@@ -139,7 +139,7 @@ proto.setPosition = function(position) {
 };
 
 /**
- * @since v3.8
+ * @since v3.9
  * 
  * @listens google.maps.StreetViewPanorama#position_changed
  * @listens google.maps.StreetViewPanorama#pov_changed
@@ -166,7 +166,7 @@ proto.processStreetViewServiceData = function(data, status) {
 };
 
 /**
- * @since v3.8
+ * @since v3.9
  */
 proto.onPanoramaPositionChanged = function() {
 
@@ -195,7 +195,7 @@ proto.onPanoramaPositionChanged = function() {
 };
 
 /**
- * @since v3.8
+ * @since v3.9
  */
 proto.onPanoramaPovChanged = function() {
   const pov = this._panorama.getPov();
