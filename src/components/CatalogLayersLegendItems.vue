@@ -84,14 +84,13 @@ export default {
     },
 
     /**
-     * @FIXME add parameter types
-     * @FIXME add return type
-     * @FIXME missing return value when `catalogLayer` is not defined
-     * 
-     * @returns {string}
+     * @params object see src/core/layers/legend/wmslegend.js params
+     * layer <Object> contains layer config
+     * @return {string/undefined} get legend url of a layer
      */
     getLegendUrl(layer, params={}) {
       const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      // just in case layer.id is not on Catalogo Registry
       if (catalogLayer) {
           return catalogLayer.getLegendUrl(params, {
             all: !this.dynamic, // set true or false based on legend is dynamic or not
@@ -181,8 +180,12 @@ export default {
           (layer.source && layer.source.url) || layer.external
             ? urlMethodsLayersName.GET
             : urlMethodsLayersName[layer.ows_method];
-        const url = `${this.getLegendUrl(layer, this.legend.config)}`;
 
+        const url = `${this.getLegendUrl(layer, this.legend.config)}`;
+        // in case of no url is get
+        if ("undefined" === typeof url){
+          continue;
+        }
         if (layer.source && layer.source.url) {
           urlLayersName[url] = [];
         } else {
