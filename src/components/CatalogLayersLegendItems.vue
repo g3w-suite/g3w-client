@@ -94,6 +94,45 @@ export default {
     },
 
     /**
+     * Method to build params string url to add to base url legend
+     * **/
+    getLegendUrlParams(urlLayerName=[]){
+      let paramsUrl = '';
+      const params = {
+        LAYERS:[],
+        STYLES:[],
+        LEGEND_ON:[],
+        LEGEND_OFF:[]
+      };
+      urlLayerName.reduce((accumulator, layerObj) =>{
+        const {layerName, style, legend_on, legend_off} = layerObj;
+        params.LAYERS.push(layerName);
+        params.STYLES.push(style);
+        legend_on && params.LEGEND_ON.push(legend_on);
+        legend_off && params.LEGEND_OFF.push(legend_off);
+        return params;
+      }, params);
+      paramsUrl+=`LAYERS=${encodeURIComponent(params.LAYERS.join(','))}`;
+      paramsUrl+=`&STYLES=${encodeURIComponent(params.STYLES.join(','))}`;
+
+      // Add LEGEND_ON parameter
+      if (params.LEGEND_ON.length) {
+        paramsUrl+=`&LEGEND_ON=${encodeURIComponent(params.LEGEND_ON.join(','))}`;
+      }
+
+      // Add LEGEND_OFF parameter
+      if (params.LEGEND_OFF.length) {
+        paramsUrl+=`&LEGEND_OFF=${encodeURIComponent(params.LEGEND_OFF.join(','))}`;
+      }
+
+      if (ApplicationService.getFilterToken()) {
+        paramsUrl += `&filtertoken=${ApplicationService.getFilterToken()}`;
+      }
+
+      return paramsUrl;
+    },
+
+    /**
      * get legend src for visible layers
      * @returns {Promise<void>}
      */
@@ -130,51 +169,62 @@ export default {
         if (layer.source && layer.source.url) {
           urlLayersName[url] = [];
         } else {
-          const [prefix, layerName] = url.split('LAYER=');
+          let prefix, legend_on, legend_off;
+          //separate by LAYER,
+          // LEGEND_ON and LEGEND_OFF -> Case categories
+          [prefix, layerName] = url.split('LAYER=');
+          [prefix, legend_on] = prefix.split('LEGEND_ON=');
+          [prefix, legend_off] = prefix.split('LEGEND_OFF=');
+
           if (!urlLayersName[prefix]) {
             urlLayersName[prefix] = [];
           }
-          urlLayersName[prefix].unshift({ layerName, style: style && style.name });
+
+          urlLayersName[prefix].unshift({
+            layerName,
+            style: style && style.name,
+            legend_on: legend_on && legend_on.replace('&', ''), // remove eventually &
+            legend_off: legend_off && legend_off.replace('&', ''),// remove eventually &
+          });
         }
 
       }
-
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
         if ('GET' === method) {
-          for (const url in urlLayersName ) {
+          for (const _url in urlLayersName ) {
+            //set base url
+            let url = _url;
+            if (urlLayersName[url].length) {
+              url+=`${this.getLegendUrlParams(urlLayersName[url])}`;
+            }
             this.legendurls.push({
               loading: true,
-              url: (urlLayersName[url].length)
-                ? `${url}LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : '' }`
-                : url,
-              error: false
+              error: false,
+              url
             })
           }
-        } else {
+        }
+        else {
           for (const url in urlLayersName ) {
             const xhr = new XMLHttpRequest();
             const econdedParams = [];
             let [_url, params] = url.split('?');
+            console.log(_url, params)
 
             params = params.split('&');
 
             params.forEach(param => {
               const [key, value] = param.split('=');
-              econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+              key && econdedParams.push(`${key}=${encodeURIComponent(value)}`);
             });
 
-            params = econdedParams.join('&');
-
-            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}`;
-            params += `&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}`;
-            params += `${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
+            params = `${econdedParams.join('&')}&${this.getLegendUrlParams(urlLayersName[url])}`;
             const legendUrlObject = {
               loading: true,
               url: null,
               error: false
             };
-
             xhr.open('POST', _url);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.responseType = 'blob';
@@ -192,7 +242,6 @@ export default {
             xhr.onerror = function() {
               legendUrlObject.loading = false;
             };
-
             xhr.send(params);
 
           }
