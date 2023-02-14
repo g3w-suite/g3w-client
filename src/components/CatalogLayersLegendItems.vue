@@ -87,7 +87,7 @@ export default {
       const catalogLayer = CatalogLayersStoresRegistry
         .getLayerById(layer.id);
       return catalogLayer && catalogLayer.getLegendUrl(params, {
-        all: !this.dynamic,
+        all: !this.dynamic, // set true or false based on legend is dynamic or not
         format: 'image/png',
         categories: layer.categories
       });
