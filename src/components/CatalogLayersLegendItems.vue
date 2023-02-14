@@ -86,7 +86,11 @@ export default {
     getLegendUrl(layer, params={}) {
       const catalogLayer = CatalogLayersStoresRegistry
         .getLayerById(layer.id);
-      return catalogLayer && catalogLayer.getLegendUrl(params, { format: 'image/png', categories: layer.categories });
+      return catalogLayer && catalogLayer.getLegendUrl(params, {
+        all: !this.dynamic,
+        format: 'image/png',
+        categories: layer.categories
+      });
     },
 
     /**
