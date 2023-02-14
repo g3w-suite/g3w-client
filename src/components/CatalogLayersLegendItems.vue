@@ -211,7 +211,7 @@ export default {
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
         if ('GET' === method) {
-          for (const url in urlLayersName ) {
+          for (let url in urlLayersName ) {
             if (urlLayersName[url].length) {
               url+=`${this.getLegendUrlParams(urlLayersName[url])}`;
             }
