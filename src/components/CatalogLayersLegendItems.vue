@@ -83,19 +83,29 @@ export default {
       legendurl.loading = false;
     },
 
+    /**
+     * @FIXME add parameter types
+     * @FIXME add return type
+     * @FIXME missing return value when `catalogLayer` is not defined
+     * 
+     * @returns {string}
+     */
     getLegendUrl(layer, params={}) {
-      const catalogLayer = CatalogLayersStoresRegistry
-        .getLayerById(layer.id);
-      return catalogLayer && catalogLayer.getLegendUrl(params, {
-        all: !this.dynamic, // set true or false based on legend is dynamic or not
-        format: 'image/png',
-        categories: layer.categories
-      });
+      const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      if (catalogLayer) {
+          return catalogLayer.getLegendUrl(params, {
+            all: !this.dynamic, // set true or false based on legend is dynamic or not
+            format: 'image/png',
+            categories: layer.categories
+          });
+      }
     },
 
     /**
-     * Method to build params string url to add to base url legend
-     * **/
+     * Build params string url to add to base url legend
+     * 
+     * @since v3.8
+     */
     getLegendUrlParams(urlLayerName=[]){
       let paramsUrl = '';
       const params = {
@@ -104,25 +114,31 @@ export default {
         LEGEND_ON:[],
         LEGEND_OFF:[]
       };
-      urlLayerName.reduce((accumulator, layerObj) =>{
-        const {layerName, style, legend_on, legend_off} = layerObj;
-        params.LAYERS.push(layerName);
-        params.STYLES.push(style);
-        legend_on && params.LEGEND_ON.push(legend_on);
-        legend_off && params.LEGEND_OFF.push(legend_off);
-        return params;
-      }, params);
-      paramsUrl+=`LAYERS=${encodeURIComponent(params.LAYERS.join(','))}`;
-      paramsUrl+=`&STYLES=${encodeURIComponent(params.STYLES.join(','))}`;
+
+      urlLayerName
+        .reduce((_, layer) => {
+          params.LAYERS.push(layer.layerName);
+          params.STYLES.push(layer.style);
+          if (layer.legend_on) {
+            params.LEGEND_ON.push(layer.legend_on);
+          }
+          if (layer.legend_off) {
+            params.LEGEND_OFF.push(layer.legend_off);
+          }
+          return params;
+        }, params);
+
+      paramsUrl += `LAYERS=${encodeURIComponent(params.LAYERS.join(','))}`;
+      paramsUrl += `&STYLES=${encodeURIComponent(params.STYLES.join(','))}`;
 
       // Add LEGEND_ON parameter
       if (params.LEGEND_ON.length) {
-        paramsUrl+=`&LEGEND_ON=${encodeURIComponent(params.LEGEND_ON.join(','))}`;
+        paramsUrl += `&LEGEND_ON=${encodeURIComponent(params.LEGEND_ON.join(','))}`;
       }
 
       // Add LEGEND_OFF parameter
       if (params.LEGEND_OFF.length) {
-        paramsUrl+=`&LEGEND_OFF=${encodeURIComponent(params.LEGEND_OFF.join(','))}`;
+        paramsUrl += `&LEGEND_OFF=${encodeURIComponent(params.LEGEND_OFF.join(','))}`;
       }
 
       if (ApplicationService.getFilterToken()) {
@@ -133,7 +149,8 @@ export default {
     },
 
     /**
-     * get legend src for visible layers
+     * Get legend src for visible layers
+     * 
      * @returns {Promise<void>}
      */
     async getLegendSrc() {
@@ -170,9 +187,11 @@ export default {
           urlLayersName[url] = [];
         } else {
           let prefix, legend_on, legend_off;
-          //separate by LAYER,
-          // LEGEND_ON and LEGEND_OFF -> Case categories
+
+          // extract LAYER from url
           [prefix, layerName] = url.split('LAYER=');
+
+          // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
           [prefix, legend_on] = prefix.split('LEGEND_ON=');
           [prefix, legend_off] = prefix.split('LEGEND_OFF=');
 
@@ -183,8 +202,8 @@ export default {
           urlLayersName[prefix].unshift({
             layerName,
             style: style && style.name,
-            legend_on: legend_on && legend_on.replace('&', ''), // remove eventually &
-            legend_off: legend_off && legend_off.replace('&', ''),// remove eventually &
+            legend_on:  (legend_on || '').replace('&', ''), // remove eventually &
+            legend_off: (legend_off || '').replace('&', ''),// remove eventually &
           });
         }
 
@@ -210,21 +229,24 @@ export default {
             const xhr = new XMLHttpRequest();
             const econdedParams = [];
             let [_url, params] = url.split('?');
-            console.log(_url, params)
 
             params = params.split('&');
 
             params.forEach(param => {
               const [key, value] = param.split('=');
-              key && econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+              if (key) {
+                econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+              }
             });
 
             params = `${econdedParams.join('&')}&${this.getLegendUrlParams(urlLayersName[url])}`;
+
             const legendUrlObject = {
               loading: true,
               url: null,
               error: false
             };
+
             xhr.open('POST', _url);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.responseType = 'blob';
@@ -232,9 +254,8 @@ export default {
             self.legendurls.push(legendUrlObject);
 
             xhr.onload = function() {
-              const data = this.response;
-              if (undefined !== data) {
-                legendUrlObject.url = window.URL.createObjectURL(data);
+              if (undefined !== this.response) {
+                legendUrlObject.url = window.URL.createObjectURL(this.response);
               }
               legendUrlObject.loading = false;
             };
@@ -242,6 +263,7 @@ export default {
             xhr.onerror = function() {
               legendUrlObject.loading = false;
             };
+
             xhr.send(params);
 
           }
