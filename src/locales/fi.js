@@ -254,7 +254,7 @@ export default {
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Kysely piirtopolygonin mukaan"
         },
         querybybbox: {
           tooltip: 'Tasoon kohdituva BBox-kysely',
