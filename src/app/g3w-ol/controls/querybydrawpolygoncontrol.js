@@ -1,6 +1,8 @@
 /**
+ * @file
  * @since v3.8
  */
+
 import GUI from 'services/gui';
 
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
