@@ -84,13 +84,12 @@ export default {
     },
 
     /**
-     * @params object see src/core/layers/legend/wmslegend.js params
-     * layer <Object> contains layer config
-     * @return {string/undefined} get legend url of a layer
+     * @param   {object} params    same as `src/core/layers/legend/wmslegend.js` params
+     * @param   {object} layer     layer config
+     * @returns {string|undefined} legend url of a layer (undefined if `layer.id` is not in CatalogRegistry)
      */
     getLegendUrl(layer, params={}) {
       const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
-      // just in case layer.id is not on Catalogo Registry
       if (catalogLayer) {
           return catalogLayer.getLegendUrl(params, {
             all: !this.dynamic, // set true or false based on legend is dynamic or not
