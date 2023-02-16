@@ -1,35 +1,45 @@
 /**
+ * @file
  * @since v3.8
  */
 import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
 
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
-const { Geometry: {getAllPolygonGeometryTypes} } = require('core/utils/geo');
+const { Geometry: { getAllPolygonGeometryTypes } } = require('core/utils/geo');
 
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
-const BaseQueryPolygonControl = function(options = {}){
-  this.layers = options.layers || [];
-  const visible = this.checkVisible(this.layers);
+const BaseQueryPolygonControl = function(options = {}) {
 
   /**
-   * set specific control options
-   *
+ * @FIXME add description
+ */
+  this.layers = options.layers || [];
+
+  /**
+   * @FIXME add description
    */
-  options.visible = visible;
+  this.unwatches = [];
+
+  options.visible = this.checkVisible(this.layers);
+
   options.offline = false;
+
   options.spatialMethod = options.spatialMethod || SPATIALMETHODS[0];
+
   options.clickmap = true;
+
   options.onhover = true;
+
   options.toggledTool = {
     type: 'spatialMethod',
-      how: 'toggled' // or hover
+    how: 'toggled' // or hover
   };
-  options.geometryTypes = VALIDGEOMETRIES;
-  /** end specific options **/
 
-  this.unwatches = [];
+  options.geometryTypes = VALIDGEOMETRIES;
+
   this.listenLayersChange();
+
   InteractionControl.call(this, options);
 };
 
@@ -37,44 +47,54 @@ ol.inherits(BaseQueryPolygonControl, InteractionControl);
 
 const proto = BaseQueryPolygonControl.prototype;
 
-proto.listenLayersChange = function(){
+/**
+ * @FIXME add description
+ */
+proto.listenLayersChange = function() {
+
   this.unwatches.forEach(unwatch => unwatch());
+
   this.unwatches.splice(0);
-  const polygonLayers = this.layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
-  polygonLayers.forEach(layer => {
-    const {state} = layer;
-    this.unwatches.push(VM.$watch(() =>  state.visible, visible => {
-      // need to be visible or selected
-      this.setEnable(visible && state.selected);
-    }));
-  });
+
+  this.layers
+    .filter(layer => VALIDGEOMETRIES.indexOf(-1 !== layer.getGeometryType()))
+    .forEach(layer => {
+      this.unwatches
+        .push(
+          VM.$watch(
+            () =>  layer.state.visible,
+            visible => { this.setEnable(/* need to be visible or selected */ visible && layer.state.selected); }
+          )
+        );
+      }
+    );
+
 };
 
-proto.change = function(layers=[]){
+/**
+ * @FIXME add description
+ */
+proto.change = function(layers=[]) {
   this.layers = layers;
-  const visible = this.checkVisibile(layers);
-  this.setVisible(visible);
+  this.setVisible(this.checkVisibile(layers));
   this.setEnable(false);
   this.listenLayersChange();
 };
 
+/**
+ * @FIXME add description
+ */
 proto.checkVisible = function(layers) {
-  let visible;
+
   // if no layer or just one
-  if (!layers.length || layers.length === 1) visible = false;
-  else {
-    // geometries to check
-    // get all layers that haven't the geometries above filterable
-    const filterableLayers = layers.filter(layer => layer.isFilterable());
-    // get all layer that have the valid geometries
-    const querableLayers = layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
-    const filterableLength = filterableLayers.length;
-    const querableLength = querableLayers.length;
-    if (querableLength === 1 && filterableLength === 1){
-      visible = filterableLayers[0] !== querableLayers[0];
-    } else visible = querableLength > 0 && filterableLength > 0;
+  if (!layers.length || 1 === layers.length) {
+    return false;
   }
-  return visible;
+
+  const filterable = layers.filter(layer => layer.isFilterable());                                      // get all layers that haven't the geometries above filterable
+  const querable   = layers.filter(layer => -1 !== VALIDGEOMETRIES.indexOf(layer.getGeometryType()));   // get all layer that have the valid geometries
+  return (1 === querable.length && 1 === filterable.length) ? (querable[0] !== filterable[0]) : (querable.length > 0 && filterable.length > 0);
+
 };
 
 module.exports = BaseQueryPolygonControl;
