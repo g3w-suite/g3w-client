@@ -179,7 +179,6 @@
 </template>
 
 <script>
-//@ts-check
   import { fieldsMixin } from 'mixins';
   import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats from 'components/QueryResultsActionInfoFormats.vue';
