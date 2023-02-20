@@ -116,7 +116,8 @@ proto.setPosition = function(position) {
         pitch: 0,
         heading: 0
       });
-      self._panorama.setPosition(latLng);
+
+      self._panorama.setPosition(data.location.latLng);
     }
   }).then(response => {
     if (response === undefined) {
