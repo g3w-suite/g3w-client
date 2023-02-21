@@ -30,7 +30,6 @@ const QueryByPolygonControl = function(options={}) {
       const geometryType = selectedLayer.getGeometryType();
       const querable = selectedLayer.isQueryable();
       if (selected){
-        console.log('qua')
         if (this.getGeometryTypes().indexOf(geometryType) !== -1) {
           this.setEnable(querable ? selectedLayer.isVisible(): querable);
         } else this.setEnable(false, false);
@@ -60,7 +59,6 @@ const QueryByPolygonControl = function(options={}) {
       this.externalLayer.push(layer);
       this.unwatches.push(VM.$watch(() =>  layer.selected, selected => {
         // need to be visible or selected
-        console.log('qui')
         this.setEnable(selected);
       }));
 
