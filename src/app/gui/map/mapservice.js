@@ -2145,9 +2145,17 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
   return extent && this.zoomToExtent(extent, options) || Promise.resolve();
 };
 
+/**
+ *
+ * @param extent
+ * @param options
+ * @returns {*|Promise<unknown>|Promise|Promise<void>}
+ */
 proto.zoomToExtent = function(extent, options={}) {
   const center = ol.extent.getCenter(extent);
-  const resolution = this.getResolutionForZoomToExtent(extent);
+  const resolution = this.getResolutionForZoomToExtent(extent, {
+    force: options.force || false // parameter to force to get resolution from extent
+  });
   this.goToRes(center, resolution);
   return options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
     zoom: false,
@@ -2169,7 +2177,15 @@ proto.compareExtentWithProjectMaxExtent = function(extent){
   return inside ? extent : projectExtent;
 };
 
-proto.getResolutionForZoomToExtent = function(extent){
+/**
+ *
+ * @param extent {Array} [minx, miny, maxx, maxy]
+ * @param options {Object/undefined} if undefined is set {
+ *   force: false // used to force to use extent to calcuate resolution
+ * }
+ * @returns {number} resolution
+ */
+proto.getResolutionForZoomToExtent = function(extent, options={force:false}){
   let resolution;
   const {ZOOM} = MAP_SETTINGS;
   const map = this.getMap();
@@ -2180,13 +2196,18 @@ proto.getResolutionForZoomToExtent = function(extent){
   const maxResolution = getResolutionFromScale(ZOOM.maxScale, this.getMapUnits()); // map resolution of the map
   // check if
   if (inside) {
-    // calculate main resolutions
-    const currentResolution = map.getView().getResolution(); // Current Resolution
     const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
-    ////
-    // set the final resolution to go to
-    resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
-    resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
+    // in case of force === true
+    if (true === options.force) {
+      resolution = extentResolution; // get resolution from passed extent
+    } else {
+      // calculate main resolutions
+      const currentResolution = map.getView().getResolution(); // Current Resolution
+      ////
+      // set the final resolution to go to
+      resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
+      resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
+    }
   } else resolution = projectMaxResolution; // set max resolution
   return resolution
 };

@@ -46,7 +46,9 @@
           const projection = await Projections.registerProjection(`EPSG:${crs.epsg}`);
           extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())
         }
-        GUI.getService('map').zoomToExtent(extent)
+        GUI.getService('map').zoomToExtent(extent, {
+          force: true // need to force to use extent for calculate resolution
+        })
       }
     },
     async mounted() {}
