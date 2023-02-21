@@ -33,7 +33,7 @@ proto.setup = function(config={}, options={}) {
       loading: false,
       error: false,
      /**
-      * @deprecated since 3.8. Will be removed in 4.x. Use expanded attribute instead
+      * @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead
       */
       show: true,
       change: false, // used for when categories changed (checkbox on TOC) and legend is on TAB
@@ -48,21 +48,37 @@ proto.setup = function(config={}, options={}) {
     minscale: config.minscale,
     maxscale: config.maxscale,
     ows_method: config.ows_method,
-    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
-    categories: false, // has more than one categories legend,
+
     /**
-     *  Expand or collapse legend item in catalog layers (TOC)
+     * @type {boolean}
+     */
+    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
+
+    /**
+     * Has more than one categories legend
+     * 
+     * @type {boolean}
+     */
+    categories: false,
+
+    /**
+     * Toggle legend item state (expandend or collapsed) in catalog layers (TOC)
+     * 
+     * @type {number}
      *
      * @since v3.8
      */
     expanded: config.expanded,
+
     /**
-     *  Opacity
-     *
+     * Layer opacity
+     * 
+     * @type {number} opacity range = [0, 100]
+     * 
      * @since v3.8
-     *
      */
     opacity: config.opacity || 100,
+
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
