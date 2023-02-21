@@ -288,38 +288,37 @@ proto.createLayersTree = function(groupName, options={}) {
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
   if (_layerstree) {
-    if (full === true) return this.state.layerstree;
-    else {
+    if (full === true) {
+      return this.state.layerstree;
+    } else {
       let traverse = (obj, newobj) => {
         obj.forEach(layer => {
           let lightlayer = null;
-          if (
-            null !== layer.id
-            && "undefined" !== typeof layer.id
-            && tocLayersId.find(toclayerId => toclayerId === layer.id)
-          ) {
-            // assign an object to lightlayer
-            lightlayer = {
-              id: layer.id
-            };
+
+          // case TOC has layer ID
+          if (null !== layer.id && "undefined" !== typeof layer.id && tocLayersId.find(id => id === layer.id)) {
+            lightlayer = ({ ...lightlayer, id: layer.id });
           }
+
           // case group
-          if (null !==layer.nodes && "undefined" !== typeof layer.nodes) {
-            lightlayer = {
+          if (null !== layer.nodes && "undefined" !== typeof layer.nodes) {
+            lightlayer = ({
+              ...lightlayer,
               title: layer.name,
               groupId: uniqueId(),
               nodes: [],
               checked: layer.checked,
               mutually_exclusive: layer["mutually-exclusive"]
-            }; //assign an object
-            traverse(layer.nodes, lightlayer.nodes)
+            });
+            traverse(layer.nodes, lightlayer.nodes); // recursion step
           }
+
           // check if lightlayer is not null
           if (null !== lightlayer) {
-            /** toggle expanded property for legend item (TOC) **/
-            lightlayer.expanded = layer.expanded;
+            lightlayer.expanded = layer.expanded; // expand legend item (TOC)
             newobj.push(lightlayer);
           }
+
         });
       };
       traverse(_layerstree, layerstree);
