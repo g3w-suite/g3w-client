@@ -261,20 +261,22 @@ export default {
     CatalogEventHub.$on('treenodeexternalselected', layer =>  {
       const catalogService = GUI.getService('catalog');
 
-      // emit signal of select layer from catalog
+      // call setSelectedExternalLayer of catalogService
       catalogService.setSelectedExternalLayer({
         layer,
         type: 'vector',
         selected: !layer.selected
-      });
+      }).then(() => {
 
-      /**
-       * Loop to all layersstores and set all layers to selected false
-       *
-       */
-      layer.selected && CatalogLayersStoresRegistry.getLayersStores().forEach(layerStore => {
-        layerStore.selectLayer(null, false);
-      });
+        /**
+         * Loop to all layersstores and set all layers to selected false
+         * if layer is selected
+         *
+         */
+        layer.selected && CatalogLayersStoresRegistry.getLayersStores().forEach(layerStore => {
+          layerStore.selectLayer(null, false);
+        });
+      })
     });
 
 
