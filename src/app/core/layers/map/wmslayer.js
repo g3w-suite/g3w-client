@@ -99,13 +99,8 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
     const OPACITIES = [];
     visibleLayers.map(layer => {
       const layerId = layer.getWMSLayerName();
-      CATEGORIES_LAYERS[layerId] = {
-        ...get_LEGEND_ON_LEGEND_OFF_Params(layer)
-      };
+      CATEGORIES_LAYERS[layerId] = { ...get_LEGEND_ON_LEGEND_OFF_Params(layer) };
       STYLES.push(layer.getStyle());
-      /**
-       * @since v3.8
-       */
       OPACITIES.push(parseInt((layer.getOpacity()/100) * 255))
     });
 
@@ -126,6 +121,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
       ...params,
       filtertoken: ApplicationState.tokens.filtertoken,
       STYLES: STYLES.join(','),
+      /** @since v3.8 */
       OPACITIES: OPACITIES.join(','),
       LEGEND_ON,
       LEGEND_OFF,
