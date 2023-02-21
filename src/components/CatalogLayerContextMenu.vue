@@ -36,7 +36,7 @@
       @since v3.8
     -->
     <li
-      v-if="layerMenu.layer.geolayer"
+      v-if="layerMenu.layer.geolayer && layerMenu.layer.visible"
       @mouseleave.self="showLayerOpacityMenu(false,$event)"
       @mouseover.self="showLayerOpacityMenu(true,$event)"
       class="menu-icon"
@@ -45,7 +45,7 @@
       <span class="item-text" v-t="'catalog_items.contextmenu.layer_opacity'"></span>
       <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul
-        v-show="layerMenu.layerOpacityMenu.show"
+        v-show="layerMenu.layer && layerMenu.layerOpacityMenu.show"
         style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
         :style="{
           top: layerMenu.layerOpacityMenu.top + 'px',
@@ -241,7 +241,7 @@
             style: null,
             default: null
           },
-          //layer Transparency Menu
+          //layer Opacity Menu
           layerOpacityMenu: {
             show: false,
             top:0,
@@ -269,10 +269,10 @@
             (!(el === event.target || el.contains(event.target))) && vnode.context[binding.expression](event);
           };
           //add event listener click
-          document.body.addEventListener('click', this.event)
+          document.body.addEventListener('click', this.event, true)
         },
         unbind(el) {
-          document.body.removeEventListener('click', this.event)
+          document.body.removeEventListener('click', this.event, true)
         }
       }
     },
