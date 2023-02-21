@@ -392,7 +392,7 @@ export default {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
     select() {
-      if (this.layerstree.external && typeof this.layerstree.selected !== "undefined") {
+      if (this.layerstree.external && "undefined" !== typeof this.layerstree.selected) {
         CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
