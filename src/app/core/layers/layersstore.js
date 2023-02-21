@@ -292,27 +292,30 @@ proto.createLayersTree = function(groupName, options={}) {
     else {
       let traverse = (obj, newobj) => {
         obj.forEach(layer => {
-          let lightlayer = {};
-          if (layer.id !== null && layer.id !== undefined) {
-            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) {
-              lightlayer.id = layer.id;
-            } else {
-              // is set to null in case of layer in layerstree
-              // but not in layers project configuration from server
-              lightlayer = null;
-            }
+          let lightlayer = null;
+          if (
+            null !== layer.id
+            && "undefined" !== typeof layer.id
+            && tocLayersId.find(toclayerId => toclayerId === layer.id)
+          ) {
+            // assign an object to lightlayer
+            lightlayer = {
+              id: layer.id
+            };
           }
           // case group
-          if (layer.nodes !== null && layer.nodes !== undefined) {
-            lightlayer.title = layer.name;
-            lightlayer.groupId = uniqueId();
-            lightlayer.nodes = [];
-            lightlayer.checked = layer.checked;
-            lightlayer.mutually_exclusive = layer["mutually-exclusive"];
+          if (null !==layer.nodes && "undefined" !== typeof layer.nodes) {
+            lightlayer = {
+              title: layer.name,
+              groupId: uniqueId(),
+              nodes: [],
+              checked: layer.checked,
+              mutually_exclusive: layer["mutually-exclusive"]
+            }; //assign an object
             traverse(layer.nodes, lightlayer.nodes)
           }
           // check if lightlayer is not null
-          if (lightlayer !== null) {
+          if (null !== lightlayer) {
             /** toggle expanded property for legend item (TOC) **/
             lightlayer.expanded = layer.expanded;
             newobj.push(lightlayer);
