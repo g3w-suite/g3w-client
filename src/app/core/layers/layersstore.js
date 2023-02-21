@@ -296,7 +296,11 @@ proto.createLayersTree = function(groupName, options={}) {
           if (layer.id !== null && layer.id !== undefined) {
             if (tocLayersId.find(toclayerId => toclayerId === layer.id)) {
               lightlayer.id = layer.id;
-            } else lightlayer = null;
+            } else {
+              // is set to null in case of layer in layerstree
+              // but not in layers project configuration from server
+              lightlayer = null;
+            }
           }
           // case group
           if (layer.nodes !== null && layer.nodes !== undefined) {
@@ -307,9 +311,12 @@ proto.createLayersTree = function(groupName, options={}) {
             lightlayer.mutually_exclusive = layer["mutually-exclusive"];
             traverse(layer.nodes, lightlayer.nodes)
           }
-          /** toggle expanded property for legend item (TOC) **/
-          lightlayer.expanded = layer.expanded;
-          lightlayer && newobj.push(lightlayer);
+          // check if lightlayer is not null
+          if (lightlayer !== null) {
+            /** toggle expanded property for legend item (TOC) **/
+            lightlayer.expanded = layer.expanded;
+            newobj.push(lightlayer);
+          }
         });
       };
       traverse(_layerstree, layerstree);
