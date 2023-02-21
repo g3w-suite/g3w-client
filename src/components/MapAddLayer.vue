@@ -81,6 +81,8 @@ import { Chrome as ChromeComponent } from 'vue-color';
 
 import { EPSG } from 'app/constant';
 
+const Projections = require('g3w-ol/projection/projections');
+
 const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('core/utils/geo');
 
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
@@ -246,11 +248,20 @@ export default {
       } catch(err){this.setError('add_external_layer');}
     },
     async addLayer() {
-      if (this.vectorLayer || this.csv.valid){
-        this.loading = true;
-        //Recreate always the vector layer because we can set the right epsg after first load the file
-        // if we change the epsg of the layer after loaded
+      if (this.vectorLayer || this.csv.valid) {
+        const {crs} = this.layer;
         try {
+          /**
+           * waiting to register a epsg choose if all go right
+           */
+          try {
+            await Projections.registerProjection(crs);
+          } catch(error) {
+            this.setError(error);
+            return;
+          }
+
+          this.loading = true;
           this.vectorLayer = await createVectorLayerFromFile(this.layer);
           this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
             color: this.layer.color,
@@ -260,10 +271,10 @@ export default {
             crs: this.layer.crs,
             type: this.layer.type,
             position: this.position
-
-        });
+          });
           $(this.$refs.modal_addlayer).modal('hide');
           this.clearLayer();
+
         } catch(err){
           this.setError('add_external_layer');
         }

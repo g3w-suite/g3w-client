@@ -4,44 +4,62 @@
 -->
 
 <template>
-  <div role="tabpanel" class="tab-pane" :class="{active:active}" id="legend">
-    <layerslegend-items :active="active" :legend="legend" :layers="visiblelayers"></layerslegend-items>
+
+  <div
+    role="tabpanel"
+    id="legend"
+    class="tab-pane"
+    :class="{active:active}"
+  >
+
+    <layerslegend-items
+      :active="active"
+      :legend="legend"
+      :layers="visiblelayers"
+    ></layerslegend-items>
+
   </div>
+
 </template>
 
 <script>
 export default {
-  props: ['layerstree', 'legend', 'active'],
+  props: [
+    'layerstree',
+    'legend',
+    'active'
+  ],
   data() {
     return {}
   },
   computed: {
-    visiblelayers(){
+    visiblelayers() {
       let _visiblelayers = [];
-      const layerstree = this.layerstree.tree;
       let traverse = obj => {
         for (const layer of obj) {
-          if (!_.isNil(layer.id) && layer.visible && layer.geolayer && !layer.exclude_from_legend) _visiblelayers.push(layer);
-          if (!_.isNil(layer.nodes)) traverse(layer.nodes);
+          if (!_.isNil(layer.id) && layer.visible && layer.geolayer && !layer.exclude_from_legend) {
+            _visiblelayers.push(layer);
+          }
+          if (!_.isNil(layer.nodes)) {
+            traverse(layer.nodes);
+          }
         }
       };
-      traverse(layerstree);
+      traverse(this.layerstree.tree);
       return _visiblelayers;
     }
   },
   watch: {
     'layerstree': {
-      handler(val, old){},
+      handler(val, old) {},
       deep: true
     },
     'visiblelayers'(visibleLayers) {
-      const show = !!visibleLayers.length;
-      this.$emit('showlegend', show);
+      this.$emit('showlegend', !!visibleLayers.length);
     }
   },
   created() {
-    const show = !!this.visiblelayers.length;
-    this.$emit('showlegend', show);
+    this.$emit('showlegend', !!this.visiblelayers.length);
   }
 };
 </script>
