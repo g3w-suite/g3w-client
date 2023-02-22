@@ -26,7 +26,10 @@ export default {
     sdk: {
       spatialbookmarks: {
         title: "Spatial Bookmarks",
-        helptext: "Move on map extent and click Add",
+        helptext: "Move on map extent, insert name and click Add",
+        input: {
+          name: "Name"
+        },
         sections: {
           project:{
             title: "Project Bookmarks"
