@@ -4,11 +4,10 @@
 -->
 
 <template>
-  <li
-    v-if="layerMenu.layer.geolayer && layerMenu.layer.visible"
+
+  <div
     @mouseleave.self="showLayerOpacityMenu(false, $event)"
     @mouseover.self="showLayerOpacityMenu(true, $event)"
-    class="menu-icon"
   >
 
   <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
@@ -38,7 +37,8 @@
       </li>
     </ul>
 
-  </li>
+  </div>
+
 </template>
 
 <script>

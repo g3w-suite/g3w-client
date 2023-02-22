@@ -43,11 +43,13 @@
     </li>
 
     <!-- TODO add item description -->
-    <catalog-layer-context-menu-layer-opacity
-      @add-layer-menu-item="addLayerMenuItem"
-      @show-layer-menu="showSubMenuContext"
-      :layerMenu="layerMenu"
-    />
+    <li v-if="layerMenu.layer.geolayer && layerMenu.layer.visible" class="menu-icon">
+      <layer-opacity-picker
+        @add-layer-menu-item="addLayerMenuItem"
+        @show-layer-menu="showSubMenuContext"
+        :layerMenu="layerMenu"
+      />
+    </li>
 
     <!-- TODO add item description -->
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
@@ -196,7 +198,7 @@
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
 
-  import CatalogLayerContextMenuLayerOpacity from "components/CatalogLayerContextMenuLayerOpacity.vue";
+  import LayerOpacityPicker from "components/LayerOpacityPicker.vue";
 
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -262,8 +264,8 @@
       }
     },
     components: {
-      'chrome-picker': ChromeComponent,
-      CatalogLayerContextMenuLayerOpacity
+      'chrome-picker':        ChromeComponent,
+      'layer-opacity-picker': LayerOpacityPicker,
     },
     directives: {
       //create a vue directive from click outside contextmenu
