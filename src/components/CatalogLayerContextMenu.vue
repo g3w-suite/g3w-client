@@ -47,7 +47,7 @@
       <layer-opacity-picker
         @add-layer-menu-item="addLayerMenuItem"
         @show-layer-menu="showSubMenuContext"
-        :layerMenu="layerMenu"
+        :layer="layerMenu.layer"
       />
     </li>
 

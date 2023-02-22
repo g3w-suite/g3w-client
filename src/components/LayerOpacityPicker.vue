@@ -15,7 +15,7 @@
   <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
 
     <ul
-      v-show="layerMenu.layer && layerOpacityMenu.show"
+      v-show="layer && layerOpacityMenu.show"
       style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
       :style="{
         top:       layerOpacityMenu.top       + 'px',
@@ -25,7 +25,7 @@
        }">
       <li>
         <range
-          :value="layerMenu.layer.opacity"
+          :value="layer.opacity"
           :min="0"
           :max="100"
           :step="1"
@@ -50,7 +50,7 @@
     name: 'Cataloglayercontextmenulayeropacity',
 
     props: {
-      layerMenu: {
+      layer: {
         type: Object,
         required: true
       }
@@ -75,12 +75,12 @@
        * 
        * @fires CatalogEventHub~layer-change-opacity
        */
-      setLayerOpacity( { id = this.layerMenu.layer.id, value: opacity }) {
+      setLayerOpacity( { id = this.layer.id, value: opacity }) {
         // skip if nothing has changed
-        if (this.layerMenu.layer.opacity == opacity) {
+        if (this.layer.opacity == opacity) {
           return;
         }
-        this.layerMenu.layer.opacity = opacity;
+        this.layer.opacity = opacity;
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (layer) {
           CatalogEventHub.$emit('layer-change-opacity', { layerId: id });
