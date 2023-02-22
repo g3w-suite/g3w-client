@@ -313,6 +313,9 @@ proto.getStyle = function(){
 
 /**
  * Get transparency property
+ * 
+ * @returns {number}
+ * 
  * @since v3.8
  */
 

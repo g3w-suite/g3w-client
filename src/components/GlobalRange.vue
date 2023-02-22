@@ -12,7 +12,12 @@
       </section>
 
       <div style="display: flex; flex-direction: column; margin: 0 3px">
-        <label :for="id" style="display: block" class="skin-color" v-t="label"></label>
+        <label
+          :for="id"
+          style="display: block"
+          class="skin-color"
+          v-t="label"
+        ></label>
         <input
           type="range"
           ref="range-input"
@@ -21,7 +26,8 @@
           :id="id"
           :min="min"
           :max="max"
-          :step="step">
+          :step="step"
+        >
       </div>
 
       <section style="align-self: flex-end">
@@ -43,44 +49,82 @@
   export default {
     name: "range",
     props:{
+
+      /**
+       * ID value for label.
+       */
       id: {
         required: true,
       },
+
+      /**
+       * @TODO find out what changes from the `unit` props
+       */
       label: {
         type:"String",
         default: ''
       },
+
+      /**
+       * Min range slider value.
+       */
       min: {
         type: Number,
         default: 0
       },
-      max:{
+
+      /**
+       * Max range slider value.
+       */
+      max: {
         type: Number,
         default: 10
       },
-      step:{
+
+      /**
+       * Range slider step.
+       */
+      step: {
         type: Number,
         default: 1
       },
+
+      /**
+       * @TODO appears to be unused, if so please remove.
+       */
       labelValue: {},
+
+      /**
+       * Current range value.
+       */
       value: {
         default: 0
       },
-      sync:{
+
+      /**
+       * Whether to emit the `changed` event.
+       */
+      sync: {
         type: Boolean,
         default: false
       },
+
       /**
-       * Boolean Show change value
+       * Whether display current range value.
        */
       showValue: {
         type: Boolean,
         default: false
       },
+
+      /**
+       * Range unit.
+       */
       unit: {
         type: String,
         default: ''
       }
+
     },
     data(){
       return {}
