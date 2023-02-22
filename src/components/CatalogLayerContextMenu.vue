@@ -35,38 +35,10 @@
     <!--
       @since v3.8
     -->
-    <li
-      v-if="layerMenu.layer.geolayer && layerMenu.layer.visible"
-      @mouseleave.self="showLayerOpacityMenu(false,$event)"
-      @mouseover.self="showLayerOpacityMenu(true,$event)"
-      class="menu-icon"
-    >
-      <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
-      <span class="item-text" v-t="'catalog_items.contextmenu.layer_opacity'"></span>
-      <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
-      <ul
-        v-show="layerMenu.layer && layerMenu.layerOpacityMenu.show"
-        style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
-        :style="{
-          top: layerMenu.layerOpacityMenu.top + 'px',
-          left: `${layerMenu.layerOpacityMenu.left}px`,
-          maxHeight: layerMenu.layerOpacityMenu.maxHeight + 'px',
-          overflowY: layerMenu.layerOpacityMenu.overflowY
-        }">
-        <li>
-          <range :value="layerMenu.layer.opacity"
-            :min="0"
-            :max="100"
-            :step="1"
-            :sync="false"
-            :showValue="true"
-            :unit="'%'"
-            @changed="closeLayerMenu(layerMenu.layerOpacityMenu)"
-            @change-range="setLayerOpacity">
-          </range>
-        </li>
-      </ul>
-    </li>
+    <catalog-layer-context-menu-layer-opacity
+      @add-layer-menu-item="addLayerMenuItem"
+      @show-layer-menu="showSubMenuContext"
+      :layerMenu="layerMenu"/>
 
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('search')"></span>
@@ -187,6 +159,8 @@
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
 
+  import CatalogLayerContextMenuLayerOpacity from "components/CatalogLayerContextMenuLayerOpacity.vue";
+
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ApplicationService from 'services/application';
@@ -241,14 +215,6 @@
             style: null,
             default: null
           },
-          //layer Opacity Menu
-          layerOpacityMenu: {
-            show: false,
-            top:0,
-            left:0,
-            style: null,
-            default: null
-          },
           //metadataInfo
           metadatainfoMenu: {
             show: false,
@@ -260,6 +226,7 @@
     },
     components: {
       'chrome-picker': ChromeComponent,
+      CatalogLayerContextMenuLayerOpacity
     },
     directives: {
       //create a vue directive from click outside contextmenu
@@ -277,6 +244,15 @@
       }
     },
     methods: {
+      /**
+       * @TODO check if we need a better way to handle this
+       * **/
+      addLayerMenuItem(item={}){
+        this.layerMenu = {
+          ...item,
+          ...this.layerMenu
+        }
+      },
       _hideMenu() {
         this.layerMenu.show = false;
         this.layerMenu.styles = false;
@@ -288,7 +264,7 @@
         this.layerMenu.loading.xls = false;
         this.layerMenu.loading.geotiff = false;
       },
-      closeLayerMenu(menu) {
+      closeLayerMenu(menu={}) {
         this._hideMenu();
         this.showColorMenu(false);
         menu.show = false;
@@ -455,20 +431,6 @@
           opacity
         });
       },
-      setLayerOpacity( {id=this.layerMenu.layer.id, value:opacity}){
-        const changed = this.layerMenu.layer.opacity != opacity;
-        if (changed) {
-          this.layerMenu.layer.opacity = opacity;
-          const layer = CatalogLayersStoresRegistry.getLayerById(id);
-          if (layer) {
-            CatalogEventHub.$emit('layer-change-opacity', {
-              layerId: id
-            });
-            layer.change();
-          }
-        }
-      },
-
       /**
        * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
        *
@@ -626,16 +588,6 @@
       async showStylesMenu(bool, evt) {
         this.showSubMenuContext({
           menu: this.layerMenu.stylesMenu,
-          bool,
-          evt
-        });
-      },
-      /**
-       * Context menu: toggle "opacity layer" submenu handling its correct horizontal and vertical alignment
-       */
-      async showLayerOpacityMenu(bool, evt) {
-        this.showSubMenuContext({
-          menu: this.layerMenu.layerOpacityMenu,
           bool,
           evt
         });
