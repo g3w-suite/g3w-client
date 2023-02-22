@@ -468,22 +468,7 @@
           }
         }
       },
-      /**
-       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
-       *
-       * @FIXME add description
-       *
-       * @param layer
-       */
-      zoomToLayer(layer) {
-        GUI
-          .getService('map')
-          .goToBBox(
-            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-            layer.epsg
-          );
-        this._hideMenu();
-      },
+
       /**
        * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
        *
