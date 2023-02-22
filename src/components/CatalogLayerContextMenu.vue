@@ -271,7 +271,8 @@
       //create a vue directive from click outside contextmenu
       'click-outside-layer-menu': {
         bind(el, binding, vnode) {
-          this.event = function (event) {
+          this.event = (event) => {
+            event.stopPropagation();
             (!(el === event.target || el.contains(event.target))) && vnode.context[binding.expression](event);
           };
           //add event listener click
