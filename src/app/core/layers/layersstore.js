@@ -285,31 +285,41 @@ proto.createLayersTree = function(groupName, options={}) {
   const full = options.full || false;
   const expanded = options.expanded;
   const _layerstree = options.layerstree || null;
+  // get all layers id from layers server config to compare with layer nodes on layerstree server property
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
   if (_layerstree) {
-    if (full === true) return this.state.layerstree;
-    else {
+    if (full === true) {
+      return this.state.layerstree;
+    } else {
       let traverse = (obj, newobj) => {
         obj.forEach(layer => {
-          let lightlayer = {};
-          if (layer.id !== null && layer.id !== undefined) {
-            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) {
-              lightlayer.id = layer.id;
-            } else lightlayer = null;
+          let lightlayer = null;
+
+          // case TOC has layer ID
+          if (null !== layer.id && "undefined" !== typeof layer.id && tocLayersId.find(id => id === layer.id)) {
+            lightlayer = ({ ...lightlayer, id: layer.id });
           }
+
           // case group
-          if (layer.nodes !== null && layer.nodes !== undefined) {
-            lightlayer.title = layer.name;
-            lightlayer.groupId = uniqueId();
-            lightlayer.nodes = [];
-            lightlayer.checked = layer.checked;
-            lightlayer.mutually_exclusive = layer["mutually-exclusive"];
-            traverse(layer.nodes, lightlayer.nodes)
+          if (null !== layer.nodes && "undefined" !== typeof layer.nodes) {
+            lightlayer = ({
+              ...lightlayer,
+              title: layer.name,
+              groupId: uniqueId(),
+              nodes: [],
+              checked: layer.checked,
+              mutually_exclusive: layer["mutually-exclusive"]
+            });
+            traverse(layer.nodes, lightlayer.nodes); // recursion step
           }
-          /** toggle expanded property for legend item (TOC) **/
-          lightlayer.expanded = layer.expanded;
-          lightlayer && newobj.push(lightlayer);
+
+          // check if lightlayer is not null
+          if (null !== lightlayer) {
+            lightlayer.expanded = layer.expanded; // expand legend item (TOC)
+            newobj.push(lightlayer);
+          }
+
         });
       };
       traverse(_layerstree, layerstree);
