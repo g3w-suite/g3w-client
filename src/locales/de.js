@@ -25,17 +25,17 @@ export default {
     },
     sdk: {
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
-        helptext: "Move on map extent, insert name and click Add",
+        title: "Räumliche Lesezeichen",
+        helptext: "Bewegen Sie sich auf der Kartenausdehnung, fügen Sie den Namen ein und klicken Sie auf Hinzufügen",
         input: {
           name: "Name"
         },
         sections: {
           project:{
-            title: "Project Bookmarks"
+            title: "Projekt-Lesezeichen"
           },
           user: {
-            title: "User Bookmarks"
+            title: "Benutzer-Lesezeichen"
           }
         }
       },

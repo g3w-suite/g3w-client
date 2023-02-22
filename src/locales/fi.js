@@ -25,17 +25,17 @@ export default {
     },
     sdk: {
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
-        helptext: "Move on map extent, insert name and click Add",
+        title: "Tilalliset kirjanmerkit",
+        helptext: "Siirry kartan laajuuteen, lisää nimi ja napsauta Lisää",
         input: {
-          name: "Name"
+          name: "Nimi"
         },
         sections: {
           project:{
-            title: "Project Bookmarks"
+            title: "Projektin kirjanmerkit"
           },
           user: {
-            title: "User Bookmarks"
+            title: "Käyttäjän kirjanmerkit"
           }
         }
       },

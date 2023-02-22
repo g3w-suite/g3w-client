@@ -25,17 +25,17 @@ export default {
     },
     sdk: {
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
-        helptext: "Move on map extent, insert name and click Add",
+        title: "Marcaje spațiale",
+        helptext: "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",
         input: {
-          name: "Name"
+          name: "Nume"
         },
         sections: {
           project:{
-            title: "Project Bookmarks"
+            title: "Marcaje de proiect"
           },
           user: {
-            title: "User Bookmarks"
+            title: "Marcaje utilizator"
           }
         }
       },

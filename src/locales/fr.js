@@ -25,17 +25,17 @@ export default {
     },
     sdk: {
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
-        helptext: "Move on map extent, insert name and click Add",
+        title: "Signets spatiaux",
+        helptext: "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
         input: {
-          name: "Name"
+          name: "Nom"
         },
         sections: {
           project:{
-            title: "Project Bookmarks"
+            title: "Signets du projet"
           },
           user: {
-            title: "User Bookmarks"
+            title: "Signets de l'utilisateur"
           }
         }
       },
