@@ -1,33 +1,28 @@
 <!--
+  @file
   @since v3.8.0
 -->
+
 <template>
   <li
     v-if="layerMenu.layer.geolayer && layerMenu.layer.visible"
-    @mouseleave.self="showLayerOpacityMenu(false,$event)"
-    @mouseover.self="showLayerOpacityMenu(true,$event)"
+    @mouseleave.self="showLayerOpacityMenu(false, $event)"
+    @mouseover.self="showLayerOpacityMenu(true, $event)"
     class="menu-icon"
   >
-    <span
-      class="menu-icon skin-color-dark"
-      :class="g3wtemplate.getFontClass('slider')">
-    </span>
-    <span
-      class="item-text"
-      v-t="'catalog_items.contextmenu.layer_opacity'">
-    </span>
-    <span
-      class="menu-icon" style="position: absolute; right: 0; margin-top: 3px"
-      :class="g3wtemplate.getFontClass('arrow-right')">
-    </span>
+
+  <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
+  <span class="item-text" v-t="'catalog_items.contextmenu.layer_opacity'"></span>
+  <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
+
     <ul
       v-show="layerMenu.layer && layerOpacityMenu.show"
       style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
       :style="{
-        top: layerOpacityMenu.top + 'px',
-         left: `${layerOpacityMenu.left}px`,
-         maxHeight: layerOpacityMenu.maxHeight + 'px',
-         overflowY: layerOpacityMenu.overflowY
+        top:       layerOpacityMenu.top       + 'px',
+        left:      layerOpacityMenu.left      + 'px',
+        maxHeight: layerOpacityMenu.maxHeight + 'px',
+        overflowY: layerOpacityMenu.overflowY
        }">
       <li>
         <range
@@ -42,6 +37,7 @@
         </range>
       </li>
     </ul>
+
   </li>
 </template>
 
@@ -50,14 +46,17 @@
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 
   export default {
+
     name: 'Cataloglayercontextmenulayeropacity',
+
     props: {
       layerMenu: {
         type: Object,
         required: true
       }
     },
-    data(){
+
+    data() {
       return {
         layerOpacityMenu: {
           show: false,
@@ -67,37 +66,46 @@
           default: null
         }
       }
+
     },
     methods: {
-      setLayerOpacity( {id=this.layerMenu.layer.id, value:opacity}){
-        const changed = this.layerMenu.layer.opacity != opacity;
-        if (changed) {
-          this.layerMenu.layer.opacity = opacity;
-          const layer = CatalogLayersStoresRegistry.getLayerById(id);
-          if (layer) {
-            CatalogEventHub.$emit('layer-change-opacity', {
-              layerId: id
-            });
-            layer.change();
-          }
+
+      /**
+       * @param {{ id:? string, value: number }}
+       * 
+       * @fires CatalogEventHub~layer-change-opacity
+       */
+      setLayerOpacity( { id = this.layerMenu.layer.id, value: opacity }) {
+        // skip if nothing has changed
+        if (this.layerMenu.layer.opacity == opacity) {
+          return;
+        }
+        this.layerMenu.layer.opacity = opacity;
+        const layer = CatalogLayersStoresRegistry.getLayerById(id);
+        if (layer) {
+          CatalogEventHub.$emit('layer-change-opacity', { layerId: id });
+          layer.change();
         }
       },
+
       /**
        * Context menu: toggle "opacity layer" submenu handling its correct horizontal and vertical alignment
+       * 
+       * @fires show-layer-menu
        */
       async showLayerOpacityMenu(bool, evt) {
-        this.$emit('show-layer-menu', {
-          menu: this.layerOpacityMenu,
-          bool,
-          evt
-        });
+        this.$emit('show-layer-menu', { menu: this.layerOpacityMenu, bool, evt });
       },
+
     },
-    created(){
-      this.$emit('add-layer-menu-item', {
-        layerOpacity: this.layerOpacityMenu
-      })
+
+    /**
+     * @fires add-layer-menu-item
+     */
+    created() {
+      this.$emit('add-layer-menu-item', { layerOpacity: this.layerOpacityMenu })
     }
+
   };
 </script>
 

@@ -1,18 +1,25 @@
 <!--
+  @file
   @since v3.7.0
 -->
 
 <template>
   <ul id="layer-menu" ref="layer-menu" v-click-outside-layer-menu="closeLayerMenu" tabindex="-1" v-if="layerMenu.show" :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
+
+    <!-- TODO add item description -->
     <li class="title">
       <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="!layerMenu.layer.projectLayer">
       <div style="display: flex; justify-content: space-between; align-items: center">
         <layerspositions @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})" style="display: flex; flex-direction: column; justify-content: space-between" :position="layerMenu.layer.position"></layerspositions>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="layerMenu.layer.metadata && layerMenu.layer.metadata.abstract" @mouseleave.self="showMetadataInfo(false)"  @mouseover.self="showMetadataInfo(true,  $event)">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('info')"></span>
       <span class="item-text" v-t="'Metadata'"></span>
@@ -20,6 +27,8 @@
         <div class="layer-menu-metadata-info" style="padding: 5px;" v-html="layerMenu.layer.metadata.abstract"></div>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="layerMenu.layer.geolayer && layerMenu.layer.styles && layerMenu.layer.styles.length > 1" @mouseleave.self="showStylesMenu(false,$event)" @mouseover.self="showStylesMenu(true,$event)" class="menu-icon">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('palette')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
@@ -32,23 +41,28 @@
         </li>
       </ul>
     </li>
-    <!--
-      @since v3.8
-    -->
+
+    <!-- TODO add item description -->
     <catalog-layer-context-menu-layer-opacity
       @add-layer-menu-item="addLayerMenuItem"
       @show-layer-menu="showSubMenuContext"
-      :layerMenu="layerMenu"/>
+      :layerMenu="layerMenu"
+    />
 
+    <!-- TODO add item description -->
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable(layerMenu.layer.id)">
       <bar-loader :loading="layerMenu.loading.data_table"></bar-loader>
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('list')"> </span>
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
     </li>
+
+    <!-- TODO add item description -->
     <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
       <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
       <span class="menu-icon skin-color-dark" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
@@ -65,6 +79,8 @@
         </li>
       </ul>
     </li>
+
+    <!-- TODO add item description -->
     <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'" v-download>
       <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
@@ -72,6 +88,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" >
       <div style="display: flex; justify-content: space-between">
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
@@ -79,6 +97,8 @@
       </div>
       <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity"></range>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
@@ -86,6 +106,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id, true)" style="position: relative">
         <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
@@ -94,6 +116,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff_map_extent'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
@@ -101,6 +125,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canDownloadGpx(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpx(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.gpx"></bar-loader>
@@ -108,6 +134,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpx'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canDownloadGpkg(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpkg(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.gpkg"></bar-loader>
@@ -115,6 +143,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpkg'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canDownloadCsv(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.csv"></bar-loader>
@@ -122,6 +152,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.csv'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canDownloadXls(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadXls(layerMenu.layer.id)">
         <bar-loader :loading="layerMenu.loading.xls"></bar-loader>
@@ -129,6 +161,8 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.xls'"></span>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canShowWmsUrl(layerMenu.layer.id)">
       <div @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wms'})" style="display: flex; max-width:300px; align-items: center;">
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
@@ -141,6 +175,8 @@
         </div>
       </div>
     </li>
+
+    <!-- TODO add item description -->
     <li v-if="canShowWfsUrl(layerMenu.layer.id)">
       <div @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wfs'})" style="display: flex; max-width:300px; align-items: center;">
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
@@ -153,6 +189,7 @@
         </div>
       </div>
     </li>
+
   </ul>
 </template>
 
