@@ -2184,21 +2184,21 @@ proto.getResolutionForZoomToExtent = function(extent, options={force:false}){
   const map = this.getMap();
 
   // if outside project extent, return max resolution
-  if (!ol.extent.containsExtent(this.project.state.extent, extent)) {
+  if (false === ol.extent.containsExtent(this.project.state.extent, extent)) {
     return map.getView().getResolutionForExtent(this.project.state.extent, map.getSize());
   }
 
-  const maxResolution    = getResolutionFromScale(MAP_SETTINGS.ZOOM.maxScale, this.getMapUnits()); // max resolution of the map
   const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize());            // resolution of request extent
 
   // retrive resolution from given `extent`
   if (true === options.force) {
     return extentResolution; 
   }
-  
+
   // calculate main resolutions from map
   let resolution;
   const currentResolution = map.getView().getResolution();
+  const maxResolution     = getResolutionFromScale(MAP_SETTINGS.ZOOM.maxScale, this.getMapUnits()); // max resolution of the map
   resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
   resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
   return resolution;
