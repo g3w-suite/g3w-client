@@ -482,7 +482,7 @@ export default {
         show_metadata: "Metatiedot",
         styles: "Tyylejä",
         vector_color_menu: "Aseta/muuta väriä",
-        layer_opacity: "Opacity"
+        layer_opacity: "Peittävyys"
       }
     },
     dataTable: {

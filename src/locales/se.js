@@ -483,7 +483,7 @@ export default {
         show_metadata: "Metadata",
         styles: "Stilar",
         vector_color_menu: "Ställ in/ändra färg",
-        layer_opacity: "Opacity"
+        layer_opacity: "Opacitet"
       }
     },
     dataTable: {

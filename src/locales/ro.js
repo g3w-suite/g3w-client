@@ -482,7 +482,7 @@ export default {
         show_metadata: "Metadate",
         styles: 'Stiluri',
         vector_color_menu:"Setează/Schimbă Culoare",
-        layer_opacity: "Opacity"
+        layer_opacity: "Opacitate"
       }
     },
     dataTable: {

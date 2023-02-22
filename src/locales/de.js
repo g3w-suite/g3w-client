@@ -482,7 +482,7 @@ export default {
         show_metadata: "Metadaten",
         styles: 'Stile',
         vector_color_menu:"Farbe einstellen/ändern",
-        layer_opacity: "Opacity"
+        layer_opacity: "Opazität"
       }
     },
     dataTable: {
