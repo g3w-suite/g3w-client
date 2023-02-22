@@ -27,7 +27,7 @@
 
         <helpdiv message="sdk.spatialbookmarks.helptext"/>
         <div
-          class="container"
+          class="container add-bookmark-input"
           style="padding: 5px; width: 100%"
         >
           <input-text
@@ -62,7 +62,7 @@
         </span>
 
         <span
-          @click.stop="showaddform = true"
+          @click.stop="showAddForm"
           style="padding: 5px; cursor: pointer;"
           class="sidebar-button sidebar-button-icon"
           :class="g3wtemplate.getFontClass('plus')"
@@ -87,6 +87,8 @@
   import InputText from "components/InputText.vue";
 
   const { uniqueId } = require('core/utils/utils');
+  const { t } = require('core/i18n/i18n.service');
+
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
@@ -120,7 +122,7 @@
         },
         addbookmarkinput: {
           name: 'add-bookmark',
-          label: 'Name',
+          label: t('sdk.spatialbookmarks.input.name'),
           value: null,
           editable: true,
           type: 'varchar',
@@ -160,6 +162,10 @@
           id: LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id,
           data: SPATIAL_BOOKMARKS_LOCALITEMS
         });
+      },
+      showAddForm(){
+        this.addbookmarkinput.value = null;
+        this.showaddform = true;
       }
     },
     created(){
@@ -171,12 +177,15 @@
   };
 </script>
 
-<style scoped>
+<style>
   .content-bookmarks {
     font-weight: bold;
     color: #ffffff;
     padding: 5px;
     border-bottom: 2px solid #ffffff;
     margin-bottom: 5px;
+  }
+  .container.add-bookmark-input p.error-input-message {
+    color: #ffffff;
   }
 </style>
