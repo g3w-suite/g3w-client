@@ -2,6 +2,8 @@ import App from './App.vue';
 import C3XYLine from './C3XYLine.vue';
 import Catalog from './Catalog.vue';
 import CatalogChangeMapThemes from './CatalogChangeMapThemes.vue';
+import CatalogLayerContextMenu from './CatalogLayerContextMenu.vue';
+import CatalogLayerContextMenuLayerOpacity from './CatalogLayerContextMenuLayerOpacity.vue';
 import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
@@ -107,6 +109,8 @@ export {
   C3XYLine,
   Catalog,
   CatalogChangeMapThemes,
+  CatalogLayerContextMenu,
+  CatalogLayerContextMenuLayerOpacity,
   CatalogLayerLegend,
   CatalogLayersGroup,
   CatalogLayersLegendItems,
