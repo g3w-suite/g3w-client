@@ -285,6 +285,7 @@ proto.createLayersTree = function(groupName, options={}) {
   const full = options.full || false;
   const expanded = options.expanded;
   const _layerstree = options.layerstree || null;
+  // get all layers id from layers server config to compare with layer nodes on layerstree server property
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
   if (_layerstree) {
