@@ -24,18 +24,14 @@ proto.handleResponse = async function(response){
 };
 
 /**
- * @since v3.8
+ * @param {{ type: 'vector' }} 
+ * 
+ * @returns {unknown[]} array of external layer add on project
+ * 
+ * @since 3.8.0
  */
-
-/**
- *
- * @param type
- * @returns Array of external layer add on project
- */
-proto.getSelectedExternalLayers = function({type="vector"}){
-  return GUI.getService('catalog').getExternalSelectedLayers({
-    type
-  });
+proto.getSelectedExternalLayers = function({type = 'vector'}) {
+  return GUI.getService('catalog').getExternalSelectedLayers({ type });
 };
 
 /**

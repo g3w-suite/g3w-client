@@ -1610,15 +1610,15 @@ const geoutils = {
     }
     return dissolvedFeature;
   },
+
   /**
-   * @since 3.8 Add methods within and intersects
-   */
-  /**
-   *
-   * Check if geometryToCheck is within geometry
-   * @param geometry: Geometry
-   * @param geometryToCheck: Geometry
-   * @returns Boolean
+   * Check if `geometryToCheck` is within `geometry`
+   * 
+   * @param   {ol.geometry} geometry
+   * @param   {ol.geometry} geometryToCheck
+   * @returns {boolean}     whether `geometryToCheck` is within `geometry`
+   * 
+   * @since 3.8.0
    */
   within(geometry, geometryToCheck){
     const olFromJsts = new jsts.io.OL3Parser();
@@ -1627,10 +1627,14 @@ const geoutils = {
     return jstsGeometryToCheck.within(jstsGeometry)
   },
   /**
-   * Check if geometry intersect with geometryCheck
-   * @param geometry
-   * @param geometryToCheck
-   * @returns Boolean
+   * Check if `geometryCheck` intersects with `geometry`
+   * 
+   * @param   {ol.geometry} geometry
+   * @param   {ol.geometry} geometryToCheck
+   * 
+   * @returns {boolean}     whether `geometryToCheck` interesects `geometry`
+   * 
+   * @since 3.8.0
    */
   intersects(geometry, geometryToCheck){
     const olFromJsts = new jsts.io.OL3Parser();
