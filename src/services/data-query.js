@@ -47,7 +47,7 @@ function QueryService(){
           return excludeLayers[0].get('name');
         }
       };
-      fid = feature.get('id');
+      fid = feature.getId();
     } else  {
       polygonLayer = excludeLayers[0];
       fid = feature.get(G3W_FID);
