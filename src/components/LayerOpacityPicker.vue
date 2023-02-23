@@ -15,13 +15,16 @@
   <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
 
     <ul
-      v-show="layer && layerOpacityMenu.show"
-      style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
+      v-show="layer && menu.show"
       :style="{
-        top:       layerOpacityMenu.top       + 'px',
-        left:      layerOpacityMenu.left      + 'px',
-        maxHeight: layerOpacityMenu.maxHeight + 'px',
-        overflowY: layerOpacityMenu.overflowY
+        top:             menu.top       + 'px',
+        left:            menu.left      + 'px',
+        maxHeight:       menu.maxHeight + 'px',
+        overflowY:       menu.overflowY,
+        paddingLeft:     0,
+        position:        'fixed',
+        backgroundColor: '#FFF',
+        color:           '#000',
        }">
       <li>
         <range
@@ -47,7 +50,7 @@
 
   export default {
 
-    name: 'Cataloglayercontextmenulayeropacity',
+    name: 'Layeropacitypicker',
 
     props: {
       layer: {
@@ -58,7 +61,7 @@
 
     data() {
       return {
-        layerOpacityMenu: {
+        menu: {
           show: false,
           top:0,
           left:0,
@@ -91,19 +94,19 @@
       /**
        * Context menu: toggle "opacity layer" submenu handling its correct horizontal and vertical alignment
        * 
-       * @fires show-layer-menu
+       * @fires show-menu-item
        */
       async showLayerOpacityMenu(bool, evt) {
-        this.$emit('show-layer-menu', { menu: this.layerOpacityMenu, bool, evt });
+        this.$emit('show-menu-item', { menu: this.menu, bool, evt });
       },
 
     },
 
     /**
-     * @fires add-layer-menu-item
+     * @fires init-menu-item
      */
     created() {
-      this.$emit('add-layer-menu-item', { layerOpacity: this.layerOpacityMenu })
+      this.$emit('init-menu-item', { layerOpacity: this.menu })
     }
 
   };

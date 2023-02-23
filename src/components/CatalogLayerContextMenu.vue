@@ -45,8 +45,8 @@
     <!-- TODO add item description -->
     <li v-if="layerMenu.layer.geolayer && layerMenu.layer.visible" class="menu-icon">
       <layer-opacity-picker
-        @add-layer-menu-item="addLayerMenuItem"
-        @show-layer-menu="showSubMenuContext"
+        @init-menu-item="addLayerMenuItem"
+        @show-menu-item="showSubMenuContext"
         :layer="layerMenu.layer"
       />
     </li>
@@ -284,15 +284,18 @@
       }
     },
     methods: {
+
       /**
-       * @TODO check if we need a better way to handle this
-       * **/
+       * @TODO find out a  a better way to handle this, eg:
+       *       using only the `showSubMenuContext()` method
+       */
       addLayerMenuItem(item={}){
-        this.layerMenu = {
-          ...item,
-          ...this.layerMenu
-        }
+        this.layerMenu = ({
+          ...this.layerMenu,
+          ...item
+        });
       },
+
       _hideMenu() {
         this.layerMenu.show = false;
         this.layerMenu.styles = false;
