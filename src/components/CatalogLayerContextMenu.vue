@@ -43,7 +43,7 @@
     </li>
 
     <!-- TODO add item description -->
-    <li v-if="layerMenu.layer.geolayer && layerMenu.layer.visible" class="menu-icon">
+    <li v-if="layerMenu.layer.geolayer && layerMenu.layer.visible" class="menu-icon" style="padding-right: 0">
       <layer-opacity-picker
         @init-menu-item="addLayerMenuItem"
         @show-menu-item="showSubMenuContext"

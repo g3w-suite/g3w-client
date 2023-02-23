@@ -10,15 +10,14 @@
     @mouseover.self="showLayerOpacityMenu(true, $event)"
   >
 
-  <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
-  <span class="item-text" v-t="'catalog_items.contextmenu.layer_opacity'"></span>
-  <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
-
+    <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
+    <span class="item-text" v-t="'catalog_items.contextmenu.layer_opacity'"></span>
+    <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
     <ul
       v-show="layer && menu.show"
       :style="{
         top:             menu.top       + 'px',
-        left:            menu.left      + 'px',
+        left:            menu.left - 15 + 'px',
         maxHeight:       menu.maxHeight + 'px',
         overflowY:       menu.overflowY,
         paddingLeft:     0,
@@ -65,6 +64,7 @@
           show: false,
           top:0,
           left:0,
+          overflowY: 'none',
           style: null,
           default: null
         }
