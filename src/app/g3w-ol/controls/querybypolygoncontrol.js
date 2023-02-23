@@ -15,7 +15,14 @@ const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 const QueryByPolygonControl = function(options={}) {
   const {spatialMethod=SPATIALMETHODS[0]} = options;
   this.layers = options.layers || [];
+
+  /**
+   * @type {unknown[]}
+   * 
+   * @since 3.8.0
+   */
   this.externalLayer = [];
+
   this.unwatches = [];
   this.listenPolygonLayersChange();
   options.visible = this.checkVisibile(this.layers);
@@ -49,24 +56,8 @@ const QueryByPolygonControl = function(options={}) {
   InteractionControl.call(this, options);
   //starting disabled
   this.setEnable(false);
-  /**
-   * @since v3.8 Add listen event to handle external vector layer
-   * with Polygon or Multipolygon Geometry type add temporary to the project
-   */
-  const CatalogService = GUI.getService('catalog');
-  CatalogService.onafter('addExternalLayer', ({layer, type})=> {
-    if (type === 'vector' && isPolygonGeometryType(layer.geometryType)){
-      this.externalLayer.push(layer);
-      this.unwatches.push(VM.$watch(() =>  layer.selected, selected => {
-        // need to be visible or selected
-        this.setEnable(selected);
-      }));
 
-    }
-  });
-  CatalogService.onafter('removeExternalLayer', ({name, type})=> {
-    if (type === 'vector') this.externalLayer = this.externalLayer.filter(layer => name !== layer.name);
-  });
+  this._handleExternalLayers();
 };
 
 ol.inherits(QueryByPolygonControl, InteractionControl);
@@ -123,6 +114,33 @@ proto.setMap = function(map) {
     this._autountoggle && this.toggle();
   });
   this.setEnable(false);
+};
+
+/**
+ * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
+ * 
+ * @listens CatalogService~addExternalLayer
+ * @listens CatalogService~removeExternalLayer
+ * 
+ * @since 3.8.0
+ */
+proto._handleExternalLayers = function() {
+  const CatalogService = GUI.getService('catalog');
+  CatalogService.onafter('addExternalLayer', ({layer, type}) => {
+    if ('vector' === type && isPolygonGeometryType(layer.geometryType)) {
+      this.externalLayer.push(layer);
+      this.unwatches.push(
+        VM.$watch(
+          () => layer.selected,
+          selected => { this.setEnable(selected); /* need to be visible or selected */ })
+      );
+    }
+  });
+  CatalogService.onafter('removeExternalLayer', ({name, type}) => {
+    if ('vector' === type) {
+      this.externalLayer = this.externalLayer.filter(layer => name !== layer.name);
+    }
+  });
 };
 
 module.exports = QueryByPolygonControl;
