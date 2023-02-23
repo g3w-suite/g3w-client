@@ -4,9 +4,16 @@
 -->
 
 <template>
-  <ul id="layer-menu" ref="layer-menu" v-click-outside-layer-menu="closeLayerMenu" tabindex="-1" v-if="layerMenu.show" :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
 
-    <!-- TODO add item description -->
+  <ul v-if="layerMenu.show"
+    id="layer-menu"
+    ref="layer-menu"
+    v-click-outside-layer-menu="closeLayerMenu"
+    tabindex="-1"
+    :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }"
+  >
+
+    <!-- Item Title -->
     <li class="title">
       <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
@@ -28,7 +35,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Styles menu -->
     <li v-if="layerMenu.layer.geolayer && layerMenu.layer.styles && layerMenu.layer.styles.length > 1" @mouseleave.self="showStylesMenu(false,$event)" @mouseover.self="showStylesMenu(true,$event)" class="menu-icon">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('palette')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
@@ -42,7 +49,7 @@
       </ul>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Opacity menu -->
     <li v-if="layerMenu.layer.geolayer && layerMenu.layer.visible" class="menu-icon" style="padding-right: 0">
       <layer-opacity-picker
         @init-menu-item="addLayerMenuItem"
@@ -51,13 +58,13 @@
       />
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Zoom to Layer -->
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer(layerMenu.layer)">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Attribute Table -->
     <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable(layerMenu.layer.id)">
       <bar-loader :loading="layerMenu.loading.data_table"></bar-loader>
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('list')"> </span>
@@ -100,7 +107,7 @@
       <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity"></range>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
@@ -109,7 +116,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id, true)" style="position: relative">
         <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
@@ -119,7 +126,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download as SHP -->
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
@@ -128,7 +135,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download as GPX -->
     <li v-if="canDownloadGpx(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpx(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.gpx"></bar-loader>
@@ -137,7 +144,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download as Gpkg -->
     <li v-if="canDownloadGpkg(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpkg(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.gpkg"></bar-loader>
@@ -146,7 +153,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download as CSV -->
     <li v-if="canDownloadCsv(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.csv"></bar-loader>
@@ -155,7 +162,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download as XLS -->
     <li v-if="canDownloadXls(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadXls(layerMenu.layer.id)">
         <bar-loader :loading="layerMenu.loading.xls"></bar-loader>
@@ -164,7 +171,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Click to Copy WMS URL -->
     <li v-if="canShowWmsUrl(layerMenu.layer.id)">
       <div @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wms'})" style="display: flex; max-width:300px; align-items: center;">
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
@@ -178,7 +185,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Click to Copy WFS URL -->
     <li v-if="canShowWfsUrl(layerMenu.layer.id)">
       <div @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wfs'})" style="display: flex; max-width:300px; align-items: center;">
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
@@ -268,23 +275,27 @@
       'layer-opacity-picker': LayerOpacityPicker,
     },
     directives: {
-      //create a vue directive from click outside contextmenu
+
+      /**
+       * Create a vue directive for handling click outside contextmenu element
+       */
       'click-outside-layer-menu': {
         bind(el, binding, vnode) {
           this.event = (event) => {
-            // in case click outside context menu
-            if (!(el === event.target || el.contains(event.target))){
-              event.stopPropagation();
-              vnode.context[binding.expression](event);
+            // skip if clicked element is a child of context menu
+            if (el === event.target || el.contains(event.target)) {
+              return;
             }
+            event.stopPropagation();
+            vnode.context[binding.expression](event);
           };
-          //add event listener click
           document.body.addEventListener('click', this.event, true)
         },
         unbind(el) {
           document.body.removeEventListener('click', this.event, true)
         }
       }
+      
     },
     methods: {
 
