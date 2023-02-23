@@ -1277,7 +1277,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
   this.onbefore('setQueryResponse', (queryResponse, options = {}) => {
     const catalogService = GUI.getService('catalog');
 
-    // skip when .. ??
+    // skip when add response to current results using addLayerFeaturesToResultsAction
     if (options.add) {
       return;
     }
