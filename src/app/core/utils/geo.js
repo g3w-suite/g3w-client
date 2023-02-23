@@ -736,6 +736,9 @@ const geoutils = {
         featureProjection: mapCrs || epsg
       });
       if (features.length) {
+        if (format instanceof ol.format.KML) {
+          features.forEach(feature => feature.unset('styleUrl'));
+        }
         const vectorSource = new ol.source.Vector({
           features
         });
