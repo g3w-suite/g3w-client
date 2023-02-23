@@ -24,6 +24,21 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Signets spatiaux",
+        helptext: "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
+        input: {
+          name: "Nom"
+        },
+        sections: {
+          project:{
+            title: "Signets du projet"
+          },
+          user: {
+            title: "Signets de l'utilisateur"
+          }
+        }
+      },
       search: {
         all: 'TOUTES',
         no_results: "Aucune valeur trouvée",

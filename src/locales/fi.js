@@ -24,6 +24,21 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Tilalliset kirjanmerkit",
+        helptext: "Siirry kartan laajuuteen, lisää nimi ja napsauta Lisää",
+        input: {
+          name: "Nimi"
+        },
+        sections: {
+          project:{
+            title: "Projektin kirjanmerkit"
+          },
+          user: {
+            title: "Käyttäjän kirjanmerkit"
+          }
+        }
+      },
       search: {
         all: 'KAIKKI',
         no_results: "Ei tuloksia",

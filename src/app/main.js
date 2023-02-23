@@ -264,7 +264,8 @@ Vue.use({
         'step-forward': "fas fa-step-forward",
         'fast-forward': "fas fa-fast-forward",
         crop: "fas fa-crop-alt",
-        exit: "fas fa-door-open"
+        exit: "fas fa-door-open",
+        bookmark: "fas fa-bookmark"
       },
       /**
        * @TODO check if deprecated
@@ -314,7 +315,7 @@ layout.loading(true);
  */
 const ApplicationTemplate = function({ApplicationService}) {
   const appLayoutConfig = ApplicationService.getConfig().layout || {};
-  // useful to build a difference layout/compoìnent based on mobile or not
+  // useful to build a difference layout/component based on mobile or not
   this._isMobile = isMobile.any;
   this._isIframe = appLayoutConfig.iframe;
   //ussefult ot not close user message when set content is called
@@ -349,6 +350,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     const WMSComponent = require('gui/wms/vue/wms');
     const MapComponent = require('gui/map/vue/map');
     const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
+    const SpatialBookMarksComponent = require('gui/spatialbookmarks/vue/spatialbookmarks');
     return {
       title: appTitle,
       placeholders: {
@@ -362,6 +364,13 @@ const ApplicationTemplate = function({ApplicationService}) {
               open: false,
               collapsible: false,
               icon: G3WTemplate.getFontClass('file'),
+              mobile: true
+            }),
+            new SpatialBookMarksComponent({
+              id: 'spatialbookmarks',
+              open: false,
+              collapsible: true,
+              icon: G3WTemplate.getFontClass('bookmark'),
               mobile: true
             }),
             new PrintComponent({

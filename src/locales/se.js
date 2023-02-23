@@ -24,6 +24,21 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Rumsliga bokmärken",
+        helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
+        input: {
+          name: "Namn"
+        },
+        sections: {
+          project:{
+            title: "Projektbokmärken"
+          },
+          user: {
+            title: "Användarbokmärken"
+          }
+        }
+      },
       search: {
         all: 'ALLA',
         no_results: "Inga resultat",

@@ -89,6 +89,12 @@ import RelationsPage from './RelationsPage.vue';
 import Search from './Search.vue';
 import SearchPanel from './SearchPanel.vue';
 import SearchSelect2 from './SearchSelect2.vue';
+import Sidebar from './Sidebar.vue';
+import SidebarItem from './SidebarItem.vue';
+import SidebarItemAction from './SidebarItemAction.vue';
+import SpatialBookMarkGroup from './SpatialBookMarkGroup.vue';
+import SpatialBookMarkItem from './SpatialBookMarkItem.vue';
+import SpatialBookMarks from './SpatialBookMarks.vue';
 import StreetView from './StreetView.vue';
 import Table from './Table.vue';
 import TableBody from './TableBody.vue';
@@ -194,6 +200,12 @@ export {
   Search,
   SearchPanel,
   SearchSelect2,
+  Sidebar,
+  SidebarItem,
+  SidebarItemAction,
+  SpatialBookMarkGroup,
+  SpatialBookMarkItem,
+  SpatialBookMarks,
   StreetView,
   Table,
   TableBody,
