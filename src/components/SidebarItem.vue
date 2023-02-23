@@ -13,7 +13,7 @@
       </div>
       <div>
         <span v-if="info.state" style="position: absolute; right: 5px; font-weight: bold" :class="info.class" :style="info.style" :title="info.tooltip">{{ info.state }}</span>
-        <sidebar-item-action v-for="action in actions" :key="action.id" :action="action"/>
+        <sidebar-item-action v-for="action in actions" :component="component.internalComponent" :key="action.id" :action="action"/>
       </div>
       <i v-if="collapsible" :class="g3wtemplate.getFontClass('angle-left')" class="pull-right"></i>
     </a>
