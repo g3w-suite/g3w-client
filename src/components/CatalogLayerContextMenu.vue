@@ -52,7 +52,7 @@
     </li>
 
     <!-- TODO add item description -->
-    <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
+    <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer(layerMenu.layer)">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
     </li>
@@ -272,8 +272,11 @@
       'click-outside-layer-menu': {
         bind(el, binding, vnode) {
           this.event = (event) => {
-            event.stopPropagation();
-            (!(el === event.target || el.contains(event.target))) && vnode.context[binding.expression](event);
+            // in case click outside context menu
+            if (!(el === event.target || el.contains(event.target))){
+              event.stopPropagation();
+              vnode.context[binding.expression](event);
+            }
           };
           //add event listener click
           document.body.addEventListener('click', this.event, true)
