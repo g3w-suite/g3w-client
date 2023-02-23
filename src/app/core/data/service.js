@@ -1,8 +1,7 @@
 import ProjectsRegistry from 'store/projects';
 import GUI from 'services/gui';
-const {
-  resolve
-} = require('core/utils/utils');
+
+const { resolve } = require('core/utils/utils');
 
 function BaseService(){
   ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
@@ -35,7 +34,9 @@ proto.getSelectedExternalLayers = function({type = 'vector'}) {
 };
 
 /**
- * Return empty request
+ * @returns {Promise<[]>} a resolved request (empty array)
+ * 
+ * @since 3.8.0
  */
 proto.getEmptyRequest = function(){
   return resolve([]);
