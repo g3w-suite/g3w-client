@@ -2629,57 +2629,62 @@ proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false){
 };
 
 /**
- * Method to add external layer to map
- * @param externalLayer
- * @param options
- * @returns {Promise<Promise<*> | Promise<never>>}
+ * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
+ * 
+ * @param { ol.layer.Vector | ol.layer.Image | unknown } externalLayer
+ * @param {{ position: unknown, opacity: number, visible: boolean, crs: unknown, type: unknown, download: unknown }} options
+ * 
+ * @returns { Promise<Promise<unknown> }
  */
 proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
     name,
     data,
-    color,
+    color, // <-- FIXME: this variable seems to be declared twice
     style,
     type,
     crs;
-  const {position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity=1, visible=true} = options;
-  const {map} = this.viewer;
-  const catalogService = GUI.getService('catalog');
+
+  const {
+    position = MAP_SETTINGS.LAYER_POSITIONS.default,
+    opacity  = 1,
+    visible  = true
+  } = options;
+
+  const { map }            = this.viewer;
+  const catalogService     = GUI.getService('catalog');
   const QueryResultService = GUI.getService('queryresults');
+
+  /**
+   * EXTERNAL VECTOR LAYER
+   */
   if (externalLayer instanceof ol.layer.Vector) {
     let color;
-    /**
-     * Used to selection query result purpose
-     * @type {{active: boolean}}
-     */
-    const filter = {
-      active: false // AT MOMENT NOT USED
+
+    if (undefined === externalLayer.get('id')) {
+      externalLayer.set('id', uniqueId());
+    }
+
+    vectorLayer           = externalLayer;
+    vectorLayer.filter    = { // used by `selection` for query result purpose ?
+      active: false           // UNUSUED - it means not yet implemented?
     };
-    const selection = {
+    vectorLayer.selection = {
       active: false,
       features: []
     };
-    /**
-     * end selection query result purpose properties
-     */
-    let id = externalLayer.get('id');
-    if (id === undefined) {
-      id = uniqueId();
-      externalLayer.set('id', id);
-    }
-    vectorLayer = externalLayer;
-    vectorLayer.filter = filter;
-    vectorLayer.selection = selection;
+
     try {
       const style = externalLayer.getStyle();
       color = style._g3w_options ? style._g3w_options.color : 'blue'; //setted by geo utils create style function
     } catch(err) {
       color = 'blue'
     }
+
     name = vectorLayer.get('name') || vectorLayer.get('id');
     type = 'vector';
     externalLayer = {
-      id,
+      id: externalLayer.get('id'),
       name,
       projectLayer: false,
       title: name,
@@ -2694,86 +2699,86 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       position,
       opacity,
       color,
-      filter,
-      selection
+      filter: vectorLayer.filter,
+      selection: vectorLayer.selection
     };
-  } else if (externalLayer instanceof ol.layer.Image){
+  }
+
+  /**
+   * EXTERNAL IMAGE LAYER
+   */
+  else if (externalLayer instanceof ol.layer.Image) {
     type = 'wms';
     name = externalLayer.get('name');
-    externalLayer.id = externalLayer.get('id');
-    externalLayer.removable = true;
-    externalLayer.projectLayer= false;
-    externalLayer.name = name;
-    externalLayer.title = name;
-    externalLayer._type = type;
-    externalLayer.opacity = opacity;
-    externalLayer.position = position;
-    externalLayer.external = true;
-    externalLayer.checked = visible;
-  } else {
-    name = externalLayer.name;
-    type = externalLayer.type;
-    crs = externalLayer.crs;
-    data = externalLayer.data;
+    externalLayer.id           = externalLayer.get('id');
+    externalLayer.removable    = true;
+    externalLayer.projectLayer = false;
+    externalLayer.name         = name;
+    externalLayer.title        = name;
+    externalLayer._type        = type;
+    externalLayer.opacity      = opacity;
+    externalLayer.position     = position;
+    externalLayer.external     = true;
+    externalLayer.checked      = visible;
+  }
+
+  /**
+   * UKNOWN EXTERNAL LAYER TYPE ?
+   */
+  else {
+    name  = externalLayer.name;
+    type  = externalLayer.type;
+    crs   = externalLayer.crs;
+    data  = externalLayer.data;
     color = externalLayer.color;
   }
-  const layer = this.getLayerByName(name);
+
   const loadExternalLayer = (layer, type) => {
     let extent;
-    if (layer) {
-      if (type === 'vector') {
-        const features = layer.getSource().getFeatures();
-        if (features.length) {
-          let id= 0;
-          /**
-           * need to add id value
-           */
-          features.forEach(feature => {
-            feature.setId(id);
-            id+=1;
-          });
-          externalLayer.geometryType = features[0].getGeometry().getType();
-          externalLayer.selected = false;
-        }
-        extent = layer.getSource().getExtent();
-        externalLayer.bbox = {
-          minx: extent[0],
-          miny: extent[1],
-          maxx: extent[2],
-          maxy: extent[3]
-        };
+    // skip if is not a valid layer
+    if (!layer) {
+      return Promise.reject();
+    }
+    if (type === 'vector') {
+      const features = layer.getSource().getFeatures();
+      if (features.length) {
+        let id = 0;
+        // add id value
+        features.forEach(feature => { feature.setId(id++); });
+        externalLayer.geometryType = features[0].getGeometry().getType();
+        externalLayer.selected = false;
       }
-      layer.set('position', position);
-      layer.setOpacity(opacity);
-      layer.setVisible(visible);
-      map.addLayer(layer);
-      this._externalLayers.push(layer);
-      QueryResultService.registerVectorLayer(layer);
-      catalogService.addExternalLayer({
-        layer: externalLayer,
-        type
-      });
-      extent && map.getView().fit(extent);
-      this.loadExternalLayer(layer);
-      return Promise.resolve(layer);
-    } else return Promise.reject();
+      extent = layer.getSource().getExtent();
+      externalLayer.bbox = { minx: extent[0], miny: extent[1], maxx: extent[2], maxy: extent[3] };
+    }
+    layer.set('position', position);
+    layer.setOpacity(opacity);
+    layer.setVisible(visible);
+    map.addLayer(layer);
+    this._externalLayers.push(layer);
+    QueryResultService.registerVectorLayer(layer);
+    catalogService.addExternalLayer({ layer: externalLayer, type });
+    if (extent) {
+      map.getView().fit(extent);
+    }
+    this.loadExternalLayer(layer);
+    return Promise.resolve(layer);
   };
+
+  const layer = this.getLayerByName(name);
+
   if (!layer) {
     switch (type) {
-      case 'vector':
-        return loadExternalLayer(vectorLayer, type);
-        break;
-      case 'wms':
-        return loadExternalLayer(externalLayer, type);
-        break;
+      case 'vector': return loadExternalLayer(vectorLayer, type);
+      case 'wms':    return loadExternalLayer(externalLayer, type);
       default:
-        vectorLayer = await createVectorLayerFromFile({
-          name, type, crs, mapCrs, data, style
-        });
+        vectorLayer = await createVectorLayerFromFile({ name, type, crs, mapCrs, data, style });
         return loadExternalLayer(vectorLayer);
     }
-    loadExternalLayer(vectorLayer);
-  } else GUI.notify.warning("layer_is_added", false);
+  } else {
+    GUI.notify.warning("layer_is_added", false);
+  }
+
 };
 
 proto.setExternalLayerStyle = function(color, field) {
