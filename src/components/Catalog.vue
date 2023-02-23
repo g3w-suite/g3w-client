@@ -213,80 +213,75 @@ export default {
   },
   created() {
     this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
+
+    /**
+     * @TODO add description
+     */
     CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
-      if (!layerstree.external) {
-        const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
-        layer.clearSelectionFids();
-      } else {
+      if (layerstree.external) {
         GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
+      } else {
+        CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).clearSelectionFids();
       }
     });
 
+    /**
+     * @TODO add description
+     */
     CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {
-      const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
-      layerstree.filter.active =  await layer.toggleFilterToken();
+      layerstree.filter.active = await CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).toggleFilterToken();
     });
 
     /**
-     * Visible change layer
+     * Handle visibilty change on legend item
      */
     CatalogEventHub.$on('treenodevisible', layer => {
-      const mapservice = GUI.getService('map');
-      mapservice.emit('cataloglayervisible', layer);
+      GUI.getService('map').emit('cataloglayervisible', layer);
     });
 
     /**
-     * Eevent handle of select layer
+     * Handle legend item select (single mouse click ?)
      */
     CatalogEventHub.$on('treenodeselected', function (storeid, node) {
-      const mapservice = GUI.getService('map');
-      const catalogService = GUI.getService('catalog');
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       // emit signal of select layer from catalog
-      !layer.isSelected() && catalogService.setSelectedExternalLayer({
-        layer: null,
-        type: 'vector',
-        selected: false
-      });
-      setTimeout(()=> {
+      if (!layer.isSelected()) {
+        GUI.getService('catalog').setSelectedExternalLayer({ layer: null, type: 'vector', selected: false });
+      }
+      setTimeout(() => {
         CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
         // emit signal of select layer from catalog
-        mapservice.emit('cataloglayerselected', layer);
+        GUI.getService('map').emit('cataloglayerselected', layer);
       });
     });
 
     /**
-     * @since v3.8 For external layer add temporary
+     * Handle temporary external layer add
      */
-    CatalogEventHub.$on('treenodeexternalselected', layer =>  {
-      const catalogService = GUI.getService('catalog');
-
-      // call setSelectedExternalLayer of catalogService
-      catalogService.setSelectedExternalLayer({
-        layer,
-        type: 'vector',
-        selected: !layer.selected
-      }).then(() => {
-
-        /**
-         * Loop to all layersstores and set all layers to selected false
-         * if layer is selected
-         *
-         */
-        layer.selected && CatalogLayersStoresRegistry.getLayersStores().forEach(layerStore => {
-          layerStore.selectLayer(null, false);
+    CatalogEventHub.$on('treenodeexternalselected', layer => {
+      GUI
+        .getService('catalog')
+        .setSelectedExternalLayer({ layer, type: 'vector', selected: !layer.selected})
+        // Loop all layersstores and unselect them all (`selected = false`)
+        .then(() => {
+          if (layer.selected) {
+            CatalogLayersStoresRegistry.getLayersStores().forEach(layer => { layer.selectLayer(null, false); });
+          }
         });
-      })
     });
 
 
+    /**
+     * @TODO add description
+     */
     ControlsRegistry.onafter('registerControl', (id, control) => {
-      if (id === 'querybbox') {
+      if ('querybbox' === id) {
         control.getInteraction().on('propertychange', evt => {
-          if (evt.key === 'active') this.state.highlightlayers = !evt.oldValue;
+          if ('active' === evt.key) this.state.highlightlayers = !evt.oldValue;
         })
       }
     });
+
   },
   beforeMount(){
     this.currentBaseLayer = this.project.state.initbaselayer;
