@@ -21,7 +21,7 @@ const QueryByPolygonControl = function(options={}) {
    * 
    * @since 3.8.0
    */
-  this.externalLayer = [];
+  this.externalLayers = [];
 
   this.unwatches = [];
   this.listenPolygonLayersChange();
@@ -128,7 +128,7 @@ proto._handleExternalLayers = function() {
   const CatalogService = GUI.getService('catalog');
   CatalogService.onafter('addExternalLayer', ({layer, type}) => {
     if ('vector' === type && isPolygonGeometryType(layer.geometryType)) {
-      this.externalLayer.push(layer);
+      this.externalLayers.push(layer);
       this.unwatches.push(
         VM.$watch(
           () => layer.selected,
@@ -138,7 +138,7 @@ proto._handleExternalLayers = function() {
   });
   CatalogService.onafter('removeExternalLayer', ({name, type}) => {
     if ('vector' === type) {
-      this.externalLayer = this.externalLayer.filter(layer => name !== layer.name);
+      this.externalLayers = this.externalLayers.filter(layer => name !== layer.name);
     }
   });
 };
