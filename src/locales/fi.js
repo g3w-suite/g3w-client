@@ -501,7 +501,8 @@ export default {
         open_attribute_table: "Avaa attribuuttitaulu",
         show_metadata: "Metatiedot",
         styles: "Tyylejä",
-        vector_color_menu: "Aseta/muuta väriä"
+        vector_color_menu: "Aseta/muuta väriä",
+        layer_opacity: "Peittävyys"
       }
     },
     dataTable: {

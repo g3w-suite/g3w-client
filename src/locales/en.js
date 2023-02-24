@@ -501,7 +501,8 @@ export default {
         open_attribute_table: "Open Attribute Table",
         show_metadata: "Metadata",
         styles: 'Styles',
-        vector_color_menu:"Set/Change Color"
+        vector_color_menu:"Set/Change Color",
+        layer_opacity: "Opacity"
       }
     },
     dataTable: {
