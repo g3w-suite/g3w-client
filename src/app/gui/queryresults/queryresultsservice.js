@@ -1236,7 +1236,7 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
         break;
       case ol.layer.Vector:
         vectorLayer.getSource().getFeatures().forEach(feature => {
-          let add = false;
+          let add;
           switch (filterConfig.spatialMethod) {
             case 'intersects':
               add = intersects(geometry, feature.getGeometry());
@@ -1248,7 +1248,7 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
               add = geometry.intersectsExtent(feature.getGeometry().getExtent());
             break;
           }
-          if(add) {
+          if (true === add) {
             features.push(feature);
           }
         });
