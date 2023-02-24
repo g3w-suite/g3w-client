@@ -39,7 +39,7 @@ function QueryService(){
     multilayers    = false,
     condition      = this.condition,
     excludeLayers  = []
-  }={}) {
+  } = {}) {
     const hasExternalLayers = this.getSelectedExternalLayers({ type: "vector" }).length;
     const fid               = (hasExternalLayers) ? feature.getId() : feature.get(G3W_FID);
     let polygonLayer        = (hasExternalLayers) ? ({ getName() { return excludeLayers[0].get('name'); } }) : excludeLayers[0];
@@ -123,45 +123,58 @@ function QueryService(){
   };
   /**
    *
-   * @param map
-   * @param coordinates
-   * @param layerIds: <Array> Pass by addLayerFeaturesToResultsAction method of /gui/queryresults/queryresultsservice.js
+   * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
+   * @param 
+   * @param layerIds: <Array> 
    * @param multilayers
    * @param feature_count
+   * 
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, query_point_tolerance=QUERY_POINT_TOLERANCE, feature_count}={}){
-    const query = {
-      coordinates,
-      type: 'coordinates'
-    };
-    const externalSelectedLayers = this.getSelectedExternalLayers({
-      type: "vector"
-    });
-    /**
-     * Check If LayerIds is length === 0 so i check if add external Layer is selected
-     */
-    if ( layerIds.length === 0 && externalSelectedLayers.length) {
+  this.coordinates = async function({
+    coordinates,
+    layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
+    multilayers           = false,
+    query_point_tolerance = QUERY_POINT_TOLERANCE,
+    feature_count
+  } = {}) {
+    const externalSelectedLayers = this.getSelectedExternalLayers({ type: 'vector' });
+    const query                  = { coordinates, type: 'coordinates' };
+
+    // Return an empty request if an external layer is selected
+    if (externalSelectedLayers.length && 0 === layerIds.length) {
       return this.handleRequest(this.getEmptyRequest(), query);
-    } else {
-      const layersFilterObject =  {
-        QUERYABLE: true,
-        SELECTEDORALL: layerIds.length === 0,
-        VISIBLE: true
-      };
-      Array.isArray(layerIds) && layerIds.forEach(layerId => {
-        if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
-        layersFilterObject.IDS.push(layerId);
-      });
-      const layers = getMapLayersByFilter(layersFilterObject);
-      const request = getQueryLayersPromisesByCoordinates(layers, {
-        multilayers,
-        feature_count,
-        query_point_tolerance,
-        coordinates
-      });
-      return this.handleRequest(request, query);
     }
+
+    const layersFilterObject =  {
+      QUERYABLE: true,
+      SELECTEDORALL: (0 === layerIds.length),
+      VISIBLE: true
+    };
+
+    if (Array.isArray(layerIds)) {
+      layerIds.forEach(id => {
+        if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
+        layersFilterObject.IDS.push(id);
+      });
+    }
+
+    return this.handleRequest(
+      // request
+      getQueryLayersPromisesByCoordinates(
+        // layers
+        getMapLayersByFilter(layersFilterObject),
+        // options
+        {
+          multilayers,
+          feature_count,
+          query_point_tolerance,
+          coordinates
+        }
+      ),
+      query
+    );
+
   };
 
   /**
