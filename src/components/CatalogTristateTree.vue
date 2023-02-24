@@ -351,7 +351,7 @@ export default {
     /**
      * Handle changing checked property of layer
      *
-     * @param layer
+     * @param {{ chechekd: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
      */
     handleLayerChecked(layerObject) {
       let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
@@ -379,6 +379,7 @@ export default {
         CatalogEventHub.$emit('treenodevisible', layer);
       }
     },
+
     toggleFilterLayer() {
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
@@ -391,8 +392,15 @@ export default {
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
+
+    /**
+     * Select legend item
+     * 
+     * @fires CatalogEventHub~treenodeexternalselected
+     * @fires CatalogEventHub~treenodeselected
+     */
     select() {
-      if (this.layerstree.external && "undefined" !== typeof this.layerstree.selected) {
+      if (this.layerstree.external && 'undefined' !== typeof this.layerstree.selected) {
         CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
