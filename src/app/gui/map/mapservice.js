@@ -839,9 +839,15 @@ proto._setupControls = function() {
                 getLayers: getControlLayers
               };
               this._changeMapMapControls.push(change);
-              const runQuery = throttle(async e => {
+              //set initial value of control change-spatial-event key to null
+              let changeSpatialMethodEventKey = null;
+              const unlistenSpatialMethodChange = () => {
+                ol.Observable.unByKey(changeSpatialMethodEventKey);
+                changeSpatialMethodEventKey = null;
+              };
+              const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
-                const coordinates = e.coordinates;
+                const coordinates = event.coordinates;
                 // ask for coordinates
                 try {
                  const {data:dataCoordinates=[]} = await DataRouterService.getData('query:coordinates', {
@@ -862,32 +868,65 @@ proto._setupControls = function() {
                   if (dataCoordinates.length && dataCoordinates[0].features.length) {
                     const feature = dataCoordinates[0].features[0];
                     const excludeLayers = [dataCoordinates[0].layer];
-                    const {data=[]} = await DataRouterService.getData('query:polygon', {
-                      inputs: {
-                        excludeLayers,
-                        feature,
-                        filterConfig:{
-                          spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
-                        },
-                        multilayers: this.project.isQueryMultiLayers(controlType)
-                      },
-                      outputs: {
-                        show({error=false}){
-                          return !error;
-                        }
-                      }
+                    // run query Polygon Request to server
+                    runQueryPolygon({
+                      feature,
+                      excludeLayers,
+                      coordinates
                     });
-                    data.length && map.getView().setCenter(coordinates);
+                    // if not get event, register it
+                    if (null === changeSpatialMethodEventKey) {
+                      changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
+                        runQueryPolygon({
+                          feature,
+                          excludeLayers,
+                          coordinates
+                        });
+                      });
+                    }
                   }
                 } catch(err){
                   console.log(err)
                 }
               });
-              const eventKey = control.on('picked', runQuery);
+              /**
+               * Get Query By Polygon Request
+               * @returns {Promise<undefined>}
+               */
+              const runQueryPolygon = async ({feature, excludeLayers, coordinates}) =>{
+                const {data=[]} = await DataRouterService.getData('query:polygon', {
+                  inputs: {
+                    excludeLayers,
+                    feature,
+                    filterConfig:{
+                      spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
+                    },
+                    multilayers: this.project.isQueryMultiLayers(controlType)
+                  },
+                  outputs: {
+                    show({error=false}){
+                      return !error;
+                    }
+                  }
+                });
+                data.length && map.getView().setCenter(coordinates);
+              };
+              const eventKey = control.on('picked', (event) => {
+                if (null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                }
+                runQuery(event);
+              });
               control.setEventKey({
                 eventType: 'picked',
                 eventKey
               });
+
+              control.on('toggled', (toggled) => {
+               if (false === toggled && null !== changeSpatialMethodEventKey) {
+                 unlistenSpatialMethodChange();
+               }
+              })
             }
           }
           break;
@@ -928,9 +967,15 @@ proto._setupControls = function() {
                 FILTERABLE: true,
                 VISIBLE: true
               };
-              const runQuery = throttle(async e => {
+              //set initial value of control change-spatial-event key to null
+              let changeSpatialMethodEventKey = null;
+              const unlistenSpatialMethodChange = () => {
+                ol.Observable.unByKey(changeSpatialMethodEventKey);
+                changeSpatialMethodEventKey = null;
+              };
+              const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
-                const bbox = e.extent;
+                const bbox = event.extent;
                 try {
                   const {data=[]} = await DataRouterService.getData('query:bbox', {
                     inputs: {
@@ -948,15 +993,34 @@ proto._setupControls = function() {
                     const center = ol.extent.getCenter(bbox);
                     this.getMap().getView().setCenter(center);
                   }
+
+                  if (null === changeSpatialMethodEventKey) {
+                    changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
+                      runQuery(event);
+                    });
+                  }
                 } catch(err){
                   console.log(err)
                 }
               });
-              const eventKey = control.on('bboxend', runQuery);
+
+              const eventKey = control.on('bboxend', (event)=> {
+                if (null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                }
+                runQuery(event);
+              });
               control.setEventKey({
                 eventType: 'bboxend',
                 eventKey
               });
+
+              control.on('toggled', (toggled) => {
+                if (false === toggled && null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                }
+              })
+
             }
           }
           break;
