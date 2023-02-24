@@ -28,61 +28,63 @@ function QueryService(){
   };
 
   /**
-   *
-   * @param geometry
-   * @param feature_count
-   * @param multilayers
-   * @param condition
-   * @param excludeLayers
+   * @param {{ feature: unknown, feature_count: unknown, filterConfig: unknown, multilayers: boolean, condition: boolean, excludeLayers: unknown[] }}
+   * 
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
-    let polygonLayer;
-    let fid;
-    if (this.getSelectedExternalLayers({
-      type: "vector"
-    }).length) {
-      polygonLayer = {
-        getName(){
-          return excludeLayers[0].get('name');
-        }
-      };
-      fid = feature.getId();
-    } else  {
-      polygonLayer = excludeLayers[0];
-      fid = feature.get(G3W_FID);
-    }
+  this.polygon = function({
+    feature,
+    feature_count  = this.project.getQueryFeatureCount(),
+    filterConfig   = {},
+    multilayers    = false,
+    condition      = this.condition,
+    excludeLayers  = []
+  }={}) {
+    const hasExternalLayers = this.getSelectedExternalLayers({ type: "vector" }).length;
+    const fid               = (hasExternalLayers) ? feature.getId() : feature.get(G3W_FID);
+    let polygonLayer        = (hasExternalLayers) ? ({ getName() { return excludeLayers[0].get('name'); } }) : excludeLayers[0];
+
     const geometry = feature.getGeometry();
+
     // in case no geometry on polygon layer response
-    if (!geometry) return this.returnExceptionResponse({
-      usermessage: {
-        type: 'warning',
-        message: `${polygonLayer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
-        messagetext: true,
-        autoclose: false
-      }
-    });
-    const layerFilterObject = {
-      SELECTED: false,
-      FILTERABLE: true,
-      VISIBLE: true
-    };
-    const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
-    const request = getQueryLayersPromisesByGeometry(layers,
-      {
-        geometry,
-        multilayers,
-        feature_count,
-        filterConfig,
-        projection: this.project.getProjection()
+    if (!geometry) {
+      return this.returnExceptionResponse({
+        usermessage: {
+          type: 'warning',
+          message: `${polygonLayer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          messagetext: true,
+          autoclose: false
+        }
       });
-      return this.handleRequest(request, {
+    }
+
+    return this.handleRequest(
+      // request
+      getQueryLayersPromisesByGeometry(
+        // layers
+        getMapLayersByFilter({
+          SELECTED: false,
+          FILTERABLE: true,
+          VISIBLE: true
+        }, condition).filter(layer => excludeLayers.indexOf(layer) === -1),
+        // options
+        {
+          geometry,
+          multilayers,
+          feature_count,
+          filterConfig,
+          projection: this.project.getProjection()
+        }
+      ),
+      // query
+      {
         fid,
         geometry,
         layer: polygonLayer,
         type: 'polygon',
         filterConfig
-      });
+      }
+    );
   };
 
   /**
