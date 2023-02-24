@@ -32,7 +32,7 @@
             </div>
           </div>
         </div>
-        <div ref="mainnavbar" class="collapse navbar-collapse" id="main-navbar" style="text-align: center; overflow: hidden; max-height: 50px;">
+        <div ref="mainnavbar" class="collapse navbar-collapse" id="main-navbar" style="text-align: center; overflow: hidden; margin: 0 0;">
           <navbarleftitems></navbarleftitems>
           <navbarrightitems></navbarrightitems>
           <ul ref="app-navbar-nav" class="nav navbar-nav navbar-right app-navbar-nav">
