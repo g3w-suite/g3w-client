@@ -24,6 +24,11 @@ export default {
       message: "Poziție relativă la straturile din TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Selectați Template"
+        }
+      },
       spatialbookmarks: {
         title: "Marcaje spațiale",
         helptext: "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",

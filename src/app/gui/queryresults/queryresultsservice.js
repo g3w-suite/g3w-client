@@ -1319,7 +1319,7 @@ proto._addComponent = function(component) {
 };
 
 proto._printSingleAtlas = function({atlas={}, features=[]}={}){
-  let {name:template, atlas: {field_name}} = atlas;
+  let {name:template, atlas: {field_name=''}} = atlas;
   field_name = field_name || '$id';
   const values = features.map(feature => feature.attributes[field_name === '$id' ?  G3W_FID: field_name]);
   const download_caller_id = ApplicationService.setDownload(true);
@@ -1381,7 +1381,7 @@ proto.printAtlas = function(layer, feature){
     });
 
     GUI.showModalDialog({
-      title: "Seleziona Template",
+      title: t('sdk.atlas.template_dialog.title'),
       message: inputs,
       buttons: {
         success: {

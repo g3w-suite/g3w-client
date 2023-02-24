@@ -24,6 +24,11 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Sélectionnez Template"
+        }
+      },
       spatialbookmarks: {
         title: "Signets spatiaux",
         helptext: "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
