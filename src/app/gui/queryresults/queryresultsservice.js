@@ -1308,7 +1308,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
     }
 
     // add vector layers to query response
-    vectorLayers.forEach(layer => { queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, query)); });
+    vectorLayers.forEach(layer => { queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query)); });
 
   });
 };
