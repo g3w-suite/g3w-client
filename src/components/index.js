@@ -2,6 +2,7 @@ import App from './App.vue';
 import C3XYLine from './C3XYLine.vue';
 import Catalog from './Catalog.vue';
 import CatalogChangeMapThemes from './CatalogChangeMapThemes.vue';
+import CatalogLayerContextMenu from './CatalogLayerContextMenu.vue';
 import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
@@ -58,6 +59,7 @@ import InputText from './InputText.vue';
 import InputTextArea from './InputTextArea.vue';
 import InputHtml from './InputTextHtml.vue';
 import InputUnique from './InputUnique.vue';
+import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
 import MetadataLayer from './MetadataLayer.vue';
@@ -113,6 +115,7 @@ export {
   C3XYLine,
   Catalog,
   CatalogChangeMapThemes,
+  CatalogLayerContextMenu,
   CatalogLayerLegend,
   CatalogLayersGroup,
   CatalogLayersLegendItems,
@@ -169,6 +172,7 @@ export {
   InputTextArea,
   InputHtml,
   InputUnique,
+  LayerOpacityPicker,
   Map,
   MapAddLayer,
   MetadataLayer,

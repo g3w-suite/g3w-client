@@ -265,7 +265,8 @@ Vue.use({
         'fast-forward': "fas fa-fast-forward",
         crop: "fas fa-crop-alt",
         exit: "fas fa-door-open",
-        bookmark: "fas fa-bookmark"
+        slider: "fas fa-sliders-h",
+        bookmark: "fas fa-bookmark",
       },
       /**
        * @TODO check if deprecated

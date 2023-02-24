@@ -497,7 +497,8 @@ export default {
         open_attribute_table: "Öppna attributtabellen",
         show_metadata: "Metadata",
         styles: "Stilar",
-        vector_color_menu: "Ställ in/ändra färg"
+        vector_color_menu: "Ställ in/ändra färg",
+        layer_opacity: "Opacitet"
       }
     },
     dataTable: {
