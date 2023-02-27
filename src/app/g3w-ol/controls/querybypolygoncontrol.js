@@ -24,8 +24,15 @@ const QueryByPolygonControl = function(options={}) {
   this.externalLayers = [];
 
   this.unwatches = [];
-  this.listenPolygonLayersChange();
+  this.listenLayersVisibilityChange();
   options.visible = this.checkVisibile(this.layers);
+
+  /**
+   * @since v3.8
+   * store current selected layer
+   * **/
+  this.selectedLayer = null;
+
   const _options = {
     offline: false,
     name: "querybypolygon",
@@ -36,11 +43,14 @@ const QueryByPolygonControl = function(options={}) {
       const selected = selectedLayer.isSelected();
       const geometryType = selectedLayer.getGeometryType();
       const querable = selectedLayer.isQueryable();
-      if (selected){
-        if (this.getGeometryTypes().indexOf(geometryType) !== -1) {
-          this.setEnable(querable ? selectedLayer.isVisible(): querable);
-        } else this.setEnable(false, false);
-      } else this.setEnable(false, false);
+      if (selected && this.getGeometryTypes().indexOf(geometryType) !== -1 && querable) {
+        // set selected layer
+        this.selectedLayer = selectedLayer;
+        this.setEnable(this.isThereVisibleLayerNotSelected());
+      } else {
+        this.selectedLayer = null;
+        this.setEnable(false, false);
+      }
     },
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
@@ -64,16 +74,23 @@ ol.inherits(QueryByPolygonControl, InteractionControl);
 
 const proto = QueryByPolygonControl.prototype;
 
-proto.listenPolygonLayersChange = function(){
+/**
+ * @since v3.8 renamed from listenPolygonLayersChange to listenLayersVisibilityChange
+ */
+proto.listenLayersVisibilityChange = function(){
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
-  const polygonLayers = this.layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
-  polygonLayers.forEach(layer => {
+  this.layers.forEach(layer => {
     const {state} = layer;
-    this.unwatches.push(VM.$watch(() =>  state.visible, visible => {
-      // need to be visible or selected
-      this.setEnable(visible && state.selected);
-    }));
+    this.unwatches.push(
+      VM.$watch(() =>  state.visible, visible => {
+       // check if a selectedLayer i set
+        if (null !== this.selectedLayer) {
+          // enable control only if current changed visible layer is true or
+          // if at least one layer (not selected) is visible
+          this.setEnable(this.isThereVisibleLayerNotSelected());
+        } else this.setEnable(false);
+      }));
   });
 };
 
@@ -82,7 +99,7 @@ proto.change = function(layers=[]){
   const visible = this.checkVisibile(layers);
   this.setVisible(visible);
   this.setEnable(false);
-  this.listenPolygonLayersChange();
+  this.listenLayersVisibilityChange();
 };
 
 proto.checkVisibile = function(layers) {
@@ -126,21 +143,81 @@ proto.setMap = function(map) {
  */
 proto._handleExternalLayers = function() {
   const CatalogService = GUI.getService('catalog');
+  // store unwatch extenal layer selected or visible
+  const unWatches = {};
+  // liste addExternalLayer setter event
   CatalogService.onafter('addExternalLayer', ({layer, type}) => {
-    if ('vector' === type && isPolygonGeometryType(layer.geometryType)) {
+    if ('vector' === type) {
+      //add to externalLayers
       this.externalLayers.push(layer);
-      this.unwatches.push(
-        VM.$watch(
+      // set list of un watches for layer based on name of layer (unique)
+      unWatches[layer.name] = [];
+      // check if has a Polygon geometry to check selected property to enable/disable map control
+      if (isPolygonGeometryType(layer.geometryType)) {
+        // set selectedLayer
+        const unWatchSelected = VM.$watch(
           () => layer.selected,
-          selected => { this.setEnable(selected); /* need to be visible or selected */ })
-      );
+          selected => {
+            if (true === selected) {
+              this.selectedLayer = layer;
+            } else {
+              this.selectedLayer = null;
+            }
+            this.setEnable(this.isThereVisibleLayerNotSelected());  /* need to be visible and selected */
+          });
+        // add unwatch selected event function
+        unWatches[layer.name].push(unWatchSelected);
+      }
+      // check visible property and get unwatch
+      const unWatchVisible = VM.$watch(
+        () => layer.visible,
+        (visible) => {
+          // in case of selected layer on TOC
+          this.setEnable(this.isThereVisibleLayerNotSelected())
+        });
+      unWatches[layer.name].push(unWatchVisible);
     }
+    this.setEnable(this.isThereVisibleLayerNotSelected());
   });
+
+  // listen removeExternalLayer setter event
   CatalogService.onafter('removeExternalLayer', ({name, type}) => {
     if ('vector' === type) {
-      this.externalLayers = this.externalLayers.filter(layer => name !== layer.name);
+      this.externalLayers = this.externalLayers.filter(layer => {
+        if (name !== layer.name)
+          return true;
+        else {
+          if (layer === this.selectedLayer) {
+            this.selectedLayer = null;
+          }
+          return false;
+        }
+      });
+      unWatches[name].forEach(unWatch => unWatch());
+      delete unWatches[name];
+      this.setEnable(this.isThereVisibleLayerNotSelected());
     }
   });
+};
+
+/**
+ * @since v3.8 Is at least layer visible not selected
+ */
+proto.isThereVisibleLayerNotSelected = function(){
+  return !!(
+    // selected layer need to be set
+    this.selectedLayer &&
+    // check is selected layer is visible
+    // call isVisible in case of project layer or visible property in case of external layer
+    ('function' === typeof this.selectedLayer.isVisible ? this.selectedLayer.isVisible() : this.selectedLayer.visible) &&
+    (// check in project layers if at least is visible
+      this.layers
+        .find(layer => layer !== this.selectedLayer && layer.isVisible()) ||
+      // check in external layers if layer at least is visible
+      this.externalLayers
+        .find(externalLayer => externalLayer !== this.selectedLayer && true === externalLayer.visible)
+      )
+  )
 };
 
 module.exports = QueryByPolygonControl;
