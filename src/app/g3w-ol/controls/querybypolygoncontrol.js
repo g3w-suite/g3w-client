@@ -43,8 +43,8 @@ const QueryByPolygonControl = function(options={}) {
     onSelectlayer(selectedLayer){
       const selected = selectedLayer.isSelected();
       const geometryType = selectedLayer.getGeometryType();
-      const querable = selectedLayer.isQueryable();
-      if (selected && this.getGeometryTypes().indexOf(geometryType) !== -1 && querable) {
+      const queryable = selectedLayer.isQueryable();
+      if (selected && this.getGeometryTypes().indexOf(geometryType) !== -1 && queryable) {
         // set selected layer
         this.selectedLayer = selectedLayer;
         this.setEnable(this.isThereVisibleLayerNotSelected());
