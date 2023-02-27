@@ -358,6 +358,10 @@ export default {
 
       // in case of external layer
       if (!projectLayer) {
+        /**
+         * @since v3.8 Need to be add to listen visibility change property
+         */
+        layerObject.visible = checked;
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
       } else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
