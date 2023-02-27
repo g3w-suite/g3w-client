@@ -67,7 +67,7 @@
           </div>
           <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
           <div class="modal-footer">
-          <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!add"></button>
+          <button v-t="'add'" type="button" class="btn btn-success pull-left" @click.stop="addLayer" :disabled="!add"></button>
           <button v-t="'close'" type="button" class="btn btn-default" data-dismiss="modal"></button>
         </div>
       </div>
@@ -151,6 +151,14 @@ export default {
   components: {
     'chrome-picker': ChromeComponent
   },
+  computed:{
+    csv_extension(){
+      return this.layer.type === 'csv';
+    },
+    add(){
+      return this.layer.data || this.csv.valid;
+    }
+  },
   methods: {
     setLayerMapPosition(position){
       this.position = position;
@@ -167,7 +175,6 @@ export default {
       this.layer.color = val;
     },
     async onAddLayer(evt) {
-      this.csv.valid = true;
       const reader = new FileReader();
       const name = evt.target.files[0].name;
       let type = evt.target.files[0].name.split('.');
@@ -186,7 +193,7 @@ export default {
             const csv_data = evt.target.result.split(/\r\n|\n/).filter(row => row);
             const [headers, ...values] = csv_data;
             const handle_csv_headers = separator => {
-              let data;
+              let data = null;
               this.csv.loading = true;
               const csv_headers = headers.split(separator);
               const headers_length = csv_headers.length;
@@ -248,7 +255,7 @@ export default {
       } catch(err){this.setError('add_external_layer');}
     },
     async addLayer() {
-      if (this.vectorLayer || this.csv.valid) {
+      if (this.layer.data || this.csv.valid) {
         const {crs} = this.layer;
         try {
           /**
@@ -273,7 +280,7 @@ export default {
             position: this.position
           });
           $(this.$refs.modal_addlayer).modal('hide');
-          this.clearLayer();
+          this.clear();
 
         } catch(err){
           this.setError('add_external_layer');
@@ -281,7 +288,10 @@ export default {
         this.loading = false
       }
     },
-    clearLayer() {
+    /**
+     * @since v3.8 renamed from clearLayer to clear
+     */
+    clear() {
       this.clearError();
       this.loading = false;
       this.layer.name = null;
@@ -303,14 +313,7 @@ export default {
       this.vectorLayer = null;
       this.fields = [];
       this.field = null;
-    }
-  },
-  computed:{
-    csv_extension(){
-      return this.layer.type === 'csv';
-    },
-    add(){
-      return this.vectorLayer || this.csv.valid;
+      this.csv.valid = false;
     }
   },
   watch:{
@@ -327,11 +330,13 @@ export default {
   },
   async mounted(){
     await this.$nextTick();
-    this.modal =  $('#modal-addlayer').modal('hide');
-    this.modal.on('hidden.bs.modal',  () => this.clearLayer());
+    this.modal = $('#modal-addlayer').modal('hide');
+    this.modal.on('hide.bs.modal',  () => {
+      this.clear();
+    });
   },
   beforeDestroy() {
-    this.clearLayer();
+    this.clear();
     this.modal.modal('hide');
     this.modal.remove();
   }

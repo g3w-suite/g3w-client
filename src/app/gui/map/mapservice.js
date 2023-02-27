@@ -2586,10 +2586,13 @@ proto.removeExternalLayers = function(){
   this._externalLayers = [];
 };
 
-proto.changeLayerVisibility = function({id, visible}){
+proto.changeLayerVisibility = function({id, external=false, visible}){
   const layer = this.getLayerById(id);
-  layer && layer.setVisible(visible);
-  this.emit('change-layer-visibility', {id, visible});
+  if (layer) {
+    layer.setVisible(visible);
+    this.emit('change-layer-visibility', {id, visible});
+  }
+
 };
 
 proto.changeLayerOpacity = function({id, opacity=1}={}){
