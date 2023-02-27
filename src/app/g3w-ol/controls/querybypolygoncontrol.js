@@ -39,14 +39,14 @@ const QueryByPolygonControl = function(options={}) {
     name: "querybypolygon",
     tipLabel: "sdk.mapcontrols.querybypolygon.tooltip",
     label: options.label || "\ue903",
-    // function to get selection layer
-    onSelectlayer(selectedLayer){
-      const selected = selectedLayer.isSelected();
-      const geometryType = selectedLayer.getGeometryType();
-      const queryable = selectedLayer.isQueryable();
-      if (selected && this.getGeometryTypes().indexOf(geometryType) !== -1 && queryable) {
-        // set selected layer
-        this.selectedLayer = selectedLayer;
+    // update selected layer
+    onSelectlayer(layer) {
+      if (
+        layer.isSelected() &&
+        layer.isQueryable() &&
+        -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
+      ) {
+        this.selectedLayer = layer;
         this.setEnable(this.isThereVisibleLayerNotSelected());
       } else {
         this.selectedLayer = null;
