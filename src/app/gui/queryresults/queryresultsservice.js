@@ -1281,19 +1281,19 @@ proto._addVectorLayersDataToQueryResponse = function() {
     if (!queryResponse.query) queryResponse.query = {};
 
     let vectorLayers = [];
-
     switch(queryResponse.query.type) {
 
       case 'coordinates':
       case 'bbox':
-        vectorLayers = this._vectorLayers.filter(layer => catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' }));
+        // need to be visible
+        vectorLayers = this._vectorLayers.filter(layer => layer.getVisible() && catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' }));
         if (!vectorLayers.length) {
-          vectorLayers = this._vectorLayers;
+          vectorLayers = this._vectorLayers.filter(layer => layer.getVisible());
         }
         break;
 
       case 'polygon':
-        vectorLayers = this._vectorLayers.filter(layer => !catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' }));
+        vectorLayers = this._vectorLayers.filter(layer => layer.getVisible() && !catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' }));
         break;
 
       default:
