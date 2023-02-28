@@ -5,25 +5,47 @@
 
 <template>
 <div class="wrapper" v-disabled="app.disabled">
+
   <cookie-law theme="dark-lime" :buttonText="cookie_law_buttonText">
     <div slot="message" v-t="'cookie_law.message'">
     </div>
   </cookie-law>
+
   <header v-if="!isIframe" class="main-header">
-    <!-- Logo -->
-    <!-- Header Navbar: style can be found in header.less -->
+
+    <!-- NAVBAR TOP (MAIN MENU) -->
+    <!-- TODO: extract/refactor into sub-components or move into a dedicated single file component -->
+    <!-- NB: additional styles can be found in `header.less` -->
     <nav ref="navbar" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+
       <div class="container-fluid">
+
         <div class="navbar-header">
-          <button ref='navbar_toggle' type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+
+          <!-- HAMBURGER (BUTTON) -->
+          <button
+            ref='navbar_toggle'
+            type="button"
+            class="navbar-toggle"
+            data-toggle="collapse"
+            data-target="#main-navbar"
+          >
             <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('ellips-v')"></i>
           </button>
+
           <!-- Toggle button on navbar only for mobile -->
           <a v-if="isMobile()" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
             <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('bars')"></i>
           </a>
+
+          <!-- LOGO -->
           <div class="logo-wrapper" :class="{'mobile': isMobile()}">
-            <a  v-if="logo_url" :href="logo_link" :target="logo_link_target" class="project_logo_link">
+            <a
+              v-if="logo_url"
+              :href="logo_link"
+              :target="logo_link_target"
+              class="project_logo_link"
+            >
               <img class="img-responsive" style="max-width: 250px;" ref="img_logo" :src="logo_url">
             </a>
             <div ref="main_title_project_title" class="project_title_content">
@@ -31,25 +53,61 @@
               <div class="sub_title">{{project_title}}</div>
             </div>
           </div>
+
         </div>
-        <div ref="mainnavbar" class="collapse navbar-collapse" id="main-navbar" style="text-align: center; overflow: hidden; margin: 0 0;">
-          <navbarleftitems></navbarleftitems>
-          <navbarrightitems></navbarrightitems>
-          <ul ref="app-navbar-nav" class="nav navbar-nav navbar-right app-navbar-nav">
+
+        <!-- TODO: add description -->
+        <div
+          ref="mainnavbar"
+          id="main-navbar"
+          class="collapse navbar-collapse"
+          style="text-align: center; overflow: hidden; margin: 0 0;"
+        >
+
+          <!-- TODO: add description -->
+          <navbarleftitems />
+
+          <!-- TODO: add description -->
+          <navbarrightitems />
+
+          <ul
+            ref="app-navbar-nav"
+            class="nav navbar-nav navbar-right app-navbar-nav"
+          >
+
+            <!-- LOGIN -->
             <li v-if="!user" class="dropdown user user-menu">
               <a :href="login_url">
                 <i :class="g3wtemplate.getFontClass('sign-in')" aria-hidden="true"></i>
                 <span v-t="'sign_in'"></span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[0]" :key="state.id"></header-item>
-            <li id="changemaps" class="dropdown user" v-if="numberOfProjectsInGroup > 1">
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[0]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- CHANGE MAP -->
+            <li v-if="numberOfProjectsInGroup > 1" id="changemaps" class="dropdown user">
               <a href="#" @click="openProjectsMenu" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('change-map')" aria-hidden="true"></i>
                 <span v-t="'changemap'"></span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[1]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[1]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- ADMIN / LOGOUT -->
             <li v-if="user" class="dropdown user user-menu">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('user')"></i>
@@ -63,40 +121,87 @@
                 </li>
                 <li class="user-footer">
                   <div class="pull-left" v-if="user.admin_url">
-                    <a :href="user.admin_url" class="btn btn-default btn-flat skin-color bold" ><i :class="g3wtemplate.getFontClass('folder')"></i> Admin</a>
+                    <a :href="user.admin_url" class="btn btn-default btn-flat skin-color bold" >
+                      <i :class="g3wtemplate.getFontClass('folder')"></i> Admin
+                    </a>
                   </div>
                   <div class="pull-right">
-                    <a :href="user.logout_url" class="btn btn-default btn-flat skin-color bold" v-t="'logout'"><i :class="g3wtemplate.getFontClass('sign-out')" style="margin-right: 2px;"></i></a>
+                    <a :href="user.logout_url" class="btn btn-default btn-flat skin-color bold" v-t="'logout'">
+                      <i :class="g3wtemplate.getFontClass('sign-out')" style="margin-right: 2px;"></i>
+                    </a>
                   </div>
                 </li>
               </ul>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[2]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[2]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- CREDITS -->
             <li class="dropdown user user-menu">
               <a href="#" data-toggle="modal" data-target="#credits" class="dropdown-toggle">
                 <i :class="g3wtemplate.getFontClass('credits')" aria-hidden="true"></i>
                 <span>Credits</span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[3]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[3]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- LANGUAGE SWITCHER -->
             <li v-if="languages" class="g3w-languages">
-              <select v-select2="'language'" class="form-control" :templateSelection="templateResultLanguages" :templateResult="templateResultLanguages" v-model="language" style="cursor:pointer; width: 130px;">
-                <option v-for="_language in languages" :key="_language[0]" :value="_language[0]" :selected="_language[0] === language && 'selected'">
+              <select
+                v-select2="'language'"
+                class="form-control"
+                :templateSelection="templateResultLanguages"
+                :templateResult="templateResultLanguages"
+                v-model="language"
+                style="cursor:pointer; width: 130px;"
+              >
+                <option
+                  v-for="_language in languages"
+                  :key="_language[0]"
+                  :value="_language[0]"
+                  :selected="_language[0] === language && 'selected'"
+                >
                   {{_language[1]}}
                 </option>
               </select>
             </li>
+
+            <!-- HOME PAGE -->
             <li v-if="frontendurl" class="dropdown">
               <a :href="frontendurl">
                 <span><i :class="g3wtemplate.getFontClass('home')"></i> Home</span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[4]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[4]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
           </ul>
+
         </div>
+
       </div>
     </nav>
   </header>
+
   <!-- Left side column. contains the logo and sidebar -->
   <sidebar></sidebar>
   <!-- Content Wrapper. Contains page content -->
