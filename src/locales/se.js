@@ -24,6 +24,21 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Rumsliga bokmärken",
+        helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
+        input: {
+          name: "Namn"
+        },
+        sections: {
+          project:{
+            title: "Projektbokmärken"
+          },
+          user: {
+            title: "Användarbokmärken"
+          }
+        }
+      },
       search: {
         all: 'ALLA',
         no_results: "Inga resultat",
@@ -482,7 +497,8 @@ export default {
         open_attribute_table: "Öppna attributtabellen",
         show_metadata: "Metadata",
         styles: "Stilar",
-        vector_color_menu: "Ställ in/ändra färg"
+        vector_color_menu: "Ställ in/ändra färg",
+        layer_opacity: "Opacitet"
       }
     },
     dataTable: {
