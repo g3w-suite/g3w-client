@@ -42,4 +42,15 @@ proto.getEmptyRequest = function(){
   return resolve([]);
 };
 
+/**
+ *
+ * @param type
+ * @returns {boolean}
+ */
+proto.hasExternalLayerSelected = function({type = 'vector'}) {
+  return this.getSelectedExternalLayers({
+    type
+  }).length > 0
+};
+
 module.exports = BaseService;
