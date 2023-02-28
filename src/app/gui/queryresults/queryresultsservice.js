@@ -1281,6 +1281,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
     if (!queryResponse.query) queryResponse.query = {};
 
     let vectorLayers = [];
+
     switch(queryResponse.query.type) {
 
       case 'coordinates':
