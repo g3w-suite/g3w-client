@@ -46,10 +46,10 @@ const QueryByPolygonControl = function(options={}) {
         layer.isQueryable() &&
         -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
       ) {
-        this.selectedLayer = layer;
+        this.setSelectedLayer(layer);
         this.setEnable(this.isThereVisibleLayerNotSelected());
       } else {
-        this.selectedLayer = null;
+        this.setSelectedLayer(null);
         this.setEnable(false, false);
       }
     },
@@ -160,9 +160,9 @@ proto._handleExternalLayers = function() {
           () => layer.selected,
           selected => {
             if (true === selected) {
-              this.selectedLayer = layer;
+              this.setSelectedLayer(layer);
             } else {
-              this.selectedLayer = null;
+              this.setSelectedLayer(null);
             }
             this.setEnable(this.isThereVisibleLayerNotSelected());  /* need to be visible and selected */
           });
@@ -189,7 +189,7 @@ proto._handleExternalLayers = function() {
           return true;
         else {
           if (layer === this.selectedLayer) {
-            this.selectedLayer = null;
+            this.setSelectedLayer(null);
           }
           return false;
         }
@@ -219,6 +219,15 @@ proto.isThereVisibleLayerNotSelected = function(){
         .find(externalLayer => externalLayer !== this.selectedLayer && true === externalLayer.visible)
       )
   )
+};
+
+/**
+ * @since v3.8
+ * layer <layer or null>
+ */
+
+proto.setSelectedLayer = function(layer){
+  this.selectedLayer = layer;
 };
 
 module.exports = QueryByPolygonControl;
