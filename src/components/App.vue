@@ -170,12 +170,12 @@
                 style="cursor:pointer; width: 130px;"
               >
                 <option
-                  v-for="_language in languages"
-                  :key="_language[0]"
-                  :value="_language[0]"
-                  :selected="_language[0] === language && 'selected'"
+                  v-for="lang in languages"
+                  :key="lang[0]"
+                  :value="lang[0]"
+                  :selected="lang[0] === language && 'selected'"
                 >
-                  {{_language[1]}}
+                  {{ lang[1] }}
                 </option>
               </select>
             </li>
@@ -1126,16 +1126,24 @@ export default {
     },
   },
   methods: {
+
+    /**
+     * Language switcher item template (select2)
+     * 
+     * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
+     */
     templateResultLanguages(state) {
-      if (!state.id) return state.text;
-      const flagsurl = `${this.staticurl}img/flags`;
-      const $state = $(`<div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around">
-            <img src="${flagsurl}/${state.element.value.toLowerCase()}.png" />
-            <span style="margin-left: 5px;">${state.text}</span> 
-          </span>`
+      if (!state.id) {
+        return state.text;
+      }
+      return $(`
+        <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
+          <img src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
+          <span style="margin-left: 5px;">${state.text}</span> 
+        </span>`
       );
-      return $state;
     },
+
     async resize(){
       if (!this.isIframe) {
         await this.$nextTick();
