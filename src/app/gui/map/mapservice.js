@@ -867,11 +867,11 @@ proto._setupControls = function() {
                   });
                   if (dataCoordinates.length && dataCoordinates[0].features.length) {
                     const feature = dataCoordinates[0].features[0];
-                    const excludeLayers = [dataCoordinates[0].layer];
+                    const layer = dataCoordinates[0].layer;
                     // run query Polygon Request to server
                     runQueryPolygon({
                       feature,
-                      excludeLayers,
+                      layer,
                       coordinates
                     });
                     // if not get event, register it
@@ -879,7 +879,7 @@ proto._setupControls = function() {
                       changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
                         runQueryPolygon({
                           feature,
-                          excludeLayers,
+                          layer,
                           coordinates
                         });
                       });
@@ -893,10 +893,11 @@ proto._setupControls = function() {
                * Get Query By Polygon Request
                * @returns {Promise<undefined>}
                */
-              const runQueryPolygon = async ({feature, excludeLayers, coordinates}) =>{
+              const runQueryPolygon = async ({feature, layer, coordinates}) =>{
                 const {data=[]} = await DataRouterService.getData('query:polygon', {
                   inputs: {
-                    excludeLayers,
+                    layer,
+                    excludeSelected: true,
                     feature,
                     filterConfig:{
                       spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter

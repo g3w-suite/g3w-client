@@ -1205,18 +1205,8 @@ proto.unregisterVectorLayer = function(vectorLayer) {
 };
 
 proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
-  let isVisible = false;
   let {coordinates, bbox, geometry, filterConfig={}} = query; // extract information about query type
   let features = [];
-  switch (vectorLayer.constructor) {
-    case VectorLayer:
-      isVisible = vectorLayer.isVisible();
-      break;
-    case ol.layer.Vector:
-      isVisible = vectorLayer.getVisible();
-      break;
-  }
-  if (!isVisible) return true;
   // case query coordinates
   if (coordinates && Array.isArray(coordinates)) {
     const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
@@ -1271,40 +1261,28 @@ proto._addVectorLayersDataToQueryResponse = function() {
   this.onbefore('setQueryResponse', (queryResponse, options = {}) => {
     const catalogService = GUI.getService('catalog');
 
-    // skip when add response to current results using addLayerFeaturesToResultsAction
-    if (options.add) {
+    // sanity checks
+    if (!queryResponse.data)  queryResponse.data  = [];
+    if (!queryResponse.query) queryResponse.query = {external:{add: true, selected:false}};
+    // skip when add response to current results using addLayerFeaturesToResultsAction or external false
+    if (options.add || false === queryResponse.query.external.add) {
       return;
     }
 
-    // sanity checks
-    if (!queryResponse.data)  queryResponse.data  = [];
-    if (!queryResponse.query) queryResponse.query = {};
-
-    let vectorLayers = [];
-
-    switch(queryResponse.query.type) {
-
-      case 'coordinates':
-      case 'bbox':
-        // need to be visible
-        vectorLayers = this._vectorLayers.filter(layer => layer.getVisible() && catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' }));
-        if (!vectorLayers.length) {
-          vectorLayers = this._vectorLayers.filter(layer => layer.getVisible());
-        }
-        break;
-
-      case 'polygon':
-        vectorLayers = this._vectorLayers.filter(layer => layer.getVisible() && !catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' }));
-        break;
-
-      default:
-        break;
-
-    }
-
     // add vector layers to query response
-    vectorLayers.forEach(layer => { queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query)); });
-
+    this._vectorLayers
+      .forEach(layer => {
+        // always visible
+        if (layer.getVisible()) {
+          if (true === queryResponse.query.external.filter.SELECTED && !catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' })) {
+            return;
+          } else if (false === queryResponse.query.external.filter.SELECTED && catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector'})) {
+            return;
+          } else {
+            queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+          }
+        }
+      });
   });
 };
 

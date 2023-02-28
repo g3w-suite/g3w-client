@@ -34,24 +34,45 @@ function QueryService(){
    */
   this.polygon = function({
     feature,
-    feature_count  = this.project.getQueryFeatureCount(),
-    filterConfig   = {},
-    multilayers    = false,
-    condition      = this.condition,
-    excludeLayers  = []
+    feature_count   = this.project.getQueryFeatureCount(),
+    filterConfig    = {},
+    multilayers     = false,
+    condition       = this.condition,
+    /**
+     * @since v3.8
+     */
+    layer    = null,
+    excludeSelected = null
   } = {}) {
-    const hasExternalLayers = this.getSelectedExternalLayers({ type: "vector" }).length;
-    const fid               = (hasExternalLayers) ? feature.getId() : feature.get(G3W_FID);
-    let polygonLayer        = (hasExternalLayers) ? ({ getName() { return excludeLayers[0].get('name'); } }) : excludeLayers[0];
-
+    const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
+    const fid               = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
+    if (hasExternalLayersSelected) {
+      layer.getName = () => layer.get('name');
+    }
     const geometry = feature.getGeometry();
-
+    /**
+     * @since v3.8
+     * @type {{fid, external: {add: boolean, filter: {SELECTED}}, geometry: (undefined|*|null), type: string, layer, filterConfig}}
+     */
+    const query = {
+      fid,
+      geometry,
+      layer,
+      type: 'polygon',
+      filterConfig,
+      external: {
+        add: true,
+        filter: {
+          SELECTED: 'boolean' == typeof excludeSelected ? !excludeSelected : excludeSelected
+        }
+      }
+    };
     // in case no geometry on polygon layer response
     if (!geometry) {
       return this.returnExceptionResponse({
         usermessage: {
           type: 'warning',
-          message: `${polygonLayer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          message: `${layer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
           messagetext: true,
           autoclose: false
         }
@@ -63,10 +84,10 @@ function QueryService(){
       getQueryLayersPromisesByGeometry(
         // layers
         getMapLayersByFilter({
-          SELECTED: false,
+          SELECTED: !excludeSelected,
           FILTERABLE: true,
           VISIBLE: true
-        }, condition).filter(layer => excludeLayers.indexOf(layer) === -1),
+        }, condition),
         // options
         {
           geometry,
@@ -77,13 +98,7 @@ function QueryService(){
         }
       ),
       // query
-      {
-        fid,
-        geometry,
-        layer: polygonLayer,
-        type: 'polygon',
-        filterConfig
-      }
+      query
     );
   };
 
@@ -97,18 +112,26 @@ function QueryService(){
    * @returns {Promise<unknown>}
    */
   this.bbox = function({ bbox, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+    const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
+    /**
+     * @since v3.8
+     * @type {{external: {add: boolean, filter: {SELECTED: boolean}}, bbox, type: string, filterConfig}}
+     */
     const query = {
       bbox,
       type: 'bbox',
-      filterConfig
+      filterConfig,
+      external: {
+        add: true,
+        filter: {
+          SELECTED: externalSelectedLayers.length > 0
+        }
+      },
     };
-    const externalSelectedLayers = this.getSelectedExternalLayers({
-      type: "vector"
-    });
     /**
      * Check If LayerIds is length === 0 so i check if add external Layer is selected
      */
-    if ( externalSelectedLayers.length) {
+    if (hasExternalLayersSelected) {
       return this.handleRequest(this.getEmptyRequest(), query);
     } else {
       const layers = getMapLayersByFilter(layersFilterObject, condition);
@@ -124,8 +147,7 @@ function QueryService(){
   /**
    *
    * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
-   * @param 
-   * @param layerIds: <Array> 
+   * @param layerIds: <Array>
    * @param multilayers
    * @param feature_count
    * 
@@ -138,11 +160,24 @@ function QueryService(){
     query_point_tolerance = QUERY_POINT_TOLERANCE,
     feature_count
   } = {}) {
-    const externalSelectedLayers = this.getSelectedExternalLayers({ type: 'vector' });
-    const query                  = { coordinates, type: 'coordinates' };
+    const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
+    /**
+     * @since v3.8
+     * @type {{external: {add: boolean, filter: {SELECTED: boolean}}, coordinates, type: string}}
+     */
+    const query = {
+      coordinates,
+      type: 'coordinates',
+      external: {
+        add: true,
+        filter: {
+          SELECTED: hasExternalLayersSelected
+        }
+      }
+    };
 
     // Return an empty request if an external layer is selected
-    if (externalSelectedLayers.length && 0 === layerIds.length) {
+    if (hasExternalLayersSelected && 0 === layerIds.length) {
       return this.handleRequest(this.getEmptyRequest(), query);
     }
 
@@ -152,6 +187,7 @@ function QueryService(){
       VISIBLE: true
     };
 
+
     if (Array.isArray(layerIds)) {
       layerIds.forEach(id => {
         if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
@@ -159,11 +195,21 @@ function QueryService(){
       });
     }
 
+    /**
+     * get layers to handle request
+     */
+    const layers = getMapLayersByFilter(layersFilterObject);
+    /**
+     * @since v3.8 in case of project layer selected need to be set add external property to false to avoid add
+     * external layer to results
+     */
+    query.external.add = !(1 === layers.length && layers[0].isSelected());
+
     return this.handleRequest(
       // request
       getQueryLayersPromisesByCoordinates(
         // layers
-        getMapLayersByFilter(layersFilterObject),
+        layers,
         // options
         {
           multilayers,
@@ -218,7 +264,7 @@ function QueryService(){
       result: true,
       error: true
     }
-  }
+  };
 }
 
 inherit(QueryService, BaseService);
