@@ -22,7 +22,7 @@
 
         <div class="navbar-header">
 
-          <!-- HAMBURGER (BUTTON) -->
+          <!-- ELLIPSIS BUTTON (MAIN MENU) -->
           <button
             ref='navbar_toggle'
             type="button"
@@ -33,7 +33,8 @@
             <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('ellips-v')"></i>
           </button>
 
-          <!-- Toggle button on navbar only for mobile -->
+          <!-- HAMBURGER BUTTON (SIDEBAR MENU) -->
+          <!-- TODO: replace isMobile() with a css media query -->
           <a v-if="isMobile()" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
             <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('bars')"></i>
           </a>
