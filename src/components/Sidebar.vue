@@ -18,11 +18,24 @@
           <div style="display: flex;" :style="{justifyContent: state.gui.title ? 'space-between' : 'flex-end' }">
             <h4 v-if="state.gui.title" style="display: inline-block; font-weight: bold" v-t="state.gui.title"></h4>
             <div>
-            <span v-if="panels.length > 1" @click="closePanel" data-placement="left" data-toggle="tooltip" v-t-tooltip.create="'back'" class="skin-tooltip-left g3w-span-button close-pane-button fa-stack">
+            <span
+              v-if="panels.length > 1"
+              @click="closePanel"
+              data-placement="left"
+              data-toggle="tooltip"
+              data-container="body"
+              v-t-tooltip.create="'back'"
+              class="skin-tooltip-left g3w-span-button close-pane-button fa-stack">
               <i :class="g3wtemplate.getFontClass('circle')" class="fa-stack-1x panel-button"></i>
               <i :class="g3wtemplate.getFontClass('arrow-left')" class="fa-stack-1x panel-icon"></i>
             </span>
-              <span @click="closeAllPanels" data-placement="left" data-toggle="tooltip" v-t-tooltip.create="'close'" class="skin-tooltip-left g3w-span-button close-pane-button fa-stack">
+              <span
+                @click="closeAllPanels"
+                data-placement="left"
+                data-toggle="tooltip"
+                data-container="body"
+                v-t-tooltip.create="'close'"
+                class="skin-tooltip-left g3w-span-button close-pane-button fa-stack">
               <i :class="g3wtemplate.getFontClass('circle')" class="fa-stack-1x panel-button"></i>
               <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
             </span>

@@ -4,9 +4,20 @@
 -->
 
 <template>
-   <span v-if="show" @contextmenu.prevent.stop="" @click.stop="clickAction(action, layer, feature, featureIndex, $event)" v-download="action.download"
-      :class="{'toggled': action.state && action.state.toggled[featureIndex] }" class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-      <span style="padding: 2px;"  :style="action.style" :class="`action-button-icon ${action.class}`"></span>
+   <span v-if="show" @contextmenu.prevent.stop=""
+      @click.stop="clickAction(action, layer, feature, featureIndex, $event)"
+      v-download="action.download"
+      :class="{'toggled': action.state && action.state.toggled[featureIndex] }"
+      class="action-button"
+      data-placement="top"
+      data-toggle="tooltip"
+      data-container="body"
+      v-t-title="action.hint">
+      <span
+        style="padding: 2px;"
+        :style="action.style"
+        :class="`action-button-icon ${action.class}`">
+      </span>
     </span>
 </template>
 

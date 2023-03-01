@@ -18,6 +18,7 @@ export default {
         _el.setAttribute('data-placement', binding.arg);
         _el.classList.add('skin-color', `skin-tooltip-${binding.arg}`);
       }
+      _el.setAttribute('data-container',"body");
       $(_el)
         .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true })
         // hide tooltip on mobile  after click

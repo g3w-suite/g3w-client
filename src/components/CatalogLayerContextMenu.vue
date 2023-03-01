@@ -176,10 +176,19 @@
       <div @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wms'})" style="display: flex; max-width:300px; align-items: center;">
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
         <div style="display: inline-flex; justify-content: space-between; width: 100%; align-items: baseline">
-          <span class="item-text catalog-menu-wms skin-tooltip-top" data-toggle="tooltip" v-t-tooltip="'sdk.catalog.menu.wms.copy'">WMS URL</span>
-          <span class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
-                :class="g3wtemplate.getFontClass('eye')"
-                data-placement="top" data-toggle="tooltip" :title="getWmsUrl(layerMenu.layer.id)">
+          <span
+            class="item-text catalog-menu-wms skin-tooltip-top"
+            data-toggle="tooltip"
+            data-container="body"
+            v-t-tooltip="'sdk.catalog.menu.wms.copy'">WMS URL
+          </span>
+          <span
+            class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+            :class="g3wtemplate.getFontClass('eye')"
+            data-placement="top"
+            data-toggle="tooltip"
+            data-container="body"
+            :title="getWmsUrl(layerMenu.layer.id)">
             </span>
         </div>
       </div>
@@ -190,10 +199,19 @@
       <div @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wfs'})" style="display: flex; max-width:300px; align-items: center;">
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
         <div style="display: inline-flex; justify-content: space-between; width: 100%; align-items: baseline">
-          <span class="item-text catalog-menu-wms skin-tooltip-top" data-toggle="tooltip" v-t-tooltip="'sdk.catalog.menu.wms.copy'">WFS URL</span>
-          <span class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
-                :class="g3wtemplate.getFontClass('eye')"
-                data-placement="top" data-toggle="tooltip" :title="getWfsUrl(layerMenu.layer.id)">
+          <span
+            class="item-text catalog-menu-wms skin-tooltip-top"
+            data-toggle="tooltip"
+            data-container="body"
+            v-t-tooltip="'sdk.catalog.menu.wms.copy'">WFS URL
+          </span>
+          <span
+            class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+            :class="g3wtemplate.getFontClass('eye')"
+            data-placement="top"
+            data-toggle="tooltip"
+            data-container="body"
+            :title="getWfsUrl(layerMenu.layer.id)">
             </span>
         </div>
       </div>

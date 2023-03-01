@@ -33,6 +33,7 @@ const Control = function(options={}) {
             h('button', {
               attrs: {
                 type: 'button',
+                'data-container': "body"
               },
               directives: [{
                 name: 't-tooltip',
