@@ -1268,19 +1268,27 @@ proto._addVectorLayersDataToQueryResponse = function() {
     if (options.add || false === queryResponse.query.external.add) {
       return;
     }
-
+    //get filter SELECTED (can be true, false or undefined (not filter selected set)
+    const isFilterSelected = queryResponse.query.external.filter.SELECTED;
     // add vector layers to query response
     this._vectorLayers
       .forEach(layer => {
-        // always visible
-        if (layer.getVisible()) {
-          if (true === queryResponse.query.external.filter.SELECTED && !catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' })) {
-            return;
-          } else if (false === queryResponse.query.external.filter.SELECTED && catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector'})) {
-            return;
-          } else {
-            queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
-          }
+        // check if current layer is Selected
+        const isLayerSelected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
+        if (
+          // always visible
+          layer.getVisible() &&
+          (
+            //if not SELECTED filter set a boolean value, layer need to be added to query
+            ("undefined" === typeof queryResponse.query.external.filter.SELECTED) ||
+            // need to be selected
+            (true === isFilterSelected && true === isLayerSelected) ||
+            // need to be unselected
+            (false === isFilterSelected && false === isLayerSelected)
+          )
+        )
+        {
+          queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
         }
       });
   });
