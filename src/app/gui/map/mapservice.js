@@ -761,11 +761,6 @@ proto._setupControls = function() {
                 }
               }
             });
-            const change = {
-              control,
-              getLayers: ()=> this.getMapLayers()
-            };
-            this._changeMapMapControls.push(change);
           }
           break;
         case 'scale':
@@ -834,11 +829,6 @@ proto._setupControls = function() {
               }
             });
             if (control) {
-              const change = {
-                control,
-                getLayers: getControlLayers
-              };
-              this._changeMapMapControls.push(change);
               //set initial value of control change-spatial-event key to null
               let changeSpatialMethodEventKey = null;
               const unlistenSpatialMethodChange = () => {
@@ -959,11 +949,6 @@ proto._setupControls = function() {
               }
             });
             if (control) {
-              const change = {
-                control,
-                getLayers: getControlLayers
-              };
-              this._changeMapMapControls.push(change);
               // get all filtrable layers in toc no based on selection or visibility
               const layersFilterObject = {
                 SELECTEDORALL: true, // selected or all
@@ -1025,7 +1010,6 @@ proto._setupControls = function() {
                   unlistenSpatialMethodChange();
                 }
               })
-
             }
           }
           break;
