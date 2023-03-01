@@ -222,11 +222,12 @@ proto.isThereVisibleLayerNotSelected = function(){
 };
 
 /**
- * @since v3.8
- * layer <layer or null>
+ * @param { unknown | null } layer
+ * 
+ * @since 3.8.0
  */
 
-proto.setSelectedLayer = function(layer){
+proto.setSelectedLayer = function(layer) {
   this.selectedLayer = layer;
 };
 
