@@ -1263,31 +1263,27 @@ proto._addVectorLayersDataToQueryResponse = function() {
 
     // sanity checks
     if (!queryResponse.data)  queryResponse.data  = [];
-    if (!queryResponse.query) queryResponse.query = {external:{add: true, selected:false}};
+    if (!queryResponse.query) queryResponse.query = { external: { add: true, selected: false } };
+
     // skip when add response to current results using addLayerFeaturesToResultsAction or external false
     if (options.add || false === queryResponse.query.external.add) {
       return;
     }
-    //get filter SELECTED (can be true, false or undefined (not filter selected set)
-    const isFilterSelected = queryResponse.query.external.filter.SELECTED;
-    // add vector layers to query response
+
+    /** @type { boolean | undefined } */
+    const isExternalFilterSelected = queryResponse.query.external.filter.SELECTED;
+
+    // add visible layers to query response (vector layers)
     this._vectorLayers
       .forEach(layer => {
-        // check if current layer is Selected
         const isLayerSelected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
         if (
-          // always visible
-          layer.getVisible() &&
-          (
-            //if not SELECTED filter set a boolean value, layer need to be added to query
-            ("undefined" === typeof queryResponse.query.external.filter.SELECTED) ||
-            // need to be selected
-            (true === isFilterSelected && true === isLayerSelected) ||
-            // need to be unselected
-            (false === isFilterSelected && false === isLayerSelected)
-          )
-        )
-        {
+          layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
+                                  (true === isLayerSelected  && true === isExternalFilterSelected) ||
+                                  (false === isLayerSelected && false === isExternalFilterSelected) ||
+                                  ("undefined" === typeof isExternalFilterSelected)
+                                )
+        ) {
           queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
         }
       });
