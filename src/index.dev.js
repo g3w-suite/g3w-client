@@ -12,5 +12,8 @@ import './globals';
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();
 
+// print some debug info
+window.g3wsdk.info();
+
 // run app (index.prod.js)
 require('./index.prod');
