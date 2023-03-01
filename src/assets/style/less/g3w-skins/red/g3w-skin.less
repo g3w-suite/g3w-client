@@ -39,27 +39,28 @@
       font-weight: bold;
     }
 
-  }
-  .skin-tooltip-top + .tooltip.top {
-    .tooltip-arrow {
-      border-top-color: @red !important;
+    &.top {
+      .tooltip-arrow {
+        border-top-color: @red !important;
+      }
     }
-  }
-  .skin-tooltip-left + .tooltip.left {
-    .tooltip-arrow {
-      border-left-color: @red !important;
-    }
-  }
 
-  .skin-tooltip-right + .tooltip.right {
-    .tooltip-arrow {
-      border-right-color: @red !important;
+    &.left {
+      .tooltip-arrow {
+        border-left-color: @red !important;
+      }
     }
-  }
 
-  .skin-tooltip-bottom + .tooltip.bottom {
-    .tooltip-arrow {
-      border-bottom-color: @red !important;
+    &.right {
+      .tooltip-arrow {
+        border-right-color: @red !important;
+      }
+    }
+
+    &.bottom {
+      .tooltip-arrow {
+        border-bottom-color: @red !important;
+      }
     }
   }
 }

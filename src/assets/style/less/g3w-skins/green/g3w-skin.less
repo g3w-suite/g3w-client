@@ -38,26 +38,28 @@
       background-color:@green !important;
       font-weight: bold;
     }
-  }
-  .skin-tooltip-left + .tooltip.left {
-    .tooltip-arrow {
-      border-left-color: @green !important;
+    &.left {
+      .tooltip-arrow {
+        border-left-color: @green !important;
+      }
     }
-  }
 
-  .skin-tooltip-top + .tooltip.top .tooltip-arrow {
-    border-top-color: @green !important;
-  }
-
-  .skin-tooltip-right + .tooltip.right {
-    .tooltip-arrow {
-      border-right-color: @green !important;
+    &.top {
+      .tooltip-arrow {
+        border-top-color: @green !important;
+      }
     }
-  }
 
-  .skin-tooltip-bottom + .tooltip.bottom {
-    .tooltip-arrow {
-      border-bottom-color: @green !important;
+    &.right {
+      .tooltip-arrow {
+        border-right-color: @green !important;
+      }
+    }
+
+    &.bottom {
+      .tooltip-arrow {
+        border-bottom-color: @green !important;
+      }
     }
   }
 }
