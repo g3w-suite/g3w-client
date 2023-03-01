@@ -23,9 +23,9 @@ proto.handleResponse = async function(response){
 };
 
 /**
- * @param {{ type: 'vector' }} 
+ * @param {{ type: 'vector' }}
  * 
- * @returns {unknown[]} array of external layer add on project
+ * @returns { unknown[] } array of external layer add on project
  * 
  * @since 3.8.0
  */
@@ -43,14 +43,14 @@ proto.getEmptyRequest = function(){
 };
 
 /**
- *
- * @param type
+ * @param {{ type: 'vector' }}
+ * 
  * @returns {boolean}
+ * 
+ * @since 3.8.0
  */
 proto.hasExternalLayerSelected = function({type = 'vector'}) {
-  return this.getSelectedExternalLayers({
-    type
-  }).length > 0
+  return this.getSelectedExternalLayers({ type }).length > 0;
 };
 
 module.exports = BaseService;
