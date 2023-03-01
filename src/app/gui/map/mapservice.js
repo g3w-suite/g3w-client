@@ -844,6 +844,8 @@ proto._setupControls = function() {
               const unlistenSpatialMethodChange = () => {
                 ol.Observable.unByKey(changeSpatialMethodEventKey);
                 changeSpatialMethodEventKey = null;
+                // reset to default
+                control.setSpatialMethod(spatialMethod);
               };
               const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
@@ -973,6 +975,8 @@ proto._setupControls = function() {
               const unlistenSpatialMethodChange = () => {
                 ol.Observable.unByKey(changeSpatialMethodEventKey);
                 changeSpatialMethodEventKey = null;
+                // reset to default
+                control.setSpatialMethod(spatialMethod);
               };
               const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
