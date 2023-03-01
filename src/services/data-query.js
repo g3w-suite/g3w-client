@@ -124,7 +124,7 @@ function QueryService(){
       external: {
         add: true,
         filter: {
-          SELECTED: externalSelectedLayers.length > 0
+          SELECTED: hasExternalLayersSelected
         }
       },
     };
