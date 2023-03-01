@@ -38,35 +38,19 @@ function QueryService(){
     filterConfig    = {},
     multilayers     = false,
     condition       = this.condition,
-    /**
-     * @since v3.8
-     */
-    layer    = null,
+    /** @since v3.8 */
+    layer           = null,
+    /** @since v3.8 */
     excludeSelected = null
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-    const fid               = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
+    const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
+    const geometry                  = feature.getGeometry();
+
     if (hasExternalLayersSelected) {
       layer.getName = () => layer.get('name');
     }
-    const geometry = feature.getGeometry();
-    /**
-     * @since v3.8
-     * @type {{fid, external: {add: boolean, filter: {SELECTED}}, geometry: (undefined|*|null), type: string, layer, filterConfig}}
-     */
-    const query = {
-      fid,
-      geometry,
-      layer,
-      type: 'polygon',
-      filterConfig,
-      external: {
-        add: true,
-        filter: {
-          SELECTED: 'boolean' == typeof excludeSelected ? !excludeSelected : excludeSelected
-        }
-      }
-    };
+
     // in case no geometry on polygon layer response
     if (!geometry) {
       return this.returnExceptionResponse({
@@ -98,7 +82,19 @@ function QueryService(){
         }
       ),
       // query
-      query
+      {
+        fid,
+        geometry,
+        layer,
+        type: 'polygon',
+        filterConfig,
+        external: {
+          add: true,
+          filter: {
+            SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : excludeSelected
+          }
+        }
+      }
     );
   };
 
@@ -111,12 +107,16 @@ function QueryService(){
    * @param layersFilterObject
    * @returns {Promise<unknown>}
    */
-  this.bbox = function({ bbox, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+  this.bbox = function({
+    bbox,
+    feature_count      = this.project.getQueryFeatureCount(),
+    filterConfig       = {},
+    multilayers        = false,
+    condition          = this.condition,
+    layersFilterObject = { SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true }
+  } = {}) {
+
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-    /**
-     * @since v3.8
-     * @type {{external: {add: boolean, filter: {SELECTED: boolean}}, bbox, type: string, filterConfig}}
-     */
     const query = {
       bbox,
       type: 'bbox',
@@ -128,22 +128,31 @@ function QueryService(){
         }
       },
     };
-    /**
-     * Check If LayerIds is length === 0 so i check if add external Layer is selected
-     */
+
+    // Check If LayerIds is length === 0 so i check if add external Layer is selected
     if (hasExternalLayersSelected) {
       return this.handleRequest(this.getEmptyRequest(), query);
-    } else {
-      const layers = getMapLayersByFilter(layersFilterObject, condition);
-      const request = getQueryLayersPromisesByBBOX(layers, {
-        bbox,
-        feature_count,
-        filterConfig,
-        multilayers,
-      });
-      return this.handleRequest(request, query);
     }
+
+    return this.handleRequest(
+      //request
+      getQueryLayersPromisesByBBOX(
+        // layers
+        getMapLayersByFilter( layersFilterObject, condition ),
+        //options
+        {
+          bbox,
+          feature_count,
+          filterConfig,
+          multilayers,
+        }
+      ),
+      // query
+      query
+    );
+
   };
+
   /**
    *
    * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
@@ -161,10 +170,6 @@ function QueryService(){
     feature_count
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-    /**
-     * @since v3.8
-     * @type {{external: {add: boolean, filter: {SELECTED: boolean}}, coordinates, type: string}}
-     */
     const query = {
       coordinates,
       type: 'coordinates',
@@ -181,7 +186,7 @@ function QueryService(){
       return this.handleRequest(this.getEmptyRequest(), query);
     }
 
-    const layersFilterObject =  {
+    const layersFilterObject = {
       QUERYABLE: true,
       SELECTEDORALL: (0 === layerIds.length),
       VISIBLE: true
@@ -195,10 +200,6 @@ function QueryService(){
       });
     }
 
-    /**
-     * get layers to handle request
-     */
-    const layers = getMapLayersByFilter(layersFilterObject);
     // set external property `add: false` in case
     // of selected layer in order to avoid querying
     // a temporary layer (external layer)
@@ -210,7 +211,7 @@ function QueryService(){
       // request
       getQueryLayersPromisesByCoordinates(
         // layers
-        layers,
+        getMapLayersByFilter(layersFilterObject),
         // options
         {
           multilayers,
@@ -219,6 +220,7 @@ function QueryService(){
           coordinates
         }
       ),
+      // query
       query
     );
 
