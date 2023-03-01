@@ -1272,6 +1272,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
 
     /** @type { boolean | undefined } */
     const isExternalFilterSelected = queryResponse.query.external.filter.SELECTED;
+    console.log(isExternalFilterSelected)
 
     // add visible layers to query response (vector layers)
     this._vectorLayers

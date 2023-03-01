@@ -200,9 +200,12 @@ function QueryService(){
       });
     }
 
+    const layers = getMapLayersByFilter(layersFilterObject);
+
     // set external property `add: false` in case
     // of selected layer in order to avoid querying
     // a temporary layer (external layer)
+
     if (1 === layers.length && layers[0].isSelected()) {
       query.external.add = false;
     }
@@ -211,7 +214,7 @@ function QueryService(){
       // request
       getQueryLayersPromisesByCoordinates(
         // layers
-        getMapLayersByFilter(layersFilterObject),
+        layers,
         // options
         {
           multilayers,
