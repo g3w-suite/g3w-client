@@ -199,11 +199,12 @@ function QueryService(){
      * get layers to handle request
      */
     const layers = getMapLayersByFilter(layersFilterObject);
-    /**
-     * @since v3.8 in case of project layer selected need to be set add external property to false to avoid add
-     * external layer to results
-     */
-    query.external.add = !(1 === layers.length && layers[0].isSelected());
+    // set external property `add: false` in case
+    // of selected layer in order to avoid querying
+    // a temporary layer (external layer)
+    if (1 === layers.length && layers[0].isSelected()) {
+      query.external.add = false;
+    }
 
     return this.handleRequest(
       // request
