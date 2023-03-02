@@ -834,8 +834,6 @@ proto._setupControls = function() {
               const unlistenSpatialMethodChange = () => {
                 ol.Observable.unByKey(changeSpatialMethodEventKey);
                 changeSpatialMethodEventKey = null;
-                // reset to default
-                control.setSpatialMethod(spatialMethod);
               };
               const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
@@ -918,6 +916,8 @@ proto._setupControls = function() {
               control.on('toggled', (toggled) => {
                if (false === toggled && null !== changeSpatialMethodEventKey) {
                  unlistenSpatialMethodChange();
+                 // reset to default
+                 control.setSpatialMethod(spatialMethod);
                }
               })
             }
@@ -960,8 +960,6 @@ proto._setupControls = function() {
               const unlistenSpatialMethodChange = () => {
                 ol.Observable.unByKey(changeSpatialMethodEventKey);
                 changeSpatialMethodEventKey = null;
-                // reset to default
-                control.setSpatialMethod(spatialMethod);
               };
               const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
@@ -1008,6 +1006,8 @@ proto._setupControls = function() {
               control.on('toggled', (toggled) => {
                 if (false === toggled && null !== changeSpatialMethodEventKey) {
                   unlistenSpatialMethodChange();
+                  // reset to default
+                  control.setSpatialMethod(spatialMethod);
                 }
               })
             }
