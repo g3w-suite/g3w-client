@@ -87,15 +87,16 @@ proto.listenLayersVisibilityChange = function() {
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
-    const {state} = layer;
     this.unwatches.push(
-      VM.$watch(() =>  state.visible, visible => {
+      VM.$watch(() =>  layer.state.visible, visible => {
        // check if a selectedLayer i set
         if (null !== this.selectedLayer) {
           // enable control only if current changed visible layer is true or
           // if at least one layer (not selected) is visible
           this.setEnable(this.isThereVisibleLayerNotSelected());
-        } else this.setEnable(false);
+        } else {
+          this.setEnable(false);
+        }
       }));
   });
 };
@@ -149,80 +150,86 @@ proto.setMap = function(map) {
  */
 proto._handleExternalLayers = function() {
   const CatalogService = GUI.getService('catalog');
-  // store unwatch extenal layer selected or visible
+
+  // store unwatches of extenal layers (selected or visible)
   const unWatches = {};
-  // liste addExternalLayer setter event
+
   CatalogService.onafter('addExternalLayer', ({layer, type}) => {
+
     if ('vector' === type) {
-      //add to externalLayers
+
+      // update `this.externalLayers`
       this.externalLayers.push(layer);
+      
       // set list of un watches for layer based on name of layer (unique)
       unWatches[layer.name] = [];
-      // check if has a Polygon geometry to check selected property to enable/disable map control
+
+      // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
       if (isPolygonGeometryType(layer.geometryType)) {
-        // set selectedLayer
-        const unWatchSelected = VM.$watch(
-          () => layer.selected,
+        unWatches[layer.name].push(
+          VM.$watch(
+          () => layer.selected,                                    // watch `layer.selected` property
           selected => {
-            if (true === selected) {
-              this.setSelectedLayer(layer);
-            } else {
-              this.setSelectedLayer(null);
-            }
-            this.setEnable(this.isThereVisibleLayerNotSelected());  /* need to be visible and selected */
-          });
-        // add unwatch selected event function
-        unWatches[layer.name].push(unWatchSelected);
+            this.setSelectedLayer(true === selected ? layer : null);
+            this.setEnable(this.isThereVisibleLayerNotSelected()); // layer must be visible and selected.
+          })
+        );
       }
-      // check visible property and get unwatch
-      const unWatchVisible = VM.$watch(
-        () => layer.visible,
+
+      unWatches[layer.name].push(
+        VM.$watch(
+        () => layer.visible,                                       // watch `layer.visible` property
         (visible) => {
-          // in case of selected layer on TOC
-          this.setEnable(this.isThereVisibleLayerNotSelected())
-        });
-      unWatches[layer.name].push(unWatchVisible);
+          this.setEnable(this.isThereVisibleLayerNotSelected());   // layer must be selected in TOC.
+        })
+      );
+
     }
+
+    this.setEnable(this.isThereVisibleLayerNotSelected());
+
+  });
+
+  CatalogService.onafter('removeExternalLayer', ({name, type}) => {
+    if ('vector' !== type) {
+      return;
+    }
+    this.externalLayers = this.externalLayers.filter(layer => {
+      if (name !== layer.name) {
+        return true;
+      }
+      if (layer === this.selectedLayer) {
+        this.setSelectedLayer(null);
+      }
+      return false;
+    });
+    unWatches[name].forEach(unWatch => unWatch());
+    delete unWatches[name];
     this.setEnable(this.isThereVisibleLayerNotSelected());
   });
 
-  // listen removeExternalLayer setter event
-  CatalogService.onafter('removeExternalLayer', ({name, type}) => {
-    if ('vector' === type) {
-      this.externalLayers = this.externalLayers.filter(layer => {
-        if (name !== layer.name)
-          return true;
-        else {
-          if (layer === this.selectedLayer) {
-            this.setSelectedLayer(null);
-          }
-          return false;
-        }
-      });
-      unWatches[name].forEach(unWatch => unWatch());
-      delete unWatches[name];
-      this.setEnable(this.isThereVisibleLayerNotSelected());
-    }
-  });
 };
 
 /**
- * @since v3.8 Is at least layer visible not selected
+ * @returns {boolean} wether at least a visible layer not selected
+ * 
+ * @since 3.8.0
  */
 proto.isThereVisibleLayerNotSelected = function(){
   return !!(
-    // selected layer need to be set
+    // check if user has selected a layer
     this.selectedLayer &&
-    // check is selected layer is visible
-    // call isVisible in case of project layer or visible property in case of external layer
-    ('function' === typeof this.selectedLayer.isVisible ? this.selectedLayer.isVisible() : this.selectedLayer.visible) &&
-    (// check in project layers if at least is visible
-      this.layers
-        .find(layer => layer !== this.selectedLayer && layer.isVisible()) ||
-      // check in external layers if layer at least is visible
-      this.externalLayers
-        .find(externalLayer => externalLayer !== this.selectedLayer && true === externalLayer.visible)
-      )
+    // check if current selected layer is visible
+    (
+      'function' === typeof this.selectedLayer.isVisible
+        ? this.selectedLayer.isVisible()                 // in case of a project project
+        : this.selectedLayer.visible                     // in case of external layer
+    ) &&
+    // check if at least one layer is visible (project or external layer)
+    (
+      this.layers.find(layer => layer !== this.selectedLayer && layer.isVisible()) ||
+      this.externalLayers.find(layer => layer !== this.layer && true === layer.visible)
+    )
   )
 };
 
