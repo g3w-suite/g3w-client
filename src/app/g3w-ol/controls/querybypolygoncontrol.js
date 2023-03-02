@@ -27,7 +27,9 @@ const QueryByPolygonControl = function(options={}) {
   this.externalLayers = [];
 
   this.unwatches = [];
+
   this.listenLayersVisibilityChange();
+
   options.visible = this.checkVisibile(this.layers);
 
   /**
