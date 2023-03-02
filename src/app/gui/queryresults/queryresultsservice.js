@@ -1302,31 +1302,35 @@ proto._addComponent = function(component) {
   this.state.components.push(component)
 };
 
-proto._printSingleAtlas = function({atlas={}, features=[]}={}){
-  let {name:template, atlas: {field_name=''}} = atlas;
+proto._printSingleAtlas = function({
+  atlas = {},
+  features = []
+} = {}) {
+
+  // TODO: make it easier to understand.. (what variables are declared? which ones are aliased?)
+  let {
+    name: template,
+    atlas: { field_name = '' }
+  } = atlas;
+
   field_name = field_name || '$id';
-  const values = features.map(feature => feature.attributes[field_name === '$id' ?  G3W_FID: field_name]);
+
+  const values = features.map(feat => feat.attributes[field_name === '$id' ?  G3W_FID : field_name]);
   const download_caller_id = ApplicationService.setDownload(true);
-  return this.printService.printAtlas({
-    field: field_name,
-    values,
-    template,
-    download: true
-  }).then(({url}) =>{
-      downloadFile({
-        url,
-        filename: template,
-        mime_type: 'application/pdf'
-      }).catch(error=>{
-        GUI.showUserMessage({
-          type: 'alert',
-          error
-        })
-      }).finally(()=>{
-        ApplicationService.setDownload(false, download_caller_id);
-        GUI.setLoadingContent(false);
-      })
-  })
+
+  return this.printService
+    .printAtlas({
+      field: field_name,
+      values,
+      template,
+      download: true
+    })
+    .then(({url}) => {
+      downloadFile({ url, filename: template, mime_type: 'application/pdf' })
+      .catch(error => { GUI.showUserMessage({ type: 'alert', error }) })
+      .finally(() => { ApplicationService.setDownload(false, download_caller_id); GUI.setLoadingContent(false); });
+    });
+
 };
 
 proto.showChart = function(ids, container, relationData){
