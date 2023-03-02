@@ -3,15 +3,32 @@ import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
 const { merge } = require('core/utils/ol');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
-const QueryBBoxControl = function(options = {}){
-  const {spatialMethod=SPATIALMETHODS[0]} = options;
+const QueryBBoxControl = function(options = {}) {
+
+  const {
+    spatialMethod = SPATIALMETHODS[0]
+  } = options;
+
+  /**
+   * @FIXME add description
+   */
   this._startCoordinate = null;
-  this.layers = options.layers || [];
-  const visible = this.checkVisible(this.layers);
-  options.visible = visible;
-  options.enabled = visible && this.checkEnabled(this.layers);
-  this.unwatches = [];
+
+  /**
+   * @FIXME add description
+   */
+  this.unwatches        = [];
+
+  /**
+   * @FIXME add description
+   */
+  this.layers           = options.layers || [];
+
+  options.visible       = this.checkVisible(this.layers);
+  options.enabled       = options.visible && this.checkEnabled(this.layers);
+
   this.listenLayersChange();
+
   const _options = {
     offline: false,
     name: "querybbox",
@@ -19,16 +36,13 @@ const QueryBBoxControl = function(options = {}){
     label: options.label || "\ue902",
     clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
-    onSelectlayer(selectLayer){
+    onSelectlayer(selectLayer) {
       const layers = this.layers;
-      const selected = selectLayer.isSelected();
-      if (selected) {
+      if (selectLayer.isSelected()) {
         const findLayer = layers.find(layer => layer === selectLayer);
-        const enabled = findLayer && findLayer.isVisible() ? true: false;
-        this.setEnable(enabled, false);
+        this.setEnable((findLayer && findLayer.isVisible() ? true : false), false);
       } else {
-        const enabled = this.checkEnabled(layers);
-        this.setEnable(enabled);
+        this.setEnable(this.checkEnabled(layers));
       }
     },
     onhover: true,
@@ -38,63 +52,74 @@ const QueryBBoxControl = function(options = {}){
     },
     spatialMethod
   };
-  options = merge(options,_options);
+
+  options = merge(options, _options);
 
   InteractionControl.call(this, options);
+
 };
 
 ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
 
-proto.listenLayersChange = function(){
+proto.listenLayersChange = function() {
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
-    const {state} = layer;
-    this.unwatches.push(VM.$watch(() =>  state.visible, visible =>{
-      if (state.selected && !visible) this.setEnable(false);
-      else {
-        const enabled = this.checkEnabled(this.layers);
-        enabled !== this.getEnable() && this.setEnable(enabled,  enabled && this.isToggled());
-      }
-    }))
-  });
+    this.unwatches
+      .push(
+        VM.$watch(
+          () => layer.state.visible,
+          visible => {
+            if (layer.state.selected && !visible) {
+              this.setEnable(false);
+            } else {
+              const enabled = this.checkEnabled(this.layers);
+              if (this.getEnable() !== enabled) {
+                this.setEnable(enabled,  enabled && this.isToggled())
+              }
+            }
+          }
+        )
+      )
+    }
+  );
 };
 
-proto.change = function(layers=[]){
+proto.change = function(layers=[]) {
   this.layers = layers;
-  const visible = this.checkVisible(layers);
-  this.setVisible(visible);
-  const enabled = this.checkEnabled(layers);
-  this.setEnable(enabled);
+  this.setVisible(this.checkVisible(layers));
+  this.setEnable(this.checkEnabled(layers));
   this.listenLayersChange(this.layers);
 };
 
-proto.checkVisible = function(layers=[]){
+proto.checkVisible = function(layers=[]) {
   return layers.length > 0;
 };
 
-proto.checkEnabled = function(layers=[]){
-  return layers.length > 0 && layers.reduce((accumulator, layer) => {
-    return accumulator || layer.isVisible();
-  }, false);
+proto.checkEnabled = function(layers=[]) {
+  return (layers.length > 0) && layers.reduce((accumulator, layer) => accumulator || layer.isVisible(), false);
 };
 
+/**
+ * @param {ol.Map} map 
+ */
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this,map);
+
   this._interaction.on('boxstart', evt => this._startCoordinate = evt.coordinate);
-  this._interaction.on('boxend', evt => {
-    const start_coordinate = this._startCoordinate;
-    const end_coordinate = evt.coordinate;
-    const extent = ol.extent.boundingExtent([start_coordinate, end_coordinate]);
+  this._interaction.on('boxend',   evt => {
     this.dispatchEvent({
       type: 'bboxend',
-      extent
+      extent: ol.extent.boundingExtent([this._startCoordinate, evt.coordinate]) // [start, end]
     });
     this._startCoordinate = null;
-    this._autountoggle && this.toggle();
-  })
+    if (this._autountoggle) {
+      this.toggle();
+    }
+  });
+
 };
 
 module.exports = QueryBBoxControl;

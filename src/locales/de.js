@@ -269,7 +269,7 @@ export default {
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Abfrage durch Polygon zeichnen"
         },
         querybybbox: {
           tooltip: 'BBox Layer abfragen',

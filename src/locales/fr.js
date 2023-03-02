@@ -261,14 +261,14 @@ export default {
             title: 'Aide - Requête par polygone',
             message:`
                 <ul>
-                  <li">Sélectionnez un layer de polygone dans la légende.</li>
+                  <li>Sélectionnez un layer de polygone dans la légende.</li>
                   <li>Vérifiez que le layer est visible dans la carte.</li>
                   <li>Cliquez sur une géométrie du layer sélectionné.</li>
                 </ul>`
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Requête par polygone de dessin"
         },
         querybybbox: {
           tooltip: 'Requête pour BBOX',

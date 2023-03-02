@@ -269,7 +269,7 @@ export default {
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Interogare prin poligon de desen"
         },
         querybybbox: {
           tooltip: 'Interogare BBox strat',

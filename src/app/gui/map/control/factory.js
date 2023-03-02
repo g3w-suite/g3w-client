@@ -15,9 +15,6 @@ const ScaleControl = require('g3w-ol/controls/scalecontrol');
 const OnClikControl = require('g3w-ol/controls/onclickcontrol');
 const ScreenshotControl = require('g3w-ol/controls/screenshotcontrol');
 const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
-/*
-* @since v3.6
-* */
 const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
 
 
