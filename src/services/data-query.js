@@ -154,11 +154,7 @@ function QueryService(){
   };
 
   /**
-   *
    * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
-   * @param layerIds: <Array>
-   * @param multilayers
-   * @param feature_count
    * 
    * @returns {Promise<unknown>}
    */
