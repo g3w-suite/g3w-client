@@ -1,13 +1,6 @@
 // Backward compatibilies with old G3W-CLIENT plugins (eg. window variables)
 import '../deprecated';
 
-/**
- * Add babel runtime support for compiled/transpiled async functions
- * 
- * @TODO check if this still useful nowdays (IE 11 ?)
- */
-import "regenerator-runtime";
-
 //import core
 import ApplicationState from 'store/application-state';
 
