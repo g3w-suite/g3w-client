@@ -2211,14 +2211,20 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
   return extent && this.zoomToExtent(extent, options) || Promise.resolve();
 };
 
+/**
+ * @param   { ol.extent }                                          extent
+ * @param   {{ force?: boolean, highLightGeometry?: ol.geometry }} [options={}]
+ * @returns { Promise<void> }
+ */
 proto.zoomToExtent = function(extent, options={}) {
-  const center = ol.extent.getCenter(extent);
-  const resolution = this.getResolutionForZoomToExtent(extent);
-  this.goToRes(center, resolution);
-  return options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
-    zoom: false,
-    duration: options.duration
-  }) || Promise.resolve();
+  this.goToRes(
+    ol.extent.getCenter(extent),
+    this.getResolutionForZoomToExtent(extent, { force: options.force || false  })
+  );
+  if (options.highLightGeometry) {
+    return this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
+  }
+  return Promise.resolve();
 };
 
 proto.zoomToProjectInitExtent = function(){
@@ -2235,26 +2241,33 @@ proto.compareExtentWithProjectMaxExtent = function(extent){
   return inside ? extent : projectExtent;
 };
 
-proto.getResolutionForZoomToExtent = function(extent){
-  let resolution;
-  const {ZOOM} = MAP_SETTINGS;
+/**
+ * @param   {[ minx: number, miny: number, maxx: number, maxy: number ]} extent
+ * @param   {{ force?: boolean }} [options] if force is undefined calculate `resolution` from given `extent`
+ * @returns {number} resolution (in pixels?)
+ */
+proto.getResolutionForZoomToExtent = function(extent, options={force:false}){
   const map = this.getMap();
-  const projectExtent = this.project.state.extent;
-  const projectMaxResolution = map.getView().getResolutionForExtent(projectExtent, map.getSize());
-  const inside = ol.extent.containsExtent(projectExtent, extent);
-  // max resolution of the map
-  const maxResolution = getResolutionFromScale(ZOOM.maxScale, this.getMapUnits()); // map resolution of the map
-  // check if
-  if (inside) {
-    // calculate main resolutions
-    const currentResolution = map.getView().getResolution(); // Current Resolution
-    const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
-    ////
-    // set the final resolution to go to
-    resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
-    resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
-  } else resolution = projectMaxResolution; // set max resolution
-  return resolution
+
+  // if outside project extent, return max resolution
+  if (false === ol.extent.containsExtent(this.project.state.extent, extent)) {
+    return map.getView().getResolutionForExtent(this.project.state.extent, map.getSize());
+  }
+
+  const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize());            // resolution of request extent
+
+  // retrive resolution from given `extent`
+  if (true === options.force) {
+    return extentResolution; 
+  }
+
+  // calculate main resolutions from map
+  let resolution;
+  const currentResolution = map.getView().getResolution();
+  const maxResolution     = getResolutionFromScale(MAP_SETTINGS.ZOOM.maxScale, this.getMapUnits()); // max resolution of the map
+  resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
+  resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
+  return resolution;
 };
 
 proto.goToBBox = function(bbox, epsg=this.getEpsg()) {

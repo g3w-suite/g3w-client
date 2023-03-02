@@ -24,6 +24,21 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Spatial Bookmarks",
+        helptext: "Move on map extent, insert name and click Add",
+        input: {
+          name: "Name"
+        },
+        sections: {
+          project:{
+            title: "Project Bookmarks"
+          },
+          user: {
+            title: "User Bookmarks"
+          }
+        }
+      },
       search: {
         all: 'ALL',
         no_results: "No results",
@@ -484,7 +499,8 @@ export default {
         open_attribute_table: "Open Attribute Table",
         show_metadata: "Metadata",
         styles: 'Styles',
-        vector_color_menu:"Set/Change Color"
+        vector_color_menu:"Set/Change Color",
+        layer_opacity: "Opacity"
       }
     },
     dataTable: {

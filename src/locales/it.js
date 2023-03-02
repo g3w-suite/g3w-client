@@ -24,6 +24,21 @@ export default {
       message: "Posizione rispetto ai layers della TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Segnalibri Spaziali",
+        helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
+        input: {
+          name: "Nome"
+        },
+        sections: {
+          project:{
+            title: "Segnalibri Progetto"
+          },
+          user: {
+            title: "Segnalibri Utente"
+          }
+        }
+      },
       search: {
         all: 'TUTTE',
         no_results: "Nessun valore trovato",
@@ -487,7 +502,8 @@ export default {
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stili",
-        vector_color_menu:"Setta/Cambia Colore"
+        vector_color_menu:"Setta/Cambia Colore",
+        layer_opacity: "Trasparenza"
       }
     },
     dataTable: {

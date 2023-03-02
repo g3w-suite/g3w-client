@@ -4,7 +4,7 @@
  */
 
 import appConfig from 'config';
-import { TIMEOUT, APP_VERSION } from 'app/constant';
+import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS } from 'app/constant';
 import ApplicationState from 'store/application-state';
 import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
@@ -72,8 +72,6 @@ const ApplicationService = function() {
       })
     }
   };
-
-
   /**
    * setup Internationalization
    */
@@ -517,6 +515,8 @@ const ApplicationService = function() {
           });
           // initialize data router service
           DataRouterService.init();
+          // init Local Items for the user
+          this.initLocalItems();
           resolve(true);
         }).fail(error => reject(error))
       }
@@ -656,7 +656,24 @@ const ApplicationService = function() {
 
   this.clear = function(){
     this.unregisterOnlineOfflineEvent();
-  }
+  };
+
+  /**
+   * Method to initialize local items if not initialize
+   * each item has id (unique identifier)
+   * and value (for initial value)
+   * @since v3.8
+   */
+  this.initLocalItems = function(){
+    Object.keys(LOCAL_ITEM_IDS).forEach(id =>{
+      if ("undefined" === typeof this.getLocalItem(id)){
+        this.setLocalItem({
+          id,
+          data: LOCAL_ITEM_IDS[id].value
+        })
+      }
+    })
+  };
 };
 
 inherit(ApplicationService, G3WObject);
