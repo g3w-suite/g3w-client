@@ -351,19 +351,26 @@ export default {
     /**
      * Handle changing checked property of layer
      *
-     * @param {{ chechekd: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
+     * @param {{ checked: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
      */
     handleLayerChecked(layerObject) {
-      let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
+      let {
+        checked,
+        id,
+        disabled,
+        projectLayer=false,
+        parentGroup
+      } = layerObject;
 
-      // in case of external layer
+      // case external layer (eg. temporary layer through `addlayerscontrol`)
       if (!projectLayer) {
-        /**
-         * @since v3.8 Need to be add to listen visibility change property
-         */
+        // update `layer.visible` property
         layerObject.visible = checked;
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
-      } else {
+      }
+      
+      // case project layer (eg. qgis layer)
+      else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked) {
           const visible = layer.setVisible(!disabled);
@@ -382,6 +389,7 @@ export default {
         }
         CatalogEventHub.$emit('treenodevisible', layer);
       }
+
     },
 
     toggleFilterLayer() {
