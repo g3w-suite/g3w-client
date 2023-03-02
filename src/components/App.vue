@@ -1242,14 +1242,3 @@ export default {
   },
 };
 </script>
-<style scoped>
-  #g3w-small-screen-hamburger-sidebar {
-    display: none;
-  }
-
-  @media (max-width: 767px) {
-    #g3w-small-screen-hamburger-sidebar {
-      display: block;
-    }
-  }
-</style>
