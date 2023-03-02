@@ -45,6 +45,7 @@
           v-if="('tab' === legendplace && category.ruleKey) || ('toc' === legendplace && showCategoriesCheckBox)"
           class="g3w-long-text"
           style="padding-left: 3px;"
+          @click.stop="zoomToCategory"
         >
           {{category.title}}
         </span>
@@ -95,6 +96,18 @@
       }
     },
     methods: {
+
+      /**
+       * @TODO
+       * **/
+      zoomToCategory(){
+        // GUI
+        //   .getService('map')
+        //   .goToBBox(
+        //     [this.layer.bbox.minx, this.layer.bbox.miny, this.layer.bbox.maxx, this.layer.bbox.maxy],
+        //     this.layer.epsg
+        //   );
+      },
 
       getWmsSourceLayerLegendUrl() {
         return this.getProjectLayer().getLegendUrl();
