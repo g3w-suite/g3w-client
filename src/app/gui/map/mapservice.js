@@ -2690,7 +2690,7 @@ proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false){
  * @param { ol.layer.Vector | ol.layer.Image | unknown } externalLayer
  * @param {{ position: unknown, opacity: number, visible: boolean, crs: unknown, type: unknown, download: unknown }} options
  * 
- * @returns { Promise<Promise<unknown> }
+ * @returns { Promise<unknown> }
  */
 proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
