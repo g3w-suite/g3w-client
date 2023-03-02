@@ -79,9 +79,9 @@ ol.inherits(QueryByPolygonControl, InteractionControl);
 const proto = QueryByPolygonControl.prototype;
 
 /**
- * @since v3.8 renamed from listenPolygonLayersChange to listenLayersVisibilityChange
+ * @since 3.8.0 
  */
-proto.listenLayersVisibilityChange = function(){
+proto.listenLayersVisibilityChange = function() {
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
@@ -232,6 +232,13 @@ proto.isThereVisibleLayerNotSelected = function(){
 
 proto.setSelectedLayer = function(layer) {
   this.selectedLayer = layer;
+};
+
+/**
+ * @deprecated since v3.8.0. Will be removed in v4.0.0. Use `QueryByPolygonControl::listenLayersVisibilityChange()` instead.
+ */
+proto.listenPolygonLayersChange = function() {
+  this.listenLayersVisibilityChange();
 };
 
 module.exports = QueryByPolygonControl;
