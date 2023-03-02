@@ -1205,25 +1205,35 @@ proto.unregisterVectorLayer = function(vectorLayer) {
 };
 
 proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
-  let {coordinates, bbox, geometry, filterConfig={}} = query; // extract information about query type
+  let {
+    coordinates,
+    bbox,
+    geometry,
+    filterConfig = {}
+  } = query; // extract information about query type
+
   let features = [];
+
   // case query coordinates
   if (coordinates && Array.isArray(coordinates)) {
     const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
-    this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-      features.push(feature);
-    },  {
-      layerFilter(layer) {
-        return layer === vectorLayer;
-      }
-    });
-  } else {
-    //case bbox
+    this.mapService.viewer.map.forEachFeatureAtPixel(
+      pixel,
+      (feature, layer) => { features.push(feature); },
+      { layerFilter(layer) { return layer === vectorLayer; } }
+    );
+  }
+
+  // TODO: rewrite this in order to avoid nested else-if conditions
+  else {
+
+    // case query bbox
     if (bbox && Array.isArray(bbox)) {
       //set geometry has Polygon
       geometry = ol.geom.Polygon.fromExtent(bbox);
     }
-    // check geometry is a Polygon or MultiPolygon
+
+    // check query geometry (Polygon or MultiPolygon)
     if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
       switch (vectorLayer.constructor) {
         case VectorLayer:
@@ -1233,15 +1243,9 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
           vectorLayer.getSource().getFeatures().forEach(feature => {
             let add;
             switch (filterConfig.spatialMethod) {
-              case 'intersects':
-                add = intersects(geometry, feature.getGeometry());
-                break;
-              case 'within':
-                add = within(geometry, feature.getGeometry());
-                break;
-              default:
-                add = geometry.intersectsExtent(feature.getGeometry().getExtent());
-                break;
+              case 'intersects': add = intersects(geometry, feature.getGeometry());                  break;
+              case 'within':     add = within(geometry, feature.getGeometry());                      break;
+              default:           add = geometry.intersectsExtent(feature.getGeometry().getExtent()); break;
             }
             if (true === add) {
               features.push(feature);
@@ -1250,11 +1254,14 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
           break;
       }
     }
+
   }
+
   return {
     features,
     layer: vectorLayer
   };
+
 };
 
 proto._addVectorLayersDataToQueryResponse = function() {
