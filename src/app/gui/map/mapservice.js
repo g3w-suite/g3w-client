@@ -913,7 +913,7 @@ proto._setupControls = function() {
                 eventKey
               });
 
-              control.on('toggled', (toggled) => {
+              control.on('toggled', ({toggled}) => {
                if (false === toggled && null !== changeSpatialMethodEventKey) {
                  unlistenSpatialMethodChange();
                  // reset to default
@@ -1003,7 +1003,7 @@ proto._setupControls = function() {
                 eventKey
               });
 
-              control.on('toggled', (toggled) => {
+              control.on('toggled', ({toggled}) => {
                 if (false === toggled && null !== changeSpatialMethodEventKey) {
                   unlistenSpatialMethodChange();
                   // reset to default
