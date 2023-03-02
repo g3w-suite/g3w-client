@@ -152,12 +152,21 @@ export default {
     'chrome-picker': ChromeComponent
   },
   computed:{
-    csv_extension(){
+
+    /**
+     * @returns {boolean} check wether current uploaded file has CSV extension
+     */
+    csv_extension() {
       return this.layer.type === 'csv';
     },
-    add(){
+
+    /**
+     * @FIXME add description
+     */
+    add() {
       return this.layer.data || this.csv.valid;
     }
+
   },
   methods: {
     setLayerMapPosition(position){
@@ -288,33 +297,37 @@ export default {
         this.loading = false
       }
     },
+
     /**
-     * @since v3.8 renamed from clearLayer to clear
+     * @since 3.8.0
      */
     clear() {
       this.clearError();
-      this.loading = false;
-      this.layer.name = null;
+      this.loading     = false;
+      this.layer.name  = null;
       this.layer.title = null;
-      this.layer.id = null;
-      this.layer.type = null;
-      this.layer.crs = this.service.getCrs();
+      this.layer.id    = null;
+      this.layer.type  = null;
+      this.layer.crs   = this.service.getCrs();
       this.layer.color = {
         hex: '#194d33',
-        rgba: {
-          r: 25,
-          g: 77,
-          b: 51,
-          a: 1
-        },
+        rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
       };
-      this.layer.data = null;
+      this.layer.data  = null;
       this.vectorLayer = null;
-      this.fields = [];
-      this.field = null;
-      this.csv.valid = false;
+      this.fields      = [];
+      this.field       = null;
+      this.csv.valid   = false;
+    },
+
+    /**
+     * @deprecated since v3.8.0. Will be removed in v3.9. Use `clear()` method instead.
+     */
+    clearLayer() {
+      this.clear();
     }
+
   },
   watch:{
     'csv.x'(value){
