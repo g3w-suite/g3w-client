@@ -63,8 +63,7 @@
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ProjectsRegistry from 'store/projects';
-
-  // const {XHR} = require('core/utils/utils');
+  import ClickMixin from 'mixins/click';
 
   export default {
     name: "layerlegend",
@@ -81,6 +80,7 @@
         categories: []
       }
     },
+    mixins: [ClickMixin],
     computed:{
       externallegend() {
         return ('wms' === this.layer.source.type);

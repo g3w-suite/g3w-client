@@ -186,32 +186,10 @@
 import LayerLegend from 'components/CatalogLayerLegend.vue';
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ClickMixin from 'mixins/click';
 import GUI from 'services/gui';
 
 const { downloadFile } = require('core/utils/utils');
-
-/**
- * Store `click` and `doubleclick` events on a single vue element.
- * 
- * @see https://stackoverflow.com/q/41303982
- */
-const CLICK_EVENT = {
-  count: 0,                                   // count click events
-  timeoutID: null,                            // timeoutID return by setTimeout Function
-  handleClick(callback, context) {
-    CLICK_EVENT.count += 1;                   // increment click count
-    if (!CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
-      CLICK_EVENT.timeoutID = setTimeout(() => {
-        callback.call(context);
-        CLICK_EVENT.reset();
-      }, 300);
-    }
-  },
-  reset() {
-    CLICK_EVENT.count = 0;
-    CLICK_EVENT.timeoutID = null;
-  }
-};
 
 export default {
   props : [
@@ -229,6 +207,7 @@ export default {
   components: {
     'layerlegend': LayerLegend
   },
+  mixins: [ClickMixin],
   data() {
     return {
       expanded: this.layerstree.expanded,
@@ -432,15 +411,13 @@ export default {
       if (this.isGroup || this.isTable) { // Skip if TOC item is a Group or Table layer.
         return;
       }
-      CLICK_EVENT.handleClick(() => {
-        switch(CLICK_EVENT.count) {
-          case 1: this.select(); break;
-          case 2: this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree); break;
-        }
+      this.handleClick({
+        '1': this.select,
+        '2': () => this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
       }, this);
     },
 
-    triClass () {
+    triClass() {
       return this.g3wtemplate.getFontClass(this.layerstree.checked ? 'check' : 'uncheck');
     },
 
