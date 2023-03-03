@@ -114,8 +114,12 @@ header.main-header {
       height: 100%;
     }
   }
+
+  // TODO: remove isMobile(), use only css @media queries
+  @media (max-width: @screen-xs-max) { padding-left: 5px; }
+  &.mobile { padding: 5px; }
+
   &.mobile{
-    padding: 5px;
     .project_title_content {
       margin-top: 2px;
       .sub_title {
