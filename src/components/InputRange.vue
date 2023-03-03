@@ -37,21 +37,22 @@ export default {
   },
   methods: {
     checkValue() {
-      // if state required initial value is false
-      let valid = !this.state.validate.required;
       // check if value of input is empty
       const isEmpty = _.isEmpty(_.trim(this.state.value));
-      // in case of required input check if is not empty and check validity from validator
-      if (this.state.validate.required) {
-        valid =  !isEmpty && this.service.getValidator().validate(this.state.value);
-      } else if (isEmpty) {  //in case not required check if value is empty
-        //set default value
+
+      // in case not required check if value is empty and set default value
+      if (isEmpty && !this.state.validate.required) {
         this.state.value = this.state.input.options.values[0].default;
-      } else {
-        // check validity from validator
-        valid = this.service.getValidator().validate(this.state.value);
       }
-      this.state.validate.valid = valid;
+
+      // if state required initial value is false
+      this.state.validate.valid = !this.state.validate.required;
+
+      // if is not empty check validity from validator
+      if (!isEmpty) {
+        this.state.validate.valid = this.service.getValidator().validate(this.state.value);
+      }
+
       this.change();
     }
   }
