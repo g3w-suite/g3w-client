@@ -438,7 +438,7 @@
         this.$options.queryResultsService.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
-          show: !this.layersFeaturesBoxes[boxid].collapsed
+          show: this.layersFeaturesBoxes[boxid] ? !this.layersFeaturesBoxes[boxid].collapsed : false
         });
       },
       getBoxId(layer, feature, relation_index) {
