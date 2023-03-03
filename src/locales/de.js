@@ -24,6 +24,11 @@ export default {
       message: "Position relativ zu den Layern im TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Template auswählen"
+        }
+      },
       spatialbookmarks: {
         title: "Räumliche Lesezeichen",
         helptext: "Bewegen Sie sich auf der Kartenausdehnung, fügen Sie den Namen ein und klicken Sie auf Hinzufügen",

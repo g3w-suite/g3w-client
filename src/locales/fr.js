@@ -24,6 +24,11 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Sélectionnez Template"
+        }
+      },
       spatialbookmarks: {
         title: "Signets spatiaux",
         helptext: "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
@@ -261,7 +266,7 @@ export default {
             title: 'Aide - Requête par polygone',
             message:`
                 <ul>
-                  <li">Sélectionnez un layer de polygone dans la légende.</li>
+                  <li>Sélectionnez un layer de polygone dans la légende.</li>
                   <li>Vérifiez que le layer est visible dans la carte.</li>
                   <li>Cliquez sur une géométrie du layer sélectionné.</li>
                 </ul>`
