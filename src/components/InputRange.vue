@@ -28,11 +28,11 @@ const Input = require('gui/inputs/input');
 export default {
   mixins: [Input],
   data() {
-    const {min, max, Step} = this.state.input.options.values[0];
+    const {min, max, Step:step} = this.state.input.options.values[0];
     return {
-      min: 1*min,
-      max: 1*max,
-      step: 1*Step
+      min,
+      max,
+      step
     }
   },
   methods: {
