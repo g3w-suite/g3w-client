@@ -1273,7 +1273,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
     if (!queryResponse.query) queryResponse.query = { external: { add: true, selected: false } };
 
     // skip when add response to current results using addLayerFeaturesToResultsAction or external false
-    if (options.add || false === queryResponse.query.external.add) {
+    if (options.add || ("undefined" === typeof queryResponse.query.external || false === queryResponse.query.external.add)) {
       return;
     }
 
