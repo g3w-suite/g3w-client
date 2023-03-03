@@ -1269,11 +1269,12 @@ proto._addVectorLayersDataToQueryResponse = function() {
     const catalogService = GUI.getService('catalog');
 
     // sanity checks
-    if (!queryResponse.data)  queryResponse.data  = [];
-    if (!queryResponse.query) queryResponse.query = { external: { add: true, selected: false } };
+    if (!queryResponse.data)  queryResponse.data    = [];
+    if (!queryResponse.query) queryResponse.query   = { external: { add: false, selected: false } };
+    if (!queryResponse.query.external) queryResponse.query.external = { add: false, selected: false };
 
     // skip when add response to current results using addLayerFeaturesToResultsAction or external false
-    if (options.add || ("undefined" === typeof queryResponse.query.external || false === queryResponse.query.external.add)) {
+    if (options.add || false === queryResponse.query.external.add) {
       return;
     }
 
