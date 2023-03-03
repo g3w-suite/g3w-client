@@ -761,11 +761,6 @@ proto._setupControls = function() {
                 }
               }
             });
-            const change = {
-              control,
-              getLayers: ()=> this.getMapLayers()
-            };
-            this._changeMapMapControls.push(change);
           }
           break;
         case 'scale':
@@ -834,14 +829,15 @@ proto._setupControls = function() {
               }
             });
             if (control) {
-              const change = {
-                control,
-                getLayers: getControlLayers
+              //set initial value of control change-spatial-event key to null
+              let changeSpatialMethodEventKey = null;
+              const unlistenSpatialMethodChange = () => {
+                ol.Observable.unByKey(changeSpatialMethodEventKey);
+                changeSpatialMethodEventKey = null;
               };
-              this._changeMapMapControls.push(change);
-              const runQuery = throttle(async e => {
+              const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
-                const coordinates = e.coordinates;
+                const coordinates = event.coordinates;
                 // ask for coordinates
                 try {
                  const {data:dataCoordinates=[]} = await DataRouterService.getData('query:coordinates', {
@@ -861,33 +857,69 @@ proto._setupControls = function() {
                   });
                   if (dataCoordinates.length && dataCoordinates[0].features.length) {
                     const feature = dataCoordinates[0].features[0];
-                    const excludeLayers = [dataCoordinates[0].layer];
-                    const {data=[]} = await DataRouterService.getData('query:polygon', {
-                      inputs: {
-                        excludeLayers,
-                        feature,
-                        filterConfig:{
-                          spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
-                        },
-                        multilayers: this.project.isQueryMultiLayers(controlType)
-                      },
-                      outputs: {
-                        show({error=false}){
-                          return !error;
-                        }
-                      }
+                    const layer = dataCoordinates[0].layer;
+                    // run query Polygon Request to server
+                    runQueryPolygon({
+                      feature,
+                      layer,
+                      coordinates
                     });
-                    data.length && map.getView().setCenter(coordinates);
+                    // if not get event, register it
+                    if (null === changeSpatialMethodEventKey) {
+                      changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
+                        runQueryPolygon({
+                          feature,
+                          layer,
+                          coordinates
+                        });
+                      });
+                    }
                   }
                 } catch(err){
                   console.log(err)
                 }
               });
-              const eventKey = control.on('picked', runQuery);
+              /**
+               * Get Query By Polygon Request
+               * @returns {Promise<undefined>}
+               */
+              const runQueryPolygon = async ({feature, layer, coordinates}) =>{
+                const {data=[]} = await DataRouterService.getData('query:polygon', {
+                  inputs: {
+                    layer,
+                    excludeSelected: true,
+                    feature,
+                    filterConfig:{
+                      spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
+                    },
+                    multilayers: this.project.isQueryMultiLayers(controlType)
+                  },
+                  outputs: {
+                    show({error=false}){
+                      return !error;
+                    }
+                  }
+                });
+                data.length && map.getView().setCenter(coordinates);
+              };
+              const eventKey = control.on('picked', (event) => {
+                if (null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                }
+                runQuery(event);
+              });
               control.setEventKey({
                 eventType: 'picked',
                 eventKey
               });
+
+              control.on('toggled', ({toggled}) => {
+               if (false === toggled && null !== changeSpatialMethodEventKey) {
+                 unlistenSpatialMethodChange();
+                 // reset to default
+                 control.setSpatialMethod(spatialMethod);
+               }
+              })
             }
           }
           break;
@@ -917,20 +949,21 @@ proto._setupControls = function() {
               }
             });
             if (control) {
-              const change = {
-                control,
-                getLayers: getControlLayers
-              };
-              this._changeMapMapControls.push(change);
               // get all filtrable layers in toc no based on selection or visibility
               const layersFilterObject = {
                 SELECTEDORALL: true, // selected or all
                 FILTERABLE: true,
                 VISIBLE: true
               };
-              const runQuery = throttle(async e => {
+              //set initial value of control change-spatial-event key to null
+              let changeSpatialMethodEventKey = null;
+              const unlistenSpatialMethodChange = () => {
+                ol.Observable.unByKey(changeSpatialMethodEventKey);
+                changeSpatialMethodEventKey = null;
+              };
+              const runQuery = throttle(async event => {
                 GUI.closeOpenSideBarComponent();
-                const bbox = e.extent;
+                const bbox = event.extent;
                 try {
                   const {data=[]} = await DataRouterService.getData('query:bbox', {
                     inputs: {
@@ -948,15 +981,35 @@ proto._setupControls = function() {
                     const center = ol.extent.getCenter(bbox);
                     this.getMap().getView().setCenter(center);
                   }
+
+                  if (null === changeSpatialMethodEventKey) {
+                    changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
+                      runQuery(event);
+                    });
+                  }
                 } catch(err){
                   console.log(err)
                 }
               });
-              const eventKey = control.on('bboxend', runQuery);
+
+              const eventKey = control.on('bboxend', (event)=> {
+                if (null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                }
+                runQuery(event);
+              });
               control.setEventKey({
                 eventType: 'bboxend',
                 eventKey
               });
+
+              control.on('toggled', ({toggled}) => {
+                if (false === toggled && null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                  // reset to default
+                  control.setSpatialMethod(spatialMethod);
+                }
+              })
             }
           }
           break;
@@ -2522,10 +2575,13 @@ proto.removeExternalLayers = function(){
   this._externalLayers = [];
 };
 
-proto.changeLayerVisibility = function({id, visible}){
+proto.changeLayerVisibility = function({id, external=false, visible}){
   const layer = this.getLayerById(id);
-  layer && layer.setVisible(visible);
-  this.emit('change-layer-visibility', {id, visible});
+  if (layer) {
+    layer.setVisible(visible);
+    this.emit('change-layer-visibility', {id, visible});
+  }
+
 };
 
 proto.changeLayerOpacity = function({id, opacity=1}={}){
@@ -2629,57 +2685,62 @@ proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false){
 };
 
 /**
- * Method to add external layer to map
- * @param externalLayer
- * @param options
- * @returns {Promise<Promise<*> | Promise<never>>}
+ * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
+ * 
+ * @param { ol.layer.Vector | ol.layer.Image | unknown } externalLayer
+ * @param {{ position: unknown, opacity: number, visible: boolean, crs: unknown, type: unknown, download: unknown }} options
+ * 
+ * @returns { Promise<unknown> }
  */
 proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
     name,
     data,
-    color,
+    color, // <-- FIXME: this variable seems to be declared twice
     style,
     type,
     crs;
-  const {position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity=1, visible=true} = options;
-  const {map} = this.viewer;
-  const catalogService = GUI.getService('catalog');
+
+  const {
+    position = MAP_SETTINGS.LAYER_POSITIONS.default,
+    opacity  = 1,
+    visible  = true
+  } = options;
+
+  const { map }            = this.viewer;
+  const catalogService     = GUI.getService('catalog');
   const QueryResultService = GUI.getService('queryresults');
+
+  /**
+   * EXTERNAL VECTOR LAYER
+   */
   if (externalLayer instanceof ol.layer.Vector) {
     let color;
-    /**
-     * Used to selection query result purpose
-     * @type {{active: boolean}}
-     */
-    const filter = {
-      active: false // AT MOMENT NOT USED
+
+    if (undefined === externalLayer.get('id')) {
+      externalLayer.set('id', uniqueId());
+    }
+
+    vectorLayer           = externalLayer;
+    vectorLayer.filter    = { // used by `selection` for query result purpose ?
+      active: false           // UNUSUED - it means not yet implemented?
     };
-    const selection = {
+    vectorLayer.selection = {
       active: false,
       features: []
     };
-    /**
-     * end selection query result purpose properties
-     */
-    let id = externalLayer.get('id');
-    if (id === undefined) {
-      id = uniqueId();
-      externalLayer.set('id', id);
-    }
-    vectorLayer = externalLayer;
-    vectorLayer.filter = filter;
-    vectorLayer.selection = selection;
+
     try {
       const style = externalLayer.getStyle();
       color = style._g3w_options ? style._g3w_options.color : 'blue'; //setted by geo utils create style function
     } catch(err) {
       color = 'blue'
     }
+
     name = vectorLayer.get('name') || vectorLayer.get('id');
     type = 'vector';
     externalLayer = {
-      id,
+      id: externalLayer.get('id'),
       name,
       projectLayer: false,
       title: name,
@@ -2694,85 +2755,86 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       position,
       opacity,
       color,
-      filter,
-      selection
+      filter: vectorLayer.filter,
+      selection: vectorLayer.selection
     };
-  } else if (externalLayer instanceof ol.layer.Image){
+  }
+
+  /**
+   * EXTERNAL IMAGE LAYER
+   */
+  else if (externalLayer instanceof ol.layer.Image) {
     type = 'wms';
     name = externalLayer.get('name');
-    externalLayer.id = externalLayer.get('id');
-    externalLayer.removable = true;
-    externalLayer.projectLayer= false;
-    externalLayer.name = name;
-    externalLayer.title = name;
-    externalLayer._type = type;
-    externalLayer.opacity = opacity;
-    externalLayer.position = position;
-    externalLayer.external = true;
-    externalLayer.checked = visible;
-  } else {
-    name = externalLayer.name;
-    type = externalLayer.type;
-    crs = externalLayer.crs;
-    data = externalLayer.data;
+    externalLayer.id           = externalLayer.get('id');
+    externalLayer.removable    = true;
+    externalLayer.projectLayer = false;
+    externalLayer.name         = name;
+    externalLayer.title        = name;
+    externalLayer._type        = type;
+    externalLayer.opacity      = opacity;
+    externalLayer.position     = position;
+    externalLayer.external     = true;
+    externalLayer.checked      = visible;
+  }
+
+  /**
+   * UKNOWN EXTERNAL LAYER TYPE ?
+   */
+  else {
+    name  = externalLayer.name;
+    type  = externalLayer.type;
+    crs   = externalLayer.crs;
+    data  = externalLayer.data;
     color = externalLayer.color;
   }
-  const layer = this.getLayerByName(name);
+
   const loadExternalLayer = (layer, type) => {
     let extent;
-    if (layer) {
-      if (type === 'vector') {
-        const features = layer.getSource().getFeatures();
-        if (features.length) {
-          let id= 0;
-          /**
-           * need to add id value
-           */
-          features.forEach(feature => {
-            feature.setId(id);
-            id+=1;
-          });
-          externalLayer.geometryType = features[0].getGeometry().getType();
-        }
-        extent = layer.getSource().getExtent();
-        externalLayer.bbox = {
-          minx: extent[0],
-          miny: extent[1],
-          maxx: extent[2],
-          maxy: extent[3]
-        };
+    // skip if is not a valid layer
+    if (!layer) {
+      return Promise.reject();
+    }
+    if (type === 'vector') {
+      const features = layer.getSource().getFeatures();
+      if (features.length) {
+        let id = 0;
+        // add id value
+        features.forEach(feature => { feature.setId(id++); });
+        externalLayer.geometryType = features[0].getGeometry().getType();
+        externalLayer.selected = false;
       }
-      layer.set('position', position);
-      layer.setOpacity(opacity);
-      layer.setVisible(visible);
-      map.addLayer(layer);
-      this._externalLayers.push(layer);
-      QueryResultService.registerVectorLayer(layer);
-      catalogService.addExternalLayer({
-        layer: externalLayer,
-        type
-      });
-      extent && map.getView().fit(extent);
-      this.loadExternalLayer(layer);
-      return Promise.resolve(layer);
-    } else return Promise.reject();
+      extent = layer.getSource().getExtent();
+      externalLayer.bbox = { minx: extent[0], miny: extent[1], maxx: extent[2], maxy: extent[3] };
+    }
+    layer.set('position', position);
+    layer.setOpacity(opacity);
+    layer.setVisible(visible);
+    map.addLayer(layer);
+    this._externalLayers.push(layer);
+    QueryResultService.registerVectorLayer(layer);
+    catalogService.addExternalLayer({ layer: externalLayer, type });
+    if (extent) {
+      map.getView().fit(extent);
+    }
+    this.loadExternalLayer(layer);
+    return Promise.resolve(layer);
   };
+
+  const layer = this.getLayerByName(name);
+
   if (!layer) {
     switch (type) {
-      case 'vector':
-        return loadExternalLayer(vectorLayer, type);
-        break;
-      case 'wms':
-        return loadExternalLayer(externalLayer, type);
-        break;
+      case 'vector': return loadExternalLayer(vectorLayer, type);
+      case 'wms':    return loadExternalLayer(externalLayer, type);
       default:
-        vectorLayer = await createVectorLayerFromFile({
-          name, type, crs, mapCrs, data, style
-        });
+        vectorLayer = await createVectorLayerFromFile({ name, type, crs, mapCrs, data, style });
         return loadExternalLayer(vectorLayer);
     }
-    loadExternalLayer(vectorLayer);
-  } else GUI.notify.warning("layer_is_added", false);
+  } else {
+    GUI.notify.warning("layer_is_added", false);
+  }
+
 };
 
 proto.setExternalLayerStyle = function(color, field) {
