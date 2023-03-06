@@ -1013,6 +1013,91 @@ proto._setupControls = function() {
             }
           }
           break;
+        case 'querybydrawpolygon':
+          if (!isMobile.any) {
+            const condition = {
+              filtrable: {
+                ows: 'WFS'
+              }
+            };
+            const getControlLayers = ()=>{
+              const layers = this.filterableLayersAvailable(condition) || [];
+              layers.forEach(layer => layer.setTocHighlightable(true));
+              return layers;
+            };
+            const layers = getControlLayers();
+            const spatialMethod = 'intersects';
+            control = this.createMapControl(controlType, {
+              options: {
+                spatialMethod,
+                layers,
+                help: {
+                  title:"sdk.mapcontrols.querybybbox.help.title",
+                  message:"sdk.mapcontrols.querybybbox.help.message",
+                }
+              }
+            });
+            if (control) {
+              //set initial value of control change-spatial-event key to null
+              let changeSpatialMethodEventKey = null;
+              const unlistenSpatialMethodChange = () => {
+                ol.Observable.unByKey(changeSpatialMethodEventKey);
+                changeSpatialMethodEventKey = null;
+              };
+              const runQuery = throttle(async event => {
+                GUI.closeOpenSideBarComponent();
+                const feature = event.feature;
+                try {
+                  const {data=[]} = await DataRouterService.getData('query:polygon', {
+                    inputs: {
+                      feature,
+                      filterConfig: {
+                        spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
+                      },
+                      multilayers: this.project.isQueryMultiLayers(controlType)
+                    },
+                    outputs: {
+                      show({error = false}) {
+                        return !error;
+                      }
+                    }
+                  });
+
+                  if (data.length) {
+                    this.zoomToFeatures([feature]);
+                  }
+
+                  if (null === changeSpatialMethodEventKey) {
+                    changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
+                      runQuery(event);
+                    });
+                  }
+                } catch(err){
+                  console.log(err)
+                }
+              });
+
+              const eventKey = control.on('drawend', (event)=> {
+                if (null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                }
+                runQuery(event);
+              });
+              control.setEventKey({
+                eventType: 'drawend',
+                eventKey
+              });
+
+              control.on('toggled', ({toggled}) => {
+                if (false === toggled && null !== changeSpatialMethodEventKey) {
+                  unlistenSpatialMethodChange();
+                  // reset to default
+                  control.setSpatialMethod(spatialMethod);
+                }
+              })
+            }
+          }
+          break;
         case 'streetview':
           // streetview
           control = this.createMapControl(controlType, {});
