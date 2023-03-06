@@ -893,7 +893,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
 
 proto.clearState = function(options={}) {
   this.state.layers.splice(0);
-  this.state.query = {};
+  this.state.query = null;
   this.state.querytitle = "";
   this.state.changed = false;
   // clear action if present
