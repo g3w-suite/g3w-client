@@ -107,19 +107,20 @@ function QueryResultsService() {
 
       // set mandatory queryResponse fields
       if (!queryResponse.data)  queryResponse.data    = [];
-      if (!queryResponse.query) queryResponse.query   = { external: { add: false, selected: false } };
-      if (!queryResponse.query.external) queryResponse.query.external = { add: false, selected: false };
+      if (!queryResponse.query) queryResponse.query   = { external: { add: false, filter: {SELECTED: false }}};
+      if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: {SELECTED: false }};
 
       // whether add response to current results using addLayerFeaturesToResultsAction
-      if (!options.add && true === queryResponse.query.external.add) {
-        this._addVectorLayersDataToQueryResponse(queryResponse);
-      }
-
-      // in case of new request results reset the query otherwise maintain the previous request
       if (!options.add) {
+        // in case of new request results reset the query otherwise maintain the previous request
         this.clearState();
         this.state.query = queryResponse.query;
         this.state.type = queryResponse.type;
+
+        // if true add external layers to response
+        if (true === queryResponse.query.external.add) {
+          this._addVectorLayersDataToQueryResponse(queryResponse);
+        }
       }
 
       this.setLayersData(this._digestFeaturesForLayers(queryResponse.data), options);
