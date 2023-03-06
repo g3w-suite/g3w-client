@@ -94,23 +94,36 @@ function QueryResultsService() {
     mapcontrol: null, // add current toggled map control if toggled
     toggleeventhandler: null
   };
+
   this.setters = {
+
     /**
-     * Method call when response is handled by Data Provider
+     * Hook method called when response is handled by Data Provider
+     * 
      * @param queryResponse
-     * @param options: add is used to know if is a new query request or add/remove query request
+     * @param {{ add: boolean }} options `add` is used to know if is a new query request or add/remove query request
      */
-    setQueryResponse(queryResponse, options={add:false}) {
-      const {add} = options;
+    setQueryResponse(queryResponse, options = { add: false }) {
+
+      // set mandatory queryResponse fields
+      if (!queryResponse.data)  queryResponse.data    = [];
+      if (!queryResponse.query) queryResponse.query   = { external: { add: false, selected: false } };
+      if (!queryResponse.query.external) queryResponse.query.external = { add: false, selected: false };
+
+      // whether add response to current results using addLayerFeaturesToResultsAction
+      if (!options.add && true === queryResponse.query.external.add) {
+        this._addVectorLayersDataToQueryResponse(queryResponse);
+      }
+
       // in case of new request results reset the query otherwise maintain the previous request
-      if (!add) {
+      if (!options.add) {
         this.clearState();
         this.state.query = queryResponse.query;
         this.state.type = queryResponse.type;
       }
-      const {data} = queryResponse;
-      const layers = this._digestFeaturesForLayers(data);
-      this.setLayersData(layers, options);
+
+      this.setLayersData(this._digestFeaturesForLayers(queryResponse.data), options);
+
     },
 
     /**
@@ -178,6 +191,7 @@ function QueryResultsService() {
      */
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
+
   base(this);
 
   this.addLayersPlotIds = function(layerIds=[]) {
@@ -194,7 +208,6 @@ function QueryResultsService() {
 
   this._setRelations(project);
   this._setAtlasActions(project);
-  this._addVectorLayersDataToQueryResponse();
   this._asyncFnc = {
     todo: noop,
     zoomToLayerFeaturesExtent: {
@@ -1264,38 +1277,29 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
 
 };
 
-proto._addVectorLayersDataToQueryResponse = function() {
-  this.onbefore('setQueryResponse', (queryResponse, options = {}) => {
-    const catalogService = GUI.getService('catalog');
+/**
+ * @TODO add description (eg. what is a vector layer ?)
+ */
+proto._addVectorLayersDataToQueryResponse = function(queryResponse) {
+  const catalogService = GUI.getService('catalog');
 
-    // sanity checks
-    if (!queryResponse.data)  queryResponse.data    = [];
-    if (!queryResponse.query) queryResponse.query   = { external: { add: false, selected: false } };
-    if (!queryResponse.query.external) queryResponse.query.external = { add: false, selected: false };
+  /** @type { boolean | undefined } */
+  const isExternalFilterSelected = queryResponse.query.external.filter.SELECTED;
 
-    // skip when add response to current results using addLayerFeaturesToResultsAction or external false
-    if (options.add || false === queryResponse.query.external.add) {
-      return;
-    }
-
-    /** @type { boolean | undefined } */
-    const isExternalFilterSelected = queryResponse.query.external.filter.SELECTED;
-
-    // add visible layers to query response (vector layers)
-    this._vectorLayers
-      .forEach(layer => {
-        const isLayerSelected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
-        if (
-          layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
-                                  (true === isLayerSelected  && true === isExternalFilterSelected) ||
-                                  (false === isLayerSelected && false === isExternalFilterSelected) ||
-                                  ("undefined" === typeof isExternalFilterSelected)
-                                )
-        ) {
-          queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
-        }
-      });
-  });
+  // add visible layers to query response (vector layers)
+  this._vectorLayers
+    .forEach(layer => {
+      const isLayerSelected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
+      if (
+        layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
+                                (true === isLayerSelected  && true === isExternalFilterSelected) ||
+                                (false === isLayerSelected && false === isExternalFilterSelected) ||
+                                ("undefined" === typeof isExternalFilterSelected)
+                              )
+      ) {
+        queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+      }
+    });
 };
 
 //function to add custom component in query result
