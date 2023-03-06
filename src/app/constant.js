@@ -540,7 +540,29 @@ export const FONT_AWESOME_ICONS = {
   'step-forward': "fas fa-step-forward",
   'fast-forward': "fas fa-fast-forward",
   crop: "fas fa-crop-alt",
-  exit: "fas fa-door-open"
+  exit: "fas fa-door-open",
+  slider: "fas fa-sliders-h",
+  bookmark: "fas fa-bookmark",
+};
+
+/**
+ * @typedef LocalItem
+ * @property {string} id unique identifier
+ * @property {any} value initial value
+ */
+
+/**
+ * LOCAL ITEM IDS - used to store id used by application
+ * 
+ * @type {Object<string, LocalItem>}
+ * 
+ * @since v3.8
+ */
+export const LOCAL_ITEM_IDS = {
+  SPATIALBOOKMARKS: {
+    id: 'SPATIALBOOKMARKS', // id unique
+    value: {} // initial value
+  }
 };
 
 export default {
@@ -556,6 +578,7 @@ export default {
   GEOMETRY_TYPES,
   LIST_OF_RELATIONS_TITLE,
   LIST_OF_RELATIONS_ID,
+  LOCAL_ITEM_IDS,
   LOCALSTORAGE_EXTERNALWMS_ITEM,
   MAP_SETTINGS,
   PRINT_FORMATS,

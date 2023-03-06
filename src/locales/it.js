@@ -24,6 +24,26 @@ export default {
       message: "Posizione rispetto ai layers della TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Seleziona Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Segnalibri Spaziali",
+        helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
+        input: {
+          name: "Nome"
+        },
+        sections: {
+          project:{
+            title: "Segnalibri Progetto"
+          },
+          user: {
+            title: "Segnalibri Utente"
+          }
+        }
+      },
       search: {
         all: 'TUTTE',
         no_results: "Nessun valore trovato",
@@ -248,7 +268,7 @@ export default {
             title: 'Guida - Interrogazione con Poligono',
             message:`
                 <ul>
-                  <li">Seleziona uno strato poligonale in legenda.</li>
+                  <li>Seleziona uno strato poligonale in legenda.</li>
                   <li>Assicurati che lo strato sia visibile in mappa.</li>
                   <li>Clicca su una geometria dello strato selezionato.</li>
                 </ul>`
@@ -484,7 +504,8 @@ export default {
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stili",
-        vector_color_menu:"Setta/Cambia Colore"
+        vector_color_menu:"Setta/Cambia Colore",
+        layer_opacity: "Trasparenza"
       }
     },
     dataTable: {

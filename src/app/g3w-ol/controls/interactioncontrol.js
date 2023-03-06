@@ -196,7 +196,10 @@ proto.toggle = function(toggle) {
     this.toggledTool && this.showToggledTool(false);
   }
   this._toolButton === undefined && this.toggledTool && this.showToggledTool(this._toggled);
-  this.dispatchEvent('toggled', toggle);
+  this.dispatchEvent({
+    type: 'toggled',
+    toggled: toggle
+  });
 };
 
 proto.getGeometryTypes = function() {
@@ -234,6 +237,10 @@ proto.getIteraction = function() {
 
 proto.setSpatialMethod = function(method='intersects'){
   this.spatialMethod = method;
+  this.dispatchEvent({
+    type: 'change-spatial-method',
+    spatialMethod: this.spatialMethod
+  });
 };
 
 proto.getSpatialMethod = function(){
