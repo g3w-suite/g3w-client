@@ -23,6 +23,7 @@
     <figure v-else>
   
       <div v-for="(category, index) in categories"
+        @contextmenu.prevent.stop="showCategoryMenu"
         style="display: flex; align-items: center; width: 100%"
         v-disabled="category.disabled"
       >
@@ -45,7 +46,7 @@
           v-if="('tab' === legendplace && category.ruleKey) || ('toc' === legendplace && showCategoriesCheckBox)"
           class="g3w-long-text"
           style="padding-left: 3px;"
-          @click.stop="zoomToCategory"
+          @click.stop="onCategoryClick"
         >
           {{category.title}}
         </span>
@@ -98,17 +99,22 @@
     methods: {
 
       /**
-       * @TODO
+       * @since v3.8
        * **/
-      zoomToCategory(){
-        // GUI
-        //   .getService('map')
-        //   .goToBBox(
-        //     [this.layer.bbox.minx, this.layer.bbox.miny, this.layer.bbox.maxx, this.layer.bbox.maxy],
-        //     this.layer.epsg
-        //   );
+      onCategoryClick(){
+        this.handleClick({
+          '1': this.selectCategory,
+          '2': () => console.log('zoom')
+        }, this);
       },
-
+      //select category
+      selectCategory() {
+        console.log('select')
+      },
+      //show category context menu
+      showCategoryMenu(){
+        this.$emit('showmenucategory');
+      },
       getWmsSourceLayerLegendUrl() {
         return this.getProjectLayer().getLegendUrl();
       },

@@ -154,6 +154,7 @@
       v-if="showLayerTocLegend"
       :legendplace="legendplace"
       :layer="layerstree"
+      @showmenucategory=""
     ></layerlegend>
 
     <!-- CHILD NODES (GROUP) -->
