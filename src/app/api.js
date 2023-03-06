@@ -266,8 +266,8 @@ module.exports = {
     $script(
       'https://unpkg.com/platform@1.3.6/platform.js',
       () => {
-        console.info('Report a bug/issue at: https://github.com/g3w-suite/g3w-client/issues');
         console.info(`
+[g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
 - g3-client: __${G3W_CONSTANT.APP_VERSION}__
 - browser: __${platform.name} ${platform.version}__
