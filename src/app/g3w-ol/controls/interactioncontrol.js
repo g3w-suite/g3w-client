@@ -5,163 +5,55 @@ const { t } = require('core/i18n/i18n.service');
 const Control = require('g3w-ol/controls/control');
 
 const InteractionControl = function(options={}) {
-
-  const {
-    visible                 = true,
-    enabled                 = true,
-    toggled                 = false,
-    clickmap                = false,
-    interactionClass        = null,
-    autountoggle            = false,
-    geometryTypes           = [],
-    onSelectlayer,
-    onhover                 = false,
-    help                    = null,
-    toggledTool,
-    interactionClassOptions = {},
-    spatialMethod
-  } = options;
-
-
-  /**
-   * @type {boolean}
-   */
+  const {visible=true, enabled=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
+    geometryTypes=[], onSelectlayer, onhover=false, help=null, toggledTool, interactionClassOptions={}, spatialMethod} = options;
   this._visible = visible;
-
-  /**
-   * @type {boolean}
-   */
   this._toggled = toggled;
-
-  /**
-   * Check if interact with map
-   * 
-   * @type {boolean}
-   */
-  this.clickmap = clickmap;
-
-  /**
-   * @FIXME add description
-   */
+  this.clickmap = clickmap; // check if interact with map
   this._interactionClass = interactionClass;
-
-  /**
-   * @FIXME add description
-   */
   this._interaction = null;
-
-  /**
-   * @type {boolean}
-   */
   this._autountoggle = autountoggle;
-
-  /**
-   * Types of geometries
-   * 
-   * @type {string[]}
-   */
-  this._geometryTypes = geometryTypes;
-  
-  /**
-   * @FIXME add description
-   */
+  this._geometryTypes = geometryTypes; // array of types geometries
   this.onSelectLayer = onSelectlayer;
-
-  /**
-   * @FIXME add description
-   */
   this._onhover = onhover;
-
-  /**
-   * @FIXME add description
-   */
   this._help = help;
-
-  /**
-   * @FIXME un-initialized variable
-   * 
-   * Used to show help info button
-   */
-  this._helpButton;
-
-  /**
-   * @FIXME un-initialized variable
-   * 
-   * Used to show toolbutton
-   */
-  this._toolButton;
-
-  /**
-   * @type { 'intersect' | 'within' }
-   */
+  this._helpButton; // used to show help info button
+  this._toolButton; // used to show toolbutton
+  //spatial method (intersect, within)
   this.spatialMethod = spatialMethod;
-
-  /**
-   * @FIXME un-initialized variable
-   */
   this.toggledTool;
-
-  /**
-   * @FIXME add description
-   */
   this._interactionClassOptions = interactionClassOptions;
-
-  /**
-   * @FIXME add description
-   */
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
-
   Control.call(this, options);
-
   // create an help message
-  if (this._help) {
-    this._createModalHelp();
-  }
-  
+  this._help && this._createModalHelp();
   // create tool
-  if (toggledTool) {
-    this.createControlTool(toggledTool);
-  }
-  
-  // set enabled
+  toggledTool && this.createControlTool(toggledTool);
+  ///se enabled
   this.setEnable(enabled);
-  
-  // set toggled
-  if(toggled) {
-    this.toggle(toggled);
-  }
-
+  toggled && this.toggle(toggled);
 };
 
 ol.inherits(InteractionControl, Control);
 
 const proto = InteractionControl.prototype;
 
-/**
- * @FIXME add description
- */
-proto.isClickMap = function() {
+proto.isClickMap = function(){
   return this.clickmap;
 };
 
 /**
- * Enable map control (DOM element)
+ * Enable map control dom
  */
-proto.enable = function() {
+proto.enable = function(){
   $(this.element).removeClass('g3w-disabled');
 };
 
-/**
- * Disable map control (DOM element)
- */
-proto.disable = function() {
+proto.disable = function(){
   $(this.element).addClass('g3w-disabled');
 };
 
-/**
- * @FIXME add description
- */
-proto.createControlTool = function(toggledTool={}) {
+proto.createControlTool = function(toggledTool={}){
   /**
    * how can be {
    *  'toggled'(default) => show tools when control is toggled
@@ -169,7 +61,7 @@ proto.createControlTool = function(toggledTool={}) {
    * }
    */
   const {type, component, how="toggled"} = toggledTool;
-  switch(type) {
+  switch(type){
     case 'spatialMethod':
       const method = this.getSpatialMethod();
       this.toggledTool = {
@@ -188,10 +80,10 @@ proto.createControlTool = function(toggledTool={}) {
         watch: {
           'method': method => this.setSpatialMethod(method)
         },
-        created() {
+        created(){
           GUI.setCloseUserMessageBeforeSetContent(false);
         },
-        beforeDestroy() {
+        beforeDestroy(){
           GUI.setCloseUserMessageBeforeSetContent(true);
         }
       };
@@ -208,125 +100,89 @@ proto.createControlTool = function(toggledTool={}) {
   }
 };
 
-/**
- * @FIXME add description
- */
-proto._createToolOnHoverButton = function() {
-  if (!this._onhover) {
-    return;
+proto._createToolOnHoverButton = function(){
+  if (this._onhover) {
+    this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
+    $(this.element).prepend(this._toolButton);
+    this._toolButton.on('click', event => {
+      event.stopPropagation();
+      this.showToggledTool(true);
+    });
+    $(this.element).hover(() => this._toggled && this._toolButton.show());
+    $(this.element).mouseleave(() => this._toolButton.hide());
   }
-
-  this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
-  
-  $(this.element).prepend(this._toolButton);
-  
-  this._toolButton.on('click', event => { event.stopPropagation(); this.showToggledTool(true); });
-  
-  $(this.element).hover(() => this._toggled && this._toolButton.show());
-  
-  $(this.element).mouseleave(() => this._toolButton.hide());
 };
 
-/**
- * @FIXME add description
- *
- * @param {boolean} [show=true]
- */
-proto.showToggledTool = function(show=true) {
-  if (!show) {
-    GUI.closeUserMessage();
-  } else {
+proto.showToggledTool = function(show=true){
+  if (show){
     GUI.showUserMessage({
       title: '',
       type: 'tool',
       size: 'small',
-      closable: (this._toolButton) ? true : false,
+      closable: this._toolButton ? true : false,
       hooks: {
         body: this.toggledTool
       }
     });
-  }
+  } else GUI.closeUserMessage();
 };
 
-/**
- * Show help message 
- */
+//show help message
 proto._showModalHelp = function() {
-  GUI.showModalDialog({ title: t(this._help.title), message: t(this._help.message) });
+  GUI.showModalDialog({
+    title: t(this._help.title),
+    message: t(this._help.message),
+  });
 };
 
-/**
- * Create modal help
- */
+// create modal help
 proto._createModalHelp = function() {
-  if (!this._onhover) {
-    return;
+  if (this._onhover) {
+    this._helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
+    $(this.element).prepend(this._helpButton);
+    this._helpButton.on('click', event => {
+      event.stopPropagation();
+      this._showModalHelp();
+    });
+    $(this.element).hover(() => this._helpButton.show());
+    $(this.element).mouseleave(() => this._helpButton.hide());
   }
-  
-  this._helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
-  
-  $(this.element).prepend(this._helpButton);
-  
-  this._helpButton.on('click', event => { event.stopPropagation(); this._showModalHelp(); });
-
-  $(this.element).hover(() => this._helpButton.show());
-
-  $(this.element).mouseleave(() => this._helpButton.hide());
 };
 
-/**
- * @FIXME add description
- */
 proto.getGeometryTypes = function() {
   return this._geometryTypes;
 };
 
-/**
- * @FIXME add description
- */
 proto.getInteraction = function() {
   return this._interaction;
 };
 
-/**
- * @FIXME add description
- */
 proto.isToggled = function() {
   return this._toggled;
 };
 
 /**
- * Get DOM bottom control
- * 
- * @returns { JQuery<HTMLElement> | jQuery | HTMLElement }
+ *
+ * Get dom bottom
+ * @returns {JQuery<HTMLElement> | jQuery | HTMLElement}
  */
-proto.getControlBottom = function() {
+proto.getControlBottom = function(){
   return $(this.element).find('button').first();
 };
 
-/**
- * @FIXME add description
- *
- * @param {string} [className='']
- */
-proto.addClassToControlBottom = function(className='') {
-  this.getControlBottom().addClass(className);
+proto.addClassToControlBottom = function(className=''){
+  const controlButton = this.getControlBottom();
+  controlButton.addClass(className);
 };
 
-/**
- * @FIXME add description
- */
-proto.removeClassToControlBottom = function(className='') {
-  this.getControlBottom().removeClass(className);
+proto.removeClassToControlBottom = function(className=''){
+  const controlButton = this.getControlBottom();
+  controlButton.removeClass(className);
 };
 
-/**
- * Press or not press
- * 
- * @param {boolean} toggle 
- */
+// press or not press
 proto.toggle = function(toggle) {
-  toggle = (undefined !== toggle) ? toggle : !this._toggled;
+  toggle = toggle !== undefined ? toggle : !this._toggled;
   this._toggled = toggle;
   if (toggle) {
     this._interaction && this._interaction.setActive(true);
@@ -339,46 +195,31 @@ proto.toggle = function(toggle) {
     this._toolButton && this._toolButton.hide();
     this.toggledTool && this.showToggledTool(false);
   }
-  if (undefined === this._toolButton && this.toggledTool) {
-    this.showToggledTool(this._toggled);
-  }
-  this.dispatchEvent('toggled', toggle);
+  this._toolButton === undefined && this.toggledTool && this.showToggledTool(this._toggled);
+  this.dispatchEvent({
+    type: 'toggled',
+    toggled: toggle
+  });
 };
 
-/**
- * @FIXME add description
- */
 proto.getGeometryTypes = function() {
   return this._geometryTypes;
 };
 
-/**
- * @FIXME add description
- */
 proto.setGeometryTypes = function(types) {
   this._geometryTypes = types;
 };
 
-/**
- * @param {ol.Map} map 
- */
 proto.setMap = function(map) {
   Control.prototype.setMap.call(this, map);
-
   if (!this._interaction && this._interactionClass) {
     this._interaction = new this._interactionClass(this._interactionClassOptions);
     map.addInteraction(this._interaction);
     this._interaction.setActive(false);
   }
-
-  if (this._toggled) {
-    setTimeout(() => { this.toggle(true); });
-  }
+  this._toggled && setTimeout(()=> {this.toggle(true)});
 };
 
-/**
- * @FIXME add description
- */
 proto._handleClick = function(evt) {
   if (this._enabled) {
     this.toggle();
@@ -386,43 +227,36 @@ proto._handleClick = function(evt) {
   }
 };
 
-/**
- * @FIXME add description
- */
 proto.getIteraction = function() {
   return this._interaction;
 };
 
 /**
- * @FIXME invalid default value for `method` parameter
- * 
- * Set filter operation
- * 
- * @param { 'intersect' | 'contains' } [method='intersects']
+ * Method to set filter operation intersect or Contains
  */
-proto.setSpatialMethod = function(method='intersects') {
+
+proto.setSpatialMethod = function(method='intersects'){
   this.spatialMethod = method;
+  this.dispatchEvent({
+    type: 'change-spatial-method',
+    spatialMethod: this.spatialMethod
+  });
 };
 
-/**
- * @returns { 'intersect' | 'contains' }
- */
-proto.getSpatialMethod = function() {
+proto.getSpatialMethod = function(){
   return this.spatialMethod;
 };
 
-/**
- * @FIXME add description
- */
-proto.setLayers = function(layers=[]) {
+proto.setLayers = function(layers=[]){
   this.layers = layers;
 };
 
 /**
- * Called when project change (owerwrite in each control)
- * 
+ * called when project change
  * @param layers
  */
-proto.change = function(layers=[]) { };
+proto.change = function(layers=[]){
+  //to owerwite to each control
+};
 
 module.exports = InteractionControl;

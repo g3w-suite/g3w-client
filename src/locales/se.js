@@ -24,6 +24,11 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Välj Template"
+        }
+      },
       spatialbookmarks: {
         title: "Rumsliga bokmärken",
         helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",

@@ -16,11 +16,10 @@ const {
 } = require('core/utils/geo');
 
 function QueryService(){
-
   base(this);
-
   /**
-   * @type {{ filtrable: { ows: string } }}
+   *
+   * @type {{filtrable: {ows: string}}}
    */
   this.condition = {
     filtrable: {
@@ -29,80 +28,83 @@ function QueryService(){
   };
 
   /**
-   * @param geometry
-   * @param feature_count
-   * @param multilayers
-   * @param condition
-   * @param excludeLayers
+   * @param {{ feature: unknown, feature_count: unknown, filterConfig: unknown, multilayers: boolean, condition: boolean, excludeLayers: unknown[] }}
    * 
    * @returns {Promise<unknown>}
    */
   this.polygon = function({
     feature,
-    feature_count     = this.project.getQueryFeatureCount(),
-    filterConfig      = {},
-    multilayers       = false,
-    condition         = this.condition,
-    layerFilterObject = { SELECTED: false, FILTERABLE: true, VISIBLE: true },
-    excludeLayers = [],
+    feature_count   = this.project.getQueryFeatureCount(),
+    filterConfig    = {},
+    multilayers     = false,
+    condition       = this.condition,
+    /** @since v3.8 */
+    layer           = null,
+    /** @since v3.8 */
+    excludeSelected = null
   } = {}) {
+    const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
+    const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
+    const geometry                  = feature.getGeometry();
 
-    /**
-     * @FIXME unclear documentation
-     */
-    // In case of Polygon coming from feature of Layer. If a draw feature excludeLayers is empty Array
-    // case QueryByDrawPolygon map control
-    const polygonLayer = (excludeLayers.length)
-      ? excludeLayers[0]
-      : null;
-
-    const geometry = feature.getGeometry();
-
-    if (geometry) {
-      return this.handleRequest(
-        // request
-        getQueryLayersPromisesByGeometry(
-          // layers
-          getMapLayersByFilter(
-            layerFilterObject,
-            condition
-          ).filter(layer => -1 === excludeLayers.indexOf(layer)),
-          {
-            geometry,
-            multilayers,
-            feature_count,
-            filterConfig,
-            projection: this.project.getProjection()
-          }
-        ),
-        // query
-        {
-          fid: feature.get(G3W_FID),
-          geometry,
-          layer: polygonLayer,
-          type: 'polygon'
-        }
-      );
+    if (hasExternalLayersSelected) {
+      layer.getName = () => layer.get('name');
     }
 
-    // no geometry on polygon layer response (warning message)
-    return this.returnExceptionResponse({
-      usermessage: {
-        type: 'warning',
-        message: `${polygonLayer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
-        messagetext: true,
-        autoclose: false
+    // in case no geometry on polygon layer response
+    if (!geometry) {
+      return this.returnExceptionResponse({
+        usermessage: {
+          type: 'warning',
+          message: `${layer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          messagetext: true,
+          autoclose: false
+        }
+      });
+    }
+
+    return this.handleRequest(
+      // request
+      getQueryLayersPromisesByGeometry(
+        // layers
+        getMapLayersByFilter({
+          SELECTED: !excludeSelected,
+          FILTERABLE: true,
+          VISIBLE: true
+        }, condition),
+        // options
+        {
+          geometry,
+          multilayers,
+          feature_count,
+          filterConfig,
+          projection: this.project.getProjection()
+        }
+      ),
+      // query
+      {
+        fid,
+        geometry,
+        layer,
+        type: 'polygon',
+        filterConfig,
+        external: {
+          add: true,
+          filter: {
+            SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : excludeSelected
+          }
+        }
       }
-    });
+    );
   };
 
   /**
+   *
    * @param bbox
    * @param feature_count
    * @param multilayers
    * @param condition
    * @param layersFilterObject
-   * 
    * @returns {Promise<unknown>}
    */
   this.bbox = function({
@@ -113,11 +115,31 @@ function QueryService(){
     condition          = this.condition,
     layersFilterObject = { SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true }
   } = {}) {
+
+    const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
+    const query = {
+      bbox,
+      type: 'bbox',
+      filterConfig,
+      external: {
+        add: true,
+        filter: {
+          SELECTED: hasExternalLayersSelected
+        }
+      },
+    };
+
+    // Check If LayerIds is length === 0 so i check if add external Layer is selected
+    if (hasExternalLayersSelected) {
+      return this.handleRequest(this.getEmptyRequest(), query);
+    }
+
     return this.handleRequest(
-      // request
+      //request
       getQueryLayersPromisesByBBOX(
-        //layers
-        getMapLayersByFilter(layersFilterObject, condition),
+        // layers
+        getMapLayersByFilter( layersFilterObject, condition ),
+        //options
         {
           bbox,
           feature_count,
@@ -125,48 +147,71 @@ function QueryService(){
           multilayers,
         }
       ),
-      {
-        bbox,
-        type: 'bbox',
-      }
+      // query
+      query
     );
+
   };
 
   /**
-   * @param map
-   * @param coordinates
-   * @param multilayers
-   * @param feature_count
+   * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
    * 
    * @returns {Promise<unknown>}
    */
   this.coordinates = async function({
     coordinates,
-    layerIds             = [],
-    multilayers          = false,
+    layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
+    multilayers           = false,
     query_point_tolerance = QUERY_POINT_TOLERANCE,
     feature_count
   } = {}) {
-    const layersFilterObject =  {
+    const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
+    const query = {
+      coordinates,
+      type: 'coordinates',
+      external: {
+        add: true,
+        filter: {
+          SELECTED: hasExternalLayersSelected
+        }
+      }
+    };
+
+    // Return an empty request if an external layer is selected
+    if (hasExternalLayersSelected && 0 === layerIds.length) {
+      return this.handleRequest(this.getEmptyRequest(), query);
+    }
+
+    const layersFilterObject = {
       QUERYABLE: true,
-      SELECTEDORALL: layerIds.length === 0,
+      SELECTEDORALL: (0 === layerIds.length),
       VISIBLE: true
     };
 
+
     if (Array.isArray(layerIds)) {
-      layerIds.forEach(layerId => {
-        if (!layersFilterObject.IDS) {
-          layersFilterObject.IDS = [];
-        }
-        layersFilterObject.IDS.push(layerId);
+      layerIds.forEach(id => {
+        if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
+        layersFilterObject.IDS.push(id);
       });
     }
-     
+
+    const layers = getMapLayersByFilter(layersFilterObject);
+
+    // set external property `add: false` in case
+    // of selected layer in order to avoid querying
+    // a temporary layer (external layer)
+
+    if (1 === layers.length && layers[0].isSelected()) {
+      query.external.add = false;
+    }
+
     return this.handleRequest(
       // request
       getQueryLayersPromisesByCoordinates(
         // layers
-        getMapLayersByFilter(layersFilterObject),
+        layers,
+        // options
         {
           multilayers,
           feature_count,
@@ -174,41 +219,41 @@ function QueryService(){
           coordinates
         }
       ),
-      {
-        coordinates,
-        type: 'coordinates',
-      }
+      // query
+      query
     );
-  };
 
-  /**
-   * @param request a jQuery promise
-   * 
-   * @returns {Promise<unknown>}
-   */
-  this.handleRequest = function(request, query={}){
-    return new Promise((resolve, reject) => {
-      request
-        .then(response => { resolve(this.handleResponse(response, query)); })
-        .fail(reject)
-    });
   };
 
   /**
    *
-   * @param response results layer
-   * 
-   * @returns {{query: *, type: string, data: any[], result: true }}
+   * @param request is a Promise(jquery promise at moment
+   * @returns {Promise<unknown>}
    */
-  this.handleResponse = function(response, query={}) {
-    const data = [];
-    response.forEach(res => res.data && res.data.forEach(d => data.push(d)));
-    return {
+  this.handleRequest = function(request, query={}){
+    return new Promise((resolve, reject) =>{
+      request.then(response => {
+        const results = this.handleResponse(response, query);
+        resolve(results);
+      }).fail(reject)
+    })
+  };
+
+  /**
+   *
+   * @param response
+   * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
+   */
+  this.handleResponse = function(response, query={}){
+    const layersResults = response;
+    const results = {
       query,
       type: 'ows',
-      data,
+      data: [],
       result: true // set result to true
     };
+    layersResults.forEach(result => result.data && result.data.forEach(data => results.data.push(data)));
+    return results;
   };
 
   /**
@@ -220,8 +265,8 @@ function QueryService(){
       usermessage,
       result: true,
       error: true
-    };
-  }
+    }
+  };
 }
 
 inherit(QueryService, BaseService);

@@ -24,6 +24,11 @@ export default {
       message: "Posizione rispetto ai layers della TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Seleziona Template"
+        }
+      },
       spatialbookmarks: {
         title: "Segnalibri Spaziali",
         helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
