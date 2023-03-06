@@ -62,13 +62,15 @@ function QueryService(){
         }
       });
     }
-
     return this.handleRequest(
       // request
       getQueryLayersPromisesByGeometry(
         // layers
         getMapLayersByFilter({
-          SELECTED: !excludeSelected,
+          ..."boolean" === typeof excludeSelected ? {
+            SELECTED: !excludeSelected} : {
+            SELECTEDORALL: true,
+          },
           FILTERABLE: true,
           VISIBLE: true
         }, condition),

@@ -230,8 +230,8 @@
        * @returns {QueryResultsInfo} query info
        */
       info() {
-        const {query, search} = this.state;
-        if (query) {
+        if (this.state.query) {
+          const {query} = this.state;
           switch (query.type) {
             case 'coordinates':
               return {
@@ -257,7 +257,7 @@
               console.warn('Unsupported query type: ' + query.type);
               break;
           }
-        } else if (search) {
+        } else if (this.state.search) {
           /** @FIXME missing implementation? */
         }
 
