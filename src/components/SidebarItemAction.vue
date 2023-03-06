@@ -4,7 +4,7 @@
 
 <template>
   <span
-    @click.stop="action.fnc"
+    @click.stop="triggerAction"
     v-t-tooltip:left.create="action.tooltip"
     style="font-weight: bold; padding:3px;"
     :class="action.class"
@@ -20,6 +20,14 @@
       action: {
         type: Object,
         required: true
+      },
+      component: {
+        type: Object
+      }
+    },
+    methods: {
+      triggerAction(){
+        this.action.fnc(this.component)
       }
     }
   };

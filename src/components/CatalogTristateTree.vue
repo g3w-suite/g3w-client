@@ -192,7 +192,7 @@ const { downloadFile } = require('core/utils/utils');
 
 /**
  * Store `click` and `doubleclick` events on a single vue element.
- * 
+ *
  * @see https://stackoverflow.com/q/41303982
  */
 const CLICK_EVENT = {
@@ -303,7 +303,7 @@ export default {
 
     /**
      * Handle change checked property of group
-     * 
+     *
      * @param group
      */
     handleGroupChecked(group) {
@@ -350,16 +350,27 @@ export default {
 
     /**
      * Handle changing checked property of layer
-     * 
-     * @param layer
+     *
+     * @param {{ checked: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
      */
     handleLayerChecked(layerObject) {
-      let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
+      let {
+        checked,
+        id,
+        disabled,
+        projectLayer=false,
+        parentGroup
+      } = layerObject;
 
-      // in case of external layer
+      // case external layer (eg. temporary layer through `addlayerscontrol`)
       if (!projectLayer) {
+        // update `layer.visible` property
+        layerObject.visible = checked;
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
-      } else {
+      }
+      
+      // case project layer (eg. qgis layer)
+      else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked) {
           const visible = layer.setVisible(!disabled);
@@ -378,7 +389,9 @@ export default {
         }
         CatalogEventHub.$emit('treenodevisible', layer);
       }
+
     },
+
     toggleFilterLayer() {
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
@@ -391,16 +404,25 @@ export default {
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
+
+    /**
+     * Select legend item
+     * 
+     * @fires CatalogEventHub~treenodeexternalselected
+     * @fires CatalogEventHub~treenodeselected
+     */
     select() {
-      if (!this.layerstree.external) {
+      if (this.layerstree.external && 'undefined' !== typeof this.layerstree.selected) {
+        CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
+      } else if (!this.isGroup && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
 
     /**
      * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
-     * 
-     * @since v3.8 
+     *
+     * @since v3.8
      */
     zoomToLayer(layer) {
       GUI
@@ -413,19 +435,19 @@ export default {
 
     /**
      * @TODO refactor this, almost the same as: `CatalogLayerContextMenu.vue::canZoom(layer))`
-     * 
+     *
      * @since v3.8
      */
     canZoom(layer) {
       return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
     },
-    
+
     /**
      * Handle `click` and `doubleclick` click events on a single tree item (TOC).
-     * 
+     *
      * 1 = select legend item
      * 2 = zoom to layer bounds
-     * 
+     *
      * @since v3.8
      */
      onTreeItemClick() {
