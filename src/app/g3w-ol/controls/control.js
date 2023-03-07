@@ -174,14 +174,13 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
-proto.setEnable = function(enabled, toggled=false) {
+proto.setEnable = function(enabled) {
   const controlButton = $(this.element).find('button').first();
   if (enabled) controlButton.removeClass('g3w-ol-disabled');
   else {
     controlButton.addClass('g3w-ol-disabled');
     this._interaction && this._interaction.setActive(false);
   }
-  this.toggle && this.toggle(toggled);
   this._enabled = enabled;
 };
 
