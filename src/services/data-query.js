@@ -39,7 +39,7 @@ function QueryService(){
     multilayers     = false,
     condition       = this.condition,
     /** @since v3.8 */
-    layer           = null,
+    layerName       = '',
     /** @since v3.8 */
     excludeSelected = null
   } = {}) {
@@ -47,16 +47,12 @@ function QueryService(){
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
     const geometry                  = feature.getGeometry();
 
-    if (hasExternalLayersSelected) {
-      layer.getName = () => layer.get('name');
-    }
-
     // in case no geometry on polygon layer response
     if (!geometry) {
       return this.returnExceptionResponse({
         usermessage: {
           type: 'warning',
-          message: `${layer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          message: `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
           messagetext: true,
           autoclose: false
         }
@@ -87,13 +83,13 @@ function QueryService(){
       {
         fid,
         geometry,
-        layer,
+        layerName,
         type: 'polygon',
         filterConfig,
         external: {
           add: true,
           filter: {
-            SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : excludeSelected
+            SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : hasExternalLayersSelected
           }
         }
       }

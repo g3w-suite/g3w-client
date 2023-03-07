@@ -248,13 +248,13 @@
             case 'polygon':
               return {
                 icon: 'draw',
-                message: (query.layer) ?
-                  `${query.layer.getName()} - Feature Id: ${query.fid}` // <Feature ID>:   when polygon feature comes from a Feature layer
+                message: (query.layerName) ?
+                  `${query.layerName} ${"undefined" !== typeof query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
                   : ' ',                                                // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
                 action: () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry),
               };
             default:
-              console.warn('Unsupported query type: ' + query.type);
+              console.warn(`Unsupported query type:  ${query.type}`);
               break;
           }
         } else if (this.state.search) {
