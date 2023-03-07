@@ -60,7 +60,9 @@ const QueryBBoxControl = function(options = {}) {
       const layers = this.layers;
       if (selectLayer.isSelected()) {
         const findLayer = layers.find(layer => layer === selectLayer);
-        this.setEnable((findLayer && findLayer.isVisible() ? true : false), false);
+        const bool = !!findLayer && findLayer.isVisible();
+        this.setEnable(bool);
+        this.toggle(bool);
       } else {
         this.setEnable(this.checkEnabled(layers));
       }
@@ -102,7 +104,7 @@ proto.listenLayersChange = function() {
             } else {
               const enabled = this.checkEnabled(this.layers);
               if (this.getEnable() !== enabled) {
-                this.setEnable(enabled,  enabled && this.isToggled())
+                this.setEnable(enabled)
               }
             }
           }
@@ -182,13 +184,19 @@ proto.runSpatialQuery = async function(){
         }
       });
       if (data.length) {
-        const center = ol.extent.getCenter(this.bbox);
-        this.getMap().getView().setCenter(center);
+        this.getMap().getView().setCenter(ol.extent.getCenter(this.bbox));
       }
     } catch(err){
       console.log(err)
     }
   }
+};
+
+/**
+ * @since v3.8
+ */
+proto.clear = function(){
+  this.bbox = null;
 };
 
 module.exports = QueryBBoxControl;

@@ -204,4 +204,11 @@ proto.runSpatialQuery = async function(){
   }
 };
 
+/**
+ * @since v3.8
+ */
+proto.clear = function(){
+  this.feature = null;
+};
+
 module.exports = QueryByDrawPolygonControl;

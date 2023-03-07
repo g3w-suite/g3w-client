@@ -272,6 +272,14 @@ proto.runSpatialQuery = function(){
 };
 
 /**
+ *@since v3.8
+ */
+
+proto.clear = function(){
+  //overwrite by each control
+};
+
+/**
  * @since v3.8
  */
 proto.handleChangeSpatialMethod = function(spatialMethod){
@@ -289,6 +297,7 @@ proto.handleChangeSpatialMethod = function(spatialMethod){
       unlistenSpatialMethodChange();
       // reset to default
       this.setSpatialMethod(spatialMethod);
+      this.clear();
     }
   })
 };

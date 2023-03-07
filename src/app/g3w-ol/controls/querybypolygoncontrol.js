@@ -55,7 +55,7 @@ const QueryByPolygonControl = function(options={}) {
         this.setEnable(this.isThereVisibleLayerNotSelected());
       } else {
         this.setSelectedLayer(null);
-        this.setEnable(false, false);
+        this.setEnable(false);
       }
     },
     interactionClass: PickCoordinatesInteraction,
@@ -277,7 +277,13 @@ proto.runSpatialQuery = async function(){
     });
     data.length && this.getMap().getView().setCenter(this.data.coordinates);
   }
+};
 
+/**
+ * @since v3.8
+ */
+proto.clear = function(){
+  this.data.layer = this.data.feature = this.data.coordinates = null;
 };
 
 module.exports = QueryByPolygonControl;
