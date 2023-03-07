@@ -185,25 +185,28 @@ proto.removeClassToControlBottom = function(className=''){
 };
 
 // press or not press
-proto.toggle = function(toggle) {
-  toggle = toggle !== undefined ? toggle : !this._toggled;
-  this._toggled = toggle;
-  if (toggle) {
-    this._interaction && this._interaction.setActive(true);
-    this.addClassToControlBottom('g3w-ol-toggled');
-    this._toolButton && this._toolButton.show();
-  } else {
-    this._help && this._helpButton.hide();
-    this._interaction && this._interaction.setActive(false);
-    this.removeClassToControlBottom('g3w-ol-toggled');
-    this._toolButton && this._toolButton.hide();
-    this.toggledTool && this.showToggledTool(false);
+proto.toggle = function(toggled) {
+  toggled = "undefined" !== typeof toggled ? toggled : !this._toggled;
+  // check if toggle value is the opposite of current toggled value
+  if (this._toggled !== toggled) {
+    this._toggled = toggled;
+    if (toggled) {
+      this._interaction && this._interaction.setActive(true);
+      this.addClassToControlBottom('g3w-ol-toggled');
+      this._toolButton && this._toolButton.show();
+    } else {
+      this._help && this._helpButton.hide();
+      this._interaction && this._interaction.setActive(false);
+      this.removeClassToControlBottom('g3w-ol-toggled');
+      this._toolButton && this._toolButton.hide();
+      this.toggledTool && this.showToggledTool(false);
+    }
+    this._toolButton === undefined && this.toggledTool && this.showToggledTool(this._toggled);
+    this.dispatchEvent({
+      type: 'toggled',
+      toggled
+    });
   }
-  this._toolButton === undefined && this.toggledTool && this.showToggledTool(this._toggled);
-  this.dispatchEvent({
-    type: 'toggled',
-    toggled: toggle
-  });
 };
 
 proto.getGeometryTypes = function() {

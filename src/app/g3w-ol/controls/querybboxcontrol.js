@@ -57,14 +57,15 @@ const QueryBBoxControl = function(options = {}) {
     clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
     onSelectlayer(selectLayer) {
-      const layers = this.layers;
       if (selectLayer.isSelected()) {
-        const findLayer = layers.find(layer => layer === selectLayer);
+        const findLayer = this.layers.find(layer => layer === selectLayer);
         const bool = !!findLayer && findLayer.isVisible();
         this.setEnable(bool);
-        this.toggle(bool);
+        if (bool !== this.isToggled()) {
+          this.toggle(bool);
+        }
       } else {
-        this.setEnable(this.checkEnabled(layers));
+        this.setEnable(this.checkEnabled(this.layers));
       }
     },
     onhover: true,
