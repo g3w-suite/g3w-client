@@ -32,6 +32,10 @@ const InteractionControl = function(options={}) {
   ///se enabled
   this.setEnable(enabled);
   toggled && this.toggle(toggled);
+  //check if spatial method is set
+  if (this.spatialMethod) {
+    this.handleChangeSpatialMethod(this.spatialMethod);
+  }
 };
 
 ol.inherits(InteractionControl, Control);
@@ -257,6 +261,36 @@ proto.setLayers = function(layers=[]){
  */
 proto.change = function(layers=[]){
   //to owerwite to each control
+};
+
+/**
+ * @since v3.8
+ *
+ * **/
+proto.runSpatialQuery = function(){
+ //need to override to control that use spatialMethod
+};
+
+/**
+ * @since v3.8
+ */
+proto.handleChangeSpatialMethod = function(spatialMethod){
+  let changeSpatialMethodEventKey = null;
+
+  const unlistenSpatialMethodChange = () => {
+    ol.Observable.unByKey(changeSpatialMethodEventKey);
+    changeSpatialMethodEventKey = null;
+  };
+
+  this.on('toggled', ({toggled}) => {
+    if (true === toggled) {
+      changeSpatialMethodEventKey = this.on('change-spatial-method', this.runSpatialQuery);
+    } else if (null !== changeSpatialMethodEventKey) {
+      unlistenSpatialMethodChange();
+      // reset to default
+      this.setSpatialMethod(spatialMethod);
+    }
+  })
 };
 
 module.exports = InteractionControl;

@@ -1,7 +1,10 @@
-import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
+import { VM } from 'g3w-ol/constants';
 import GUI from 'services/gui';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
 
-const { merge }                  = require('core/utils/ol');
+const {throttle} = require('core/utils/utils');
+const {getMapLayersByFilter} = require('core/utils/geo');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
@@ -15,8 +18,27 @@ const {
 
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
+
+const condition = {
+  filtrable: {
+    ows: 'WFS'
+  }
+};
+
 const QueryByPolygonControl = function(options={}) {
+
+  const controlQuerableLayers = getMapLayersByFilter({
+    QUERYABLE: true,
+    SELECTEDORALL: true
+  });
+  const controlFiltrableLayers = GUI.getService('map').filterableLayersAvailable({
+    FILTERABLE: true,
+    SELECTEDORALL: true
+  }, condition);
+  const layers = controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
+
   const _options = {
+    ...options,
     offline: false,
     enabled: false,
     name: "querybypolygon",
@@ -37,10 +59,20 @@ const QueryByPolygonControl = function(options={}) {
       }
     },
     interactionClass: PickCoordinatesInteraction,
-    ...options
+    layers,
+    help: {
+      title: "sdk.mapcontrols.querybypolygon.help.title",
+      message: "sdk.mapcontrols.querybypolygon.help.message",
+    }
   };
 
   BaseQueryPolygonControl.call(this, _options);
+  // data need to runSpatialQuery
+  this.data = {
+    layer: null,
+    feature: null,
+    coordinates: null
+  }
 };
 
 ol.inherits(QueryByPolygonControl, BaseQueryPolygonControl);
@@ -106,13 +138,47 @@ proto.checkVisibile = function(layers) {
 
 proto.setMap = function(map) {
   BaseQueryPolygonControl.prototype.setMap.call(this, map);
-  this._interaction.on('picked', evt => {
+  const eventKey = this._interaction.on('picked', throttle(async evt => {
+    this.data.coordinates = evt.coordinate;
     this.dispatchEvent({
       type: 'picked',
-      coordinates: evt.coordinate
+      coordinates: this.data.coordinates
     });
+    GUI.closeOpenSideBarComponent();
+    // ask for coordinates
+    try {
+      const {data: dataCoordinates = []} = await DataRouterService.getData('query:coordinates', {
+        inputs: {
+          feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+          coordinates: this.data.coordinates
+        },
+        outputs: {
+          show({data = [], query}) {
+            const show = data.length === 0;
+            // set coordinates to null in case of show  is false to avoid that externalvector added to query result
+            // response to coordinates otherwise we show coordinate in point
+            query.coordinates = !show ? null : query.coordinates;
+            return show;
+          }
+        }
+      });
+      if (dataCoordinates.length && dataCoordinates[0].features.length) {
+        this.data.feature = dataCoordinates[0].features[0];
+        this.data.layer = dataCoordinates[0].layer;
+        // run query Polygon Request to server
+        this.runSpatialQuery();
+      }
+    } catch(err){
+      console.log(err)
+    }
+
+    this.setEventKey({
+      eventType: 'picked',
+      eventKey
+    });
+
     this._autountoggle && this.toggle();
-  });
+  }));
   this.setEnable(false);
 };
 
@@ -186,6 +252,32 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
  */
 proto.handleRemoveExternalLayer = function(layer) {
   this.setEnable(this.isThereVisibleLayerNotSelected());
+};
+
+/**
+ * @since v3.8
+ */
+proto.runSpatialQuery = async function(){
+  if (null !== this.data.coordinates && null !== this.data.feature && null !== this.data.layer) {
+    const {data=[]} = await DataRouterService.getData('query:polygon', {
+      inputs: {
+        layer: this.data.layer,
+        excludeSelected: true,
+        feature: this.data.feature,
+        filterConfig:{
+          spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
+        },
+        multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
+      },
+      outputs: {
+        show({error=false}){
+          return !error;
+        }
+      }
+    });
+    data.length && this.getMap().getView().setCenter(this.data.coordinates);
+  }
+
 };
 
 module.exports = QueryByPolygonControl;

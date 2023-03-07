@@ -4,12 +4,18 @@
  */
 
 import GUI from 'services/gui';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
 
+const {throttle} = require('core/utils/utils');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 
 const QueryByDrawPolygonControl = function(options={}) {
+  const layers           = GUI.getService('map').filterableLayersAvailable({iltrable: {ows: 'WFS'}}) || [];
+  layers.forEach(layer => layer.setTocHighlightable(true));
 
   const _options = {
+    ...options,
     name: "querybydrawpolygon",
     tipLabel: "sdk.mapcontrols.querybydrawpolygon.tooltip",
     customClass: GUI.getFontClass('draw'),
@@ -34,10 +40,17 @@ const QueryByDrawPolygonControl = function(options={}) {
       }
     },
     enabled: true,
-    ...options
+    layers,
+    help: {
+      title:"sdk.mapcontrols.querybybbox.help.title",
+      message:"sdk.mapcontrols.querybybbox.help.message",
+    }
   };
 
   BaseQueryPolygonControl.call(this, _options);
+
+  // feature used to store feature drawend
+  this.feature = null;
 };
 
 ol.inherits(QueryByDrawPolygonControl, BaseQueryPolygonControl);
@@ -51,11 +64,20 @@ proto.setMap = function(map) {
   
   BaseQueryPolygonControl.prototype.setMap.call(this, map);
 
-  this._interaction.on('drawend', evt => {
-    this.dispatchEvent({ type: 'drawend', feature: evt.feature });
+  const eventKey = this._interaction.on('drawend', throttle(evt => {
+    this.feature = evt.feature;
+    this.dispatchEvent({ type: 'drawend', feature: this.feature });
+
+    this.runSpatialQuery();
+
     if (this._autountoggle) {
       this.toggle();
     }
+  }));
+
+  this.setEventKey({
+    eventType: 'drawend',
+    eventKey
   });
 };
 
@@ -148,6 +170,38 @@ proto.isThereVisibleLayers = function(){
       this.externalLayers.find(layer => true === layer.visible)
     )
   )
+};
+
+/**
+ * @since v3.8
+ */
+
+proto.runSpatialQuery = async function(){
+  GUI.closeOpenSideBarComponent();
+
+  try {
+    const {data=[]} = await DataRouterService.getData('query:polygon', {
+      inputs: {
+        feature: this.feature,
+        filterConfig: {
+          spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
+        },
+        multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
+      },
+      outputs: {
+        show({error = false}) {
+          return !error;
+        }
+      }
+    });
+
+    if (data.length) {
+      GUI.getService('map').zoomToFeatures([this.feature]);
+    }
+
+  } catch(err){
+    console.log(err)
+  }
 };
 
 module.exports = QueryByDrawPolygonControl;

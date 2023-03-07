@@ -1,7 +1,23 @@
 import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
+import GUI from 'services/gui';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
 
-const { merge } = require('core/utils/ol');
+const {throttle} = require('core/utils/utils');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+
+// get all filtrable layers in toc no based on selection or visibility
+const layersFilterObject = {
+  SELECTEDORALL: true, // selected or all
+  FILTERABLE: true,
+  VISIBLE: true
+};
+
+const condition = {
+  filtrable: {
+    ows: 'WFS'
+  }
+};
 
 const QueryBBoxControl = function(options = {}) {
 
@@ -19,10 +35,13 @@ const QueryBBoxControl = function(options = {}) {
    */
   this.unwatches        = [];
 
+
   /**
    * @FIXME add description
    */
-  this.layers           = options.layers || [];
+
+  this.layers           = GUI.getService('map').filterableLayersAvailable(condition) || [];
+  this.layers.forEach(layer => layer.setTocHighlightable(true));
 
   options.visible       = this.checkVisible(this.layers);
   options.enabled       = options.visible && this.checkEnabled(this.layers);
@@ -30,6 +49,7 @@ const QueryBBoxControl = function(options = {}) {
   this.listenLayersChange();
 
   const _options = {
+    ...options,
     offline: false,
     name: "querybbox",
     tipLabel: "sdk.mapcontrols.querybybbox.tooltip",
@@ -50,12 +70,17 @@ const QueryBBoxControl = function(options = {}) {
       type: 'spatialMethod',
       how: 'toggled' // or hover
     },
-    spatialMethod
+    spatialMethod,
+    help: {
+      title:"sdk.mapcontrols.querybybbox.help.title",
+      message:"sdk.mapcontrols.querybybbox.help.message",
+    }
   };
 
-  options = merge(options, _options);
+  InteractionControl.call(this, _options);
 
-  InteractionControl.call(this, options);
+  //store bbox
+  this.bbox = null;
 
 };
 
@@ -87,6 +112,10 @@ proto.listenLayersChange = function() {
   );
 };
 
+/**
+ * @deprecated since v3.7
+ * @param layers
+ */
 proto.change = function(layers=[]) {
   this.layers = layers;
   this.setVisible(this.checkVisible(layers));
@@ -106,20 +135,60 @@ proto.checkEnabled = function(layers=[]) {
  * @param {ol.Map} map 
  */
 proto.setMap = function(map) {
-  InteractionControl.prototype.setMap.call(this,map);
+  InteractionControl.prototype.setMap.call(this, map);
 
   this._interaction.on('boxstart', evt => this._startCoordinate = evt.coordinate);
-  this._interaction.on('boxend',   evt => {
+  const eventKey = this._interaction.on('boxend', throttle(evt => {
+    this.bbox = ol.extent.boundingExtent([this._startCoordinate, evt.coordinate]);
     this.dispatchEvent({
       type: 'bboxend',
-      extent: ol.extent.boundingExtent([this._startCoordinate, evt.coordinate]) // [start, end]
+      extent: this.bbox
     });
+
+    this.runSpatialQuery();
+
     this._startCoordinate = null;
     if (this._autountoggle) {
       this.toggle();
     }
+  }));
+
+  this.setEventKey({
+    eventType: 'bboxend',
+    eventKey
   });
 
+};
+
+/**
+ *
+ * @param extent
+ * @returns {Promise<void>}
+ */
+proto.runSpatialQuery = async function(){
+  if (null !== this.bbox) {
+    GUI.closeOpenSideBarComponent();
+    try {
+      const {data=[]} = await DataRouterService.getData('query:bbox', {
+        inputs: {
+          bbox: this.bbox,
+          feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+          layersFilterObject,
+          filterConfig: {
+            spatialMethod: this.getSpatialMethod(), // added spatial method to polygon filter
+          },
+          condition,
+          multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
+        }
+      });
+      if (data.length) {
+        const center = ol.extent.getCenter(this.bbox);
+        this.getMap().getView().setCenter(center);
+      }
+    } catch(err){
+      console.log(err)
+    }
+  }
 };
 
 module.exports = QueryBBoxControl;
