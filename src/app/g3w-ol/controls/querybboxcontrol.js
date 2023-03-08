@@ -138,31 +138,37 @@ proto.checkEnabled = function() {
 };
 
 /**
- * @param {ol.Map} map 
+ * @param {ol.Map} map
+ * 
+ * @listens ol.interaction.DragBox~boxstart
+ * @listens ol.interaction.DragBox~boxend
  */
 proto.setMap = function(map) {
+
   InteractionControl.prototype.setMap.call(this, map);
 
-  this._interaction.on('boxstart', evt => this._startCoordinate = evt.coordinate);
-  const eventKey = this._interaction.on('boxend', throttle(evt => {
-    this.bbox = ol.extent.boundingExtent([this._startCoordinate, evt.coordinate]);
-    this.dispatchEvent({
-      type: 'bboxend',
-      extent: this.bbox
-    });
+  this._interaction
+    .on('boxstart', evt => this._startCoordinate = evt.coordinate);
 
-    this.runSpatialQuery();
+  const eventKey = this._interaction
+    .on('boxend', throttle(evt => {
 
-    this._startCoordinate = null;
-    if (this._autountoggle) {
-      this.toggle();
-    }
-  }));
+      this.bbox = ol.extent.boundingExtent([this._startCoordinate, evt.coordinate]);
 
-  this.setEventKey({
-    eventType: 'bboxend',
-    eventKey
-  });
+      this.dispatchEvent({ type: 'bboxend', extent: this.bbox });
+
+      this.runSpatialQuery();
+
+      this._startCoordinate = null;
+
+      if (this._autountoggle) {
+        this.toggle();
+      }
+
+    }));
+
+  this.setEventKey({ eventType: 'bboxend', eventKey });
+
 };
 
 /**
