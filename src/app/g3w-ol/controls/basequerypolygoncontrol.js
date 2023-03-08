@@ -3,19 +3,12 @@
  * @since v3.8
  */
 import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
-import GUI from 'services/gui';
 
-const { merge }                  = require('core/utils/ol');
-const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+const { merge }          = require('core/utils/ol');
+const { Geometry }       = require('core/utils/geo');
 
-// TODO: make it easier to understand.. (what variables are declared? which ones are aliased?)
-const {
-  Geometry : {
-    getAllPolygonGeometryTypes,
-  }
-} = require('core/utils/geo');
-
-const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
+const VALIDGEOMETRIES    = Geometry.getAllPolygonGeometryTypes();
 
 const BaseQueryPolygonControl = function(options = {}) {
 
