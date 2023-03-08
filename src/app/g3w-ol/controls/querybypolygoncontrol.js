@@ -3,21 +3,12 @@ import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
-const {throttle} = require('core/utils/utils');
-const {getMapLayersByFilter} = require('core/utils/geo');
-const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
-const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+const { throttle }                       = require('core/utils/utils');
+const { getMapLayersByFilter, Geometry } = require('core/utils/geo');
+const BaseQueryPolygonControl            = require('g3w-ol/controls/basequerypolygoncontrol');
+const PickCoordinatesInteraction         = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
-// TODO: make it easier to understand.. (what variables are declared? which ones are aliased?)
-const {
-  Geometry : {
-    getAllPolygonGeometryTypes,
-    isPolygonGeometryType
-  }
-} = require('core/utils/geo');
-
-const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
-
+const VALIDGEOMETRIES = Geometry.getAllPolygonGeometryTypes();
 
 const condition = {
   filtrable: {
@@ -31,12 +22,12 @@ const QueryByPolygonControl = function(options={}) {
     QUERYABLE: true,
     SELECTEDORALL: true
   });
+
   const controlFiltrableLayers = GUI.getService('map').filterableLayersAvailable({
     FILTERABLE: true,
     SELECTEDORALL: true
   }, condition);
-  const layers = controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
-
+  
   const _options = {
     ...options,
     offline: false,
@@ -61,16 +52,23 @@ const QueryByPolygonControl = function(options={}) {
       }
     },
     interactionClass: PickCoordinatesInteraction,
-    layers,
+    layers: controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [],
     help: {
       title: "sdk.mapcontrols.querybypolygon.help.title",
       message: "sdk.mapcontrols.querybypolygon.help.message",
     }
   };
+
+  /**
+   * @since 3.8.0
+   */
   this.unwatches = [];
 
   BaseQueryPolygonControl.call(this, _options);
-  // data need to runSpatialQuery
+
+  /**
+   * Data needed to runSpatialQuery
+   */
   this.data = {
     layer: null,
     feature: null,
@@ -219,7 +217,7 @@ proto.listenPolygonLayersChange = function() {
  */
 proto.handleAddExternalLayer = function(layer, unWatches) {
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
-  if (isPolygonGeometryType(layer.geometryType)) {
+  if (Geometry.isPolygonGeometryType(layer.geometryType)) {
     unWatches[layer.name].push(
       VM.$watch(
         () => layer.selected,                                    // watch `layer.selected` property
