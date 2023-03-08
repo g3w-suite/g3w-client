@@ -12,7 +12,6 @@ const InteractionControl         = require('g3w-ol/controls/interactioncontrol')
 const {
   Geometry : {
     getAllPolygonGeometryTypes,
-    isPolygonGeometryType
   }
 } = require('core/utils/geo');
 
@@ -81,29 +80,11 @@ ol.inherits(BaseQueryPolygonControl, InteractionControl);
 const proto = BaseQueryPolygonControl.prototype;
 
 /**
- * @virtual method need to be implemented by subclasses
- * 
- * @since 3.8.0
- */
-proto.listenLayersVisibilityChange = function() { };
-
-/**
- * @virtual method need to be implemented by subclasses
- * 
- * @param layers
- * @returns {boolean}
- *
- * @since 3.8.0
- */
-proto.checkVisibile = function(layers) {
-  return false
-};
-
-/**
  * @param { unknown | null } layer
  *
  * @since 3.8.0
  */
+
 proto.setSelectedLayer = function(layer) {
   this.selectedLayer = layer;
 };
@@ -117,7 +98,34 @@ proto.change = function(layers=[]){
 };
 
 /**
- * @since 3.8.0
+ * @since v3.8.0
+ * @param layers
+ * @returns {boolean}
+ *
+ * @override to subclass
+ */
+proto.checkVisibile = function(layers) {
+  return false
+};
+
+/**
+ * @since v3.8.0
+ */
+proto.listenLayersVisibilityChange = function(){
+  /**
+   * @override by subclass
+   */
+};
+
+/**
+ * @since v3.8.0
+ */
+proto.watchLayer = function(expOrFn, callback){
+  return VM.$watch(expOrFn, callback)
+};
+
+/**
+ * @since v3.8.0
  */
 proto.isSelectedLayerVisible = function(){
   return (
@@ -125,63 +133,6 @@ proto.isSelectedLayerVisible = function(){
       ? this.selectedLayer.isVisible()                 // in case of a project project
       : this.selectedLayer.visible                     // in case of external layer
   )
-};
-
-/**
- * @since 3.8.0
- */
-proto.watchLayer = function(expOrFn, callback){
-  return VM.$watch(expOrFn, callback)
-};
-
-/**
- * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
- *
- * @listens CatalogService~addExternalLayer
- * @listens CatalogService~removeExternalLayer
- *
- * @since 3.8.0
- */
-proto._handleExternalLayers = function() {
-  const CatalogService = GUI.getService('catalog');
-
-  // store unwatches of extenal layers (selected or visible)
-  const unWatches = {};
-
-  CatalogService.onafter('addExternalLayer', ({layer, type}) => {
-
-    if ('vector' === type) {
-
-      // update `this.externalLayers`
-      this.externalLayers.push(layer);
-
-      // set list of un watches for layer based on name of layer (unique)
-      unWatches[layer.name] = [];
-
-      //call handle add ExternalLayer
-      'function' === typeof this.handleAddExternalLayer && this.handleAddExternalLayer(layer, unWatches);
-    }
-
-  });
-
-  CatalogService.onafter('removeExternalLayer', ({name, type}) => {
-    if ('vector' !== type) {
-      return;
-    }
-    this.externalLayers = this.externalLayers.filter(layer => {
-      if (name !== layer.name) {
-        'function' === typeof this.handleRemoveExternalLayer && this.handleRemoveExternalLayer(layer);
-        return true;
-      }
-      if (layer === this.selectedLayer) {
-        this.setSelectedLayer(null);
-      }
-      return false;
-    });
-    unWatches[name].forEach(unWatch => unWatch());
-    delete unWatches[name];
-  });
-
 };
 
 module.exports = BaseQueryPolygonControl;

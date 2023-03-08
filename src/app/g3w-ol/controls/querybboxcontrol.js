@@ -61,12 +61,10 @@ const QueryBBoxControl = function(options = {}) {
         const findLayer = this.layers.find(layer => layer === selectLayer);
         const bool = !!findLayer && findLayer.isVisible();
         this.setEnable(bool);
-        if (bool !== this.isToggled()) {
-          this.toggle(bool);
-        }
       } else {
         this.setEnable(this.checkEnabled(this.layers));
       }
+      this.toggle(this.isToggled() && this.getEnable());
     },
     onhover: true,
     toggledTool:{
@@ -100,8 +98,8 @@ proto.listenLayersChange = function() {
         VM.$watch(
           () => layer.state.visible,
           visible => {
-            if (layer.state.selected && !visible) {
-              this.setEnable(false);
+            if (true === layer.state.selected) {
+              this.setEnable(visible);
             } else {
               const enabled = this.checkEnabled(this.layers);
               if (this.getEnable() !== enabled) {
@@ -116,22 +114,27 @@ proto.listenLayersChange = function() {
 };
 
 /**
- * @deprecated since v3.7
+ * @deprecated since 3.7
  * @param layers
  */
 proto.change = function(layers=[]) {
   this.layers = layers;
-  this.setVisible(this.checkVisible(layers));
-  this.setEnable(this.checkEnabled(layers));
-  this.listenLayersChange(this.layers);
+  this.setVisible(this.checkVisible());
+  this.setEnable(this.checkEnabled());
+  this.listenLayersChange();
 };
 
-proto.checkVisible = function(layers=[]) {
-  return layers.length > 0;
+proto.checkVisible = function() {
+  return this.layers.length > 0 || this.externalLayers.length > 0;
 };
 
-proto.checkEnabled = function(layers=[]) {
-  return (layers.length > 0) && layers.reduce((accumulator, layer) => accumulator || layer.isVisible(), false);
+proto.checkEnabled = function() {
+  return !!(
+    (
+      (this.layers.length > 0) && this.layers.find(layer => layer.isVisible())
+    ) ||
+    this.externalLayers.find(layer => layer !== this.layer && true === layer.visible)
+  )
 };
 
 /**
@@ -160,7 +163,6 @@ proto.setMap = function(map) {
     eventType: 'bboxend',
     eventKey
   });
-
 };
 
 /**
@@ -194,7 +196,51 @@ proto.runSpatialQuery = async function(){
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
+ * @param layer
+ */
+proto.handleAddExternalLayer = function(layer, unWatches) {
+  // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
+  if (isPolygonGeometryType(layer.geometryType)) {
+    unWatches[layer.name].push(
+      VM.$watch(
+        () => layer.selected,                                    // watch `layer.selected` property
+        selected => {
+          if (true === selected) {
+            this.setSelectedLayer(layer);
+            this.setEnable(layer.visible); // layer must be visible and selected.
+          } else {
+            this.setSelectedLayer(null);
+            this.setEnable(this.checkEnabled()); // layer must be visible and selected.
+          }
+          this.toggle(this.isToggled() && this.getEnable());
+        })
+    );
+  }
+
+  unWatches[layer.name].push(
+    VM.$watch(
+      () => layer.visible,                                       // watch `layer.visible` property
+      () => {
+        this.setEnable(this.checkEnabled());
+        this.toggled(this.isToggled() && this.getEnable());
+      })
+  );
+
+  this.setEnable(this.checkEnabled());
+};
+
+/**
+ * @since 3.8.0
+ * @param layer
+ */
+proto.handleRemoveExternalLayer = function(layer) {
+  this.setEnable(this.isThereVisibleLayerNotSelected());
+};
+
+
+/**
+ * @since 3.8.0
  */
 proto.clear = function(){
   this.bbox = null;

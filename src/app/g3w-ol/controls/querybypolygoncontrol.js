@@ -53,9 +53,11 @@ const QueryByPolygonControl = function(options={}) {
       ) {
         this.setSelectedLayer(layer);
         this.setEnable(this.isThereVisibleLayerNotSelected());
+        this.toggle(this.isToggled() && this.getEnable())
       } else {
         this.setSelectedLayer(null);
         this.setEnable(false);
+        this.toggle(false);
       }
     },
     interactionClass: PickCoordinatesInteraction,
@@ -93,15 +95,17 @@ proto.listenLayersVisibilityChange = function() {
           // enable control only if current changed visible layer is true or
           // if at least one layer (not selected) is visible
           this.setEnable(this.isThereVisibleLayerNotSelected());
+          this.toggle(this.isToggled() && this.getEnable());
         } else {
           this.setEnable(false);
+          this.toggle(false);
         }
       }));
   });
 };
 
 /**
- * @deprecated since v3.7 Remove from v3.9
+ * @deprecated since 3.7.0 Remove from 3.9.0
  * @param layers<Array>
  */
 proto.change = function(layers=[]){
@@ -219,7 +223,7 @@ proto.listenPolygonLayersChange = function() {
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  * @param layer
  */
 proto.handleAddExternalLayer = function(layer, unWatches) {
@@ -229,8 +233,14 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
       VM.$watch(
         () => layer.selected,                                    // watch `layer.selected` property
         selected => {
-          this.setSelectedLayer(true === selected ? layer : null);
-          this.setEnable(this.isThereVisibleLayerNotSelected()); // layer must be visible and selected.
+          if (true === selected) {
+            this.setSelectedLayer(layer);
+            this.setEnable(layer.isvisible && this.isThereVisibleLayerNotSelected()); // layer must be visible and selected.
+          } else {
+            this.setSelectedLayer(null);
+            this.setEnable(false);
+          }
+          this.toggle(this.isToggled() && this.getEnable());
         })
     );
   }
@@ -239,7 +249,12 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
     VM.$watch(
       () => layer.visible,                                       // watch `layer.visible` property
       (visible) => {
-        this.setEnable(this.isThereVisibleLayerNotSelected());   // layer must be selected in TOC.
+        if (true === visible) {
+          this.setEnable(this.isThereVisibleLayerNotSelected());   // layer must be selected in TOC.
+        } else {
+          this.setEnable(this.selected ? false : this.isThereVisibleLayerNotSelected());   // layer must be selected in TOC.
+        }
+        this.toggle(this.isToggled() && this.getEnable());
       })
   );
 
@@ -247,7 +262,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  * @param layer
  */
 proto.handleRemoveExternalLayer = function(layer) {
@@ -255,13 +270,14 @@ proto.handleRemoveExternalLayer = function(layer) {
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  */
 proto.runSpatialQuery = async function(){
   if (null !== this.data.coordinates && null !== this.data.feature && null !== this.data.layer) {
+    const layerName = this.data.layer.getName ? this.data.layer.getName() : this.data.layer.get('name');
     const {data=[]} = await DataRouterService.getData('query:polygon', {
       inputs: {
-        layer: this.data.layer,
+        layerName,
         excludeSelected: true,
         feature: this.data.feature,
         filterConfig:{
@@ -280,7 +296,7 @@ proto.runSpatialQuery = async function(){
 };
 
 /**
- * @since v3.8
+ * @since v3.8.0
  */
 proto.clear = function(){
   this.data.layer = this.data.feature = this.data.coordinates = null;

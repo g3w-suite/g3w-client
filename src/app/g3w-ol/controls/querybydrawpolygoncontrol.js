@@ -2,7 +2,6 @@
  * @file
  * @since v3.8
  */
-
 import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
@@ -38,6 +37,7 @@ const QueryByDrawPolygonControl = function(options={}) {
         this.setSelectedLayer(null);
         this.setEnable(true);
       }
+      this.toggle(this.isToggled() && this.getEnable());
     },
     enabled: true,
     layers,
@@ -123,7 +123,7 @@ proto.listenLayersVisibilityChange = function() {
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  * @param layer
  */
 proto.handleAddExternalLayer = function(layer, unWatches) {
@@ -131,8 +131,14 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
     this.watchLayer(
       () => layer.selected,                                    // watch `layer.selected` property
       selected => {
-        this.setSelectedLayer(true === selected ? layer : null);
-        this.setEnable(this.isThereVisibleLayers()); // layer must be visible and selected.
+        if (true === selected) {
+          this.setSelectedLayer(layer);
+          this.setEnable(layer.visible);
+        } else {
+          this.setSelectedLayer(null);
+          this.setEnable(this.isThereVisibleLayers());
+          this.toggle(this.isToggled() && this.getEnable());
+        }
       })
   );
 
@@ -140,7 +146,12 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
     this.watchLayer(
       () => layer.visible,                                       // watch `layer.visible` property
       (visible) => {
-        this.setEnable(this.isThereVisibleLayers());   // layer must be selected in TOC.
+        if (true === layer.selected) {
+          this.setEnable(visible);
+        } else {
+          this.setEnable(this.isThereVisibleLayers());
+        }
+        this.toggle(this.isToggled() && this.getEnable());
       })
   );
 
@@ -148,15 +159,15 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  * @param layer
  */
-proto.handleRemoveExternalLayer = function(layer) {
+proto.handleRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayers());
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  */
 proto.isThereVisibleLayers = function(){
   return !!(
@@ -173,7 +184,7 @@ proto.isThereVisibleLayers = function(){
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  */
 
 proto.runSpatialQuery = async function(){
@@ -182,6 +193,7 @@ proto.runSpatialQuery = async function(){
   try {
     const {data=[]} = await DataRouterService.getData('query:polygon', {
       inputs: {
+        layerName: 'Draw',
         feature: this.feature,
         filterConfig: {
           spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
@@ -205,7 +217,7 @@ proto.runSpatialQuery = async function(){
 };
 
 /**
- * @since v3.8
+ * @since 3.8.0
  */
 proto.clear = function(){
   this.feature = null;

@@ -157,10 +157,6 @@ proto.getGeometryTypes = function() {
   return this._geometryTypes;
 };
 
-proto.getInteraction = function() {
-  return this._interaction;
-};
-
 proto.isToggled = function() {
   return this._toggled;
 };
@@ -234,14 +230,13 @@ proto._handleClick = function(evt) {
   }
 };
 
-proto.getIteraction = function() {
+proto.getInteraction = function() {
   return this._interaction;
 };
 
 /**
  * Method to set filter operation intersect or Contains
  */
-
 proto.setSpatialMethod = function(method='intersects'){
   this.spatialMethod = method;
   this.dispatchEvent({
@@ -259,31 +254,43 @@ proto.setLayers = function(layers=[]){
 };
 
 /**
- * called when project change
- * @param layers
- */
-proto.change = function(layers=[]){
-  //to owerwite to each control
-};
-
-/**
- * @since v3.8
+ * @virtual method need to be implemented by subclasses
  *
- * **/
-proto.runSpatialQuery = function(){
- //need to override to control that use spatialMethod
-};
-
-/**
- *@since v3.8
+ * @since 3.8.0
  */
-
-proto.clear = function(){
-  //overwrite by each control
-};
+proto.change = function(layers=[]){};
 
 /**
- * @since v3.8
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.runSpatialQuery = function(){};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.clear = function(){};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.handleAddExternalLayer = function(layer, unWatches) {};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.handleRemoveExternalLayer = function(layer){};
+
+/**
+ * @since 3.8.0
+ * @param spatialMethod <String> intersects, within
  */
 proto.handleChangeSpatialMethod = function(spatialMethod){
   let changeSpatialMethodEventKey = null;
@@ -303,6 +310,52 @@ proto.handleChangeSpatialMethod = function(spatialMethod){
       this.clear();
     }
   })
+};
+
+/**
+ * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
+ *
+ * @listens CatalogService~addExternalLayer
+ * @listens CatalogService~removeExternalLayer
+ *
+ * @since 3.8.0
+ */
+proto._handleExternalLayers = function() {
+  const CatalogService = GUI.getService('catalog');
+
+  // store unwatches of extenal layers (selected or visible)
+  const unWatches = {};
+
+  CatalogService.onafter('addExternalLayer', ({layer, type}) => {
+
+    if ('vector' === type) {
+
+      // update `this.externalLayers`
+      this.externalLayers.push(layer);
+
+      // set list of un watches for layer based on name of layer (unique)
+      unWatches[layer.name] = [];
+      //call handle add ExternalLayer
+      this.handleAddExternalLayer(layer, unWatches);
+    }
+
+  });
+
+  CatalogService.onafter('removeExternalLayer', ({name, type}) => {
+    if ('vector' !== type) {
+      return;
+    }
+    this.externalLayers = this.externalLayers.filter(layer => {
+      if (name === layer.name) {
+        this.handleRemoveExternalLayer(layer);
+        (layer === this.selectedLayer) && this.setSelectedLayer(null);
+      }
+      return name !== layer.name;
+    });
+    unWatches[name].forEach(unWatch => unWatch());
+    delete unWatches[name];
+  });
+
 };
 
 module.exports = InteractionControl;
