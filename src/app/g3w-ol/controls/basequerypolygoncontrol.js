@@ -81,11 +81,29 @@ ol.inherits(BaseQueryPolygonControl, InteractionControl);
 const proto = BaseQueryPolygonControl.prototype;
 
 /**
+ * @virtual method need to be implemented by subclasses
+ * 
+ * @since 3.8.0
+ */
+proto.listenLayersVisibilityChange = function() { };
+
+/**
+ * @virtual method need to be implemented by subclasses
+ * 
+ * @param layers
+ * @returns {boolean}
+ *
+ * @since 3.8.0
+ */
+proto.checkVisibile = function(layers) {
+  return false
+};
+
+/**
  * @param { unknown | null } layer
  *
  * @since 3.8.0
  */
-
 proto.setSelectedLayer = function(layer) {
   this.selectedLayer = layer;
 };
@@ -99,14 +117,21 @@ proto.change = function(layers=[]){
 };
 
 /**
- * @since v3.8
- * @param layers
- * @returns {boolean}
- *
- * @override to subclass
+ * @since 3.8.0
  */
-proto.checkVisibile = function(layers) {
-  return false
+proto.isSelectedLayerVisible = function(){
+  return (
+    'function' === typeof this.selectedLayer.isVisible
+      ? this.selectedLayer.isVisible()                 // in case of a project project
+      : this.selectedLayer.visible                     // in case of external layer
+  )
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.watchLayer = function(expOrFn, callback){
+  return VM.$watch(expOrFn, callback)
 };
 
 /**
@@ -157,33 +182,6 @@ proto._handleExternalLayers = function() {
     delete unWatches[name];
   });
 
-};
-
-/**
- * @since v3.8
- */
-proto.listenLayersVisibilityChange = function(){
-  /**
-   * @override by subclass
-   */
-};
-
-/**
- * @since v3.8
- */
-proto.watchLayer = function(expOrFn, callback){
-  return VM.$watch(expOrFn, callback)
-};
-
-/**
- * @since v3.8
- */
-proto.isSelectedLayerVisible = function(){
-  return (
-    'function' === typeof this.selectedLayer.isVisible
-      ? this.selectedLayer.isVisible()                 // in case of a project project
-      : this.selectedLayer.visible                     // in case of external layer
-  )
 };
 
 module.exports = BaseQueryPolygonControl;
