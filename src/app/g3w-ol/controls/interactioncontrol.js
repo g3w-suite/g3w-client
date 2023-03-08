@@ -209,29 +209,41 @@ proto.removeClassToControlBottom = function(className=''){
   controlButton.removeClass(className);
 };
 
-// press or not press
-proto.toggle = function(toggled) {
-  toggled = "undefined" !== typeof toggled ? toggled : !this._toggled;
-  // check if toggle value is the opposite of current toggled value
-  if (this._toggled !== toggled) {
-    this._toggled = toggled;
-    if (toggled) {
-      this._interaction && this._interaction.setActive(true);
-      this.addClassToControlBottom('g3w-ol-toggled');
-      this._toolButton && this._toolButton.show();
-    } else {
-      this._help && this._helpButton.hide();
-      this._interaction && this._interaction.setActive(false);
-      this.removeClassToControlBottom('g3w-ol-toggled');
-      this._toolButton && this._toolButton.hide();
-      this.toggledTool && this.showToggledTool(false);
-    }
-    this._toolButton === undefined && this.toggledTool && this.showToggledTool(this._toggled);
-    this.dispatchEvent({
-      type: 'toggled',
-      toggled
-    });
+/**
+ * Set button status (pressed / not pressed)
+ * 
+ * @param {boolean} [toggled]
+ * 
+ * @fires toggled event
+ */
+proto.toggle = function(toggled = !this._toggled) {
+
+  // skip if button is already toggled or un-toggled
+  if (this._toggled === toggled) {
+    return;
   }
+
+  this._toggled = toggled;
+
+  // TODO: simplify this by removing all that short circuiting logic
+  if (toggled) {
+    this._interaction && this._interaction.setActive(true);
+    this.addClassToControlBottom('g3w-ol-toggled');
+    this._toolButton && this._toolButton.show();
+  } else {
+    this._help && this._helpButton.hide();
+    this._interaction && this._interaction.setActive(false);
+    this.removeClassToControlBottom('g3w-ol-toggled');
+    this._toolButton && this._toolButton.hide();
+    this.toggledTool && this.showToggledTool(false);
+  }
+
+  if (undefined === this._toolButton && this.toggledTool) {
+    this.showToggledTool(this._toggled);
+  }
+
+  this.dispatchEvent({ type: 'toggled', toggled });
+
 };
 
 proto.getGeometryTypes = function() {
