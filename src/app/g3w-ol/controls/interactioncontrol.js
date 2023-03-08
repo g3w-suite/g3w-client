@@ -5,8 +5,23 @@ const { t } = require('core/i18n/i18n.service');
 const Control = require('g3w-ol/controls/control');
 
 const InteractionControl = function(options={}) {
-  const {visible=true, enabled=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
-    geometryTypes=[], onSelectlayer, onhover=false, help=null, toggledTool, interactionClassOptions={}, spatialMethod} = options;
+
+  const {
+    visible=true,
+    enabled=true,
+    toggled=false,
+    clickmap=false,
+    interactionClass=null,
+    autountoggle=false,
+    geometryTypes=[],
+    onSelectlayer,
+    onhover=false,
+    help=null,
+    toggledTool,
+    interactionClassOptions={},
+    spatialMethod
+  } = options;
+
   this._visible = visible;
   this._toggled = toggled;
   this.clickmap = clickmap; // check if interact with map
@@ -23,19 +38,33 @@ const InteractionControl = function(options={}) {
   this.spatialMethod = spatialMethod;
   this.toggledTool;
   this._interactionClassOptions = interactionClassOptions;
+
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
+
   Control.call(this, options);
+
   // create an help message
-  this._help && this._createModalHelp();
+  if (this._help) {
+    this._createModalHelp();
+  }
+
   // create tool
-  toggledTool && this.createControlTool(toggledTool);
-  ///se enabled
+  if (toggledTool) {
+    this.createControlTool(toggledTool);
+  }
+  
+  // set enabled
   this.setEnable(enabled);
-  toggled && this.toggle(toggled);
-  //check if spatial method is set
+
+  if (toggled) {
+    this.toggle(toggled);
+  }
+
+  // check if spatial method is set
   if (this.spatialMethod) {
     this.handleChangeSpatialMethod(this.spatialMethod);
   }
+
 };
 
 ol.inherits(InteractionControl, Control);
