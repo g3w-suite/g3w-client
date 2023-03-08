@@ -125,20 +125,20 @@ proto.listenLayersVisibilityChange = function() {
 };
 
 /**
- * @since 3.8.0
  * @param layer
+ * @param unWatches
+ * 
+ * @since 3.8.0
  */
 proto.handleAddExternalLayer = function(layer, unWatches) {
+
   unWatches[layer.name].push(
     this.watchLayer(
       () => layer.selected,                                    // watch `layer.selected` property
       selected => {
-        if (true === selected) {
-          this.setSelectedLayer(layer);
-          this.setEnable(layer.visible);
-        } else {
-          this.setSelectedLayer(null);
-          this.setEnable(this.isThereVisibleLayers());
+        this.setSelectedLayer(true === selected ? layer : null);
+        this.setEnable(true === selected ? layer.visible : this.isThereVisibleLayers());
+        if (true !== selected) {
           this.toggle(this.isToggled() && this.getEnable());
         }
       })
@@ -146,13 +146,9 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
 
   unWatches[layer.name].push(
     this.watchLayer(
-      () => layer.visible,                                       // watch `layer.visible` property
+      () => layer.visible,                                     // watch `layer.visible` property
       (visible) => {
-        if (true === layer.selected) {
-          this.setEnable(visible);
-        } else {
-          this.setEnable(this.isThereVisibleLayers());
-        }
+        this.setEnable(true === layer.selected ? visible : this.isThereVisibleLayers());
         this.toggle(this.isToggled() && this.getEnable());
       })
   );
@@ -162,7 +158,6 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
 
 /**
  * @since 3.8.0
- * @param layer
  */
 proto.handleRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayers());
@@ -171,7 +166,7 @@ proto.handleRemoveExternalLayer = function() {
 /**
  * @since 3.8.0
  */
-proto.isThereVisibleLayers = function(){
+proto.isThereVisibleLayers = function() {
   return !!(
     // check if user has selected a layer
     this.selectedLayer &&
@@ -186,14 +181,15 @@ proto.isThereVisibleLayers = function(){
 };
 
 /**
+ * @returns {Promise<void>}
+ * 
  * @since 3.8.0
  */
-
-proto.runSpatialQuery = async function(){
+proto.runSpatialQuery = async function() {
   GUI.closeOpenSideBarComponent();
 
   try {
-    const {data=[]} = await DataRouterService.getData('query:polygon', {
+    const { data = [] } = await DataRouterService.getData('query:polygon', {
       inputs: {
         layerName: 'Draw',
         feature: this.feature,
@@ -221,7 +217,7 @@ proto.runSpatialQuery = async function(){
 /**
  * @since 3.8.0
  */
-proto.clear = function(){
+proto.clear = function() {
   this.feature = null;
 };
 
