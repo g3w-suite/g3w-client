@@ -34,13 +34,6 @@ const BaseQueryPolygonControl = function(options = {
    */
   this.externalLayers = [];
 
-  /**
-   * @type {unknown[]}
-   *
-   * @since 3.8.0
-   */
-  this.unwatches = [];
-
   this.listenLayersVisibilityChange();
 
   /**
