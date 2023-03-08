@@ -3,7 +3,6 @@
  * @since v3.8
  */
 import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
-import GUI from 'services/gui';
 
 const { merge }                  = require('core/utils/ol');
 const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
@@ -36,8 +35,6 @@ const BaseQueryPolygonControl = function(options = {}) {
    * @since 3.8.0
    */
   this.externalLayers = [];
-
-  this.unwatches = [];
 
   this.listenLayersVisibilityChange();
 

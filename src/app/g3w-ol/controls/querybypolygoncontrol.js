@@ -67,6 +67,7 @@ const QueryByPolygonControl = function(options={}) {
       message: "sdk.mapcontrols.querybypolygon.help.message",
     }
   };
+  this.unwatches = [];
 
   BaseQueryPolygonControl.call(this, _options);
   // data need to runSpatialQuery

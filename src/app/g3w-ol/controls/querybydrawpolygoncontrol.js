@@ -47,6 +47,8 @@ const QueryByDrawPolygonControl = function(options={}) {
     }
   };
 
+  this.unwatches = [];
+
   BaseQueryPolygonControl.call(this, _options);
 
   // feature used to store feature drawend
