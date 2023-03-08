@@ -332,20 +332,22 @@ proto.setLayers = function(layers=[]){
 /**
  * @param { 'intersects' | 'within' } spatialMethod
  * 
+ * @listens change-spatial-method
+ * 
  * @since 3.8.0
  */
 proto.handleChangeSpatialMethod = function(spatialMethod) {
-  let changeSpatialMethodEventKey = null;
+  let eventKey = null;
 
   const unlistenSpatialMethodChange = () => {
-    ol.Observable.unByKey(changeSpatialMethodEventKey);
-    changeSpatialMethodEventKey = null;
+    ol.Observable.unByKey(eventKey);
+    eventKey = null;
   };
 
   this.on('toggled', ({toggled}) => {
     if (true === toggled) {
-      changeSpatialMethodEventKey = this.on('change-spatial-method', this.runSpatialQuery);
-    } else if (null !== changeSpatialMethodEventKey) {
+      eventKey = this.on('change-spatial-method', this.runSpatialQuery);
+    } else if (null !== eventKey) {
       unlistenSpatialMethodChange();
       // reset to default
       this.setSpatialMethod(spatialMethod);
