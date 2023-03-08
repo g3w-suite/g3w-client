@@ -231,27 +231,28 @@
        */
       info() {
         if (this.state.query) {
-          const {query} = this.state;
+          const query               = this.state.query;
+          const queryResultsService = this.$options.queryResultsService;
           switch (query.type) {
             case 'coordinates':
               return {
                 icon: 'marker',
                 message: `  ${query.coordinates[0]}, ${query.coordinates[1]}`,
-                action: () => this.$options.queryResultsService.showCoordinates(query.coordinates),
+                action: () => queryResultsService.showCoordinates(query.coordinates),
               };
             case 'bbox':
               return {
                 icon: 'square',
                 message: `  [${query.bbox.join(' , ')}]`,
-                action: () => this.$options.queryResultsService.showBBOX(query.bbox),
+                action: () => queryResultsService.showBBOX(query.bbox),
               };
             case 'polygon':
               return {
                 icon: 'draw',
                 message: (query.layerName) ?
                   `${query.layerName} ${"undefined" !== typeof query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
-                  : ' ',                                                // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
-                action: () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry),
+                  : ' ',                                                                                        // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+                action: () => query.geometry && queryResultsService.showGeometry(query.geometry),
               };
             default:
               console.warn(`Unsupported query type:  ${query.type}`);
