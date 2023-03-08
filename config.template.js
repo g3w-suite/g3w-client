@@ -33,7 +33,7 @@ let conf = {
   },
   plugins: G3W_PLUGINS,
   keys: G3W_KEYS,
-  devConfig: function() {
+  devConfig() {
     g3wsdk.core.ApplicationService.once('ready', () => { });
     g3wsdk.core.ApplicationService.once('initconfig', () => {
       initConfig.group.vendorkeys = Object.assign(initConfig.group.vendorkeys || {}, G3W_KEYS);
