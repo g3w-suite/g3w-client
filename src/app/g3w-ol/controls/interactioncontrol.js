@@ -71,6 +71,41 @@ ol.inherits(InteractionControl, Control);
 
 const proto = InteractionControl.prototype;
 
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.change = function(layers=[]){};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.runSpatialQuery = function(){};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.clear = function(){};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.handleAddExternalLayer = function(layer, unWatches) {};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.handleRemoveExternalLayer = function(layer){};
+
 proto.isClickMap = function(){
   return this.clickmap;
 };
@@ -293,41 +328,6 @@ proto.getSpatialMethod = function(){
 proto.setLayers = function(layers=[]){
   this.layers = layers;
 };
-
-/**
- * @virtual method need to be implemented by subclasses
- *
- * @since 3.8.0
- */
-proto.change = function(layers=[]){};
-
-/**
- * @virtual method need to be implemented by subclasses
- *
- * @since 3.8.0
- */
-proto.runSpatialQuery = function(){};
-
-/**
- * @virtual method need to be implemented by subclasses
- *
- * @since 3.8.0
- */
-proto.clear = function(){};
-
-/**
- * @virtual method need to be implemented by subclasses
- *
- * @since 3.8.0
- */
-proto.handleAddExternalLayer = function(layer, unWatches) {};
-
-/**
- * @virtual method need to be implemented by subclasses
- *
- * @since 3.8.0
- */
-proto.handleRemoveExternalLayer = function(layer){};
 
 /**
  * @param { 'intersects' | 'within' } spatialMethod
