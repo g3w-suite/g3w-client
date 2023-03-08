@@ -237,8 +237,9 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
 };
 
 /**
- * @since 3.8.0
  * @param layer
+ * 
+ * @since 3.8.0
  */
 proto.handleRemoveExternalLayer = function(layer) {
   this.setEnable(this.isThereVisibleLayerNotSelected());
