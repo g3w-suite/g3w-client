@@ -45,6 +45,13 @@ const InteractionControl = function(options={}) {
    */
   this.selectedLayer = null;
 
+  /**
+   * @type {unknown[]}
+   *
+   * @since 3.8.0
+   */
+  this.externalLayers = [];
+
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
 
   Control.call(this, options);
