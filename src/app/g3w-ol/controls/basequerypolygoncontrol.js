@@ -10,7 +10,9 @@ const { Geometry }       = require('core/utils/geo');
 
 const VALIDGEOMETRIES    = Geometry.getAllPolygonGeometryTypes();
 
-const BaseQueryPolygonControl = function(options = {
+const BaseQueryPolygonControl = function(options = {}) {
+
+  const {
     spatialMethod=SPATIALMETHODS[0],
     name,
     tipLabel,
@@ -18,13 +20,8 @@ const BaseQueryPolygonControl = function(options = {
     onSelectlayer,
     enabled=true,
     interactionClass
-  } = {}) {
+  } = options;
 
-  /**
-   * @type {unknown[]}
-   *
-   * @since 3.8.0
-   */
   this.layers = options.layers || [];
 
   /**
