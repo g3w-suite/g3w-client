@@ -3,7 +3,7 @@ import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
-const {throttle} = require('core/utils/utils');
+const { throttle } = require('core/utils/utils');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 // get all filtrable layers in toc no based on selection or visibility
@@ -39,7 +39,6 @@ const QueryBBoxControl = function(options = {}) {
   /**
    * @FIXME add description
    */
-
   this.layers           = GUI.getService('map').filterableLayersAvailable(condition) || [];
   this.layers.forEach(layer => layer.setTocHighlightable(true));
 
@@ -59,8 +58,7 @@ const QueryBBoxControl = function(options = {}) {
     onSelectlayer(selectLayer) {
       if (selectLayer.isSelected()) {
         const findLayer = this.layers.find(layer => layer === selectLayer);
-        const bool = !!findLayer && findLayer.isVisible();
-        this.setEnable(bool);
+        this.setEnable(!!findLayer && findLayer.isVisible());
       } else {
         this.setEnable(this.checkEnabled(this.layers));
       }
@@ -80,7 +78,11 @@ const QueryBBoxControl = function(options = {}) {
 
   InteractionControl.call(this, _options);
 
-  //store bbox
+  /**
+   * Store bbox coordinates
+   * 
+   * @type {ol.coordinate}
+   */
   this.bbox = null;
 
 };
