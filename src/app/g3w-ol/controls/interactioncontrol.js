@@ -375,37 +375,33 @@ proto.handleChangeSpatialMethod = function(spatialMethod) {
 proto._handleExternalLayers = function() {
   const CatalogService = GUI.getService('catalog');
 
-  // store unwatches of extenal layers (selected or visible)
+  // 0. store unwatches of extenal layers (selected or visible)
   const unWatches = {};
 
+  // 1. update list `this.externalLayers`
+  // 2. update list `unWatches` of layer un-watchers (based on unique name of layer)
+  // 3. call `this.handleAddExternalLayer`
   CatalogService.onafter('addExternalLayer', ({layer, type}) => {
-
     if ('vector' === type) {
-
-      // update `this.externalLayers`
       this.externalLayers.push(layer);
-
-      // set list of un watches for layer based on name of layer (unique)
       unWatches[layer.name] = [];
-      //call handle add ExternalLayer
       this.handleAddExternalLayer(layer, unWatches);
     }
-
   });
 
+  // 4. clean up any previously attached event listener
   CatalogService.onafter('removeExternalLayer', ({name, type}) => {
-    if ('vector' !== type) {
-      return;
+    if ('vector' === type) {
+      this.externalLayers = this.externalLayers.filter(layer => {
+        if (name === layer.name) {
+          this.handleRemoveExternalLayer(layer);
+          (layer === this.selectedLayer) && this.setSelectedLayer(null);
+        }
+        return name !== layer.name;
+      });
+      unWatches[name].forEach(unWatch => unWatch());
+      delete unWatches[name];
     }
-    this.externalLayers = this.externalLayers.filter(layer => {
-      if (name === layer.name) {
-        this.handleRemoveExternalLayer(layer);
-        (layer === this.selectedLayer) && this.setSelectedLayer(null);
-      }
-      return name !== layer.name;
-    });
-    unWatches[name].forEach(unWatch => unWatch());
-    delete unWatches[name];
   });
 
 };
