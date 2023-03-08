@@ -285,19 +285,25 @@ proto.setGeometryTypes = function(types) {
   this._geometryTypes = types;
 };
 
+/**
+ * @param {ol.Map} map 
+ */
 proto.setMap = function(map) {
+
   Control.prototype.setMap.call(this, map);
+
   if (!this._interaction && this._interactionClass) {
     this._interaction = new this._interactionClass(this._interactionClassOptions);
     map.addInteraction(this._interaction);
     this._interaction.setActive(false);
   }
+
   if (this._toggled) {
     /**
      * @TODO try to find a better solution
      */
     this._toggled = false;
-    setTimeout(()=> {this.toggle(true)});
+    setTimeout(() => { this.toggle(true) });
   }
 };
 
