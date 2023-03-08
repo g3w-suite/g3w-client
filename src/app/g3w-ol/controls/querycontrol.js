@@ -1,3 +1,8 @@
+import GUI from 'services/gui';
+import ProjectsRegistry from 'store/projects';
+import DataRouterService from 'services/data';
+
+const {throttle} = require('core/utils/utils');
 const utils = require('core/utils/ol');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
@@ -20,21 +25,50 @@ ol.inherits(QueryControl, InteractionControl);
 const proto = QueryControl.prototype;
 
 proto.setMap = function(map) {
-  let eventToggledKey;
-  const querySingleClickFnc = event => {
-    this.dispatchEvent({
-      type: 'picked',
-      coordinates: event.coordinate
-    });
-    this._autountoggle && this.toggle(true);
-  };
+  let eventKey = null;
   if (map) {
-    eventToggledKey = this.on('toggled', event => {
-      const toggled = event.target.isToggled();
-      toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);
+    this.on('toggled', ({toggled}) => {
+
+      if (true === toggled) {
+        if (null === eventKey) {
+
+          eventKey = map.on('singleclick', throttle(async event => {
+            const coordinates = event.coordinate;
+            GUI.closeOpenSideBarComponent();
+            try {
+              const {data=[]} = await DataRouterService.getData('query:coordinates', {
+                inputs: {
+                  coordinates,
+                  feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+                  query_point_tolerance: ProjectsRegistry.getCurrentProject().getQueryPointTolerance,
+                  multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name),
+                }
+              });
+              data.length && GUI.getService('map').showMarker(coordinates);
+            } catch(error) {}
+
+            this.dispatchEvent({
+              type: 'picked',
+              coordinates
+            });
+
+          }));
+
+          this.setEventKey({
+            eventType: 'picked',
+            eventKey
+          });
+        }
+      } else {
+        ol.Observable.unByKey(eventKey);
+        eventKey = null;
+      }
     });
-  } else ol.Observable.unByKey(eventToggledKey);
+
+  }
+
   InteractionControl.prototype.setMap.call(this, map);
 };
+
 
 module.exports = QueryControl;
