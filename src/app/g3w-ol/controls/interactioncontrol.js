@@ -330,10 +330,11 @@ proto.handleAddExternalLayer = function(layer, unWatches) {};
 proto.handleRemoveExternalLayer = function(layer){};
 
 /**
+ * @param { 'intersects' | 'within' } spatialMethod
+ * 
  * @since 3.8.0
- * @param spatialMethod <String> intersects, within
  */
-proto.handleChangeSpatialMethod = function(spatialMethod){
+proto.handleChangeSpatialMethod = function(spatialMethod) {
   let changeSpatialMethodEventKey = null;
 
   const unlistenSpatialMethodChange = () => {
