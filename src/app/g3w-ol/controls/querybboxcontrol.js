@@ -172,32 +172,34 @@ proto.setMap = function(map) {
 };
 
 /**
- *
- * @param extent
  * @returns {Promise<void>}
+ * 
+ * @since 3.8.0
  */
 proto.runSpatialQuery = async function(){
-  if (null !== this.bbox) {
-    GUI.closeOpenSideBarComponent();
-    try {
-      const {data=[]} = await DataRouterService.getData('query:bbox', {
-        inputs: {
-          bbox: this.bbox,
-          feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
-          layersFilterObject,
-          filterConfig: {
-            spatialMethod: this.getSpatialMethod(), // added spatial method to polygon filter
-          },
-          condition,
-          multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
-        }
-      });
-      if (data.length) {
-        this.getMap().getView().setCenter(ol.extent.getCenter(this.bbox));
+  // skip if bbox is not set
+  if (null === this.bbox) {
+    return;
+  }
+  GUI.closeOpenSideBarComponent();
+  try {
+    const { data = [] } = await DataRouterService.getData('query:bbox', {
+      inputs: {
+        bbox: this.bbox,
+        feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+        layersFilterObject,
+        filterConfig: {
+          spatialMethod: this.getSpatialMethod(), // added spatial method to polygon filter
+        },
+        condition,
+        multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
       }
-    } catch(err){
-      console.log(err)
+    });
+    if (data.length) {
+      this.getMap().getView().setCenter(ol.extent.getCenter(this.bbox));
     }
+  } catch(err){
+    console.warn('Error running spatial query: ', err);
   }
 };
 
