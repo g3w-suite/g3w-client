@@ -6,11 +6,11 @@ import ProjectsRegistry from 'store/projects';
 const { throttle } = require('core/utils/utils');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
-// get all filtrable layers in toc no based on selection or visibility
+// Object contain properties of TOC layers that need to satisfy
 const layersFilterObject = {
   SELECTEDORALL: true, // selected or all
-  FILTERABLE: true,
-  VISIBLE: true
+  FILTERABLE: true, // check src/app/core/layers/layer.js#L925
+  VISIBLE: true // need to be visible
 };
 
 const condition = {
