@@ -56,10 +56,6 @@ const InteractionControl = function(options={}) {
   // set enabled
   this.setEnable(enabled);
 
-  if (toggled) {
-    this.toggle(toggled);
-  }
-
   // check if spatial method is set
   if (this.spatialMethod) {
     this.handleChangeSpatialMethod(this.spatialMethod);
@@ -261,7 +257,13 @@ proto.setMap = function(map) {
     map.addInteraction(this._interaction);
     this._interaction.setActive(false);
   }
-  this._toggled && setTimeout(()=> {this.toggle(true)});
+  if (this._toggled) {
+    /**
+     * @TODO try to find a better solution
+     */
+    this._toggled = false;
+    setTimeout(()=> {this.toggle(true)});
+  }
 };
 
 proto._handleClick = function(evt) {
