@@ -267,7 +267,7 @@ proto._hasVisibleLayer = function() {
  * 
  * @since 3.8.0
  */
-proto.hasVisibleExternalLayer = function() {
+proto._hasVisibleExternalLayer = function() {
   return !!(this.externalLayers.find(layer => layer !== this.layer && true === layer.visible));
 };
 
