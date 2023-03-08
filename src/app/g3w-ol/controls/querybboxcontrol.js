@@ -204,23 +204,21 @@ proto.runSpatialQuery = async function(){
 };
 
 /**
- * @since 3.8.0
  * @param layer
+ * @param unWatches
+ * 
+ * @since 3.8.0
  */
 proto.handleAddExternalLayer = function(layer, unWatches) {
+
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
   if (isPolygonGeometryType(layer.geometryType)) {
     unWatches[layer.name].push(
       VM.$watch(
-        () => layer.selected,                                    // watch `layer.selected` property
+        () => layer.selected,                    // watch `layer.selected` property
         selected => {
-          if (true === selected) {
-            this.setSelectedLayer(layer);
-            this.setEnable(layer.visible); // layer must be visible and selected.
-          } else {
-            this.setSelectedLayer(null);
-            this.setEnable(this.checkEnabled()); // layer must be visible and selected.
-          }
+          this.setSelectedLayer(true === selected ? layer : null);
+          this.setEnable(true === selected ? layer.visible : this.checkEnabled());
           this.toggle(this.isToggled() && this.getEnable());
         })
     );
@@ -228,7 +226,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
 
   unWatches[layer.name].push(
     VM.$watch(
-      () => layer.visible,                                       // watch `layer.visible` property
+      () => layer.visible,                       // watch `layer.visible` property
       () => {
         this.setEnable(this.checkEnabled());
         this.toggled(this.isToggled() && this.getEnable());
