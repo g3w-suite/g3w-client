@@ -23,7 +23,7 @@ const InteractionControl = function(options={}) {
   } = options;
 
   this._visible = visible;
-  this._toggled = toggled;
+  this._toggled = false;
   this.clickmap = clickmap; // check if interact with map
   this._interactionClass = interactionClass;
   this._interaction = null;
@@ -43,6 +43,11 @@ const InteractionControl = function(options={}) {
 
   Control.call(this, options);
 
+  if (true === toggled) {
+    // in case of toggled true
+    this.on('setMap', () => this.toggle(toggled));
+  }
+
   // create an help message
   if (this._help) {
     this._createModalHelp();
@@ -52,7 +57,7 @@ const InteractionControl = function(options={}) {
   if (toggledTool) {
     this.createControlTool(toggledTool);
   }
-  
+
   // set enabled
   this.setEnable(enabled);
 
@@ -298,13 +303,14 @@ proto.setMap = function(map) {
     this._interaction.setActive(false);
   }
 
-  if (this._toggled) {
-    /**
-     * @TODO try to find a better solution
-     */
-    this._toggled = false;
-    setTimeout(() => { this.toggle(true) });
-  }
+  /**
+   * @since 3.8.0
+   */
+  this.dispatchEvent({
+    type: 'setMap',
+    map
+  })
+
 };
 
 proto._handleClick = function(evt) {
