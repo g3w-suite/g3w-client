@@ -91,6 +91,9 @@ ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
 
+/**
+ * @since 3.8.0
+ */
 proto.listenLayersChange = function() {
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
@@ -131,12 +134,7 @@ proto.checkVisible = function() {
 };
 
 proto.checkEnabled = function() {
-  return !!(
-    (
-      (this.layers.length > 0) && this.layers.find(layer => layer.isVisible())
-    ) ||
-    this.externalLayers.find(layer => layer !== this.layer && true === layer.visible)
-  )
+  return !!(this._hasVisibleLayer() || this._hasVisibleExternalLayer());
 };
 
 /**
@@ -246,6 +244,24 @@ proto.handleRemoveExternalLayer = function(layer) {
  */
 proto.clear = function(){
   this.bbox = null;
+};
+
+/**
+ * @returns {boolean} whether at least one of stored `this.layers` is visible
+ * 
+ * @since 3.8.0
+ */
+proto._hasVisibleLayer = function() {
+  return !!((this.layers.length > 0) && this.layers.find(layer => layer.isVisible()));
+};
+
+/**
+ * @returns {boolean} whether at least one of stored `this.externalLayers` is visible
+ * 
+ * @since 3.8.0
+ */
+proto._hasExternalVisibleLayer = function() {
+  return !!(this.externalLayers.find(layer => layer !== this.layer && true === layer.visible));
 };
 
 module.exports = QueryBBoxControl;
