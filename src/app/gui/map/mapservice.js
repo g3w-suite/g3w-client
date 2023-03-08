@@ -644,8 +644,6 @@ proto._setupControls = function() {
 
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
-    const feature_count = this.project.getQueryFeatureCount();
-    const query_point_tolerance = this.project.getQueryPointTolerance();
     const map = this.getMap();
     //common spatial methods for map controls
     const spatialMethod = 'intersects';
@@ -779,26 +777,6 @@ proto._setupControls = function() {
           control = this.createMapControl(controlType, {
             add: true,
             toggled: true
-          });
-          const runQuery = throttle(async e => {
-            const coordinates = e.coordinates;
-            GUI.closeOpenSideBarComponent();
-            try {
-              const {data=[]} = await DataRouterService.getData('query:coordinates', {
-                inputs: {
-                  coordinates,
-                  feature_count,
-                  query_point_tolerance,
-                  multilayers: this.project.isQueryMultiLayers(controlType),
-                }
-              });
-              data.length && this.showMarker(coordinates);
-            } catch(error) {}
-          });
-          const eventKey = control.on('picked', runQuery);
-          control.setEventKey({
-            eventType: 'picked',
-            eventKey
           });
           break;
         case 'querybypolygon':
