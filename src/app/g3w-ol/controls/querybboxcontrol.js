@@ -42,7 +42,6 @@ const QueryBBoxControl = function(options = {}) {
   this.layers           = GUI.getService('map').filterableLayersAvailable(condition) || [];
   this.layers.forEach(layer => layer.setTocHighlightable(true));
 
-  options.visible       = this.checkVisible(this.layers);
   options.enabled       = options.visible && this.checkEnabled(this.layers);
 
   this.listenLayersChange();
@@ -77,6 +76,8 @@ const QueryBBoxControl = function(options = {}) {
   };
 
   InteractionControl.call(this, _options);
+
+  this.setVisible(this.checkVisible(this.layers));
 
   /**
    * Store bbox coordinates
