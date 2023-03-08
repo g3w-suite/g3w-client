@@ -38,13 +38,6 @@ const BaseQueryPolygonControl = function(options = {}) {
    */
   options.visible = this.checkVisibile(this.layers);
 
-  /**
-   * Store current selected layer
-   *
-   * @since 3.8.0
-   */
-  this.selectedLayer = null;
-
   const _options = {
     offline: false,
     name,
@@ -96,16 +89,6 @@ proto.checkVisibile = function(layers) {
  * @since v3.8.0
  */
 proto.listenLayersVisibilityChange = function() { };
-
-/**
- * @param { unknown | null } layer
- *
- * @since 3.8.0
- */
-
-proto.setSelectedLayer = function(layer) {
-  this.selectedLayer = layer;
-};
 
 proto.change = function(layers=[]) {
   this.layers = layers;

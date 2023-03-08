@@ -207,16 +207,6 @@ proto.isThereVisibleLayerNotSelected = function(){
 };
 
 /**
- * @param { unknown | null } layer
- * 
- * @since 3.8.0
- */
-
-proto.setSelectedLayer = function(layer) {
-  this.selectedLayer = layer;
-};
-
-/**
  * @deprecated since v3.8.0. Will be removed in v4.0.0. Use `QueryByPolygonControl::listenLayersVisibilityChange()` instead.
  */
 proto.listenPolygonLayersChange = function() {

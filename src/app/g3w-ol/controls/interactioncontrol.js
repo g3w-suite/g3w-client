@@ -38,6 +38,12 @@ const InteractionControl = function(options={}) {
   this.spatialMethod = spatialMethod;
   this.toggledTool;
   this._interactionClassOptions = interactionClassOptions;
+  /**
+   * Store current selected layer
+   *
+   * @since 3.8.0
+   */
+  this.selectedLayer = null;
 
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
 
@@ -71,6 +77,15 @@ const InteractionControl = function(options={}) {
 ol.inherits(InteractionControl, Control);
 
 const proto = InteractionControl.prototype;
+
+/**
+ * @param { unknown | null } layer
+ *
+ * @since 3.8.0
+ */
+proto.setSelectedLayer = function(layer) {
+  this.selectedLayer = layer;
+};
 
 /**
  * @virtual method need to be implemented by subclasses
