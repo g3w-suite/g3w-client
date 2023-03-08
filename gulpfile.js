@@ -479,9 +479,9 @@ gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatena
 gulp.task('build', done => runSequence(
   'production',
   // 'clean:admin',
-  'clean:overrides',
   'clone:default_plugins',
   'build:client',
+  'clean:overrides',
   done
   )
 );
