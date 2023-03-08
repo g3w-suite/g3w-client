@@ -174,12 +174,15 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
+/**
+ * Toggle pointer events and `g3w-ol-disabled` class on map control button
+ * 
+ * @param {boolean} enabled wheter the map control button is clickable
+ */
 proto.setEnable = function(enabled) {
-  const controlButton = $(this.element).find('button').first();
-  if (enabled) controlButton.removeClass('g3w-ol-disabled');
-  else {
-    controlButton.addClass('g3w-ol-disabled');
-    this._interaction && this._interaction.setActive(false);
+  $(this.element).find('button').first().toggleClass('g3w-ol-disabled', !enabled);
+  if(!enabled && this._interaction) {
+    this._interaction.setActive(false);
   }
   this._enabled = enabled;
 };
