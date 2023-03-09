@@ -30,47 +30,54 @@ const proto = QueryControl.prototype;
  * @listens InteractionControl~toggled
  */
 proto.setMap = function(map) {
-  let eventKey = null;
+ let eventSingleClickKey = null;
 
   this.on('toggled', ({toggled}) => {
 
     if (true !== toggled) {
-      ol.Observable.unByKey(eventKey);
-      eventKey = null;
-    } else if (null === eventKey && map) {
-      eventKey = map
-        .on('singleclick', throttle(async event => {
-          const coordinates = event.coordinate;
-
-          GUI.closeOpenSideBarComponent();
-
-          try {
-            const project = ProjectsRegistry.getCurrentProject();
-            const { data = [] } = await DataRouterService.getData('query:coordinates', {
-              inputs: {
-                coordinates,
-                feature_count: project.getQueryFeatureCount(),
-                query_point_tolerance: project.getQueryPointTolerance(),
-                multilayers: project.isQueryMultiLayers(this.name),
-              }
-            });
-            if (data.length) {
-              GUI.getService('map').showMarker(coordinates);
-            }
-          } catch(err) {
-            console.warn('Error running spatial query: ', err)
-          }
-
-          this.dispatchEvent({ type: 'picked', coordinates });
-
-        }));
-
-      this.setEventKey({ eventType: 'picked', eventKey });
+      ol.Observable.unByKey(eventSingleClickKey);
+      eventSingleClickKey = null;
+    } else if (null === eventSingleClickKey && map) {
+      // register click on map event. It use to dispatch picked event by control
+      eventSingleClickKey = map
+        .on('singleclick', throttle(evt => this.dispatchEvent({ type: 'picked', coordinates:evt.coordinate })));
     }
+  });
 
+  const eventPickedKey = this.on('picked', this.runQuery);
+
+  this.setEventKey({
+    eventType: 'picked',
+    eventKey: eventPickedKey
   });
 
   InteractionControl.prototype.setMap.call(this, map);
+};
+
+/**
+ * @since 3.8.0
+ * @param event
+ */
+proto.runQuery = async function({coordinates}) {
+
+  GUI.closeOpenSideBarComponent();
+  try {
+    const project = ProjectsRegistry.getCurrentProject();
+    const { data = [] } = await DataRouterService.getData('query:coordinates', {
+      inputs: {
+        coordinates,
+        feature_count: project.getQueryFeatureCount(),
+        query_point_tolerance: project.getQueryPointTolerance(),
+        multilayers: project.isQueryMultiLayers(this.name),
+      }
+    });
+    if (data.length) {
+      GUI.getService('map').showMarker(coordinates);
+    }
+  } catch(err) {
+    console.warn('Error running spatial query: ', err)
+  }
+
 };
 
 
