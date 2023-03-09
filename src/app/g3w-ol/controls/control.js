@@ -77,7 +77,7 @@ proto.isToggled = function() {
 proto.setEventKey = function({eventType, eventKey}){
   this.eventKeys[eventType] = {
     eventKey,
-    originalHandler: eventKey.linstener
+    originalHandler: eventKey.listener
   };
 };
 
