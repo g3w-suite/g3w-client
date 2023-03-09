@@ -88,10 +88,14 @@ proto.listenLayersVisibilityChange = function() {
       VM.$watch(
         () =>  layer.state.visible,
         visible => {
+          if (layer.isSelected()) {
+            this.setEnable(visible && this.isThereVisibleLayerNotSelected());
+          } else {
+            this.setEnable(this.isThereVisibleLayerNotSelected())
+          }
           // enable control only if current changed visible layer is true or
           // if at least one layer (not selected) is visible
-          this.setEnable(null !== this.selectedLayer ? this.isThereVisibleLayerNotSelected() : false);
-          this.toggle(null !== this.selectedLayer ? this.isToggled() && this.getEnable() : false);
+          this.toggle( this.isToggled() && this.getEnable());
         }
       )
     );
@@ -202,8 +206,8 @@ proto.isThereVisibleLayerNotSelected = function() {
     this.isSelectedLayerVisible() &&
     // check if at least one layer is visible (project or external layer)
     (
-      this.layers.find(layer => layer !== this.selectedLayer && layer.isVisible()) ||
-      this.externalLayers.find(layer => layer !== this.layer && true === layer.visible)
+      this.layers.find(layer => layer !== this.selectedLayer && (layer.isVisible() && layer.isFilterable(condition.filtrable))) ||
+      this.externalLayers.find(layer => layer !== this.selectedLayer && true === layer.visible)
     )
   )
 };
@@ -229,21 +233,29 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
       VM.$watch(
         () => layer.selected,                                    // watch `layer.selected` property
         selected => {
-          this.setSelectedLayer(true === selected ? layer : null);
-          this.setEnable(true === selected ? layer.isvisible && this.isThereVisibleLayerNotSelected() : false);
+          if (true === selected) {
+            this.setSelectedLayer(layer);
+            this.setEnable(layer.visible && this.isThereVisibleLayerNotSelected());
+          } else {
+            this.setEnable(false);
+          }
+          this.toggle(this.isToggled() && this.getEnable());
+        })
+    );
+
+    unWatches[layer.name].push(
+      VM.$watch(
+        () => layer.visible,                                       // watch `layer.visible` property
+        (visible) => {
+          if (layer.selected){
+            this.setEnable(visible && this.isThereVisibleLayerNotSelected());
+          } else {
+            this.setEnable(this.isThereVisibleLayerNotSelected());
+          }
           this.toggle(this.isToggled() && this.getEnable());
         })
     );
   }
-
-  unWatches[layer.name].push(
-    VM.$watch(
-      () => layer.visible,                                       // watch `layer.visible` property
-      (visible) => {
-        this.setEnable(true === visible ? this.isThereVisibleLayerNotSelected() : !this.selected && this.isThereVisibleLayerNotSelected());
-        this.toggle(this.isToggled() && this.getEnable());
-      })
-  );
 
   this.setEnable(this.isThereVisibleLayerNotSelected());
 };
@@ -252,7 +264,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
  * @since 3.8.0
  * @param layer
  */
-proto.handleRemoveExternalLayer = function(layer) {
+proto.handleRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayerNotSelected());
 };
 
