@@ -3,7 +3,8 @@ import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
-const { throttle } = require('core/utils/utils');
+const { throttle }       = require('core/utils/utils');
+const { Geometry }       = require('core/utils/geo');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 // Object contain properties of TOC layers that need to satisfy
@@ -213,7 +214,7 @@ proto.runSpatialQuery = async function(){
 proto.handleAddExternalLayer = function(layer, unWatches) {
 
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
-  if (isPolygonGeometryType(layer.geometryType)) {
+  if (Geometry.isPolygonGeometryType(layer.geometryType)) {
     unWatches[layer.name].push(
       VM.$watch(
         () => layer.selected,                    // watch `layer.selected` property
