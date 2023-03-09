@@ -644,7 +644,6 @@ proto._setupControls = function() {
 
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
-    const map = this.getMap();
     //common spatial methods for map controls
     const spatialMethod = 'intersects';
     mapcontrols.forEach(mapcontrol => {
