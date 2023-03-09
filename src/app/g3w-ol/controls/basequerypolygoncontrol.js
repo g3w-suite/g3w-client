@@ -56,8 +56,6 @@ const BaseQueryPolygonControl = function(options = {}) {
 
   // starting disabled
   this.setEnable(enabled);
-
-  this._handleExternalLayers();
 };
 
 ol.inherits(BaseQueryPolygonControl, InteractionControl);

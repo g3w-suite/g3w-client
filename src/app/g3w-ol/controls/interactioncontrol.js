@@ -38,23 +38,17 @@ const InteractionControl = function(options={}) {
   this.spatialMethod = spatialMethod;
   this.toggledTool;
   this._interactionClassOptions = interactionClassOptions;
+
+  options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
+
+  Control.call(this, options);
+
   /**
    * Store current selected layer
    *
    * @since 3.8.0
    */
   this.selectedLayer = null;
-
-  /**
-   * @type {unknown[]}
-   *
-   * @since 3.8.0
-   */
-  this.externalLayers = [];
-
-  options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
-
-  Control.call(this, options);
 
   if (true === toggled) {
     // in case of toggled true
@@ -79,11 +73,31 @@ const InteractionControl = function(options={}) {
     this.handleChangeSpatialMethod(this.spatialMethod);
   }
 
+  /**
+   * @since 3.8.0
+   * Here put method or logic that are done just one time
+   */
+  if (false === InteractionControl.instanced) {
+    this._handleExternalLayers();
+    InteractionControl.instanced = true;
+  }
 };
 
 ol.inherits(InteractionControl, Control);
 
+/**
+ * Classe property
+ * @type {boolean}
+ */
+InteractionControl.instanced = false;
+
 const proto = InteractionControl.prototype;
+
+/**
+ * Class property
+ * @type {boolean}
+ */
+InteractionControl.instanced = false;
 
 /**
  * @param { unknown | null } layer
@@ -403,7 +417,7 @@ proto.handleChangeSpatialMethod = function(spatialMethod) {
 proto._handleExternalLayers = function() {
   const CatalogService = GUI.getService('catalog');
 
-  // 0. store unwatches of extenal layers (selected or visible)
+  // 0. store unwatches of external layers (selected or visible)
   const unWatches = {};
 
   // 1. update list `this.externalLayers`
@@ -433,5 +447,11 @@ proto._handleExternalLayers = function() {
   });
 
 };
+
+/**
+ * Store external vector layers add to project
+ * @since 3.8.0
+ */
+proto.externalLayers = [];
 
 module.exports = InteractionControl;
