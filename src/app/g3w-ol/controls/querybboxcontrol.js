@@ -40,15 +40,12 @@ const QueryBBoxControl = function(options = {}) {
   /**
    * @FIXME add description
    */
-  this.layers           = GUI.getService('map').filterableLayersAvailable(condition) || [];
-  this.layers.forEach(layer => layer.setTocHighlightable(true));
-
-  options.enabled       = options.visible && this.checkEnabled(this.layers);
-
-  this.listenLayersChange();
+  const layers           = GUI.getService('map').filterableLayersAvailable(condition) || [];
+  layers.forEach(layer => layer.setTocHighlightable(true));
 
   const _options = {
     ...options,
+    layers,
     offline: false,
     name: "querybbox",
     tipLabel: "sdk.mapcontrols.querybybbox.tooltip",
@@ -77,8 +74,8 @@ const QueryBBoxControl = function(options = {}) {
   };
 
   InteractionControl.call(this, _options);
-
   this.setVisible(this.checkVisible(this.layers));
+  this.setEnable(this.checkEnabled(this.layers));
 
   /**
    * Store bbox coordinates
@@ -96,7 +93,7 @@ const proto = QueryBBoxControl.prototype;
 /**
  * @since 3.8.0
  */
-proto.listenLayersChange = function() {
+proto.listenLayersVisibilityChange = function() {
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
@@ -108,11 +105,9 @@ proto.listenLayersChange = function() {
             if (true === layer.state.selected) {
               this.setEnable(visible);
             } else {
-              const enabled = this.checkEnabled(this.layers);
-              if (this.getEnable() !== enabled) {
-                this.setEnable(enabled)
-              }
+              this.setEnable(this.checkEnabled(this.layers))
             }
+            this.toggle(this.isToggled() && this.getEnable());
           }
         )
       )
@@ -128,7 +123,7 @@ proto.change = function(layers=[]) {
   this.layers = layers;
   this.setVisible(this.checkVisible());
   this.setEnable(this.checkEnabled());
-  this.listenLayersChange();
+  this.listenLayersVisibilityChange();
 };
 
 proto.checkVisible = function() {
@@ -212,7 +207,6 @@ proto.runSpatialQuery = async function(){
  * @since 3.8.0
  */
 proto.handleAddExternalLayer = function(layer, unWatches) {
-
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
   if (Geometry.isPolygonGeometryType(layer.geometryType)) {
     unWatches[layer.name].push(
@@ -231,7 +225,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
       () => layer.visible,                       // watch `layer.visible` property
       () => {
         this.setEnable(this.checkEnabled());
-        this.toggled(this.isToggled() && this.getEnable());
+        this.toggle(this.isToggled() && this.getEnable());
       })
   );
 
@@ -243,7 +237,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
  * 
  * @since 3.8.0
  */
-proto.handleRemoveExternalLayer = function(layer) {
+proto.handleRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayerNotSelected());
 };
 
@@ -255,22 +249,5 @@ proto.clear = function(){
   this.bbox = null;
 };
 
-/**
- * @returns {boolean} whether at least one of stored `this.layers` is visible
- * 
- * @since 3.8.0
- */
-proto._hasVisibleLayer = function() {
-  return !!((this.layers.length > 0) && this.layers.find(layer => layer.isVisible()));
-};
-
-/**
- * @returns {boolean} whether at least one of stored `this.externalLayers` is visible
- * 
- * @since 3.8.0
- */
-proto._hasVisibleExternalLayer = function() {
-  return !!(this.externalLayers.find(layer => layer !== this.layer && true === layer.visible));
-};
 
 module.exports = QueryBBoxControl;

@@ -59,10 +59,7 @@ const QueryByPolygonControl = function(options={}) {
     }
   };
 
-  /**
-   * @since 3.8.0
-   */
-  this.unwatches = [];
+
 
   BaseQueryPolygonControl.call(this, _options);
 

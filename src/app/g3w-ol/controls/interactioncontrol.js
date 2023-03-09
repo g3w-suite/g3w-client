@@ -1,4 +1,4 @@
-import { SPATIALMETHODS } from 'g3w-ol/constants';
+import { VM, SPATIALMETHODS } from 'g3w-ol/constants';
 import GUI from 'services/gui';
 
 const { t } = require('core/i18n/i18n.service');
@@ -19,8 +19,20 @@ const InteractionControl = function(options={}) {
     help=null,
     toggledTool,
     interactionClassOptions={},
+    layers=[],
     spatialMethod
   } = options;
+
+  /**
+   * @since 3.8.0
+   */
+  this.layers = layers; // project layers dependecies
+  /**
+   * @since 3.8.0
+   */
+  this.unwatches = [];
+
+  this.listenLayersVisibilityChange();
 
   this._visible = visible;
   this._toggled = false;
@@ -42,13 +54,6 @@ const InteractionControl = function(options={}) {
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
 
   Control.call(this, options);
-
-  /**
-   * Store current selected layer
-   *
-   * @since 3.8.0
-   */
-  this.selectedLayer = null;
 
   if (true === toggled) {
     // in case of toggled true
@@ -77,27 +82,14 @@ const InteractionControl = function(options={}) {
    * @since 3.8.0
    * Here put method or logic that are done just one time
    */
-  if (false === InteractionControl.instanced) {
-    this._handleExternalLayers();
-    InteractionControl.instanced = true;
-  }
+  this.externalLayers = [];
+  this._handleExternalLayers();
+
 };
 
 ol.inherits(InteractionControl, Control);
 
-/**
- * Classe property
- * @type {boolean}
- */
-InteractionControl.instanced = false;
-
 const proto = InteractionControl.prototype;
-
-/**
- * Class property
- * @type {boolean}
- */
-InteractionControl.instanced = false;
 
 /**
  * @param { unknown | null } layer
@@ -113,7 +105,13 @@ proto.setSelectedLayer = function(layer) {
  *
  * @since 3.8.0
  */
-proto.change = function(layers=[]){};
+proto.change = function(layers=[]) {
+  this.layers = layers;
+  const visible = this.checkVisibile(layers);
+  this.setVisible(visible);
+  this.setEnable(false);
+  this.listenLayersVisibilityChange();
+};
 
 /**
  * @virtual method need to be implemented by subclasses
@@ -142,6 +140,49 @@ proto.handleAddExternalLayer = function(layer, unWatches) {};
  * @since 3.8.0
  */
 proto.handleRemoveExternalLayer = function(layer){};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.handleSelectedLayer = function(event) {};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ * @param event <Object> {type: <String>, data:<Object>}
+ * @since 3.8.0
+ */
+proto.handleExternalSelectedLayer = function(layer){};
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @param layers
+ * @returns {boolean}
+ *
+ * @since 3.8.0
+ */
+proto.checkVisibile = function(layers) {
+  return true;
+};
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @param layers
+ * @returns {boolean}
+ *
+ * @since 3.8.0
+ */
+proto.checkVisibile = function(layers) {
+  return true;
+};
+
+/**
+ * @virtual method need to be implemented by subclasses
+ *
+ * @since v3.8.0
+ */
+proto.listenLayersVisibilityChange = function() { };
 
 proto.isClickMap = function(){
   return this.clickmap;
@@ -407,6 +448,19 @@ proto.handleChangeSpatialMethod = function(spatialMethod) {
 };
 
 /**
+ * @since 3.8.0
+ */
+proto._handleSelectedLayers = function(){
+  GUI.getService('map').on('cataloglayerselected', layer => {
+    if (layer && ('function' === typeof this.onSelectLayer)){
+      this.dispatchEvent({
+        type: 'cataloglayerselected'
+      })
+    }
+  })
+};
+
+/**
  * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
  *
  * @listens CatalogService~addExternalLayer
@@ -449,9 +503,48 @@ proto._handleExternalLayers = function() {
 };
 
 /**
- * Store external vector layers add to project
  * @since 3.8.0
  */
-proto.externalLayers = [];
+proto.watchLayer = function(expOrFn, callback) {
+  return VM.$watch(expOrFn, callback)
+};
+
+/**
+ * @returns {boolean}
+ *
+ * @since 3.8.0
+ */
+proto.isSelectedLayerVisible = function() {
+  return (
+    'function' === typeof this.selectedLayer.isVisible
+      ? this.selectedLayer.isVisible()                 // in case of a project project
+      : this.selectedLayer.visible                     // in case of external layer
+  )
+};
+
+/**
+ * @returns {boolean} whether at least one of stored `this.layers` is visible
+ *
+ * @since 3.8.0
+ */
+proto._hasVisibleLayer = function() {
+  return !!((this.layers.length > 0) && this.layers.find(layer => layer.isVisible()));
+};
+
+/**
+ * @returns {boolean} whether at least one of stored `this.externalLayers` is visible
+ *
+ * @since 3.8.0
+ */
+proto._hasVisibleExternalLayer = function() {
+  return !!(this.externalLayers.find(layer => layer !== this.layer && true === layer.visible));
+};
+
+/**
+ * Store current selected layer
+ *
+ * @since 3.8.0
+ */
+proto.selectedLayer = null;
 
 module.exports = InteractionControl;
