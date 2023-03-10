@@ -2530,7 +2530,8 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       opacity,
       color,
       filter: vectorLayer.filter,
-      selection: vectorLayer.selection
+      selection: vectorLayer.selection,
+      tochighlightable: false //@since 3.8.0
     };
   }
 

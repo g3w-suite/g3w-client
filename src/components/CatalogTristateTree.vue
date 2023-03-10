@@ -267,7 +267,19 @@ export default {
       this.layerstree.selected = (this.layerstree.disabled && this.layerstree.selected) ? false : this.layerstree.selected;
     },
     isHighLight() {
-      return this.highlightlayers && !this.isGroup && CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() && this.layerstree.visible;
+      return (
+        (
+          this.highlightlayers &&
+          !this.isGroup &&
+          CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() &&
+          this.layerstree.visible
+        ) || (
+          this.layerstree.external &&
+          this.layerstree.visible &&
+          "vector" && this.layerstree._type &&
+          true === this.layerstree.tochighlightable
+        )
+      )
     },
     isInGrey() {
       return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
