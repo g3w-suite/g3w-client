@@ -1,5 +1,6 @@
 import { VM, SPATIALMETHODS } from 'g3w-ol/constants';
 import GUI from 'services/gui';
+import ControlsRegistry from 'store/map-controls'
 
 const { t } = require('core/i18n/i18n.service');
 const Control = require('g3w-ol/controls/control');
@@ -14,7 +15,6 @@ const InteractionControl = function(options={}) {
     interactionClass=null,
     autountoggle=false,
     geometryTypes=[],
-    onSelectlayer,
     onhover=false,
     help=null,
     toggledTool,
@@ -41,7 +41,6 @@ const InteractionControl = function(options={}) {
   this._interaction = null;
   this._autountoggle = autountoggle;
   this._geometryTypes = geometryTypes; // array of types geometries
-  this.onSelectLayer = onSelectlayer;
   this._onhover = onhover;
   this._help = help;
   this._helpButton; // used to show help info button
@@ -80,16 +79,21 @@ const InteractionControl = function(options={}) {
 
   /**
    * @since 3.8.0
-   * Here put method or logic that are done just one time
    */
-  this.externalLayers = [];
-  this._handleExternalLayers();
+  this.externalLayers = ControlsRegistry.externalLayers;
+  /**
+   * Store current selected layer
+   *
+   * @since 3.8.0
+   */
+  proto.selectedLayer = ControlsRegistry.selectedLayer;
 
 };
 
 ol.inherits(InteractionControl, Control);
 
 const proto = InteractionControl.prototype;
+
 
 /**
  * @param { unknown | null } layer
@@ -102,6 +106,13 @@ proto.setSelectedLayer = function(layer) {
 
 /**
  * @virtual method need to be implemented by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.onSelectLayer = function(){};
+
+/**
+ * method override by subclasses
  *
  * @since 3.8.0
  */
@@ -132,14 +143,14 @@ proto.clear = function(){};
  *
  * @since 3.8.0
  */
-proto.handleAddExternalLayer = function(layer, unWatches) {};
+proto.onAddExternalLayer = function({layer, unWatches}={}) {};
 
 /**
  * @virtual method need to be implemented by subclasses
  *
  * @since 3.8.0
  */
-proto.handleRemoveExternalLayer = function(layer){};
+proto.onRemoveExternalLayer = function(layer){};
 
 /**
  * @virtual method need to be implemented by subclasses
@@ -460,47 +471,6 @@ proto._handleSelectedLayers = function(){
   })
 };
 
-/**
- * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
- *
- * @listens CatalogService~addExternalLayer
- * @listens CatalogService~removeExternalLayer
- *
- * @since 3.8.0
- */
-proto._handleExternalLayers = function() {
-  const CatalogService = GUI.getService('catalog');
-
-  // 0. store unwatches of external layers (selected or visible)
-  const unWatches = {};
-
-  // 1. update list `this.externalLayers`
-  // 2. update list `unWatches` of layer un-watchers (based on unique name of layer)
-  // 3. call `this.handleAddExternalLayer`
-  CatalogService.onafter('addExternalLayer', ({layer, type}) => {
-    if ('vector' === type) {
-      this.externalLayers.push(layer);
-      unWatches[layer.name] = [];
-      this.handleAddExternalLayer(layer, unWatches);
-    }
-  });
-
-  // 4. clean up any previously attached event listener
-  CatalogService.onafter('removeExternalLayer', ({name, type}) => {
-    if ('vector' === type) {
-      this.externalLayers = this.externalLayers.filter(layer => {
-        if (name === layer.name) {
-          this.handleRemoveExternalLayer(layer);
-          (layer === this.selectedLayer) && this.setSelectedLayer(null);
-        }
-        return name !== layer.name;
-      });
-      unWatches[name].forEach(unWatch => unWatch());
-      delete unWatches[name];
-    }
-  });
-
-};
 
 /**
  * @since 3.8.0
@@ -539,12 +509,5 @@ proto._hasVisibleLayer = function() {
 proto._hasVisibleExternalLayer = function() {
   return !!(this.externalLayers.find(layer => layer !== this.layer && true === layer.visible));
 };
-
-/**
- * Store current selected layer
- *
- * @since 3.8.0
- */
-proto.selectedLayer = null;
 
 module.exports = InteractionControl;

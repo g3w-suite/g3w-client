@@ -257,13 +257,7 @@ function MapService(options={}) {
   };
 
   this._onCatalogSelectLayer = function(layer) {
-    if (layer) {
-      for (let i = 0; i < this._mapControls.length; i++) {
-        const mapcontrol = this._mapControls[i];
-        //is a function
-        if (mapcontrol.control.onSelectLayer) mapcontrol.control.onSelectLayer(layer);
-      }
-    }
+    ControlsRegistry.catalogSelectedLayer(layer);
   };
 
   this.on('cataloglayerselected', this._onCatalogSelectLayer);

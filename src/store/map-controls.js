@@ -12,6 +12,63 @@ const G3WObject = require('core/g3wobject');
 function ControlsRegistry() {
   this._controls = {};
   this._offlineids = [];
+  this.selectedLayer = null;
+  this.externalLayers = [];
+
+  ApplicationService.on('complete', ()=> {
+    /**
+     * since 3.8.0
+     */
+    const CatalogService = GUI.getService('catalog');
+
+    // 0. store unwatches of external layers (selected or visible)
+    const unWatches = {};
+
+    /**
+     * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
+     *
+     * @listens CatalogService~addExternalLayer
+     * @listens CatalogService~removeExternalLayer
+     *
+     * @since 3.8.0
+     */
+
+    // 1. update list `this.externalLayers`
+    // 2. update list `unWatches` of layer un-watchers (based on unique name of layer)
+    // 3. call `this.onAddExternalLayer`
+    CatalogService.onafter('addExternalLayer', ({layer, type}) => {
+      if ('vector' === type) {
+        this.externalLayers.push(layer);
+        unWatches[layer.name] = [];
+        this.callControlsEventHandler({
+          handler: 'onAddExternalLayer',
+          param: {
+            layer,
+            unWatches
+          }
+        });
+      }
+    });
+
+    // 4. clean up any previously attached event listener
+    CatalogService.onafter('removeExternalLayer', ({name, type}) => {
+      if ('vector' === type) {
+        this.externalLayers = this.externalLayers.filter(layer => {
+          if (name === layer.name) {
+            this.callControlsEventHandler({
+              handler: 'handleRemoveExternalLayer',
+              param: layer
+            });
+            (layer === this.selectedLayer) && this.setSelectedLayer(null);
+          }
+          return name !== layer.name;
+        });
+        unWatches[name].forEach(unWatch => unWatch());
+        delete unWatches[name];
+      }
+    });
+  });
+
   ApplicationService.onbefore('offline', () =>{
     this._offlineids.forEach(controlItem => {
       const {id} = controlItem;
@@ -32,6 +89,29 @@ function ControlsRegistry() {
     registerControl(id, control) {
       this._registerControl(id, control);
     }
+  };
+
+  /**
+   * @since 3.8.0
+   */
+  this.catalogSelectedLayer = function(layer){
+    this.callControlsEventHandler({
+      handler: 'onSelectLayer',
+      param: layer
+    });
+  };
+
+  /**
+   * @since 3.8.0
+   * @param handler <String> method name
+   * @param param <Any>
+   */
+  this.callControlsEventHandler = function({handler, param}){
+    Object.values(this._controls).forEach((control) => {
+      if ('function' === typeof control[handler]) {
+        control[handler](param)
+      }
+    })
   };
 
   this._registerControl = function(id, control) {
