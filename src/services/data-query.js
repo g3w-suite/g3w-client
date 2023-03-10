@@ -43,7 +43,12 @@ function QueryService(){
     /** @since 3.8.0 */
     excludeSelected = null,
     /** @since 3.8.0 **/
-    addExternal = true,
+    external = {
+      add: true,
+      filter: {
+        SELECTED : false
+      }
+    }
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
@@ -93,15 +98,7 @@ function QueryService(){
         layerName,
         type: 'polygon',
         filterConfig,
-        external: {
-          add: addExternal,
-          filter: {
-            /**
-             * @TODO find easy way to manage it
-             */
-            SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : hasExternalLayersSelected
-          }
-        }
+        external
       }
     );
   };

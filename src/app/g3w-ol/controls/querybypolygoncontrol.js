@@ -70,11 +70,9 @@ proto.onSelectLayer = function(layer) {
     layer.isQueryable() &&
     -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
   ) {
-    this.setSelectedLayer(layer);
     this.setEnable(this.isThereVisibleLayerNotSelected());
     this.toggle(this.isToggled() && this.getEnable())
   } else {
-    this.setSelectedLayer(null);
     this.setEnable(false);
     this.toggle(false);
   }
@@ -295,6 +293,12 @@ proto.runSpatialQuery = async function() {
       layerName: this.data.layer.getName ? this.data.layer.getName() : this.data.layer.get('name'),
       excludeSelected: true,
       feature: this.data.feature,
+      external: {
+        add: true,
+        filter: {
+          SELECTED: false
+        }
+      },
       filterConfig:{
         spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
       },
