@@ -50,11 +50,9 @@ proto.onSelectLayer = function(layer) {
   if (
     layer
   ) {
-    this.setSelectedLayer(layer);
     this.setEnable(layer.isFilterable());
   } else {
-    this.setSelectedLayer(null);
-    this.setEnable(true);
+    this.setEnable(false);
   }
   this.toggle(this.isToggled() && this.getEnable());
 };
@@ -119,6 +117,7 @@ proto.listenLayersVisibilityChange = function() {
           // if at least one layer (not selected) is visible
           this.setEnable(this.isSelectedLayerVisible());
         }
+        this.toggle(this.isToggled() && this.getEnable())
       }));
   });
 };
@@ -131,19 +130,16 @@ proto.listenLayersVisibilityChange = function() {
  */
 proto.onAddExternalLayer = function({layer, unWatches}) {
 
-  unWatches[layer.name].push(
+  unWatches.push(
     this.watchLayer(
       () => layer.selected,                                    // watch `layer.selected` property
       selected => {
-        this.setSelectedLayer(true === selected ? layer : null);
         this.setEnable(true === selected ? layer.visible : this.isThereVisibleLayers());
-        if (true !== selected) {
-          this.toggle(this.isToggled() && this.getEnable());
-        }
+        this.toggle(this.isToggled() && this.getEnable());
       })
   );
 
-  unWatches[layer.name].push(
+  unWatches.push(
     this.watchLayer(
       () => layer.visible,                                     // watch `layer.visible` property
       (visible) => {

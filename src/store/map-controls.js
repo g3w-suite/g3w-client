@@ -5,6 +5,7 @@
 
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
+import { VM } from 'g3w-ol/constants';
 
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -39,12 +40,19 @@ function ControlsRegistry() {
     CatalogService.onafter('addExternalLayer', ({layer, type}) => {
       if ('vector' === type) {
         this.externalLayers.push(layer);
-        unWatches[layer.name] = [];
+        // Add event listener of selected property to set selected layer
+        unWatches[layer.name] = [
+          VM.$watch(() => layer.selected, // watch `layer.selected` property
+            selected => {
+              this.setSelectedLayer(true === selected ? layer : null);
+            })
+        ];
+
         this.callControlsEventHandler({
           handler: 'onAddExternalLayer',
           param: {
             layer,
-            unWatches
+            unWatches: unWatches[layer.name]
           }
         });
       }
@@ -117,11 +125,9 @@ function ControlsRegistry() {
    * @since 3.8.0
    */
   this.catalogSelectedLayer = function(layer){
-    if (layer.isSelected()){
-      this.setSelectedLayer(layer);
-    } else {
-      this.setSelectedLayer(layer);
-    }
+
+    this.setSelectedLayer(layer.isSelected() ? layer : null);
+
     this.callControlsEventHandler({
       handler: 'onSelectLayer',
       param: this.selectedLayer

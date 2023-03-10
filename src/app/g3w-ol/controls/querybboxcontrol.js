@@ -1,4 +1,4 @@
-import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
+import { SPATIALMETHODS } from 'g3w-ol/constants';
 import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
@@ -110,7 +110,7 @@ proto.listenLayersVisibilityChange = function() {
   this.layers.forEach(layer => {
     this.unwatches
       .push(
-        VM.$watch(
+        this.watchLayer(
           () => layer.state.visible,
           visible => {
             if (true === layer.state.selected) {
@@ -222,18 +222,17 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
   //set layer property
   layer.tochighlightable = this.isToggled() && this.getEnable();
 
-  unWatches[layer.name].push(
-    VM.$watch(
+  unWatches.push(
+    this.watchLayer(
       () => layer.selected,                    // watch `layer.selected` property
       selected => {
-        this.setSelectedLayer(true === selected ? layer : null);
         this.setEnable(true === selected ? layer.visible : this.checkEnabled());
         this.toggle(this.isToggled() && this.getEnable());
       })
   );
 
-  unWatches[layer.name].push(
-    VM.$watch(
+  unWatches.push(
+    this.watchLayer(
       () => layer.visible,                       // watch `layer.visible` property
       () => {
         this.setEnable(this.checkEnabled());

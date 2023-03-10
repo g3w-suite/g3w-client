@@ -1,4 +1,3 @@
-import { VM } from 'g3w-ol/constants';
 import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
@@ -89,7 +88,7 @@ proto.listenLayersVisibilityChange = function() {
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
     this.unwatches.push(
-      VM.$watch(
+      this.watchLayer(
         () =>  layer.state.visible,
         visible => {
           if (layer === this.getSelectedLayer()) {
@@ -233,12 +232,11 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
 
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
   if (Geometry.isPolygonGeometryType(layer.geometryType)) {
-    unWatches[layer.name].push(
-      VM.$watch(
+    unWatches.push(
+      this.watchLayer(
         () => layer.selected,                                    // watch `layer.selected` property
         selected => {
           if (true === selected) {
-            this.setSelectedLayer(layer);
             this.setEnable(layer.visible && this.isThereVisibleLayerNotSelected());
           } else {
             this.setEnable(false);
@@ -247,8 +245,8 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
         })
     );
 
-    unWatches[layer.name].push(
-      VM.$watch(
+    unWatches.push(
+      this.watchLayer(
         () => layer.visible,                                       // watch `layer.visible` property
         (visible) => {
           if (layer.selected){
