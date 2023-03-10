@@ -66,16 +66,15 @@ proto.setMap = function(map) {
   
   BaseQueryPolygonControl.prototype.setMap.call(this, map);
 
-  const eventKey = this._interaction.on('drawend', throttle(evt => {
+ this._interaction.on('drawend', throttle(evt => {
     this.feature = evt.feature;
     this.dispatchEvent({ type: 'drawend', feature: this.feature });
-
-    this.runSpatialQuery();
-
     if (this._autountoggle) {
       this.toggle();
     }
   }));
+
+  const eventKey = this.on('drawend', this.runSpatialQuery);
 
   this.setEventKey({
     eventType: 'drawend',
