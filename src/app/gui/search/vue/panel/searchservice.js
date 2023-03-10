@@ -11,7 +11,8 @@ const {
   getUniqueDomId,
   createFilterFormInputs,
   createSingleFieldParameter,
-  isEmptyObject
+  isEmptyObject,
+  sortAlphabeticallyArray
 } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
@@ -313,11 +314,7 @@ proto.getLayersFilterData = async function(layers, options={}){
     .filter(({status}) => status === 'fulfilled')
     .reduce((accumulator, {value=[]}) => [...accumulator, ...value]
     , []);
-  return data.sort((a, b) => {
-    if (a < b) return -1;
-    if (a > b) return 1;
-    return 0;
-  })
+  return sortAlphabeticallyArray(data);
 };
 
 /**

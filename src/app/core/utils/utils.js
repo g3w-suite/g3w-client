@@ -632,6 +632,28 @@ const utils = {
     const matchDayInDate = datetimeformat.match(/d/g);
     if (matchDayInDate && matchDayInDate.length < 3) datetimeformat = datetimeformat.replace(/d/g, 'D');
     return datetimeformat
+  },
+  /**
+   * @since 3.8.0
+   * Sort Array of String Alphabetically
+   */
+  sortAlphabeticallyArray(arr){
+    return arr.sort((a, b) => {
+      return a.localeCompare(b, undefined, {sensitivity: 'base'});
+    })
+  },
+  /**
+   * @since 3.8.0
+   * Sort Array of String Alphabetically
+   */
+  sortNumericArray(arr, ascending=true){
+    return arr.sort((a, b) => {
+      if (true === ascending){
+        return a - b;
+      } else {
+        return b - a;
+      }
+    })
   }
 };
 
