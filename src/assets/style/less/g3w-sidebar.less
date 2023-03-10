@@ -4,12 +4,17 @@
 @control-sidebar-width: 450px;
 
 .main-sidebar{
-    &.iframe{
-      padding-top:0 !important;
-      a.sidebar-aside-toggle {
-        top: 0! important;
-      }
+  &.iframe{
+    padding-top:0 !important;
+    a.sidebar-aside-toggle {
+      top: 0! important;
     }
+  }
+  a.sidebar-aside-toggle {
+    @media (max-width: @screen-xs-max) {
+      display: none !important;
+    }
+  }
   &.mobile {
     width: @sidebar-width-small;
   }

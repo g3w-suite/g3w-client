@@ -34,8 +34,7 @@
           </button>
 
           <!-- HAMBURGER BUTTON (SIDEBAR MENU) -->
-          <!-- TODO: replace isMobile() with a css media query -->
-          <a v-if="isMobile()" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+          <a id="g3w-small-screen-hamburger-sidebar" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
             <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('bars')"></i>
           </a>
 
