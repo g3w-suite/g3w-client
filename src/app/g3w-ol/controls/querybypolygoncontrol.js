@@ -151,41 +151,11 @@ proto.setMap = function(map) {
 
   BaseQueryPolygonControl.prototype.setMap.call(this, map);
   
-  const eventKey = this._interaction
+  this._interaction
     .on('picked', throttle(async evt => {
       this.data.coordinates = evt.coordinate;
 
       this.dispatchEvent({ type: 'picked', coordinates: this.data.coordinates });
-
-      GUI.closeOpenSideBarComponent();
-
-      // ask for coordinates
-      try {
-        const { data = [] } = await DataRouterService.getData('query:coordinates', {
-          inputs: {
-            feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
-            coordinates: this.data.coordinates
-          },
-          outputs: {
-            // whether to show picked coordinates on map
-            show({data = [], query}) {
-              const show = data.length === 0;
-              // set query coordinates to null in case to avoid `externalvector` added to query response
-              query.coordinates = show ? query.coordinates : null;
-              return show;
-            }
-          }
-        });
-        if (data.length && data[0].features.length) {
-          this.data.feature = data[0].features[0];
-          this.data.layer = data[0].layer;
-          this.runSpatialQuery();
-        }
-      } catch(err) {
-        console.warn('Error running spatial query:', err);
-      }
-
-      this.setEventKey({ eventType: 'picked', eventKey });
 
       if (this._autountoggle) {
         this.toggle();
@@ -193,8 +163,47 @@ proto.setMap = function(map) {
 
     }));
 
+  const eventKey = this.on('picked', this.getPolygonFeatureFromCoordinates);
+
+  this.setEventKey({ eventType: 'picked', eventKey });
+
   this.setEnable(false);
 };
+
+/**
+ * @since 3.8.0
+ * @returns {Promise<boolean>}
+ */
+proto.getPolygonFeatureFromCoordinates = async function(){
+  GUI.closeOpenSideBarComponent();
+
+  // ask for coordinates
+  try {
+    const { data = [] } = await DataRouterService.getData('query:coordinates', {
+      inputs: {
+        feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+        coordinates: this.data.coordinates
+      },
+      outputs: {
+        // whether to show picked coordinates on map
+        show({data = [], query}) {
+          const show = data.length === 0;
+          // set query coordinates to null in case to avoid `externalvector` added to query response
+          query.coordinates = show ? query.coordinates : null;
+          return show;
+        }
+      }
+    });
+    if (data.length && data[0].features.length) {
+      this.data.feature = data[0].features[0];
+      this.data.layer = data[0].layer;
+      this.runSpatialQuery();
+    }
+  } catch(err) {
+    console.warn('Error running spatial query:', err);
+  }
+};
+
 
 /**
  * @returns {boolean} whether at least a visible layer not selected
