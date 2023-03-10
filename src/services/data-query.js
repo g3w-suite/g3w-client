@@ -43,7 +43,7 @@ function QueryService(){
     /** @since 3.8.0 */
     excludeSelected = null,
     /** @since 3.8.0 **/
-    excludeExternal = false,
+    addExternal = true,
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
@@ -65,10 +65,15 @@ function QueryService(){
       getQueryLayersPromisesByGeometry(
         // layers
         getMapLayersByFilter({
-          ..."boolean" === typeof excludeSelected ? {
-            SELECTED: !excludeSelected} : {
-            SELECTED_OR_ALL: true,
-          },
+          ...(
+              "boolean" === typeof excludeSelected ?
+              {
+                SELECTED: !excludeSelected
+              } :
+              {
+                SELECTED_OR_ALL: true
+              }
+          ),
           FILTERABLE: true,
           VISIBLE: true
         }, condition),
@@ -89,8 +94,11 @@ function QueryService(){
         type: 'polygon',
         filterConfig,
         external: {
-          add: !excludeExternal,
+          add: addExternal,
           filter: {
+            /**
+             * @TODO find easy way to manage it
+             */
             SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : hasExternalLayersSelected
           }
         }
@@ -116,7 +124,7 @@ function QueryService(){
     /** @since 3.8.0 **/
     excludeSelected    = null,
     /** @since 3.8.0 **/
-    excludeExternal = false,
+    addExternal = true,
     layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
   } = {}) {
 
@@ -126,7 +134,7 @@ function QueryService(){
       type: 'bbox',
       filterConfig,
       external: {
-        add: !excludeExternal,
+        add: addExternal,
         filter: {
           SELECTED: hasExternalLayersSelected || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
         }
@@ -168,7 +176,7 @@ function QueryService(){
     multilayers           = false,
     query_point_tolerance = QUERY_POINT_TOLERANCE,
     /** @since 3.8.0 **/
-    excludeExternal = false,
+    addExternal = true,
     feature_count
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
@@ -176,7 +184,7 @@ function QueryService(){
       coordinates,
       type: 'coordinates',
       external: {
-        add: !excludeExternal,
+        add: addExternal,
         filter: {
           SELECTED: hasExternalLayersSelected
         }

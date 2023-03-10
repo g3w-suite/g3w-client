@@ -195,7 +195,7 @@ proto.runSpatialQuery = async function(){
       inputs: {
         bbox: this.bbox,
         feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
-        excludeExternal: this.getSelectedLayer() && this.layers.find(layer => layer === this.getSelectedLayer()),
+        addExternal: this.addExternalLayerToResult(),
         layersFilterObject,
         filterConfig: {
           spatialMethod: this.getSpatialMethod(), // added spatial method to polygon filter

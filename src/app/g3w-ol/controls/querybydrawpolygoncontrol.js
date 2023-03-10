@@ -52,7 +52,7 @@ proto.onSelectLayer = function(layer) {
   ) {
     this.setEnable(layer.isFilterable());
   } else {
-    this.setEnable(false);
+    this.setEnable(this.isThereVisibleLayers());
   }
   this.toggle(this.isToggled() && this.getEnable());
 };
@@ -188,7 +188,8 @@ proto.runSpatialQuery = async function() {
       inputs: {
         layerName: 'Draw',
         feature: this.feature,
-        excludeSelected: !this.getSelectedLayer(),
+        addExternal: this.addExternalLayerToResult(),
+        excludeSelected: this.getSelectedLayer() && !this.isExternalLayerSelected(),
         filterConfig: {
           spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
         },
