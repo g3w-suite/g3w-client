@@ -151,14 +151,12 @@ proto.setMap = function(map) {
   this._interaction
     .on('boxstart', evt => this._startCoordinate = evt.coordinate);
 
-  const eventKey = this._interaction
+  this._interaction
     .on('boxend', throttle(evt => {
 
       this.bbox = ol.extent.boundingExtent([this._startCoordinate, evt.coordinate]);
 
       this.dispatchEvent({ type: 'bboxend', extent: this.bbox });
-
-      this.runSpatialQuery();
 
       this._startCoordinate = null;
 
@@ -168,7 +166,9 @@ proto.setMap = function(map) {
 
     }));
 
-  this.setEventKey({ eventType: 'bboxend', eventKey });
+    const eventKey = this.on('bboxend', this.runSpatialQuery);
+
+    this.setEventKey({ eventType: 'bboxend', eventKey });
 
 };
 
