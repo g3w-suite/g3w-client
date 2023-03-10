@@ -514,4 +514,33 @@ proto._hasVisibleExternalLayer = function() {
   return !!(this.getExternalLayers().find(layer => layer !== this.layer && true === layer.visible));
 };
 
+/**
+ * @returns {boolean} whether selectedLayer is not external
+ * @since 3.8.0
+ */
+proto.addExternalLayerToResult = function(){
+  return (
+    (null === this.getSelectedLayer()) ||
+    (
+      "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
+    )
+  )
+};
+
+/**
+ * @returns {boolean|boolean}
+ * @since 3.8.0
+ *
+ */
+proto.isExternalLayerSelected = function(){
+  return (
+    (
+      (null !== this.getSelectedLayer()) &&
+      (
+        "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
+      )
+    )
+  )
+};
+
 module.exports = InteractionControl;
