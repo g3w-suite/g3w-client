@@ -188,8 +188,13 @@ proto.runSpatialQuery = async function() {
       inputs: {
         layerName: 'Draw',
         feature: this.feature,
-        addExternal: this.addExternalLayerToResult(),
-        excludeSelected: this.getSelectedLayer() && !this.isExternalLayerSelected(),
+        excludeSelected: null === this.getSelectedLayer(),
+        external: {
+          add: this.addExternalLayerToResult(),
+          filter: {
+            SELECTED: this.isExternalLayerSelected()
+          }
+        },
         filterConfig: {
           spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
         },
