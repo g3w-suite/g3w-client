@@ -81,16 +81,29 @@ proto.setEventKey = function({eventType, eventKey}){
   };
 };
 
+/**
+ * Method to reset original handler method of control event
+ * @param eventType <String>
+ */
 proto.resetOriginalHandlerEvent = function(eventType){
-  const eventKey = this.eventKeys[eventType].eventKey;
-  eventKey && ol.Observable.unByKey(eventKey);
-  this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
+  if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
+    const eventKey = this.eventKeys[eventType].eventKey;
+    ol.Observable.unByKey(eventKey);
+    this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
+  }
 };
 
+/**
+ * Method to overwrite original handler method of control event
+ * @param eventType <String>
+ * @param handler <Function>
+ */
 proto.overwriteEventHandler = function({eventType, handler}) {
-  const eventKey = this.eventKeys[eventType].eventKey;
-  eventKey && ol.Observable.unByKey(eventKey);
-  this.eventKeys[eventType].eventKey = this.on(eventType, handler);
+  if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
+    const eventKey = this.eventKeys[eventType].eventKey;
+    ol.Observable.unByKey(eventKey);
+    this.eventKeys[eventType].eventKey = this.on(eventType, handler);
+  }
 };
 
 proto.getPosition = function(positionCode) {
