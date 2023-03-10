@@ -19,12 +19,12 @@ const QueryByPolygonControl = function(options={}) {
 
   const controlQuerableLayers = getMapLayersByFilter({
     QUERYABLE: true,
-    SELECTEDORALL: true
+    SELECTED_OR_ALL: true
   });
 
   const controlFiltrableLayers = GUI.getService('map').filterableLayersAvailable({
     FILTERABLE: true,
-    SELECTEDORALL: true
+    SELECTED_OR_ALL: true
   }, condition);
   
   const _options = {

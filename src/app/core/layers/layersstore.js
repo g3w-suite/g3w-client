@@ -91,7 +91,7 @@ proto.getLayersDict = function(filter = {}, options={}) {
     VISIBLE,
     SELECTED,
     CACHED,
-    SELECTEDORALL,
+    SELECTED_OR_ALL,
     SERVERTYPE,
     BASELAYER,
     GEOLAYER,
@@ -109,7 +109,7 @@ proto.getLayersDict = function(filter = {}, options={}) {
     && _.isUndefined(VISIBLE)
     && _.isUndefined(SERVERTYPE)
     && _.isUndefined(CACHED)
-    && _.isUndefined(SELECTEDORALL)
+    && _.isUndefined(SELECTED_OR_ALL)
     && _.isUndefined(SERVERTYPE)
     && _.isUndefined(GEOLAYER)
     && _.isUndefined(HIDDEN)
@@ -132,7 +132,7 @@ proto.getLayersDict = function(filter = {}, options={}) {
   }
 
   // return only selected if some one are selected
-  if (SELECTEDORALL) {
+  if (SELECTED_OR_ALL) {
     let _layers = layers;
     layers = layers.filter(layer => layer.isSelected());
     layers = layers.length ? layers : _layers;

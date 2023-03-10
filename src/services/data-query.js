@@ -67,7 +67,7 @@ function QueryService(){
         getMapLayersByFilter({
           ..."boolean" === typeof excludeSelected ? {
             SELECTED: !excludeSelected} : {
-            SELECTEDORALL: true,
+            SELECTED_OR_ALL: true,
           },
           FILTERABLE: true,
           VISIBLE: true
@@ -117,7 +117,7 @@ function QueryService(){
     excludeSelected    = null,
     /** @since 3.8.0 **/
     excludeExternal = false,
-    layersFilterObject = { SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true }
+    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
   } = {}) {
 
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
@@ -190,7 +190,7 @@ function QueryService(){
 
     const layersFilterObject = {
       QUERYABLE: true,
-      SELECTEDORALL: (0 === layerIds.length),
+      SELECTED_OR_ALL: (0 === layerIds.length),
       VISIBLE: true
     };
 

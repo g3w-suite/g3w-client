@@ -8,7 +8,7 @@ const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 // Object contain properties of TOC layers that need to satisfy
 const layersFilterObject = {
-  SELECTEDORALL: true, // selected or all
+  SELECTED_OR_ALL: true, // selected or all
   FILTERABLE: true, // check src/app/core/layers/layer.js#L925
   VISIBLE: true // need to be visible
 };

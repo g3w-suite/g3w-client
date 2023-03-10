@@ -1069,7 +1069,7 @@ proto._setMapControlsInsideContainerLenght = function() {
 proto.filterableLayersAvailable = function(options={}) {
   const layers = getMapLayersByFilter({
     FILTERABLE: true,
-    SELECTEDORALL: true,
+    SELECTED_OR_ALL: true,
   }, options);
   return layers.filter(layer => layer.getProvider('filter') instanceof WFSProvider);
 };
