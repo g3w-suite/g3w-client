@@ -462,19 +462,6 @@ proto.handleChangeSpatialMethod = function(spatialMethod) {
   })
 };
 
-/**
- * @since 3.8.0
- */
-proto._handleSelectedLayers = function(){
-  GUI.getService('map').on('cataloglayerselected', layer => {
-    if (layer && ('function' === typeof this.onSelectLayer)){
-      this.dispatchEvent({
-        type: 'cataloglayerselected'
-      })
-    }
-  })
-};
-
 
 /**
  * @since 3.8.0
