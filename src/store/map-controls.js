@@ -97,13 +97,14 @@ function ControlsRegistry() {
     registerControl(id, control) {
       this._registerControl(id, control);
     },
-    /**
-     * @since 3.8.0
-     * @param { unknown | null } layer
-     */
-    setSelectedLayer(layer) {
-      this.selectedLayer = layer;
-    }
+  };
+
+  /**
+   * @since 3.8.0
+   * @param { unknown | null } layer
+   */
+  this.setSelectedLayer= function(layer) {
+    this.selectedLayer = layer;
   };
 
   /**
@@ -125,7 +126,6 @@ function ControlsRegistry() {
    * @since 3.8.0
    */
   this.catalogSelectedLayer = function(layer){
-
     this.setSelectedLayer(layer.isSelected() ? layer : null);
 
     this.callControlsEventHandler({
