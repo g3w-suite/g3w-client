@@ -35,22 +35,6 @@ const QueryByPolygonControl = function(options={}) {
     name: "querybypolygon",
     tipLabel: "sdk.mapcontrols.querybypolygon.tooltip",
     label: options.label || "\ue903",
-    // update selected layer
-    onSelectlayer(layer) {
-      if (
-        layer.isSelected() &&
-        layer.isQueryable() &&
-        -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
-      ) {
-        this.setSelectedLayer(layer);
-        this.setEnable(this.isThereVisibleLayerNotSelected());
-        this.toggle(this.isToggled() && this.getEnable())
-      } else {
-        this.setSelectedLayer(null);
-        this.setEnable(false);
-        this.toggle(false);
-      }
-    },
     interactionClass: PickCoordinatesInteraction,
     layers: controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [],
     help: {
@@ -76,6 +60,26 @@ const QueryByPolygonControl = function(options={}) {
 ol.inherits(QueryByPolygonControl, BaseQueryPolygonControl);
 
 const proto = QueryByPolygonControl.prototype;
+
+/**
+ * @since 3.8.0
+ * @param layer
+ */
+proto.onSelectLayer = function(layer) {
+  if (
+    layer.isSelected() &&
+    layer.isQueryable() &&
+    -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
+  ) {
+    this.setSelectedLayer(layer);
+    this.setEnable(this.isThereVisibleLayerNotSelected());
+    this.toggle(this.isToggled() && this.getEnable())
+  } else {
+    this.setSelectedLayer(null);
+    this.setEnable(false);
+    this.toggle(false);
+  }
+};
 
 /**
  * @since 3.8.0 
@@ -225,7 +229,7 @@ proto.listenPolygonLayersChange = function() {
  * 
  * @since 3.8.0
  */
-proto.handleAddExternalLayer = function(layer, unWatches) {
+proto.onAddExternalLayer = function({layer, unWatches}) {
 
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
   if (Geometry.isPolygonGeometryType(layer.geometryType)) {
@@ -264,7 +268,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
  * @since 3.8.0
  * @param layer
  */
-proto.handleRemoveExternalLayer = function() {
+proto.onRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayerNotSelected());
 };
 

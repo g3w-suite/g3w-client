@@ -23,22 +23,6 @@ const QueryByDrawPolygonControl = function(options={}) {
     interactionClassOptions: {
       type: 'Polygon'
     },
-    /**
-     * method to handle selection layer
-     * @param layer
-     */
-    onSelectlayer(layer) {
-      if (
-        layer.isSelected()
-      ) {
-        this.setSelectedLayer(layer);
-        this.setEnable(layer.isFilterable());
-      } else {
-        this.setSelectedLayer(null);
-        this.setEnable(true);
-      }
-      this.toggle(this.isToggled() && this.getEnable());
-    },
     enabled: true,
     layers,
     help: {
@@ -49,6 +33,8 @@ const QueryByDrawPolygonControl = function(options={}) {
 
   BaseQueryPolygonControl.call(this, _options);
 
+  this.setEnable(this.isThereVisibleLayers());
+
   // feature used to store feature drawend
   this.feature = null;
 };
@@ -56,6 +42,22 @@ const QueryByDrawPolygonControl = function(options={}) {
 ol.inherits(QueryByDrawPolygonControl, BaseQueryPolygonControl);
 
 const proto = QueryByDrawPolygonControl.prototype;
+
+/**
+ * @since 3.8.0
+ */
+proto.onSelectLayer = function(layer) {
+  if (
+    layer.isSelected()
+  ) {
+    this.setSelectedLayer(layer);
+    this.setEnable(layer.isFilterable());
+  } else {
+    this.setSelectedLayer(null);
+    this.setEnable(true);
+  }
+  this.toggle(this.isToggled() && this.getEnable());
+};
 
 /**
  * @param {ol.Map} map
@@ -128,7 +130,7 @@ proto.listenLayersVisibilityChange = function() {
  * 
  * @since 3.8.0
  */
-proto.handleAddExternalLayer = function(layer, unWatches) {
+proto.onAddExternalLayer = function({layer, unWatches}) {
 
   unWatches[layer.name].push(
     this.watchLayer(
@@ -157,7 +159,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
 /**
  * @since 3.8.0
  */
-proto.handleRemoveExternalLayer = function() {
+proto.onRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayers());
 };
 
@@ -191,6 +193,7 @@ proto.runSpatialQuery = async function() {
       inputs: {
         layerName: 'Draw',
         feature: this.feature,
+        excludeSelected: !this.selectedLayer,
         filterConfig: {
           spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
         },

@@ -52,15 +52,6 @@ const QueryBBoxControl = function(options = {}) {
     label: options.label || "\ue902",
     clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
-    onSelectlayer(selectLayer) {
-      if (selectLayer.isSelected()) {
-        const findLayer = this.layers.find(layer => layer === selectLayer);
-        this.setEnable(!!findLayer && findLayer.isVisible());
-      } else {
-        this.setEnable(this.checkEnabled(this.layers));
-      }
-      this.toggle(this.isToggled() && this.getEnable());
-    },
     onhover: true,
     toggledTool:{
       type: 'spatialMethod',
@@ -89,6 +80,19 @@ const QueryBBoxControl = function(options = {}) {
 ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
+
+/**
+ * @since 3.8.0
+ */
+proto.onSelectLayer = function(layer) {
+  if (layer.isSelected()) {
+    const findLayer = this.layers.find(_layer => _layer === layer);
+    this.setEnable(!!findLayer && findLayer.isVisible());
+  } else {
+    this.setEnable(this.checkEnabled(this.layers));
+  }
+  this.toggle(this.isToggled() && this.getEnable());
+};
 
 /**
  * @since 3.8.0
@@ -206,7 +210,7 @@ proto.runSpatialQuery = async function(){
  * 
  * @since 3.8.0
  */
-proto.handleAddExternalLayer = function(layer, unWatches) {
+proto.onAddExternalLayer = function({layer, unWatches}) {
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
   if (Geometry.isPolygonGeometryType(layer.geometryType)) {
     unWatches[layer.name].push(
@@ -237,7 +241,7 @@ proto.handleAddExternalLayer = function(layer, unWatches) {
  * 
  * @since 3.8.0
  */
-proto.handleRemoveExternalLayer = function() {
+proto.onRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayerNotSelected());
 };
 
