@@ -38,10 +38,12 @@ function QueryService(){
     filterConfig    = {},
     multilayers     = false,
     condition       = this.condition,
-    /** @since v3.8 */
+    /** @since 3.8.0 */
     layerName       = '',
-    /** @since v3.8 */
-    excludeSelected = null
+    /** @since 3.8.0 */
+    excludeSelected = null,
+    /** @since 3.8.0 **/
+    excludeExternal = false,
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
@@ -87,7 +89,7 @@ function QueryService(){
         type: 'polygon',
         filterConfig,
         external: {
-          add: true,
+          add: !excludeExternal,
           filter: {
             SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : hasExternalLayersSelected
           }
@@ -111,6 +113,10 @@ function QueryService(){
     filterConfig       = {},
     multilayers        = false,
     condition          = this.condition,
+    /** @since 3.8.0 **/
+    excludeSelected    = null,
+    /** @since 3.8.0 **/
+    excludeExternal = false,
     layersFilterObject = { SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true }
   } = {}) {
 
@@ -120,9 +126,9 @@ function QueryService(){
       type: 'bbox',
       filterConfig,
       external: {
-        add: true,
+        add: !excludeExternal,
         filter: {
-          SELECTED: hasExternalLayersSelected
+          SELECTED: hasExternalLayersSelected || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
         }
       },
     };
@@ -161,6 +167,8 @@ function QueryService(){
     layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
     multilayers           = false,
     query_point_tolerance = QUERY_POINT_TOLERANCE,
+    /** @since 3.8.0 **/
+    excludeExternal = false,
     feature_count
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
@@ -168,7 +176,7 @@ function QueryService(){
       coordinates,
       type: 'coordinates',
       external: {
-        add: true,
+        add: !excludeExternal,
         filter: {
           SELECTED: hasExternalLayersSelected
         }
