@@ -349,6 +349,33 @@ export const ZINDEXES = {
   }
 };
 
+/**
+ * @since v3.8
+ */
+export const API_BASE_URLS = {
+  CRS: '/crs/'  //Example /crs/<epsg_code>
+};
+
+/**
+ * @typedef LocalItem
+ * @property {string} id unique identifier
+ * @property {any} value initial value
+ */
+
+/**
+ * LOCAL ITEM IDS - used to store id used by application
+ * 
+ * @type {Object<string, LocalItem>}
+ * 
+ * @since v3.8
+ */
+export const LOCAL_ITEM_IDS = {
+  SPATIALBOOKMARKS: {
+    id: 'SPATIALBOOKMARKS', // id unique
+    value: {} // initial value
+  }
+};
+
 export default {
   APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
@@ -372,5 +399,7 @@ export default {
   TOC_LAYERS_INIT_STATUS,
   TOC_THEMES_INIT_STATUS,
   VIEWPORT,
-  ZINDEXES
+  ZINDEXES,
+  API_BASE_URLS,
+  LOCAL_ITEM_IDS
 };

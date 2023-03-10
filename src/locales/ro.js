@@ -24,6 +24,26 @@ export default {
       message: "Poziție relativă la straturile din TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Selectați Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Marcaje spațiale",
+        helptext: "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",
+        input: {
+          name: "Nume"
+        },
+        sections: {
+          project:{
+            title: "Marcaje de proiect"
+          },
+          user: {
+            title: "Marcaje utilizator"
+          }
+        }
+      },
       search: {
         all: 'Toate',
         no_results: "Fără rezultat",
@@ -481,7 +501,8 @@ export default {
         open_attribute_table: "Deschide Tabela Atribute",
         show_metadata: "Metadate",
         styles: 'Stiluri',
-        vector_color_menu:"Setează/Schimbă Culoare"
+        vector_color_menu:"Setează/Schimbă Culoare",
+        layer_opacity: "Opacitate"
       }
     },
     dataTable: {

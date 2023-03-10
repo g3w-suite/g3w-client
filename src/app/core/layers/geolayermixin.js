@@ -33,9 +33,10 @@ proto.setup = function(config={}, options={}) {
       loading: false,
       error: false,
      /**
-      * @deprecated since 3.8. Will be removed in 4.x. Use expanded attribute instead
+      * @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead
       */
-      show: true
+      show: true,
+      change: false, // used for when categories changed (checkbox on TOC) and legend is on TAB
     },
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
@@ -47,14 +48,37 @@ proto.setup = function(config={}, options={}) {
     minscale: config.minscale,
     maxscale: config.maxscale,
     ows_method: config.ows_method,
-    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
-    categories: false, // has more than one categories legend,
+
     /**
-     *  Expand or collapse legend item in catalog layers (TOC)
+     * @type {boolean}
+     */
+    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
+
+    /**
+     * Has more than one categories legend
+     * 
+     * @type {boolean}
+     */
+    categories: false,
+
+    /**
+     * Toggle legend item state (expandend or collapsed) in catalog layers (TOC)
+     * 
+     * @type {number}
      *
      * @since v3.8
      */
-    expanded: config.expanded
+    expanded: config.expanded,
+
+    /**
+     * Layer opacity
+     * 
+     * @type {number} opacity range = [0, 100]
+     * 
+     * @since v3.8
+     */
+    opacity: config.opacity || 100,
+
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
@@ -68,7 +92,8 @@ proto.getLegendGraphic = function({all=true}={}){
   const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
   const legendurl = this.getLegendUrl(legendParams, {
     categories: true,
-    all // true meaning no bbox no filter just all referred to
+    all, // true meaning no bbox no filter just all referred to
+    format: 'application/json' // is the format to request categories (icon and label of each category)
   });
   return XHR.get({
     url: legendurl
@@ -284,6 +309,18 @@ proto.getStyles = function(){
 
 proto.getStyle = function(){
   return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
+};
+
+/**
+ * Get transparency property
+ * 
+ * @returns {number}
+ * 
+ * @since v3.8
+ */
+
+proto.getOpacity = function() {
+  return this.state.opacity;
 };
 
 /**

@@ -32,6 +32,7 @@ function Project(config={}, options={}) {
     legend_position: 'tab', 'toc'
     query_point_tolerance
     wps: [] // array of wps service
+    bookmarks:[] Array of bookmarks
   }
   */
   // for future implementation catalog tab actived
@@ -454,6 +455,14 @@ proto.getMapThemeConfiguration = async function(map_theme){
 
 proto.getUrl = function(type){
   return this.urls[type];
+};
+
+/**
+ * @returns {Array} spatial bookmarks saved on current QGIS project
+ * @since v3.8
+ */
+proto.getSpatialBookmarks = function(){
+  return this.state.bookmarks || [];
 };
 
 
