@@ -4,7 +4,6 @@ import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
 const { throttle }       = require('core/utils/utils');
-const { Geometry }       = require('core/utils/geo');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 // Object contain properties of TOC layers that need to satisfy
@@ -75,6 +74,14 @@ const QueryBBoxControl = function(options = {}) {
    */
   this.bbox = null;
 
+  /**
+   * @since 3.8.0
+   * Set tochighlightable to external layer to show highlight class
+   */
+  this.on('toggled', ({toggled}) => {
+    this.getExternalLayers().forEach(layer => layer.tochighlightable = toggled);
+  })
+
 };
 
 ol.inherits(QueryBBoxControl, InteractionControl);
@@ -85,7 +92,7 @@ const proto = QueryBBoxControl.prototype;
  * @since 3.8.0
  */
 proto.onSelectLayer = function(layer) {
-  if (layer.isSelected()) {
+  if (layer) {
     const findLayer = this.layers.find(_layer => _layer === layer);
     this.setEnable(!!findLayer && findLayer.isVisible());
   } else {
@@ -131,7 +138,7 @@ proto.change = function(layers=[]) {
 };
 
 proto.checkVisible = function() {
-  return this.layers.length > 0 || this.externalLayers.length > 0;
+  return this.layers.length > 0 || this.getExternalLayers().length > 0;
 };
 
 proto.checkEnabled = function() {
@@ -188,6 +195,7 @@ proto.runSpatialQuery = async function(){
       inputs: {
         bbox: this.bbox,
         feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+        excludeExternal: this.getSelectedLayer() && this.layers.find(layer => layer === this.getSelectedLayer()),
         layersFilterObject,
         filterConfig: {
           spatialMethod: this.getSpatialMethod(), // added spatial method to polygon filter
@@ -211,18 +219,18 @@ proto.runSpatialQuery = async function(){
  * @since 3.8.0
  */
 proto.onAddExternalLayer = function({layer, unWatches}) {
-  // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
-  if (Geometry.isPolygonGeometryType(layer.geometryType)) {
-    unWatches[layer.name].push(
-      VM.$watch(
-        () => layer.selected,                    // watch `layer.selected` property
-        selected => {
-          this.setSelectedLayer(true === selected ? layer : null);
-          this.setEnable(true === selected ? layer.visible : this.checkEnabled());
-          this.toggle(this.isToggled() && this.getEnable());
-        })
-    );
-  }
+  //set layer property
+  layer.tochighlightable = this.isToggled() && this.getEnable();
+
+  unWatches[layer.name].push(
+    VM.$watch(
+      () => layer.selected,                    // watch `layer.selected` property
+      selected => {
+        this.setSelectedLayer(true === selected ? layer : null);
+        this.setEnable(true === selected ? layer.visible : this.checkEnabled());
+        this.toggle(this.isToggled() && this.getEnable());
+      })
+  );
 
   unWatches[layer.name].push(
     VM.$watch(

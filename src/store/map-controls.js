@@ -88,16 +88,43 @@ function ControlsRegistry() {
   this.setters = {
     registerControl(id, control) {
       this._registerControl(id, control);
+    },
+    /**
+     * @since 3.8.0
+     * @param { unknown | null } layer
+     */
+    setSelectedLayer(layer) {
+      this.selectedLayer = layer;
     }
   };
 
   /**
    * @since 3.8.0
    */
+  this.getSelectedLayer = function(){
+    return this.selectedLayer;
+  };
+
+  /**
+   * @since 3.8.0
+   * @returns {Array}
+   */
+  this.getExternalLayers = function(){
+    return this.externalLayers;
+  };
+
+  /**
+   * @since 3.8.0
+   */
   this.catalogSelectedLayer = function(layer){
+    if (layer.isSelected()){
+      this.setSelectedLayer(layer);
+    } else {
+      this.setSelectedLayer(layer);
+    }
     this.callControlsEventHandler({
       handler: 'onSelectLayer',
-      param: layer
+      param: this.selectedLayer
     });
   };
 

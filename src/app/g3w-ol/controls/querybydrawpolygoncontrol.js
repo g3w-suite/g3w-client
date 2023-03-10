@@ -48,7 +48,7 @@ const proto = QueryByDrawPolygonControl.prototype;
  */
 proto.onSelectLayer = function(layer) {
   if (
-    layer.isSelected()
+    layer
   ) {
     this.setSelectedLayer(layer);
     this.setEnable(layer.isFilterable());
@@ -112,12 +112,12 @@ proto.listenLayersVisibilityChange = function() {
     this.unwatches.push(
       this.watchLayer(() =>  layer.state.visible, visible => {
         // check if a selectedLayer i set
-        if (null !== this.selectedLayer) {
+        if (null === this.getSelectedLayer()) {
+          this.setEnable(this.isThereVisibleLayers());
+        } else {
           // enable control only if current changed visible layer is true or
           // if at least one layer (not selected) is visible
           this.setEnable(this.isSelectedLayerVisible());
-        } else {
-          this.setEnable(this.isThereVisibleLayers());
         }
       }));
   });
@@ -168,13 +168,13 @@ proto.onRemoveExternalLayer = function() {
 proto.isThereVisibleLayers = function() {
   return !!(
     // check if user has selected a layer
-    this.selectedLayer &&
+    this.getSelectedLayer() &&
     // check if current selected layer is visible
     this.isSelectedLayerVisible() ||
     // check if at least one layer is visible (project or external layer)
     (
       this.layers.find(layer => layer && layer.isVisible()) ||
-      this.externalLayers.find(layer => true === layer.visible)
+      this.getExternalLayers().find(layer => true === layer.visible)
     )
   )
 };
@@ -192,7 +192,7 @@ proto.runSpatialQuery = async function() {
       inputs: {
         layerName: 'Draw',
         feature: this.feature,
-        excludeSelected: !this.selectedLayer,
+        excludeSelected: !this.getSelectedLayer(),
         filterConfig: {
           spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
         },

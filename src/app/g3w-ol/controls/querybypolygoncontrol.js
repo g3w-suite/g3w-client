@@ -67,7 +67,7 @@ const proto = QueryByPolygonControl.prototype;
  */
 proto.onSelectLayer = function(layer) {
   if (
-    layer.isSelected() &&
+    layer &&
     layer.isQueryable() &&
     -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
   ) {
@@ -92,7 +92,7 @@ proto.listenLayersVisibilityChange = function() {
       VM.$watch(
         () =>  layer.state.visible,
         visible => {
-          if (layer.isSelected()) {
+          if (layer === this.getSelectedLayer()) {
             this.setEnable(visible && this.isThereVisibleLayerNotSelected());
           } else {
             this.setEnable(this.isThereVisibleLayerNotSelected())
@@ -205,13 +205,13 @@ proto.setMap = function(map) {
 proto.isThereVisibleLayerNotSelected = function() {
   return !!(
     // check if user has selected a layer
-    this.selectedLayer &&
+    this.getSelectedLayer() &&
     // check if current selected layer is visible
     this.isSelectedLayerVisible() &&
     // check if at least one layer is visible (project or external layer)
     (
-      this.layers.find(layer => layer !== this.selectedLayer && (layer.isVisible() && layer.isFilterable(condition.filtrable))) ||
-      this.externalLayers.find(layer => layer !== this.selectedLayer && true === layer.visible)
+      this.layers.find(layer => layer !== this.getSelectedLayer() && (layer.isVisible() && layer.isFilterable(condition.filtrable))) ||
+      this.getExternalLayers().find(layer => layer !== this.getSelectedLayer() && true === layer.visible)
     )
   )
 };

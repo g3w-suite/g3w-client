@@ -77,17 +77,6 @@ const InteractionControl = function(options={}) {
     this.handleChangeSpatialMethod(this.spatialMethod);
   }
 
-  /**
-   * @since 3.8.0
-   */
-  this.externalLayers = ControlsRegistry.externalLayers;
-  /**
-   * Store current selected layer
-   *
-   * @since 3.8.0
-   */
-  proto.selectedLayer = ControlsRegistry.selectedLayer;
-
 };
 
 ol.inherits(InteractionControl, Control);
@@ -101,7 +90,22 @@ const proto = InteractionControl.prototype;
  * @since 3.8.0
  */
 proto.setSelectedLayer = function(layer) {
-  this.selectedLayer = layer;
+  ControlsRegistry.setSelectedLayer(layer);
+};
+
+/**
+ *
+ * @since 3.8.0
+ */
+proto.getSelectedLayer = function() {
+  return ControlsRegistry.getSelectedLayer();
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.getExternalLayers = function(){
+  return ControlsRegistry.getExternalLayers();
 };
 
 /**
@@ -486,9 +490,9 @@ proto.watchLayer = function(expOrFn, callback) {
  */
 proto.isSelectedLayerVisible = function() {
   return (
-    'function' === typeof this.selectedLayer.isVisible
-      ? this.selectedLayer.isVisible()                 // in case of a project project
-      : this.selectedLayer.visible                     // in case of external layer
+    'function' === typeof this.getSelectedLayer().isVisible
+      ? this.getSelectedLayer().isVisible()                 // in case of a project project
+      : this.getSelectedLayer().visible                     // in case of external layer
   )
 };
 
@@ -502,12 +506,12 @@ proto._hasVisibleLayer = function() {
 };
 
 /**
- * @returns {boolean} whether at least one of stored `this.externalLayers` is visible
+ * @returns {boolean} whether at least one of stored `this.getExternalLayers()` is visible
  *
  * @since 3.8.0
  */
 proto._hasVisibleExternalLayer = function() {
-  return !!(this.externalLayers.find(layer => layer !== this.layer && true === layer.visible));
+  return !!(this.getExternalLayers().find(layer => layer !== this.layer && true === layer.visible));
 };
 
 module.exports = InteractionControl;
