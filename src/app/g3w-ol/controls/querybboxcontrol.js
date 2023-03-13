@@ -140,9 +140,10 @@ proto.setMap = function(map) {
 
     }));
 
-    const eventKey = this.on('bboxend', this.runSpatialQuery);
-
-    this.setEventKey({ eventType: 'bboxend', eventKey });
+    this.setEventKey({
+      eventType: 'bboxend',
+      eventKey: this.on('bboxend', this.runSpatialQuery)
+    });
 
 };
 

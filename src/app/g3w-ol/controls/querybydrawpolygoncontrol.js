@@ -47,6 +47,8 @@ const proto = QueryByDrawPolygonControl.prototype;
 
 /**
  * @param {ol.Map} map
+ * 
+ * @listens ol.interaction.Draw~drawend
  */
 proto.setMap = function(map) {
   
@@ -60,9 +62,10 @@ proto.setMap = function(map) {
     }
   }));
 
-  const eventKey = this.on('drawend', this.runSpatialQuery);
-
-  this.setEventKey({ eventType: 'drawend', eventKey });
+  this.setEventKey({
+    eventType: 'drawend',
+    eventKey: this.on('drawend', this.runSpatialQuery)
+  });
 
 };
 

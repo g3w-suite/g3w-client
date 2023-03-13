@@ -109,9 +109,10 @@ proto.setMap = function(map) {
 
     }));
 
-  const eventKey = this.on('picked', this.getPolygonFeatureFromCoordinates);
-
-  this.setEventKey({ eventType: 'picked', eventKey });
+  this.setEventKey({
+    eventType: 'picked',
+    eventKey: this.on('picked', this.getPolygonFeatureFromCoordinates)
+  });
 
   this.setEnable(false);
 };
