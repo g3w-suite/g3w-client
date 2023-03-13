@@ -24,9 +24,12 @@ const InteractionControl = function(options={}) {
   } = options;
 
   /**
+   * Project layers dependecies
+   * 
    * @since 3.8.0
    */
-  this.layers = layers; // project layers dependecies
+  this.layers = layers;
+
   /**
    * @since 3.8.0
    */
@@ -35,27 +38,54 @@ const InteractionControl = function(options={}) {
   this.listenLayersVisibilityChange();
 
   this._visible = visible;
+
   this._toggled = false;
-  this.clickmap = clickmap; // check if interact with map
+
+  /**
+   * Check if interact with map
+   */
+  this.clickmap = clickmap;
+
   this._interactionClass = interactionClass;
+
   this._interaction = null;
+
   this._autountoggle = autountoggle;
-  this._geometryTypes = geometryTypes; // array of types geometries
+
+  /**
+   * Array of types geometries
+   */
+  this._geometryTypes = geometryTypes;
+
   this._onhover = onhover;
+
   this._help = help;
-  this._helpButton; // used to show help info button
-  this._toolButton; // used to show toolbutton
-  //spatial method (intersect, within)
+
+  /**
+   * Used to show help info button
+   */
+  this._helpButton;
+
+  /**
+   * Used to show toolbutton
+   */
+  this._toolButton;
+
+  /**
+   * @type { 'intersect' | 'within' }
+   */
   this.spatialMethod = spatialMethod;
+
   this.toggledTool;
+
   this._interactionClassOptions = interactionClassOptions;
 
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
 
   Control.call(this, options);
 
+  // in case of toggled true, then ... ?
   if (true === toggled) {
-    // in case of toggled true
     this.on('setMap', () => this.toggle(toggled));
   }
 
