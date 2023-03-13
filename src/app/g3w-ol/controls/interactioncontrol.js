@@ -115,62 +115,25 @@ const proto = InteractionControl.prototype;
 
 
 /**
- * @param { unknown | null } layer
+ * @virtual method need to be implemented by subclasses
  *
  * @since 3.8.0
  */
-proto.setSelectedLayer = function(layer) {
-  ControlsRegistry.setSelectedLayer(layer);
-};
-
-/**
- *
- * @since 3.8.0
- */
-proto.getSelectedLayer = function() {
-  return ControlsRegistry.getSelectedLayer();
-};
-
-/**
- * @since 3.8.0
- */
-proto.getExternalLayers = function(){
-  return ControlsRegistry.getExternalLayers();
-};
+proto.onSelectLayer = function() {};
 
 /**
  * @virtual method need to be implemented by subclasses
  *
  * @since 3.8.0
  */
-proto.onSelectLayer = function(){};
-
-/**
- * method override by subclasses
- *
- * @since 3.8.0
- */
-proto.change = function(layers=[]) {
-  this.layers = layers;
-  const visible = this.checkVisibile(layers);
-  this.setVisible(visible);
-  this.setEnable(false);
-  this.listenLayersVisibilityChange();
-};
+proto.runSpatialQuery = function() {};
 
 /**
  * @virtual method need to be implemented by subclasses
  *
  * @since 3.8.0
  */
-proto.runSpatialQuery = function(){};
-
-/**
- * @virtual method need to be implemented by subclasses
- *
- * @since 3.8.0
- */
-proto.clear = function(){};
+proto.clear = function() {};
 
 /**
  * @virtual method need to be implemented by subclasses
@@ -184,7 +147,7 @@ proto.onAddExternalLayer = function({layer, unWatches}={}) {};
  *
  * @since 3.8.0
  */
-proto.onRemoveExternalLayer = function(layer){};
+proto.onRemoveExternalLayer = function(layer) {};
 
 /**
  * @virtual method need to be implemented by subclasses
@@ -195,10 +158,13 @@ proto.handleSelectedLayer = function(event) {};
 
 /**
  * @virtual method need to be implemented by subclasses
- * @param event <Object> {type: <String>, data:<Object>}
+ * 
+ * @param {{ type: {string}, data: any}} layer event
+ * 
  * @since 3.8.0
  */
-proto.handleExternalSelectedLayer = function(layer){};
+proto.handleExternalSelectedLayer = function(layer) {};
+
 /**
  * @virtual method need to be implemented by subclasses
  *
@@ -210,6 +176,7 @@ proto.handleExternalSelectedLayer = function(layer){};
 proto.checkVisibile = function(layers) {
   return true;
 };
+
 /**
  * @virtual method need to be implemented by subclasses
  *
@@ -229,22 +196,38 @@ proto.checkVisibile = function(layers) {
  */
 proto.listenLayersVisibilityChange = function() { };
 
-proto.isClickMap = function(){
+/**
+ * method override by subclasses
+ *
+ * @since 3.8.0
+ */
+proto.change = function(layers=[]) {
+  this.layers = layers;
+  const visible = this.checkVisibile(layers);
+  this.setVisible(visible);
+  this.setEnable(false);
+  this.listenLayersVisibilityChange();
+};
+
+proto.isClickMap = function() {
   return this.clickmap;
 };
 
 /**
  * Enable map control dom
  */
-proto.enable = function(){
+proto.enable = function() {
   $(this.element).removeClass('g3w-disabled');
 };
 
-proto.disable = function(){
+proto.disable = function() {
   $(this.element).addClass('g3w-disabled');
 };
 
-proto.createControlTool = function(toggledTool={}){
+/**
+ * @param {{ type: {'spatialMethod' | 'custom'}, component: unknown, how: {'toggled' | 'hover'} }} toggledTool 
+ */
+proto.createControlTool = function(toggledTool={}) {
   /**
    * how can be {
    *  'toggled'(default) => show tools when control is toggled
@@ -252,7 +235,7 @@ proto.createControlTool = function(toggledTool={}){
    * }
    */
   const {type, component, how="toggled"} = toggledTool;
-  switch(type){
+  switch(type) {
     case 'spatialMethod':
       const method = this.getSpatialMethod();
       this.toggledTool = {
@@ -271,10 +254,10 @@ proto.createControlTool = function(toggledTool={}){
         watch: {
           'method': method => this.setSpatialMethod(method)
         },
-        created(){
+        created() {
           GUI.setCloseUserMessageBeforeSetContent(false);
         },
-        beforeDestroy(){
+        beforeDestroy() {
           GUI.setCloseUserMessageBeforeSetContent(true);
         }
       };
@@ -291,7 +274,7 @@ proto.createControlTool = function(toggledTool={}){
   }
 };
 
-proto._createToolOnHoverButton = function(){
+proto._createToolOnHoverButton = function() {
   if (this._onhover) {
     this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
     $(this.element).prepend(this._toolButton);
@@ -304,8 +287,8 @@ proto._createToolOnHoverButton = function(){
   }
 };
 
-proto.showToggledTool = function(show=true){
-  if (show){
+proto.showToggledTool = function(show=true) {
+  if (show) {
     GUI.showUserMessage({
       title: '',
       type: 'tool',
@@ -318,7 +301,9 @@ proto.showToggledTool = function(show=true){
   } else GUI.closeUserMessage();
 };
 
-//show help message
+/**
+ * Show help message
+ */
 proto._showModalHelp = function() {
   GUI.showModalDialog({
     title: t(this._help.title),
@@ -326,7 +311,9 @@ proto._showModalHelp = function() {
   });
 };
 
-// create modal help
+/**
+ * Create modal help
+ */
 proto._createModalHelp = function() {
   if (this._onhover) {
     this._helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
@@ -349,20 +336,20 @@ proto.isToggled = function() {
 };
 
 /**
- *
  * Get dom bottom
+ * 
  * @returns {JQuery<HTMLElement> | jQuery | HTMLElement}
  */
-proto.getControlBottom = function(){
+proto.getControlBottom = function() {
   return $(this.element).find('button').first();
 };
 
-proto.addClassToControlBottom = function(className=''){
+proto.addClassToControlBottom = function(className='') {
   const controlButton = this.getControlBottom();
   controlButton.addClass(className);
 };
 
-proto.removeClassToControlBottom = function(className=''){
+proto.removeClassToControlBottom = function(className='') {
   const controlButton = this.getControlBottom();
   controlButton.removeClass(className);
 };
@@ -413,7 +400,9 @@ proto.setGeometryTypes = function(types) {
 };
 
 /**
- * @param {ol.Map} map 
+ * @param {ol.Map} map
+ * 
+ * @fires setMap event
  */
 proto.setMap = function(map) {
 
@@ -425,13 +414,8 @@ proto.setMap = function(map) {
     this._interaction.setActive(false);
   }
 
-  /**
-   * @since 3.8.0
-   */
-  this.dispatchEvent({
-    type: 'setMap',
-    map
-  })
+  /** @since 3.8.0 */
+  this.dispatchEvent({ type: 'setMap', map });
 
 };
 
@@ -449,7 +433,7 @@ proto.getInteraction = function() {
 /**
  * Method to set filter operation intersect or Contains
  */
-proto.setSpatialMethod = function(method='intersects'){
+proto.setSpatialMethod = function(method='intersects') {
   this.spatialMethod = method;
   this.dispatchEvent({
     type: 'change-spatial-method',
@@ -457,12 +441,35 @@ proto.setSpatialMethod = function(method='intersects'){
   });
 };
 
-proto.getSpatialMethod = function(){
+proto.getSpatialMethod = function() {
   return this.spatialMethod;
 };
 
-proto.setLayers = function(layers=[]){
+proto.setLayers = function(layers=[]) {
   this.layers = layers;
+};
+
+/**
+ * @param { unknown | null } layer
+ *
+ * @since 3.8.0
+ */
+proto.setSelectedLayer = function(layer) {
+  ControlsRegistry.setSelectedLayer(layer);
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.getSelectedLayer = function() {
+  return ControlsRegistry.getSelectedLayer();
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.getExternalLayers = function() {
+  return ControlsRegistry.getExternalLayers();
 };
 
 /**
@@ -491,7 +498,6 @@ proto.handleChangeSpatialMethod = function(spatialMethod) {
     }
   })
 };
-
 
 /**
  * @since 3.8.0
@@ -533,30 +539,25 @@ proto._hasVisibleExternalLayer = function() {
 
 /**
  * @returns {boolean} whether selectedLayer is not external
+ * 
  * @since 3.8.0
  */
-proto.addExternalLayerToResult = function(){
+proto.addExternalLayerToResult = function() {
   return (
-    (null === this.getSelectedLayer()) ||
-    (
-      "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
-    )
-  )
+    null === this.getSelectedLayer() ||
+    "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
+  );
 };
 
 /**
- * @returns {boolean|boolean}
+ * @returns {boolean}
+ * 
  * @since 3.8.0
- *
  */
-proto.isExternalLayerSelected = function(){
+proto.isExternalLayerSelected = function() {
   return (
-    (
-      (null !== this.getSelectedLayer()) &&
-      (
-        "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
-      )
-    )
+    null !== this.getSelectedLayer() &&
+    "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
   )
 };
 
