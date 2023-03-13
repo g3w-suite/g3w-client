@@ -71,13 +71,9 @@ proto.runQuery = async function({coordinates}) {
         multilayers: project.isQueryMultiLayers(this.name),
       }
     });
-    if (data.length) {
-      GUI.getService('map').showMarker(coordinates);
-    }
   } catch(err) {
     console.warn('Error running spatial query: ', err)
   }
-
 };
 
 module.exports = QueryControl;
