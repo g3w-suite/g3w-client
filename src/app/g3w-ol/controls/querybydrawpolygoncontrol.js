@@ -10,7 +10,7 @@ const { throttle }            = require('core/utils/utils');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 
 const QueryByDrawPolygonControl = function(options={}) {
-  const layers           = GUI.getService('map').filterableLayersAvailable({ iltrable: { ows: 'WFS' } }) || [];
+  const layers           = GUI.getService('map').filterableLayersAvailable({ filtrable: { ows: 'WFS' } }) || [];
   layers.forEach(layer => layer.setTocHighlightable(true));
 
   const _options = {
