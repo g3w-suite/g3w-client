@@ -71,13 +71,9 @@ function QueryService(){
         // layers
         getMapLayersByFilter({
           ...(
-              "boolean" === typeof excludeSelected ?
-              {
-                SELECTED: !excludeSelected
-              } :
-              {
-                SELECTED_OR_ALL: true
-              }
+            "boolean" === typeof excludeSelected
+              ? { SELECTED: !excludeSelected }
+              : { SELECTED_OR_ALL: true }
           ),
           FILTERABLE: true,
           VISIBLE: true
