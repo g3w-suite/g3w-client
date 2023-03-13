@@ -12,7 +12,8 @@ const {
   createFilterFormInputs,
   createSingleFieldParameter,
   isEmptyObject,
-  sortAlphabeticallyArray
+  sortAlphabeticallyArray,
+  sortNumericArray
 } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
@@ -314,7 +315,20 @@ proto.getLayersFilterData = async function(layers, options={}){
     .filter(({status}) => status === 'fulfilled')
     .reduce((accumulator, {value=[]}) => [...accumulator, ...value]
     , []);
-  return sortAlphabeticallyArray(data);
+  //check if is not empty array
+  if (data.length > 0) {
+    switch (typeof data[0]) {
+      case 'string':
+        // return values
+        return sortAlphabeticallyArray(data);
+      case 'number':
+        return sortNumericArray(data);
+      default:
+        return data;
+    }
+  } else {
+    return data;
+  }
 };
 
 /**
