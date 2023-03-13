@@ -277,7 +277,7 @@ export default {
     },
 
     isHighLight() {
-      return (this._isHighLightProjectLayer() || this._isHighLightExternalLayer());
+      return (this._isHighLightProjectLayer || this._isHighLightExternalLayer);
     },
 
     isInGrey() {
