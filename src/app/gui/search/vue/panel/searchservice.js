@@ -311,10 +311,11 @@ proto.getLayerFilterData = function(layer, {suggest, unique, ordering}) {
  */
 proto.getLayersFilterData = async function(layers, options={}){
   const data_promises = await Promise.allSettled(layers.map(layer => this.getLayerFilterData(layer, options)));
-  const data = data_promises
+  // get unique value from each layers
+  const data = Array.from(data_promises
     .filter(({status}) => status === 'fulfilled')
-    .reduce((accumulator, {value=[]}) => [...accumulator, ...value]
-    , []);
+    .reduce((accumulator, {value=[]}) => new Set([...accumulator, ...value])
+    , []));
   //check if is not empty array
   if (data.length > 0) {
     switch (typeof data[0]) {
