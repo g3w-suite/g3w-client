@@ -15,7 +15,10 @@
 
     <!-- Item Title -->
     <li class="title">
-      <div>{{ layerMenu.layer.title}}</div>
+      <div>
+        <span>{{ layerMenu.layer.title}}</span>
+        <span v-if="layerMenu.layer.showfeaturecount">[]</span>
+      </div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
 
