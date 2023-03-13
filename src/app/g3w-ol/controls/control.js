@@ -82,26 +82,26 @@ proto.setEventKey = function({eventType, eventKey}){
 };
 
 /**
- * Method to reset original handler method of control event
- * @param eventType <String>
+ * Reset original handler method of control event.
+ * 
+ * @param {string} eventType
  */
-proto.resetOriginalHandlerEvent = function(eventType){
+proto.resetOriginalHandlerEvent = function(eventType) {
   if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
-    const eventKey = this.eventKeys[eventType].eventKey;
-    ol.Observable.unByKey(eventKey);
+    ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
     this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
   }
 };
 
 /**
- * Method to overwrite original handler method of control event
- * @param eventType <String>
- * @param handler <Function>
+ * Override original handler method of control event.
+ * 
+ * @param {string} eventType
+ * @param {() => {}} handler
  */
 proto.overwriteEventHandler = function({eventType, handler}) {
   if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
-    const eventKey = this.eventKeys[eventType].eventKey;
-    ol.Observable.unByKey(eventKey);
+    ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
     this.eventKeys[eventType].eventKey = this.on(eventType, handler);
   }
 };
