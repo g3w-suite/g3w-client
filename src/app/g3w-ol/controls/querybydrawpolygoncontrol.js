@@ -6,11 +6,11 @@ import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
-const {throttle} = require('core/utils/utils');
+const { throttle }            = require('core/utils/utils');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 
 const QueryByDrawPolygonControl = function(options={}) {
-  const layers           = GUI.getService('map').filterableLayersAvailable({iltrable: {ows: 'WFS'}}) || [];
+  const layers           = GUI.getService('map').filterableLayersAvailable({ iltrable: { ows: 'WFS' } }) || [];
   layers.forEach(layer => layer.setTocHighlightable(true));
 
   const _options = {
@@ -35,27 +35,15 @@ const QueryByDrawPolygonControl = function(options={}) {
 
   this.setEnable(this.isThereVisibleLayers());
 
-  // feature used to store feature drawend
+  /**
+   * Store drawed ol.Feature
+   */
   this.feature = null;
 };
 
 ol.inherits(QueryByDrawPolygonControl, BaseQueryPolygonControl);
 
 const proto = QueryByDrawPolygonControl.prototype;
-
-/**
- * @since 3.8.0
- */
-proto.onSelectLayer = function(layer) {
-  if (
-    layer
-  ) {
-    this.setEnable(layer.isFilterable());
-  } else {
-    this.setEnable(this.isThereVisibleLayers());
-  }
-  this.toggle(this.isToggled() && this.getEnable());
-};
 
 /**
  * @param {ol.Map} map
@@ -74,29 +62,33 @@ proto.setMap = function(map) {
 
   const eventKey = this.on('drawend', this.runSpatialQuery);
 
-  this.setEventKey({
-    eventType: 'drawend',
-    eventKey
-  });
+  this.setEventKey({ eventType: 'drawend', eventKey });
+
 };
 
 /**
  * Check visibiliy of control
+ * 
  * @param layers
+ * 
  * @returns {boolean}
  */
 proto.checkVisibile = function(layers) {
-  let visible;
   // if no layer
-  if (!layers.length) visible = false;
-  else {
-    // get all layers filterable
-    const filterableLayers = layers.filter(layer => layer.isFilterable());
-    visible = filterableLayers.length > 0;
+  if (!layers.length) {
+    return false;
   }
-  return visible;
+  // get all layers filterable
+  return layers.filter(layer => layer.isFilterable()).length > 0;
 };
 
+/**
+ * @since 3.8.0
+ */
+proto.onSelectLayer = function(layer) {
+  this.setEnable((layer && layer.isFilterable()) || this.isThereVisibleLayers());
+  this.toggle(this.isToggled() && this.getEnable());
+};
 
 /**
  * @param { unknown | null } layer
@@ -123,8 +115,7 @@ proto.listenLayersVisibilityChange = function() {
 };
 
 /**
- * @param layer
- * @param unWatches
+ * @param {{ layer, unWatches }}
  * 
  * @since 3.8.0
  */
