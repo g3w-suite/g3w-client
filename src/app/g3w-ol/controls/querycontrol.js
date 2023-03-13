@@ -59,11 +59,10 @@ proto.setMap = function(map) {
  * @param event
  */
 proto.runQuery = async function({coordinates}) {
-
   GUI.closeOpenSideBarComponent();
   try {
     const project = ProjectsRegistry.getCurrentProject();
-    const { data = [] } = await DataRouterService.getData('query:coordinates', {
+    await DataRouterService.getData('query:coordinates', {
       inputs: {
         coordinates,
         feature_count: project.getQueryFeatureCount(),
