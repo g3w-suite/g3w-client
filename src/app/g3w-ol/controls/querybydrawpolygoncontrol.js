@@ -201,10 +201,6 @@ proto.runSpatialQuery = async function() {
       }
     });
 
-    if (data.length) {
-      GUI.getService('map').zoomToFeatures([this.feature]);
-    }
-
   } catch(err){
     console.log(err)
   }
