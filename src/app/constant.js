@@ -302,12 +302,6 @@ export const PRINT_SCALES = [
 ];
 
 /**
- * @since 3.8.0
- *
- */
-export const SCALES = PRINT_SCALES;
-
-/**
  * Point tolerance when clicking on map
  * @type {{unit: string, value: number}}
  */
@@ -398,7 +392,6 @@ export default {
   PRINT_FORMATS,
   PRINT_RESOLUTIONS,
   PRINT_SCALES,
-  SCALES,
   QUERY_POINT_TOLERANCE,
   SEARCH_ALLVALUE,
   SEARCH_RETURN_TYPES,
