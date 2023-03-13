@@ -16,7 +16,9 @@ const QueryControl = function(options = {}){
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
   };
+
   options = utils.merge(options, _options);
+
   InteractionControl.call(this, options);
 };
 
@@ -44,11 +46,9 @@ proto.setMap = function(map) {
     }
   });
 
-  const eventPickedKey = this.on('picked', this.runQuery);
-
   this.setEventKey({
     eventType: 'picked',
-    eventKey: eventPickedKey
+    eventKey: this.on('picked', this.runQuery)
   });
 
   InteractionControl.prototype.setMap.call(this, map);
@@ -79,6 +79,5 @@ proto.runQuery = async function({coordinates}) {
   }
 
 };
-
 
 module.exports = QueryControl;
