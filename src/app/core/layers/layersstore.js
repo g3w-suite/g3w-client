@@ -103,21 +103,21 @@ proto.getLayersDict = function(filter = {}, options={}) {
 
   // if filter is passed
   if (
-    _.isUndefined(QUERYABLE)
-    && _.isUndefined(FILTERABLE)
-    && _.isUndefined(EDITABLE)
-    && _.isUndefined(VISIBLE)
-    && _.isUndefined(SERVERTYPE)
-    && _.isUndefined(CACHED)
-    && _.isUndefined(SELECTED_OR_ALL)
-    && _.isUndefined(SERVERTYPE)
-    && _.isUndefined(GEOLAYER)
-    && _.isUndefined(HIDDEN)
-    && _.isUndefined(DISABLED)
-    && _.isUndefined(BASELAYER)
-    && _.isUndefined(VECTORLAYER)
-    && _.isUndefined(PRINTABLE)
-    && _.isUndefined(IDS)
+    _.isUndefined(QUERYABLE) &&
+    _.isUndefined(FILTERABLE) &&
+    _.isUndefined(EDITABLE) &&
+    _.isUndefined(VISIBLE) &&
+    _.isUndefined(SERVERTYPE) &&
+    _.isUndefined(CACHED) &&
+    _.isUndefined(SELECTED_OR_ALL) &&
+    _.isUndefined(SERVERTYPE) &&
+    _.isUndefined(GEOLAYER) &&
+    _.isUndefined(HIDDEN) &&
+    _.isUndefined(DISABLED) &&
+    _.isUndefined(BASELAYER) &&
+    _.isUndefined(VECTORLAYER) &&
+    _.isUndefined(PRINTABLE) &&
+    _.isUndefined(IDS)
   ) return this._layers;
 
   let layers = [];
@@ -136,29 +136,22 @@ proto.getLayersDict = function(filter = {}, options={}) {
     let _layers = layers;
     layers = layers.filter(layer => layer.isSelected());
     layers = layers.length ? layers : _layers;
-  } else  if (typeof SELECTED === 'boolean') layers = layers.filter(layer => SELECTED === layer.isSelected());
+  }
 
-  if (typeof QUERYABLE === 'boolean') layers = layers.filter(layer => QUERYABLE === layer.isQueryable());
+  if ('boolean' === typeof SELECTED && !SELECTED_OR_ALL) layers = layers.filter(layer => SELECTED === layer.isSelected());
 
-  if (typeof FILTERABLE === 'boolean') layers = layers.filter(layer => FILTERABLE === layer.isFilterable(options.filtrable || null));
+  if ('boolean' === typeof QUERYABLE)   layers = layers.filter(layer => QUERYABLE   === layer.isQueryable());
+  if ('boolean' === typeof FILTERABLE)  layers = layers.filter(layer => FILTERABLE  === layer.isFilterable(options.filtrable || null));
+  if ('boolean' === typeof EDITABLE)    layers = layers.filter(layer => EDITABLE    === layer.isEditable());
+  if ('boolean' === typeof VISIBLE)     layers = layers.filter(layer => VISIBLE     === layer.isVisible());
+  if ('boolean' === typeof CACHED)      layers = layers.filter(layer => CACHED      === layer.isCached());
+  if ('boolean' === typeof BASELAYER)   layers = layers.filter(layer => BASELAYER   === layer.isBaseLayer());
+  if ('boolean' === typeof GEOLAYER)    layers = layers.filter(layer => GEOLAYER    === layer.state.geolayer);
+  if ('boolean' === typeof VECTORLAYER) layers = layers.filter(layer => VECTORLAYER === layer.isType('vector'));
+  if ('boolean' === typeof HIDDEN)      layers = layers.filter(layer => HIDDEN      == layer.isHidden());
+  if ('boolean' === typeof DISABLED)    layers = layers.filter(layer => DISABLED    === layer.isDisabled());
 
-  if (typeof EDITABLE === 'boolean') layers = layers.filter(layer => EDITABLE === layer.isEditable());
-
-  if (typeof VISIBLE === 'boolean') layers = layers.filter(layer => VISIBLE === layer.isVisible());
-
-  if (typeof CACHED === 'boolean') layers = layers.filter(layer => CACHED === layer.isCached());
-
-  if (typeof BASELAYER === 'boolean') layers = layers.filter(layer => BASELAYER === layer.isBaseLayer());
-
-  if (typeof GEOLAYER === 'boolean') layers = layers.filter(layer => GEOLAYER === layer.state.geolayer);
-
-  if (typeof VECTORLAYER === 'boolean') layers = layers.filter(layer => VECTORLAYER === layer.isType('vector'));
-
-  if (typeof HIDDEN === 'boolean') layers = layers.filter(layer => HIDDEN == layer.isHidden());
-
-  if (typeof DISABLED === 'boolean') layers = layers.filter(layer => DISABLED === layer.isDisabled());
-
-  if (typeof SERVERTYPE === 'string' && SERVERTYPE !=='') layers = layers.filter(layer => SERVERTYPE === layer.getServerType());
+  if ('string' === typeof SERVERTYPE && '' !== SERVERTYPE) layers = layers.filter(layer => SERVERTYPE === layer.getServerType());
 
   if (PRINTABLE) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: PRINTABLE.scale}));
 
