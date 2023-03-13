@@ -231,7 +231,7 @@
        */
       info() {
         if (this.state.query) {
-          const query               = this.state.query;
+          const query = this.state.query;
           switch (query.type) {
             case 'coordinates':
               return {

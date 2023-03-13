@@ -124,15 +124,9 @@ function QueryResultsService() {
         }
 
         switch (this.state.query.type) {
-          case 'coordinates':
-            this.showCoordinates(this.state.query.coordinates);
-            break;
-          case 'bbox':
-            this.showBBOX(this.state.query.bbox);
-            break;
-          case 'polygon':
-            this.state.query.geometry && this.showGeometry(this.state.query.geometry);
-            break;
+          case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
+          case 'bbox':        this.showBBOX(this.state.query.bbox); break;
+          case 'polygon':     this.state.query.geometry && this.showGeometry(this.state.query.geometry); break;
         }
       }
 
@@ -1730,20 +1724,27 @@ proto.removeQueryResultLayerFromMap = function(){
   this.mapService.getMap().removeLayer(this.resultsQueryLayer)
 };
 
-// show layerQuery result on map
+/**
+ * Show layerQuery result on map
+ */
 proto.addQueryResultsLayerToMap = function({feature}){
+
   this.removeQueryResultLayerFromMap();
+
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
-  try {
-    const center = ol.extent.getCenter(feature.getGeometry().getExtent());
-    this.mapService.getMap().getView().setCenter(center);
-  } catch(err){}
 
-  //need to be call to set layer on top of map
-  this.mapService.setZIndexLayer({
-    layer: this.resultsQueryLayer
-  })
+  try {
+    this.mapService
+      .getMap()
+      .getView()
+      .setCenter(ol.extent.getCenter(feature.getGeometry().getExtent()));
+  } catch(err) {
+    console.warn(err);
+  }
+
+  // make sure that layer is on top of other map.
+  this.mapService.setZIndexLayer({ layer: this.resultsQueryLayer })
 
 };
 
