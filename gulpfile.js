@@ -162,7 +162,9 @@ gulp.task('concatenate:vendor_js', function() {
  */
 gulp.task('browserify:app', function() {
   let rebundle;
-  let bundler = browserify('./src/app/main.js', {
+  let bundler = browserify(
+    `./src/index.${production ? 'prod' : 'dev'}.js`,
+    {
     basedir: './',
     paths: ['./src/', './src/app/', './src/plugins/'],
     debug: !production,
@@ -180,7 +182,7 @@ gulp.task('browserify:app', function() {
     ]
   });
   if (production) {
-    bundler.ignore('./src/app/dev/index.js');           // ignore dev index file
+    bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
     dependencies.forEach(dep => bundler.external(dep)); // add external module node_modules on vendor
   } else {
     bundler.on('prebundle', bundle => {
@@ -477,9 +479,9 @@ gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatena
 gulp.task('build', done => runSequence(
   'production',
   // 'clean:admin',
-  'clean:overrides',
   'clone:default_plugins',
   'build:client',
+  'clean:overrides',
   done
   )
 );
