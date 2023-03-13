@@ -178,11 +178,11 @@ proto.runSpatialQuery = async function() {
   GUI.closeOpenSideBarComponent();
 
   try {
-    const { data = [] } = await DataRouterService.getData('query:polygon', {
+    await DataRouterService.getData('query:polygon', {
       inputs: {
         layerName: 'Draw',
         feature: this.feature,
-        excludeSelected: null === this.getSelectedLayer(),
+        excludeSelected: (null === this.getSelectedLayer()),
         external: {
           add: this.addExternalLayerToResult(),
           filter: {
@@ -190,7 +190,7 @@ proto.runSpatialQuery = async function() {
           }
         },
         filterConfig: {
-          spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
+          spatialMethod: this.getSpatialMethod()
         },
         multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
       },
@@ -202,7 +202,7 @@ proto.runSpatialQuery = async function() {
     });
 
   } catch(err){
-    console.log(err)
+    console.warn(err)
   }
 };
 
