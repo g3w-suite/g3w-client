@@ -24,6 +24,11 @@ export default {
       message: "Posizione rispetto ai layers della TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Seleziona Template"
+        }
+      },
       spatialbookmarks: {
         title: "Segnalibri Spaziali",
         helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
@@ -263,7 +268,7 @@ export default {
             title: 'Guida - Interrogazione con Poligono',
             message:`
                 <ul>
-                  <li">Seleziona uno strato poligonale in legenda.</li>
+                  <li>Seleziona uno strato poligonale in legenda.</li>
                   <li>Assicurati che lo strato sia visibile in mappa.</li>
                   <li>Clicca su una geometria dello strato selezionato.</li>
                 </ul>`

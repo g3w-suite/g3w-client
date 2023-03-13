@@ -400,7 +400,6 @@ function GeocodingControl(options={}) {
     debug: false,
     viewbox: options.bbox,
     bounded: 1,
-    classMobile: options.isMobile ? 'nominatim-mobile' : '',
     mapCrs: options.mapCrs,
     fontIcon: GUI.getFontClass('search')
   };
@@ -445,7 +444,7 @@ function GeocodingControl(options={}) {
 
   this.projection;
 
-  const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`;
+  const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container}`;
   const self = this;
 
   const GeocoderVueContainer = Vue.extend({
