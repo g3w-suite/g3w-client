@@ -6,11 +6,13 @@ import ProjectsRegistry from 'store/projects';
 const { throttle }       = require('core/utils/utils');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
-// Object contain properties of TOC layers that need to satisfy
+/**
+ * Catalog layers (TOC) properties that need to be satisfied
+ */
 const layersFilterObject = {
   SELECTED_OR_ALL: true, // selected or all
-  FILTERABLE: true, // check src/app/core/layers/layer.js#L925
-  VISIBLE: true // need to be visible
+  FILTERABLE: true,      // see: src/app/core/layers/layer.js#L925
+  VISIBLE: true          // need to be visible
 };
 
 const condition = {
@@ -34,7 +36,6 @@ const QueryBBoxControl = function(options = {}) {
    * @FIXME add description
    */
   this.unwatches        = [];
-
 
   /**
    * @FIXME add description
@@ -64,7 +65,9 @@ const QueryBBoxControl = function(options = {}) {
   };
 
   InteractionControl.call(this, _options);
+
   this.setVisible(this.checkVisible(this.layers));
+
   this.setEnable(this.checkEnabled(this.layers));
 
   /**
@@ -75,8 +78,9 @@ const QueryBBoxControl = function(options = {}) {
   this.bbox = null;
 
   /**
+   * Set `layer.tochighlightable` to external layer to show highlight class
+   * 
    * @since 3.8.0
-   * Set tochighlightable to external layer to show highlight class
    */
   this.on('toggled', ({toggled}) => {
     this.getExternalLayers().forEach(layer => layer.tochighlightable = toggled);
@@ -89,45 +93,8 @@ ol.inherits(QueryBBoxControl, InteractionControl);
 const proto = QueryBBoxControl.prototype;
 
 /**
- * @since 3.8.0
- */
-proto.onSelectLayer = function(layer) {
-  if (layer) {
-    const findLayer = this.layers.find(_layer => _layer === layer);
-    this.setEnable(!!findLayer && findLayer.isVisible());
-  } else {
-    this.setEnable(this.checkEnabled(this.layers));
-  }
-  this.toggle(this.isToggled() && this.getEnable());
-};
-
-/**
- * @since 3.8.0
- */
-proto.listenLayersVisibilityChange = function() {
-  this.unwatches.forEach(unwatch => unwatch());
-  this.unwatches.splice(0);
-  this.layers.forEach(layer => {
-    this.unwatches
-      .push(
-        this.watchLayer(
-          () => layer.state.visible,
-          visible => {
-            if (true === layer.state.selected) {
-              this.setEnable(visible);
-            } else {
-              this.setEnable(this.checkEnabled(this.layers))
-            }
-            this.toggle(this.isToggled() && this.getEnable());
-          }
-        )
-      )
-    }
-  );
-};
-
-/**
  * @deprecated since 3.7
+ * 
  * @param layers
  */
 proto.change = function(layers=[]) {
@@ -180,6 +147,44 @@ proto.setMap = function(map) {
 };
 
 /**
+ * @since 3.8.0
+ */
+proto.onSelectLayer = function(layer) {
+  if (layer) {
+    const findLayer = this.layers.find(_layer => _layer === layer);
+    this.setEnable(!!findLayer && findLayer.isVisible());
+  } else {
+    this.setEnable(this.checkEnabled(this.layers));
+  }
+  this.toggle(this.isToggled() && this.getEnable());
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.listenLayersVisibilityChange = function() {
+  this.unwatches.forEach(unwatch => unwatch());
+  this.unwatches.splice(0);
+  this.layers.forEach(layer => {
+    this.unwatches
+      .push(
+        this.watchLayer(
+          () => layer.state.visible,
+          visible => {
+            if (true === layer.state.selected) {
+              this.setEnable(visible);
+            } else {
+              this.setEnable(this.checkEnabled(this.layers))
+            }
+            this.toggle(this.isToggled() && this.getEnable());
+          }
+        )
+      )
+    }
+  );
+};
+
+/**
  * @returns {Promise<void>}
  * 
  * @since 3.8.0
@@ -213,8 +218,7 @@ proto.runSpatialQuery = async function(){
 };
 
 /**
- * @param layer
- * @param unWatches
+ * @param {{ layer, unWatches }}
  * 
  * @since 3.8.0
  */
@@ -244,8 +248,6 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
 };
 
 /**
- * @param layer
- * 
  * @since 3.8.0
  */
 proto.onRemoveExternalLayer = function() {
