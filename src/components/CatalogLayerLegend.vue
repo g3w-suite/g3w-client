@@ -21,7 +21,7 @@
     </figure>
 
     <figure v-else>
-  
+
       <div v-for="(category, index) in categories"
         style="display: flex; align-items: center; width: 100%"
         v-disabled="category.disabled"
@@ -42,7 +42,7 @@
         >
 
         <span
-          v-if="('tab' === legendplace && category.ruleKey) || ('toc' === legendplace && showCategoriesCheckBox)"
+          v-if="('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
           class="g3w-long-text"
           style="padding-left: 3px;"
         >
@@ -62,8 +62,6 @@
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ProjectsRegistry from 'store/projects';
-
-  // const {XHR} = require('core/utils/utils');
 
   export default {
     name: "layerlegend",
@@ -90,9 +88,7 @@
       show() {
         return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },
-      showCategoriesCheckBox() {
-        return this.categories.length > 1;
-      }
+
     },
     methods: {
 
@@ -217,10 +213,10 @@
 
       /**
        * @FIXME the following comment seems wrong (isn't `this.dynamic` a `boolean` variable?)
-       * 
+       *
        * Store legend url icons based on current style of layer
        * It use to cache all symbol of a style without get a new request to server
-       * 
+       *
        * @type {{}}
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
