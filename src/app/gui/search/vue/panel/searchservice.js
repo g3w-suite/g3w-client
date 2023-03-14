@@ -287,44 +287,38 @@ proto.getValueMapValues = async function(field){
 };
 
 /**
- *
  * @param layer
+ * @param {{ suggest, unique, ordering }} options
+ * 
  * @returns {Promise}
+ * 
+ * @since 3.8.0
  */
 proto.getLayerFilterData = function(layer, {suggest, unique, ordering}) {
-  return layer.getFilterData({
-    suggest,
-    unique,
-    ordering
-  })
+  return layer.getFilterData({ suggest, unique, ordering });
 };
 
 /**
- *
  * @param layers
  * @param options
+ * 
  * @returns {Promise<*>}
+ * 
+ * @since 3.8.0
  */
-proto.getLayersFilterData = async function(layers, options={}){
+proto.getLayersFilterData = async function(layers, options={}) {
   const data_promises = await Promise.allSettled(layers.map(layer => this.getLayerFilterData(layer, options)));
   // get unique value from each layers
-  const data = Array.from(data_promises
-    .filter(({status}) => status === 'fulfilled')
-    .reduce((accumulator, {value=[]}) => new Set([...accumulator, ...value])
-    , []));
+  const data = Array.from(
+    data_promises
+      .filter(({status}) => 'fulfilled' === status)
+      .reduce((accumulator, { value = [] }) => new Set([...accumulator, ...value]), [])
+    );
   //check if is not empty array
-  if (data.length > 0) {
-    switch (typeof data[0]) {
-      case 'string':
-        // return values
-        return sortAlphabeticallyArray(data);
-      case 'number':
-        return sortNumericArray(data);
-      default:
-        return data;
-    }
-  } else {
-    return data;
+  switch (data.length && typeof data[0]) {
+    case 'string': return sortAlphabeticallyArray(data);
+    case 'number': return sortNumericArray(data);
+    default:       return data;
   }
 };
 
