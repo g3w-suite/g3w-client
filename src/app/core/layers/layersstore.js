@@ -262,8 +262,16 @@ proto.setLayersTree = function(layerstree, name, expanded=true) {
   };
   const traverse = (nodes, parentGroup) => {
     nodes.forEach((node, index) => {
-      // case of layer substitute node with layere state
-      if (node.id !== undefined) nodes[index] = this.getLayerById(node.id).getState();
+      // case of layer substitute node with layer state
+
+      if (node.id !== undefined) {
+        nodes[index] = this.getLayerById(node.id).getState();
+        /**
+         * @since 3.8.0
+         * Improve it
+         */
+        nodes[index].showfeaturecount = node.showfeaturecount;
+      }
       if (node.nodes) {
         node.nodes.forEach(node => node.parentGroup = parentGroup);
         traverse(node.nodes, node);
@@ -282,9 +290,11 @@ proto.setLayersTree = function(layerstree, name, expanded=true) {
 // used by from plugin (or external code) to build layerstree
 // layer groupNem is a ProjectName
 proto.createLayersTree = function(groupName, options={}) {
-  const full = options.full || false;
-  const expanded = options.expanded;
-  const _layerstree = options.layerstree || null;
+  const {
+    expanded,
+    layerstree:_layerstree=null,
+    full=false
+  } = options;
   // get all layers id from layers server config to compare with layer nodes on layerstree server property
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
@@ -292,13 +302,16 @@ proto.createLayersTree = function(groupName, options={}) {
     if (full === true) {
       return this.state.layerstree;
     } else {
-      let traverse = (obj, newobj) => {
+      let traverse = (obj, layerstree) => {
         obj.forEach(layer => {
           let lightlayer = null;
 
           // case TOC has layer ID
           if (null !== layer.id && "undefined" !== typeof layer.id && tocLayersId.find(id => id === layer.id)) {
-            lightlayer = ({ ...lightlayer, id: layer.id });
+            lightlayer = ({
+              ...lightlayer,
+              ...layer
+            });
           }
 
           // case group
@@ -317,7 +330,7 @@ proto.createLayersTree = function(groupName, options={}) {
           // check if lightlayer is not null
           if (null !== lightlayer) {
             lightlayer.expanded = layer.expanded; // expand legend item (TOC)
-            newobj.push(lightlayer);
+            layerstree.push(lightlayer);
           }
 
         });
