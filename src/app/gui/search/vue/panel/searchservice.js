@@ -15,6 +15,7 @@ const {
   sortAlphabeticallyArray,
   sortNumericArray
 } = require('core/utils/utils');
+
 const G3WObject = require('core/g3wobject');
 
 const NONVALIDVALUES = [null, undefined, ALLVALUE];
@@ -225,33 +226,28 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
 
 /**
  * Request to server value for a specific select field
- * @param field (form input)
- * @returns {Promise<*[]>}
+ * 
+ * @param field form input
+ * 
+ * @returns {Promise<[]>}
  */
-proto.getValuesFromField = async function(field){
+proto.getValuesFromField = async function(field) {
   if (field.options.layer_id) {
-    const uniqueValues = await this.getUniqueValuesFromField({
+    const uniqueValues = await this.getUniqueValuesFromField({ field, unique: field.attribute });
+    return this.getValueRelationValues(
       field,
-      unique: field.attribute
-    });
-    const layer = CatalogLayersStoresRegistry.getLayerById(field.options.layer_id);
-    const filter = createFilterFormInputs({
-      layer,
-      search_endpoint: this.getSearchEndPoint(),
-      inputs: uniqueValues.map( value => ({
-        attribute: field.options.value,
-        logicop: "OR",
-        operator: "eq",
-        value
-      }))
-    });
-    return this.getValueRelationValues(field, filter);
+      // filter
+      createFilterFormInputs({
+        layer: CatalogLayersStoresRegistry.getLayerById(field.options.layer_id),
+        search_endpoint: this.getSearchEndPoint(),
+        inputs: uniqueValues.map( value => ({ value, attribute: field.options.value, logicop: "OR", operator: "eq" }))
+      })
+    );
   }
-  else if (field.options.values.length) return this.getValueMapValues(field);
-  else return this.getUniqueValuesFromField({
-      field,
-      unique: field.attribute
-    })
+  if (field.options.values.length) {
+    return this.getValueMapValues(field);
+  }
+  return this.getUniqueValuesFromField({ field, unique: field.attribute })
 };
 
 proto.getValueRelationValues = async function(field, filter){
