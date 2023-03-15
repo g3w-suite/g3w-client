@@ -39,11 +39,6 @@ const BaseQueryPolygonControl = function(options = {}) {
 
   InteractionControl.call(this, options);
 
-  /**
-   * @since 3.8.0
-   */
-  this.setVisible(this.checkVisibile(this.layers));
-
   // starting disabled
   this.setEnable(enabled);
 };

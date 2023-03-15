@@ -58,7 +58,6 @@ const proto = QueryByPolygonControl.prototype;
  */
 proto.change = function(layers=[]) {
   this.layers = layers;
-  this.setVisible(this.checkVisibile(layers));
   this.setEnable(false);
   this.listenLayersVisibilityChange();
 };

@@ -66,7 +66,6 @@ const QueryBBoxControl = function(options = {}) {
 
   InteractionControl.call(this, _options);
 
-  this.setVisible(this.checkVisible(this.layers));
 
   this.setEnable(this.checkEnabled(this.layers));
 
@@ -99,7 +98,6 @@ const proto = QueryBBoxControl.prototype;
  */
 proto.change = function(layers=[]) {
   this.layers = layers;
-  this.setVisible(this.checkVisible());
   this.setEnable(this.checkEnabled());
   this.listenLayersVisibilityChange();
 };
