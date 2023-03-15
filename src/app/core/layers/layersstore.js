@@ -248,8 +248,8 @@ proto.getWmsUrl = function() {
   return this.config.wmsUrl;
 };
 
-// set layersstree of layers inside the laysstore
-proto.setLayersTree = function(layerstree, name, expanded=true) {
+// set layersstree of layers inside the layersstore
+proto.setLayersTree = function(layerstree=[], name, expanded=true) {
   // this is a root group project that contain all layerstree of qgis project
   const rootGroup = {
     title: name || this.config.id,
@@ -263,14 +263,12 @@ proto.setLayersTree = function(layerstree, name, expanded=true) {
   const traverse = (nodes, parentGroup) => {
     nodes.forEach((node, index) => {
       // case of layer substitute node with layer state
-
       if (node.id !== undefined) {
         nodes[index] = this.getLayerById(node.id).getState();
         /**
          * @since 3.8.0
-         * Improve it
          */
-        nodes[index].showfeaturecount = node.showfeaturecount;
+        nodes[index].showfeaturecount = node.showfeaturecount || false;
       }
       if (node.nodes) {
         node.nodes.forEach(node => node.parentGroup = parentGroup);
@@ -288,8 +286,12 @@ proto.setLayersTree = function(layerstree, name, expanded=true) {
 };
 
 // used by from plugin (or external code) to build layerstree
-// layer groupNem is a ProjectName
-proto.createLayersTree = function(groupName, options={}) {
+// layer groupName is a ProjectName
+proto.createLayersTree = function(groupName, options={
+  layerstree:null,
+  expanded: false,
+  full: false
+  }) {
   const {
     expanded,
     layerstree:_layerstree=null,
@@ -298,55 +300,55 @@ proto.createLayersTree = function(groupName, options={}) {
   // get all layers id from layers server config to compare with layer nodes on layerstree server property
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
+  // check if layerstree coming from server project configuration is set
   if (_layerstree) {
     if (full === true) {
       return this.state.layerstree;
     } else {
-      let traverse = (obj, layerstree) => {
-        obj.forEach(layer => {
+      let traverse = (nodes, layerstree) => {
+        nodes.forEach(node => {
           let lightlayer = null;
 
           // case TOC has layer ID
-          if (null !== layer.id && "undefined" !== typeof layer.id && tocLayersId.find(id => id === layer.id)) {
+          if (null !== node.id && "undefined" !== typeof node.id && tocLayersId.find(id => id === node.id)) {
             lightlayer = ({
               ...lightlayer,
-              ...layer
+              ...node
             });
           }
 
           // case group
-          if (null !== layer.nodes && "undefined" !== typeof layer.nodes) {
+          if (null !== node.nodes && "undefined" !== typeof node.nodes) {
             lightlayer = ({
               ...lightlayer,
-              title: layer.name,
+              title: node.name,
               groupId: uniqueId(),
               nodes: [],
-              checked: layer.checked,
-              mutually_exclusive: layer["mutually-exclusive"]
+              checked: node.checked,
+              mutually_exclusive: node["mutually-exclusive"]
             });
-            traverse(layer.nodes, lightlayer.nodes); // recursion step
+            traverse(node.nodes, lightlayer.nodes); // recursion step
           }
 
           // check if lightlayer is not null
           if (null !== lightlayer) {
-            lightlayer.expanded = layer.expanded; // expand legend item (TOC)
+            lightlayer.expanded = node.expanded; // expand legend item (TOC)
             layerstree.push(lightlayer);
           }
-
         });
       };
       traverse(_layerstree, layerstree);
     }
   } else {
+    // get all project layers that have geometry
     const geoLayers = this.getGeoLayers();
-    geoLayers.forEach(layer => {
-      layerstree.push({
+    layerstree = geoLayers.map(layer => ({
         id: layer.getId(),
         name: layer.getName(),
         title: layer.getTitle(),
         visible: layer.isVisible() || false
       })
-    });
+    )
   }
   // setLayerstree
   this.setLayersTree(layerstree, groupName, expanded);
