@@ -17,7 +17,7 @@
     <li class="title">
       <div>
         <span>{{ layerMenu.layer.title}}</span>
-        <span v-if="layerMenu.layer.showfeaturecount">[]</span>
+        <span v-if="layerMenu.layer.showfeaturecount">[{featurecount}]</span>
       </div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
@@ -299,6 +299,14 @@
         }
       }
       
+    },
+    computed: {
+      featurecount(){
+        const {featurecount={}} = this.layerMenu.layer;
+        return Object.values(featurecount).reduce((featurecount, featureCountCategory) =>{
+          return featurecount + 1*featureCountCategory;
+        }, 0)
+      }
     },
     methods: {
 

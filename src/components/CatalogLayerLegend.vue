@@ -46,7 +46,10 @@
           class="g3w-long-text"
           style="padding-left: 3px;"
         >
-          {{category.title}}
+          <span>{{category.title}}</span>
+          <span v-if="layer.showfeaturecount" style="font-weight: bold">
+            [{{layer.featurecount[category.ruleKey]}}]
+          </span>
         </span>
 
       </div>
@@ -225,7 +228,6 @@
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.mapReady = false;
-
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
 
       // Get all legend graphics of a layer when start
