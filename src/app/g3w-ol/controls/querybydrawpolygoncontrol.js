@@ -10,15 +10,12 @@ const { throttle }            = require('core/utils/utils');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 
 const QueryByDrawPolygonControl = function(options={}) {
-  const layers = GUI.getService('map')
-    .filterableLayersAvailable({
-      FILTERABLE: true,
-      SELECTED_OR_ALL: true
-    }, {
-      filtrable: {
-        ows: 'WFS'
-      }
-    });
+  const layers = GUI.getService('map').filterableLayersAvailable({
+    filtrable: {
+      ows: 'WFS'
+    }
+  }) || [];
+
   const _options = {
     ...options,
     name: "querybydrawpolygon",
@@ -74,26 +71,16 @@ proto.setMap = function(map) {
 };
 
 /**
- * Check visibiliy of control
- * 
- * @param layers
- * 
- * @returns {boolean}
- */
-proto.checkVisibile = function(layers) {
-  // if no layer
-  if (!layers.length) {
-    return false;
-  }
-  // get all layers filterable
-  return layers.filter(layer => layer.isFilterable()).length > 0;
-};
-
-/**
  * @since 3.8.0
  */
 proto.onSelectLayer = function(layer) {
-  this.setEnable((layer && layer.isFilterable()) || this.isThereVisibleLayers());
+  if (layer) {
+    const findLayer = this.layers.find(_layer => _layer === layer);
+    this.setEnable(!!findLayer && findLayer.isVisible());
+  } else {
+    this.setEnable((this.isThereVisibleLayers()));
+  }
+
   this.toggle(this.isToggled() && this.getEnable());
 };
 
@@ -107,7 +94,7 @@ proto.listenLayersVisibilityChange = function() {
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
     this.unwatches.push(
-      this.watchLayer(() =>  layer.state.visible, visible => {
+      this.watchLayer(() => layer.state.visible, visible => {
         // check if a selectedLayer i set
         if (null === this.getSelectedLayer()) {
           this.setEnable(this.isThereVisibleLayers());
@@ -154,25 +141,6 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
  */
 proto.onRemoveExternalLayer = function() {
   this.setEnable(this.isThereVisibleLayers());
-};
-
-/**
- * @since 3.8.0
- */
-proto.isThereVisibleLayers = function() {
-  return !!(
-    // check if user has selected a layer
-    (
-      this.getSelectedLayer() &&
-      // check if current selected layer is visible
-      this.isSelectedLayerVisible()
-    )  ||
-    // check if at least one layer is visible (project or external layer)
-    (
-      this.layers.find(layer => layer && layer.isVisible()) ||
-      this.getExternalLayers().find(layer => true === layer.visible)
-    )
-  )
 };
 
 /**

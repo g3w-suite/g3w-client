@@ -40,7 +40,7 @@ const QueryBBoxControl = function(options = {}) {
   /**
    * @FIXME add description
    */
-  const layers           = GUI.getService('map').filterableLayersAvailable(condition) || [];
+  const layers = GUI.getService('map').filterableLayersAvailable(condition) || [];
   layers.forEach(layer => layer.setTocHighlightable(true));
 
   const _options = {
@@ -67,7 +67,7 @@ const QueryBBoxControl = function(options = {}) {
   InteractionControl.call(this, _options);
 
 
-  this.setEnable(this.checkEnabled(this.layers));
+  this.setEnable(this.isThereVisibleLayers());
 
   /**
    * Store bbox coordinates
@@ -98,16 +98,12 @@ const proto = QueryBBoxControl.prototype;
  */
 proto.change = function(layers=[]) {
   this.layers = layers;
-  this.setEnable(this.checkEnabled());
+  this.setEnable(this.isThereVisibleLayers());
   this.listenLayersVisibilityChange();
 };
 
 proto.checkVisible = function() {
   return this.layers.length > 0 || this.getExternalLayers().length > 0;
-};
-
-proto.checkEnabled = function() {
-  return !!(this._hasVisibleLayer() || this._hasVisibleExternalLayer());
 };
 
 /**
@@ -153,7 +149,7 @@ proto.onSelectLayer = function(layer) {
     const findLayer = this.layers.find(_layer => _layer === layer);
     this.setEnable(!!findLayer && findLayer.isVisible());
   } else {
-    this.setEnable(this.checkEnabled(this.layers));
+    this.setEnable(this.isThereVisibleLayers());
   }
   this.toggle(this.isToggled() && this.getEnable());
 };
@@ -173,7 +169,7 @@ proto.listenLayersVisibilityChange = function() {
             if (true === layer.state.selected) {
               this.setEnable(visible);
             } else {
-              this.setEnable(this.checkEnabled(this.layers))
+              this.setEnable(this.isThereVisibleLayers())
             }
             this.toggle(this.isToggled() && this.getEnable());
           }
@@ -229,7 +225,7 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
     this.watchLayer(
       () => layer.selected,                    // watch `layer.selected` property
       selected => {
-        this.setEnable(true === selected ? layer.visible : this.checkEnabled());
+        this.setEnable(true === selected ? layer.visible : this.isThereVisibleLayers());
         this.toggle(this.isToggled() && this.getEnable());
       })
   );
@@ -238,12 +234,12 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
     this.watchLayer(
       () => layer.visible,                       // watch `layer.visible` property
       () => {
-        this.setEnable(this.checkEnabled());
+        this.setEnable(this.isThereVisibleLayers());
         this.toggle(this.isToggled() && this.getEnable());
       })
   );
 
-  this.setEnable(this.checkEnabled());
+  this.setEnable(this.isThereVisibleLayers());
 };
 
 /**

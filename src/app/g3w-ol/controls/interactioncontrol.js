@@ -538,6 +538,13 @@ proto._hasVisibleExternalLayer = function() {
 };
 
 /**
+ * @since 3.8.0
+ */
+proto.isThereVisibleLayers = function() {
+  return !!(this._hasVisibleLayer() || this._hasVisibleExternalLayer());
+};
+
+/**
  * @returns {boolean} whether selectedLayer is not external
  * 
  * @since 3.8.0
