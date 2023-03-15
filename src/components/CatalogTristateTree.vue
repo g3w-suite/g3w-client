@@ -119,7 +119,8 @@
         :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
-        {{ layerstree.title }}
+        <span>{{ layerstree.title }}</span>
+        <span v-if="!isGroup && layerstree.showfeaturecount" style="font-weight: bold">[{{getFeatureCount}}]</span>
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
@@ -271,6 +272,14 @@ export default {
     },
     isInGrey() {
       return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
+    },
+    /**
+     * @since 3.8.0
+     */
+    getFeatureCount(){
+      return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) =>{
+        return total + 1*categoryFeatureCount;
+      }, 0)
     }
   },
   watch:{
