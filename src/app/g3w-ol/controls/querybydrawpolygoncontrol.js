@@ -10,9 +10,15 @@ const { throttle }            = require('core/utils/utils');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 
 const QueryByDrawPolygonControl = function(options={}) {
-  const layers           = GUI.getService('map').filterableLayersAvailable({ filtrable: { ows: 'WFS' } }) || [];
-  layers.forEach(layer => layer.setTocHighlightable(true));
-
+  const layers = GUI.getService('map')
+    .filterableLayersAvailable({
+      FILTERABLE: true,
+      SELECTED_OR_ALL: true
+    }, {
+      filtrable: {
+        ows: 'WFS'
+      }
+    });
   const _options = {
     ...options,
     name: "querybydrawpolygon",
@@ -23,7 +29,6 @@ const QueryByDrawPolygonControl = function(options={}) {
     interactionClassOptions: {
       type: 'Polygon'
     },
-    enabled: true,
     layers,
     help: {
       title:"sdk.mapcontrols.querybybbox.help.title",
@@ -32,7 +37,6 @@ const QueryByDrawPolygonControl = function(options={}) {
   };
 
   BaseQueryPolygonControl.call(this, _options);
-
   this.setEnable(this.isThereVisibleLayers());
 
   /**
@@ -158,9 +162,11 @@ proto.onRemoveExternalLayer = function() {
 proto.isThereVisibleLayers = function() {
   return !!(
     // check if user has selected a layer
-    this.getSelectedLayer() &&
-    // check if current selected layer is visible
-    this.isSelectedLayerVisible() ||
+    (
+      this.getSelectedLayer() &&
+      // check if current selected layer is visible
+      this.isSelectedLayerVisible()
+    )  ||
     // check if at least one layer is visible (project or external layer)
     (
       this.layers.find(layer => layer && layer.isVisible()) ||

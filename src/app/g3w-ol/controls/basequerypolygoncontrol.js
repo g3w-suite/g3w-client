@@ -15,7 +15,6 @@ const BaseQueryPolygonControl = function(options = {}) {
   const {
     spatialMethod=SPATIALMETHODS[0],
     onSelectlayer,
-    enabled=true,
     interactionClass
   } = options;
 
@@ -38,9 +37,6 @@ const BaseQueryPolygonControl = function(options = {}) {
   options.geometryTypes = VALIDGEOMETRIES;
 
   InteractionControl.call(this, options);
-
-  // starting disabled
-  this.setEnable(enabled);
 };
 
 ol.inherits(BaseQueryPolygonControl, InteractionControl);

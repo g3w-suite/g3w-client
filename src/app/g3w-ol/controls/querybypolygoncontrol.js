@@ -208,7 +208,7 @@ proto.isThereVisibleLayerNotSelected = function() {
     this.isSelectedLayerVisible() &&
     // check if at least one layer is visible (project or external layer)
     (
-      this.layers.find(layer => layer !== this.getSelectedLayer() && (layer.isVisible() && layer.isFilterable(condition.filtrable))) ||
+      !!this.layers.find(layer => (layer !== this.getSelectedLayer()) && (layer.isVisible() && layer.isFilterable(condition.filtrable))) ||
       this.getExternalLayers().find(layer => layer !== this.getSelectedLayer() && true === layer.visible)
     )
   )
