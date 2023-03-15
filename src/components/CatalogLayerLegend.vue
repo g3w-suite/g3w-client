@@ -97,7 +97,10 @@
     methods: {
 
       getWmsSourceLayerLegendUrl() {
-        return this.getProjectLayer().getLegendUrl();
+        return this.getProjectLayer().getLegendUrl({
+          width: 16,
+          height: 16
+        });
       },
 
       getProjectLayer() {
