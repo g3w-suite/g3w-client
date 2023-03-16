@@ -76,7 +76,7 @@ proto._makeOlLayer = function(withLayers) {
     iframe_internal: this.iframe_internal,
     layers: this.layers,
     /**
-     * @since 3.8.0
+     * @since 3.7.11
      */
     format: this.config.format
   };

@@ -89,7 +89,7 @@ RasterLayers._WMSLayer = function(options={}) {
     extent,
     maxResolution,
     /**
-     * @since @3.8.0
+     * @since @3.7.11
      */
     format
   } = layerObj;
@@ -105,7 +105,7 @@ RasterLayers._WMSLayer = function(options={}) {
   /**
    * Need to check if not undefined
    * otherwise FORMAT parameter is not send
-   * @since 3.8.0
+   * @since 3.7.11
    */
   if ("undefined" !== typeof format) {
     params.FORMAT = format
