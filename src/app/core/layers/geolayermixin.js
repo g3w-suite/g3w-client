@@ -107,7 +107,6 @@ proto.getLegendGraphic = function({all=true}={}){
 proto.setCategories = function(categories=[]) {
   this.legendCategories[this.getCurrentStyle().name] = categories;
   //set categories state attribute to true only if exist at least a rule key
-  // meaning that layer has at least more than one has a
   this.state.categories = categories.length > 0 && categories.filter(category => category.ruleKey).length > 0;
 };
 
