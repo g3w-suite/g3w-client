@@ -524,7 +524,7 @@ proto.isSelectedLayerVisible = function() {
  *
  * @since 3.8.0
  */
-proto._hasVisibleLayer = function() {
+proto.hasControlVisibleLayer = function() {
   return !!((this.layers.length > 0) && this.layers.find(layer => layer.isVisible()));
 };
 
@@ -533,15 +533,16 @@ proto._hasVisibleLayer = function() {
  *
  * @since 3.8.0
  */
-proto._hasVisibleExternalLayer = function() {
+proto.hasVisibleExternalLayer = function() {
   return !!(this.getExternalLayers().find(layer => layer !== this.layer && true === layer.visible));
 };
 
 /**
  * @since 3.8.0
+ * @returns {boolean}
  */
-proto.isThereVisibleLayers = function() {
-  return !!(this._hasVisibleLayer() || this._hasVisibleExternalLayer());
+proto.hasVisibleLayers = function() {
+  return !!(this.hasControlVisibleLayer() || this.hasVisibleExternalLayer());
 };
 
 /**

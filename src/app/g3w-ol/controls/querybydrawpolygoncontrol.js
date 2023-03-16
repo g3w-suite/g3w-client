@@ -34,7 +34,7 @@ const QueryByDrawPolygonControl = function(options={}) {
   };
 
   BaseQueryPolygonControl.call(this, _options);
-  this.setEnable(this.isThereVisibleLayers());
+  this.setEnable(this.hasVisibleLayers());
 
   /**
    * Store drawed ol.Feature
@@ -78,9 +78,8 @@ proto.onSelectLayer = function(layer) {
     const findLayer = this.layers.find(_layer => _layer === layer);
     this.setEnable(!!findLayer && findLayer.isVisible());
   } else {
-    this.setEnable((this.isThereVisibleLayers()));
+    this.setEnable((this.hasVisibleLayers()));
   }
-
   this.toggle(this.isToggled() && this.getEnable());
 };
 
@@ -97,7 +96,7 @@ proto.listenLayersVisibilityChange = function() {
       this.watchLayer(() => layer.state.visible, visible => {
         // check if a selectedLayer i set
         if (null === this.getSelectedLayer()) {
-          this.setEnable(this.isThereVisibleLayers());
+          this.setEnable(this.hasVisibleLayers());
         } else {
           // enable control only if current changed visible layer is true or
           // if at least one layer (not selected) is visible
@@ -119,7 +118,7 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
     this.watchLayer(
       () => layer.selected,                                    // watch `layer.selected` property
       selected => {
-        this.setEnable(true === selected ? layer.visible : this.isThereVisibleLayers());
+        this.setEnable(true === selected ? layer.visible : this.hasVisibleLayers());
         this.toggle(this.isToggled() && this.getEnable());
       })
   );
@@ -128,19 +127,19 @@ proto.onAddExternalLayer = function({layer, unWatches}) {
     this.watchLayer(
       () => layer.visible,                                     // watch `layer.visible` property
       (visible) => {
-        this.setEnable(true === layer.selected ? visible : this.isThereVisibleLayers());
+        this.setEnable(true === layer.selected ? visible : this.hasVisibleLayers());
         this.toggle(this.isToggled() && this.getEnable());
       })
   );
 
-  this.setEnable(this.isThereVisibleLayers());
+  this.setEnable(this.hasVisibleLayers());
 };
 
 /**
  * @since 3.8.0
  */
 proto.onRemoveExternalLayer = function() {
-  this.setEnable(this.isThereVisibleLayers());
+  this.setEnable(this.hasVisibleLayers());
 };
 
 /**
