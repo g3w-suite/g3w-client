@@ -150,13 +150,20 @@
             try {
 
               const { nodes = [] } = await projectLayer.getLegendGraphic({ all });
+              console.log(nodes)
 
               // case of all categories
               if (all) {
+
                 const categories = [];
-                nodes.forEach(({ icon, title, symbols = []}) => {
+                nodes.forEach(({ icon, title, ruleKey, checked, symbols = []}) => {
                   if (icon) {
-                    categories.push({ icon, title, disabled: false });
+                    /**
+                     * need to take care of checked and ruleKey
+                     * if just one category is set. If there are more that one category
+                     * symbols array is set
+                     */
+                    categories.push({ icon, title, ruleKey, checked, disabled: false });
                   } else {
                     symbols.forEach(symbol => {
                       symbol._checked = symbol.checked;
