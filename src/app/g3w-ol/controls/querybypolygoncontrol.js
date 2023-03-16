@@ -18,7 +18,7 @@ const condition = {
 const QueryByPolygonControl = function(options={}) {
 
   const controlQuerableLayers  = getMapLayersByFilter({ QUERYABLE: true, SELECTED_OR_ALL: true });
-  const controlFiltrableLayers = GUI.getService('map').filterableLayersAvailable({ FILTERABLE: true, SELECTED_OR_ALL: true }, condition);
+  const controlFiltrableLayers = GUI.getService('map').filterableLayersAvailable(condition);
   
   const _options = {
     ...options,
