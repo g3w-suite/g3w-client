@@ -68,25 +68,33 @@ proto._getVisibleLayers = function() {
   return this.layers.filter(layer => layer.isVisible());
 };
 
+/**
+ * @param {boolean} withLayers
+ * 
+ * @returns {RasterLayers.WMSLayer}
+ * 
+ * @listens ol.source.ImageWMS~imageloadstart
+ * @listens ol.source.ImageWMS~imageloadend
+ * @listens ol.source.ImageWMS~imageloaderror
+ */
 proto._makeOlLayer = function(withLayers) {
-  const wmsConfig = {
-    url: this.config.url,
-    id: this.config.id,
-    projection: this.config.projection,
-    iframe_internal: this.iframe_internal,
-    layers: this.layers,
-    /**
-     * @since 3.7.11
-     */
-    format: this.config.format
-  };
-  if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
-  const representativeLayer = this.layers[0];
-  if (representativeLayer && representativeLayer.getWmsUrl) wmsConfig.url = representativeLayer.getWmsUrl();
-  const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
+  const olLayer = new RasterLayers.WMSLayer(
+    // wmsConfig
+    {
+      url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
+      id:              this.config.id,
+      projection:      this.config.projection,
+      iframe_internal: this.iframe_internal,
+      layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
+      /** @since 3.7.11 */
+      format:          this.config.format
+    },
+    this.extraParams,
+    this._method
+  );
   olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
-  olLayer.getSource().on('imageloadend', () => this.emit("loadend"));
-  olLayer.getSource().on('imageloaderror', ()=> this.emit("loaderror"));
+  olLayer.getSource().on('imageloadend',   () => this.emit("loadend"));
+  olLayer.getSource().on('imageloaderror', () => this.emit("loaderror"));
   return olLayer
 };
 
