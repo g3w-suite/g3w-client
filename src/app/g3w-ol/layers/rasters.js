@@ -101,6 +101,15 @@ RasterLayers._WMSLayer = function(options={}) {
     DPI
   };
 
+  /**
+   * Need to check if not undefined
+   * otherwise FORMAT parameter is not send
+   * @since 3.7.11
+   */
+  if ("undefined" !== typeof format) {
+    params.FORMAT = format
+  }
+
   params = Object.assign({}, params, extraParams);
   const sourceOptions = {
     url: layerObj.url,
