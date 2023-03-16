@@ -24,7 +24,7 @@ const InteractionControl = function(options={}) {
   } = options;
 
   /**
-   * Project layers dependecies
+   * Project layers dependencies
    * 
    * @since 3.8.0
    */
@@ -524,7 +524,7 @@ proto.isSelectedLayerVisible = function() {
  *
  * @since 3.8.0
  */
-proto.hasControlVisibleLayer = function() {
+proto.hasVisibleProjectLayer = function() {
   return !!((this.layers.length > 0) && this.layers.find(layer => layer.isVisible()));
 };
 
@@ -538,11 +538,12 @@ proto.hasVisibleExternalLayer = function() {
 };
 
 /**
+ * @returns {boolean} whether at least one of stored `this.layers` or `this.getExternalLayers()` is visible
+ * 
  * @since 3.8.0
- * @returns {boolean}
  */
 proto.hasVisibleLayers = function() {
-  return !!(this.hasControlVisibleLayer() || this.hasVisibleExternalLayer());
+  return !!(this.hasVisibleProjectLayer() || this.hasVisibleExternalLayer());
 };
 
 /**
