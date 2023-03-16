@@ -150,7 +150,6 @@
             try {
 
               const { nodes = [] } = await projectLayer.getLegendGraphic({ all });
-              console.log(nodes)
 
               // case of all categories
               if (all) {
