@@ -87,7 +87,11 @@ RasterLayers._WMSLayer = function(options={}) {
     opacity=1.0,
     visible,
     extent,
-    maxResolution
+    maxResolution,
+    /**
+     * @since @3.8.0
+     */
+    format
   } = layerObj;
   const projection = layerObj.projection ? layerObj.projection.getCode() : null;
   let params = {
@@ -97,6 +101,15 @@ RasterLayers._WMSLayer = function(options={}) {
     SLD_VERSION: sld_version,
     DPI
   };
+
+  /**
+   * Need to check if not undefined
+   * otherwise FORMAT parameter is not send
+   * @since 3.8.0
+   */
+  if ("undefined" !== typeof format) {
+    params.FORMAT = format
+  }
 
   params = Object.assign({}, params, extraParams);
   const sourceOptions = {

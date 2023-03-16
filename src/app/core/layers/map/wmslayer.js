@@ -74,7 +74,11 @@ proto._makeOlLayer = function(withLayers) {
     id: this.config.id,
     projection: this.config.projection,
     iframe_internal: this.iframe_internal,
-    layers: this.layers
+    layers: this.layers,
+    /**
+     * @since 3.8.0
+     */
+    format: this.config.format
   };
   if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
   const representativeLayer = this.layers[0];
