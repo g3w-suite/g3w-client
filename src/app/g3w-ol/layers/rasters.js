@@ -76,7 +76,14 @@ RasterLayers.TiledArgisMapServer = function(options={}){
 };
 
 RasterLayers._WMSLayer = function(options={}) {
-  const {layerObj, method='GET', extraParams, tiled=false} = options;
+
+  const {
+    layerObj,
+    method='GET',
+    extraParams,
+    tiled=false
+  } = options;
+
   const {
     iframe_internal=false,
     layers='',
@@ -93,7 +100,7 @@ RasterLayers._WMSLayer = function(options={}) {
      */
     format
   } = layerObj;
-  const projection = layerObj.projection ? layerObj.projection.getCode() : null;
+
   let params = {
     LAYERS: layers,
     VERSION: version,
@@ -103,28 +110,24 @@ RasterLayers._WMSLayer = function(options={}) {
   };
 
   /**
-   * Need to check if not undefined
-   * otherwise FORMAT parameter is not send
+   * Check if not undefined otherwise FORMAT parameter is not send
+   * 
    * @since 3.7.11
    */
   if ("undefined" !== typeof format) {
     params.FORMAT = format
   }
 
-  params = Object.assign({}, params, extraParams);
   const sourceOptions = {
     url: layerObj.url,
-    params,
+    params: Object.assign({}, params, extraParams),
     ratio: 1,
-    projection
+    projection: (layerObj.projection) ? layerObj.projection.getCode() : null
   };
 
-  if (iframe_internal || method === 'POST')
-    loadImageTileFunction({
-      method,
-      type: 'image',
-      sourceOptions
-    });
+  if (iframe_internal || 'POST' === method) {
+    loadImageTileFunction({ method, sourceOptions, type: 'image' });
+  }
 
   const imageOptions = {
     id,
@@ -135,18 +138,14 @@ RasterLayers._WMSLayer = function(options={}) {
     maxResolution,
   };
 
-  let imageClass;
-  let source;
   if (tiled) {
-    source = new ol.source.TileWMS(sourceOptions);
-    imageClass = ol.layer.Tile;
-  } else {
-    source = new ol.source.ImageWMS(sourceOptions);
-    imageClass = ol.layer.Image;
+    imageOptions.source = new ol.source.TileWMS(sourceOptions);
+    return new ol.layer.Tile(imageOptions);
   }
-  imageOptions.source = source;
-  const image = new imageClass(imageOptions);
-  return image;
+
+  imageOptions.source = new ol.source.ImageWMS(sourceOptions);
+  return new ol.layer.Image(imageOptions);
+
 };
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
