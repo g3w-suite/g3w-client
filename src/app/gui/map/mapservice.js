@@ -1787,7 +1787,11 @@ proto._setupMapLayers = function() {
     if (layers.length === 1) {
       mapLayer = layer.getMapLayer({
         id: multilayerId,
-        projection: this.getProjection()
+        projection: this.getProjection(),
+        /**
+         * @since 3.7.11
+         */
+        format: layer.getSource() && layer.getSource().format
       }, {});
       mapLayer.addLayer(layer);
       mapLayers.push(mapLayer)

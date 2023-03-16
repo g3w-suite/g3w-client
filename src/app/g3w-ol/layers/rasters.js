@@ -30,7 +30,7 @@ RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
+RasterLayers.WMSLayer = function(layerObj, extraParams={}, method='GET'){
   const options = {
     layerObj,
     extraParams,
@@ -86,7 +86,11 @@ RasterLayers._WMSLayer = function(options={}) {
     opacity=1.0,
     visible,
     extent,
-    maxResolution
+    maxResolution,
+    /**
+     * @since @3.7.11
+     */
+    format
   } = layerObj;
   const projection = layerObj.projection ? layerObj.projection.getCode() : null;
   let params = {
