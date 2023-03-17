@@ -1734,15 +1734,6 @@ proto.addQueryResultsLayerToMap = function({feature}){
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
 
-  try {
-    this.mapService
-      .getMap()
-      .getView()
-      .setCenter(ol.extent.getCenter(feature.getGeometry().getExtent()));
-  } catch(err) {
-    console.warn(err);
-  }
-
   // make sure that layer is on top of other map.
   this.mapService.setZIndexLayer({ layer: this.resultsQueryLayer })
 
