@@ -273,6 +273,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Kysely piirtopolygonin mukaan"
+        },
         querybybbox: {
           tooltip: 'Tasoon kohdituva BBox-kysely',
           nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',

@@ -1,84 +1,139 @@
-import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
 import GUI from 'services/gui';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
 
-const { merge }                  = require('core/utils/ol');
-const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
-const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+const { throttle }                       = require('core/utils/utils');
+const { getMapLayersByFilter, Geometry } = require('core/utils/geo');
+const BaseQueryPolygonControl            = require('g3w-ol/controls/basequerypolygoncontrol');
+const PickCoordinatesInteraction         = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
-// TODO: make it easier to understand.. (what variables are declared? which ones are aliased?)
-const {
-  Geometry : {
-    getAllPolygonGeometryTypes,
-    isPolygonGeometryType
+const VALIDGEOMETRIES = Geometry.getAllPolygonGeometryTypes();
+
+const condition = {
+  filtrable: {
+    ows: 'WFS'
   }
-} = require('core/utils/geo');
-
-const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
+};
 
 const QueryByPolygonControl = function(options={}) {
-  const {spatialMethod=SPATIALMETHODS[0]} = options;
-  this.layers = options.layers || [];
 
-  /**
-   * @type {unknown[]}
-   * 
-   * @since 3.8.0
-   */
-  this.externalLayers = [];
-
-  this.unwatches = [];
-
-  this.listenLayersVisibilityChange();
-
-  options.visible = this.checkVisibile(this.layers);
-
-  /**
-   * Store current selected layer
-   * 
-   * @since 3.8.0
-   */
-  this.selectedLayer = null;
-
+  const controlQuerableLayers  = getMapLayersByFilter({ QUERYABLE: true, SELECTED_OR_ALL: true });
+  const controlFiltrableLayers = GUI.getService('map').filterableLayersAvailable(condition);
+  
   const _options = {
+    ...options,
     offline: false,
+    enabled: false,
     name: "querybypolygon",
     tipLabel: "sdk.mapcontrols.querybypolygon.tooltip",
     label: options.label || "\ue903",
-    // update selected layer
-    onSelectlayer(layer) {
-      if (
-        layer.isSelected() &&
-        layer.isQueryable() &&
-        -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
-      ) {
-        this.setSelectedLayer(layer);
-        this.setEnable(this.isThereVisibleLayerNotSelected());
-      } else {
-        this.setSelectedLayer(null);
-        this.setEnable(false, false);
-      }
-    },
-    clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
-    spatialMethod,
-    toggledTool:{
-      type: 'spatialMethod',
-      how: 'toggled' // or hover
-    },
-    onhover: true
+    layers: controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [],
+    help: {
+      title: "sdk.mapcontrols.querybypolygon.help.title",
+      message: "sdk.mapcontrols.querybypolygon.help.message",
+    }
   };
-  options = merge(options,_options);
-  options.geometryTypes = VALIDGEOMETRIES;
-  InteractionControl.call(this, options);
-  //starting disabled
-  this.setEnable(false);
 
-  this._handleExternalLayers();
+  BaseQueryPolygonControl.call(this, _options);
+
+  /**
+   * Data needed to runSpatialQuery
+   */
+  this.data = {
+    layer: null,
+    feature: null,
+    coordinates: null
+  }
 };
 
-ol.inherits(QueryByPolygonControl, InteractionControl);
+ol.inherits(QueryByPolygonControl, BaseQueryPolygonControl);
 
 const proto = QueryByPolygonControl.prototype;
+
+/**
+ * @deprecated since 3.7.0. Will be removed in 3.9.0
+ * 
+ * @param {unknown[]} layers
+ */
+proto.change = function(layers=[]) {
+  this.layers = layers;
+  this.setEnable(false);
+  this.listenLayersVisibilityChange();
+};
+
+/**
+ * Check visibiliy of control
+ * 
+ * @param layers
+ * 
+ * @returns {boolean}
+ */
+proto.checkVisibile = function(layers) {
+  // if no layer or just one
+  if (!layers.length || 1 === layers.length) {
+    return false;
+  }
+
+  // get all layers that haven't the geometries above filterable
+  const filterableLayers = layers.filter(layer => layer.isFilterable());
+  // get all layer that have the valid geometries
+  const queryableLayers = layers.filter(layer => -1 !== VALIDGEOMETRIES.indexOf(layer.getGeometryType()));
+
+  if (1 === queryableLayers.length && 1 === filterableLayers.length) {
+    return filterableLayers[0] !== queryableLayers[0];
+  }
+
+  return queryableLayers.length > 0 && filterableLayers.length > 0;
+};
+
+/**
+ * @param {ol.Map} map 
+ * 
+ * @listens PickCoordinatesInteraction~picked
+ */
+proto.setMap = function(map) {
+
+  BaseQueryPolygonControl.prototype.setMap.call(this, map);
+  
+  this._interaction
+    .on('picked', throttle(async evt => {
+      this.data.coordinates = evt.coordinate;
+
+      this.dispatchEvent({ type: 'picked', coordinates: this.data.coordinates });
+
+      if (this._autountoggle) {
+        this.toggle();
+      }
+
+    }));
+
+  this.setEventKey({
+    eventType: 'picked',
+    eventKey: this.on('picked', this.getPolygonFeatureFromCoordinates)
+  });
+
+  this.setEnable(false);
+};
+
+/**
+ * @param layer
+ * 
+ * @since 3.8.0
+ */
+proto.onSelectLayer = function(layer) {
+  if (
+    layer &&
+    layer.isQueryable() &&
+    -1 !== this.getGeometryTypes().indexOf(layer.getGeometryType())
+  ) {
+    this.setEnable(this.isThereVisibleLayerNotSelected());
+    this.toggle(this.isToggled() && this.getEnable())
+  } else {
+    this.setEnable(false);
+    this.toggle(false);
+  }
+};
 
 /**
  * @since 3.8.0 
@@ -88,159 +143,75 @@ proto.listenLayersVisibilityChange = function() {
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
     this.unwatches.push(
-      VM.$watch(() =>  layer.state.visible, visible => {
-       // check if a selectedLayer i set
-        if (null !== this.selectedLayer) {
+      this.watchLayer(
+        () =>  layer.state.visible,
+        visible => {
+          if (layer === this.getSelectedLayer()) {
+            this.setEnable(visible && this.isThereVisibleLayerNotSelected());
+          } else {
+            this.setEnable(this.isThereVisibleLayerNotSelected())
+          }
           // enable control only if current changed visible layer is true or
           // if at least one layer (not selected) is visible
-          this.setEnable(this.isThereVisibleLayerNotSelected());
-        } else {
-          this.setEnable(false);
+          this.toggle( this.isToggled() && this.getEnable());
         }
-      }));
+      )
+    );
   });
 };
 
-proto.change = function(layers=[]){
-  this.layers = layers;
-  const visible = this.checkVisibile(layers);
-  this.setVisible(visible);
-  this.setEnable(false);
-  this.listenLayersVisibilityChange();
-};
+/**
+ * @returns {Promise<boolean>}
+ * 
+ * @since 3.8.0
+ */
+proto.getPolygonFeatureFromCoordinates = async function(){
+  GUI.closeOpenSideBarComponent();
 
-proto.checkVisibile = function(layers) {
-  let visible;
-  // if no layer or just one
-  if (!layers.length || layers.length === 1) visible = false;
-  else {
-    // geometries to check
-    // get all layers that haven't the geometries above filterable
-    const filterableLayers = layers.filter(layer => layer.isFilterable());
-    // get all layer that have the valid geometries
-    const querableLayers = layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
-    const filterableLength = filterableLayers.length;
-    const querableLength = querableLayers.length;
-    if (querableLength === 1 && filterableLength === 1){
-      visible = filterableLayers[0] !== querableLayers[0];
-    } else visible = querableLength > 0 && filterableLength > 0;
+  // ask for coordinates
+  try {
+    const { data = [] } = await DataRouterService.getData('query:coordinates', {
+      inputs: {
+        feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+        coordinates: this.data.coordinates
+      },
+      outputs: {
+        // whether to show picked coordinates on map
+        show({data = [], query}) {
+          const show = data.length === 0;
+          // set query coordinates to null in case to avoid `externalvector` added to query response
+          query.coordinates = show ? query.coordinates : null;
+          return show;
+        }
+      }
+    });
+    if (data.length && data[0].features.length) {
+      this.data.feature = data[0].features[0];
+      this.data.layer = data[0].layer;
+      this.runSpatialQuery();
+    }
+  } catch(err) {
+    console.warn('Error running spatial query:', err);
   }
-  return visible;
-};
-
-proto.setMap = function(map) {
-  InteractionControl.prototype.setMap.call(this, map);
-  this._interaction.on('picked', evt => {
-    this.dispatchEvent({
-      type: 'picked',
-      coordinates: evt.coordinate
-    });
-    this._autountoggle && this.toggle();
-  });
-  this.setEnable(false);
 };
 
 /**
- * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
- * 
- * @listens CatalogService~addExternalLayer
- * @listens CatalogService~removeExternalLayer
+ * @returns {boolean} whether at least a visible layer not selected
  * 
  * @since 3.8.0
  */
-proto._handleExternalLayers = function() {
-  const CatalogService = GUI.getService('catalog');
-
-  // store unwatches of extenal layers (selected or visible)
-  const unWatches = {};
-
-  CatalogService.onafter('addExternalLayer', ({layer, type}) => {
-
-    if ('vector' === type) {
-
-      // update `this.externalLayers`
-      this.externalLayers.push(layer);
-      
-      // set list of un watches for layer based on name of layer (unique)
-      unWatches[layer.name] = [];
-
-      // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
-      if (isPolygonGeometryType(layer.geometryType)) {
-        unWatches[layer.name].push(
-          VM.$watch(
-          () => layer.selected,                                    // watch `layer.selected` property
-          selected => {
-            this.setSelectedLayer(true === selected ? layer : null);
-            this.setEnable(this.isThereVisibleLayerNotSelected()); // layer must be visible and selected.
-          })
-        );
-      }
-
-      unWatches[layer.name].push(
-        VM.$watch(
-        () => layer.visible,                                       // watch `layer.visible` property
-        (visible) => {
-          this.setEnable(this.isThereVisibleLayerNotSelected());   // layer must be selected in TOC.
-        })
-      );
-
-    }
-
-    this.setEnable(this.isThereVisibleLayerNotSelected());
-
-  });
-
-  CatalogService.onafter('removeExternalLayer', ({name, type}) => {
-    if ('vector' !== type) {
-      return;
-    }
-    this.externalLayers = this.externalLayers.filter(layer => {
-      if (name !== layer.name) {
-        return true;
-      }
-      if (layer === this.selectedLayer) {
-        this.setSelectedLayer(null);
-      }
-      return false;
-    });
-    unWatches[name].forEach(unWatch => unWatch());
-    delete unWatches[name];
-    this.setEnable(this.isThereVisibleLayerNotSelected());
-  });
-
-};
-
-/**
- * @returns {boolean} wether at least a visible layer not selected
- * 
- * @since 3.8.0
- */
-proto.isThereVisibleLayerNotSelected = function(){
+proto.isThereVisibleLayerNotSelected = function() {
   return !!(
     // check if user has selected a layer
-    this.selectedLayer &&
+    this.getSelectedLayer() &&
     // check if current selected layer is visible
-    (
-      'function' === typeof this.selectedLayer.isVisible
-        ? this.selectedLayer.isVisible()                 // in case of a project project
-        : this.selectedLayer.visible                     // in case of external layer
-    ) &&
+    this.isSelectedLayerVisible() &&
     // check if at least one layer is visible (project or external layer)
     (
-      this.layers.find(layer => layer !== this.selectedLayer && layer.isVisible()) ||
-      this.externalLayers.find(layer => layer !== this.layer && true === layer.visible)
+      !!this.layers.find(layer => (layer !== this.getSelectedLayer()) && (layer.isVisible() && layer.isFilterable(condition.filtrable))) ||
+      this.getExternalLayers().find(layer => layer !== this.getSelectedLayer() && true === layer.visible)
     )
   )
-};
-
-/**
- * @param { unknown | null } layer
- * 
- * @since 3.8.0
- */
-
-proto.setSelectedLayer = function(layer) {
-  this.selectedLayer = layer;
 };
 
 /**
@@ -248,6 +219,97 @@ proto.setSelectedLayer = function(layer) {
  */
 proto.listenPolygonLayersChange = function() {
   this.listenLayersVisibilityChange();
+};
+
+/**
+ * @param {{ layer, unWatches }}
+ * 
+ * @since 3.8.0
+ */
+proto.onAddExternalLayer = function({layer, unWatches}) {
+
+  // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
+  if (Geometry.isPolygonGeometryType(layer.geometryType)) {
+    unWatches.push(
+      this.watchLayer(
+        () => layer.selected,                                    // watch `layer.selected` property
+        selected => {
+          if (true === selected) {
+            this.setEnable(layer.visible && this.isThereVisibleLayerNotSelected());
+          } else {
+            this.setEnable(false);
+          }
+          this.toggle(this.isToggled() && this.getEnable());
+        })
+    );
+
+    unWatches.push(
+      this.watchLayer(
+        () => layer.visible,                                       // watch `layer.visible` property
+        (visible) => {
+          if (layer.selected){
+            this.setEnable(visible && this.isThereVisibleLayerNotSelected());
+          } else {
+            this.setEnable(this.isThereVisibleLayerNotSelected());
+          }
+          this.toggle(this.isToggled() && this.getEnable());
+        })
+    );
+  }
+
+  this.setEnable(this.isThereVisibleLayerNotSelected());
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.onRemoveExternalLayer = function() {
+  this.setEnable(this.isThereVisibleLayerNotSelected());
+};
+
+/**
+ * Execute query Polygon request to server
+ * 
+ * @since 3.8.0
+ */
+proto.runSpatialQuery = async function() {
+  // skip when .. ?
+  if (!(null !== this.data.coordinates && null !== this.data.feature && null !== this.data.layer)) {
+    return;
+  }
+
+  const { data = [] } = await DataRouterService.getData('query:polygon', {
+    inputs: {
+      layerName: this.data.layer.getName ? this.data.layer.getName() : this.data.layer.get('name'),
+      excludeSelected: true,
+      feature: this.data.feature,
+      external: {
+        add: true,
+        filter: {
+          SELECTED: false
+        }
+      },
+      filterConfig:{
+        spatialMethod: this.getSpatialMethod() // added spatial method to polygon filter
+      },
+      multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
+    },
+    outputs: {
+      show({error=false}) {
+        return !error;
+      }
+    }
+  });
+  if (data.length) {
+    this.getMap().getView().setCenter(this.data.coordinates);
+  }
+};
+
+/**
+ * @since v3.8.0
+ */
+proto.clear = function() {
+  this.data.layer = this.data.feature = this.data.coordinates = null;
 };
 
 module.exports = QueryByPolygonControl;
