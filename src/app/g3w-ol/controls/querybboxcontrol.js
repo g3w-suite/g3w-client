@@ -204,9 +204,6 @@ proto.runSpatialQuery = async function(){
         multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
       }
     });
-    if (data.length) {
-      this.getMap().getView().setCenter(ol.extent.getCenter(this.bbox));
-    }
   } catch(err){
     console.warn('Error running spatial query: ', err);
   }
