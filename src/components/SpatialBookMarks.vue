@@ -43,15 +43,19 @@
       </li>
     </template>
     <template v-else>
-      <div class="content-bookmarks">
-        <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
-      </div>
-      <template v-for="bookmark in project.bookmarks">
-        <spatial-book-mark-group
-          v-if="bookmark.nodes"
-          :group="bookmark"/>
-        <spatial-book-mark-item v-else :bookmark="bookmark"/>
+      <template v-if="project.bookmarks.length > 0">
+        <div class="content-bookmarks">
+          <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
+        </div>
+        <template v-for="bookmark in project.bookmarks">
+          <spatial-book-mark-group
+                  v-if="bookmark.nodes"
+                  :group="bookmark"/>
+          <spatial-book-mark-item
+                  v-else :bookmark="bookmark"/>
+        </template>
       </template>
+
       <div
         class="content-bookmarks"
         style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
@@ -113,11 +117,9 @@
          */
 
         project: {
-          show: true,
-          bookmarks: ProjectsRegistry.getCurrentProject().getSpatialBookmarks()
+          bookmarks: ProjectsRegistry.getCurrentProject().getSpatialBookmarks() || []
         },
         user: {
-          show: true,
           bookmarks: SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()]
         },
         addbookmarkinput: {
