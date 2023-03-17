@@ -151,7 +151,7 @@
             if (all) { // case of all categories
               this._setAllLayerCategories(nodes);
             } else {
-              this._setLayerCategories(nodes, categories);
+              this._updateLayerCategories(nodes, categories);
             }
           }
         } catch(err) {
@@ -189,7 +189,7 @@
       /**
        * @since 3.8.0
        */
-      _setLayerCategories(nodes, categories) {
+      _updateLayerCategories(nodes, categories) {
         const projectLayer = this.getProjectLayer();
 
         projectLayer.setCategories(categories);
