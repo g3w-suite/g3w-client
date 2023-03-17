@@ -15,6 +15,8 @@ const ScaleControl = require('g3w-ol/controls/scalecontrol');
 const OnClikControl = require('g3w-ol/controls/onclickcontrol');
 const ScreenshotControl = require('g3w-ol/controls/screenshotcontrol');
 const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
+const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
+
 
 const ControlsFactory = {
   create(options={}) {
@@ -44,7 +46,8 @@ ControlsFactory.CONTROLS = {
   'scale': ScaleControl,
   'onclick': OnClikControl,
   'screenshot': ScreenshotControl,
-  'geoscreenshot': geoScreenshotControl
+  'geoscreenshot': geoScreenshotControl,
+  'querybydrawpolygon': QueryByDrawPolygonControl
 };
 
 module.exports = ControlsFactory;

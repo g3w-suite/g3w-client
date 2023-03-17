@@ -257,13 +257,7 @@ function MapService(options={}) {
   };
 
   this._onCatalogSelectLayer = function(layer) {
-    if (layer) {
-      for (let i = 0; i < this._mapControls.length; i++) {
-        const mapcontrol = this._mapControls[i];
-        //is a function
-        if (mapcontrol.control.onSelectLayer) mapcontrol.control.onSelectLayer(layer);
-      }
-    }
+    ControlsRegistry.catalogSelectedLayer(layer);
   };
 
   this.on('cataloglayerselected', this._onCatalogSelectLayer);
@@ -644,9 +638,8 @@ proto._setupControls = function() {
 
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
-    const feature_count = this.project.getQueryFeatureCount();
-    const query_point_tolerance = this.project.getQueryPointTolerance();
-    const map = this.getMap();
+    //common spatial methods for map controls
+    const spatialMethod = 'intersects';
     mapcontrols.forEach(mapcontrol => {
       let control;
       // mapcontrol can be a String or object with options
@@ -778,239 +771,20 @@ proto._setupControls = function() {
             add: true,
             toggled: true
           });
-          const runQuery = throttle(async e => {
-            const coordinates = e.coordinates;
-            GUI.closeOpenSideBarComponent();
-            try {
-              const {data=[]} = await DataRouterService.getData('query:coordinates', {
-                inputs: {
-                  coordinates,
-                  feature_count,
-                  query_point_tolerance,
-                  multilayers: this.project.isQueryMultiLayers(controlType),
-                }
-              });
-              data.length && this.showMarker(coordinates);
-            } catch(error) {}
-          });
-          const eventKey = control.on('picked', runQuery);
-          control.setEventKey({
-            eventType: 'picked',
-            eventKey
-          });
           break;
         case 'querybypolygon':
           if (!isMobile.any) {
-            const condition = {
-              filtrable: {
-                ows: 'WFS'
-              }
-            };
-            const getControlLayers = () => {
-              const controlQuerableLayers = getMapLayersByFilter({
-                QUERYABLE: true,
-                SELECTEDORALL: true
-              });
-              const controlFiltrableLayers = this.filterableLayersAvailable({
-                FILTERABLE: true,
-                SELECTEDORALL: true
-              }, condition);
-              return controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
-            };
-            const spatialMethod = 'intersects';
-            control = this.createMapControl(controlType, {
-              options: {
-                spatialMethod,
-                layers: getControlLayers(),
-                help: {
-                  title: "sdk.mapcontrols.querybypolygon.help.title",
-                  message: "sdk.mapcontrols.querybypolygon.help.message",
-                }
-              }
-            });
-            if (control) {
-              //set initial value of control change-spatial-event key to null
-              let changeSpatialMethodEventKey = null;
-              const unlistenSpatialMethodChange = () => {
-                ol.Observable.unByKey(changeSpatialMethodEventKey);
-                changeSpatialMethodEventKey = null;
-              };
-              const runQuery = throttle(async event => {
-                GUI.closeOpenSideBarComponent();
-                const coordinates = event.coordinates;
-                // ask for coordinates
-                try {
-                 const {data:dataCoordinates=[]} = await DataRouterService.getData('query:coordinates', {
-                    inputs: {
-                      feature_count,
-                      coordinates
-                    },
-                   outputs: {
-                      show({data=[], query}){
-                        const show = data.length === 0;
-                        // set coordinates to null in case of show  is false to avoid that externalvector added to query result
-                        // response to coordinates otherwise we show coordinate in point
-                        query.coordinates = !show ? null : query.coordinates;
-                        return show;
-                      }
-                   }
-                  });
-                  if (dataCoordinates.length && dataCoordinates[0].features.length) {
-                    const feature = dataCoordinates[0].features[0];
-                    const layer = dataCoordinates[0].layer;
-                    // run query Polygon Request to server
-                    runQueryPolygon({
-                      feature,
-                      layer,
-                      coordinates
-                    });
-                    // if not get event, register it
-                    if (null === changeSpatialMethodEventKey) {
-                      changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
-                        runQueryPolygon({
-                          feature,
-                          layer,
-                          coordinates
-                        });
-                      });
-                    }
-                  }
-                } catch(err){
-                  console.log(err)
-                }
-              });
-              /**
-               * Get Query By Polygon Request
-               * @returns {Promise<undefined>}
-               */
-              const runQueryPolygon = async ({feature, layer, coordinates}) =>{
-                const {data=[]} = await DataRouterService.getData('query:polygon', {
-                  inputs: {
-                    layer,
-                    excludeSelected: true,
-                    feature,
-                    filterConfig:{
-                      spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
-                    },
-                    multilayers: this.project.isQueryMultiLayers(controlType)
-                  },
-                  outputs: {
-                    show({error=false}){
-                      return !error;
-                    }
-                  }
-                });
-                data.length && map.getView().setCenter(coordinates);
-              };
-              const eventKey = control.on('picked', (event) => {
-                if (null !== changeSpatialMethodEventKey) {
-                  unlistenSpatialMethodChange();
-                }
-                runQuery(event);
-              });
-              control.setEventKey({
-                eventType: 'picked',
-                eventKey
-              });
-
-              control.on('toggled', ({toggled}) => {
-               if (false === toggled && null !== changeSpatialMethodEventKey) {
-                 unlistenSpatialMethodChange();
-                 // reset to default
-                 control.setSpatialMethod(spatialMethod);
-               }
-              })
-            }
+            control = this.createMapControl(controlType, {options: {spatialMethod}});
           }
           break;
         case 'querybbox':
           if (!isMobile.any) {
-            const condition = {
-              filtrable: {
-                ows: 'WFS'
-              }
-            };
-            const getControlLayers = ()=>{
-              const layers = this.filterableLayersAvailable(condition) || [];
-              layers.forEach(layer => layer.setTocHighlightable(true));
-              return layers;
-            };
-            // check the start iniztial layer available to create and add querybobx control to map
-            const layers = getControlLayers();
-            const spatialMethod = 'intersects';
-            control = this.createMapControl(controlType, {
-              options: {
-                spatialMethod,
-                layers,
-                help: {
-                  title:"sdk.mapcontrols.querybybbox.help.title",
-                  message:"sdk.mapcontrols.querybybbox.help.message",
-                }
-              }
-            });
-            if (control) {
-              // get all filtrable layers in toc no based on selection or visibility
-              const layersFilterObject = {
-                SELECTEDORALL: true, // selected or all
-                FILTERABLE: true,
-                VISIBLE: true
-              };
-              //set initial value of control change-spatial-event key to null
-              let changeSpatialMethodEventKey = null;
-              const unlistenSpatialMethodChange = () => {
-                ol.Observable.unByKey(changeSpatialMethodEventKey);
-                changeSpatialMethodEventKey = null;
-              };
-              const runQuery = throttle(async event => {
-                GUI.closeOpenSideBarComponent();
-                const bbox = event.extent;
-                try {
-                  const {data=[]} = await DataRouterService.getData('query:bbox', {
-                    inputs: {
-                      bbox,
-                      feature_count,
-                      layersFilterObject,
-                      filterConfig: {
-                        spatialMethod: control.getSpatialMethod(), // added spatial method to polygon filter
-                      },
-                      condition,
-                      multilayers: this.project.isQueryMultiLayers(controlType)
-                    }
-                  });
-                  if (data.length) {
-                    const center = ol.extent.getCenter(bbox);
-                    this.getMap().getView().setCenter(center);
-                  }
-
-                  if (null === changeSpatialMethodEventKey) {
-                    changeSpatialMethodEventKey = control.on('change-spatial-method', () => {
-                      runQuery(event);
-                    });
-                  }
-                } catch(err){
-                  console.log(err)
-                }
-              });
-
-              const eventKey = control.on('bboxend', (event)=> {
-                if (null !== changeSpatialMethodEventKey) {
-                  unlistenSpatialMethodChange();
-                }
-                runQuery(event);
-              });
-              control.setEventKey({
-                eventType: 'bboxend',
-                eventKey
-              });
-
-              control.on('toggled', ({toggled}) => {
-                if (false === toggled && null !== changeSpatialMethodEventKey) {
-                  unlistenSpatialMethodChange();
-                  // reset to default
-                  control.setSpatialMethod(spatialMethod);
-                }
-              })
-            }
+            control = this.createMapControl(controlType, {options: {spatialMethod}});
+          }
+          break;
+        case 'querybydrawpolygon':
+          if (!isMobile.any) {
+            control = this.createMapControl(controlType, {options: {spatialMethod}});
           }
           break;
         case 'streetview':
@@ -1295,7 +1069,7 @@ proto._setMapControlsInsideContainerLenght = function() {
 proto.filterableLayersAvailable = function(options={}) {
   const layers = getMapLayersByFilter({
     FILTERABLE: true,
-    SELECTEDORALL: true,
+    SELECTED_OR_ALL: true,
   }, options);
   return layers.filter(layer => layer.getProvider('filter') instanceof WFSProvider);
 };
@@ -2760,7 +2534,8 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       opacity,
       color,
       filter: vectorLayer.filter,
-      selection: vectorLayer.selection
+      selection: vectorLayer.selection,
+      tochighlightable: false //@since 3.8.0
     };
   }
 

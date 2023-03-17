@@ -274,6 +274,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Disegna un poligono per interrogare"
+        },
         querybybbox: {
           tooltip: 'Interroga per BBOX',
           nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
