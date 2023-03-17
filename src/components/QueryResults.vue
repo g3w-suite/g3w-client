@@ -218,30 +218,50 @@
       hasResults() {
         return this.state.layers.length > 0;
       },
-      info(){
-        const info = {
-          icon: null,
-          message: null,
-          action: null
-        };
-        const {query, search} = this.state;
-        if (query){
-          if (query.type === 'coordinates') {
-            info.icon = 'marker';
-            info.message = `  ${query.coordinates[0]}, ${query.coordinates[1]}`;
-            info.action = () => this.$options.queryResultsService.showCoordinates(query.coordinates);
-          } else if (query.type ==="bbox")  {
-            info.icon = 'square';
-            info.message = `  [${query.bbox.join(' , ')}]`;
-            info.action = ()=>this.$options.queryResultsService.showBBOX(query.bbox);
-          } else if (query.type === "polygon") {
-            info.icon =  'draw';
-            info.message =  `${query.layer.getName()} - Feature Id: ${query.fid}`;
-            info.action = () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry);
+
+      /**
+       * @typedef QueryResultsInfo
+       * 
+       * @property { string | null }     icon
+       * @property { string | null }     message
+       * @property { (() => {}) | null } action
+       */
+      /**
+       * @returns {QueryResultsInfo} query info
+       */
+      info() {
+        if (this.state.query) {
+          const query = this.state.query;
+          switch (query.type) {
+            case 'coordinates':
+              return {
+                icon: 'marker',
+                message: `  ${query.coordinates[0]}, ${query.coordinates[1]}`
+              };
+            case 'bbox':
+              return {
+                icon: 'square',
+                message: `  [${query.bbox.join(' , ')}]`
+              };
+            case 'polygon':
+              return {
+                icon: 'draw',
+                message: (query.layerName) ?
+                  `${query.layerName} ${"undefined" !== typeof query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
+                  : ' '                                                                                         // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+              };
+            default:
+              console.warn(`Unsupported query type:  ${query.type}`);
+              break;
           }
-        } else if (search){}
-        return info;
+        } else if (this.state.search) {
+          /** @FIXME missing implementation? */
+        }
+
+        return { icon: null, message: null };
+
       }
+
     },
     methods: {
       /**
