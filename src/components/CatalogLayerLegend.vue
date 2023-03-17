@@ -147,62 +147,68 @@
           if (all && categories) { // check if exist current layer categories
             this.categories = categories;
           } else {
-            try {
-
-              const { nodes = [] } = await projectLayer.getLegendGraphic({ all });
-
-              // case of all categories
-              if (all) {
-
-                const categories = [];
-                nodes.forEach(({ icon, title, ruleKey, checked, symbols = []}) => {
-                  if (icon) {
-                    /**
-                     * need to take care of checked and ruleKey
-                     * if just one category is set. If there are more that one category
-                     * symbols array is set
-                     */
-                    categories.push({ icon, title, ruleKey, checked, disabled: false });
-                  } else {
-                    symbols.forEach(symbol => {
-                      symbol._checked = symbol.checked;
-                      symbol.disabled = false;
-                      categories.push(symbol);
-                    });
-                  }
-                });
-                projectLayer.setCategories(categories);
-                this.categories = categories;
-              } else {
-                projectLayer.setCategories(categories);
-                this.categories = categories;
-
-                // case to update current categories
-                if (nodes.length) {
-                  nodes.forEach(({icon, title, symbols = []}) => {
-                    if (icon) symbols = [{icon, title}];
-                    categories.forEach(category  => {
-                      const find = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
-                      const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
-                      category.disabled = disabled && !find;
-                    });
-                  })
-                } else {
-                  categories.forEach(category => category.disabled = ("undefined" !== typeof category.checked ? category.checked : true));
-                }
-
-              }
-
-            } catch(err) {
-              this.setError();
+            const { nodes = [] } = await projectLayer.getLegendGraphic({ all });
+            if (all) { // case of all categories
+              this._setAllLayerCategories(nodes);
+            } else {
+              this._setLayerCategories(nodes, categories);
             }
           }
-
         } catch(err) {
           this.setError();
         }
+      },
 
-      }
+      /**
+       * @since 3.8.0
+       */
+      _setAllLayerCategories(nodes) {
+        const projectLayer = this.getProjectLayer();
+
+        const categories = [];
+        nodes.forEach(({ icon, title, ruleKey, checked, symbols = []}) => {
+          if (icon) {
+            /**
+             * need to take care of checked and ruleKey
+             * if just one category is set. If there are more that one category
+             * symbols array is set
+             */
+            categories.push({ icon, title, ruleKey, checked, disabled: false });
+          } else {
+            symbols.forEach(symbol => {
+              symbol._checked = symbol.checked;
+              symbol.disabled = false;
+              categories.push(symbol);
+            });
+          }
+        });
+        projectLayer.setCategories(categories);
+        this.categories = categories;
+      },
+
+      /**
+       * @since 3.8.0
+       */
+      _setLayerCategories(nodes, categories) {
+        const projectLayer = this.getProjectLayer();
+
+        projectLayer.setCategories(categories);
+        this.categories = categories;
+
+        // case to update current categories
+        if (nodes.length) {
+          nodes.forEach(({icon, title, symbols = []}) => {
+            if (icon) symbols = [{icon, title}];
+            categories.forEach(category  => {
+              const find = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
+              const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
+              category.disabled = disabled && !find;
+            });
+          })
+        } else {
+          categories.forEach(category => category.disabled = ("undefined" !== typeof category.checked ? category.checked : true));
+        }
+      },
 
     },
     watch: {
