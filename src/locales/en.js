@@ -125,7 +125,7 @@ export default {
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'Refereces',
+                  personprimary: 'References',
                   contactvoicetelephone: 'Phone',
                   contactorganization: 'Organization',
                   ContactOrganization: 'Organization',
