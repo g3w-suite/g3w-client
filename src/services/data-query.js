@@ -38,37 +38,43 @@ function QueryService(){
     filterConfig    = {},
     multilayers     = false,
     condition       = this.condition,
-    /** @since v3.8 */
-    layer           = null,
-    /** @since v3.8 */
-    excludeSelected = null
+    /** @since 3.8.0 */
+    layerName       = '',
+    /** @since 3.8.0 */
+    excludeSelected = null,
+    /** @since 3.8.0 **/
+    external = {
+      add: true,
+      filter: {
+        SELECTED : false
+      }
+    }
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
     const geometry                  = feature.getGeometry();
-
-    if (hasExternalLayersSelected) {
-      layer.getName = () => layer.get('name');
-    }
 
     // in case no geometry on polygon layer response
     if (!geometry) {
       return this.returnExceptionResponse({
         usermessage: {
           type: 'warning',
-          message: `${layer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          message: `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
           messagetext: true,
           autoclose: false
         }
       });
     }
-
     return this.handleRequest(
       // request
       getQueryLayersPromisesByGeometry(
         // layers
         getMapLayersByFilter({
-          SELECTED: !excludeSelected,
+          ...(
+            "boolean" === typeof excludeSelected
+              ? { SELECTED: !excludeSelected }
+              : { SELECTED_OR_ALL: true }
+          ),
           FILTERABLE: true,
           VISIBLE: true
         }, condition),
@@ -85,15 +91,10 @@ function QueryService(){
       {
         fid,
         geometry,
-        layer,
+        layerName,
         type: 'polygon',
         filterConfig,
-        external: {
-          add: true,
-          filter: {
-            SELECTED: ('boolean' == typeof excludeSelected) ? !excludeSelected : excludeSelected
-          }
-        }
+        external
       }
     );
   };
@@ -113,7 +114,11 @@ function QueryService(){
     filterConfig       = {},
     multilayers        = false,
     condition          = this.condition,
-    layersFilterObject = { SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true }
+    /** @since 3.8.0 **/
+    excludeSelected    = null,
+    /** @since 3.8.0 **/
+    addExternal = true,
+    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
   } = {}) {
 
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
@@ -122,9 +127,9 @@ function QueryService(){
       type: 'bbox',
       filterConfig,
       external: {
-        add: true,
+        add: addExternal,
         filter: {
-          SELECTED: hasExternalLayersSelected
+          SELECTED: hasExternalLayersSelected || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
         }
       },
     };
@@ -163,6 +168,8 @@ function QueryService(){
     layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
     multilayers           = false,
     query_point_tolerance = QUERY_POINT_TOLERANCE,
+    /** @since 3.8.0 **/
+    addExternal = true,
     feature_count
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
@@ -170,7 +177,7 @@ function QueryService(){
       coordinates,
       type: 'coordinates',
       external: {
-        add: true,
+        add: addExternal,
         filter: {
           SELECTED: hasExternalLayersSelected
         }
@@ -184,7 +191,7 @@ function QueryService(){
 
     const layersFilterObject = {
       QUERYABLE: true,
-      SELECTEDORALL: (0 === layerIds.length),
+      SELECTED_OR_ALL: (0 === layerIds.length),
       VISIBLE: true
     };
 

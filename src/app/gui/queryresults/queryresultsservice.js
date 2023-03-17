@@ -67,24 +67,25 @@ function QueryResultsService() {
   this.init = function() {
     this.clearState();
   };
-  // Is a vector layer used by query resul to show eventually query resuesta as coordnates, bbox, polygon, etc ..
-  const color = 'blue';
-  const stroke = new ol.style.Stroke({
-    color,
-    width: 3
-  });
-  const fill = new ol.style.Fill({
-    color
-  });
+
+   /**
+   * Vector layer used by query result to show query
+   * request as coordinates, bbox, polygon, etc ..
+   * 
+   * @type {ol.layer.Vector}
+   */
   this.resultsQueryLayer = new ol.layer.Vector({
-    style: new ol.style.Style({
-      stroke,
-      image: new ol.style.Circle({
-        fill,
-        radius: 6
-      }),
-    }),
-    source: new ol.source.Vector()
+    source: new ol.source.Vector(),
+    style(feature) {
+      const fill   = new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.7)' });
+      const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
+      if ('Point' === feature.getGeometry().getType()) {
+        return new ol.style.Style({
+          text: new ol.style.Text({ text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', fill, stroke })
+        });
+      }
+      return new ol.style.Style({ stroke });
+    }
   });
 
   this._vectorLayers = [];
@@ -120,6 +121,12 @@ function QueryResultsService() {
         // if true add external layers to response
         if (true === queryResponse.query.external.add) {
           this._addVectorLayersDataToQueryResponse(queryResponse);
+        }
+
+        switch (this.state.query.type) {
+          case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
+          case 'bbox':        this.showBBOX(this.state.query.bbox); break;
+          case 'polygon':     this.state.query.geometry && this.showGeometry(this.state.query.geometry); break;
         }
       }
 
@@ -749,7 +756,6 @@ proto.clear = function() {
   this.removeAddFeaturesLayerResultInteraction({
     toggle: true
   });
-  this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
     todo: noop,
@@ -762,6 +768,7 @@ proto.clear = function() {
   };
   this.clearState();
   this.closeComponent();
+  this.removeQueryResultLayerFromMap();
 };
 
 proto.getCurrentLayersIds = function(){
@@ -893,7 +900,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
 
 proto.clearState = function(options={}) {
   this.state.layers.splice(0);
-  this.state.query = {};
+  this.state.query = null;
   this.state.querytitle = "";
   this.state.changed = false;
   // clear action if present
@@ -1717,20 +1724,28 @@ proto.removeQueryResultLayerFromMap = function(){
   this.mapService.getMap().removeLayer(this.resultsQueryLayer)
 };
 
-// show layerQuery result on map
-proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
+/**
+ * Show layerQuery result on map
+ */
+proto.addQueryResultsLayerToMap = function({feature}){
+
   this.removeQueryResultLayerFromMap();
+
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
-  try {
-    const center = ol.extent.getCenter(feature.getGeometry().getExtent());
-    this.mapService.getMap().getView().setCenter(center);
-  } catch(err){
 
+  try {
+    this.mapService
+      .getMap()
+      .getView()
+      .setCenter(ol.extent.getCenter(feature.getGeometry().getExtent()));
+  } catch(err) {
+    console.warn(err);
   }
-  timeout && setTimeout(()=>{
-    this.removeQueryResultLayerFromMap();
-  }, timeout)
+
+  // make sure that layer is on top of other map.
+  this.mapService.setZIndexLayer({ layer: this.resultsQueryLayer })
+
 };
 
 /**
