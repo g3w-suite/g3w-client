@@ -198,7 +198,9 @@
         // case to update current categories
         if (nodes.length) {
           nodes.forEach(({icon, title, symbols = []}) => {
-            if (icon) symbols = [{icon, title}];
+            if (icon) {
+              symbols = [{icon, title}];
+            }
             categories.forEach(category  => {
               const find = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
               const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
