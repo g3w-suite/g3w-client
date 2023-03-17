@@ -300,9 +300,6 @@ proto.runSpatialQuery = async function() {
       }
     }
   });
-  if (data.length) {
-    this.getMap().getView().setCenter(this.data.coordinates);
-  }
 };
 
 /**
