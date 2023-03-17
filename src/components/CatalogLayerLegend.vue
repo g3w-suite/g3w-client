@@ -242,7 +242,8 @@
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
 
       // Get all legend graphics of a layer when start
-      if (this.layer.visible) {
+      // need to exclude wms source
+      if (this.layer.visible && this.layer.source && 'wms' !== this.layer.source.type) {
         this.setLayerCategories(true).then(() => {
           if (this.dynamic) {
             GUI.getService('map').on('change-map-legend-params', async () => {
