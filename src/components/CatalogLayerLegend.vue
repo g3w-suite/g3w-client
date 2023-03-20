@@ -47,7 +47,7 @@
           style="padding-left: 3px;"
         >
           <span>{{category.title}}</span>
-          <span v-if="layer.showfeaturecount" style="font-weight: bold">
+          <span v-if="layer.showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
             [{{layer.featurecount[category.ruleKey]}}]
           </span>
         </span>

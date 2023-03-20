@@ -291,7 +291,6 @@ export default {
       return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) =>{
         return total + 1*categoryFeatureCount;
       }, 0)
-    }
     },
 
     /**
@@ -321,7 +320,6 @@ export default {
         true === this.layerstree.tochighlightable
       )
     },
-
   },
   watch:{
     'layerstree.disabled'(bool) {},
