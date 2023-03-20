@@ -192,29 +192,6 @@ import GUI from 'services/gui';
 
 const { downloadFile } = require('core/utils/utils');
 
-/**
- * Store `click` and `doubleclick` events on a single vue element.
- *
- * @see https://stackoverflow.com/q/41303982
- */
-const CLICK_EVENT = {
-  count: 0,                                   // count click events
-  timeoutID: null,                            // timeoutID return by setTimeout Function
-  handleClick(callback, context) {
-    CLICK_EVENT.count += 1;                   // increment click count
-    if (!CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
-      CLICK_EVENT.timeoutID = setTimeout(() => {
-        callback.call(context);
-        CLICK_EVENT.reset();
-      }, 300);
-    }
-  },
-  reset() {
-    CLICK_EVENT.count = 0;
-    CLICK_EVENT.timeoutID = null;
-  }
-};
-
 export default {
   props : [
     'layerstree',
@@ -242,7 +219,6 @@ export default {
     }
   },
   computed: {
-
     showLegendLayer() {
       return !this.layerstree.exclude_from_legend;
     },
@@ -494,11 +470,15 @@ export default {
      * @since v3.8
      */
      onTreeItemClick() {
-      if (this.isGroup || this.isTable) { // Skip if TOC item is a Group or Table layer.
+      if (this.isTable) { // Skip if TOC item is a Group or Table layer.
         return;
       }
       this.handleClick({
-        '1': this.select,
+        ...(
+          this.isGroup ?
+            {} :
+            {'1': this.select}
+        ),
         '2': () => this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
       }, this);
     },

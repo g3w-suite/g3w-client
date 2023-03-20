@@ -253,12 +253,59 @@ proto.setLayersTree = function(layerstree, name, expanded=true) {
     checked: true,
     nodes: layerstree
   };
+  const setGroupBBox = (group, bbox) => {
+
+    group.bbox = "undefined" === typeof group.bbox ?
+      // get bbox from bbox
+      group.bbox = bbox :
+      //calculate bbox from extent ol method
+      ol.extent.extend(
+      [
+        group.bbox.minx,
+        group.bbox.miny,
+        group.bbox.maxx,
+        group.bbox.maxy
+      ],
+      [
+        bbox.minx,
+        bbox.miny,
+        bbox.maxx,
+        bbox.maxy
+      ]
+    ).reduce((bbox, extentCoordinate, index) =>{
+      switch(index){
+        case 0:
+          bbox.minx = extentCoordinate;
+          break;
+        case 1:
+          bbox.miny = extentCoordinate;
+          break;
+        case 2:
+          bbox.maxx = extentCoordinate;
+          break;
+        case 3:
+          bbox.maxy = extentCoordinate;
+          break;
+      }
+      return bbox;
+    }, {minxx:null, miny: null, maxx: null, maxy: null});
+
+    // Recursion
+    if (group.parentGroup && false === group.parentGroup.root) {
+      setGroupBBox(group.parentGroup, group.bbox);
+    }
+  };
   const traverse = (nodes, parentGroup) => {
     nodes.forEach((node, index) => {
       // case of layer substitute node with layere state
-      if (node.id !== undefined) nodes[index] = this.getLayerById(node.id).getState();
+      if (node.id !== undefined) {
+        nodes[index] = this.getLayerById(node.id).getState();
+        if ("undefined" !== typeof nodes[index].bbox) {
+          setGroupBBox(parentGroup, nodes[index].bbox);
+        }
+      }
       if (node.nodes) {
-        node.nodes.forEach(node => node.parentGroup = parentGroup);
+        //node.nodes.forEach(node => node.parentGroup = parentGroup);
         traverse(node.nodes, node);
       }
       //SET PARENT GROUP
@@ -300,6 +347,7 @@ proto.createLayersTree = function(groupName, options={}) {
               ...lightlayer,
               title: layer.name,
               groupId: uniqueId(),
+              root: false,
               nodes: [],
               checked: layer.checked,
               mutually_exclusive: layer["mutually-exclusive"]

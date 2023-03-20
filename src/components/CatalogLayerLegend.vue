@@ -103,12 +103,24 @@
       onCategoryClick(){
         this.handleClick({
           '1': this.selectCategory,
-          '2': () => console.log('zoom')
+          '2': () => this.zoomToCategory
         }, this);
       },
-      //select category
+      /**
+       * @since 3.8.0
+       * */
       selectCategory() {
-        console.log('select')
+        /*
+        * @TODO
+        * */
+      },
+      /*
+      * @since 3.8.0
+      * */
+      zoomToCategory(){
+        /*
+        * @TODO
+        * */
       },
       //show category context menu
       showCategoryMenu(){

@@ -25,7 +25,9 @@ export default {
       this.CLICK_EVENT.count += 1;                   // increment click count
       if (!this.CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
         this.CLICK_EVENT.timeoutID = setTimeout(() => {
-          "undefined" !== callbacks[this.CLICK_EVENT.count] && callbacks[this.CLICK_EVENT.count].call(context);
+          if ("undefined" !== typeof callbacks[this.CLICK_EVENT.count]) {
+            callbacks[this.CLICK_EVENT.count].call(context);
+          }
           this.reset();
         }, 300);
       }
