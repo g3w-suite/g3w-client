@@ -84,7 +84,9 @@
     computed: {
 
       /**
-       * @since 3.8.0
+       * @returns {boolean} whether to display total number of features for current layer
+       * 
+       * @since 3.8.0 
        */
       showfeaturecount() {
        return "undefined" !== typeof this.layer.featurecount;

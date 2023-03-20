@@ -242,9 +242,11 @@ export default {
   computed: {
 
     /**
+     * @returns {boolean} whether to display total number of features for current layer
+     * 
      * @since 3.8.0 
      */
-    showfeaturecount(){
+    showfeaturecount() {
       return "undefined" !== typeof this.layerstree.featurecount;
     },
 
