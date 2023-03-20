@@ -192,6 +192,29 @@ import GUI from 'services/gui';
 
 const { downloadFile } = require('core/utils/utils');
 
+/**
+ * Store `click` and `doubleclick` events on a single vue element.
+ *
+ * @see https://stackoverflow.com/q/41303982
+ */
+const CLICK_EVENT = {
+  count: 0,                                   // count click events
+  timeoutID: null,                            // timeoutID return by setTimeout Function
+  handleClick(callback, context) {
+    CLICK_EVENT.count += 1;                   // increment click count
+    if (!CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
+      CLICK_EVENT.timeoutID = setTimeout(() => {
+        callback.call(context);
+        CLICK_EVENT.reset();
+      }, 300);
+    }
+  },
+  reset() {
+    CLICK_EVENT.count = 0;
+    CLICK_EVENT.timeoutID = null;
+  }
+};
+
 export default {
   props : [
     'layerstree',
@@ -219,39 +242,79 @@ export default {
     }
   },
   computed: {
+
     showLegendLayer() {
       return !this.layerstree.exclude_from_legend;
     },
+
     showLayerTocLegend() {
       return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer;
     },
+
     isGroup() {
       return !!this.layerstree.nodes
     },
+
     legendlayerposition() {
       return (this.showLegendLayer && this.layerstree.legend) ? this.legendplace : 'tab';
     },
+
     showscalevisibilityclass() {
       return !this.isGroup && this.layerstree.scalebasedvisibility
     },
+
     showScaleVisibilityToolip() {
       return this.showscalevisibilityclass && this.layerstree.disabled && this.layerstree.checked;
     },
+
     isTable() {
       return !this.isGroup && !this.layerstree.geolayer && !this.layerstree.external;
     },
+
     isHidden() {
       return this.layerstree.hidden && (true === this.layerstree.hidden);
     },
+
     selected() {
       this.layerstree.selected = (this.layerstree.disabled && this.layerstree.selected) ? false : this.layerstree.selected;
     },
+
     isHighLight() {
-      return this.highlightlayers && !this.isGroup && CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() && this.layerstree.visible;
+      return (this._isHighLightProjectLayer || this._isHighLightExternalLayer);
     },
+
     isInGrey() {
       return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
-    }
+    },
+
+    /**
+     * @TODO double check the name of this function (ie. matches its purpose?)
+     *
+     * @since 3.8.0
+     */
+     _isHighLightProjectLayer() {
+      return (
+        this.highlightlayers &&
+        !this.isGroup &&
+        CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() &&
+        this.layerstree.visible
+      );
+    },
+
+    /**
+     * @TODO double check the name of this function (ie. matches its purpose?)
+     *
+     * @since 3.8.0
+     */
+    _isHighLightExternalLayer() {
+      return (
+        this.layerstree.external &&
+        this.layerstree.visible &&
+        "vector" /* <-- what the heck? */ && this.layerstree._type &&
+        true === this.layerstree.tochighlightable
+      )
+    },
+
   },
   watch:{
     'layerstree.disabled'(bool) {},
@@ -283,7 +346,7 @@ export default {
 
     /**
      * Handle change checked property of group
-     * 
+     *
      * @param group
      */
     handleGroupChecked(group) {
@@ -330,16 +393,27 @@ export default {
 
     /**
      * Handle changing checked property of layer
-     * 
-     * @param layer
+     *
+     * @param {{ checked: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
      */
     handleLayerChecked(layerObject) {
-      let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
+      let {
+        checked,
+        id,
+        disabled,
+        projectLayer=false,
+        parentGroup
+      } = layerObject;
 
-      // in case of external layer
+      // case external layer (eg. temporary layer through `addlayerscontrol`)
       if (!projectLayer) {
+        // update `layer.visible` property
+        layerObject.visible = checked;
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
-      } else {
+      }
+
+      // case project layer (eg. qgis layer)
+      else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked) {
           const visible = layer.setVisible(!disabled);
@@ -358,7 +432,9 @@ export default {
         }
         CatalogEventHub.$emit('treenodevisible', layer);
       }
+
     },
+
     toggleFilterLayer() {
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
@@ -371,16 +447,25 @@ export default {
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
+
+    /**
+     * Select legend item
+     *
+     * @fires CatalogEventHub~treenodeexternalselected
+     * @fires CatalogEventHub~treenodeselected
+     */
     select() {
-      if (!this.layerstree.external) {
+      if (this.layerstree.external && 'undefined' !== typeof this.layerstree.selected) {
+        CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
+      } else if (!this.isGroup && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
 
     /**
      * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
-     * 
-     * @since v3.8 
+     *
+     * @since v3.8
      */
     zoomToLayer(layer) {
       GUI
@@ -393,19 +478,19 @@ export default {
 
     /**
      * @TODO refactor this, almost the same as: `CatalogLayerContextMenu.vue::canZoom(layer))`
-     * 
+     *
      * @since v3.8
      */
     canZoom(layer) {
       return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
     },
-    
+
     /**
      * Handle `click` and `doubleclick` click events on a single tree item (TOC).
-     * 
+     *
      * 1 = select legend item
      * 2 = zoom to layer bounds
-     * 
+     *
      * @since v3.8
      */
      onTreeItemClick() {

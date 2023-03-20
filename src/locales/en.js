@@ -24,6 +24,11 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Select Template"
+        }
+      },
       spatialbookmarks: {
         title: "Spatial Bookmarks",
         helptext: "Move on map extent, insert name and click Add",
@@ -120,7 +125,7 @@ export default {
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'Refereces',
+                  personprimary: 'References',
                   contactvoicetelephone: 'Phone',
                   contactorganization: 'Organization',
                   ContactOrganization: 'Organization',
@@ -267,6 +272,9 @@ export default {
                   <li>Click on a feature of selected layer.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
         },
         querybybbox: {
           tooltip: 'Query BBox layer',

@@ -24,6 +24,11 @@ export default {
       message: "Poziție relativă la straturile din TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Selectați Template"
+        }
+      },
       spatialbookmarks: {
         title: "Marcaje spațiale",
         helptext: "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",
@@ -267,6 +272,9 @@ export default {
                   <li>Click pe o entitate a stratului selectat.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Interogare prin poligon de desen"
         },
         querybybbox: {
           tooltip: 'Interogare BBox strat',
