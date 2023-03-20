@@ -47,7 +47,7 @@
           style="padding-left: 3px;"
         >
           <span>{{category.title}}</span>
-          <span v-if="layer.showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
+          <span v-if="showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
             [{{layer.featurecount[category.ruleKey]}}]
           </span>
         </span>
@@ -82,6 +82,12 @@
       }
     },
     computed:{
+      /*
+      * @since 3.8.0
+      * */
+      showfeaturecount(){
+       return "undefined" !== typeof this.layer.featurecount;
+      },
       externallegend() {
         return ('wms' === this.layer.source.type);
       },

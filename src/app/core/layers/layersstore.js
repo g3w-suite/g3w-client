@@ -258,10 +258,6 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
       // case of layer substitute node with layer state
       if (node.id !== undefined) {
         nodes[index] = this.getLayerById(node.id).getState();
-        /**
-         * @since 3.8.0
-         */
-        nodes[index].showfeaturecount = node.showfeaturecount || false;
       }
       if (node.nodes) {
         node.nodes.forEach(node => node.parentGroup = parentGroup);
