@@ -266,12 +266,15 @@ export default {
           help: {
             title: 'Ohje - Förfrågan med polygon',
             message:`
-                <ul >
+                <ul>
                   <li>Välj polygonnivå i listan.</li>
                   <li>Kontrollera att nivån är synlig.</li>
                   <li>Välj egenskap på önskad nivå.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Fråga efter ritpolygon"
         },
         querybybbox: {
           tooltip: 'BBox-förfrågan som riktar sig till en nivå',
