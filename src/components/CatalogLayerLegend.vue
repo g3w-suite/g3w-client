@@ -81,19 +81,23 @@
         categories: []
       }
     },
-    computed:{
-      /*
-      * @since 3.8.0
-      * */
-      showfeaturecount(){
+    computed: {
+
+      /**
+       * @since 3.8.0
+       */
+      showfeaturecount() {
        return "undefined" !== typeof this.layer.featurecount;
       },
+
       externallegend() {
         return ('wms' === this.layer.source.type);
       },
+
       legend() {
         return this.layer.legend;
       },
+
       show() {
         return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },

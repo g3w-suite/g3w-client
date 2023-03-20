@@ -240,12 +240,14 @@ export default {
     }
   },
   computed: {
+
     /**
-     *@since 3.8.0
-     *  */
+     * @since 3.8.0 
+     */
     showfeaturecount(){
       return "undefined" !== typeof this.layerstree.featurecount;
     },
+
     showLegendLayer() {
       return !this.layerstree.exclude_from_legend;
     },
@@ -289,13 +291,12 @@ export default {
     isInGrey() {
       return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
     },
+
     /**
      * @since 3.8.0
      */
-    getFeatureCount(){
-      return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) =>{
-        return total + 1*categoryFeatureCount;
-      }, 0)
+    getFeatureCount() {
+      return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) => total + 1 * categoryFeatureCount, 0);
     },
 
     /**

@@ -241,9 +241,15 @@ proto.getWmsUrl = function() {
   return this.config.wmsUrl;
 };
 
-// set layersstree of layers inside the layersstore
+/**
+ * Set layersstree of layers inside the layersstore
+ * 
+ * @param {unknown[]} layerstree nodes
+ * @param {string}    name 
+ * @param {boolean}   [expanded = true]
+ */
 proto.setLayersTree = function(layerstree=[], name, expanded=true) {
-  // this is a root group project that contain all layerstree of qgis project
+  // Root group project that contain all layerstree of qgis project
   const rootGroup = {
     title: name || this.config.id,
     root: true,
@@ -255,8 +261,8 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
   };
   const traverse = (nodes, parentGroup) => {
     nodes.forEach((node, index) => {
-      // case of layer substitute node with layer state
-      if (node.id !== undefined) {
+      // substitute node layer with layer state
+      if (undefined !== node.id) {
         nodes[index] = this.getLayerById(node.id).getState();
       }
       if (node.nodes) {
@@ -274,64 +280,68 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
   }
 };
 
-// used by from plugin (or external code) to build layerstree
-// layer groupName is a ProjectName
-proto.createLayersTree = function(groupName, options={
-  layerstree:null,
-  expanded: false,
-  full: false
-  }) {
-  const {
-    expanded,
-    layerstree:_layerstree=null,
-    full=false
-  } = options;
+/**
+ * Used by external plugins to build layerstree
+ * 
+ * @param {string} groupName is a ProjectName
+ * @param {layerstree, expanded: boolean, full: bool} options 
+ */
+proto.createLayersTree = function(
+  groupName,
+  options = {
+    layerstree:null,
+    expanded: false,
+    full: false
+  }
+  ) {
+
   // get all layers id from layers server config to compare with layer nodes on layerstree server property
-  const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
+  const tocLayersId = this.getLayers({ BASELAYER: false }).map(layer=>layer.getId());
   let layerstree = [];
+  
   // check if layerstree coming from server project configuration is set
-  if (_layerstree) {
-    if (full === true) {
+  if (options.layerstree && true === options.full) {
       return this.state.layerstree;
-    } else {
-      let traverse = (nodes, layerstree) => {
-        nodes.forEach(node => {
-          let lightlayer = null;
+  }
 
-          // case TOC has layer ID
-          if (null !== node.id && "undefined" !== typeof node.id && tocLayersId.find(id => id === node.id)) {
-            lightlayer = ({
-              ...lightlayer,
-              ...node
-            });
-          }
+  /** @FIXME add description */
+  if (options.layerstree && true !== options.full) {
+    let traverse = (nodes, layerstree) => {
+      nodes.forEach(node => {
+        let lightlayer = null;
 
-          // case group
-          if (null !== node.nodes && "undefined" !== typeof node.nodes) {
-            lightlayer = ({
-              ...lightlayer,
-              title: node.name,
-              groupId: uniqueId(),
-              nodes: [],
-              checked: node.checked,
-              mutually_exclusive: node["mutually-exclusive"]
-            });
-            traverse(node.nodes, lightlayer.nodes); // recursion step
-          }
+        // case TOC has layer ID
+        if (null !== node.id && "undefined" !== typeof node.id && tocLayersId.find(id => id === node.id)) {
+          lightlayer = ({ ...lightlayer, ...node });
+        }
 
-          // check if lightlayer is not null
-          if (null !== lightlayer) {
-            lightlayer.expanded = node.expanded; // expand legend item (TOC)
-            layerstree.push(lightlayer);
-          }
-        });
-      };
-      traverse(_layerstree, layerstree);
-    }
-  } else {
+        // case group
+        if (null !== node.nodes && "undefined" !== typeof node.nodes) {
+          lightlayer = ({
+            ...lightlayer,
+            title: node.name,
+            groupId: uniqueId(),
+            nodes: [],
+            checked: node.checked,
+            mutually_exclusive: node["mutually-exclusive"]
+          });
+          traverse(node.nodes, lightlayer.nodes); // recursion step
+        }
+
+        // check if lightlayer is not null
+        if (null !== lightlayer) {
+          lightlayer.expanded = node.expanded; // expand legend item (TOC)
+          layerstree.push(lightlayer);
+        }
+      });
+    };
+    traverse(options.layerstree, layerstree);
+  }
+
+  /** @FIXME add description */
+  if (!options.layerstree) {
     // get all project layers that have geometry
-    const geoLayers = this.getGeoLayers();
-    layerstree = geoLayers.map(layer => ({
+    layerstree = this.getGeoLayers().map(layer => ({
         id: layer.getId(),
         name: layer.getName(),
         title: layer.getTitle(),
@@ -339,8 +349,9 @@ proto.createLayersTree = function(groupName, options={
       })
     )
   }
+
   // setLayerstree
-  this.setLayersTree(layerstree, groupName, expanded);
+  this.setLayersTree(layerstree, groupName, options.expanded);
 };
 
 proto.removeLayersTree = function() {

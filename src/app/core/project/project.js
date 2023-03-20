@@ -140,15 +140,18 @@ proto.getOwsMethod = function() {
   return this.state.ows_method;
 };
 
-// process layerstree and baselayers of the project
+/**
+ * process layerstree and baselayers of the project
+ */
 proto._processLayers = function() {
-  //info useful for catalog
+
+  // useful info for catalog
   const traverse = nodes => {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       let layer_name_originale;
       //check if layer (node) of folder
-      if (node.id !== undefined) {
+      if (undefined !== node.id) {
         this.state.layers.forEach(layer => {
           layer_name_originale = layer.name;
           if (node.id === layer.id) {
@@ -167,25 +170,17 @@ proto._processLayers = function() {
       }
     }
   };
-  // call trasverse function to
+
   traverse(this.state.layerstree);
   const baseLayerId = ApplicationService.getBaseLayerId();
 
-  /**
-   * Filter base layers bing in case of no bing vendor key is provide
-   */
-
-  this.state.baselayers = this.state.baselayers.filter(baselayer => {
-    return baselayer.servertype === 'Bing' ? ApplicationState.keys.vendorkeys.bing : true
-  });
-
-  /*******************************************************/
+  // Remove bing base layer when no vendor API Key is provided
+  this.state.baselayers = this.state.baselayers.filter(baselayer => (baselayer.servertype === 'Bing' ? ApplicationState.keys.vendorkeys.bing : true));
 
   for (let i=0; i < this.state.baselayers.length; i++) {
     const baseLayerConfig = this.state.baselayers[i];
-    const baseLayerVisibleId = baseLayerId !== null ? baseLayerId : this.state.initbaselayer;
-    const visible = baseLayerVisibleId && (baseLayerConfig.id === baseLayerVisibleId) || !!baseLayerConfig.fixed;
-    baseLayerConfig.visible = visible;
+    const baseLayerVisibleId = (null !== baseLayerId) ? baseLayerId : this.state.initbaselayer;
+    baseLayerConfig.visible = baseLayerVisibleId && (baseLayerConfig.id === baseLayerVisibleId) || !!baseLayerConfig.fixed;
     baseLayerConfig.baselayer = true;
   }
 };
