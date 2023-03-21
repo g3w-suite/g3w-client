@@ -2,6 +2,8 @@
  * @file all contants values used on application
  */
 
+//@ts-check
+
 /**
  * @TODO we can safely import "version" from "package.json" when we will use native ES Modules
  */
@@ -10,11 +12,15 @@ import version from '../version';
 
 /**
  * Same as "package.json" version
+ * 
+ * @type {string}
  */
 export const APP_VERSION = version;
 
 /**
  * Default editing capabilities 
+ * 
+ * @type {string[]}
  */
 export const DEFAULT_EDITING_CAPABILITIES = [
   'add_feature',
@@ -23,6 +29,9 @@ export const DEFAULT_EDITING_CAPABILITIES = [
   'delete_feature'
 ];
 
+/**
+ * @type {Object<string, { format: string, url: string }>}
+ */
 export const DOWNLOAD_FORMATS = {
   download: {
     format: 'shapefile',
@@ -50,6 +59,9 @@ export const DOWNLOAD_FORMATS = {
   }
 };
 
+/**
+ * @type {string[]}
+ */
 export const EPSG = [
   "EPSG:3003",
   "EPSG:3004",
@@ -66,10 +78,13 @@ export const EPSG = [
 
 /**
  * fid name field referred to fid feature
+ * 
+ * @type {string}
  */
 export const G3W_FID = 'g3w_fid'; 
 
 /**
+ * @type {Object<string, string>}
  * @since v3.5
  */
 export const FILTER_OPERATORS =  {
@@ -88,6 +103,7 @@ export const FILTER_OPERATORS =  {
 };
 
 /**
+ * @type {Object<string, string>}
  * @since v3.5
  */
 export const FILTER_EXPRESSION_OPERATORS = {
@@ -100,6 +116,8 @@ export const FILTER_EXPRESSION_OPERATORS = {
 
 /**
  * Geometry fields used to exclude or get geometry information from server request
+ * 
+ * @type {string[]}
  */
  export const GEOMETRY_FIELDS = [
   'geometryProperty',
@@ -113,6 +131,9 @@ export const FILTER_EXPRESSION_OPERATORS = {
   'geometria'
 ];
 
+/**
+ * @type {Object<string, string>}
+ */
 export const GEOMETRY_TYPES = {
   POINT: "Point",
   POINTZ: "PointZ",
@@ -161,11 +182,31 @@ export const GEOMETRY_TYPES = {
   GEOMETRYCOLLECTION25D: "GeometryCollection25D"
 };
 
+/**
+ * @type {string}
+ */
 export const LIST_OF_RELATIONS_TITLE = 'info.list_of_relations';
+
+/**
+ * @type {string}
+ */
 export const LIST_OF_RELATIONS_ID = '__G3W_LIST_OF_RELATIONS_ID__';
 
+/**
+ * @type {string}
+ */
 export const LOCALSTORAGE_EXTERNALWMS_ITEM = 'externalwms';
 
+/**
+ * @typedef MapSettings
+ * @property {{ maxScale: number }} ZOOM
+ * @property {{ duration: number }} ANIMATION
+ * @property {{ default: string, getPositions: Function }} LAYER_POSITIONS: 
+ */
+
+/**
+ * @type {MapSettings}
+ */
 export const MAP_SETTINGS = {
   ZOOM: {
     maxScale: 1000,
@@ -185,6 +226,7 @@ export const MAP_SETTINGS = {
 };
 
 /**
+ * @type {Array<{ value: any, label: string }>}
  * @since v3.5
  */
 export const PRINT_FORMATS = [
@@ -199,11 +241,13 @@ export const PRINT_FORMATS = [
 ];
 
 /**
+ * @type {number[]}
  * @since v3.5
  */
 export const PRINT_RESOLUTIONS = [150, 300];
 
 /**
+ * @type {Array<{ value: number, label: string }>}
  * @since v3.5
  */
 export const PRINT_SCALES = [
@@ -303,6 +347,7 @@ export const PRINT_SCALES = [
 
 /**
  * Point tolerance when clicking on map
+ * 
  * @type {{unit: string, value: number}}
  */
 export const QUERY_POINT_TOLERANCE = {
@@ -311,25 +356,36 @@ export const QUERY_POINT_TOLERANCE = {
 };
 
 /**
+ * @type {string}
  * @since v3.5
  */
 export const SEARCH_ALLVALUE = '__G3W_ALL__';
 
 /**
+ * @type {string[]}
  * @since v3.5
  */
 export const SEARCH_RETURN_TYPES = ['data', 'search'];
 
 /**
  * TIMEOUT (1 minute = 60000)
+ * 
+ * @type {number}
  */
 export const TIMEOUT = 60000;
 
+/**
+ * @type {string}
+ */
 export const TOC_LAYERS_INIT_STATUS = 'not_collapsed';
  
+/**
+ * @type {string}
+ */
 export const TOC_THEMES_INIT_STATUS = 'collapsed';
 
 /**
+ * @type {{resize: Object<string, { min: number }>}}
  * @since v3.5
  */
 export const VIEWPORT = {
@@ -343,23 +399,186 @@ export const VIEWPORT = {
   }
 };
 
+/**
+ * @type {Object<string, { tool: number }>}
+ */
 export const ZINDEXES = {
   usermessage: {
     tool: 2
   }
 };
 
+/**
+ * @type {Object<string, string>}
+ * @since v3.8
+ */
+export const API_BASE_URLS = {
+  CRS: '/crs/'  //Example /crs/<epsg_code>
+};
+
+/**
+ * List of default Font Awesome classes for current project
+ * 
+ * @type {Object<string, string>}
+ * @since v3.8
+ */
+export const FONT_AWESOME_ICONS = {
+  'change-map': "fas fa-map-signs",
+  map: "far fa-map",
+  file: "fas fa-file-code",
+  marker: "fas fa-map-marker-alt",
+  relation: "fas fa-sitemap",
+  tools: "fas fa-cogs",
+  tool: "fas fa-cog",
+  search: "fas fa-search",
+  print: "fas fa-print",
+  info: "fas fa-info-circle",
+  'info-circle': "fas fa-info-circle",
+  globe: "fas fa-globe",
+  mail: "fas fa-envelope",
+  mobile: "fas fa-mobile",
+  fax: "fas fa-fax",
+  user: "fas fa-user",
+  bars: "fas fa-bars",
+  uncheck: "far fa-square",
+  check: "far fa-check-square",
+  filluncheck: "fas fa-square",
+  table: "fas fa-table",
+  trash: "fas fa-trash",
+  'trash-o':"far fa-trash-alt",
+  pencil: "fas fa-pencil-alt",
+  'ellips-h': "fas fa-ellipsis-h",
+  'ellips-v': "fas fa-ellipsis-v",
+  'arrow-up': "fas fa-chevron-up",
+  'arrow-down': "fas fa-chevron-down",
+  'arrow-left': "fas fa-chevron-left",
+  'arrow-right': "fas fa-chevron-right",
+  'resize-h': "fas fa-arrows-alt-h",
+  'resize-v': "fas fa-arrows-alt-v",
+  'resize-default': "fas fa-compress",
+  'caret-up': "fas fa-caret-up",
+  'caret-down': "fas fa-caret-down",
+  'caret-left': "fas fa-caret-left",
+  'caret-right': "fas fa-caret-right",
+  'empty-circle': "far fa-circle",
+  'cloud-upload': "fas fa-cloud-upload-alt",
+  spinner: "fas fa-spinner",
+  minus: "fas fa-minus",
+  "minus-square":"far fa-minus-square",
+  plus: "fas fa-plus",
+  'plus-circle': "fas fa-plus-circle",
+  'plus-square': "far fa-plus-square",
+  grid: "fas fa-th",
+  home: "fas fa-home",
+  folder: "fas fa-folder",
+  'sign-out': "fas fa-sign-out-alt",
+  close: "fas fa-times",
+  time: "far fa-clock",
+  calendar: "fas fa-calendar-alt",
+  list: "fas fa-list-alt",
+  link: "fas fa-link",
+  unlink: "fas fa-unlink",
+  eye: "far fa-eye",
+  'eye-close': "far fa-eye-slash",
+  save: "far fa-save",
+  pdf: "fas fa-file-pdf",
+  image: "far fa-image",
+  video: "far fa-file-video",
+  unknow:"far fa-question-circle",
+  zip: "far fa-file-archive",
+  text: "far fa-file-alt",
+  excel: "far fa-file-excel",
+  xls:"far fa-file-excel",
+  gpx: "fas fa-location-arrow",
+  gpkg: "fas fa-box-open",
+  shapefile:"fas fa-file-archive",
+  csv: "fas fa-file-csv",
+  geotiff: "fas fa-th",
+  ppt: "far fa-file-powerpoint",
+  circle: "fas fa-circle",
+  calculator: "fas fa-calculator",
+  picture: "far fa-image",
+  keyboard: "far fa-keyboard",
+  'file-download':"fas fa-file-download",
+  copy: "far fa-copy",
+  draw: "fas fa-draw-polygon",
+  chart: "fas fa-chart-bar",
+  'chart-line': "fas fa-chart-line",
+  'chart-area': "fas fa-chart-area",
+  'chart-pie': "fas fa-chart-pie",
+  run: "fas fa-play",
+  warning: "fas fa-exclamation-circle",
+  alert: "fas fa-exclamation-triangle",
+  crosshairs: "fas fa-crosshairs",
+  success: "far fa-check-circle",
+  back: "fas fa-chevron-circle-left",
+  'file-upload': "fas fa-file-upload",
+  wifi: "fas fa-wifi",
+  mouse: "fas fa-mouse",
+  'copy-paste': "far fa-copy",
+  'vector-square': "fas fa-vector-square",
+  download: "fas fa-download",
+  credits: "fas fa-euro-sign",
+  filter: "fas fa-filter",
+  plugin: "fas fa-plug",
+  invert: "fas fa-exchange-alt",
+  clear: "fas fa-broom",
+  palette: "fas fa-palette",
+  layers: "fas fa-layer-group",
+  'sign-in': "fas fa-sign-in-alt",
+  language: "fas fa-language",
+  target: "fas fa-bullseye",
+  pin: "fas fa-map-pin",
+  square: "far fa-square",
+  move: "fas fa-arrows-alt",
+  moon: "fas fa-moon",
+  sun: "fas fa-sun",
+  refresh: "fas fa-sync-alt",
+  pause:"fas fa-pause",
+  'step-backward': "fas fa-step-backward",
+  'fast-backward': "fas fa-fast-backward",
+  'step-forward': "fas fa-step-forward",
+  'fast-forward': "fas fa-fast-forward",
+  crop: "fas fa-crop-alt",
+  exit: "fas fa-door-open",
+  slider: "fas fa-sliders-h",
+  bookmark: "fas fa-bookmark",
+};
+
+/**
+ * @typedef LocalItem
+ * @property {string} id unique identifier
+ * @property {any} value initial value
+ */
+
+/**
+ * LOCAL ITEM IDS - used to store id used by application
+ * 
+ * @type {Object<string, LocalItem>}
+ * 
+ * @since v3.8
+ */
+export const LOCAL_ITEM_IDS = {
+  SPATIALBOOKMARKS: {
+    id: 'SPATIALBOOKMARKS', // id unique
+    value: {} // initial value
+  }
+};
+
 export default {
   APP_VERSION,
+  API_BASE_URLS,
   DEFAULT_EDITING_CAPABILITIES,
   DOWNLOAD_FORMATS,
   FILTER_OPERATORS,
   FILTER_EXPRESSION_OPERATORS,
+  FONT_AWESOME_ICONS,
   G3W_FID,
   GEOMETRY_FIELDS,
   GEOMETRY_TYPES,
   LIST_OF_RELATIONS_TITLE,
   LIST_OF_RELATIONS_ID,
+  LOCAL_ITEM_IDS,
   LOCALSTORAGE_EXTERNALWMS_ITEM,
   MAP_SETTINGS,
   PRINT_FORMATS,
@@ -372,5 +591,5 @@ export default {
   TOC_LAYERS_INIT_STATUS,
   TOC_THEMES_INIT_STATUS,
   VIEWPORT,
-  ZINDEXES
+  ZINDEXES,
 };

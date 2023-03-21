@@ -20,6 +20,8 @@ const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
  *
  */
 const ZoomHistoryControl = require('g3w-ol/controls/zoomhistorycontrol');
+const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
+
 
 const ControlsFactory = {
   create(options={}) {
@@ -50,6 +52,7 @@ ControlsFactory.CONTROLS = {
   'onclick': OnClikControl,
   'screenshot': ScreenshotControl,
   'geoscreenshot': geoScreenshotControl,
+  'querybydrawpolygon': QueryByDrawPolygonControl,
   'zoomhistory': ZoomHistoryControl /** @since v3.8 **/
 };
 

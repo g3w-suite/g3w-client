@@ -91,7 +91,7 @@ proto.getLayersDict = function(filter = {}, options={}) {
     VISIBLE,
     SELECTED,
     CACHED,
-    SELECTEDORALL,
+    SELECTED_OR_ALL,
     SERVERTYPE,
     BASELAYER,
     GEOLAYER,
@@ -103,21 +103,21 @@ proto.getLayersDict = function(filter = {}, options={}) {
 
   // if filter is passed
   if (
-    _.isUndefined(QUERYABLE)
-    && _.isUndefined(FILTERABLE)
-    && _.isUndefined(EDITABLE)
-    && _.isUndefined(VISIBLE)
-    && _.isUndefined(SERVERTYPE)
-    && _.isUndefined(CACHED)
-    && _.isUndefined(SELECTEDORALL)
-    && _.isUndefined(SERVERTYPE)
-    && _.isUndefined(GEOLAYER)
-    && _.isUndefined(HIDDEN)
-    && _.isUndefined(DISABLED)
-    && _.isUndefined(BASELAYER)
-    && _.isUndefined(VECTORLAYER)
-    && _.isUndefined(PRINTABLE)
-    && _.isUndefined(IDS)
+    _.isUndefined(QUERYABLE) &&
+    _.isUndefined(FILTERABLE) &&
+    _.isUndefined(EDITABLE) &&
+    _.isUndefined(VISIBLE) &&
+    _.isUndefined(SERVERTYPE) &&
+    _.isUndefined(CACHED) &&
+    _.isUndefined(SELECTED_OR_ALL) &&
+    _.isUndefined(SERVERTYPE) &&
+    _.isUndefined(GEOLAYER) &&
+    _.isUndefined(HIDDEN) &&
+    _.isUndefined(DISABLED) &&
+    _.isUndefined(BASELAYER) &&
+    _.isUndefined(VECTORLAYER) &&
+    _.isUndefined(PRINTABLE) &&
+    _.isUndefined(IDS)
   ) return this._layers;
 
   let layers = [];
@@ -132,33 +132,26 @@ proto.getLayersDict = function(filter = {}, options={}) {
   }
 
   // return only selected if some one are selected
-  if (SELECTEDORALL) {
+  if (SELECTED_OR_ALL) {
     let _layers = layers;
     layers = layers.filter(layer => layer.isSelected());
     layers = layers.length ? layers : _layers;
-  } else  if (typeof SELECTED === 'boolean') layers = layers.filter(layer => SELECTED === layer.isSelected());
+  }
 
-  if (typeof QUERYABLE === 'boolean') layers = layers.filter(layer => QUERYABLE === layer.isQueryable());
+  if ('boolean' === typeof SELECTED && !SELECTED_OR_ALL) layers = layers.filter(layer => SELECTED === layer.isSelected());
 
-  if (typeof FILTERABLE === 'boolean') layers = layers.filter(layer => FILTERABLE === layer.isFilterable(options.filtrable || null));
+  if ('boolean' === typeof QUERYABLE)   layers = layers.filter(layer => QUERYABLE   === layer.isQueryable());
+  if ('boolean' === typeof FILTERABLE)  layers = layers.filter(layer => FILTERABLE  === layer.isFilterable(options.filtrable || null));
+  if ('boolean' === typeof EDITABLE)    layers = layers.filter(layer => EDITABLE    === layer.isEditable());
+  if ('boolean' === typeof VISIBLE)     layers = layers.filter(layer => VISIBLE     === layer.isVisible());
+  if ('boolean' === typeof CACHED)      layers = layers.filter(layer => CACHED      === layer.isCached());
+  if ('boolean' === typeof BASELAYER)   layers = layers.filter(layer => BASELAYER   === layer.isBaseLayer());
+  if ('boolean' === typeof GEOLAYER)    layers = layers.filter(layer => GEOLAYER    === layer.state.geolayer);
+  if ('boolean' === typeof VECTORLAYER) layers = layers.filter(layer => VECTORLAYER === layer.isType('vector'));
+  if ('boolean' === typeof HIDDEN)      layers = layers.filter(layer => HIDDEN      == layer.isHidden());
+  if ('boolean' === typeof DISABLED)    layers = layers.filter(layer => DISABLED    === layer.isDisabled());
 
-  if (typeof EDITABLE === 'boolean') layers = layers.filter(layer => EDITABLE === layer.isEditable());
-
-  if (typeof VISIBLE === 'boolean') layers = layers.filter(layer => VISIBLE === layer.isVisible());
-
-  if (typeof CACHED === 'boolean') layers = layers.filter(layer => CACHED === layer.isCached());
-
-  if (typeof BASELAYER === 'boolean') layers = layers.filter(layer => BASELAYER === layer.isBaseLayer());
-
-  if (typeof GEOLAYER === 'boolean') layers = layers.filter(layer => GEOLAYER === layer.state.geolayer);
-
-  if (typeof VECTORLAYER === 'boolean') layers = layers.filter(layer => VECTORLAYER === layer.isType('vector'));
-
-  if (typeof HIDDEN === 'boolean') layers = layers.filter(layer => HIDDEN == layer.isHidden());
-
-  if (typeof DISABLED === 'boolean') layers = layers.filter(layer => DISABLED === layer.isDisabled());
-
-  if (typeof SERVERTYPE === 'string' && SERVERTYPE !=='') layers = layers.filter(layer => SERVERTYPE === layer.getServerType());
+  if ('string' === typeof SERVERTYPE && '' !== SERVERTYPE) layers = layers.filter(layer => SERVERTYPE === layer.getServerType());
 
   if (PRINTABLE) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: PRINTABLE.scale}));
 
@@ -285,31 +278,41 @@ proto.createLayersTree = function(groupName, options={}) {
   const full = options.full || false;
   const expanded = options.expanded;
   const _layerstree = options.layerstree || null;
+  // get all layers id from layers server config to compare with layer nodes on layerstree server property
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
   if (_layerstree) {
-    if (full === true) return this.state.layerstree;
-    else {
+    if (full === true) {
+      return this.state.layerstree;
+    } else {
       let traverse = (obj, newobj) => {
         obj.forEach(layer => {
-          let lightlayer = {};
-          if (layer.id !== null && layer.id !== undefined) {
-            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) {
-              lightlayer.id = layer.id;
-            } else lightlayer = null;
+          let lightlayer = null;
+
+          // case TOC has layer ID
+          if (null !== layer.id && "undefined" !== typeof layer.id && tocLayersId.find(id => id === layer.id)) {
+            lightlayer = ({ ...lightlayer, id: layer.id });
           }
+
           // case group
-          if (layer.nodes !== null && layer.nodes !== undefined) {
-            lightlayer.title = layer.name;
-            lightlayer.groupId = uniqueId();
-            lightlayer.nodes = [];
-            lightlayer.checked = layer.checked;
-            lightlayer.mutually_exclusive = layer["mutually-exclusive"];
-            traverse(layer.nodes, lightlayer.nodes)
+          if (null !== layer.nodes && "undefined" !== typeof layer.nodes) {
+            lightlayer = ({
+              ...lightlayer,
+              title: layer.name,
+              groupId: uniqueId(),
+              nodes: [],
+              checked: layer.checked,
+              mutually_exclusive: layer["mutually-exclusive"]
+            });
+            traverse(layer.nodes, lightlayer.nodes); // recursion step
           }
-          /** toggle expanded property for legend item (TOC) **/
-          lightlayer.expanded = layer.expanded;
-          lightlayer && newobj.push(lightlayer);
+
+          // check if lightlayer is not null
+          if (null !== lightlayer) {
+            lightlayer.expanded = layer.expanded; // expand legend item (TOC)
+            newobj.push(lightlayer);
+          }
+
         });
       };
       traverse(_layerstree, layerstree);
