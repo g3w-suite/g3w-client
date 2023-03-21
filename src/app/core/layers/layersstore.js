@@ -244,6 +244,7 @@ proto.getWmsUrl = function() {
 // set layersstree of layers inside the laysstore
 proto.setLayersTree = function(layerstree, name, expanded=true) {
   // this is a root group project that contain all layerstree of qgis project
+  const [minx, miny, maxx, maxy] = this.getInitExtent();
   const rootGroup = {
     title: name || this.config.id,
     root: true,
@@ -251,6 +252,15 @@ proto.setLayersTree = function(layerstree, name, expanded=true) {
     expanded,
     disabled: false,
     checked: true,
+    /**
+     * @since 3.8.0
+     */
+    bbox: {
+      minx,
+      miny,
+      maxx,
+      maxy
+    },
     nodes: layerstree
   };
   const setGroupBBox = (group, bbox) => {
