@@ -893,8 +893,10 @@ proto._setupControls = function() {
             });
           }
           break;
+        /**
+         * @since 3.8.0
+         */
         case 'zoomhistory':
-          console.log(controlType)
           control = this.createMapControl(controlType, {});
           break;
 

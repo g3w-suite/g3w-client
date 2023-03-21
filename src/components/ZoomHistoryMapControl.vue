@@ -1,37 +1,44 @@
+<!--
+  @file
+  @since v3.8
+-->
+
 <template>
   <div
     style="display:flex; flex-direction: column"
     class="ol-zoom-history ol-unselectable ol-control">
+    
+    <!-- STEP BACK -->
     <button
-      @click.stop.prevent="history.index-=1"
+      @click.stop.prevent="history.index--"
       type="button"
       v-disabled="history.index === 0"
       v-t-tooltip="'Back'"
     >
       <i :class="g3wtemplate.getFontClass('arrow-left')"></i>
     </button>
+
+    <!-- STEP FORWARD -->
     <button
-      @click.stop.prevent="history.index+=1"
+      @click.stop.prevent="history.index++"
       type="button"
-      v-disabled="(
-        (history.index === 0 && history.items.length === 1) ||
-        (history.index === history.items.length - 1)
-      )"
+      v-disabled="hasEmptyHistory"
       v-t-tooltip="'Forward'"
     >
       <i :class="g3wtemplate.getFontClass('arrow-right')"></i>
     </button>
+
   </div>
 </template>
 
 
 <script>
   import GUI from 'services/gui';
-  const {debounce} = require('core/utils/utils');
+  const { debounce } = require('core/utils/utils');
 
   export default {
     name: "ZoomHistoryMapControl",
-    data(){
+    data() {
       return {
         history: {
           index: 0,
@@ -39,17 +46,7 @@
         }
       }
     },
-    created(){
-      const map = GUI.getService('map').getMap();
-      this.history.items.push(map.getView().calculateExtent(map.getSize()));
-      this.changeKeyEvent = map.getView().on('change' , debounce(evt => {
-        const extent = evt.target.calculateExtent(map.getSize());
-        if (this.history.index !== this.history.items.length -1)
-          this.history.items.splice((this.history.index - this.history.items.length) + 1);
-        this.history.items.push(extent);
-        this.history.index+=1;
-      }, 600))
-    },
+
     watch: {
       'history.index': {
         immediate: false,
@@ -58,9 +55,35 @@
         }
       }
     },
+
+    methods: {
+      hasEmptyHistory() {
+        return (0 === this.history.index && 1 === this.history.items.length) || (this.history.items.length - 1 === this.history.index);
+      }
+    },
+
+    /**
+     * @listens ol.View~change
+     */
+    created() {
+      const map = GUI.getService('map').getMap();
+      const view = map.getView();
+
+      this.history.items.push(view.calculateExtent(map.getSize()));
+
+      this.changeKeyEvent = view.on('change' , debounce(evt => {
+        if (this.history.index !== this.history.items.length -1) {
+          this.history.items.splice((this.history.index - this.history.items.length) + 1);
+        }
+        this.history.items.push(evt.target.calculateExtent(map.getSize()));
+        this.history.index +=1;
+      }, 600))
+    },
+
     beforeDestroy() {
       ol.Object.unByKey(this.changeKeyEvent);
     }
+    
   }
 </script>
 

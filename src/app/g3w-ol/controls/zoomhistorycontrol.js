@@ -4,13 +4,11 @@ const Control = require('g3w-ol/controls/control');
 
 function ZoomHistoryControl() {
   const vueElement = Vue.extend(ZoomHistoryMapControl);
-  const element = new vueElement();
-  const options = {
+  Control.call(this, {
     name: "history",
     tipLabel: "sdk.mapcontrols.addlayer.tooltip",
-    element: element.$mount().$el
-  };
-  Control.call(this, options);
+    element: (new vueElement()).$mount().$el
+  });
 }
 
 ol.inherits(ZoomHistoryControl, Control);
