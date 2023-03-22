@@ -1,9 +1,9 @@
-import ZoomHistoryMapControl from "components/ZoomHistoryMapControl.vue";
+import MapControlZoomHistory from "components/MapControlZoomHistory.vue";
 
 const Control = require('g3w-ol/controls/control');
 
 function ZoomHistoryControl() {
-  const vueElement = Vue.extend(ZoomHistoryMapControl);
+  const vueElement = Vue.extend(MapControlZoomHistory);
   Control.call(this, {
     name: "history",
     tipLabel: "sdk.mapcontrols.addlayer.tooltip",

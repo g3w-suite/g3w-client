@@ -37,7 +37,7 @@
   const { debounce } = require('core/utils/utils');
 
   export default {
-    name: "ZoomHistoryMapControl",
+    name: "MapControlZoomHistory",
     data() {
       return {
         history: {
