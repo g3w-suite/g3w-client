@@ -237,35 +237,21 @@ proto.handleFieldsWithExpression = function(fields=[]){
             this.default_expression_fields_dependencies[dependency_field] = [];
           this.default_expression_fields_dependencies[dependency_field].push(field.name);
         });
-      }
 
-      /*
-     * @since 3.8.0
-     *  In case of no dependencies fields need to call if no dependencies_fields is set
-     *
-     * */
-      if (this.state.isnew && 0 === dependencies_fields.length) {
-        inputService.handleDefaultExpressionFormInput({
-          field,
-          feature: this.feature,
-          qgs_layer_id: this.layer.getId(),
-          parentData: this.parentData
-        });
+        /**
+         * @since 3.8.0 always call if a field has a default_expression set in update or is a new feature
+         */
+        if (this.state.isnew || (apply_on_update && 0 === dependencies_fields.length)) {
+          inputService.handleDefaultExpressionFormInput({
+            field,
+            feature: this.feature,
+            qgs_layer_id: this.layer.getId(),
+            parentData: this.parentData
+          });
+        }
       }
     }
   });
-
-  /**
-   * @since 3.8.0
-   */
-  if (this.state.isnew) {
-    // start to evaluate filter expression field
-    Object.keys(this.default_expression_fields_dependencies).forEach(name =>{
-      this.evaluateDefaultExpressionFields({
-        name
-      });
-    });
-  }
 
   // start to evaluate filter expression field
   Object.keys(this.filter_expression_fields_dependencies).forEach(name =>{
