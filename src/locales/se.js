@@ -318,8 +318,8 @@ export default {
           }
         },
         zoomhistory: {
-          zoom_last: "Zoom Last",
-          zoom_next: "Zoom Next"
+          zoom_last: "Zoom Föregående",
+          zoom_next: "Zoom Nästa"
         }
       },
       relations: {

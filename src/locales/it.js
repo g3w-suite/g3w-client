@@ -320,8 +320,8 @@ export default {
           }
         },
         zoomhistory: {
-          zoom_last: "Ultimo Zoom",
-          zoom_next: "Prossimo Zoom"
+          zoom_last: "Zoom Precedente",
+          zoom_next: "Zoom Successivo"
         }
       },
       relations: {
