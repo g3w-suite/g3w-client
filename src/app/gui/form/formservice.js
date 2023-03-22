@@ -240,7 +240,9 @@ proto.handleFieldsWithExpression = function(fields=[]){
       }
 
       /*
-     * @since 3.8.0 Fix. In case of no dependencies fields need to call
+     * @since 3.8.0
+     *  In case of no dependencies fields need to call if no dependencies_fields is set
+     *
      * */
       if (this.state.isnew && 0 === dependencies_fields.length) {
         inputService.handleDefaultExpressionFormInput({
@@ -252,6 +254,19 @@ proto.handleFieldsWithExpression = function(fields=[]){
       }
     }
   });
+
+  /**
+   * @since 3.8.0
+   */
+  if (this.state.isnew) {
+    // start to evaluate filter expression field
+    Object.keys(this.default_expression_fields_dependencies).forEach(name =>{
+      this.evaluateDefaultExpressionFields({
+        name
+      });
+    });
+  }
+
   // start to evaluate filter expression field
   Object.keys(this.filter_expression_fields_dependencies).forEach(name =>{
     this.evaluateFilterExpressionFields({
