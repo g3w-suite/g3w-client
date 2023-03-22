@@ -222,17 +222,32 @@ proto.handleFieldsWithExpression = function(fields=[]){
      */
     if (options.default_expression) {
       const {referencing_fields=[], referenced_columns=[], apply_on_update=false} = options.default_expression;
+
+      // get all field that current field has an dependency
+      const dependencies_fields = [...referenced_columns, ...referencing_fields];
       /**
-       * In case on apply_on_update true always listend dependenencies change
+       * In case on apply_on_update true always listen dependencies change
        * otherwise only for new Feature
        */
       if (apply_on_update || this.state.isnew) {
         const default_expression_dependency_fields = new Set();
-        [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
+        dependencies_fields.forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
         default_expression_dependency_fields.forEach(dependency_field => {
           if (this.default_expression_fields_dependencies[dependency_field] === undefined)
             this.default_expression_fields_dependencies[dependency_field] = [];
           this.default_expression_fields_dependencies[dependency_field].push(field.name);
+        });
+      }
+
+      /*
+     * @since 3.8.0 Fix. In case of no dependencies fields need to call
+     * */
+      if (this.state.isnew && 0 === dependencies_fields.length) {
+        inputService.handleDefaultExpressionFormInput({
+          field,
+          feature: this.feature,
+          qgs_layer_id: this.layer.getId(),
+          parentData: this.parentData
         });
       }
     }
