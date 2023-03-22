@@ -9,6 +9,8 @@
     class="treeview-menu g3w-spatial-bookmarks menu-items"
     :class="{'g3w-tools': !showaddform}"
   >
+
+    <!-- ADD NEW BOOKMARK (FORM) -->
     <template v-if="showaddform">
 
       <li>
@@ -26,12 +28,8 @@
         </div>
 
         <helpdiv message="sdk.spatialbookmarks.helptext"/>
-        <div
-          class="container add-bookmark-input"
-          style="padding: 5px; width: 100%"
-        >
-          <input-text
-            :state="addbookmarkinput"/>
+        <div class="container add-bookmark-input" style="padding: 5px; width: 100%">
+          <input-text :state="addbookmarkinput" />
         </div>
         <div style="margin-top: 5px;">
           <button
@@ -42,17 +40,16 @@
         </div>
       </li>
     </template>
+
+    <!-- BOOKMARS LIST -->
     <template v-else>
-      <template v-if="project.bookmarks.length > 0">
+      <template v-if="hasProjectbookmarks">
         <div class="content-bookmarks">
           <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
         </div>
         <template v-for="bookmark in project.bookmarks">
-          <spatial-book-mark-group
-                  v-if="bookmark.nodes"
-                  :group="bookmark"/>
-          <spatial-book-mark-item
-                  v-else :bookmark="bookmark"/>
+          <spatial-book-mark-group v-if="bookmark.nodes" :group="bookmark" />
+          <spatial-book-mark-item v-else :bookmark="bookmark" />
         </template>
       </template>
 
@@ -74,15 +71,15 @@
         </span>
       </div>
       <spatial-book-mark-item
-        @remove-bookmark="removeBookMark"
         v-for="bookmark in user.bookmarks"
+        @remove-bookmark="removeBookMark"
         :bookmark="bookmark"/>
     </template>
   </ul>
 </template>
 
 <script>
-  import {LOCAL_ITEM_IDS} from 'app/constant';
+  import { LOCAL_ITEM_IDS } from 'app/constant';
   import GUI from 'services/gui';
   import ApplicationService from 'services/application';
   import ProjectsRegistry from 'store/projects';
@@ -97,17 +94,27 @@
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
   export default {
+
     components: {
       SpatialBookMarkGroup,
       SpatialBookMarkItem,
       InputText,
     },
+
     data() {
-      if ("undefined" === typeof SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()]) {
-        SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = []
+      const project = ProjectsRegistry.getCurrentProject();
+
+      if ("undefined" === typeof SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
+        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = []
       }
+
       return {
-        showaddform: false, // property to show or not add dialog menu
+
+        /**
+         * true = show add dialog menu
+         */
+        showaddform: false,
+
         /** bookmark is an array of Object with follow structure:
          * {
          *   name: <String> Unique identifier of spatial bootmark,
@@ -117,11 +124,13 @@
          */
 
         project: {
-          bookmarks: ProjectsRegistry.getCurrentProject().getSpatialBookmarks() || []
+          bookmarks: project.getSpatialBookmarks() || []
         },
+
         user: {
-          bookmarks: SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()]
+          bookmarks: SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]
         },
+
         addbookmarkinput: {
           name: 'add-bookmark',
           label: t('sdk.spatialbookmarks.input.name'),
@@ -138,10 +147,21 @@
             required: true
           }
         }
+
       }
     },
+
+    computed: {
+
+      hasProjectbookmarks() {
+        return this.project.bookmarks.length > 0;
+      }
+
+    },
+
     methods: {
-      addBookMark(){
+
+      addBookMark() {
         this.user.bookmarks.push({
           id: uniqueId(),
           name: this.addbookmarkinput.value,
@@ -154,28 +174,36 @@
         this.saveUserBookMarks();
         this.showaddform = false;
       },
-      removeBookMark(id){
+
+      removeBookMark(id) {
         this.user.bookmarks = this.user.bookmarks.filter(bookmark => bookmark.id !== id);
         this.saveUserBookMarks();
       },
-      saveUserBookMarks(){
+
+      saveUserBookMarks() {
         SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
         ApplicationService.setLocalItem({
           id: LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id,
           data: SPATIAL_BOOKMARKS_LOCALITEMS
         });
       },
-      showAddForm(){
+
+      showAddForm() {
         this.addbookmarkinput.value = null;
         this.showaddform = true;
       }
+
     },
-    created(){
+
+    created() {
       this.$on('close', ()=>{
         this.showaddform = false
       })
     },
+
+    /** @FIXME remove unusued method ? */
     async mounted() {}
+
   };
 </script>
 
