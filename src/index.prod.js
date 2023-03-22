@@ -1,5 +1,13 @@
-// Backward compatibilies with old G3W-CLIENT plugins (eg. window variables)
-import '../deprecated';
+/**
+ * @file Production entry point (app.min.js)
+ * @since v3.8
+ */
+
+// include backward compatibilies
+import './deprecated';
+
+// expose global variables
+import './globals';
 
 //import core
 import ApplicationState from 'store/application-state';
