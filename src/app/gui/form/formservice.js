@@ -223,7 +223,7 @@ proto.handleFieldsWithExpression = function(fields=[]){
     if (options.default_expression) {
       const {referencing_fields=[], referenced_columns=[], apply_on_update=false} = options.default_expression;
 
-      // get all field that current field has an dependency
+      // get all dependency fields that of current field
       const dependencies_fields = [...referenced_columns, ...referencing_fields];
       /**
        * In case on apply_on_update true always listen dependencies change
