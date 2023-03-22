@@ -10,22 +10,37 @@
 
   <div :id="target" class="g3w-map">
 
-    <div class="g3w-map-controls" style="display: flex" v-disabled="disableMapControls" ref="g3w-map-controls" :class="mapcontrolsalignement"></div>
-    <div id="g3w-map-info" ref="g3w-map-info" :style="map_info.style" v-if="map_info.info">
+    <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
+    <div
+      ref="g3w-map-controls"
+      class="g3w-map-controls"
+      style="display: flex"
+      v-disabled="disableMapControls"
+      :class="mapcontrolsalignement"
+    ></div>
+
+    <!-- FIXME: add description -->
+    <div
+      v-if="map_info.info"
+      ref="g3w-map-info"
+      id="g3w-map-info"
+      :style="map_info.style"
+    >
       {{map_info.info}}
     </div>
-    <div style="display: none;">
-      <div id="marker"></div>
-    </div>
-    <addlayer :service="service"></addlayer>
+
+    <!-- FIXME: display none ? -->
+    <div style="display: none;"><div id="marker"></div></div>
+
+    <!-- FIXME: add description -->
+    <addlayer :service="service" />
 
     <!-- @since 3.8.0   -->
-
     <div class="g3w-map-controls-left-bottom"></div>
+
   </div>
 
-
-
+  <!-- FIXME: add description -->
   <map-footer :service="service"/>
 
 </div>
@@ -54,7 +69,7 @@ export default {
     mapcontrolsalignement() {
       return this.service.state.mapcontrolsalignement;
     },
-    disableMapControls(){
+    disableMapControls() {
       return this.service.state.mapControl.disabled;
     }
   },
