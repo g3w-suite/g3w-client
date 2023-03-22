@@ -140,52 +140,47 @@ proto.getOwsMethod = function() {
   return this.state.ows_method;
 };
 
-// process layerstree and baselayers of the project
+/**
+ * process layerstree and baselayers of the project
+ */
 proto._processLayers = function() {
-  //info useful for catalog
-  const traverse = tree => {
-    for (let i = 0; i < tree.length; i++) {
-      const layer = tree[i];
+
+  // useful info for catalog
+  const traverse = nodes => {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
       let layer_name_originale;
       //check if layer (node) of folder
-      if (layer.id !== undefined) {
-        this.state.layers.forEach(_layer => {
-          layer_name_originale = _layer.name;
-          if (layer.id === _layer.id) {
-            layer.name = _layer.name;
-            _layer.wmsUrl = this.getWmsUrl();
-            _layer.project = this;
-            tree[i] = Object.assign(_layer, layer);
+      if (undefined !== node.id) {
+        this.state.layers.forEach(layer => {
+          layer_name_originale = layer.name;
+          if (node.id === layer.id) {
+            node.name = layer.name;
+            layer.wmsUrl = this.getWmsUrl();
+            layer.project = this;
+            node[i] = Object.assign(layer, node);
             return false
           }
         });
       }
-      if (Array.isArray(layer.nodes)) {
+      if (Array.isArray(node.nodes)) {
         //add title to tree
-        layer.title = layer.name;
-        traverse(layer.nodes);
+        node.title = node.name;
+        traverse(node.nodes);
       }
     }
   };
-  // call trasverse function to
+
   traverse(this.state.layerstree);
   const baseLayerId = ApplicationService.getBaseLayerId();
 
-  /**
-   * Filter base layers bing in case of no bing vendor key is provide
-   */
-
-  this.state.baselayers = this.state.baselayers.filter(baselayer => {
-    return baselayer.servertype === 'Bing' ? ApplicationState.keys.vendorkeys.bing : true
-  });
-
-  /*******************************************************/
+  // Remove bing base layer when no vendor API Key is provided
+  this.state.baselayers = this.state.baselayers.filter(baselayer => (baselayer.servertype === 'Bing' ? ApplicationState.keys.vendorkeys.bing : true));
 
   for (let i=0; i < this.state.baselayers.length; i++) {
     const baseLayerConfig = this.state.baselayers[i];
-    const baseLayerVisibleId = baseLayerId !== null ? baseLayerId : this.state.initbaselayer;
-    const visible = baseLayerVisibleId && (baseLayerConfig.id === baseLayerVisibleId) || !!baseLayerConfig.fixed;
-    baseLayerConfig.visible = visible;
+    const baseLayerVisibleId = (null !== baseLayerId) ? baseLayerId : this.state.initbaselayer;
+    baseLayerConfig.visible = baseLayerVisibleId && (baseLayerConfig.id === baseLayerVisibleId) || !!baseLayerConfig.fixed;
     baseLayerConfig.baselayer = true;
   }
 };
