@@ -897,10 +897,7 @@ proto._setupControls = function() {
          * @since 3.8.0
          */
         case 'zoomhistory':
-          control = this.createMapControl(controlType, {
-            add: false
-          });
-          this._addControlToMapControlsLeftBottom(control);
+          control = this.createMapControl(controlType, { add: false });
           this._addControlToMapControlsLeftBottom(control);
           break;
 
@@ -1187,11 +1184,11 @@ proto._addControlToMapControls = function(control, visible=true) {
 /**
  * @since 3.8.0
  */
-
 proto._addControlToMapControlsLeftBottom = function(control, visible=true) {
-  const controlElement = control.element;
-  if (!visible) control.element.style.display = "none";
-  $('.g3w-map-controls-left-bottom').append(controlElement);
+  if (!visible) {
+    control.element.style.display = "none";
+  }
+  $('.g3w-map-controls-left-bottom').append(control.element);
 };
 
 proto.getMapControlByType = function({type}={}) {
