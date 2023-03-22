@@ -10,7 +10,7 @@
     
     <!-- STEP BACK -->
     <button
-      @click.stop.prevent="history.index--"
+      @click.stop.prevent="last"
       type="button"
       v-disabled="history.index === 0"
       v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_last'"
@@ -20,7 +20,7 @@
 
     <!-- STEP FORWARD -->
     <button
-      @click.stop.prevent="history.index++"
+      @click.stop.prevent="next"
       type="button"
       v-disabled="hasEmptyHistory"
       v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_next'"
@@ -46,16 +46,19 @@
         }
       }
     },
-
-    watch: {
-      'history.index': {
-        immediate: false,
-        handler(index) {
-          GUI.getService('map').getMap().getView().fit(this.history.items[index])
-        }
+    methods: {
+      last(){
+        this.history.index--;
+        this.setMapExtent();
+      },
+      next(){
+        this.history.index++;
+        this.setMapExtent();
+      },
+      setMapExtent(){
+        GUI.getService('map').getMap().getView().fit(this.history.items[this.history.index])
       }
     },
-
     computed: {
       hasEmptyHistory() {
         return (0 === this.history.index && 1 === this.history.items.length) || (this.history.items.length - 1 === this.history.index);
@@ -76,7 +79,7 @@
           this.history.items.splice((this.history.index - this.history.items.length) + 1);
         }
         this.history.items.push(evt.target.calculateExtent(map.getSize()));
-        this.history.index +=1;
+        this.history.index++;
       }, 600))
     },
 
