@@ -15,7 +15,7 @@
       v-disabled="history.index === 0"
       v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_last'"
     >
-      <i :class="g3wtemplate.getFontClass('arrow-left')"></i>
+      <i :class="g3wtemplate.getFontClass('reply')"></i>
     </button>
 
     <!-- STEP FORWARD -->
@@ -25,7 +25,7 @@
       v-disabled="hasEmptyHistory"
       v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_next'"
     >
-      <i :class="g3wtemplate.getFontClass('arrow-right')"></i>
+      <i :class="g3wtemplate.getFontClass('share')"></i>
     </button>
 
   </div>

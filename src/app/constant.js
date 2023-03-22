@@ -543,6 +543,11 @@ export const FONT_AWESOME_ICONS = {
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
   bookmark: "fas fa-bookmark",
+  /**
+   * @since 3.8.0
+   */
+  reply: "fas fa-reply",
+  share: "fas fa-share"
 };
 
 /**
