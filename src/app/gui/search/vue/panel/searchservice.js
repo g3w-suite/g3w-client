@@ -294,8 +294,8 @@ proto.getValueMapValues = async function(field){
  * 
  * @since 3.8.0
  */
-proto.getLayerFilterData = function(layer, {suggest, unique, ordering}) {
-  return layer.getFilterData({ suggest, unique, ordering });
+proto.getLayerFilterData = function(layer, {field, suggest, unique, ordering}) {
+  return layer.getFilterData({ field, suggest, unique, ordering });
 };
 
 /**
