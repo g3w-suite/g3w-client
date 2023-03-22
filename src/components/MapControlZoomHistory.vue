@@ -5,28 +5,31 @@
 
 <template>
   <div
-    style="display:flex; flex-direction: column"
+    style="display:flex;gap: 5px; "
     class="ol-zoom-history ol-unselectable ol-control">
     
     <!-- STEP BACK -->
-    <button
-      @click.stop.prevent="last"
-      type="button"
-      v-disabled="history.index === 0"
-      v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_last'"
-    >
-      <i :class="g3wtemplate.getFontClass('reply')"></i>
-    </button>
+    <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_last'">
+      <button
+        @click.stop.prevent="last"
+        type="button"
+        v-disabled="history.index === 0">
+        <i :class="g3wtemplate.getFontClass('reply')"></i>
+      </button>
+    </div>
+
 
     <!-- STEP FORWARD -->
-    <button
-      @click.stop.prevent="next"
-      type="button"
-      v-disabled="hasEmptyHistory"
-      v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_next'"
-    >
-      <i :class="g3wtemplate.getFontClass('share')"></i>
-    </button>
+    <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_next'">
+      <button
+        @click.stop.prevent="next"
+        type="button"
+        v-disabled="hasEmptyHistory">
+
+        <i :class="g3wtemplate.getFontClass('share')"></i>
+      </button>
+    </div>
+
 
   </div>
 </template>

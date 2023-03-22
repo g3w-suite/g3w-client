@@ -9,6 +9,7 @@
   <div v-for="hidemap in hidemaps" :id="hidemap.id" :key="hidemap.id" class="g3w-map hidemap"></div>
 
   <div :id="target" class="g3w-map">
+
     <div class="g3w-map-controls" style="display: flex" v-disabled="disableMapControls" ref="g3w-map-controls" :class="mapcontrolsalignement"></div>
     <div id="g3w-map-info" ref="g3w-map-info" :style="map_info.style" v-if="map_info.info">
       {{map_info.info}}
@@ -17,7 +18,13 @@
       <div id="marker"></div>
     </div>
     <addlayer :service="service"></addlayer>
+
+    <!-- @since 3.8.0   -->
+
+    <div class="g3w-map-controls-left-bottom"></div>
   </div>
+
+
 
   <map-footer :service="service"/>
 
@@ -52,7 +59,7 @@ export default {
     }
   },
   methods: {
-    showHideControls () {
+    showHideControls() {
       const mapControls = this.service.getMapControls();
       mapControls.forEach(control => control.type !== "scaleline" && control.control.showHide());
     }
@@ -72,3 +79,11 @@ export default {
   }
 };
 </script>
+<style scoped>
+  .g3w-map-controls-left-bottom {
+    position: absolute;
+    bottom: 75px;
+    left: 10px;
+    z-index: 1;
+  }
+</style>

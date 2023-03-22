@@ -5,7 +5,7 @@ const Control = require('g3w-ol/controls/control');
 function ZoomHistoryControl() {
   const vueElement = Vue.extend(MapControlZoomHistory);
   Control.call(this, {
-    name: "history",
+    name: "zoomhistory",
     tipLabel: "sdk.mapcontrols.addlayer.tooltip",
     element: (new vueElement()).$mount().$el
   });
