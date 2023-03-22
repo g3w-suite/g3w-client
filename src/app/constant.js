@@ -542,12 +542,22 @@ export const FONT_AWESOME_ICONS = {
   crop: "fas fa-crop-alt",
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
+
+  /**
+   * @since 3.8.0
+   */
   bookmark: "fas fa-bookmark",
+
   /**
    * @since 3.8.0
    */
   reply: "fas fa-reply",
-  share: "fas fa-share"
+
+  /**
+   * @since 3.8.0
+   */
+  share: "fas fa-share",
+
 };
 
 /**
