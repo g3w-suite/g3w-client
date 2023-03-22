@@ -318,6 +318,10 @@ export default {
             metric: 'Metri',
             nautical: 'Miglio Nautico'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Ultimo Zoom",
+          zoom_next: "Prossimo Zoom"
         }
       },
       relations: {

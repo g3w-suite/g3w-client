@@ -13,7 +13,7 @@
       @click.stop.prevent="history.index--"
       type="button"
       v-disabled="history.index === 0"
-      v-t-tooltip="'Back'"
+      v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_last'"
     >
       <i :class="g3wtemplate.getFontClass('arrow-left')"></i>
     </button>
@@ -23,7 +23,7 @@
       @click.stop.prevent="history.index++"
       type="button"
       v-disabled="hasEmptyHistory"
-      v-t-tooltip="'Forward'"
+      v-t-tooltip="'sdk.mapcontrols.zoomhistory.zoom_next'"
     >
       <i :class="g3wtemplate.getFontClass('arrow-right')"></i>
     </button>

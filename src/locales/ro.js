@@ -316,6 +316,10 @@ export default {
             metric: 'Metri',
             nautical: 'Mile Nautice'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Last",
+          zoom_next: "Zoom Next"
         }
       },
       relations: {
