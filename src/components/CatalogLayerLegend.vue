@@ -21,7 +21,7 @@
     </figure>
 
     <figure v-else>
-  
+
       <div v-for="(category, index) in categories"
         style="display: flex; align-items: center; width: 100%"
         v-disabled="category.disabled"
@@ -42,11 +42,14 @@
         >
 
         <span
-          v-if="('tab' === legendplace && category.ruleKey) || ('toc' === legendplace && showCategoriesCheckBox)"
+          v-if="('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
           class="g3w-long-text"
           style="padding-left: 3px;"
         >
-          {{category.title}}
+          <span>{{category.title}}</span>
+          <span v-if="showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
+            [{{layer.featurecount[category.ruleKey]}}]
+          </span>
         </span>
 
       </div>
@@ -63,8 +66,6 @@
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ProjectsRegistry from 'store/projects';
 
-  // const {XHR} = require('core/utils/utils');
-
   export default {
     name: "layerlegend",
     props: {
@@ -80,24 +81,37 @@
         categories: []
       }
     },
-    computed:{
+    computed: {
+
+      /**
+       * @returns {boolean} whether to display total number of features for current layer
+       * 
+       * @since 3.8.0 
+       */
+      showfeaturecount() {
+       return "undefined" !== typeof this.layer.featurecount;
+      },
+
       externallegend() {
         return ('wms' === this.layer.source.type);
       },
+
       legend() {
         return this.layer.legend;
       },
+
       show() {
         return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },
-      showCategoriesCheckBox() {
-        return this.categories.length > 1;
-      }
+
     },
     methods: {
 
       getWmsSourceLayerLegendUrl() {
-        return this.getProjectLayer().getLegendUrl();
+        return this.getProjectLayer().getLegendUrl({
+          width: 16,
+          height: 16
+        });
       },
 
       getProjectLayer() {
@@ -148,56 +162,70 @@
           if (all && categories) { // check if exist current layer categories
             this.categories = categories;
           } else {
-            try {
-
-              const { nodes = [] } = await projectLayer.getLegendGraphic({ all });
-
-              // case of all categories
-              if (all) {
-                const categories = [];
-                nodes.forEach(({ icon, title, symbols = []}) => {
-                  if (icon) {
-                    categories.push({ icon, title, disabled: false });
-                  } else {
-                    symbols.forEach(symbol => {
-                      symbol._checked = symbol.checked;
-                      symbol.disabled = false;
-                      categories.push(symbol);
-                    });
-                  }
-                });
-                projectLayer.setCategories(categories);
-                this.categories = categories;
-              } else {
-                projectLayer.setCategories(categories);
-                this.categories = categories;
-
-                // case to update current categories
-                if (nodes.length) {
-                  nodes.forEach(({icon, title, symbols = []}) => {
-                    if (icon) symbols = [{icon, title}];
-                    categories.forEach(category  => {
-                      const find = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
-                      const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
-                      category.disabled = disabled && !find;
-                    });
-                  })
-                } else {
-                  categories.forEach(category => category.disabled = ("undefined" !== typeof category.checked ? category.checked : true));
-                }
-
-              }
-
-            } catch(err) {
-              this.setError();
+            const { nodes = [] } = await projectLayer.getLegendGraphic({ all });
+            if (all) { // case of all categories
+              this._setAllLayerCategories(nodes);
+            } else {
+              this._updateLayerCategories(nodes, categories);
             }
           }
-
         } catch(err) {
           this.setError();
         }
+      },
 
-      }
+      /**
+       * @since 3.8.0
+       */
+      _setAllLayerCategories(nodes) {
+        const projectLayer = this.getProjectLayer();
+
+        const categories = [];
+        nodes.forEach(({ icon, title, ruleKey, checked, symbols = []}) => {
+          if (icon) {
+            /**
+             * need to take care of checked and ruleKey
+             * if just one category is set. If there are more that one category
+             * symbols array is set
+             */
+            categories.push({ icon, title, ruleKey, checked, disabled: false });
+          } else {
+            symbols.forEach(symbol => {
+              symbol._checked = symbol.checked;
+              symbol.disabled = false;
+              categories.push(symbol);
+            });
+          }
+        });
+        projectLayer.setCategories(categories);
+        this.categories = categories;
+      },
+
+      /**
+       * @since 3.8.0
+       */
+      _updateLayerCategories(nodes, categories) {
+        const projectLayer = this.getProjectLayer();
+
+        projectLayer.setCategories(categories);
+        this.categories = categories;
+
+        // case to update current categories
+        if (nodes.length) {
+          nodes.forEach(({icon, title, symbols = []}) => {
+            if (icon) {
+              symbols = [{icon, title}];
+            }
+            categories.forEach(category  => {
+              const find = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
+              const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
+              category.disabled = disabled && !find;
+            });
+          })
+        } else {
+          categories.forEach(category => category.disabled = ("undefined" !== typeof category.checked ? category.checked : true));
+        }
+      },
 
     },
     watch: {
@@ -217,19 +245,19 @@
 
       /**
        * @FIXME the following comment seems wrong (isn't `this.dynamic` a `boolean` variable?)
-       * 
+       *
        * Store legend url icons based on current style of layer
        * It use to cache all symbol of a style without get a new request to server
-       * 
+       *
        * @type {{}}
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.mapReady = false;
-
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
 
       // Get all legend graphics of a layer when start
-      if (this.layer.visible) {
+      // need to exclude wms source
+      if (this.layer.visible && this.layer.source && 'wms' !== this.layer.source.type) {
         this.setLayerCategories(true).then(() => {
           if (this.dynamic) {
             GUI.getService('map').on('change-map-legend-params', async () => {

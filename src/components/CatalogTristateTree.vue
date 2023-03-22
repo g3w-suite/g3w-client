@@ -119,7 +119,8 @@
         :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
-        {{ layerstree.title }}
+        <span>{{ layerstree.title }}</span>
+        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">[{{getFeatureCount}}]</span>
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
@@ -239,39 +240,94 @@ export default {
     }
   },
   computed: {
+
+    /**
+     * @returns {boolean} whether to display total number of features for current layer
+     * 
+     * @since 3.8.0 
+     */
+    showfeaturecount() {
+      return "undefined" !== typeof this.layerstree.featurecount;
+    },
+
     showLegendLayer() {
       return !this.layerstree.exclude_from_legend;
     },
+
     showLayerTocLegend() {
       return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer;
     },
+
     isGroup() {
       return !!this.layerstree.nodes
     },
+
     legendlayerposition() {
       return (this.showLegendLayer && this.layerstree.legend) ? this.legendplace : 'tab';
     },
+
     showscalevisibilityclass() {
       return !this.isGroup && this.layerstree.scalebasedvisibility
     },
+
     showScaleVisibilityToolip() {
       return this.showscalevisibilityclass && this.layerstree.disabled && this.layerstree.checked;
     },
+
     isTable() {
       return !this.isGroup && !this.layerstree.geolayer && !this.layerstree.external;
     },
+
     isHidden() {
       return this.layerstree.hidden && (true === this.layerstree.hidden);
     },
+
     selected() {
       this.layerstree.selected = (this.layerstree.disabled && this.layerstree.selected) ? false : this.layerstree.selected;
     },
+
     isHighLight() {
-      return this.highlightlayers && !this.isGroup && CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() && this.layerstree.visible;
+      return (this._isHighLightProjectLayer || this._isHighLightExternalLayer);
     },
+
     isInGrey() {
       return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
-    }
+    },
+
+    /**
+     * @since 3.8.0
+     */
+    getFeatureCount() {
+      return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) => total + 1 * categoryFeatureCount, 0);
+    },
+
+    /**
+     * @TODO double check the name of this function (ie. matches its purpose?)
+     *
+     * @since 3.8.0
+     */
+     _isHighLightProjectLayer() {
+      return (
+        this.highlightlayers &&
+        !this.isGroup &&
+        CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() &&
+        this.layerstree.visible
+      );
+    },
+
+    /**
+     * @TODO double check the name of this function (ie. matches its purpose?)
+     *
+     * @since 3.8.0
+     */
+    _isHighLightExternalLayer() {
+      return (
+        this.layerstree.external &&
+        this.layerstree.visible &&
+        "vector" /* <-- what the heck? */ && this.layerstree._type &&
+        true === this.layerstree.tochighlightable
+      )
+    },
   },
   watch:{
     'layerstree.disabled'(bool) {},

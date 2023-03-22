@@ -125,7 +125,7 @@ export default {
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'Refereces',
+                  personprimary: 'References',
                   contactvoicetelephone: 'Phone',
                   contactorganization: 'Organization',
                   ContactOrganization: 'Organization',
@@ -272,6 +272,9 @@ export default {
                   <li>Click on a feature of selected layer.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
         },
         querybybbox: {
           tooltip: 'Query BBox layer',
