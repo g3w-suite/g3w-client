@@ -56,7 +56,7 @@
       }
     },
 
-    methods: {
+    computed: {
       hasEmptyHistory() {
         return (0 === this.history.index && 1 === this.history.items.length) || (this.history.items.length - 1 === this.history.index);
       }
