@@ -46,7 +46,10 @@
           class="g3w-long-text"
           style="padding-left: 3px;"
         >
-          {{category.title}}
+          <span>{{category.title}}</span>
+          <span v-if="showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
+            [{{layer.featurecount[category.ruleKey]}}]
+          </span>
         </span>
 
       </div>
@@ -78,13 +81,25 @@
         categories: []
       }
     },
-    computed:{
+    computed: {
+
+      /**
+       * @returns {boolean} whether to display total number of features for current layer
+       * 
+       * @since 3.8.0 
+       */
+      showfeaturecount() {
+       return "undefined" !== typeof this.layer.featurecount;
+      },
+
       externallegend() {
         return ('wms' === this.layer.source.type);
       },
+
       legend() {
         return this.layer.legend;
       },
+
       show() {
         return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },
@@ -238,7 +253,6 @@
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.mapReady = false;
-
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
 
       // Get all legend graphics of a layer when start
