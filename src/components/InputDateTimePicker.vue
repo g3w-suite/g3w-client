@@ -53,13 +53,10 @@ export default {
       return !this.state.input.options.formats[0].date;
     },
     stateValueChanged(value) {
-      const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].displayformat);
-      const date = moment(value).format(datetimedisplayformat);
-      $(`#${this.iddatetimepicker}`).val(date);
+      $(`#${this.idinputdatetimepiker}`).val(value);
     }
   },
   async mounted() {
-    //if (this.state.name === 'anno_costr') this.state.value = '2022-01-01';
     const {formats=[], layout={vertical:"top", horizontal: "left"}} = this.state.input.options;
     const {minDate, maxDate, fieldformat, enabledDates, disabledDates, displayformat, useCurrent} = formats[0];
     await this.$nextTick();
