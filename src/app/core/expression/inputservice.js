@@ -74,7 +74,12 @@ export default {
   async handleDefaultExpressionFormInput({field, feature, qgs_layer_id, parentData}={}){
     const form_data = convertFeatureToGEOJSON(feature);
     const options = field.input.options;
-    let {layer_id=qgs_layer_id, default_expression, loading} = options;
+    const {
+      layer_id=qgs_layer_id,
+      default_expression,
+      loading,
+      default:default_value,
+    } = options;
     if (default_expression) {
       loading.state = 'loading';
       /**
@@ -100,6 +105,9 @@ export default {
         field.value = value;
         return value;
       } catch(err){
+        if ("undefined" !== typeof default_value) {
+          field.value = default_value
+        }
         return Promise.reject(err);
       } finally {
         loading.state = 'ready';
