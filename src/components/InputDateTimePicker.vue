@@ -53,7 +53,8 @@ export default {
       return !this.state.input.options.formats[0].date;
     },
     stateValueChanged(value) {
-      $(`#${this.idinputdatetimepiker}`).val(value);
+      const date =  moment(value, this.datetimefieldformat).format(this.datetimedisplayformat);
+      $(`#${this.idinputdatetimepiker}`).val(date);
     }
   },
   async mounted() {
@@ -66,11 +67,15 @@ export default {
     });
     const date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
     const locale = this.service.getLocale();
-    const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(displayformat);
-    const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(fieldformat);
+    /**
+     * set has widget input property instance
+     */
+    this.datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(displayformat);
+    this.datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(fieldformat);
+
     $(`#${this.iddatetimepicker}`).datetimepicker({
       defaultDate: date,
-      format: datetimedisplayformat,
+      format: this.datetimedisplayformat,
       ignoreReadonly: true,
       allowInputToggle: true,
       enabledDates,
@@ -90,7 +95,7 @@ export default {
 
     $(`#${this.iddatetimepicker}`).on("dp.change", evt => {
       const newDate = $('#'+this.idinputdatetimepiker).val();
-      this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, datetimedisplayformat).format(datetimefieldformat);
+      this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
       this.widgetChanged();
     });
     $(`#${this.iddatetimepicker}`).on("dp.show", async evt => {

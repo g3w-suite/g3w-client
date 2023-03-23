@@ -43,8 +43,14 @@ proto.setValue = function(value) {
       }
     } else {
       //check if we can state.check get_default_value from input.options.default is set
-      if ( this.state.get_default_value && typeof this.state.input.options.default !== "undefined" && this.state.input.options.default !== null) {
-        this.state.value = this.state.input.options.default;
+      if (
+        this.state.get_default_value &&
+        "undefined" !== typeof this.state.input.options.default &&
+        null !== this.state.input.options.default
+      ) {
+        if ("undefined" === typeof this.state.input.options.default_expression) {
+          this.state.value = this.state.input.options.default;
+        }
         this.state.value_from_default_value = true;
       }
     }
