@@ -43,5 +43,5 @@ export {
   RelationsService,
   RouterService,
   TaskService,
-  WorkFlowsStack
+  WorkFlowsStack,
 };
