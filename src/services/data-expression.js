@@ -14,6 +14,7 @@ function ExpressionService(){
    * @param qgis_layer_id
    * @param form_data
    * @param expression
+   * @param field_name since 3.8.0
    * @param layer_id layer owner of the data
    * @param qgs_layer_id layer id owner of the form data
    * @returns {Promise<void>}
@@ -22,7 +23,7 @@ function ExpressionService(){
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-  this.expression = async function({qgs_layer_id, layer_id, form_data, expression, formatter=1, parent}){
+  this.expression = async function({qgs_layer_id, layer_id, form_data, field_name, expression, formatter=1, parent}){
     const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
     try {
       const response = await this.handleRequest({
@@ -33,7 +34,11 @@ function ExpressionService(){
           form_data,
           expression,
           formatter,
-          parent
+          parent,
+          /**
+           * @since 3.8.0
+           */
+          field_name
         }
       });
       return this.handleResponse(response);
@@ -46,13 +51,15 @@ function ExpressionService(){
    * @param qgis_layer_id
    * @param form_data
    * @param expression
+   * @param field_name since 3.8.0
+
    * @returns {Promise<void>}
    * POST only method to return QGIS Expressions evaluated in Project an optional Layer/Form context
    *
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   this.expression_eval = function({layer_id, qgs_layer_id, form_data, expression, formatter=1, parent}={}){
+   this.expression_eval = function({layer_id, qgs_layer_id, form_data, field_name, expression, formatter=1, parent}={}){
      const url = this.project.getUrl('expression_eval');
      return this.handleRequest({
        url,
@@ -63,6 +70,10 @@ function ExpressionService(){
          expression,
          formatter,
          parent,
+         /**
+          * @since 3.8.0
+          */
+         field_name
        }
      });
   };

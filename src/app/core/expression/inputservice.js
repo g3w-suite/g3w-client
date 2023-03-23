@@ -19,6 +19,7 @@ export default {
       try {
         const features = await DataRouterService.getData('expression:expression', {
           inputs: {
+            field_name: field.name,
             layer_id,
             qgs_layer_id,// layer id owner of the data
             form_data,
@@ -82,6 +83,7 @@ export default {
       try {
         const value = await DataRouterService.getData('expression:expression_eval', {
           inputs: {
+            field_name: field.name,
             layer_id, //
             qgs_layer_id, //layer id owner of the data
             form_data,
