@@ -21,7 +21,21 @@ proto.change = function(layers=[]){
 };
 
 proto.checkVisible = function(layers=[]){
-  const find = layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false);
+  const find = layers.find((layer) => {
+    if (layer.isExternalWMS && layer.isExternalWMS()) {
+      /**
+       * @since 3.8.0
+       * check if domain of wms is not that same of application to avoid CORS issue on getting
+       * map image
+       */
+      try {
+        const domain = new URL(layer.getSource().url);
+        // check if same origin of current page
+        return location.origin !== domain.origin;
+      } catch(err){}
+      return true;
+    } else return false
+  });
   return !find;
 };
 
