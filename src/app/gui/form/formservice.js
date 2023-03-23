@@ -215,7 +215,6 @@ proto.handleFieldsWithExpression = function(fields=[]){
           this.filter_expression_fields_dependencies[dependency_field] = [];
         this.filter_expression_fields_dependencies[dependency_field].push(field.name);
       });
-
     }
     /**
      * Case of a field that has a default_value object and check if apply_on_update only
@@ -223,15 +222,14 @@ proto.handleFieldsWithExpression = function(fields=[]){
     if (options.default_expression) {
       const {referencing_fields=[], referenced_columns=[], apply_on_update=false} = options.default_expression;
 
-      // get all dependency fields that of current field
-      const dependencies_fields = [...referenced_columns, ...referencing_fields];
       /**
        * In case on apply_on_update true always listen dependencies change
        * otherwise only for new Feature
        */
       if (apply_on_update || this.state.isnew) {
         const default_expression_dependency_fields = new Set();
-        dependencies_fields.forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
+
+        [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
         default_expression_dependency_fields.forEach(dependency_field => {
           if (this.default_expression_fields_dependencies[dependency_field] === undefined)
             this.default_expression_fields_dependencies[dependency_field] = [];
@@ -241,7 +239,7 @@ proto.handleFieldsWithExpression = function(fields=[]){
         /**
          * @since 3.8.0 always call if a field has a default_expression set in update or is a new feature
          */
-        if (this.state.isnew || (apply_on_update && 0 === dependencies_fields.length)) {
+        if (this.state.isnew || (apply_on_update && 0 === default_expression_dependency_fields.size)) {
           inputService.handleDefaultExpressionFormInput({
             field,
             feature: this.feature,
