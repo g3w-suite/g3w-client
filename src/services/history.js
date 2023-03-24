@@ -7,16 +7,16 @@ const { inherit, base, Base64 } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /*
- * RouterService basato su History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
+ * HistoryService basato su History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
  * Il concetto di base è una RouteQuery, del tipo "map?point=21.2,42.1&zoom=12",
  * che viene inserito nello stato dell'history del browser e nella URL come parametro querystring in forma codificata (q=map@point!21.2,41.1|zoom!12).
  * Per invocare una RouteQuery:
  *
- * RouterService.goto("map?point=21.2,42.1&zoom=12");
+ * HistoryService.goto("map?point=21.2,42.1&zoom=12");
  *
- * Chiunque voglia rispondere ad una RouteQuery deve aggiungere una route con RouterService.addRoute(pattern, callback). Es.:
+ * Chiunque voglia rispondere ad una RouteQuery deve aggiungere una route con HistoryService.addRoute(pattern, callback). Es.:
  *
- * var route = RouterService.addRoute('map/{?query}',function(query){
+ * var route = HistoryService.addRoute('map/{?query}',function(query){
  *  console.log(query.point);
  *  console.log(query.zoom);
  * });
@@ -29,10 +29,10 @@ const G3WObject = require('core/g3wobject');
  *  "map/:?querystring:": eventuale querystring, passata alla callback come oggetto dei parametri
  *
  * Per rimuovere una route:
- * RouterService.removeRoute(route);
+ * HistoryService.removeRoute(route);
 */
 
-const RouterService = function(){
+const HistoryService = function(){
   this._initialLocationQuery;
   this._routeQuery = '';
   this.setters = {
@@ -193,4 +193,4 @@ proto._stripInitialQuery = function(locationQuery) {
   return locationQuery;
 };
 
-export default new RouterService();
+export default new HistoryService();
