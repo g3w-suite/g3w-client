@@ -238,31 +238,35 @@ proto._handleFieldWithFilterExpression = function(field, default_expression) {
       apply_on_update = false,
     } = default_expression;
 
-    /**
-     * In case on apply_on_update true always listen dependencies change
-     * otherwise only for new Feature
-     */
-    if (apply_on_update || this.state.isnew) {
-      const default_expression_dependency_fields = new Set();
+    // Skip if not apply_on_update (listen dependencies change only for new Feature)
+    if (!apply_on_update && !this.state.isnew) {
+      return;
+    }
 
-      [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
-      default_expression_dependency_fields.forEach(dependency_field => {
-        if (this.default_expression_fields_dependencies[dependency_field] === undefined)
-          this.default_expression_fields_dependencies[dependency_field] = [];
-        this.default_expression_fields_dependencies[dependency_field].push(field.name);
-      });
+    const dependency_fields = new Set();
 
-      /**
-       * @since 3.8.0 always call if a field has a default_expression set in update or is a new feature
-       */
-      if (this.state.isnew || (apply_on_update && 0 === default_expression_dependency_fields.size)) {
-        inputService.handleDefaultExpressionFormInput({
-          field,
-          feature: this.feature,
-          qgs_layer_id: this.layer.getId(),
-          parentData: this.parentData
-        });
+    // TODO: add description
+    [
+      ...referenced_columns,
+      ...referencing_fields
+    ].forEach(dependency_field => dependency_fields.add(dependency_field));
+  
+    dependency_fields.forEach(dependency_field => {
+      // TODO: shorten variable name
+      if (undefined === this.default_expression_fields_dependencies[dependency_field]) {
+        this.default_expression_fields_dependencies[dependency_field] = [];
       }
+      this.default_expression_fields_dependencies[dependency_field].push(field.name);
+    });
+
+    // Call input service if a field has a default_expression set in update or is a new feature
+    if (this.state.isnew || (apply_on_update && 0 === default_expression_dependency_fields.size)) {
+      inputService.handleDefaultExpressionFormInput({
+        field,
+        feature: this.feature,
+        qgs_layer_id: this.layer.getId(),
+        parentData: this.parentData
+      });
     }
   }
 };
