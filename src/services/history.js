@@ -87,7 +87,7 @@ proto.goto = function(routeQuery){
     this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
   }
   if (routeQuery) {
-    encodedRouteQuery = this._encodeRouteQuery(routeQuery);
+    const encodedRouteQuery = this._encodeRouteQuery(routeQuery);
     const path = '?'+this._initialLocationQuery + '&q='+encodedRouteQuery;
     History.pushState({routequery:routeQuery},null,path);
   }
@@ -185,8 +185,8 @@ proto._stripInitialQuery = function(locationQuery) {
   if (previousQuery) {
     const previousQueryLength = previousQuery.length;
     const previousQueryPosition = locationQuery.indexOf(previousQuery);
-    queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
-    querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
+    const queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
+    let querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
     querySuffix = (queryPrefix != "") ? querySuffix : _.trimStart(querySuffix,"&");
     locationQuery = queryPrefix + querySuffix;
   }
