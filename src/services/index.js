@@ -6,10 +6,10 @@ import OWSService from './data-ows';
 import ProxyService from './data-proxy';
 import QueryService from './data-query';
 import SearchService from './data-search';
-import RouterService from './data';
+import DataService from './data';
 import ChangesManager from './editing';
 import GUI from './gui';
-import RouterService from './history';
+import HistoryService from './history';
 import AppService from './iframe-app';
 import EditingService from './iframe-editing';
 import IframePluginService from './iframe-plugin';
@@ -20,7 +20,7 @@ import TaskService from './tasks';
 import WorkFlowsStack from './workflows';
 
 /**
- * FIXME: importing directly from this file breaks application
+ * @FIXME importing directly from this file breaks application
  * (maybe related to: https://github.com/Raruto/g3w-client/commit/c83d99934d00ea5c6047c215c6eba54fd2d5aefa)
  */
 export {
@@ -32,10 +32,10 @@ export {
   ProxyService,
   QueryService,
   SearchService,
-  RouterService,
+  DataService,
   ChangesManager,
   GUI,
-  RouterService,
+  HistoryService,
   AppService,
   EditingService,
   IframePluginService,
