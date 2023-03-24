@@ -230,7 +230,7 @@ proto._handleFieldWithFilterExpression = function(field, filter_expression) {
  * 
  * @since 3.8.0
  */
-proto._handleFieldWithFilterExpression = function(field, default_expression) {
+proto._handleFieldWithDefaultExpression = function(field, default_expression) {
   if (default_expression) {
     const {
       referencing_fields = [],
