@@ -29,32 +29,46 @@ proto.getValue = function() {
   return this.state.value;
 };
 
+/**
+ * @param value 
+ * 
+ * @returns {void} 
+ */
 proto.setValue = function(value) {
-  if (value === null || value === undefined) {
-    if (Array.isArray(this.state.input.options)) {
-      if (this.state.input.options[0].default)
-        this.state.value = this.state.input.options[0].default;
-      else if(Array.isArray(this.state.input.options.values)) {
-        if (this.state.input.options.values.length) {
-          this.state.value =  this.state.input.options.values[0] &&
-            this.state.input.options.values[0].value
-            || this.state.input.options.values[0]
-        }
-      }
-    } else {
-      //check if we can state.check get_default_value from input.options.default is set
-      if (
-        this.state.get_default_value &&
-        "undefined" !== typeof this.state.input.options.default &&
-        null !== this.state.input.options.default
-      ) {
-        if ("undefined" === typeof this.state.input.options.default_expression) {
-          this.state.value = this.state.input.options.default;
-        }
-        this.state.value_from_default_value = true;
-      }
+  
+  // skip when ??
+  if (!(null === value || undefined === value)) {
+    return;
+  }
+
+  const options = this.state.input.options;
+
+  // when .. ??
+  if (Array.isArray(options)) {
+    if (options[0].default) {
+      this.state.value = options[0].default;
+    } else if(values.length && Array.isArray(options.values)) {
+      this.state.value = ( options.values[0] && options.values[0].value || options.values[0]);
     }
   }
+
+  const FIND_ME_A_NAME = (
+    !Array.isArray(options) &&
+    this.state.get_default_value &&
+    undefined !== options.default &&
+    null !== options.default
+  );
+
+  // check if we can state.check get_default_value from input.options.default is set
+  if (FIND_ME_A_NAME && undefined === options.default_expression) {
+      this.state.value = options.default;
+  }
+
+  // when .. ??
+  if(FIND_ME_A_NAME) {
+    this.state.value_from_default_value = true;
+  }
+
 };
 
 proto.addValueToValues = function(value) {
