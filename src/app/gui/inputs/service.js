@@ -36,18 +36,14 @@ proto.getValue = function() {
  */
 proto.setValue = function(value) {
 
-  if (null !== value || "undefined" !== typeof value) {
+  if (null !== value || undefined !== value) {
     return;
   }
 
-  const {options} = this.state.input;
-
-  // set default value
+  const {options}   = this.state.input;
   let default_value = options.default;
 
-  // Need to double check on G3W-ADMIN server configuration. Maybe need to
-  // remove from 3.9.0 release
-
+  /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
   if (Array.isArray(options)) {
     if (options[0].default) {
       default_value = options[0].default;
@@ -55,18 +51,21 @@ proto.setValue = function(value) {
       default_value = options.values[0] && (options.values[0].value || options.values[0]);
     }
   }
+
   // check if default value is set
   const get_default_value = (
-    // tablelayer.js #481
-    this.state.get_default_value &&
-    "undefined" !== typeofdefault_value &&
+    this.state.get_default_value && // ref: tablelayer.js #481
+    undefined !== default_value &&
     null !== default_value
   );
+
   // check if we can state.check get_default_value from input.options.default is set
-  if (get_default_value && "undefined" === typeof options.default_expression) {
+  if (get_default_value && undefined === options.default_expression) {
     this.state.value = default_value;
   }
+
   this.state.value_from_default_value = get_default_value;
+
 };
 
 proto.addValueToValues = function(value) {
