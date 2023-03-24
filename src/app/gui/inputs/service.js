@@ -47,7 +47,7 @@ proto.setValue = function(value) {
   if (Array.isArray(options)) {
     if (options[0].default) {
       this.state.value = options[0].default;
-    } else if(values.length && Array.isArray(options.values)) {
+    } else if(Array.isArray(options.values) && options.values.length) {
       this.state.value = ( options.values[0] && options.values[0].value || options.values[0]);
     }
   }
