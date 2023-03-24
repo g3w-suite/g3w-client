@@ -60,11 +60,13 @@ function ExpressionService() {
    * 
    * @returns { Promise<void> }
    */
-   this.expression_eval = function(expr){
-     return this.handleRequest({
-       url: this.project.getUrl('expression_eval'),
-       params: expr
-     });
+   this.expression_eval = function(expr) {
+    expr = expr || {};
+    expr.formatter = expr.formatter || 1; 
+    return this.handleRequest({
+      url: this.project.getUrl('expression_eval'),
+      params: expr
+    });
   };
 
   /**
