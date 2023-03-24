@@ -8,6 +8,7 @@
   <ul v-if="menu.show"
     id="project-context-menu"
     ref="project-context-menu"
+    class="catalog-context-menu"
     v-click-outside-context-menu="closeLayerMenu"
     tabindex="-1"
     :style="{top: menu.top + 'px', left: menu.left + 'px' }"
@@ -15,7 +16,14 @@
 
     <!-- Item Title -->
     <li class="title">
-      <div>{{ menu.title}}</div>
+      <div>G3W-ADMIN {{ menu.title}}</div>
+    </li>
+
+    <!-- TODO add item description -->
+    <li>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span>Layers</span>
+      </div>
     </li>
 
   </ul>
@@ -75,10 +83,27 @@
         await this.$nextTick();
         this.menu.top = $(evt.target).offset().top - $(this.$refs['project-context-menu']).height() + ($(evt.target).height()/ 2);
       });
+
+      CatalogEventHub.$on('hide-project-context-menu', this._hideMenu);
     }
   };
 </script>
 <style scoped>
+  #project-context-menu {
+    background: #FAFAFA;
+    border: 1px solid #BDBDBD;
+    border-radius: 3px;
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    min-width: 150px;
+    z-index: 999999;
+    color:#000000;
+    outline: none;
+  }
+
   li .item-text{
     font-weight: bold;
   }

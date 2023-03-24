@@ -6,8 +6,9 @@
 <template>
 
   <ul v-if="layerMenu.show"
-    id="layer-menu"
+    id="layer-context-menu"
     ref="layer-menu"
+    class="catalog-context-menu"
     v-click-outside-context-menu="closeLayerMenu"
     tabindex="-1"
     :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }"
