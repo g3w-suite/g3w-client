@@ -30,45 +30,43 @@ proto.getValue = function() {
 };
 
 /**
- * @param value 
- * 
- * @returns {void} 
+ * @param value
+ *
+ * @returns {void}
  */
 proto.setValue = function(value) {
-  
-  // skip when ??
-  if (!(null === value || undefined === value)) {
+
+  if (null !== value || "undefined" !== typeof value) {
     return;
   }
 
-  const options = this.state.input.options;
+  const {options} = this.state.input;
 
-  // when .. ??
+  // set default value
+  let default_value = options.default;
+
+  // Need to double check on G3W-ADMIN server configuration. Maybe need to
+  // remove from 3.9.0 release
+
   if (Array.isArray(options)) {
     if (options[0].default) {
-      this.state.value = options[0].default;
-    } else if(Array.isArray(options.values) && options.values.length) {
-      this.state.value = ( options.values[0] && options.values[0].value || options.values[0]);
+      default_value = options[0].default;
+    } else if (Array.isArray(options.values) && options.values.length > 0) {
+      default_value = options.values[0] && (options.values[0].value || options.values[0]);
     }
   }
-
-  const FIND_ME_A_NAME = (
-    !Array.isArray(options) &&
+  // check if default value is set
+  const get_default_value = (
+    // tablelayer.js #481
     this.state.get_default_value &&
-    undefined !== options.default &&
-    null !== options.default
+    "undefined" !== typeofdefault_value &&
+    null !== default_value
   );
-
   // check if we can state.check get_default_value from input.options.default is set
-  if (FIND_ME_A_NAME && undefined === options.default_expression) {
-      this.state.value = options.default;
+  if (get_default_value && "undefined" === typeof options.default_expression) {
+    this.state.value = default_value;
   }
-
-  // when .. ??
-  if(FIND_ME_A_NAME) {
-    this.state.value_from_default_value = true;
-  }
-
+  this.state.value_from_default_value = get_default_value;
 };
 
 proto.addValueToValues = function(value) {
