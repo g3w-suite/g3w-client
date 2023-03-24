@@ -8,7 +8,7 @@
   <ul v-if="layerMenu.show"
     id="layer-menu"
     ref="layer-menu"
-    v-click-outside-layer-menu="closeLayerMenu"
+    v-click-outside-context-menu="closeLayerMenu"
     tabindex="-1"
     :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }"
   >
@@ -273,29 +273,6 @@
     components: {
       'chrome-picker':        ChromeComponent,
       'layer-opacity-picker': LayerOpacityPicker,
-    },
-    directives: {
-
-      /**
-       * Create a vue directive for handling click outside contextmenu element
-       */
-      'click-outside-layer-menu': {
-        bind(el, binding, vnode) {
-          this.event = (event) => {
-            // skip if clicked element is a child of context menu
-            if (el === event.target || el.contains(event.target)) {
-              return;
-            }
-            event.stopPropagation();
-            vnode.context[binding.expression](event);
-          };
-          document.body.addEventListener('click', this.event, true)
-        },
-        unbind(el) {
-          document.body.removeEventListener('click', this.event, true)
-        }
-      }
-      
     },
     methods: {
 
