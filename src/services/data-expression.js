@@ -22,14 +22,13 @@ function ExpressionService() {
    * @param expr.form_data
    * @param expr.field_name    since 3.8.0
    * @param expr.expression
-   * @param expr.formatter     default = 1
+   * @param expr.formatter
    * @param expr.parent
    *
    * @returns { Promise<void> }
    */
   this.expression = async function(expr) {
     expr = expr || {};
-    expr.formatter = expr.formatter || 1;
     try {
       return this.handleResponse(
         // response
@@ -55,14 +54,13 @@ function ExpressionService() {
    * @param expr.form_data
    * @param expr.field_name    since 3.8.0
    * @param expr.expression
-   * @param expr.formatter     default = 1
+   * @param expr.formatter
    * @param expr.parent
    *
    * @returns { Promise<void> }
    */
    this.expression_eval = function(expr) {
     expr = expr || {};
-    expr.formatter = expr.formatter || 1;
     return this.handleRequest({
       url: this.project.getUrl('expression_eval'),
       params: expr
