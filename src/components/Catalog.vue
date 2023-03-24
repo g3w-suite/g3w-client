@@ -26,7 +26,10 @@
         <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
           <helpdiv message="catalog_items.helptext"></helpdiv>
           <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
-            <changemapthemes :key="project.state.gid" :map_themes="project.state.map_themes" @change-map-theme="changeMapTheme"></changemapthemes>
+            <change-map-themes-component
+              :key="project.state.gid"
+              :map_themes="project.state.map_themes"
+              @change-map-theme="changeMapTheme"/>
           </div>
           <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees" :key="_layerstree.storeid">
             <tristate-tree
@@ -73,7 +76,9 @@
         </layerslegend>
       </div>
     </div>
-    <cataloglayercontextmenu :external="state.external"/>
+    <catalog-layer-context-menu :external="state.external"/>
+    <catalog-project-context-menu/>
+
   </div>
 </template>
 
@@ -82,6 +87,7 @@ import { MAP_SETTINGS } from 'app/constant';
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 import ChangeMapThemesComponent from 'components/CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu from 'components/CatalogLayerContextMenu.vue';
+import CatalogProjectContextMenu from 'components/CatalogProjectContextMenu.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ApplicationService from 'services/application';
 import ControlsRegistry from 'store/map-controls';
@@ -103,8 +109,9 @@ export default {
     }
   },
   components: {
-    'changemapthemes': ChangeMapThemesComponent,
-    'cataloglayercontextmenu' : CatalogLayerContextMenu
+    ChangeMapThemesComponent,
+    CatalogLayerContextMenu,
+    CatalogProjectContextMenu,
   },
   computed: {
     //show or not group toolbar

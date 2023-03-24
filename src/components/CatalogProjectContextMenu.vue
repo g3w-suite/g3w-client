@@ -5,17 +5,17 @@
 
 <template>
 
-  <ul v-if="layerMenu.show"
+  <ul v-if="menu.show"
     id="project-context-menu"
     ref="project-context-menu"
     v-click-outside-context-menu="closeLayerMenu"
     tabindex="-1"
-    :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }"
+    :style="{top: menu.top + 'px', left: menu.left + 'px' }"
   >
 
     <!-- Item Title -->
     <li class="title">
-      <div>{{ projectMenu.title}}</div>
+      <div>{{ menu.title}}</div>
     </li>
 
   </ul>
@@ -23,6 +23,7 @@
 
 <script>
   import ProjectsRegistry from 'store/projects';
+  import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 
   const { t } = require('core/i18n/i18n.service');
 
@@ -40,13 +41,12 @@
     },
     data(){
       return {
-        projectMenu: {
+        menu: {
           title: ProjectsRegistry.getCurrentProject().getName(),
           show: false,
           top:0,
           left:0,
-          tooltip: false,
-          //metadataInfo
+          //layers
           layers: {
             show: false,
             top:0,
@@ -57,28 +57,23 @@
     },
     methods: {
       _hideMenu() {
-        this.projectMenu.show = false;
-        this.projectMenu.styles = false;
+        this.menu.show = false;
       },
-      closeLayerMenu(menu={}) {
+      closeLayerMenu() {
         this._hideMenu();
-        this.showColorMenu(false);
-        menu.show = false;
       },
       showAdminLayers(){
-
+        console.log('qui')
       }
-
     },
     created() {
       CatalogEventHub.$on('show-project-context-menu', async (evt) => {
         this._hideMenu();
         await this.$nextTick();
-        this.projectMenu.left = evt.x;
-        this.projectMenu.name = layerstree.name;
-        this.projectMenu.show = true;
+        this.menu.left = evt.x;
+        this.menu.show = true;
         await this.$nextTick();
-        this.projectMenu.top = $(evt.target).offset().top - $(this.$refs['project-context-menu']).height() + ($(evt.target).height()/ 2);
+        this.menu.top = $(evt.target).offset().top - $(this.$refs['project-context-menu']).height() + ($(evt.target).height()/ 2);
       });
     }
   };

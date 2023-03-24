@@ -647,7 +647,7 @@
       }
     },
     created() {
-      CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
+      CatalogEventHub.$on('show-layer-context-menu', async (layerstree, evt) => {
         this._hideMenu();
         await this.$nextTick();
         this.layerMenu.left = evt.x;
@@ -659,6 +659,7 @@
         this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
         $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
       });
+      CatalogEventHub.$on('hide-layer-context-menu', this._hideMenu)
     }
   };
 </script>

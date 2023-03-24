@@ -7,7 +7,7 @@
 
   <li
     class="tree-item"
-    @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
+    @contextmenu.prevent.stop="showContextMenu"
     @click.stop="onTreeItemClick"
     :style="{
       marginLeft: !isGroup ? '5px' : '0'
@@ -534,14 +534,24 @@ export default {
       GUI.getService('map').removeExternalLayer(name, wms);
     },
 
-    showLayerMenu(layerstree, evt) {
+    /**
+     * @since 3.8.0
+     * @param layerstree
+     * @param evt
+     */
+
+    showContextMenu(evt){
       if (
         !this.isGroup &&
         (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
       ) {
-        CatalogEventHub.$emit('showmenulayer', layerstree, evt);
+        CatalogEventHub.$emit('hide-project-context-menu');
+        CatalogEventHub.$emit('show-layer-context-menu', this.layerstree, evt);
+      } else if (this.isGroup && true === this.layerstree.root) {
+        CatalogEventHub.$emit('hide-layer-context-menu');
+        CatalogEventHub.$emit('show-project-context-menu', evt);
       }
-    }
+    },
 
   },
 
