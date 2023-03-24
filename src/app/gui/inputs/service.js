@@ -54,7 +54,7 @@ proto.setValue = function(value) {
 
   // check if default value is set
   const get_default_value = (
-    this.state.get_default_value && // ref: tablelayer.js #481
+    this.state.get_default_value && // ref: core/layers/tablelayer.js::getFieldsWithValues()
     undefined !== default_value &&
     null !== default_value
   );
