@@ -11,7 +11,7 @@ const IFrameRouterService = require('core/iframe/routerservice');
 const {splitContextAndMethod} = require('core/utils/utils');
 const GUI = require('gui/gui');
 
-function Routerservice() {
+function DataService() {
   //set deafult outputplace
   this.defaultoutputplaces = ['gui'];
   // set current outputplaces
@@ -146,4 +146,4 @@ function Routerservice() {
 
 }
 
-export default new Routerservice();
+export default new DataService();
