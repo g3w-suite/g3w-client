@@ -17,24 +17,23 @@ function ExpressionService() {
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    * 
-   * @param expr.qgis_layer_id layer id owner of the form data
-   * @param expr.layer_id      layer owner of the data
-   * @param expr.form_data
-   * @param expr.field_name    since 3.8.0
-   * @param expr.expression
-   * @param expr.formatter
-   * @param expr.parent 
+   * @param params.qgis_layer_id layer id owner of the form data
+   * @param params.layer_id      layer owner of the data
+   * @param params.form_data
+   * @param params.field_name    since 3.8.0
+   * @param params.expression
+   * @param params.formatter
+   * @param params.parent
    * 
    * @returns { Promise<void> }
    */
-  this.expression = async function(expr) {
-    expr = expr || {};
+  this.expression = async function(params= {}) {
     try {
       return this.handleResponse(
         // response
         await this.handleRequest({
-          url: `${this.project.getUrl('vector_data')}${expr.layer_id}/`,
-          params: expr
+          url: `${this.project.getUrl('vector_data')}${params.layer_id}/`,
+          params
         })
       );
     } catch(err) {
@@ -49,21 +48,20 @@ function ExpressionService() {
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    * 
-   * @param expr.layer_id
-   * @param expr.qgis_layer_id
-   * @param expr.form_data
-   * @param expr.field_name    since 3.8.0
-   * @param expr.expression
-   * @param expr.formatter
-   * @param expr.parent
+   * @param params.layer_id
+   * @param params.qgis_layer_id
+   * @param params.form_data
+   * @param params.field_name    since 3.8.0
+   * @param params.expression
+   * @param params.formatter
+   * @param params.parent
    * 
    * @returns { Promise<void> }
    */
-   this.expression_eval = function(expr) {
-    expr = expr || {};
+   this.expression_eval = function(params={}) {
     return this.handleRequest({
       url: this.project.getUrl('expression_eval'),
-      params: expr
+      params
     });
   };
 
