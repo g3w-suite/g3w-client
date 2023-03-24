@@ -197,65 +197,91 @@ proto.evaluateFilterExpressionFields = function(input={}) {
 };
 
 /**
- * Method to handle expression on
- * @param fields
+ * Handle a field that has a `filter_expression` value object
+ * 
+ * @since 3.8.0
  */
-proto.handleFieldsWithExpression = function(fields=[]){
-  fields.forEach(field => {
-    const {options={}} = field.input;
+proto._handleFieldWithFilterExpression = function(field, filter_expression) {
+  if (filter_expression) {
+    const {
+      referencing_fields = [],
+      referenced_columns = []
+    } = filter_expression;
+    const dependency_fields = new Set();
+
+    // TODO: add description
+    [
+      ...referenced_columns,
+      ...referencing_fields
+    ].forEach(dependency_field => dependency_fields.add(dependency_field));
+
+    dependency_fields.forEach(dependency_field => {
+      // TODO: shorten variable name
+      if (undefined === this.filter_expression_fields_dependencies[dependency_field]) {
+        this.filter_expression_fields_dependencies[dependency_field] = [];
+      }
+      this.filter_expression_fields_dependencies[dependency_field].push(field.name);
+    });
+  }
+};
+
+/**
+ * Handle a field that has a `default_value` object and check if `apply_on_update` only
+ * 
+ * @since 3.8.0
+ */
+proto._handleFieldWithFilterExpression = function(field, default_expression) {
+  if (default_expression) {
+    const {
+      referencing_fields = [],
+      referenced_columns = [],
+      apply_on_update = false,
+    } = default_expression;
+
     /**
-     * Case of a field that has a filter_expression value object
+     * In case on apply_on_update true always listen dependencies change
+     * otherwise only for new Feature
      */
-    if (options.filter_expression) {
-      const filter_expression_dependency_fields = new Set();
-      const {referencing_fields=[], referenced_columns=[]} = options.filter_expression;
-      [...referenced_columns, ...referencing_fields].forEach(dependency_field => filter_expression_dependency_fields.add(dependency_field))
-      filter_expression_dependency_fields.forEach(dependency_field => {
-        if (this.filter_expression_fields_dependencies[dependency_field] === undefined)
-          this.filter_expression_fields_dependencies[dependency_field] = [];
-        this.filter_expression_fields_dependencies[dependency_field].push(field.name);
+    if (apply_on_update || this.state.isnew) {
+      const default_expression_dependency_fields = new Set();
+
+      [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
+      default_expression_dependency_fields.forEach(dependency_field => {
+        if (this.default_expression_fields_dependencies[dependency_field] === undefined)
+          this.default_expression_fields_dependencies[dependency_field] = [];
+        this.default_expression_fields_dependencies[dependency_field].push(field.name);
       });
-    }
-    /**
-     * Case of a field that has a default_value object and check if apply_on_update only
-     */
-    if (options.default_expression) {
-      const {referencing_fields=[], referenced_columns=[], apply_on_update=false} = options.default_expression;
 
       /**
-       * In case on apply_on_update true always listen dependencies change
-       * otherwise only for new Feature
+       * @since 3.8.0 always call if a field has a default_expression set in update or is a new feature
        */
-      if (apply_on_update || this.state.isnew) {
-        const default_expression_dependency_fields = new Set();
-
-        [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
-        default_expression_dependency_fields.forEach(dependency_field => {
-          if (this.default_expression_fields_dependencies[dependency_field] === undefined)
-            this.default_expression_fields_dependencies[dependency_field] = [];
-          this.default_expression_fields_dependencies[dependency_field].push(field.name);
+      if (this.state.isnew || (apply_on_update && 0 === default_expression_dependency_fields.size)) {
+        inputService.handleDefaultExpressionFormInput({
+          field,
+          feature: this.feature,
+          qgs_layer_id: this.layer.getId(),
+          parentData: this.parentData
         });
-
-        /**
-         * @since 3.8.0 always call if a field has a default_expression set in update or is a new feature
-         */
-        if (this.state.isnew || (apply_on_update && 0 === default_expression_dependency_fields.size)) {
-          inputService.handleDefaultExpressionFormInput({
-            field,
-            feature: this.feature,
-            qgs_layer_id: this.layer.getId(),
-            parentData: this.parentData
-          });
-        }
       }
     }
-  });
+  }
+};
 
+/**
+ * Handle fields with associated expression
+ * 
+ * @param {Array} [fields = []]
+ */
+proto.handleFieldsWithExpression = function(fields=[]) {
+  // TODO: add description
+  fields.forEach(field => {
+    const { options = {} } = field.input;
+    this._handleFieldWithFilterExpression(field, options.filter_expression);
+    this._handleFieldWithDefaultExpression(field, options.default_expression);
+  });
   // start to evaluate filter expression field
-  Object.keys(this.filter_expression_fields_dependencies).forEach(name =>{
-    this.evaluateFilterExpressionFields({
-      name
-    });
+  Object.keys(this.filter_expression_fields_dependencies).forEach(name => {
+    this.evaluateFilterExpressionFields({ name });
   });
 };
 
