@@ -7,88 +7,90 @@ const BaseService = require('core/data/service');
 const {XHR} = require('core/utils/utils');
 const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
 
-function ExpressionService(){
-  base(this);
-  /**
-   *
-   * @param qgis_layer_id
-   * @param form_data
-   * @param expression
-   * @param layer_id layer owner of the data
-   * @param qgs_layer_id layer id owner of the form data
-   * @returns {Promise<void>}
-   * POST only: accepts
+function ExpressionService() {
 
+  base(this);
+
+  /**
+   * POST only: accepts
+   *
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
+   *
+   * @param expr.qgis_layer_id layer id owner of the form data
+   * @param expr.layer_id      layer owner of the data
+   * @param expr.form_data
+   * @param expr.field_name    since 3.8.0
+   * @param expr.expression
+   * @param expr.formatter     default = 1
+   * @param expr.parent
+   *
+   * @returns { Promise<void> }
    */
-  this.expression = async function({qgs_layer_id, layer_id, form_data, expression, formatter=1, parent}){
-    const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
+  this.expression = async function(expr) {
+    expr = expr || {};
+    expr.formatter = expr.formatter || 1;
     try {
-      const response = await this.handleRequest({
-        url,
-        params: {
-          layer_id,
-          qgs_layer_id,
-          form_data,
-          expression,
-          formatter,
-          parent
-        }
-      });
-      return this.handleResponse(response);
+      return this.handleResponse(
+        // response
+        await this.handleRequest({
+          url: `${this.project.getUrl('vector_data')}${expr.layer_id}/`,
+          params: expr
+        })
+      );
     } catch(err) {
       return Promise.reject(err);
     }
-  };
-  /**
-   *
-   * @param qgis_layer_id
-   * @param form_data
-   * @param expression
-   * @returns {Promise<void>}
-   * POST only method to return QGIS Expressions evaluated in Project an optional Layer/Form context
-   *
-   *  Mandatory JSON body: expression
-    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
-   */
-   this.expression_eval = function({layer_id, qgs_layer_id, form_data, expression, formatter=1, parent}={}){
-     const url = this.project.getUrl('expression_eval');
-     return this.handleRequest({
-       url,
-       params: {
-         layer_id,
-         qgs_layer_id,
-         form_data,
-         expression,
-         formatter,
-         parent,
-       }
-     });
+
   };
 
   /**
-   * Common method to handel request
-    * @param url
-   * @param params
-   * @contentType
-   * @returns {Promise<*>}
+   * POST only method to return QGIS Expressions evaluated in Project an optional Layer/Form context
+   *
+   * Mandatory JSON body: expression
+   * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
+   *
+   * @param expr.layer_id
+   * @param expr.qgis_layer_id
+   * @param expr.form_data
+   * @param expr.field_name    since 3.8.0
+   * @param expr.expression
+   * @param expr.formatter     default = 1
+   * @param expr.parent
+   *
+   * @returns { Promise<void> }
    */
-  this.handleRequest = function({url, params={}, contentType='application/json'}={}){
-    return XHR.post({
-      url,
-      contentType,
-      data: JSON.stringify(params)
+   this.expression_eval = function(expr) {
+    expr = expr || {};
+    expr.formatter = expr.formatter || 1;
+    return this.handleRequest({
+      url: this.project.getUrl('expression_eval'),
+      params: expr
     });
   };
 
-  /***
-   * Common method to handle response
+  /**
+   * Handle server request
+   *
+   * @param url
+   * @param params
+   * @param contentType
+
+   * @returns { Promise<*> }
+   */
+  this.handleRequest = function({ url, params={}, contentType='application/json' } = {}) {
+    return XHR.post({ url, contentType, data: JSON.stringify(params) });
+  };
+
+  /**
+   * Handle server response
+   *
    * @param response
    */
-  this.handleResponse = function(response={}){
+  this.handleResponse = function(response = {}) {
     return getFeaturesFromResponseVectorApi(response);
   };
+
 }
 
 inherit(ExpressionService, BaseService);
