@@ -245,7 +245,8 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
 
     const dependency_fields = new Set();
 
-    // TODO: add description
+    // Get array of dependency fields on default expression if exist
+    // add each of it in a Set (unique array items)
     [
       ...referenced_columns,
       ...referencing_fields
@@ -260,7 +261,7 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
     });
 
     // Call input service if a field has a default_expression set in update or is a new feature
-    if (this.state.isnew || (apply_on_update && 0 === default_expression_dependency_fields.size)) {
+    if (this.state.isnew || (apply_on_update && 0 === dependency_fields.size)) {
       inputService.handleDefaultExpressionFormInput({
         field,
         feature: this.feature,
