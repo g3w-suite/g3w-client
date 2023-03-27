@@ -7,31 +7,47 @@
   <!-- item template -->
   <div id="catalog" @contextmenu.prevent.stop="" class="tabbable-panel catalog">
     <div class="tabbable-line">
+
+      <!-- TAB MENU (header) -->
       <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click.capture="delegationClickEventTab">
-        <li v-if="hasLayers" role="presentation"  :class="{ active: activeTab === 'layers' && 'hasLayers' }">
+        <li v-if="hasLayers" role="presentation"  :class="{ active: activeTab  && 'hasLayers' }">
           <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
         </li>
-        <li v-if="state.external.wms.length" role="presentation"  :class="{ active: activeTab === 'externalwms' }">
+        <li v-if="state.external.wms.length" role="presentation" :class="{ active: ('externalwms' === activeTab) }">
           <a href="#externalwms" aria-controls="externalwms" role="tab" data-toggle="tab" data-i18n="externalwms" v-t="'externalwms'"></a>
         </li>
-        <li v-if="hasBaseLayers" role="presentation" :class="{ active: activeTab === 'baselayers' }" >
+        <li v-if="hasBaseLayers" role="presentation" :class="{ active: ('baselayers' === activeTab) }" >
           <a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a>
         </li>
-        <li v-if="legend.place ===  'tab' && showlegend" role="presentation" :class="{ active: activeTab === 'legend' }">
+        <li v-if="'tab' === legend.place && showlegend" role="presentation" :class="{ active: ('legend' === activeTab) }">
           <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a>
         </li>
       </ul>
+
+      <!-- TAB MENU (content) -->
       <div class="tab-content catalog-tab-content">
-        <bar-loader :loading="loading"></bar-loader>
-        <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
-          <helpdiv message="catalog_items.helptext"></helpdiv>
+
+        <bar-loader :loading="loading" />
+
+        <div id="layers" role="tabpanel" class="tab-pane" :class="{ active: ('layers' === activeTab  && 'hasLayers') }">
+
+          <helpdiv message="catalog_items.helptext" />
+
+          <!-- TOOLBAR -->
           <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
             <change-map-themes-component
               :key="project.state.gid"
               :map_themes="project.state.map_themes"
-              @change-map-theme="changeMapTheme"/>
+              @change-map-theme="changeMapTheme"
+            />
           </div>
-          <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees" :key="_layerstree.storeid">
+
+          <!-- LAYER TREES -->
+          <ul
+            v-for="_layerstree in state.layerstrees"
+            :key="_layerstree.storeid"
+            class="tree-root root project-root"
+          >
             <tristate-tree
               v-for="layerstree in _layerstree.tree"
               :key="layerstree.id"
@@ -45,35 +61,80 @@
               :storeid="_layerstree.storeid"
             />
           </ul>
-          <ul class="g3w-external_layers-group" v-if="state.external.vector.length">
-            <tristate-tree :externallayers="state.external.vector" :layerstree="layerstree" class="item" v-for="layerstree in state.external.vector" :key="layerstree.id">
-            </tristate-tree>
+
+          <!-- EXTERNAL VECTOR LAYER -->
+          <ul v-if="state.external.vector.length" class="g3w-external_layers-group">
+            <tristate-tree
+              v-for="layerstree in state.external.vector"
+              :key="layerstree.id"
+              :externallayers="state.external.vector"
+              :layerstree="layerstree"
+              class="item"
+            />
           </ul>
+
+          <!-- GROUP OF LAYERS -->
           <ul v-for="layersgroup in state.layersgroups">
-            <layers-group :layersgroup="layersgroup"></layers-group>
+            <layers-group :layersgroup="layersgroup" />
           </ul>
+
         </div>
-        <div role="tabpanel" class="tab-pane" v-if="state.external.wms.length" :class="{ active: activeTab === 'externalwms' }" id="externalwms">
+
+        <!-- EXTERNAL WMS LAYER -->
+        <div v-if="state.external.wms.length" id="externalwms" role="tabpanel" class="tab-pane" :class="{ active: ('externalwms' === activeTab) }">
           <ul class="g3w-external_wms_layers-group">
-            <tristate-tree :externallayers="state.external.wms" :layerstree="layerstree" class="item" v-for="layerstree in state.external.wms" :key="layerstree.id">
-            </tristate-tree>
+            <tristate-tree
+              v-for="layerstree in state.external.wms"
+              :key="layerstree.id"
+              :externallayers="state.external.wms"
+              :layerstree="layerstree"
+              class="item"
+            />
           </ul>
         </div>
-        <div class="tab-pane baselayers" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }" id="baselayers">
-          <ul id="baselayers-content" :class="{'mobile': isMobile()}" :style="{gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))`}">
-            <li v-if="!baselayer.fixed" v-for="baselayer in baselayers" :key="baselayer.title">
-              <img :src="getSrcBaseLayerImage(baselayer)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail baselayer" :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}" >
+
+        <!-- BASE LAYERS -->
+        <div v-if="hasBaseLayers" id="baselayers" role="tabpanel" class="tab-pane baselayers" :class="{ active: ('baselayers' === activeTab || !hasLayers) }">
+          <ul
+            id="baselayers-content"
+            :class="{'mobile': isMobile()}"
+            :style="{ gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))` }"
+          >
+            <li
+              v-if="!baselayer.fixed"
+              v-for="baselayer in baselayers"
+              :key="baselayer.title"
+            >
+              <img
+                :src="getSrcBaseLayerImage(baselayer)"
+                @click.stop="setBaseLayer(baselayer.id)"
+                class="img-responsive img-thumbnail baselayer"
+                :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}"
+              >
               <div class="baseselayer-text text-center">{{ baselayer.title }}</div>
             </li>
             <li @click.stop="setBaseLayer(null)">
-              <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail baselayer" :style="{opacity: currentBaseLayer === null ? 1 : 0.5}">
+              <img
+                :src="getSrcBaseLayerImage(null)"
+                class="img-responsive img-thumbnail baselayer"
+                :style="{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
+              >
               <div class="baseselayer-text text-center" v-t="'nobaselayer'"></div>
             </li>
           </ul>
         </div>
-        <layerslegend v-if="legend.place === 'tab'" @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'"
-          v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id">
-        </layerslegend>
+
+        <!-- TODO: add description -->
+        <layerslegend
+          v-if="'tab' === legend.place"
+          v-for="_layerstree in state.layerstrees"
+          :key="_layerstree.id"
+          :legend="legend"
+          :active="'legend' === activeTab"
+          :layerstree="_layerstree"
+          @showlegend="showLegend"
+        />
+
       </div>
     </div>
     
