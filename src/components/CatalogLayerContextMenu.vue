@@ -11,7 +11,7 @@
     class="catalog-context-menu"
     v-click-outside-context-menu="closeLayerMenu"
     tabindex="-1"
-    :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }"
+    :style="{ top: layerMenu.top + 'px', left: layerMenu.left + 'px' }"
   >
 
     <!-- Item Title -->
@@ -224,12 +224,14 @@
 
   export default {
     name: 'Cataloglayermenu',
+
     props: {
       external: {
         type: Object
       }
     },
-    data(){
+
+    data() {
       return {
         layerMenu: {
           show: false,
@@ -271,21 +273,20 @@
         }
       }
     },
+
     components: {
       'chrome-picker':        ChromeComponent,
       'layer-opacity-picker': LayerOpacityPicker,
     },
+
     methods: {
 
       /**
        * @TODO find out a  a better way to handle this, eg:
        *       using only the `showSubMenuContext()` method
        */
-      addLayerMenuItem(item={}){
-        this.layerMenu = ({
-          ...this.layerMenu,
-          ...item
-        });
+      addLayerMenuItem(item = {}) {
+        this.layerMenu = ({ ...this.layerMenu, ...item });
       },
 
       _hideMenu() {
@@ -299,14 +300,17 @@
         this.layerMenu.loading.xls = false;
         this.layerMenu.loading.geotiff = false;
       },
+
       closeLayerMenu(menu={}) {
         this._hideMenu();
         this.showColorMenu(false);
         menu.show = false;
       },
-      onbeforeDestroyChangeColor(){
+
+      onbeforeDestroyChangeColor() {
         this.$refs.color_picker.$off();
       },
+
       onChangeColor(val) {
         const mapService = GUI.getService('map');
         this.layerMenu.layer.color = val;
@@ -315,46 +319,55 @@
         style._g3w_options.color = val;
         layer.setStyle(style);
       },
+
       canShowWmsUrl(layerId) {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         return originalLayer ? (!!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl())) : false;
       },
-      canShowWfsUrl(layerId){
+
+      canShowWfsUrl(layerId) {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         return originalLayer && !originalLayer.isType('table') && originalLayer.isWfsActive();
       },
+
       canDownloadXls(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isXlsDownlodable(): false;
+        return layer ? layer.isXlsDownlodable() : false;
       },
+
       canDownloadGpx(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isGpxDownlodable(): false;
+        return layer ? layer.isGpxDownlodable() : false;
       },
+
       canDownloadGpkg(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isGpkgDownlodable(): false;
+        return layer ? layer.isGpkgDownlodable() : false;
       },
-      canDownloadCsv(layerId){
+
+      canDownloadCsv(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isCsvDownlodable(): false;
+        return layer ? layer.isCsvDownlodable() : false;
       },
-      canDownloadGeoTIFF(layerId){
+
+      canDownloadGeoTIFF(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isGeoTIFFDownlodable(): false;
+        return layer ? layer.isGeoTIFFDownlodable() : false;
       },
+
       canDownloadShp(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isShpDownlodable(): false;
+        return layer ? layer.isShpDownlodable() : false;
       },
+
       getWmsUrl(layerId) {
-        const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return originalLayer.getCatalogWmsUrl();
+        return CatalogLayersStoresRegistry.getLayerById(layerId).getCatalogWmsUrl();
       },
+
       getWfsUrl(layerId) {
-        const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return originalLayer.getCatalogWfsUrl();
+        return CatalogLayersStoresRegistry.getLayerById(layerId).getCatalogWfsUrl();
       },
+
       copyUrl({evt, layerId, type}={}) {
         const url = this[`get${type}Url`](layerId);
         let ancorEement = document.createElement('a');
@@ -370,7 +383,8 @@
         ancorEement = null;
         setTimeout(()=>this._hideMenu(), 600);
       },
-      downloadGeoTIFF(layerId, map_extent=false){
+
+      downloadGeoTIFF(layerId, map_extent=false) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.geotiff = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -386,6 +400,7 @@
             this._hideMenu();
           })
       },
+
       downloadShp(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.shp = true;
@@ -398,6 +413,7 @@
             this._hideMenu();
           })
       },
+
       downloadCsv(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.csv = true;
@@ -410,6 +426,7 @@
             this._hideMenu();
           })
       },
+
       downloadXls(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.xls = true;
@@ -422,6 +439,7 @@
             this._hideMenu();
           })
       },
+
       downloadGpx(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.gpx = true;
@@ -434,6 +452,7 @@
             this._hideMenu();
           })
       },
+
       downloadGpkg(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.gpkg = true;
@@ -446,26 +465,21 @@
             this._hideMenu();
           })
       },
-      changeLayerMapPosition({position, layer}){
-        const mapService = GUI.getService('map');
+
+      changeLayerMapPosition({position, layer}) {
         const changed = layer.position !== position;
         if (changed) {
           layer.position = position;
-          mapService.changeLayerMapPosition({
-            id: layer.id,
-            position
-          });
-          changed && this._hideMenu();
+          GUI.getService('map').changeLayerMapPosition({ id: layer.id, position });
+          this._hideMenu();
         }
       },
-      setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}){
+
+      setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}) {
         this.layerMenu.layer.opacity = opacity;
-        const mapService = GUI.getService('map');
-        mapService.changeLayerOpacity({
-          id,
-          opacity
-        });
+        GUI.getService('map').changeLayerOpacity({ id, opacity });
       },
+
       /**
        * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
        *
@@ -494,9 +508,9 @@
         return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
       },
 
-      getGeometryType(layerId, external=false){
+      getGeometryType(layerId, external=false) {
         let geometryType;
-        if (external){
+        if (external) {
           const layer = this.external.vector.find(layer => layer.id === layerId);
           if (layer) geometryType = layer.geometryType;
         } else {
@@ -512,14 +526,14 @@
        * @param layer
        * @returns {Promise<void>}
        */
-      async downloadExternalShapefile(layer){
+      async downloadExternalShapefile(layer) {
         const EPSG4326 = 'EPSG:4326';
         this.layerMenu.loading.shp = true;
         const mapService = GUI.getService('map');
         const vectorLayer = mapService.getLayerByName(layer.name);
         const GeoJSONFormat = new ol.format.GeoJSON();
         let features = vectorLayer.getSource().getFeatures();
-        if (layer.crs !== EPSG4326){
+        if (layer.crs !== EPSG4326) {
           features = features.map(feature => {
             const clonefeature = feature.clone();
             clonefeature.getGeometry().transform(layer.crs, EPSG4326);
@@ -546,6 +560,7 @@
         this.layerMenu.loading.shp = false;
         this._hideMenu();
       },
+
       showAttributeTable(layerId) {
         this.layerMenu.loading.data_table = false;
         GUI.closeContent();
@@ -564,6 +579,7 @@
           title: layer.getName()
         });
       },
+
       startEditing() {
         let layer;
         const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
@@ -575,7 +591,8 @@
           }
         });
       },
-      setCurrentLayerStyle(index){
+
+      setCurrentLayerStyle(index) {
         let changed = false;
         this.layerMenu.layer.styles.forEach((style, idx) =>{
           if (idx === index) {
@@ -596,6 +613,7 @@
         }
         this.closeLayerMenu(this.layerMenu.stylesMenu);
       },
+
       /**
        * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
        */
@@ -617,6 +635,7 @@
         }
         menu.show = bool;
       },
+
       /**
        * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
        */
@@ -627,8 +646,11 @@
           evt
         });
       },
-      //showmetadatainfo
-      async showMetadataInfo(bool, evt){
+
+      /**
+       * Show metadata info
+       */
+      async showMetadataInfo(bool, evt) {
         if (bool) {
           const elem = $(evt.target);
           this.layerMenu.metadatainfoMenu.top = elem.offset().top;
@@ -637,6 +659,7 @@
         }
         this.layerMenu.metadatainfoMenu.show = bool;
       },
+
       showColorMenu(bool, evt) {
         if (bool) {
           const elem = $(evt.target);
@@ -645,10 +668,12 @@
           this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) / 2) - OFFSETMENU.left;
         }
         this.layerMenu.colorMenu.show = bool;
-      }
-    },
-    created() {
-      CatalogEventHub.$on('show-layer-context-menu', async (layerstree, evt) => {
+      },
+
+      /**
+       * @since 3.8.0
+       */
+      async onShowLayerContextMenu (layerstree, evt) {
         this._hideMenu();
         await this.$nextTick();
         this.layerMenu.left = evt.x;
@@ -659,9 +684,19 @@
         await this.$nextTick();
         this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
         $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
-      });
+      },
+
+    },
+
+    /**
+     * @listens CatalogEventHub~show-layer-context-menu
+     * @listens CatalogEventHub~hide-layer-context-menu
+     */
+    created() {
+      CatalogEventHub.$on('show-layer-context-menu', this.onShowLayerContextMenu );
       CatalogEventHub.$on('hide-layer-context-menu', this._hideMenu)
-    }
+    },
+
   };
 </script>
 <style scoped>
