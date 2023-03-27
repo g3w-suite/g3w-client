@@ -33,6 +33,8 @@
           </div>
           <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees" :key="_layerstree.storeid">
             <tristate-tree
+              v-for="layerstree in _layerstree.tree"
+              :key="layerstree.id"
               :highlightlayers="state.highlightlayers"
               :layerstree="layerstree"
               class="item"
@@ -40,10 +42,8 @@
               :root="true"
               :legendplace="legend.place"
               :parent_mutually_exclusive="false"
-              v-for="layerstree in _layerstree.tree"
               :storeid="_layerstree.storeid"
-              :key="layerstree.id">
-            </tristate-tree>
+            />
           </ul>
           <ul class="g3w-external_layers-group" v-if="state.external.vector.length">
             <tristate-tree :externallayers="state.external.vector" :layerstree="layerstree" class="item" v-for="layerstree in state.external.vector" :key="layerstree.id">
