@@ -10,7 +10,7 @@
 
       <!-- TAB MENU (header) -->
       <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click.capture="delegationClickEventTab">
-        <li v-if="hasLayers" role="presentation"  :class="{ active: activeTab  && 'hasLayers' }">
+        <li v-if="hasLayers" role="presentation"  :class="{ active: ('layers' === activeTab  && 'hasLayers') }">
           <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
         </li>
         <li v-if="state.external.wms.length" role="presentation" :class="{ active: ('externalwms' === activeTab) }">
