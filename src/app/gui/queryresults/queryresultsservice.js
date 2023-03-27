@@ -81,7 +81,13 @@ function QueryResultsService() {
       const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
       if ('Point' === feature.getGeometry().getType()) {
         return new ol.style.Style({
-          text: new ol.style.Text({ text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', fill, stroke })
+          text: new ol.style.Text({
+            text: '\uf3c5',
+            font: '900 3em "Font Awesome 5 Free"',
+            fill,
+            stroke,
+            offsetY : -15
+          }),
         });
       }
       return new ol.style.Style({ stroke });
