@@ -76,8 +76,10 @@
         </layerslegend>
       </div>
     </div>
-    <catalog-layer-context-menu :external="state.external"/>
-    <catalog-project-context-menu/>
+    
+    <catalog-layer-context-menu :external="state.external" />
+    
+    <catalog-project-context-menu />
 
   </div>
 </template>
@@ -96,6 +98,7 @@ import GUI from 'services/gui';
 const DEFAULT_ACTIVE_TAB = 'layers';
 
 export default {
+  
   data() {
     const legend = this.$options.legend;
     legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
@@ -108,44 +111,57 @@ export default {
       loading: false,
     }
   },
+
   components: {
     ChangeMapThemesComponent,
     CatalogLayerContextMenu,
     CatalogProjectContextMenu,
   },
+
   computed: {
-    //show or not group toolbar
-    showTocTools(){
-      const {map_themes=[]} = this.project.state;
-      const show = map_themes.length > 1;
-      return show;
+
+    /**
+     * @returns {boolean} whether to show group toolbar 
+     */
+    showTocTools() {
+      return (this.project.state.map_themes || []).length > 1;
     },
+  
     project() {
       return this.state.prstate.currentProject
     },
+
     title() {
       return this.project.state.name;
     },
+
     baselayers() {
       return this.project.state.baselayers;
     },
-    hasBaseLayers(){
+
+    hasBaseLayers() {
       return this.project.state.baselayers.length > 0;
     },
+
     hasLayers() {
       let layerstresslength = 0;
-      this.state.layerstrees.forEach(layerstree => layerstresslength+=layerstree.tree.length);
-      return this.state.external.vector.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
+      this.state.layerstrees.forEach(layerstree => layerstresslength += layerstree.tree.length);
+      return (this.state.external.vector.length > 0 || layerstresslength > 0 || this.state.layersgroups.length > 0);
     }
+
   },
+
   methods: {
-    //change view method
-    async changeMapTheme(map_theme){
+
+    /**
+     * Change view (aka. QGIS theme)
+     */
+    async changeMapTheme(map_theme) {
       GUI.closeContent();
       const changes = await this.$options.service.changeMapTheme(map_theme);
       const changeStyleLayersId = Object.keys(changes.layers).filter(layerId => {
         if (changes.layers[layerId].style) {
-          if (!changes.layers[layerId].visible){
+          if (!changes.layers[layerId].visible) {
             const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
             // clear categories
             layer.clearCategories();
@@ -162,17 +178,21 @@ export default {
           })
         });
     },
-    delegationClickEventTab(evt){
+
+    delegationClickEventTab(evt) {
      this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;
     },
+
     showLegend(bool) {
       this.showlegend = bool;
     },
+
     setBaseLayer(id) {
       this.currentBaseLayer = id;
       this.project.setBaseLayer(id);
       ApplicationService.setBaseLayerId(id);
     },
+
     getSrcBaseLayerImage(baseLayer) {
       const type = baseLayer && baseLayer.servertype || baseLayer;
       let image;
@@ -196,60 +216,49 @@ export default {
           image = 'nobaselayer.png';
       }
       return !customimage ? `${GUI.getResourcesUrl()}images/${image}`: image;
-    }
-  },
-  watch: {
-    // listen external wms change. If remove all layer nee to set active the project or default tab
-    'state.external.wms'(newlayers, oldlayers){
-      if (oldlayers && newlayers.length === 0){
-        this.activeTab = this.project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
-      }
     },
-    'state.prstate.currentProject': {
-      async handler(project, oldproject){
-        const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
-        this.loading = activeTab === 'baselayers';
-        await this.$nextTick();
-        setTimeout(()=>{
-          this.loading = false;
-          this.activeTab = activeTab;
-        }, activeTab === 'baselayers' ? 500 : 0)
-      },
-      immediate: false
-    }
-  },
-  created() {
-    this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
 
     /**
      * @TODO add description
+     * 
+     * @since 3.8.0
      */
-    CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
+    onUnSelectionLayer(storeid, layerstree) {
       if (layerstree.external) {
         GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
       } else {
         CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).clearSelectionFids();
       }
-    });
+    },
 
     /**
      * @TODO add description
+     * 
+     * @since 3.8.0
      */
-    CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {
+    async onActiveFilterTokenLayer(storeid, layerstree) {
       layerstree.filter.active = await CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).toggleFilterToken();
-    });
+    },
 
     /**
      * Handle visibilty change on legend item
+     * 
+     * @fires MapService~cataloglayervisible
+     * 
+     * @since 3.8.0
      */
-    CatalogEventHub.$on('treenodevisible', layer => {
+    onTreeNodeVisible(layer) {
       GUI.getService('map').emit('cataloglayervisible', layer);
-    });
+    },
 
     /**
      * Handle legend item select (single mouse click ?)
+     * 
+     * @fires MapService~cataloglayerselected
+     * 
+     * @since 3.8.0
      */
-    CatalogEventHub.$on('treenodeselected', function (storeid, node) {
+    onTreeNodeSelected(storeid, node) {
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       // emit signal of select layer from catalog
       if (!layer.isSelected()) {
@@ -260,12 +269,14 @@ export default {
         // emit signal of select layer from catalog
         GUI.getService('map').emit('cataloglayerselected', layer);
       });
-    });
+    },
 
     /**
      * Handle temporary external layer add
+     * 
+     * @since 3.8.0
      */
-    CatalogEventHub.$on('treenodeexternalselected', layer => {
+    onTreeNodeExternalSelected(layer) {
       GUI
         .getService('catalog')
         .setSelectedExternalLayer({ layer, type: 'vector', selected: !layer.selected})
@@ -275,23 +286,74 @@ export default {
             CatalogLayersStoresRegistry.getLayersStores().forEach(layer => { layer.selectLayer(null, false); });
           }
         });
-    });
-
+    },
 
     /**
      * @TODO add description
+     * 
+     * @listens ol.interaction~propertychange
+     * 
+     * @since 3.8.0
      */
-    ControlsRegistry.onafter('registerControl', (id, control) => {
+    onRegisterControl(id, control) {
       if ('querybbox' === id) {
         control.getInteraction().on('propertychange', evt => {
           if ('active' === evt.key) this.state.highlightlayers = !evt.oldValue;
         })
       }
-    });
+    },
 
   },
-  beforeMount(){
+
+  watch: {
+
+    /**
+     * Listen external WMS change. If remove all layer need to set active the project or default tab 
+     */
+    'state.external.wms'(newlayers, oldlayers) {
+      if (oldlayers && 0 === newlayers.length) {
+        this.activeTab = this.project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+      }
+    },
+  
+    'state.prstate.currentProject': {
+      async handler(project, oldproject) {
+        const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+        this.loading = activeTab === 'baselayers';
+        await this.$nextTick();
+        setTimeout(()=>{
+          this.loading = false;
+          this.activeTab = activeTab;
+        }, activeTab === 'baselayers' ? 500 : 0)
+      },
+      immediate: false
+    },
+
+  },
+
+  /**
+   * @listens CatalogEventHub~unselectionlayer
+   * @listens CatalogEventHub~activefiltertokenlayer
+   * @listens CatalogEventHub~treenodevisible
+   * @listens CatalogEventHub~treenodeselected
+   * @listens CatalogEventHub~treenodeexternalselected
+   * @listens ControlsRegistry~registerControl
+   */
+  created() {
+    this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
+
+    CatalogEventHub.$on('unselectionlayer', this.onUnSelectionLayer);
+    CatalogEventHub.$on('activefiltertokenlayer', this.onActiveFilterTokenLayer);
+    CatalogEventHub.$on('treenodevisible', this.onTreeNodeVisible);
+    CatalogEventHub.$on('treenodeselected', this.onTreeNodeSelected);
+    CatalogEventHub.$on('treenodeexternalselected', this.onTreeNodeExternalSelected);
+    ControlsRegistry.onafter('registerControl', this.onRegisterControl);
+
+  },
+
+  beforeMount() {
     this.currentBaseLayer = this.project.state.initbaselayer;
-  }
+  },
+
 };
 </script>
