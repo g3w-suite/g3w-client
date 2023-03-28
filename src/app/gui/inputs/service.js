@@ -145,8 +145,12 @@ proto.setUpdate = function(){
   const {value, _value} = this.state;
   if (this.state.input.type === 'media' && toRawType(value) !== 'Object' && toRawType(_value) !== 'Object') {
     this.state.update = value.value != _value.value;
+  } else if (this.state.input.type === "datetimepicker") {
+    //check
+    this.state.update = (null !== value ? value.toUpperCase(): value) != (_value ? _value.toUpperCase(): _value);
+  } else {
+    this.state.update = value != _value;
   }
-  else this.state.update = value != _value;
 };
 
 module.exports = Service;
