@@ -9,7 +9,7 @@
     id="project-context-menu"
     ref="project-context-menu"
     class="catalog-context-menu"
-    v-click-outside-context-menu="closeLayerMenu"
+    v-click-outside="closeLayerMenu"
     tabindex="-1"
     :style="{
       top: menu.top + 'px',
