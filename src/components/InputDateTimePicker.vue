@@ -138,10 +138,13 @@ export default {
     });
 
     $(`#${this.iddatetimepicker}`)
-      .on("dp.change", evt => {
-        const newDate = $('#'+this.idinputdatetimepiker).val();
-        this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
-        this.widgetChanged();
+      .on("dp.change", () => {
+        const newDate = $(`#${this.idinputdatetimepiker}`).val();
+        const value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
+        if (this.state.value !== value) {
+          this.widgetChanged();
+        }
+        this.state.value = value;
       });
 
     $(`#${this.iddatetimepicker}`)
