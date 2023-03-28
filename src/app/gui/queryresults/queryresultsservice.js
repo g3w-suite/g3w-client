@@ -630,7 +630,7 @@ proto.setActionsForLayers = function(layers, options = { add: false }) {
 
     // Lookup for layer geometry.
     if (layer.hasgeometry) {
-      this._setActionGoToGeometry(layer.id);
+      this._setActionGoToGeometry(layer);
     }
 
     // Lookup for layer relations.
