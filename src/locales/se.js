@@ -29,6 +29,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Välj Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Rumsliga bokmärken",
+        helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
+        input: {
+          name: "Namn"
+        },
+        sections: {
+          project:{
+            title: "Projektbokmärken"
+          },
+          user: {
+            title: "Användarbokmärken"
+          }
+        }
+      },
       search: {
         all: 'ALLA',
         no_results: "Inga resultat",
@@ -251,12 +271,15 @@ export default {
           help: {
             title: 'Ohje - Förfrågan med polygon',
             message:`
-                <ul >
+                <ul>
                   <li>Välj polygonnivå i listan.</li>
                   <li>Kontrollera att nivån är synlig.</li>
                   <li>Välj egenskap på önskad nivå.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Fråga efter ritpolygon"
         },
         querybybbox: {
           tooltip: 'BBox-förfrågan som riktar sig till en nivå',
@@ -487,7 +510,8 @@ export default {
         open_attribute_table: "Öppna attributtabellen",
         show_metadata: "Metadata",
         styles: "Stilar",
-        vector_color_menu: "Ställ in/ändra färg"
+        vector_color_menu: "Ställ in/ändra färg",
+        layer_opacity: "Opacitet"
       }
     },
     dataTable: {

@@ -90,7 +90,11 @@ function Layer(config={}, options={}) {
       pageLength: null
     },
     visible: config.visible || false,
-    tochighlightable: false
+    tochighlightable: false,
+    /**
+     * @since 3.8.0
+     */
+    featurecount: config.featurecount
   };
 
   // add selectionFids
@@ -1105,6 +1109,13 @@ proto.isVector = function() {
 
 proto.isTable = function(){
   return this.getType() === Layer.LayerTypes.TABLE;
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.getFeatureCount = function(){
+  return this.state.featurecount;
 };
 
 /// LAYER PROPERTIES

@@ -5,6 +5,7 @@
 import G3W_CONSTANT from 'constant';
 
 import ApplicationState from 'store/application-state';
+import ApplicationService from 'services/application';
 
 /**
  * Single File Components
@@ -31,7 +32,6 @@ import RelationsService from 'services/relations';
 import TaskService from 'services/tasks';
 import WorkflowsStack from 'services/workflows';
 import ApiService from 'services/api';
-import ApplicationService from 'services/application';
 import RouterService from 'services/router';
 
 import GUI from 'services/gui';
@@ -260,6 +260,22 @@ module.exports = {
     controls: {},
     utils: g3wolutils
   },
+
+  // G3W-SUITE debug info
+  info: () => {
+    $script(
+      'https://unpkg.com/platform@1.3.6/platform.js',
+      () => {
+        window.console.info(`
+[g3wsdk.info]\n
+- g3w-admin: __${initConfig.version}__
+- g3-client: __${G3W_CONSTANT.APP_VERSION}__
+- browser: __${platform.name} ${platform.version}__
+- operating system: __${platform.os.toString()}__
+`.trim());
+      });
+  },
+
   // G3W-CLIENT version
   version: G3W_CONSTANT.APP_VERSION
 };
