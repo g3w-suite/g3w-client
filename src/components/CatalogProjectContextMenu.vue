@@ -1,6 +1,6 @@
 <!--
   @file
-  @since v3.7.0
+  @since v3.8.0
 -->
 
 <template>
@@ -11,7 +11,10 @@
     class="catalog-context-menu"
     v-click-outside-context-menu="closeLayerMenu"
     tabindex="-1"
-    :style="{top: menu.top + 'px', left: menu.left + 'px' }"
+    :style="{
+      top: menu.top + 'px',
+      left: menu.left + 'px'
+    }"
   >
 
     <!-- Item Title -->
@@ -22,7 +25,7 @@
     <!-- TODO add item description -->
     <li>
       <div style="display: flex; justify-content: space-between; align-items: center">
-        <span>Layers</span>
+        <span>Layers (NOT YET IMPLEMENTED)</span>
       </div>
     </li>
 
@@ -33,21 +36,23 @@
   import ProjectsRegistry from 'store/projects';
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 
-  const { t } = require('core/i18n/i18n.service');
+  // const { t } = require('core/i18n/i18n.service');
 
-  const OFFSETMENU = {
-    top: 50,
-    left: 15
-  };
+  // const OFFSETMENU = {
+  //   top: 50,
+  //   left: 15
+  // };
 
   export default {
     name: 'CatalogProjectmenu',
+
     props: {
       external: {
         type: Object
       }
     },
-    data(){
+
+    data() {
       return {
         menu: {
           title: ProjectsRegistry.getCurrentProject().getName(),
@@ -63,27 +68,38 @@
         }
       }
     },
+  
     methods: {
+
       _hideMenu() {
         this.menu.show = false;
       },
+
       closeLayerMenu() {
         this._hideMenu();
       },
-      showAdminLayers(){
+
+      showAdminLayers() {
         console.log('qui')
-      }
-    },
-    created() {
-      CatalogEventHub.$on('show-project-context-menu', async (evt) => {
+      },
+
+      async onShowProjectContextMenu(evt) {
         this._hideMenu();
         await this.$nextTick();
         this.menu.left = evt.x;
         this.menu.show = true;
         await this.$nextTick();
-        this.menu.top = $(evt.target).offset().top - $(this.$refs['project-context-menu']).height() + ($(evt.target).height()/ 2);
-      });
+        this.menu.top = $(evt.target).offset().top - $(this.$refs['project-context-menu']).height() + ($(evt.target).height() / 2);
+      },
 
+    },
+
+    /**
+     * @listens CatalogEventHub~show-project-context-menu
+     * @listens CatalogEventHub~hide-project-context-menu
+     */
+    created() {
+      CatalogEventHub.$on('show-project-context-menu', this.onShowProjectContextMenu);
       CatalogEventHub.$on('hide-project-context-menu', this._hideMenu);
     }
   };
