@@ -103,6 +103,7 @@ function FormService() {
     this.force.update = feature.isNew();
     this.filter_expression_fields_dependencies = {}; // expression fields dependencies from filter_expression
     this.default_expression_fields_dependencies = {};
+    this.default_expression_no_fields_dependencies = []; // since 3.8.0
     this.setFormFields(fields);
     if (this.layer && options.formStructure) {
       const formstructure = this.layer.getLayerEditingFormStructure(fields);
@@ -251,7 +252,14 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
       ...referenced_columns,
       ...referencing_fields
     ].forEach(dependency_field => dependency_fields.add(dependency_field));
-  
+
+    /**
+     * @since 3.8.0
+     */
+    if (0 === dependency_fields.size && (this.state.isnew || apply_on_update)) {
+      this.default_expression_no_fields_dependencies.push(field);
+    }
+
     dependency_fields.forEach(dependency_field => {
       // TODO: shorten variable name
       if (undefined === this.default_expression_fields_dependencies[dependency_field]) {
@@ -261,7 +269,7 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
     });
 
     // Call input service if a field has a default_expression set in update or is a new feature
-    if (this.state.isnew || (apply_on_update && 0 === dependency_fields.size)) {
+    if (this.state.isnew) {
       inputService.handleDefaultExpressionFormInput({
         field,
         feature: this.feature,
@@ -489,6 +497,27 @@ proto.clearAll = function() {
   this.eventBus.$off('set-loading-form');
   this.eventBus.$off('component-validation');
   this.eventBus.$off('disable-component');
+};
+
+/**
+ * @since 3.8.0
+ * @returns {Promise<void>}
+ * Method
+ */
+proto.saveDefaultExpressionFieldsNotDependencies = async function(){
+  const defaultExpressionPromises = [];
+  this.default_expression_no_fields_dependencies.forEach(field => {
+    defaultExpressionPromises.push(inputService.handleDefaultExpressionFormInput({
+      field,
+      feature: this.feature,
+      qgs_layer_id: this.layer.getId(),
+      parentData: this.parentData
+    }))
+  });
+
+  try {
+    await Promise.allSettled(defaultExpressionPromises);
+  } catch(err){}
 };
 
 module.exports = FormService;
