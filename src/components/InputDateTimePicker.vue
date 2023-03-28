@@ -79,12 +79,10 @@ export default {
       // check if current value (state.value) is not equal to current wiget datetimepicker
       //means is changed by others (default expression evaluation for example)
       if (value !== $(`#${this.idinputdatetimepiker}`).val()){
-        // check if value is not null
         const date = null !== value ? moment(value, this.datetimefieldformat).format(this.datetimedisplayformat) : value;
         await this.$nextTick();
         $(`#${this.idinputdatetimepiker}`).val(date);
       }
-      this.change();
     }
   },
 
