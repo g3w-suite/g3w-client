@@ -24,6 +24,26 @@ export default {
       message: "Position relativ zu den Layern im TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Template auswählen"
+        }
+      },
+      spatialbookmarks: {
+        title: "Räumliche Lesezeichen",
+        helptext: "Bewegen Sie sich auf der Kartenausdehnung, fügen Sie den Namen ein und klicken Sie auf Hinzufügen",
+        input: {
+          name: "Name"
+        },
+        sections: {
+          project:{
+            title: "Projekt-Lesezeichen"
+          },
+          user: {
+            title: "Benutzer-Lesezeichen"
+          }
+        }
+      },
       search: {
         all: 'ALLE',
         no_results: "Keine Ergebnisse",
@@ -253,6 +273,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Abfrage durch Polygon zeichnen"
+        },
         querybybbox: {
           tooltip: 'BBox Layer abfragen',
           nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
@@ -481,7 +504,8 @@ export default {
         open_attribute_table: "Attributtabelle öffnen",
         show_metadata: "Metadaten",
         styles: 'Stile',
-        vector_color_menu:"Farbe einstellen/ändern"
+        vector_color_menu:"Farbe einstellen/ändern",
+        layer_opacity: "Opazität"
       }
     },
     dataTable: {

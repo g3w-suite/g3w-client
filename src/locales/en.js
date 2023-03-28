@@ -24,6 +24,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Select Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Spatial Bookmarks",
+        helptext: "Move on map extent, insert name and click Add",
+        input: {
+          name: "Name"
+        },
+        sections: {
+          project:{
+            title: "Project Bookmarks"
+          },
+          user: {
+            title: "User Bookmarks"
+          }
+        }
+      },
       search: {
         all: 'ALL',
         no_results: "No results",
@@ -105,7 +125,7 @@ export default {
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'Refereces',
+                  personprimary: 'References',
                   contactvoicetelephone: 'Phone',
                   contactorganization: 'Organization',
                   ContactOrganization: 'Organization',
@@ -252,6 +272,9 @@ export default {
                   <li>Click on a feature of selected layer.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
         },
         querybybbox: {
           tooltip: 'Query BBox layer',
@@ -481,7 +504,8 @@ export default {
         open_attribute_table: "Open Attribute Table",
         show_metadata: "Metadata",
         styles: 'Styles',
-        vector_color_menu:"Set/Change Color"
+        vector_color_menu:"Set/Change Color",
+        layer_opacity: "Opacity"
       }
     },
     dataTable: {

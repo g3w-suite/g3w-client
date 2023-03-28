@@ -1,5 +1,4 @@
-const BaseLayers = require('g3w-ol/layers/bases');
-const Projections = require('g3w-ol/projection/projections');
+const BaseLayers = require('../layers/bases');
 
 const MapHelpers = {
   createViewer(opts={}){
@@ -26,10 +25,7 @@ const _Viewer = function(opts={}) {
     view,
     keyboardEventTarget: document
   };
-  if (opts.id) {
-    options.target = opts.id;
-  }
-  Projections.setApplicationProjections();
+  options.target = opts.id;
   const map  = new ol.Map(options);
   this.map = map;
 };
