@@ -24,7 +24,7 @@
       style="padding-right: 2px;"
       :class="[
         { bold : isGroup },
-         g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
+        g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
       @click="expandCollapse"
       class="root collapse-expande-collapse-icon">
@@ -155,7 +155,7 @@
       v-if="showLayerTocLegend"
       :legendplace="legendplace"
       :layer="layerstree"
-    ></layerlegend>
+    />
 
     <!-- CHILD NODES (GROUP) -->
     <ul
@@ -215,6 +215,7 @@ const CLICK_EVENT = {
 };
 
 export default {
+
   props : [
     'layerstree',
     'storeid',
@@ -227,9 +228,11 @@ export default {
     'root',
     'parent'
   ],
+
   components: {
     'layerlegend': LayerLegend
   },
+
   data() {
     return {
       expanded: this.layerstree.expanded,
@@ -239,6 +242,7 @@ export default {
       filtered: false
     }
   },
+
   computed: {
 
     /**
@@ -328,135 +332,147 @@ export default {
         true === this.layerstree.tochighlightable
       )
     },
+
   },
+
   watch:{
+    
+    /**
+     * @FIXME missing implementation ? 
+     */
     'layerstree.disabled'(bool) {},
+    
     'layerstree.checked'(n, o) {
       if (this.isGroup) {
         this.handleGroupChecked(this.layerstree);
       } else {
         this.handleLayerChecked(this.layerstree);
       }
-    }
-  },
-  methods: {
-
-    /**
-     * Inizialize layer (disable, visible etc..)
-     */
-    init() {
-      if (this.isGroup && !this.layerstree.checked) {
-        this.handleGroupChecked(this.layerstree);
-      }
-      if (this.isGroup && !this.root) {
-        this.layerstree.nodes.forEach(node => {
-          if (node.id && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
-            node.uncheckable = true;
-          }
-        })
-      }
     },
+
+  },
+
+  methods: {
 
     /**
      * Handle change checked property of group
      *
-     * @param group
+     * @param {boolean} group.checked
+     * @param {uknown}  group.parentGroup
+     * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      let { checked, parentGroup, nodes } = group;
+      let {
+        checked,
+        parentGroup,
+        nodes
+      } = group;
+    
       const setAllLayersVisible = ({nodes, visible}) => {
         nodes.forEach(node => {
-          if (undefined !== node.id) {
-            if (node.parentGroup.checked && node.checked) {
-              CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(visible);
-            }
-          } else {
+          if (undefined === node.id) {
             setAllLayersVisible({ nodes: node.nodes, visible: visible && node.checked });
+          } else if (node.parentGroup.checked && node.checked) {
+            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(visible);
           }
         });
       };
-      if (checked) {
-        const visible = parentGroup ? parentGroup.checked : true;
-        if (parentGroup && parentGroup.mutually_exclusive) {
-          parentGroup.nodes.forEach(node => {
-            node.checked = node.groupId === group.groupId;
-            if (node.checked) {
-              setAllLayersVisible({ nodes: node.nodes, visible });
-            }
-          });
-        } else {
-          setAllLayersVisible({ nodes, visible });
-        }
-        while (parentGroup) {
-          parentGroup.checked = parentGroup.root || parentGroup.checked;
-          parentGroup = parentGroup.parentGroup
-        }
-      } else {
+
+      if (!checked) {
         nodes.forEach(node => {
-          if (undefined !== node.id) {
-            if (node.checked) {
-              CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(false);
-            }
-          } else {
+          if (undefined === node.id) {
             setAllLayersVisible({ nodes: node.nodes, visible: false });
+          } else if (node.checked) {
+            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(false);
+          }
+        });
+        return; // NB exit early!
+      }
+
+      const visible = parentGroup ? parentGroup.checked : true;
+      if (false === (parentGroup && parentGroup.mutually_exclusive)) {
+        setAllLayersVisible({ nodes, visible });
+      } else {
+        parentGroup.nodes.forEach(node => {
+          node.checked = node.groupId === group.groupId;
+          if (node.checked) {
+            setAllLayersVisible({ nodes: node.nodes, visible });
           }
         });
       }
+      while (parentGroup) {
+        parentGroup.checked = parentGroup.root || parentGroup.checked;
+        parentGroup = parentGroup.parentGroup
+      }
+
     },
 
     /**
      * Handle changing checked property of layer
      *
-     * @param {{ checked: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
+     * @param {boolean} layer.checked
+     * @param {string}  layer.id
+     * @param {boolean} layer.disabled
+     * @param {boolean} layer.projectLayer
+     * @param {uknown}  layer.parentGroup
      */
-    handleLayerChecked(layerObject) {
+    handleLayerChecked(layer) {
       let {
         checked,
         id,
         disabled,
         projectLayer=false,
         parentGroup
-      } = layerObject;
+      } = layer;
 
       // case external layer (eg. temporary layer through `addlayerscontrol`)
       if (!projectLayer) {
         // update `layer.visible` property
-        layerObject.visible = checked;
+        layer.visible = checked;
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
+        return;  // NB exit early!
       }
       
       // case project layer (eg. qgis layer)
-      else {
-        const layer = CatalogLayersStoresRegistry.getLayerById(id);
-        if (checked) {
-          const visible = layer.setVisible(!disabled);
-          if (visible && 'toc' === this.legendplace) {
-            setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
-          }
-          if (parentGroup.mutually_exclusive) {
-            parentGroup.nodes.forEach(node => node.checked = node.id === id);
-          }
-          while (parentGroup) {
-            parentGroup.checked = true;
-            parentGroup = parentGroup.parentGroup;
-          }
-        } else {
-          layer.setVisible(false);
+      const cataloglayer = CatalogLayersStoresRegistry.getLayerById(id);
+      if (!checked) {
+        cataloglayer.setVisible(false);
+      } else {
+        const visible = cataloglayer.setVisible(!disabled);
+        if (visible && 'toc' === this.legendplace) {
+          setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
         }
-        CatalogEventHub.$emit('treenodevisible', layer);
+        if (parentGroup.mutually_exclusive) {
+          parentGroup.nodes.forEach(node => node.checked = node.id === id);
+        }
+        while (parentGroup) {
+          parentGroup.checked = true;
+          parentGroup = parentGroup.parentGroup;
+        }
       }
+
+      CatalogEventHub.$emit('treenodevisible', cataloglayer);
 
     },
 
+    /**
+     * @fires CatalogEventHub~activefiltertokenlayer
+     */
     toggleFilterLayer() {
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
+
+    /**
+     * @fires CatalogEventHub~unselectionlayer
+     */
     clearSelection() {
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
+
     toggle() {
       this.layerstree.checked = !this.layerstree.checked;
     },
+
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
@@ -471,22 +487,24 @@ export default {
       if (this.layerstree.external && 'undefined' !== typeof this.layerstree.selected) {
         CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
-        CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
+        CatalogEventHub.$emit('treenodeselected', this.storeid, this.layerstree);
       }
     },
 
     /**
      * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
      *
-     * @since v3.8
+     * @since 3.8.0
      */
-    zoomToLayer(layer) {
-      GUI
-        .getService('map')
-        .goToBBox(
-          [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-          layer.epsg
-        );
+    maybeZoomToLayer(layer) {
+      if (this.canZoom(this.layerstree)) {
+        GUI
+          .getService('map')
+          .goToBBox(
+            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+            layer.epsg
+          );
+      }
     },
 
     /**
@@ -513,7 +531,7 @@ export default {
       CLICK_EVENT.handleClick(() => {
         switch(CLICK_EVENT.count) {
           case 1: this.select(); break;
-          case 2: this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree); break;
+          case 2: this.maybeZoomToLayer(this.layerstree); break;
         }
       }, this);
     },
@@ -535,12 +553,16 @@ export default {
     },
 
     /**
-     * @since 3.8.0
-     * @param layerstree
      * @param evt
+     * 
+     * @fires CatalogEventHub~hide-layer-context-menu
+     * @fires CatalogEventHub~hide-project-context-menu
+     * @fires CatalogEventHub~show-layer-context-menu
+     * @fires CatalogEventHub~show-project-context-menu
+     * 
+     * @since 3.8.0
      */
-
-    showContextMenu(evt){
+    showContextMenu(evt) {
       if (
         !this.isGroup &&
         (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
@@ -555,9 +577,16 @@ export default {
 
   },
 
+  /**
+   * Inizialize layer (disable, visible etc..)
+   */
   created() {
-    // just firs time
-    this.init();
+    if (this.isGroup && !this.layerstree.checked) {
+      this.handleGroupChecked(this.layerstree);
+    }
+    if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
+      this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
+    }
   },
 
   async mounted() {
