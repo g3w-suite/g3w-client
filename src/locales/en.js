@@ -355,6 +355,7 @@ export default {
           textarea: "text",
           string: "string",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
