@@ -10,7 +10,7 @@
 
       <!-- TAB MENU (header) -->
       <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click.capture="delegationClickEventTab">
-        <li v-if="hasLayers" role="presentation"  :class="{ active: ('layers' === activeTab  && 'hasLayers') }">
+        <li v-if="hasLayers" role="presentation"  :class="{ active: ('layers' === activeTab) }">
           <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
         </li>
         <li v-if="state.external.wms.length" role="presentation" :class="{ active: ('externalwms' === activeTab) }">
@@ -29,7 +29,7 @@
 
         <bar-loader :loading="loading" />
 
-        <div id="layers" role="tabpanel" class="tab-pane" :class="{ active: ('layers' === activeTab  && 'hasLayers') }">
+        <div id="layers" role="tabpanel" class="tab-pane" :class="{ active: ('layers' === activeTab) }">
 
           <helpdiv message="catalog_items.helptext" />
 
