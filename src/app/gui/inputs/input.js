@@ -12,9 +12,6 @@ const Input = {
   watch: {
     'notvalid'(notvalid){
       notvalid && this.service.setErrorMessage(this.state)
-    },
-    'state.value'(){
-      this.state.input.options.default_expression && this.change();
     }
   },
   created() {
