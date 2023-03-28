@@ -37,19 +37,18 @@
 
 <script>
 import ApplicationState from 'store/application-state';
-import { resizeMixin, widgetMixins } from 'mixins';
+import { resizeMixin } from 'mixins';
 
 const Input = require('gui/inputs/input');
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
-  
+
   mixins: [
     Input,
-    widgetMixins,
     resizeMixin
   ],
-  
+
   data() {
     const uniqueValue = getUniqueDomId();
     return {
@@ -59,12 +58,11 @@ export default {
       },
       iddatetimepicker: 'datetimepicker_' + uniqueValue,
       idinputdatetimepiker: 'inputdatetimepicker_' + uniqueValue,
-      changed: false
     }
   },
-  
+
   methods: {
-  
+
     resize() {
       const domeDataPicker = $(`#${this.iddatetimepicker}`);
       if (domeDataPicker && domeDataPicker.data("DateTimePicker")) {
@@ -75,12 +73,19 @@ export default {
     timeOnly () {
       return !this.state.input.options.formats[0].date;
     },
-
-    stateValueChanged(value) {
-      const date = moment(value, this.datetimefieldformat).format(this.datetimedisplayformat);
-      $(`#${this.idinputdatetimepiker}`).val(date);
+  },
+  watch: {
+    async 'state.value'(value){
+      // check if current value (state.value) is not equal to current wiget datetimepicker
+      //means is changed by others (default expression evaluation for example)
+      if (value !== $(`#${this.idinputdatetimepiker}`).val()){
+        // check if value is not null
+        const date = null !== value ? moment(value, this.datetimefieldformat).format(this.datetimedisplayformat) : value;
+        await this.$nextTick();
+        $(`#${this.idinputdatetimepiker}`).val(date);
+      }
+      this.change();
     }
-
   },
 
   async mounted() {
@@ -91,7 +96,7 @@ export default {
         horizontal: "left"
       }
     } = this.state.input.options;
-  
+
     const {
       minDate,
       maxDate,
@@ -101,21 +106,21 @@ export default {
       displayformat,
       useCurrent
     } = formats[0];
-  
+
     await this.$nextTick();
-
-    const fielddatetimeformat = fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
-  
-    this.service.setValidatorOptions({ fielddatetimeformat });
-  
-    const date = 
-      moment(this.state.value, fielddatetimeformat, true).isValid()
-        ? moment(this.state.value, fielddatetimeformat).toDate()
-        : null;
-
     // set has widget input property instance
+
     this.datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(displayformat);
     this.datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(fieldformat);
+
+
+    this.service.setValidatorOptions({ fielddatetimeformat: this.datetimefieldformat });
+
+    const date =
+      moment(this.state.value, this.datetimefieldformat, true).isValid()
+        ? moment(this.state.value, this.datetimefieldformat).toDate()
+        : null;
+
 
     $(`#${this.iddatetimepicker}`).datetimepicker({
       defaultDate: date,
@@ -141,9 +146,6 @@ export default {
       .on("dp.change", () => {
         const newDate = $(`#${this.idinputdatetimepiker}`).val();
         const value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
-        if (this.state.value !== value) {
-          this.widgetChanged();
-        }
         this.state.value = value;
       });
 
