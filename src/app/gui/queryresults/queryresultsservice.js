@@ -515,7 +515,8 @@ proto.downloadApplicationWrapper = async function(downloadFnc, options={}) {
  * be added or removed to current `state.layers` results
  * 
  * @param {Array} layer
- * @since v3.8.0
+ * 
+ * @since 3.8.0
  */
 proto.updateLayerResultFeatures = function(responseLayer) {
   const layer              = this._getLayer(responseLayer.id),            // get layer from current `state.layers` showed on result
@@ -600,7 +601,7 @@ proto.getBoxId = function(layer, feature, relation_index) {
  * @param layers 
  * @param options 
  */
-proto.setActionsForLayers = function(layers, options={add: false}) {
+proto.setActionsForLayers = function(layers, options = { add: false }) {
   if (options.add) {
     return;
   }
@@ -621,240 +622,61 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     this.state.currentactiontools[layer.id]        = Vue.observable(currentactiontoolslayer);
     this.state.currentactionfeaturelayer[layer.id] = Vue.observable(currentationfeaturelayer);
 
-    const is_external_layer_or_wms = (layer.external) || (layer.source ? layer.source.type === 'wms' : false);
+    const is_external_layer_or_wms = (layer.external) || (layer.source ? 'wms' === layer.source.type : false);
     
     if (!this.state.layersactions[layer.id]) {
       this.state.layersactions[layer.id] = [];
     }
 
-    /**
-     * Lookup for layer geometry.
-     */
+    // Lookup for layer geometry.
     if (layer.hasgeometry) {
-      this.state.layersactions[layer.id]
-        .push({
-          id: 'gotogeometry',
-          download: false,
-          mouseover: true,
-          class: GUI.getFontClass('marker'),
-          hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
-          cbk: throttle(this.goToGeometry.bind(this))
-        });
+      this._setActionGoToGeometry(layer.id);
     }
 
-    /**
-     * Lookup for layer relations.
-     */
+    // Lookup for layer relations.
     if (this._relations && this._relations[layer.id]) {
-
-      const relations = this._relations[layer.id].filter(relation => 'MANY' === relation.type);
-      const chartRelationIds = [];
-      
-      relations.forEach(relation => {
-        const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
-        if (id) {
-          chartRelationIds.push(id);
-        }
-      });
-
-      /** @FIXME add description */
-      if (relations.length) {
-        this.state.layersactions[layer.id]
-          .push({
-            id: 'show-query-relations',
-            download: false,
-            class: GUI.getFontClass('relation'),
-            hint: 'sdk.mapcontrols.query.actions.relations.hint',
-            cbk: this.showQueryRelations,
-            relations,
-            chartRelationIds
-          });
-      }
-
-      /** @FIXME add description */
-      if (chartRelationIds.length) {
-        this.state.layersactions[layer.id]
-          .push({
-            id: 'show-plots-relations',
-            download: false,
-            opened: true,
-            class: GUI.getFontClass('chart'),
-            state: this.createActionState({ layer }),
-            hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
-            cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
-          });
-      }
-
+      this._setActionShowQueryAndPlotsRelations(layer);
     }
 
-    /**
-     * Lookup for layer print atlas.
-     */
+    // Lookup for layer print atlas.
     if (this.getAtlasByLayerId(layer.id).length) {
-      this.state.layersactions[layer.id]
-        .push({
-          id: `printatlas`,
-          download: true,
-          class: GUI.getFontClass('print'),
-          hint: `sdk.tooltips.atlas`,
-          cbk: this.printAtlas.bind(this)
-        });
+      this._setActionPrintAtlas(layer);
     }
     
-    const state = this.createActionState({ layer });
-
-    /**
-     * Lookup for layer downloadable features (single).
-     */
+    // Lookup for layer downloadable features (single).
     if (layer.downloads.length === 1) {
-      const [format] = layer.downloads; // NB: format == layer.downloads[0]
-      const cbk = this.downloadFeatures.bind(this, format);
-      layer[format] = Vue.observable({ active: false });
-      this.state.layersactions[layer.id]
-        .push({
-          id: `download_${format}_feature`,
-          download: true,
-          state,
-          class: GUI.getFontClass('download'),
-          hint: `sdk.tooltips.download_${format}`,
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            if (action.state.toggled[index]) {
-              cbk(layer, feature, action, index);
-            } else {
-              this.setCurrentActionLayerFeatureTool({ index, action, layer })
-            }
-          }
-        });
+      this._setActionDownloadFeature(layer);
     }
 
-    /**
-     * Lookup for layer downloadable features (multi).
-     */
+    // Lookup for layer downloadable features (multi).
     if (layer.downloads.length > 1) {
-
-      const downloads = [];
-
-      layer.downloads
-        .forEach(format => {
-          downloads.push({
-            id: `download_${format}_feature`,
-            download: true,
-            format,
-            class: GUI.getFontClass(format),
-            hint: `sdk.tooltips.download_${format}`,
-            cbk: (layer, feature, action, index)=> {
-              // un-toggle downloads action
-              this.downloadFeatures(format, layer, feature, action, index);
-              if ('polygon' !== this.state.query.type) {
-                const downloadsaction = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-                downloadsaction.cbk(layer, feature, downloadsaction, index);
-              }
-            }
-          });
-        });
-
-      // set actionstools configs
-      this.state.actiontools[DownloadFormats.name] = this.state.actiontools[DownloadFormats.name] || {};
-      this.state.actiontools[DownloadFormats.name][layer.id] = { downloads };
-      // check if has download actions
-      this.state.layersactions[layer.id]
-        .push({
-          id: `downloads`,
-          download: true,
-          class: GUI.getFontClass('download'),
-          state,
-          toggleable: true,
-          hint: `Downloads`,
-          change({features}) {
-            features
-              .forEach((feature, index) => {
-                if (undefined === this.state.toggled[index]) {
-                  VM.$set(this.state.toggled, index, false);
-                } else {
-                  this.state.toggled[index] = false;
-                }
-              });
-          },
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
-          }
-        });
+      this._setActionMultiDownloadFeature(layer);
     }
 
-    /**
-     * Lookup for not external layer or WMS.
-     */
+    // Lookup for not external layer or WMS.
     if (false == is_external_layer_or_wms) {
-      this.state.layersactions[layer.id].push({
-        id: 'removefeaturefromresult',
-        download: false,
-        mouseover: true,
-        class: GUI.getFontClass('minus-square'),
-        style: {
-          color: 'red'
-        },
-        hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-        cbk: this.removeFeatureLayerFromResult.bind(this)
-      });
+      this._setActionRemoveFeatureFromResult(layer);
     }
 
-    /**
-     * Lookup for layer selection status (active).
-     */
+    // Lookup for layer selection status (active).
     if (undefined !== layer.selection.active) {
-      this.state.layersactions[layer.id]
-        .push({
-          id: 'selection',
-          download: false,
-          class: GUI.getFontClass('success'),
-          hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-          state: this.createActionState({ layer }),
-          init: ({feature, index, action}={}) => {
-            if("undefined" !== typeof layer.selection.active) {
-              this.checkFeatureSelection({ layer, index, feature, action })
-            }
-          },
-          cbk: throttle(this.addToSelection.bind(this))
-        });
-      // In case of external layer don't listen to `selection` event
-      this.listenClearSelection(layer, 'selection');
+      this._setActionSelection(layer);
     }
 
-    /**
-     * Lookup for not external layer or WMS (copy link to feature).
-     */
+    // Lookup for not external layer or WMS (copy link to feature).
     if (!is_external_layer_or_wms && layer.hasgeometry) {
-      this.state.layersactions[layer.id]
-        .push({
-          id: 'link_zoom_to_fid',
-          download: false,
-          class: GUI.getFontClass('link'),
-          hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
-          hint_change: {
-            hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',
-            duration: 1000
-          },
-          cbk: this.copyZoomToFidUrl.bind(this)
-        });
+      this._setActionLinkZoomToFid(layer);
     }
 
-    /**
-     * Lookup for editable layer.
-     */
+    // Lookup for editable layer.
     if (layer.editable && !layer.inediting) {
-      this.state.layersactions[layer.id]
-        .push({
-          id: 'editing',
-          class: GUI.getFontClass('pencil'),
-          hint: 'Editing',
-          cbk: (layer, feature) => { this.editFeature({ layer, feature }) }
-        });
+      this._setActionEditing(layer);
     }
 
   });
+
   this.addActionsForLayers(this.state.layersactions, this.state.layers);
+
 };
 
 /**
@@ -2341,7 +2163,7 @@ proto.showQueryRelations = function(layer, feature, action) {
 /**
  * Get layer from current state.layers showed on result
  * 
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._getLayer = function(layerId) {
   return this.state.layers.find(l => l.id === layerId);
@@ -2350,7 +2172,7 @@ proto._getLayer = function(layerId) {
 /**
  * Get external layer from current state.layers showed on result
  * 
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._getExternalLayer = function(layerId) {
   return (this._getLayer(layerId) || {}).external;
@@ -2359,7 +2181,7 @@ proto._getExternalLayer = function(layerId) {
 /**
  * Get ids of the selected features
  * 
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._getFeaturesIds = function(features, external) {
   return features.map(f => external ? f.id : f.attributes[G3W_FID]);
@@ -2368,7 +2190,7 @@ proto._getFeaturesIds = function(features, external) {
 /**
  * Extract features from layer object
  * 
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._getLayerFeatures = function(layer) {
   return layer.features || [];
@@ -2377,7 +2199,7 @@ proto._getLayerFeatures = function(layer) {
 /**
  * Loop and filter the features that we need to remove
  * 
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._featuresToRemove = function(features, external) {
   const features_ids = this._getFeaturesIds(features, external); // get id of the features
@@ -2387,7 +2209,7 @@ proto._featuresToRemove = function(features, external) {
 /**
  * Filter features to add
  * 
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._featuresToAdd = function(features, external) {
   const features_ids = this._getFeaturesIds(features, external);
@@ -2395,7 +2217,7 @@ proto._featuresToAdd = function(features, external) {
 };
 
 /**
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._toggleLayerFeatureBox = function(layer, feature, collapsed) {
   const boxId = this.getBoxId(layer, feature);
@@ -2405,14 +2227,239 @@ proto._toggleLayerFeatureBox = function(layer, feature, collapsed) {
 };
 
 /**
- * @since v3.8.0
+ * @since 3.8.0
  */
 proto._removeLayerFeatureBox = function(layer, feature_to_delete) {
   setTimeout(()=> delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feature_to_delete)]);
 };
 
 /**
- * @deprecated since v3.8. Will be deleted in 4.x. Use QueryResultsService::updateLayerResultFeatures(layer) instead
+ * @since 3.8.0
+ */
+proto._setActionGoToGeometry = function(layer) {
+  this.state.layersactions[layer.id]
+  .push({
+    id: 'gotogeometry',
+    download: false,
+    mouseover: true,
+    class: GUI.getFontClass('marker'),
+    hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
+    cbk: throttle(this.goToGeometry.bind(this))
+  });
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionShowQueryAndPlotsRelations = function(layer) {
+  const relations = this._relations[layer.id].filter(relation => 'MANY' === relation.type);
+  const chartRelationIds = [];
+  
+  relations.forEach(relation => {
+    const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
+    if (id) {
+      chartRelationIds.push(id);
+    }
+  });
+
+  /** @FIXME add description */
+  if (relations.length) {
+    this.state.layersactions[layer.id]
+      .push({
+        id: 'show-query-relations',
+        download: false,
+        class: GUI.getFontClass('relation'),
+        hint: 'sdk.mapcontrols.query.actions.relations.hint',
+        cbk: this.showQueryRelations,
+        relations,
+        chartRelationIds
+      });
+  }
+
+  /** @FIXME add description */
+  if (chartRelationIds.length) {
+    this.state.layersactions[layer.id]
+      .push({
+        id: 'show-plots-relations',
+        download: false,
+        opened: true,
+        class: GUI.getFontClass('chart'),
+        state: this.createActionState({ layer }),
+        hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
+        cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
+      });
+  }
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionPrintAtlas = function(layer) {
+  this.state.layersactions[layer.id]
+  .push({
+    id: `printatlas`,
+    download: true,
+    class: GUI.getFontClass('print'),
+    hint: `sdk.tooltips.atlas`,
+    cbk: this.printAtlas.bind(this)
+  });
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionDownloadFeature = function(layer) {
+  const [format] = layer.downloads; // NB: format == layer.downloads[0]
+  const cbk = this.downloadFeatures.bind(this, format);
+  layer[format] = Vue.observable({ active: false });
+  this.state.layersactions[layer.id]
+    .push({
+      id: `download_${format}_feature`,
+      download: true,
+      state,
+      class: GUI.getFontClass('download'),
+      hint: `sdk.tooltips.download_${format}`,
+      cbk: (layer, feature, action, index) => {
+        action.state.toggled[index] = !action.state.toggled[index];
+        if (action.state.toggled[index]) {
+          cbk(layer, feature, action, index);
+        } else {
+          this.setCurrentActionLayerFeatureTool({ index, action, layer })
+        }
+      }
+    });
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionMultiDownloadFeature = function(layer) {
+  const state = this.createActionState({ layer });
+
+  const downloads = [];
+
+  layer.downloads
+    .forEach(format => {
+      downloads.push({
+        id: `download_${format}_feature`,
+        download: true,
+        format,
+        class: GUI.getFontClass(format),
+        hint: `sdk.tooltips.download_${format}`,
+        cbk: (layer, feature, action, index)=> {
+          // un-toggle downloads action
+          this.downloadFeatures(format, layer, feature, action, index);
+          if ('polygon' !== this.state.query.type) {
+            const downloadsaction = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
+            downloadsaction.cbk(layer, feature, downloadsaction, index);
+          }
+        }
+      });
+    });
+
+  // set actionstools configs
+  this.state.actiontools[DownloadFormats.name] = this.state.actiontools[DownloadFormats.name] || {};
+  this.state.actiontools[DownloadFormats.name][layer.id] = { downloads };
+  // check if has download actions
+  this.state.layersactions[layer.id]
+    .push({
+      id: `downloads`,
+      download: true,
+      class: GUI.getFontClass('download'),
+      state,
+      toggleable: true,
+      hint: `Downloads`,
+      change({features}) {
+        features
+          .forEach((feature, index) => {
+            if (undefined === this.state.toggled[index]) {
+              VM.$set(this.state.toggled, index, false);
+            } else {
+              this.state.toggled[index] = false;
+            }
+          });
+      },
+      cbk: (layer, feature, action, index) => {
+        action.state.toggled[index] = !action.state.toggled[index];
+        this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
+      }
+    });
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionRemoveFeatureFromResult = function(layer) {
+  this.state.layersactions[layer.id]
+    .push({
+      id: 'removefeaturefromresult',
+      download: false,
+      mouseover: true,
+      class: GUI.getFontClass('minus-square'),
+      style: {
+        color: 'red'
+      },
+      hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
+      cbk: this.removeFeatureLayerFromResult.bind(this)
+    });
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionSelection = function(layer) {
+  this.state.layersactions[layer.id]
+    .push({
+      id: 'selection',
+      download: false,
+      class: GUI.getFontClass('success'),
+      hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
+      state: this.createActionState({ layer }),
+      init: ({feature, index, action}={}) => {
+        if("undefined" !== typeof layer.selection.active) {
+          this.checkFeatureSelection({ layer, index, feature, action })
+        }
+      },
+      cbk: throttle(this.addToSelection.bind(this))
+    });
+  
+  // In case of external layer don't listen to `selection` event
+  this.listenClearSelection(layer, 'selection');
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionLinkZoomToFid = function(layer) {
+  this.state.layersactions[layer.id]
+    .push({
+      id: 'link_zoom_to_fid',
+      download: false,
+      class: GUI.getFontClass('link'),
+      hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
+      hint_change: {
+        hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',
+        duration: 1000
+      },
+      cbk: this.copyZoomToFidUrl.bind(this)
+    });
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setActionEditing = function(layer) {
+  this.state.layersactions[layer.id]
+    .push({
+      id: 'editing',
+      class: GUI.getFontClass('pencil'),
+      hint: 'Editing',
+      cbk: (layer, feature) => { this.editFeature({ layer, feature }) }
+    });
+};
+
+/**
+ * @deprecated since 3.8.0 Will be deleted in 4.x. Use QueryResultsService::updateLayerResultFeatures(layer) instead
  */
 proto.addRemoveFeaturesToLayerResult = deprecate(proto.updateLayerResultFeatures, '[G3W-CLIENT] QueryResultsService::addRemoveFeaturesToLayerResult(layer) is deprecated');
 
