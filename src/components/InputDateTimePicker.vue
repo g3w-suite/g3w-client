@@ -40,13 +40,12 @@ import ApplicationState from 'core/applicationstate';
 
 const Input = require('gui/inputs/input');
 const {getUniqueDomId} = require('core/utils/utils');
-const {resizeMixin, widgetMixins} = require('gui/vue/vue.mixins');
+const {resizeMixin} = require('gui/vue/vue.mixins');
 
 export default {
 
   mixins: [
     Input,
-    widgetMixins,
     resizeMixin
   ],
 
@@ -59,7 +58,6 @@ export default {
       },
       iddatetimepicker: 'datetimepicker_' + uniqueValue,
       idinputdatetimepiker: 'inputdatetimepicker_' + uniqueValue,
-      changed: false
     }
   },
 
@@ -75,12 +73,17 @@ export default {
     timeOnly () {
       return !this.state.input.options.formats[0].date;
     },
-
-    stateValueChanged(value) {
-      const date = moment(value, this.datetimefieldformat).format(this.datetimedisplayformat);
-      $(`#${this.idinputdatetimepiker}`).val(date);
+  },
+  watch: {
+    async 'state.value'(value){
+      // check if current value (state.value) is not equal to current wiget datetimepicker
+      //means is changed by others (default expression evaluation for example)
+      if (value !== $(`#${this.idinputdatetimepiker}`).val()){
+        const date = null !== value ? moment(value, this.datetimefieldformat).format(this.datetimedisplayformat) : value;
+        await this.$nextTick();
+        $(`#${this.idinputdatetimepiker}`).val(date);
+      }
     }
-
   },
 
   async mounted() {
@@ -103,19 +106,19 @@ export default {
     } = formats[0];
 
     await this.$nextTick();
-
-    const fielddatetimeformat = fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
-
-    this.service.setValidatorOptions({ fielddatetimeformat });
-
-    const date =
-      moment(this.state.value, fielddatetimeformat, true).isValid()
-        ? moment(this.state.value, fielddatetimeformat).toDate()
-        : null;
-
     // set has widget input property instance
+
     this.datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(displayformat);
     this.datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(fieldformat);
+
+
+    this.service.setValidatorOptions({ fielddatetimeformat: this.datetimefieldformat });
+
+    const date =
+      moment(this.state.value, this.datetimefieldformat, true).isValid()
+        ? moment(this.state.value, this.datetimefieldformat).toDate()
+        : null;
+
 
     $(`#${this.iddatetimepicker}`).datetimepicker({
       defaultDate: date,
@@ -138,10 +141,10 @@ export default {
     });
 
     $(`#${this.iddatetimepicker}`)
-      .on("dp.change", evt => {
-        const newDate = $('#'+this.idinputdatetimepiker).val();
-        this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
-        this.widgetChanged();
+      .on("dp.change", () => {
+        const newDate = $(`#${this.idinputdatetimepiker}`).val();
+        const value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
+        this.state.value = value;
       });
 
     $(`#${this.iddatetimepicker}`)
