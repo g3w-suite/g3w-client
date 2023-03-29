@@ -333,6 +333,7 @@ export default {
           textarea: "text",
           string: "teckensträng",
           date: "datum",
+          datetime: "datum",
           float: "flyttal",
           table: "tabell"
         },

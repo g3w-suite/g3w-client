@@ -332,6 +332,7 @@ export default {
           textarea: "textuel",
           string: "chaîne",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },

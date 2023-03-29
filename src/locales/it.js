@@ -334,6 +334,7 @@ export default {
           textarea: "testuale",
           string: "stringa",
           date: "data",
+          datetime: "data",
           float: "float",
           table: "table"
         },
