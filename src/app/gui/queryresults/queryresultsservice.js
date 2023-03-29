@@ -225,7 +225,6 @@ function QueryResultsService() {
   });
 
   /**
-   *
    * <Array> where are store vector layer add on runtime
    */
   this._vectorLayers = [];
@@ -234,6 +233,7 @@ function QueryResultsService() {
    * @FIXME add description
    */
   this._addFeaturesLayerResultInteraction = {
+
     /**
      * Reference to current layer
      */
@@ -270,8 +270,8 @@ function QueryResultsService() {
     setQueryResponse(queryResponse, options = { add: false }) {
 
       // set mandatory queryResponse fields
-      if (!queryResponse.data)  queryResponse.data    = [];
-      if (!queryResponse.query) queryResponse.query   = { external: { add: false, filter: {SELECTED: false }}};
+      if (!queryResponse.data)           queryResponse.data           = [];
+      if (!queryResponse.query)          queryResponse.query          = { external: { add: false, filter: { SELECTED: false } } };
       if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: {SELECTED: false }};
 
       // whether add response to current results using addLayerFeaturesToResultsAction
@@ -289,7 +289,7 @@ function QueryResultsService() {
         switch (this.state.query.type) {
           case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
           case 'bbox':        this.showBBOX(this.state.query.bbox); break;
-          case 'polygon':     this.state.query.geometry && this.showGeometry(this.state.query.geometry); break;
+          case 'polygon':     this.showGeometry(this.state.query.geometry); break;
         }
       }
 
@@ -2040,7 +2040,9 @@ proto.showBBOX = function(bbox) {
  * @param geometry
  */
 proto.showGeometry = function(geometry) {
-  this.addQueryResultsLayerToMap({ feature: createFeatureFromGeometry({ geometry }) });
+  if (geometry) {
+    this.addQueryResultsLayerToMap({ feature: createFeatureFromGeometry({ geometry }) });
+  }
 };
 
 /**
