@@ -1,5 +1,6 @@
 import inputService from 'core/expression/inputservice';
-const {inherit, base} = require('core/utils/utils');
+
+const { inherit, base } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function FormService() {
@@ -101,7 +102,9 @@ function FormService() {
     };
     this.force.update = feature.isNew();
     this.filter_expression_fields_dependencies = {}; // expression fields dependencies from filter_expression
-    this.default_expression_fields_dependencies = {};
+    this.default_expression_fields_dependencies = {};// expression fields dependencies from default_expression
+    this.default_expression_fields_on_update = []; // since 3.8.0
+    this.listenChangeInput = true; // since 3.8.0
     this.setFormFields(fields);
     if (this.layer && options.formStructure) {
       const formstructure = this.layer.getLayerEditingFormStructure(fields);
@@ -124,10 +127,15 @@ proto.setReady = function(bool=false){
  * @param input
  */
 proto.changeInput = function(input){
-  this.evaluateFilterExpressionFields(input);
-  this.evaluateDefaultExpressionFields(input);
-  this.isValid(input);
-  this.isUpdated(input);
+  //add 3.8.0 to avoid listen changes when
+  // saveDefaultExpressionFieldsNotDependencies is called
+  // TODO find better solution
+  if (true === this.listenChangeInput) {
+    this.evaluateFilterExpressionFields(input);
+    this.evaluateDefaultExpressionFields(input);
+    this.isValid(input);
+    this.isUpdated(input);
+  }
 };
 
 /**
@@ -251,16 +259,24 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
       ...referencing_fields
     ].forEach(dependency_field => dependency_fields.add(dependency_field));
 
-    dependency_fields.forEach(dependency_field => {
-      // TODO: shorten variable name
-      if (undefined === this.default_expression_fields_dependencies[dependency_field]) {
-        this.default_expression_fields_dependencies[dependency_field] = [];
-      }
-      this.default_expression_fields_dependencies[dependency_field].push(field.name);
-    });
 
-    // Call input service if a field has a default_expression set in update or is a new feature
-    if (this.state.isnew || (apply_on_update && 0 === dependency_fields.size)) {
+    //Only in apply update listen changeInput
+    if (apply_on_update) {
+
+      this.default_expression_fields_on_update.push(field);
+
+      dependency_fields.forEach(dependency_field => {
+        // TODO: shorten variable name
+        if (undefined === this.default_expression_fields_dependencies[dependency_field]) {
+          this.default_expression_fields_dependencies[dependency_field] = [];
+        }
+        this.default_expression_fields_dependencies[dependency_field].push(field.name);
+      });
+    }
+
+
+    // Call input service if a field has a default_expression and is a new feature
+    if (this.state.isnew) {
       inputService.handleDefaultExpressionFormInput({
         field,
         feature: this.feature,
@@ -481,13 +497,83 @@ proto.handleRelation = function({relationId, feature}){
   //OVERWRITE BY  PLUGIN EDITING PLUGIN
 };
 
-//method to clear all the open thinghs opened by service
+//method to clear all the open things opened by service
 proto.clearAll = function() {
   this.eventBus.$off('addtovalidate');
   this.eventBus.$off('set-main-component');
   this.eventBus.$off('set-loading-form');
   this.eventBus.$off('component-validation');
   this.eventBus.$off('disable-component');
+};
+
+/**
+ * @since 3.8.0
+ * @returns {Promise<void>}
+ * Method
+ */
+proto.saveDefaultExpressionFieldsNotDependencies = async function(){
+  if (0 === this.default_expression_fields_on_update.length){
+    return;
+  } else {
+    // disable listen changeInput
+    // TODO improve
+    this.listenChangeInput = false;
+    //Array contain field name already resolved with server default_expression request
+    const alreadyRequestDefaultExpressionFields = [];
+    // loop through default_expression_fields
+    for (let i = 0; i < this.default_expression_fields_on_update.length; i++) {
+      // extract all dependency fields of current field
+      const dFs = Object.keys(this.default_expression_fields_dependencies)
+        .filter(field => {
+          return (
+            // check if dependency field is field on update
+            this.default_expression_fields_on_update.find(({name}) => name === field) &&
+            // if has bind current field
+            this.default_expression_fields_dependencies[field].find(fieldName => fieldName === this.default_expression_fields_on_update[i].name)
+          )
+        });
+      // id current field has a Array (at least one) dependency fields
+      // need to evaluate its value and after evaluate field value expression
+      for (let i = 0; i < dFs.length; i++) {
+        // in case already done a default_expression request evaluation from server
+        if ("undefined" !== typeof alreadyRequestDefaultExpressionFields.find(name => name === dFs[i])){
+          continue;
+        }
+        // get value. Need to wait response
+        try {
+          const value = await inputService.handleDefaultExpressionFormInput({
+            field: this._getField(dFs[i]),
+            feature: this.feature,
+            qgs_layer_id: this.layer.getId(),
+            parentData: this.parentData
+          });
+          // update field with evaluated value to feature
+          this.feature.set(dFs[i], value);
+          // add to array
+          alreadyRequestDefaultExpressionFields.push(dFs[i]);
+        } catch(err) {}
+      }
+    }
+
+    // array of defaultExpressionPromises request
+    const defaultExpressionPromises = [];
+
+    this.default_expression_fields_on_update.forEach(field => {
+      if ("undefined" === typeof alreadyRequestDefaultExpressionFields.find(name => name === field.name)) {
+        defaultExpressionPromises.push(inputService.handleDefaultExpressionFormInput({
+          field,
+          feature: this.feature,
+          qgs_layer_id: this.layer.getId(),
+          parentData: this.parentData
+        }))
+      }
+    });
+
+    try {
+      await Promise.allSettled(defaultExpressionPromises);
+    } catch(err){}
+  }
+
 };
 
 module.exports = FormService;
