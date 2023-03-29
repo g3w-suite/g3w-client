@@ -77,7 +77,6 @@ function QueryResultsService() {
    * @FIXME add description
    */
   this._actions = {
-    'zoomto':                 QueryResultsService.zoomToElement,
     'highlightgeometry':      this.highlightGeometry.bind(this),
     'clearHighlightGeometry': this.clearHighlightGeometry.bind(this)
   };
