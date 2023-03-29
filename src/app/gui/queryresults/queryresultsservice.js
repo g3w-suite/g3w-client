@@ -77,8 +77,8 @@ function QueryResultsService() {
    * @FIXME add description
    */
   this._actions = {
-    'zoomto': QueryResultsService.zoomToElement,
-    'highlightgeometry': this.highlightGeometry.bind(this),
+    'zoomto':                 QueryResultsService.zoomToElement,
+    'highlightgeometry':      this.highlightGeometry.bind(this),
     'clearHighlightGeometry': this.clearHighlightGeometry.bind(this)
   };
 
@@ -276,10 +276,11 @@ function QueryResultsService() {
 
       // whether add response to current results using addLayerFeaturesToResultsAction
       if (!options.add) {
+        
         // in case of new request results reset the query otherwise maintain the previous request
         this.clearState();
         this.state.query = queryResponse.query;
-        this.state.type = queryResponse.type;
+        this.state.type  = queryResponse.type;
 
         // if true add external layers to response
         if (true === queryResponse.query.external.add) {
@@ -291,6 +292,7 @@ function QueryResultsService() {
           case 'bbox':        this.showBBOX(this.state.query.bbox); break;
           case 'polygon':     this.showGeometry(this.state.query.geometry); break;
         }
+      
       }
 
       this.setLayersData(this._digestFeaturesForLayers(queryResponse.data), options);
@@ -1067,181 +1069,210 @@ proto.reset = function() {
  * @returns {[]}
  */
 proto._digestFeaturesForLayers = function(featuresForLayers=[]) {
-  let id = 0;
   const layers = [];
+  /**
+   * @TODO find out why we need such a level of depth (ie. a nested foreach + triple variables named `featuresForLayer` ?)
+   */
+  featuresForLayers.forEach(featuresForLayer => {
+    (
+      Array.isArray(featuresForLayer)
+      ? featuresForLayer
+      : [featuresForLayer]
+    ).forEach(featuresForLayer => {
+      const layer = this._handleFeatureForLayer(featuresForLayer);
+      if (layer) {
+        layers.push(layer)
+      }
+    });    
+  });
+  return layers;
+};
+
+/**
+ * Convert response from server
+ * 
+ * @param featuresForLayer
+ * 
+ * @since 3.8.0
+ */
+proto._handleFeatureForLayer = function(featuresForLayer) {
+  const layerObj = {
+    editable: false,
+    inediting: false,
+    downloads: [],
+    infoformats: [],
+    filter: {},
+    selection: {},
+    external: false,
+    source: undefined,
+    infoformat: undefined,
+    formStructure: undefined,
+    attributes: [],
+    features: [],
+    hasgeometry: false,
+    show: true,
+    addfeaturesresults: {
+      active:false
+    },
+    [DownloadFormats.name]: {
+      active: false
+    },
+    expandable: true,
+    hasImageField: false,
+    error: '',
+    rawdata: null, // rawdata response
+    loading: false,
+  };
+
+  const layer = featuresForLayer.layer;
+
   let layerAttributes,
     layerRelationsAttributes,
     layerTitle,
-    layerId;
+    layerId,
+    sourceType;
 
-  // convert response from server
-  const _handleFeatureFoLayer = featuresForLayer => {
-    const layerObj = {
-      editable: false,
-      inediting: false,
-      downloads: [],
-      infoformats: [],
-      filter: {},
-      selection: {},
-      external: false,
-      source: undefined,
-      infoformat: undefined,
-      formStructure: undefined,
-      attributes: [],
-      features: [],
-      hasgeometry: false,
-      show: true,
-      addfeaturesresults: {
-        active:false
-      },
-      [DownloadFormats.name]: {
-        active: false
-      },
-      expandable: true,
-      hasImageField: false,
-      error: '',
-      rawdata: null, // rawdata response
-      loading: false,
-    };
-    const layer = featuresForLayer.layer;
-    let sourceType;
-    let extractRelations = false;
+  let extractRelations = false;
 
-    if (layer instanceof Layer) {
-      layerObj.editable    = layer.isEditable();
-      layerObj.inediting   = layer.isInEditing();
-      layerObj.source      = layer.getSource();
-      layerObj.infoformats = layer.getInfoFormats();
-      layerObj.infoformat  = layer.getInfoFormat();
-      // set selection filter and relation if not wms
-      if (-1 === [
-          Layer.SourceTypes.WMS,
-          Layer.SourceTypes.WCS,
-          Layer.SourceTypes.WMST
-        ].indexOf(layer.getSourceType())
-        ) {
-        layerObj.filter    = layer.state.filter;
-        layerObj.selection = layer.state.selection;
-        extractRelations   = true;
-      }
-      layerObj.downloads = layer.getDownloadableFormats();
-      try { sourceType = layer.getSourceType() } catch(err) {}
-      layerRelationsAttributes = [];
-      layerTitle               = layer.getTitle();
-      layerId                  = layer.getId();
-      layerAttributes          = ('ows' === this.state.type) /* sanitize attributes layer only if is ows */
-                                    ? layer.getAttributes().map(attribute => {
-                                        const sanitizeAttribute = {...attribute};
-                                        sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
-                                        return sanitizeAttribute
-                                      })
-                                    : layer.getAttributes();
-      if (layer.hasFormStructure()) {
-        const structure = layer.getLayerEditingFormStructure();
-        if (this._relations && this._relations.length) {
-          const getRelationFieldsFromFormStructure = (node) => {
-            if (!node.nodes) {
-              node.name ? node.relation = true : null;
-            } else {
-              for (const _node of node.nodes) {
-                getRelationFieldsFromFormStructure(_node);
-              }
+  if (layer instanceof Layer) {
+    layerObj.editable    = layer.isEditable();
+    layerObj.inediting   = layer.isInEditing();
+    layerObj.source      = layer.getSource();
+    layerObj.infoformats = layer.getInfoFormats();
+    layerObj.infoformat  = layer.getInfoFormat();
+
+    // set selection filter and relation if not wms
+    if (-1 === [
+        Layer.SourceTypes.WMS,
+        Layer.SourceTypes.WCS,
+        Layer.SourceTypes.WMST
+      ].indexOf(layer.getSourceType())
+      ) {
+      layerObj.filter    = layer.state.filter;
+      layerObj.selection = layer.state.selection;
+      extractRelations   = true;
+    }
+
+    layerObj.downloads = layer.getDownloadableFormats();
+
+    try { sourceType = layer.getSourceType() } catch(err) {}
+
+    layerRelationsAttributes = [];
+    layerTitle               = layer.getTitle();
+    layerId                  = layer.getId();
+    layerAttributes          = ('ows' === this.state.type) /* sanitize attributes layer only if is ows */
+                                  ? layer.getAttributes().map(attribute => {
+                                      const sanitizeAttribute = {...attribute};
+                                      sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
+                                      return sanitizeAttribute
+                                    })
+                                  : layer.getAttributes();
+
+    if (layer.hasFormStructure()) {
+      const structure = layer.getLayerEditingFormStructure();
+      if (this._relations && this._relations.length) {
+        const getRelationFieldsFromFormStructure = (node) => {
+          if (!node.nodes) {
+            node.name ? node.relation = true : null;
+          } else {
+            for (const _node of node.nodes) {
+              getRelationFieldsFromFormStructure(_node);
             }
-          };
-          for (const node of structure) {
-            getRelationFieldsFromFormStructure(node);
+          }
+        };
+        for (const node of structure) {
+          getRelationFieldsFromFormStructure(node);
+        }
+      }
+      layerObj.formStructure = {
+        structure,
+        fields: layer.getFields().filter(field => field.show), // get features show
+      };
+    }
+  } else if (layer instanceof ol.layer.Vector) {
+    layerObj.selection       = layer.selection;
+    layerAttributes          = layer.getProperties();
+    layerRelationsAttributes = [];
+    layerTitle               = layer.get('name');
+    layerId                  = layer.get('id');
+    layerObj.external        = true;
+  } else if ('string' === typeof layer || layer instanceof String) {
+    const feature            = featuresForLayer.features[0];
+    const split_layer_name   = layer.split('_');
+    sourceType               = Layer.LayerTypes.VECTOR;
+    layerAttributes          = (feature ? feature.getProperties() : []);
+    layerRelationsAttributes =  [];
+    layerId                  = layer;
+    layerObj.external        = true;
+    layerTitle               = (split_layer_name.length > 4)
+                                  ? split_layer_name.slice(0, split_layer_name.length -4).join(' ')
+                                  : layer;
+  }
+
+  layerObj.title               = layerTitle;
+  layerObj.id                  = layerId;
+  layerObj.atlas               = this.getAtlasByLayerId(layerId);
+  layerObj.relationsattributes = layerRelationsAttributes;
+
+  /** @FIXME add description */
+  if (featuresForLayer.rawdata) {
+    layerObj.rawdata = featuresForLayer.rawdata;
+    return layerObj;
+  }
+  
+  /** @FIXME add description */
+  if (featuresForLayer.features && featuresForLayer.features.length) {
+    const layerSpecialAttributesName =
+      (layer instanceof Layer)
+        ? layerAttributes.filter(attribute => {
+            try {
+              return ('_' === attribute.name[0] || Number.isInteger(1*attribute.name[0]))
+            } catch(e) {
+              return false;
+            }
+          }).map(attribute => ({ alias: attribute.name.replace(/_/, ''), name: attribute.name }))
+        : [];
+    if (layerSpecialAttributesName.length) {
+      featuresForLayer.features
+        .forEach(feature => this._setSpecialAttributesFeatureProperty(layerSpecialAttributesName, feature));
+    }
+    layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
+    layerObj.attributes
+      .forEach(attribute => {
+        if (layerObj.formStructure) {
+          const relationField = layer.getFields().find(field => field.name === attribute.name); // need to check all field also show false
+          if (!relationField) {
+            layerObj.formStructure.fields.push(attribute);
           }
         }
-        layerObj.formStructure = {
-          structure,
-          fields: layer.getFields().filter(field => field.show), // get features show
-        };
-      }
-    } else if (layer instanceof ol.layer.Vector) {
-      layerObj.selection       = layer.selection;
-      layerAttributes          = layer.getProperties();
-      layerRelationsAttributes = [];
-      layerTitle               = layer.get('name');
-      layerId                  = layer.get('id');
-      layerObj.external        = true;
-    } else if ('string' === typeof layer || layer instanceof String) {
-      const feature            = featuresForLayer.features[0];
-      const split_layer_name   = layer.split('_');
-      sourceType               = Layer.LayerTypes.VECTOR;
-      layerAttributes          = (feature ? feature.getProperties() : []);
-      layerRelationsAttributes =  [];
-      layerId                  = layer;
-      layerObj.external        = true;
-      layerTitle               = (split_layer_name.length > 4)
-                                    ? split_layer_name.slice(0, split_layer_name.length -4).join(' ')
-                                    : layer;
-    }
+        if (attribute.type === 'image') {
+          layerObj.hasImageField = true;
+        }
+      });
+    featuresForLayer.features
+      .forEach(feature => {
+        const props = this.getFeaturePropertiesAndGeometry(feature);
+        if (props.geometry) {
+          layerObj.hasgeometry = true;
+        }
+        layerObj.features
+          .push({
+            id: layerObj.external ? feature.getId() : props.id,
+            attributes: props.properties,
+            geometry: props.geometry,
+            selection: props.selection,
+            show: true
+          });
+      });
+    return layerObj;
+  }
 
-    layerObj.title               = layerTitle;
-    layerObj.id                  = layerId;
-    layerObj.atlas               = this.getAtlasByLayerId(layerId);
-    layerObj.relationsattributes = layerRelationsAttributes;
+  /** @FIXME missing return type ? */
+  /** @FIXME add description */
+  if (featuresForLayer.error) {
+    layerObj.error = featuresForLayer.error;
+  }
 
-    if (featuresForLayer.rawdata) {
-      layerObj.rawdata = featuresForLayer.rawdata;
-      layers.push(layerObj)
-    } else if (featuresForLayer.features && featuresForLayer.features.length) {
-      const layerSpecialAttributesName =
-        (layer instanceof Layer)
-          ? layerAttributes.filter(attribute => {
-              try {
-                return ('_' === attribute.name[0] || Number.isInteger(1*attribute.name[0]))
-              } catch(e) {
-                return false;
-              }
-            }).map(attribute => ({ alias: attribute.name.replace(/_/, ''), name: attribute.name }))
-          : [];
-      if (layerSpecialAttributesName.length) {
-        featuresForLayer.features
-          .forEach(feature => this._setSpecialAttributesFeatureProperty(layerSpecialAttributesName, feature));
-      }
-      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
-      layerObj.attributes
-        .forEach(attribute => {
-          if (layerObj.formStructure) {
-            const relationField = layer.getFields().find(field => field.name === attribute.name); // need to check all field also show false
-            if (!relationField) {
-              layerObj.formStructure.fields.push(attribute);
-            }
-          }
-          if (attribute.type === 'image') {
-            layerObj.hasImageField = true;
-          }
-        });
-      featuresForLayer.features
-        .forEach(feature => {
-          const props = this.getFeaturePropertiesAndGeometry(feature);
-          if (props.geometry) {
-            layerObj.hasgeometry = true;
-          }
-          layerObj.features
-            .push({
-              id: layerObj.external ? feature.getId() : props.id,
-              attributes: props.properties,
-              geometry: props.geometry,
-              selection: props.selection,
-              show: true
-            });
-          id += 1;
-        });
-        layers.push(layerObj);
-    } else if (featuresForLayer.error) {
-      layerObj.error = featuresForLayer.error;
-    }
-  };
-  featuresForLayers.forEach(featuresForLayer => {
-    if (!Array.isArray(featuresForLayer)) {
-      _handleFeatureFoLayer(featuresForLayer);
-    } else {
-      featuresForLayer.forEach(featuresForLayer => _handleFeatureFoLayer(featuresForLayer));
-    }
-  });
-  return layers;
 };
 
 /**
