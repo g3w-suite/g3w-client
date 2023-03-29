@@ -12,7 +12,10 @@ const Input = {
       notvalid && this.service.setErrorMessage(this.state)
     },
     'state.value'(){
-      this.state.input.options.default_expression && this.change();
+      if ("undefined" !== typeof this.state.input.options.default_expression) {
+        // need to postpone state.value watch parent that use mixin
+        setTimeout(() => this.change());
+      }
     }
   },
   created() {
