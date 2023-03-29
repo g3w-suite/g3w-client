@@ -256,7 +256,7 @@ function QueryResultsService() {
   };
 
   /**
-   * Core methods that used from other object to react before or after its call
+   * Core methods used from other classes to react before or after its call
    */
   this.setters = {
 
@@ -304,7 +304,7 @@ function QueryResultsService() {
      * @param layers
      * @param options
      */
-    setLayersData(layers, options={add:false}) {
+    setLayersData(layers, options = { add: false }) {
       if (!options.add) {
         // set the right order of result layers based on TOC
         this._currentLayerIds = layers.map(layer => layer.id);
@@ -312,7 +312,7 @@ function QueryResultsService() {
       }
       // get features from add pick layer in case of a new request query
       layers.forEach(layer => { options.add ? this.updateLayerResultFeatures(layer) : this.state.layers.push(layer); });
-      this.setActionsForLayers(layers, {add: options.add});
+      this.setActionsForLayers(layers, { add: options.add });
       this.state.changed = true;
     },
 
@@ -419,7 +419,7 @@ function QueryResultsService() {
   /**
    * @FIXME add description
    */
-  GUI.onbefore('setContent', (options)=> {
+  GUI.onbefore('setContent', (options) => {
     this.mapService = this.mapService || ApplicationService.getApplicationService('map');
     if (100 === options.perc && GUI.isMobile()) {
       this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
@@ -444,7 +444,7 @@ const proto = QueryResultsService.prototype;
  * @param type      feature or layer
  * @param position 
  */
-proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, component, type='feature', position='after'}={}) {
+proto.registerCustomComponent = function({ id = getUniqueDomId(), layerId, component, type = 'feature', position = 'after' } = {}) {
   if (undefined === this.state.layerscustomcomponents[layerId]) {
     this.state.layerscustomcomponents[layerId] = {
       layer:   { before: [], after: [] },
@@ -593,7 +593,9 @@ proto.checkIfLayerHasNoFeatures = function(layer) {
  * @returns {string}
  */
 proto.getBoxId = function(layer, feature, relation_index) {
-  return (null !== relation_index && undefined !== relation_index) ? `${layer.id}_${feature.id}_${relation_index}` : `${layer.id}_${feature.id}`;
+  return (null !== relation_index && undefined !== relation_index)
+    ? `${layer.id}_${feature.id}_${relation_index}`
+    : `${layer.id}_${feature.id}`;
 };
 
 /**
@@ -685,9 +687,9 @@ proto.setActionsForLayers = function(layers, options = { add: false }) {
  */
 proto.createActionState = function({layer, dynamicProperties=['toggled']}) {
   // check number of download formats
-  const propertiesObject = dynamicProperties.reduce((accumulator, property) => { accumulator[property] = {}; return accumulator; }, {});
-  layer.features.map((_, idx) => { Object.keys(propertiesObject).forEach(property => { propertiesObject[property][idx] = null; }); });
-  return Vue.observable(propertiesObject);
+  const properties = dynamicProperties.reduce((obj, prop) => { obj[prop] = {}; return obj; }, {});
+  layer.features.map((_, idx) => { Object.keys(properties).forEach(prop => { properties[prop][idx] = null; }); });
+  return Vue.observable(properties);
 };
 
 /**
@@ -708,14 +710,15 @@ proto.getActionLayerById = function({layer, id}={}) {
  * @param value component value or null
  */
 proto.setCurrentActionLayerFeatureTool = function({layer, action, index, component=null}={}) {
-  if (component) {
-    if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].toggleable) {
-      this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
-    }
-    this.state.currentactionfeaturelayer[layer.id][index] = action;
-  } else {
-    this.state.currentactionfeaturelayer[layer.id][index] = null;
+  if (
+    component &&
+    this.state.currentactiontools[layer.id][index] &&
+    action.id !== this.state.currentactionfeaturelayer[layer.id][index].id &&
+    this.state.currentactionfeaturelayer[layer.id][index].toggleable
+  ) {
+    this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
   }
+  this.state.currentactionfeaturelayer[layer.id][index] = component ? action : null;
   this.state.currentactiontools[layer.id][index] = component;
 };
 
@@ -724,8 +727,7 @@ proto.setCurrentActionLayerFeatureTool = function({layer, action, index, compone
  * @FIXME add description
  */
 proto.addCurrentActionToolsLayer = function({id, layer, config={}}) {
-  this.state.actiontools[id] = {};
-  this.state.actiontools[id][layer.id] = config;
+  this.state.actiontools[id] = { [layer.id]: config };
 };
 
 /**
@@ -734,15 +736,16 @@ proto.addCurrentActionToolsLayer = function({id, layer, config={}}) {
  * @param layer
  */
 proto.resetCurrentActionToolsLayer = function(layer) {
-  layer.features.forEach((_, idx)=> {
-    if (this.state.currentactiontools[layer.id]) {
-      if (undefined === this.state.currentactiontools[layer.id][idx]) {
-        Vue.set(this.state.currentactiontools[layer.id], idx, null);
-      } else {
-        this.state.currentactiontools[layer.id][idx] = null;
-      }
-      this.state.currentactionfeaturelayer[layer.id][idx] = null;
+  layer.features.forEach((_, idx) => {
+    if (!this.state.currentactiontools[layer.id]) {
+      return;
     }
+    if (undefined === this.state.currentactiontools[layer.id][idx]) {
+      Vue.set(this.state.currentactiontools[layer.id], idx, null);
+    } else {
+      this.state.currentactiontools[layer.id][idx] = null;
+    }
+    this.state.currentactionfeaturelayer[layer.id][idx] = null;
   })
 };
 
@@ -2262,7 +2265,7 @@ proto._toggleLayerFeatureBox = function(layer, feature, collapsed) {
  * @since 3.8.0
  */
 proto._removeLayerFeatureBox = function(layer, feature_to_delete) {
-  setTimeout(()=> delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feature_to_delete)]);
+  setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feature_to_delete)]);
 };
 
 /**
@@ -2378,7 +2381,7 @@ proto._setActionMultiDownloadFeature = function(layer) {
         format,
         class: GUI.getFontClass(format),
         hint: `sdk.tooltips.download_${format}`,
-        cbk: (layer, feature, action, index)=> {
+        cbk: (layer, feature, action, index) => {
           // un-toggle downloads action
           this.downloadFeatures(format, layer, feature, action, index);
           if ('polygon' !== this.state.query.type) {
