@@ -62,6 +62,7 @@ import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
+import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
 import MetadataProjectBBoxContent from './MetadataProjectBBoxContent.vue';
@@ -175,6 +176,7 @@ export {
   LayerOpacityPicker,
   Map,
   MapAddLayer,
+  MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,
   MetadataProjectBBoxContent,
