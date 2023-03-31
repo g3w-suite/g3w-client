@@ -92,7 +92,7 @@
             />
 
             <!-- CHANGE MAP -->
-            <li v-if="numberOfProjectsInGroup > 1" id="changemaps" class="dropdown user">
+            <li v-if="showChangeMap" id="changemaps" class="dropdown user">
               <a href="#" @click="openChangeMapMenu" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('change-map')" aria-hidden="true"></i>
                 <span v-t="'changemap'"></span>
@@ -1112,8 +1112,18 @@ export default {
     login_url(){
       return this.appconfig.user.login_url
     },
+    /**
+     * @deprecate 3.9.0
+     * */
     numberOfProjectsInGroup() {
       return this.appconfig.projects.length;
+    },
+    /**
+     * @since 3.8.0
+     */
+    showChangeMap(){
+      console.log()
+      return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
     },
     frontendurl() {
       return this.urls.frontendurl;
@@ -1172,7 +1182,7 @@ export default {
      */
     openChangeMapMenu(){
       GUI.openChangeMapMenu();
-    }
+    },
   },
   watch: {
     'language'(language, currentlanguage) {

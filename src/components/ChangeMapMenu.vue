@@ -86,10 +86,13 @@ export default {
         this.items = [macrogroup];
         this.steps = [];
       } else {
-        this.current = 'root';
-        this.items = this.macrogroupsandgroups;
-        this.steps = [];
+        this.showRoot();
       }
+    },
+    showRoot(){
+      this.current = 'root';
+      this.items = this.macrogroupsandgroups;
+      this.steps = [];
     },
     async showGroups(item){
       this.loading = true;
@@ -166,22 +169,19 @@ export default {
       return imageSrc && this.$options.host ? `${this.$options.host}${imageSrc}` : imageSrc;
     }
   },
-  async created(){
-    this.loading = true;
+  created() {
     // at start time set item projects
     this.items = ProjectsRegistry.getListableProjects();
     this.parent = ProjectsRegistry.getCurrentProjectGroup();
     this.currentProjectGroupId = this.parent.id;
     // get macrogroups
-    this.macrogroups = await XHR.get({
-      url: API_BASE_URLS.ABOUT.macrogroups
-    });
+    this.macrogroups = ApplicationService.getConfig().macrogroups;
     // get projects
-    this.groups = await XHR.get({
-      url: API_BASE_URLS.ABOUT.nomacrogoups
-    });
+    this.groups = ApplicationService.getConfig().groups;
     this.macrogroupsandgroups = [...this.macrogroups, ...this.groups];
-    this.loading = false;
+    if (0 === this.items.length) {
+      this.showRoot();
+    }
   }
 };
 </script>

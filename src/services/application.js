@@ -4,7 +4,7 @@
  */
 
 import appConfig from 'config';
-import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS } from 'app/constant';
+import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS, API_BASE_URLS } from 'app/constant';
 import ApplicationState from 'store/application-state';
 import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
@@ -318,8 +318,15 @@ const ApplicationService = function() {
       initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
         initConfigUrl:  `${appConfig.server.urls.initconfig}`
       });
+
       // write urls of static files and media url (base url and vector url)
       this.baseurl = initConfig.baseurl;
+      /**
+       * Since 3.8.0
+       * @type {string|string}
+       */
+      const {macrogroups, groups} = await this.getMacrogroupsGroups();
+
       config.server.urls.baseurl = initConfig.baseurl;
       config.server.urls.frontendurl = initConfig.frontendurl;
       config.server.urls.staticurl = initConfig.staticurl;
@@ -379,10 +386,36 @@ const ApplicationService = function() {
         plugins: config.group.plugins,
         tools: config.tools,
         views: config.views || {},
-        user: config.user || null
+        user: config.user || null,
+        /**
+         * @since 3.8.0
+         */
+        groups,
+        macrogroups,
       };
     } catch(error) {
       return Promise.reject(error);
+    }
+  };
+
+  /**
+   * @since 3.8.0
+   */
+  this.getMacrogroupsGroups = async function(){
+    try {
+      return {
+        macrogroups: await XHR.get({
+          url: API_BASE_URLS.ABOUT.macrogroups
+        }),
+        groups: await XHR.get({
+          url: API_BASE_URLS.ABOUT.nomacrogoups
+        })
+      }
+    } catch(err){
+      return {
+        macrogroups: [],
+        groups:[]
+      }
     }
   };
 
