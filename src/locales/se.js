@@ -406,6 +406,10 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logga ut",
     no_other_projects: "Inga projekt för denna grupp",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "No more groups fro this Macrogroup",
     yes: "Ja",
     no: "Nej",
     back: "Gå tillbaka",

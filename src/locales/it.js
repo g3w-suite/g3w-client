@@ -407,6 +407,10 @@ export default {
     toggle_color_scheme: "Cambia colore",
     logout: "Esci",
     no_other_projects: "Non ci sono altri progetti in questo gruppo cartografico",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "Non ci sono altri gruppi in questo Macrogruppo",
     yes: "Si",
     no: "No",
     back:"Indietro",
