@@ -30,10 +30,12 @@
       class="menu-item">
 
         <div
+
           v-if="logoSrc(item)"
           class="menu-item-image">
 
           <img
+            @error="ImageError(item)"
             :src="logoSrc(item)"
             class="img-responsive">
         </div>
@@ -78,6 +80,9 @@ export default {
     }
   },
   methods: {
+    ImageError(item){
+      item.thumbnail = null;
+    },
     back(){
       if (this.steps.length > 1) {
         this.steps = [];
@@ -110,8 +115,9 @@ export default {
     async showProjects(item){
       this.loading = true;
       this.parent = item;
-      if (parent.id === this.currentProjectGroupId){
+      if (this.parent.id === this.currentProjectGroupId){
         this.items = ProjectsRegistry.getListableProjects();
+        this.current = 'projects';
       } else {
         try {
           this.items = await XHR.get({
@@ -176,7 +182,18 @@ export default {
     this.macrogroups = ApplicationService.getConfig().macrogroups;
     // get projects
     this.groups = ApplicationService.getConfig().groups;
+    // collect all groups and macrogroups
     this.macrogroupsandgroups = [...this.macrogroups, ...this.groups];
+    // check if group on initConfig is referred to macrogrop
+    const isMacroGroup = this.macrogroups.find(macrogroup => macrogroup.id === this.parent.id);
+    if (isMacroGroup) {
+      // check belong group
+      const findGroup = this.groups.find(group => group.id === this.parent.id);
+      if (findGroup) {
+        this.parent = findGroup;
+        this.currentProjectGroupId = this.parent.id;
+      }
+    }
     if (0 === this.items.length) {
       this.showRoot();
     }
