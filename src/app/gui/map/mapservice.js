@@ -1008,7 +1008,7 @@ proto.getMapExtent = function(){
 proto.addMapExtentUrlParameterToUrl = function(url, epsg) {
   url = new URL(url);
   const map_extent = ("undefined" !== typeof epsg && this.getEpsg() !== epsg) ?
-    ol.proj.transform(this.getMapExtent(), this.getEpsg(), epsg) :
+    ol.proj.transformExtent(this.getMapExtent(), this.getEpsg(), epsg) :
     this.getMapExtent();
   url.searchParams.set('map_extent', map_extent.toString());
   return url.toString()
