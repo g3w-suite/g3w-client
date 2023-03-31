@@ -80,11 +80,9 @@ export default {
   methods: {
     back(){
       if (this.steps.length > 1) {
-        const macrogroup = this.macrogroups.find(macrogroup => macrogroup.id === this.parent.id);
-        this.parent = null;
-        this.current = 'macrogroup';
-        this.items = [macrogroup];
         this.steps = [];
+        const item = this.macrogroups.find(macrogroup => macrogroup.id === this.parent.id);
+        this.showGroups(item);
       } else {
         this.showRoot();
       }
