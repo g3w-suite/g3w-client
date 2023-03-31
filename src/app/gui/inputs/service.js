@@ -29,26 +29,43 @@ proto.getValue = function() {
   return this.state.value;
 };
 
+/**
+ * @param value
+ *
+ * @returns {void}
+ */
 proto.setValue = function(value) {
-  if (value === null || value === undefined) {
-    if (Array.isArray(this.state.input.options)) {
-      if (this.state.input.options[0].default)
-        this.state.value = this.state.input.options[0].default;
-      else if(Array.isArray(this.state.input.options.values)) {
-        if (this.state.input.options.values.length) {
-          this.state.value =  this.state.input.options.values[0] &&
-            this.state.input.options.values[0].value
-            || this.state.input.options.values[0]
-        }
-      }
-    } else {
-      //check if we can state.check get_default_value from input.options.default is set
-      if ( this.state.get_default_value && typeof this.state.input.options.default !== "undefined" && this.state.input.options.default !== null) {
-        this.state.value = this.state.input.options.default;
-        this.state.value_from_default_value = true;
-      }
+
+  if (null !== value || undefined !== value) {
+    return;
+  }
+
+  const {options}   = this.state.input;
+  let default_value = options.default;
+
+  /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
+  if (Array.isArray(options)) {
+    if (options[0].default) {
+      default_value = options[0].default;
+    } else if (Array.isArray(options.values) && options.values.length > 0) {
+      default_value = options.values[0] && (options.values[0].value || options.values[0]);
     }
   }
+
+  // check if default value is set
+  const get_default_value = (
+    this.state.get_default_value && // ref: core/layers/tablelayer.js::getFieldsWithValues()
+    undefined !== default_value &&
+    null !== default_value
+  );
+
+  // check if we can state.check get_default_value from input.options.default is set
+  if (get_default_value && undefined === options.default_expression) {
+    this.state.value = default_value;
+  }
+
+  this.state.value_from_default_value = get_default_value;
+
 };
 
 proto.addValueToValues = function(value) {
@@ -128,8 +145,12 @@ proto.setUpdate = function(){
   const {value, _value} = this.state;
   if (this.state.input.type === 'media' && toRawType(value) !== 'Object' && toRawType(_value) !== 'Object') {
     this.state.update = value.value != _value.value;
+  } else if (this.state.input.type === "datetimepicker") {
+    //check
+    this.state.update = (null !== value ? value.toUpperCase(): value) != (_value ? _value.toUpperCase(): _value);
+  } else {
+    this.state.update = value != _value;
   }
-  else this.state.update = value != _value;
 };
 
 module.exports = Service;

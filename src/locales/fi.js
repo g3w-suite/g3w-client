@@ -359,6 +359,7 @@ export default {
           textarea: "teksti",
           string: "merkkijono",
           date: "päiväys",
+          datetime: "päiväys",
           float: "liukuluku",
           table: "taulukko"
         },

@@ -359,6 +359,7 @@ export default {
           textarea: "text",
           string: "string - text",
           date: "data",
+          datetime: "data",
           float: "float - nr. cu zecimale",
           table: "tabelă"
         },
