@@ -93,7 +93,7 @@
 
             <!-- CHANGE MAP -->
             <li v-if="numberOfProjectsInGroup > 1" id="changemaps" class="dropdown user">
-              <a href="#" @click="openProjectsMenu" class="dropdown-toggle" data-toggle="dropdown">
+              <a href="#" @click="openChangeMapMenu" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('change-map')" aria-hidden="true"></i>
                 <span v-t="'changemap'"></span>
               </a>
@@ -1161,8 +1161,17 @@ export default {
     getLogoLink() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
     },
+    /**
+     * @deprecate since 3.8.0
+     */
     openProjectsMenu() {
       GUI.openProjectsMenu();
+    },
+    /**
+     * @since 3.8.0
+     */
+    openChangeMapMenu(){
+      GUI.openChangeMapMenu();
     }
   },
   watch: {

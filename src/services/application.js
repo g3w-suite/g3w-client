@@ -38,6 +38,14 @@ const ApplicationService = function() {
     changeProject({gid, host}={}){
       return this._changeProject({gid, host})
     },
+    /**
+     * @since 3.8.0
+     */
+    changeMapProject({url, epsg}){
+      url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      history.replaceState(null, null, url);
+      location.replace(url);
+    },
     online() {
       this.setOnline();
     },
@@ -599,11 +607,11 @@ const ApplicationService = function() {
    * @returns {JQuery.Promise<any, any, any>}
    * @private
    */
-  this._changeProject = function({gid, host}={}) {
+  this._changeProject = function({gid, host, crs}={}) {
     const d = $.Deferred();
     this._gid = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
-    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl);
+    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
     history.replaceState(null, null, url);
     location.replace(url);
     d.resolve();

@@ -999,10 +999,18 @@ proto.getMapExtent = function(){
   return map.getView().calculateExtent(map.getSize());
 };
 
-proto.addMapExtentUrlParameterToUrl = function(url){
+/**
+ *
+ * @param url
+ * @param crs @since 3.8.0
+ * @returns {string}
+ */
+proto.addMapExtentUrlParameterToUrl = function(url, epsg) {
   url = new URL(url);
-  const map_extent = this.getMapExtent().toString();
-  url.searchParams.set('map_extent', map_extent);
+  const map_extent = ("undefined" !== typeof epsg && this.getEpsg() !== epsg) ?
+    ol.proj.transform(this.getMapExtent(), this.getEpsg(), epsg) :
+    this.getMapExtent();
+  url.searchParams.set('map_extent', map_extent.toString());
   return url.toString()
 };
 
