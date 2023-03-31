@@ -316,6 +316,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Edellinen",
+          zoom_next: "Zoom Seurata"
         }
       },
       relations: {
@@ -355,6 +359,7 @@ export default {
           textarea: "teksti",
           string: "merkkijono",
           date: "päiväys",
+          datetime: "päiväys",
           float: "liukuluku",
           table: "taulukko"
         },

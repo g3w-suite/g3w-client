@@ -316,6 +316,10 @@ export default {
             metric: 'Metri',
             nautical: 'Mile Nautice'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Anterior",
+          zoom_next: "Zoom Urmatorul"
         }
       },
       relations: {
@@ -355,6 +359,7 @@ export default {
           textarea: "text",
           string: "string - text",
           date: "data",
+          datetime: "data",
           float: "float - nr. cu zecimale",
           table: "tabelă"
         },

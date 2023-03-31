@@ -316,6 +316,10 @@ export default {
             metric: 'Meter',
             nautical: 'Nautische Meile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Vorheriger",
+          zoom_next: "Zoom Nächster"
         }
       },
       relations: {
@@ -355,6 +359,7 @@ export default {
           textarea: "text",
           string: "string",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
