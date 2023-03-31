@@ -19,41 +19,41 @@
       </div>
     </template>
 
+    <div class="g3w-change-map-menu-container" v-if="items.length">
+      <div
+                v-for="item in items"
+                :key="item.title"
+                @click="trigger(item)"
+                class="menu-item">
+
+          <div
+
+                  v-if="logoSrc(item)"
+                  class="menu-item-image">
+
+            <img
+                    @error="ImageError(item)"
+                    :src="logoSrc(item)"
+                    class="img-responsive">
+          </div>
+
+          <div
+                  v-else
+                  class="no-menu-item-image skin-background-color">
+          </div>
+
+          <div class="menu-item-content">
+            <div class="menu-item-text">
+              <h4 class="menu-item-title">{{ item.title }}</h4>
+              <div v-html="item.description"></div>
+            </div>
+          </div>
+
+        </div>
+    </div>
     <template v-else>
-
+      <h3 style="font-weight: bold" v-t="`no_other_${current}`"></h3>
     </template>
-    <div class="g3w-change-map-menu-container">
-      <div
-      v-for="item in items"
-      :key="item.title"
-      @click="trigger(item)"
-      class="menu-item">
-
-        <div
-
-          v-if="logoSrc(item)"
-          class="menu-item-image">
-
-          <img
-            @error="ImageError(item)"
-            :src="logoSrc(item)"
-            class="img-responsive">
-        </div>
-
-      <div
-        v-else
-        class="no-menu-item-image skin-background-color">
-      </div>
-
-      <div class="menu-item-content">
-        <div class="menu-item-text">
-          <h4 class="menu-item-title">{{ item.title }}</h4>
-          <div v-html="item.description"></div>
-        </div>
-      </div>
-
-    </div>
-    </div>
   </div>
 
 </template>
@@ -85,8 +85,8 @@ export default {
     },
     back(){
       if (this.steps.length > 1) {
+        const item = this.steps[0];
         this.steps = [];
-        const item = this.macrogroups.find(macrogroup => macrogroup.id === this.parent.id);
         this.showGroups(item);
       } else {
         this.showRoot();
@@ -109,7 +109,7 @@ export default {
       } catch(err) {
         this.items = [];
       }
-      this.steps.push(this.current);
+      this.steps.push(this.parent);
       this.loading = false;
     },
     async showProjects(item){
@@ -128,8 +128,10 @@ export default {
           this.items = [];
         }
       }
-      this.steps.push(this.current);
+
+      this.steps.push(this.parent);
       this.loading = false;
+
     },
     async trigger(item) {
       switch(this.current) {
