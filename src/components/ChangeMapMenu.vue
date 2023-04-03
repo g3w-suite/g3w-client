@@ -21,25 +21,18 @@
 
     <div class="g3w-change-map-menu-container" v-if="items.length">
       <div
-                v-for="item in items"
-                :key="item.title"
-                @click="trigger(item)"
-                class="menu-item">
+        v-for="item in items"
+        :key="item.title"
+        @click.stop="trigger(item)"
+        class="menu-item">
 
           <div
-
-                  v-if="logoSrc(item)"
-                  class="menu-item-image">
+            class="menu-item-image">
 
             <img
-                    @error="ImageError(item)"
-                    :src="logoSrc(item)"
-                    class="img-responsive">
-          </div>
-
-          <div
-                  v-else
-                  class="no-menu-item-image skin-background-color">
+              @error="ImageError(item)"
+              :src="item.thumbnail || item.header_logo_img || item.logo_img"
+              class="img-responsive">
           </div>
 
           <div class="menu-item-content">
@@ -80,8 +73,17 @@ export default {
     }
   },
   methods: {
+    /**
+     * Method handle error image loading
+     * */
     ImageError(item){
-      item.thumbnail = LOGO_GIS3W;
+      const g3w_logo = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+      if (item.thumbnail)
+        item.thumbnail = g3w_logo;
+      else if (item.logo_img)
+        item.thumbnail = g3w_logo;
+      else if (item.header_logo_img)
+        item.header_logo_img = g3w_logo;
     },
     back(){
       if (this.steps.length > 1) {
@@ -123,6 +125,10 @@ export default {
           this.items = await XHR.get({
             url: `${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`
           });
+          this.items.forEach(item => this.setItemImageSrc({
+            item,
+            type: 'project'
+          }));
           this.current = 'projects';
         } catch(err){
           this.items = [];
@@ -165,25 +171,55 @@ export default {
       }
     },
 
-    logoSrc({thumbnail, logo_img, header_logo_img}) {
-      let imageSrc;
-      const src = thumbnail || logo_img || header_logo_img;
-      if (src) {
-        imageSrc= src.indexOf(ProjectsRegistry.config.mediaurl) !== -1 ? src : (src.indexOf('static') === -1 && src.indexOf('media') === -1) ?
-          `${ProjectsRegistry.config.mediaurl}${src}`: `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
-      } else imageSrc = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
-      return imageSrc && this.$options.host ? `${this.$options.host}${imageSrc}` : imageSrc;
+    /**
+     * Method to set scr image of project, group, macrogroup
+     * @param item
+     * @param type <String> project, group, macrogroup
+     */
+    setItemImageSrc({item, type}={}) {
+
+      const setSrc = (src)=> {
+        if (src) {
+          imageSrc= src.indexOf(ProjectsRegistry.config.mediaurl) !== -1 ? src : (src.indexOf('static') === -1 && src.indexOf('media') === -1) ?
+            `${ProjectsRegistry.config.mediaurl}${src}`: `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+        } else imageSrc = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+        return this.$options.host ? `${this.$options.host}${imageSrc}` : imageSrc;
+      };
+
+      switch(type) {
+        case 'project':
+          item.thumbnail = setSrc(item.thumbnail);
+          break;
+        case 'group':
+          item.header_logo_img = setSrc(item.header_logo_img);
+          break;
+        case 'macrogroup':
+          item.logo_img = setSrc(item.logo_img);
+          break;
+      }
     }
   },
   created() {
     // at start time set item projects
     this.items = ProjectsRegistry.getListableProjects();
+    this.items.forEach(item => this.setItemImageSrc({
+      item,
+      type: 'project'
+    }));
     this.parent = ProjectsRegistry.getCurrentProjectGroup();
     this.currentProjectGroupId = this.parent.id;
     // get macrogroups
     this.macrogroups = ApplicationService.getConfig().macrogroups;
-    // get projects
+    this.macrogroups.forEach(item => this.setItemImageSrc({
+      item,
+      type: 'magrocroup'
+    }));
+    // get groups
     this.groups = ApplicationService.getConfig().groups;
+    this.groups.forEach(item => this.setItemImageSrc({
+      item,
+      type: 'group'
+    }));
     // collect all groups and macrogroups
     this.macrogroupsandgroups = [...this.macrogroups, ...this.groups];
     // check if group on initConfig is referred to macrogrop
@@ -227,18 +263,10 @@ export default {
     padding-bottom: 50%;
     opacity: 0.7;
   }
-  .no-menu-item-image {
-    width: 50%;
-    height: 60px;
-    border-radius: 3px;
-    margin: auto;
-    margin-bottom: 5px;
-    opacity: 0.7;
-  }
-  .menu-item-image:hover, .no-menu-item-image:hover {
+
+  .menu-item-image:hover {
     opacity: 1;
   }
-
 
   .menu-item-image img {
     position: absolute;
