@@ -590,6 +590,12 @@ export const LOCAL_ITEM_IDS = {
   }
 };
 
+/**
+ * @since 3.8.0
+ */
+
+export const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
+
 export default {
   APP_VERSION,
   API_BASE_URLS,
@@ -617,4 +623,5 @@ export default {
   TOC_THEMES_INIT_STATUS,
   VIEWPORT,
   ZINDEXES,
+  LOGO_GIS3W,
 };

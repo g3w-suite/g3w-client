@@ -61,7 +61,7 @@
 <script>
 import ApplicationService from 'services/application';
 import ProjectsRegistry from 'store/projects';
-import {API_BASE_URLS} from "constant";
+import {API_BASE_URLS, LOGO_GIS3W} from "constant";
 
 const Projections = require('g3w-ol/projection/projections');
 const {XHR} = require('core/utils/utils');
@@ -81,7 +81,7 @@ export default {
   },
   methods: {
     ImageError(item){
-      item.thumbnail = null;
+      item.thumbnail = LOGO_GIS3W;
     },
     back(){
       if (this.steps.length > 1) {
@@ -170,8 +170,8 @@ export default {
       const src = thumbnail || logo_img || header_logo_img;
       if (src) {
         imageSrc= src.indexOf(ProjectsRegistry.config.mediaurl) !== -1 ? src : (src.indexOf('static') === -1 && src.indexOf('media') === -1) ?
-          `${ProjectsRegistry.config.mediaurl}${src}`: null;
-      } else imageSrc = null;
+          `${ProjectsRegistry.config.mediaurl}${src}`: `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+      } else imageSrc = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
       return imageSrc && this.$options.host ? `${this.$options.host}${imageSrc}` : imageSrc;
     }
   },
@@ -210,7 +210,7 @@ export default {
   .g3w-change-map-menu-container {
     height: 100%;
     display: grid;
-    grid-template-columns: repeat(3, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
     grid-gap: 1em;
     overflow-y: auto;
 
