@@ -405,10 +405,10 @@ const ApplicationService = function() {
     try {
       return {
         macrogroups: await XHR.get({
-          url: API_BASE_URLS.ABOUT.macrogroups
+          url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.macrogroups}`
         }),
         groups: await XHR.get({
-          url: API_BASE_URLS.ABOUT.nomacrogoups
+          url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.nomacrogoups}`
         })
       }
     } catch(err){

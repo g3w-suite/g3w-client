@@ -419,8 +419,8 @@ export const API_BASE_URLS = {
    */
   ABOUT: {
     macrogroups: '/about/api/macrogroup/', // info about macrogroups of G3W-SUITE
-    nomacrogoups: '/about/api/group/nomacrogroup', // info about no macrogroups of G3W-SUITE
-    projects: '/about/api/group/__G3W_GROUP_ID__/projects',
+    nomacrogoups: '/about/api/group/nomacrogroup/', // info about no macrogroups of G3W-SUITE
+    projects: '/about/api/group/__G3W_GROUP_ID__/projects/',
     group:'/about/api/group/', //
 //
   },

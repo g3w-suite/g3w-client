@@ -104,7 +104,7 @@ export default {
       this.parent = item;
       try {
         this.items = await XHR.get({
-          url: `${API_BASE_URLS.ABOUT.group}/${item.id}`
+          url: `/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${item.id}/`
         });
         this.current = 'groups';
 
@@ -123,7 +123,7 @@ export default {
       } else {
         try {
           this.items = await XHR.get({
-            url: `${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`
+            url: `/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`
           });
           this.items.forEach(item => this.setItemImageSrc({
             item,
