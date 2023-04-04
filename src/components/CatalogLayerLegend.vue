@@ -48,7 +48,7 @@
         >
           <span>{{category.title}}</span>
           <span v-if="showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
-            [{{layer.featurecount[category.ruleKey]}}]
+            [{{layer.stylesfeaturecount[currentstyle][category.ruleKey]}}]
           </span>
         </span>
 
@@ -78,7 +78,8 @@
     },
     data() {
       return {
-        categories: []
+        categories: [],
+        currentstyle: this.layer.styles.find(style => true === style.current).name
       }
     },
     computed: {
@@ -149,7 +150,8 @@
         }
         if (layerId === this.layer.id) {
           if ("undefined" !== typeof style) {
-            this.layer.featurecount = await this.getProjectLayer().getStyleFeatureCount(style);
+            await this.getProjectLayer().getStyleFeatureCount(style);
+            this.currentstyle = style;
           }
           await this.setLayerCategories(true);
         }
