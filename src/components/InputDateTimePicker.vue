@@ -145,6 +145,7 @@ export default {
         const newDate = $(`#${this.idinputdatetimepiker}`).val();
         const value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
         this.state.value = value;
+        this.change();
       });
 
     $(`#${this.iddatetimepicker}`)
