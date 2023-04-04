@@ -1133,15 +1133,20 @@ proto.getFeatureCount = function(){
  */
 proto.getStyleFeatureCount = async function(style){
   if ("undefined" === typeof this.state.stylesfeaturecount[style]){
-    this.state.stylesfeaturecount[style] = await XHR.post({
-      url: this.config.urls.featurecount,
-      data: {
-        style
-      },
-      contentType: 'application/json'
-    })
+    try {
+      const {result, data} = await XHR.post({
+        url: `${this.config.urls.featurecount}${this.getId()}/`,
+        data: JSON.stringify({
+          style
+        }),
+        contentType: 'application/json'
+      });
+      this.state.stylesfeaturecount[style] = true === result ? data : {};
+    } catch(err){
+      this.state.stylesfeaturecount[style] = {};
+    }
   }
-  return this.state.stylesfeaturecount[style]
+  return this.state.stylesfeaturecount[style];
 };
 
 /// LAYER PROPERTIES
