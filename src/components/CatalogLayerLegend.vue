@@ -149,11 +149,14 @@
           return;
         }
         if (layerId === this.layer.id) {
-          if ("undefined" !== typeof style) {
-            await this.getProjectLayer().getStyleFeatureCount(style);
-            this.currentstyle = style;
-          }
-          await this.setLayerCategories(true);
+          try {
+            await this.setLayerCategories(true);
+            if ("undefined" !== typeof style) {
+              await this.getProjectLayer().getStyleFeatureCount(style);
+              this.currentstyle = style;
+            }
+          } catch(err) {}
+
         }
         if (this.dynamic) {
           await this.setLayerCategories(false);
