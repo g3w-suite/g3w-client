@@ -51,6 +51,7 @@ function Project(config={}, options={}) {
     map_themes: `/${this.getType()}/api/prjtheme/${this.getId()}/`,
     expression_eval: `/api/expression_eval/${this.getId()}/`,
     vector_data: `${this.getVectorUrl()}data/${this.getType()}/${this.getId()}/`,
+    featurecount:`${this.getVectorUrl()}featurecount/${this.getType()}/${this.getId()}/`,
 };
   /*
    *
@@ -459,6 +460,5 @@ proto.getUrl = function(type){
 proto.getSpatialBookmarks = function(){
   return this.state.bookmarks || [];
 };
-
 
 module.exports = Project;

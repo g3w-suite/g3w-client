@@ -143,10 +143,14 @@
       },
 
       async handlerChangeLegend(options={}) {
+        const {layerId, style} = options;
         if (this.externallegend) {
           return;
         }
-        if (options.layerId === this.layer.id) {
+        if (layerId === this.layer.id) {
+          if ("undefined" !== typeof style) {
+            this.layer.featurecount = await this.getProjectLayer().getStyleFeatureCount(style);
+          }
           await this.setLayerCategories(true);
         }
         if (this.dynamic) {

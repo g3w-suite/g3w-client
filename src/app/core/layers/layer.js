@@ -53,6 +53,11 @@ function Layer(config={}, options={}) {
     this.config.urls.widget = {
       unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
     };
+    /**
+     * @since 3.8.0
+     *
+     */
+    this.config.urls.featurecount = project.getUrl('featurecount');
     //set custom parameters based on project qgis version
     this.config.searchParams = {
       I: 0,
@@ -94,7 +99,10 @@ function Layer(config={}, options={}) {
     /**
      * @since 3.8.0
      */
-    featurecount: config.featurecount
+    featurecount: config.featurecount,
+    stylesfeaturecount: defaultstyle && config.featurecount && {
+      [defaultstyle]: config.featurecount
+    }
   };
 
   // add selectionFids
@@ -1116,6 +1124,24 @@ proto.isTable = function(){
  */
 proto.getFeatureCount = function(){
   return this.state.featurecount;
+};
+
+/**
+ * @since 3.8.0
+ * @param style
+ * @returns {Promise<Object>}
+ */
+proto.getStyleFeatureCount = async function(style){
+  if ("undefined" === typeof this.state.stylesfeaturecount[style]){
+    this.state.stylesfeaturecount[style] = await XHR.post({
+      url: this.config.urls.featurecount,
+      data: {
+        style
+      },
+      contentType: 'application/json'
+    })
+  }
+  return this.state.stylesfeaturecount[style]
 };
 
 /// LAYER PROPERTIES

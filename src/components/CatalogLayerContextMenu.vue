@@ -611,7 +611,8 @@
           const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
           if (layer) {
             CatalogEventHub.$emit('layer-change-style', {
-              layerId
+              layerId,
+              style: this.layerMenu.stylesMenu.style
             });
             layer.change();
           }
