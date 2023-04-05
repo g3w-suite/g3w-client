@@ -14,13 +14,15 @@
     <bar-loader
       v-if="legend"
       :loading="legend.loading"
-    ></bar-loader>
+    />
 
     <figure v-if="externallegend">
       <img :src="getWmsSourceLayerLegendUrl()" >
     </figure>
 
-    <figure v-else>
+    <figure v-else v-disabled="loading">
+
+      <bar-loader :loading="loading"/>
 
       <div v-for="(category, index) in categories"
         style="display: flex; align-items: center; width: 100%"
@@ -48,7 +50,7 @@
         >
           <span>{{category.title}}</span>
           <span v-if="showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
-            [{{layer.featurecount[category.ruleKey]}}]
+            [{{layer.stylesfeaturecount[currentstyle][category.ruleKey]}}]
           </span>
         </span>
 
@@ -78,7 +80,26 @@
     },
     data() {
       return {
-        categories: []
+
+        /**
+         * Whether to show loading bar while changing style categories
+         * 
+         * @since 3.8.0
+         */
+        loading: false, 
+
+        /**
+         * Array of categories
+         */
+        categories: [],
+
+        /**
+         * Holds a reference to current layer style (active category)
+         * 
+         * @since 3.8.0
+         */
+        currentstyle: this.layer.styles.find(style => true === style.current).name,
+
       }
     },
     computed: {
@@ -89,22 +110,32 @@
        * @since 3.8.0 
        */
       showfeaturecount() {
-       return "undefined" !== typeof this.layer.featurecount;
+        return undefined !== this.layer.featurecount;
       },
 
+      /**
+       * @returns {boolean} whether is a WMS layer 
+       */
       externallegend() {
         return ('wms' === this.layer.source.type);
       },
 
+      /**
+       * @returns {boolean} whether layer has legend to show
+       */
       legend() {
         return this.layer.legend;
       },
 
+      /**
+       * @returns {boolean} whether if need to show legend
+       */
       show() {
         return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },
 
     },
+
     methods: {
 
       getWmsSourceLayerLegendUrl() {
@@ -123,9 +154,8 @@
       },
 
       showHideLayerCategory(index) {
-        const projectLayer = this.getProjectLayer();
         this.categories[index].checked = !this.categories[index].checked;
-        projectLayer.change();
+        this.getProjectLayer().change();
         if ('tab' === this.legendplace) {
           this.layer.legend.change = true;
         } else if (this.categories[index].checked && this.mapReady) {
@@ -142,16 +172,31 @@
         this.legend.loading = false;
       },
 
-      async handlerChangeLegend(options={}) {
+      /**
+       * Method called when is changed style of a layer
+       * 
+       * @since 3.8.0
+       */
+      async onChangeLayerLegendStyle(options={}) {
+        this.loading = true;
         if (this.externallegend) {
           return;
         }
         if (options.layerId === this.layer.id) {
-          await this.setLayerCategories(true);
+          try {
+            await this.setLayerCategories(true);
+            if (undefined !== options.style) {
+              await this.getProjectLayer().getStyleFeatureCount(options.style);
+              this.currentstyle = options.style;
+            }
+          } catch(err) {
+            console.warn('Error while changing layer style')
+          }
         }
         if (this.dynamic) {
           await this.setLayerCategories(false);
         }
+        this.loading = false;
       },
 
       async setLayerCategories(all=false) {
@@ -253,7 +298,7 @@
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.mapReady = false;
-      CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
+      CatalogEventHub.$on('layer-change-style', this.onChangeLayerLegendStyle);
 
       // Get all legend graphics of a layer when start
       // need to exclude wms source
@@ -276,8 +321,8 @@
     },
 
     beforeDestroy() {
-      CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);
-    }
+      CatalogEventHub.$off('layer-change-style', this.onChangeLayerLegendStyle);
+    },
 
   }
 </script>
