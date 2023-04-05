@@ -80,16 +80,26 @@
     },
     data() {
       return {
+
         /**
+         * Whether to show loading bar while changing style categories
+         * 
          * @since 3.8.0
-         * */
-        loading: false, // used to show bar loading when changind style categories
-        categories: [], // Array contain categories
+         */
+        loading: false, 
+
         /**
-         * @sice 3.8.0
-         * current layer style
-         * */
-        currentstyle: this.layer.styles.find(style => true === style.current).name
+         * Array of categories
+         */
+        categories: [],
+
+        /**
+         * Holds a reference to current layer style (active category)
+         * 
+         * @since 3.8.0
+         */
+        currentstyle: this.layer.styles.find(style => true === style.current).name,
+
       }
     },
     computed: {
@@ -100,27 +110,32 @@
        * @since 3.8.0 
        */
       showfeaturecount() {
-       return "undefined" !== typeof this.layer.featurecount;
+        return undefined !== this.layer.featurecount;
       },
 
+      /**
+       * @returns {boolean} whether is a WMS layer 
+       */
       externallegend() {
         return ('wms' === this.layer.source.type);
       },
+
       /**
-       * Boolean. Return true if layer has legend to show
-       * */
+       * @returns {boolean} whether layer has legend to show
+       */
       legend() {
         return this.layer.legend;
       },
 
       /**
-       * Boolean. Return true if need to show legend
-       * */
+       * @returns {boolean} whether if need to show legend
+       */
       show() {
         return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },
 
     },
+
     methods: {
 
       getWmsSourceLayerLegendUrl() {
@@ -139,9 +154,8 @@
       },
 
       showHideLayerCategory(index) {
-        const projectLayer = this.getProjectLayer();
         this.categories[index].checked = !this.categories[index].checked;
-        projectLayer.change();
+        this.getProjectLayer().change();
         if ('tab' === this.legendplace) {
           this.layer.legend.change = true;
         } else if (this.categories[index].checked && this.mapReady) {
@@ -159,23 +173,25 @@
       },
 
       /**
-       * Method call when is changed style of a layer
-       * */
-      async handlerChangeStyleLayerLegend(options={}) {
+       * Method called when is changed style of a layer
+       * 
+       * @since 3.8.0
+       */
+      async onChangeLayerLegendStyle(options={}) {
         this.loading = true;
-        const {layerId, style} = options;
         if (this.externallegend) {
           return;
         }
-        if (layerId === this.layer.id) {
+        if (options.layerId === this.layer.id) {
           try {
             await this.setLayerCategories(true);
-            if ("undefined" !== typeof style) {
-              await this.getProjectLayer().getStyleFeatureCount(style);
-              this.currentstyle = style;
+            if (undefined !== options.style) {
+              await this.getProjectLayer().getStyleFeatureCount(options.style);
+              this.currentstyle = options.style;
             }
-          } catch(err) {}
-
+          } catch(err) {
+            console.warn('Error while changing layer style')
+          }
         }
         if (this.dynamic) {
           await this.setLayerCategories(false);
@@ -282,7 +298,7 @@
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.mapReady = false;
-      CatalogEventHub.$on('layer-change-style', this.handlerChangeStyleLayerLegend);
+      CatalogEventHub.$on('layer-change-style', this.onChangeLayerLegendStyle);
 
       // Get all legend graphics of a layer when start
       // need to exclude wms source
@@ -305,8 +321,8 @@
     },
 
     beforeDestroy() {
-      CatalogEventHub.$off('layer-change-style', this.handlerChangeStyleLayerLegend);
-    }
+      CatalogEventHub.$off('layer-change-style', this.onChangeLayerLegendStyle);
+    },
 
   }
 </script>
