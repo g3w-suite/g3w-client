@@ -14,13 +14,15 @@
     <bar-loader
       v-if="legend"
       :loading="legend.loading"
-    ></bar-loader>
+    />
 
     <figure v-if="externallegend">
       <img :src="getWmsSourceLayerLegendUrl()" >
     </figure>
 
-    <figure v-else>
+    <figure v-else v-disabled="loading">
+
+      <bar-loader :loading="loading"/>
 
       <div v-for="(category, index) in categories"
         style="display: flex; align-items: center; width: 100%"
@@ -78,7 +80,15 @@
     },
     data() {
       return {
-        categories: [],
+        /**
+         * @since 3.8.0
+         * */
+        loading: false, // used to show bar loading when changind style categories
+        categories: [], // Array contain categories
+        /**
+         * @sice 3.8.0
+         * current layer style
+         * */
         currentstyle: this.layer.styles.find(style => true === style.current).name
       }
     },
@@ -96,11 +106,16 @@
       externallegend() {
         return ('wms' === this.layer.source.type);
       },
-
+      /**
+       * Boolean. Return true if layer has legend to show
+       * */
       legend() {
         return this.layer.legend;
       },
 
+      /**
+       * Boolean. Return true if need to show legend
+       * */
       show() {
         return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },
@@ -143,7 +158,11 @@
         this.legend.loading = false;
       },
 
-      async handlerChangeLegend(options={}) {
+      /**
+       * Method call when is changed style of a layer
+       * */
+      async handlerChangeStyleLayerLegend(options={}) {
+        this.loading = true;
         const {layerId, style} = options;
         if (this.externallegend) {
           return;
@@ -161,6 +180,7 @@
         if (this.dynamic) {
           await this.setLayerCategories(false);
         }
+        this.loading = false;
       },
 
       async setLayerCategories(all=false) {
@@ -262,7 +282,7 @@
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.mapReady = false;
-      CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
+      CatalogEventHub.$on('layer-change-style', this.handlerChangeStyleLayerLegend);
 
       // Get all legend graphics of a layer when start
       // need to exclude wms source
@@ -285,7 +305,7 @@
     },
 
     beforeDestroy() {
-      CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);
+      CatalogEventHub.$off('layer-change-style', this.handlerChangeStyleLayerLegend);
     }
 
   }
