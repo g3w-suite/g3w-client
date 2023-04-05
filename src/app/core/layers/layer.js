@@ -100,7 +100,10 @@ function Layer(config={}, options={}) {
      * @since 3.8.0
      */
     featurecount: config.featurecount,
-    stylesfeaturecount: defaultstyle && config.featurecount && {
+    /**
+     * @since 3.8.0
+     */
+    stylesfeaturecount: config.featurecount && defaultstyle && {
       [defaultstyle]: config.featurecount
     }
   };
