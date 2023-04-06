@@ -35,6 +35,7 @@
             class="menu-item-image">
 
             <img
+              alt="logo"
               @error="ImageError(item)"
               :src="item.thumbnail || item.header_logo_img || item.logo_img"
               class="img-responsive">
