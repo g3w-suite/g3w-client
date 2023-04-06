@@ -280,23 +280,65 @@
           categories.forEach(category => category.disabled = ("undefined" !== typeof category.checked ? category.checked : true));
         }
       },
-
+      /**
+       * @since 3.8.0
+       */
+      registerChangeMapLegendParamsEvent(){
+        GUI.getService('map')
+          .on('change-map-legend-params', async () => {
+            this.mapReady = true;
+            if (
+              this.layer.visible &&
+              (false === this.externallegend && ('toc' === this.legendplace || this.layer.categories))
+            ) {
+              this.setLayerCategories(false);
+            }
+          });
+      },
+      /**
+       * @since3.8.0
+       * @returns {Promise<void>}
+       */
+      async runInitLayerVisibleAction(){
+        await this.setLayerCategories(true);
+        if (this.dynamic) {
+          await this.setLayerCategories(false);
+          this.registerChangeMapLegendParamsEvent();
+        }
+        this.initialize = true;
+      }
     },
     watch: {
 
       /**
        * Only when visible show categories layer. In case of dynamic legend check
+       * @param visible Boolean
       */
-      'layer.visible'(visible) {
-        if (!this.externallegend && visible) {
-          this.setLayerCategories(!this.dynamic);
+      async 'layer.visible'(visible) {
+        // check if layer is enabled to get legend and if is visible
+        if (false === this.externallegend && visible) {
+          // check if the first time that is visible.
+          // in this case need to be initialize
+          if (false === this.initialize) {
+            await this.runInitLayerVisibleAction();
+          } else {
+            //otherwise show categories base on if is dynamic legend or not
+            await this.setLayerCategories(!this.dynamic);
+          }
         }
       }
 
     },
 
     async created() {
-
+      /**
+       * It uses to check if check layer and its legend categories are initialized
+       * register all events. It happened when the first time layer is visible
+       * without do server request
+       * @since 3.8.0
+       * @type {boolean}
+       */
+      this.initialize = false;
       /**
        * @FIXME the following comment seems wrong (isn't `this.dynamic` a `boolean` variable?)
        *
@@ -312,22 +354,9 @@
 
       // Get all legend graphics of a layer when start
       // need to exclude wms source
-      if (this.layer.visible && this.layer.source && 'wms' !== this.layer.source.type) {
-        this.setLayerCategories(true).then(() => {
-          if (this.dynamic) {
-            GUI.getService('map').on('change-map-legend-params', async () => {
-              this.mapReady = true;
-              if (
-                this.layer.visible &&
-                (false === this.externallegend && ('toc' === this.legendplace || this.layer.categories))
-                ) {
-                this.setLayerCategories(false);
-              }
-            });
-          }
-        })
+      if (false === this.externallegend && true === this.layer.visible) {
+        await this.runInitLayerVisibleAction();
       }
-
     },
 
     beforeDestroy() {
