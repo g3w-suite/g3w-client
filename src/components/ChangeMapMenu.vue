@@ -184,8 +184,9 @@ export default {
     setItemImageSrc({item, type}={}) {
 
       const setSrc = (src)=> {
+        let imageSrc;
         if (src) {
-          imageSrc= src.indexOf(ProjectsRegistry.config.mediaurl) !== -1 ? src : (src.indexOf('static') === -1 && src.indexOf('media') === -1) ?
+          imageSrc = src.indexOf(ProjectsRegistry.config.mediaurl) !== -1 ? src : (src.indexOf('static') === -1 && src.indexOf('media') === -1) ?
             `${ProjectsRegistry.config.mediaurl}${src}`: `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
         } else imageSrc = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
         return this.$options.host ? `${this.$options.host}${imageSrc}` : imageSrc;
