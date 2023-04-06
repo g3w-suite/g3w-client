@@ -414,6 +414,7 @@ export default {
     back: "Back",
     backto: "Back to ",
     changemap: "Change Map",
+    change_session: "Change Session",
     component: "Generic Component",
     search: "Search",
     no_results: "No results found",

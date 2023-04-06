@@ -414,6 +414,7 @@ export default {
     back: "Înapoi",
     backto: "Înapoi la ",
     changemap: "Schimbare Hartă",
+    change_session: "Change Session",
     component: "Componentă Generică",
     search: "Căutare",
     no_results: "Niciun rezultat găsit",

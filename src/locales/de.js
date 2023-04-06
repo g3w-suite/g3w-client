@@ -414,6 +414,7 @@ export default {
     back: "Zurück",
     backto: "Zurück zu ",
     changemap: "Karte ändern",
+    change_session: "Change Session",
     component: "Allgemeine Komponente",
     search: "Suche",
     no_results: "Keine Ergebnisse gefunden",

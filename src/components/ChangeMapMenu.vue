@@ -8,11 +8,16 @@
     <template v-if="current !== 'root'">
       <div style="display: flex; align-items: center; color: #ffffff" class="skin-background-color">
         <span
+          v-t-tooltip:bottom.create="'change_session'"
           v-disabled="loading"
           @click.stop="back"
-          style="font-size: 2em; margin: 5px; cursor: pointer; padding: 3px; border: 2px solid #ffffff; border-radius: 3px; "
-          :class="g3wtemplate.getFontClass('reply')">
+          style="font-size: 2em; margin: 5px; cursor: pointer; padding: 3px; border: 2px solid #ffffff; border-radius: 3px; ">
+            <i
+              style="color: #FFFFFF"
+              :class="g3wtemplate.getFontClass('reply')">
+            </i>
         </span>
+
         <div v-if="parent" style="margin: auto">
           <h3 style="font-weight: bold">{{parent.title || parent.name}}</h3>
         </div>
@@ -23,10 +28,10 @@
       <div
         v-for="item in items"
         :key="item.title"
-        @click.stop="trigger(item)"
         class="menu-item">
 
           <div
+            @click.stop="trigger(item)"
             class="menu-item-image">
 
             <img

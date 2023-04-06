@@ -416,6 +416,7 @@ export default {
     back:"Indietro",
     backto: "Torna a ",
     changemap: "Cambia Mappa",
+    change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",
     no_results: "Nessun risultato trovato",
