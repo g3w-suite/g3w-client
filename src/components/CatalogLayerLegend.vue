@@ -298,6 +298,7 @@
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.mapReady = false;
+      // listen layer change style event
       CatalogEventHub.$on('layer-change-style', this.onChangeLayerLegendStyle);
 
       // Get all legend graphics of a layer when start
@@ -309,7 +310,7 @@
               this.mapReady = true;
               if (
                 this.layer.visible &&
-                (!this.externallegend && ('toc' === this.legendplace || this.layer.categories))
+                (false === this.externallegend && ('toc' === this.legendplace || this.layer.categories))
                 ) {
                 this.setLayerCategories(false);
               }
