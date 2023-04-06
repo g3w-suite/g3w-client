@@ -259,12 +259,12 @@ export default {
 
   }
   .menu-item {
-    cursor: pointer;
     margin-bottom: 20px;
     margin-top:20px;
   }
 
   .menu-item-image {
+    cursor: pointer;
     position: relative;
     overflow: hidden;
     padding-bottom: 50%;
