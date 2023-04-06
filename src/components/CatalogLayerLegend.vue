@@ -271,9 +271,9 @@
               symbols = [{icon, title}];
             }
             categories.forEach(category  => {
-              const find = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
+              const findSymbol = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
               const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
-              category.disabled = disabled && !find;
+              category.disabled = disabled && "undefined" === typeof findSymbol;
             });
           })
         } else {
