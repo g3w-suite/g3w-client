@@ -128,10 +128,12 @@
       },
 
       /**
-       * @returns {boolean} whether if need to show legend
+       * @returns {boolean} whether if needed to show legend
        */
       show() {
-        return this.layer.expanded && this.layer.visible && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
+        return this.layer.expanded &&
+               this.layer.visible &&
+               ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
       },
 
     },
@@ -182,19 +184,26 @@
         if (this.externallegend) {
           return;
         }
+        // check if style is change on this layer
         if (options.layerId === this.layer.id) {
           try {
-            await this.setLayerCategories(true);
+            // check if style is passed on options
             if (undefined !== options.style) {
+              // get all layer categories
+              await this.setLayerCategories(true);
+              // get style feature count
               await this.getProjectLayer().getStyleFeatureCount(options.style);
+              // set current style
               this.currentstyle = options.style;
+              // if filter layer legend by map content is set, enable/disable categories
+              if (this.dynamic) {
+                await this.setLayerCategories(false);
+              }
             }
           } catch(err) {
             console.warn('Error while changing layer style')
           }
-        }
-        if (this.dynamic) {
-          await this.setLayerCategories(false);
+
         }
         this.loading = false;
       },
