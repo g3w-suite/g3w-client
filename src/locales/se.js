@@ -464,7 +464,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL har redan lagts till.",
+        url_already_added: "WMS URL/Name har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },

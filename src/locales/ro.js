@@ -463,7 +463,7 @@ export default {
         add_wms_layer: "Adaugă strat WMS",
         delete_wms_url: "Șterge URL WMS",
         layer_id_already_added: "Strat WMS deja adăugat",
-        url_already_added: "URL WMS deja adăugat",
+        url_already_added: "URL WMS/Nume deja adăugat",
         layer_add_error: "Stratul WMS nu s-a adăugat. Verificați URL-ul sau parametrii WMS"
       }
     },

@@ -463,7 +463,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Layer already added",
-        url_already_added: "WMS URL already added",
+        url_already_added: "WMS URL/Name already added",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
