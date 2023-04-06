@@ -363,9 +363,10 @@ export default {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked) {
           const visible = layer.setVisible(!disabled);
-          if (visible && 'toc' === this.legendplace) {
-            setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
-          }
+
+          // if (visible && 'toc' === this.legendplace) {
+          //   setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
+          // }
           if (parentGroup.mutually_exclusive) {
             parentGroup.nodes.forEach(node => node.checked = node.id === id);
           }
