@@ -400,22 +400,26 @@ const ApplicationService = function() {
 
   /**
    * @since 3.8.0
+   * @returns {Promise<{macrogroups: *[], groups: *[]}>}
    */
   this.getMacrogroupsGroups = async function(){
+    // set initial macrogroups and group equal to empty array
+    let macrogroups = [];
+    let groups = [];
     try {
-      return {
-        macrogroups: await XHR.get({
-          url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.macrogroups}`
-        }),
-        groups: await XHR.get({
-          url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.nomacrogoups}`
-        })
-      }
-    } catch(err){
-      return {
-        macrogroups: [],
-        groups:[]
-      }
+      macrogroups = await XHR.get({
+        url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.macrogroups}`
+      })
+    } catch(err) {}
+    try {
+      groups = await XHR.get({
+        url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.nomacrogoups}`
+      })
+    } catch(err){}
+
+    return {
+      macrogroups,
+      groups
     }
   };
 
