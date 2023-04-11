@@ -460,7 +460,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Taso on jo lisätty.",
-        url_already_added: "WMS URL/Name on jo lisätty.",
+        url_already_added: "WMS URL/Nimi on jo lisätty.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
