@@ -442,6 +442,10 @@ export default {
     save: "Sauvegarder",
     cancel: "Supprimer",
     close: "Fermer",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Don't show again",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Ajouter",

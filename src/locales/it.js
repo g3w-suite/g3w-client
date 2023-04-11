@@ -445,8 +445,12 @@ export default {
     save: "Salva",
     cancel: "Cancella",
     close: "Chiudi",
-    enlange_reduce:"Allarga/Riduci",
-    reset_default:"Dimensione Partenza",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Non mostrare più",
+    enlange_reduce: "Allarga/Riduci",
+    reset_default: "Dimensione Partenza",
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",

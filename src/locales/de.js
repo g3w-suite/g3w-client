@@ -443,6 +443,10 @@ export default {
     save: "Speichern",
     cancel: "Abbrechen",
     close: "Schließen",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Don't show again",
     enlange_reduce:"Vergrößern/Verkleinern",
     reset_default:"Standardgröße",
     add: "Hinzufügen",

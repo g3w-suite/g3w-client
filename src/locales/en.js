@@ -443,6 +443,10 @@ export default {
     save: "Save",
     cancel: "Cancel",
     close: "Close",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Don't show again",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Add",

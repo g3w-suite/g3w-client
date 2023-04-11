@@ -443,6 +443,10 @@ export default {
     save: "Salvează",
     cancel: "Anulează",
     close: "Închide",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Don't show again",
     enlange_reduce:"Mărește/Micșorează",
     reset_default:"Mărimea implicită",
     add: "Adaugă",
