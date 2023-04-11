@@ -430,11 +430,9 @@ const ApplicationService = function() {
     // if exist a global initConfig
     this._initConfig = window.initConfig;
 
-
     let projectPath;
 
     // DEPRECATED: will be removed after v4.0
-
     const locationsearch = url ? url.split('?')[1] : location.search.substring(1);
 
     if (locationsearch) {
@@ -449,7 +447,6 @@ const ApplicationService = function() {
       });
 
     ///////////////////////////////////////////////////////////////////
-
     } else if (this._gid) {
       projectPath = `${this._groupId}/${this._gid.split(':').join('/')}`;
     }
@@ -487,7 +484,7 @@ const ApplicationService = function() {
     this._initConfigUrl = initConfigUrl;
   };
 
-  // post boostratp
+  // post bootstrap
   this.postBootstrap = async function() {
     if (!this.complete) {
       try {
@@ -503,7 +500,7 @@ const ApplicationService = function() {
     }
   };
 
-  //boostrap plugins
+  //bootstrap plugins
   this._bootstrapPlugins = function() {
     return PluginsRegistry.init({
       pluginsBaseUrl: this._config.urls.staticurl,
@@ -512,7 +509,7 @@ const ApplicationService = function() {
     });
   };
 
-  //set EPSG of Application is usefule for example to wms request for table layer
+  //set EPSG of Application is useful for example to wms request for table layer
   this.setEPSGApplication  = function(project){
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
