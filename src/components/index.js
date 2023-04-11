@@ -75,12 +75,7 @@ import Print from './Print.vue';
 import PrintFidAtlasValues from './PrintFidAtlasValues.vue';
 import PrintPage from './PrintPage.vue';
 import PrintSelectAtlasFieldValues from './PrintSelectAtlasFieldValues.vue';
-/**
- *@since 3.8.0
- */
 import ChangeMapMenu from "./ChangeMapMenu.vue";
-/**/
-
 import ProjectsMenu from './ProjectsMenu.vue';
 import QueryBuilder from './QueryBuilder.vue';
 import QueryBuilderSearch from './QueryBuilderSearch.vue';
@@ -127,6 +122,10 @@ export {
   CatalogLayersGroup,
   CatalogLayersLegendItems,
   CatalogTristateTree,
+  /**
+   * @since 3.8.0
+   */
+  ChangeMapMenu,
   Field,
   FieldG3W,
   FieldGallery,
@@ -230,8 +229,4 @@ export {
   VieportContentsViewer,
   WMS,
   WMSLatersPanel,
-  /**
-   * @since 3.8.0
-   */
-  ChangeMapMenu,
 };
