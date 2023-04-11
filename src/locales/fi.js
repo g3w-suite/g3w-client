@@ -405,10 +405,7 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Kirjaudu ulos",
     no_other_projects: "Ei projekteja tälle ryhmälle",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Ei enää ryhmiä tälle makroryhmälle",
     yes: "Kyllä",
     no: "Ei",
     back: "Palaa",
