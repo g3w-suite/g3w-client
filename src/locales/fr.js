@@ -404,11 +404,16 @@ export default {
     },
     logout: "Quitter",
     no_other_projects: "Il n'y a pas d'autres projets dans ce groupe de cartes",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "No more groups fro this Macrogroup",
     yes: "Oui",
     no: "No",
     back:"Retour",
     backto: "Retour à ",
     changemap: "Changer de carte",
+    change_session: "Change Session",
     component: "Composant générique",
     search: "Recherches",
     no_results: "Aucun résultat trouvé",
@@ -459,7 +464,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL har redan lagts till.",
+        url_already_added: "WMS URL/Name har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },

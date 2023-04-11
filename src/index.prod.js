@@ -68,6 +68,8 @@ const {base, inherit, toRawType} = require('core/utils/utils');
 const {t, tPlugin} = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
+const ChangeMapMenuComponent = require('gui/changemapmenu/changemapmenu');
+
 
 /**
  * Install global components
@@ -1013,6 +1015,27 @@ const ApplicationTemplate = function({ApplicationService}) {
         ApplicationTemplate.Services.sidebar.closeOpenComponents();
         GUI.setContent({
           content: new ProjectsMenuComponent(),
+          title: '',
+          perc: 100
+        });
+      }
+    };
+
+    /**
+     * @since 3.8.0
+     */
+    GUI.openChangeMapMenu = function(){
+      const contentsComponent = GUI.getComponent('contents');
+      // check if is projectmenucomponent
+      if (contentsComponent.getComponentById('changemapmenu')) GUI.closeContent();
+      else {
+        if (this.isMobile()) {
+          GUI.hideSidebar();
+          $('#main-navbar.navbar-collapse').removeClass('in');
+        }
+        ApplicationTemplate.Services.sidebar.closeOpenComponents();
+        GUI.setContent({
+          content: new ChangeMapMenuComponent(),
           title: '',
           perc: 100
         });

@@ -405,11 +405,16 @@ export default {
     toggle_color_scheme: "Farbschema umschalten",
     logout: "Logout",
     no_other_projects: "Kein weiteres Projekt für diese Gruppe",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "No more groups fro this Macrogroup",
     yes: "Ja",
     no: "No",
     back: "Zurück",
     backto: "Zurück zu ",
     changemap: "Karte ändern",
+    change_session: "Change Session",
     component: "Allgemeine Komponente",
     search: "Suche",
     no_results: "Keine Ergebnisse gefunden",
@@ -458,7 +463,7 @@ export default {
         add_wms_layer: "WMS Layer hinzufügen",
         delete_wms_url: "WMS Url löschen",
         layer_id_already_added: "WMS Layer bereits hinzugefügt",
-        url_already_added: "WMS URL bereits hinzugefügt",
+        url_already_added: "WMS URL/Name bereits hinzugefügt",
         layer_add_error: "WMS Layer nicht hinzugefügt. Bitte überprüfen Sie alle WMS-Parameter oder Url"
       }
     },

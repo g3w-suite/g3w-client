@@ -108,11 +108,11 @@ function Layer(config={}, options={}) {
     projectLayer: true,
 
     geolayer: false,
-
+    //reactive selection attribute
     selection: {
       active: false
     },
-
+    //reactive filter attribute
     filter: {
       active: false
     },

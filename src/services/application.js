@@ -4,7 +4,7 @@
  */
 
 import appConfig from 'config';
-import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS } from 'app/constant';
+import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS, API_BASE_URLS } from 'app/constant';
 import ApplicationState from 'store/application-state';
 import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
@@ -37,6 +37,14 @@ const ApplicationService = function() {
   this.setters = {
     changeProject({gid, host}={}){
       return this._changeProject({gid, host})
+    },
+    /**
+     * @since 3.8.0
+     */
+    changeMapProject({url, epsg}){
+      url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      history.replaceState(null, null, url);
+      location.replace(url);
     },
     online() {
       this.setOnline();
@@ -310,8 +318,15 @@ const ApplicationService = function() {
       initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
         initConfigUrl:  `${appConfig.server.urls.initconfig}`
       });
+
       // write urls of static files and media url (base url and vector url)
       this.baseurl = initConfig.baseurl;
+      /**
+       * Since 3.8.0
+       * @type {string|string}
+       */
+      const {macrogroups, groups} = await this.getMacrogroupsGroups();
+
       config.server.urls.baseurl = initConfig.baseurl;
       config.server.urls.frontendurl = initConfig.frontendurl;
       config.server.urls.staticurl = initConfig.staticurl;
@@ -371,10 +386,40 @@ const ApplicationService = function() {
         plugins: config.group.plugins,
         tools: config.tools,
         views: config.views || {},
-        user: config.user || null
+        user: config.user || null,
+        /**
+         * @since 3.8.0
+         */
+        groups,
+        macrogroups,
       };
     } catch(error) {
       return Promise.reject(error);
+    }
+  };
+
+  /**
+   * @since 3.8.0
+   * @returns {Promise<{macrogroups: *[], groups: *[]}>}
+   */
+  this.getMacrogroupsGroups = async function(){
+    // set initial macrogroups and group equal to empty array
+    let macrogroups = [];
+    let groups = [];
+    try {
+      macrogroups = await XHR.get({
+        url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.macrogroups}`
+      })
+    } catch(err) {}
+    try {
+      groups = await XHR.get({
+        url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.nomacrogoups}`
+      })
+    } catch(err){}
+
+    return {
+      macrogroups,
+      groups
     }
   };
 
@@ -385,11 +430,9 @@ const ApplicationService = function() {
     // if exist a global initConfig
     this._initConfig = window.initConfig;
 
-
     let projectPath;
 
     // DEPRECATED: will be removed after v4.0
-
     const locationsearch = url ? url.split('?')[1] : location.search.substring(1);
 
     if (locationsearch) {
@@ -404,7 +447,6 @@ const ApplicationService = function() {
       });
 
     ///////////////////////////////////////////////////////////////////
-
     } else if (this._gid) {
       projectPath = `${this._groupId}/${this._gid.split(':').join('/')}`;
     }
@@ -442,7 +484,7 @@ const ApplicationService = function() {
     this._initConfigUrl = initConfigUrl;
   };
 
-  // post boostratp
+  // post bootstrap
   this.postBootstrap = async function() {
     if (!this.complete) {
       try {
@@ -458,7 +500,7 @@ const ApplicationService = function() {
     }
   };
 
-  //boostrap plugins
+  //bootstrap plugins
   this._bootstrapPlugins = function() {
     return PluginsRegistry.init({
       pluginsBaseUrl: this._config.urls.staticurl,
@@ -467,7 +509,7 @@ const ApplicationService = function() {
     });
   };
 
-  //set EPSG of Application is usefule for example to wms request for table layer
+  //set EPSG of Application is useful for example to wms request for table layer
   this.setEPSGApplication  = function(project){
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
@@ -599,11 +641,11 @@ const ApplicationService = function() {
    * @returns {JQuery.Promise<any, any, any>}
    * @private
    */
-  this._changeProject = function({gid, host}={}) {
+  this._changeProject = function({gid, host, crs}={}) {
     const d = $.Deferred();
     this._gid = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
-    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl);
+    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
     history.replaceState(null, null, url);
     location.replace(url);
     d.resolve();
