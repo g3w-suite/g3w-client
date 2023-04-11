@@ -600,14 +600,11 @@ const ApplicationService = function() {
    * @private
    */
   this._changeProject = function({gid, host}={}) {
-    const d = $.Deferred();
     this._gid = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
     const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl);
     history.replaceState(null, null, url);
     location.replace(url);
-    d.resolve();
-    return d.promise();
   };
 
   /**
