@@ -1184,7 +1184,7 @@ export default {
       if (this.currentProject.getMessages()){
         for (let i =0; i < this.currentProject.getMessages().items.length; i++) {
 
-          const {id, title, body:message, level} = this.currentProject.getMessages().items[i];
+          const {id, title, body, level} = this.currentProject.getMessages().items[i];
 
           const data = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.MESSAGES.id) || LOCAL_ITEM_IDS.MESSAGES.value;
 
@@ -1192,7 +1192,35 @@ export default {
             data[this.currentProject.getId()] = [];
           }
 
+          // create Vue doNotShowAgainVueComponent vue component
+          const doNotShowAgainVueComponent = new (Vue.extend({
+            data(){
+              return {
+                id: uniqueId(),
+                checked: false
+              }
+            },
+            template: `
+              <div style="display: flex; margin-top: 10px;">
+                <input :id="id"
+                  v-model="checked"
+                  class="magic-checkbox"
+                  type="checkbox"/>
+                <label :for="id" v-t="'dont_show_again'"/>
+              </div>
+            `
+          }));
+
+          // check if current project has already messages stored
           if ("undefined" === typeof data[this.currentProject.getId()].find(_id => _id === id)) {
+            // create dom element message from body html string from server
+            const message = (new DOMParser())
+              .parseFromString(body, 'text/html')
+              .body
+              .childNodes[0];
+            //append input don't show again checkbox vue component
+            message.append(doNotShowAgainVueComponent.$mount().$el);
+            //show modal window
             await new Promise((resolve, reject) => {
               GUI.showModalDialog({
                 title,
@@ -1201,18 +1229,23 @@ export default {
                 closeButton: false,
                 className: `g3w-modal-project-message ${Object.entries(this.currentProject.getMessages().levels).find(([key, value]) => value === level)[0]}`,
                 buttons: {
-                  ok: {
-                    label: 'Ok',
-                    className: 'btn-info',
+                  close: {
+                    label: t('close'),
+                    className: 'btn-secondary',
                     callback: () => {
-                      data[this.currentProject.getId()].push(id)
-                      ApplicationService.setLocalItem({
-                        id: LOCAL_ITEM_IDS.MESSAGES.id,
-                        data
-                      })
+                      // in case of checkbox is checked, store on locale storage browser
+                      if (doNotShowAgainVueComponent.checked) {
+                        // add id message
+                        data[this.currentProject.getId()].push(id);
+                        // update browser local storage
+                        ApplicationService.setLocalItem({
+                          id: LOCAL_ITEM_IDS.MESSAGES.id,
+                          data
+                        })
+                      }
                       resolve();
                     }
-                  }
+                  },
                 }
               })
             })
