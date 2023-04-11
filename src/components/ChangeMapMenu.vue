@@ -60,7 +60,7 @@
 <script>
 import ApplicationService from 'services/application';
 import ProjectsRegistry from 'store/projects';
-import {API_BASE_URLS, LOGO_GIS3W} from "constant";
+import { API_BASE_URLS, LOGO_GIS3W } from 'constant';
 
 const Projections = require('g3w-ol/projection/projections');
 const {XHR} = require('core/utils/utils');
