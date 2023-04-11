@@ -1123,7 +1123,6 @@ export default {
      * @since 3.8.0
      */
     showChangeMap(){
-      console.log()
       return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
     },
     frontendurl() {
@@ -1220,7 +1219,6 @@ export default {
           }
         }
       }
-    }
     },
     /**
      * @since 3.8.0
