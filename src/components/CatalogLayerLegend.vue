@@ -131,9 +131,11 @@
        * @returns {boolean} whether if needed to show legend
        */
       show() {
-        return this.layer.expanded &&
-               this.layer.visible &&
-               ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories);
+        return (
+          this.layer.expanded &&
+          this.layer.visible &&
+          ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories)
+        );
       },
 
     },
@@ -181,30 +183,25 @@
        */
       async onChangeLayerLegendStyle(options={}) {
         this.loading = true;
+
         if (this.externallegend) {
           return;
         }
-        // check if style is change on this layer
-        if (options.layerId === this.layer.id) {
-          try {
-            // check if style is passed on options
-            if (undefined !== options.style) {
-              // get all layer categories
-              await this.setLayerCategories(true);
-              // get style feature count
-              await this.getProjectLayer().getStyleFeatureCount(options.style);
-              // set current style
-              this.currentstyle = options.style;
-              // if filter layer legend by map content is set, enable/disable categories
-              if (this.dynamic) {
-                await this.setLayerCategories(false);
-              }
-            }
-          } catch(err) {
-            console.warn('Error while changing layer style')
-          }
 
+        try {
+          // check if style is passed on options and if the style is changed on this layer
+          if (undefined !== options.style && options.layerId === this.layer.id) {
+            await this.setLayerCategories(true);                              // Get all layer categories.
+            await this.getProjectLayer().getStyleFeatureCount(options.style); // Get style feature count.
+            this.currentstyle = options.style;                                // Set current style.
+            if (this.dynamic) {                                               // If filter layer legend by map content is set,
+              await this.setLayerCategories(false);                           // toggle categories. 
+            }
+          }
+        } catch(err) {
+          console.warn('Error while changing layer style')
         }
+
         this.loading = false;
       },
 
@@ -280,75 +277,86 @@
           categories.forEach(category => category.disabled = ("undefined" !== typeof category.checked ? category.checked : true));
         }
       },
+
       /**
        * @since 3.8.0
        */
-      registerChangeMapLegendParamsEvent(){
-        GUI.getService('map')
-          .on('change-map-legend-params', async () => {
-            this.mapReady = true;
-            if (
-              this.layer.visible &&
-              (false === this.externallegend && ('toc' === this.legendplace || this.layer.categories))
-            ) {
-              this.setLayerCategories(false);
-            }
-          });
+      async onChangeMapLegendParams() {
+        this.mapReady = true;
+        if (
+          this.layer.visible &&
+          false === this.externallegend &&
+          ('toc' === this.legendplace || this.layer.categories)
+        ) {
+          this.setLayerCategories(false);
+        }
       },
+
       /**
-       * @since3.8.0
        * @returns {Promise<void>}
+       * 
+       * @listens map~change-map-legend-params
+       * 
+       * @since 3.8.0
        */
-      async runInitLayerVisibleAction(){
+      async runInitLayerVisibleAction() {
         await this.setLayerCategories(true);
         if (this.dynamic) {
           await this.setLayerCategories(false);
-          this.registerChangeMapLegendParamsEvent();
+          GUI.getService('map').on('change-map-legend-params', this.onChangeMapLegendParams);
         }
         this.initialize = true;
-      }
+      },
+
     },
+
     watch: {
 
       /**
        * Only when visible show categories layer. In case of dynamic legend check
-       * @param visible Boolean
-      */
+       * 
+       * @param {boolean} visible
+       */
       async 'layer.visible'(visible) {
         // check if layer is enabled to get legend and if is visible
-        if (false === this.externallegend && visible) {
-          // check if the first time that is visible.
-          // in this case need to be initialize
-          if (false === this.initialize) {
-            await this.runInitLayerVisibleAction();
-          } else {
-            //otherwise show categories base on if is dynamic legend or not
-            await this.setLayerCategories(!this.dynamic);
-          }
+        const enabled = visible && false === this.externallegend;
+        // initialize if it is the first time that is visible.
+        if (enabled && false === this.initialize) {
+          await this.runInitLayerVisibleAction();
+        }
+        // otherwise show categories base on if is dynamic legend or not
+        if (enabled && false !== this.initialize) {
+          await this.setLayerCategories(!this.dynamic);
         }
       }
 
     },
 
     async created() {
+  
       /**
-       * It uses to check if check layer and its legend categories are initialized
-       * register all events. It happened when the first time layer is visible
-       * without do server request
-       * @since 3.8.0
+       * Used to check if layer and its legend categories are initialized
+       * That means register all events at first time the layer is visible
+       * without do any server request
+       * 
        * @type {boolean}
+       * 
+       * @since 3.8.0
        */
       this.initialize = false;
+  
       /**
        * @FIXME the following comment seems wrong (isn't `this.dynamic` a `boolean` variable?)
        *
-       * Store legend url icons based on current style of layer
+       * Store legend url icons based on current style of layer.
        * It use to cache all symbol of a style without get a new request to server
        *
        * @type {{}}
        */
       this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
+
       this.mapReady = false;
+
       // listen layer change style event
       CatalogEventHub.$on('layer-change-style', this.onChangeLayerLegendStyle);
 
@@ -357,6 +365,7 @@
       if (false === this.externallegend && true === this.layer.visible) {
         await this.runInitLayerVisibleAction();
       }
+
     },
 
     beforeDestroy() {
