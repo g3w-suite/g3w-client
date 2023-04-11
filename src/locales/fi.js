@@ -411,7 +411,7 @@ export default {
     back: "Palaa",
     backto: "Takaisin ",
     changemap: "Vaihda karttaa",
-    change_session: "Change Session",
+    change_session: "Vaihda istuntoa",
     component: "Yleinen komponentti",
     search: "Hae",
     no_results: "Ei hakutuloksia",

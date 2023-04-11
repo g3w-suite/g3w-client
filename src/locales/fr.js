@@ -410,7 +410,7 @@ export default {
     back:"Retour",
     backto: "Retour à ",
     changemap: "Changer de carte",
-    change_session: "Change Session",
+    change_session: "Changer de séance",
     component: "Composant générique",
     search: "Recherches",
     no_results: "Aucun résultat trouvé",

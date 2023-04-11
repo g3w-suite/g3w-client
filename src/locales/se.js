@@ -412,7 +412,7 @@ export default {
     back: "Gå tillbaka",
     backto: "Tillbaka ",
     changemap: "Byt karta",
-    change_session: "Change Session",
+    change_session: "Ändra session",
     component: "Allmän komponent",
     search: "Sök",
     no_results: "Inga sökresultat",
