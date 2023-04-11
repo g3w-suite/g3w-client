@@ -577,7 +577,14 @@ export const LOCAL_ITEM_IDS = {
   SPATIALBOOKMARKS: {
     id: 'SPATIALBOOKMARKS', // id unique
     value: {} // initial value
-  }
+  },
+  /**
+   * @since 3.8.0
+   */
+  MESSAGES: {
+    id: 'MESSAGES',
+    value: {}
+  },
 };
 
 export default {
