@@ -119,9 +119,7 @@ const ApplicationService = function() {
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set Accept-Language request header based on config language
     $.ajaxSetup({
-      beforeSend(jqXHR) {
-        jqXHR.setRequestHeader('Accept-Language', this._config.user.i18n || 'en');
-      }
+      beforeSend: (xhr) => { xhr.setRequestHeader('Accept-Language', this._config.user.i18n || 'en'); }
     });
   };
 
@@ -620,6 +618,7 @@ const ApplicationService = function() {
             this.startIFrameService({ project });
           }
           DataRouterService.init();
+          this.initLocalItems();
           resolve(true);
         }).fail(error => reject(error))
       }
