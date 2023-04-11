@@ -489,4 +489,12 @@ proto.getSpatialBookmarks = function() {
   return this.state.bookmarks || [];
 };
 
+/**
+ * @returns {Object} messages at start time {items: <Array>, info:<Object>}
+ * @since 3.8.0
+ */
+proto.getMessages = function(){
+  return this.state.messages;
+};
+
 module.exports = Project;
