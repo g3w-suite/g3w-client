@@ -274,6 +274,7 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 import { resizeMixin } from 'mixins';
+import {LOCAL_ITEM_IDS} from "constant";
 
 const { uniqueId } = require('core/utils/utils');
 const { t } = require('core/i18n/i18n.service');
@@ -1163,6 +1164,49 @@ export default {
     },
     openProjectsMenu() {
       GUI.openProjectsMenu();
+    },
+    /**
+     * @since 3.8.0
+     */
+    async handleMessages(){
+      if (this.currentProject.getMessages()){
+        for (let i =0; i < this.currentProject.getMessages().items.length; i++) {
+
+          const {id, title, body:message, level} = this.currentProject.getMessages().items[i];
+
+          const data = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.MESSAGES.id) || LOCAL_ITEM_IDS.MESSAGES.value;
+
+          if ("undefined" === typeof data[this.currentProject.getId()]) {
+            data[this.currentProject.getId()] = [];
+          }
+
+          if ("undefined" === typeof data[this.currentProject.getId()].find(_id => _id === id)) {
+            await new Promise((resolve, reject) => {
+              GUI.showModalDialog({
+                title,
+                message,
+                size: 'large',
+                closeButton: false,
+                className: `g3w-modal-project-message ${Object.entries(this.currentProject.getMessages().levels).find(([key, value]) => value === level)[0]}`,
+                buttons: {
+                  ok: {
+                    label: 'Ok',
+                    className: 'btn-info',
+                    callback: () => {
+                      data[this.currentProject.getId()].push(id)
+                      ApplicationService.setLocalItem({
+                        id: LOCAL_ITEM_IDS.MESSAGES.id,
+                        data
+                      })
+                      resolve();
+                    }
+                  }
+                }
+              })
+            })
+          }
+        }
+      }
     }
   },
   watch: {
@@ -1205,6 +1249,8 @@ export default {
     !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
   },
   async mounted() {
+    //check if show Project messages when app is mounted
+    this.handleMessages();
     this.logoWidth = 0;
     await this.$nextTick();
     const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
