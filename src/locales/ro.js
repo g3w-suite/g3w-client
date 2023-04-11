@@ -405,11 +405,16 @@ export default {
     toggle_color_scheme: "Comutare schemă de culori",
     logout: "Deconectare",
     no_other_projects: "No more project for this group",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "No more groups fro this Macrogroup",
     yes: "Da",
     no: "Nu",
     back: "Înapoi",
     backto: "Înapoi la ",
     changemap: "Schimbare Hartă",
+    change_session: "Change Session",
     component: "Componentă Generică",
     search: "Căutare",
     no_results: "Niciun rezultat găsit",
@@ -458,7 +463,7 @@ export default {
         add_wms_layer: "Adaugă strat WMS",
         delete_wms_url: "Șterge URL WMS",
         layer_id_already_added: "Strat WMS deja adăugat",
-        url_already_added: "URL WMS deja adăugat",
+        url_already_added: "URL WMS/Nume deja adăugat",
         layer_add_error: "Stratul WMS nu s-a adăugat. Verificați URL-ul sau parametrii WMS"
       }
     },

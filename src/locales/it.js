@@ -407,11 +407,16 @@ export default {
     toggle_color_scheme: "Cambia colore",
     logout: "Esci",
     no_other_projects: "Non ci sono altri progetti in questo gruppo cartografico",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "Non ci sono altri gruppi in questo Macrogruppo",
     yes: "Si",
     no: "No",
     back:"Indietro",
     backto: "Torna a ",
     changemap: "Cambia Mappa",
+    change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",
     no_results: "Nessun risultato trovato",
@@ -460,7 +465,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Elimina WMS url",
         layer_id_already_added: "WMS Layer già aggiunto",
-        url_already_added: "WMS URL già aggiunto",
+        url_already_added: "WMS URL/Nome già aggiunto",
         layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
       }
     },
