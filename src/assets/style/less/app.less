@@ -77,19 +77,27 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 //@since 3.8.0
 .g3w-modal-project-message {
 
-  &.Info .modal-header {
-    background-color: cornflowerblue;
+  &.Info{
+    .modal-header, .modal-footer {
+      background-color: cornflowerblue;
+    }
   }
-  &.Warning .modal-header {
-    background-color: orange;
+  &.Warning{
+    .modal-header, .modal-footer {
+      background-color: orange;
+    }
   }
 
-  &.Error .modal-header {
-    background-color: red;
+  &.Error {
+    .modal-header, .modal-footer {
+      background-color: red;
+    }
   }
 
-  &.Critical .modal-header {
-    background-color: black;
+  &.Critical{
+    .modal-header, .modal-footer {
+      background-color: #000000;
+    }
   }
 
   h4.modal-title {
