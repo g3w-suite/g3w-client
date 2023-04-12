@@ -430,9 +430,13 @@ export default {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked) {
           const visible = layer.setVisible(!disabled);
+          /**
+           * Is it necessary to emit a layer change event here?
+           *
           if (visible && 'toc' === this.legendplace) {
             setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
           }
+         */
           if (parentGroup.mutually_exclusive) {
             parentGroup.nodes.forEach(node => node.checked = node.id === id);
           }

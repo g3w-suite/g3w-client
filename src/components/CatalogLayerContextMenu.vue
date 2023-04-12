@@ -43,8 +43,7 @@
       <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000" :style="{ top: layerMenu.stylesMenu.top + 'px', left: `${layerMenu.stylesMenu.left}px`, maxHeight: layerMenu.stylesMenu.maxHeight + 'px', overflowY: layerMenu.stylesMenu.overflowY }">
         <li v-for="(style, index) in layerMenu.layer.styles" @click.stop="setCurrentLayerStyle(index)" :key="style.name">
           <span v-if="style.current" style="font-size: 0.8em;" :class="g3wtemplate.getFontClass('circle')"></span>
-          <span>{{style.name}}
-            <span v-if="style.name === layerMenu.layer.defaultstyle && layerMenu.layer.styles.length > 1">(<span v-t="'default'"></span>)</span></span>
+          <span>{{ getStyleName(style) }}</span>
         </li>
       </ul>
     </li>
@@ -611,7 +610,8 @@
           const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
           if (layer) {
             CatalogEventHub.$emit('layer-change-style', {
-              layerId
+              layerId,
+              style: this.layerMenu.stylesMenu.style
             });
             layer.change();
           }
@@ -667,8 +667,19 @@
           this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) / 2) - OFFSETMENU.left;
         }
         this.layerMenu.colorMenu.show = bool;
-      }
+      },
+
+      /**
+       * Get category style name eventually suffixed by "(default)" string
+       * 
+       * @since 3.8.0
+       */
+      getStyleName(style) {
+        return style.name + (style.name === this.layerMenu.layer.defaultstyle && this.layerMenu.layer.styles.length > 1 ? ` (${t('default')})` : '');
+      },
+
     },
+
     created() {
       CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
         this._hideMenu();
@@ -682,7 +693,8 @@
         this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
         $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
       });
-    }
+    },
+
   };
 </script>
 <style scoped>
