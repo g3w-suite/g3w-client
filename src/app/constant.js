@@ -409,11 +409,32 @@ export const ZINDEXES = {
 };
 
 /**
- * @type {Object<string, string>}
+ * @type {Object<string, string | Object<string, string>>}
  * @since v3.8
  */
 export const API_BASE_URLS = {
-  CRS: '/crs/'  //Example /crs/<epsg_code>
+
+  /**
+   * Info about groups, macrogroups, projects, etc. of G3W-SUITE
+   * 
+   * @since 3.8.0
+   */
+  ABOUT: {
+    macrogroups:  '/about/api/macrogroup/', 
+    nomacrogoups: '/about/api/group/nomacrogroup/', 
+    projects:     '/about/api/group/__G3W_GROUP_ID__/projects/',
+    group:        '/about/api/group/',
+  },
+
+  /**
+   * Coordinate Reference Systems
+   * 
+   * @example /crs/<epsg_code>
+   * 
+   * @since v3.8
+   */
+  CRS: '/crs/',
+
 };
 
 /**
@@ -542,7 +563,22 @@ export const FONT_AWESOME_ICONS = {
   crop: "fas fa-crop-alt",
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
+
+  /**
+   * @since 3.8.0
+   */
   bookmark: "fas fa-bookmark",
+
+  /**
+   * @since 3.8.0
+   */
+  reply: "fas fa-reply",
+
+  /**
+   * @since 3.8.0
+   */
+  share: "fas fa-share",
+
 };
 
 /**
@@ -565,6 +601,12 @@ export const LOCAL_ITEM_IDS = {
   }
 };
 
+/**
+ * @since 3.8.0
+ */
+
+export const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
+
 export default {
   APP_VERSION,
   API_BASE_URLS,
@@ -580,6 +622,7 @@ export default {
   LIST_OF_RELATIONS_ID,
   LOCAL_ITEM_IDS,
   LOCALSTORAGE_EXTERNALWMS_ITEM,
+  LOGO_GIS3W,
   MAP_SETTINGS,
   PRINT_FORMATS,
   PRINT_RESOLUTIONS,

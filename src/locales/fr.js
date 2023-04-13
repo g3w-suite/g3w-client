@@ -321,6 +321,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Précédent",
+          zoom_next: "Zoom Suivant"
         }
       },
       relations: {
@@ -360,6 +364,7 @@ export default {
           textarea: "textuel",
           string: "chaîne",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
@@ -404,11 +409,13 @@ export default {
     },
     logout: "Quitter",
     no_other_projects: "Il n'y a pas d'autres projets dans ce groupe de cartes",
+    no_other_groups: "Il n'y a pas d'autres groupes dans ce macrogroupe",
     yes: "Oui",
     no: "No",
     back:"Retour",
     backto: "Retour à ",
     changemap: "Changer de carte",
+    change_session: "Changer de séance",
     component: "Composant générique",
     search: "Recherches",
     no_results: "Aucun résultat trouvé",
@@ -459,7 +466,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL har redan lagts till.",
+        url_already_added: "WMS URL/Nom har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },

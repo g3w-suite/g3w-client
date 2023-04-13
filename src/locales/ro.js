@@ -321,6 +321,10 @@ export default {
             metric: 'Metri',
             nautical: 'Mile Nautice'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Anterior",
+          zoom_next: "Zoom Urmatorul"
         }
       },
       relations: {
@@ -360,6 +364,7 @@ export default {
           textarea: "text",
           string: "string - text",
           date: "data",
+          datetime: "data",
           float: "float - nr. cu zecimale",
           table: "tabelă"
         },
@@ -405,11 +410,13 @@ export default {
     toggle_color_scheme: "Comutare schemă de culori",
     logout: "Deconectare",
     no_other_projects: "No more project for this group",
+    no_other_groups: "Nu mai sunt grupuri pentru acest macrogrup",
     yes: "Da",
     no: "Nu",
     back: "Înapoi",
     backto: "Înapoi la ",
     changemap: "Schimbare Hartă",
+    change_session: "Schimbați sesiunea",
     component: "Componentă Generică",
     search: "Căutare",
     no_results: "Niciun rezultat găsit",
@@ -458,7 +465,7 @@ export default {
         add_wms_layer: "Adaugă strat WMS",
         delete_wms_url: "Șterge URL WMS",
         layer_id_already_added: "Strat WMS deja adăugat",
-        url_already_added: "URL WMS deja adăugat",
+        url_already_added: "URL WMS/Nume deja adăugat",
         layer_add_error: "Stratul WMS nu s-a adăugat. Verificați URL-ul sau parametrii WMS"
       }
     },
