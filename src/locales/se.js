@@ -449,7 +449,7 @@ export default {
     /**
      * @since 3.8.0
      */
-    dont_show_again: "Don't show again",
+    dont_show_again: "Visa inte det här meddelandet igen",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Lägg till",

@@ -448,7 +448,7 @@ export default {
     /**
      * @since 3.8.0
      */
-    dont_show_again: "Don't show again",
+    dont_show_again: "Älä näytä viestiä uudelleen",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Lisää",
