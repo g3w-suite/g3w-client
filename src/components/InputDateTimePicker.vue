@@ -73,12 +73,47 @@ export default {
     timeOnly () {
       return !this.state.input.options.formats[0].date;
     },
+
+    /**
+     * @since 3.8.0
+     */
+    onDatePickerChange() {
+      const newDate = $(`#${this.idinputdatetimepiker}`).val();
+      this.state.value =
+        _.isEmpty(_.trim(newDate))
+          ? null
+          : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
+      this.change();
+    },
+
+    /**
+     * @fires datetimepickershow
+     * 
+     * @since 3.8.0
+     */
+    async onDatePickerShow(evt) {
+      await this.$nextTick();
+      const { top, left, width } = this.$refs.datetimepicker_body.getBoundingClientRect();
+      this.widget_container.top = top;
+      this.widget_container.left = left - width;
+      this.$emit('datetimepickershow');
+    },
+
+    /**
+     * @fires datetimepickershow
+     * 
+     * @since 3.8.0
+     */
+    onDatePickerHide(evt) {
+      this.$emit('datetimepickershow');
+    },
+
   },
   watch: {
-    async 'state.value'(value){
+    async 'state.value'(value) {
       // check if current value (state.value) is not equal to current wiget datetimepicker
       //means is changed by others (default expression evaluation for example)
-      if (value !== $(`#${this.idinputdatetimepiker}`).val()){
+      if (value !== $(`#${this.idinputdatetimepiker}`).val()) {
         const date = null !== value ? moment(value, this.datetimefieldformat).format(this.datetimedisplayformat) : value;
         await this.$nextTick();
         $(`#${this.idinputdatetimepiker}`).val(date);
@@ -140,27 +175,9 @@ export default {
       locale: this.service.getLocale()
     });
 
-    $(`#${this.iddatetimepicker}`)
-      .on("dp.change", () => {
-        const newDate = $(`#${this.idinputdatetimepiker}`).val();
-        const value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
-        this.state.value = value;
-        this.change();
-      });
-
-    $(`#${this.iddatetimepicker}`)
-      .on("dp.show", async evt => {
-        await this.$nextTick();
-        const { top, left, width } = this.$refs.datetimepicker_body.getBoundingClientRect();
-        this.widget_container.top = top;
-        this.widget_container.left = left - width;
-        this.$emit('datetimepickershow');
-      });
-
-    $(`#${this.iddatetimepicker}`)
-      .on("dp.hide", evt => {
-        this.$emit('datetimepickershow');
-      });
+    $(`#${this.iddatetimepicker}`).on("dp.change", this.onDatePickerChange);
+    $(`#${this.iddatetimepicker}`).on("dp.show", this.onDatePickerShow);
+    $(`#${this.iddatetimepicker}`).on("dp.hide", this.onDatePickerHide);
 
     if (ApplicationState.ismobile) {
       setTimeout(() => { $(`#${this.idinputdatetimepiker}`).blur(); });

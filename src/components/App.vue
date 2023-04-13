@@ -1039,7 +1039,9 @@ $.LayoutManager = $.LayoutManager || {
 const layout = $.LayoutManager;
 
 export default {
+
   mixins: [resizeMixin],
+
   data() {
     return {
       customcredits: false,
@@ -1049,14 +1051,18 @@ export default {
       cookie_law_buttonText: t('cookie_law.buttonText')
     }
   },
+
   components: {
     HeaderItem,
     CookieLaw
   },
+
   computed: {
-    app(){
+
+    app() {
       return this.appState.gui.app;
     },
+
     languages() {
 
       /***
@@ -1065,75 +1071,98 @@ export default {
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
       return languages.length > 1 && languages;
     },
+
     currentProject() {
       return ProjectsRegistry.getCurrentProject();
     },
+
     appconfig() {
       return ApplicationService.getConfig();
     },
+
     isIframe() {
       return !!this.appconfig.group.layout.iframe;
     },
+
     urls() {
       return this.appconfig.urls;
     },
-    staticurl(){
+
+    staticurl() {
       return this.urls.staticurl;
     },
+
     powered_by() {
       return this.appconfig.group.powered_by;
     },
-    clienturl(){
+
+    clienturl() {
       return this.urls.clienturl;
     },
+
     g3w_suite_logo() {
       return `${this.clienturl}images/g3wsuite_logo.png`;
     },
+
     credits_logo() {
       return `${this.clienturl}images/logo_gis3w_156_85.png`;
     },
+
     logo_url() {
       const logo_project_url = this.currentProject.getThumbnail();
       return logo_project_url ? logo_project_url : `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
+
     logo_link() {
       const logo_link = this.getLogoLink();
       return logo_link ? logo_link : "#";
     },
+
     logo_link_target() {
       const logo_link = this.getLogoLink();
       return logo_link ? "_blank" : "";
     },
+
     project_title() {
       return this.currentProject.getState().name;
     },
+
     user() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
-    login_url(){
+
+    login_url() {
       return this.appconfig.user.login_url
     },
+
     /**
-     * @deprecate 3.9.0
-     * */
+     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `hasRelatedMaps` instead
+     */
     numberOfProjectsInGroup() {
       return this.appconfig.projects.length;
     },
+
     /**
+     * @returns {boolean} whether it should list any related projects or maps.
+     *
      * @since 3.8.0
      */
     showChangeMap(){
       return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
     },
+
     frontendurl() {
       return this.urls.frontendurl;
     },
+
     main_title() {
       const main_title = this.appconfig.main_map_title;
       const group_name = this.appconfig.group.name || this.appconfig.group.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
+
   },
+
   methods: {
 
     /**
@@ -1153,7 +1182,7 @@ export default {
       );
     },
 
-    async resize(){
+    async resize() {
       if (!this.isIframe) {
         await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
@@ -1161,22 +1190,27 @@ export default {
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
-    showCustomModalContent(id){
+
+    showCustomModalContent(id) {
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
-    closePanel(){
+
+    closePanel() {
       sidebarService.closePanel();
     },
+
     getLogoLink() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
     },
+
     /**
-     * @deprecate since 3.8.0
+     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `openChangeMapMenu` instead.
      */
     openProjectsMenu() {
       GUI.openProjectsMenu();
     },
+
     /**
      * @since 3.8.0
      */
@@ -1257,21 +1291,28 @@ export default {
      * @since 3.8.0
      */
     openChangeMapMenu(){
+    openChangeMapMenu() {
       GUI.openChangeMapMenu();
     },
+
   },
+
   watch: {
+
     'language'(language, currentlanguage) {
       if (currentlanguage) {
         ApplicationService.changeLanguage(language);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     }
+
   },
+
   beforeCreate() {
     this.delayType = 'debounce';
     this.delayTime = 0;
   },
+
   created() {
     this.language = this.appconfig._i18n.language;
     this.custom_modals = [];
@@ -1299,6 +1340,7 @@ export default {
 
     !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
   },
+
   async mounted() {
     //check if show Project messages when app is mounted
     this.handleMessages();
@@ -1329,7 +1371,7 @@ export default {
       $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
     }
     setFloatBarMaxHeight();
-    function setModalHeight(){
+    function setModalHeight() {
       $('#g3w-modal-overlay').css('height',$(window).height());
     }
     $(window).resize(() => {
@@ -1337,5 +1379,6 @@ export default {
       setModalHeight();
     });
   },
+
 };
 </script>

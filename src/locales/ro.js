@@ -405,16 +405,13 @@ export default {
     toggle_color_scheme: "Comutare schemă de culori",
     logout: "Deconectare",
     no_other_projects: "No more project for this group",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Nu mai sunt grupuri pentru acest macrogrup",
     yes: "Da",
     no: "Nu",
     back: "Înapoi",
     backto: "Înapoi la ",
     changemap: "Schimbare Hartă",
-    change_session: "Change Session",
+    change_session: "Schimbați sesiunea",
     component: "Componentă Generică",
     search: "Căutare",
     no_results: "Niciun rezultat găsit",

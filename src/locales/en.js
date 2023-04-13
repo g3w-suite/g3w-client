@@ -405,10 +405,7 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logout",
     no_other_projects: "No more project for this group",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "No more groups for this Macrogroup",
     yes: "Yes",
     no: "No",
     back: "Back",

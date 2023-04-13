@@ -1000,17 +1000,21 @@ proto.getMapExtent = function(){
 };
 
 /**
- *
  * @param url
- * @param crs @since 3.8.0
+ * @param epsg cordinate referece system (since 3.8.0)
+ * 
  * @returns {string}
  */
 proto.addMapExtentUrlParameterToUrl = function(url, epsg) {
   url = new URL(url);
-  const map_extent = ("undefined" !== typeof epsg && this.getEpsg() !== epsg) ?
-    ol.proj.transformExtent(this.getMapExtent(), this.getEpsg(), epsg) :
-    this.getMapExtent();
-  url.searchParams.set('map_extent', map_extent.toString());
+  url.searchParams.set(
+    'map_extent',
+    (
+      undefined !== epsg && this.getEpsg() !== epsg
+        ? ol.proj.transformExtent(this.getMapExtent(), this.getEpsg(), epsg)
+        : this.getMapExtent()
+    ).toString()
+  );
   return url.toString()
 };
 

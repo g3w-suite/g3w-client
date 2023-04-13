@@ -405,16 +405,13 @@ export default {
     toggle_color_scheme: "Farbschema umschalten",
     logout: "Logout",
     no_other_projects: "Kein weiteres Projekt für diese Gruppe",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Keine weiteren Gruppen für diese Makrogruppe",
     yes: "Ja",
     no: "No",
     back: "Zurück",
     backto: "Zurück zu ",
     changemap: "Karte ändern",
-    change_session: "Change Session",
+    change_session: "Sitzung ändern",
     component: "Allgemeine Komponente",
     search: "Suche",
     no_results: "Keine Ergebnisse gefunden",
