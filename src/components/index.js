@@ -62,6 +62,7 @@ import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
+import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
 import MetadataProjectBBoxContent from './MetadataProjectBBoxContent.vue';
@@ -74,6 +75,7 @@ import Print from './Print.vue';
 import PrintFidAtlasValues from './PrintFidAtlasValues.vue';
 import PrintPage from './PrintPage.vue';
 import PrintSelectAtlasFieldValues from './PrintSelectAtlasFieldValues.vue';
+import ChangeMapMenu from "./ChangeMapMenu.vue";
 import ProjectsMenu from './ProjectsMenu.vue';
 import QueryBuilder from './QueryBuilder.vue';
 import QueryBuilderSearch from './QueryBuilderSearch.vue';
@@ -120,6 +122,10 @@ export {
   CatalogLayersGroup,
   CatalogLayersLegendItems,
   CatalogTristateTree,
+  /**
+   * @since 3.8.0
+   */
+  ChangeMapMenu,
   Field,
   FieldG3W,
   FieldGallery,
@@ -175,6 +181,7 @@ export {
   LayerOpacityPicker,
   Map,
   MapAddLayer,
+  MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,
   MetadataProjectBBoxContent,

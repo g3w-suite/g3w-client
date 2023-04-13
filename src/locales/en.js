@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Connection error",
+      at_moment: "At the moment is not possible show map",
+      f5: "Press Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -316,6 +321,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Last",
+          zoom_next: "Zoom Next"
         }
       },
       relations: {
@@ -355,6 +364,7 @@ export default {
           textarea: "text",
           string: "string",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
@@ -400,11 +410,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logout",
     no_other_projects: "No more project for this group",
+    no_other_groups: "No more groups for this Macrogroup",
     yes: "Yes",
     no: "No",
     back: "Back",
     backto: "Back to ",
     changemap: "Change Map",
+    change_session: "Change Session",
     component: "Generic Component",
     search: "Search",
     no_results: "No results found",
@@ -453,7 +465,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Layer already added",
-        url_already_added: "WMS URL already added",
+        url_already_added: "WMS URL/Name already added",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
