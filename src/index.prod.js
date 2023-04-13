@@ -64,11 +64,11 @@ import vDownload from 'directives/v-download';
 // constants
 import { FONT_AWESOME_ICONS } from 'app/constant';
 
-const {base, inherit, toRawType} = require('core/utils/utils');
-const {t, tPlugin} = require('core/i18n/i18n.service');
-const G3WObject = require('core/g3wobject');
-const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
-const ChangeMapMenuComponent = require('gui/changemapmenu/changemapmenu');
+const { base, inherit, toRawType } = require('core/utils/utils');
+const { t, tPlugin }               = require('core/i18n/i18n.service');
+const G3WObject                    = require('core/g3wobject');
+const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
+const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
 
 
 /**
@@ -571,20 +571,25 @@ const ApplicationTemplate = function({ApplicationService}) {
   // setup Interaces
   this._setupInterface = function() {
     /* PLUBLIC INTERFACE */
+
     /* Common methods */
     GUI.layout = layout;
     GUI.getSize = ({element, what}) => {
       if (element && what)
         return this.sizes[element][what];
     };
+
     GUI.addComponent = this._addComponent.bind(this);
     GUI.removeComponent = this._removeComponent.bind(this);
+
     /* Metodos to define */
     GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
+
     //LIST
     GUI.showList = FloatbarService.showPanel.bind(FloatbarService);
     GUI.closeList = FloatbarService.closePanel.bind(FloatbarService);
     GUI.hideList = FloatbarService.hidePanel.bind(FloatbarService);
+
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
@@ -673,7 +678,6 @@ const ApplicationTemplate = function({ApplicationService}) {
       return showPanelContent;
     };
 
-
     GUI.showForm = function(options={}) {
       const {perc, split='h', push, showgoback, crumb} = options;
       const FormComponent = require('gui/form/vue/form');
@@ -694,6 +698,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       // return service
       return formService;
     };
+
     /**
      *
      * @param pop remove or not content or pop
@@ -752,12 +757,17 @@ const ApplicationTemplate = function({ApplicationService}) {
       });
       return queryResultService;
     };
+
     GUI.addNavbarItem = function(item) {
       NavbarItemsService.addItem(item)
     };
+
     GUI.removeNavBarItem = function() {};
+
     GUI.showPanel = SidebarService.showPanel.bind(SidebarService);
+
     GUI.closePanel = SidebarService.closePanel.bind(SidebarService);
+
     ///
     GUI.disableApplication = function(bool=false){
       ApplicationService.disableApplication(bool);
@@ -771,6 +781,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.closeUserMessage = function() {
       ViewportService.closeUserMessage();
     };
+
     /* ------------------ */
     GUI.notify = {
       warning(message, autoclose=false){
@@ -802,12 +813,15 @@ const ApplicationTemplate = function({ApplicationService}) {
         })
       }
     };
+
     // proxy  bootbox library
     GUI.dialog = bootbox;
+
     //modal dialog//
     GUI.showModalDialog = function(options={}) {
       return GUI.dialog.dialog(options);
     };
+
     /* spinner */
     GUI.showSpinner = function(options={}){
       const container = options.container || 'body';
@@ -820,21 +834,26 @@ const ApplicationTemplate = function({ApplicationService}) {
         $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'" style="'+ center+'"></div></div>');
       }
     };
+
     //hide spinner
     GUI.hideSpinner = function(id='loadspinner'){
       $("#"+id).remove();
     };
+
     /* end spinner*/
     /* end common methods */
 
     /*  */
+
     // FLOATBAR //
     GUI.showFloatbar = function() {
       FloatbarService.open();
     };
+
     GUI.hideFloatbar = function() {
       FloatbarService.close();
     };
+
     // SIDEBAR //
     GUI.showSidebar = this._showSidebar.bind(this);
     GUI.hideSidebar = this._hideSidebar.bind(this);
@@ -844,6 +863,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.reloadComponents = function(){
       ApplicationTemplate.Services.sidebar.reloadComponents();
     };
+
     // MODAL
     GUI.setModal = this._showModalOverlay.bind(this);
     GUI.showFullModal = function({element="#full-screen-modal", show=true} = {}) {
@@ -858,6 +878,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.setPrimaryView = function(viewName) {
       ViewportService.setPrimaryView(viewName);
     };
+
     // only map
     GUI.showMap = function() {
       ViewportService.showMap();
@@ -891,6 +912,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       GUI.setContent(options);
       return true;
     };
+
     // add component to stack (append)
     // Differences between pushContent and setContent are :
     //  - push every componet is added, set is refreshed
@@ -901,11 +923,13 @@ const ApplicationTemplate = function({ApplicationService}) {
       options.push = true;
       GUI.setContent(options);
     };
+
     // add content to stack
     GUI.pushContextualContent = (options={}) => {
       options.perc = this._isMobile ? 100 : options.perc;
       GUI.pushContent(options);
     };
+
     // remove last content from stack
     GUI.popContent = function() {
       ViewportService.popContent();
@@ -930,6 +954,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.changeCurrentContentTitle = function(title){
       ViewportService.changeCurrentContentTitle(title);
     };
+
     /**
      * change current content options
      * @param options: {title, crumb}
@@ -954,12 +979,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
-      const options = {
+      const projectVueMenuComponent = new ProjectsMenuComponent({
         projects: projects && Array.isArray(projects) && projects,
         cbk,
         host
-      };
-      const projectVueMenuComponent = new ProjectsMenuComponent(options).getInternalComponent();
+      }).getInternalComponent();
       return projectVueMenuComponent.$mount().$el;
     };
 
@@ -969,13 +993,13 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     GUI._setContent = (options={}) => {
       this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
-      options.content = options.content || null;
-      options.title = options.title || "";
-      options.push = _.isBoolean(options.push) ? options.push : false;
-      options.perc = this._isMobile ? 100 : options.perc;
-      options.split = options.split || 'h';
+      options.content     = options.content || null;
+      options.title       = options.title || "";
+      options.push        = _.isBoolean(options.push) ? options.push : false;
+      options.perc        = this._isMobile ? 100 : options.perc;
+      options.split       = options.split || 'h';
       options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
-      options.showtitle = _.isBoolean(options.showtitle) ? options.showtitle : true;
+      options.showtitle   = _.isBoolean(options.showtitle) ? options.showtitle : true;
       ViewportService.showContent(options);
     };
 
@@ -1004,45 +1028,47 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI.openProjectsMenu = function() {
-      const contentsComponent = GUI.getComponent('contents');
-      // check if is projectmenucomponent
-      if (contentsComponent.getComponentById('projectsmenu')) GUI.closeContent();
-      else {
-        if (this.isMobile()) {
-          GUI.hideSidebar();
-          $('#main-navbar.navbar-collapse').removeClass('in');
-        }
-        ApplicationTemplate.Services.sidebar.closeOpenComponents();
-        GUI.setContent({
-          content: new ProjectsMenuComponent(),
-          title: '',
-          perc: 100
-        });
+      const isProjectMenuComponent = GUI.getComponent('contents').getComponentById('projectsmenu');
+      if (isProjectMenuComponent) {
+        GUI.closeContent();
+        return;
       }
+      if (this.isMobile()) {
+        GUI.hideSidebar();
+        $('#main-navbar.navbar-collapse').removeClass('in');
+      }
+      ApplicationTemplate.Services.sidebar.closeOpenComponents();
+      GUI.setContent({
+        content: new ProjectsMenuComponent(),
+        title: '',
+        perc: 100
+      });
     };
 
     /**
      * @since 3.8.0
      */
-    GUI.openChangeMapMenu = function(){
-      const contentsComponent = GUI.getComponent('contents');
-      // check if is projectmenucomponent
-      if (contentsComponent.getComponentById('changemapmenu')) GUI.closeContent();
-      else {
-        if (this.isMobile()) {
-          GUI.hideSidebar();
-          $('#main-navbar.navbar-collapse').removeClass('in');
-        }
-        ApplicationTemplate.Services.sidebar.closeOpenComponents();
-        GUI.setContent({
-          content: new ChangeMapMenuComponent(),
-          title: '',
-          perc: 100
-        });
+    GUI.openChangeMapMenu = function() {
+      const isChangeMapMenuComponent = GUI.getComponent('contents').getComponentById('changemapmenu');
+      if (isChangeMapMenuComponent) {
+        GUI.closeContent();
+        return;
       }
+      if (this.isMobile()) {
+        GUI.hideSidebar();
+        $('#main-navbar.navbar-collapse').removeClass('in');
+      }
+      ApplicationTemplate.Services.sidebar.closeOpenComponents();
+      GUI.setContent({
+        content: new ChangeMapMenuComponent(),
+        title: '',
+        perc: 100
+      });
     }
   };
+
   base(this);
+
 };
 
 inherit(ApplicationTemplate, G3WObject);

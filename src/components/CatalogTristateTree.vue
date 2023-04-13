@@ -431,12 +431,11 @@ export default {
         if (checked) {
           const visible = layer.setVisible(!disabled);
           /**
-           * Is it necessary to emit a layer change event here?
-           *
-          if (visible && 'toc' === this.legendplace) {
-            setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
-          }
-         */
+           * @TODO is it necessary to emit the `layer-change-style` event here?
+           */
+          // if (visible && 'toc' === this.legendplace) {
+          //  setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
+          // }
           if (parentGroup.mutually_exclusive) {
             parentGroup.nodes.forEach(node => node.checked = node.id === id);
           }
