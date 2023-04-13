@@ -1248,11 +1248,13 @@ export default {
 
           // check if current project has already messages stored
           if ("undefined" === typeof data[this.currentProject.getId()].find(_id => _id === id)) {
+            // create content message div
+            const message = document.createElement('div');
             // create dom element message from body html string from server
-            const message = (new DOMParser())
+            const serverMessageDOMNodes = (new DOMParser())
               .parseFromString(body, 'text/html')
-              .body
-              .childNodes[0];
+              .body.childNodes
+            message.append(...serverMessageDOMNodes);
             //append input don't show again checkbox vue component
             message.append(doNotShowAgainVueComponent.$mount().$el);
             //show modal window
