@@ -1089,27 +1089,26 @@ ApplicationTemplate.Services = {
   floatbar: null
 };
 
-ApplicationTemplate.fail = function({language='en', error }) {
+ApplicationTemplate.fail = function({ error }) {
   layout.loading(false);
-  const error_page =  {
-    it: {
-      error: error || "Errore di connessione",
-      at_moment: "Al momento non è possibile caricare la mappa",
-      f5: "Premi Ctrl+F5"
-    },
-    en: {
-      error: error || "Connection error",
-      at_moment: "At the moment is not possible show map",
-      f5: "Press Ctrl+F5"
-    }
-  };
-  const compiledTemplate = Vue.compile(require('gui/templates/500.html'));
-  const app = new Vue({
+  new Vue({
     el: '#app',
-    ...compiledTemplate,
-    data: {
-      messages: error_page[language]
-    }
+    ...Vue.compile(
+      `<div class="error-initial-page skin-background-color">
+        <template v-if="isMobile()">
+          <h3 class="oops">Oops!</h3>
+          <h5 class="cause">${ error || t('error_page.error') }</h5>
+          <h6 class="at-moment">${ t('error_page.at_moment') }</h6>
+          <h4 class="f5">${ t('error_page.f5') }</h4>
+        </template>
+        <template v-else>
+          <h1 class="oops">Oops!</h1>
+          <h1 class="cause">${ error || t('error_page.error') }</h1>
+          <h3 class="at-moment">${ t('error_page.at_moment') }</h3>
+          <h2 class="f5">${ t('error_page.error') }</h2>
+        </template>
+      </div>`
+    )
   });
 };
 
@@ -1130,8 +1129,5 @@ ApplicationService.init()
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
-    ApplicationTemplate.fail({
-      language,
-      error
-    });
+    ApplicationTemplate.fail({ error });
   });

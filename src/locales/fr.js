@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Erreur de connexion",
+      at_moment: "Pour le moment, il n'est pas possible d'afficher la carte",
+      f5: "Appuyez sur Ctrl+F5"
+    },
     cookie_law: {
       message: "Ce site utilise des cookies pour assurer une bonne convivialité pour l'utilisateur final.",
       buttonText: "J’ai compris !"
