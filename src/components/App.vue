@@ -1212,6 +1212,7 @@ export default {
     },
 
     /**
+     * Show Modal Window message when Application start
      * @since 3.8.0
      */
     async handleMessages(){
@@ -1290,7 +1291,6 @@ export default {
     /**
      * @since 3.8.0
      */
-    openChangeMapMenu(){
     openChangeMapMenu() {
       GUI.openChangeMapMenu();
     },
