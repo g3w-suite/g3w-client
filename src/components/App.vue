@@ -5,25 +5,47 @@
 
 <template>
 <div class="wrapper" v-disabled="app.disabled">
+
   <cookie-law theme="dark-lime" :buttonText="cookie_law_buttonText">
     <div slot="message" v-t="'cookie_law.message'">
     </div>
   </cookie-law>
+
   <header v-if="!isIframe" class="main-header">
-    <!-- Logo -->
-    <!-- Header Navbar: style can be found in header.less -->
+
+    <!-- NAVBAR TOP (MAIN MENU) -->
+    <!-- TODO: extract/refactor into sub-components or move into a dedicated single file component -->
+    <!-- NB: additional styles can be found in `header.less` -->
     <nav ref="navbar" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+
       <div class="container-fluid">
+
         <div class="navbar-header">
-          <button ref='navbar_toggle' type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+
+          <!-- ELLIPSIS BUTTON (MAIN MENU) -->
+          <button
+            ref='navbar_toggle'
+            type="button"
+            class="navbar-toggle"
+            data-toggle="collapse"
+            data-target="#main-navbar"
+          >
             <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('ellips-v')"></i>
           </button>
-          <!-- Toggle button on navbar only for mobile -->
-          <a v-if="isMobile()" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+
+          <!-- HAMBURGER BUTTON (SIDEBAR MENU) -->
+          <a id="g3w-small-screen-hamburger-sidebar" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
             <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('bars')"></i>
           </a>
+
+          <!-- LOGO -->
           <div class="logo-wrapper" :class="{'mobile': isMobile()}">
-            <a  v-if="logo_url" :href="logo_link" :target="logo_link_target" class="project_logo_link">
+            <a
+              v-if="logo_url"
+              :href="logo_link"
+              :target="logo_link_target"
+              class="project_logo_link"
+            >
               <img class="img-responsive" style="max-width: 250px;" ref="img_logo" :src="logo_url">
             </a>
             <div ref="main_title_project_title" class="project_title_content">
@@ -31,25 +53,61 @@
               <div class="sub_title">{{project_title}}</div>
             </div>
           </div>
+
         </div>
-        <div ref="mainnavbar" class="collapse navbar-collapse" id="main-navbar" style="text-align: center; overflow: hidden; max-height: 50px;">
-          <navbarleftitems></navbarleftitems>
-          <navbarrightitems></navbarrightitems>
-          <ul ref="app-navbar-nav" class="nav navbar-nav navbar-right app-navbar-nav">
+
+        <!-- TODO: add description -->
+        <div
+          ref="mainnavbar"
+          id="main-navbar"
+          class="collapse navbar-collapse"
+          style="text-align: center; overflow: hidden; margin: 0 0;"
+        >
+
+          <!-- TODO: add description -->
+          <navbarleftitems />
+
+          <!-- TODO: add description -->
+          <navbarrightitems />
+
+          <ul
+            ref="app-navbar-nav"
+            class="nav navbar-nav navbar-right app-navbar-nav"
+          >
+
+            <!-- LOGIN -->
             <li v-if="!user" class="dropdown user user-menu">
               <a :href="login_url">
                 <i :class="g3wtemplate.getFontClass('sign-in')" aria-hidden="true"></i>
                 <span v-t="'sign_in'"></span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[0]" :key="state.id"></header-item>
-            <li id="changemaps" class="dropdown user" v-if="numberOfProjectsInGroup > 1">
-              <a href="#" @click="openProjectsMenu" class="dropdown-toggle" data-toggle="dropdown">
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[0]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- CHANGE MAP -->
+            <li v-if="hasRelatedMaps" id="changemaps" class="dropdown user">
+              <a href="#" @click="openChangeMapMenu" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('change-map')" aria-hidden="true"></i>
                 <span v-t="'changemap'"></span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[1]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[1]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- ADMIN / LOGOUT -->
             <li v-if="user" class="dropdown user user-menu">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('user')"></i>
@@ -63,40 +121,87 @@
                 </li>
                 <li class="user-footer">
                   <div class="pull-left" v-if="user.admin_url">
-                    <a :href="user.admin_url" class="btn btn-default btn-flat skin-color bold" ><i :class="g3wtemplate.getFontClass('folder')"></i> Admin</a>
+                    <a :href="user.admin_url" class="btn btn-default btn-flat skin-color bold" >
+                      <i :class="g3wtemplate.getFontClass('folder')"></i> Admin
+                    </a>
                   </div>
                   <div class="pull-right">
-                    <a :href="user.logout_url" class="btn btn-default btn-flat skin-color bold" v-t="'logout'"><i :class="g3wtemplate.getFontClass('sign-out')" style="margin-right: 2px;"></i></a>
+                    <a :href="user.logout_url" class="btn btn-default btn-flat skin-color bold" v-t="'logout'">
+                      <i :class="g3wtemplate.getFontClass('sign-out')" style="margin-right: 2px;"></i>
+                    </a>
                   </div>
                 </li>
               </ul>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[2]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[2]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- CREDITS -->
             <li class="dropdown user user-menu">
               <a href="#" data-toggle="modal" data-target="#credits" class="dropdown-toggle">
                 <i :class="g3wtemplate.getFontClass('credits')" aria-hidden="true"></i>
                 <span>Credits</span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[3]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[3]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
+            <!-- LANGUAGE SWITCHER -->
             <li v-if="languages" class="g3w-languages">
-              <select v-select2="'language'" class="form-control" :templateSelection="templateResultLanguages" :templateResult="templateResultLanguages" v-model="language" style="cursor:pointer; width: 130px;">
-                <option v-for="_language in languages" :key="_language[0]" :value="_language[0]" :selected="_language[0] === language && 'selected'">
-                  {{_language[1]}}
+              <select
+                v-select2="'language'"
+                class="form-control"
+                :templateSelection="templateResultLanguages"
+                :templateResult="templateResultLanguages"
+                v-model="language"
+                style="cursor:pointer; width: 130px;"
+              >
+                <option
+                  v-for="lang in languages"
+                  :key="lang[0]"
+                  :value="lang[0]"
+                  :selected="lang[0] === language && 'selected'"
+                >
+                  {{ lang[1] }}
                 </option>
               </select>
             </li>
+
+            <!-- HOME PAGE -->
             <li v-if="frontendurl" class="dropdown">
               <a :href="frontendurl">
                 <span><i :class="g3wtemplate.getFontClass('home')"></i> Home</span>
               </a>
             </li>
-            <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[4]" :key="state.id"></header-item>
+
+            <!-- TODO: add description -->
+            <header-item
+              v-for="state in custom_header_items_position[4]"
+              :key="state.id"
+              :state="state"
+              @show-custom-modal-content="showCustomModalContent"
+            />
+
           </ul>
+
         </div>
+
       </div>
     </nav>
   </header>
+
   <!-- Left side column. contains the logo and sidebar -->
   <sidebar></sidebar>
   <!-- Content Wrapper. Contains page content -->
@@ -933,7 +1038,9 @@ $.LayoutManager = $.LayoutManager || {
 const layout = $.LayoutManager;
 
 export default {
+
   mixins: [resizeMixin],
+
   data() {
     return {
       customcredits: false,
@@ -943,14 +1050,18 @@ export default {
       cookie_law_buttonText: t('cookie_law.buttonText')
     }
   },
+
   components: {
     HeaderItem,
     CookieLaw
   },
+
   computed: {
-    app(){
+
+    app() {
       return this.appState.gui.app;
     },
+
     languages() {
 
       /***
@@ -959,78 +1070,118 @@ export default {
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
       return languages.length > 1 && languages;
     },
+
     currentProject() {
       return ProjectsRegistry.getCurrentProject();
     },
+
     appconfig() {
       return ApplicationService.getConfig();
     },
+
     isIframe() {
       return !!this.appconfig.group.layout.iframe;
     },
+
     urls() {
       return this.appconfig.urls;
     },
-    staticurl(){
+
+    staticurl() {
       return this.urls.staticurl;
     },
+
     powered_by() {
       return this.appconfig.group.powered_by;
     },
-    clienturl(){
+
+    clienturl() {
       return this.urls.clienturl;
     },
+
     g3w_suite_logo() {
       return `${this.clienturl}images/g3wsuite_logo.png`;
     },
+
     credits_logo() {
       return `${this.clienturl}images/logo_gis3w_156_85.png`;
     },
+
     logo_url() {
       const logo_project_url = this.currentProject.getThumbnail();
       return logo_project_url ? logo_project_url : `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
+
     logo_link() {
       const logo_link = this.getLogoLink();
       return logo_link ? logo_link : "#";
     },
+
     logo_link_target() {
       const logo_link = this.getLogoLink();
       return logo_link ? "_blank" : "";
     },
+
     project_title() {
       return this.currentProject.getState().name;
     },
+
     user() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
-    login_url(){
+
+    login_url() {
       return this.appconfig.user.login_url
     },
+
+    /**
+     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `hasRelatedMaps` instead
+     */
     numberOfProjectsInGroup() {
       return this.appconfig.projects.length;
     },
+
+    /**
+     * @returns {boolean} whether it should list any related projects or maps.
+     * 
+     * @since 3.8.0
+     */
+    hasRelatedMaps() {
+      return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
+    },
+
     frontendurl() {
       return this.urls.frontendurl;
     },
+
     main_title() {
       const main_title = this.appconfig.main_map_title;
       const group_name = this.appconfig.group.name || this.appconfig.group.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
+
   },
+
   methods: {
+
+    /**
+     * Language switcher item template (select2)
+     * 
+     * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
+     */
     templateResultLanguages(state) {
-      if (!state.id) return state.text;
-      const flagsurl = `${this.staticurl}img/flags`;
-      const $state = $(`<div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around">
-            <img src="${flagsurl}/${state.element.value.toLowerCase()}.png" />
-            <span style="margin-left: 5px;">${state.text}</span> 
-          </span>`
+      if (!state.id) {
+        return state.text;
+      }
+      return $(`
+        <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
+          <img src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
+          <span style="margin-left: 5px;">${state.text}</span> 
+        </span>`
       );
-      return $state;
     },
-    async resize(){
+
+    async resize() {
       if (!this.isIframe) {
         await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
@@ -1038,32 +1189,52 @@ export default {
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
-    showCustomModalContent(id){
+
+    showCustomModalContent(id) {
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
-    closePanel(){
+
+    closePanel() {
       sidebarService.closePanel();
     },
+
     getLogoLink() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
     },
+
+    /**
+     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `openChangeMapMenu` instead.
+     */
     openProjectsMenu() {
       GUI.openProjectsMenu();
-    }
+    },
+
+    /**
+     * @since 3.8.0
+     */
+    openChangeMapMenu() {
+      GUI.openChangeMapMenu();
+    },
+
   },
+
   watch: {
+
     'language'(language, currentlanguage) {
       if (currentlanguage) {
         ApplicationService.changeLanguage(language);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     }
+
   },
+
   beforeCreate() {
     this.delayType = 'debounce';
     this.delayTime = 0;
   },
+
   created() {
     this.language = this.appconfig._i18n.language;
     this.custom_modals = [];
@@ -1091,6 +1262,7 @@ export default {
 
     !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
   },
+
   async mounted() {
     this.logoWidth = 0;
     await this.$nextTick();
@@ -1119,7 +1291,7 @@ export default {
       $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
     }
     setFloatBarMaxHeight();
-    function setModalHeight(){
+    function setModalHeight() {
       $('#g3w-modal-overlay').css('height',$(window).height());
     }
     $(window).resize(() => {
@@ -1127,5 +1299,6 @@ export default {
       setModalHeight();
     });
   },
+
 };
 </script>

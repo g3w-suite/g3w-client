@@ -24,6 +24,26 @@ export default {
       message: "Position relativ zu den Layern im TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Template auswählen"
+        }
+      },
+      spatialbookmarks: {
+        title: "Räumliche Lesezeichen",
+        helptext: "Bewegen Sie sich auf der Kartenausdehnung, fügen Sie den Namen ein und klicken Sie auf Hinzufügen",
+        input: {
+          name: "Name"
+        },
+        sections: {
+          project:{
+            title: "Projekt-Lesezeichen"
+          },
+          user: {
+            title: "Benutzer-Lesezeichen"
+          }
+        }
+      },
       search: {
         all: 'ALLE',
         no_results: "Keine Ergebnisse",
@@ -253,6 +273,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Abfrage durch Polygon zeichnen"
+        },
         querybybbox: {
           tooltip: 'BBox Layer abfragen',
           nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
@@ -293,6 +316,10 @@ export default {
             metric: 'Meter',
             nautical: 'Nautische Meile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Vorheriger",
+          zoom_next: "Zoom Nächster"
         }
       },
       relations: {
@@ -332,6 +359,7 @@ export default {
           textarea: "text",
           string: "string",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
@@ -377,11 +405,13 @@ export default {
     toggle_color_scheme: "Farbschema umschalten",
     logout: "Logout",
     no_other_projects: "Kein weiteres Projekt für diese Gruppe",
+    no_other_groups: "Keine weiteren Gruppen für diese Makrogruppe",
     yes: "Ja",
     no: "No",
     back: "Zurück",
     backto: "Zurück zu ",
     changemap: "Karte ändern",
+    change_session: "Sitzung ändern",
     component: "Allgemeine Komponente",
     search: "Suche",
     no_results: "Keine Ergebnisse gefunden",
@@ -430,7 +460,7 @@ export default {
         add_wms_layer: "WMS Layer hinzufügen",
         delete_wms_url: "WMS Url löschen",
         layer_id_already_added: "WMS Layer bereits hinzugefügt",
-        url_already_added: "WMS URL bereits hinzugefügt",
+        url_already_added: "WMS URL/Name bereits hinzugefügt",
         layer_add_error: "WMS Layer nicht hinzugefügt. Bitte überprüfen Sie alle WMS-Parameter oder Url"
       }
     },
@@ -481,7 +511,8 @@ export default {
         open_attribute_table: "Attributtabelle öffnen",
         show_metadata: "Metadaten",
         styles: 'Stile',
-        vector_color_menu:"Farbe einstellen/ändern"
+        vector_color_menu:"Farbe einstellen/ändern",
+        layer_opacity: "Opazität"
       }
     },
     dataTable: {

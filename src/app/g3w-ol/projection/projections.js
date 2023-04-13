@@ -1,7 +1,8 @@
-import {API_BASE_URLS} from 'constant';
-const Projection = require('./projection');
-const {XHR} = require('core/utils/utils');
-const {normalizeEpsg} = require('core/utils/geo');
+import { API_BASE_URLS } from 'constant';
+
+const Projection       = require('./projection');
+const { XHR }          = require('core/utils/utils');
+const {normalizeEpsg } = require('core/utils/geo');
 
 const Projections = {
 

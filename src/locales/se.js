@@ -24,6 +24,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Välj Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Rumsliga bokmärken",
+        helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
+        input: {
+          name: "Namn"
+        },
+        sections: {
+          project:{
+            title: "Projektbokmärken"
+          },
+          user: {
+            title: "Användarbokmärken"
+          }
+        }
+      },
       search: {
         all: 'ALLA',
         no_results: "Inga resultat",
@@ -246,12 +266,15 @@ export default {
           help: {
             title: 'Ohje - Förfrågan med polygon',
             message:`
-                <ul >
+                <ul>
                   <li>Välj polygonnivå i listan.</li>
                   <li>Kontrollera att nivån är synlig.</li>
                   <li>Välj egenskap på önskad nivå.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Fråga efter ritpolygon"
         },
         querybybbox: {
           tooltip: 'BBox-förfrågan som riktar sig till en nivå',
@@ -293,6 +316,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Föregående",
+          zoom_next: "Zoom Nästa"
         }
       },
       relations: {
@@ -333,6 +360,7 @@ export default {
           textarea: "text",
           string: "teckensträng",
           date: "datum",
+          datetime: "datum",
           float: "flyttal",
           table: "tabell"
         },
@@ -378,11 +406,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logga ut",
     no_other_projects: "Inga projekt för denna grupp",
+    no_other_groups: "Inga fler grupper för denna makrogrupp",
     yes: "Ja",
     no: "Nej",
     back: "Gå tillbaka",
     backto: "Tillbaka ",
     changemap: "Byt karta",
+    change_session: "Ändra session",
     component: "Allmän komponent",
     search: "Sök",
     no_results: "Inga sökresultat",
@@ -431,7 +461,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL har redan lagts till.",
+        url_already_added: "WMS URL/Namn har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
@@ -482,7 +512,8 @@ export default {
         open_attribute_table: "Öppna attributtabellen",
         show_metadata: "Metadata",
         styles: "Stilar",
-        vector_color_menu: "Ställ in/ändra färg"
+        vector_color_menu: "Ställ in/ändra färg",
+        layer_opacity: "Opacitet"
       }
     },
     dataTable: {

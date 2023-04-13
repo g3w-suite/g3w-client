@@ -1,100 +1,258 @@
-import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
+import { SPATIALMETHODS } from 'g3w-ol/constants';
+import GUI from 'services/gui';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
 
-const { merge } = require('core/utils/ol');
+const { throttle }       = require('core/utils/utils');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
-const QueryBBoxControl = function(options = {}){
-  const {spatialMethod=SPATIALMETHODS[0]} = options;
+/**
+ * Catalog layers (TOC) properties that need to be satisfied
+ */
+const layersFilterObject = {
+  SELECTED_OR_ALL: true, // selected or all
+  FILTERABLE: true,      // see: src/app/core/layers/layer.js#L925
+  VISIBLE: true          // need to be visible
+};
+
+const condition = {
+  filtrable: {
+    ows: 'WFS'
+  }
+};
+
+const QueryBBoxControl = function(options = {}) {
+
+  const {
+    spatialMethod = SPATIALMETHODS[0]
+  } = options;
+
+  /**
+   * @FIXME add description
+   */
   this._startCoordinate = null;
-  this.layers = options.layers || [];
-  const visible = this.checkVisible(this.layers);
-  options.visible = visible;
-  options.enabled = visible && this.checkEnabled(this.layers);
-  this.unwatches = [];
-  this.listenLayersVisibleChange();
+
+  /**
+   * @FIXME add description
+   */
+  this.unwatches        = [];
+
+  /**
+   * @FIXME add description
+   */
+  const layers = GUI.getService('map').filterableLayersAvailable(condition) || [];
+  layers.forEach(layer => layer.setTocHighlightable(true));
+
   const _options = {
+    ...options,
+    layers,
     offline: false,
     name: "querybbox",
     tipLabel: "sdk.mapcontrols.querybybbox.tooltip",
     label: options.label || "\ue902",
     clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
-    onSelectlayer(selectLayer){
-      const layers = this.layers;
-      const selected = selectLayer.isSelected();
-      if (selected) {
-        const findLayer = layers.find(layer => layer === selectLayer);
-        const enabled = findLayer && findLayer.isVisible() ? true: false;
-        this.setEnable(enabled, false);
-      } else {
-        const enabled = this.checkEnabled(layers);
-        this.setEnable(enabled);
-      }
-    },
     onhover: true,
     toggledTool:{
       type: 'spatialMethod',
       how: 'toggled' // or hover
     },
-    spatialMethod
+    spatialMethod,
+    help: {
+      title:"sdk.mapcontrols.querybybbox.help.title",
+      message:"sdk.mapcontrols.querybybbox.help.message",
+    }
   };
-  options = merge(options,_options);
 
-  InteractionControl.call(this, options);
+  InteractionControl.call(this, _options);
+
+
+  this.setEnable(this.hasVisibleLayers());
+
+  /**
+   * Store bbox coordinates
+   * 
+   * @type {ol.coordinate}
+   */
+  this.bbox = null;
+
+  /**
+   * Set `layer.tochighlightable` to external layer to show highlight class
+   * 
+   * @since 3.8.0
+   */
+  this.on('toggled', ({toggled}) => {
+    this.getExternalLayers().forEach(layer => layer.tochighlightable = toggled);
+  })
+
 };
 
 ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
 
-proto.listenLayersVisibleChange = function(){
+/**
+ * @deprecated since 3.7
+ * 
+ * @param layers
+ */
+proto.change = function(layers=[]) {
+  this.layers = layers;
+  this.setEnable(this.hasVisibleLayers());
+  this.listenLayersVisibilityChange();
+};
+
+proto.checkVisible = function() {
+  return this.layers.length > 0 || this.getExternalLayers().length > 0;
+};
+
+/**
+ * @param {ol.Map} map
+ * 
+ * @listens ol.interaction.DragBox~boxstart
+ * @listens ol.interaction.DragBox~boxend
+ */
+proto.setMap = function(map) {
+
+  InteractionControl.prototype.setMap.call(this, map);
+
+  this._interaction
+    .on('boxstart', evt => this._startCoordinate = evt.coordinate);
+
+  this._interaction
+    .on('boxend', throttle(evt => {
+
+      this.bbox = ol.extent.boundingExtent([this._startCoordinate, evt.coordinate]);
+
+      this.dispatchEvent({ type: 'bboxend', extent: this.bbox });
+
+      this._startCoordinate = null;
+
+      if (this._autountoggle) {
+        this.toggle();
+      }
+
+    }));
+
+    this.setEventKey({
+      eventType: 'bboxend',
+      eventKey: this.on('bboxend', this.runSpatialQuery)
+    });
+
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.onSelectLayer = function(layer) {
+  if (layer) {
+    const findLayer = this.layers.find(_layer => _layer === layer);
+    this.setEnable(!!findLayer && findLayer.isVisible());
+  } else {
+    this.setEnable(this.hasVisibleLayers());
+  }
+  this.toggle(this.isToggled() && this.getEnable());
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.listenLayersVisibilityChange = function() {
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
-    const {state} = layer;
-    this.unwatches.push(VM.$watch(() =>  state.visible, visible =>{
-      if (state.selected && !visible) this.setEnable(false);
-      else {
-        const enabled = this.checkEnabled(this.layers);
-        enabled !== this.getEnable() && this.setEnable(enabled,  enabled && this.isToggled());
+    this.unwatches
+      .push(
+        this.watchLayer(
+          () => layer.state.visible,
+          visible => {
+            if (true === layer.state.selected) {
+              this.setEnable(visible);
+            } else {
+              this.setEnable(this.hasVisibleLayers())
+            }
+            this.toggle(this.isToggled() && this.getEnable());
+          }
+        )
+      )
+    }
+  );
+};
+
+/**
+ * @returns {Promise<void>}
+ * 
+ * @since 3.8.0
+ */
+proto.runSpatialQuery = async function(){
+  // skip if bbox is not set
+  if (null === this.bbox) {
+    return;
+  }
+  GUI.closeOpenSideBarComponent();
+  try {
+    const { data = [] } = await DataRouterService.getData('query:bbox', {
+      inputs: {
+        bbox: this.bbox,
+        feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+        addExternal: this.addExternalLayerToResult(),
+        layersFilterObject,
+        filterConfig: {
+          spatialMethod: this.getSpatialMethod(), // added spatial method to polygon filter
+        },
+        condition,
+        multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
       }
-    }))
-  });
-};
-
-proto.change = function(layers=[]){
-  this.layers = layers;
-  const visible = this.checkVisible(layers);
-  this.setVisible(visible);
-  const enabled = this.checkEnabled(layers);
-  this.setEnable(enabled);
-  this.listenLayersVisibleChange(this.layers);
-};
-
-proto.checkVisible = function(layers=[]){
-  return layers.length > 0;
-};
-
-proto.checkEnabled = function(layers=[]){
-  return layers.length > 0 && layers.reduce((accumulator, layer) => {
-    return accumulator || layer.isVisible();
-  }, false);
-};
-
-proto.setMap = function(map) {
-  InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('boxstart', evt => this._startCoordinate = evt.coordinate);
-  this._interaction.on('boxend', evt => {
-    const start_coordinate = this._startCoordinate;
-    const end_coordinate = evt.coordinate;
-    const extent = ol.extent.boundingExtent([start_coordinate, end_coordinate]);
-    this.dispatchEvent({
-      type: 'bboxend',
-      extent
     });
-    this._startCoordinate = null;
-    this._autountoggle && this.toggle();
-  })
+  } catch(err){
+    console.warn('Error running spatial query: ', err);
+  }
 };
+
+/**
+ * @param {{ layer, unWatches }}
+ * 
+ * @since 3.8.0
+ */
+proto.onAddExternalLayer = function({layer, unWatches}) {
+  //set layer property
+  layer.tochighlightable = this.isToggled() && this.getEnable();
+
+  unWatches.push(
+    this.watchLayer(
+      () => layer.selected,                    // watch `layer.selected` property
+      selected => {
+        this.setEnable(true === selected ? layer.visible : this.hasVisibleLayers());
+        this.toggle(this.isToggled() && this.getEnable());
+      })
+  );
+
+  unWatches.push(
+    this.watchLayer(
+      () => layer.visible,                       // watch `layer.visible` property
+      () => {
+        this.setEnable(this.hasVisibleLayers());
+        this.toggle(this.isToggled() && this.getEnable());
+      })
+  );
+
+  this.setEnable(this.hasVisibleLayers());
+};
+
+/**
+ * @since 3.8.0
+ */
+proto.onRemoveExternalLayer = function() {
+  this.setEnable(this.isThereVisibleLayerNotSelected());
+};
+
+
+/**
+ * @since 3.8.0
+ */
+proto.clear = function(){
+  this.bbox = null;
+};
+
 
 module.exports = QueryBBoxControl;

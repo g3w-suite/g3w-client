@@ -24,6 +24,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Select Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Spatial Bookmarks",
+        helptext: "Move on map extent, insert name and click Add",
+        input: {
+          name: "Name"
+        },
+        sections: {
+          project:{
+            title: "Project Bookmarks"
+          },
+          user: {
+            title: "User Bookmarks"
+          }
+        }
+      },
       search: {
         all: 'ALL',
         no_results: "No results",
@@ -105,7 +125,7 @@ export default {
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'Refereces',
+                  personprimary: 'References',
                   contactvoicetelephone: 'Phone',
                   contactorganization: 'Organization',
                   ContactOrganization: 'Organization',
@@ -253,6 +273,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
+        },
         querybybbox: {
           tooltip: 'Query BBox layer',
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
@@ -293,6 +316,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Last",
+          zoom_next: "Zoom Next"
         }
       },
       relations: {
@@ -332,6 +359,7 @@ export default {
           textarea: "text",
           string: "string",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
@@ -377,11 +405,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logout",
     no_other_projects: "No more project for this group",
+    no_other_groups: "No more groups for this Macrogroup",
     yes: "Yes",
     no: "No",
     back: "Back",
     backto: "Back to ",
     changemap: "Change Map",
+    change_session: "Change Session",
     component: "Generic Component",
     search: "Search",
     no_results: "No results found",
@@ -430,7 +460,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Layer already added",
-        url_already_added: "WMS URL already added",
+        url_already_added: "WMS URL/Name already added",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
@@ -481,7 +511,8 @@ export default {
         open_attribute_table: "Open Attribute Table",
         show_metadata: "Metadata",
         styles: 'Styles',
-        vector_color_menu:"Set/Change Color"
+        vector_color_menu:"Set/Change Color",
+        layer_opacity: "Opacity"
       }
     },
     dataTable: {

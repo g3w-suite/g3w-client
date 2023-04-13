@@ -24,6 +24,26 @@ export default {
       message: "Posizione rispetto ai layers della TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Seleziona Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Segnalibri Spaziali",
+        helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
+        input: {
+          name: "Nome"
+        },
+        sections: {
+          project:{
+            title: "Segnalibri Progetto"
+          },
+          user: {
+            title: "Segnalibri Utente"
+          }
+        }
+      },
       search: {
         all: 'TUTTE',
         no_results: "Nessun valore trovato",
@@ -248,11 +268,14 @@ export default {
             title: 'Guida - Interrogazione con Poligono',
             message:`
                 <ul>
-                  <li">Seleziona uno strato poligonale in legenda.</li>
+                  <li>Seleziona uno strato poligonale in legenda.</li>
                   <li>Assicurati che lo strato sia visibile in mappa.</li>
                   <li>Clicca su una geometria dello strato selezionato.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Disegna un poligono per interrogare"
         },
         querybybbox: {
           tooltip: 'Interroga per BBOX',
@@ -295,6 +318,10 @@ export default {
             metric: 'Metri',
             nautical: 'Miglio Nautico'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Precedente",
+          zoom_next: "Zoom Successivo"
         }
       },
       relations: {
@@ -334,6 +361,7 @@ export default {
           textarea: "testuale",
           string: "stringa",
           date: "data",
+          datetime: "data",
           float: "float",
           table: "table"
         },
@@ -378,12 +406,14 @@ export default {
     },
     toggle_color_scheme: "Cambia colore",
     logout: "Esci",
-    no_other_projects: "Non ci sono altri progetti in questo gruppo cartografico",
+    no_other_projects: "Nu există alte proiecte în acest grup de hărți",
+    no_other_groups: "Nu există alte grupuri în acest grup de macrocomenzi",
     yes: "Si",
     no: "No",
     back:"Indietro",
     backto: "Torna a ",
     changemap: "Cambia Mappa",
+    change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",
     no_results: "Nessun risultato trovato",
@@ -432,7 +462,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Elimina WMS url",
         layer_id_already_added: "WMS Layer già aggiunto",
-        url_already_added: "WMS URL già aggiunto",
+        url_already_added: "WMS URL/Nome già aggiunto",
         layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
       }
     },
@@ -484,7 +514,8 @@ export default {
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stili",
-        vector_color_menu:"Setta/Cambia Colore"
+        vector_color_menu:"Setta/Cambia Colore",
+        layer_opacity: "Trasparenza"
       }
     },
     dataTable: {
