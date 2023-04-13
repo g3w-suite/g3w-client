@@ -20,8 +20,13 @@ proto.change = function(layers=[]){
   this.setVisible(visible);
 };
 
+/**
+ * Check visibility map control based on layers
+ * @param layers <Array>
+ * @returns {boolean}
+ */
 proto.checkVisible = function(layers=[]){
-  const find = layers.find((layer) => {
+  return "undefined" === typeof layers.find((layer) => {
     if (layer.isExternalWMS && layer.isExternalWMS()) {
       /**
        * @since 3.8.0
@@ -36,7 +41,6 @@ proto.checkVisible = function(layers=[]){
       return true;
     } else return false
   });
-  return !find;
 };
 
 module.exports = ScreenshotControl;
