@@ -234,8 +234,13 @@ proto.getProjectUrl = function(gid) {
   // get project configuration in initConfig group projects
   const projectConfig = this.getProjectConfigByGid(gid);
   const {url} = projectConfig;
-  const {origin} = location;
-  return `${origin}${baseurl}${url}`;
+  try {
+    new URL(baseurl)
+    return `${baseurl}${url}`;
+  } catch(err) {
+    const {origin} = location;
+    return `${origin}${baseurl}${url}`;
+  }
 };
 
 // method to call server to get project configuration
