@@ -199,12 +199,19 @@ export default {
     async trigger(item) {
       switch(this.current) {
         case 'projects':
+          let url;
           const epsg = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
           await Projections.registerProjection(epsg);
-          const url = `${location.origin}${ProjectsRegistry.getBaseUrl()}${item.url || item.map_url.replace(/^\//, "")}`;
+          try {
+            new URL(ProjectsRegistry.getBaseUrl());
+            url = `${ProjectsRegistry.getBaseUrl()}${item.url || item.map_url.replace(/^\//, "")}`;
+          } catch(err) {
+            url = `${location.origin}${ProjectsRegistry.getBaseUrl()}${item.url || item.map_url.replace(/^\//, "")}`;
+          }
           return ApplicationService.changeMapProject({ url, epsg });
+
         case 'groups': {
-          this.showProjects(item);
+          await this.showProjects(item);
           break;
         }
         case 'macrogroup': {
