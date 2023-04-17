@@ -375,17 +375,17 @@ proto.createLayersTree = function(
         }
 
           // case group
-          if (null !== layer.nodes && "undefined" !== typeof layer.nodes) {
+          if (null !== node.nodes && "undefined" !== typeof node.nodes) {
             lightlayer = ({
               ...lightlayer,
-              title: layer.name,
+              title: node.name,
               groupId: uniqueId(),
               root: false,
               nodes: [],
-              checked: layer.checked,
-              mutually_exclusive: layer["mutually-exclusive"]
+              checked: node.checked,
+              mutually_exclusive: node["mutually-exclusive"]
             });
-            traverse(layer.nodes, lightlayer.nodes); // recursion step
+            traverse(node.nodes, lightlayer.nodes); // recursion step
           }
 
         // check if lightlayer is not null
