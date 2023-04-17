@@ -893,6 +893,14 @@ proto._setupControls = function() {
             });
           }
           break;
+        /**
+         * @since 3.8.0
+         */
+        case 'zoomhistory':
+          control = this.createMapControl(controlType, { add: false });
+          this._addControlToMapControlsLeftBottom(control);
+          break;
+
       }
     });
     return this.getMapControls()
@@ -991,10 +999,22 @@ proto.getMapExtent = function(){
   return map.getView().calculateExtent(map.getSize());
 };
 
-proto.addMapExtentUrlParameterToUrl = function(url){
+/**
+ * @param url
+ * @param epsg cordinate referece system (since 3.8.0)
+ * 
+ * @returns {string}
+ */
+proto.addMapExtentUrlParameterToUrl = function(url, epsg) {
   url = new URL(url);
-  const map_extent = this.getMapExtent().toString();
-  url.searchParams.set('map_extent', map_extent);
+  url.searchParams.set(
+    'map_extent',
+    (
+      undefined !== epsg && this.getEpsg() !== epsg
+        ? ol.proj.transformExtent(this.getMapExtent(), this.getEpsg(), epsg)
+        : this.getMapExtent()
+    ).toString()
+  );
   return url.toString()
 };
 
@@ -1171,6 +1191,16 @@ proto._addControlToMapControls = function(control, visible=true) {
   const controlElement = control.element;
   if (!visible) control.element.style.display = "none";
   $('.g3w-map-controls').append(controlElement);
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._addControlToMapControlsLeftBottom = function(control, visible=true) {
+  if (!visible) {
+    control.element.style.display = "none";
+  }
+  $('.g3w-map-controls-left-bottom').append(control.element);
 };
 
 proto.getMapControlByType = function({type}={}) {

@@ -119,7 +119,8 @@
         :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
-        {{ layerstree.title }}
+        <span>{{ layerstree.title }}</span>
+        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">[{{getFeatureCount}}]</span>
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
@@ -219,6 +220,16 @@ export default {
     }
   },
   computed: {
+
+    /**
+     * @returns {boolean} whether to display total number of features for current layer
+     *
+     * @since 3.8.0
+     */
+    showfeaturecount() {
+      return "undefined" !== typeof this.layerstree.featurecount;
+    },
+
     showLegendLayer() {
       return !this.layerstree.exclude_from_legend;
     },
@@ -264,6 +275,13 @@ export default {
     },
 
     /**
+     * @since 3.8.0
+     */
+    getFeatureCount() {
+      return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) => total + 1 * categoryFeatureCount, 0);
+    },
+
+    /**
      * @TODO double check the name of this function (ie. matches its purpose?)
      *
      * @since 3.8.0
@@ -290,7 +308,6 @@ export default {
         true === this.layerstree.tochighlightable
       )
     },
-
   },
   watch:{
     'layerstree.disabled'(bool) {},
@@ -393,9 +410,12 @@ export default {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked) {
           const visible = layer.setVisible(!disabled);
-          if (visible && 'toc' === this.legendplace) {
-            setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
-          }
+          /**
+           * @TODO is it necessary to emit the `layer-change-style` event here?
+           */
+          // if (visible && 'toc' === this.legendplace) {
+          //  setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
+          // }
           if (parentGroup.mutually_exclusive) {
             parentGroup.nodes.forEach(node => node.checked = node.id === id);
           }
