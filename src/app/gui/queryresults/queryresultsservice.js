@@ -1395,7 +1395,6 @@ proto.printAtlas = function(layer, feature){
           className: "skin-button",
           callback: ()=> {
             const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
-            console.log(index)
             if ("undefined" !== typeof index) {
               const atlas = atlasLayer[index];
               this._printSingleAtlas({
