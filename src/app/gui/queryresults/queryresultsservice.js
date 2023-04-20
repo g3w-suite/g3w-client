@@ -1281,7 +1281,6 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
           break;
       }
     }
-
   }
 
   return {
@@ -1396,12 +1395,16 @@ proto.printAtlas = function(layer, feature){
           className: "skin-button",
           callback: ()=> {
             const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
-            if (index !== null || index !== undefined) {
+            console.log(index)
+            if ("undefined" !== typeof index) {
               const atlas = atlasLayer[index];
               this._printSingleAtlas({
                 atlas,
                 features
               })
+            } else {
+              //prevent to close
+              return false
             }
           }
         }
