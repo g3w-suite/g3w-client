@@ -866,8 +866,12 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     // MODAL
     GUI.setModal = this._showModalOverlay.bind(this);
-    GUI.showFullModal = function({element="#full-screen-modal", show=true} = {}) {
-      show ? $(element).modal('show') : $(element).modal('hide')
+    
+    /**
+     * Toggle set full screen modal 
+     */
+    GUI.showFullModal = function({element = "#full-screen-modal", show = true} = {}) {
+      $(element).modal(show ? 'show' : 'hide')
     };
 
     GUI.disableSideBar = function(bool=true) {

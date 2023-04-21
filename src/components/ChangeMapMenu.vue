@@ -242,7 +242,12 @@ export default {
       }
     },
 
+    /**
+     * @TODO extract as utility function (almost the same as `components/ProjectsMenu::logoSrc(src)`) 
+     */
     _setSrc(src) {
+      src = src || '';
+
       let imageSrc;
       const host       = this.$options.host || '';
       const mediaurl   = ProjectsRegistry.config.mediaurl;
