@@ -22,21 +22,18 @@ proto.change = function(layers=[]){
 };
 
 /**
- * Check visibility map control based on layers
- * @param layers <Array>
+ * Check visibility for map control based on layers URLs.
+ * 
+ * Allow to print external WMS layers only when they have
+ * same origin URL of current application in order to avoid
+ * CORS issue while getting map image.
+ * 
+ * @param {array} layers
+ * 
  * @returns {boolean}
  */
-proto.checkVisible = function(layers=[]){
-  return "undefined" === typeof layers.find((layer) => {
-    if ("undefined" !== typeof layer.getSource().url) {
-      /**
-       * @since 3.8.0
-       * check if domain of wms is not that same of application to avoid CORS issue on getting
-       * map image
-       */
-      return false === sameOrigin(layer.getSource().url, location)
-    } else return false
-  });
+proto.checkVisible = function(layers=[]) {
+  return undefined === layers.find((layer) => !sameOrigin(layer.getSource() && layer.getSource().url, location));
 };
 
 module.exports = ScreenshotControl;
