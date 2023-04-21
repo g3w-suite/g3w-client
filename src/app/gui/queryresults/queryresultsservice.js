@@ -1372,47 +1372,45 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
   } else this.hideChart(container)
 };
 
-proto.printAtlas = function(layer, feature){
-  let {id:layerId, features} = layer;
-  const inputAtlasAttr = 'g3w_atlas_index';
-  features = feature ? [feature]: features;
-  const atlasLayer = this.getAtlasByLayerId(layerId);
-  if (atlasLayer.length > 1) {
-    let inputs='';
-    atlasLayer.forEach((atlas, index) => {
-      const id = getUniqueDomId();
-      inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
-                 <label for="${id}">${atlas.name}</label>
-                 <br>`;
-    });
+proto.printAtlas = function(layer, feature) {
+  let {features} = layer;
+  features = feature ? [feature] : features;
+  const atlasLayer = this.getAtlasByLayerId(layer.id);
 
-    GUI.showModalDialog({
-      title: t('sdk.atlas.template_dialog.title'),
-      message: inputs,
-      buttons: {
-        success: {
-          label: "OK",
-          className: "skin-button",
-          callback: ()=> {
-            const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
-            if ("undefined" !== typeof index) {
-              const atlas = atlasLayer[index];
-              this._printSingleAtlas({
-                atlas,
-                features
-              })
-            } else {
-              //prevent to close
-              return false
-            }
+  /** @FIXME add description */
+  if (atlasLayer.length <= 1) {
+    this._printSingleAtlas({ features, atlas: atlasLayer[0] });
+    return;
+  }
+
+  const inputAtlasAttr = 'g3w_atlas_index';
+  let inputs = '';
+
+  atlasLayer.forEach((atlas, index) => {
+    const id = getUniqueDomId();
+    inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>`;
+    inputs += `<label for="${id}">${atlas.name}</label>`;
+    inputs += `<br>`;
+  });
+
+  GUI.showModalDialog({
+    title: t('sdk.atlas.template_dialog.title'),
+    message: inputs,
+    buttons: {
+      success: {
+        label: "OK",
+        className: "skin-button",
+        callback: () => {
+          const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
+          if (undefined === index) {
+            return false; // prevent default
           }
+          this._printSingleAtlas({ features, atlas: atlasLayer[index] });
         }
       }
-    })
-  } else this._printSingleAtlas({
-      atlas: atlasLayer[0],
-      features
-    })
+    }
+  });
+
 };
 
 /**
