@@ -1,9 +1,9 @@
+const {sameOrigin} = require('core/utils/utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
 function ScreenshotControl(options = {}) {
   this.layers = options.layers || [];
-  const visible = this.checkVisible(this.layers);
-  options.visible = visible;
+  options.visible = this.checkVisible(this.layers);
   options.name = options.name || "maptoimage";
   options.tipLabel =  options.tipLabel|| "Screenshot";
   options.label = options.label || "\ue90f";
@@ -17,6 +17,7 @@ const proto = ScreenshotControl.prototype;
 
 proto.change = function(layers=[]){
   const visible = this.checkVisible(layers);
+  console.log(visible)
   this.setVisible(visible);
 };
 
@@ -27,18 +28,13 @@ proto.change = function(layers=[]){
  */
 proto.checkVisible = function(layers=[]){
   return "undefined" === typeof layers.find((layer) => {
-    if (layer.isExternalWMS && layer.isExternalWMS()) {
+    if ("undefined" !== typeof layer.getSource().url) {
       /**
        * @since 3.8.0
        * check if domain of wms is not that same of application to avoid CORS issue on getting
        * map image
        */
-      try {
-        const domain = new URL(layer.getSource().url);
-        // check if same origin of current page
-        return location.origin !== domain.origin;
-      } catch(err){}
-      return true;
+      return false === sameOrigin(layer.getSource().url, location)
     } else return false
   });
 };
