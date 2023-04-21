@@ -92,7 +92,7 @@
             />
 
             <!-- CHANGE MAP -->
-            <li v-if="showChangeMap" id="changemaps" class="dropdown user">
+            <li v-if="hasRelatedMaps" id="changemaps" class="dropdown user">
               <a href="#" @click="openChangeMapMenu" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('change-map')" aria-hidden="true"></i>
                 <span v-t="'changemap'"></span>
@@ -1147,7 +1147,7 @@ export default {
      *
      * @since 3.8.0
      */
-    showChangeMap(){
+     hasRelatedMaps() {
       return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
     },
 
