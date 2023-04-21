@@ -202,6 +202,10 @@ export default {
       this.loading = false;
     },
 
+    /**
+     * @param {string} item.url
+     * @param {string} item.map_url
+     */
     async changeMapProject(item) {
       let url;
       const base_url = ProjectsRegistry.getBaseUrl();
