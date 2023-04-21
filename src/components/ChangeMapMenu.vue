@@ -202,7 +202,7 @@ export default {
       this.loading = false;
     },
 
-    async changeMapProject() {
+    async changeMapProject(item) {
       let url;
       const base_url = ProjectsRegistry.getBaseUrl();
       const epsg = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
