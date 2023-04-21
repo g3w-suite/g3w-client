@@ -86,7 +86,7 @@ function ProjectsRegistry() {
     this
       .getProject(
         config.initproject,
-        { map_theme: (new URLSearchParams(location.search)).searchParams.get('map_theme') }
+        { map_theme: (new URLSearchParams(location.search)).get('map_theme') }
       )
       .then(project => {
         this.setCurrentProject(project);
@@ -304,7 +304,7 @@ function ProjectsRegistry() {
 
         /** @TODO add description */
         if (!options.map_theme) {
-          d.resolve(remoteConfig);
+          d.resolve(serverConfig);
           return;
         }
 
