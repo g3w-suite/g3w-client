@@ -1,4 +1,4 @@
-const {sameOrigin} = require('core/utils/utils');
+const { sameOrigin } = require('core/utils/utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
 function ScreenshotControl(options = {}) {
@@ -17,7 +17,6 @@ const proto = ScreenshotControl.prototype;
 
 proto.change = function(layers=[]){
   const visible = this.checkVisible(layers);
-  console.log(visible)
   this.setVisible(visible);
 };
 
