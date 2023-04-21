@@ -78,12 +78,10 @@ export default {
      * @TODO extract as utility function (almost the same as `components/ChangeManpMenu::_setSrc(src)`) 
      */
     logoSrc(src) {
-      src = src || '';
-
       let imageSrc;
       const host = this.$options.host || '';
-      const has_media = (-1 !== src.indexOf(ProjectsRegistry.config.mediaurl));
-      const not_static = (-1 === src.indexOf('static') && -1 === src.indexOf('media'))
+      const has_media = src && (-1 !== src.indexOf(ProjectsRegistry.config.mediaurl));
+      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'))
 
       if (!src) {
         imageSrc = fakeImage

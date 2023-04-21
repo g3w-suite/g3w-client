@@ -243,14 +243,12 @@ export default {
      * @TODO extract as utility function (almost the same as `components/ProjectsMenu::logoSrc(src)`) 
      */
     _setSrc(src) {
-      src = src || '';
-
       let imageSrc;
       const host       = this.$options.host || '';
       const mediaurl   = ProjectsRegistry.config.mediaurl;
       const clienturl  = ApplicationService.getConfig().urls.clienturl;
-      const has_media  = (-1 !== src.indexOf(mediaurl));
-      const not_static = (-1 === src.indexOf('static') && -1 === src.indexOf('media'));
+      const has_media  = src && (-1 !== src.indexOf(mediaurl));
+      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'));
 
       if (!src) {
         imageSrc = `${clienturl}${LOGO_GIS3W}`;
