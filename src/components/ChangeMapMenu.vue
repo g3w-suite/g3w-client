@@ -37,15 +37,13 @@
       >
 
       <!-- ITEM IMAGE -->
-        <div
-          @click.stop="trigger(item)"
-          class="menu-item-image"
-        >
+        <div class="menu-item-image" @click.stop="trigger(item)">
           <img
-            alt="logo"
-            @error="setFallBackImage(item)"
             :src="item.thumbnail || item.header_logo_img || item.logo_img"
-            class="img-responsive">
+            @error="setFallBackImage(item)"
+            alt="logo"
+            class="img-responsive"
+          >
         </div>
 
         <!-- ITEM CONTENT -->
@@ -73,8 +71,7 @@ import ProjectsRegistry from 'store/projects';
 import { API_BASE_URLS, LOGO_GIS3W } from 'constant';
 
 const Projections = require('g3w-ol/projection/projections');
-const {XHR} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+const { XHR } = require('core/utils/utils');
 
 export default {
 
@@ -234,7 +231,7 @@ export default {
      * @param { 'project' | 'group' | 'macrogroup' } image.type
      * @param                                        image.item
       */
-    setItemImageSrc({item, type}={}) {
+    setItemImageSrc({ item, type } = {}) {
       switch(type) {
         case 'project':    item.thumbnail       = this._setSrc(item.thumbnail); break;
         case 'group':      item.header_logo_img = this._setSrc(item.header_logo_img); break;
