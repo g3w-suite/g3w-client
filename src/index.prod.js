@@ -1133,5 +1133,6 @@ ApplicationService.init()
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
+    console.error(error);
     ApplicationTemplate.fail({ error });
   });
