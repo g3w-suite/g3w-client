@@ -20,23 +20,24 @@ const G3WObject = require('core/g3wobject');
 
 const NONVALIDVALUES = [null, undefined, ALLVALUE];
 
-function SearchService(config={}) {
-  this.debounces =  {
+function SearchService(config = {}) {
+
+  this.debounces = {
     run: {
       fnc: (...args) => {
-        if (GUI.isMobile()){
-         const [width, heigth] = this.mapService.getMap().getSize();
-         if  (width === 0 || heigth === 0) {
-           GUI.hideSidebar();
-           setTimeout(()=>{
-             this._run(...args)
-           }, 600)
-         } else this._run(...args);
-        } else this._run(...args)
+        const [width, heigth] = this.mapService.getMap().getSize();
+        if (!GUI.isMobile() || !(width === 0 || heigth === 0)) {
+          this._run(...args);
+          return;
+        }
+        GUI.hideSidebar();
+        setTimeout(() => { this._run(...args); }, 600);
       }
     }
   };
+
   base(this);
+
   // reactivity data
   this.state = {
     title: null,
@@ -44,36 +45,60 @@ function SearchService(config={}) {
     loading: {},
     searching: false
   };
+
   this.config = config;
-  const {type, options={}} = this.config;
-  const layerid = options.querylayerid || options.layerid || null;
-  const otherquerylayerids = options.otherquerylayerids || [];
-  const filter = options.filter || [];
+
+  const { options = {} } = this.config;
+  const layerid          = options.querylayerid || options.layerid || null;
+
   this.inputdependance = {};
+
   this.inputdependencies = {};
+
   this.cachedependencies = {};
+
   this.project = ProjectsRegistry.getCurrentProject();
+
   this.mapService = GUI.getService('map');
+
   this.searchLayer = null;
+
   this.filter = null;
+
   this.inputs = [];
+
   this.state.title = config.name;
+
   this.search_endpoint = config.search_endpoint;
+
   this.url = options.queryurl;
+
   this.filter = options.filter;
-  /*
-   type:
-     search: search default ,
-     search_1n in case of 1:N
- */
-  this.type = type || 'search';
+
+  /**
+   * @type { 'search' | 'search_1n' }
+   */
+  this.type = this.config.type || 'search';
+
   this.return = options.return || 'data';
+
   this.show = this.return === 'data' && this.type === 'search';
+
   this.searchLayer = CatalogLayersStoresRegistry.getLayerById(layerid);
-  // store layers that will be searchable for that form search. First one is layer owner of the search setted on admin
-  this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStoresRegistry.getLayerById(layerid));
-  // stat to create the form search structure
-  this.createInputsFormFromFilter({filter});
+
+  /**
+   * Store layers that will be searchable for that search form.
+   * First one is layer owner of the search setted on admin.
+   */
+  this.searchLayers = [
+    layerid,
+    ...(options.otherquerylayerids || [])
+  ].map(layerid => CatalogLayersStoresRegistry.getLayerById(layerid));
+
+  /**
+   * Create the form search structure
+   */
+  this.createInputsFormFromFilter({ filter: (options.filter || []) });
 }
 
 inherit(SearchService, G3WObject);
@@ -81,8 +106,12 @@ inherit(SearchService, G3WObject);
 const proto = SearchService.prototype;
 
 /**
+ * @TODO slim down and refactor
+ * 
  * Start Method to create right search structure for search form
+ * 
  * @param filter
+ * 
  * @returns {Promise<void>}
  */
 proto.createInputsFormFromFilter = async function({filter=[]}={}) {
@@ -108,7 +137,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       forminput.loading = forminput.type !== 'autocompletefield';
       const promise = new Promise((resolve, reject) =>{
         if (forminput.options.values === undefined) forminput.options.values = [];
-        else if (dependance){ // in case of dependence load right now
+        else if (dependance) { // in case of dependence load right now
           if (!dependance_strict) this.getValuesFromField(forminput).then(values => { // return array of values
             values = this.valuesToKeysValues(values); // set values for select
             forminput.options.values = values;
@@ -154,7 +183,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
         if (forminput.options.values.length) {
           forminput.widget = 'valuemap';
           forminput.options._values = [...forminput.options.values];
-        } else if (forminput.options.layer_id){
+        } else if (forminput.options.layer_id) {
           forminput.widget = 'valuerelation';
         }
       }
@@ -174,19 +203,16 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
 /**
  * Get return type
  */
-
-proto.getReturnType = function(){
+proto.getReturnType = function() {
   return this.return;
 };
 
 /**
  * Set return type
  */
-
-proto.setReturnType = function(returnType='data'){
+proto.setReturnType = function(returnType='data') {
   this.return = returnType;
-  //set show only in case return === 'data'
-  this.show = this.return === 'data';
+  this.show   = ('data' === returnType);
 };
 
 proto.getAutoFieldDependeciesParamField = function(field) {
@@ -197,31 +223,22 @@ proto.getAutoFieldDependeciesParamField = function(field) {
   }
 };
 
-proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
+proto.createFieldsDependenciesAutocompleteParameter = function({ fields = [], field, value }={}) {
   const dependendency = this.getCurrentFieldDependance(field);
-  if (value !== undefined) {
-    const fieldParam = createSingleFieldParameter({
-      field,
-      value,
-      operator: this.getFilterInputFromField(field).op
-    });
-    fields.push(fieldParam);
+  if (undefined !== value) {
+    fields.push(createSingleFieldParameter({ field, value, operator: this.getFilterInputFromField(field).op }));
   }
-  if (dependendency) {
-    const [field, value] = Object.entries(dependendency)[0];
-    // In case of some input dependeny are not filled
-    if (typeof value !== "undefined") {
-      // need to set to lower case for api purpose
-      const {op, logicop} = this.getFilterInputFromField(field);
-      if (fields.length) fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}|${logicop.toLowerCase()}`);
-      else fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}`);
-    }
-    return this.createFieldsDependenciesAutocompleteParameter({
-      fields,
-      field
-    })
+  if (!dependendency) {
+    return fields.length && fields.join() || undefined;
   }
-  return fields.length && fields.join() || undefined;
+  const [field, value] = Object.entries(dependendency)[0];
+  // In case of some input dependeny are not filled
+  if (undefined !== value) {
+    // need to set to lower case for api purpose
+    const {op, logicop} = this.getFilterInputFromField(field);
+    fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}|` + (fields.length ? logicop.toLowerCase() : ''));
+  }
+  return this.createFieldsDependenciesAutocompleteParameter({ fields, field });
 };
 
 /**
@@ -250,26 +267,20 @@ proto.getValuesFromField = async function(field) {
   return this.getUniqueValuesFromField({ field:field.attribute })
 };
 
-proto.getValueRelationValues = async function(field, filter){
-  const {layer_id, key, value} =  field.options;
-  const layer = CatalogLayersStoresRegistry.getLayerById(layer_id);
+proto.getValueRelationValues = async function(field, filter) {
   try {
-    const {data=[]} = await DataRouterService.getData('search:features', {
+    const { data = [] } = await DataRouterService.getData('search:features', {
       inputs:{
-        layer,
+        layer: CatalogLayersStoresRegistry.getLayerById(field.options.layer_id),
         search_endpoint: this.getSearchEndPoint(),
         filter,
-        ordering: key
+        ordering: field.options.key
       },
       outputs: false
     });
-    const features = data && data[0] && data[0].features || [];
     const values = [];
-    features.forEach(feature =>{
-      values.push({
-        key: feature.get(key),
-        value: feature.get(value)
-      })
+    (data && data[0] && data[0].features || []).forEach(feature => {
+      values.push({ key: feature.get(field.options.key), value: feature.get(field.options.value) })
     });
     return values;
   } catch(err) {
@@ -278,12 +289,14 @@ proto.getValueRelationValues = async function(field, filter){
 };
 
 /**
- * Return values map
+ * Return mapped values
+ * 
  * @param field
+ * 
  * @returns {Promise<*>}
  */
-proto.getValueMapValues = async function(field){
-  return field.options.values.filter(value => value !== ALLVALUE);
+proto.getValueMapValues = async function(field) {
+  return field.options.values.filter(value => ALLVALUE !== value);
 };
 
 /**
@@ -323,7 +336,7 @@ proto.getLayersFilterData = async function(layers, options = {}) {
  * 
  * @returns {Promise<[]>}
  */
-proto.getUniqueValuesFromField = async function({field, value, output}){
+proto.getUniqueValuesFromField = async function({field, value, output}) {
   let data = [];
 
   try {
@@ -344,12 +357,16 @@ proto.getUniqueValuesFromField = async function({field, value, output}){
 };
 
 /**
- * Method to run search
+ * @TODO slim down and refactor
+ * 
+ * Execute search
+ * 
  * @param filter
  * @param search_endpoint
  * @param queryUrl
  * @param feature_count
  * @param show
+ * 
  * @returns {Promise<void|unknown>}
  */
 proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=this.show} ={}) {
@@ -372,20 +389,20 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         title: this.state.title
       }
     });
-    if (show){
+    if (show) {
       // in case of autozoom_query
-      if (this.project.state.autozoom_query && data && data.data.length === 1){
+      if (this.project.state.autozoom_query && data && data.data.length === 1) {
         this.mapService.zoomToFeatures(data.data[0].features)
       }
     } else {
-      if (this.type === 'search_1n'){
+      if (this.type === 'search_1n') {
         const relationId = this.config.options.search_1n_relationid;
         const {features=[]} = data.data[0] || {};
         // check if has features on result
-        if (features.length){
+        if (features.length) {
           const relation = this.project.getRelationById(relationId);
           const inputs = [];
-          if (relation){
+          if (relation) {
             const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
             const uniqueValues = new Set();
             features.forEach(feature => {
@@ -426,7 +443,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
             GUI.closeContent();
             // in case of api get first response on array
             data = data.data[0].data;
-            if (isEmptyObject(data)){
+            if (isEmptyObject(data)) {
               const dataPromise = Promise.resolve({});
               DataRouterService.showCustomOutputDataPromise(dataPromise);
             } else {
@@ -438,33 +455,28 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         }
       }
     }
-  } catch(err){}
+  } catch(err) {}
   this.state.searching = false;
   return data;
 };
 
-proto.filterValidFormInputs = function(){
-  return this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
+proto.filterValidFormInputs = function() {
+  return this.state.forminputs.filter(input => -1 === NONVALIDVALUES.indexOf(input.value) && '' !== input.value.toString().trim());
 };
 
 /**
  *
  * @returns {string|*|string}
  */
-proto.getSearchEndPoint = function(){
+proto.getSearchEndPoint = function() {
   return this.search_endpoint || this.searchLayer.getSearchEndPoint()
 };
 
 /*
 * type wms, vector (for vector api)
 * */
-proto.createFilter = function(search_endpoint=this.getSearchEndPoint()){
-  const inputs = this.filterValidFormInputs();
-  return createFilterFormInputs({
-    layer: this.searchLayers,
-    inputs,
-    search_endpoint
-  })
+proto.createFilter = function(search_endpoint = this.getSearchEndPoint()) {
+  return createFilterFormInputs({ layer: this.searchLayers, inputs: this.filterValidFormInputs(), search_endpoint });
 };
 
 proto._run = function() {
@@ -477,45 +489,49 @@ proto._run = function() {
  * @param value
  */
 proto.changeInput = function({id, value} = {}) {
-  const input = this.state.forminputs.find(input => id == input.id);
-  input.value = value;
+  this.state.forminputs.find(input => id == input.id).value = value;
 };
+
+/**
+ * @private
+ */
+function createOperatorObject(inputObj) {
+  for (const operator in inputObj) {
+    const input = inputObj[operator];
+    if (Array.isArray(input)) {
+      createBooleanObject(operator, input);
+      break;
+    }
+  }
+  const field = inputObj.attribute;
+  const operator = inputObj.op;
+  const evalObject = {};
+  evalObject[operator] = {};
+  evalObject[operator][field] = null;
+  return evalObject;
+}
+
+/**
+ * @private 
+ */
+function createBooleanObject(booleanOperator, inputs = []) {
+  const booleanObject = {};
+  booleanObject[booleanOperator] = [];
+  inputs.forEach((input) => {
+    booleanObject[booleanOperator].push(createOperatorObject(input));
+  });
+  return booleanObject;
+}
 
 proto.createQueryFilterFromConfig = function({filter}) {
   let queryFilter;
-  function createOperatorObject(inputObj) {
-    for (const operator in inputObj) {
-      const input = inputObj[operator];
-      if (Array.isArray(input)) {
-        createBooleanObject(operator, input);
-        break;
-      }
-    }
-    const field = inputObj.attribute;
-    const operator = inputObj.op;
-    const evalObject = {};
-    evalObject[operator] = {};
-    evalObject[operator][field] = null;
-    return evalObject;
-  }
-
-  function createBooleanObject(booleanOperator, inputs = []) {
-    const booleanObject = {};
-    booleanObject[booleanOperator] = [];
-    inputs.forEach((input) => {
-      booleanObject[booleanOperator].push(createOperatorObject(input));
-    });
-    return booleanObject;
-  }
-
   for (const operator in filter) {
-    const inputs = filter[operator];
-    queryFilter = createBooleanObject(operator, inputs);
+    queryFilter = createBooleanObject(operator, filter[operator]);
   }
   return queryFilter;
 };
 
-proto.getFilterInputFromField = function(field){
+proto.getFilterInputFromField = function(field) {
   return this.filter.find(input =>  input.attribute === field);
 };
 
@@ -524,14 +540,13 @@ proto._getExpressionOperatorFromInput = function(field) {
   return dependanceCascadeField ? dependanceCascadeField.op : null;
 };
 
-proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
-  const dependanceCascadeField = this.getFilterInputFromField(field);
-  const dependance = dependanceCascadeField.input.options.dependance;
+proto._getCascadeDependanciesFilter = function(field, dependencies = []) {
+  const dependance = this.getFilterInputFromField(field).input.options.dependance;
   if (dependance) {
     dependencies.unshift(dependance);
     this._getCascadeDependanciesFilter(dependance, dependencies)
   }
-  return dependencies
+  return dependencies;
 };
 
 /**
@@ -541,28 +556,26 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
  */
 proto.getCurrentFieldDependance = function(field) {
   const dependance = this.inputdependance[field];
-  // found a dependance
-  if (dependance) {
-    // check if as value
-    if (this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE)
-      return {
-        [dependance]: this.cachedependencies[dependance]._currentValue
-      };
-    // otherwise se value of dependance undefined so it no add on list o field dependance
-    else return {
-      [dependance]: undefined
-    }
-  }
-  return dependance
+  return dependance ? ({
+    [dependance]:
+      (this.cachedependencies[dependance] && ALLVALUE !== this.cachedependencies[dependance]._currentValue)
+        ? this.cachedependencies[dependance]._currentValue // dependance as value
+        : undefined                                        // undefined = so it no add on list o field dependance
+    }) : dependance;
 };
 
-// check the current value of dependance
+/**
+ * Check the current value of dependance
+ */
 proto.getDependanceCurrentValue = function(field) {
-  const dependance = this.inputdependance[field];
-  return dependance ? this.cachedependencies[dependance]._currentValue : this.state.forminputs.find(forminput => forminput.attribute === field).value;
+  return this.inputdependance[field] ? this.cachedependencies[this.inputdependance[field]]._currentValue : this.state.forminputs.find(forminput => forminput.attribute === field).value;
 };
 
-// fill all dependencies inputs based on value
+/**
+ * @TODO slim down and refactor
+ * 
+ * Fill all dependencies inputs based on value
+ */
 proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
   const isRoot = this.inputdependance[field] === undefined;
   //check id inpute father is valid to search on subscribers
@@ -664,7 +677,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                     try {
                       const values = await this.getValueRelationValues(subscribe, filter);
                       values.forEach(value =>  subscribe.options.values.push(value));
-                    } catch(err){console.log(err)}
+                    } catch(err) {console.log(err)}
                   }
                 }
               else {
@@ -702,40 +715,27 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
   })
 };
 
-proto.getDependencies = function(field){
+proto.getDependencies = function(field) {
   return this.inputdependencies[field] || [];
 };
 
-proto.setInputDependencies = function({master, slave}={}) {
-  this.inputdependencies[master] = this.inputdependencies[master] !== undefined ? this.inputdependencies[master] : [];
+proto.setInputDependencies = function({ master, slave }={}) {
+  this.inputdependencies[master] = (undefined !== this.inputdependencies[master] ? this.inputdependencies[master] : []);
   this.inputdependencies[master].push(slave);
 };
 
 //set key value for select
-proto.valuesToKeysValues = function(values){
-  if (values.length) {
-    const type = toRawType(values[0]);
-    values = type !== 'Object' ? values.map(value =>({
-      key: value,
-      value
-    })): values
-  }
-  return values;
+proto.valuesToKeysValues = function(values) {
+  return values.length ? ('Object' !== toRawType(values[0]) ? values.map(value => ({ key: value, value })) : values) : values;
 };
 
 proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
-  const info = this.getInfoFromLayer(ogcService);
-  Object.assign(info, {
-    ogcService,
-    filter
-  });
-  return info;
+  return Object.assign(this.getInfoFromLayer(ogcService), { ogcService, filter });
 };
 
 proto.getInfoFromLayer = function(ogcService) {
-  const queryUrl = ogcService === 'wfs' ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl();
   return {
-    url: queryUrl,
+    url: (ogcService === 'wfs' ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl()),
     layers: [],
     infoFormat: this.searchLayer.getInfoFormat(ogcService),
     crs: this.searchLayer.getCrs(),
