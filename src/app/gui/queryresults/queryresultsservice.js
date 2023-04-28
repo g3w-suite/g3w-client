@@ -1373,8 +1373,7 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
 };
 
 proto.printAtlas = function(layer, feature) {
-  let {features} = layer;
-  features = feature ? [feature] : features;
+const features   = feature ? [feature] : layer.features;
   const atlasLayer = this.getAtlasByLayerId(layer.id);
 
   /** @FIXME add description */
