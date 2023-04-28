@@ -231,14 +231,14 @@ proto.createFieldsDependenciesAutocompleteParameter = function({ fields = [], fi
   if (!dependendency) {
     return fields.length && fields.join() || undefined;
   }
-  const [field, value] = Object.entries(dependendency)[0];
+  const [dfield, dvalue] = Object.entries(dependendency)[0];
   // In case of some input dependeny are not filled
-  if (undefined !== value) {
+  if (undefined !== dvalue) {
     // need to set to lower case for api purpose
-    const {op, logicop} = this.getFilterInputFromField(field);
-    fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}|` + (fields.length ? logicop.toLowerCase() : ''));
+    const { op, logicop } = this.getFilterInputFromField(dfield);
+    fields.unshift(`${dfield}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
   }
-  return this.createFieldsDependenciesAutocompleteParameter({ fields, field });
+  return this.createFieldsDependenciesAutocompleteParameter({ fields, dfield });
 };
 
 /**
@@ -357,6 +357,75 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
 };
 
 /**
+ * @private
+ */
+async function parse_search_1n(data, options) {
+  const { search_endpoint, feature_count} = options;
+
+  const relationId = this.config.options.search_1n_relationid;
+  const {features=[]} = data.data[0] || {};
+  // check if has features on result
+  if (!features.length) {
+    DataRouterService.showEmptyOutputs();
+  }
+  const relation = this.project.getRelationById(relationId);
+  const inputs = [];
+  if (relation) {
+    const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
+    const uniqueValues = new Set();
+    features.forEach(feature => {
+      const value = feature.getProperties()[referencingField];
+      if (!uniqueValues.has(value)) {
+        uniqueValues.add(value);
+        inputs.push({
+          attribute:referencedField,
+          logicop: "OR",
+          operator: "eq",
+          value
+        })
+      }
+    });
+    const layer = this.project.getLayerById(referencedLayer);
+    const filter = createFilterFormInputs({
+      layer,
+      search_endpoint,
+      inputs
+    });
+    data = await DataRouterService.getData('search:features', {
+      inputs:{
+        layer,
+        search_endpoint,
+        filter,
+        formatter: 1, // set formatter to 1
+        feature_count
+      },
+      outputs: {
+        title: this.state.title
+      }
+    });
+  }
+  return data;
+}
+
+/**
+ * @private 
+ */
+function parse_search_by_returnType(data, returnType) {
+  if('search' === returnType) { 
+    GUI.closeContent();
+    // in case of api get first response on array
+    data = data.data[0].data;
+    if (isEmptyObject(data)) {
+      DataRouterService.showCustomOutputDataPromise(Promise.resolve({}));
+    } else {
+      const SearchPanel = require('gui/search/vue/panel/searchpanel');
+      (new SearchPanel(data)).show();
+    }
+  }
+  return data;
+}
+
+/**
  * @TODO slim down and refactor
  * 
  * Execute search
@@ -369,11 +438,20 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
  * 
  * @returns {Promise<void|unknown>}
  */
-proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=this.show} ={}) {
+proto.doSearch = async function({
+  filter,
+  search_endpoint = this.getSearchEndPoint(),
+  queryUrl        = this.url,
+  feature_count   = 10000,
+  show            = this.show
+} = {}) {
+
   filter = filter || this.createFilter();
-  // call a generic method of layer
-  let data;
+
   this.state.searching = true;
+
+  let data;
+
   try {
     data = await DataRouterService.getData('search:features', {
       inputs:{
@@ -381,82 +459,24 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         search_endpoint,
         filter,
         queryUrl,
-        formatter: 1, // set formatter to 1
+        formatter: 1,
         feature_count,
-        raw: this.return === 'search' // parameter to get raw response
+        raw: ('search' === this.return) // in order to get raw response
       },
-      outputs: show && {
-        title: this.state.title
-      }
+      outputs: show && { title: this.state.title }
     });
-    if (show) {
-      // in case of autozoom_query
-      if (this.project.state.autozoom_query && data && data.data.length === 1) {
-        this.mapService.zoomToFeatures(data.data[0].features)
-      }
-    } else {
-      if (this.type === 'search_1n') {
-        const relationId = this.config.options.search_1n_relationid;
-        const {features=[]} = data.data[0] || {};
-        // check if has features on result
-        if (features.length) {
-          const relation = this.project.getRelationById(relationId);
-          const inputs = [];
-          if (relation) {
-            const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
-            const uniqueValues = new Set();
-            features.forEach(feature => {
-              const value = feature.getProperties()[referencingField];
-              if (!uniqueValues.has(value)) {
-                uniqueValues.add(value);
-                inputs.push({
-                  attribute:referencedField,
-                  logicop: "OR",
-                  operator: "eq",
-                  value
-                })
-              }
-            });
-            const layer = this.project.getLayerById(referencedLayer);
-            const filter = createFilterFormInputs({
-              layer,
-              search_endpoint,
-              inputs
-            });
-            data = await DataRouterService.getData('search:features', {
-              inputs:{
-                layer,
-                search_endpoint,
-                filter,
-                formatter: 1, // set formatter to 1
-                feature_count
-              },
-              outputs: {
-                title: this.state.title
-              }
-            });
-          }
-        } else DataRouterService.showEmptyOutputs();
-      } else {
-        switch (this.return) {
-          case 'search':
-            GUI.closeContent();
-            // in case of api get first response on array
-            data = data.data[0].data;
-            if (isEmptyObject(data)) {
-              const dataPromise = Promise.resolve({});
-              DataRouterService.showCustomOutputDataPromise(dataPromise);
-            } else {
-              const SearchPanel = require('gui/search/vue/panel/searchpanel');
-              const add_panel = new SearchPanel(data);
-              add_panel.show();
-            }
-            break;
-        }
-      }
+    if (!show) {
+      const parsed = ('search_1n' === this.type) ? await parse_search_1n(data) : parse_search_by_returnType(data, this.return);
+      data = parsed ? parsed : data;
+    } else if (this.project.state.autozoom_query && data && 1 === data.data.length) {
+      this.mapService.zoomToFeatures(data.data[0].features); // autozoom_query
     }
-  } catch(err) {}
+  } catch(e) {
+    console.warn(e);
+  }
+
   this.state.searching = false;
+
   return data;
 };
 
