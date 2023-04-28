@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Yhteysvirhe",
+      at_moment: "Tällä hetkellä ei ole mahdollista näyttää karttaa",
+      f5: "Paina Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -405,16 +410,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Kirjaudu ulos",
     no_other_projects: "Ei projekteja tälle ryhmälle",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Ei enää ryhmiä tälle makroryhmälle",
     yes: "Kyllä",
     no: "Ei",
     back: "Palaa",
     backto: "Takaisin ",
     changemap: "Vaihda karttaa",
-    change_session: "Change Session",
+    change_session: "Vaihda istuntoa",
     component: "Yleinen komponentti",
     search: "Hae",
     no_results: "Ei hakutuloksia",
@@ -443,6 +445,10 @@ export default {
     save: "Tallenna",
     cancel: "Peruuta",
     close: "Sulje",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Älä näytä viestiä uudelleen",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Lisää",
@@ -463,7 +469,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Taso on jo lisätty.",
-        url_already_added: "WMS URL/Name on jo lisätty.",
+        url_already_added: "WMS URL/Nimi on jo lisätty.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },

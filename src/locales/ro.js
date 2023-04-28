@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Eroare de conexiune",
+      at_moment: "Momentan nu este posibil să afișați harta",
+      f5: "Apăsați Ctrl+F5"
+    },
     cookie_law: {
       message: "Acest website foloseste cookie-uri pentru a furniza vizitatorilor o experiență mult mai bună de navigare",
       buttonText: "Am înțeles!"
@@ -405,16 +410,13 @@ export default {
     toggle_color_scheme: "Comutare schemă de culori",
     logout: "Deconectare",
     no_other_projects: "No more project for this group",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Nu mai sunt grupuri pentru acest macrogrup",
     yes: "Da",
     no: "Nu",
     back: "Înapoi",
     backto: "Înapoi la ",
     changemap: "Schimbare Hartă",
-    change_session: "Change Session",
+    change_session: "Schimbați sesiunea",
     component: "Componentă Generică",
     search: "Căutare",
     no_results: "Niciun rezultat găsit",
@@ -443,6 +445,10 @@ export default {
     save: "Salvează",
     cancel: "Anulează",
     close: "Închide",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Nu mai afișa mesajul",
     enlange_reduce:"Mărește/Micșorează",
     reset_default:"Mărimea implicită",
     add: "Adaugă",

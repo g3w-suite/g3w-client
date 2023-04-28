@@ -99,7 +99,10 @@ function Layer(config={}, options={}) {
 
     defaultstyle,
 
-    inediting: false, // state of if is in editing (setted by editing plugin )
+    /**
+     * state of if is in editing (setted by editing plugin)
+     */
+    inediting: false,
 
     infoformat: this.getInfoFormat(),
 
@@ -108,11 +111,17 @@ function Layer(config={}, options={}) {
     projectLayer: true,
 
     geolayer: false,
-    //reactive selection attribute
+
+    /**
+     * Reactive selection attribute 
+     */
     selection: {
       active: false
     },
-    //reactive filter attribute
+
+    /**
+     * Reactive filter attribute 
+     */
     filter: {
       active: false
     },

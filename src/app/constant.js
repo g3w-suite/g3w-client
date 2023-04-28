@@ -409,21 +409,32 @@ export const ZINDEXES = {
 };
 
 /**
- * @type {Object<string, string>}
+ * @type {Object<string, string | Object<string, string>>}
  * @since v3.8
  */
 export const API_BASE_URLS = {
-  CRS: '/crs/',  //Example /crs/<epsg_code>,
+
   /**
+   * Info about groups, macrogroups, projects, etc. of G3W-SUITE
+   * 
    * @since 3.8.0
    */
   ABOUT: {
-    macrogroups: '/about/api/macrogroup/', // info about macrogroups of G3W-SUITE
-    nomacrogoups: '/about/api/group/nomacrogroup/', // info about no macrogroups of G3W-SUITE
-    projects: '/about/api/group/__G3W_GROUP_ID__/projects/',
-    group:'/about/api/group/', //
-//
+    macrogroups:  '/about/api/macrogroup/', 
+    nomacrogoups: '/about/api/group/nomacrogroup/', 
+    projects:     '/about/api/group/__G3W_GROUP_ID__/projects/',
+    group:        '/about/api/group/',
   },
+
+  /**
+   * Coordinate Reference Systems
+   * 
+   * @example /crs/<epsg_code>
+   * 
+   * @since v3.8
+   */
+  CRS: '/crs/',
+
 };
 
 /**
@@ -584,10 +595,17 @@ export const FONT_AWESOME_ICONS = {
  * @since v3.8
  */
 export const LOCAL_ITEM_IDS = {
+
+  MESSAGES: {
+    id: 'MESSAGES',
+    value: {}
+  },
+
   SPATIALBOOKMARKS: {
-    id: 'SPATIALBOOKMARKS', // id unique
-    value: {} // initial value
-  }
+    id: 'SPATIALBOOKMARKS',
+    value: {}
+  },
+
 };
 
 /**

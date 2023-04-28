@@ -92,7 +92,7 @@
             />
 
             <!-- CHANGE MAP -->
-            <li v-if="showChangeMap" id="changemaps" class="dropdown user">
+            <li v-if="hasRelatedMaps" id="changemaps" class="dropdown user">
               <a href="#" @click="openChangeMapMenu" class="dropdown-toggle" data-toggle="dropdown">
                 <i :class="g3wtemplate.getFontClass('change-map')" aria-hidden="true"></i>
                 <span v-t="'changemap'"></span>
@@ -274,6 +274,7 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 import { resizeMixin } from 'mixins';
+import { LOCAL_ITEM_IDS } from "constant";
 
 const { uniqueId } = require('core/utils/utils');
 const { t } = require('core/i18n/i18n.service');
@@ -1038,7 +1039,9 @@ $.LayoutManager = $.LayoutManager || {
 const layout = $.LayoutManager;
 
 export default {
+
   mixins: [resizeMixin],
+
   data() {
     return {
       customcredits: false,
@@ -1048,14 +1051,18 @@ export default {
       cookie_law_buttonText: t('cookie_law.buttonText')
     }
   },
+
   components: {
     HeaderItem,
     CookieLaw
   },
+
   computed: {
-    app(){
+
+    app() {
       return this.appState.gui.app;
     },
+
     languages() {
 
       /***
@@ -1064,76 +1071,98 @@ export default {
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
       return languages.length > 1 && languages;
     },
+
     currentProject() {
       return ProjectsRegistry.getCurrentProject();
     },
+
     appconfig() {
       return ApplicationService.getConfig();
     },
+
     isIframe() {
       return !!this.appconfig.group.layout.iframe;
     },
+
     urls() {
       return this.appconfig.urls;
     },
-    staticurl(){
+
+    staticurl() {
       return this.urls.staticurl;
     },
+
     powered_by() {
       return this.appconfig.group.powered_by;
     },
-    clienturl(){
+
+    clienturl() {
       return this.urls.clienturl;
     },
+
     g3w_suite_logo() {
       return `${this.clienturl}images/g3wsuite_logo.png`;
     },
+
     credits_logo() {
       return `${this.clienturl}images/logo_gis3w_156_85.png`;
     },
+
     logo_url() {
       const logo_project_url = this.currentProject.getThumbnail();
       return logo_project_url ? logo_project_url : `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
+
     logo_link() {
       const logo_link = this.getLogoLink();
       return logo_link ? logo_link : "#";
     },
+
     logo_link_target() {
       const logo_link = this.getLogoLink();
       return logo_link ? "_blank" : "";
     },
+
     project_title() {
       return this.currentProject.getState().name;
     },
+
     user() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
-    login_url(){
+
+    login_url() {
       return this.appconfig.user.login_url
     },
+
     /**
-     * @deprecate 3.9.0
-     * */
+     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `hasRelatedMaps` instead
+     */
     numberOfProjectsInGroup() {
       return this.appconfig.projects.length;
     },
+
     /**
+     * @returns {boolean} whether it should list any related projects or maps.
+     *
      * @since 3.8.0
      */
-    showChangeMap(){
-      console.log()
+    hasRelatedMaps() {
       return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
     },
+
     frontendurl() {
       return this.urls.frontendurl;
     },
+
     main_title() {
       const main_title = this.appconfig.main_map_title;
       const group_name = this.appconfig.group.name || this.appconfig.group.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
+
   },
+
   methods: {
 
     /**
@@ -1153,7 +1182,7 @@ export default {
       );
     },
 
-    async resize(){
+    async resize() {
       if (!this.isIframe) {
         await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
@@ -1161,41 +1190,130 @@ export default {
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
-    showCustomModalContent(id){
+
+    showCustomModalContent(id) {
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
-    closePanel(){
+
+    closePanel() {
       sidebarService.closePanel();
     },
+
     getLogoLink() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
     },
+
     /**
-     * @deprecate since 3.8.0
+     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `openChangeMapMenu` instead.
      */
     openProjectsMenu() {
       GUI.openProjectsMenu();
     },
+
+    /**
+     * Display dialog messages on first page load (on app bootstrap).
+     * 
+     * @since 3.8.0
+     */
+    async initDialogMessages() {
+      const messages = this.currentProject.getMessages();
+      
+      // no messages to show
+      if (!messages) {
+        return;
+      }
+
+      const projectId = this.currentProject.getId();
+
+      for (let i =0; i < messages.items.length; i++) {
+        const message = messages.items[i];
+        const data    = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.MESSAGES.id) || LOCAL_ITEM_IDS.MESSAGES.value;
+
+        if (undefined === data[projectId]) {
+          data[projectId] = [];
+        }
+
+        // check if current project has already messages stored
+        if (undefined !== data[projectId].find(id => id === message.id)) {
+          continue;
+        }
+
+        // create "Do Not Show Again" component
+        const doNotShowAgainVueComponent = new (Vue.extend({
+          data: () => ({ id: uniqueId(), checked: false }),
+          template: `
+            <div style="display: flex; margin-top: 10px;">
+              <input :id="id"
+                v-model="checked"
+                class="magic-checkbox"
+                type="checkbox"/>
+              <label :for="id" v-t="'dont_show_again'"/>
+            </div>
+          `
+        }));
+    
+        // create content message div
+        const content = document.createElement('div');
+        // create dom element message from body html string from server
+        content.append(...(new DOMParser()).parseFromString(message.body, 'text/html').body.childNodes);
+        // append input don't show again checkbox vue component
+        content.append(doNotShowAgainVueComponent.$mount().$el);
+
+        // show modal window
+        await new Promise((resolve) => {
+          GUI.showModalDialog({
+            title: message.title,
+            message: content,
+            size: 'large',
+            closeButton: false,
+            className: `g3w-modal-project-message ${Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]}`,
+            buttons: {
+              close: {
+                label: t('close'),
+                className: 'btn-secondary',
+                callback: () => {
+                  // update locale storage if "Do Not Show Again" checkbox is checked 
+                  if (doNotShowAgainVueComponent.checked) {
+                    data[projectId].push(message.id);
+                    ApplicationService.setLocalItem({ id: LOCAL_ITEM_IDS.MESSAGES.id, data })
+                  }
+                  resolve();
+                }
+              },
+            }
+          })
+        })
+
+      }
+
+    },
+
     /**
      * @since 3.8.0
      */
-    openChangeMapMenu(){
+    openChangeMapMenu() {
       GUI.openChangeMapMenu();
     },
+
   },
+
   watch: {
+
     'language'(language, currentlanguage) {
       if (currentlanguage) {
         ApplicationService.changeLanguage(language);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     }
+
   },
+
   beforeCreate() {
     this.delayType = 'debounce';
     this.delayTime = 0;
   },
+
   created() {
     this.language = this.appconfig._i18n.language;
     this.custom_modals = [];
@@ -1223,41 +1341,59 @@ export default {
 
     !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
   },
+
   async mounted() {
+
+    //check if show Project messages when app is mounted
+    this.initDialogMessages();
+
     this.logoWidth = 0;
+
     await this.$nextTick();
+
     const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
+
     const elementLenght = rightNavBarElements.length;
+
     this.rightNavbarWidth = 15; // margin right
+
     for (let i = 0; i < elementLenght; i++ ) {
       this.rightNavbarWidth+= rightNavBarElements.item(i).offsetWidth;
     }
+
     this.language = this.appconfig.user.i18n;
+
     await this.$nextTick();
-    !this.isIframe && this.$refs.img_logo.addEventListener('load', ()=>{
-      this.logoWidth = this.$refs.img_logo.offsetWidth + 15; // added marging
-      this.resize();
-    }, {once: true});
-    /* start to render LayoutManager layout */
+
+    // add some marging to logo
+    if (!this.isIframe) {
+      this.$refs.img_logo.addEventListener('load', () => {
+        this.logoWidth = this.$refs.img_logo.offsetWidth + 15;
+        this.resize()
+      }, { once: true });
+    }
+
+    // start to render LayoutManager layout
     layout.loading(false);
     layout.setup();
-    //Fix the problem with right sidebar and layout boxed
+
+    // fix right sidebar and boxed layout 
     layout.pushMenu.expandOnHover();
     layout.controlSidebar._fix($(".control-sidebar-bg"));
     layout.controlSidebar._fix($(".control-sidebar"));
-    const controlsidebarEl = layout.options.controlSidebarOptions.selector;
+
     function setFloatBarMaxHeight() {
-      $(controlsidebarEl).css('max-height',$(window).innerHeight());
+      $(layout.options.controlSidebarOptions.selector).css('max-height',$(window).innerHeight());
       $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
     }
     setFloatBarMaxHeight();
-    function setModalHeight(){
-      $('#g3w-modal-overlay').css('height',$(window).height());
-    }
+
     $(window).resize(() => {
       setFloatBarMaxHeight();
-      setModalHeight();
+      $('#g3w-modal-overlay').css('height',$(window).height());
     });
+
   },
+
 };
 </script>

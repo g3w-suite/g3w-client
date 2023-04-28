@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Erreur de connexion",
+      at_moment: "Pour le moment, il n'est pas possible d'afficher la carte",
+      f5: "Appuyez sur Ctrl+F5"
+    },
     cookie_law: {
       message: "Ce site utilise des cookies pour assurer une bonne convivialité pour l'utilisateur final.",
       buttonText: "J’ai compris !"
@@ -404,16 +409,13 @@ export default {
     },
     logout: "Quitter",
     no_other_projects: "Il n'y a pas d'autres projets dans ce groupe de cartes",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Il n'y a pas d'autres groupes dans ce macrogroupe",
     yes: "Oui",
     no: "No",
     back:"Retour",
     backto: "Retour à ",
     changemap: "Changer de carte",
-    change_session: "Change Session",
+    change_session: "Changer de séance",
     component: "Composant générique",
     search: "Recherches",
     no_results: "Aucun résultat trouvé",
@@ -442,6 +444,10 @@ export default {
     save: "Sauvegarder",
     cancel: "Supprimer",
     close: "Fermer",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Ne plus afficher ce message",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Ajouter",
@@ -464,7 +470,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL/Name har redan lagts till.",
+        url_already_added: "WMS URL/Nom har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },

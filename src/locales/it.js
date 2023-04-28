@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Errore di connessione",
+      at_moment: "Al momento non è possibile caricare la mappa",
+      f5: "Premi Ctrl+F5"
+    },
     cookie_law: {
       message: "Questo sito utilizza i cookie per garantire una buona usabilità all'utilizzatore finale.",
       buttonText: "Ho capito!"
@@ -406,11 +411,8 @@ export default {
     },
     toggle_color_scheme: "Cambia colore",
     logout: "Esci",
-    no_other_projects: "Non ci sono altri progetti in questo gruppo cartografico",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "Non ci sono altri gruppi in questo Macrogruppo",
+    no_other_projects: "Nu există alte proiecte în acest grup de hărți",
+    no_other_groups: "Nu există alte grupuri în acest grup de macrocomenzi",
     yes: "Si",
     no: "No",
     back:"Indietro",
@@ -445,8 +447,12 @@ export default {
     save: "Salva",
     cancel: "Cancella",
     close: "Chiudi",
-    enlange_reduce:"Allarga/Riduci",
-    reset_default:"Dimensione Partenza",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Non mostrare più",
+    enlange_reduce: "Allarga/Riduci",
+    reset_default: "Dimensione Partenza",
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",
@@ -528,6 +534,6 @@ export default {
       info: "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
-    }
+    },
   },
 };

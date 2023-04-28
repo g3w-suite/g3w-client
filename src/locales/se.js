@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Anslutningsfel",
+      at_moment: "För närvarande är inte möjligt visa karta",
+      f5: "Tryck på Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -406,16 +411,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logga ut",
     no_other_projects: "Inga projekt för denna grupp",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Inga fler grupper för denna makrogrupp",
     yes: "Ja",
     no: "Nej",
     back: "Gå tillbaka",
     backto: "Tillbaka ",
     changemap: "Byt karta",
-    change_session: "Change Session",
+    change_session: "Ändra session",
     component: "Allmän komponent",
     search: "Sök",
     no_results: "Inga sökresultat",
@@ -444,6 +446,10 @@ export default {
     save: "Spara",
     cancel: "Ånga",
     close: "Stäng",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Visa inte det här meddelandet igen",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Lägg till",
@@ -464,7 +470,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL/Name har redan lagts till.",
+        url_already_added: "WMS URL/Namn har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },

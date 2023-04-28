@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Verbindungsfehler",
+      at_moment: "Karte anzeigen ist im Moment nicht möglich",
+      f5: "Drücken Sie Strg+F5"
+    },
     cookie_law: {
       message: "Diese Website verwendet Cookies, um Ihnen die bestmögliche Erfahrung auf unserer Website zu bieten.",
       buttonText: "Verstanden!"
@@ -405,16 +410,13 @@ export default {
     toggle_color_scheme: "Farbschema umschalten",
     logout: "Logout",
     no_other_projects: "Kein weiteres Projekt für diese Gruppe",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "Keine weiteren Gruppen für diese Makrogruppe",
     yes: "Ja",
     no: "No",
     back: "Zurück",
     backto: "Zurück zu ",
     changemap: "Karte ändern",
-    change_session: "Change Session",
+    change_session: "Sitzung ändern",
     component: "Allgemeine Komponente",
     search: "Suche",
     no_results: "Keine Ergebnisse gefunden",
@@ -443,6 +445,10 @@ export default {
     save: "Speichern",
     cancel: "Abbrechen",
     close: "Schließen",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Diese Meldung nicht mehr anzeigen",
     enlange_reduce:"Vergrößern/Verkleinern",
     reset_default:"Standardgröße",
     add: "Hinzufügen",

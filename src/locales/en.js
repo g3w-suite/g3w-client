@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Connection error",
+      at_moment: "At the moment is not possible show map",
+      f5: "Press Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -405,10 +410,7 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logout",
     no_other_projects: "No more project for this group",
-    /**
-     * @since 3.8.0
-     */
-    no_other_groups: "No more groups fro this Macrogroup",
+    no_other_groups: "No more groups for this Macrogroup",
     yes: "Yes",
     no: "No",
     back: "Back",
@@ -443,6 +445,10 @@ export default {
     save: "Save",
     cancel: "Cancel",
     close: "Close",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Don't show again",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Add",
