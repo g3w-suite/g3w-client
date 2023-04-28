@@ -274,6 +274,7 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 import { resizeMixin } from 'mixins';
+import { LOCAL_ITEM_IDS } from "constant";
 
 const { uniqueId } = require('core/utils/utils');
 const { t } = require('core/i18n/i18n.service');
@@ -1143,7 +1144,7 @@ export default {
 
     /**
      * @returns {boolean} whether it should list any related projects or maps.
-     * 
+     *
      * @since 3.8.0
      */
     hasRelatedMaps() {
@@ -1211,6 +1212,84 @@ export default {
     },
 
     /**
+     * Display dialog messages on first page load (on app bootstrap).
+     * 
+     * @since 3.8.0
+     */
+    async initDialogMessages() {
+      const messages = this.currentProject.getMessages();
+      
+      // no messages to show
+      if (!messages) {
+        return;
+      }
+
+      const projectId = this.currentProject.getId();
+
+      for (let i =0; i < messages.items.length; i++) {
+        const message = messages.items[i];
+        const data    = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.MESSAGES.id) || LOCAL_ITEM_IDS.MESSAGES.value;
+
+        if (undefined === data[projectId]) {
+          data[projectId] = [];
+        }
+
+        // check if current project has already messages stored
+        if (undefined !== data[projectId].find(id => id === message.id)) {
+          continue;
+        }
+
+        // create "Do Not Show Again" component
+        const doNotShowAgainVueComponent = new (Vue.extend({
+          data: () => ({ id: uniqueId(), checked: false }),
+          template: `
+            <div style="display: flex; margin-top: 10px;">
+              <input :id="id"
+                v-model="checked"
+                class="magic-checkbox"
+                type="checkbox"/>
+              <label :for="id" v-t="'dont_show_again'"/>
+            </div>
+          `
+        }));
+    
+        // create content message div
+        const content = document.createElement('div');
+        // create dom element message from body html string from server
+        content.append(...(new DOMParser()).parseFromString(message.body, 'text/html').body.childNodes);
+        // append input don't show again checkbox vue component
+        content.append(doNotShowAgainVueComponent.$mount().$el);
+
+        // show modal window
+        await new Promise((resolve) => {
+          GUI.showModalDialog({
+            title: message.title,
+            message: content,
+            size: 'large',
+            closeButton: false,
+            className: `g3w-modal-project-message ${Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]}`,
+            buttons: {
+              close: {
+                label: t('close'),
+                className: 'btn-secondary',
+                callback: () => {
+                  // update locale storage if "Do Not Show Again" checkbox is checked 
+                  if (doNotShowAgainVueComponent.checked) {
+                    data[projectId].push(message.id);
+                    ApplicationService.setLocalItem({ id: LOCAL_ITEM_IDS.MESSAGES.id, data })
+                  }
+                  resolve();
+                }
+              },
+            }
+          })
+        })
+
+      }
+
+    },
+
+    /**
      * @since 3.8.0
      */
     openChangeMapMenu() {
@@ -1264,40 +1343,56 @@ export default {
   },
 
   async mounted() {
+
+    //check if show Project messages when app is mounted
+    this.initDialogMessages();
+
     this.logoWidth = 0;
+
     await this.$nextTick();
+
     const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
+
     const elementLenght = rightNavBarElements.length;
+
     this.rightNavbarWidth = 15; // margin right
+
     for (let i = 0; i < elementLenght; i++ ) {
       this.rightNavbarWidth+= rightNavBarElements.item(i).offsetWidth;
     }
+
     this.language = this.appconfig.user.i18n;
+
     await this.$nextTick();
-    !this.isIframe && this.$refs.img_logo.addEventListener('load', ()=>{
-      this.logoWidth = this.$refs.img_logo.offsetWidth + 15; // added marging
-      this.resize();
-    }, {once: true});
-    /* start to render LayoutManager layout */
+
+    // add some marging to logo
+    if (!this.isIframe) {
+      this.$refs.img_logo.addEventListener('load', () => {
+        this.logoWidth = this.$refs.img_logo.offsetWidth + 15;
+        this.resize()
+      }, { once: true });
+    }
+
+    // start to render LayoutManager layout
     layout.loading(false);
     layout.setup();
-    //Fix the problem with right sidebar and layout boxed
+
+    // fix right sidebar and boxed layout 
     layout.pushMenu.expandOnHover();
     layout.controlSidebar._fix($(".control-sidebar-bg"));
     layout.controlSidebar._fix($(".control-sidebar"));
-    const controlsidebarEl = layout.options.controlSidebarOptions.selector;
+
     function setFloatBarMaxHeight() {
-      $(controlsidebarEl).css('max-height',$(window).innerHeight());
+      $(layout.options.controlSidebarOptions.selector).css('max-height',$(window).innerHeight());
       $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
     }
     setFloatBarMaxHeight();
-    function setModalHeight() {
-      $('#g3w-modal-overlay').css('height',$(window).height());
-    }
+
     $(window).resize(() => {
       setFloatBarMaxHeight();
-      setModalHeight();
+      $('#g3w-modal-overlay').css('height',$(window).height());
     });
+
   },
 
 };

@@ -595,10 +595,17 @@ export const FONT_AWESOME_ICONS = {
  * @since v3.8
  */
 export const LOCAL_ITEM_IDS = {
+
+  MESSAGES: {
+    id: 'MESSAGES',
+    value: {}
+  },
+
   SPATIALBOOKMARKS: {
-    id: 'SPATIALBOOKMARKS', // id unique
-    value: {} // initial value
-  }
+    id: 'SPATIALBOOKMARKS',
+    value: {}
+  },
+
 };
 
 /**
