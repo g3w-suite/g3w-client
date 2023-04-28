@@ -287,30 +287,22 @@ proto.getValueMapValues = async function(field){
 };
 
 /**
- * @param layer
- * @param {{ suggest, unique, ordering }} options
- * 
- * @returns {Promise}
- * 
- * @since 3.8.0
- */
-proto.getLayerFilterData = function(layer, {field, suggest, unique, ordering}) {
-  return layer.getFilterData({ field, suggest, unique, ordering });
-};
-
-/**
  * @param layers
- * @param options
+ * @param options.field
+ * @param options.suggest
+ * @param options.unique
+ * @param options.ordering
  * 
  * @returns {Promise<*>}
  * 
  * @since 3.8.0
  */
-proto.getLayersFilterData = async function(layers, options={}) {
-  const data_promises = await Promise.allSettled(layers.map(layer => this.getLayerFilterData(layer, options)));
+proto.getLayersFilterData = async function(layers, options = {}) {
+  const { field, suggest, unique, ordering } = options;
   // get unique value from each layers
   const data = Array.from(
-    data_promises
+    await Promise
+      .allSettled(layers.map(layer => layer.getFilterData({ field, suggest, unique, ordering })))
       .filter(({status}) => 'fulfilled' === status)
       .reduce((accumulator, { value = [] }) => new Set([...accumulator, ...value]), [])
     );
@@ -323,45 +315,33 @@ proto.getLayersFilterData = async function(layers, options={}) {
 };
 
 /**
- * @since 3.8.0
- * Method to get unique values from field
- * @param field
- * @param value
- * @param unique
+ * Get unique values from field
+ * 
+ * @param options.field
+ * @param options.value
+ * @param options.unique 
+ * 
  * @returns {Promise<[]>}
  */
 proto.getUniqueValuesFromField = async function({field, value, output}){
   let data = [];
-  try {
 
-    const options = {
+  try {
+    data = await this.getLayersFilterData(
+      (1 === this.searchLayers.length ? [this.searchLayer] : this.searchLayers), {
       field: this.getAutoFieldDependeciesParamField(field),
       suggest: value !== undefined ? `${field}|${value}` : undefined,
       unique: field,
       ordering: field
-    };
+    });
 
-    /**
-     * In case of single layer to search
-     */
-    if (this.searchLayers.length === 1) {
-      data = await this.getLayerFilterData(this.searchLayer, options);
-    } else {
-      data = await this.getLayersFilterData(this.searchLayers, options);
+    if ('autocomplete' === output) {
+      data = data.map(value => ({ id:value, text:value }));
     }
-  } catch(error) {}
+  } catch(e) { console.warn(e); }
 
-  switch (output) {
-    case 'autocomplete':
-      return data.map(value => ({
-        id:value,
-        text:value
-      }));
-    default:
-      return data;
-  }
+  return data;
 };
-
 
 /**
  * Method to run search
