@@ -362,41 +362,37 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
 async function parse_search_1n(data, options) {
   const { search_endpoint, feature_count} = options;
 
-  const relationId = this.config.options.search_1n_relationid;
-  const {features=[]} = data.data[0] || {};
+  const { features = [] } = data.data[0] || {};
+
   // check if has features on result
   if (!features.length) {
     DataRouterService.showEmptyOutputs();
   }
-  const relation = this.project.getRelationById(relationId);
-  const inputs = [];
+
+  const relation = this.project.getRelationById(this.config.options.search_1n_relationid);
   if (relation) {
-    const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
+    const inputs = [];
+
     const uniqueValues = new Set();
     features.forEach(feature => {
-      const value = feature.getProperties()[referencingField];
+      const value = feature.getProperties()[relation.fieldRef.referencingField];
       if (!uniqueValues.has(value)) {
         uniqueValues.add(value);
-        inputs.push({
-          attribute:referencedField,
-          logicop: "OR",
-          operator: "eq",
-          value
-        })
+        inputs.push({ attribute:relation.fieldRef.referencedField, logicop: "OR", operator: "eq", value });
       }
     });
-    const layer = this.project.getLayerById(referencedLayer);
-    const filter = createFilterFormInputs({
-      layer,
-      search_endpoint,
-      inputs
-    });
+
+    const layer = this.project.getLayerById(relation.referencedLayer);
     data = await DataRouterService.getData('search:features', {
-      inputs:{
+      inputs: {
         layer,
         search_endpoint,
-        filter,
-        formatter: 1, // set formatter to 1
+        filter: createFilterFormInputs({
+          layer,
+          search_endpoint,
+          inputs
+        }),
+        formatter: 1,
         feature_count
       },
       outputs: {
@@ -426,9 +422,7 @@ function parse_search_by_returnType(data, returnType) {
 }
 
 /**
- * @TODO slim down and refactor
- * 
- * Execute search
+ * Perform search
  * 
  * @param filter
  * @param search_endpoint
