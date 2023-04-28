@@ -12,7 +12,6 @@ function LayersStore(config={}) {
     //set catalogable property
     catalog: _.isBoolean(config.catalog) ? config.catalog : true
   };
-
   this.state = {
     //useful to build layerstree
     layerstree: [],
@@ -269,7 +268,24 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
     },
     nodes: layerstree
   };
-  const setGroupBBox = (group, bbox) => {
+  const setGroupBBox = (group, {bbox, epsg}={}) => {
+    //check if epsg code is different from project epsg
+    if ((epsg !== this.getProjection().getCode())) {
+      //need to transform bbox to project epsg code
+      const [minx, miny, maxx, maxy] = ol.proj.transformExtent([
+        bbox.minx,
+        bbox.miny,
+        bbox.maxx,
+        bbox.maxy
+      ], epsg, this.getProjection().getCode());
+      //set translate value to bbox
+      bbox = {
+        minx,
+        miny,
+        maxx,
+        maxy
+      }
+    }
 
     group.bbox = "undefined" === typeof group.bbox ?
       // get bbox from bbox
@@ -305,26 +321,31 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
       }
       return bbox;
     }, {minxx:null, miny: null, maxx: null, maxy: null});
-
     // Recursion
     if (group.parentGroup && false === group.parentGroup.root) {
-      setGroupBBox(group.parentGroup, group.bbox);
+      setGroupBBox(group.parentGroup, {
+        bbox: group.bbox,
+        epsg: this.getProjection().getCode(), // set epsg of project
+      });
     }
   };
   const traverse = (nodes, parentGroup) => {
     nodes.forEach((node, index) => {
       // substitute node layer with layer state
-      if (undefined !== node.id) {
+      if ("undefined" !== typeof node.id) {
         nodes[index] = this.getLayerById(node.id).getState();
       }
-      // case of layer substitute node with layere state
-      if (node.id !== undefined) {
+      // case of layer substitute node with layer state
+      if ("undefined" !== typeof node.id) {
         nodes[index] = this.getLayerById(node.id).getState();
         if ("undefined" !== typeof nodes[index].bbox) {
-          setGroupBBox(parentGroup, nodes[index].bbox);
+          setGroupBBox(parentGroup, {
+            bbox: nodes[index].bbox, // pass bbox of layer
+            epsg: nodes[index].epsg, // pass espg of layer
+          });
         }
       }
-      if (node.nodes) {
+      if (Array.isArray(node.nodes)) {
         node.nodes.forEach(node => node.parentGroup = parentGroup);
         traverse(node.nodes, node);
       }
