@@ -30,7 +30,7 @@ const Projections = require('g3w-ol/projection/projections');
  * @param config.wps                           array of wps service
  * @param config.bookmarks                     array of bookmarks
  * @param { 'POST' | 'GET' }                   config.ows_method
- * @param {boolean}                            config.wms_use_layer_ids
+ * @param { boolean }                          config.wms_use_layer_ids
  * @param { 'ows' | 'api' }                    config.search_endpoint 
  * @param { 'tab' | 'toc' }                    config.legend_position 
  * @param { 'layers', 'baselayers', 'legend' } config.catalog_tab
@@ -487,6 +487,15 @@ proto.getUrl = function(type) {
  */
 proto.getSpatialBookmarks = function() {
   return this.state.bookmarks || [];
+};
+
+/**
+ * @returns {{ items: Array, info: Object }} project messages at start time 
+ * 
+ * @since 3.8.0
+ */
+proto.getMessages = function() {
+  return this.state.messages;
 };
 
 module.exports = Project;

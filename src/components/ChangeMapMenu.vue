@@ -37,15 +37,13 @@
       >
 
       <!-- ITEM IMAGE -->
-        <div
-          @click.stop="trigger(item)"
-          class="menu-item-image"
-        >
+        <div class="menu-item-image" @click.stop="trigger(item)">
           <img
-            alt="logo"
-            @error="setFallBackImage(item)"
             :src="item.thumbnail || item.header_logo_img || item.logo_img"
-            class="img-responsive">
+            @error="setFallBackImage(item)"
+            alt="logo"
+            class="img-responsive"
+          >
         </div>
 
         <!-- ITEM CONTENT -->
@@ -73,8 +71,7 @@ import ProjectsRegistry from 'store/projects';
 import { API_BASE_URLS, LOGO_GIS3W } from 'constant';
 
 const Projections = require('g3w-ol/projection/projections');
-const {XHR} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+const { XHR } = require('core/utils/utils');
 
 export default {
 
@@ -137,13 +134,8 @@ export default {
      */
      setFallBackImage(item) {
       const g3w_logo = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
-      if (item.thumbnail) {
-        item.thumbnail = g3w_logo;
-      } else if (item.logo_img) {
-        item.thumbnail = g3w_logo;
-      } else if (item.header_logo_img) {
-        item.header_logo_img = g3w_logo;
-      }
+      if (item.thumbnail || item.logo_img) item.thumbnail       = g3w_logo;
+      else if (item.header_logo_img)       item.header_logo_img = g3w_logo;
     },
 
     back() {
@@ -162,12 +154,23 @@ export default {
       this.steps = [];
     },
 
+    _onChangeRoot(item) {
+      // item is a macrogroup
+      if (undefined === item.srid) {
+        this.showGroups(item)
+      } else {
+        // item is a group
+        this.showProjects(item);
+      }
+    },
+
     async showGroups(item) {
       this.loading = true;
       this.parent = item;
       try {
-        const url = encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${item.id}/`);
-        this.items = await XHR.get({ url });
+        this.items = await XHR.get({
+          url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${item.id}/`)
+        });
         this.current = 'groups';
       } catch(err) {
         this.items = [];
@@ -179,47 +182,50 @@ export default {
     async showProjects(item) {
       this.loading = true;
       this.parent = item;
+
       if (this.parent.id === this.currentProjectGroupId) {
         this.items = ProjectsRegistry.getListableProjects();
         this.current = 'projects';
       } else {
         try {
-          const url = encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`)
-          this.items = await XHR.get({ url });
+          this.items = await XHR.get({
+            url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`)
+          });
           this.items.forEach(item => this.setItemImageSrc({ item, type: 'project' }));
           this.current = 'projects';
         } catch(err) {
           this.items = [];
         }
       }
+
       this.steps.push(this.parent);
       this.loading = false;
     },
 
+    /**
+     * @param {string} item.url
+     * @param {string} item.map_url
+     */
+    async changeMapProject(item) {
+      let url;
+      const base_url = ProjectsRegistry.getBaseUrl();
+      const epsg = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
+      await Projections.registerProjection(epsg);
+      try {
+        new URL(base_url);
+        url = `${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
+      } catch(err) {
+        url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
+      }
+      return ApplicationService.changeMapProject({ url, epsg });
+    },
+
     async trigger(item) {
       switch(this.current) {
-        case 'projects':
-          const epsg = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
-          await Projections.registerProjection(epsg);
-          const url = `${location.origin}${ProjectsRegistry.getBaseUrl()}${item.url || item.map_url.replace(/^\//, "")}`;
-          return ApplicationService.changeMapProject({ url, epsg });
-        case 'groups': {
-          this.showProjects(item);
-          break;
-        }
-        case 'macrogroup': {
-          this.showGroups(item);
-          break;
-        }
-        case 'root':
-          // item is a macrogroup
-          if (undefined === item.srid) {
-            this.showGroups(item)
-          } else {
-            // item is a group
-            this.showProjects(item);
-          }
-          break;
+        case 'root':       return this._onChangeRoot(item);
+        case 'macrogroup': return this.showGroups(item);
+        case 'groups':     return await this.showProjects(item);
+        case 'projects':   return await this.changeMapProject(item);
       }
     },
 
@@ -229,33 +235,36 @@ export default {
      * @param { 'project' | 'group' | 'macrogroup' } image.type
      * @param                                        image.item
       */
-    setItemImageSrc({item, type}={}) {
+    setItemImageSrc({ item, type } = {}) {
       switch(type) {
-        case 'project':
-          item.thumbnail = this._setSrc(item.thumbnail);
-          break;
-        case 'group':
-          item.header_logo_img = this._setSrc(item.header_logo_img);
-          break;
-        case 'macrogroup':
-          item.logo_img = this._setSrc(item.logo_img);
-          break;
+        case 'project':    item.thumbnail       = this._setSrc(item.thumbnail); break;
+        case 'group':      item.header_logo_img = this._setSrc(item.header_logo_img); break;
+        case 'macrogroup': item.logo_img        = this._setSrc(item.logo_img); break;
       }
     },
 
+    /**
+     * @TODO extract as utility function (almost the same as `components/ProjectsMenu::logoSrc(src)`) 
+     */
     _setSrc(src) {
       let imageSrc;
-      if (src) {
-        imageSrc = 
-          -1 !== src.indexOf(ProjectsRegistry.config.mediaurl)
-            ? src
-            : (-1 === src.indexOf('static') && -1 === src.indexOf('media'))
-              ? `${ProjectsRegistry.config.mediaurl}${src}`
-              : `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+      const host       = this.$options.host || '';
+      const mediaurl   = ProjectsRegistry.config.mediaurl;
+      const clienturl  = ApplicationService.getConfig().urls.clienturl;
+      const has_media  = src && (-1 !== src.indexOf(mediaurl));
+      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'));
+
+      if (!src) {
+        imageSrc = `${clienturl}${LOGO_GIS3W}`;
+      } else if (has_media) {
+        imageSrc = src;
+      } else if (not_static) {  
+        imageSrc = `${mediaurl}${src}`;
       } else {
-        imageSrc = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+        imageSrc = `${clienturl}${LOGO_GIS3W}`;
       }
-      return this.$options.host ? `${this.$options.host}${imageSrc}` : imageSrc;
+
+      return `${host}${imageSrc}`;
     },
 
   },
