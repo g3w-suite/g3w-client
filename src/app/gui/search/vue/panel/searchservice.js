@@ -358,10 +358,12 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
 };
 
 /**
- * @since 3.8.0
  * @param data
  * @param options
+ * 
  * @returns {Promise<*>}
+ * 
+ * @since 3.8.0
  */
 proto.parse_search_1n = async function(data, options) {
   const { search_endpoint, feature_count} = options;
