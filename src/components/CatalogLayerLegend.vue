@@ -150,7 +150,7 @@
       /**
        * @since v3.8
        */
-      onCategoryClick(){
+      onCategoryClick() {
         this.handleClick({
           '1': () => { /** @TODO this.selectCategory() */ console.info('TODO: select category (single click)'); },
           '2': () => { /** @TODO this.zoomToCategory() */ console.info('TODO: zoom to category (double click)'); }

@@ -11,7 +11,7 @@ export default {
      *
      * @see https://stackoverflow.com/q/41303982
      */
-    this.CLICK_EVENT = {
+    this.__CLICK_EVENT = {
       count: 0,                                   // count click events
       timeoutID: null                             // timeoutID return by setTimeout Function
     };
@@ -20,15 +20,15 @@ export default {
   methods: {
 
     /**
-     * @param callbacks:<Object> contain as key number of click and as value method to call
+     * @param {{ '1': () => {}, '2': () => {}}} callbacks hashmap of click event handlers ('1' = click, '2' = double click)
      * @param context
      */
-    handleClick(callbacks= {}, context) {
-      this.CLICK_EVENT.count += 1;                   // increment click count
-      if (!this.CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
-        this.CLICK_EVENT.timeoutID = setTimeout(() => {
-          if (undefined !== callbacks[this.CLICK_EVENT.count]) {
-            callbacks[this.CLICK_EVENT.count].call(context);
+    handleClick(callbacks = {}, context) {
+      this.__CLICK_EVENT.count += 1;                   // increment click count
+      if (!this.__CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
+        this.__CLICK_EVENT.timeoutID = setTimeout(() => {
+          if (undefined !== callbacks[this.__CLICK_EVENT.count]) {
+            callbacks[this.__CLICK_EVENT.count].call(context);
           }
           this.__resetClickMixin();
         }, 300);
@@ -36,18 +36,18 @@ export default {
     },
 
     __resetClickMixin() {
-      this.CLICK_EVENT.count = 0;
-      this.CLICK_EVENT.timeoutID = null;
+      this.__CLICK_EVENT.count = 0;
+      this.__CLICK_EVENT.timeoutID = null;
     },
 
     __clearClickMixin() {
       this.__resetClickMixin();
-      this.CLICK_EVENT = null;
+      this.__CLICK_EVENT = null;
     }
 
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     this.__clearClickMixin();
   }
 
