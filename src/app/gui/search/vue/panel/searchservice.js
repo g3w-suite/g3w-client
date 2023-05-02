@@ -95,6 +95,7 @@ function SearchService(config = {}) {
     ...(options.otherquerylayerids || [])
   ].map(layerid => CatalogLayersStoresRegistry.getLayerById(layerid));
 
+
   /**
    * Create the form search structure
    */
@@ -313,12 +314,13 @@ proto.getValueMapValues = async function(field) {
 proto.getLayersFilterData = async function(layers, options = {}) {
   const { field, suggest, unique, ordering } = options;
   // get unique value from each layers
+  const promisesData = await Promise.allSettled(layers.map(layer => layer.getFilterData({ field, suggest, unique, ordering })));
+
   const data = Array.from(
-    await Promise
-      .allSettled(layers.map(layer => layer.getFilterData({ field, suggest, unique, ordering })))
+    promisesData
       .filter(({status}) => 'fulfilled' === status)
       .reduce((accumulator, { value = [] }) => new Set([...accumulator, ...value]), [])
-    );
+  )
   //check if is not empty array
   switch (data.length && typeof data[0]) {
     case 'string': return sortAlphabeticallyArray(data);
@@ -338,7 +340,6 @@ proto.getLayersFilterData = async function(layers, options = {}) {
  */
 proto.getUniqueValuesFromField = async function({field, value, output}) {
   let data = [];
-
   try {
     data = await this.getLayersFilterData(
       (1 === this.searchLayers.length ? [this.searchLayer] : this.searchLayers), {
@@ -357,9 +358,12 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
 };
 
 /**
- * @private
+ * @since 3.8.0
+ * @param data
+ * @param options
+ * @returns {Promise<*>}
  */
-async function parse_search_1n(data, options) {
+proto.parse_search_1n = async function(data, options) {
   const { search_endpoint, feature_count} = options;
 
   const { features = [] } = data.data[0] || {};
@@ -460,7 +464,9 @@ proto.doSearch = async function({
       outputs: show && { title: this.state.title }
     });
     if (!show) {
-      const parsed = ('search_1n' === this.type) ? await parse_search_1n(data) : parse_search_by_returnType(data, this.return);
+      const parsed = ('search_1n' === this.type) ?
+        await this.parse_search_1n(data, {search_endpoint, feature_count}) :
+        parse_search_by_returnType(data, this.return);
       data = parsed ? parsed : data;
     } else if (this.project.state.autozoom_query && data && 1 === data.data.length) {
       this.mapService.zoomToFeatures(data.data[0].features); // autozoom_query
