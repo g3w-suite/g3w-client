@@ -240,6 +240,14 @@ proto.getWmsUrl = function() {
   return this.config.wmsUrl;
 };
 
+proto.removeLayersTree = function() {
+  this.state.layerstree.splice(0, this.state.layerstree.length);
+};
+
+proto.getLayersTree = function() {
+  return this.state.layerstree;
+};
+
 /**
  * Set layersstree of layers inside the layersstore
  *
@@ -248,8 +256,9 @@ proto.getWmsUrl = function() {
  * @param {boolean}   [expanded = true]
  */
 proto.setLayersTree = function(layerstree=[], name, expanded=true) {
-  // Root group project that contain all layerstree of qgis project
   const [minx, miny, maxx, maxy] = this.getInitExtent();
+
+  // Root group project that contain all layerstree of qgis project
   const rootGroup = {
     title: name || this.config.id,
     root: true,
@@ -260,169 +269,50 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
     /**
      * @since 3.8.0
      */
-    bbox: {
-      minx,
-      miny,
-      maxx,
-      maxy
-    },
+    bbox: { minx, miny, maxx, maxy },
     nodes: layerstree
   };
-  const setGroupBBox = (group, {bbox, epsg}={}) => {
-    //check if epsg code is different from project epsg
-    if ((epsg !== this.getProjection().getCode())) {
-      //need to transform bbox to project epsg code
-      const [minx, miny, maxx, maxy] = ol.proj.transformExtent([
-        bbox.minx,
-        bbox.miny,
-        bbox.maxx,
-        bbox.maxy
-      ], epsg, this.getProjection().getCode());
-      //set translate value to bbox
-      bbox = {
-        minx,
-        miny,
-        maxx,
-        maxy
-      }
-    }
 
-    group.bbox = "undefined" === typeof group.bbox ?
-      // get bbox from bbox
-      group.bbox = bbox :
-      //calculate bbox from extent ol method
-      ol.extent.extend(
-      [
-        group.bbox.minx,
-        group.bbox.miny,
-        group.bbox.maxx,
-        group.bbox.maxy
-      ],
-      [
-        bbox.minx,
-        bbox.miny,
-        bbox.maxx,
-        bbox.maxy
-      ]
-    ).reduce((bbox, extentCoordinate, index) =>{
-      switch(index){
-        case 0:
-          bbox.minx = extentCoordinate;
-          break;
-        case 1:
-          bbox.miny = extentCoordinate;
-          break;
-        case 2:
-          bbox.maxx = extentCoordinate;
-          break;
-        case 3:
-          bbox.maxy = extentCoordinate;
-          break;
-      }
-      return bbox;
-    }, {minxx:null, miny: null, maxx: null, maxy: null});
-    // Recursion
-    if (group.parentGroup && false === group.parentGroup.root) {
-      setGroupBBox(group.parentGroup, {
-        bbox: group.bbox,
-        epsg: this.getProjection().getCode(), // set epsg of project
-      });
-    }
-  };
-  const traverse = (nodes, parentGroup) => {
-    nodes.forEach((node, index) => {
-      // substitute node layer with layer state
-      if ("undefined" !== typeof node.id) {
-        nodes[index] = this.getLayerById(node.id).getState();
-      }
-      // case of layer substitute node with layer state
-      if ("undefined" !== typeof node.id) {
-        nodes[index] = this.getLayerById(node.id).getState();
-        if ("undefined" !== typeof nodes[index].bbox) {
-          setGroupBBox(parentGroup, {
-            bbox: nodes[index].bbox, // pass bbox of layer
-            epsg: nodes[index].epsg, // pass espg of layer
-          });
-        }
-      }
-      if (Array.isArray(node.nodes)) {
-        node.nodes.forEach(node => node.parentGroup = parentGroup);
-        traverse(node.nodes, node);
-      }
-      //SET PARENT GROUP
-      nodes[index].parentGroup = parentGroup;
-    });
-  };
   if (layerstree.length) {
-    traverse(layerstree, rootGroup);
-    // at the end
-    this.state.layerstree.splice(0,0, rootGroup);
+    this._traverseLayersTree(layerstree, rootGroup);
+    this.state.layerstree.splice(0, 0, rootGroup); // at the end
   }
 };
 
 /**
  * Used by external plugins to build layerstree
  *
- * @param {string} groupName is a ProjectName
- * @param {layerstree, expanded: boolean, full: bool} options
+ * @param {string}  groupName is a ProjectName
+ * @param {unknown} [options.layerstree = null ]
+ * @param {boolean} [options.expanded   = false]
+ * @param {boolean} [options.full       = false]
  */
 proto.createLayersTree = function(
   groupName,
   options = {
-    layerstree:null,
+    layerstree: null,
     expanded: false,
     full: false
   }
   ) {
 
-  // get all layers id from layers server config to compare with layer nodes on layerstree server property
-  const tocLayersId = this.getLayers({ BASELAYER: false }).map(layer=>layer.getId());
   let layerstree = [];
 
-  // check if layerstree coming from server project configuration is set
+  // return layerstree from server project config (when setted)
   if (options.layerstree && true === options.full) {
       return this.state.layerstree;
   }
 
-  /** @FIXME add description */
+  // compare all layer ids from server config with all layer nodes on layerstree server property
   if (options.layerstree && true !== options.full) {
-    let traverse = (nodes, layerstree) => {
-      nodes.forEach(node => {
-        let lightlayer = null;
-
-        // case TOC has layer ID
-        if (null !== node.id && "undefined" !== typeof node.id && tocLayersId.find(id => id === node.id)) {
-          lightlayer = ({ ...lightlayer, ...node });
-        }
-
-          // case group
-          if (null !== node.nodes && "undefined" !== typeof node.nodes) {
-            lightlayer = ({
-              ...lightlayer,
-              title: node.name,
-              groupId: uniqueId(),
-              root: false,
-              nodes: [],
-              checked: node.checked,
-              mutually_exclusive: node["mutually-exclusive"]
-            });
-            traverse(node.nodes, lightlayer.nodes); // recursion step
-          }
-
-        // check if lightlayer is not null
-        if (null !== lightlayer) {
-          lightlayer.expanded = node.expanded; // expand legend item (TOC)
-          layerstree.push(lightlayer);
-        }
-      });
-    };
-    traverse(options.layerstree, layerstree);
+    const tocLayersId = this.getLayers({ BASELAYER: false }).map(layer=>layer.getId())
+    this._traverseLightLayersTree(options.layerstree, layerstree, tocLayersId);
   }
 
-  /** @FIXME add description */
+  // retrieve all project layers that have geometry
   if (!options.layerstree) {
-    // get all project layers that have geometry
-    layerstree = this.getGeoLayers().map(layer => ({
+    layerstree = this.getGeoLayers()
+      .map(layer => ({
         id: layer.getId(),
         name: layer.getName(),
         title: layer.getTitle(),
@@ -435,12 +325,106 @@ proto.createLayersTree = function(
   this.setLayersTree(layerstree, groupName, options.expanded);
 };
 
-proto.removeLayersTree = function() {
-  this.state.layerstree.splice(0,this.state.layerstree.length);
+/**
+ * @since 3.8.0
+ */
+proto._traverseLightLayersTree = function(nodes, layerstree, tocLayersId) {
+  nodes.forEach(node => {
+    let lightlayer = null;
+
+    // case TOC has layer ID
+    if (null !== node.id && "undefined" !== typeof node.id && tocLayersId.find(id => id === node.id)) {
+      lightlayer = ({ ...lightlayer, ...node });
+    }
+
+    // case group
+    if (null !== node.nodes && "undefined" !== typeof node.nodes) {
+      lightlayer = ({
+        ...lightlayer,
+        title: node.name,
+        groupId: uniqueId(),
+        root: false,
+        nodes: [],
+        checked: node.checked,
+        mutually_exclusive: node["mutually-exclusive"]
+      });
+      this._traverseLightLayersTree(node.nodes, lightlayer.nodes, tocLayersId); // recursion step
+    }
+
+    // check if lightlayer is not null
+    if (null !== lightlayer) {
+      lightlayer.expanded = node.expanded; // expand legend item (TOC)
+      layerstree.push(lightlayer);
+    }
+  });
 };
 
-proto.getLayersTree = function() {
-  return this.state.layerstree;
+/**
+ * @since 3.8.0
+ */
+proto._traverseLayersTree = function(nodes, parentGroup) {
+  nodes.forEach((node, index) => {
+    // substitute node layer with layer state
+    if ("undefined" !== typeof node.id) {
+      nodes[index] = this.getLayerById(node.id).getState();
+    }
+    // case of layer substitute node with layer state
+    if ("undefined" !== typeof node.id) {
+      nodes[index] = this.getLayerById(node.id).getState();
+      // pass bbox and epsg of layer
+      if ("undefined" !== typeof nodes[index].bbox) {
+        this._setLayersTreeGroupBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
+      }
+    }
+    if (Array.isArray(node.nodes)) {
+      node.nodes.forEach(node => node.parentGroup = parentGroup);
+      this._traverseLayersTree(node.nodes, node);
+    }
+    //SET PARENT GROUP
+    nodes[index].parentGroup = parentGroup;
+  });
+};
+
+/**
+ * @since 3.8.0
+ */
+proto._setLayersTreeGroupBBox = function(group, { bbox, epsg } = {}) {
+
+  const project_epsg = this.getProjection().getCode();
+
+  // translate bbox epsg to project epsg code (when they differ)
+  if ((epsg !== project_epsg)) {
+    const [minx, miny, maxx, maxy] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
+    bbox = { minx, miny, maxx, maxy }
+  }
+
+  // get current bbox or compute bbox from ol extent
+  if (undefined === group.bbox) { 
+    group.bbox = bbox
+  } else {
+    group.bbox = ol.extent
+      .extend(
+        [ group.bbox.minx, group.bbox.miny, group.bbox.maxx, group.bbox.maxy ],
+        [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ]
+      )
+      .reduce(
+        (bbox, extentCoordinate, index) => {
+          switch(index){
+            case 0: bbox.minx = extentCoordinate; break;
+            case 1: bbox.miny = extentCoordinate; break;
+            case 2: bbox.maxx = extentCoordinate; break;
+            case 3: bbox.maxy = extentCoordinate; break;
+          }
+          return bbox;
+        },
+        { minxx:null, miny: null, maxx: null, maxy: null }
+      );
+  }
+
+  // Recursion
+  if (group.parentGroup && false === group.parentGroup.root) {
+    this._setLayersTreeGroupBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
+  }
 };
 
 module.exports = LayersStore;
