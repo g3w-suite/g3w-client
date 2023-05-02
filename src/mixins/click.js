@@ -4,7 +4,8 @@
  */
 
 export default {
-  created(){
+  
+  created() {
     /**
      * Store `click` and `doubleclick` events on a single vue element.
      *
@@ -12,12 +13,13 @@ export default {
      */
     this.CLICK_EVENT = {
       count: 0,                                   // count click events
-      timeoutID: null                           // timeoutID return by setTimeout Function
+      timeoutID: null                             // timeoutID return by setTimeout Function
     };
   },
+  
   methods: {
+
     /**
-     *
      * @param callbacks:<Object> contain as key number of click and as value method to call
      * @param context
      */
@@ -25,23 +27,28 @@ export default {
       this.CLICK_EVENT.count += 1;                   // increment click count
       if (!this.CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
         this.CLICK_EVENT.timeoutID = setTimeout(() => {
-          if ("undefined" !== typeof callbacks[this.CLICK_EVENT.count]) {
+          if (undefined !== callbacks[this.CLICK_EVENT.count]) {
             callbacks[this.CLICK_EVENT.count].call(context);
           }
-          this.reset();
+          this.__resetClickMixin();
         }, 300);
       }
     },
-    reset(){
+
+    __resetClickMixin() {
       this.CLICK_EVENT.count = 0;
       this.CLICK_EVENT.timeoutID = null;
     },
-    clear(){
-      this.reset();
+
+    __clearClickMixin() {
+      this.__resetClickMixin();
       this.CLICK_EVENT = null;
     }
+
   },
+
   beforeDestroy(){
-    this.clear();
+    this.__clearClickMixin();
   }
+
 };

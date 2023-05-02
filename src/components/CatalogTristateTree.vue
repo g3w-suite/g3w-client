@@ -489,16 +489,9 @@ export default {
      * @since v3.8
      */
      onTreeItemClick() {
-      if (this.isTable) { // Skip if TOC item is a Group or Table layer.
-        return;
-      }
       this.handleClick({
-        ...(
-          this.isGroup ?
-            {} :
-            {'1': this.select}
-        ),
-        '2': () => this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
+        '1': () => !this.isTable && !this.isGroup && this.select(),
+        '2': () => !this.isTable && this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
       }, this);
     },
 

@@ -149,33 +149,25 @@
 
       /**
        * @since v3.8
-       * **/
+       */
       onCategoryClick(){
         this.handleClick({
-          '1': this.selectCategory,
-          '2': () => this.zoomToCategory
+          '1': () => { /** @TODO this.selectCategory() */ console.info('TODO: select category (single click)'); },
+          '2': () => { /** @TODO this.zoomToCategory() */ console.info('TODO: zoom to category (double click)'); }
         }, this);
       },
+
       /**
-       * @since 3.8.0
-       * */
-      selectCategory() {
-        /*
-        * @TODO
-        * */
-      },
-      /*
-      * @since 3.8.0
-      * */
-      zoomToCategory(){
-        /*
-        * @TODO
-        * */
-      },
-      //show category context menu
+       * Show category contextual menu
+       * 
+       * @fires showmenucategory
+       * 
+       * @since v3.8
+       */
       showCategoryMenu(){
         this.$emit('showmenucategory');
       },
+  
       getWmsSourceLayerLegendUrl() {
         return this.getProjectLayer().getLegendUrl({
           width: 16,
@@ -211,7 +203,7 @@
       },
 
       /**
-       * Method called when is changed style of a layer
+       * Handle changing style of layer legend
        *
        * @since 3.8.0
        */
@@ -268,13 +260,10 @@
         const categories = [];
         nodes.forEach(({ icon, title, ruleKey, checked, symbols = []}) => {
           if (icon) {
-            /**
-             * need to take care of checked and ruleKey
-             * if just one category is set. If there are more that one category
-             * symbols array is set
-             */
+            // just one category is set (take care of `checked` and `ruleKey`).
             categories.push({ icon, title, ruleKey, checked, disabled: false });
           } else {
+            // there are more that one category (`symbols` array is set).
             symbols.forEach(symbol => {
               symbol._checked = symbol.checked;
               symbol.disabled = false;
