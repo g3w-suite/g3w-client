@@ -1,12 +1,13 @@
 {
   "name": "g3w-client",
-  "version": "3.8.0-alpha.0",
+  "version": "3.8.0-alpha.2",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
     "build": "gulp version && gulp build --max-old-space-size=2048",
     "build:plugins": "gulp version && gulp build:plugins",
+    "watch:plugins": "gulp version && gulp watch:plugins",
     "dev": "gulp dev --max-old-space-size=2048",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
@@ -31,6 +32,8 @@
     "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
     "vue": "2.6.12",
+    "vue-color": "^2.8.1",
+    "vue-cookie": "^1.1.4",
     "vue-cookie-law": "^1.13.3"
   },
   "overrides": {

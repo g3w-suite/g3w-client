@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Yhteysvirhe",
+      at_moment: "Tällä hetkellä ei ole mahdollista näyttää karttaa",
+      f5: "Paina Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -24,6 +29,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Valitse Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Tilalliset kirjanmerkit",
+        helptext: "Siirry kartan laajuuteen, lisää nimi ja napsauta Lisää",
+        input: {
+          name: "Nimi"
+        },
+        sections: {
+          project:{
+            title: "Projektin kirjanmerkit"
+          },
+          user: {
+            title: "Käyttäjän kirjanmerkit"
+          }
+        }
+      },
       search: {
         all: 'KAIKKI',
         no_results: "Ei tuloksia",
@@ -253,6 +278,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Kysely piirtopolygonin mukaan"
+        },
         querybybbox: {
           tooltip: 'Tasoon kohdituva BBox-kysely',
           nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
@@ -293,6 +321,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Edellinen",
+          zoom_next: "Zoom Seurata"
         }
       },
       relations: {
@@ -332,6 +364,7 @@ export default {
           textarea: "teksti",
           string: "merkkijono",
           date: "päiväys",
+          datetime: "päiväys",
           float: "liukuluku",
           table: "taulukko"
         },
@@ -377,11 +410,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Kirjaudu ulos",
     no_other_projects: "Ei projekteja tälle ryhmälle",
+    no_other_groups: "Ei enää ryhmiä tälle makroryhmälle",
     yes: "Kyllä",
     no: "Ei",
     back: "Palaa",
     backto: "Takaisin ",
     changemap: "Vaihda karttaa",
+    change_session: "Vaihda istuntoa",
     component: "Yleinen komponentti",
     search: "Hae",
     no_results: "Ei hakutuloksia",
@@ -410,6 +445,10 @@ export default {
     save: "Tallenna",
     cancel: "Peruuta",
     close: "Sulje",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Älä näytä viestiä uudelleen",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Lisää",
@@ -430,7 +469,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Taso on jo lisätty.",
-        url_already_added: "WMS URL  on jo lisätty.",
+        url_already_added: "WMS URL/Nimi on jo lisätty.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
@@ -481,7 +520,8 @@ export default {
         open_attribute_table: "Avaa attribuuttitaulu",
         show_metadata: "Metatiedot",
         styles: "Tyylejä",
-        vector_color_menu: "Aseta/muuta väriä"
+        vector_color_menu: "Aseta/muuta väriä",
+        layer_opacity: "Peittävyys"
       }
     },
     dataTable: {

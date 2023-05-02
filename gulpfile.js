@@ -18,6 +18,8 @@ const buffer      = require('vinyl-buffer');
 const source      = require('vinyl-source-stream');
 
 // Node.js
+const exec        = require('child_process').exec;
+const execSync    = require('child_process').execSync;
 const del         = require('del');
 const fs          = require('fs');
 const path        = require('path');
@@ -45,8 +47,27 @@ const g3w         = require('./config');
 let production   = false;
 let outputFolder = g3w.admin_overrides_folder;
 
+// ANSI color codes
+const INFO__ = "\033[0;32m\#\#\# ";
+const __INFO = " \#\#\# \033[0m";
+const H1__ = "\n\n" + INFO__;
+const __H1 = __INFO + "\n";
+
+
 // Retrieve project dependencies ("g3w-client")
 const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
+
+// Built-in client plugins
+const default_plugins = [
+  'editing',
+  'openrouteservice',
+  'qplotly',
+  'qtimeseries'
+];
+// Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
+const dev_plugins = Array.from(new Set(
+  default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins))
+));
 
 // production const to set environmental variable
 function setNODE_ENV() {
@@ -89,8 +110,6 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/slimScroll/jquery.slimscroll.min.js",
       g3w.assetsFolder + "/vendors/fastclick/fastclick.js",
       g3w.assetsFolder + "/vendors/vue/vue.min.js",
-      g3w.assetsFolder + "/vendors/vue/cookie/vue-cookie.js",
-      g3w.assetsFolder + "/vendors/vue-color/vue-color.js",
       g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
       g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
       g3w.assetsFolder + "/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js",
@@ -143,7 +162,9 @@ gulp.task('concatenate:vendor_js', function() {
  */
 gulp.task('browserify:app', function() {
   let rebundle;
-  let bundler = browserify('./src/app/main.js', {
+  let bundler = browserify(
+    `./src/index.${production ? 'prod' : 'dev'}.js`,
+    {
     basedir: './',
     paths: ['./src/', './src/app/', './src/plugins/'],
     debug: !production,
@@ -161,7 +182,7 @@ gulp.task('browserify:app', function() {
     ]
   });
   if (production) {
-    bundler.ignore('./src/app/dev/index.js');           // ignore dev index file
+    bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
     dependencies.forEach(dep => bundler.external(dep)); // add external module node_modules on vendor
   } else {
     bundler.on('prebundle', bundle => {
@@ -324,6 +345,64 @@ gulp.task('browser-sync', function() {
 });
 
 /**
+ * Make sure that core client plugins are there
+ * 
+ * [submodule "src/plugins/editing"]          <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
+ * [submodule "src/plugins/openrouteservice"] <-- https://github.com/g3w-suite/g3w-client-plugin-openrouteservice.git
+ * [submodule "src/plugins/qplotly"]          <-- https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
+ * [submodule "src/plugins/qtimeseries"]      <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
+ */
+gulp.task('clone:default_plugins', function() {
+  console.log(H1__ + `Cloning default plugins` + __H1);
+  for (const pluginName of default_plugins) {
+    if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
+      execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, {stdio: 'inherit'});
+    }
+    if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
+      execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
+    }
+  }
+});
+
+/**
+ * Make sure that all g3w.plugins bundles are there (NB: without watching them)
+ * 
+ * CORE PLUGINS:
+ * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
+ * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
+ * - [submodule "src/plugins/qplotly"]     --> src/plugins/qplotly/plugin.js
+ * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
+ * 
+ * CUSTOM PLUGINS:
+ * - [submodule "src/plugins/eleprofile"]  --> src/plugins/eleprofile/plugin.js
+ * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
+ */
+gulp.task('build:dev_plugins', function() {
+  for (const pluginName of dev_plugins) {
+    console.log(H1__ + `Building plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __H1);
+    try {
+      execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
+    } catch(e) { /* soft fails on missing `gulp default` task */ }
+  }
+});
+
+/**
+ * Run `gulp watch` on each g3w.plugins folder
+ */
+gulp.task('watch:plugins', function() {
+  for (const pluginName of dev_plugins) {
+    console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
+    exec(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js watch`,
+      (error, stdout, stderr) => {
+        if (error) { console.error(`exec error: ${error}`); return; }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+      }
+    );
+  }
+});
+
+/**
  * Ask the developer which plugins wants to deploy
  */
 gulp.task('select-plugins', function() {
@@ -384,7 +463,7 @@ gulp.task('deploy-plugins', function() {
 /**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('build:plugins', (done) => runSequence('select-plugins', 'deploy-plugins', done));
+gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-plugins', done));
 
 /**
  * Compile and deploy local developed client file assets (static and templates)
@@ -399,9 +478,10 @@ gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatena
  */
 gulp.task('build', done => runSequence(
   'production',
-  'clean:admin',
-  'clean:overrides',
+  // 'clean:admin',
+  'clone:default_plugins',
   'build:client',
+  'clean:overrides',
   done
   )
 );
@@ -413,8 +493,10 @@ gulp.task('build', done => runSequence(
  * outputFolder = g3w.admin_overrides_folder
  */
 gulp.task('dev', done => runSequence(
-  'clean:admin',
+  // 'clean:admin',
   'clean:overrides',
+  'clone:default_plugins',
+  'build:dev_plugins',
   'build:client',
   'browser-sync',
   done
@@ -472,11 +554,7 @@ gulp.task('version', function () {
 // Backward compatibilities (v3.x)
 gulp.task('g3w-admin',                           ['build']);
 gulp.task('g3w-admin-plugins-select',            ['build:plugins']);
-gulp.task('g3w-admin-client:static',             ['build:static']);
-gulp.task('g3w-admin-client:template',           ['build:templates']);
 gulp.task('g3w-admin-client',                    ['g3w-admin']);
 gulp.task('g3w-admin:plugins',                   ['build:plugins']);
-gulp.task('g3w-admin:static',                    ['build:static']);
-gulp.task('g3w-admin:templates',                 ['build:templates']);
 gulp.task('serve',                               ['dev']);
 gulp.task('default',                             ['dev']);

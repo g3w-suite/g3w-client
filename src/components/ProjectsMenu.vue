@@ -34,51 +34,69 @@ const t = require('core/i18n/i18n.service').t;
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
 export default {
+
   data() {
     return {
       state: null,
       loading: false
     }
   },
+
   methods: {
+
     trigger(item) {
-      if (item.cbk) {
-        //set full screen modal
-        GUI.showFullModal({
-          show: true
-        });
-        GUI.setLoadingContent(true);
-        const {gid} = item;
-        item.cbk.call(item, {
-          gid
-        }).then(promise => {
-            //changeProject is a setter so it return a promise
-            promise
-              .then(project=>document.title = project.state.html_page_title)
-              .fail(() => {
-                GUI.notify.error("<h4>" + t("error_map_loading") + "</h4>" +
-                  "<h5>"+ t("check_internet_connection_or_server_admin") + "</h5>");
-              })
-              .always(() => {
-                GUI.showFullModal({
-                  show: false
-                });
-                GUI.setLoadingContent(false);
-              })
-          })
-      }
-      else if (item.href) window.open(item.href, '_blank');
+      if (item.cbk)        this._initCallback(item);
+      else if (item.href)  window.open(item.href, '_blank');
       else if (item.route) GUI.goto(item.route);
-      else console.log("No action for "+item.title);
+      else                 console.log("No action for "+item.title);
     },
+
+    /**
+     * @since 3.8.0 
+     */
+    _initCallback(item) {
+      this._toggleModal(true);
+      item.cbk
+        .call(item, { gid: item.gid })
+        .then(promise => { // changeProject is a setter so it returns a promise
+          promise
+            .then(project => { if (project) document.title = project.state.html_page_title })
+            .fail(() => { GUI.notify.error("<h4>" + t("error_map_loading") + "</h4>" + "<h5>"+ t("check_internet_connection_or_server_admin") + "</h5>"); })
+            .always(() => { this._toggleModal(false); })
+        });
+    },
+
+    /**
+     * @since 3.8.0 
+     */
+    _toggleModal(state) {
+      GUI.showFullModal({ show: state });
+      GUI.setLoadingContent(state);
+    },
+
+    /**
+     * @TODO extract as utility function (almost the same as `components/ChangeManpMenu::_setSrc(src)`) 
+     */
     logoSrc(src) {
       let imageSrc;
-      if (src) {
-        imageSrc= src.indexOf(ProjectsRegistry.config.mediaurl) !== -1 ? src : (src.indexOf('static') === -1 && src.indexOf('media') === -1) ?
-          `${ProjectsRegistry.config.mediaurl}${src}`: fakeImage;
-      } else imageSrc = fakeImage;
-      return this.$options.host && `${this.$options.host}${imageSrc}` || imageSrc;
-    }
-  }
+      const host = this.$options.host || '';
+      const has_media = src && (-1 !== src.indexOf(ProjectsRegistry.config.mediaurl));
+      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'))
+
+      if (!src) {
+        imageSrc = fakeImage
+      } else if(has_media) {
+        imageSrc = src;
+      } else if(not_static) {
+        imageSrc = `${ProjectsRegistry.config.mediaurl}${src}`;
+      } else {
+        imageSrc = fakeImage
+      }
+  
+      return `${host}${imageSrc}`;
+    },
+
+  },
+
 };
 </script>

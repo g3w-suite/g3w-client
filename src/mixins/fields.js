@@ -6,8 +6,9 @@
 export default {
   methods: {
     getFieldService(){
-      if (this._fieldsService === undefined)
+      if (undefined === this._fieldsService) {
         this._fieldsService = require('gui/fields/fieldsservice');
+      }
       return this._fieldsService;
     },
     getFieldType(field) {
