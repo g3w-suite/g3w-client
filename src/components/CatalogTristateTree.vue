@@ -187,32 +187,10 @@
 import LayerLegend from 'components/CatalogLayerLegend.vue';
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ClickMixin from 'mixins/click';
 import GUI from 'services/gui';
 
 const { downloadFile } = require('core/utils/utils');
-
-/**
- * Store `click` and `doubleclick` events on a single vue element.
- *
- * @see https://stackoverflow.com/q/41303982
- */
-const CLICK_EVENT = {
-  count: 0,                                   // count click events
-  timeoutID: null,                            // timeoutID return by setTimeout Function
-  handleClick(callback, context) {
-    CLICK_EVENT.count += 1;                   // increment click count
-    if (!CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
-      CLICK_EVENT.timeoutID = setTimeout(() => {
-        callback.call(context);
-        CLICK_EVENT.reset();
-      }, 300);
-    }
-  },
-  reset() {
-    CLICK_EVENT.count = 0;
-    CLICK_EVENT.timeoutID = null;
-  }
-};
 
 export default {
   props : [
@@ -230,6 +208,7 @@ export default {
   components: {
     'layerlegend': LayerLegend
   },
+  mixins: [ClickMixin],
   data() {
     return {
       expanded: this.layerstree.expanded,
@@ -243,8 +222,8 @@ export default {
 
     /**
      * @returns {boolean} whether to display total number of features for current layer
-     * 
-     * @since 3.8.0 
+     *
+     * @since 3.8.0
      */
     showfeaturecount() {
       return "undefined" !== typeof this.layerstree.featurecount;
@@ -424,7 +403,7 @@ export default {
         layerObject.visible = checked;
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
       }
-      
+
       // case project layer (eg. qgis layer)
       else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
@@ -466,7 +445,7 @@ export default {
 
     /**
      * Select legend item
-     * 
+     *
      * @fires CatalogEventHub~treenodeexternalselected
      * @fires CatalogEventHub~treenodeselected
      */
@@ -510,18 +489,13 @@ export default {
      * @since v3.8
      */
      onTreeItemClick() {
-      if (this.isGroup || this.isTable) { // Skip if TOC item is a Group or Table layer.
-        return;
-      }
-      CLICK_EVENT.handleClick(() => {
-        switch(CLICK_EVENT.count) {
-          case 1: this.select(); break;
-          case 2: this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree); break;
-        }
+      this.handleClick({
+        '1': () => !this.isTable && !this.isGroup && this.select(),
+        '2': () => !this.isTable && this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
       }, this);
     },
 
-    triClass () {
+    triClass() {
       return this.g3wtemplate.getFontClass(this.layerstree.checked ? 'check' : 'uncheck');
     },
 
