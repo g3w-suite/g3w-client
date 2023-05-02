@@ -358,76 +358,6 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
 };
 
 /**
- * @param data
- * @param options
- * 
- * @returns {Promise<*>}
- * 
- * @since 3.8.0
- */
-proto.parse_search_1n = async function(data, options) {
-  const { search_endpoint, feature_count} = options;
-
-  const { features = [] } = data.data[0] || {};
-
-  // check if has features on result
-  if (!features.length) {
-    DataRouterService.showEmptyOutputs();
-  }
-
-  const relation = this.project.getRelationById(this.config.options.search_1n_relationid);
-  if (relation) {
-    const inputs = [];
-
-    const uniqueValues = new Set();
-    features.forEach(feature => {
-      const value = feature.getProperties()[relation.fieldRef.referencingField];
-      if (!uniqueValues.has(value)) {
-        uniqueValues.add(value);
-        inputs.push({ attribute:relation.fieldRef.referencedField, logicop: "OR", operator: "eq", value });
-      }
-    });
-
-    const layer = this.project.getLayerById(relation.referencedLayer);
-    data = await DataRouterService.getData('search:features', {
-      inputs: {
-        layer,
-        search_endpoint,
-        filter: createFilterFormInputs({
-          layer,
-          search_endpoint,
-          inputs
-        }),
-        formatter: 1,
-        feature_count
-      },
-      outputs: {
-        title: this.state.title
-      }
-    });
-  }
-  return data;
-}
-
-/**
- * @private 
- */
-function parse_search_by_returnType(data, returnType) {
-  if('search' === returnType) { 
-    GUI.closeContent();
-    // in case of api get first response on array
-    data = data.data[0].data;
-    if (isEmptyObject(data)) {
-      DataRouterService.showCustomOutputDataPromise(Promise.resolve({}));
-    } else {
-      const SearchPanel = require('gui/search/vue/panel/searchpanel');
-      (new SearchPanel(data)).show();
-    }
-  }
-  return data;
-}
-
-/**
  * Perform search
  * 
  * @param filter
@@ -466,9 +396,14 @@ proto.doSearch = async function({
       outputs: show && { title: this.state.title }
     });
     if (!show) {
-      const parsed = ('search_1n' === this.type) ?
-        await this.parse_search_1n(data, {search_endpoint, feature_count}) :
-        parse_search_by_returnType(data, this.return);
+      const parsed = ('search_1n' === this.type)
+        ? await parse_search_1n(data, {
+          search_endpoint,
+          feature_count,
+          relation_id: this.config.options.search_1n_relationid,
+          output_title: this.state.title
+        })
+        : parse_search_by_returnType(data, this.return);
       data = parsed ? parsed : data;
     } else if (this.project.state.autozoom_query && data && 1 === data.data.length) {
       this.mapService.zoomToFeatures(data.data[0].features); // autozoom_query
@@ -514,41 +449,10 @@ proto.changeInput = function({id, value} = {}) {
   this.state.forminputs.find(input => id == input.id).value = value;
 };
 
-/**
- * @private
- */
-function createOperatorObject(inputObj) {
-  for (const operator in inputObj) {
-    const input = inputObj[operator];
-    if (Array.isArray(input)) {
-      createBooleanObject(operator, input);
-      break;
-    }
-  }
-  const field = inputObj.attribute;
-  const operator = inputObj.op;
-  const evalObject = {};
-  evalObject[operator] = {};
-  evalObject[operator][field] = null;
-  return evalObject;
-}
-
-/**
- * @private 
- */
-function createBooleanObject(booleanOperator, inputs = []) {
-  const booleanObject = {};
-  booleanObject[booleanOperator] = [];
-  inputs.forEach((input) => {
-    booleanObject[booleanOperator].push(createOperatorObject(input));
-  });
-  return booleanObject;
-}
-
 proto.createQueryFilterFromConfig = function({filter}) {
   let queryFilter;
   for (const operator in filter) {
-    queryFilter = createBooleanObject(operator, filter[operator]);
+    queryFilter = create_boolean_filter(operator, filter[operator]);
   }
   return queryFilter;
 };
@@ -757,7 +661,7 @@ proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
 
 proto.getInfoFromLayer = function(ogcService) {
   return {
-    url: (ogcService === 'wfs' ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl()),
+    url: ('wfs' === ogcService ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl()),
     layers: [],
     infoFormat: this.searchLayer.getInfoFormat(ogcService),
     crs: this.searchLayer.getCrs(),
@@ -776,5 +680,89 @@ proto.getSearchLayer = function() {
 proto.clear = function() {
   this.state = null;
 };
+
+/**
+ * @private 
+ */
+function create_boolean_filter(operator, inputs = []) {
+  const boolean = { [operator]: [] };
+  inputs.forEach((input) => {
+    for (const operator in input) {
+      if (Array.isArray(input[operator])) {
+        create_boolean_filter(operator, input[operator]); // recursion step.
+        break;
+      }
+    }
+    boolean[operator].push({
+      [input.op] : {
+        [input.attribute]: null
+      }
+    });
+  });
+  return boolean;
+}
+
+/**
+ * @private 
+ */
+async function parse_search_1n(data, options) {
+  const { search_endpoint, feature_count, relation_id, output_title } = options;
+
+  const { features = [] } = data.data[0] || {};
+
+  const project = ProjectsRegistry.getCurrentProject();
+
+  // check if has features on result
+  if (!features.length) {
+    DataRouterService.showEmptyOutputs();
+  }
+
+  const relation = project.getRelationById(relation_id);
+  if (relation) {
+    const inputs = [];
+
+    const uniqueValues = new Set();
+    features.forEach(feature => {
+      const value = feature.getProperties()[relation.fieldRef.referencingField];
+      if (!uniqueValues.has(value)) {
+        uniqueValues.add(value);
+        inputs.push({ attribute:relation.fieldRef.referencedField, logicop: "OR", operator: "eq", value });
+      }
+    });
+
+    const layer = project.getLayerById(relation.referencedLayer);
+    data = await DataRouterService.getData('search:features', {
+      inputs: {
+        layer,
+        search_endpoint,
+        filter: createFilterFormInputs({ layer, search_endpoint, inputs }),
+        formatter: 1,
+        feature_count
+      },
+      outputs: {
+        title: output_title
+      }
+    });
+  }
+  return data;
+}
+
+/**
+ * @private 
+ */
+function parse_search_by_returnType(data, returnType) {
+  if ('search' === returnType) { 
+    GUI.closeContent();
+    // in case of api get first response on array
+    data = data.data[0].data;
+    if (isEmptyObject(data)) {
+      DataRouterService.showCustomOutputDataPromise(Promise.resolve({}));
+    } else {
+      const SearchPanel = require('gui/search/vue/panel/searchpanel');
+      (new SearchPanel(data)).show();
+    }
+  }
+  return data;
+}
 
 module.exports = SearchService;
