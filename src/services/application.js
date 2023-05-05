@@ -402,7 +402,7 @@ const ApplicationService = function() {
         const url =  `${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`;
         // get configuration from server (return a promise)
         try {
-          const initConfig =  await this.getInitConfig(url);
+          const initConfig =  await this.getInitConfig(`${url.replace(/\/$/, "")}`);
           //group, mediaurl, staticurl, user
           initConfig.staticurl = "../dist/"; // in development force  asset
           initConfig.clienturl = "../dist/"; // in development force  asset
@@ -598,7 +598,10 @@ const ApplicationService = function() {
     this._gid = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
     const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl);
-    history.replaceState(null, null, url);
+    // in case of url with not same origin (CORS issue) trigger an error
+    try {
+      history.replaceState(null, null, url);
+    } catch (err) {}
     location.replace(url);
     d.resolve();
     return d.promise();
