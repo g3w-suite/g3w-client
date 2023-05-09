@@ -740,7 +740,13 @@ const ApplicationService = function() {
     this._gid = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
     const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
-    history.replaceState(null, null, url);
+    /**
+     * @since 3.7.15
+     */
+    // in case of url with not same origin (CORS issue) trigger an error
+    try {
+      history.replaceState(null, null, url);
+    } catch (err) {}
     location.replace(url);
     d.resolve();
     return d.promise();
