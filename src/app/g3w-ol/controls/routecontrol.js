@@ -2,10 +2,11 @@ import ApplicationState from 'store/application-state';
 import ScriptsRegister from 'store/scripts';
 import GUI from 'services/gui';
 const utils = require('core/utils/ol');
-const {areCoordinatesEqual} = require('core/utils/geo');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
+
+const TRAVELMODES = ['DRIVING', 'WALKING']
 
 const RouteControl = function(options={}) {
 
@@ -18,8 +19,7 @@ const RouteControl = function(options={}) {
       return [new ol.style.Style({
         stroke: new ol.style.Stroke({
           color: 'blue',
-          width: 3,
-          lineDash: [10, 10]
+          width: 3
         })
       }),
         //Implement style for LineString vertices
@@ -37,6 +37,8 @@ const RouteControl = function(options={}) {
         })]
     }
   });
+
+  this.travelMode = TRAVELMODES[0];
 
   const source = new ol.source.Vector();
 
@@ -97,7 +99,40 @@ const RouteControl = function(options={}) {
     interactionClass: ol.interaction.Draw,
     interactionClassOptions: {
       source,
-      type: 'Point'
+      type: 'Point',
+      condition(event){
+        //draw point only if click (left mouse)
+        return event.pointerEvent.buttons === 1;
+      }
+    },
+    toggledTool: {
+      type: 'custom',
+      how: 'toggled',
+      title: 'Route Mode', // @TODO translation
+      iconClass:  GUI.getFontClass('route'),
+      component: {
+        data() {
+          this.travelModes = TRAVELMODES;
+          return {
+            travelMode: 'DRIVING'
+          }
+        },
+        template: `
+          <div style="width: 100%; padding: 5px;">
+            <select ref="select" style="width: 100%"  :search="false" v-select2="'travelMode'">
+              <option v-for="travelMode in travelModes">{{travelMode}}</option>
+            </select>
+          </div>`,
+        watch: {
+          'travelMode': travelMode => this.setTravelMode(travelMode)
+        },
+        created() {
+          GUI.setCloseUserMessageBeforeSetContent(false);
+        },
+        beforeDestroy() {
+          GUI.setCloseUserMessageBeforeSetContent(true);
+        }
+      }
     }
   };
 
@@ -176,6 +211,11 @@ proto.setMap = function(map) {
   });
 };
 
+proto.setTravelMode = function(mode){
+  this.travelMode = mode;
+  this.showRoute();
+};
+
 proto.updateRoute = function(){
   setTimeout(() => {
     this.pointsLayer.getSource().getFeatures().forEach((feature, index) => {
@@ -194,6 +234,7 @@ proto.showRoute = function(){
     this.routeLayer.getSource().clear();
     const pointsLength = this.pointsLayer.getSource().getFeatures().length;
     if (pointsLength > 1) {
+      GUI.disableApplication(true);
       const points = this.pointsLayer.getSource().getFeatures()
         .sort((featureA, featureB) => (featureA.get('position') - featureB.get('position')) )
         .map(feature => ol.proj.transform(feature.getGeometry().getCoordinates(), this.projection, 'EPSG:4326'))
@@ -209,23 +250,30 @@ proto.showRoute = function(){
         origin,
         destination,
         waypoints,
-        travelMode: 'DRIVING'
+        travelMode: this.travelMode
       };
-      directionsService.route(request,  (response, status) => {
-        if (status === 'OK') {
-          this.routeLayer
-            .getSource()
-            .addFeature(new ol.Feature({
-              geometry: new ol.geom.LineString(response.routes[0].overview_path.map(({lat, lng}) =>{
-                return ol.proj.transform([lng(), lat()], 'EPSG:4326', this.projection)
+      try {
+        directionsService.route(request,  (response, status) => {
+          if (status === 'OK') {
+            this.routeLayer
+              .getSource()
+              .addFeature(new ol.Feature({
+                geometry: new ol.geom.LineString(response.routes[0].overview_path.map(({lat, lng}) =>{
+                  return ol.proj.transform([lng(), lat()], 'EPSG:4326', this.projection)
+                }))
               }))
-            }))
+            resolve();
+          } else {
+            reject();
+          }
+        });
+      } catch(err){}
+      finally {
+        GUI.disableApplication(false);
+      }
 
-          resolve();
-        } else {
-          reject();
-        }
-      });
+    } else {
+      GUI.closeContent()
     }
   })
 };

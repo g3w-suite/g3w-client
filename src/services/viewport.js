@@ -102,7 +102,21 @@ const ViewportService = function() {
     this.state.resized[type] = bool;
   };
 
-  this.showUserMessage = function({title, subtitle, message, type, position, size, draggable, duration, textMessage=false, closable, autoclose, hooks={}}={}) {
+  this.showUserMessage = function({
+    title,
+    subtitle,
+    message,
+    type,
+    position,
+    size,
+    draggable,
+    duration,
+    textMessage=false,
+    closable,
+    autoclose,
+    hooks,
+    showIcon=true,
+    iconClass,}={}) {
     this.closeUserMessage();
     setTimeout(() => {
       this.state.usermessage.id = uniqueId();
@@ -119,6 +133,14 @@ const ViewportService = function() {
       this.state.usermessage.autoclose = autoclose;
       this.state.usermessage.closable = closable;
       this.state.usermessage.draggable = draggable;
+      /**
+       * @since 3.8.1
+       */
+      this.state.usermessage.showIcon = showIcon; // show Icon
+      /*
+      * @since 3.8.1
+      * */
+      this.state.usermessage.iconClass = iconClass; // Icon
       this.state.usermessage.hooks.header = hooks.header; // has to be a vue component or vue object
       this.state.usermessage.hooks.body = hooks.body; // has to be a vue component or vue object
       this.state.usermessage.hooks.footer = hooks.footer; // has to be a vue component or vue object

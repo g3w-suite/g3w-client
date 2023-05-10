@@ -234,39 +234,44 @@ proto.createControlTool = function(toggledTool={}) {
    *  'hover' =>  (show button tool as info help)
    * }
    */
-  const {type, component, how="toggled"} = toggledTool;
+  const {type, component, how="toggled", title, iconClass} = toggledTool;
   switch(type) {
     case 'spatialMethod':
       const method = this.getSpatialMethod();
       this.toggledTool = {
-        data() {
-          this.methods = SPATIALMETHODS;
-          return {
-            method
+        title,
+        component: {
+          data() {
+            this.methods = SPATIALMETHODS;
+            return {
+              method
+            }
+          },
+          template: `
+            <div style="width: 100%; padding: 5px;">
+              <select ref="select" style="width: 100%"  :search="false" v-select2="'method'">
+                <option v-for="method in methods">{{method}}</option>
+              </select>
+            </div>`,
+          watch: {
+            'method': method => this.setSpatialMethod(method)
+          },
+          created() {
+            GUI.setCloseUserMessageBeforeSetContent(false);
+          },
+          beforeDestroy() {
+            GUI.setCloseUserMessageBeforeSetContent(true);
           }
-        },
-        template: `
-          <div style="width: 100%; padding: 5px;">
-            <select ref="select" style="width: 100%"  :search="false" v-select2="'method'">
-              <option v-for="method in methods">{{method}}</option>
-            </select>
-          </div>`,
-        watch: {
-          'method': method => this.setSpatialMethod(method)
-        },
-        created() {
-          GUI.setCloseUserMessageBeforeSetContent(false);
-        },
-        beforeDestroy() {
-          GUI.setCloseUserMessageBeforeSetContent(true);
         }
-      };
+      }
       break;
     case 'custom':
-      this.toggledTool = component;
+    default:
+      this.toggledTool = {title, iconClass, component};
       break;
     // if we want to create a button (as info on hover)
   }
+
   switch (how) {
     case 'hover':
       this._createToolOnHoverButton();
@@ -290,12 +295,13 @@ proto._createToolOnHoverButton = function() {
 proto.showToggledTool = function(show=true) {
   if (show) {
     GUI.showUserMessage({
-      title: '',
+      title: this.toggledTool.title || '',
       type: 'tool',
       size: 'small',
+      iconClass: this.toggledTool.iconClass,
       closable: this._toolButton ? true : false,
       hooks: {
-        body: this.toggledTool
+        body: this.toggledTool.component
       }
     });
   } else GUI.closeUserMessage();

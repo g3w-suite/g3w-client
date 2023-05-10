@@ -6,7 +6,7 @@
 <template>
   <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
     <div v-if="showheader" class="usermessage-header-content">
-      <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
+      <i v-if="showIcon" class="usermessage-header-icontype" :class="iconClass || g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
         <slot name="header">
           <h4  v-if="title" v-t="title"></h4>
@@ -122,7 +122,17 @@
       closable: {
         type: Boolean,
         default: true
-      }
+      },
+      /**
+       * @since 3.8.1
+       */
+      showIcon: {
+        type: Boolean,
+        default: true
+      },
+      iconClass: {
+        type: String
+      },
     },
     computed:{
       showheader(){
