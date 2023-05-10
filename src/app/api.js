@@ -6,6 +6,10 @@ import G3W_CONSTANT from 'constant';
 
 import ApplicationState from 'store/application-state';
 import ApplicationService from 'services/application';
+/**
+ * @since 3.8.1
+ */
+import ScriptsRegister from 'store/scripts';
 
 /**
  * Single File Components
@@ -263,9 +267,9 @@ module.exports = {
 
   // G3W-SUITE debug info
   info: () => {
-    $script(
-      'https://unpkg.com/platform@1.3.6/platform.js',
-      () => {
+    ScriptsRegister.load({
+      url: 'https://unpkg.com/platform@1.3.6/platform.js',
+      callback: () => {
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
@@ -273,7 +277,8 @@ module.exports = {
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
-      });
+      }
+    })
   },
 
   // G3W-CLIENT version

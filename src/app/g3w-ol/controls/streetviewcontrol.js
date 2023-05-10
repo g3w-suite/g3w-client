@@ -1,4 +1,6 @@
 import ApplicationState from 'store/application-state';
+import ScriptsRegister from 'store/scripts';
+
 import GUI from 'services/gui';
 
 const { XHR } = require('core/utils/utils');
@@ -31,10 +33,11 @@ const StreetViewControl = function(options={}) {
     }).catch((error) => this.keyError = error.responseText);
   }
   //get script script
-  $script(`${GoogleStreetViewApiUrl}js?${this.key ? 'key=' + this.key : '' }`);
+  ScriptsRegister.load({
+    url: `${GoogleStreetViewApiUrl}js?${this.key ? 'key=' + this.key : '' }`
+  })
 
   /***/
-
   this._sv = null;
   this._panorama = null;
   this._map = null;

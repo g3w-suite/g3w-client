@@ -901,6 +901,16 @@ proto._setupControls = function() {
           this._addControlToMapControlsLeftBottom(control);
           break;
 
+        /**
+         * @since 3.8.1
+        */
+        case 'route':
+          control = this.createMapControl(controlType, {
+            options: {
+              tipLabel:'Route', //@TODO tip Label translation
+              projection: this.getProjection(),
+            }
+          });
       }
     });
     return this.getMapControls()

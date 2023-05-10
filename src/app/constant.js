@@ -563,6 +563,10 @@ export const FONT_AWESOME_ICONS = {
   crop: "fas fa-crop-alt",
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
+  /**
+   * @since 3.8.1
+   */
+  route: "fas fa-route",
 
   /**
    * @since 3.8.0
