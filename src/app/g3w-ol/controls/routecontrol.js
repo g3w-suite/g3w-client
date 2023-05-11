@@ -282,7 +282,8 @@ proto.showRoute = function(){
             pointsLength > 2 ?
                 points.slice(1, pointsLength - 1).map(([lng, lat]) => ({location: new window.google.maps.LatLng(lat, lng)})) :
                 [] ,
-        travelMode: this.travelMode
+        travelMode: this.travelMode,
+        language: ApplicationState.language,
       }
 
       try {
