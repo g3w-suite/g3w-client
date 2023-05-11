@@ -310,7 +310,7 @@ proto.showRoute = function(){
              * Register vue component events
              */
             const content = new MapRouteComponent({
-              legs: response.routes[0].legs
+              legs: response.routes[0].legs,
             });
 
             content.internalComponent.$on('zoom-to-point', (index) => this.zoomToPoint(index));

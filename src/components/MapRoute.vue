@@ -1,5 +1,5 @@
 <template>
-  <div class="maproute" style="background: #FFFFFF; padding: 5px">
+  <div class="maproute" style="background: #FFFFFF; padding: 5px; overflow: auto">
     <section class="maproute-header">
       <div class="maproute-header-info" style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
           <span
@@ -43,12 +43,31 @@
         </span>
       </div>
     </section>
+    <section class="maproute-details" style="display: flex; flex-direction: column">
+        <span @click.stop="showDetails = !showDetails" class="skin-color" style="cursor: pointer; text-align: center; font-weight: bold">Visualizza dettagli</span>
+        <div v-show="showDetails"  class="maproute-details-content">
+            <template v-for="leg in $options.legs">
+              <div v-for="step in leg.steps" style="padding: 5px; border-bottom: 2px solid #eeeeee">
+                  <div v-html="step.instructions"></div>
+                  <div style="display: flex; justify-content: flex-end">
+                      <span style="color:green; font-weight: bold">{{step.duration.text}}</span>
+                      <span>({{step.distance.text}})</span>
+                  </div>
+              </div>
+            </template>
+        </div>
+    </section>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'MapRoute'
+  name: 'MapRoute',
+  data(){
+    return {
+      showDetails: false
+    }
+  },
 };
 </script>
 <style scoped>
