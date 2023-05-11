@@ -152,11 +152,11 @@ const ViewportService = function() {
       this.state.usermessage.closable = closable;
       this.state.usermessage.draggable = draggable;
       /**
-       * @since 3.8.1
+       * @since 3.9.0
        */
       this.state.usermessage.showIcon = showIcon; // show Icon
       /*
-      * @since 3.8.1
+      * @since 3.9.0
       * */
       this.state.usermessage.iconClass = iconClass; // Icon
       this.state.usermessage.hooks.header = hooks.header; // has to be a vue component or vue object

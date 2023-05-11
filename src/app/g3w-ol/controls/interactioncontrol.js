@@ -20,7 +20,9 @@ const InteractionControl = function(options={}) {
     toggledTool,
     interactionClassOptions={},
     layers=[],
-    spatialMethod
+    spatialMethod,
+    //since 3.8.1
+    controlItems,
   } = options;
 
   /**
@@ -78,6 +80,11 @@ const InteractionControl = function(options={}) {
 
   this.toggledTool;
 
+  /**
+   * @since 3.9.0
+   */
+  this.controlItemsElement;
+
   this._interactionClassOptions = interactionClassOptions;
 
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
@@ -97,6 +104,10 @@ const InteractionControl = function(options={}) {
   // create tool
   if (toggledTool) {
     this.createControlTool(toggledTool);
+  }
+
+  if (controlItems) {
+    this.createControlItems(controlItems);
   }
 
   // set enabled
@@ -225,6 +236,15 @@ proto.disable = function() {
 };
 
 /**
+ * @since 3.9.0
+ */
+
+proto.createControlItems = function(controlItems={}){
+  const {component} = controlItems;
+  this.controlItemsElement = new Vue(component).$mount().$el;
+}
+
+/**
  * @param {{ type: {'spatialMethod' | 'custom'}, component: unknown, how: {'toggled' | 'hover'} }} toggledTool 
  */
 proto.createControlTool = function(toggledTool={}) {
@@ -234,7 +254,7 @@ proto.createControlTool = function(toggledTool={}) {
    *  'hover' =>  (show button tool as info help)
    * }
    */
-  const {type, component, how="toggled", title, iconClass, userMessageType} = toggledTool;
+  const {type, component, how="toggled", title, showIcon, iconClass, userMessageType} = toggledTool;
   switch(type) {
     case 'spatialMethod':
       const method = this.getSpatialMethod();
@@ -267,7 +287,7 @@ proto.createControlTool = function(toggledTool={}) {
       break;
     case 'custom':
     default:
-      this.toggledTool = {title, iconClass, component, userMessageType};
+      this.toggledTool = {title, component, showIcon, iconClass, userMessageType};
       break;
     // if we want to create a button (as info on hover)
   }
@@ -299,10 +319,11 @@ proto.showToggledTool = function(show=true) {
       type: this.toggledTool.userMessageType ||'tool',
       size: 'small',
       iconClass: this.toggledTool.iconClass,
+      showIcon: this.toggledTool.showIcon,
       closable: this._toolButton ? true : false,
       hooks: {
         body: this.toggledTool.component
-      }
+      },
     });
   } else GUI.closeUserMessage();
 };
@@ -391,6 +412,17 @@ proto.toggle = function(toggled = !this._toggled) {
 
   if (undefined === this._toolButton && this.toggledTool) {
     this.showToggledTool(this._toggled);
+  }
+
+  /**
+   * @since 3.9.0
+   */
+  if (this.controlItemsElement) {
+    if (toggled) {
+      GUI.getService('map').showMapControlsItems(this.controlItemsElement);
+    } else {
+      GUI.getService('map').hideMapControlsItems();
+    }
   }
 
   this.dispatchEvent({ type: 'toggled', toggled });

@@ -10,6 +10,9 @@
 
   <div :id="target" class="g3w-map">
 
+    <!-- SINCE 3.8.1 MAP CONTROL ITEMS   -->
+    <div id="map-control-items" class="skin-border-color"></div>
+
     <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
     <div
       ref="g3w-map-controls"
@@ -100,5 +103,12 @@ export default {
     bottom: 75px;
     left: 10px;
     z-index: 1;
+  }
+
+  #map-control-items {
+    position: absolute;
+    z-index: 1;
+    top: 5px;
+    border: 2px solid;
   }
 </style>

@@ -86,7 +86,7 @@ const RouteControl = function(options={}) {
             image: new ol.style.Circle({
               radius: 6,
               stroke: new ol.style.Stroke({
-                color: 'black',
+                color: this.travelMode === 'TRANSIT' ? 'transparent' : 'black',
                 width: 4
               })
             })
@@ -95,6 +95,7 @@ const RouteControl = function(options={}) {
     }
   })
 
+  // projection of the map
   this.projection = options.projection;
 
   const _options = {
@@ -112,50 +113,47 @@ const RouteControl = function(options={}) {
         return event.pointerEvent.buttons === 1;
       }
     },
-    toggledTool: {
-      type: 'custom',
-      userMessageType: 'tool',
-      how: 'toggled',
-      title: 'Route Mode', // @TODO translation
-      iconClass:  GUI.getFontClass('route'),
+    /**
+     * @since 3.9.0
+     */
+    controlItems: {
       component: {
-        data() {
-          return {
-            travelMode: TRAVELMODES[0].value,
-            travelModes: TRAVELMODES
-          }
-        },
-        template: `
-          <div style="width: 100%; padding: 5px;">
-          <section style="display: flex; border-radius: 3px; border: 1px solid #eeeeee">
-            <span v-for="mode in travelModes" :key="mode.value" 
-              @click.stop="setTravelMode(mode.value)"    
-              :style="{backgroundColor: mode.value === travelMode ? '#eeeeee' : 'transparent'}"    
-              :class="{'skin-color': mode.value === travelMode}"    
-              style="padding: 10px; margin: 5px; border-radius: 3px">
-                <i 
-                  style="font-size: 1.3em; cursor: pointer" 
-                  :class="g3wtemplate.getFontClass(mode.iconClass)">
-                </i>
-            </span>
-          </section>
-            
+          data() {
+            return {
+              travelMode: TRAVELMODES[0].value,
+              travelModes: TRAVELMODES
+            }
+          },
+          template: `
+          <div style="background: #FFFFFF; border-radius: 3px;">
+            <section style="display: flex; border-radius: 3px; border: 1px solid #eeeeee">
+              <span v-for="mode in travelModes" :key="mode.value" 
+                @click.stop="setTravelMode(mode.value)"    
+                :style="{backgroundColor: mode.value === travelMode ? '#cccccc' : 'transparent'}"    
+                :class="{'skin-color': mode.value === travelMode}"    
+                style="padding: 10px; margin: 5px; border-radius: 3px">
+                  <i
+                    style="font-size: 1.3em; width: 20px; text-align: center; cursor: pointer" 
+                    :class="g3wtemplate.getFontClass(mode.iconClass)">
+                  </i>
+              </span>
+            </section>
           </div>`,
-        methods: {
-          setTravelMode(travelMode){
-           this.travelMode = travelMode;
+          methods: {
+            setTravelMode(travelMode){
+              this.travelMode = travelMode;
+            }
+          },
+          watch: {
+            'travelMode': travelMode => this.setTravelMode(travelMode)
+          },
+          created() {
+            GUI.setCloseUserMessageBeforeSetContent(false);
+          },
+          beforeDestroy() {
+            GUI.setCloseUserMessageBeforeSetContent(true);
           }
-        },
-        watch: {
-          'travelMode': travelMode => this.setTravelMode(travelMode)
-        },
-        created() {
-          GUI.setCloseUserMessageBeforeSetContent(false);
-        },
-        beforeDestroy() {
-          GUI.setCloseUserMessageBeforeSetContent(true);
         }
-      }
     }
   };
 
@@ -226,6 +224,7 @@ proto.setMap = function(map) {
  */
 proto.setTravelMode = function(mode){
   this.travelMode = mode;
+  this.pointsLayer.getSource().dispatchEvent('change');
   this.showRoute();
 };
 
@@ -260,6 +259,7 @@ proto.deletePoint = function(index){
   })
 };
 
+
 /**
  * Method to show StreetView depending of key and keyError
  * @param coordinate
@@ -270,23 +270,21 @@ proto.showRoute = function(){
     const pointsLength = this.pointsLayer.getSource().getFeatures().length;
     if (pointsLength > 1) {
       GUI.disableApplication(true);
-      const points = this.pointsLayer.getSource().getFeatures()
-        .sort((featureA, featureB) => (featureA.get('position') - featureB.get('position')) )
-        .map(feature => ol.proj.transform(feature.getGeometry().getCoordinates(), this.projection, 'EPSG:4326'))
       const directionsService = new window.google.maps.DirectionsService();
-      const origin = new window.google.maps.LatLng(points[0][1],points[0][0]);
-      const waypoints = pointsLength > 2 ? points.slice(1, pointsLength - 1).map(([lng, lat]) => {
-        return {
-          location: new window.google.maps.LatLng(lat, lng)
-        };
-      }) : [];
-      const destination = new window.google.maps.LatLng(points[pointsLength-1][1],points[pointsLength-1][0]);
+      const points = this.pointsLayer.getSource().getFeatures()
+          .sort((featureA, featureB) => (featureA.get('position') - featureB.get('position')) )
+          .map(feature => ol.proj.transform(feature.getGeometry().getCoordinates(), this.projection, 'EPSG:4326'))
+      //@TODO
       const request = {
-        origin,
-        destination,
-        waypoints,
+        origin: new window.google.maps.LatLng(points[0][1],points[0][0]),
+        destination: new window.google.maps.LatLng(points[pointsLength-1][1],points[pointsLength-1][0]),
+        waypoints: this.travelMode === 'TRANSIT' ? [] :
+            pointsLength > 2 ?
+                points.slice(1, pointsLength - 1).map(([lng, lat]) => ({location: new window.google.maps.LatLng(lat, lng)})) :
+                [] ,
         travelMode: this.travelMode
-      };
+      }
+
       try {
         directionsService.route(request,  (response, status) => {
           if (status === 'OK') {
@@ -297,18 +295,23 @@ proto.showRoute = function(){
                   return ol.proj.transform([lng(), lat()], 'EPSG:4326', this.projection)
                 }))
               }))
-            const content = new MapRouteComponent({
-              legs: response.routes[0].legs
-            });
-            /**
-             * Register vue component events
-             */
+
+            // get response route bounds
             const routeBounds = ol.proj.transformExtent([
               response.routes[0].bounds.Ha.lo,
               response.routes[0].bounds.Ua.lo,
               response.routes[0].bounds.Ha.hi,
               response.routes[0].bounds.Ua.hi
-            ], 'EPSG:4326', this.projection)
+            ], 'EPSG:4326', this.projection);
+
+
+            /**
+             * Register vue component events
+             */
+            const content = new MapRouteComponent({
+              legs: response.routes[0].legs
+            });
+
             content.internalComponent.$on('zoom-to-point', (index) => this.zoomToPoint(index));
             content.internalComponent.$on('delete-point', (index) => this.deletePoint(index));
             content.internalComponent.$on('zoom-to-route', () => {
@@ -321,6 +324,7 @@ proto.showRoute = function(){
 
             GUI.setContent({
               content,
+              closable: false,
               title: 'Map Route'
             });
             resolve();
@@ -346,6 +350,7 @@ proto.clear = function() {
   this.routeLayer.getSource().clear();
   this.pointsLayer.getSource().clear();
   this._map.removeInteraction(this.modifyInteraction);
+  GUI.closeContent();
 };
 
 proto.toggle = function(toggle) {

@@ -7,7 +7,7 @@ import G3W_CONSTANT from 'constant';
 import ApplicationState from 'store/application-state';
 import ApplicationService from 'services/application';
 /**
- * @since 3.8.1
+ * @since 3.9.0
  */
 import ScriptsRegister from 'store/scripts';
 

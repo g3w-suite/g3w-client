@@ -65,13 +65,6 @@
       color: "#222d32",
       fontWeight: "bold"
     },
-    /**
-    * @since 3.8.1
-    */
-    maptool: {
-      backgroundColor: '#FFFFFF',
-      color: "#222d32"
-    }
   };
   /**
    * Add custom style to handle different type of usermessage
@@ -87,13 +80,6 @@
       left: "40px"
     },
     loading: {},
-    /**
-    * @since 3.8.1
-    */
-    maptool: {
-      "z-index": ZINDEXES.usermessage.tool,
-      right: "50px"
-    },
   };
 
   export default {
@@ -145,7 +131,7 @@
         default: true
       },
       /**
-       * @since 3.8.1
+       * @since 3.9.0
        */
       showIcon: {
         type: Boolean,

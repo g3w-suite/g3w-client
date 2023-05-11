@@ -566,7 +566,7 @@ export const FONT_AWESOME_ICONS = {
   car: "fas fa-car",
   walking: "fas fa-walking",
   /**
-   * @since 3.8.1
+   * @since 3.9.0
    */
   route: "fas fa-route",
 
@@ -585,15 +585,15 @@ export const FONT_AWESOME_ICONS = {
    */
   share: "fas fa-share",
   /**
-   * @since 3.8.1
+   * @since 3.9.0
    */
   'circle-close': "far fa-times-circle",
   /**
-   * @since 3.8.1
+   * @since 3.9.0
    */
   'bicycle': "fas fa-bicycle",
   /**
-   * @since 3.8.1
+   * @since 3.9.0
    */
   'bus': "fas fa-bus",
 };

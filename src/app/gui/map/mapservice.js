@@ -902,7 +902,7 @@ proto._setupControls = function() {
           break;
 
         /**
-         * @since 3.8.1
+         * @since 3.9.0
         */
         case 'route':
           control = this.createMapControl(controlType, {
@@ -1136,6 +1136,20 @@ proto.setMapControlsContainer = function(mapControlDom) {
   this.state.mapcontrolDOM = mapControlDom;
 };
 
+/**
+ * @since 3.9.0
+ */
+
+proto.showMapControlsItems = function(element){
+  const mapControlItemsDom = document.getElementById('map-control-items');
+  mapControlItemsDom.hidden = false;
+  mapControlItemsDom.append(element);
+};
+
+proto.hideMapControlsItems = function(){
+  document.getElementById('map-control-items').hidden = true;
+}
+
 proto._updateMapControlsLayout = function({width, height}={}) {
   // case mobile open keyboard
   (width == 0 || height == 0) ? this.state.mapcontrolDOM.css('z-index', 0) : this.state.mapcontrolDOM.css('z-index', 1);
@@ -1183,6 +1197,9 @@ proto._updateMapControlsLayout = function({width, height}={}) {
         }
       };
       handleVerticalMapControlDOMElements();
+      document.getElementById('map-control-items')
+          .style
+          .setProperty('right', `${document.querySelector('.g3w-map-controls').getBoundingClientRect().width + 5}px`);
     } else isMobile.any && this.setMapControlsAlignement('rv');
   }
 };

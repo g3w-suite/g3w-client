@@ -5,7 +5,7 @@
           <span
             @click.stop="$emit('zoom-to-route')"
             class="action-button skin-color"
-            style="font-size: 1.5em"
+            style="font-size: 1.5em; padding: 5px;"
             :class="g3wtemplate.getFontClass('route')"></span>
           <span>
             <span style="font-size: 1.5em; font-weight: bold; color: green; margin-right: 5px;">{{Math.round($options.legs.reduce((accumulator, item)=> accumulator+=item.duration.value, 0)/60)}} min</span>

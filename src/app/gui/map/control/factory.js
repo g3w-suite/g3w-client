@@ -18,7 +18,7 @@ const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
 const ZoomHistoryControl = require('g3w-ol/controls/zoomhistorycontrol');
 const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
 /**
- * @since 3.8.1
+ * @since 3.9.0
  *
  */
 const RouteControl = require('g3w-ol/controls/routecontrol');
@@ -64,7 +64,7 @@ ControlsFactory.CONTROLS = {
    */
   'nominatim': GeocodingControl,
   /**
-   * @since 3.8.1
+   * @since 3.9.0
    *
    */
   'route': RouteControl,
