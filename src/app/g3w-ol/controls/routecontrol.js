@@ -1,12 +1,32 @@
 import ApplicationState from 'store/application-state';
 import ScriptsRegister from 'store/scripts';
 import GUI from 'services/gui';
+
+const MapRouteComponent = require('gui/maproute/vue/maproute');
 const utils = require('core/utils/ol');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
 
-const TRAVELMODES = ['DRIVING', 'WALKING']
+const TRAVELMODES = [
+  {
+    value: 'DRIVING',
+    iconClass: 'car'
+  },
+  {
+    value: 'WALKING',
+    iconClass: 'walking'
+  },
+  {
+    value: 'BICYCLING',
+    iconClass: 'bicycle'
+  },
+  {
+    value: 'TRANSIT',
+    iconClass: 'bus'
+  }
+]
+
 
 const RouteControl = function(options={}) {
 
@@ -18,27 +38,14 @@ const RouteControl = function(options={}) {
     style(){
       return [new ol.style.Style({
         stroke: new ol.style.Stroke({
-          color: 'blue',
-          width: 3
+          color: '#03a9f4',
+          width: 5
         })
-      }),
-        //Implement style for LineString vertices
-        new ol.style.Style({
-          image: new ol.style.Circle({
-            radius: 3,
-            fill: new ol.style.Fill({
-              color: 'orange',
-            })
-          }),
-          geometry: (feature) => {
-            const coordinates = feature.getGeometry().getCoordinates();
-            return new ol.geom.MultiPoint(coordinates);
-          }
-        })]
+      })]
     }
   });
 
-  this.travelMode = TRAVELMODES[0];
+  this.travelMode = TRAVELMODES[0].value;
 
   const source = new ol.source.Vector();
 
@@ -54,7 +61,7 @@ const RouteControl = function(options={}) {
               radius: 8,
               stroke: new ol.style.Stroke({
                 color: 'white',
-                width: 2
+                width: 4
               }),
               fill: new ol.style.Fill({
                 color: 'green'
@@ -67,7 +74,7 @@ const RouteControl = function(options={}) {
               radius: 8,
               stroke: new ol.style.Stroke({
                 color: 'white',
-                width: 2
+                width: 4
               }),
               fill: new ol.style.Fill({
                 color: 'red'
@@ -79,7 +86,7 @@ const RouteControl = function(options={}) {
             image: new ol.style.Circle({
               radius: 6,
               stroke: new ol.style.Stroke({
-                color: 'grey',
+                color: 'black',
                 width: 4
               })
             })
@@ -107,22 +114,38 @@ const RouteControl = function(options={}) {
     },
     toggledTool: {
       type: 'custom',
+      userMessageType: 'tool',
       how: 'toggled',
       title: 'Route Mode', // @TODO translation
       iconClass:  GUI.getFontClass('route'),
       component: {
         data() {
-          this.travelModes = TRAVELMODES;
           return {
-            travelMode: 'DRIVING'
+            travelMode: TRAVELMODES[0].value,
+            travelModes: TRAVELMODES
           }
         },
         template: `
           <div style="width: 100%; padding: 5px;">
-            <select ref="select" style="width: 100%"  :search="false" v-select2="'travelMode'">
-              <option v-for="travelMode in travelModes">{{travelMode}}</option>
-            </select>
+          <section style="display: flex; border-radius: 3px; border: 1px solid #eeeeee">
+            <span v-for="mode in travelModes" :key="mode.value" 
+              @click.stop="setTravelMode(mode.value)"    
+              :style="{backgroundColor: mode.value === travelMode ? '#eeeeee' : 'transparent'}"    
+              :class="{'skin-color': mode.value === travelMode}"    
+              style="padding: 10px; margin: 5px; border-radius: 3px">
+                <i 
+                  style="font-size: 1.3em; cursor: pointer" 
+                  :class="g3wtemplate.getFontClass(mode.iconClass)">
+                </i>
+            </span>
+          </section>
+            
           </div>`,
+        methods: {
+          setTravelMode(travelMode){
+           this.travelMode = travelMode;
+          }
+        },
         watch: {
           'travelMode': travelMode => this.setTravelMode(travelMode)
         },
@@ -138,24 +161,6 @@ const RouteControl = function(options={}) {
 
   this.modifyInteraction = new ol.interaction.Modify({
     source,
-    deleteCondition: (event) => {
-      if (ol.events.condition.doubleClick(event)) {
-        const features = this._map.getFeaturesAtPixel(event.pixel, {
-          layerFilter: (layer) =>{
-            return layer === this.pointsLayer;
-          }
-        })
-        if (features){
-          features.forEach(feature => {
-            this.pointsLayer.getSource().removeFeature(feature)
-          })
-
-          this.updateRoute();
-        }
-        return true;
-      }
-      return false;
-    }
   })
 
   this.snapInteraction = new ol.interaction.Snap({
@@ -187,6 +192,10 @@ ol.inherits(RouteControl, InteractionControl);
 
 const proto = RouteControl.prototype;
 
+/**
+ * @TODO
+ * @param map
+ */
 proto.setMap = function(map) {
   this._map = map;
   InteractionControl.prototype.setMap.call(this, map);
@@ -211,11 +220,18 @@ proto.setMap = function(map) {
   });
 };
 
+/**
+ * @TODO
+ * @param mode
+ */
 proto.setTravelMode = function(mode){
   this.travelMode = mode;
   this.showRoute();
 };
 
+/**
+ * @TODO
+ */
 proto.updateRoute = function(){
   setTimeout(() => {
     this.pointsLayer.getSource().getFeatures().forEach((feature, index) => {
@@ -224,6 +240,25 @@ proto.updateRoute = function(){
     this.showRoute();
   })
 }
+
+/**
+ * @TODO
+ * @param index
+ */
+proto.zoomToPoint = function(index){
+  GUI.getService('map').zoomToFeatures([this.pointsLayer.getSource().getFeatures()[index]])
+};
+
+/**
+ * @TODO
+ * @param index
+ */
+proto.deletePoint = function(index){
+  this.pointsLayer.getSource().removeFeature(this.pointsLayer.getSource().getFeatures()[index]);
+  setTimeout(()=>{
+    this.updateRoute();
+  })
+};
 
 /**
  * Method to show StreetView depending of key and keyError
@@ -262,6 +297,32 @@ proto.showRoute = function(){
                   return ol.proj.transform([lng(), lat()], 'EPSG:4326', this.projection)
                 }))
               }))
+            const content = new MapRouteComponent({
+              legs: response.routes[0].legs
+            });
+            /**
+             * Register vue component events
+             */
+            const routeBounds = ol.proj.transformExtent([
+              response.routes[0].bounds.Ha.lo,
+              response.routes[0].bounds.Ua.lo,
+              response.routes[0].bounds.Ha.hi,
+              response.routes[0].bounds.Ua.hi
+            ], 'EPSG:4326', this.projection)
+            content.internalComponent.$on('zoom-to-point', (index) => this.zoomToPoint(index));
+            content.internalComponent.$on('delete-point', (index) => this.deletePoint(index));
+            content.internalComponent.$on('zoom-to-route', () => {
+              GUI.getService('map').zoomToExtent(routeBounds);
+            });
+
+            /**
+             * end
+             */
+
+            GUI.setContent({
+              content,
+              title: 'Map Route'
+            });
             resolve();
           } else {
             reject();

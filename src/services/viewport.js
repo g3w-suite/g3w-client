@@ -102,6 +102,24 @@ const ViewportService = function() {
     this.state.resized[type] = bool;
   };
 
+  /**
+   * @TODO handle in clean way without specify each property
+   * @param title
+   * @param subtitle
+   * @param message
+   * @param type
+   * @param position
+   * @param size
+   * @param draggable
+   * @param duration
+   * @param textMessage
+   * @param closable
+   * @param autoclose
+   * @param hooks
+   * @param showIcon
+   * @param iconClass
+   * @returns {{textMessage: boolean, cloasable: null, autoclose: null, draggable: null, show: boolean, id: null, position: null, title: null, message: null, type: null, hooks: {footer: null, header: null, body: null}}}
+   */
   this.showUserMessage = function({
     title,
     subtitle,
@@ -114,7 +132,7 @@ const ViewportService = function() {
     textMessage=false,
     closable,
     autoclose,
-    hooks,
+    hooks={},
     showIcon=true,
     iconClass,}={}) {
     this.closeUserMessage();

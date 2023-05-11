@@ -234,7 +234,7 @@ proto.createControlTool = function(toggledTool={}) {
    *  'hover' =>  (show button tool as info help)
    * }
    */
-  const {type, component, how="toggled", title, iconClass} = toggledTool;
+  const {type, component, how="toggled", title, iconClass, userMessageType} = toggledTool;
   switch(type) {
     case 'spatialMethod':
       const method = this.getSpatialMethod();
@@ -267,7 +267,7 @@ proto.createControlTool = function(toggledTool={}) {
       break;
     case 'custom':
     default:
-      this.toggledTool = {title, iconClass, component};
+      this.toggledTool = {title, iconClass, component, userMessageType};
       break;
     // if we want to create a button (as info on hover)
   }
@@ -296,7 +296,7 @@ proto.showToggledTool = function(show=true) {
   if (show) {
     GUI.showUserMessage({
       title: this.toggledTool.title || '',
-      type: 'tool',
+      type: this.toggledTool.userMessageType ||'tool',
       size: 'small',
       iconClass: this.toggledTool.iconClass,
       closable: this._toolButton ? true : false,

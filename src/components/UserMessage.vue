@@ -4,14 +4,21 @@
 -->
 
 <template>
-  <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
+  <div class="usermessage-content"
+    :id="id"
+    :style="style"
+    :class="{'mobile': addClassMobile()}">
+
     <div v-if="showheader" class="usermessage-header-content">
       <i v-if="showIcon" class="usermessage-header-icontype" :class="iconClass || g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
         <slot name="header">
-          <h4  v-if="title" v-t="title"></h4>
-          <h4  v-else> {{ type.toUpperCase() }}</h4>
-          <h5 class="usermessage-header-subtitle" v-if="subtitle" v-t="subtitle"></h5>
+          <h4 v-if="title" v-t="title"></h4>
+          <h4 v-else> {{ type.toUpperCase() }}</h4>
+          <h5 v-if="subtitle"
+            class="usermessage-header-subtitle"
+            v-t="subtitle">
+          </h5>
         </slot>
       </div>
       <div class="usermessage-header-right">
@@ -58,6 +65,13 @@
       color: "#222d32",
       fontWeight: "bold"
     },
+    /**
+    * @since 3.8.1
+    */
+    maptool: {
+      backgroundColor: '#FFFFFF',
+      color: "#222d32"
+    }
   };
   /**
    * Add custom style to handle different type of usermessage
@@ -73,6 +87,13 @@
       left: "40px"
     },
     loading: {},
+    /**
+    * @since 3.8.1
+    */
+    maptool: {
+      "z-index": ZINDEXES.usermessage.tool,
+      right: "50px"
+    },
   };
 
   export default {
