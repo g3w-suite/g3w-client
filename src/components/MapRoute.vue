@@ -44,12 +44,22 @@
       </div>
     </section>
     <section class="maproute-details" style="display: flex; flex-direction: column">
-        <span @click.stop="showDetails = !showDetails" class="skin-color" style="cursor: pointer; text-align: center; font-weight: bold">Visualizza dettagli</span>
+        <div
+          @click.stop="showDetails = !showDetails"
+          class="maproute-details-show-hide skin-background-color lighten" style="cursor: pointer; display: flex; justify-content: space-between; padding: 3px;">
+          <span
+            style="font-weight: bold">Dettagli
+          </span>
+          <span
+            :class="[showDetails ? g3wtemplate.font['minus'] : g3wtemplate.font['plus']]"></span>
+        </div>
         <div v-show="showDetails"  class="maproute-details-content">
             <template v-for="leg in $options.legs">
-              <div v-for="step in leg.steps" style="padding: 5px; border-bottom: 2px solid #eeeeee">
+              <div v-for="step in leg.steps"
+                  style="padding: 5px; border-bottom: 2px solid #eeeeee; cursor:pointer"
+                  @click.stop="$options.showLine(step)">
                   <div v-html="step.instructions"></div>
-                  <div style="display: flex; justify-content: flex-end">
+                  <div style="display: flex; justify-content: center">
                       <span style="color:green; font-weight: bold">{{step.duration.text}}</span>
                       <span>({{step.distance.text}})</span>
                   </div>

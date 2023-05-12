@@ -311,8 +311,8 @@ proto.showRoute = function(){
              */
             const content = new MapRouteComponent({
               legs: response.routes[0].legs,
+              showLine: this.showLine.bind(this)
             });
-
             content.internalComponent.$on('zoom-to-point', (index) => this.zoomToPoint(index));
             content.internalComponent.$on('delete-point', (index) => this.deletePoint(index));
             content.internalComponent.$on('zoom-to-route', () => {
@@ -342,6 +342,17 @@ proto.showRoute = function(){
       GUI.closeContent()
     }
   })
+};
+
+/**
+ * @TODO
+ * @param polyline
+ */
+proto.showLine = function({polyline}){
+  const vertex = google.maps.geometry.encoding.decodePath(polyline.points);
+  console.log(vertex)
+  GUI.getService('map')
+    .highlightGeometry(new ol.geom.LineString(vertex.map(({lat, lng}) => ol.proj.transform([lng(), lat()], 'EPSG:4326', this.projection))), {zoom: false})
 };
 
 /**

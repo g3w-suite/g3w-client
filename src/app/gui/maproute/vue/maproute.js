@@ -10,8 +10,8 @@ const InternalComponent = Vue.extend(vueComponentOptions);
 
 const MapRouteComponent = function(options={}) {
     base(this);
-    const {legs} = options;
-    const internalComponent = new InternalComponent({legs});
+    const {legs, showLine} = options;
+    const internalComponent = new InternalComponent({legs, showLine});
     this.setInternalComponent(internalComponent);
     this.unmount = function() {
         return base(this, 'unmount');
