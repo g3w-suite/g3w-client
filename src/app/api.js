@@ -32,7 +32,6 @@ import RelationsService from 'services/relations';
 import TaskService from 'services/tasks';
 import WorkflowsStack from 'services/workflows';
 import ApiService from 'services/api';
-import RouterService from 'services/router';
 
 import GUI from 'services/gui';
 //MIXINS
@@ -116,7 +115,6 @@ module.exports = {
     ApplicationService,
     ApplicationState,
     ApiService,
-    Router: RouterService,
     i18n,
     task: {
       TaskService

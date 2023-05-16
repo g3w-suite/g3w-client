@@ -10,8 +10,6 @@ import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
 import ProjectsRegistry from 'store/projects';
 import ApiService from 'services/api';
-import ClipboardService from 'services/clipboard';
-import RouterService from 'services/router';
 import GUI from 'services/gui';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
@@ -336,13 +334,6 @@ const ApplicationService = function() {
   };
 
   /**
-   * router service
-   */
-  this.getRouterService = function() {
-    return RouterService;
-  };
-
-  /**
    * @returns {string} application proxy url 
    */
   this.getProxyUrl = function() {
@@ -354,13 +345,6 @@ const ApplicationService = function() {
    */
   this.getInterfaceOwsUrl = function() {
     return `${this._initConfig.interfaceowsurl}`;
-  };
-
-  /**
-   * clipboard service
-   */
-  this.getClipboardService = function() {
-    return ClipboardService;
   };
 
   /**
@@ -596,7 +580,6 @@ const ApplicationService = function() {
    * 7 - set current project `gid` (group id)
    * 8 - set current project EPSG (coordinate system)
    * 9 - check if application is loaded within an <IFRAME>
-   * 10 - initialize DataRouterService
    */
   this.bootstrap = function() {
     return new Promise((resolve, reject) => {
@@ -636,7 +619,6 @@ const ApplicationService = function() {
   this.postBootstrap = async function() {
     if (!this.complete) {
       try {
-        RouterService.init();
         await PluginsRegistry.init({
           pluginsBaseUrl: this._config.urls.staticurl,
           pluginsConfigs: this._config.plugins,

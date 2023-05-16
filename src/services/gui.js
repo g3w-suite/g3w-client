@@ -1,4 +1,3 @@
-import RouterService from 'services/router';
 import ComponentsRegistry from 'store/components';
 
 const { base, inherit, noop } = require('core/utils/utils');
@@ -55,9 +54,6 @@ function GUI() {
     return ComponentsRegistry.getComponents();
   };
 
-  this.goto = function(url) {
-    RouterService.goto(url);
-  };
   this.ready = function() {
     this.emit('ready');
     this.isready = true;
