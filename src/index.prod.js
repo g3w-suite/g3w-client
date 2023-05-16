@@ -9,6 +9,10 @@ import './deprecated';
 // expose global variables
 import './globals';
 
+import VueI18n from "vue-i18n";
+
+Vue.use(VueI18n);
+
 //import core
 import ApplicationState from 'store/application-state';
 
@@ -55,7 +59,10 @@ import vTToltip from 'directives/v-t-tooltip';
 import vTHtml from 'directives/v-t-html';
 import vTPlaceholder from 'directives/v-t-placeholder';
 import vTTitle from 'directives/v-t-title';
-import vT from "directives/v-t";
+/**
+ * @deprecate from 3.9.0
+ */
+//import vT from "directives/v-t";
 import vTPlugin from 'directives/v-t-plugin';
 import vPlugins from 'directives/v-plugins';
 import vOnline from 'directives/v-online';
@@ -65,7 +72,7 @@ import vDownload from 'directives/v-download';
 import { FONT_AWESOME_ICONS } from 'app/constant';
 
 const { base, inherit, toRawType } = require('core/utils/utils');
-const { t, tPlugin }               = require('core/i18n/i18n.service');
+//const { t, tPlugin }               = require('core/i18n/i18n.service');
 const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
@@ -96,8 +103,8 @@ Vue.component(Divider.name, Divider);
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
  */
-Vue.filter('t', value => t(value));
-Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
+//Vue.filter('t', value => t(value));
+//Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
 
 /**
  * Install global directives
@@ -112,7 +119,7 @@ Vue.directive('t-tooltip', vTToltip);
 Vue.directive('t-html', vTHtml);
 Vue.directive('t-placeholder', vTPlaceholder);
 Vue.directive('t-title', vTTitle);
-Vue.directive("t", vT);
+//Vue.directive("t", vT);
 Vue.directive("t-plugin", vTPlugin);
 Vue.directive("plugins", vPlugins);
 Vue.directive("online", vOnline);
@@ -160,6 +167,7 @@ Vue.use({
     };
     // include isMobile() method within all Vue instances
     Vue.mixin({
+      i18n: ApplicationState.i18n, // install i18n vue-i18n plugin to every instance
       methods: {
         isMobile () {
           return isMobile.any
@@ -340,7 +348,7 @@ const ApplicationTemplate = function({ApplicationService}) {
         self._setupInterface();
         // setup layout
         self._setupLayout();
-        //register all services fro the application
+        //register all services from the application
         self._setUpServices();
         // create templateConfig
         self.templateConfig = self._createTemplateConfig();
@@ -354,14 +362,14 @@ const ApplicationTemplate = function({ApplicationService}) {
         self._buildTemplate();
         // setup Font, Css class methods
         self._setUpTemplateDependencies(this);
-        $(document).localize();
+        //$(document).localize();
         self._setViewport(self.templateConfig.viewport);
         const skinColor = $('.navbar').css('background-color');
+        //getSkinColor
         GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
         await this.$nextTick();
-        self.emit('ready');
         self.sizes.sidebar.width = $('#g3w-sidebar').width();
-        //getSkinColor
+        self.emit('ready');
         GUI.ready();
       }
     })
@@ -388,6 +396,9 @@ const ApplicationTemplate = function({ApplicationService}) {
   // dataTable Translations and custom extentions
   this._setDataTableLanguage = function(dataTable=null) {
     const languageOptions = {
+      "language": {}
+    };
+    /*const languageOptions = {
       "language": {
         "sSearch": '',
         "searchPlaceholder": t("dosearch"),
@@ -400,7 +411,8 @@ const ApplicationTemplate = function({ApplicationService}) {
         "zeroRecords": t("dataTable.nodatafilterd"),
         "infoFiltered": ''
       }
-    };
+    };*/
+
     //set form control class to filter
     $.extend( $.fn.dataTableExt.oStdClasses, {
       "sFilterInput": "form-control search"
@@ -1107,9 +1119,9 @@ ApplicationTemplate.fail = function({ error }) {
         </template>
         <template v-else>
           <h1 class="oops">Oops!</h1>
-          <h1 class="cause">${ error || t('error_page.error') }</h1>
-          <h3 class="at-moment">${ t('error_page.at_moment') }</h3>
-          <h2 class="f5">${ t('error_page.error') }</h2>
+          <h1 class="cause">${ error || $t('error_page.error') }</h1>
+          <h3 class="at-moment">${ $t('error_page.at_moment') }</h3>
+          <h2 class="f5">${ $t('error_page.error') }</h2>
         </template>
       </div>`
     )
@@ -1129,10 +1141,10 @@ ApplicationService.init()
     app.init();
   })
   .catch(({ error=null, language }) => {
+    console.log(error)
     if (error) {
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
-    console.error(error);
     ApplicationTemplate.fail({ error });
   });

@@ -1,4 +1,18 @@
 /**
+ * @since 3.9.0
+ */
+import VueI18n from "vue-i18n";
+
+const i18nConfig = {
+  locale: null, // set locale
+  fallbackLocale: 'en',
+  messages: {}
+}
+
+const i18n = new VueI18n(i18nConfig);
+
+
+/**
  * @file State and methods to query the STATE of application
  * @since v3.6
  */
@@ -53,6 +67,11 @@ const STATE = Vue.observable({
    * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
    */
   lng: 'en',
+
+  /**
+   * @since 3.9.0
+   */
+  i18n,
 
   /**
    * @FIXME add description

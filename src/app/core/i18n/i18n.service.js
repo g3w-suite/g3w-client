@@ -1,79 +1,124 @@
+import ApplicationState from 'store/application-state';
 import ApplicationService from 'services/application';
+
+const {XHR} = require('core/utils/utils');
+
 
 // main object content for i18n
 const plugins18nConfig = {};
 
-function init(config) {
-  config.appLanguages.forEach(language =>{
-    plugins18nConfig[language] = {
-      plugins: {}
-    }
-  });
-  i18next
-  .use(i18nextXHRBackend)
-  .init({
-      lng: config.language,
-      ns: 'app',
-      fallbackLng: 'en',
-      resources: config.resources
-  });
-  return new Promise((resolve, reject) => {
-    jqueryI18next.init(i18next, $, {
-      tName: 't', // --> appends $.t = i18next.t
-      i18nName: 'i18n', // --> appends $.i18n = i18next
-      handleName: 'localize', // --> appends $(selector).localize(opts);
-      selectorAttr: 'data-i18n', // selector for translating elements
-      targetAttr: 'data-i18n-target', // element attribute to grab target element to translate (if diffrent then itself)
-      optionsAttr: 'data-i18n-options', // element attribute that contains options, will load/set if useOptionsAttr = true
-      useOptionsAttr: false, // see optionsAttr
-      parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
-    });
-    addI18n(plugins18nConfig);
-    resolve();
-  })
-
+/**
+ * @TODO
+ * @param config
+ * @returns {Promise<void>}
+ */
+async function init(config) {
+  setLanguageTranslation(config.language);
 }
+
+/**
+ * @TODO
+ * @param language
+ * @returns {Promise<void>}
+ */
+async function setLanguageTranslation(language) {
+  // check if is empty object
+  if (Object.keys(ApplicationState.i18n.getLocaleMessage(language)).length === 0) {
+    const messageTranslationLanguageObject = await XHR.get({
+      url: `${ApplicationService.getConfig().urls.staticurl}client/locales/${language}.json`,
+    })
+    //add plugin eventually
+    messageTranslationLanguageObject.plugins = {}
+    ApplicationState.i18n.mergeLocaleMessage(language, messageTranslationLanguageObject);
+  }
+  //set language
+  ApplicationState.i18n.locale = language;
+}
+
+/**
+ * @since 3.9.0
+ * @param language
+ * @returns {Promise<void>}
+ */
+
+/**
+ * @TODO
+ * @returns {string}
+ */
 const getAppLanguage = function() {
   const config = ApplicationService.getConfig();
   return config.user.i18n || "en";
 };
 
-
+/**
+ * @TODO
+ * @param text
+ * @returns {*}
+ */
 // function to translate
 const t = function(text) {
-  return i18next.t(text);
+  return ApplicationState.i18n.t(text);
 };
 
+/**
+ * @TODO
+ * @param text
+ * @returns {*}
+ */
 // function to translate plugins
 const tPlugin = function(text) {
-  return i18next.t(`plugins.${text}`);
+  return ApplicationState.i18n.t(`plugins.${text}`);
 };
 
+/**
+ * @TODO
+ * @param filter
+ * @returns {function(*): *}
+ */
 const tPrefix = function(filter) {
   return function(text) {
-    return i18next.t(`${filter}.${text}`);
+    return  ApplicationState.i18n.t(`${filter}.${text}`);
   }
 };
 
+/**
+ * @TODO
+ * @param name
+ * @param config
+ */
 const addI18nPlugin = function({name, config}) {
-  for (const language in config) {
-    const pluginLanguage = plugins18nConfig[language];
-    if (pluginLanguage) pluginLanguage.plugins[name] = config[language];
-  }
-  addI18n(plugins18nConfig);
+  //TODO need a way to split also plugin language file request
+  addI18n({
+    [ApplicationState.i18n.locale]: {
+      plugins: {
+        [name]: config[ApplicationState.i18n.locale]
+      }
+    }
+  });
 };
 
+/**
+ * @TODO
+ * @param i18nObject
+ */
 const addI18n = function(i18nObject) {
   for (const language in i18nObject) {
     const languageObj = i18nObject[language];
     for (const key in languageObj)  {
-      i18next.addResource(language, 'translation', key, languageObj[key])
+      ApplicationState.i18n.mergeLocaleMessage(language, {
+        [key]:  languageObj[key]
+      })
     }
   }
 };
 
-const changeLanguage = function(language){
-  i18next.changeLanguage(language);
+/**
+ * @TODO
+ * @param language
+ * @returns {Promise<void>}
+ */
+const changeLanguage = async function(language){
+  await setLanguageTranslation(language)
 };
 
 module.exports = {

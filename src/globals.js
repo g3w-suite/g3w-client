@@ -1,4 +1,8 @@
 /**
+ * @since.3.9.0
+ */
+window.Vue = require('vue2/dist/vue.min');
+/**
  * @file Expose `window.g3wsdk` variable
  * @since v3.8
  */

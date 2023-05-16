@@ -43,8 +43,6 @@
   import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
   import sidebarService from 'services/sidebar';
 
-  const { t } = require('core/i18n/i18n.service');
-
   export default {
     name: "Sidebar",
     data() {
@@ -53,7 +51,7 @@
         panels: sidebarService.stack.state.contentsdata,
         bOpen: true,
         bPageMode: false,
-        header: t('main navigation'),
+        header: this.$t('main navigation'),
         state: sidebarService.state
       }
     },
