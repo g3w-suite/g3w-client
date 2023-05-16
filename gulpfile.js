@@ -55,7 +55,7 @@ const __H1 = __INFO + "\n";
 
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue' && dep !== 'vue2');
 
 // Built-in client plugins
 const default_plugins = [
@@ -401,7 +401,16 @@ gulp.task('build:dev_plugins', function() {
     console.log(H1__ + `Building plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __H1);
     try {
       execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
-    } catch(e) { /* soft fails on missing `gulp default` task */ }
+      /**
+       * Copy locales plugin folder to g3w.admin_overrides_folder plugin locales folder
+       * @since 3.9.0
+       *
+       */
+      //execSync(`mkdir ${g3w.admin_overrides_folder}/static/${pluginName}`)
+      //execSync(`cp -R ${g3w.pluginsFolder}/${pluginName}/locales ${g3w.admin_overrides_folder}/static/${pluginName}`)
+    } catch(e) { /* soft fails on missing `gulp default` task */
+
+    }
   }
 });
 
