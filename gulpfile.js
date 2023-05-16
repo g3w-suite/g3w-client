@@ -109,14 +109,10 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/bootstrap-treeview/js/bootstrap-treeview.js",
       g3w.assetsFolder + "/vendors/slimScroll/jquery.slimscroll.min.js",
       g3w.assetsFolder + "/vendors/fastclick/fastclick.js",
-      g3w.assetsFolder + "/vendors/vue/vue.min.js",
       g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
       g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
       g3w.assetsFolder + "/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js",
       g3w.assetsFolder + "/vendors/ismobile/ismobile.min.js",
-      g3w.assetsFolder + "/vendors/jquery-i18next/jquery-i18next.min.js",
-      g3w.assetsFolder + "/vendors/i18next/i18next.min.js",
-      g3w.assetsFolder + "/vendors/i18next/i18nextXHRBackend.min.js",
       g3w.assetsFolder + "/vendors/script/script.min.js",
       g3w.assetsFolder + "/vendors/x2js/xml2json.g3w.min.js",
       g3w.assetsFolder + "/vendors/proj4js/proj4.js",
@@ -221,6 +217,17 @@ gulp.task('browserify:app', function() {
   }
   return rebundle();
 });
+
+/**
+ * @since 3.9.0
+ * Move locale files to g3w-admin client folder
+ */
+gulp.task('locales', function(){
+  return gulp.src([
+    `${g3w.localesFolder}/*.json`,
+  ])
+    .pipe(gulp.dest(outputFolder + '/static/client/locales/'))
+})
 
 /**
  * Deploy client and vendor images
@@ -333,6 +340,10 @@ gulp.task('browser-sync', function() {
   // gulp.watch('./src/**/*.{png,jpg}',                  gulp.series('images', 'browser:reload'));
   // gulp.watch(['./src/index.html', './src/**/*.html'], gulp.series('browser:reload'));
   //
+  /**
+   * @since 3.9.0
+   */
+  gulp.watch([`${g3w.localesFolder}/*.json`], () => runSequence('locales','browser:reload'));
 
   gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
@@ -468,7 +479,7 @@ gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'selec
 /**
  * Compile and deploy local developed client file assets (static and templates)
  */
-gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'html']);
+gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'locales', 'fonts', 'images', 'less', 'datatable-images', 'html']);
 
 /**
  * [PROD] Compile and deploy client application
