@@ -10,7 +10,7 @@
         <i style="padding: 3px;" :class="g3wtemplate.getFontClass('caret-down')"></i>
         <i style="padding: 0 0 0 4px;" :class="g3wtemplate.getFontClass('eye')"></i>
         <span v-show="current_map_theme " class="treeview-label g3w-long-text" style="overflow: hidden; white-space: normal;text-overflow: ellipsis;">
-          <span style="color: #cccccc !important;" v-t:pre="'sdk.catalog.current_map_theme_prefix'">:</span>
+          <span style="color: #cccccc !important;">{{$t('sdk.catalog.current_map_theme_prefix')}}:</span>
           <span class="skin-color" style="font-size: 1.1em;">{{ current_map_theme }}</span>
         </span>
         <span v-show="!current_map_theme" class="treeview-label" style="color: #cccccc !important; font-weight: bold" >

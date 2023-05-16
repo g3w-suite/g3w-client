@@ -236,7 +236,8 @@
                 </a>
                 <div v-t="'credits.g3wSuiteDescription'" style="margin-top: 10px;"></div>
               </div>
-              <div v-t:pre ="'credits.productOf'" class="credit-title-logo g3w-credits-block" style="font-size: 1em; display: flex; justify-content: center">
+              <div class="credit-title-logo g3w-credits-block" style="font-size: 1em; display: flex; justify-content: center">
+                {{$t('credits.productOf')}}
                 <a style="text-align: center!important;" href="http://www.gis3w.it" target="_blank">
                   <img width="60" style="margin-left: 5px" :src="credits_logo" class="img-responsive center-block" alt="">
                 </a>

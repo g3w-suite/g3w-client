@@ -7,7 +7,7 @@
   <div class="query-relations" style="overflow-y:auto">
     <div class="header skin-background-color lighten"  style="margin-bottom: 10px; border-radius: 4px; padding: 5px;">
       <div class="skin-color-dark">
-        <span style="font-size: 1.1em;" v-t:pre="'sdk.relations.list_of_relations_feature'"> </span>
+        <span style="font-size: 1.1em;" >{{$t('sdk.relations.list_of_relations_feature')}} </span>
         <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span>
       </div>
     </div>
