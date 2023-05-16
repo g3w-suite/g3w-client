@@ -348,7 +348,15 @@ gulp.task('browser-sync', function() {
   gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
-  gulp.watch(g3w.pluginsFolder + '/*/plugin.js',      (file) => {
+
+  //@since 3.9.0
+  gulp.watch([`${g3w.pluginsFolder}/*/locales/*.json`],      (file) => {
+        const plugins = process.env.G3W_PLUGINS;
+        process.env.G3W_PLUGINS = path.basename(path.dirname(file.path).split('locales')[0]);
+        runSequence('deploy-locales-plugins', 'browser:reload', () => process.env.G3W_PLUGINS = plugins)
+    });
+
+  gulp.watch([`${g3w.pluginsFolder}/*/plugin.js`],      (file) => {
     const plugins = process.env.G3W_PLUGINS;
     process.env.G3W_PLUGINS = path.basename(path.dirname(file.path));
     runSequence('deploy-plugins', 'browser:reload', () => process.env.G3W_PLUGINS = plugins)
@@ -455,6 +463,23 @@ gulp.task('select-plugins', function() {
 });
 
 /**
+ * @since 3.9.0
+ */
+gulp.task('deploy-locales-plugins', function() {
+    const pluginNames  = process.env.G3W_PLUGINS.split(',');
+    const nodePath     = path;
+    const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
+    return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/locales/*.json`))
+        .pipe(rename((path, file) => {
+            const pluginName   = nodePath.basename(file.base.split('locales')[0]);
+            const staticFolder = production ? `${pluginName}/static/${pluginName}/locales/` : `${pluginName}/locales/`;
+            path.dirname = `${outputFolder}/${staticFolder}`;
+            console.log(`[G3W-CLIENT] file updated: ${path.dirname}${path.basename}${path.extname}`);
+        }))
+        .pipe(gulp.dest('.'));
+});
+
+/**
  * Deploy local developed plugins (src/plugins)
  */
 gulp.task('deploy-plugins', function() {
@@ -474,7 +499,7 @@ gulp.task('deploy-plugins', function() {
 /**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-plugins', done));
+gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-locales-plugins', 'deploy-plugins', done));
 
 /**
  * Compile and deploy local developed client file assets (static and templates)
