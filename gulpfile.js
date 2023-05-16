@@ -99,19 +99,14 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/bootbox/bootbox.min.js",
       g3w.assetsFolder + "/vendors/lodash/lodash.min.js",
       g3w.assetsFolder + "/vendors/eventemitter/EventEmitter.min.js",
-      g3w.assetsFolder + "/vendors/history/jquery.history.js",
-      g3w.assetsFolder + "/vendors/signals/signals.min.js",
-      g3w.assetsFolder + "/vendors/crossroads/crossroads.min.js",
       g3w.assetsFolder + "/vendors/moment/moment.js",
       g3w.assetsFolder + "/vendors/moment/moment-with-locales.js",
       g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js",
       g3w.assetsFolder + "/vendors/icheck/icheck.min.js",
-      g3w.assetsFolder + "/vendors/bootstrap-treeview/js/bootstrap-treeview.js",
       g3w.assetsFolder + "/vendors/slimScroll/jquery.slimscroll.min.js",
       g3w.assetsFolder + "/vendors/fastclick/fastclick.js",
       g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
       g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
-      g3w.assetsFolder + "/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js",
       g3w.assetsFolder + "/vendors/ismobile/ismobile.min.js",
       g3w.assetsFolder + "/vendors/script/script.min.js",
       g3w.assetsFolder + "/vendors/x2js/xml2json.g3w.min.js",
@@ -301,11 +296,9 @@ gulp.task('custom-less', function () {
 gulp.task('concatenate:vendor_css', function() {
   return gulp.src([
     g3w.assetsFolder + "/vendors/bootstrap/css/bootstrap.min.css",
-    g3w.assetsFolder + "/vendors/bootstrap-treeview/css/bootstrap-treeview.min.css",
     g3w.assetsFolder + "/vendors/icheck/skins/all.css",
     g3w.assetsFolder + "/vendors/magic-check/magic-check.min.css",
     g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css",
-    g3w.assetsFolder + "/vendors/hint/hint.min.css",
     g3w.assetsFolder + "/vendors/ol/css/ol.css",
     g3w.assetsFolder + "/vendors/select2/css/select2.min.css",
     g3w.assetsFolder + "/vendors/c3/css/c3.min.css",
@@ -404,12 +397,14 @@ gulp.task('build:dev_plugins', function() {
       /**
        * Copy locales plugin folder to g3w.admin_overrides_folder plugin locales folder
        * @since 3.9.0
+       * @TODO
        *
        */
-      //execSync(`mkdir ${g3w.admin_overrides_folder}/static/${pluginName}`)
-      //execSync(`cp -R ${g3w.pluginsFolder}/${pluginName}/locales ${g3w.admin_overrides_folder}/static/${pluginName}`)
-    } catch(e) { /* soft fails on missing `gulp default` task */
-
+      execSync(`mkdir ${g3w.admin_overrides_folder}/static/${pluginName} && mkdir ${g3w.admin_overrides_folder}/static/${pluginName}/js`);
+      execSync(`cp ${g3w.pluginsFolder}/${pluginName}/plugin.js ${g3w.admin_overrides_folder}/static/${pluginName}/js`);
+      execSync(`cp -R ${g3w.pluginsFolder}/${pluginName}/locales ${g3w.admin_overrides_folder}/static/${pluginName}`);
+    } catch(e) {
+      /* soft fails on missing `gulp default` task */
     }
   }
 });
