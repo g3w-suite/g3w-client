@@ -52,7 +52,6 @@ async function getPluginLanguageTranslation({name, language}= {}){
     const pluginLanguageTranslation = await XHR.get({
       url: `${ApplicationService.getConfig().urls.staticurl}${name}/locales/${language}.json`,
     })
-    //TODO need a way to split also plugin language file request
     addI18n({
       [language]: {
         plugins: {
@@ -60,7 +59,9 @@ async function getPluginLanguageTranslation({name, language}= {}){
         }
       }
     });
-  } catch(err){}
+  } catch(err){
+    //@TODO handle possible error on loading plugin translation
+  }
 }
 
 /**
