@@ -51,7 +51,6 @@ proto.mount = function(parent) {
   const iCinstance = panel.$mount();
   $(parent).append(iCinstance.$el);
   iCinstance.$nextTick(() => {
-    $(parent).localize();
     panel.onShow && panel.onShow();
   });
   return resolvedValue(true);
