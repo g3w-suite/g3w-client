@@ -4,8 +4,8 @@ import ApplicationService from 'services/application';
 const {XHR} = require('core/utils/utils');
 
 
-// main object content for i18n
-const plugins18nConfig = {};
+// array of i18n plugin
+const plugins18n = [];
 
 /**
  * @TODO
@@ -33,6 +33,29 @@ async function setLanguageTranslation(language) {
   }
   //set language
   ApplicationState.i18n.locale = language;
+}
+
+/**
+ * @since 3.9.0
+ * @param language
+ * @returns {Promise<void>}
+ */
+async function setPluginLanguageTranslation(name){
+  try {
+    const pluginLanguageTranslation = await XHR.get({
+      url: `${ApplicationService.getConfig().urls.staticurl}${name}/locales/${ApplicationState.i18n.locale}.json`,
+    })
+    //TODO need a way to split also plugin language file request
+    addI18n({
+      [ApplicationState.i18n.locale]: {
+        plugins: {
+          [name]: pluginLanguageTranslation
+        }
+      }
+    });
+  } catch(err){
+
+  }
 }
 
 /**
@@ -86,15 +109,9 @@ const tPrefix = function(filter) {
  * @param name
  * @param config
  */
-const addI18nPlugin = function({name, config}) {
-  //TODO need a way to split also plugin language file request
-  addI18n({
-    [ApplicationState.i18n.locale]: {
-      plugins: {
-        [name]: config[ApplicationState.i18n.locale]
-      }
-    }
-  });
+const addI18nPlugin = async function({name}) {
+  plugins18n.push(name);
+  setPluginLanguageTranslation(name);
 };
 
 /**
@@ -118,7 +135,10 @@ const addI18n = function(i18nObject) {
  * @returns {Promise<void>}
  */
 const changeLanguage = async function(language){
-  await setLanguageTranslation(language)
+  await setLanguageTranslation(language);
+  plugins18n.forEach(name => {
+    setPluginLanguageTranslation(name);
+  })
 };
 
 module.exports = {
