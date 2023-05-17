@@ -1176,8 +1176,8 @@ export default {
         return state.text;
       }
       return $(`
-        <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
-          <img src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
+        <div style="font-weight: bold; display:flex; align-items: center;">
+          <img style="margin-right: 3px;" src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
           <span style="margin-left: 5px;">${state.text}</span> 
         </span>`
       );
