@@ -230,12 +230,17 @@ gulp.task('locales', function(){
 gulp.task('images', function () {
   return gulp.src([
       `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
-      `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
+    /**
+     * @deprecated 3.9.0
+     * Each plugin need to get own images
+     */
+    //`${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
       '!./src/**/node_modules/**/'
     ])
     .pipe(flatten())
     .pipe(gulp.dest(outputFolder + '/static/client/images/'))
 });
+
 
 /**
  * Deploy datatables images (src/assets/vendors/datatables)
@@ -254,7 +259,10 @@ gulp.task('images', function () {
       `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
       `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
       `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
+    /**
+     * @deprecated 3.9.0
+     */
+    //`${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
       '!./src/**/node_modules/**/'
     ])
     .pipe(flatten())
@@ -397,12 +405,16 @@ gulp.task('build:dev_plugins', function() {
       /**
        * Copy locales plugin folder to g3w.admin_overrides_folder plugin locales folder
        * @since 3.9.0
-       * @TODO
+       * @TODO try a better way to work with
        *
        */
       execSync(`mkdir ${g3w.admin_overrides_folder}/static/${pluginName} && mkdir ${g3w.admin_overrides_folder}/static/${pluginName}/js`);
       execSync(`cp ${g3w.pluginsFolder}/${pluginName}/plugin.js ${g3w.admin_overrides_folder}/static/${pluginName}/js`);
+      //assests
+      //@TODO
       execSync(`cp -R ${g3w.pluginsFolder}/${pluginName}/locales ${g3w.admin_overrides_folder}/static/${pluginName}`);
+      execSync(`cp -R ${g3w.pluginsFolder}/${pluginName}/images ${g3w.admin_overrides_folder}/static/${pluginName}`);
+      execSync(`cp -R ${g3w.pluginsFolder}/${pluginName}/fonts ${g3w.admin_overrides_folder}/static/${pluginName}`);
     } catch(e) {
       /* soft fails on missing `gulp default` task */
     }
@@ -469,6 +481,40 @@ gulp.task('select-plugins', function() {
 /**
  * @since 3.9.0
  */
+gulp.task('deploy-fonts-plugins', function() {
+  const pluginNames  = process.env.G3W_PLUGINS.split(',');
+  const nodePath     = path;
+  const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
+  return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/fonts/*.{eot,ttf,woff,woff2}`))
+    .pipe(rename((path, file) => {
+      const pluginName   = nodePath.basename(file.base.split('fonts')[0]);
+      const staticFolder = production ? `${pluginName}/static/${pluginName}/static/fonts/` : `${pluginName}/static/fonts/`;
+      path.dirname = `${outputFolder}/${staticFolder}`;
+      console.log(`[G3W-CLIENT] file plugins fonts updated: ${path.dirname}${path.basename}${path.extname}`);
+    }))
+    .pipe(gulp.dest('.'));
+});
+
+/**
+ * @since 3.9.0
+ */
+gulp.task('deploy-images-plugins', function() {
+  const pluginNames  = process.env.G3W_PLUGINS.split(',');
+  const nodePath     = path;
+  const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
+  return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/images/*.{png,jpg,gif,svg}`))
+    .pipe(rename((path, file) => {
+      const pluginName   = nodePath.basename(file.base.split('images')[0]);
+      const staticFolder = production ? `${pluginName}/static/${pluginName}/images/` : `${pluginName}/images/`;
+      path.dirname = `${outputFolder}/${staticFolder}`;
+      console.log(`[G3W-CLIENT] file plugins images updated: ${path.dirname}${path.basename}${path.extname}`);
+    }))
+    .pipe(gulp.dest('.'));
+});
+
+/**
+ * @since 3.9.0
+ */
 gulp.task('deploy-locales-plugins', function() {
     const pluginNames  = process.env.G3W_PLUGINS.split(',');
     const nodePath     = path;
@@ -486,7 +532,7 @@ gulp.task('deploy-locales-plugins', function() {
 /**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('deploy-plugins', function() {
+gulp.task('deploy-plugin-plugins', function() {
   const pluginNames  = process.env.G3W_PLUGINS.split(',');
   const nodePath     = path;
   const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
@@ -501,9 +547,15 @@ gulp.task('deploy-plugins', function() {
 });
 
 /**
+ * @since 3.9.0
+ */
+
+gulp.task('deploy-plugins', ['deploy-plugin-plugins', 'deploy-locales-plugins', 'deploy-images-plugins', 'deploy-fonts-plugins']);
+
+/**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-locales-plugins', 'deploy-plugins', done));
+gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-plugins', done));
 
 /**
  * Compile and deploy local developed client file assets (static and templates)
