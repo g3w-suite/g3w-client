@@ -1,5 +1,5 @@
 /**
- * @file all contants values used on application
+ * @file all constants values used on application
  */
 
 //@ts-check

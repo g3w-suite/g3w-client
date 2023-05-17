@@ -3,6 +3,7 @@ import ApplicationService from 'services/application';
 
 const {XHR} = require('core/utils/utils');
 
+const LOCALES_PATH = 'locales';
 
 // array of i18n plugin
 const plugins18n = [];
@@ -26,7 +27,7 @@ async function getAppLanguageTranslation(language) {
   // check if is empty object
   if (Object.keys(ApplicationState.i18n.getLocaleMessage(language)).length === 0) {
     const messageTranslationLanguageObject = await XHR.get({
-      url: `${ApplicationService.getConfig().urls.staticurl}client/locales/${language}.json`,
+      url: `${ApplicationService.getConfig().urls.staticurl}client/${LOCALES_PATH}/${language}.json`,
     })
     //add plugin eventually
     messageTranslationLanguageObject.plugins = {}
@@ -50,7 +51,7 @@ function setLanguageTranslation(language) {
 async function getPluginLanguageTranslation({name, language}= {}){
   try {
     const pluginLanguageTranslation = await XHR.get({
-      url: `${ApplicationService.getConfig().urls.staticurl}${name}/locales/${language}.json`,
+      url: `${ApplicationService.getConfig().urls.staticurl}${name}/${LOCALES_PATH}/${language}.json`,
     })
     addI18n({
       [language]: {
@@ -117,7 +118,7 @@ const tPrefix = function(filter) {
  */
 const addI18nPlugin = async function({name}) {
   plugins18n.push(name);
-  getPluginLanguageTranslation({
+  await getPluginLanguageTranslation({
     name,
     language: ApplicationState.i18n.locale
   });
