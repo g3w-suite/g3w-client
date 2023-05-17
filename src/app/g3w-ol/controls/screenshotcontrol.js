@@ -1,9 +1,9 @@
+const { sameOrigin } = require('core/utils/utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
 function ScreenshotControl(options = {}) {
   this.layers = options.layers || [];
-  const visible = this.checkVisible(this.layers);
-  options.visible = visible;
+  options.visible = this.checkVisible(this.layers);
   options.name = options.name || "maptoimage";
   options.tipLabel =  options.tipLabel|| "Screenshot";
   options.label = options.label || "\ue90f";
@@ -20,9 +20,19 @@ proto.change = function(layers=[]){
   this.setVisible(visible);
 };
 
-proto.checkVisible = function(layers=[]){
-  const find = layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false);
-  return !find;
+/**
+ * Check visibility for map control based on layers URLs.
+ * 
+ * Allow to print external WMS layers only when they have
+ * same origin URL of current application in order to avoid
+ * CORS issue while getting map image.
+ * 
+ * @param {array} layers
+ * 
+ * @returns {boolean}
+ */
+proto.checkVisible = function(layers=[]) {
+  return undefined === layers.find((layer) => !sameOrigin(layer.getSource() && layer.getSource().url, location));
 };
 
 module.exports = ScreenshotControl;
