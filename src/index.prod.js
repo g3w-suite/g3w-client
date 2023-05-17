@@ -30,7 +30,7 @@ import ImageComponent from 'components/GlobalImage.vue';
 import GalleryImagesComponent from 'components/GlobalGallery.vue';
 import GeospatialComponet from 'components/GlobalGeo.vue';
 import Skeleton from 'components/GlobalSkeleton.vue';
-import BarLoader from 'components/GlobalBarLoader';
+import BarLoader from 'components/GlobalBarLoader.vue';
 import Progressbar from 'components/GlobalProgressBar.vue';
 import HelpDiv from 'components/GlobalHelpDiv.vue';
 import Resize from 'components/GlobalResize.vue'
