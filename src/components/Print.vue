@@ -9,7 +9,7 @@
       <form class="g3w-search-form form-horizonal">
         <div class="box-body">
           <transition :duration="500" name="fade">
-            <bar-loader :loading="state.loading"></bar-loader>
+            <bar-loader :loading="state.loading"/>
           </transition>
           <helpdiv message='sdk.print.help'></helpdiv>
           <label for="templates" v-t="'sdk.print.template'"></label>

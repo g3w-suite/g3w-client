@@ -24,7 +24,7 @@
             <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
             <template v-else>
               <div v-if="showRelationByField" v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading" @click.stop="handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}">
-                <bar-loader :loading="loadingRelation(getNode(row, column)).loading"></bar-loader>
+                <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
                 <div style="display: flex; align-items: center">
                   <div  class="query_relation_field">
                     <i :class="g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>

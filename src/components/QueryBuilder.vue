@@ -27,7 +27,7 @@
       <div id="query_builder_values" class="margin-between-element">
         <div id="query_builder_values_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.values'"></div>
         <div v-if="!manual" id="query_builder_values_content" class="querybuilder-content margin-between-element">
-          <bar-loader :loading="loading.values"></bar-loader>
+          <bar-loader :loading="loading.values"/>
           <table class="table table-striped content-table">
             <tbody>
               <tr v-for="value in values" @click="select.value = value" :class="{'skin-background-color lighten': select.value===value}" :key="value" @dblclick="addToExpression({value: value, type: 'value'})" style="cursor: pointer">
@@ -64,7 +64,7 @@
           </div>
         </div>
         <div id="query_builder_message" class="margin-between-element">
-          <bar-loader :loading="loading.test"></bar-loader>
+          <bar-loader :loading="loading.test"/>
           <span class="bold skin-color" v-show="message" v-t="'sdk.querybuilder.messages.number_of_features'"></span><span class="bold skin-color">{{message}}</span>
         </div>
         <div id="query_builder_footer_buttons" class="content-end margin-between-element">

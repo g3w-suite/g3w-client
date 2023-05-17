@@ -22,7 +22,7 @@
         </li>
       </ul>
       <div class="tab-content catalog-tab-content">
-        <bar-loader :loading="loading"></bar-loader>
+        <bar-loader :loading="loading"/>
         <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
           <helpdiv message="catalog_items.helptext"></helpdiv>
           <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">

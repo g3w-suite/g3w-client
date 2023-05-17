@@ -5,7 +5,7 @@
 
 <template>
   <div v-disabled="loading">
-    <bar-loader :loading="loading"></bar-loader>
+    <bar-loader :loading="loading"/>
     <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
     <helpdiv v-if="abstract" :message="abstract"></helpdiv>
     <label for="g3w-wms-layers" v-t="'sidebar.wms.panel.label.layers'"></label>

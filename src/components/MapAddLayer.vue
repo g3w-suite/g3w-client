@@ -27,7 +27,7 @@
             @input="onChangeColor"
             style="width:100%; margin:auto"
           ></chrome-picker>
-          <bar-loader :loading="loading"></bar-loader>
+          <bar-loader :loading="loading"/>
           <form id="addcustomlayer">
             <input ref="input_file" type="file" title=" " @change="onAddLayer($event)" :accept="accepted_extension">
             <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
@@ -38,7 +38,7 @@
             <p style="font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
           </form>
           <div v-if="csv_extension" style="padding: 15px; border: 1px solid grey; border-radius: 3px">
-            <bar-loader :loading="csv.loading"></bar-loader>
+            <bar-loader :loading="csv.loading"/>
             <div class="select_field">
               <label v-t="'mapcontrols.add_layer_control.select_csv_separator'" for="g3w-select-field-layer"></label>
               <select class="form-control" id="g3w-select-separator" v-model="csv.separator">
