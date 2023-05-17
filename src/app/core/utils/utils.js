@@ -632,7 +632,42 @@ const utils = {
     const matchDayInDate = datetimeformat.match(/d/g);
     if (matchDayInDate && matchDayInDate.length < 3) datetimeformat = datetimeformat.replace(/d/g, 'D');
     return datetimeformat
-  }
+  },
+
+  /**
+   * Sort an array of strings (alphabetical order)
+   * 
+   * @since 3.8.0
+   */
+  sortAlphabeticallyArray(arr) {
+    return arr.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  },
+
+  /**
+   * Sort an array of numbers (natural order)
+   * 
+   * @since 3.8.0
+   */
+  sortNumericArray(arr, ascending = true) {
+    return arr.sort((a, b) => (ascending ? (a - b) : (b - a)));
+  },
+
+  /**
+   * @param {string} url1
+   * @param {string} url2
+   *
+   * @returns {boolean} whether URLs have same origin.
+   *
+   * @since 3.8.0
+   */
+  sameOrigin(url1, url2) {
+    try {
+      return new URL(url1).origin === new URL(url2).origin;
+    } catch(err) {
+      return false
+    }
+  },
+
 };
 
 module.exports = utils;

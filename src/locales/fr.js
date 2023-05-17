@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Erreur de connexion",
+      at_moment: "Pour le moment, il n'est pas possible d'afficher la carte",
+      f5: "Appuyez sur Ctrl+F5"
+    },
     cookie_law: {
       message: "Ce site utilise des cookies pour assurer une bonne convivialité pour l'utilisateur final.",
       buttonText: "J’ai compris !"
@@ -24,6 +29,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Sélectionnez Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Signets spatiaux",
+        helptext: "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
+        input: {
+          name: "Nom"
+        },
+        sections: {
+          project:{
+            title: "Signets du projet"
+          },
+          user: {
+            title: "Signets de l'utilisateur"
+          }
+        }
+      },
       search: {
         all: 'TOUTES',
         no_results: "Aucune valeur trouvée",
@@ -246,11 +271,14 @@ export default {
             title: 'Aide - Requête par polygone',
             message:`
                 <ul>
-                  <li">Sélectionnez un layer de polygone dans la légende.</li>
+                  <li>Sélectionnez un layer de polygone dans la légende.</li>
                   <li>Vérifiez que le layer est visible dans la carte.</li>
                   <li>Cliquez sur une géométrie du layer sélectionné.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Requête par polygone de dessin"
         },
         querybybbox: {
           tooltip: 'Requête pour BBOX',
@@ -293,6 +321,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Précédent",
+          zoom_next: "Zoom Suivant"
         }
       },
       relations: {
@@ -332,6 +364,7 @@ export default {
           textarea: "textuel",
           string: "chaîne",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
@@ -376,11 +409,13 @@ export default {
     },
     logout: "Quitter",
     no_other_projects: "Il n'y a pas d'autres projets dans ce groupe de cartes",
+    no_other_groups: "Il n'y a pas d'autres groupes dans ce macrogroupe",
     yes: "Oui",
     no: "No",
     back:"Retour",
     backto: "Retour à ",
     changemap: "Changer de carte",
+    change_session: "Changer de séance",
     component: "Composant générique",
     search: "Recherches",
     no_results: "Aucun résultat trouvé",
@@ -409,6 +444,10 @@ export default {
     save: "Sauvegarder",
     cancel: "Supprimer",
     close: "Fermer",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Ne plus afficher ce message",
     enlange_reduce:"Enlarge/Reduce",
     reset_default:"Default size",
     add: "Ajouter",
@@ -431,7 +470,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL har redan lagts till.",
+        url_already_added: "WMS URL/Nom har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
@@ -483,7 +522,8 @@ export default {
         open_attribute_table: "Table d'attributs ouverte",
         show_metadata: "Métadonnées",
         styles: "Styles",
-        vector_color_menu:"Définir/changer la couleur"
+        vector_color_menu:"Définir/changer la couleur",
+        layer_opacity: "Opacité"
       }
     },
     dataTable: {
