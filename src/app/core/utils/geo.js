@@ -736,6 +736,12 @@ const geoutils = {
         featureProjection: mapCrs || epsg
       });
       if (features.length) {
+
+        // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
+        if (format instanceof ol.format.KML) {
+          features.forEach(feature => feature.unset('styleUrl'));// ref: 
+        }
+
         const vectorSource = new ol.source.Vector({
           features
         });
@@ -1609,6 +1615,38 @@ const geoutils = {
         } else dissolvedFeature = null;
     }
     return dissolvedFeature;
+  },
+
+  /**
+   * Check if `geometryToCheck` is within `geometry`
+   * 
+   * @param   {ol.geometry} geometry
+   * @param   {ol.geometry} geometryToCheck
+   * @returns {boolean}     whether `geometryToCheck` is within `geometry`
+   * 
+   * @since 3.8.0
+   */
+  within(geometry, geometryToCheck){
+    const olFromJsts = new jsts.io.OL3Parser();
+    const jstsGeometry = olFromJsts.read(geometry);
+    const jstsGeometryToCheck = olFromJsts.read(geometryToCheck);
+    return jstsGeometryToCheck.within(jstsGeometry)
+  },
+  /**
+   * Check if `geometryCheck` intersects with `geometry`
+   * 
+   * @param   {ol.geometry} geometry
+   * @param   {ol.geometry} geometryToCheck
+   * 
+   * @returns {boolean}     whether `geometryToCheck` interesects `geometry`
+   * 
+   * @since 3.8.0
+   */
+  intersects(geometry, geometryToCheck){
+    const olFromJsts = new jsts.io.OL3Parser();
+    const jstsGeometry = olFromJsts.read(geometry);
+    const jstsGeometryToCheck = olFromJsts.read(geometryToCheck);
+    return jstsGeometry.intersects(jstsGeometryToCheck)
   },
 
   /**

@@ -1,12 +1,13 @@
-// Backward compatibilies with old G3W-CLIENT plugins (eg. window variables)
-import '../deprecated';
-
 /**
- * Add babel runtime support for compiled/transpiled async functions
- * 
- * @TODO check if this still useful nowdays (IE 11 ?)
+ * @file Production entry point (app.min.js)
+ * @since v3.8
  */
-import "regenerator-runtime";
+
+// include backward compatibilies
+import './deprecated';
+
+// expose global variables
+import './globals';
 
 //import core
 import ApplicationState from 'store/application-state';
@@ -29,8 +30,8 @@ import ImageComponent from 'components/GlobalImage.vue';
 import GalleryImagesComponent from 'components/GlobalGallery.vue';
 import GeospatialComponet from 'components/GlobalGeo.vue';
 import Skeleton from 'components/GlobalSkeleton.vue';
-import BarLoader from 'components/GlobalBarLoader.vue';
-import Progressbar from 'components/GlobalProgressBar';
+import BarLoader from 'components/GlobalBarLoader';
+import Progressbar from 'components/GlobalProgressBar.vue';
 import HelpDiv from 'components/GlobalHelpDiv.vue';
 import Resize from 'components/GlobalResize.vue'
 import LayerPositions from 'components/GlobalLayerPositions.vue';
@@ -60,27 +61,15 @@ import vPlugins from 'directives/v-plugins';
 import vOnline from 'directives/v-online';
 import vDownload from 'directives/v-download';
 
-const {base, inherit, toRawType} = require('core/utils/utils');
-const {t, tPlugin} = require('core/i18n/i18n.service');
-const G3WObject = require('core/g3wobject');
-const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
+// constants
+import { FONT_AWESOME_ICONS } from 'app/constant';
 
-/**
- * Expose "g3wsdk" variable globally
- *
- * used by plugins to load sdk class and instances
- */
-window.g3wsdk = require('api');
+const { base, inherit, toRawType } = require('core/utils/utils');
+const { t, tPlugin }               = require('core/i18n/i18n.service');
+const G3WObject                    = require('core/g3wobject');
+const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
+const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
 
-require('app/dev');
-
-/**
- * EXPERIMENTAL: not yet implemented
- *
- * @see https://github.com/g3w-suite/g3w-client/issues/71
- * @see https://github.com/g3w-suite/g3w-client/issues/46
- */
-// window.g3w = window.g3wsdk;
 
 /**
  * Install global components
@@ -146,126 +135,7 @@ Vue.use({
   install(Vue) {
     // hold a list of registered fontawsome classes for current project
     Vue.prototype.g3wtemplate = {
-      font: {
-        'change-map': "fas fa-map-signs",
-        map: "far fa-map",
-        file: "fas fa-file-code",
-        marker: "fas fa-map-marker-alt",
-        relation: "fas fa-sitemap",
-        tools: "fas fa-cogs",
-        tool: "fas fa-cog",
-        search: "fas fa-search",
-        print: "fas fa-print",
-        info: "fas fa-info-circle",
-        'info-circle': "fas fa-info-circle",
-        globe: "fas fa-globe",
-        mail: "fas fa-envelope",
-        mobile: "fas fa-mobile",
-        fax: "fas fa-fax",
-        user: "fas fa-user",
-        bars: "fas fa-bars",
-        uncheck: "far fa-square",
-        check: "far fa-check-square",
-        filluncheck: "fas fa-square",
-        table: "fas fa-table",
-        trash: "fas fa-trash",
-        'trash-o':"far fa-trash-alt",
-        pencil: "fas fa-pencil-alt",
-        'ellips-h': "fas fa-ellipsis-h",
-        'ellips-v': "fas fa-ellipsis-v",
-        'arrow-up': "fas fa-chevron-up",
-        'arrow-down': "fas fa-chevron-down",
-        'arrow-left': "fas fa-chevron-left",
-        'arrow-right': "fas fa-chevron-right",
-        'resize-h': "fas fa-arrows-alt-h",
-        'resize-v': "fas fa-arrows-alt-v",
-        'resize-default': "fas fa-compress",
-        'caret-up': "fas fa-caret-up",
-        'caret-down': "fas fa-caret-down",
-        'caret-left': "fas fa-caret-left",
-        'caret-right': "fas fa-caret-right",
-        'empty-circle': "far fa-circle",
-        'cloud-upload': "fas fa-cloud-upload-alt",
-        spinner: "fas fa-spinner",
-        minus: "fas fa-minus",
-        "minus-square":"far fa-minus-square",
-        plus: "fas fa-plus",
-        'plus-circle': "fas fa-plus-circle",
-        'plus-square': "far fa-plus-square",
-        grid: "fas fa-th",
-        home: "fas fa-home",
-        folder: "fas fa-folder",
-        'sign-out': "fas fa-sign-out-alt",
-        close: "fas fa-times",
-        time: "far fa-clock",
-        calendar: "fas fa-calendar-alt",
-        list: "fas fa-list-alt",
-        link: "fas fa-link",
-        unlink: "fas fa-unlink",
-        eye: "far fa-eye",
-        'eye-close': "far fa-eye-slash",
-        save: "far fa-save",
-        pdf: "fas fa-file-pdf",
-        image: "far fa-image",
-        video: "far fa-file-video",
-        unknow:"far fa-question-circle",
-        zip: "far fa-file-archive",
-        text: "far fa-file-alt",
-        excel: "far fa-file-excel",
-        xls:"far fa-file-excel",
-        gpx: "fas fa-location-arrow",
-        gpkg: "fas fa-box-open",
-        shapefile:"fas fa-file-archive",
-        csv: "fas fa-file-csv",
-        geotiff: "fas fa-th",
-        ppt: "far fa-file-powerpoint",
-        circle: "fas fa-circle",
-        calculator: "fas fa-calculator",
-        picture: "far fa-image",
-        keyboard: "far fa-keyboard",
-        'file-download':"fas fa-file-download",
-        copy: "far fa-copy",
-        draw: "fas fa-draw-polygon",
-        chart: "fas fa-chart-bar",
-        'chart-line': "fas fa-chart-line",
-        'chart-area': "fas fa-chart-area",
-        'chart-pie': "fas fa-chart-pie",
-        run: "fas fa-play",
-        warning: "fas fa-exclamation-circle",
-        alert: "fas fa-exclamation-triangle",
-        crosshairs: "fas fa-crosshairs",
-        success: "far fa-check-circle",
-        back: "fas fa-chevron-circle-left",
-        'file-upload': "fas fa-file-upload",
-        wifi: "fas fa-wifi",
-        mouse: "fas fa-mouse",
-        'copy-paste': "far fa-copy",
-        'vector-square': "fas fa-vector-square",
-        download: "fas fa-download",
-        credits: "fas fa-euro-sign",
-        filter: "fas fa-filter",
-        plugin: "fas fa-plug",
-        invert: "fas fa-exchange-alt",
-        clear: "fas fa-broom",
-        palette: "fas fa-palette",
-        layers: "fas fa-layer-group",
-        'sign-in': "fas fa-sign-in-alt",
-        language: "fas fa-language",
-        target: "fas fa-bullseye",
-        pin: "fas fa-map-pin",
-        square: "far fa-square",
-        move: "fas fa-arrows-alt",
-        moon: "fas fa-moon",
-        sun: "fas fa-sun",
-        refresh: "fas fa-sync-alt",
-        pause:"fas fa-pause",
-        'step-backward': "fas fa-step-backward",
-        'fast-backward': "fas fa-fast-backward",
-        'step-forward': "fas fa-step-forward",
-        'fast-forward': "fas fa-fast-forward",
-        crop: "fas fa-crop-alt",
-        exit: "fas fa-door-open"
-      },
+      font: FONT_AWESOME_ICONS,
       /**
        * @TODO check if deprecated
        */
@@ -314,7 +184,7 @@ layout.loading(true);
  */
 const ApplicationTemplate = function({ApplicationService}) {
   const appLayoutConfig = ApplicationService.getConfig().layout || {};
-  // useful to build a difference layout/compoìnent based on mobile or not
+  // useful to build a difference layout/component based on mobile or not
   this._isMobile = isMobile.any;
   this._isIframe = appLayoutConfig.iframe;
   //ussefult ot not close user message when set content is called
@@ -349,6 +219,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     const WMSComponent = require('gui/wms/vue/wms');
     const MapComponent = require('gui/map/vue/map');
     const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
+    const SpatialBookMarksComponent = require('gui/spatialbookmarks/vue/spatialbookmarks');
     return {
       title: appTitle,
       placeholders: {
@@ -362,6 +233,13 @@ const ApplicationTemplate = function({ApplicationService}) {
               open: false,
               collapsible: false,
               icon: G3WTemplate.getFontClass('file'),
+              mobile: true
+            }),
+            new SpatialBookMarksComponent({
+              id: 'spatialbookmarks',
+              open: false,
+              collapsible: true,
+              icon: G3WTemplate.getFontClass('bookmark'),
               mobile: true
             }),
             new PrintComponent({
@@ -693,20 +571,25 @@ const ApplicationTemplate = function({ApplicationService}) {
   // setup Interaces
   this._setupInterface = function() {
     /* PLUBLIC INTERFACE */
+
     /* Common methods */
     GUI.layout = layout;
     GUI.getSize = ({element, what}) => {
       if (element && what)
         return this.sizes[element][what];
     };
+
     GUI.addComponent = this._addComponent.bind(this);
     GUI.removeComponent = this._removeComponent.bind(this);
+
     /* Metodos to define */
     GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
+
     //LIST
     GUI.showList = FloatbarService.showPanel.bind(FloatbarService);
     GUI.closeList = FloatbarService.closePanel.bind(FloatbarService);
     GUI.hideList = FloatbarService.hidePanel.bind(FloatbarService);
+
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
@@ -795,7 +678,6 @@ const ApplicationTemplate = function({ApplicationService}) {
       return showPanelContent;
     };
 
-
     GUI.showForm = function(options={}) {
       const {perc, split='h', push, showgoback, crumb} = options;
       const FormComponent = require('gui/form/vue/form');
@@ -816,6 +698,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       // return service
       return formService;
     };
+
     /**
      *
      * @param pop remove or not content or pop
@@ -874,12 +757,17 @@ const ApplicationTemplate = function({ApplicationService}) {
       });
       return queryResultService;
     };
+
     GUI.addNavbarItem = function(item) {
       NavbarItemsService.addItem(item)
     };
+
     GUI.removeNavBarItem = function() {};
+
     GUI.showPanel = SidebarService.showPanel.bind(SidebarService);
+
     GUI.closePanel = SidebarService.closePanel.bind(SidebarService);
+
     ///
     GUI.disableApplication = function(bool=false){
       ApplicationService.disableApplication(bool);
@@ -893,6 +781,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.closeUserMessage = function() {
       ViewportService.closeUserMessage();
     };
+
     /* ------------------ */
     GUI.notify = {
       warning(message, autoclose=false){
@@ -924,12 +813,15 @@ const ApplicationTemplate = function({ApplicationService}) {
         })
       }
     };
+
     // proxy  bootbox library
     GUI.dialog = bootbox;
+
     //modal dialog//
     GUI.showModalDialog = function(options={}) {
       return GUI.dialog.dialog(options);
     };
+
     /* spinner */
     GUI.showSpinner = function(options={}){
       const container = options.container || 'body';
@@ -942,21 +834,26 @@ const ApplicationTemplate = function({ApplicationService}) {
         $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'" style="'+ center+'"></div></div>');
       }
     };
+
     //hide spinner
     GUI.hideSpinner = function(id='loadspinner'){
       $("#"+id).remove();
     };
+
     /* end spinner*/
     /* end common methods */
 
     /*  */
+
     // FLOATBAR //
     GUI.showFloatbar = function() {
       FloatbarService.open();
     };
+
     GUI.hideFloatbar = function() {
       FloatbarService.close();
     };
+
     // SIDEBAR //
     GUI.showSidebar = this._showSidebar.bind(this);
     GUI.hideSidebar = this._hideSidebar.bind(this);
@@ -966,10 +863,15 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.reloadComponents = function(){
       ApplicationTemplate.Services.sidebar.reloadComponents();
     };
+
     // MODAL
     GUI.setModal = this._showModalOverlay.bind(this);
-    GUI.showFullModal = function({element="#full-screen-modal", show=true} = {}) {
-      show ? $(element).modal('show') : $(element).modal('hide')
+
+    /**
+     * Toggle set full screen modal
+     */
+    GUI.showFullModal = function({element = "#full-screen-modal", show = true} = {}) {
+      $(element).modal(show ? 'show' : 'hide')
     };
 
     GUI.disableSideBar = function(bool=true) {
@@ -980,6 +882,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.setPrimaryView = function(viewName) {
       ViewportService.setPrimaryView(viewName);
     };
+
     // only map
     GUI.showMap = function() {
       ViewportService.showMap();
@@ -1013,6 +916,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       GUI.setContent(options);
       return true;
     };
+
     // add component to stack (append)
     // Differences between pushContent and setContent are :
     //  - push every componet is added, set is refreshed
@@ -1023,11 +927,13 @@ const ApplicationTemplate = function({ApplicationService}) {
       options.push = true;
       GUI.setContent(options);
     };
+
     // add content to stack
     GUI.pushContextualContent = (options={}) => {
       options.perc = this._isMobile ? 100 : options.perc;
       GUI.pushContent(options);
     };
+
     // remove last content from stack
     GUI.popContent = function() {
       ViewportService.popContent();
@@ -1052,6 +958,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.changeCurrentContentTitle = function(title){
       ViewportService.changeCurrentContentTitle(title);
     };
+
     /**
      * change current content options
      * @param options: {title, crumb}
@@ -1076,12 +983,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
-      const options = {
+      const projectVueMenuComponent = new ProjectsMenuComponent({
         projects: projects && Array.isArray(projects) && projects,
         cbk,
         host
-      };
-      const projectVueMenuComponent = new ProjectsMenuComponent(options).getInternalComponent();
+      }).getInternalComponent();
       return projectVueMenuComponent.$mount().$el;
     };
 
@@ -1091,13 +997,13 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     GUI._setContent = (options={}) => {
       this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
-      options.content = options.content || null;
-      options.title = options.title || "";
-      options.push = _.isBoolean(options.push) ? options.push : false;
-      options.perc = this._isMobile ? 100 : options.perc;
-      options.split = options.split || 'h';
+      options.content     = options.content || null;
+      options.title       = options.title || "";
+      options.push        = _.isBoolean(options.push) ? options.push : false;
+      options.perc        = this._isMobile ? 100 : options.perc;
+      options.split       = options.split || 'h';
       options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
-      options.showtitle = _.isBoolean(options.showtitle) ? options.showtitle : true;
+      options.showtitle   = _.isBoolean(options.showtitle) ? options.showtitle : true;
       ViewportService.showContent(options);
     };
 
@@ -1126,24 +1032,47 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI.openProjectsMenu = function() {
-      const contentsComponent = GUI.getComponent('contents');
-      // check if is projectmenucomponent
-      if (contentsComponent.getComponentById('projectsmenu')) GUI.closeContent();
-      else {
-        if (this.isMobile()) {
-          GUI.hideSidebar();
-          $('#main-navbar.navbar-collapse').removeClass('in');
-        }
-        ApplicationTemplate.Services.sidebar.closeOpenComponents();
-        GUI.setContent({
-          content: new ProjectsMenuComponent(),
-          title: '',
-          perc: 100
-        });
+      const isProjectMenuComponent = GUI.getComponent('contents').getComponentById('projectsmenu');
+      if (isProjectMenuComponent) {
+        GUI.closeContent();
+        return;
       }
+      if (this.isMobile()) {
+        GUI.hideSidebar();
+        $('#main-navbar.navbar-collapse').removeClass('in');
+      }
+      ApplicationTemplate.Services.sidebar.closeOpenComponents();
+      GUI.setContent({
+        content: new ProjectsMenuComponent(),
+        title: '',
+        perc: 100
+      });
+    };
+
+    /**
+     * @since 3.8.0
+     */
+    GUI.openChangeMapMenu = function() {
+      const isChangeMapMenuComponent = GUI.getComponent('contents').getComponentById('changemapmenu');
+      if (isChangeMapMenuComponent) {
+        GUI.closeContent();
+        return;
+      }
+      if (this.isMobile()) {
+        GUI.hideSidebar();
+        $('#main-navbar.navbar-collapse').removeClass('in');
+      }
+      ApplicationTemplate.Services.sidebar.closeOpenComponents();
+      GUI.setContent({
+        content: new ChangeMapMenuComponent(),
+        title: '',
+        perc: 100
+      });
     }
   };
+
   base(this);
+
 };
 
 inherit(ApplicationTemplate, G3WObject);
@@ -1164,27 +1093,26 @@ ApplicationTemplate.Services = {
   floatbar: null
 };
 
-ApplicationTemplate.fail = function({language='en', error }) {
+ApplicationTemplate.fail = function({ error }) {
   layout.loading(false);
-  const error_page =  {
-    it: {
-      error: error || "Errore di connessione",
-      at_moment: "Al momento non è possibile caricare la mappa",
-      f5: "Premi Ctrl+F5"
-    },
-    en: {
-      error: error || "Connection error",
-      at_moment: "At the moment is not possible show map",
-      f5: "Press Ctrl+F5"
-    }
-  };
-  const compiledTemplate = Vue.compile(require('gui/templates/500.html'));
-  const app = new Vue({
+  new Vue({
     el: '#app',
-    ...compiledTemplate,
-    data: {
-      messages: error_page[language]
-    }
+    ...Vue.compile(
+      `<div class="error-initial-page skin-background-color">
+        <template v-if="isMobile()">
+          <h3 class="oops">Oops!</h3>
+          <h5 class="cause">${ error || t('error_page.error') }</h5>
+          <h6 class="at-moment">${ t('error_page.at_moment') }</h6>
+          <h4 class="f5">${ t('error_page.f5') }</h4>
+        </template>
+        <template v-else>
+          <h1 class="oops">Oops!</h1>
+          <h1 class="cause">${ error || t('error_page.error') }</h1>
+          <h3 class="at-moment">${ t('error_page.at_moment') }</h3>
+          <h2 class="f5">${ t('error_page.error') }</h2>
+        </template>
+      </div>`
+    )
   });
 };
 
@@ -1205,8 +1133,6 @@ ApplicationService.init()
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
-    ApplicationTemplate.fail({
-      language,
-      error
-    });
+    console.error(error);
+    ApplicationTemplate.fail({ error });
   });

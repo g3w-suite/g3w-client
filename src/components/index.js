@@ -2,6 +2,7 @@ import App from './App.vue';
 import C3XYLine from './C3XYLine.vue';
 import Catalog from './Catalog.vue';
 import CatalogChangeMapThemes from './CatalogChangeMapThemes.vue';
+import CatalogLayerContextMenu from './CatalogLayerContextMenu.vue';
 import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
@@ -29,7 +30,7 @@ import GlobalGallery from './GlobalGallery.vue';
 import GlobalGeo from './GlobalGeo.vue';
 import GlobalImage from './GlobalImage.vue';
 import GlobalLayerPositions from './GlobalLayerPositions.vue';
-import GlobalProgressBar from './GlobalProgressBar.js';
+import GlobalProgressBar from './GlobalProgressBar.vue';
 import GlobalRange from './GlobalRange.vue';
 import GlobalResize from './GlobalResize.vue';
 import GlobalResizeIcon from './GlobalResizeIcon.vue';
@@ -58,8 +59,10 @@ import InputText from './InputText.vue';
 import InputTextArea from './InputTextArea.vue';
 import InputHtml from './InputTextHtml.vue';
 import InputUnique from './InputUnique.vue';
+import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
+import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
 import MetadataProjectBBoxContent from './MetadataProjectBBoxContent.vue';
@@ -72,6 +75,7 @@ import Print from './Print.vue';
 import PrintFidAtlasValues from './PrintFidAtlasValues.vue';
 import PrintPage from './PrintPage.vue';
 import PrintSelectAtlasFieldValues from './PrintSelectAtlasFieldValues.vue';
+import ChangeMapMenu from "./ChangeMapMenu.vue";
 import ProjectsMenu from './ProjectsMenu.vue';
 import QueryBuilder from './QueryBuilder.vue';
 import QueryBuilderSearch from './QueryBuilderSearch.vue';
@@ -89,6 +93,12 @@ import RelationsPage from './RelationsPage.vue';
 import Search from './Search.vue';
 import SearchPanel from './SearchPanel.vue';
 import SearchSelect2 from './SearchSelect2.vue';
+import Sidebar from './Sidebar.vue';
+import SidebarItem from './SidebarItem.vue';
+import SidebarItemAction from './SidebarItemAction.vue';
+import SpatialBookMarkGroup from './SpatialBookMarkGroup.vue';
+import SpatialBookMarkItem from './SpatialBookMarkItem.vue';
+import SpatialBookMarks from './SpatialBookMarks.vue';
 import StreetView from './StreetView.vue';
 import Table from './Table.vue';
 import TableBody from './TableBody.vue';
@@ -107,10 +117,15 @@ export {
   C3XYLine,
   Catalog,
   CatalogChangeMapThemes,
+  CatalogLayerContextMenu,
   CatalogLayerLegend,
   CatalogLayersGroup,
   CatalogLayersLegendItems,
   CatalogTristateTree,
+  /**
+   * @since 3.8.0
+   */
+  ChangeMapMenu,
   Field,
   FieldG3W,
   FieldGallery,
@@ -163,8 +178,10 @@ export {
   InputTextArea,
   InputHtml,
   InputUnique,
+  LayerOpacityPicker,
   Map,
   MapAddLayer,
+  MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,
   MetadataProjectBBoxContent,
@@ -194,6 +211,12 @@ export {
   Search,
   SearchPanel,
   SearchSelect2,
+  Sidebar,
+  SidebarItem,
+  SidebarItemAction,
+  SpatialBookMarkGroup,
+  SpatialBookMarkItem,
+  SpatialBookMarks,
   StreetView,
   Table,
   TableBody,
