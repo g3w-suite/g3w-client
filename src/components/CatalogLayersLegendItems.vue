@@ -6,22 +6,21 @@
 <template>
   <div class="legend-item">
 
-    <figure v-for="legendurl in legendurls" :key="legendurl.url">
+    <figure v-for="legendurl in legendurls">
+        <bar-loader
+          :loading="legendurl.loading"
+        />
 
-      <bar-loader
-        :loading="legendurl.loading"
-      ></bar-loader>
+        <img
+          v-show="!legendurl.loading && !legendurl.error"
+          :src="legendurl.url"
+          @error="setError(legendurl)"
+          @load="urlLoaded(legendurl)"
+        >
 
-      <img
-        v-show="!legendurl.loading && !legendurl.error"
-        :src="legendurl.url"
-        @error="setError(legendurl)"
-        @load="urlLoaded(legendurl)"
-      >
+        <span class="divider"></span>
 
-      <span class="divider"></span>
-
-    </figure>
+      </figure>
 
   </div>
 </template>
@@ -53,12 +52,11 @@ export default {
   watch: {
 
     /**
-     * It changes when check/uncheck layer on toc
+     * It changes when change layer visibility
      */
     layers: {
       handler() {
-       //reset the legend urls array
-       this.legendurls = [];
+        this.getLegendSrc();
       },
       immediate: false
     },
@@ -85,28 +83,94 @@ export default {
       legendurl.loading = false;
     },
 
+    /**
+     * @param   {object} params    same as `src/core/layers/legend/wmslegend.js` params
+     * @param   {object} layer     layer config
+     * @returns {string|undefined} legend url of a layer (undefined if `layer.id` is not in CatalogRegistry)
+     */
     getLegendUrl(layer, params={}) {
-      const catalogLayer = CatalogLayersStoresRegistry
-        .getLayerById(layer.id);
-      return catalogLayer && catalogLayer.getLegendUrl(params, { format: 'image/png', categories: layer.categories });
+      const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      if (catalogLayer) {
+          return catalogLayer.getLegendUrl(params, {
+            all: !this.dynamic, // set true or false based on legend is dynamic or not
+            format: 'image/png',
+            categories: layer.categories
+          });
+      }
     },
 
-    async getLegendSrc(_layers) {
+    /**
+     * Build params string url to add to base url legend
+     * 
+     * @since v3.8
+     */
+    getLegendUrlParams(urlLayerName=[]){
+      let paramsUrl = '';
+      const params = {
+        LAYERS:[],
+        STYLES:[],
+        LEGEND_ON:[],
+        LEGEND_OFF:[]
+      };
+
+      urlLayerName
+        .reduce((_, layer) => {
+          params.LAYERS.push(layer.layerName);
+          params.STYLES.push(layer.style);
+          if (layer.legend_on) {
+            params.LEGEND_ON.push(layer.legend_on);
+          }
+          if (layer.legend_off) {
+            params.LEGEND_OFF.push(layer.legend_off);
+          }
+          return params;
+        }, params);
+
+      paramsUrl += `LAYERS=${encodeURIComponent(params.LAYERS.join(','))}`;
+      paramsUrl += `&STYLES=${encodeURIComponent(params.STYLES.join(','))}`;
+
+      // Add LEGEND_ON parameter
+      if (params.LEGEND_ON.length) {
+        paramsUrl += `&LEGEND_ON=${encodeURIComponent(params.LEGEND_ON.join(','))}`;
+      }
+
+      // Add LEGEND_OFF parameter
+      if (params.LEGEND_OFF.length) {
+        paramsUrl += `&LEGEND_OFF=${encodeURIComponent(params.LEGEND_OFF.join(','))}`;
+      }
+
+      if (ApplicationService.getFilterToken()) {
+        paramsUrl += `&filtertoken=${ApplicationService.getFilterToken()}`;
+      }
+
+      return paramsUrl;
+    },
+
+    /**
+     * Get legend src for visible layers
+     * 
+     * @returns {Promise<void>}
+     */
+    async getLegendSrc() {
+
+      // reset layers url
+      this.legendurls = [];
+
+      await this.$nextTick();
+
       // skip if not active
       if (!this.active) {
         return
       }
+
       const urlMethodsLayersName = {
         GET: {},
         POST: {}
       };
       const self = this;
-      this.legendurls = [];
-
-      await this.$nextTick();
 
       // filter geolayer
-      const layers = _layers.filter(layer => layer.geolayer);
+      const layers = this.layers.filter(layer => layer.geolayer);
 
       for (let i=0; i < layers.length; i++) {
         const layer = layers[i];
@@ -115,33 +179,52 @@ export default {
           (layer.source && layer.source.url) || layer.external
             ? urlMethodsLayersName.GET
             : urlMethodsLayersName[layer.ows_method];
-        const url = `${this.getLegendUrl(layer, this.legend.config)}`;
 
+        const url = `${this.getLegendUrl(layer, this.legend.config)}`;
+        // in case of no url is get
+        if ("undefined" === typeof url){
+          continue;
+        }
         if (layer.source && layer.source.url) {
           urlLayersName[url] = [];
         } else {
-          const [prefix, layerName] = url.split('LAYER=');
+          let prefix, legend_on, legend_off;
+
+          // extract LAYER from url
+          [prefix, layerName] = url.split('LAYER=');
+
+          // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
+          [prefix, legend_on] = prefix.split('LEGEND_ON=');
+          [prefix, legend_off] = prefix.split('LEGEND_OFF=');
+
           if (!urlLayersName[prefix]) {
             urlLayersName[prefix] = [];
           }
-          urlLayersName[prefix].unshift({ layerName, style: style && style.name });
+
+          urlLayersName[prefix].unshift({
+            layerName,
+            style: style && style.name,
+            legend_on:  (legend_on || '').replace('&', ''), // remove eventually &
+            legend_off: (legend_off || '').replace('&', ''),// remove eventually &
+          });
         }
 
       }
-
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
         if ('GET' === method) {
-          for (const url in urlLayersName ) {
+          for (let url in urlLayersName ) {
+            if (urlLayersName[url].length) {
+              url+=`${this.getLegendUrlParams(urlLayersName[url])}`;
+            }
             this.legendurls.push({
               loading: true,
-              url: (urlLayersName[url].length)
-                ? `${url}&LAYER=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : '' }`
-                : url,
-              error: false
+              error: false,
+              url
             })
           }
-        } else {
+        }
+        else {
           for (const url in urlLayersName ) {
             const xhr = new XMLHttpRequest();
             const econdedParams = [];
@@ -151,14 +234,13 @@ export default {
 
             params.forEach(param => {
               const [key, value] = param.split('=');
-              econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+              if (key) {
+                econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+              }
             });
 
-            params = econdedParams.join('&');
+            params = `${econdedParams.join('&')}&${this.getLegendUrlParams(urlLayersName[url])}`;
 
-            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}`;
-            params += `&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}`;
-            params += `${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
             const legendUrlObject = {
               loading: true,
               url: null,
@@ -172,9 +254,8 @@ export default {
             self.legendurls.push(legendUrlObject);
 
             xhr.onload = function() {
-              const data = this.response;
-              if (undefined !== data) {
-                legendUrlObject.url = window.URL.createObjectURL(data);
+              if (undefined !== this.response) {
+                legendUrlObject.url = window.URL.createObjectURL(this.response);
               }
               legendUrlObject.loading = false;
             };
@@ -197,19 +278,11 @@ export default {
      */
     this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
     this.mapReady = false;
+    /**
+     * listen when layer has changed style
+     */
     CatalogEventHub.$on('layer-change-style', (options={}) => {
-      let changeLayersLegend =[];
-      if (options.layerId) {
-        const layer = this.layers.find(layer => options.layerId == layer.id);
-        if (layer) {
-          changeLayersLegend.push(layer);
-        }
-      } else {
-        changeLayersLegend = this.layers;
-      }
-      if (changeLayersLegend.length) {
-        this.getLegendSrc(changeLayersLegend);
-      }
+      this.getLegendSrc();
     });
   },
 
@@ -221,7 +294,7 @@ export default {
     if (this.dynamic) {
       GUI.getService('map').on('change-map-legend-params', ()=>{
         this.mapReady = true;
-        this.getLegendSrc(this.layers);
+        this.getLegendSrc();
       });
     } else {
       this.mapReady = true;

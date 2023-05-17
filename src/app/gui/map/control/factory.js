@@ -15,6 +15,9 @@ const ScaleControl = require('g3w-ol/controls/scalecontrol');
 const OnClikControl = require('g3w-ol/controls/onclickcontrol');
 const ScreenshotControl = require('g3w-ol/controls/screenshotcontrol');
 const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
+const ZoomHistoryControl = require('g3w-ol/controls/zoomhistorycontrol');
+const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
+
 
 const ControlsFactory = {
   create(options={}) {
@@ -35,7 +38,6 @@ ControlsFactory.CONTROLS = {
   'zoom': OLControl,
   'scaleline': OLControl,
   'overview': OLControl,
-  'nominatim': GeocodingControl, // temporary fro backward compatibility
   'geocoding': GeocodingControl,
   'addlayers': AddLayersControl,
   'length': LengthControl,
@@ -44,7 +46,19 @@ ControlsFactory.CONTROLS = {
   'scale': ScaleControl,
   'onclick': OnClikControl,
   'screenshot': ScreenshotControl,
-  'geoscreenshot': geoScreenshotControl
+  'geoscreenshot': geoScreenshotControl,
+  'querybydrawpolygon': QueryByDrawPolygonControl,
+  
+  /**
+   * @since 3.8.0
+   */
+  'zoomhistory': ZoomHistoryControl,
+  
+  /**
+   * @deprecated since version ??. Will be removed in version ??. Use 'geocoding' control instead.
+   */
+  'nominatim': GeocodingControl,
+
 };
 
 module.exports = ControlsFactory;
