@@ -595,7 +595,12 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.removeComponent = this._removeComponent.bind(this);
 
     /* Metodos to define */
-    GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
+    GUI.getResourcesUrl = () => ApplicationService.getConfig().resourcesurl;
+
+    /**
+     * @since 3.9.0
+     */
+    GUI.getStaticUrl = () => ApplicationService.getConfig().urls.staticurl;
 
     //LIST
     GUI.showList = FloatbarService.showPanel.bind(FloatbarService);
