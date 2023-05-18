@@ -26,7 +26,7 @@
         { bold : isGroup },
          g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
-      @click="expandCollapse"
+      @click.stop="expandCollapse"
       class="root collapse-expande-collapse-icon">
     </span>
 
@@ -56,7 +56,7 @@
         v-if="layerstree.external && layerstree.removable"
         style="color: red; padding-left: 1px;"
         :class="g3wtemplate.getFontClass('trash')"
-        @click="removeExternalLayer(layerstree.name, layerstree._type)"
+        @click.stop="removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
       <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
