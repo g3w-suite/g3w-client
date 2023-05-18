@@ -102,7 +102,6 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/moment/moment-with-locales.js",
       g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js",
       g3w.assetsFolder + "/vendors/icheck/icheck.min.js",
-      g3w.assetsFolder + "/vendors/fastclick/fastclick.js",
       g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
       g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
       g3w.assetsFolder + "/vendors/ismobile/ismobile.min.js",
