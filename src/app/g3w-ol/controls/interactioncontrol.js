@@ -20,7 +20,8 @@ const InteractionControl = function(options={}) {
     toggledTool,
     interactionClassOptions={},
     layers=[],
-    spatialMethod
+    spatialMethod,
+    queryResultsLayer=false,
   } = options;
 
   /**
@@ -77,6 +78,11 @@ const InteractionControl = function(options={}) {
   this.spatialMethod = spatialMethod;
 
   this.toggledTool;
+
+  /**
+   * @since3.8.1
+   */
+  this._queryResultsLayer = queryResultsLayer;
 
   this._interactionClassOptions = interactionClassOptions;
 
@@ -381,6 +387,10 @@ proto.toggle = function(toggled = !this._toggled) {
     this.removeClassToControlBottom('g3w-ol-toggled');
     this._toolButton && this._toolButton.hide();
     this.toggledTool && this.showToggledTool(false);
+    /**
+     * @since 3.8.1
+     */
+    this._queryResultsLayer && GUI.getService('queryresults').clearResultsQueryLayer();
   }
 
   if (undefined === this._toolButton && this.toggledTool) {

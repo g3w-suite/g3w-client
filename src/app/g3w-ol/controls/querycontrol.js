@@ -15,6 +15,10 @@ const QueryControl = function(options = {}){
     label: options.label || "\uea0f",
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
+    /**
+     * @since 3.8.1
+     */
+    queryResultsLayer: true,
   };
 
   options = utils.merge(options, _options);
@@ -36,7 +40,7 @@ proto.setMap = function(map) {
 
   this.on('toggled', ({toggled}) => {
 
-    if (true !== toggled) {
+    if (false === toggled) {
       ol.Observable.unByKey(eventSingleClickKey);
       eventSingleClickKey = null;
     } else if (null === eventSingleClickKey && map) {

@@ -752,13 +752,21 @@ proto.copyZoomToFidUrl = function(layer, feature, action){
 };
 
 /**
+ * @since 3.8.1
+ */
+
+proto.clearResultsQueryLayer = function(){
+  this.resultsQueryLayer.getSource().clear();
+}
+
+/**
  * Clear all
  */
 proto.clear = function() {
   this.runAsyncTodo();
   this.unlistenerEventsActions();
   this.mapService.clearHighlightGeometry();
-  this.resultsQueryLayer.getSource().clear();
+  this.clearResultsQueryLayer();
   this.removeAddFeaturesLayerResultInteraction({
     toggle: true
   });

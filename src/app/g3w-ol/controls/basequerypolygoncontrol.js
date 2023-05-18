@@ -29,7 +29,11 @@ const BaseQueryPolygonControl = function(options = {}) {
       type: 'spatialMethod',
       how: 'toggled' // or hover
     },
-    onhover: true
+    onhover: true,
+    /**
+     * @since 3.8.1
+     */
+    queryResultsLayer: true,
   };
 
   options = merge(options, default_options);
