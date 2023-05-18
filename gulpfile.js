@@ -105,10 +105,14 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
       g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
       g3w.assetsFolder + "/vendors/ismobile/ismobile.min.js",
-      g3w.assetsFolder + "/vendors/script/script.min.js",
       g3w.assetsFolder + "/vendors/x2js/xml2json.g3w.min.js",
       g3w.assetsFolder + "/vendors/proj4js/proj4.js",
       g3w.assetsFolder + "/vendors/ol/js/ol.js",
+      /*
+        @deprecate 3.9.0
+        @TODO
+        Move to external g3w-client plugin folder as dependence
+      */
       g3w.assetsFolder + "/vendors/ol-rotate-feature/bundle.min.js",
       g3w.assetsFolder + "/vendors/jsts/jsts.min.js",
       g3w.assetsFolder + "/vendors/datatables/datatables.min.js",
@@ -117,6 +121,11 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/select2/js/select2.full.min.js",
       g3w.assetsFolder + "/vendors/d3/js/d3.min.js",
       g3w.assetsFolder + "/vendors/c3/js/c3.min.js",
+      /*
+        @deprecate 3.9.0
+        @TODO
+        Move to external g3w-client plugin folder as dependence
+       */
       g3w.assetsFolder + "/vendors/wps/js/wps-js-all.min.js",
       g3w.assetsFolder + "/vendors/quill/js/quill.min.js"
       ]),

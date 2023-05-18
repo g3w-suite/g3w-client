@@ -1,4 +1,12 @@
 /**
+ * @since 3.9.0
+ * @TODO use $script only when necessary and not globally
+ */
+import $script from 'scriptjs';
+
+window.$script = $script;
+
+/**
  * @since.3.9.0
  */
 window.Vue = require('vue2/dist/vue.min');
@@ -9,6 +17,7 @@ window.Vue = require('vue2/dist/vue.min');
 
 /**
  * @since 3.9.0
+ * @TODO use loadash (better each single method) when necessary and not globally
  */
 import _ from 'lodash';
 

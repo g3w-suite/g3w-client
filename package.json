@@ -32,6 +32,7 @@
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "regenerator-runtime": "^0.13.9",
+    "scriptjs": "^2.5.9",
     "shp-write": "^0.3.2",
     "vue-color": "^2.8.1",
     "vue-cookie": "^1.1.4",
