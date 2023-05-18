@@ -94,7 +94,7 @@ gulp.task('concatenate:vendor_js', function() {
   return merge(
     gulp.src([
       g3w.assetsFolder + "/vendors/jquery/jquery-2.2.1.min.js",
-      g3w.assetsFolder + "/vendors/jquery-ui/jquery-ui.min.js", // dependeny of  jquery.fileupload.js
+      g3w.assetsFolder + "/vendors/jquery-ui/jquery-ui.min.js", // dependency of  jquery.fileupload.js
       g3w.assetsFolder + "/vendors/bootstrap/js/bootstrap.min.js",
       g3w.assetsFolder + "/vendors/bootbox/bootbox.min.js",
       g3w.assetsFolder + "/vendors/eventemitter/EventEmitter.min.js",
@@ -114,7 +114,6 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/jsts/jsts.min.js",
       g3w.assetsFolder + "/vendors/datatables/datatables.min.js",
       g3w.assetsFolder + "/vendors/shp2geojson/shp.min.js",
-      g3w.assetsFolder + "/vendors/jszip/jszip.min.js",
       g3w.assetsFolder + "/vendors/filesaver/FileSaver.min.js",
       g3w.assetsFolder + "/vendors/select2/js/select2.full.min.js",
       g3w.assetsFolder + "/vendors/d3/js/d3.min.js",

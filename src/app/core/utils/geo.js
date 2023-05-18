@@ -2,6 +2,11 @@ import CONSTANT from 'app/constant';
 import MapLayersStoresRegistry from 'store/map-layers';
 import GUI from 'services/gui';
 
+/**
+ * @since 3.9.0
+ */
+const JSZip = require("jszip");
+
 const { toRawType, uniqueId } = require('core/utils/utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
@@ -839,10 +844,10 @@ const geoutils = {
         const promiseKmz = new Promise(async (resolve, reject) => {
           const zip = new JSZip();
           const buffer = await data.arrayBuffer(data);
-          zip.load(buffer);
+          await zip.loadAsync(buffer);
           const kmlFile = zip.file(/.kml$/i)[0];
           if (kmlFile) {
-            data = kmlFile.asText();
+            data = await kmlFile.async("string");
             format = new ol.format.KML({
               extractStyles: false
             });
