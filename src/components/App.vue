@@ -295,11 +295,6 @@ $.LayoutManager = $.LayoutManager || {
    * Modify these options to suit your implementation
    */
   options: {
-    //Add slimscroll to navbar menus
-    //This requires you to load the slimscroll plugin
-    //in every page before app.js
-    navbarMenuSlimscroll: true,
-    navbarMenuSlimscrollWidth: "0px", //The width of the scroll bar
     navbarMenuHeight: "200px", //The height of the inner menu
     //General animation speed for JS animated elements such as box collapse/expand and
     //sidebar treeview slide up/down. This options accepts an integer as milliseconds,
@@ -309,8 +304,6 @@ $.LayoutManager = $.LayoutManager || {
     sidebarToggleSelector: "[data-toggle='offcanvas']",
     //Activate sidebar push menu
     sidebarPushMenu: true,
-    //Activate sidebar slimscroll if the fixed layout is set (requires SlimScroll Plugin)
-    sidebarSlimScroll: false,
     //Enable sidebar expand on hover effect for sidebar mini
     //This option is forced to true if both the fixed layout and sidebar mini
     //are used together
@@ -444,32 +437,8 @@ $.LayoutManager = $.LayoutManager || {
         }
       },
       fixSidebar () {
-        //Make sure the body tag has the .fixed class
-        if (!$("body").hasClass("fixed")) {
-          if (typeof $.fn.slimScroll != 'undefined') {
-            $(".sidebar").slimScroll({destroy: true}).height("auto");
-          }
-          return;
-        } else if (typeof $.fn.slimScroll == 'undefined' && window.console) {
-          window.console.error("Error: the fixed layout requires the slimscroll plugin!");
-        }
-        //Enable slimscroll for fixed layout (sidebar)
-        if ($.LayoutManager.options.sidebarSlimScroll && !isMobile.any) {
-          if (typeof $.fn.slimScroll != 'undefined') {
-            //Destroy if it exists
-            $("#g3w-sidebar").slimScroll({destroy: true}).height("auto");
-            //Add slimscroll
-            $("#g3w-sidebar").slimScroll({
-              touchScrollStep: 50,
-              height: ($(window).height() - $(".navbar-header").height() - 10) + "px",
-              color: "rgba(255,255,255,0.7)",
-              size: "3px"
-            });
-          }
-        } else {
-          $(".sidebar").css({'height': ($(window).height() - $(".navbar-header").height()) + "px"});
-          $(".sidebar").css('overflow-y', 'auto');
-        }
+        $(".sidebar").css({'height': ($(window).height() - $(".navbar-header").height()) + "px"});
+        $(".sidebar").css('overflow-y', 'auto');
       }
 
     };
@@ -968,14 +937,6 @@ $.LayoutManager = $.LayoutManager || {
       $.LayoutManager.controlSidebar.activate();
     }
 
-    //Add slimscroll to navbar dropdown
-    if (o.navbarMenuSlimscroll && typeof $.fn.slimscroll != 'undefined') {
-      $(".navbar .menu").slimscroll({
-        height: o.navbarMenuHeight,
-        alwaysVisible: false,
-        size: o.navbarMenuSlimscrollWidth
-      }).css("width", "100%");
-    }
 
     //Activate sidebar push menu
     if (o.sidebarPushMenu) {

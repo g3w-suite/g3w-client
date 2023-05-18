@@ -55,7 +55,7 @@ const __H1 = __INFO + "\n";
 
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue' && dep !== 'vue2');
+const dependencies = Object.keys(packageJSON.dependencies);
 
 // Built-in client plugins
 const default_plugins = [
@@ -97,13 +97,11 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/jquery-ui/jquery-ui.min.js",
       g3w.assetsFolder + "/vendors/bootstrap/js/bootstrap.min.js",
       g3w.assetsFolder + "/vendors/bootbox/bootbox.min.js",
-      g3w.assetsFolder + "/vendors/lodash/lodash.min.js",
       g3w.assetsFolder + "/vendors/eventemitter/EventEmitter.min.js",
       g3w.assetsFolder + "/vendors/moment/moment.js",
       g3w.assetsFolder + "/vendors/moment/moment-with-locales.js",
       g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js",
       g3w.assetsFolder + "/vendors/icheck/icheck.min.js",
-      g3w.assetsFolder + "/vendors/slimScroll/jquery.slimscroll.min.js",
       g3w.assetsFolder + "/vendors/fastclick/fastclick.js",
       g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
       g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",

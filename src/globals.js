@@ -8,6 +8,13 @@ window.Vue = require('vue2/dist/vue.min');
  */
 
 /**
+ * @since 3.9.0
+ */
+import _ from 'lodash';
+
+window._ = _;
+
+/**
  * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances
  * 
  * @type {object}
