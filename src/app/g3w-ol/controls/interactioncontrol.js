@@ -390,7 +390,9 @@ proto.toggle = function(toggled = !this._toggled) {
     /**
      * @since 3.8.1
      */
-    this._queryResultsLayer && GUI.getService('queryresults').clearResultsQueryLayer();
+    if (true === this._queryResultsLayer) {
+      GUI.closeContent();
+    }
   }
 
   if (undefined === this._toolButton && this.toggledTool) {
