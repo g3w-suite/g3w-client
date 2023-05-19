@@ -107,11 +107,6 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/x2js/xml2json.g3w.min.js",
       g3w.assetsFolder + "/vendors/proj4js/proj4.js",
       g3w.assetsFolder + "/vendors/ol/js/ol.js",
-      /*
-        @deprecate 3.9.0
-        @TODO
-        Move to external g3w-client plugin folder as dependence
-      */
       g3w.assetsFolder + "/vendors/ol-rotate-feature/bundle.min.js",
       g3w.assetsFolder + "/vendors/jsts/jsts.min.js",
       g3w.assetsFolder + "/vendors/datatables/datatables.min.js",
@@ -120,14 +115,10 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/select2/js/select2.full.min.js",
       g3w.assetsFolder + "/vendors/d3/js/d3.min.js",
       g3w.assetsFolder + "/vendors/c3/js/c3.min.js",
-      /*
-        @deprecate 3.9.0
-        @TODO
-        Move to external g3w-client plugin folder as dependence
-       */
       g3w.assetsFolder + "/vendors/wps/js/wps-js-all.min.js",
       g3w.assetsFolder + "/vendors/quill/js/quill.min.js"
       ]),
+
       browserify(
         /* Uncomment the following in next ESM release (v4.x) */
         // {
@@ -175,16 +166,13 @@ gulp.task('browserify:app', function() {
       imgurify
     ]
   });
+
+  bundler.external(dependencies);           // add external module node_modules on vendor
+
   if (production) {
-    bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
-    dependencies.forEach(dep => bundler.external(dep)); // add external module node_modules on vendor
+    bundler.ignore('./src/index.dev.js');   // ignore dev index file (just to be safe)
   } else {
-    bundler.on('prebundle', bundle => {
-      dependencies.forEach(dep => {
-        bundle.external(dep);
-        bundle.require(dep);
-      });
-    });
+    bundler.require(dependencies);
     bundler = watchify(bundler);
   }
 
@@ -259,9 +247,12 @@ gulp.task('images', function () {
  */
  gulp.task('fonts', function () {
   return gulp.src([
-      `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
+    `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
+    `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
+    /**
+     * @since3.9.0
+     */
+      './node_modules/@fortawesome/fontawesome-free/webfonts/**/*.{eot,ttf,woff,woff2}',
     /**
      * @deprecated 3.9.0
      */
@@ -314,8 +305,11 @@ gulp.task('concatenate:vendor_css', function() {
     g3w.assetsFolder + "/vendors/select2/css/select2.min.css",
     g3w.assetsFolder + "/vendors/c3/css/c3.min.css",
     g3w.assetsFolder + "/vendors/datatables/DataTables-1.10.16/css/jquery.dataTables.min.css",
-    g3w.assetsFolder + "/vendors/font-awesome-5.15.4/css/all.min.css",
-    g3w.assetsFolder + "/vendors/quill/css/quill.snow.min.css"
+    g3w.assetsFolder + "/vendors/quill/css/quill.snow.min.css",
+    /**
+     * @since 3.9.0
+     */
+    './node_modules/@fortawesome/fontawesome-free/css/all.min.css',
   ])
     .pipe(concat('vendor.min.css'))
     .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
