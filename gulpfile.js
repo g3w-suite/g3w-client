@@ -97,7 +97,6 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/jquery-ui/jquery-ui.min.js", // dependency of  jquery.fileupload.js
       g3w.assetsFolder + "/vendors/bootstrap/js/bootstrap.min.js",
       g3w.assetsFolder + "/vendors/bootbox/bootbox.min.js",
-      g3w.assetsFolder + "/vendors/eventemitter/EventEmitter.min.js",
       g3w.assetsFolder + "/vendors/moment/moment.js",
       g3w.assetsFolder + "/vendors/moment/moment-with-locales.js",
       g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js",
