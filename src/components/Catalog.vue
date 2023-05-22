@@ -30,6 +30,7 @@
           </div>
           <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees" :key="_layerstree.storeid">
             <tristate-tree
+              v-for="layerstree in _layerstree.tree"
               :highlightlayers="state.highlightlayers"
               :layerstree="layerstree"
               class="item"
@@ -37,14 +38,17 @@
               :root="true"
               :legendplace="legend.place"
               :parent_mutually_exclusive="false"
-              v-for="layerstree in _layerstree.tree"
               :storeid="_layerstree.storeid"
-              :key="layerstree.id">
-            </tristate-tree>
+              :key="layerstree.id"
+            />
           </ul>
           <ul class="g3w-external_layers-group" v-if="state.external.vector.length">
-            <tristate-tree :externallayers="state.external.vector" :layerstree="layerstree" class="item" v-for="layerstree in state.external.vector" :key="layerstree.id">
-            </tristate-tree>
+            <tristate-tree
+              v-for="layerstree in state.external.vector"
+              :externallayers="state.external.vector"
+              :layerstree="layerstree" class="item"
+              :key="layerstree.id"
+            />
           </ul>
           <ul v-for="layersgroup in state.layersgroups">
             <layers-group :layersgroup="layersgroup"></layers-group>
@@ -52,8 +56,13 @@
         </div>
         <div role="tabpanel" class="tab-pane" v-if="state.external.wms.length" :class="{ active: activeTab === 'externalwms' }" id="externalwms">
           <ul class="g3w-external_wms_layers-group">
-            <tristate-tree :externallayers="state.external.wms" :layerstree="layerstree" class="item" v-for="layerstree in state.external.wms" :key="layerstree.id">
-            </tristate-tree>
+            <tristate-tree
+              v-for="layerstree in state.external.wms"
+              :externallayers="state.external.wms"
+              :layerstree="layerstree"
+              class="item"
+              :key="layerstree.id"
+            />
           </ul>
         </div>
         <div class="tab-pane baselayers" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }" id="baselayers">
