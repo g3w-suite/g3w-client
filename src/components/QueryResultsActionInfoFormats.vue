@@ -4,8 +4,9 @@
 -->
 
 <template>
+  <!-- show only if layer has info formats property. Ex. wms external layer    -->
   <select v-if="infoformats.length" class="skin-color" v-select2="'infoformat'" :select2_value="infoformat" :search="false">
-      <option v-for="infoformat in infoformats" :key="infoformat" :value="infoformat">{{infoformat}}</option>
+    <option v-for="infoformat in infoformats" :key="infoformat" :value="infoformat">{{infoformat}}</option>
   </select>
 </template>
 
