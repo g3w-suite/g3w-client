@@ -25,7 +25,7 @@ export default {
      */
     handleClick(callbacks = {}, context) {
       if (!this.__CLICK_EVENT) {
-        console.warn('click mixin not initialied on context:', context);
+        console.warn('click mixin not initialized on context:', context);
         return;
       }
       this.__CLICK_EVENT.count += 1;                   // increment click count
