@@ -89,14 +89,20 @@ export default {
     },
 
     /**
-     * Filter layer based on current epsg
+     * @since 3.8.1
      */
-    filterLayerByCurrentEpsg() {
-      this.layers =
-        (null === this.epsg)
-          ? this.$options.config.layers
-          : this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(this.epsg) !== -1);
-    }
+    getLayersByEpsg(epsg) {
+      return (null === epsg)
+        ? this.$options.config.layers
+        : this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(epsg) !== -1);
+    },
+
+    /**
+     * @since 3.8.1
+     */
+    getProjectionsByName(name) {
+      return this.projections.filter((projection) => -1 !== this.layerProjections[name].crss.indexOf(projection));
+    },
 
   },
   watch: {
@@ -112,13 +118,13 @@ export default {
         this.epsg        = this.layerProjections[layers[0]].crss[0];
         this.projections = this.layerProjections[layers[0]].crss;
       } else {                          // TODO: add description
-        this.projections = this.projections.filter((projection) => -1 !== this.layerProjections[layers[layers.length -1]].crss.indexOf(projection));
+        this.projections = this.getProjectionsByName(layers[layers.length -1]);;
       }
     },
 
     async epsg() {
       await this.$nextTick();
-      this.filterLayerByCurrentEpsg();
+      this.layers = this.getLayersByEpsg(this.epsg);
     },
 
   },
