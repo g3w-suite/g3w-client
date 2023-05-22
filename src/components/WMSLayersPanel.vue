@@ -73,7 +73,9 @@ export default {
     },
     //filter layer based on current epsg
     filterLayerByCurrentEpsg(){
-      this.layers = this.epsg !== null ? this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(this.epsg) !== -1) : this.$options.config.layers;
+      this.layers = this.epsg !== null ?
+        this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(this.epsg) !== -1) :
+        this.$options.config.layers;
     }
   },
   watch: {
@@ -85,7 +87,11 @@ export default {
           this.epsg = this.layerProjections[firstLayer].crss[0];
           // take first layer selected supported crss
           this.projections = this.layerProjections[firstLayer].crss;
-        } else this.projections = this.projections.filter(projection => this.layerProjections[layers[layers.length -1]].crss.index(projection) !== -1);
+        } else {
+          this.projections = this.projections.filter((projection) => {
+            return this.layerProjections[layers[layers.length -1]].crss.indexOf(projection) !== -1;
+          });
+        }
       } else {
         // Reset epsg and projections to initial values
         this.epsg = null;
@@ -99,6 +105,7 @@ export default {
   },
   async created() {
     const {layers, title, abstract, wmsurl:url} = this.$options.config;
+    //store for each layer name projection info
     this.layerProjections = {};
     this.url = url;
     layers.forEach(layer => {
