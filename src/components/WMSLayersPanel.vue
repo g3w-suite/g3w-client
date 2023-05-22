@@ -5,25 +5,35 @@
 
 <template>
   <div v-disabled="loading">
-    <bar-loader :loading="loading"></bar-loader>
+
+    <bar-loader :loading="loading" />
+
     <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
-    <helpdiv v-if="abstract" :message="abstract"></helpdiv>
+
+    <helpdiv v-if="abstract" :message="abstract" />
+
     <label for="g3w-wms-layers" v-t="'sidebar.wms.panel.label.layers'"></label>
     <select id="g3w-wms-layers" multiple="multiple" clear="true" v-select2="'selectedlayers'">
       <option v-for="layer in layers" :value="layer.name" :key="layer.name">{{layer.title}}</option>
     </select>
+
     <label for="g3w-wms-projections" v-t="'sidebar.wms.panel.label.projections'"></label>
     <select id="g3w-wms-projections" v-select2="'epsg'">
       <option v-for="projection in projections" :key="projection" :value="projection">{{projection}}</option>
     </select>
+
     <label for="g3w-wms-layer-name" v-t="'sidebar.wms.panel.label.name'"></label>
     <input class="form-control" id="g3w-wms-layer-name" v-model="name">
+
     <div v-if="added" class="g3w-wms-external-panel-layer-added-message" v-t="'sidebar.wms.layer_id_already_added'"></div>
-    <layerspositions @layer-position-change="position=$event" :position="position"></layerspositions>
-    <button @click.stop="addWMSlayer" v-disabled="selectedlayers.length === 0" class="btn wms-add-layer-buttom sidebar-button skin-button">
+
+    <layerspositions @layer-position-change="position=$event" :position="position" />
+
+    <button @click.stop="addWMSlayer" v-disabled="0 === selectedlayers.length" class="btn wms-add-layer-buttom sidebar-button skin-button">
       <i style="font-weight: bold;" :class="g3wtemplate.getFontClass('plus-square')" ></i>
     </button>
-  </div>
+
+</div>
 </template>
 
 <script>
@@ -31,7 +41,7 @@ const Projections = require('g3w-ol/projection/projections');
 
 export default {
   name: "wmpspanel",
-  data(){
+  data() {
     return {
       loading: false,
       position: undefined,
@@ -48,86 +58,121 @@ export default {
     }
   },
   methods: {
-    async addWMSlayer(){
+
+    async addWMSlayer() {
       const config = {
-        url: this.url,
-        name: this.name && this.name.trim() || undefined,
-        layers: this.selectedlayers,
-        epsg: this.epsg,
+        url:      this.url,
+        name:     this.name && this.name.trim() || undefined,
+        layers:   this.selectedlayers,
+        epsg:     this.epsg,
         position: this.position
       };
-      ///pre
       this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
-      if (!this.added){
-        this.loading = true;
-        try {
-          await this.$options.service.addWMSlayer(config);
-        } catch(err){}
-        this.loading = false;
-        this.clear();
+      if (this.added) {
+        console.warn('WMS Layer already added');
+        return;
       }
+      try {
+        this.loading = true;
+        await this.$options.service.addWMSlayer(config);
+      } catch(err) {
+        console.warn('unexpected error while adding WMS Layer');
+      } finally {
+        this.loading = false;
+      }      
+      this.clear();
     },
-    clear(){
+
+    clear() {
       this.selectedlayers = [];
       this.name = null;
     },
-    //filter layer based on current epsg
-    filterLayerByCurrentEpsg(){
-      this.layers = this.epsg !== null ?
-        this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(this.epsg) !== -1) :
-        this.$options.config.layers;
-    }
+
+    /**
+     * @since 3.8.1
+     */
+    getLayersByEpsg(epsg) {
+      return (null === epsg)
+        ? this.$options.config.layers
+        : this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(epsg) !== -1);
+    },
+
+    /**
+     * @since 3.8.1
+     */
+    getProjectionsByName(name) {
+      return this.projections.filter((projection) => -1 !== this.layerProjections[name].crss.indexOf(projection));
+    },
+
   },
   watch: {
-    // when change selected layers
-    selectedlayers(layers){
-      if (layers.length) {
-        const firstLayer = layers[0];
-        if (layers.length === 1) {
-          this.epsg = this.layerProjections[firstLayer].crss[0];
-          // take first layer selected supported crss
-          this.projections = this.layerProjections[firstLayer].crss;
-        } else {
-          this.projections = this.projections.filter((projection) => {
-            return this.layerProjections[layers[layers.length -1]].crss.indexOf(projection) !== -1;
-          });
-        }
-      } else {
-        // Reset epsg and projections to initial values
-        this.epsg = null;
+
+    /**
+     * Handle selected layers change  
+     */
+    selectedlayers(layers) {
+      if (!layers.length) {             // Reset epsg and projections to initial values
+        this.epsg        = null;
         this.projections = [];
+      } else if (layers.length === 1) { // take first layer selected supported crss
+        this.epsg        = this.layerProjections[layers[0]].crss[0];
+        this.projections = this.layerProjections[layers[0]].crss;
+      } else {                          // TODO: add description
+        this.projections = this.getProjectionsByName(layers[layers.length -1]);;
       }
     },
-    async epsg(){
+
+    async epsg() {
       await this.$nextTick();
-      this.filterLayerByCurrentEpsg();
-    }
+      this.layers = this.getLayersByEpsg(this.epsg);
+    },
+
   },
+
   async created() {
-    const {layers, title, abstract, wmsurl:url} = this.$options.config;
-    //store for each layer name projection info
+    const {
+      layers,
+      title,
+      abstract,
+      wmsurl,
+    } = this.$options.config;
+
+    /**
+     * URL of wms
+     */
+    this.url = wmsurl;
+
+    /**
+     * Title of wms
+     */
+     this.title = title;
+    
+    /**
+     * Abstract of wms
+     */
+    this.abstract = abstract;
+
+    /**
+     * Store for each layer name projection info
+     */
     this.layerProjections = {};
-    this.url = url;
-    layers.forEach(layer => {
-      // store for each layer projection epsg with title that i use
-      this.layerProjections[layer.name] = {
-        crss: layer.crss.map(crs => {
-          // try to check if projection
-          Projections.get(crs);
-          return `EPSG:${crs.epsg}`;
-        }).sort(),
-        title: layer.title
+    layers.forEach(({name, crss, title }) => {
+      this.layerProjections[name] = {
+        crss: crss.map(crs => { /* try to check if projection */ Projections.get(crs); return `EPSG:${crs.epsg}`; }).sort(),
+        title,
       };
     });
+
+    /**
+     * Layers of wms
+     */
     this.layers = layers;
-    // title of wms
-    this.title = title;
-    // abstract of wms
-    this.abstract = abstract;
   },
+
   beforeDestroy() {
     this.$data = null;
-  }
+  },
+
 };
 </script>
 
