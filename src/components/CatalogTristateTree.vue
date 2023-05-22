@@ -56,29 +56,29 @@
         v-if="layerstree.external && layerstree.removable"
         style="color: red; padding-left: 1px;"
         :class="g3wtemplate.getFontClass('trash')"
-        @click.stop="removeExternalLayer(layerstree.name, layerstree._type)"
-      ></span>
+        @click.stop="removeExternalLayer(layerstree.name, layerstree._type)">
+      </span>
 
       <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
       <span
         v-if="layerstree.external && layerstree.download"
         style="color: #ffffff; margin-left: 5px;"
         :class="g3wtemplate.getFontClass('download')"
-        @click="downloadExternalLayer(layerstree.download)"
-      ></span>
+        @click="downloadExternalLayer(layerstree.download)">
+      </span>
 
       <!-- HIDDEN NODE (LAYER) -->
       <span
         v-show="!layerstree.hidden"
         class="checkbox-layer"
-        :class="parentFolder ? 'child' : 'root'"
-      >
+        :class="parentFolder ? 'child' : 'root'">
         <span
           v-if="'toc' === legendlayerposition || !isGroup && layerstree.categories"
           @click.self.stop="expandCollapse"
           class="collapse-expande-collapse-icon"
-          :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
-        ></span>
+          :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')">
+        </span>
+
         <span
           @click.stop="toggle()"
           :style="{
@@ -93,7 +93,9 @@
           :class="[
             g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'),
             { 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }
-          ]"></span>
+          ]">
+        </span>
+
       </span>
 
     </template>
@@ -105,8 +107,7 @@
       :class="{
         disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)),
         bold: isGroup
-      }"
-    >
+      }">
 
       <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
       <span
@@ -133,8 +134,8 @@
           data-toggle="tooltip"
           :class="g3wtemplate.getFontClass('success')"
           @click.caputure.prevent.stop="clearSelection"
-          v-t-tooltip.create="'layer_selection_filter.tools.clear'"
-        ></span>
+          v-t-tooltip.create="'layer_selection_filter.tools.clear'">
+        </span>
 
         <span
           v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
@@ -143,8 +144,8 @@
           data-toggle="tooltip"
           :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']"
           @click.caputure.prevent.stop="toggleFilterLayer"
-          v-t-tooltip.create="'layer_selection_filter.tools.filter'"
-        ></span>
+          v-t-tooltip.create="'layer_selection_filter.tools.filter'">
+        </span>
 
       </div>
 
@@ -154,17 +155,17 @@
     <layerlegend
       v-if="showLayerTocLegend"
       :legendplace="legendplace"
-      :layer="layerstree"
-    ></layerlegend>
+      :layer="layerstree"/>
 
     <!-- CHILD NODES (GROUP) -->
     <ul
       v-if="isGroup"
       class="tree-content-items group"
       :class="[`g3w-lendplace-${legendplace}`]"
-      v-show="layerstree.expanded"
-    >
+      v-show="layerstree.expanded">
+
       <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
+
         <tristate-tree
           :root="false"
           :legendConfig="legend"
@@ -174,8 +175,8 @@
           :layerstree="_layerstree"
           :storeid="storeid"
           :parent="layerstree"
-          :parent_mutually_exclusive="!!layerstree.mutually_exclusive">
-        </tristate-tree>
+          :parent_mutually_exclusive="!!layerstree.mutually_exclusive"/>
+
       </span>
     </ul>
 
