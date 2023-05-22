@@ -308,7 +308,7 @@ proto.getLocalWMSData = function(){
  * @param data
  */
 proto.updateLocalWMSData = function(data){
-  // in case for the firs time is non present set empty object
+  // in case for the firs time is no present set empty object
   const alldata = ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {};
   alldata[this.projectId] = data;
   ApplicationService.setLocalItem({
