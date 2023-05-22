@@ -199,6 +199,7 @@ import GUI from 'services/gui';
 const { downloadFile } = require('core/utils/utils');
 
 export default {
+
   props : [
     'layerstree',
     'storeid',
@@ -211,19 +212,23 @@ export default {
     'root',
     'parent'
   ],
+
   components: {
     'layerlegend': LayerLegend
   },
+
   mixins: [ClickMixin],
+
   data() {
     return {
-      expanded: this.layerstree.expanded,
+      expanded:       this.layerstree.expanded,
       isGroupChecked: true,
       controltoggled: false,
-      n_childs: null,
-      filtered: false
+      n_childs:       null,
+      filtered:       false
     }
   },
+
   computed: {
 
     /**
@@ -314,8 +319,16 @@ export default {
       )
     },
   },
+
   watch:{
-    'layerstree.disabled'(bool) {},
+
+    /**
+     * @FIXME empty function ? 
+     */
+    'layerstree.disabled'(bool) {
+
+    },
+
     'layerstree.checked'(n, o) {
       if (this.isGroup) {
         this.handleGroupChecked(this.layerstree);
@@ -323,7 +336,9 @@ export default {
         this.handleLayerChecked(this.layerstree);
       }
     }
+
   },
+
   methods: {
 
     /**
@@ -439,12 +454,15 @@ export default {
     toggleFilterLayer() {
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
+
     clearSelection() {
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
+
     toggle() {
       this.layerstree.checked = !this.layerstree.checked;
     },
+
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
