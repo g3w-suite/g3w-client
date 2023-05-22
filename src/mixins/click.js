@@ -24,6 +24,10 @@ export default {
      * @param context
      */
     handleClick(callbacks = {}, context) {
+      if (!this.__CLICK_EVENT) {
+        console.warn('click mixin not initialied on context:', context);
+        return;
+      }
       this.__CLICK_EVENT.count += 1;                   // increment click count
       if (!this.__CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
         this.__CLICK_EVENT.timeoutID = setTimeout(() => {
