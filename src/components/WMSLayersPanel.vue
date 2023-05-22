@@ -72,13 +72,14 @@ export default {
         console.warn('WMS Layer already added');
         return;
       }
-      this.loading = true;
       try {
+        this.loading = true;
         await this.$options.service.addWMSlayer(config);
       } catch(err) {
         console.warn('unexpected error while adding WMS Layer');
-      }
-      this.loading = false;
+      } finally {
+        this.loading = false;
+      }      
       this.clear();
     },
 
