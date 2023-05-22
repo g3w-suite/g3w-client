@@ -29,7 +29,7 @@
 
     <layerspositions @layer-position-change="position=$event" :position="position" />
 
-    <button @click.stop="addWMSlayer" v-disabled="0 === selectedlayers.length" class="btn wms-add-layer-buttom sidebar-button skin-button">
+    <button @click.stop="addWMSlayer" v-disabled="0 === selectedlayers.length" class="btn wms-add-layer-button sidebar-button skin-button">
       <i style="font-weight: bold;" :class="g3wtemplate.getFontClass('plus-square')" ></i>
     </button>
 
@@ -182,7 +182,7 @@ export default {
     font-weight: bold;
     margin-bottom: 10px;
   }
-  button.wms-add-layer-buttom{
+  button.wms-add-layer-button {
     width: 100%;
     margin-top: 10px;
   }
