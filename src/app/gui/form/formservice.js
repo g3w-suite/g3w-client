@@ -229,6 +229,17 @@ proto._handleFieldWithFilterExpression = function(field, filter_expression) {
       }
       this.filter_expression_fields_dependencies[dependency_field].push(field.name);
     });
+
+    // Call input service if a field has a filter_expression and is a new feature
+    if (this.state.isnew) {
+      const qgs_layer_id = this.layer.getId();
+      inputService.handleFilterExpressionFormInput({
+        parentData: this.parentData,
+        qgs_layer_id, // the owner of feature
+        field, // field related
+        feature: this.feature //feature to transform in form_data
+      })
+    }
   }
 };
 
@@ -295,6 +306,7 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
 proto.handleFieldsWithExpression = function(fields=[]) {
   // TODO: add description
   fields.forEach(field => {
+    console.log(field.name)
     const { options = {} } = field.input;
     this._handleFieldWithFilterExpression(field, options.filter_expression);
     this._handleFieldWithDefaultExpression(field, options.default_expression);
