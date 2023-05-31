@@ -133,6 +133,13 @@ import * as filter from 'ol/format/filter'
 ol.format.filter = filter;
 
 /**
+ * ol sphere
+ */
+
+import * as sphere from 'ol/sphere';
+ol.sphere = sphere;
+
+/**
  * ol color
  */
 import * as color from 'ol/color';
