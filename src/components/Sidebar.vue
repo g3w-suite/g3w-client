@@ -7,7 +7,7 @@
   <aside class="main-sidebar" :class="{ iframe: iframe, 'g3w-disabled': disabled }" >
     <!-- sidebar: style can be found in g3w-sidebar.less -->
     <!-- Sidebar toggle button (desktop only) -->
-    <a href="#" class="sidebar-aside-toggle" data-toggle="offcanvas" role="button">
+    <a href="#" class="sidebar-aside-toggle" data-widget="pushmenu" data-toggle="offcanvas" role="button">
       <i :class="g3wtemplate.getFontClass('bars')"></i>
     </a>
     <div id="g3w-sidebar" class="sidebar">

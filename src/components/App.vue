@@ -307,7 +307,7 @@ $.LayoutManager = $.LayoutManager || {
     //Enable sidebar expand on hover effect for sidebar mini
     //This option is forced to true if both the fixed layout and sidebar mini
     //are used together
-    sidebarExpandOnHover: false,
+    sidebarExpandOnHover: true,
     //BoxRefresh Plugin
     enableBoxRefresh: true,
     //Enable Fast Click. Fastclick.js creates a more
@@ -691,8 +691,8 @@ $.LayoutManager = $.LayoutManager || {
       selectors: $.LayoutManager.options.boxWidgetOptions.boxWidgetSelectors,
       icons: $.LayoutManager.options.boxWidgetOptions.boxWidgetIcons,
       animationSpeed: $.LayoutManager.options.animationSpeed,
-      activate (_box) {
-        var _this = this;
+      activate(_box) {
+        const _this = this;
         if (!_box) {
           _box = document; // activate all boxes per default
         }
@@ -708,12 +708,12 @@ $.LayoutManager = $.LayoutManager || {
           _this.remove($(this));
         });
       },
-      collapse (element) {
-        var _this = this;
+      collapse(element) {
+        const _this = this;
         //Find the box parent
-        var box = element.parents(".box").first();
+        const box = element.parents(".box").first();
         //Find the body and the footer
-        var box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
+        const box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
         if (!box.hasClass("collapsed-box")) {
           //Convert minus into plus
           element.find(".btn-collapser")
@@ -734,9 +734,9 @@ $.LayoutManager = $.LayoutManager || {
           });
         }
       },
-      remove (element) {
+      remove(element) {
         //Find the box parent
-        var box = element.parents(".box").first();
+        const box = element.parents(".box").first();
         box.slideUp(this.animationSpeed);
       }
     };

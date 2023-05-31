@@ -25,6 +25,11 @@ const fs          = require('fs');
 const path        = require('path');
 
 ///////////////////////////////////////////////////////
+/**
+ * @since 3.9.0
+ */
+const esmify = require('esmify')
+
 const babelify    = require('babelify');
 const browserSync = require('browser-sync');
 const browserify  = require('browserify');
@@ -40,6 +45,7 @@ const runSequence = require('run-sequence'); // same as "gulp.series" (v4)
 
 const packageJSON = require('./package.json');
 const g3w         = require('./config');
+const {defaultTo} = require("lodash");
 
 ///////////////////////////////////////////////////////
 
@@ -55,7 +61,19 @@ const __H1 = __INFO + "\n";
 
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies);
+//Javascript node_modules dependencies
+const dependencies = Object.keys(packageJSON.dependencies)
+  .filter(dependency => dependency !== 'magic-check' && dependency !== 'ol')
+  .map(dependency => {
+    switch (dependency) {
+      case 'datatables.net-dt':
+        return 'datatables.net';
+      case 'jsts':
+        return 'jsts/dist/jsts.min';
+      default:
+        return dependency;
+    }
+});
 
 // Built-in client plugins
 const default_plugins = [
@@ -86,61 +104,6 @@ gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`
 
 gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(outputFolder + '/templates/client')));
 gulp.task('browser:reload',  () => browserSync ? browserSync.reload() : null);
-
-/**
- * Concatenate and browserify vendor javascript files
- */
-gulp.task('concatenate:vendor_js', function() {
-  return merge(
-    gulp.src([
-      g3w.assetsFolder + "/vendors/jquery/jquery-2.2.1.min.js",
-      g3w.assetsFolder + "/vendors/jquery-ui/jquery-ui.min.js", // dependency of  jquery.fileupload.js
-      g3w.assetsFolder + "/vendors/bootstrap/js/bootstrap.min.js",
-      g3w.assetsFolder + "/vendors/bootbox/bootbox.min.js",
-      g3w.assetsFolder + "/vendors/moment/moment.js",
-      g3w.assetsFolder + "/vendors/moment/moment-with-locales.js",
-      g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js",
-      g3w.assetsFolder + "/vendors/icheck/icheck.min.js",
-      g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
-      g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
-      g3w.assetsFolder + "/vendors/ismobile/ismobile.min.js",
-      g3w.assetsFolder + "/vendors/x2js/xml2json.g3w.min.js",
-      g3w.assetsFolder + "/vendors/proj4js/proj4.js",
-      g3w.assetsFolder + "/vendors/ol/js/ol.js",
-      g3w.assetsFolder + "/vendors/ol-rotate-feature/bundle.min.js",
-      g3w.assetsFolder + "/vendors/jsts/jsts.min.js",
-      g3w.assetsFolder + "/vendors/datatables/datatables.min.js",
-      g3w.assetsFolder + "/vendors/shp2geojson/shp.min.js",
-      g3w.assetsFolder + "/vendors/filesaver/FileSaver.min.js",
-      g3w.assetsFolder + "/vendors/select2/js/select2.full.min.js",
-      g3w.assetsFolder + "/vendors/d3/js/d3.min.js",
-      g3w.assetsFolder + "/vendors/c3/js/c3.min.js",
-      g3w.assetsFolder + "/vendors/wps/js/wps-js-all.min.js",
-      g3w.assetsFolder + "/vendors/quill/js/quill.min.js"
-      ]),
-
-      browserify(
-        /* Uncomment the following in next ESM release (v4.x) */
-        // {
-        //  plugin: [
-        //    esmify
-        //  ],
-        //  transform: [
-        //    vueify,
-        //    [ babelify, { ignore: [/\/node_modules\//], /* global: true, sourceMaps: true, babelrc: true */ } ]
-        //    [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
-        //    imgurify
-        // ]}
-        )
-        .require(dependencies)
-        .bundle()
-        .pipe(source('vendor.node_modules.min.js'))
-        .pipe(buffer())
-        .pipe(uglify())
-    )
-    .pipe(concat('vendor.min.js'))
-    .pipe(gulp.dest(outputFolder + '/static/client/js/'));
-});
 
 /**
  * Compile client application (src/app/main.js --> app.min.js)
@@ -229,7 +192,7 @@ gulp.task('images', function () {
       '!./src/**/node_modules/**/'
     ])
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/images/'))
+    .pipe(gulp.dest(`${outputFolder}/static/client/images/`))
 });
 
 
@@ -237,9 +200,9 @@ gulp.task('images', function () {
  * Deploy datatables images (src/assets/vendors/datatables)
  */
  gulp.task('datatable-images', function () {
-  return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
+  return gulp.src(`./node_modules/datatables.net-dt/images/*`)
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/css/DataTables-1.10.16/images/'));
+    .pipe(gulp.dest(`${outputFolder}/static/client/images/`));
 });
 
 /**
@@ -293,19 +256,39 @@ gulp.task('custom-less', function () {
 });
 
 /**
+ * Concatenate and browserify vendor javascript files
+ */
+gulp.task('concatenate:vendor_js', function() {
+  return browserify( `./src/node_packages.js`, {
+      transform: [
+        [ babelify, {
+            global: true,
+            presets: ["env"],
+            compact : true
+          }],
+      ]
+    })
+    .require(dependencies)
+    .bundle()
+    .pipe(source('vendor.min.js'))
+    .pipe(buffer())
+    .pipe(gulp.dest(`${outputFolder}/static/client/js/`));
+});
+
+/**
  * Concatenate vendor css files
  */
 gulp.task('concatenate:vendor_css', function() {
   return gulp.src([
-    g3w.assetsFolder + "/vendors/bootstrap/css/bootstrap.min.css",
-    g3w.assetsFolder + "/vendors/icheck/skins/all.css",
-    g3w.assetsFolder + "/vendors/magic-check/magic-check.min.css",
-    g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css",
-    g3w.assetsFolder + "/vendors/ol/css/ol.css",
-    g3w.assetsFolder + "/vendors/select2/css/select2.min.css",
-    g3w.assetsFolder + "/vendors/c3/css/c3.min.css",
-    g3w.assetsFolder + "/vendors/datatables/DataTables-1.10.16/css/jquery.dataTables.min.css",
-    g3w.assetsFolder + "/vendors/quill/css/quill.snow.min.css",
+    "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+    "./node_modules/icheck/skins/all.css",
+    "./node_modules/magic-check/css/magic-check.min.css",
+    "./node_modules/bootstrap-datetimepicker-npm/build/css/bootstrap-datetimepicker.css",
+    "./node_modules/ol/ol.css",
+    "./node_modules/select2/dist/css/select2.min.css",
+    "./node_modules/c3/c3.min.css",
+    "./node_modules/datatables.net-dt/css/jquery.dataTables.css",
+    "./node_modules/quill/dist/quill.snow.css",
     /**
      * @since 3.9.0
      */
@@ -359,6 +342,12 @@ gulp.task('browser-sync', function() {
     process.env.G3W_PLUGINS = path.basename(path.dirname(file.path));
     runSequence('deploy-plugins', 'browser:reload', () => process.env.G3W_PLUGINS = plugins)
   });
+
+  /**
+   * @TEMPORARY
+   */
+  gulp.watch(['./src/node_packages.js'], () => runSequence('concatenate:vendor_js', 'browser:reload'));
+
 });
 
 /**

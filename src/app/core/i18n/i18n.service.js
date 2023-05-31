@@ -14,7 +14,7 @@ const plugins18n = [];
  * @returns {Promise<void>}
  */
 async function init({language}={}) {
-  getAppLanguageTranslation(language);
+  await getAppLanguageTranslation(language);
   setLanguageTranslation(language);
 }
 

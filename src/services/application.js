@@ -109,11 +109,11 @@ const ApplicationService = function() {
   /**
    * Load application translations (i18n languages)
    */
-  this.setupI18n = function() {
+  this.setupI18n = async function() {
     const languageConfig = this._config._i18n;
     languageConfig.appLanguages = this._config.i18n.map(languageLabel => languageLabel[0]);
     this.setApplicationLanguage(languageConfig.language);
-    i18ninit(languageConfig);
+    await i18ninit(languageConfig);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set Accept-Language request header based on config language
     $.ajaxSetup({
@@ -582,8 +582,8 @@ const ApplicationService = function() {
    * 9 - check if application is loaded within an <IFRAME>
    */
   this.bootstrap = function() {
-    return new Promise((resolve, reject) => {
-      this.setupI18n();
+    return new Promise(async (resolve, reject) => {
+      await this.setupI18n();
       const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
       if (!ApplicationState.ready) {
         $.when(

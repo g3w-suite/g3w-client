@@ -7,6 +7,8 @@ import GUI from 'services/gui';
  */
 const JSZip = require("jszip");
 
+const shp = require('./shp.min');
+
 const { toRawType, uniqueId } = require('core/utils/utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
