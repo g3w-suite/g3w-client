@@ -63,7 +63,10 @@ const __H1 = __INFO + "\n";
 // Retrieve project dependencies ("g3w-client")
 //Javascript node_modules dependencies
 const dependencies = Object.keys(packageJSON.dependencies)
-  .filter(dependency => dependency !== 'magic-check' && dependency !== 'ol')
+  .filter(dependency =>  {
+    return dependency !== 'magic-check' && // has no js files, only css
+           dependency !== 'ol' // "ParseError: 'import' and 'export' may appear only with 'sourceType: module'",
+  })
   .map(dependency => {
     switch (dependency) {
       case 'datatables.net-dt':
@@ -261,10 +264,9 @@ gulp.task('custom-less', function () {
 gulp.task('concatenate:vendor_js', function() {
   return browserify( `./src/vendors.js`, {
       transform: [
-        [ babelify, {
-            global: true,
-            presets: ["env"],
-            compact: true
+        [ babelify, { // need to use import/export ES6 module
+            global: true, // https://stackoverflow.com/questions/41107756/force-browserify-to-transform-dependencies
+            compact: true,
           }],
       ]
     })
