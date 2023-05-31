@@ -20,6 +20,7 @@
                   <span class="query-layer-feature-count" v-show="!layer.rawdata">({{layer.features.length}})</span>
                 </div>
                 <div class="box-features-action" @click.stop="">
+                  <!-- info format layer component -->
                   <infoformats :layer="layer"/>
                   <template v-if="layer.features.length > 1">
                     <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button"
