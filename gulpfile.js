@@ -259,12 +259,12 @@ gulp.task('custom-less', function () {
  * Concatenate and browserify vendor javascript files
  */
 gulp.task('concatenate:vendor_js', function() {
-  return browserify( `./src/node_packages.js`, {
+  return browserify( `./src/vendors.js`, {
       transform: [
         [ babelify, {
             global: true,
             presets: ["env"],
-            compact : true
+            compact: true
           }],
       ]
     })
@@ -347,7 +347,7 @@ gulp.task('browser-sync', function() {
   /**
    * @TEMPORARY
    */
-  gulp.watch(['./src/node_packages.js'], () => runSequence('concatenate:vendor_js', 'browser:reload'));
+  gulp.watch(['./src/vendors.js'], () => runSequence('concatenate:vendor_js', 'browser:reload'));
 
 });
 

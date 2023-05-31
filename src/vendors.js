@@ -1,33 +1,36 @@
+/**
+ * @since 3.9.0
+ */
+
+import $script from 'scriptjs';
+window.$script = $script;
+
+import _ from 'lodash';
+window._ = _;
+
 import * as jsts from 'jsts/dist/jsts.min';
+window.jsts = jsts;
 
-window.jsts = jsts
-/**
- * @since 3.9.0
- */
+
 import isMobile from 'ismobilejs';
+window.isMobile = isMobile;
 
-window.isMobile = isMobile
-
-/**
- * @since 3.9.0
- */
 import { saveAs } from 'file-saver';
-
 window.saveAs = saveAs;
 
-/**
- * @since 3.9.0
- */
 import moment from 'moment';
-
 window.moment = moment;
 
-import proj4 from 'proj4';
+import EventEmitter from 'eventemitter';
+window.EventEmitter = EventEmitter;
 
+import proj4 from 'proj4';
 window.proj4 = proj4;
+
 /**
- * @since 3.9.0
+ * OpenLayers
  */
+
 import * as ol from 'ol';
 window.ol = ol;
 
@@ -75,112 +78,75 @@ ol.extent = {
 /**
  * ol source
  */
-
 import * as source from 'ol/source';
-
 ol.source = source;
 
 /**
  * ol layer
  */
-
 import * as layer from 'ol/layer'
-
 ol.layer = layer;
+
 /**
  * ol interaction
  */
 
 import * as interaction from 'ol/interaction';
-
 ol.interaction = interaction;
 
 /**
  * ol control
  */
 import * as control from 'ol/control';
-
 ol.control = control;
 
 /**
  * ol geom
  */
 import * as geom from 'ol/geom';
-
 ol.geom = geom;
 
 /**
  * ol style
  */
 import * as style from 'ol/style';
-
 ol.style = style;
 
 /**
  * ol coordinate
  */
 import * as coordinate from 'ol/coordinate';
-
 ol.coordinate = coordinate;
 
 /**
  * ol format
  */
-
 import * as format from 'ol/format';
-
 ol.format = format;
 
 /**
  * ol color
  */
-
 import * as color from 'ol/color';
-
 ol.color = color;
 
 /**
  * ol Observable
  */
-
 import {unByKey} from 'ol/Observable';
-
 ol.Observable.unByKey = unByKey;
 
 /**
- * @since 3.9.0
- * @TODO use EventEmitter (better each single method) when necessary and not globally
+ * End Openlayers
  */
-import EventEmitter from 'eventemitter';
 
-window.EventEmitter = EventEmitter;
-/**
- * @since 3.9.0
- * @TODO use lodash (better each single method) when necessary and not globally
- */
-import _ from 'lodash';
-
-window._ = _;
-
-/**
- * @since 3.9.0
- * @TODO use $script only when necessary and not globally
- */
-import $script from 'scriptjs';
-
-window.$script = $script;
-
-/**
- * @since.3.9.0
- */
 window.Vue = require('vue2/dist/vue.min');
-/**
- * @since 3.9.0
- */
+
 window.jQuery = window.$ = require('jquery');
 /**
  * Here all jquery dependencies
  */
+
 window.bootbox = require('bootbox');
 
 require('bootstrap');
@@ -196,10 +162,3 @@ require('datatables.net')( window, window.jQuery );
 require('blueimp-file-upload')
 
 require('jquery-file-download');
-
-
-
-
-
-
-
