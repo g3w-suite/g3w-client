@@ -6,7 +6,6 @@ import GUI from 'services/gui';
  * @since 3.9.0
  */
 const JSZip = require("jszip");
-
 const shp = require('./shp.min');
 
 const { toRawType, uniqueId } = require('core/utils/utils');

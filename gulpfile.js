@@ -272,6 +272,7 @@ gulp.task('concatenate:vendor_js', function() {
     .bundle()
     .pipe(source('vendor.min.js'))
     .pipe(buffer())
+    .pipe(uglify())
     .pipe(gulp.dest(`${outputFolder}/static/client/js/`));
 });
 
