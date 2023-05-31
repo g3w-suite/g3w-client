@@ -64,7 +64,8 @@ import {
   getWidth,
   getHeight,
   getCenter,
-  containsExtent
+  containsExtent,
+  boundingExtent
 } from 'ol/extent';
 
 ol.extent = {
@@ -73,6 +74,7 @@ ol.extent = {
   getHeight,
   getCenter,
   containsExtent,
+  boundingExtent,
 }
 
 /**
@@ -106,6 +108,9 @@ ol.control = control;
 import * as geom from 'ol/geom';
 ol.geom = geom;
 
+import {fromExtent} from 'ol/geom/Polygon';
+ol.geom.Polygon.fromExtent = fromExtent;
+
 /**
  * ol style
  */
@@ -123,6 +128,9 @@ ol.coordinate = coordinate;
  */
 import * as format from 'ol/format';
 ol.format = format;
+
+import * as filter from 'ol/format/filter'
+ol.format.filter = filter;
 
 /**
  * ol color
