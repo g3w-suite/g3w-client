@@ -8,7 +8,7 @@ const olutils = require('core/utils/ol');
 /*
 * @since 3.9.0
  */
-window.X2JS = require('./xml2json.g3w.min');
+const X2JS = require('./xml2json.g3w.min');
 
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
