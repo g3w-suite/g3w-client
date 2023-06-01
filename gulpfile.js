@@ -303,7 +303,7 @@ gulp.task('concatenate:vendor_css', function() {
     .pipe(concat('vendor.min.css'))
     .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
     .pipe(cssnano())
-    .pipe(gulp.dest(outputFolder + '/static/client/css/'));
+    .pipe(gulp.dest(`${outputFolder}/static/client/css/`));
 });
 
 /**
@@ -333,7 +333,7 @@ gulp.task('browser-sync', function() {
    */
   gulp.watch([`${g3w.localesFolder}/*.json`], () => runSequence('locales','browser:reload'));
 
-  gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
+  gulp.watch([`${g3w.assetsFolder}/style/**/*.less`], () => runSequence('less','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
 
@@ -443,7 +443,7 @@ gulp.task('select-plugins', function() {
         message: 'Environment',
         choices: ['development', 'production'],
         }, (response) => {
-          production = response.env == 'production';
+          production = response.env === 'production';
           setNODE_ENV();
         }
       )
@@ -511,7 +511,7 @@ gulp.task('deploy-images-plugins', function() {
 gulp.task('deploy-locales-plugins', function() {
     const pluginNames  = process.env.G3W_PLUGINS.split(',');
     const nodePath     = path;
-    const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
+    const outputFolder = production ? g3w.admin_plugins_folder : `${g3w.admin_overrides_folder}/static`;
     return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/locales/*.json`))
         .pipe(rename((path, file) => {
             const pluginName   = nodePath.basename(file.base.split('locales')[0]);
@@ -528,7 +528,7 @@ gulp.task('deploy-locales-plugins', function() {
 gulp.task('deploy-plugin-plugins', function() {
   const pluginNames  = process.env.G3W_PLUGINS.split(',');
   const nodePath     = path;
-  const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
+  const outputFolder = production ? g3w.admin_plugins_folder : `${g3w.admin_overrides_folder}/static`;
   return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
     .pipe(rename((path, file) => {
         const pluginName   = nodePath.basename(file.base);
@@ -597,7 +597,7 @@ gulp.task('dev', done => runSequence(
 gulp.task('test', function() {
   return new Promise(async done => {
     const testPath = `${__dirname}${g3w.test.path}`;
-    const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
+    const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(`${testPath}/${file}`).isDirectory());
     for (let i = 0; i < testGroupFolders.length; i++) {
       await new Promise(resolve => {
         new karma.Server({
