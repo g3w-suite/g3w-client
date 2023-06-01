@@ -9,10 +9,6 @@ import './deprecated';
 // expose global variables
 import './globals';
 
-import VueI18n from "vue-i18n";
-
-Vue.use(VueI18n);
-
 //import core
 import ApplicationState from 'store/application-state';
 
@@ -129,6 +125,7 @@ Vue.directive("download", vDownload);
 /**
  * Install global plugins
  */
+Vue.use(VueI18n);
 Vue.use(window.VueCookie);
 
 /**

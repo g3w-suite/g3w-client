@@ -1,15 +1,10 @@
-/**
- * @since 3.9.0
- */
-import VueI18n from "vue-i18n";
-
 const i18nConfig = {
   locale: null, // set locale
   fallbackLocale: 'en',
   messages: {}
 }
 
-const i18n = new VueI18n(i18nConfig);
+const i18n = new window.VueI18n(i18nConfig);
 
 
 /**
