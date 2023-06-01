@@ -287,7 +287,7 @@ gulp.task('concatenate:vendor_js', function() {
 gulp.task('concatenate:vendor_css', function() {
   return gulp.src([
     "./node_modules/bootstrap/dist/css/bootstrap.min.css",
-    "./node_modules/icheck/skins/all.css",
+    //"./node_modules/icheck/skins/all.css",
     "./node_modules/magic-check/css/magic-check.min.css",
     "./node_modules/bootstrap-datetimepicker-npm/build/css/bootstrap-datetimepicker.css",
     "./node_modules/ol/ol.css",
