@@ -63,10 +63,7 @@ const __H1 = __INFO + "\n";
 // Retrieve project dependencies ("g3w-client")
 //Javascript node_modules dependencies
 const dependencies = Object.keys(packageJSON.dependencies)
-  .filter(dependency =>  {
-    return dependency !== 'magic-check' && // has no js files, only css
-           dependency !== 'ol' // "ParseError: 'import' and 'export' may appear only with 'sourceType: module'",
-  })
+  .filter(dependency =>  dependency !== 'magic-check' ) // has no js files, only css
   .map(dependency => {
     switch (dependency) {
       case 'datatables.net-dt':
@@ -127,21 +124,24 @@ gulp.task('browserify:app', function() {
     // ],
     transform: [
       vueify,
-      [ babelify, { babelrc: true } ],
+      [
+        babelify, {
+          babelrc: true,
+          global: false,
+          ignore: [/\/node_modules\//]
+        }
+      ],
       [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
       imgurify
     ]
   });
-
-  bundler.external(dependencies);           // add external module node_modules on vendor
-
+  //bundler.external(dependencies);   @TODO its still useful?     add external module node_modules on vendor
   if (production) {
     bundler.ignore('./src/index.dev.js');   // ignore dev index file (just to be safe)
   } else {
-    bundler.require(dependencies);
+    //bundler.require(dependencies); // @TODO its still useful?
     bundler = watchify(bundler);
   }
-
   const bundle = () => bundler.bundle()
       .on('error', err => {
         console.log('ERROR: running gulp task "browserify:app"');
@@ -270,7 +270,6 @@ gulp.task('concatenate:vendor_js', function() {
           }],
       ]
     })
-    .require(dependencies)
     .bundle()
     .pipe(source('vendor.min.js'))
     .pipe(buffer())
