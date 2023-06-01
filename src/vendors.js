@@ -2,13 +2,13 @@
  * @file
  * @since 3.9.0
  */
-import Quill from 'quill';
+import Quill from 'quill/dist/quill.min';
 import $script from 'scriptjs';
-import _ from 'lodash';
+import _, {cond} from 'lodash';
 import * as jsts from 'jsts/dist/jsts.min';
 import isMobile from 'ismobilejs';
 import { saveAs } from 'file-saver';
-import moment from 'moment';
+import moment from 'moment/min/moment-with-locales.min';
 import EventEmitter from 'eventemitter';
 import proj4 from 'proj4';
 import * as ol from 'ol';
@@ -31,6 +31,8 @@ import * as filter from 'ol/format/filter';
 import * as sphere from 'ol/sphere';
 import * as color from 'ol/color';
 import * as has from 'ol/has';
+import * as events from 'ol/events';
+import * as condition from 'ol/events/condition';
 import {unByKey} from 'ol/Observable';
 import VueI18n from "vue-i18n";
 
@@ -104,9 +106,13 @@ ol.sphere = sphere;
 
 ol.color = color;
 
-ol.Observable.unByKey = unByKey;
-
 ol.has = has;
+
+ol.events = events;
+
+ol.events.condition = condition;
+
+ol.Observable.unByKey = unByKey;
 
 /**
  * Vue
@@ -124,7 +130,7 @@ window.bootbox = require('bootbox');
 
 require('bootstrap');
 
-require('bootstrap-datetimepicker-npm')(window.jQuery);
+require('bootstrap-datetimepicker')(window.jQuery);
 
 require('jquery-ui');
 
