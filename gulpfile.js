@@ -5,7 +5,10 @@ const concat      = require('gulp-concat');
 const flatten     = require('gulp-flatten');
 const gulpif      = require('gulp-if');
 const less        = require('gulp-less');
-const merge       = require('gulp-merge');
+/**
+ * @since 3.9.0
+ */
+const cssnano    = require('gulp-cssnano');
 const prompt      = require('gulp-prompt');
 const rename      = require('gulp-rename');
 const replace     = require('gulp-replace');
@@ -241,8 +244,9 @@ gulp.task('less', ['fonts'], function() {
     //.pipe(gulpif(production, cleanCSS({ keepSpecialComments: 0 }), replace(/\w+fonts/g, 'fonts')))
     .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
     .pipe(cleanCSS({ keepSpecialComments: 0 }))
+    .pipe(cssnano())
     .pipe(rename('app.min.css'))
-    .pipe(gulp.dest(outputFolder + '/static/client/css/'))
+    .pipe(gulp.dest(`${outputFolder}/static/client/css/`))
 });
 
 /**
@@ -298,6 +302,7 @@ gulp.task('concatenate:vendor_css', function() {
   ])
     .pipe(concat('vendor.min.css'))
     .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
+    .pipe(cssnano())
     .pipe(gulp.dest(outputFolder + '/static/client/css/'));
 });
 
