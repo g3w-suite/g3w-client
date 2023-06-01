@@ -2,7 +2,7 @@
  * @file
  * @since 3.9.0
  */
-
+import Quill from 'quill';
 import $script from 'scriptjs';
 import _ from 'lodash';
 import * as jsts from 'jsts/dist/jsts.min';
@@ -33,6 +33,8 @@ import * as color from 'ol/color';
 import * as has from 'ol/has';
 import {unByKey} from 'ol/Observable';
 import VueI18n from "vue-i18n";
+
+window.Quill = Quill;
 
 window.$script = $script;
 
