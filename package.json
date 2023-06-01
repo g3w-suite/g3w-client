@@ -38,7 +38,6 @@
     "datatables.net-dt": "^1.10.16",
     "eventemitter": "npm:wolfy87-eventemitter@^5.2.9",
     "file-saver": "^2.0.5",
-    "icheck": "^1.0.2",
     "ismobilejs": "^1.1.1",
     "jquery": "^2.2.1",
     "jquery-file-download": "^1.4.5",

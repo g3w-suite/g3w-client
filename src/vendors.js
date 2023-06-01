@@ -2,7 +2,7 @@
  * @file
  * @since 3.9.0
  */
-
+import Quill from 'quill';
 import $script from 'scriptjs';
 import _ from 'lodash';
 import * as jsts from 'jsts/dist/jsts.min';
@@ -30,15 +30,17 @@ import * as format from 'ol/format';
 import * as filter from 'ol/format/filter';
 import * as sphere from 'ol/sphere';
 import * as color from 'ol/color';
+import * as has from 'ol/has';
 import {unByKey} from 'ol/Observable';
 import VueI18n from "vue-i18n";
+
+window.Quill = Quill;
 
 window.$script = $script;
 
 window._ = _;
 
 window.jsts = jsts;
-
 
 window.isMobile = isMobile;
 
@@ -66,7 +68,7 @@ ol.proj = {
   projections,
   Units,
   get,
-  addProjection
+  addProjection,
 };
 
 ol.extent = {
@@ -104,10 +106,11 @@ ol.color = color;
 
 ol.Observable.unByKey = unByKey;
 
+ol.has = has;
+
 /**
  * Vue
  */
-
 window.Vue = require('vue2/dist/vue.min');
 
 window.VueI18n = VueI18n;
@@ -115,14 +118,13 @@ window.VueI18n = VueI18n;
 /**
  * jQuery
  */
-
 window.jQuery = window.$ = require('jquery');
 
 window.bootbox = require('bootbox');
 
 require('bootstrap');
 
-require('bootstrap-datetimepicker-npm');
+require('bootstrap-datetimepicker-npm')(window.jQuery);
 
 require('jquery-ui');
 
@@ -130,6 +132,6 @@ require('select2')(window.jQuery);
 
 require('datatables.net')(window, window.jQuery);
 
-require('blueimp-file-upload')
+require('blueimp-file-upload');
 
 require('jquery-file-download');
