@@ -125,7 +125,7 @@ Vue.directive("download", vDownload);
 /**
  * Install global plugins
  */
-Vue.use(VueI18n);
+Vue.use(window.VueI18n);
 Vue.use(window.VueCookie);
 
 /**
