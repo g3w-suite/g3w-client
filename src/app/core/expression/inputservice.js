@@ -5,9 +5,9 @@ const { convertFeatureToGEOJSON } = require('core/utils/geo');
 export default {
   
   /**
-   * @param expr.field
-   * @param expr.feature
-   * @param expr.qgs_layer_id
+   * @param expr.field        related field
+   * @param expr.feature      feature to transform in form_data
+   * @param expr.qgs_layer_id layer id owner of the feature data 
    * @param expr.parentData
    * 
    * @returns { void | Promise<unknown> }
@@ -36,17 +36,17 @@ export default {
         inputs: {
           field_name: field.name,
           layer_id,
-          qgs_layer_id, // layer id owner of the data
+          qgs_layer_id,
           form_data: convertFeatureToGEOJSON(feature),
-          parent: parentData && {
+          parent: parentData && ({
             form_data: convertFeatureToGEOJSON(parentData.feature),
             qgs_layer_id: parentData.qgs_layer_id,
-            formatter: 0
-          },
+            formatter: 0,
+          }),
           formatter: 0,
-          expression: filter_expression.expression
+          expression: filter_expression.expression,
         },
-        outputs: false
+        outputs: false,
       });
 
       if('select_autocomplete' === field.input.type) {
@@ -59,7 +59,7 @@ export default {
             value: features[i].properties[value]
           })
         }
-        values.sort(({key:aKey}, {key:bKey}) => {
+        values.sort(({ key: aKey }, { key: bKey }) => {
           if ('string' === typeof aKey ) {
             aKey = aKey.toLowerCase();
             bKey = bKey.toLowerCase()
@@ -82,9 +82,9 @@ export default {
   },
 
   /**
-   * @param expr.field
-   * @param expr.feature
-   * @param expr.qgs_layer_id
+   * @param expr.field        related field
+   * @param expr.feature      feature to transform in form_data
+   * @param expr.qgs_layer_id layer id owner of the feature data 
    * @param expr.parentData
    *  
    * @returns { void | Promise<unknown> } 
