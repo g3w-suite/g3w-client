@@ -360,7 +360,6 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
 proto.handleFieldsWithExpression = function(fields=[]) {
   // TODO: add description
   fields.forEach(field => {
-    console.log(field.name)
     const { options = {} } = field.input;
     this._handleFieldWithFilterExpression(field, options.filter_expression);
     this._handleFieldWithDefaultExpression(field, options.default_expression);
