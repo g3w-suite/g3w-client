@@ -2,13 +2,13 @@
  * @file
  * @since 3.9.0
  */
+import moment from 'moment/min/moment-with-locales';
 import Quill from 'quill/dist/quill.min';
 import $script from 'scriptjs';
 import _, {cond} from 'lodash';
 import * as jsts from 'jsts/dist/jsts.min';
 import isMobile from 'ismobilejs';
 import { saveAs } from 'file-saver';
-import moment from 'moment/min/moment-with-locales.min';
 import EventEmitter from 'eventemitter';
 import proj4 from 'proj4';
 import * as ol from 'ol';
@@ -36,6 +36,8 @@ import * as condition from 'ol/events/condition';
 import {unByKey} from 'ol/Observable';
 import VueI18n from "vue-i18n";
 
+window.moment = moment;
+
 window.Quill = Quill;
 
 window.$script = $script;
@@ -47,8 +49,6 @@ window.jsts = jsts;
 window.isMobile = isMobile;
 
 window.saveAs = saveAs;
-
-window.moment = moment;
 
 window.EventEmitter = EventEmitter;
 
@@ -130,7 +130,7 @@ window.bootbox = require('bootbox');
 
 require('bootstrap');
 
-require('bootstrap-datetimepicker')(window.jQuery);
+require('bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min');
 
 require('jquery-ui');
 

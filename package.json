@@ -33,7 +33,7 @@
     "blueimp-file-upload": "^10.32.0",
     "bootbox": "^4.4.0",
     "bootstrap": "^3.4.1",
-    "bootstrap-datetimepicker": "npm:bootstrap-datetimepicker-npm@^4.17.37-npm",
+    "bootstrap-datetimepicker": "npm:eonasdan-bootstrap-datetimepicker@^4.17.47",
     "c3": "^0.7.20",
     "datatables.net-dt": "^1.10.16",
     "eventemitter": "npm:wolfy87-eventemitter@^5.2.9",
