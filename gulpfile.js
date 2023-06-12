@@ -32,7 +32,7 @@ const path        = require('path');
  * @since 3.9.0
  */
 const esmify = require('esmify')
-
+const commonShake = require('common-shakeify')
 const babelify    = require('babelify');
 const browserSync = require('browser-sync');
 const browserify  = require('browserify');
@@ -235,7 +235,7 @@ gulp.task('images', function () {
 /**
  * Compile client styles (src/assets/style/less/app.less --> app.min.css)
  */
-gulp.task('less', ['fonts'], function() {
+gulp.task('less', gulp.series('fonts', function() {
   return gulp.src(`${g3w.assetsFolder}/style/less/app.less`)
     .pipe(less({
       paths: [`${g3w.assetsFolder}/style/less`], // add paths where to search in @import
@@ -247,7 +247,7 @@ gulp.task('less', ['fonts'], function() {
     .pipe(cssnano())
     .pipe(rename('app.min.css'))
     .pipe(gulp.dest(`${outputFolder}/static/client/css/`))
-});
+}));
 
 /**
  * Compile less files in css (process.env.CUSTOM_LESS_FOLDER)
@@ -288,7 +288,7 @@ gulp.task('concatenate:vendor_css', function() {
   return gulp.src([
     "./node_modules/bootstrap/dist/css/bootstrap.min.css",
     "./node_modules/magic-check/css/magic-check.min.css",
-    "./node_modules/bootstrap-datetimepicker-npm/build/css/bootstrap-datetimepicker.css",
+    "./node_modules/bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css",
     "./node_modules/ol/ol.css",
     "./node_modules/select2/dist/css/select2.min.css",
     "./node_modules/c3/c3.min.css",
@@ -330,11 +330,11 @@ gulp.task('browser-sync', function() {
   /**
    * @since 3.9.0
    */
-  gulp.watch([`${g3w.localesFolder}/*.json`], () => runSequence('locales','browser:reload'));
+  gulp.watch([`${g3w.localesFolder}/*.json`],  gulp.series('locales','browser:reload'));
 
-  gulp.watch([`${g3w.assetsFolder}/style/**/*.less`], () => runSequence('less','browser:reload'));
-  gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
-  gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
+  gulp.watch([`${g3w.assetsFolder}/style/**/*.less`], gulp.series('less','browser:reload'));
+  gulp.watch('./src/**/*.{png,jpg}',                  gulp.series('images','browser:reload'));
+  gulp.watch(['./src/index.html'],                    gulp.series('html', 'browser:reload'));
 
   //@since 3.9.0
   gulp.watch([`${g3w.pluginsFolder}/*/locales/*.json`],      (file) => {
@@ -364,7 +364,7 @@ gulp.task('browser-sync', function() {
  * [submodule "src/plugins/qplotly"]          <-- https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
  * [submodule "src/plugins/qtimeseries"]      <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
  */
-gulp.task('clone:default_plugins', function() {
+gulp.task('clone:default_plugins', async function() {
   console.log(H1__ + `Cloning default plugins` + __H1);
   for (const pluginName of default_plugins) {
     if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
@@ -389,7 +389,7 @@ gulp.task('clone:default_plugins', function() {
  * - [submodule "src/plugins/eleprofile"]  --> src/plugins/eleprofile/plugin.js
  * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
  */
-gulp.task('build:dev_plugins', function() {
+gulp.task('build:dev_plugins', async function() {
   for (const pluginName of dev_plugins) {
     console.log(H1__ + `Building plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __H1);
     try {
@@ -542,32 +542,37 @@ gulp.task('deploy-plugin-plugins', function() {
  * @since 3.9.0
  */
 
-gulp.task('deploy-plugins', ['deploy-plugin-plugins', 'deploy-locales-plugins', 'deploy-images-plugins', 'deploy-fonts-plugins']);
+gulp.task('deploy-plugins', gulp.series('deploy-plugin-plugins', 'deploy-locales-plugins', 'deploy-images-plugins', 'deploy-fonts-plugins'));
 
 /**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-plugins', done));
+gulp.task('build:plugins', gulp.series('clone:default_plugins', 'select-plugins', 'deploy-plugins',));
 
 /**
  * Compile and deploy local developed client file assets (static and templates)
  */
-gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'locales', 'fonts', 'images', 'less', 'datatable-images', 'html']);
+gulp.task('build:client', gulp.series('browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'locales', 'fonts', 'images', 'less', 'datatable-images', 'html'));
 
+/**
+ * Set production to true
+ */
+gulp.task('production', function(){
+  production = true;
+  setNODE_ENV();
+});
 /**
  * [PROD] Compile and deploy client application
  * 
  * production   = true,
  * outputFolder = g3w.admin_plugins_folder + '/client'
  */
-gulp.task('build', done => runSequence(
+gulp.task('build', gulp.series(
   'production',
   // 'clean:admin',
   'clone:default_plugins',
   'build:client',
-  'clean:overrides',
-  done
-  )
+  'clean:overrides',)
 );
 
 /**
@@ -576,15 +581,13 @@ gulp.task('build', done => runSequence(
  * production   = false,
  * outputFolder = g3w.admin_overrides_folder
  */
-gulp.task('dev', done => runSequence(
+gulp.task('dev', gulp.series(
   // 'clean:admin',
   'clean:overrides',
   'clone:default_plugins',
   'build:dev_plugins',
   'build:client',
-  'browser-sync',
-  done
-  )
+  'browser-sync',)
 );
 
 /**
@@ -627,18 +630,11 @@ gulp.task('version', function () {
   });
 });
 
-/**
- * Set production to true
- */
- gulp.task('production', function(){
-  production = true;
-  setNODE_ENV();
-});
 
 // Backward compatibilities (v3.x)
-gulp.task('g3w-admin',                           ['build']);
-gulp.task('g3w-admin-plugins-select',            ['build:plugins']);
-gulp.task('g3w-admin-client',                    ['g3w-admin']);
-gulp.task('g3w-admin:plugins',                   ['build:plugins']);
-gulp.task('serve',                               ['dev']);
-gulp.task('default',                             ['dev']);
+gulp.task('g3w-admin',                           gulp.series('build'));
+gulp.task('g3w-admin-plugins-select',            gulp.series('build:plugins'));
+gulp.task('g3w-admin-client',                    gulp.series('g3w-admin'));
+gulp.task('g3w-admin:plugins',                   gulp.series('build:plugins'));
+gulp.task('serve',                               gulp.series('dev'));
+gulp.task('default',                             gulp.series('dev'));
