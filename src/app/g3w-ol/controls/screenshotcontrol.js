@@ -34,7 +34,7 @@ proto.change = function(layers=[]){
  * @returns {boolean}
  */
 proto.checkVisible = function(layers=[]) {
-  return "undefined" === typeof layers.find((layer) => !sameOrigin(layer.getSource() && layer.getSource().url, location));
+  return undefined === layers.find((layer) => !sameOrigin(layer.getSource() && layer.getSource().url, location));
 };
 
 
