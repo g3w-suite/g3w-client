@@ -715,7 +715,7 @@ proto._setupControls = function() {
           if (!isMobile.any ) {
             control = this.createMapControl(controlType, {
               options: {
-                layers: MapLayersStoresRegistry.getLayers(),
+                layers: [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
                 onclick: async () => {
                   // Start download show Image
                   const caller_download_id = ApplicationService.setDownload(true);
@@ -2627,6 +2627,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       map.getView().fit(extent);
     }
     this.loadExternalLayer(layer);
+
     return Promise.resolve(layer);
   };
 

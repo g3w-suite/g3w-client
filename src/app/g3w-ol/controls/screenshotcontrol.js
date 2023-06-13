@@ -1,3 +1,4 @@
+import GUI from 'services/gui';
 const { sameOrigin } = require('core/utils/utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
@@ -9,6 +10,16 @@ function ScreenshotControl(options = {}) {
   options.label = options.label || "\ue90f";
   options.toggled = false;
   OnClickControl.call(this, options);
+  // Listen when a new externalLayer is add to map
+  GUI.getService('map').onafter('loadExternalLayer', (layer)=> {
+    this.layers.push(layer);
+    this.change(this.layers);
+  })
+  // Listen when a externalLayer is remove to map
+  GUI.getService('map').onafter('unloadExternalLayer', (layer)=> {
+    this.layers = this.layers.filter(_layer => _layer !== layer);
+    this.change(this.layers);
+  })
 }
 
 ol.inherits(ScreenshotControl, OnClickControl);
@@ -38,8 +49,15 @@ proto.checkVisible = function(layers=[]) {
   // because for BaseLayer instance src/app/core/layers/baselayers/baselayer.js,
   // getSource() return ol.source instance and not source
   // configuration object
-  return undefined === layers.find((layer) => layer.getConfig().source && layer.getConfig().source.url && !sameOrigin(layer.getConfig().source.url, location));
+  return undefined === layers.find((layer) => {
+    // case wms external layer
+    if ((layer instanceof ol.layer.Tile) || (layer instanceof ol.layer.Image)) {
+      return !sameOrigin(layer.getSource().getUrl(), location);
+    } else {
+      // project layer
+      return layer.getConfig().source && layer.getConfig().source.url && !sameOrigin(layer.getConfig().source.url, location)
+    }
+  });
 };
-
 
 module.exports = ScreenshotControl;
