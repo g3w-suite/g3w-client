@@ -27,15 +27,14 @@ proto.change = function(layers=[]){
  * same origin URL of current application in order to avoid
  * CORS issue while getting map image.
  * 
+ * Layers that don't have a source URL are excluded (eg. base layers)
+ * 
  * @param {array} layers
  * 
  * @returns {boolean}
  */
 proto.checkVisible = function(layers=[]) {
-  return "undefined" === typeof layers
-    //exclude base layers and layers that have not a source url
-    .filter(layer => !layer.isBaseLayer() && layer.getSource() && layer.getSource().url)
-    .find((layer) => !sameOrigin(layer.getSource().url, location));
+  return "undefined" === typeof layers.find((layer) => !sameOrigin(layer.getSource() && layer.getSource().url, location));
 };
 
 
