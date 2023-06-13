@@ -34,7 +34,11 @@ proto.change = function(layers=[]){
  * @returns {boolean}
  */
 proto.checkVisible = function(layers=[]) {
-  return undefined === layers.find((layer) => !sameOrigin(layer.getSource && layer.getSource() && layer.getSource().url, location));
+  // get layer.getConfig().source instead of layer.getSource()
+  // because for BaseLayer instance src/app/core/layers/baselayers/baselayer.js,
+  // getSource() return ol.source instance and not source
+  // configuration object
+  return undefined === layers.find((layer) => layer.getConfig().source && layer.getConfig().source.url && !sameOrigin(layer.getConfig().source.url, location));
 };
 
 
