@@ -32,7 +32,11 @@ proto.change = function(layers=[]){
  * @returns {boolean}
  */
 proto.checkVisible = function(layers=[]) {
-  return undefined === layers.find((layer) => !sameOrigin(layer.getSource() && layer.getSource().url, location));
+  return "undefined" === typeof layers
+    //exclude base layers and layers that have not a source url
+    .filter(layer => !layer.isBaseLayer() && layer.getSource() && layer.getSource().url)
+    .find((layer) => !sameOrigin(layer.getSource().url, location));
 };
+
 
 module.exports = ScreenshotControl;
