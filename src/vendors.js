@@ -3,7 +3,7 @@
  * @since 3.9.0
  */
 import moment from 'moment/min/moment-with-locales';
-import Quill from 'quill/dist/quill.min';
+import Quill from 'quill/dist/quill';
 import $script from 'scriptjs';
 import _, {cond} from 'lodash';
 import * as jsts from 'jsts/dist/jsts.min';
