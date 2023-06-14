@@ -51,6 +51,7 @@ proto.checkVisible = function(layers=[]) {
   // configuration object
   return undefined === layers.find((layer) => {
     // case wms external layer
+    if (layer instanceof ol.layer.Vector) return;
     if ((layer instanceof ol.layer.Tile) || (layer instanceof ol.layer.Image)) {
       return !sameOrigin(layer.getSource().getUrl(), location);
     } else {
