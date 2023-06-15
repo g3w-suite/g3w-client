@@ -706,42 +706,7 @@ proto._setupControls = function() {
             control = this.createMapControl(controlType, {
               options: {
                 layers: [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
-                onclick: async () => {
-                  // Start download show Image
-                  const caller_download_id = ApplicationService.setDownload(true);
-                  try {
-                    const blobImage = await this.createMapImage();
-                    if (controlType === 'screenshot') saveAs(blobImage, `map_${Date.now()}.png`);
-                    else {
-                      const url = `/${this.project.getType()}/api/asgeotiff/${this.project.getId()}/`;
-                      const bbox = this.getMapBBOX().toString();
-                      const csrfmiddlewaretoken = this.getCookie('csrftoken');
-                      try {
-                        const geoTIFF = await getGeoTIFFfromServer({
-                          url,
-                          params: {
-                            image: blobImage,
-                            csrfmiddlewaretoken,
-                            bbox
-                          },
-                          method: "POST"
-                        });
-                        saveAs(geoTIFF, `map_${Date.now()}.tif`);
-                      } catch(err) {
-                        console.log(err)
-                      }
-                    }
-                  } catch (err) {
-                    GUI.showUserMessage({
-                      type: 'alert',
-                      message: t("mapcontrols.screenshot.error"),
-                      autoclose: true
-                    })
-                  }
-                  // Stop download show Image
-                  ApplicationService.setDownload(false, caller_download_id);
-                  return true;
-                }
+                onclick: this._handlePrint.bind(this, controlType)
               }
             });
           }
@@ -2684,6 +2649,44 @@ proto.setExternalLayerStyle = function(color, field) {
     return featureStyleFunction ? featureStyleFunction.call(feature, resolution) : defaultStyle[feature.getGeometry().getType()];
   };
   return styleFunction;
+};
+
+/**
+ * @since 3.8.3
+ */
+proto._handlePrint = async function(controlType) {
+  // Start download
+  const download_id = ApplicationService.setDownload(true);
+  try {
+    const blobImage = await this.createMapImage();
+    if ('screenshot' === controlType) {
+      saveAs(blobImage, `map_${Date.now()}.png`);
+    } else {
+      // GeoTIFF
+      saveAs(
+        await getGeoTIFFfromServer({
+          url: `/${this.project.getType()}/api/asgeotiff/${this.project.getId()}/`,
+          method: "POST",
+          params: {
+            image: blobImage,
+            csrfmiddlewaretoken: this.getCookie('csrftoken'),
+            bbox: this.getMapBBOX().toString()
+          },
+        }),
+        `map_${Date.now()}.tif`
+      );
+    }
+  } catch (err) {
+    GUI.showUserMessage({
+      type: 'alert',
+      message: t("mapcontrols.screenshot.error"),
+      autoclose: true
+    });
+    console.warn(err)
+  }
+  // End download
+  ApplicationService.setDownload(false, download_id);
+  return true;
 };
 
 module.exports = MapService;
