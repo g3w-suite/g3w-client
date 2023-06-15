@@ -1550,41 +1550,24 @@ proto._removeListeners = function() {
 };
 
 // remove all events of layersStore
-proto._removeEventsKeysToLayersStore = function(layerStore) {
-  const layerStoreId = layerStore.getId();
-  if (this._layersStoresEventKeys[layerStoreId]) {
-    this._layersStoresEventKeys[layerStoreId].forEach(eventObj => {
-      Object.entries(eventObj).forEach(([event, eventKey]) => layerStore.un(event, eventKey));
-    });
-    delete this._layersStoresEventKeys[layerStoreId];
+proto._removeEventsKeysToLayersStore = function(store) {
+  const id = store.getId();
+  if (this._layersStoresEventKeys[id]) {
+    this._layersStoresEventKeys[id].forEach(evt => { Object.entries(evt).forEach(([event, key]) => store.un(event, key)); });
+    delete this._layersStoresEventKeys[id];
   }
 };
 
 // register all events of layersStore and relative keys
-proto._setUpEventsKeysToLayersStore = function(layerStore) {
-  const layerStoreId = layerStore.getId();
+proto._setUpEventsKeysToLayersStore = function(store) {
+  const id = store.getId();
   // check if already store a key of events
-  this._layersStoresEventKeys[layerStoreId] = [];
-  //ADD LAYER
-  const addLayerKey = layerStore.onafter('addLayer', layer => {
-    if (layer.getType() === 'vector') {
-      const mapLayer = layer.getMapLayer();
-      this.addLayerToMap(mapLayer);
-    }
+  this._layersStoresEventKeys[id] = [];
+  this._layersStoresEventKeys[id].push({
+    addLayer: store.onafter('addLayer', layer => { 'vector' === layer.getType() && this.addLayerToMap(layer.getMapLayer()) }),
   });
-  this._layersStoresEventKeys[layerStoreId].push({
-    addLayer: addLayerKey
-  });
-  // REMOVE LAYER
-  const removeLayerKey = layerStore.onafter('removeLayer',  layer => {
-    if (layer.getType() === 'vector') {
-      const olLayer = layer.getOLLayer();
-      this.viewer.map.removeLayer(olLayer);
-    }
-  });
-
-  this._layersStoresEventKeys[layerStoreId].push({
-    removeLayer: removeLayerKey
+  this._layersStoresEventKeys[id].push({
+    removeLayer: store.onafter('removeLayer', layer => { 'vector' === layer.getType() && this.viewer.map.removeLayer(layer.getOLLayer()) }),
   });
 };
 
