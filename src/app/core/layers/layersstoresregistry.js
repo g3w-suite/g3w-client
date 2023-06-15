@@ -10,7 +10,6 @@ function LayersStoresRegistry() {
     addLayersStore: this._addLayersStore.bind(this),
     removeLayersStore: this._removeLayersStore.bind(this),
     removeLayersStores: this._removeLayersStores.bind(this),
-    }
   };
 
   base(this);
