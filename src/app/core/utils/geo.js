@@ -840,7 +840,9 @@ const geoutils = {
           const zip = new JSZip();
           const buffer = await data.arrayBuffer(data);
           zip.load(buffer);
-          const kmlFile = zip.file(/.kml$/i)[0];
+          const kmlFiles = zip.file(/.kml$/i);
+          // get last kml file (when doc.kml file has a reference to kml inside another folder)
+          const kmlFile = kmlFiles[kmlFiles.length -1];
           if (kmlFile) {
             data = kmlFile.asText();
             format = new ol.format.KML({
