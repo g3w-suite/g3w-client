@@ -1564,10 +1564,10 @@ proto._setUpEventsKeysToLayersStore = function(store) {
   // check if already store a key of events
   this._layersStoresEventKeys[id] = [];
   this._layersStoresEventKeys[id].push({
-    addLayer: store.onafter('addLayer', layer => { 'vector' === layer.getType() && this.addLayerToMap(layer.getMapLayer()) }),
+    addLayer: store.onafter('addLayer', l => { 'vector' === l.getType() && this.addLayerToMap(l.getMapLayer()) }),
   });
   this._layersStoresEventKeys[id].push({
-    removeLayer: store.onafter('removeLayer', layer => { 'vector' === layer.getType() && this.viewer.map.removeLayer(layer.getOLLayer()) }),
+    removeLayer: store.onafter('removeLayer', l => { 'vector' === l.getType() && this.viewer.map.removeLayer(l.getOLLayer()) }),
   });
 };
 
