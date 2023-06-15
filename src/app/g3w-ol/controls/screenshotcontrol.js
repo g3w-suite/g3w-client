@@ -45,20 +45,22 @@ proto.change = function(layers=[]){
  * @returns {boolean}
  */
 proto.checkVisible = function(layers=[]) {
-  // get layer.getConfig().source instead of layer.getSource()
-  // because for BaseLayer instance src/app/core/layers/baselayers/baselayer.js,
-  // getSource() return ol.source instance and not source
-  // configuration object
   return undefined === layers.find((layer) => {
-    // case wms external layer
-    if (layer instanceof ol.layer.Vector) return;
-    if ((layer instanceof ol.layer.Tile) || (layer instanceof ol.layer.Image)) {
-      return !sameOrigin(layer.getSource().getUrl(), location);
-    } else {
-      // project layer
-      return layer.getConfig().source && layer.getConfig().source.url && !sameOrigin(layer.getConfig().source.url, location)
-    }
+    if (isVectorLayer(layer)) return;
+    const source_url = isImageLayer(layer)
+      ? layer.getSource().getUrl()
+      : layer.getConfig().source && layer.getConfig().source.url;
+    return source_url && !sameOrigin(source_url, location);
   });
 };
+
+function isVectorLayer(layer) {
+  return layer instanceof ol.layer.Vector;
+}
+
+function isImageLayer(layer) {
+  return (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image);
+}
+
 
 module.exports = ScreenshotControl;
