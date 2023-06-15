@@ -602,16 +602,11 @@ proto.showAddLayerModal = function() {
 };
 
 proto._checkMapControls = function() {
-  this._changeMapMapControls.forEach(({control, getLayers}) => {
-    const layers = getLayers();
-    control.change(layers);
-  });
+  this._changeMapMapControls.forEach(({ control, getLayers }) => { control.change(getLayers()); });
 };
 
 proto._setupControls = function() {
-  const baseLayers = getMapLayersByFilter({
-    BASELAYER: true
-  });
+  const baseLayers = getMapLayersByFilter({ BASELAYER: true });
   this.getMapLayers().forEach(mapLayer => mapLayer.getSource().setAttributions(this.getApplicationAttribution()));
   // check if base layer is set. If true add attribution control
   if (this.getApplicationAttribution() || baseLayers.length) {
