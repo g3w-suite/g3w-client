@@ -3,13 +3,18 @@ const { sameOrigin } = require('core/utils/utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
 function ScreenshotControl(options = {}) {
-  this.layers      = options.layers || [];
+  options = {
+    name: "maptoimage",
+    tipLabel: "Screenshot",
+    label: "\ue90f",
+    toggled: false,
+    visible: false,
+    layers: [],
+    ...options
+  };
 
-  options.visible  = this.checkVisible(this.layers);
-  options.name     = options.name || "maptoimage";
-  options.tipLabel = options.tipLabel || "Screenshot";
-  options.label    = options.label || "\ue90f";
-  options.toggled  = false;
+  this.layers     = options.layers;
+  options.visible = this.checkVisible(this.layers);
 
   OnClickControl.call(this, options);
 
