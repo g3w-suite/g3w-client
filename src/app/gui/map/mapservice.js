@@ -278,19 +278,11 @@ function MapService(options={}) {
     listener: extraParamsSet
   });
 
-  this.once('viewerset', ()=> {
-    //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    MapLayersStoresRegistry.getLayersStores().forEach(layersStore => {
-      this._setUpEventsKeysToLayersStore(layersStore);
-    });
-    // LISTEN ON EVERY ADDED LAYERSSTORE
-    MapLayersStoresRegistry.onafter('addLayersStore', layersStore => {
-      this._setUpEventsKeysToLayersStore(layersStore);
-    });
-    // LISTENER ON REMOVE LAYERSTORE
-    MapLayersStoresRegistry.onafter('removeLayersStore', layerStore => {
-      this._removeEventsKeysToLayersStore(layerStore);
-    });
+  this.once('viewerset', () => {
+    // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+    MapLayersStoresRegistry.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
+    MapLayersStoresRegistry.onafter('addLayersStore', this._setUpEventsKeysToLayersStore.bind(this));
+    MapLayersStoresRegistry.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
   });
 
   base(this);
@@ -337,9 +329,7 @@ proto.clear = function() {
     }
   });
   this._keyEvents = null;
-  MapLayersStoresRegistry.getLayersStores().forEach(layerStore => {
-    this._removeEventsKeysToLayersStore(layerStore);
-  })
+  MapLayersStoresRegistry.getLayersStores().forEach(this._removeEventsKeysToLayersStore.bind(this))
 };
 
 proto.showMapSpinner = function(){
