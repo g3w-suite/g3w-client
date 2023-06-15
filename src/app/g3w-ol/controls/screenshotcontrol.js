@@ -3,32 +3,42 @@ const { sameOrigin } = require('core/utils/utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
 function ScreenshotControl(options = {}) {
-  this.layers = options.layers || [];
-  options.visible = this.checkVisible(this.layers);
-  options.name = options.name || "maptoimage";
-  options.tipLabel =  options.tipLabel|| "Screenshot";
-  options.label = options.label || "\ue90f";
-  options.toggled = false;
+  this.layers      = options.layers || [];
+
+  options.visible  = this.checkVisible(this.layers);
+  options.name     = options.name || "maptoimage";
+  options.tipLabel = options.tipLabel || "Screenshot";
+  options.label    = options.label || "\ue90f";
+  options.toggled  = false;
+
   OnClickControl.call(this, options);
-  // Listen when a new externalLayer is add to map
-  GUI.getService('map').onafter('loadExternalLayer', (layer)=> {
-    this.layers.push(layer);
-    this.change(this.layers);
-  })
-  // Listen when a externalLayer is remove to map
-  GUI.getService('map').onafter('unloadExternalLayer', (layer)=> {
-    this.layers = this.layers.filter(_layer => _layer !== layer);
-    this.change(this.layers);
-  })
+
+  GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+  GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
 }
 
 ol.inherits(ScreenshotControl, OnClickControl);
 
 const proto = ScreenshotControl.prototype;
 
-proto.change = function(layers=[]){
-  const visible = this.checkVisible(layers);
-  this.setVisible(visible);
+/**
+ * @since 3.8.3 
+ */
+proto._addLayer = function(layer) {
+  this.layers.push(layer);
+  this.change(this.layers);
+};
+
+/**
+ * @since 3.8.3 
+ */
+proto._removeLayer = function(layer) {
+  this.layers = this.layers.filter(_layer => _layer !== layer);
+  this.change(this.layers);
+};
+
+proto.change = function(layers = []) {
+  this.setVisible(this.checkVisible(layers));
 };
 
 /**
@@ -44,7 +54,7 @@ proto.change = function(layers=[]){
  * 
  * @returns {boolean}
  */
-proto.checkVisible = function(layers=[]) {
+proto.checkVisible = function(layers = []) {
   return undefined === layers.find((layer) => {
     if (isVectorLayer(layer)) return;
     const source_url = isImageLayer(layer)
