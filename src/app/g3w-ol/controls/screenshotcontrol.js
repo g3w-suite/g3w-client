@@ -39,7 +39,7 @@ proto._addLayer = function(layer) {
  * @since 3.8.3 
  */
 proto._removeLayer = function(layer) {
-  this.layers = this.layers.filter(_layer => _layer !== layer);
+  this.layers = this.layers.filter(l => l !== layer);
   this.change(this.layers);
 };
 
@@ -61,7 +61,7 @@ proto.change = function(layers = []) {
  * @returns {boolean}
  */
 proto.checkVisible = function(layers = []) {
-  return undefined === layers.find((layer) => {
+  return layers.some((layer) => {
     if (isVectorLayer(layer) || !layer.getVisible()) return;
     const source_url = isImageLayer(layer)
       ? layer.getSource().getUrl()
