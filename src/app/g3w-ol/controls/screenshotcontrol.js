@@ -26,6 +26,11 @@ const proto = ScreenshotControl.prototype;
  */
 proto._addLayer = function(layer) {
   this.layers.push(layer);
+  // in case of image layer
+  if (isImageLayer(layer)) {
+    // listen change visibility of layer
+    layer.on('change:visible', () => this.change(this.layers));
+  }
   this.change(this.layers);
 };
 
@@ -57,6 +62,7 @@ proto.change = function(layers = []) {
 proto.checkVisible = function(layers = []) {
   return undefined === layers.find((layer) => {
     if (isVectorLayer(layer)) return;
+    if (isImageLayer(layer) && !layer.getVisible()) return;
     const source_url = isImageLayer(layer)
       ? layer.getSource().getUrl()
       : layer.getConfig().source && layer.getConfig().source.url;
