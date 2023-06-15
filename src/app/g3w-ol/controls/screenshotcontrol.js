@@ -39,7 +39,7 @@ proto._addLayer = function(layer) {
  * @since 3.8.3 
  */
 proto._removeLayer = function(layer) {
-  this.layers = this.layers.filter(l => l !== layer);
+  this.layers = this.layers.filter(_layer => _layer !== layer);
   this.change(this.layers);
 };
 
@@ -61,14 +61,16 @@ proto.change = function(layers = []) {
  * @returns {boolean}
  */
 proto.checkVisible = function(layers = []) {
-  return layers.some((layer) => {
-    if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) return;
-    const source_url = isImageLayer(layer)
-      ? layer.getSource().getUrl()
-      : layer.getConfig().source && layer.getConfig().source.url;
-    return source_url && !sameOrigin(source_url, location);
-  });
+  return !layers.some(isCrossOrigin);
 };
+
+function isCrossOrigin(layer) {
+  if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) return;
+  const source_url = isImageLayer(layer)
+    ? layer.getSource().getUrl()
+    : layer.getConfig().source && layer.getConfig().source.url;
+  return source_url && !sameOrigin(source_url, location);
+}
 
 function isVectorLayer(layer) {
   return layer instanceof ol.layer.Vector;
@@ -77,6 +79,5 @@ function isVectorLayer(layer) {
 function isImageLayer(layer) {
   return (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image);
 }
-
 
 module.exports = ScreenshotControl;
