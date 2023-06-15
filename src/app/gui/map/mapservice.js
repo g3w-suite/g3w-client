@@ -309,25 +309,21 @@ proto.setUpMapOlEvents = function(){
 
 //clear methods to remove all listeners events
 proto.clear = function() {
-  Object.keys(this._keyEvents).forEach(type => {
-    switch(type) {
-      case 'ol':
-        this._keyEvents[type].forEach(keyEvent => ol.Observable.unByKey(keyEvent));
-        break;
-      case 'g3wobject':
-        this._keyEvents[type].forEach(eventObject => {
-          const {who, setter, key} = eventObject;
-          who.un(setter, key);
-        });
-        break;
-      case 'eventemitter':
-        this._keyEvents[type].forEach(eventObject => {
-          const {event, listener } = eventObject;
-          this.removeListener(event, listener);
-        });
-        break;
-    }
-  });
+  Object
+    .keys(this._keyEvents)
+    .forEach(type => {
+      switch(type) {
+        case 'ol':
+          this._keyEvents[type].forEach(key => ol.Observable.unByKey(key));
+          break;
+        case 'g3wobject':
+          this._keyEvents[type].forEach(({ who, setter, key }) => { who.un(setter, key); });
+          break;
+        case 'eventemitter':
+          this._keyEvents[type].forEach(({ event, listener }) => { this.removeListener(event, listener); });
+          break;
+      }
+    });
   this._keyEvents = null;
   MapLayersStoresRegistry.getLayersStores().forEach(this._removeEventsKeysToLayersStore.bind(this))
 };
