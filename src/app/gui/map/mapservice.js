@@ -573,15 +573,14 @@ proto.activeMapControl = function(controlName) {
   !control.isToggled() ? control.toggle() : null;
 };
 
-proto.createMapControl = function(type, {id, add=true, toggled=false, visible, options={}}={}) {
-  id = id || type;
-  const control = ControlsFactory.create({
-    type,
-    toggled,
-    ...options
-  });
-  visible = visible === undefined ? (control.isVisible ? control.isVisible() : true) : visible;
-  control && this.addControl(id, type, control, add, visible);
+proto.createMapControl = function(type, { id, add = true, toggled = false, visible, options = {} } = {}) {
+  const control = ControlsFactory.create({ type, toggled, ...options });
+  visible = visible === undefined
+    ? (control.isVisible ? control.isVisible() : true)
+    : visible;
+  if (control) {
+    this.addControl(id || type, type, control, add, visible);
+  }
   return control;
 };
 
@@ -1155,8 +1154,6 @@ proto.getMapControlByType = function({type}={}) {
 };
 
 /**
- *
- *
  * @param id
  * @param type
  * @param control
@@ -1166,41 +1163,39 @@ proto.getMapControlByType = function({type}={}) {
 proto.addControl = function(id, type, control, addToMapControls=true, visible=true) {
   this.state.mapcontrolready = false;
   this.viewer.map.addControl(control);
+
   control.on('toggled', evt => this.emit('mapcontrol:toggled', evt));
-  this._mapControls.push({
-    id,
-    type,
-    control,
-    visible,
-    mapcontrol: addToMapControls && visible
+
+  this._mapControls.push({ id, type, control, visible, mapcontrol: addToMapControls && visible });
+
+  control.on('controlclick', ({ target: mapcontrol }) => {
+    const clickmap = mapcontrol.isClickMap && mapcontrol.isClickMap() || false;
+    if (clickmap) {
+      this._externalInteractions.forEach(interaction => interaction.setActive(false));
+    }
+    this.controlClick(mapcontrol, { clickmap })
   });
-  control.on('controlclick', evt => {
-    const {target:mapcontrol} = evt;
-    const info = {
-      clickmap: mapcontrol.isClickMap && mapcontrol.isClickMap() || false
-    };
-    info.clickmap && this._externalInteractions.forEach(interaction => interaction.setActive(false));
-    this.controlClick(mapcontrol, info)
-  });
+
   const buttonControl = $(control.element).find('button');
-  buttonControl.tooltip({
-    placement: 'bottom',
-    trigger : GUI.isMobile() ? 'click': 'hover'
-  });
+
+  buttonControl.tooltip({ placement: 'bottom', trigger: GUI.isMobile() ? 'click': 'hover' });
+
   // in case of mobile hide tooltip after click
-  GUI.isMobile() && buttonControl.on('shown.bs.tooltip', function() {
-    setTimeout(()=>$(this).tooltip('hide'), 600);
-  });
-  if (addToMapControls) this._addControlToMapControls(control, visible);
-  else {
-    const $mapElement = $(`#${this.getMap().getTarget()}`);
-    this._updateMapControlsLayout({
-      width: $mapElement.width(),
-      height: $mapElement.height()
-    })
+  if (GUI.isMobile()) {
+    buttonControl.on('shown.bs.tooltip', function() { setTimeout(() => $(this).tooltip('hide'), 600); });
   }
+
+  if (addToMapControls) {
+    this._addControlToMapControls(control, visible);
+  } else {
+    const $mapElement = $(`#${this.getMap().getTarget()}`);
+    this._updateMapControlsLayout({ width: $mapElement.width(), height: $mapElement.height() });
+  }
+
   ControlsRegistry.registerControl(type, control);
+
   this._setMapControlsInsideContainerLenght();
+
   this.state.mapcontrolready = true;
 };
 
