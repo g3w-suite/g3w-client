@@ -62,7 +62,7 @@ proto.change = function(layers = []) {
  */
 proto.checkVisible = function(layers = []) {
   return layers.some((layer) => {
-    if (isVectorLayer(layer) || !layer.getVisible()) return;
+    if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) return;
     const source_url = isImageLayer(layer)
       ? layer.getSource().getUrl()
       : layer.getConfig().source && layer.getConfig().source.url;
