@@ -74,7 +74,7 @@ proto.checkVisible = function(layers = []) {
 };
 
 function isCrossOrigin(layer) {
-  if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) return;
+  if (isVectorLayer(layer)) return;
   const source_url = isImageLayer(layer)
     ? layer.getSource().getUrl()
     : layer.getConfig().source && layer.getConfig().source.url;
