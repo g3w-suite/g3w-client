@@ -511,7 +511,16 @@ export default {
         tooltip: "Areal"
       },
       screenshot: {
-        error: "Screenshot error creation"
+        error: "Screenshot error creation",
+        securityError: `  
+        <p><b>Säkerhetsfel</b>: ett externt lager hindrar kartan från att skrivas ut. Gör så här för att kontrollera:</p>
+        <ol>
+          <li>ta bort alla manuellt tillagda externa lager (t.ex. WMS-lager)</li>
+          <li>tvinga om inläsning av sidan: <code>CTRL + F5</code></li>
+          <li>skriv ut kartan igen</li>
+        </ol>
+        <p>För mer information kontakta serveradministratören om: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -vikt: fet;">&#x2139;&#xFE0F; säkerhet och nedsmutsade dukar</a></p>
+        `
       }
     },
     catalog_items: {

@@ -1,10 +1,12 @@
 const ScreenshotControl = require('g3w-ol/controls/screenshotcontrol');
 
 function GeoScreenshotControl(options = {}) {
-  options.name = "maptoimagegeo";
-  options.tipLabel =  "Geo Screenshot";
-  options.label = "\ue900";
-  ScreenshotControl.call(this, options);
+  ScreenshotControl.call(this, {
+    name: "maptoimagegeo",
+    tipLabel: "Geo Screenshot",
+    label: "\ue900",
+    ...options,
+  });
 }
 
 ol.inherits(GeoScreenshotControl, ScreenshotControl);

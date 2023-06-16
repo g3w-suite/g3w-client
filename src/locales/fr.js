@@ -512,7 +512,16 @@ export default {
         tooltip: "Zone"
       },
       screenshot: {
-        error: "Erreur de création de la capture d'écran"
+        error: "Erreur de création de la capture d'écran",
+        securityError: `  
+        <p><b>Erreur de sécurité</b> : une couche externe empêche l'impression de la carte. Pour vérifier, procédez comme suit :</p>
+        <ol>
+          <li>supprimer toutes les couches externes ajoutées manuellement (par exemple, les couches WMS)</li>
+          <li>forcer le rechargement de la page : <code>CTRL + F5</code></li>
+          <li>imprimer à nouveau la carte</li>
+        </ol>
+        <p>Pour plus d'informations, veuillez contacter l'administrateur du serveur à propos de : <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -poids : gras ;">&#x2139;&#xFE0F ; sécurité et toiles souillées</a></p>
+        `
       }
     },
     catalog_items: {
