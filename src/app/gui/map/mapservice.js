@@ -412,8 +412,6 @@ proto.createMapImage = function({map, background} = {}) {
       else canvas.toBlob(blob => resolve(blob));
     } catch (err) {
       reject(err);
-      // TODO ??
-      // throw err;
     }
   })
 };
