@@ -73,6 +73,21 @@ function MapService(options={}) {
     mapunits: ['metric']
   };
   this.id = 'MapService';
+
+  /**
+   * @since 3.8.3
+   * internal promise. Resolved when view is set
+   */
+  this._ready = new Promise((resolve, reject) => {
+    this.once('viewerset', () => {
+      // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+      MapLayersStoresRegistry.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
+      MapLayersStoresRegistry.onafter('addLayersStore', this._setUpEventsKeysToLayersStore.bind(this));
+      MapLayersStoresRegistry.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
+      resolve();
+    });
+  })
+
   this.viewer = null;
   this.target = options.target || null;
   this.layersCount = 0; // useful to set Zindex to layer order on map
@@ -277,20 +292,6 @@ function MapService(options={}) {
     event: 'extraParamsSet',
     listener: extraParamsSet
   });
-
-  /**
-   * @since 3.8.3
-   * internal promise. Resolved when view is set
-   */
-  this._ready = new Promise((resolve, reject) => {
-    this.once('viewerset', () => {
-      // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-      MapLayersStoresRegistry.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
-      MapLayersStoresRegistry.onafter('addLayersStore', this._setUpEventsKeysToLayersStore.bind(this));
-      MapLayersStoresRegistry.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
-      resolve();
-    });
-  })
 
   base(this);
 }
