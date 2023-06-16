@@ -515,15 +515,13 @@ export default {
       screenshot: {
         error: "Errore nella creazione dello screenshot",
         securityError: `  
-         [<span style="font-weight: bold">securityError</span>] An external layer is preventing the map from being printed.<br>
-          To check, proceed as follows:
-          <ol>
-            <li>remove any manually added external layers (eg. WMS layers)</li>
-            <li>reload the page (CTRL + F5)</li>
-            <li>print again the map</li>
-          </ol>
-          If the error persists please contact the server administrator.<br>
-          For more info: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image">security and tainted canvases</a>
+        <p><b>Errore di sicurezza</b>: uno strato esterno impedisce la stampa della mappa. Per verificare, procedere come segue:</p>
+        <ol>
+          <li>rimuovi eventuali layer esterni aggiunti manualmente (es. layer WMS)</li>
+          <li>forza il ricaricamento della pagina: <code>CTRL + F5<code></li>
+          <li>stampa nuovamente la mappa</li>
+        </ol>
+        <p>Per maggiori informazioni contattare l'amministratore del server in merito a: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
         `
       }
     },

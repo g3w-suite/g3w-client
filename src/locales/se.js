@@ -513,15 +513,13 @@ export default {
       screenshot: {
         error: "Screenshot error creation",
         securityError: `  
-         [<span style="font-weight: bold">securityError</span>] An external layer is preventing the map from being printed.<br>
-          To check, proceed as follows:
-          <ol>
-            <li>remove any manually added external layers (eg. WMS layers)</li>
-            <li>reload the page (CTRL + F5)</li>
-            <li>print again the map</li>
-          </ol>
-          If the error persists please contact the server administrator.<br>
-          For more info: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image">security and tainted canvases</a>
+        <p><b>Säkerhetsfel</b>: ett externt lager hindrar kartan från att skrivas ut. Gör så här för att kontrollera:</p>
+        <ol>
+          <li>ta bort alla manuellt tillagda externa lager (t.ex. WMS-lager)</li>
+          <li>tvinga om inläsning av sidan: <code>CTRL + F5</code></li>
+          <li>skriv ut kartan igen</li>
+        </ol>
+        <p>För mer information kontakta serveradministratören om: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -vikt: fet;">&#x2139;&#xFE0F; säkerhet och nedsmutsade dukar</a></p>
         `
       }
     },
