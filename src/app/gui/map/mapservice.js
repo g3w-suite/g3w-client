@@ -396,7 +396,6 @@ proto.createMapImage = function({map, background} = {}) {
       else canvas.toBlob(blob => resolve(blob));
     } catch (err) {
       reject(err);
-      
       // TODO ??
       // throw err;
     }
@@ -2639,11 +2638,10 @@ proto._handlePrint = async function(controlType) {
       );
     }
   } catch (err) {
-    console.warn(err)
     GUI.showUserMessage({
-      type: 'alert',
-      message: t("mapcontrols.screenshot.error"),
-      autoclose: true
+      type: 'SecurityError' === err.name ? 'warning' : 'alert',
+      message: 'SecurityError' === err.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
+      autoclose: false
     });
   }
   // End download

@@ -513,7 +513,18 @@ export default {
         tooltip: "Area"
       },
       screenshot: {
-        error: "Errore nella creazione dello screenshot"
+        error: "Errore nella creazione dello screenshot",
+        securityError: `  
+         [<span style="font-weight: bold">securityError</span>] An external layer is preventing the map from being printed.<br>
+          To check, proceed as follows:
+          <ol>
+            <li>remove any manually added external layers (eg. WMS layers)</li>
+            <li>reload the page (CTRL + F5)</li>
+            <li>print again the map</li>
+          </ol>
+          If the error persists please contact the server administrator.<br>
+          For more info: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image">security and tainted canvases</a>
+        `
       }
     },
     catalog_items: {
