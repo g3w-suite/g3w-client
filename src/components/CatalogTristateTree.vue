@@ -474,10 +474,14 @@ export default {
      * @fires CatalogEventHub~treenodeselected
      */
     select() {
-      if (this.layerstree.external && 'undefined' !== typeof this.layerstree.selected) {
+      // skip when `selected === undefined` (unselectable layer, eg. an external WMS layer) 
+      if (undefined === this.layerstree.selected) {
+        return;
+      }
+      if (this.layerstree.external) {
         CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
-        CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
+        CatalogEventHub.$emit('treenodeselected', this.storeid, this.layerstree);
       }
     },
 
