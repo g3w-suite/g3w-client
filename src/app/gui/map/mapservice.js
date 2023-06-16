@@ -278,12 +278,19 @@ function MapService(options={}) {
     listener: extraParamsSet
   });
 
-  this.once('viewerset', () => {
-    // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    MapLayersStoresRegistry.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
-    MapLayersStoresRegistry.onafter('addLayersStore', this._setUpEventsKeysToLayersStore.bind(this));
-    MapLayersStoresRegistry.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
-  });
+  /**
+   * @since 3.8.3
+   * internal promise. Resolved when view is set
+   */
+  this._ready = new Promise((resolve, reject) => {
+    this.once('viewerset', () => {
+      // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+      MapLayersStoresRegistry.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
+      MapLayersStoresRegistry.onafter('addLayersStore', this._setUpEventsKeysToLayersStore.bind(this));
+      MapLayersStoresRegistry.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
+      resolve();
+    });
+  })
 
   base(this);
 }
@@ -291,6 +298,14 @@ function MapService(options={}) {
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
+
+/**
+ * @since 3.8.3
+ * return promise ready
+ */
+proto.isReady = function(){
+  return this._ready;
+};
 
 proto.setUpMapOlEvents = function() {
   const dynamicLegend = this.project.getContextBaseLegend();
