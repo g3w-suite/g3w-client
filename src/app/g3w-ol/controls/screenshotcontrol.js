@@ -1,7 +1,22 @@
 import GUI from 'services/gui';
+
 const { sameOrigin } = require('core/utils/utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
+/**
+ * @FIXME prevent tainted canvas error
+ * 
+ * Because the pixels in a canvas's bitmap can come from a variety of sources,
+ * including images or videos retrieved from other hosts, it's inevitable that
+ * security problems may arise. As soon as you draw into a canvas any data that
+ * was loaded from another origin without CORS approval, the canvas becomes
+ * tainted.
+ * 
+ * A tainted canvas is one which is no longer considered secure, and any attempts
+ * to retrieve image data back from the canvas will cause an exception to be thrown.
+ * 
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+ */
 function ScreenshotControl(options = {}) {
   options = {
     name: "maptoimage",
@@ -18,10 +33,11 @@ function ScreenshotControl(options = {}) {
 
   OnClickControl.call(this, options);
 
-  this.isVisible() && GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
-  /**
-   * Comment because at 3.8.3 need to be find a way to redraw a map canvas
-   */
+  if (this.isVisible()) {
+    GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+  }
+
+  /** @TODO prevent tainted canvas error  */
   //GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
 }
 
@@ -33,13 +49,11 @@ const proto = ScreenshotControl.prototype;
  * @since 3.8.3 
  */
 proto._addLayer = function(layer) {
-  // only in case visible otherwise we need to find a solution to redraw map canvas
   if (this.isVisible()) {
     this.layers.push(layer);
     this.change(this.layers);
-    /**
-     * Comment because at 3.8.3 need to be find a way to redraw a map canvas
-     */
+
+    /** @TODO prevent tainted canvas error  */
     //layer.on('change:visible', () => this.change(this.layers));
   }
 };
@@ -48,7 +62,7 @@ proto._addLayer = function(layer) {
  * @since 3.8.3 
  */
 proto._removeLayer = function(layer) {
-  this.layers = this.layers.filter(_layer => _layer !== layer);
+  this.layers = this.layers.filter(l => l !== layer);
   this.change(this.layers);
 };
 
