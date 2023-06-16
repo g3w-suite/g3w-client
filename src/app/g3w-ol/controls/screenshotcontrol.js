@@ -33,12 +33,8 @@ function ScreenshotControl(options = {}) {
 
   OnClickControl.call(this, options);
 
-  if (this.isVisible()) {
-    GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
-  }
-
-  /** @TODO prevent tainted canvas error  */
-  //GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+  GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+  GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
 }
 
 ol.inherits(ScreenshotControl, OnClickControl);
@@ -49,13 +45,9 @@ const proto = ScreenshotControl.prototype;
  * @since 3.8.3 
  */
 proto._addLayer = function(layer) {
-  if (this.isVisible()) {
-    this.layers.push(layer);
-    this.change(this.layers);
-
-    /** @TODO prevent tainted canvas error  */
-    //layer.on('change:visible', () => this.change(this.layers));
-  }
+  this.layers.push(layer);
+  this.change(this.layers);
+  layer.on('change:visible', () => this.change(this.layers));
 };
 
 /**
@@ -88,7 +80,7 @@ proto.checkVisible = function(layers = []) {
 };
 
 function isCrossOrigin(layer) {
-  if (isVectorLayer(layer)) return;
+  if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) return;
   const source_url = isImageLayer(layer)
     ? layer.getSource().getUrl()
     : layer.getConfig().source && layer.getConfig().source.url;

@@ -396,6 +396,9 @@ proto.createMapImage = function({map, background} = {}) {
       else canvas.toBlob(blob => resolve(blob));
     } catch (err) {
       reject(err);
+      
+      // TODO ??
+      // throw err;
     }
   })
 };
@@ -2513,11 +2516,13 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
   }
 
   const loadExternalLayer = (layer, type) => {
-    let extent;
     // skip if is not a valid layer
     if (!layer) {
       return Promise.reject();
     }
+
+    let extent;
+
     if (type === 'vector') {
       const features = layer.getSource().getFeatures();
       if (features.length) {
@@ -2530,16 +2535,23 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       extent = layer.getSource().getExtent();
       externalLayer.bbox = { minx: extent[0], miny: extent[1], maxx: extent[2], maxy: extent[3] };
     }
+
     layer.set('position', position);
     layer.setOpacity(opacity);
     layer.setVisible(visible);
+
     map.addLayer(layer);
+
     this._externalLayers.push(layer);
+
     QueryResultService.registerVectorLayer(layer);
+
     catalogService.addExternalLayer({ layer: externalLayer, type });
+
     if (extent) {
       map.getView().fit(extent);
     }
+
     this.loadExternalLayer(layer);
 
     return Promise.resolve(layer);
@@ -2627,12 +2639,12 @@ proto._handlePrint = async function(controlType) {
       );
     }
   } catch (err) {
+    console.warn(err)
     GUI.showUserMessage({
       type: 'alert',
       message: t("mapcontrols.screenshot.error"),
       autoclose: true
     });
-    console.warn(err)
   }
   // End download
   ApplicationService.setDownload(false, download_id);
