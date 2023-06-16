@@ -510,7 +510,16 @@ export default {
         tooltip: "Arie"
       },
       screenshot: {
-        error: "Eroare captură ecran"
+        error: "Eroare captură ecran",
+        securityError: `  
+        <p><b>Eroare de securitate</b>: un strat extern împiedică imprimarea hărții. Pentru a verifica, procedați după cum urmează:</p>
+        <ol>
+          <li>eliminați orice straturi externe adăugate manual (de exemplu, straturi WMS)</li>
+          <li>forțați reîncărcarea paginii: <code>CTRL + F5</code></li>
+          <li>tipărește din nou harta</li>
+        </ol>
+        <p>Pentru mai multe informații, vă rugăm să contactați administratorul serverului despre: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -greutate: bold;">&#x2139;&#xFE0F; securitate și pânze contaminate</a></p>
+        `
       }
     },
     catalog_items: {
