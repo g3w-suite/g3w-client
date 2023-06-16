@@ -2300,10 +2300,7 @@ proto.stopDrawGreyCover = function() {
 };
 
 proto.removeExternalLayers = function() {
-  this._externalLayers.forEach(layer =>{
-    const name = layer.get('name');
-    this.removeExternalLayer(name);
-  });
+  this._externalLayers.forEach(layer => { this.removeExternalLayer(layer.get('name')); });
   this._externalLayers = [];
 };
 
@@ -2336,31 +2333,32 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
 };
 
 /**
- * Remove externla layer
+ * Remove external layer
+ * 
  * @param name
  */
 proto.removeExternalLayer = function(name) {
   const layer = this.getLayerByName(name);
-  const catalogService = GUI.getService('catalog');
-  const QueryResultService = GUI.getService('queryresults');
-  QueryResultService.unregisterVectorLayer(layer);
+  GUI.getService('queryresults').unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
   const type = layer._type || 'vector';
-  catalogService.removeExternalLayer({
-    name,
-    type
-  });
-  if (type == 'wms') this._externalMapLayers = this._externalMapLayers.filter(externalMapLayer => {
-    if (externalMapLayer.getId() === layer.id) this.unregisterMapLayerListeners(externalMapLayer, layer.projectLayer);
-    return externalMapLayer.getId() !== layer.id
-  });
-  this._externalLayers = this._externalLayers.filter(externalLayer => externalLayer.get('id') !== layer.get('id'));
+  GUI.getService('catalog').removeExternalLayer({ name, type });
+  if (type == 'wms') {
+    this._externalMapLayers = this._externalMapLayers
+      .filter(ext => {
+        const found = ext.getId() === layer.id;
+        if (found) this.unregisterMapLayerListeners(ext, layer.projectLayer);
+        return !found;
+      });
+  }
+  this._externalLayers = this._externalLayers.filter(ext => ext.get('id') !== layer.get('id'));
   this.unloadExternalLayer(layer);
   this.emit('remove-external-layer', name);
 };
 
 /**
- * Add wms external layer to mapo
+ * Add external WMS layer to map
+ * 
  * @param url
  * @param layers
  * @param name
@@ -2368,36 +2366,28 @@ proto.removeExternalLayer = function(name) {
  * @param position
  * @returns {Promise<unknown>}
  */
-proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity, visible=true}={}) {
+proto.addExternalWMSLayer = function({
+  url,
+  layers,
+  name,
+  epsg = this.getEpsg(),
+  position = MAP_SETTINGS.LAYER_POSITIONS.default,
+  opacity,
+  visible=true
+} = {}) {
+
   const projection = ol.proj.get(epsg);
-  return new Promise((resolve, reject) =>{
-    const {wmslayer, olLayer} = createWMSLayer({
-      name,
-      url,
-      layers,
-      projection
-    });
 
-    wmslayer.once('loadend', ()=> {
-      resolve(wmslayer)
-    });
+  return new Promise((resolve, reject) => {
+    const { wmslayer, olLayer } = createWMSLayer({ name, url, layers, projection });
 
-    wmslayer.once('loaderror', err => {
-      reject(err);
-    });
+    wmslayer.once('loadend', () => { resolve(wmslayer) });
+    wmslayer.once('loaderror', err => { reject(err); });
 
-    /**
-     * add to map
-     */
-    this.addExternalLayer(olLayer,  {
-      position,
-      opacity,
-      visible
-    });
+    // add to map
+    this.addExternalLayer(olLayer, { position, opacity, visible });
 
-    /**
-     * cal register and other thing to alert that new map layer is added
-     */
+    // register and dispatch layer add event
     this.addExternalMapLayer(wmslayer, false);
   })
 };
@@ -2411,9 +2401,9 @@ proto.getExternalLayers = function() {
   return this._externalLayers;
 };
 
-proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false) {
-  this._externalMapLayers.push(externalMapLayer);
-  this.registerMapLayerListeners(externalMapLayer, projectLayer);
+proto.addExternalMapLayer = function(layer, projectLayer=false) {
+  this._externalMapLayers.push(layer);
+  this.registerMapLayerListeners(layer, projectLayer);
 };
 
 /**
@@ -2577,62 +2567,36 @@ proto.setExternalLayerStyle = function(color, field) {
   const defaultStyle = {
     'Point': new ol.style.Style({
       image: new ol.style.Circle({
-        fill: new ol.style.Fill({
-          color
-        }),
+        fill: new ol.style.Fill({ color }),
         radius: 5,
-        stroke: new ol.style.Stroke({
-          color,
-          width: 1
-        })
+        stroke: new ol.style.Stroke({ color, width: 1 })
       })
     }),
     'LineString': new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color,
-        width: 3
-      })
+      stroke: new ol.style.Stroke({ color, width: 3 })
     }),
     'Polygon': new ol.style.Style({
-      fill: new ol.style.Fill({
-        color: 'rgba(255,255,255,0.5)'
-      }),
-      stroke: new ol.style.Stroke({
-        color,
-        width: 3
-      })
+      fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
+      stroke: new ol.style.Stroke({ color, width: 3 })
     }),
     'MultiPoint': new ol.style.Style({
       image: new ol.style.Circle({
-        fill: new ol.style.Fill({
-          color
-        }),
+        fill: new ol.style.Fill({ color }),
         radius: 5,
-        stroke: new ol.style.Stroke({
-          color,
-          width: 1
-        })
+        stroke: new ol.style.Stroke({ color, width: 1 })
       })
     }),
     'MultiLineString': new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color,
-        width: 3
-      })
+      stroke: new ol.style.Stroke({ color, width: 3 })
     }),
     'MultiPolygon': new ol.style.Style({
-      fill: new ol.style.Fill({
-        color: 'rgba(255,255,255,0.5)'
-      }),
-      stroke: new ol.style.Stroke({
-        color,
-        width: 3
-      })
+      fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
+      stroke: new ol.style.Stroke({ color, width: 3 })
     })
   };
   const styleFunction = function(feature, resolution) {
-    const featureStyleFunction = feature.getStyleFunction();
-    return featureStyleFunction ? featureStyleFunction.call(feature, resolution) : defaultStyle[feature.getGeometry().getType()];
+    const func = feature.getStyleFunction();
+    return func ? func.call(feature, resolution) : defaultStyle[feature.getGeometry().getType()];
   };
   return styleFunction;
 };
