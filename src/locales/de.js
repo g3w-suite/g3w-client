@@ -510,7 +510,16 @@ export default {
         tooltip: "Area"
       },
       screenshot: {
-        error: "Screenshot Fehlererstellung"
+        error: "Screenshot Fehlererstellung",
+        securityError: `  
+        <p><b>Sicherheitsfehler</b>: Eine externe Ebene verhindert, dass die Karte gedruckt wird. Gehen Sie zur Überprüfung wie folgt vor:</p>
+        <ol>
+          <li>Entfernen Sie alle manuell hinzugefügten externen Ebenen (z. B. WMS-Ebenen)</li>
+          <li>Neuladen der Seite erzwingen: <code>STRG + F5</code></li>
+          <li>Drucken Sie die Karte erneut</li>
+        </ol>
+        <p>Für weitere Informationen wenden Sie sich bitte an den Serveradministrator zu: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -weight: fett;">&#x2139;&#xFE0F; Sicherheit und befleckte Leinwände</a></p>
+        `
       }
     },
     catalog_items: {

@@ -510,7 +510,16 @@ export default {
         tooltip: "Pinta-ala"
       },
       screenshot: {
-        error: "Screenshot error creation"
+        error: "Screenshot error creation",
+        securityError: `  
+        <p><b>Turvallisuusvirhe</b>: ulkoinen kerros estää karttaa tulostamasta. Tarkistaaksesi, toimi seuraavasti:</p>
+        <ol>
+          <li>poista manuaalisesti lisätyt ulkoiset tasot (esim. WMS-tasot)</li>
+          <li>Pakota sivun uudelleenlataus: <code>CTRL + F5</code></li>
+          <li>tulosta kartta uudelleen</li>
+        </ol>
+        <p>Saat lisätietoja palvelimen järjestelmänvalvojalta seuraavista aiheista: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -paino: lihavoitu;">&#x2139;&#xFE0F; turvallisuus ja likaiset kankaat</a></p>
+        `
       }
     },
     catalog_items: {
