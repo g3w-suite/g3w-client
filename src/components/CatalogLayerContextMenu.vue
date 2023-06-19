@@ -16,7 +16,7 @@
     <!-- Item Title -->
     <li class="title">
       <div>{{ layerMenu.layer.title}}</div>
-      <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
+      <div style="font-weight: normal; font-size: 0.8em">{{ getGeometryType(layerMenu.layer.id, layerMenu.layer.external) }}</div>
     </li>
 
     <!-- TODO add item description -->
@@ -25,12 +25,13 @@
         <layerspositions
           @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})"
           style="display: flex; flex-direction: column; justify-content: space-between"
-          :position="layerMenu.layer.position"/>
+          :position="layerMenu.layer.position"
+        />
       </div>
     </li>
 
     <!-- TODO add item description -->
-    <li v-if="layerMenu.layer.metadata && layerMenu.layer.metadata.abstract" @mouseleave.self="showMetadataInfo(false)"  @mouseover.self="showMetadataInfo(true,  $event)">
+    <li v-if="hasMetadataInfo(layerMenu.layer)" @mouseleave.self="showMetadataInfo(false)"  @mouseover.self="showMetadataInfo(true,  $event)">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('info')"></span>
       <span class="item-text" v-t="'Metadata'"></span>
       <div v-show="layerMenu.metadatainfoMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0; border-radius: 0 3px 3px 0;" :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: `${layerMenu.metadatainfoMenu.left+1}px` }">
@@ -39,7 +40,7 @@
     </li>
 
     <!-- Styles menu -->
-    <li v-if="layerMenu.layer.geolayer && layerMenu.layer.styles && layerMenu.layer.styles.length > 1" @mouseleave.self="showStylesMenu(false,$event)" @mouseover.self="showStylesMenu(true,$event)" class="menu-icon">
+    <li v-if="canShowStylesMenu(layerMenu.layer)" @mouseleave.self="showStylesMenu(false,$event)" @mouseover.self="showStylesMenu(true,$event)" class="menu-icon">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('palette')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
       <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
@@ -52,7 +53,7 @@
     </li>
 
     <!-- Opacity menu -->
-    <li v-if="layerMenu.layer.geolayer && layerMenu.layer.visible" class="menu-icon" style="padding-right: 0">
+    <li v-if="canShowOpacityPicker(layerMenu.layer)" class="menu-icon" style="padding-right: 0">
       <layer-opacity-picker
         @init-menu-item="addLayerMenuItem"
         @show-menu-item="showSubMenuContext"
@@ -68,13 +69,13 @@
 
     <!-- Attribute Table -->
     <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable(layerMenu.layer.id)">
-      <bar-loader :loading="layerMenu.loading.data_table"></bar-loader>
+      <bar-loader :loading="layerMenu.loading.data_table" />
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('list')"> </span>
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
     </li>
 
     <!-- TODO add item description -->
-    <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
+    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer)" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
       <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
       <span class="menu-icon skin-color-dark" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left + 'px' }">
@@ -90,41 +91,38 @@
         </li>
       </ul>
     </li>
-    <template v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'">
 
-      <!-- When is provided an download url        -->
-      <li @click.prevent.stop="" v-if="layerMenu.layer.downloadUrl" v-download>
-        <div @click.prevent.stop="downloadExternal(layerMenu.layer.downloadUrl)" >
-          <bar-loader :loading="layerMenu.loading.unknow"/>
-            <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('download')"></span>
-            <span class="item-text" v-t="'sdk.catalog.menu.download.unknow'"></span>
-        </div>
-      </li>
+    <!-- Download an external layer file from a proxy server url -->
+    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && layer.downloadUrl" v-download>
+      <div @click.prevent.stop="downloadExternal(layerMenu.layer.downloadUrl)">
+        <bar-loader :loading="layerMenu.loading.unknow" />
+        <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('download')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.unknow'"></span>
+      </div>
+    </li>
 
-      <!-- Download a shapefile version of the layer -->
-      <li @click.prevent.stop="" v-else v-download>
-        <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)" >
-          <bar-loader :loading="layerMenu.loading.shp"/>
-          <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
-          <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
-        </div>
-      </li>
-
-    </template>
+    <!-- Download an external layer file as shapefile -->
+    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && !layer.downloadUrl" v-download>
+      <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)">
+        <bar-loader :loading="layerMenu.loading.shp" />
+        <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
+      </div>
+    </li>
 
     <!-- TODO add item description -->
-    <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" >
+    <li @click.prevent.stop="" v-if="isExternalWMSLayer(layerMenu.layer)">
       <div style="display: flex; justify-content: space-between">
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
         <span style="font-weight: bold; margin-left: 5px;">{{layerMenu.layer.opacity}}</span>
       </div>
-      <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity"/>
+      <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity" />
     </li>
 
     <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id)" >
-        <bar-loader :loading="layerMenu.loading.geotiff"/>
+        <bar-loader :loading="layerMenu.loading.geotiff" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('geotiff')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff'"></span>
       </div>
@@ -133,7 +131,7 @@
     <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id, true)" style="position: relative">
-        <bar-loader :loading="layerMenu.loading.geotiff"/>
+        <bar-loader :loading="layerMenu.loading.geotiff" />
         <span class="menu-icon skin-color-dark" style="color:#777" :class="g3wtemplate.getFontClass('geotiff')"></span>
         <span style="position: absolute; left: -7px; bottom: 8px; font-size: 1.2em" class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('crop')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff_map_extent'"></span>
@@ -143,7 +141,7 @@
     <!-- Download as SHP -->
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
-        <bar-loader :loading="layerMenu.loading.shp"/>
+        <bar-loader :loading="layerMenu.loading.shp" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
@@ -152,7 +150,7 @@
     <!-- Download as GPX -->
     <li v-if="canDownloadGpx(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpx(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.gpx"/>
+        <bar-loader :loading="layerMenu.loading.gpx" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('gpx')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpx'"></span>
       </div>
@@ -161,7 +159,7 @@
     <!-- Download as Gpkg -->
     <li v-if="canDownloadGpkg(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpkg(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.gpkg"/>
+        <bar-loader :loading="layerMenu.loading.gpkg" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('gpkg')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpkg'"></span>
       </div>
@@ -170,7 +168,7 @@
     <!-- Download as CSV -->
     <li v-if="canDownloadCsv(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.csv"/>
+        <bar-loader :loading="layerMenu.loading.csv" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('csv')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.csv'"></span>
       </div>
@@ -179,7 +177,7 @@
     <!-- Download as XLS -->
     <li v-if="canDownloadXls(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadXls(layerMenu.layer.id)">
-        <bar-loader :loading="layerMenu.loading.xls"/>
+        <bar-loader :loading="layerMenu.loading.xls" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('xls')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.xls'"></span>
       </div>
@@ -342,14 +340,17 @@
          */
         this.layerMenu.loading.unknow = false;
       },
+
       closeLayerMenu(menu={}) {
         this._hideMenu();
         this.showColorMenu(false);
         menu.show = false;
       },
+
       onbeforeDestroyChangeColor(){
         this.$refs.color_picker.$off();
       },
+
       onChangeColor(val) {
         const mapService = GUI.getService('map');
         this.layerMenu.layer.color = val;
@@ -358,46 +359,57 @@
         style._g3w_options.color = val;
         layer.setStyle(style);
       },
+
       canShowWmsUrl(layerId) {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         return originalLayer ? (!!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl())) : false;
       },
+
       canShowWfsUrl(layerId){
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         return originalLayer && !originalLayer.isType('table') && originalLayer.isWfsActive();
       },
+
       canDownloadXls(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isXlsDownlodable(): false;
+        return layer ? layer.isXlsDownlodable() : false;
       },
+
       canDownloadGpx(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isGpxDownlodable(): false;
+        return layer ? layer.isGpxDownlodable() : false;
       },
+
       canDownloadGpkg(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isGpkgDownlodable(): false;
+        return layer ? layer.isGpkgDownlodable() : false;
       },
+
       canDownloadCsv(layerId){
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isCsvDownlodable(): false;
+        return layer ? layer.isCsvDownlodable() : false;
       },
+
       canDownloadGeoTIFF(layerId){
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isGeoTIFFDownlodable(): false;
+        return layer ? layer.isGeoTIFFDownlodable() : false;
       },
+
       canDownloadShp(layerId) {
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        return layer ? layer.isShpDownlodable(): false;
+        return layer ? layer.isShpDownlodable() : false;
       },
+
       getWmsUrl(layerId) {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         return originalLayer.getCatalogWmsUrl();
       },
+
       getWfsUrl(layerId) {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         return originalLayer.getCatalogWfsUrl();
       },
+
       copyUrl({evt, layerId, type}={}) {
         const url = this[`get${type}Url`](layerId);
         let ancorEement = document.createElement('a');
@@ -413,6 +425,7 @@
         ancorEement = null;
         setTimeout(()=>this._hideMenu(), 600);
       },
+
       downloadGeoTIFF(layerId, map_extent=false){
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.geotiff = true;
@@ -429,6 +442,7 @@
             this._hideMenu();
           })
       },
+
       downloadShp(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.shp = true;
@@ -441,6 +455,7 @@
             this._hideMenu();
           })
       },
+
       downloadCsv(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.csv = true;
@@ -453,6 +468,7 @@
             this._hideMenu();
           })
       },
+
       downloadXls(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.xls = true;
@@ -465,6 +481,7 @@
             this._hideMenu();
           })
       },
+
       downloadGpx(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.gpx = true;
@@ -477,6 +494,7 @@
             this._hideMenu();
           })
       },
+
       downloadGpkg(layerId) {
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.gpkg = true;
@@ -489,6 +507,7 @@
             this._hideMenu();
           })
       },
+
       changeLayerMapPosition({position, layer}){
         const mapService = GUI.getService('map');
         const changed = layer.position !== position;
@@ -501,6 +520,7 @@
           changed && this._hideMenu();
         }
       },
+
       setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}){
         this.layerMenu.layer.opacity = opacity;
         const mapService = GUI.getService('map');
@@ -509,6 +529,7 @@
           opacity
         });
       },
+
       /**
        * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
        *
@@ -551,19 +572,19 @@
       },
 
       /**
+       * External download url
+       * 
        * @since 3.8.3
-       * Download external Url
        */
-      downloadExternal(url){
+      downloadExternal(url) {
         this.layerMenu.loading.unknow = true;
-        downloadFile({
-          url
-        })
+        downloadFile({ url });
         this.layerMenu.loading.unknow = false;
       },
 
       /**
        * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection
+       * 
        * @param layer
        * @returns {Promise<void>}
        */
@@ -601,6 +622,7 @@
         this.layerMenu.loading.shp = false;
         this._hideMenu();
       },
+
       showAttributeTable(layerId) {
         this.layerMenu.loading.data_table = false;
         GUI.closeContent();
@@ -619,6 +641,7 @@
           title: layer.getName()
         });
       },
+
       startEditing() {
         let layer;
         const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
@@ -630,6 +653,7 @@
           }
         });
       },
+
       setCurrentLayerStyle(index){
         let changed = false;
         this.layerMenu.layer.styles.forEach((style, idx) =>{
@@ -652,6 +676,7 @@
         }
         this.closeLayerMenu(this.layerMenu.stylesMenu);
       },
+
       /**
        * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
        */
@@ -673,6 +698,7 @@
         }
         menu.show = bool;
       },
+
       /**
        * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
        */
@@ -683,6 +709,7 @@
           evt
         });
       },
+
       //showmetadatainfo
       async showMetadataInfo(bool, evt){
         if (bool) {
@@ -693,6 +720,7 @@
         }
         this.layerMenu.metadatainfoMenu.show = bool;
       },
+
       showColorMenu(bool, evt) {
         if (bool) {
           const elem = $(evt.target);
@@ -710,6 +738,41 @@
        */
       getStyleName(style) {
         return style.name + (style.name === this.layerMenu.layer.defaultstyle && this.layerMenu.layer.styles.length > 1 ? ` (${t('default')})` : '');
+      },
+
+      /**
+       * @since 3.8.3
+       */
+      isExternalWMSLayer(layer) {
+        return !layer.projectLayer && 'wms' === layer._type;
+      },
+
+      /**
+       * @since 3.8.3
+       */
+       isExternalVectorLayer(layer) {
+        return !layer.projectLayer && 'wms' !== layer._type;
+      },
+
+      /**
+       * @since 3.8.3
+       */
+      canShowStylesMenu(layer) {
+        return layer.geolayer && layer.styles && layer.styles.length > 1;
+      },
+
+      /**
+       * @since 3.8.3
+       */
+      hasMetadataInfo(layer) {
+        return layer.metadata && layer.metadata.abstract;
+      },
+
+      /**
+       * @since 3.8.3
+       */
+      canShowOpacityPicker(layer) {
+        return layer.geolayer && layer.visible;
       },
 
     },
