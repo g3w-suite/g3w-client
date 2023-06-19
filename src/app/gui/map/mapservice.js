@@ -2431,7 +2431,6 @@ proto.addExternalMapLayer = function(layer, projectLayer=false) {
  * @returns { Promise<unknown> }
  */
 proto.addExternalLayer = async function(externalLayer, options={}) {
-  console.log(options)
   let vectorLayer,
     name,
     data,
