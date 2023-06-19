@@ -20,12 +20,12 @@ const Geometry = {
   /**
    * Remove Z values from geometry coordinates
    */
-   removeZValueToOLFeatureGeometry({feature}={}){
+   removeZValueToOLFeatureGeometry({feature}={}) {
     const geometry = feature.getGeometry();
     if (geometry) {
       const geometryType = geometry.getType();
       const originalFeatureCoordinates = geometry.getCoordinates();
-      switch (geometryType){
+      switch (geometryType) {
         // POINT: [x, y]
         case GeometryTypes.POINT:
           if (originalFeatureCoordinates.length === 3) {
@@ -78,11 +78,11 @@ const Geometry = {
    /**
     * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
     */
-   addZValueToOLFeatureGeometry({feature, geometryType}={}){
+   addZValueToOLFeatureGeometry({feature, geometryType}={}) {
      const geometry = feature.getGeometry();
      geometryType = geometryType || geometry.getType();
      const originalFeatureCoordinates = geometry.getCoordinates();
-     switch (geometryType){
+     switch (geometryType) {
        // POINT: [x, y]
        case GeometryTypes.POINTZ:
        case GeometryTypes.POINTM:
@@ -155,7 +155,7 @@ const Geometry = {
    /**
     * core/geometry/geometry::getOLGeometry@v3.4
     */
-   getOLGeometry(geometryType){
+   getOLGeometry(geometryType) {
      switch (geometryType) {
        case GeometryTypes.LINESTRINGZ:
        case GeometryTypes.LINESTRINGM:
@@ -210,7 +210,7 @@ const Geometry = {
    /**
     * core/geometry/geometry::isMultiGeometry@v3.4
     */
-   isMultiGeometry(geometryType){
+   isMultiGeometry(geometryType) {
      return [
        GeometryTypes.MULTIPOINT,
        GeometryTypes.MULTIPOINTZ,
@@ -238,7 +238,7 @@ const Geometry = {
    /**
     * core/geometry/geometry::getAllPointGeometryTypes@v3.4
     */
-   getAllPointGeometryTypes(){
+   getAllPointGeometryTypes() {
      return [
        GeometryTypes.POINT,
        GeometryTypes.POINTZ,
@@ -256,14 +256,14 @@ const Geometry = {
    /**
     * core/geometry/geometry::isPointGeometryType@v3.4
     */
-   isPointGeometryType(geometryType){
+   isPointGeometryType(geometryType) {
      return Geometry.getAllPointGeometryTypes().indexOf(geometryType) !== -1;
    },
  
    /**
     * core/geometry/geometry::getAllLineGeometryTypes@v3.4
     */
-   getAllLineGeometryTypes(){
+   getAllLineGeometryTypes() {
      return [
        GeometryTypes.LINESTRING,
        GeometryTypes.LINESTRINGZ,
@@ -290,14 +290,14 @@ const Geometry = {
    /**
     * core/geometry/geometry::isLineGeometryType@v3.4
     */
-   isLineGeometryType(geometryType){
+   isLineGeometryType(geometryType) {
      return Geometry.getAllLineGeometryTypes().indexOf(geometryType) !== -1;
    },
  
    /**
     * core/geometry/geometry::getAllPolygonGeometryTypes@v3.4
     */
-   getAllPolygonGeometryTypes(){
+   getAllPolygonGeometryTypes() {
      return [
        GeometryTypes.POLYGON,
        GeometryTypes.POLYGONZ,
@@ -315,14 +315,14 @@ const Geometry = {
    /**
     * core/geometry/geometry::isPolygonGeometryType@v3.4
     */
-   isPolygonGeometryType(geometryType){
+   isPolygonGeometryType(geometryType) {
      return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
    },
  
    /**
     * core/geometry/geometry::is3DGeometry@v3.4
     */
-   is3DGeometry(geometryType){
+   is3DGeometry(geometryType) {
      return [
        GeometryTypes.POINTZ,
        GeometryTypes.POINTM,
@@ -422,7 +422,7 @@ const geoutils = {
     return geometry
   },
 
-  getDefaultLayerStyle(geometryType, options={}){
+  getDefaultLayerStyle(geometryType, options={}) {
     const {color} = options;
     switch (geometryType) {
       case GeometryTypes.LINESTRINGZ:
@@ -563,7 +563,7 @@ const geoutils = {
     return style
   },
 
-  createFeatureFromCoordinates(coordinates){
+  createFeatureFromCoordinates(coordinates) {
     let feature;
     if (Array.isArray(coordinates) && coordinates.length === 2) {
       const geometry = new ol.geom.Point(coordinates);
@@ -572,7 +572,7 @@ const geoutils = {
     return feature;
   },
 
-  createFeatureFromBBOX(bbox){
+  createFeatureFromBBOX(bbox) {
     let feature;
     if (Array.isArray(bbox) && bbox.length === 4) {
       const geometry = ol.geom.Polygon.fromExtent(bbox);
@@ -581,7 +581,7 @@ const geoutils = {
     return feature;
   },
 
-  createFeatureFromGeometry({id,geometry}={}){
+  createFeatureFromGeometry({id,geometry}={}) {
     if (geometry) {
       const feature = new ol.Feature(geometry);
       feature.setId(id);
@@ -599,7 +599,7 @@ const geoutils = {
    * @param id
    * @param feature
    */
-  createFeatureFromFeatureObject({id, feature={}}){
+  createFeatureFromFeatureObject({id, feature={}}) {
     const {geometry, attributes} = feature;
     feature = geoutils.createFeatureFromGeometry({id,geometry});
     Object.keys(attributes).forEach(attribute => feature.set(attribute, attributes[attribute]));
@@ -695,7 +695,7 @@ const geoutils = {
     return olLayer;
   },
 
-  createWMSLayer({url, name, projection, layers=[]}={}){
+  createWMSLayer({url, name, projection, layers=[]}={}) {
     const id = name || uniqueId();
     name = name || id;
     const wmslayer = new WMSLayer({
@@ -713,12 +713,12 @@ const geoutils = {
     }
   },
 
-  createVectorLayerFromGeometry(geometry){
+  createVectorLayerFromGeometry(geometry) {
     const feature = new ol.Feature(geometry);
     return geoutils.createVectorLayerFromFeatures(feature);
   },
 
-  createVectorLayerFromFeatures(feature){
+  createVectorLayerFromFeatures(feature) {
     return new ol.layer.Vector({
       source: new ol.source.Vector({
         features: Array.isArray(feature) ? feature : [feature]
@@ -726,25 +726,29 @@ const geoutils = {
     })
   },
 
-  async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {
+  async createVectorLayerFromFile({
+    name,
+    type,
+    crs,
+    mapCrs,
+    data,
+    style
+  } = {}) {
+
     let format;
     let layer;
-    const createVectorLayer = (format, data, epsg=crs) => {
+
+    const createVectorLayer = (format, data, epsg = crs) => {
       let vectorLayer;
-      const features = format.readFeatures(data, {
-        dataProjection: epsg,
-        featureProjection: mapCrs || epsg
-      });
+      const features = format.readFeatures(data, { dataProjection: epsg, featureProjection: mapCrs || epsg });
       if (features.length) {
 
         // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
         if (format instanceof ol.format.KML) {
-          features.forEach(feature => feature.unset('styleUrl'));// ref: 
+          features.forEach(feature => feature.unset('styleUrl'));
         }
 
-        const vectorSource = new ol.source.Vector({
-          features
-        });
+        const vectorSource = new ol.source.Vector({ features });
         vectorLayer = new ol.layer.Vector({
           source: vectorSource,
           name,
@@ -769,28 +773,26 @@ const geoutils = {
         layer = createVectorLayer(format, data);
         break;
       case 'kml':
-        format = new ol.format.KML({
-          extractStyles: false
-        });
+        format = new ol.format.KML({ extractStyles: false });
         layer = createVectorLayer(format, data,  "EPSG:4326");
         break;
       case 'csv':
         const {headers, separator, values, x, y} = data;
         const features = [];
         const errorrows = [];
-        values.forEach((row, index) =>{
+        values.forEach((row, index) => {
           const properties = {};
           const rowvalues = row.split(separator);
           if (rowvalues.length === headers.length)  {
             const coordinates = [];
-            rowvalues.forEach((value, index) =>{
+            rowvalues.forEach((value, index) => {
               const field = headers[index];
               if (field === x) coordinates[0] = 1*value;
               if (field === y) coordinates[1] = 1*value;
               properties[field] = value;
             });
             // check if all coordinates is right
-            if (coordinates.find(value => Number.isNaN(value)) === undefined){
+            if (coordinates.find(value => Number.isNaN(value)) === undefined) {
               const geometry = new ol.geom.Point(coordinates);
               if (crs !== mapCrs) geometry.transform(crs, mapCrs);
               const feature = new ol.Feature(geometry);
@@ -804,7 +806,7 @@ const geoutils = {
           })
         });
         if (!features.length) return Promise.reject();
-        if (errorrows.length){
+        if (errorrows.length) {
           GUI.showUserMessage({
             type: 'warning',
             message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
@@ -813,7 +815,7 @@ const geoutils = {
                 template: `<select v-select2="errorrows[0].value" class="skin-color" :search="false" style="width:100%">
                     <option v-for="errorrow in errorrows" :key="errorrow.row" :value="errorrow.value">[{{ errorrow.row}}] {{errorrow.value}}</option>
                 </select>`,
-                data(){
+                data() {
                   return {
                     errorrows
                   };
@@ -824,16 +826,15 @@ const geoutils = {
           });
         }
 
-        const source = new ol.source.Vector({
-          features
-        });
         layer = new ol.layer.Vector({
-          source,
+          source: new ol.source.Vector({ features }),
           name,
           _fields: headers,
           id: uniqueId()
         });
-        style && layer.setStyle(style);
+        if (style) {
+          layer.setStyle(style);
+        }
         break;
       case 'kmz':
         const promiseKmz = new Promise(async (resolve, reject) => {
@@ -841,15 +842,19 @@ const geoutils = {
           const buffer = await data.arrayBuffer(data);
           zip.load(buffer);
           const kmlFiles = zip.file(/.kml$/i);
+          /**
+           * @TODO handle multiple network links
+           * 
+           * https://github.com/g3w-suite/g3w-client/pull/430/files#r1232092732
+           */
           // get last kml file (when doc.kml file has a reference to kml inside another folder)
-          const kmlFile = kmlFiles[kmlFiles.length -1];
+          const kmlFile = kmlFiles[kmlFiles.length - 1];
           if (kmlFile) {
             data = kmlFile.asText();
-            format = new ol.format.KML({
-              extractStyles: false
-            });
-            resolve(createVectorLayer(format, data, "EPSG:4326"));
-          } else reject();
+            resolve(createVectorLayer(new ol.format.KML({ extractStyles: false }), data, "EPSG:4326"));
+          } else {
+            reject();
+          }
         });
         try {
           return await promiseKmz;
@@ -858,7 +863,7 @@ const geoutils = {
         }
         break;
       case 'zip':
-        const promise = new Promise(async (resolve, reject) =>{
+        const promise = new Promise(async (resolve, reject) => {
           const buffer = await data.arrayBuffer(data);
           shp(buffer).then(geojson => {
             const data = JSON.stringify(geojson);
@@ -876,7 +881,7 @@ const geoutils = {
     return layer;
   },
 
-  createStyleFunctionToVectorLayer(options={}){
+  createStyleFunctionToVectorLayer(options={}) {
     const styleFunction = (feature, resolution) => {
       let {color, field} = options;
       color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
@@ -950,11 +955,11 @@ const geoutils = {
    * @param feature
    * @param type
    */
-  getFormDataExpressionRequestFromFeature(feature){
+  getFormDataExpressionRequestFromFeature(feature) {
     delete feature.attributes.geometry;
     const _feature = new ol.Feature(feature.geometry);
     const properties = {};
-    geoutils.getAlphanumericPropertiesFromFeature(feature.attributes).forEach(property =>{
+    geoutils.getAlphanumericPropertiesFromFeature(feature.attributes).forEach(property => {
       if (property !== G3W_FID) properties[property] = feature.attributes[property]
     });
     _feature.setProperties(properties);
@@ -966,7 +971,7 @@ const geoutils = {
    * Convert Feature  to GEOJSON Format
    * @param feature
    */
-  convertFeatureToGEOJSON(feature){
+  convertFeatureToGEOJSON(feature) {
     const GeoJSONFormat = new ol.format.GeoJSON();
     return GeoJSONFormat.writeFeatureObject(feature);
   },
@@ -979,7 +984,7 @@ const geoutils = {
    * @param multilayers
    * @returns {JQuery.Promise<any, any, any>}
    */
-  getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}){
+  getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}) {
     let queriesPromise;
     const geometry = ol.geom.Polygon.fromExtent(bbox);
     const map = GUI.getComponent('map').getService().getMap();
@@ -1080,7 +1085,7 @@ const geoutils = {
             .fail(error => queryErrors.push(error))
             .always(() => {
               layersLenght -= 1;
-              if (layersLenght === 0){
+              if (layersLenght === 0) {
                 queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
               }
             })
@@ -1144,7 +1149,7 @@ const geoutils = {
           resolution,
         }).then(response => {
           queryResponses.push(response)
-        }).fail(error =>{
+        }).fail(error => {
           rejectedResponses+=1;
           queryErrors.push(error);
         }).always(() => {
@@ -1158,7 +1163,7 @@ const geoutils = {
     return d.promise();
   },
 
-  transformBBOX({bbox, sourceCrs, destinationCrs}={}){
+  transformBBOX({bbox, sourceCrs, destinationCrs}={}) {
     const point1 = new ol.geom.Point([bbox[0], bbox[1]]);
     const point2 = new ol.geom.Point([bbox[2], bbox[3]]);
     point1.transform(sourceCrs, destinationCrs);
@@ -1219,7 +1224,7 @@ const geoutils = {
     } else return null;
   },
 
-  covertVectorFeaturesToResultFeatures(features=[]){
+  covertVectorFeaturesToResultFeatures(features=[]) {
     return features.map(feature => {
       const {id, properties:attributes, geometry} = feature;
       attributes[G3W_FID]= id;
@@ -1251,7 +1256,7 @@ const geoutils = {
     for (let i = 0; i < targetCoordinatesLength -1; i++) {
       startPoint = targetCoordinates[i];
       endPoint = targetCoordinates[i+1];
-      if (isZType){
+      if (isZType) {
         startPoint.z = lineGeometry.getCoordinates()[i][2];
         endPoint.z = lineGeometry.getCoordinates()[i+1][2];
       }
@@ -1264,7 +1269,7 @@ const geoutils = {
           if (isZType) splitPoint.z = startPoint.z;
           if (pointsNotSplitted.length) {
             const lineNewSegment = olFromJsts.write(geometryFactory.createLineString(pointsNotSplitted.concat([startPoint, splitPoint])));
-            if (isZType){
+            if (isZType) {
               const coordinates = lineNewSegment.getCoordinates();
               lineNewSegment.setCoordinates([[...coordinates[0], startPoint.z],[...coordinates[1], splitPoint.z]])
             }
@@ -1272,7 +1277,7 @@ const geoutils = {
             pointsNotSplitted = [];
           } else {
             const lineNewSegment = olFromJsts.write(geometryFactory.createLineString([startPoint, splitPoint]));
-            if (isZType){
+            if (isZType) {
               const coordinates = lineNewSegment.getCoordinates();
               lineNewSegment.setCoordinates([[...coordinates[0], startPoint.z],[...coordinates[1], splitPoint.z]])
             }
@@ -1284,7 +1289,7 @@ const geoutils = {
       } else pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
     }
     const restOfLine = olFromJsts.write(geometryFactory.createLineString(pointsNotSplitted));
-    if (isZType){
+    if (isZType) {
       const zCoordinates = [];
       pointsNotSplitted.forEach((pointNotSplitted, index) => {
         const coordinate =  restOfLine.getCoordinates()[index];
@@ -1297,7 +1302,7 @@ const geoutils = {
     return splitted && splittedSegments || []
   },
 
-  splitFeatures({features=[], splitfeature} ={}){
+  splitFeatures({features=[], splitfeature} ={}) {
     const splitterdGeometries = [];
     features.forEach(feature => {
       const geometries = geoutils.splitFeature({feature, splitfeature});
@@ -1309,7 +1314,7 @@ const geoutils = {
     return splitterdGeometries;
   },
 
-  splitFeature({feature, splitfeature} ={}){
+  splitFeature({feature, splitfeature} ={}) {
     const geometries = {
       feature: feature.getGeometry(), //geometry of the feature to split
       split: splitfeature.getGeometry() // geometry of split feature
@@ -1321,7 +1326,7 @@ const geoutils = {
     // array of splitted geometries
     const splittedFeatureGeometries = [];
     const parser = new jsts.io.OL3Parser();
-    switch (splitType){
+    switch (splitType) {
       case 'LineString':
         // check if geometry is Polygon
         if (featureGeometryType.indexOf('Polygon') !== -1 ) {
@@ -1330,7 +1335,7 @@ const geoutils = {
           // if multiPolygon
           const polygonFeature = isMulti ? geometries.feature.getPolygons() : geometries.feature;
           if (Array.isArray(polygonFeature)) {
-            polygonFeature.forEach(geometry =>{
+            polygonFeature.forEach(geometry => {
               geoutils.splitFeature({
                 splitfeature,
                 feature: new ol.Feature({
@@ -1351,7 +1356,7 @@ const geoutils = {
             let holePolygons;
             if (polygonFeature.getLinearRingCount() > 1) {
               let holeFeaturesGeometry;
-              for (let index=1; index < polygonFeature.getLinearRingCount(); index++){
+              for (let index=1; index < polygonFeature.getLinearRingCount(); index++) {
                 const holeRing = parser.read(polygonFeature.getLinearRing(index));
                 if (holeFeaturesGeometry === undefined) holeFeaturesGeometry = holeRing;
                 else holeFeaturesGeometry = holeFeaturesGeometry.union(holeRing);
@@ -1359,15 +1364,15 @@ const geoutils = {
               holePolygons = new jsts.operation.polygonize.Polygonizer();
               holePolygons.add(holeFeaturesGeometry);
               let holyPolygonUnion;
-              holePolygons.getPolygons().toArray().forEach(polygon =>{
+              holePolygons.getPolygons().toArray().forEach(polygon => {
                 if (holyPolygonUnion === undefined) holyPolygonUnion = polygon;
                 else holyPolygonUnion = holyPolygonUnion.union(polygon);
               });
               holePolygons = holyPolygonUnion;
             }
 
-            if (isZType){
-              polygonFeature.getCoordinates()[0].forEach((coordinate, index) =>{
+            if (isZType) {
+              polygonFeature.getCoordinates()[0].forEach((coordinate, index) => {
                 externalPolygonFeatureGeometry.getCoordinates()[index].z = coordinate[2];
               });
               splitGeometry.getCoordinates().forEach(coordinate => coordinate.z = 0);
@@ -1382,7 +1387,7 @@ const geoutils = {
               if (polygonFeatureGeometry.intersects(polygon.getInteriorPoint())) {
                 const geometry = parser.write(polygon);
                 const polygonCoordinates = polygon.getCoordinates();
-                if (isZType){
+                if (isZType) {
                   polygonCoordinates.forEach((coordinate, index) => {
                     coordinate.z = coordinate.z === undefined ? polygonCoordinates[index === 0 ? index+1 : index-1].z : coordinate.z;
                   })
@@ -1396,10 +1401,10 @@ const geoutils = {
                   geometry.setCoordinates([zCoordinates]);
                 }
                 const geometryType = geometry.getType();
-                if (isMulti){
+                if (isMulti) {
                   splittedFeatureGeometries.push(new ol.geom.MultiPolygon(geometryType=== 'Polygon' ? [geometry.getCoordinates()] : geometry.getCoordinates()))
                 } else {
-                  if (geometryType === 'Polygon'){
+                  if (geometryType === 'Polygon') {
                     splittedFeatureGeometries.push(geometry);
                   } else geometry.getCoordinates().forEach(coordinates => {
                     splittedFeatureGeometries.push(new ol.geom.Polygon(coordinates))
@@ -1413,7 +1418,7 @@ const geoutils = {
           const isMulti = featureGeometryType.indexOf('Multi') !== -1;
           const lineFeatureGeometry = isMulti ? geometries.feature.getLineStrings() : geometries.feature;
           if (Array.isArray(lineFeatureGeometry)) {
-            lineFeatureGeometry.forEach(lineGeometry =>{
+            lineFeatureGeometry.forEach(lineGeometry => {
               geoutils.splitFeature({
                 splitfeature,
                 feature: new ol.Feature({
@@ -1433,14 +1438,14 @@ const geoutils = {
    * Return Point feature vertex from geometry
    * @param geometry
    */
-  getPointFeaturesfromGeometryVertex(geometry){
+  getPointFeaturesfromGeometryVertex(geometry) {
     const pointFeatures = [];
-    switch(geometry.getType()){
+    switch(geometry.getType()) {
       case GeometryTypes.MULTIPOLYGON:
-        geometry.getCoordinates().forEach(coordinates =>{
-          coordinates.forEach(coordinates =>{
+        geometry.getCoordinates().forEach(coordinates => {
+          coordinates.forEach(coordinates => {
             coordinates.pop();
-            coordinates.forEach(coordinates =>{
+            coordinates.forEach(coordinates => {
               const feature = new ol.Feature(new ol.geom.Point(coordinates));
               pointFeatures.push(feature);
             })
@@ -1448,32 +1453,32 @@ const geoutils = {
         });
         break;
       case GeometryTypes.POLYGON:
-        geometry.getCoordinates().forEach(coordinates =>{
+        geometry.getCoordinates().forEach(coordinates => {
           coordinates.pop();
-          coordinates.forEach(coordinates =>{
+          coordinates.forEach(coordinates => {
             const feature = new ol.Feature(new ol.geom.Point(coordinates));
             pointFeatures.push(feature);
           })
         });
         break;
       case GeometryTypes.MULTILINESTRING:
-        geometry.getCoordinates().forEach(coordinates =>{
-          coordinates.forEach(coordinates =>{
+        geometry.getCoordinates().forEach(coordinates => {
+          coordinates.forEach(coordinates => {
             const feature = new ol.Feature(new ol.geom.Point(coordinates));
             pointFeatures.push(feature);
           })
         });
         break;
       case GeometryTypes.LINESTRING:
-        geometry.getCoordinates().forEach(coordinates =>{
-          coordinates.forEach(coordinates =>{
+        geometry.getCoordinates().forEach(coordinates => {
+          coordinates.forEach(coordinates => {
             const feature = new ol.Feature(new ol.geom.Point(coordinates));
             pointFeatures.push(feature);
           })
         });
         break;
       case GeometryTypes.MULTIPOINT:
-        geometry.getCoordinates().forEach(coordinates =>{
+        geometry.getCoordinates().forEach(coordinates => {
           const feature = new ol.Feature(new ol.geom.Point(coordinates));
           pointFeatures.push(feature);
         });
@@ -1492,19 +1497,19 @@ const geoutils = {
    * @param geometries
    * @returns {*}
    */
-  getVertexLength(geometry){
+  getVertexLength(geometry) {
     let vertexLength = 0;
-    switch(geometry.getType()){
+    switch(geometry.getType()) {
       case GeometryTypes.MULTIPOLYGON:
-        geometry.getCoordinates().forEach(coordinates =>{
-          coordinates.forEach(coordinates =>{
+        geometry.getCoordinates().forEach(coordinates => {
+          coordinates.forEach(coordinates => {
             coordinates.pop();
             coordinates.forEach(() => vertexLength+=1);
           })
         });
         break;
       case GeometryTypes.POLYGON:
-        geometry.getCoordinates().forEach(coordinates =>{
+        geometry.getCoordinates().forEach(coordinates => {
           coordinates.pop();
           coordinates.forEach(() => vertexLength+=1);
         });
@@ -1520,13 +1525,13 @@ const geoutils = {
    *  Point <--> Polygon => false
    *
    */
-  isSameBaseGeometryType(geometryType1, geometryType2){
+  isSameBaseGeometryType(geometryType1, geometryType2) {
     geometryType1 = geometryType1.replace('Multi','');
     geometryType2 = geometryType2.replace('Multi','');
     return geometryType1 === geometryType2;
   },
 
-  isSingleGeometry(geometry){
+  isSingleGeometry(geometry) {
     return !Geometry.isMultiGeometry(geometry.getType());
   },
 
@@ -1535,7 +1540,7 @@ const geoutils = {
     return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
   },
 
-  multiGeometryToSingleGeometries(geometry){
+  multiGeometryToSingleGeometries(geometry) {
     const geometryType = geometry.getType();
     let geometries = [];
     switch (geometryType) {
@@ -1558,9 +1563,9 @@ const geoutils = {
    * @param toGeometryType
    * @returns {*}
    */
-  convertSingleMultiGeometry(geometry, toGeometryType){
+  convertSingleMultiGeometry(geometry, toGeometryType) {
     const fromGeometryType = geometry.getType();
-    if (toGeometryType && (fromGeometryType !== toGeometryType)){
+    if (toGeometryType && (fromGeometryType !== toGeometryType)) {
       const isFromGeometryMulti = Geometry.isMultiGeometry(fromGeometryType);
       const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
       if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
@@ -1628,7 +1633,7 @@ const geoutils = {
    * 
    * @since 3.8.0
    */
-  within(geometry, geometryToCheck){
+  within(geometry, geometryToCheck) {
     const olFromJsts = new jsts.io.OL3Parser();
     const jstsGeometry = olFromJsts.read(geometry);
     const jstsGeometryToCheck = olFromJsts.read(geometryToCheck);
@@ -1644,7 +1649,7 @@ const geoutils = {
    * 
    * @since 3.8.0
    */
-  intersects(geometry, geometryToCheck){
+  intersects(geometry, geometryToCheck) {
     const olFromJsts = new jsts.io.OL3Parser();
     const jstsGeometry = olFromJsts.read(geometry);
     const jstsGeometryToCheck = olFromJsts.read(geometryToCheck);
@@ -1682,7 +1687,7 @@ const geoutils = {
     if (epsg !== '') return `EPSG:${parseInt(epsg)}`;
   },
 
-  crsToCrsObject(crs){
+  crsToCrsObject(crs) {
     if (crs === null || crs === undefined) return crs;
     if  (toRawType(crs) === 'Object' && crs.epsg) crs.epsg = geoutils.normalizeEpsg(crs.epsg);
     else
@@ -1792,7 +1797,7 @@ const geoutils = {
    * }
    * @returns {Promise<Blob>}
    */
-  async getGeoTIFFfromServer(options={}){
+  async getGeoTIFFfromServer(options={}) {
     const {url, params:{image, csrfmiddlewaretoken, bbox}, method="POST"} = options;
     const body = new FormData();
     body.append('image', image);
@@ -1810,7 +1815,7 @@ const geoutils = {
    * @param feature
    * @returns {*|Feature|Feature}
    */
-  createOlFeatureFromApiResponseFeature(feature){
+  createOlFeatureFromApiResponseFeature(feature) {
     const {properties={}, geometry, id} = feature;
     properties[G3W_FID] = id;
     const Feature = new ol.Feature(geometry && new ol.geom[geometry.type](geometry.coordinates));
@@ -1819,7 +1824,7 @@ const geoutils = {
     return Feature;
   },
 
-  sanitizeFidFeature(fid){
+  sanitizeFidFeature(fid) {
     if (toRawType(fid) === 'String' && Number.isNaN(1*fid))  {
       fid = fid.split('.');
       fid = fid.length === 2 ? fid[1] : fid[0];
@@ -1859,14 +1864,14 @@ const geoutils = {
   /**
    * core/geometry/geom::distance@v3.4
    */
-  distance(c1,c2){
+  distance(c1,c2) {
     return Math.sqrt(geom.squaredDistance(c1,c2));
   },
 
   /**
    * * core/geometry/geom::squaredDistance@v3.4
    */
-  squaredDistance(c1,c2){
+  squaredDistance(c1,c2) {
     const x1 = c1[0];
     const y1 = c1[1];
     const x2 = c2[0];
@@ -1905,7 +1910,7 @@ const geoutils = {
     }
     return [x, y];
   },
-  get_LEGEND_ON_LEGEND_OFF_Params(layer){
+  get_LEGEND_ON_LEGEND_OFF_Params(layer) {
     let LEGEND_ON, LEGEND_OFF;
     if (layer.getCategories()) {
       /**
