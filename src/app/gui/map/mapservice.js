@@ -2487,9 +2487,22 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       crs: options.crs,
       type: options.type,
       _type: type,
-      //@since 3.8.3. Contain an external custom url do download
-      downloadUrl: options.downloadUrl,
       download: options.download || false,
+      /**
+       * An alternate (external) server url where to perfom download.
+       * 
+       * @example
+       * 
+       * ```js
+       * GUI.getService('map').addExternalLayer(layer, {
+       *   type: 'geojson',
+       *   downloadUrl:  _<URL WHERE DOWNLOAD FILE>_
+       * });
+       * ```
+       * 
+       * @since 3.8.3
+       */
+      downloadUrl: options.downloadUrl,
       visible,
       checked: true,
       position,
@@ -2497,7 +2510,10 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       color,
       filter: vectorLayer.filter,
       selection: vectorLayer.selection,
-      tochighlightable: false //@since 3.8.0
+      /**
+       * @since 3.8.0
+       */
+      tochighlightable: false
     };
   }
 
