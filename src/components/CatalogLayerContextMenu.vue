@@ -91,6 +91,7 @@
       </ul>
     </li>
     <template v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'">
+
       <!-- When is provided an download url        -->
       <li @click.prevent.stop="" v-if="layerMenu.layer.downloadUrl" v-download>
         <div @click.prevent.stop="downloadExternal(layerMenu.layer.downloadUrl)" >
@@ -100,7 +101,7 @@
         </div>
       </li>
 
-      <!-- TODO add item description -->
+      <!-- Download a shapefile version of the layer -->
       <li @click.prevent.stop="" v-else v-download>
         <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)" >
           <bar-loader :loading="layerMenu.loading.shp"/>
