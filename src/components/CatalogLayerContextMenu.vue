@@ -93,7 +93,7 @@
     </li>
 
     <!-- Download an external layer file from a proxy server url -->
-    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && layer.downloadUrl" v-download>
+    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && layerMenu.layer.downloadUrl" v-download>
       <div @click.prevent.stop="downloadExternal(layerMenu.layer.downloadUrl)">
         <bar-loader :loading="layerMenu.loading.unknow" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('download')"></span>
@@ -102,7 +102,7 @@
     </li>
 
     <!-- Download an external layer file as shapefile -->
-    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && !layer.downloadUrl" v-download>
+    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && !layerMenu.layer.downloadUrl" v-download>
       <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)">
         <bar-loader :loading="layerMenu.loading.shp" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
