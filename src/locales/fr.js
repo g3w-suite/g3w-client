@@ -520,7 +520,7 @@ export default {
           <li>forcer le rechargement de la page : <code>CTRL + F5</code></li>
           <li>imprimer à nouveau la carte</li>
         </ol>
-        <p>Pour plus d'informations, veuillez contacter l'administrateur du serveur à propos de : <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -poids : gras ;">&#x2139;&#xFE0F ; sécurité et toiles souillées</a></p>
+        <p>Pour plus d'informations, veuillez contacter l'administrateur du serveur à propos de : <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -poids : gras ;">&#x2139;&#xFE0F; sécurité et toiles souillées</a></p>
         `
       }
     },
