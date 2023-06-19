@@ -387,6 +387,7 @@ export default {
             copied: "Copiat"
           },
           download: {
+            unknow: 'Descarcă',
             shp: 'Descarcă Shapefile',
             gpx: 'Descarcă GPX',
             gpkg: 'Descarcă GPKG',
