@@ -638,7 +638,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
   }
 
   this.default_expression_fields_on_update.forEach(field => {
-    if ("undefined" === requested_expressions.find(name => name === field.name)) {
+    if ("undefined" === typeof requested_expressions.find(name => name === field.name)) {
       pending_expressions.push(inputService.handleDefaultExpressionFormInput({
         field,
         feature: this.feature,
