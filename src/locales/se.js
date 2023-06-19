@@ -388,6 +388,7 @@ export default {
             copied: "Kopierad."
           },
           download: {
+            unknow: 'Ladda',
             shp: 'Ladda SHP-fil',
             gpx: 'Ladda GPX-fil',
             gpkg: 'Ladda GPKG-fil',

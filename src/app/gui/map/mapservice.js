@@ -2431,6 +2431,7 @@ proto.addExternalMapLayer = function(layer, projectLayer=false) {
  * @returns { Promise<unknown> }
  */
 proto.addExternalLayer = async function(externalLayer, options={}) {
+  console.log(options)
   let vectorLayer,
     name,
     data,
@@ -2487,6 +2488,8 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       crs: options.crs,
       type: options.type,
       _type: type,
+      //@since 3.8.3. Contain an external custom url do download
+      downloadUrl: options.downloadUrl,
       download: options.download || false,
       visible,
       checked: true,

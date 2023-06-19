@@ -22,7 +22,10 @@
     <!-- TODO add item description -->
     <li v-if="!layerMenu.layer.projectLayer">
       <div style="display: flex; justify-content: space-between; align-items: center">
-        <layerspositions @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})" style="display: flex; flex-direction: column; justify-content: space-between" :position="layerMenu.layer.position"></layerspositions>
+        <layerspositions
+          @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})"
+          style="display: flex; flex-direction: column; justify-content: space-between"
+          :position="layerMenu.layer.position"/>
       </div>
     </li>
 
@@ -83,19 +86,30 @@
             v-model="layerMenu.colorMenu.color"
             @input="onChangeColor"
             style="width: 100%"
-          ></chrome-picker>
+          />
         </li>
       </ul>
     </li>
+    <template v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'">
+      <!-- When is provided an download url        -->
+      <li @click.prevent.stop="" v-if="layerMenu.layer.downloadUrl" v-download>
+        <div @click.prevent.stop="downloadExternal(layerMenu.layer.downloadUrl)" >
+          <bar-loader :loading="layerMenu.loading.unknow"/>
+            <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('download')"></span>
+            <span class="item-text" v-t="'sdk.catalog.menu.download.unknow'"></span>
+        </div>
+      </li>
 
-    <!-- TODO add item description -->
-    <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'" v-download>
-      <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)" >
-        <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
-        <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
-        <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
-      </div>
-    </li>
+      <!-- TODO add item description -->
+      <li @click.prevent.stop="" v-else v-download>
+        <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)" >
+          <bar-loader :loading="layerMenu.loading.shp"/>
+          <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
+          <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
+        </div>
+      </li>
+
+    </template>
 
     <!-- TODO add item description -->
     <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" >
@@ -103,13 +117,13 @@
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
         <span style="font-weight: bold; margin-left: 5px;">{{layerMenu.layer.opacity}}</span>
       </div>
-      <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity"></range>
+      <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity"/>
     </li>
 
     <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id)" >
-        <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
+        <bar-loader :loading="layerMenu.loading.geotiff"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('geotiff')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff'"></span>
       </div>
@@ -118,7 +132,7 @@
     <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id, true)" style="position: relative">
-        <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
+        <bar-loader :loading="layerMenu.loading.geotiff"/>
         <span class="menu-icon skin-color-dark" style="color:#777" :class="g3wtemplate.getFontClass('geotiff')"></span>
         <span style="position: absolute; left: -7px; bottom: 8px; font-size: 1.2em" class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('crop')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff_map_extent'"></span>
@@ -128,7 +142,7 @@
     <!-- Download as SHP -->
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
-        <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
+        <bar-loader :loading="layerMenu.loading.shp"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
@@ -137,7 +151,7 @@
     <!-- Download as GPX -->
     <li v-if="canDownloadGpx(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpx(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.gpx"></bar-loader>
+        <bar-loader :loading="layerMenu.loading.gpx"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('gpx')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpx'"></span>
       </div>
@@ -146,7 +160,7 @@
     <!-- Download as Gpkg -->
     <li v-if="canDownloadGpkg(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpkg(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.gpkg"></bar-loader>
+        <bar-loader :loading="layerMenu.loading.gpkg"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('gpkg')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpkg'"></span>
       </div>
@@ -155,7 +169,7 @@
     <!-- Download as CSV -->
     <li v-if="canDownloadCsv(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.csv"></bar-loader>
+        <bar-loader :loading="layerMenu.loading.csv"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('csv')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.csv'"></span>
       </div>
@@ -164,7 +178,7 @@
     <!-- Download as XLS -->
     <li v-if="canDownloadXls(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadXls(layerMenu.layer.id)">
-        <bar-loader :loading="layerMenu.loading.xls"></bar-loader>
+        <bar-loader :loading="layerMenu.loading.xls"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('xls')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.xls'"></span>
       </div>
@@ -214,6 +228,8 @@
   const { t } = require('core/i18n/i18n.service');
   const shpwrite = require('shp-write');
   const TableComponent = require('gui/table/vue/table');
+  const { downloadFile } = require('core/utils/utils');
+
 
   const OFFSETMENU = {
     top: 50,
@@ -319,6 +335,11 @@
         this.layerMenu.loading.gpkg = false;
         this.layerMenu.loading.xls = false;
         this.layerMenu.loading.geotiff = false;
+        /**
+         * @since 3.8.3
+         * @type {boolean}
+         */
+        this.layerMenu.loading.unknow = false;
       },
       closeLayerMenu(menu={}) {
         this._hideMenu();
@@ -526,6 +547,18 @@
         }
         geometryType = geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
         return geometryType;
+      },
+
+      /**
+       * @since 3.8.3
+       * Download external Url
+       */
+      downloadExternal(url){
+        this.layerMenu.loading.unknow = true;
+        downloadFile({
+          url
+        })
+        this.layerMenu.loading.unknow = false;
       },
 
       /**

@@ -387,6 +387,7 @@ export default {
             copied: "Kopioitu."
           },
           download: {
+            unknow: "Lataa",
             shp: 'Lataa SHP-tiedosto',
             gpx: 'Lataa GPX-tiedosto',
             gpkg: 'Lataa GPKG-tiedosto',

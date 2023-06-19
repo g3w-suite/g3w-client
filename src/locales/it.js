@@ -389,6 +389,7 @@ export default {
             copied: "Copiato"
           },
           download: {
+            unknow: "Scarica",
             shp: 'Scarica Shapefile',
             gpx: 'Scarica GPX',
             gpkg: 'Scarica GPKG',
