@@ -211,6 +211,13 @@ proto.setUpdate = function(bool=false, options={}) {
   const { force = false } = options;
   this.force.update = force;
   this.state.update = this.force.update || bool;
+  if (false === this.state.update) {
+    // need to set original value of field _value
+    // equal to current value to get changes
+    this.state.fields.forEach(field => {
+      field._value = field.value;
+    })
+  }
 };
 
 /**
@@ -653,6 +660,9 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
   } catch(err) {
     console.warn(err);
   }
+
+  // enable listen changeInput again
+  this.listenChangeInput = true;
 
 };
 
