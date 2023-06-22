@@ -141,7 +141,7 @@
     </div>
     
     <catalog-layer-context-menu :external="state.external" />
-    
+
     <catalog-project-context-menu />
 
   </div>
