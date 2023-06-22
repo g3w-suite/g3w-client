@@ -544,7 +544,7 @@ export default {
      onTreeItemClick() {
       this.handleClick({
         '1': () => !this.isTable && !this.isGroup && this.select(),
-        '2': () => !this.isTable && this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
+        '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree)
       }, this);
     },
 
