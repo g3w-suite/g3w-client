@@ -52,7 +52,7 @@ import InputPickLayer from './InputPickLayer.vue';
 import InputRadio from './InputRadio.vue';
 import InputRange from './InputRange.vue';
 import InputSelect from './InputSelect.vue';
-import InputSliderange from './InputSliderange.vue';
+import InputSliderRange from './InputSliderRange.vue';
 import InputTable from './InputTable.vue';
 import InputTableBody from './InputTableBody.vue';
 import InputTableHeader from './InputTableHeader.vue';
@@ -63,6 +63,7 @@ import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
+import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
 import MetadataProjectBBoxContent from './MetadataProjectBBoxContent.vue';
@@ -75,6 +76,7 @@ import Print from './Print.vue';
 import PrintFidAtlasValues from './PrintFidAtlasValues.vue';
 import PrintPage from './PrintPage.vue';
 import PrintSelectAtlasFieldValues from './PrintSelectAtlasFieldValues.vue';
+import ChangeMapMenu from "./ChangeMapMenu.vue";
 import ProjectsMenu from './ProjectsMenu.vue';
 import QueryBuilder from './QueryBuilder.vue';
 import QueryBuilderSearch from './QueryBuilderSearch.vue';
@@ -85,7 +87,7 @@ import QueryResultsActionInfoFormats from './QueryResultsActionInfoFormats.vue';
 import QueryResultsActionQueryPolygonCSVAttributes from './QueryResultsActionQueryPolygonCSVAttributes.vue';
 import QueryResultsActions from './QueryResultsActions.vue';
 import QueryResultsHeaderFeatureBody from './QueryResultsHeaderFeatureBody.vue';
-import QueryResultsAttributeFieldValue from './QueryResultsAttributeFieldValue.vue';
+import QueryResultsAttributeFieldValue from './QueryResultsTableAttributeFieldValue.vue';
 import Relation from './Relation.vue';
 import Relations from './Relations.vue';
 import RelationsPage from './RelationsPage.vue';
@@ -107,9 +109,9 @@ import TableToolbar from './TableToolbar.vue';
 import Tool from './Tool.vue';
 import Tools from './Tools.vue';
 import UserMessage from './UserMessage.vue';
-import VieportContentsViewer from './VieportContentsViewer.vue';
+import ViewportContentsViewer from './ViewportContentsViewer.vue';
 import WMS from './WMS.vue';
-import WMSLatersPanel from './WMSLatersPanel.vue';
+import WMSLayersPanel from './WMSLayersPanel.vue';
 
 export {
   App,
@@ -125,6 +127,10 @@ export {
   CatalogLayersGroup,
   CatalogLayersLegendItems,
   CatalogTristateTree,
+  /**
+   * @since 3.8.0
+   */
+  ChangeMapMenu,
   Field,
   FieldG3W,
   FieldGallery,
@@ -169,7 +175,7 @@ export {
   InputRadio,
   InputRange,
   InputSelect,
-  InputSliderange,
+  InputSliderRange,
   InputTable,
   InputTableBody,
   InputTableHeader,
@@ -180,6 +186,7 @@ export {
   LayerOpacityPicker,
   Map,
   MapAddLayer,
+  MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,
   MetadataProjectBBoxContent,
@@ -224,7 +231,7 @@ export {
   Tool,
   Tools,
   UserMessage,
-  VieportContentsViewer,
+  ViewportContentsViewer,
   WMS,
-  WMSLatersPanel,
+  WMSLayersPanel,
 };

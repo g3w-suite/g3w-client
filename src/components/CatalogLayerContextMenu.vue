@@ -19,7 +19,7 @@
 
     <!-- Item Title -->
     <li class="title">
-      <div>{{ layerMenu.layer.title }}</div>
+      <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">
         {{ getGeometryType(layerMenu.layer.id, layerMenu.layer.external) }}
       </div>
@@ -38,9 +38,10 @@
 
     <!-- TODO add item description -->
     <li
-      v-if="canShowMetadataInfo(layerMenu.layer)"
+      v-if="hasMetadataInfo(layerMenu.layer)"
       @mouseleave.self="showMetadataInfo(false)"
-      @mouseover.self="showMetadataInfo(true,  $event)">
+      @mouseover.self="showMetadataInfo(true,  $event)"
+    >
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('info')"></span>
       <span class="item-text" v-t="'Metadata'"></span>
       <div
@@ -81,12 +82,7 @@
           :key="style.name"
         >
           <span v-if="style.current" style="font-size: 0.8em;" :class="g3wtemplate.getFontClass('circle')"></span>
-          <span>
-            {{style.name}}
-            <span v-if="style.name === layerMenu.layer.defaultstyle && layerMenu.layer.styles.length > 1">
-              (<span v-t="'default'"></span>)
-            </span>
-          </span>
+          <span>{{ getStyleName(style) }}</span>
         </li>
       </ul>
     </li>
@@ -125,7 +121,7 @@
 
     <!-- TODO add item description -->
     <li
-      v-if="isExternalShapefile(layerMenu.layer)"
+      v-if="isExternalVectorLayer(layerMenu.layer)"
       @click.prevent.stop="" 
       @mouseleave.self="showColorMenu(false,$event)"
       @mouseover.self="showColorMenu(true,$event)"
@@ -153,13 +149,22 @@
       </ul>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Download an external layer file from a proxy server url -->
     <li
-      v-if="isExternalShapefile(layerMenu.layer)"
+      v-if="isExternalVectorLayer(layerMenu.layer) && layerMenu.layer.downloadUrl"
       @click.prevent.stop=""
       v-download
     >
-      <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)" >
+      <div @click.prevent.stop="downloadExternal(layerMenu.layer.downloadUrl)">
+        <bar-loader :loading="layerMenu.loading.unknow" />
+        <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('download')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.unknow'"></span>
+      </div>
+    </li>
+
+    <!-- Download an external layer file as shapefile -->
+    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && !layerMenu.layer.downloadUrl" v-download>
+      <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)">
         <bar-loader :loading="layerMenu.loading.shp" />
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
@@ -167,7 +172,10 @@
     </li>
 
     <!-- TODO add item description -->
-    <li v-if="isExternalWMSLayer(layerMenu.layer)" @click.prevent.stop="">
+    <li
+      v-if="isExternalWMSLayer(layerMenu.layer)"
+      @click.prevent.stop=""
+    >
       <div style="display: flex; justify-content: space-between">
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
         <span style="font-weight: bold; margin-left: 5px;">{{ layerMenu.layer.opacity }}</span>
@@ -305,6 +313,8 @@
   const { t } = require('core/i18n/i18n.service');
   const shpwrite = require('shp-write');
   const TableComponent = require('gui/table/vue/table');
+  const { downloadFile } = require('core/utils/utils');
+
 
   const OFFSETMENU = {
     top: 50,
@@ -387,6 +397,11 @@
         this.layerMenu.loading.gpkg = false;
         this.layerMenu.loading.xls = false;
         this.layerMenu.loading.geotiff = false;
+        /**
+         * @since 3.8.3
+         * @type {boolean}
+         */
+        this.layerMenu.loading.unknow = false;
       },
 
       closeLayerMenu(menu={}) {
@@ -610,6 +625,17 @@
       },
 
       /**
+       * External download url
+       * 
+       * @since 3.8.3
+       */
+      downloadExternal(url) {
+        this.layerMenu.loading.unknow = true;
+        downloadFile({ url });
+        this.layerMenu.loading.unknow = false;
+      },
+
+      /**
        * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection
        * 
        * @param layer
@@ -690,7 +716,10 @@
           const layerId = this.layerMenu.layer.id;
           const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
           if (layer) {
-            CatalogEventHub.$emit('layer-change-style', { layerId });
+            CatalogEventHub.$emit('layer-change-style', {
+              layerId,
+              style: this.layerMenu.stylesMenu.style
+            });
             layer.change();
           }
         }
@@ -768,27 +797,6 @@
       /**
        * @since 3.8.0
        */
-      canShowMetadataInfo(layer) {
-        return layer.metadata && layer.metadata.abstract;
-      },
-
-      /**
-       * @since 3.8.0
-       */
-      canShowOpacityPicker(layer) {
-        return layer.geolayer && layer.visible;
-      },
-
-      /**
-       * @since 3.8.0 
-       */
-      canShowStylesMenu(layer) {
-        return layer.geolayer && layer.styles && layer.styles.length > 1;
-      },
-
-      /**
-       * @since 3.8.0
-       */
       canOpenAttributeTable(layer) {
         return layer.openattributetable;
       },
@@ -801,18 +809,52 @@
       },
 
       /**
+       * Get category style name eventually suffixed by "(default)" string
+       * 
        * @since 3.8.0
        */
-      isExternalShapefile(layer) {
-        return !layer.projectLayer && 'wms' !== layer._type
+      getStyleName(style) {
+        return style.name + (
+          style.name === this.layerMenu.layer.defaultstyle && this.layerMenu.layer.styles.length > 1
+            ? ` (${t('default')})`
+            : ''
+          );
       },
 
       /**
-       * @since 3.8.0
+       * @since 3.8.3
        */
       isExternalWMSLayer(layer) {
         return !layer.projectLayer && 'wms' === layer._type;
-      }
+      },
+
+      /**
+       * @since 3.8.3
+       */
+       isExternalVectorLayer(layer) {
+        return !layer.projectLayer && 'wms' !== layer._type;
+      },
+
+      /**
+       * @since 3.8.3
+       */
+      canShowStylesMenu(layer) {
+        return layer.geolayer && layer.styles && layer.styles.length > 1;
+      },
+
+      /**
+       * @since 3.8.3
+       */
+      hasMetadataInfo(layer) {
+        return layer.metadata && layer.metadata.abstract;
+      },
+
+      /**
+       * @since 3.8.3
+       */
+      canShowOpacityPicker(layer) {
+        return layer.geolayer && layer.visible;
+      },
 
     },
 

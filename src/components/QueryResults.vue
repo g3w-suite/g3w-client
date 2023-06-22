@@ -6,7 +6,7 @@
 <template>
   <div id="search-results" class="queryresults-wrapper">
     <div class="skin-color" style="font-weight: bold; margin-bottom: 3px; font-size: 1.1em;" v-if="info.message">
-      <span v-if="info.icon" class="action-button skin-tooltip-bottom" :class="g3wtemplate.getFontClass(info.icon)" @click.stop.prevent="info.action"></span>
+      <span v-if="info.icon" class="action-button skin-tooltip-bottom" :class="g3wtemplate.getFontClass(info.icon)"></span>
       <span>{{info.message}}</span>
     </div>
     <div class="queryresults-container">
@@ -20,6 +20,7 @@
                   <span class="query-layer-feature-count" v-show="!layer.rawdata">({{layer.features.length}})</span>
                 </div>
                 <div class="box-features-action" @click.stop="">
+                  <!-- info format layer component -->
                   <infoformats :layer="layer"/>
                   <template v-if="layer.features.length > 1">
                     <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button"

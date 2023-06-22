@@ -26,17 +26,17 @@
         { bold : isGroup },
         g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
-      @click="expandCollapse"
-      class="root collapse-expande-collapse-icon">
-    </span>
+      @click.stop="expandCollapse"
+      class="root collapse-expande-collapse-icon"
+    ></span>
 
     <!-- GROUP LAYER -->
     <span
       v-if="isGroup"
       @click.stop="toggle()"
       style="color: #ffffff"
-      :class="[triClass()]">
-    </span>
+      :class="[triClass()]"
+    ></span>
 
     <!-- TABLE LAYER -->
     <span
@@ -46,8 +46,8 @@
       :class="[
         parentFolder ? 'child' : 'root',
         g3wtemplate.getFontClass('table')
-      ]">
-    </span>
+      ]"
+    ></span>
 
     <template v-else>
 
@@ -56,7 +56,7 @@
         v-if="layerstree.external && layerstree.removable"
         style="color: red; padding-left: 1px;"
         :class="g3wtemplate.getFontClass('trash')"
-        @click="removeExternalLayer(layerstree.name, layerstree._type)"
+        @click.stop="removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
       <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
@@ -79,6 +79,7 @@
           class="collapse-expande-collapse-icon"
           :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
         ></span>
+
         <span
           @click.stop="toggle()"
           :style="{
@@ -93,7 +94,9 @@
           :class="[
             g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'),
             { 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }
-          ]"></span>
+          ]"
+        ></span>
+
       </span>
 
     </template>
@@ -164,7 +167,9 @@
       :class="[`g3w-lendplace-${legendplace}`]"
       v-show="layerstree.expanded"
     >
+
       <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
+
         <tristate-tree
           :root="false"
           :legendConfig="legend"
@@ -174,8 +179,9 @@
           :layerstree="_layerstree"
           :storeid="storeid"
           :parent="layerstree"
-          :parent_mutually_exclusive="!!layerstree.mutually_exclusive">
-        </tristate-tree>
+          :parent_mutually_exclusive="!!layerstree.mutually_exclusive"
+        />
+
       </span>
     </ul>
 
@@ -187,32 +193,10 @@
 import LayerLegend from 'components/CatalogLayerLegend.vue';
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ClickMixin from 'mixins/click';
 import GUI from 'services/gui';
 
 const { downloadFile } = require('core/utils/utils');
-
-/**
- * Store `click` and `doubleclick` events on a single vue element.
- *
- * @see https://stackoverflow.com/q/41303982
- */
-const CLICK_EVENT = {
-  count: 0,                                   // count click events
-  timeoutID: null,                            // timeoutID return by setTimeout Function
-  handleClick(callback, context) {
-    CLICK_EVENT.count += 1;                   // increment click count
-    if (!CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
-      CLICK_EVENT.timeoutID = setTimeout(() => {
-        callback.call(context);
-        CLICK_EVENT.reset();
-      }, 300);
-    }
-  },
-  reset() {
-    CLICK_EVENT.count = 0;
-    CLICK_EVENT.timeoutID = null;
-  }
-};
 
 export default {
 
@@ -233,13 +217,15 @@ export default {
     'layerlegend': LayerLegend
   },
 
+  mixins: [ClickMixin],
+
   data() {
     return {
-      expanded: this.layerstree.expanded,
+      expanded:       this.layerstree.expanded,
       isGroupChecked: true,
       controltoggled: false,
-      n_childs: null,
-      filtered: false
+      n_childs:       null,
+      filtered:       false
     }
   },
 
@@ -247,8 +233,8 @@ export default {
 
     /**
      * @returns {boolean} whether to display total number of features for current layer
-     * 
-     * @since 3.8.0 
+     *
+     * @since 3.8.0
      */
     showfeaturecount() {
       return "undefined" !== typeof this.layerstree.featurecount;
@@ -336,17 +322,39 @@ export default {
   },
 
   watch:{
-    
+
     /**
-     * @FIXME missing implementation ? 
+     * @FIXME empty function ? 
      */
-    'layerstree.disabled'(bool) {},
-    
+    'layerstree.disabled'(bool) {
+
+    },
+
     'layerstree.checked'(n, o) {
       if (this.isGroup) {
         this.handleGroupChecked(this.layerstree);
       } else {
         this.handleLayerChecked(this.layerstree);
+      }
+    }
+
+  },
+
+  methods: {
+
+    /**
+     * Inizialize layer (disable, visible etc..)
+     */
+    init() {
+      if (this.isGroup && !this.layerstree.checked) {
+        this.handleGroupChecked(this.layerstree);
+      }
+      if (this.isGroup && !this.root) {
+        this.layerstree.nodes.forEach(node => {
+          if (node.id && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
+            node.uncheckable = true;
+          }
+        })
       }
     },
 
@@ -432,22 +440,27 @@ export default {
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
         return;  // NB exit early!
       }
-      
+
       // case project layer (eg. qgis layer)
-      const cataloglayer = CatalogLayersStoresRegistry.getLayerById(id);
-      if (!checked) {
-        cataloglayer.setVisible(false);
-      } else {
-        const visible = cataloglayer.setVisible(!disabled);
-        if (visible && 'toc' === this.legendplace) {
-          setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
-        }
-        if (parentGroup.mutually_exclusive) {
-          parentGroup.nodes.forEach(node => node.checked = node.id === id);
-        }
-        while (parentGroup) {
-          parentGroup.checked = true;
-          parentGroup = parentGroup.parentGroup;
+      else {
+        const layer = CatalogLayersStoresRegistry.getLayerById(id);
+        if (checked) {
+          const visible = layer.setVisible(!disabled);
+          /**
+           * @TODO is it necessary to emit the `layer-change-style` event here?
+           */
+          // if (visible && 'toc' === this.legendplace) {
+          //  setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
+          // }
+          if (parentGroup.mutually_exclusive) {
+            parentGroup.nodes.forEach(node => node.checked = node.id === id);
+          }
+          while (parentGroup) {
+            parentGroup.checked = true;
+            parentGroup = parentGroup.parentGroup;
+          }
+        } else {
+          layer.setVisible(false);
         }
       }
 
@@ -479,12 +492,16 @@ export default {
 
     /**
      * Select legend item
-     * 
+     *
      * @fires CatalogEventHub~treenodeexternalselected
      * @fires CatalogEventHub~treenodeselected
      */
     select() {
-      if (this.layerstree.external && 'undefined' !== typeof this.layerstree.selected) {
+      // skip when `selected === undefined` (unselectable layer, eg. an external WMS layer) 
+      if (undefined === this.layerstree.selected) {
+        return;
+      }
+      if (this.layerstree.external) {
         CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected', this.storeid, this.layerstree);
@@ -525,18 +542,13 @@ export default {
      * @since v3.8
      */
      onTreeItemClick() {
-      if (this.isGroup || this.isTable) { // Skip if TOC item is a Group or Table layer.
-        return;
-      }
-      CLICK_EVENT.handleClick(() => {
-        switch(CLICK_EVENT.count) {
-          case 1: this.select(); break;
-          case 2: this.maybeZoomToLayer(this.layerstree); break;
-        }
+      this.handleClick({
+        '1': () => !this.isTable && !this.isGroup && this.select(),
+        '2': () => !this.isTable && this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
       }, this);
     },
 
-    triClass () {
+    triClass() {
       return this.g3wtemplate.getFontClass(this.layerstree.checked ? 'check' : 'uncheck');
     },
 

@@ -191,7 +191,7 @@ proto.runSpatialQuery = async function(){
   }
   GUI.closeOpenSideBarComponent();
   try {
-    const { data = [] } = await DataRouterService.getData('query:bbox', {
+    await DataRouterService.getData('query:bbox', {
       inputs: {
         bbox: this.bbox,
         feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),

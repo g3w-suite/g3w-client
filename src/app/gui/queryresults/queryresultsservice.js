@@ -81,7 +81,13 @@ function QueryResultsService() {
       const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
       if ('Point' === feature.getGeometry().getType()) {
         return new ol.style.Style({
-          text: new ol.style.Text({ text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', fill, stroke })
+          text: new ol.style.Text({
+            text: '\uf3c5',
+            font: '900 3em "Font Awesome 5 Free"',
+            fill,
+            stroke,
+            offsetY : -15
+          }),
         });
       }
       return new ol.style.Style({ stroke });
@@ -1275,7 +1281,6 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
           break;
       }
     }
-
   }
 
   return {
@@ -1367,44 +1372,44 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
   } else this.hideChart(container)
 };
 
-proto.printAtlas = function(layer, feature){
-  let {id:layerId, features} = layer;
-  const inputAtlasAttr = 'g3w_atlas_index';
-  features = feature ? [feature]: features;
-  const atlasLayer = this.getAtlasByLayerId(layerId);
-  if (atlasLayer.length > 1) {
-    let inputs='';
-    atlasLayer.forEach((atlas, index) => {
-      const id = getUniqueDomId();
-      inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
-                 <label for="${id}">${atlas.name}</label>
-                 <br>`;
-    });
+proto.printAtlas = function(layer, feature) {
+  const features   = feature ? [feature] : layer.features;
+  const atlasLayer = this.getAtlasByLayerId(layer.id);
 
-    GUI.showModalDialog({
-      title: t('sdk.atlas.template_dialog.title'),
-      message: inputs,
-      buttons: {
-        success: {
-          label: "OK",
-          className: "skin-button",
-          callback: ()=> {
-            const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
-            if (index !== null || index !== undefined) {
-              const atlas = atlasLayer[index];
-              this._printSingleAtlas({
-                atlas,
-                features
-              })
-            }
+  /** @FIXME add description */
+  if (atlasLayer.length <= 1) {
+    this._printSingleAtlas({ features, atlas: atlasLayer[0] });
+    return;
+  }
+
+  const inputAtlasAttr = 'g3w_atlas_index';
+  let inputs = '';
+
+  atlasLayer.forEach((atlas, index) => {
+    const id = getUniqueDomId();
+    inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>`;
+    inputs += `<label for="${id}">${atlas.name}</label>`;
+    inputs += `<br>`;
+  });
+
+  GUI.showModalDialog({
+    title: t('sdk.atlas.template_dialog.title'),
+    message: inputs,
+    buttons: {
+      success: {
+        label: "OK",
+        className: "skin-button",
+        callback: () => {
+          const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
+          if (undefined === index) {
+            return false; // prevent default
           }
+          this._printSingleAtlas({ features, atlas: atlasLayer[index] });
         }
       }
-    })
-  } else this._printSingleAtlas({
-      atlas: atlasLayer[0],
-      features
-    })
+    }
+  });
+
 };
 
 /**

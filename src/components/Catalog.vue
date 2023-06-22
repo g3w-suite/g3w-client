@@ -6,6 +6,7 @@
 <template>
   <!-- item template -->
   <div id="catalog" @contextmenu.prevent.stop="" class="tabbable-panel catalog">
+
     <div class="tabbable-line">
 
       <!-- TAB MENU (header) -->
@@ -136,6 +137,7 @@
         />
 
       </div>
+
     </div>
     
     <catalog-layer-context-menu :external="state.external" />
@@ -159,17 +161,15 @@ import GUI from 'services/gui';
 const DEFAULT_ACTIVE_TAB = 'layers';
 
 export default {
-  
   data() {
-    const legend = this.$options.legend;
-    legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
+    this.$options.legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
     return {
-      state: null,
-      legend,
-      showlegend: false,
+      state:            null,
+      legend:           this.$options.legend,
+      showlegend:       false,
       currentBaseLayer: null,
-      activeTab: null,
-      loading: false,
+      activeTab:        null,
+      loading:          false,
     }
   },
 
@@ -205,10 +205,10 @@ export default {
     },
 
     hasLayers() {
-      let layerstresslength = 0;
-      this.state.layerstrees.forEach(layerstree => layerstresslength += layerstree.tree.length);
-      return (this.state.external.vector.length > 0 || layerstresslength > 0 || this.state.layersgroups.length > 0);
-    }
+      let len = 0;
+      this.state.layerstrees.forEach(layerstree => len += layerstree.tree.length);
+      return this.state.external.vector.length > 0 || len > 0 || this.state.layersgroups.length > 0 ;
+    },
 
   },
 
@@ -228,16 +228,15 @@ export default {
             layer.clearCategories();
             layer.change();
           }
-          return true
+          return true;
         }
       });
-      this.legend.place === 'tab' ? CatalogEventHub.$emit('layer-change-style') :
+      if ('tab' === this.legend.place) {
+        CatalogEventHub.$emit('layer-change-style');
+      } else {
         // get all layer tha changes style
-        changeStyleLayersId.forEach(layerId => {
-          CatalogEventHub.$emit('layer-change-style', {
-            layerId
-          })
-        });
+        changeStyleLayersId.forEach(layerId => { CatalogEventHub.$emit('layer-change-style', { layerId }); });
+      }
     },
 
     delegationClickEventTab(evt) {
@@ -255,10 +254,9 @@ export default {
     },
 
     getSrcBaseLayerImage(baseLayer) {
-      const type = baseLayer && baseLayer.servertype || baseLayer;
       let image;
       let customimage = false;
-      switch (type) {
+      switch (baseLayer && baseLayer.servertype || baseLayer) {
         case 'OSM':
           image = 'osm.png';
           break;
@@ -276,15 +274,15 @@ export default {
         default:
           image = 'nobaselayer.png';
       }
-      return !customimage ? `${GUI.getResourcesUrl()}images/${image}`: image;
+      return customimage ? image : `${GUI.getResourcesUrl()}images/${image}`;
     },
 
-    /**
+        /**
      * @TODO add description
      * 
      * @since 3.8.0
      */
-    onUnSelectionLayer(storeid, layerstree) {
+     onUnSelectionLayer(storeid, layerstree) {
       if (layerstree.external) {
         GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
       } else {
@@ -369,23 +367,23 @@ export default {
   watch: {
 
     /**
-     * Listen external WMS change. If remove all layer need to set active the project or default tab 
+     * Listen external wms change. If remove all layer nee to set active the project or default tab 
      */
     'state.external.wms'(newlayers, oldlayers) {
       if (oldlayers && 0 === newlayers.length) {
         this.activeTab = this.project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
       }
     },
-  
+
     'state.prstate.currentProject': {
       async handler(project, oldproject) {
         const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
-        this.loading = activeTab === 'baselayers';
+        this.loading = 'baselayers' === activeTab;
         await this.$nextTick();
-        setTimeout(()=>{
+        setTimeout(() => {
           this.loading = false;
           this.activeTab = activeTab;
-        }, activeTab === 'baselayers' ? 500 : 0)
+        }, ('baselayers' === activeTab) ? 500 : 0)
       },
       immediate: false
     },
