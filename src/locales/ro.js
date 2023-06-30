@@ -410,7 +410,7 @@ export default {
     },
     toggle_color_scheme: "Comutare schemă de culori",
     logout: "Deconectare",
-    no_other_projects: "No more project for this group",
+    no_other_projects: "Nu mai sunt proiecte pentru acest grup",
     no_other_groups: "Nu mai sunt grupuri pentru acest macrogrup",
     yes: "Da",
     no: "Nu",

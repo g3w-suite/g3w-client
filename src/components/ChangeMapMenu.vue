@@ -24,8 +24,11 @@
         </span>
 
         <div v-if="parent" style="margin: auto">
-          <h3 style="font-weight: bold">{{parent.title || parent.name}}</h3>
+          <h3 style="font-weight: bold">{{parent.name || parent.title}}</h3>
         </div>
+      </div>
+      <div v-if="parent" style="margin: auto">
+        <h4 class="macro-group-title skin-background-color lighten">{{getMacroGroupTitle()}}</h4>
       </div>
     </template>
 
@@ -49,7 +52,7 @@
         <!-- ITEM CONTENT -->
         <div class="menu-item-content">
           <div class="menu-item-text">
-            <h4 class="menu-item-title">{{ item.title }}</h4>
+            <h4 class="menu-item-title">{{ item.name || item.title }}</h4>
             <div v-html="item.description"></div>
           </div>
         </div>
@@ -128,7 +131,12 @@ export default {
   },
 
   methods: {
-
+    /**
+     * @since 3.8.4
+     */
+    getMacroGroupTitle(){
+      return this[this.current === 'projects' ? 'groups' : 'macrogroups'].find(item => item.id === this.parent.id).title;
+    },
     /**
      * Set a fallback image on network error.
      */
@@ -313,6 +321,11 @@ export default {
     width: 100%;
     position: relative;
   }
+
+  .macro-group-title {
+    padding: 10px;
+  }
+
   .g3w-change-map-menu-container {
     height: 100%;
     display: grid;
