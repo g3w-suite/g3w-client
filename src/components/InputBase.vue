@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import { baseInputMixin } from 'mixins/base-input';
+import baseInputMixin from 'mixins/base-input';
 
 console.log(baseInputMixin);
 
