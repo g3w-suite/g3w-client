@@ -62,7 +62,7 @@
 <script>
 import baseInputMixin from 'mixins/base-input';
 
-console.log(baseInputMixin);
+console.assert(undefined !== baseInputMixin, 'baseInputMixin is undefined');
 
 export default {
   name: "InputBase",

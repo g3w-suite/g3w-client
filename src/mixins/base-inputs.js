@@ -11,8 +11,11 @@
 import ApplicationState   from 'store/application-state';
 import baseInputMixin from 'mixins/base-input';
 import BaseInputComponent from 'components/InputBase.vue';
+import { InputsServices } from 'gui/inputs';
 
-console.log(baseInputMixin, BaseInputComponent);
+console.assert(undefined !== InputsServices, 'InputsServices is undefined')
+console.assert(undefined !== baseInputMixin, 'baseInputMixin is undefined');
+console.assert(undefined !== BaseInputComponent, 'BaseInputComponent is undefined');
 
 export default {
 
@@ -25,10 +28,12 @@ export default {
   },
 
   watch: {
-    'notvalid'(notvalid){
-      notvalid && this.service.setErrorMessage(this.state)
+    'notvalid'(notvalid) {
+      if (notvalid) {
+       this.service.setErrorMessage(this.state);
+      }
     },
-    'state.value'(){
+    'state.value'() {
       if ("undefined" !== typeof this.state.input.options.default_expression) {
         // need to postpone state.value watch parent that use mixin
         setTimeout(() => this.change());
@@ -38,9 +43,15 @@ export default {
 
   created() {
     this.service = new InputsServices[this.state.input.type]({ state: this.state });
+
     this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
-    this.state.editable && this.state.validate.required && this.service.validate();
+
+    if (this.state.editable && this.state.validate.required) {
+      this.service.validate();
+    }
+ 
     this.$emit('addinput', this.state);
+
     /**
      * When input value has a default value option emit
      * `changeinput` event without check validation.
@@ -72,6 +83,7 @@ export default {
    if (this.state.value_from_default_value) {
     this.$emit('changeinput', this.state);
    }
+
   },
 
   destroyed() {
