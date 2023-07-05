@@ -25,11 +25,12 @@
 </template>
 
 <script>
-const Input = require('gui/inputs/input');
+import { baseInputsMixin } from 'mixins';
+
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
-  mixins: [Input],
+  mixins: [ baseInputsMixin ],
   data() {
     return {
       ids: [getUniqueDomId(),getUniqueDomId()],

@@ -7,11 +7,10 @@
 </template>
 
 <script>
-const { getUniqueDomId } = require('core/utils/utils');
-const Input = require('gui/inputs/input');
+import { baseInputsMixin } from 'mixins';
 
 export default {
-  mixins: [Input],
+  mixins: [ baseInputsMixin ],
   methods: {
     setupTableCustomTools(){
       /**

@@ -35,7 +35,7 @@
 </template>
 
 <script>
-const Inputs = require('gui/inputs/inputs');
+import { InputsComponents } from 'gui/inputs';
 
 export default {
   name: "g3w-input",
@@ -57,7 +57,7 @@ export default {
     }
   },
   components: {
-    ...Inputs
+    ...InputsComponents
   },
   computed: {
     type() {

@@ -21,10 +21,10 @@
 </template>
 
 <script>
-const Input = require('gui/inputs/input');
+import { baseInputsMixin } from 'mixins';
 
 export default {
-  mixins: [Input],
+  mixins: [ baseInputsMixin ],
 };
 </script>
 

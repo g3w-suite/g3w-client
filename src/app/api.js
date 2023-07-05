@@ -88,7 +88,7 @@ const ToolsComponent = require('gui/tools/vue/tools');
 const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
 const FormComponent = require('gui/form/vue/form');
 const FormService = require('gui/form/formservice');
-const InputsComponents = require('gui/inputs/inputs');
+import { InputsComponents } from 'gui/inputs';
 const ChartsFactory = require('gui/charts/chartsfactory');
 const Fields = require('gui/fields/fields');
 const SearchPanelService = require('gui/search/vue/panel/searchservice');

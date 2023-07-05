@@ -20,11 +20,10 @@
 <script>
 import InputTableHeader from 'components/InputTableHeader.vue';
 import InputTableBody from 'components/InputTableBody.vue';
-
-const Input = require('gui/inputs/input');
+import { baseInputsMixin } from 'mixins';
 
 export default {
-  mixins: [Input],
+  mixins: [ baseInputsMixin ],
   components: {
     InputTableHeader,
     InputTableBody

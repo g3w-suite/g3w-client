@@ -59,11 +59,12 @@
 </template>
 
 <script>
+import { baseInputsMixin } from 'mixins';
+
 const { getUniqueDomId } = require('core/utils/utils');
-const Input = require('gui/inputs/input');
 
 export default {
-  mixins: [Input],
+  mixins: [ baseInputsMixin ],
   data(){
     return {
       lonId: getUniqueDomId(),

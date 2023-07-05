@@ -24,11 +24,11 @@
 </template>
 
 <script>
-const Input = require('gui/inputs/input');
-const Service = require('gui/inputs/picklayer/service');
+import { baseInputsMixin } from 'mixins';
+import { InputsServices } from 'gui/inputs';
 
 export default {
-  mixins: [Input],
+  mixins: [ baseInputsMixin ],
   methods: {
     pickLayer() {
       this.pickservice.pick()
@@ -39,7 +39,7 @@ export default {
     }
   },
   created() {
-    this.pickservice = new Service(this.state.input.options)
+    this.pickservice = new InputsServices['picklayer'](this.state.input.options)
   },
   beforeDestroy() {
     this.pickservice.clear();

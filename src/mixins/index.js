@@ -14,6 +14,7 @@ import formInputsMixins from 'mixins/form-inputs';
 import widgetMixins from 'mixins/widget';
 import metadataMixin from 'mixins/metadata';
 import baseInputMixin from 'mixins/base-input';
+import baseInputsMixin from 'mixins/base-inputs';
 
 const mixins = {
   autocompleteMixin,
@@ -27,6 +28,7 @@ const mixins = {
   widgetMixins,
   metadataMixin,
   baseInputMixin,
+  baseInputsMixin,
 };
 export {fieldsMixin};
 export {mediaMixin};
@@ -38,6 +40,7 @@ export {formInputsMixins};
 export {widgetMixins};
 export {metadataMixin};
 export {baseInputMixin};
+export {baseInputsMixin};
 export {autocompleteMixin};
 
 export {mixins};

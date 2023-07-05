@@ -23,16 +23,19 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry from 'store/map-layers';
 import GUI from 'services/gui';
-import { selectMixin, select2Mixin } from 'mixins';
+import { baseInputsMixin, selectMixin, select2Mixin } from 'mixins';
+import { InputsServices } from 'gui/inputs';
 
-const PickLayerInputService = require('gui/inputs/picklayer/service');
 const Layer = require('core/layers/layer');
-const InputMixin = require('gui/inputs/input');
 
 const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 
 export default {
-  mixins: [InputMixin, selectMixin, select2Mixin],
+  mixins: [
+    baseInputsMixin,
+    selectMixin,
+    select2Mixin
+  ],
   data() {
     return {
       showPickLayer: false,
@@ -116,7 +119,7 @@ export default {
           fields: [field],
           pick_type: dependencyLayer.isStarted && dependencyLayer.isStarted() && 'map' || null
         };
-        this.pickLayerInputService = this.showPickLayer && new PickLayerInputService(options);
+        this.pickLayerInputService = this.showPickLayer && new InputsServices['picklayer'](options);
       } catch(err) {}
     }
     this.autocomplete && this.state.value && this.service.getKeyByValue({

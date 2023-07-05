@@ -21,13 +21,15 @@
 </template>
 
 <script>
-import { widgetMixins } from 'mixins';
+import { baseInputsMixin, widgetMixins } from 'mixins';
 
-const Input = require('gui/inputs/input');
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
-  mixins: [Input, widgetMixins],
+  mixins: [
+    baseInputsMixin,
+    widgetMixins
+  ],
   data() {
     return {
       value: null,

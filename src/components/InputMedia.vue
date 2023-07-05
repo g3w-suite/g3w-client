@@ -30,14 +30,14 @@
 
 <script>
 import GUI from 'services/gui';
+import { baseInputsMixin } from 'mixins';
 
-const InputMixins = require('gui/inputs/input');
 const { getUniqueDomId } = require('core/utils/utils');
 const { t } = require('core/i18n/i18n.service');
 const { media_field: MediaField } = require('gui/fields/fields');
 
 export default {
-  mixins: [InputMixins],
+  mixins: [ baseInputsMixin ],
   components: {
     'g3w-media': MediaField
   },

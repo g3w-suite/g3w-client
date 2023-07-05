@@ -19,12 +19,15 @@
 </template>
 
 <script>
-import { selectMixin } from 'mixins';
-const Input = require('gui/inputs/input');
+import { baseInputsMixin, selectMixin } from 'mixins';
+
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
-  mixins: [Input, selectMixin],
+  mixins: [
+    baseInputsMixin,
+    selectMixin
+  ],
   data() {
     const id = `unique_${getUniqueDomId()}`;
     return {id}
