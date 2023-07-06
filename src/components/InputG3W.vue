@@ -187,7 +187,7 @@ const vm = {
 
     type() {
       if ('child' !== this.state.type) {
-        return (this.state.input.type ? this.state.input.type : this.state.type + '_input');
+        return `${this.state.input.type ? this.state.input.type : this.state.type}_input`;
       }
     }
 
