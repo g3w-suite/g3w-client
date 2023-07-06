@@ -1128,11 +1128,12 @@ ApplicationService.init()
     app.on('ready', () =>  ApplicationService.postBootstrap());
     app.init();
   })
-  .catch(({ error=null, language }) => {
+  .catch((e) => {
+    let { error=null, language } = e;
     if (error) {
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
-    console.error(error);
+    console.error(e || error);
     ApplicationTemplate.fail({ error });
   });

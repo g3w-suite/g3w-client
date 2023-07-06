@@ -21,7 +21,11 @@
 
 <script>
 export default {
-  props: ['relations', 'feature', 'loading'],
+  props: [
+    'relations',
+    'feature',
+    'loading'
+  ],
   methods: {
     async showRelation(relation) {
       await this.$parent.showRelation(relation);

@@ -31,8 +31,14 @@
       </user-message>
     </transition>
     <div id="g3w-view-map" :class="`split-${state.split}`" class="g3w-view map" :style="styles.map">
-      <g3w-resize id="resize-map-and-content" :show="showresize" :moveFnc="moveFnc" :orientation="state.split"
-        :style="{backgroundColor:'transparent'}" :class="`split-${state.split}`"/>
+      <g3w-resize
+        id="resize-map-and-content"
+        :show="showresize"
+        :moveFnc="moveFnc"
+        :orientation="state.split"
+        :style="{ backgroundColor:'transparent' }"
+        :class="`split-${state.split}`"
+      />
       <div id="application-notifications">
         <online-notify/>
         <download-notify/>

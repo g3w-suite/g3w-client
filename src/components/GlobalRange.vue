@@ -61,7 +61,7 @@
        * @TODO find out what changes from the `unit` props
        */
       label: {
-        type:"String",
+        type: String,
         default: ''
       },
 

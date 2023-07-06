@@ -5,7 +5,10 @@
 
 export default {
   name: "bar-loader",
-  props: ['loading', 'color'],
+  props: [
+    'loading',
+    'color'
+  ],
   render(createElement) {
     if (this.loading) {
       return createElement('div', {

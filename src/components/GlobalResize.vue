@@ -12,6 +12,7 @@
 
   export default {
     name: "g3w-resize",
+
     props: {
       show: {
         type: Boolean,
@@ -20,11 +21,10 @@
       },
       orientation: {
         type: String,
-        required: true,
         default: 'h'
       },
       where: {
-        type: 'string',
+        type: String,
         default: 'document'
       },
       moveFnc: {
@@ -33,31 +33,38 @@
       },
       style:{
         type: Object,
-        default: {}
+        default: () => ({})
       }
     },
+
     methods: {
+
       wrapMoveFnc(evt) {
-        this.domElementMoveListen.addEventListener('mouseup', this.stop, {once: true});
+        this.domElementMoveListen.addEventListener('mouseup', this.stop, { once: true });
         this.moveFnc(evt);
       },
-      start(){
+
+      start() {
         this.domElementMoveListen.addEventListener('mousemove', this.wrapMoveFnc);
       },
-      async stop(){
+
+      async stop() {
         this.domElementMoveListen.removeEventListener('mousemove', this.wrapMoveFnc);
         await this.$nextTick();
         GUI.emit('resize');
-      }
+      },
+
     },
-    watch:{
-      'orientation':{
-        handler(orientation){
-          this.style.cursor = orientation === 'v' ? 'ns-resize' : 'col-resize';
+
+    watch: {
+      'orientation': {
+        handler(orientation) {
+          this.style.cursor = 'v' === orientation ? 'ns-resize' : 'col-resize';
         },
         immediate: true
       }
     },
+
     async mounted() {
       this.domElementMoveListen;
       this.style = {
@@ -75,10 +82,10 @@
           this.domElementMoveListen = document;
       }
     },
+
     destroyed() {
       this.domElementMoveListen = null;
-    }
-  }
-</script>
+    },
 
-<style scoped></style>
+}
+</script>

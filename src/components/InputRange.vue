@@ -5,20 +5,21 @@
 
 <template>
   <baseinput :state="state">
-      <input
-        slot="body"
-        @keydown.69.prevent=""
-        @keydown.13.stop=""
-        @change="checkValue"
-        @blur="checkValue"
-        style="width:100%; padding-right: 5px;"
-        class="form-control"
-        :tabIndex="tabIndex"
-        v-disabled="!editable"
-        :class="{'input-error-validation' : notvalid}"
-        v-model="state.value"
-        type="number"
-        :step="step">
+    <input
+      slot                = "body"
+      @keydown.69.prevent = ""
+      @keydown.13.stop    = ""
+      @change             = "checkValue"
+      @blur               = "checkValue"
+      style               = "width: 100%; padding-right: 5px;"
+      class               = "form-control"
+      :tabIndex           = "tabIndex"
+      v-disabled          = "!editable"
+      :class              = "{ 'input-error-validation' : notvalid }"
+      v-model             = "state.value"
+      type                = "number"
+      :step               = "step"
+    >
   </baseinput>
 </template>
 
@@ -26,16 +27,20 @@
 import { baseInputsMixin } from 'mixins';
 
 export default {
+
   mixins: [ baseInputsMixin ],
+
   data() {
-    const {min, max, Step:step} = this.state.input.options.values[0];
+    const { min, max, Step:step } = this.state.input.options.values[0];
     return {
       min,
       max,
-      step
-    }
+      step,
+    };
   },
+
   methods: {
+
     checkValue() {
       // check if value of input is empty
       const isEmpty = _.isEmpty(_.trim(this.state.value));
@@ -54,7 +59,9 @@ export default {
       }
 
       this.change();
-    }
-  }
+    },
+
+  },
+
 };
 </script>

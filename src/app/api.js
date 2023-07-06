@@ -35,7 +35,6 @@ import ApiService                  from 'services/api';
 import RouterService               from 'services/router';
 
 import GUI                         from 'services/gui';
-//MIXINS
 import Mixins                      from 'mixins';
 
 const G3WObject                    = require('core/g3wobject');
@@ -88,9 +87,9 @@ const ToolsComponent               = require('gui/tools/vue/tools');
 const QueryResultsComponent        = require('gui/queryresults/vue/queryresults');
 const FormComponent                = require('gui/form/vue/form');
 const FormService                  = require('gui/form/formservice');
-import { InputsComponents } from 'gui/inputs';
 const ChartsFactory                = require('gui/charts/chartsfactory');
 const Fields                       = require('gui/fields/fields');
+const InputsComponents             = G3WInput.components;
 const SearchPanelService           = require('gui/search/vue/panel/searchservice');
 
 /**
@@ -102,6 +101,11 @@ const DeleteFeatureInteraction     = require('g3w-ol/interactions/deletefeaturei
 const AreaInteraction              = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction            = require('g3w-ol/interactions/lengthinteraction');
 const g3wolutils                   = require('core/utils/ol');
+
+/**
+ * Test assertions
+ */
+console.assert(undefined !== InputsComponents, 'InputsComponents is undefined');
 
 module.exports = {
 
@@ -219,9 +223,7 @@ module.exports = {
       MapComponent,
       ToolsComponent,
       QueryResultsComponent,
-      // main Form Component
       FormComponent,
-      // Form Components
       FormComponents: {
         Body: FormBody,
         Footer: FormFooter

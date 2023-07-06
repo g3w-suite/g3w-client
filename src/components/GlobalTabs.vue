@@ -65,7 +65,7 @@
         default: false
       },
       contenttype: {
-        default: 'query'//or editing
+        default: 'query' //or editing
       },
       layerid:{
         required: true

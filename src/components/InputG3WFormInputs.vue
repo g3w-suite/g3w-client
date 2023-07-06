@@ -9,12 +9,12 @@
       <div class="box-body">
           <template v-for="field in state.fields">
             <g3w-input
-              :state="field"
-              :addToValidate="addToValidate"
-              :changeInput="changeInput"
-              @addToValidate="addToValidate"
-              @changeInput="changeInput">
-            </g3w-input>
+              :state         = "field"
+              :addToValidate = "addToValidate"
+              :changeInput   = "changeInput"
+              @addToValidate = "addToValidate"
+              @changeInput   = "changeInput"
+            />
           </template>
       </div>
       <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">

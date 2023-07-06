@@ -54,7 +54,13 @@
           </tbody>
         </table>
       </div>
-      <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'" class="skin-border-color lighten" style="border-style: solid; border-width: 0 1px 0 1px"/>
+      <g3w-resize
+        :show="chart"
+        :moveFnc="moveFnc"
+        :where="'content'"
+        class="skin-border-color lighten"
+        style="border-style: solid; border-width: 0 1px 0 1px"
+      />
       <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0', paddingBottom: '5px', marginBottom: '5px', marginLeft: '8px' }" ref="chartcontent"></div>
     </div>
     <div v-else class="dataTables_scrollBody" style="font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;">
@@ -77,7 +83,14 @@ const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 let SIDEBARWIDTH;
 
 export default {
-  props: ['table', 'feature', 'relation', 'previousview', 'showChartButton', 'cardinality'],
+  props: [
+    'table',
+    'feature',
+    'relation',
+    'previousview',
+    'showChartButton',
+    'cardinality'
+  ],
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {

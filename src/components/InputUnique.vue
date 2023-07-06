@@ -6,14 +6,19 @@
 <template>
   <baseinput :state="state">
     <select
-      :id="id"
-      slot="body"
-      style="width:100%"
-      :tabIndex="tabIndex"
-      v-disabled="!editable"
-      class="form-control">
+      :id          = "id"
+      slot         = "body"
+      style        = "width: 100%"
+      :tabIndex    = "tabIndex"
+      v-disabled   = "!editable"
+      class        = "form-control"
+    >
       <option value="null"></option>
-      <option :value="getValue(value)" v-for="value in state.input.options.values" :key="value">{{ getValue(value) }}</option>
+      <option
+        v-for  = "value in state.input.options.values"
+        :key   = "value"
+        :value = "getValue(value)"
+      >{{ getValue(value) }}</option>
     </select>
   </baseinput>
 </template>
@@ -24,36 +29,47 @@ import { baseInputsMixin, selectMixin } from 'mixins';
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
+
   mixins: [
     baseInputsMixin,
     selectMixin
   ],
+
   data() {
-    const id = `unique_${getUniqueDomId()}`;
-    return {id}
+    return { id: `unique_${getUniqueDomId()}` };
   },
+
   watch: {
+
     async 'state.input.options.values'(values) {
-      this.state.value = this.state.value ? this.state.value: null;
-      this.state.value !== null && values.indexOf(this.state.value) === -1 && this.service.addValueToValues(this.state.value);
+
+      this.state.value = this.state.value
+        ? this.state.value
+        : null;
+
+      if (null !== this.state.value && -1 === values.indexOf(this.state.value)) {
+        this.service.addValueToValues(this.state.value);
+      }
+
       await this.$nextTick();
-      this.state.value && this.select2.val(this.state.value).trigger('change');
-    }
+
+      if (this.state.value) {
+        this.select2.val(this.state.value).trigger('change');
+      }
+
+    },
+
   },
+
   async mounted() {
     await this.$nextTick();
-    if (this.state.input.options.editable) {
-      this.select2 = $(`#${this.id}`).select2({
-        dropdownParent: $('#g3w-view-content'),
-        tags: true,
-        language: this.getLanguage()
-      });
-      this.select2.val(this.state.value).trigger('change');
-      this.select2.on('select2:select', event => {
-        const value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
-        this.changeSelect(value);
-      })
+    if (!this.state.input.options.editable) {
+      return;
     }
-  }
+    this.select2 = $(`#${this.id}`).select2({ dropdownParent: $('#g3w-view-content'), tags: true, language: this.getLanguage() });
+    this.select2.val(this.state.value).trigger('change');
+    this.select2.on('select2:select', e => { this.changeSelect(e.params.data.$value ? e.params.data.$value : e.params.data.id); })
+  },
+
 };
 </script>
