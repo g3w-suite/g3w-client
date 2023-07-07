@@ -34,7 +34,6 @@
 
 <script>
 import { g3wInputMixin }  from 'mixins';
-import { InputsServices } from 'mixins/g3w-input';
 
 export default {
 
@@ -56,7 +55,7 @@ export default {
   },
 
   created() {
-    this.pickservice = new InputsServices['picklayer'](this.state.input.options)
+    this.pickservice = this.createInputService('picklayer', this.state.input.options);
   },
 
   beforeDestroy() {

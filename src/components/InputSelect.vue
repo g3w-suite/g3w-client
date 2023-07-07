@@ -62,9 +62,6 @@ import CatalogLayersStoresRegistry                    from 'store/catalog-layers
 import MapLayersStoresRegistry                        from 'store/map-layers';
 import GUI                                            from 'services/gui';
 import { g3wInputMixin, selectMixin, select2Mixin }   from 'mixins';
-import { InputsServices }                             from 'mixins/g3w-input';
-
-console.assert(undefined !== InputsServices, 'InputsServices is undefined');
 
 const Layer = require('core/layers/layer');
 
@@ -171,7 +168,7 @@ export default {
         this.showPickLayer = layer
           ? layer.getType() !== Layer.LayerTypes.TABLE
           : false;
-        this.pickLayerInputService = this.showPickLayer && new InputsServices['picklayer']({
+        this.pickLayerInputService = this.showPickLayer && this.createInputService('picklayer', {
           layer_id,
           fields: [value],
           pick_type: (layer.isStarted && layer.isStarted() && 'map' || null)

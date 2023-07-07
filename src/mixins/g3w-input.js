@@ -188,7 +188,7 @@ class Service {
 /**
  * ORIGINAL SOURCE: src/app/gui/inputs/services.js@3.8
  */
-export const InputsServices = {
+const InputsServices = {
   'text':           Service,
   'textarea':       Service,
   'texthtml':       Service,
@@ -584,14 +584,26 @@ export default {
 
   },
 
+  methods: {
+
+    /**
+     * Factory method
+     * 
+     * @since 3.8.5
+     */
+    createInputService(type, options) {
+      console.assert(undefined !== InputsServices[type], 'Uknwon InputsService type: ', type);
+      return new InputsServices[type](options);
+    }
+
+  },
+
   /**
    * @fires addinput
    * @fires changeinput
    */
   created() {
-    console.assert(undefined !== InputsServices[this.state.input.type], 'uknwon InputsService type: ', this.state.input.type);
-
-    this.service = new InputsServices[this.state.input.type]({ state: this.state });
+    this.service = this.createInputService(this.state.input.type, { state: this.state });
 
     this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
 
