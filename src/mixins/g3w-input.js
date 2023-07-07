@@ -35,6 +35,8 @@ console.assert(undefined !== BaseInputComponent, 'BaseInputComponent is undefine
 /******************************************************* */
 
 /**
+ * Base class
+ * 
  * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
  */
 class Service {
@@ -186,6 +188,8 @@ class Service {
 /******************************************************* */
 
 /**
+ * Factory object 
+ * 
  * ORIGINAL SOURCE: src/app/gui/inputs/services.js@3.8
  */
 const InputsServices = {
