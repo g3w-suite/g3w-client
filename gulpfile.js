@@ -32,7 +32,6 @@ const path        = require('path');
  * @since 3.9.0
  */
 const esmify = require('esmify')
-const commonShake = require('common-shakeify')
 const babelify    = require('babelify');
 const browserSync = require('browser-sync');
 const browserify  = require('browserify');
