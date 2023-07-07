@@ -11,10 +11,10 @@
 </template>
 
 <script>
-import { baseInputsMixin } from 'mixins';
+import { g3wInputMixin } from 'mixins';
 
 export default {
-  mixins: [ baseInputsMixin ],
+  mixins: [ g3wInputMixin ],
 
   methods: {
 

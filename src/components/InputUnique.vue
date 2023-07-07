@@ -24,14 +24,14 @@
 </template>
 
 <script>
-import { baseInputsMixin, selectMixin } from 'mixins';
+import { g3wInputMixin, selectMixin } from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
 
   mixins: [
-    baseInputsMixin,
+    g3wInputMixin,
     selectMixin
   ],
 

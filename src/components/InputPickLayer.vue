@@ -33,12 +33,12 @@
 </template>
 
 <script>
-import { baseInputsMixin } from 'mixins';
-import { InputsServices } from 'mixins/base-inputs';
+import { g3wInputMixin }  from 'mixins';
+import { InputsServices } from 'mixins/g3w-input';
 
 export default {
 
-  mixins: [ baseInputsMixin ],
+  mixins: [ g3wInputMixin ],
 
   methods: {
 

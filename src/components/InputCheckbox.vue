@@ -22,16 +22,16 @@
 </template>
 
 <script>
-import { baseInputsMixin, widgetMixins } from 'mixins';
+import { g3wInputMixin, widgetMixins } from 'mixins';
 
-console.assert(undefined !== baseInputsMixin);
+console.assert(undefined !== g3wInputMixin);
 
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
 
   mixins: [
-    baseInputsMixin,
+    g3wInputMixin,
     widgetMixins
   ],
 

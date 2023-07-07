@@ -14,7 +14,7 @@ import formInputsMixins  from 'mixins/form-inputs';
 import widgetMixins      from 'mixins/widget';
 import metadataMixin     from 'mixins/metadata';
 import baseInputMixin    from 'mixins/base-input';
-import baseInputsMixin   from 'mixins/base-inputs';
+import g3wInputMixin     from 'mixins/g3w-input';
 
 const mixins = {
   autocompleteMixin,
@@ -28,7 +28,7 @@ const mixins = {
   widgetMixins,
   metadataMixin,
   baseInputMixin,
-  baseInputsMixin,
+  g3wInputMixin,
 };
 export {fieldsMixin};
 export {mediaMixin};
@@ -40,7 +40,7 @@ export {formInputsMixins};
 export {widgetMixins};
 export {metadataMixin};
 export {baseInputMixin};
-export {baseInputsMixin};
+export {g3wInputMixin};
 export {autocompleteMixin};
 
 export {mixins};

@@ -45,16 +45,16 @@
 </template>
 
 <script>
-import GUI from 'services/gui';
-import { baseInputsMixin } from 'mixins';
+import GUI               from 'services/gui';
+import { g3wInputMixin } from 'mixins';
 
-const { getUniqueDomId } = require('core/utils/utils');
-const { t } = require('core/i18n/i18n.service');
+const { getUniqueDomId }          = require('core/utils/utils');
+const { t }                       = require('core/i18n/i18n.service');
 const { media_field: MediaField } = require('gui/fields/fields');
 
 export default {
 
-  mixins: [ baseInputsMixin ],
+  mixins: [ g3wInputMixin ],
 
   components: {
     'g3w-media': MediaField

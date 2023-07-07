@@ -61,8 +61,8 @@
 import CatalogLayersStoresRegistry                    from 'store/catalog-layers';
 import MapLayersStoresRegistry                        from 'store/map-layers';
 import GUI                                            from 'services/gui';
-import { baseInputsMixin, selectMixin, select2Mixin } from 'mixins';
-import { InputsServices }                             from 'mixins/base-inputs';
+import { g3wInputMixin, selectMixin, select2Mixin } from 'mixins';
+import { InputsServices }                             from 'mixins/g3w-input';
 
 console.assert(undefined !== InputsServices, 'InputsServices is undefined');
 
@@ -73,7 +73,7 @@ const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty 
 export default {
 
   mixins: [
-    baseInputsMixin,
+    g3wInputMixin,
     selectMixin,
     select2Mixin
   ],

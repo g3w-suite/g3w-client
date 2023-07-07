@@ -38,10 +38,10 @@
 <script>
 import InputTableHeader    from 'components/InputTableHeader.vue';
 import InputTableBody      from 'components/InputTableBody.vue';
-import { baseInputsMixin } from 'mixins';
+import { g3wInputMixin }   from 'mixins';
 
 export default {
-  mixins: [ baseInputsMixin ],
+  mixins: [ g3wInputMixin ],
 
   components: {
     InputTableHeader,

@@ -40,15 +40,15 @@
 </template>
 
 <script>
-import ApplicationState from 'store/application-state';
-import { baseInputsMixin, resizeMixin } from 'mixins';
+import ApplicationState               from 'store/application-state';
+import { g3wInputMixin, resizeMixin } from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
 
   mixins: [
-    baseInputsMixin,
+    g3wInputMixin,
     resizeMixin
   ],
 
