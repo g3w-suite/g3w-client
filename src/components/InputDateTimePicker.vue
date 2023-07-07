@@ -27,7 +27,7 @@
           :id       = "idinputdatetimepiker"
           :tabIndex = "tabIndex"
           :readonly = "!editable || isMobile() ? 'readonly' : null"
-          :class    = "{'input-error-validation' : notvalid}"
+          :class    = "{ 'input-error-validation' : notvalid }"
           class     = "form-control"
         />
         <span class="input-group-addon caret">
