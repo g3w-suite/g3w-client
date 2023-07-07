@@ -41,7 +41,7 @@
         <input
           :id         = "lonId"
           @change     = "changeLonLat"
-          :class      ="{ 'input-error-validation' : notvalid }"
+          :class      = "{ 'input-error-validation' : notvalid }"
           class       = "form-control"
           style       = "width: 100%; margin-bottom: 5px;"
           :tabIndex   = "tabIndex"
