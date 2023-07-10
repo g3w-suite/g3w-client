@@ -49,9 +49,11 @@ export default {
   },
 
   computed: {
+
     values() {
       return Array.isArray(this.value) ? this.value : [this.value];
-    };
+    },
+
   },
 
   methods: {
@@ -69,7 +71,7 @@ export default {
     },
 
     getGalleryImages() {
-      return this.values.map(image => ({src: this.getSrc(image)}));
+      return this.values.map(img => ({ src: this.getSrc(img) }));
     },
 
   },
