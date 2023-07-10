@@ -16,6 +16,7 @@ import inputService                from 'core/expression/inputservice';
 import FormBody                    from 'components/FormBody.vue';
 import FormFooter                  from 'components/FormFooter.vue';
 import C3XYLine                    from 'components/C3XYLine.vue';
+import G3WField                    from 'components/FieldG3W.vue';
 
 /**
  * CORE modules
@@ -75,7 +76,7 @@ const Workflow                     = require('core/workflow/workflow');
 const Panel                        = require('gui/panel');
 const ControlFactory               = require('gui/map/control/factory');
 const ComponentsFactory            = require('gui/component/componentsfactory');
-const FieldsService                = require('gui/fields/fieldsservice');
+const FieldsService                = Mixins.fieldsMixin.methods.getFieldService();
 const Component                    = require('gui/component/component');
 const MetadataComponent            = require('gui/metadata/vue/metadata');
 const SearchComponent              = require('gui/search/vue/search');
@@ -88,7 +89,7 @@ const QueryResultsComponent        = require('gui/queryresults/vue/queryresults'
 const FormComponent                = require('gui/form/vue/form');
 const FormService                  = require('gui/form/formservice');
 const ChartsFactory                = require('gui/charts/chartsfactory');
-const Fields                       = require('gui/fields/fields');
+const Fields                       = G3WField.components;
 const InputsComponents             = G3WInput.components;
 const SearchPanelService           = require('gui/search/vue/panel/searchservice');
 
@@ -106,6 +107,8 @@ const g3wolutils                   = require('core/utils/ol');
  * Test assertions
  */
 console.assert(undefined !== InputsComponents, 'InputsComponents is undefined');
+console.assert(undefined !== FieldsService,    'FieldsService is undefined');
+console.assert(undefined !== Fields,           'Fields is undefined');
 
 module.exports = {
 

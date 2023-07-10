@@ -181,16 +181,19 @@
 
 <script>
   import { fieldsMixin } from 'mixins';
+
   import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import InfoFormats from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody from 'components/QueryResultsHeaderFeatureBody.vue';
+  import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
+  import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
 
   const { throttle } = require('core/utils/utils');
 
-  const maxSubsetLength = 3;
+  const maxSubsetLength             = 3;
   const headerExpandActionCellWidth = 10;
-  const headerActionsCellWidth = 10;
-  const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
+  const headerActionsCellWidth      = 10;
+  const HEADERTYPESFIELD            = ['varchar', 'integer', 'float', 'date'];
+
+  console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
 
   export default {
     data() {

@@ -92,7 +92,3 @@
     }
   }
 </script>
-
-<style scoped>
-
-</style>

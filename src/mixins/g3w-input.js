@@ -32,6 +32,22 @@ const { t }                                   = require('core/i18n/i18n.service'
 console.assert(undefined !== baseInputMixin,     'baseInputMixin is undefined');
 console.assert(undefined !== BaseInputComponent, 'BaseInputComponent is undefined');
 
+/**
+ * Limit a number between min / max values
+ * 
+ * @see _.clamp lodash implementation
+ */
+function _clamp(num, min, max) {
+  return Math.min(Math.max(num, min), max);
+}
+
+/**
+ * Check if a variable is not `null` or `undefined` (nullish coalescing values) 
+ */
+function _hasValue(value) {
+  return null !== value && undefined !== value;
+}
+
 /******************************************************* */
 
 /**
@@ -42,11 +58,13 @@ console.assert(undefined !== BaseInputComponent, 'BaseInputComponent is undefine
 class Service {
 
   constructor(options = {}) {
-    // state of input
+    /** state of input */
     this.state = options.state || {};
 
-    // type of input
-    //this.state.validate.required && this.setValue(this.state.value);
+    // // type of input
+    // if (this.state.validate.required) {
+    //   this.setValue(this.state.value);
+    // }
 
     // initial value of input (based on value or default options value)
     this.setValue(this.state.value);
@@ -67,12 +85,16 @@ class Service {
   }
 
   /**
+   * Initial value of input (based on value or default options value)
+   * 
+   * @TODO potential ambiguous method name, rename into something more explicit (eg. `this.setDefaultValue(value)`)
+   * 
    * @param value
    *
    * @returns {void}
    */
   setValue(value) {
-    if (null !== value && "undefined" !== typeof value) {
+    if (_hasValue(value)) {
       return;
     }
 
@@ -91,8 +113,7 @@ class Service {
     // check if default value is set
     const get_default_value = (
       this.state.get_default_value && // ref: core/layers/tablelayer.js::getFieldsWithValues()
-      undefined !== default_value &&
-      null !== default_value
+      _hasValue(default_value)
     );
 
     // check if we can state.check get_default_value from input.options.default is set
@@ -128,7 +149,7 @@ class Service {
     this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value)));
   }
 
-  // general method to check the value of the state is valid or not
+  // Check state's value validity
   validate() {
     if (this.state.validate.empty) {
       this.state.validate.empty  = true;
@@ -231,32 +252,30 @@ const InputsServices = {
   'check': class extends Service {
  
     constructor(options = {}) {
-      const value = options.state.input.options.values.find(value => value.checked === false);
+      const value              = options.state.input.options.values.find(value => false === value.checked);
       options.validatorOptions = { values: options.state.input.options.values.map(value => value) };
-      if (options.state.value === null && !options.state.forceNull) {
-        options.state.value = value.value;
-      }
+      options.state.value      = (null === options.state.value && !options.state.forceNull) ? value.value : options.state.value;
       super(options);
     }
 
     convertCheckedToValue(checked) {
-      checked = checked === null ||  checked === undefined ? false : checked;
-      const option = this.state.input.options.values.find(value => value.checked === checked);
-      this.state.value = option.value;
+      checked          = _hasValue(checked) ? checked : false;
+      this.state.value = this.state.input.options.values.find(value => checked === value.checked).value;
       return this.state.value;
     }
 
     convertValueToChecked() {
-      if ([null, undefined].includes(this.state.value)) {
+      if (!_hasValue(this.state.value)) {
         return false;
       }
-      let option = this.state.input.options.values.find(value => value.value == this.state.value);
-      if (option === undefined) {
-        option = this.state.input.options.values.find(value => value.checked === false);
+      let option = this.state.input.options.values.find(value => this.state.value === value.value);
+      if (undefined === option) {
+        option           = this.state.input.options.values.find(value => false === value.checked);
         this.state.value = option.value;
       }
       return option.checked;
     }
+
   },
 
   /**
@@ -369,6 +388,7 @@ const InputsServices = {
   'picklayer': class extends Service {
   
     constructor(options = {}) {
+      /** @FIXME super options have a different object structure (ie. super_options = { state: { ...picklayer_options } }) */
       super(options);
       this.pick_type   = options.pick_type || 'wms';
       this.ispicked    = false;
@@ -386,7 +406,7 @@ const InputsServices = {
 
     //bind interrupt event
     escKeyUpHandler({ keyCode, data: { owner } }) {
-      if(27 === keyCode) {
+      if (27 === keyCode) {
        owner.unpick();
       }
     }
@@ -396,7 +416,7 @@ const InputsServices = {
     }
 
     bindEscKeyUp() {
-      $(document).on('keyup', {owner: this}, this.escKeyUpHandler);
+      $(document).on('keyup', { owner: this }, this.escKeyUpHandler);
     };
 
     pick() {
@@ -459,7 +479,7 @@ const InputsServices = {
     }
 
     clear() {
-      if(this.isPicked()) {
+      if (this.isPicked()) {
        this.unpick();
       }
       this.mapService = this.interaction = this.field = null;
@@ -497,59 +517,77 @@ const InputsServices = {
     constructor(options = {}) {
       super(options);
 
-      this.coordinatebutton = undefined;
-      this.mapService = GUI.getComponent('map').getService();
-      this.mapEpsg    = this.mapService.getCrs();
-      this.mapControlToggleEventHandler = evt => {
-        if (evt.target.isToggled() && evt.target.isClickMap()) {
-          this.coordinatebutton.active && this.toggleGetCoordinate();
-        }
-      };
-      this.map = this.mapService.getMap();
-      this.outputEpsg = this.state.epsg || this.mapEpsg;
-      this.eventMapKey;
+      this.coordinatebutton             = undefined;
+      this.mapService                   = GUI.getComponent('map').getService();
+      this.mapEpsg                      = this.mapService.getCrs();
+      this.mapControlToggleEventHandler = this.mapControlToggleEventHandler.bind(this);
+      this.onMapClick                   = this.onMapClick(this);
+      this.map                          = this.mapService.getMap();
+      this.outputEpsg                   = this.state.epsg || this.mapEpsg;
     }
-  
+
     setCoordinateButtonReactiveObject(coordinatebutton) {
       this.coordinatebutton = coordinatebutton;
     }
-  
+
     validate() {
-      if (this.state.values.lon < -180)     this.state.values.lon = -180;
-      else if (this.state.values.lon > 180) this.state.values.lon = 180;
-      if (this.state.values.lat < -90)      this.state.values.lon = -90;
-      else if (this.state.values.lat > 90)  this.state.values.lon = 90;
-      this.state.validate.valid = !Number.isNaN(1*this.state.values.lon);
+      this.state.values.lon     = _clamp(this.state.values.lon, -180, 180);
+      this.state.values.lat     = _clamp(this.state.values.lon, -90, 90);
+      this.state.validate.valid = !Number.isNaN(1 * this.state.values.lon);
     }
   
     toggleGetCoordinate() {
-      this.coordinatebutton.active = !this.coordinatebutton.active;
-      this.coordinatebutton.active ? this.startToGetCoordinates() : this.stopToGetCoordinates();
+      if (this.coordinatebutton.active) {
+        this.stopToGetCoordinates();
+      } else {
+        this.startToGetCoordinates();
+      }
     }
   
     startToGetCoordinates() {
+      this.coordinatebutton.active = true;
+
       this.mapService.deactiveMapControls();
       this.mapService.on('mapcontrol:toggled', this.mapControlToggleEventHandler);
-      this.eventMapKey = this.map.on('click', evt => {
-        evt.originalEvent.stopPropagation();
-        evt.preventDefault();
-        const coordinate = this.mapEpsg !== this.outputEpsg
-          ? ol.proj.transform(evt.coordinate, this.mapEpsg, this.outputEpsg)
-          : evt.coordinate;
-        this.state.value = [coordinate];
-        const [lon, lat] = coordinate;
-        this.state.values.lon = lon;
-        this.state.values.lat = lat;
-      })
+      this.eventMapKey = this.map.on('click', this.onMapClick)
     }
-  
+
     stopToGetCoordinates() {
+      this.coordinatebutton.active = false;
+
       ol.Observable.unByKey(this.eventMapKey);
       this.mapService.off('mapcontrol:toggled', this.mapControlToggleEventHandler)
     }
-  
+
     clear() {
       this.stopToGetCoordinates();
+    }
+
+    /**
+     * @since 3.8.5 
+     */
+    mapControlToggleEventHandler(e) {
+      if (
+        e.target.isToggled() &&
+        e.target.isClickMap() &&
+        this.coordinatebutton.active
+      ) {
+        this.toggleGetCoordinate();
+      }
+    }
+
+    /**
+     * @since 3.8.5 
+     */
+    onMapClick(evt) {
+      evt.originalEvent.stopPropagation();
+      evt.preventDefault();
+      const coord = this.mapEpsg !== this.outputEpsg
+        ? ol.proj.transform(evt.coordinate, this.mapEpsg, this.outputEpsg)
+        : evt.coordinate;
+      this.state.value      = [coord];
+      this.state.values.lon = coord[0];
+      this.state.values.lat = coord[1];
     }
   
   },
@@ -580,7 +618,7 @@ export default {
     },
 
     'state.value'() {
-      if ("undefined" !== typeof this.state.input.options.default_expression) {
+      if (undefined !== this.state.input.options.default_expression) {
         // postpone `state.value` watch parent that use mixin
         setTimeout(() => this.change());
       }
@@ -645,9 +683,9 @@ export default {
      * 
      * ```
      */
-   if (this.state.value_from_default_value) {
-    this.$emit('changeinput', this.state);
-   }
+    if (this.state.value_from_default_value) {
+      this.$emit('changeinput', this.state);
+    }
 
   },
 

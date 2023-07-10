@@ -84,8 +84,11 @@
 <script>
   import G3wInput         from 'components/InputG3W.vue';
   import ProjectsRegistry from 'store/projects';
+  import G3WField         from 'components/FieldG3W.vue';
 
-  const Fields = require('gui/fields/fields');
+  const Fields = G3WField.components;
+
+  console.assert(undefined !== Fields, 'Fields is undefined');
 
   export default {
 

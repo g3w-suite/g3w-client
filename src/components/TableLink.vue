@@ -17,7 +17,3 @@ export default {
   props: ['href']
 };
 </script>
-
-<style scoped>
-
-</style>

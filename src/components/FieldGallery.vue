@@ -6,11 +6,19 @@
 -->
 
 <template>
-  <div class="modal fade modal-fullscreen force-fullscreen" :id="id" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true" >
+  <div
+    class="modal fade modal-fullscreen force-fullscreen"
+    :id="id"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby=""
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
-          <!--begin carousel-->
+
+          <!-- carousel-->
           <div :id="carouselId" class="carousel slide" data-interval="false">
             <div class="carousel-inner">
               <div v-for="(image, index) in images" class="item" :class="active == index ? 'active' : ''">
@@ -26,6 +34,7 @@
               </span>
             </a>
           </div>
+
         </div>
       </div>
     </div>
@@ -36,36 +45,45 @@
 import ProjectsRegistry from 'store/projects';
 
 export default {
+
   name: "g3w-images-gallery",
+
   props: {
+
     images: {
       type: Array,
       default: []
     },
+
     id: {
       type: String,
       default: 'gallery'
     },
+
     active: {
       type: Number
-    }
+    },
+
   },
+
   data() {
     return {
       carouselId: 'carousel_'+ Date.now()
-    }
+    };
   },
+
   methods: {
+
     isActive(src) {
       return src === active
     },
+
     isRelativePath(url) {
-      if (!_.startsWith(url,'/') && !_.startsWith(url,'http')) {
-        return ProjectsRegistry.getConfig().mediaurl + url
-      }
-      return url
+      return _.startsWith(url, '/') || _.startsWith(url, 'http') ? url : (ProjectsRegistry.getConfig().mediaurl + url);
     },
-  }
+
+  },
+
 };
 </script>
 

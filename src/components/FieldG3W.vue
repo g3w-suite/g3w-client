@@ -5,35 +5,38 @@
 
 <template>
   <component
-    :is="type"
-    :feature="feature"
-    :state="state">
-  </component>
+    :is      = "type"
+    :feature = "feature"
+    :state   = "state"
+  />
 </template>
 
 <script>
-const fieldsService = require('gui/fields/fieldsservice');
-const Fields = require('gui/fields/fields');
+import { fieldsMixin } from 'mixins';
+
+console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
 
 export default {
+
   name: "g3w-field",
+
   props: {
+
     state: {
       required: true
     },
+
     feature: {
       type: Object
-    }
+    },
+
   },
-  components: {
-    ...Fields
+
+  components: fieldsMixin.methods.getFieldService().getFields(),
+
+  created() {
+    this.type = fieldsMixin.methods.getFieldService().getType(this.state);
   },
-  created(){
-    this.type = fieldsService.getType(this.state)
-  }
+
 };
 </script>
-
-<style scoped>
-
-</style>
