@@ -310,6 +310,8 @@ const InputsServices = {
 
     constructor(options = {}) {
       super(options);
+
+      /** @TODO double check (in v3.8 this assignment was before `super(options)` call) */
       this.validatorOptions = {};
     }
 
@@ -392,11 +394,9 @@ const InputsServices = {
   /**
    * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
    */
-  'picklayer': class extends Service {
+  'picklayer': class {
   
     constructor(options = {}) {
-      /** @FIXME super options have a different object structure (ie. super_options = { state: { ...picklayer_options } }) */
-      super(options);
       this.pick_type   = options.pick_type || 'wms';
       this.ispicked    = false;
       this.fields      = options.fields || [options.value];
@@ -532,13 +532,13 @@ const InputsServices = {
       this.mapService                   = GUI.getComponent('map').getService();
       this.mapEpsg                      = this.mapService.getCrs();
       this.mapControlToggleEventHandler = this.mapControlToggleEventHandler.bind(this);
-      this.onMapClick                   = this.onMapClick(this);
+      this.onMapClick                   = this.onMapClick.bind(this);
       this.map                          = this.mapService.getMap();
       this.outputEpsg                   = this.state.epsg || this.mapEpsg;
     }
 
-    setCoordinateButtonReactiveObject(coordinatebutton) {
-      this.coordinatebutton = coordinatebutton;
+    setCoordinateButtonReactiveObject(button) {
+      this.coordinatebutton = button;
     }
 
     validate() {

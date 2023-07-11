@@ -20,8 +20,9 @@
         top: 2px;
         font-size: 1.2em
       "
-      :class         = "g3wtemplate.font['crosshairs']" class="skin-color">
-    </span>
+      :class         = "g3wtemplate.font['crosshairs']"
+      class          = "skin-color"
+    ></span>
 
     <!-- DROPDOWN -->
     <div
@@ -78,14 +79,14 @@ export default {
   data() {
     return {
       showPickLayer: false,
-      picked: false
+      picked:        false,
     }
   },
 
   computed: {
 
     showNullOption() {
-      return this.state.nullOption === undefined || this.state.nullOption === true;
+      return undefined === this.state.nullOption || true === this.state.nullOption;
     },
 
     select2NullValue() {
