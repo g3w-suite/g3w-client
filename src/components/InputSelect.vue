@@ -178,7 +178,7 @@ export default {
       }
     }
 
-    if(this.autocomplete && this.state.value) {
+    if (this.autocomplete && this.state.value) {
       this.service.getKeyByValue({ search: this.state.value });
     }
 

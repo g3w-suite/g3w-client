@@ -4,37 +4,49 @@
 -->
 
 <template>
-  <div v-show="show" :id="$attrs.id" :style="style" @mousedown.stop="start" ></div>
+  <div
+    v-show          = "show"
+    :id             = "$attrs.id"
+    :style          = "style"
+    @mousedown.stop = "start"
+  ></div>
 </template>
 
 <script>
   import GUI from 'services/gui';
 
   export default {
+
     name: "g3w-resize",
 
     props: {
+
       show: {
         type: Boolean,
         required: true,
         default: true
       },
+
       orientation: {
         type: String,
         default: 'h'
       },
+
       where: {
         type: String,
         default: 'document'
       },
+
       moveFnc: {
         type: Function,
         default: evt=> console.log(evt)
       },
-      style:{
+
+      style: {
         type: Object,
         default: () => ({})
-      }
+      },
+
     },
 
     methods: {
@@ -57,30 +69,31 @@
     },
 
     watch: {
+
       'orientation': {
         handler(orientation) {
           this.style.cursor = 'v' === orientation ? 'ns-resize' : 'col-resize';
         },
         immediate: true
-      }
+      },
+
     },
 
     async mounted() {
-      this.domElementMoveListen;
+
       this.style = {
-        minWidth: '5px',
-        backgroundColor: '#dddddd',
-        cursor: 'col-resize',
+        minWidth:        '5px',
+        backgroundColor: '#DDD',
+        cursor:          'col-resize',
         ...this.style,
       };
-      switch(this.where) {
-        case 'content':
-          this.domElementMoveListen = document.getElementById('g3w-view-content');
-          break;
-        case 'document':
-        default:
-          this.domElementMoveListen = document;
-      }
+
+      this.domElementMoveListen = (
+        'content' === this.where
+          ? document.getElementById('g3w-view-content')
+          : document
+      );
+
     },
 
     destroyed() {

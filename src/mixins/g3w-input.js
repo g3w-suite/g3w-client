@@ -98,7 +98,7 @@ class Service {
       return;
     }
 
-    const {options}   = this.state.input;
+    const { options }   = this.state.input;
     let default_value = options.default;
 
     /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
@@ -146,10 +146,17 @@ class Service {
   }
 
   setEmpty() {
-    this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value)));
+    this.state.validate.empty = !(
+      (Array.isArray(this.state.value) &&
+      this.state.value.length
+      ) ||
+      !_.isEmpty(_.trim(this.state.value))
+    );
   }
 
-  // Check state's value validity
+  /**
+   * Check state's value validity
+   */
   validate() {
     if (this.state.validate.empty) {
       this.state.validate.empty  = true;
@@ -495,16 +502,20 @@ const InputsServices = {
     constructor(options = {}) {
       const { min, max } = options.state.input.option;
       options.state.info = `[MIN: ${min} - MAX: ${max}]`;
+
       super(options);
+
       this.setValidator(Validators.get('range', { min: 1 * min, max: 1 * max }));
-      this.validate = function() {
-        this.state.value = 1 * this.state.value;
-        this.state.validate.valid = this.state.value >= this.state.input.options.min || this.state.value <= this.state.input.options.max;
-      }
     }
 
     changeInfoMessage() {
       this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
+    }
+
+    /** @override */
+    validate() {
+      this.state.value          = 1 * this.state.value;
+      this.state.validate.valid = this.state.value >= this.state.input.options.min || this.state.value <= this.state.input.options.max;
     }
 
   },
