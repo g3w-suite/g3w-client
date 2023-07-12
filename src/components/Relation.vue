@@ -77,7 +77,17 @@ const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 let SIDEBARWIDTH;
 
 export default {
-  props: ['table', 'feature', 'relation', 'previousview', 'showChartButton', 'cardinality'],
+  name: 'relation',
+  props: {
+    table: {},
+    feature: {
+      default: null
+    },
+    relation: {},
+    previousview: {},
+    showChartButton: {},
+    cardinality:{},
+  },
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
@@ -85,7 +95,6 @@ export default {
   },
   data(){
     return {
-      feature: null,
       fields: null,
       chart: false,
       headercomponent: null,
