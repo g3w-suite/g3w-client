@@ -33,7 +33,7 @@ export default {
     },
 
     value() {
-      return this.state.value
+      return this.state.value;
     },
 
   },

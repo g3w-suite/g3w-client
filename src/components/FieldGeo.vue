@@ -6,9 +6,9 @@
 <template>
   <div class="geo-content">
     <span
-      @click.stop="showLayer()"
-      class="show-hide-geo"
-      :class="[ g3wtemplate.font[visible ? 'eye-close' : 'eye'] ]"
+      @click.stop = "showLayer()"
+      class       = "show-hide-geo"
+      :class      = "[ g3wtemplate.font[visible ? 'eye-close' : 'eye'] ]"
     ></span>
   </div>
 </template>

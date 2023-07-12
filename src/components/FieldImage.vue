@@ -6,20 +6,20 @@
 <template>
   <field :state="state">
     <div
-      slot="field"
-      style="text-align: left"
+      slot  = "field"
+      style = "text-align: left"
     >
       <img
-        v-for="(value, index) in values"
-        class="img-responsive"
-        style="max-height:50px"
-        @click="showGallery(index)"
-        :src="getSrc(value)"
+        v-for  = "(value, index) in values"
+        class  = "img-responsive"
+        style  = "max-height: 50px"
+        @click = "showGallery(index)"
+        :src   = "getSrc(value)"
       />
       <g3w-images-gallery
-        :id="galleryId"
-        :active="active"
-        :images="getGalleryImages()"
+        :id     = "galleryId"
+        :active = "active"
+        :images = "getGalleryImages()"
       />
     </div>
   </field>
@@ -32,7 +32,7 @@ const { toRawType } = require('core/utils/utils');
 
 export default {
 
-  name: "image",
+  name: "field-image",
 
   props: ['state'],
 

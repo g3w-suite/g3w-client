@@ -167,10 +167,11 @@ export default {
   methods: {
 
     getFieldService() {
-      if (undefined === this._fieldsService) {
-        this._fieldsService = fieldsservice;
-      }
-      return this._fieldsService;
+      // if (undefined === this._fieldsService) {
+      //   this._fieldsService = fieldsservice;
+      // }
+      // return this._fieldsService;
+      return fieldsservice;
     },
 
     getFieldType(field) {

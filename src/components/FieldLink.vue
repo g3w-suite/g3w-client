@@ -6,10 +6,10 @@
 <template>
   <field :state="state">
     <button
-      slot="field"
-      class="btn skin-button field_link"
-      v-t="'info.link_button'"
-      @click="openLink(value)"
+      slot   = "field"
+      class  = "btn skin-button field_link"
+      v-t    = "'info.link_button'"
+      @click = "openLink(value)"
     ></button>
   </field>
 </template>
@@ -19,13 +19,13 @@ import Field from 'components/Field.vue';
 
 export default {
 
-  name: "link",
+  name: "field-link",
 
   props: ['state'],
 
   data() {
     return {
-      value:null
+      value: null,
     };
   },
 

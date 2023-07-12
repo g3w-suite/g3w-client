@@ -199,14 +199,14 @@ console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
 
 export default {
 
-  props: [
-    'table',
-    'feature',
-    'relation',
-    'previousview',
-    'showChartButton',
-    'cardinality'
-  ],
+  props: {
+    table:           {},
+    feature:         { default: null },
+    relation:        {},
+    previousview:    {},
+    showChartButton: {},
+    cardinality:     {},
+  },
 
   inject: ['relationnoback'],
 
@@ -218,7 +218,6 @@ export default {
 
   data() {
     return {
-      feature:         null,
       fields:          null,
       chart:           false,
       headercomponent: null,

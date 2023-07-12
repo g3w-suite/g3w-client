@@ -10,15 +10,13 @@ import Field from 'components/Field.vue';
 
 export default {
 
-  name: "text",
+  name: "field-text",
 
   props: ['state'],
 
   components: {
     Field
   },
-
-  created() {},
 
 };
 </script>

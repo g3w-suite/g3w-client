@@ -7,12 +7,12 @@
 
 <template>
   <div
-    class="modal fade modal-fullscreen force-fullscreen"
-    :id="id"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby=""
-    aria-hidden="true"
+    class           = "modal fade modal-fullscreen force-fullscreen"
+    :id             = "id"
+    tabindex        = "-1"
+    role            = "dialog"
+    aria-labelledby = ""
+    aria-hidden     = "true"
   >
     <div class="modal-dialog">
       <div class="modal-content">
@@ -25,13 +25,12 @@
                 <img style="margin:auto" :src="isRelativePath(image.src)">
               </div>
             </div>
-            <a v-if="images.length> 1" class="left carousel-control" :href="'#'+carouselId" role="button" data-slide="prev">
-              <span :class="g3wtemplate.font['arrow-left']">
-              </span>
+            <a
+              v-if="images.length> 1"  class="left carousel-control"  :href="'#' + carouselId" role="button" data-slide="prev">
+              <span :class="g3wtemplate.font['arrow-left']"></span>
             </a>
-            <a v-if="images.length> 1" class="right carousel-control" :href="'#'+carouselId" role="button" data-slide="next">
-              <span :class="g3wtemplate.font['arrow-right']">
-              </span>
+            <a v-if="images.length> 1" class="right carousel-control" :href="'#' + carouselId" role="button" data-slide="next">
+              <span :class="g3wtemplate.font['arrow-right']"></span>
             </a>
           </div>
 

@@ -7,9 +7,9 @@
   <field :state="state">
     <div slot="field">
       <component
-        :feature="feature"
-        :value="state.value"
-        :is="state.vueoptions.component"
+        :feature = "feature"
+        :value   = "state.value"
+        :is      = "state.vueoptions.component"
       />
     </div>
   </field>
