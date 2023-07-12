@@ -42,9 +42,16 @@
         default: evt=> console.log(evt)
       },
 
-      style: {
-        type: Object,
-        default: () => ({})
+    },
+
+    computed: {
+
+      style() {
+        return {
+          minWidth: '5px',
+          backgroundColor: '#dddddd',
+          cursor: ('v' === this.orientation ? 'ns-resize' : 'col-resize'),
+        };
       },
 
     },
@@ -68,37 +75,17 @@
 
     },
 
-    watch: {
-
-      'orientation': {
-        handler(orientation) {
-          this.style.cursor = 'v' === orientation ? 'ns-resize' : 'col-resize';
-        },
-        immediate: true
-      },
-
-    },
-
     async mounted() {
-
-      this.style = {
-        minWidth:        '5px',
-        backgroundColor: '#DDD',
-        cursor:          'col-resize',
-        ...this.style,
-      };
-
       this.domElementMoveListen = (
         'content' === this.where
           ? document.getElementById('g3w-view-content')
           : document
       );
-
     },
 
     destroyed() {
       this.domElementMoveListen = null;
     },
 
-}
+};
 </script>

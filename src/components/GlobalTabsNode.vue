@@ -64,7 +64,7 @@
                     <i :class="g3wtemplate.font[`${'query' === context ? 'relation' : 'pencil'}`]"></i>
                   </div>
                   <span class="query_relation_field_message g3w-long-text">
-                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
+                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name) }}</span>
                   </span>
                 </div>
 
