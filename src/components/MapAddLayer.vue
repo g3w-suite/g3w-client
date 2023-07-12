@@ -101,6 +101,7 @@ ChromeComponent.mounted = async function() {
 };
 
 export default {
+  name: 'map-add-layer',
   props: ['service'],
   data() {
     //add map crs if not present

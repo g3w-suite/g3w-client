@@ -63,6 +63,7 @@ const { getUniqueDomId } = require('core/utils/utils');
 const Input = require('gui/inputs/input');
 
 export default {
+  name: 'input-lonlat',
   mixins: [Input],
   data(){
     return {

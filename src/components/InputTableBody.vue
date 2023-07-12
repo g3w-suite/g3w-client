@@ -20,6 +20,7 @@
 const Validators = require('core/utils/validators');
 
 export default {
+  name: "input-table-row",
   props: {
     columntypes: {
       type: Array,
@@ -31,10 +32,7 @@ export default {
     }
   },
 
-  name: "input-table-row",
-  computed: {
-
-  },
+  computed: {},
 
   methods: {
     deleteRow(index) {

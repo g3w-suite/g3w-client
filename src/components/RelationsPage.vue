@@ -28,6 +28,7 @@ const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
 const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 
 export default {
+  name: 'relation-page',
   data() {
     this.chartRelationIds = this.$options.chartRelationIds || [];
     const {

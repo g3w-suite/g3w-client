@@ -9,6 +9,7 @@
 
 <script>
 export default {
+  name: 'metadata',
   data() {
     return {
       state: null

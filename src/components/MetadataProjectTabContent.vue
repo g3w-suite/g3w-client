@@ -28,7 +28,7 @@
 
 <script>
   export default {
-    name: "metadatatabcontent",
+    name: "metadata-tab-content",
     props: {
       data: {},
       fieldName: {}

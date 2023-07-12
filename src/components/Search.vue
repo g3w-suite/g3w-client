@@ -23,6 +23,7 @@ import G3WTool from 'components/Tool.vue';
 import G3WSearchQuerybuilder from 'components/QueryBuilderSearch.vue';
 
 export default {
+  name: 'search',
   data() {
     return {
       state: null

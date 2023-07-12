@@ -25,6 +25,7 @@
  * @TODO remove "Vue.extend" from module export
  */
 export default Vue.extend({
+  name: 'form-header',
   props: {
     headers: {
       type: Array,

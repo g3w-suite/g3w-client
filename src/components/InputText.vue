@@ -23,6 +23,7 @@
 const Input = require('gui/inputs/input');
 
 export default {
-  mixins: [Input]
+  name: "input-text",
+  mixins: [Input],
 };
 </script>

@@ -48,9 +48,7 @@
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 
   export default {
-
     name: 'Layeropacitypicker',
-
     props: {
       layer: {
         type: Object,

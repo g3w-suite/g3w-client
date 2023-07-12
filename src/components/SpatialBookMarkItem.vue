@@ -23,6 +23,7 @@
   const Projections = require('g3w-ol/projection/projections');
 
   export default {
+    name: 'spatial-bookmark-item',
     props: {
       bookmark: {
         type: Object,

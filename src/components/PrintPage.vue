@@ -32,6 +32,7 @@ import GUI from 'services/gui';
 const { imageToDataURL } = require('core/utils/utils');
 
 export default {
+  name: 'print-page',
   data() {
     return {
       state: null,

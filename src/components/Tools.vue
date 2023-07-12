@@ -22,6 +22,7 @@
 import G3wTool from 'components/Tool.vue';
 
 export default {
+  name: 'g3w-tools',
   data() {
     return {
       state: null

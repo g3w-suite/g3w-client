@@ -65,6 +65,7 @@ import SelectAtlasFieldValues from 'components/PrintSelectAtlasFieldValues.vue';
 import FidAtlasValues from 'components/PrintFidAtlasValues.vue';
 
 export default {
+  name: 'print',
   data() {
     return {
       state: null,

@@ -24,6 +24,7 @@
 const Input = require('gui/inputs/input');
 
 export default {
+  name: 'input-integer',
   mixins: [Input],
 };
 </script>

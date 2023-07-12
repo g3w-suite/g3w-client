@@ -20,6 +20,7 @@
 
 <script>
 export default {
+  name:'header-item',
   props: ['state'],
   methods: {
     showCustomModal(id) {

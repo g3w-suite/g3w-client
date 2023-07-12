@@ -13,6 +13,7 @@
 
 <script>
 export default {
+  name: 'streetview',
   data() {
     return {
       state: null

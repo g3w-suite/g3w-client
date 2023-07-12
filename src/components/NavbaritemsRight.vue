@@ -13,7 +13,7 @@
   import NavbarItemsService from 'services/navbaritems';
 
   export default {
-    name: "NavbaritemRight",
+    name: "navbar-item-right",
     data() {
       return {
         items: NavbarItemsService.state.items.right

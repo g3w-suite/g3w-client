@@ -13,7 +13,7 @@
 
 <script>
 export default {
-  name: "link",
+  name: "table-link",
   props: ['href']
 };
 </script>

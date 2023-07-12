@@ -24,6 +24,7 @@ import InputTableBody from 'components/InputTableBody.vue';
 const Input = require('gui/inputs/input');
 
 export default {
+  name: 'input-table',
   mixins: [Input],
   components: {
     InputTableHeader,

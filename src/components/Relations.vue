@@ -21,6 +21,7 @@
 
 <script>
 export default {
+  name: 'relations',
   props: ['relations', 'feature', 'loading'],
   methods: {
     async showRelation(relation) {

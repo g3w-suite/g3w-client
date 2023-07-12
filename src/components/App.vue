@@ -1039,6 +1039,7 @@ $.LayoutManager = $.LayoutManager || {
 const layout = $.LayoutManager;
 
 export default {
+  name: 'app',
 
   mixins: [resizeMixin],
 

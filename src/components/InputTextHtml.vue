@@ -11,6 +11,7 @@ const { getUniqueDomId } = require('core/utils/utils');
 const Input = require('gui/inputs/input');
 
 export default {
+  name: "input-html",
   mixins: [Input],
   methods: {
     setupTableCustomTools(){

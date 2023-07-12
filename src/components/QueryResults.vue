@@ -193,6 +193,7 @@
   const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
 
   export default {
+    name: 'queryresults',
     data() {
       return {
         state: this.$options.queryResultsService.state,

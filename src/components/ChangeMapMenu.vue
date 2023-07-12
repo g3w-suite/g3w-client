@@ -74,7 +74,7 @@ const Projections = require('g3w-ol/projection/projections');
 const { XHR } = require('core/utils/utils');
 
 export default {
-
+  name: 'change-map-menu',
   data() {
     return {
       

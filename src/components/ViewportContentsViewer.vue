@@ -9,6 +9,7 @@
 
 <script>
 export default {
+  name: 'viewport-contents-viewer',
   data() {
     return {
       state: null

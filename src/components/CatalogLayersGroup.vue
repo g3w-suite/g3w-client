@@ -16,6 +16,7 @@
 
 <script>
 export default {
+  name: 'catalog-layers-group',
   props: {
     layersgroup: {
       type: Object

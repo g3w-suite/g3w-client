@@ -94,7 +94,7 @@
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
   export default {
-
+    name: 'spatial-bookmarks',
     components: {
       SpatialBookMarkGroup,
       SpatialBookMarkItem,

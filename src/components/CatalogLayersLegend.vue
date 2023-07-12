@@ -24,6 +24,7 @@
 
 <script>
 export default {
+  name: 'catalog-layers-legend',
   props: [
     'layerstree',
     'legend',

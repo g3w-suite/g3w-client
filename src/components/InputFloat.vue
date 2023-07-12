@@ -25,6 +25,7 @@
 const Input = require('gui/inputs/input');
 
 export default {
+  name: 'input-float',
   mixins: [Input],
 };
 </script>

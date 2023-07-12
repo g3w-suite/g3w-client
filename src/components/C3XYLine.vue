@@ -30,6 +30,7 @@ import GUI from 'services/gui';
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
+  name: 'c3xyline',
   props: {
     showdata: {
       type: Boolean,

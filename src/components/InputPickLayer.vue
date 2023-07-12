@@ -28,6 +28,7 @@ const Input = require('gui/inputs/input');
 const Service = require('gui/inputs/picklayer/service');
 
 export default {
+  name: 'input-picklayer',
   mixins: [Input],
   methods: {
     pickLayer() {

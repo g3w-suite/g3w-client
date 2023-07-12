@@ -134,7 +134,7 @@ import GUI from 'services/gui';
 const DEFAULT_ACTIVE_TAB = 'layers';
 
 export default {
-
+  name: 'catalog',
   data() {
     this.$options.legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
     return {
