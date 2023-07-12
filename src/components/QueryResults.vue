@@ -207,9 +207,6 @@
       'header-feature-body': HeaderFeatureBody
     },
     computed: {
-      layersFeaturesBoxes() {
-        return this.state.layersFeaturesBoxes;
-      },
       onelayerresult(){
         return this.state.layers.length  === 1;
       },
@@ -429,11 +426,11 @@
       },
       getLayerFeatureBox(layer, feature, relation_index){
         const boxid = this.getBoxId(layer, feature, relation_index);
-        if (this.layersFeaturesBoxes[boxid] === undefined) {
-          this.layersFeaturesBoxes[boxid] = Vue.observable({
+        if (this.state.layersFeaturesBoxes[boxid] === undefined) {
+          this.state.layersFeaturesBoxes[boxid] = Vue.observable({
             collapsed: true
           });
-          this.$watch(()=> this.layersFeaturesBoxes[boxid].collapsed, collapsed => {
+          this.$watch(() => this.state.layersFeaturesBoxes[boxid].collapsed, collapsed => {
             const index = layer.features.findIndex(_feature => feature.id === _feature.id);
             const container = this.getContainerFromFeatureLayer({
               layer,
@@ -446,20 +443,20 @@
               container
             })
           });
-          this.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
+          this.state.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
         }
-        return this.layersFeaturesBoxes[boxid];
+        return this.state.layersFeaturesBoxes[boxid];
       },
       // to CHECK NOT GOOD
       collapsedFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
-        return this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
+        return this.state.layersFeaturesBoxes[boxid] ? this.state.layersFeaturesBoxes[boxid].collapsed : true;
       },
       showFeatureInfo(layer, boxid) {
         this.$options.queryResultsService.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
-          show: this.layersFeaturesBoxes[boxid] ? !this.layersFeaturesBoxes[boxid].collapsed : false
+          show: this.state.layersFeaturesBoxes[boxid] ? !this.state.layersFeaturesBoxes[boxid].collapsed : false
         });
       },
       getBoxId(layer, feature, relation_index) {
@@ -467,7 +464,7 @@
       },
       async toggleFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
-        this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
+        this.state.layersFeaturesBoxes[boxid].collapsed = !this.state.layersFeaturesBoxes[boxid].collapsed;
         await this.$nextTick();
         this.showFeatureInfo(layer, boxid);
       },
@@ -501,7 +498,7 @@
                 const boxid = `${layer.id}_${feature.id}_${relation.name}`;
                 const elements = relation.elements;
                 elements.forEach((element, index) =>{
-                  this.layersFeaturesBoxes[boxid+index] = {
+                  this.state.layersFeaturesBoxes[boxid+index] = {
                     collapsed: true
                   };
                 });
@@ -536,7 +533,6 @@
     },
     beforeDestroy() {
       this.state.zoomToResult = true;
-      this.layersFeaturesBoxes = null;
     },
     destroyed() {
       this.$options.queryResultsService.clear();
