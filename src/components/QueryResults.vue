@@ -510,7 +510,6 @@
           })
         });
 
-        this.onelayerresult = layers.length === 1;
         // check if is a single result layer and if has one feature
         if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
           const layer = layers[0];
