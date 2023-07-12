@@ -18,7 +18,7 @@ import Field from 'components/Field.vue';
 const { toRawType } = require('core/utils/utils');
 
 export default {
-  name: "image",
+  name: "field-image",
   props: ['state'],
   data() {
     return {

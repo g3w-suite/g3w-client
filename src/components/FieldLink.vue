@@ -13,7 +13,7 @@
 import Field from 'components/Field.vue';
 
 export default {
-  name: "link",
+  name: "field-link",
   props: ['state'],
   data() {
     return {
