@@ -77,7 +77,10 @@ const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 let SIDEBARWIDTH;
 
 export default {
+
+  /** @since 3.8.6 */
   name: 'relation',
+
   props: {
     table: {},
     feature: {
