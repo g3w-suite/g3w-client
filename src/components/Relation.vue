@@ -74,7 +74,7 @@
         :style = "{
           width:       chart ? '70%' : '100%',
           marginRight: chart ? '8px' : '3px',
-          position: 'relative'
+          position:    'relative'
         }"
         ref    = "tablecontent"
       >
