@@ -21,7 +21,7 @@
             default: 'h'
         }
       },
-      computed(){},
+      computed:{},
       methods:{
           toggleFull(){
               GUI.toggleFullViewContent();

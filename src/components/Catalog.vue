@@ -135,6 +135,9 @@ const DEFAULT_ACTIVE_TAB = 'layers';
 
 export default {
 
+  /** @since 3.8.6 */
+  name: 'catalog',
+
   data() {
     this.$options.legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
     return {

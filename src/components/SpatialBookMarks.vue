@@ -95,6 +95,9 @@
 
   export default {
 
+    /** @since 3.8.6 */
+    name: 'spatial-bookmarks',
+
     components: {
       SpatialBookMarkGroup,
       SpatialBookMarkItem,

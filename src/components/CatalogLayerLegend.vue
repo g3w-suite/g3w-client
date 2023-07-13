@@ -76,7 +76,7 @@
     name: "layerlegend",
     props: {
       legendplace: {
-        type: 'String'
+        type: String
       },
       layer: {
         type: Object
