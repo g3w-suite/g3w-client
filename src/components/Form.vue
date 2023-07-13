@@ -38,7 +38,10 @@ import HeaderFormComponent from 'components/FormHeader.vue';
 import G3wFormFooter from 'components/FormFooter.vue';
 
 export default {
+
+  /** @since 3.8.6 */
   name: 'form',
+
   data() {
     return {
       state: {},

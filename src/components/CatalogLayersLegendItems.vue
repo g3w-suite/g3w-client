@@ -33,7 +33,10 @@ import ProjectsRegistry from 'store/projects';
 import GUI from 'services/gui';
 
 export default {
+
+  /** @since 3.8.6 */
   name: 'catalog-layers-legend-items',
+
   props: {
     layers: {
       default: []

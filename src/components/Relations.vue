@@ -21,7 +21,10 @@
 
 <script>
 export default {
+
+  /** @since 3.8.6 */
   name: 'relations',
+
   props: ['relations', 'feature', 'loading'],
   methods: {
     async showRelation(relation) {

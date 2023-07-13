@@ -28,7 +28,10 @@
 
 <script>
   export default {
+
+    /** @since 3.8.6 */
     name: "metadata-tab-content",
+
     props: {
       data: {},
       fieldName: {}

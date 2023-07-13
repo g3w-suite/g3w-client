@@ -199,7 +199,10 @@ import GUI from 'services/gui';
 const { downloadFile } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
   name: 'catalog-tristate-tree',
+
   props : [
     'layerstree',
     'storeid',
