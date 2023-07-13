@@ -29,9 +29,12 @@ import { g3wInputMixin } from 'mixins';
 
 export default {
 
+  /** @since 3.8.6 */
+  name: 'input-slider-range',
+
   mixins: [ g3wInputMixin ],
 
-  watch:{
+  watch: {
 
     'state.input.options.min'() {
       this.service.changeInfoMessage()

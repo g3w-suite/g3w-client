@@ -32,6 +32,7 @@ const { toRawType } = require('core/utils/utils');
 
 export default {
 
+  /** @since 3.8.6 */
   name: "field-image",
 
   props: ['state'],

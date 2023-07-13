@@ -199,6 +199,9 @@ console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
 
 export default {
 
+  /** @since 3.8.6 */
+  name: 'relation',
+
   props: {
     table:           {},
     feature:         { default: null },

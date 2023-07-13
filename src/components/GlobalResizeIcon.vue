@@ -38,8 +38,6 @@
 
     },
 
-    computed: {},
-
     methods: {
 
       toggleFull() {

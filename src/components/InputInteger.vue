@@ -25,6 +25,11 @@
 import { g3wInputMixin } from 'mixins';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-integer',
+
   mixins: [ g3wInputMixin ],
+
 };
 </script>

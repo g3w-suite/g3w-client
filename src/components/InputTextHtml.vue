@@ -14,6 +14,10 @@
 import { g3wInputMixin } from 'mixins';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: "input-html",
+
   mixins: [ g3wInputMixin ],
 
   methods: {

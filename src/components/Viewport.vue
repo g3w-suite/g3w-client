@@ -25,7 +25,7 @@
         :type              = "usermessage.type"
       >
         <template v-if="hooks.header" slot="header"><component :is="hooks.header" /></template>
-        <template v-if="hooks.body"   slot="body"><component :is="hooks.body" /></template>
+        <template v-if="hooks.body"   slot="body"><component   :is="hooks.body" /></template>
         <template v-if="hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
       </user-message>
     </transition>

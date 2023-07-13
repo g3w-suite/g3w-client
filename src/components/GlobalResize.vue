@@ -48,9 +48,9 @@
 
       style() {
         return {
-          minWidth: '5px',
+          minWidth:        '5px',
           backgroundColor: '#dddddd',
-          cursor: ('v' === this.orientation ? 'ns-resize' : 'col-resize'),
+          cursor:          ('v' === this.orientation ? 'ns-resize' : 'col-resize'),
         };
       },
 

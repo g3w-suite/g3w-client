@@ -93,6 +93,7 @@
 </template>
 
 <script>
+
   import TabService from 'core/expression/tabservice';
   import Node       from 'components/GlobalTabsNode.vue';
   import GUI        from 'services/gui';

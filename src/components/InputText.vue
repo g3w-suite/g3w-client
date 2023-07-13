@@ -24,6 +24,11 @@
 import { g3wInputMixin } from 'mixins';
 
 export default {
-  mixins: [ g3wInputMixin ]
+
+  /** @since 3.8.6 */
+  name: "input-text",
+
+  mixins: [ g3wInputMixin ],
+
 };
 </script>

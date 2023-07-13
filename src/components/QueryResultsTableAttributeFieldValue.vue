@@ -19,19 +19,27 @@
   console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
 
   export default {
+
     name: "tableattributefieldvalue",
+
     props: {
+
       field: {
         type: Object
       },
+
       feature: {
           type: Object
-      }
+      },
+
     },
+
     mixins: [fieldsMixin],
+
     components: {
       'g3w-link': Link,
-      'g3w-vue': VueField,
-    }
-  }
+      'g3w-vue':  VueField,
+    },
+
+  };
 </script>

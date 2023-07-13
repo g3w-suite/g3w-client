@@ -19,6 +19,7 @@ import Field from 'components/Field.vue';
 
 export default {
 
+  /** @since 3.8.6 */
   name: "field-link",
 
   props: ['state'],

@@ -455,6 +455,9 @@
 
   export default {
 
+    /** @since 3.8.6 */
+    name: 'queryresults',
+
     data() {
       return {
         state:                       this.$options.queryResultsService.state,

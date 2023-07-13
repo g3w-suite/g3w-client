@@ -14,7 +14,7 @@
           border-style: solid;
           border-width: 2px;
           border-radius: 4px;
-          width:100%;
+          width: 100%;
           cursor: pointer;
           text-align: center;
         "
@@ -57,6 +57,9 @@ const MediaField = G3WField.components.media_field;
 console.assert(undefined !== MediaField, 'MediaField is undefined');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-media',
 
   mixins: [ g3wInputMixin ],
 

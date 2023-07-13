@@ -13,7 +13,10 @@
 
 <script>
 export default {
-  name: "link",
+
+  /** @since 3.8.6 */
+  name: "table-link",
+
   props: ['href']
 };
 </script>

@@ -46,6 +46,9 @@ import G3wFormInputs from 'components/InputG3WFormInputs.vue';
  */
 export default Vue.extend({
 
+  /** @since 3.8.6 */
+  name: 'form-body',
+
   props: [
     'state',
     'handleRelation'
