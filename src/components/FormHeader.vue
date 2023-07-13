@@ -35,7 +35,7 @@ export default Vue.extend({
       default:[]
     },
     currentid: {
-      type: 'String'
+      type: String
     },
     update: {
       type: Boolean
