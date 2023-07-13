@@ -40,7 +40,7 @@ import G3wFormFooter from 'components/FormFooter.vue';
 export default {
 
   /** @since 3.8.6 */
-  name: 'form',
+  name: 'g3w-form',
 
   data() {
     return {
