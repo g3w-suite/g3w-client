@@ -449,8 +449,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Ne plus afficher ce message",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    enlange_reduce: "Agrandir / Réduire",
+    reset_default: "Taille par défaut",
     add: "Ajouter",
     exitnosave: "Quitter sans sauvegarder",
     annul: "Annuler",

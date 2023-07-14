@@ -450,8 +450,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Nu mai afișa mesajul",
-    enlange_reduce:"Mărește/Micșorează",
-    reset_default:"Mărimea implicită",
+    enlange_reduce: "Mărește / Micșorează",
+    reset_default: "Mărimea implicită",
     add: "Adaugă",
     exitnosave: "Ieșire fără salvare",
     annul: "Anulează",

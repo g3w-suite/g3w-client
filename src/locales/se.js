@@ -451,8 +451,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Visa inte det här meddelandet igen",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    enlange_reduce: "Förstora / Förminska",
+    reset_default: "Standardstorlek",
     add: "Lägg till",
     exitnosave: "Lämna programmet utan att spara",
     annul: "Ångra",

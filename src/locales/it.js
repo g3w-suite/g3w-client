@@ -452,8 +452,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Non mostrare più",
-    enlange_reduce: "Allarga/Riduci",
-    reset_default: "Dimensione Partenza",
+    enlange_reduce: "Allarga / Riduci",
+    reset_default: "Dimensione predefinita",
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",
