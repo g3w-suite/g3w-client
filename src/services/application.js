@@ -752,39 +752,34 @@ const ApplicationService = function() {
     return d.promise();
   };
 
+  /**
+   * Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
+   */
   this.setLayout = function(who='app', config={}) {
-    /**
-     * Set default height percentage of height when show
-     * vertical content (for example show table attribute)
-     */
-    if (config.rightpanel) {
-      /**
-       * @since 3.6.7
-       * Configuration values coming from server if set.
-       * Basically, referred to right panel is consider width default percentage.
-       * So height value (ex. show attribute table of a layer show vertically) is get the same percentage of with
-       */
-      const default_width_height = config.rightpanel.width ||  config.rightpanel.width || 50;
-      Object.assign(config.rightpanel, {
-          width: config.rightpanel.width || default_width_height,
-          height: config.rightpanel.height || default_width_height,
-          width_default: config.rightpanel.width || default_width_height, // used eventually to reset starting values
-          height_default: config.rightpanel.height || default_width_height ,
-          width_100: false,
-          height_100: false,
-        }
-      );
-    } else {
-      config.rightpanel = {
-        width: 50,
-        height: 50,
-        width_default: 50,
-        height_default: 50,
-        width_100: false,
-        height_100: false
-      };
-    }
+
+    const default_config = config.rightpanel || {
+      width:          50, // ie. width == 50%  
+      height:         50, // ie. height == 50%
+      width_default:  50,
+      height_default: 50,
+      width_100:      false,
+      height_100:     false,
+    };
+
+    config.rightpanel = Object.assign(
+      default_config,
+      {
+        width:          config.rightpanel.width  || default_config.width,
+        height:         config.rightpanel.height || default_config.width,
+        width_default:  config.rightpanel.width  || default_config.width,
+        height_default: config.rightpanel.height || default_config.width,
+        width_100:      false,
+        height_100:     false,
+      }
+    );
+
     ApplicationState.gui.layout[who] = config;
+
   };
 
   this.removeLayout = function(who) {
