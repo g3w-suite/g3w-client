@@ -758,11 +758,18 @@ const ApplicationService = function() {
      * vertical content (for example show table attribute)
      */
     if (config.rightpanel) {
+      /**
+       * @since 3.6.7
+       * Configuration values coming from server if set.
+       * Basically, referred to right panel is consider width default percentage.
+       * So height value (ex. show attribute table of a layer show vertically) is get the same percentage of with
+       */
+      const default_width_height = config.rightpanel.width ||  config.rightpanel.width || 50;
       Object.assign(config.rightpanel, {
-          width: config.rightpanel.width || 50,
-          height: config.rightpanel.height || 50,
-          width_default: config.rightpanel.width, // used eventually to reset starting values
-          height_default: config.rightpanel.height,
+          width: config.rightpanel.width || default_width_height,
+          height: config.rightpanel.height || default_width_height,
+          width_default: config.rightpanel.width || default_width_height, // used eventually to reset starting values
+          height_default: config.rightpanel.height || default_width_height ,
           width_100: false,
           height_100: false,
         }
