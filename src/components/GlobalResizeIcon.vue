@@ -4,9 +4,10 @@
 -->
 
 <template>
-  <div style="display: flex; justify-content: space-between;">
+  <div style="display: flex; justify-content: space-between">
     <i
-      :class                    = "g3wtemplate.getFontClass(`resize-${type}`)"
+      v-if                      = "show"
+      :class                    = "g3wtemplate.getFontClass(`resize-${this.type}`)"
       v-t-tooltip:bottom.create = "'enlange_reduce'"
       style                     = "cursor: pointer; margin-right: 3px;"
       class                     = "action-button skin-color-dark"
@@ -32,13 +33,29 @@
     props: {
 
       type: {
-          type: String,
-          default: 'h'
+        type:    String,
+        default: 'h',
       },
 
     },
 
-    methods: {
+    data() {
+      return {
+        show: "undefined" !== typeof this.type,
+      };
+    },
+
+    watch: {
+
+      async type() {
+        this.show = false;
+        await this.$nextTick();
+        this.show = true;
+      },
+
+    },
+
+    methods:{
 
       toggleFull() {
         GUI.toggleFullViewContent();
