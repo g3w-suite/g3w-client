@@ -450,8 +450,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Don't show again",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    enlange_reduce: "Enlarge / Reduce",
+    reset_default: "Default size",
     add: "Add",
     exitnosave: "Exit without save",
     annul: "Cancel",
