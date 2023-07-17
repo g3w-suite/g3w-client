@@ -99,27 +99,27 @@ Vue.component('app',                       App);
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
  */
-Vue.filter('t', value => t(value));
-Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
+Vue.filter('t',                            value => t(value));
+Vue.filter('tPlugin',                      value => value !== null ? tPlugin(value) : '');
 
 /**
  * Install global directives
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
-Vue.directive("disabled",       vDisabled);
-Vue.directive("checked",        vChecked);
-Vue.directive("selected-first", vSelectedFirst);
-Vue.directive('select2',        vSelect2);
-Vue.directive('t-tooltip',      vTToltip);
-Vue.directive('t-html',         vTHtml);
-Vue.directive('t-placeholder',  vTPlaceholder);
-Vue.directive('t-title',        vTTitle);
-Vue.directive("t",              vT);
-Vue.directive("t-plugin",       vTPlugin);
-Vue.directive("plugins",        vPlugins);
-Vue.directive("online",         vOnline);
-Vue.directive("download",       vDownload);
+Vue.directive("disabled",                  vDisabled);
+Vue.directive("checked",                   vChecked);
+Vue.directive("selected-first",            vSelectedFirst);
+Vue.directive('select2',                   vSelect2);
+Vue.directive('t-tooltip',                 vTToltip);
+Vue.directive('t-html',                    vTHtml);
+Vue.directive('t-placeholder',             vTPlaceholder);
+Vue.directive('t-title',                   vTTitle);
+Vue.directive("t",                         vT);
+Vue.directive("t-plugin",                  vTPlugin);
+Vue.directive("plugins",                   vPlugins);
+Vue.directive("online",                    vOnline);
+Vue.directive("download",                  vDownload);
 
 
 /**
@@ -434,11 +434,12 @@ ApplicationService.init()
 
     });
   })
-  .catch(({ error=null, language }) => {
+  .catch((e) => {
+    let { error=null, language } = e;
     if (error) {
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
-    console.error(error);
+    console.error(e || error);
     ApplicationTemplate.fail({ error });
   });
