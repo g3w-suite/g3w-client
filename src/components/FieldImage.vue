@@ -5,9 +5,22 @@
 
 <template>
   <field :state="state">
-    <div slot="field" style="text-align: left">
-      <img v-for="(value, index) in values" class="img-responsive" style="max-height:50px" @click="showGallery(index)" :src="getSrc(value)"/>
-      <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"></g3w-images-gallery>
+    <div
+      slot  = "field"
+      style = "text-align: left"
+    >
+      <img
+        v-for  = "(value, index) in values"
+        class  = "img-responsive"
+        style  = "max-height: 50px"
+        @click = "showGallery(index)"
+        :src   = "getSrc(value)"
+      />
+      <g3w-images-gallery
+        :id     = "galleryId"
+        :active = "active"
+        :images = "getGalleryImages()"
+      />
     </div>
   </field>
 </template>
@@ -23,34 +36,47 @@ export default {
   name: "field-image",
 
   props: ['state'],
+
   data() {
     return {
       galleryId: `gallery_${Date.now()}`,
-      active: null,
-      value: this.state.value.mime_type !== undefined ? this.state.value.value : this.state.value
-    }
+      active:    null,
+      value:     undefined !== this.state.value.mime_type  ? this.state.value.value : this.state.value,
+    };
   },
+
   components: {
     Field
   },
+
   computed: {
+
     values() {
       return Array.isArray(this.value) ? this.value : [this.value];
-    }
-  },
-  methods: {
-    getSrc(value) {
-      return toRawType(value) === 'Object' ? value.photo: value;
     },
+
+  },
+
+  methods: {
+
+    getSrc(value) {
+      return 'Object' === toRawType(value) ? value.photo: value;
+    },
+
     showGallery(index) {
       this.active = index;
-      if (toRawType(this.value) === 'Object') this.value.active = true;
+      if ('Object' === toRawType(this.value)) {
+        this.value.active = true;
+      }
       $(`#${this.galleryId}`).modal('show');
     },
+
     getGalleryImages() {
-      return this.values.map(image => ({src: this.getSrc(image)}));
-    }
-  }
+      return this.values.map(img => ({ src: this.getSrc(img) }));
+    },
+
+  },
+
 };
 </script>
 

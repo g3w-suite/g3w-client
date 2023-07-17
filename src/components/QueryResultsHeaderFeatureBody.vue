@@ -22,8 +22,10 @@
 </template>
 
 <script>
-  import Actions from 'components/QueryResultsActions.vue';
+  import Actions         from 'components/QueryResultsActions.vue';
   import { fieldsMixin } from 'mixins';
+
+  console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
   
   export default {
     name: "headerfeaturebody",

@@ -6,29 +6,31 @@
 <template>
   <baseinput :state="state">
     <input
-      :placeholder="state.default"
-      type="color"
-      slot="body"
-      @change="change"
-      :tabIndex="tabIndex"
-      v-disabled="!editable"
-      :field="state.name"
-      class="form-control"
-      style="cursor: pointer"
-      v-model="state.value"
-      :class="{'input-error-validation' : notvalid}"
-      :id="state.name">
+      :placeholder = "state.default"
+      type         = "color"
+      slot         = "body"
+      @change      = "change"
+      :tabIndex    = "tabIndex"
+      v-disabled   = "!editable"
+      :field       = "state.name"
+      class        = "form-control"
+      style        = "cursor: pointer"
+      v-model      = "state.value"
+      :class       = "{ 'input-error-validation' : notvalid }"
+      :id          = "state.name"
+    >
   </baseinput>
 </template>
 
 <script>
-const Input = require('gui/inputs/input');
+import { g3wInputMixin } from 'mixins';
 
 export default {
 
   /** @since 3.8.6 */
   name: 'input-color',
 
-  mixins: [Input]
+  mixins: [ g3wInputMixin ],
+
 };
 </script>

@@ -44,7 +44,7 @@
       },
       value: {},
       label: {
-        default:'Date'
+        default: 'Date'
       }
     },
     data(){
@@ -108,7 +108,3 @@
     }
   }
 </script>
-
-<style scoped>
-
-</style>

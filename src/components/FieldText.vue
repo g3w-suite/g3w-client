@@ -19,8 +19,6 @@ export default {
     Field
   },
 
-  created() {},
-
 };
 </script>
 

@@ -4,16 +4,17 @@
  */
 
 import autocompleteMixin from 'mixins/autocomplete';
-import fieldsMixin from 'mixins/fields';
-import mediaMixin from 'mixins/media';
-import geoMixin from 'mixins/geo';
-import resizeMixin from 'mixins/resize';
-import selectMixin from 'mixins/select';
-import select2Mixin from 'mixins/select2';
-import formInputsMixins from 'mixins/form-inputs';
-import widgetMixins from 'mixins/widget';
-import metadataMixin from 'mixins/metadata';
-import baseInputMixin from 'mixins/base-input';
+import fieldsMixin       from 'mixins/fields';
+import mediaMixin        from 'mixins/media';
+import geoMixin          from 'mixins/geo';
+import resizeMixin       from 'mixins/resize';
+import selectMixin       from 'mixins/select';
+import select2Mixin      from 'mixins/select2';
+import formInputsMixins  from 'mixins/form-inputs';
+import widgetMixins      from 'mixins/widget';
+import metadataMixin     from 'mixins/metadata';
+import baseInputMixin    from 'mixins/base-input';
+import g3wInputMixin     from 'mixins/g3w-input';
 
 const mixins = {
   autocompleteMixin,
@@ -27,6 +28,7 @@ const mixins = {
   widgetMixins,
   metadataMixin,
   baseInputMixin,
+  g3wInputMixin,
 };
 export {fieldsMixin};
 export {mediaMixin};
@@ -38,6 +40,7 @@ export {formInputsMixins};
 export {widgetMixins};
 export {metadataMixin};
 export {baseInputMixin};
+export {g3wInputMixin};
 export {autocompleteMixin};
 
 export {mixins};

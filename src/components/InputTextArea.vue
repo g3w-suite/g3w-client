@@ -6,29 +6,31 @@
 <template>
   <baseinput :state="state">
     <textarea
-      @keydown.stop=""
-      :placeholder="state.default"
-      @input="change"
-      @change="change"
-      slot="body"
-      style="max-width: 100%; min-width: 100%"
-      rows="3"
-      :tabIndex="tabIndex"
-      v-disabled="!editable"
-      :class="{'input-error-validation' : notvalid}"
-      v-model="state.value"></textarea>
+      @keydown.stop = ""
+      :placeholder  = "state.default"
+      @input        = "change"
+      @change       = "change"
+      slot          = "body"
+      style         = "max-width: 100%; min-width: 100%"
+      rows          = "3"
+      :tabIndex     = "tabIndex"
+      v-disabled    = "!editable"
+      :class        = "{ 'input-error-validation' : notvalid }"
+      v-model       = "state.value"
+    ></textarea>
   </baseinput>
 </template>
 
 <script>
-const Input = require('gui/inputs/input');
+import { g3wInputMixin } from 'mixins';
 
 export default {
 
   /** @since 3.8.6 */
   name: "input-textarea",
 
-  mixins: [Input],
+  mixins: [ g3wInputMixin ],
+
 };
 </script>
 

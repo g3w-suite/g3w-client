@@ -4,70 +4,88 @@
  */
 
 export default {
-  data(){
+
+  data() {
     return {
       valid: false
-    }
+    };
   },
+
   methods: {
-    addToValidate(input){
+
+    addToValidate(input) {
       this.tovalidate.push(input);
     },
-    changeInput(input){
-      this.isValid(input)
+
+    changeInput(input) {
+      this.isValid(input);
     },
+
     // Every input send to form it valid value that will change the genaral state of form
     isValid(input) {
-      if (input) {
-        // check mutually
-        if (input.validate.mutually) {
-          if (!input.validate.required) {
-            if (!input.validate.empty) {
-              input.validate._valid = input.validate.valid;
-              input.validate.mutually_valid = input.validate.mutually.reduce((previous, inputname) => {
-                return previous && this.tovalidate[inputname].validate.empty;
-              }, true);
-              input.validate.valid = input.validate.mutually_valid && input.validate.valid;
-            } else {
-              input.value = null;
-              input.validate.mutually_valid = true;
-              input.validate.valid = true;
-              input.validate._valid = true;
-              let countNoTEmptyInputName = [];
-              for (let i = input.validate.mutually.length; i--;) {
-                const inputname = input.validate.mutually[i];
-                !this.tovalidate[inputname].validate.empty && countNoTEmptyInputName.push(inputname) ;
-              }
-              if (countNoTEmptyInputName.length < 2) {
-                countNoTEmptyInputName.forEach((inputname) => {
-                  this.tovalidate[inputname].validate.mutually_valid = true;
-                  this.tovalidate[inputname].validate.valid = true;
-                  setTimeout(()=>{
-                    this.tovalidate[inputname].validate.valid = this.tovalidate[inputname].validate._valid;
-                    this.state.valid = this.state.valid && this.tovalidate[inputname].validate.valid;
-                  })
-                })
-              }
-            }
+
+      const is_mutually = input && input.validate.mutually && !input.validate.required; 
+      const is_min_max  = input && !input.validate.mutually && !input.validate.empty && (input.validate.min_field || input.validate.max_field);
+
+      // check mutually (not empty)
+      if (is_mutually && !input.validate.empty) {
+            input.validate._valid         = input.validate.valid;
+            input.validate.mutually_valid = input.validate.mutually.reduce((prev, name) => prev && this.tovalidate[name].validate.empty, true);
+            input.validate.valid          = input.validate.mutually_valid && input.validate.valid;
+      }
+
+      // check mutually (empty)
+      if (is_mutually && input.validate.empty) {
+        input.value                   = null;
+        input.validate.mutually_valid = true;
+        input.validate.valid          = true;
+        input.validate._valid         = true;
+
+        let no_empty_inputs = [];
+        const inputs        = input.validate.mutually;
+        for (let i = inputs.length; i--;) {
+          if (!this.tovalidate[inputs[i]].validate.empty) {
+            no_empty_inputs.push(inputs[i]); // push input name.
           }
-          //check if min_field or max_field is set
-        } else if (!input.validate.empty && (input.validate.min_field || input.validate.max_field)) {
-          const input_name = input.validate.min_field || input.validate.max_field;
-          input.validate.valid = input.validate.min_field ?
-            this.tovalidate[input.validate.min_field].validate.empty || 1*input.value > 1*this.tovalidate[input.validate.min_field].value :
-            this.tovalidate[input.validate.max_field].validate.empty || 1*input.value < 1*this.tovalidate[input.validate.max_field].value;
-          if (input.validate.valid) this.tovalidate[input_name].validate.valid = true
+        }
+
+        if (no_empty_inputs.length < 2) {
+          no_empty_inputs.forEach((name) => {
+            this.tovalidate[name].validate.mutually_valid = true;
+            this.tovalidate[name].validate.valid          = true;
+            setTimeout(() => {
+              this.tovalidate[name].validate.valid = this.tovalidate[name].validate._valid;
+              this.state.valid                     = this.state.valid && this.tovalidate[name].validate.valid;
+            })
+          })
+        }
+
+      }
+
+      // check if min_field or max_field is set
+      if (is_min_max) {
+        const min = input.validate.min_field;
+        const max = input.validate.max_field;
+        input.validate.valid = min
+          ? this.tovalidate[min].validate.empty || 1 * input.value > 1 * this.tovalidate[min].value
+          : this.tovalidate[max].validate.empty || 1 * input.value < 1 * this.tovalidate[max].value;
+        if (input.validate.valid) {
+          this.tovalidate[min || max].validate.valid = true;
         }
       }
-      this.valid = Object.values(this.tovalidate).reduce((previous, input) => {
-        return previous && input.validate.valid;
-      }, true);
-    }
+
+      this.valid = Object.values(this.tovalidate).reduce((prev, input) => prev && input.validate.valid, true);
+
+    },
+
   },
-  created(){
+
+  created() {
     this.tovalidate = [];
   },
-  destroyed(){
+
+  destroyed() {
     this.tovalidate = null;
   }
+
 };
