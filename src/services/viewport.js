@@ -3,12 +3,14 @@
  * @since v3.7
  */
 
-import ApplicationState from 'store/application-state';
+import ApplicationState                    from 'store/application-state';
 import { VIEWPORT as viewportConstraints } from 'app/constant';
-import GUI from 'services/gui';
+import GUI                                 from 'services/gui';
 
-const { base, inherit, uniqueId } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+const { base, inherit, uniqueId }          = require('core/utils/utils');
+const G3WObject                            = require('core/g3wobject');
+
+console.assert(undefined !== GUI, 'GUI is undefined');
 
 const ViewportService = function() {
   // state of viewport
@@ -102,7 +104,20 @@ const ViewportService = function() {
     this.state.resized[type] = bool;
   };
 
-  this.showUserMessage = function({title, subtitle, message, type, position, size, draggable, duration, textMessage=false, closable, autoclose, hooks={}}={}) {
+  this.showUserMessage = function({
+    title,
+    subtitle,
+    message,
+    type,
+    position,
+    size,
+    draggable,
+    duration,
+    textMessage = false,
+    closable,
+    autoclose,
+    hooks = {}
+  }={}) {
     this.closeUserMessage();
     setTimeout(() => {
       this.state.usermessage.id = uniqueId();
@@ -285,11 +300,16 @@ const ViewportService = function() {
       .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`]
   };
 
+  /**
+   * Return number of component of stack
+   */
   this.contentLength = function() {
     return this.state.content.contentsdata.length;
   };
 
-  // pull the last element of contentStack
+  /**
+   * Remove last element (content) from stack
+   */
   this.popContent = function() {
     const d = $.Deferred();
     // check if content exist compontentStack

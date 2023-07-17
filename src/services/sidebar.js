@@ -5,9 +5,9 @@
 
 import SidebarItemComponent from 'components/SidebarItem.vue';
 
-const { base, inherit } = require('core/utils/utils');
-const { barstack: Stack } = require('gui/utils/utils');
-const G3WObject = require('core/g3wobject');
+const { base, inherit }     = require('core/utils/utils');
+const { barstack: Stack }   = require('gui/utils/utils');
+const G3WObject             = require('core/g3wobject');
 
 /**
  * TODO: temporary need to remove it

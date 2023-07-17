@@ -4,6 +4,8 @@
 
 import G3W_CONSTANT                from 'constant';
 
+import GUI                         from 'services/gui';
+
 import ApplicationState            from 'store/application-state';
 import ApplicationService          from 'services/application';
 
@@ -35,7 +37,6 @@ import WorkflowsStack              from 'services/workflows';
 import ApiService                  from 'services/api';
 import RouterService               from 'services/router';
 
-import GUI                         from 'services/gui';
 import Mixins                      from 'mixins';
 
 const G3WObject                    = require('core/g3wobject');

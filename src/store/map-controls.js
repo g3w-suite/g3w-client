@@ -4,11 +4,14 @@
  */
 
 import ApplicationService from 'services/application';
-import GUI from 'services/gui';
-import { VM } from 'g3w-ol/constants';
+import ComponentsRegistry from 'store/components';
+import { VM }             from 'g3w-ol/constants';
 
-const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+const { base, inherit }   = require('core/utils/utils');
+const G3WObject           = require('core/g3wobject');
+
+console.assert(undefined !== ApplicationService, 'ApplicationService is undefined');
+console.assert(undefined !== ComponentsRegistry, 'ComponentsRegistry is undefined');
 
 function ControlsRegistry() {
 
@@ -39,7 +42,7 @@ function ControlsRegistry() {
      */
       () => {
 
-      const CatalogService = GUI.getService('catalog');
+      const CatalogService = ComponentsRegistry.getComponent('catalog').getService();
 
       // 0. store unwatches of external layers (selected or visible)
       const unWatches = {};
@@ -197,7 +200,7 @@ function ControlsRegistry() {
     if (!control) {
       return false;
     }
-    GUI.getService('map').getMap().removeControl(control);
+    ComponentsRegistry.getComponent('map').getService().getMap().removeControl(control);
     delete this._controls[id];
     this._offlineids = this._offlineids.filter(_id => _id !== id);
     return true;

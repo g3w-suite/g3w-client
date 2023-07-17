@@ -3,20 +3,28 @@
  * @since v3.6
  */
 
-import appConfig from 'config';
-import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS, API_BASE_URLS } from 'app/constant';
-import ApplicationState from 'store/application-state';
-import DataRouterService from 'services/data';
-import PluginsRegistry from 'store/plugins';
-import ProjectsRegistry from 'store/projects';
-import ApiService from 'services/api';
-import ClipboardService from 'services/clipboard';
-import RouterService from 'services/router';
-import GUI from 'services/gui';
+import appConfig                         from 'config';
+import {
+  TIMEOUT,
+  APP_VERSION,
+  LOCAL_ITEM_IDS,
+  API_BASE_URLS
+}                                        from 'app/constant';
+import ApplicationState                  from 'store/application-state';
+import DataRouterService                 from 'services/data';
+import ComponentsRegistry                from 'store/components';
+import PluginsRegistry                   from 'store/plugins';
+import ProjectsRegistry                  from 'store/projects';
+import ApiService                        from 'services/api';
+import ClipboardService                  from 'services/clipboard';
+import RouterService                     from 'services/router';
+
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
-const { base, inherit, XHR, uniqueId } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+const { base, inherit, XHR, uniqueId }   = require('core/utils/utils');
+const G3WObject                          = require('core/g3wobject');
+
+console.assert(undefined !== ComponentsRegistry, 'ComponentsRegistry is undefined');
 
 /**
  * Manage Application 
@@ -65,7 +73,7 @@ const ApplicationService = function() {
      * @since 3.8.0
      */
     changeMapProject({url, epsg}) {
-      url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      url = ComponentsRegistry.getComponent('map').getService().addMapExtentUrlParameterToUrl(url, epsg);
       history.replaceState(null, null, url);
       location.replace(url);
     },
@@ -739,7 +747,7 @@ const ApplicationService = function() {
     const d = $.Deferred();
     this._gid = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
-    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
+    const url = ComponentsRegistry.getComponent('map').getService().addMapExtentUrlParameterToUrl(projectUrl, crs);
     /**
      * @since 3.7.15
      */

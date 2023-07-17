@@ -14,15 +14,11 @@ import ApplicationState          from 'store/application-state';
 
 //import services
 import ApplicationService        from 'services/application';
-import viewport                  from 'services/viewport';
 import GUI                       from 'services/gui';
 import FloatbarService           from 'services/floatbar';
 import NavbarItemsService        from 'services/navbaritems';
 import SidebarService            from 'services/sidebar';
 import ViewportService           from 'services/viewport';
-
-// import store
-import ComponentsRegistry        from 'store/components';
 
 //components
 import App                       from 'components/App.vue';
@@ -64,9 +60,7 @@ import vDownload                 from 'directives/v-download';
 // constants
 import { FONT_AWESOME_ICONS }    from 'app/constant';
 
-const { base, inherit }          = require('core/utils/utils');
 const { t, tPlugin }             = require('core/i18n/i18n.service');
-const G3WObject                  = require('core/g3wobject');
 
 /**
  * Install global components
@@ -175,12 +169,11 @@ Vue.use({
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
 /**
+ * Loading spinner start
+ * 
  * @requires components/App.vue
  */
-const layout = $.LayoutManager;
-
-// loading spinner at beginning
-layout.loading(true);
+$.LayoutManager.loading(true);
 
 // dataTable Translations and custom extentions 
 const setDataTableLanguage = function(dataTable = null) {
@@ -208,164 +201,6 @@ const setDataTableLanguage = function(dataTable = null) {
 };
 
 /**
- * ORIGINAL SOURCE: src/gui/app/index.js@3.4
- * 
- * @deprecated since 3.9.0. Will be removed in 4.0.0. (create your own vue app instead..) 
- */
-const ApplicationTemplate = function({ApplicationService}) {
-
-  const appLayoutConfig = ApplicationService.getConfig().layout || {};
-
-  // useful to build a difference layout/component based on mobile or not
-  this._isMobile = isMobile.any;
-
-  this._isIframe = appLayoutConfig.iframe;
-
-  //ussefult ot not close user message when set content is called
-  this.sizes = {
-    sidebar: {
-      width:0
-    }
-  };
-
-  /**
-   * usefull to show onaly last waiting request output
-   * at moment will be an object
-   * {
-   * stop: method to sot to show result
-   * }
-   */
-  this.waitingoutputdataplace = null;
-
-  /**
-   * @deprecated since 3.9.0. Will be removed in 4.0.0. 
-   */
-  this.init = function() {
-    console.warn('ApplicationTemplate class will be removed in v4.0.0, please create your own vue app instead..');
-  };
-
-  /**
-   * route setting at beginning (is an example)
-   */
-  this._addRoutes = function() {
-    ApplicationService
-      .getRouterService()
-      .addRoute(
-        'map/zoomto/{coordinate}/:zoom:',
-        function(coordinate, zoom) {
-          coordinate = _.map(coordinate.split(','), (xy) => Number(xy));
-          zoom       = zoom ? Number(zoom): null;
-          if (coordinate.length) {
-            GUI.getComponent('map').getService().on('ready', function() {
-              this.zoomTo(coordinate, zoom);
-            })
-          }
-        }
-      );
-  };
-
-  /**
-   * add component to template
-   */
-  this._addComponent = function(component, placeholder, options={}) {
-    this._addComponents([component], placeholder, options);
-    return true;
-  };
-
-  // registry component
-  this._addComponents = function(components, placeholder, options) {
-    let register = true;
-    if (
-      placeholder &&
-      ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1 &&
-      ApplicationTemplate.Services[placeholder]
-    ) {
-      register = ApplicationTemplate.Services[placeholder].addComponents(components, options);
-    }
-
-    Object
-      .entries(components)
-      .forEach(([ key, component ]) => {
-        if (register) {
-          ComponentsRegistry.registerComponent(component);
-          ApplicationService.registerService(component.id, component.getService())
-        }
-      });
-  };
-
-  this._removeComponent = function(id, placeholder, options) {
-    const component = ComponentsRegistry.unregisterComponent(id);
-    if (placeholder && ApplicationTemplate.Services[placeholder]) {
-     ApplicationTemplate.Services[placeholder].removeComponent(component, options);
-    }
-  };
-
-  this._showModalOverlay = function(bool = false, message) {
-    const mapService = GUI.getService('map');
-    if (bool) mapService.startDrawGreyCover(message);
-    else      mapService.stopDrawGreyCover();
-  };
-
-  this._isSidebarVisible = function() {
-    return !$('body').hasClass('sidebar-collapse');
-  };
-
-  this._showSidebar = function() {
-    $('body').addClass('sidebar-open');
-    $('body').removeClass('sidebar-collapse')
-  };
-
-  this._hideSidebar = function() {
-    $('body').removeClass('sidebar-open');
-    $('body').addClass('sidebar-collapse')
-  };
-
-  base(this);
-
-};
-
-inherit(ApplicationTemplate, G3WObject);
-
-// Placeholder knowed by application
-ApplicationTemplate.PLACEHOLDERS = [
-  'navbar',
-  'sidebar',
-  'viewport',
-  'floatbar'
-];
-
-// service know by the applications (standard)
-ApplicationTemplate.Services = {
-  navbar: null,
-  sidebar: SidebarService,
-  viewport: ViewportService,
-  floatbar: null
-};
-
-ApplicationTemplate.fail = function({ error }) {
-  layout.loading(false);
-  new Vue({
-    el: '#app',
-    ...Vue.compile(
-      `<div class="error-initial-page skin-background-color">
-        <template v-if="isMobile()">
-          <h3 class="oops">Oops!</h3>
-          <h5 class="cause">${ error || t('error_page.error') }</h5>
-          <h6 class="at-moment">${ t('error_page.at_moment') }</h6>
-          <h4 class="f5">${ t('error_page.f5') }</h4>
-        </template>
-        <template v-else>
-          <h1 class="oops">Oops!</h1>
-          <h1 class="cause">${ error || t('error_page.error') }</h1>
-          <h3 class="at-moment">${ t('error_page.at_moment') }</h3>
-          <h2 class="f5">${ t('error_page.error') }</h2>
-        </template>
-      </div>`
-    )
-  });
-};
-
-/**
  * Application starting point (Create Vue App)
  *
  * create the ApplicationTemplate instance passing template interface configuration
@@ -373,11 +208,10 @@ ApplicationTemplate.fail = function({ error }) {
  */
 ApplicationService.init()
   .then(() => {
-    const app = new ApplicationTemplate({ ApplicationService });
 
     setDataTableLanguage();
 
-    if (isMobile.any || app._isIframe) {
+    if (ApplicationService.ismobile || (ApplicationService.getConfig().layout || {}).iframe) {
       $('body').addClass('sidebar-collapse');
     }
     
@@ -395,15 +229,12 @@ ApplicationService.init()
       created() {
 
         // setup interfaces and create application config
-        app.templateConfig = GUI.init({
-          app,
-          layout,
-          service:  ApplicationService,
+        GUI.init({
+          app:      ApplicationService,
           floatbar: FloatbarService,
           viewport: ViewportService,
           navbar:   NavbarItemsService,
           sidebar:  SidebarService,
-          state:    ApplicationState,
         });
     
         this.$watch( () => ApplicationState.language, () => { setDataTableLanguage(); } );
@@ -420,15 +251,15 @@ ApplicationService.init()
 
         // build template, register other components, setup Fonts Css class methods (vendor dependencies ?)
         GUI.setup_deps({
-          app,
           floatbar: FloatbarService,
           VueApp: this,
         }); 
 
         await this.$nextTick();
 
-        app.sizes.sidebar.width = $('#g3w-sidebar').width();
+        GUI.sizes.sidebar.width = $('#g3w-sidebar').width();
         GUI.ready(); // getSkinColor
+
         ApplicationService.postBootstrap()
       },
 
@@ -436,10 +267,40 @@ ApplicationService.init()
   })
   .catch((e) => {
     let { error=null, language } = e;
-    if (error) {
-      if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
-      else if (error.statusText) error = error.statusText;
+
+    if (error && error.responseJSON && error.responseJSON.error.data) {
+      error = error.responseJSON.error.data;
+    } else if (error && error.statusText) {
+      error = error.statusText;
     }
+
     console.error(e || error);
-    ApplicationTemplate.fail({ error });
+
+    /**
+     * Loading spinner end
+     * 
+     * @requires components/App.vue
+     */
+    $.LayoutManager.loading(false);
+
+    new Vue({
+      el: '#app',
+      ...Vue.compile(
+        `<div class="error-initial-page skin-background-color">
+          <template v-if="isMobile()">
+            <h3 class="oops">Oops!</h3>
+            <h5 class="cause">${ error || t('error_page.error') }</h5>
+            <h6 class="at-moment">${ t('error_page.at_moment') }</h6>
+            <h4 class="f5">${ t('error_page.f5') }</h4>
+          </template>
+          <template v-else>
+            <h1 class="oops">Oops!</h1>
+            <h1 class="cause">${ error || t('error_page.error') }</h1>
+            <h3 class="at-moment">${ t('error_page.at_moment') }</h3>
+            <h2 class="f5">${ t('error_page.error') }</h2>
+          </template>
+        </div>`
+      )
+    });
+
   });
