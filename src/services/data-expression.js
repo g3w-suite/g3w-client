@@ -2,15 +2,13 @@
  * @file
  * @since v3.6
  */
+import { BaseService } from 'core/data/service'
 
-const BaseService = require('core/data/service');
-const { base, inherit, XHR } = require('core/utils/utils');
+const { XHR }                              = require('core/utils/utils');
 const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
 
-function ExpressionService() {
- 
-  base(this);
-  
+class ExpressionService extends BaseService {
+
   /**
    * POST only: accepts
    * 
@@ -27,20 +25,20 @@ function ExpressionService() {
    * 
    * @returns { Promise<void> }
    */
-  this.expression = async function(params= {}) {
+  async expression(params= {}) {
     try {
       return this.handleResponse(
         // response
         await this.handleRequest({
           url: `${this.project.getUrl('vector_data')}${params.layer_id}/`,
-          params
+          params,
         })
       );
     } catch(err) {
       return Promise.reject(err);
     }
 
-  };
+  }
 
   /**
    * POST only method to return QGIS Expressions evaluated in Project an optional Layer/Form context
@@ -58,37 +56,39 @@ function ExpressionService() {
    * 
    * @returns { Promise<void> }
    */
-   this.expression_eval = function(params={}) {
+   expression_eval(params = {}) {
     return this.handleRequest({
       url: this.project.getUrl('expression_eval'),
-      params
+      params,
     });
-  };
+  }
 
   /**
    * Handle server request
    * 
-   * @param url
-   * @param params
-   * @param contentType
+   * @param opts.url
+   * @param opts.params
+   * @param opts.contentType
 
    * @returns { Promise<*> }
    */
-  this.handleRequest = function({ url, params={}, contentType='application/json' } = {}) {
+  handleRequest({
+    url,
+    params      = {},
+    contentType = 'application/json',
+  } = {}) {
     return XHR.post({ url, contentType, data: JSON.stringify(params) });
-  };
+  }
 
   /**
    * Handle server response
    * 
    * @param response
    */
-  this.handleResponse = function(response = {}) {
+  handleResponse(response = {}) {
     return getFeaturesFromResponseVectorApi(response);
-  };
+  }
 
 }
-
-inherit(ExpressionService, BaseService);
 
 export default new ExpressionService();

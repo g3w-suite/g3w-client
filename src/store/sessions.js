@@ -3,33 +3,36 @@
  * @since v3.6
  */
 
-const SessionsRegistry = function() {
-  this._sessions = {};
+class SessionsRegistry {
 
-  this.register = function(session) {
-    const id = session.getId();
-    this._sessions[id] = session;
-  };
-
-  this.unregister = function(id) {
-    delete this._sessions[id];
-  };
-
-  this.getSession = function(id) {
-    return this._sessions[id];
-  };
-
-  this.setSession = function(id, session) {
-    this._sessions[id] = session;
-  };
-
-  this.getSessions = function() {
-    return this._sessions;
-  };
-
-  this.clear = function(){
+  constructor() {
     this._sessions = {};
   }
-};
+
+  register(session) {
+    this._sessions[session.getId()] = session;
+  }
+
+  unregister(id) {
+    delete this._sessions[id];
+  }
+
+  getSession(id) {
+    return this._sessions[id];
+  }
+
+  setSession(id, session) {
+    this._sessions[id] = session;
+  };
+
+  getSessions() {
+    return this._sessions;
+  }
+
+  clear() {
+    this._sessions = {};
+  }
+
+}
 
 export default new SessionsRegistry();

@@ -40,23 +40,28 @@ console.assert(undefined !== MapComponent,              'MapComponent is undefin
 console.assert(undefined !== QueryResultsComponent,     'QueryResultsComponent is undefined');
 console.assert(undefined !== SpatialBookMarksComponent, 'SpatialBookMarksComponent is undefined');
 
+// Placeholder knowed by application
+const PLACEHOLDERS = [
+  'navbar',
+  'sidebar',
+  'viewport',
+  'floatbar'
+];
 
-// API della GUI.
-// methods have be defined by application
-// app should call GUI.ready() when GUI is ready
+
+/**
+ * GUI's API.
+ * 
+ * some methods are defined by the application,
+ * app should call `GUI.ready()` when GUI is ready
+ */
 function GUI() {
 
   const self = this;
 
-  // Placeholder knowed by application
-  this.PLACEHOLDERS = [
-    'navbar',
-    'sidebar',
-    'viewport',
-    'floatbar'
-  ];
-
-  // service know by the applications (standard)
+  /**
+   * common services known by application
+   */ 
   this.Services = {
     navbar: null,
     sidebar: null,
@@ -540,7 +545,7 @@ function GUI() {
     let register = true;
     if (
       placeholder &&
-      self.PLACEHOLDERS.indexOf(placeholder) > -1 &&
+      PLACEHOLDERS.indexOf(placeholder) > -1 &&
       self.Services[placeholder]
     ) {
       register = self.Services[placeholder].addComponents(components, options);
@@ -559,12 +564,12 @@ function GUI() {
   /**
    * add component to template
    */
-  this.addComponent     = function(component, placeholder, options={}) {
+  this.addComponent = function(component, placeholder, options={}) {
     self._addComponents([component], placeholder, options);
     return true;
   };
 
-  this.removeComponent  = function(id, placeholder, options) {
+  this.removeComponent = function(id, placeholder, options) {
     const component = ComponentsRegistry.unregisterComponent(id);
     if (placeholder && self.Services[placeholder]) {
       self.Services[placeholder].removeComponent(component, options);
@@ -762,14 +767,17 @@ function GUI() {
         ApplicationService.registerService(component.id, component.getService());
       });
 
-    this
-      .Services
-      .viewport
-      .on('resize', () => this.emit('resize'));
+    viewport.on('resize', () => this.emit('resize'));
 
-    this.templateConfig = {
-      title: ApplicationService.getConfig().apptitle || 'G3W Suite',
-      placeholders: {
+  };
+
+  this.setup_deps = function({ floatbar, VueApp }) {
+
+    // build template
+    floatbar.init(this.layout);
+
+    Object
+      .entries({
         navbar:   {
             components: [],
         },
@@ -849,36 +857,15 @@ function GUI() {
         floatbar: {
           components: []
         },
-      },
-      othercomponents: [
-        new QueryResultsComponent({ id: 'queryresults' }),
-      ],
-      // placeholder of the content (view content). Secondary view (hidden)
-      viewport: {
-        components: {
-          map:     new MapComponent({ id: 'map' }),
-          content: new ContentsComponent({ id: 'contents' }),
-        },
-      },
-    };
-
-  };
-
-  this.setup_deps = function({ floatbar, VueApp }) {
-
-    // build template
-    floatbar.init(this.layout);
-
-    Object
-      .entries(this.templateConfig.placeholders)
+      })
       .forEach(([ placeholder, options ]) => {
         this._addComponents(options.components, placeholder);
     });
 
     // other components not related to placeholder
-    if (this.templateConfig.othercomponents) {
-      this._addComponents(this.templateConfig.othercomponents);
-    }
+    this._addComponents([
+      new QueryResultsComponent({ id: 'queryresults' }),
+    ]);
 
     // method that return Template Info
     this.getTemplateInfo = function() {
@@ -895,11 +882,13 @@ function GUI() {
 
     $(document).localize();
 
+    // placeholder of the content (view content). Secondary view (hidden)
+    const map     = new MapComponent({ id: 'map' });
+    const content = new ContentsComponent({ id: 'contents' });
+
     // viewport settings
-    if (this.templateConfig.viewport) {
-      this.Services.viewport.init(this.templateConfig.viewport);
-      this._addComponents(this.templateConfig.viewport.components);
-    }
+    this.Services.viewport.init({ components: { map, content } });
+    this._addComponents({ map, content });
 
     const skinColor = $('.navbar').css('background-color');
     this.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;

@@ -4,37 +4,29 @@
  */
 
 import ApplicationService from 'services/application';
+import { BaseService }     from 'core/data/service';
 
-const { base, inherit, XHR } = require('core/utils/utils');
-const BaseService = require('core/data/service');
+const { XHR } = require('core/utils/utils');
 
-function OWSService(){
-  base(this);
+class OWSService extends BaseService {
+
   /**
-   *
-   * @param params
+   * @param params.url
+   * 
    * @returns {Promise<{data: string, response: *}>}
    */
-  this.wmsCapabilities = async function({url} ={}){
-    const owsUrl = `${ApplicationService.getInterfaceOwsUrl()}`;
+  async wmsCapabilities({ url } ={})  {
     try {
-      const params = {
-        url,
-        service: "wms"
-      };
-      const data = JSON.stringify(params);
-      const response = await XHR.post({
-        url: owsUrl,
+      return await XHR.post({
+        url:         `${ApplicationService.getInterfaceOwsUrl()}`,
         contentType: 'application/json',
-        data
+        data:        JSON.stringify({ url, service: 'wms' })
       });
-      return response;
-    } catch(err){
-      return;
+    } catch(e) {
+      console.warn(e);
     }
-  };
-}
+  }
 
-inherit(OWSService, BaseService);
+}
 
 export default new OWSService();
