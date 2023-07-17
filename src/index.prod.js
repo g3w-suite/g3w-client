@@ -10,86 +10,89 @@ import './deprecated';
 import './globals';
 
 //import core
-import ApplicationState from 'store/application-state';
+import ApplicationState          from 'store/application-state';
 
 //import services
-import ApplicationService from 'services/application';
-import viewport from "services/viewport";
-import GUI from 'services/gui';
-import FloatbarService from "services/floatbar";
-import NavbarItemsService from 'services/navbaritems';
-import SidebarService from 'services/sidebar';
-import ViewportService from 'services/viewport';
+import ApplicationService        from 'services/application';
+import viewport                  from 'services/viewport';
+import GUI                       from 'services/gui';
+import FloatbarService           from 'services/floatbar';
+import NavbarItemsService        from 'services/navbaritems';
+import SidebarService            from 'services/sidebar';
+import ViewportService           from 'services/viewport';
 
 // import store
-import ComponentsRegistry from 'store/components';
+import ComponentsRegistry        from 'store/components';
 
 //components
-import App from 'components/App.vue';
-import ImageComponent from 'components/GlobalImage.vue';
-import GalleryImagesComponent from 'components/GlobalGallery.vue';
-import GeospatialComponet from 'components/GlobalGeo.vue';
-import Skeleton from 'components/GlobalSkeleton.vue';
-import BarLoader from 'components/GlobalBarLoader';
-import Progressbar from 'components/GlobalProgressBar';
-import HelpDiv from 'components/GlobalHelpDiv.vue';
-import Resize from 'components/GlobalResize.vue'
-import LayerPositions from 'components/GlobalLayerPositions.vue';
-import DateTime from 'components/GlobalDateTime.vue';
-import Range from 'components/GlobalRange.vue';
-import ResizeIcon from 'components/GlobalResizeIcon.vue';
-import Tabs from 'components/GlobalTabs.vue';
-import Divider from 'components/GlobalDivider.vue';
-import FloatbarComponent from "components/Floatbar.vue";
-import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
+import App                       from 'components/App.vue';
+import ImageComponent            from 'components/GlobalImage.vue';
+import GalleryImagesComponent    from 'components/GlobalGallery.vue';
+import GeospatialComponet        from 'components/GlobalGeo.vue';
+import Skeleton                  from 'components/GlobalSkeleton.vue';
+import BarLoader                 from 'components/GlobalBarLoader';
+import Progressbar               from 'components/GlobalProgressBar';
+import HelpDiv                   from 'components/GlobalHelpDiv.vue';
+import Resize                    from 'components/GlobalResize.vue'
+import LayerPositions            from 'components/GlobalLayerPositions.vue';
+import DateTime                  from 'components/GlobalDateTime.vue';
+import Range                     from 'components/GlobalRange.vue';
+import ResizeIcon                from 'components/GlobalResizeIcon.vue';
+import Tabs                      from 'components/GlobalTabs.vue';
+import Divider                   from 'components/GlobalDivider.vue';
+import FloatbarComponent         from 'components/Floatbar.vue';
+import NavbaritemsLeftComponent  from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
-import SidebarComponent from 'components/Sidebar.vue';
-import ViewportComponent from 'components/Viewport.vue';
+import SidebarComponent          from 'components/Sidebar.vue';
+import ViewportComponent         from 'components/Viewport.vue';
 
 //directives
-import vDisabled from 'directives/v-disabled';
-import vChecked from 'directives/v-checked';
-import vSelectedFirst from 'directives/v-selected-first';
-import vSelect2 from 'directives/v-select2';
-import vTToltip from 'directives/v-t-tooltip';
-import vTHtml from 'directives/v-t-html';
-import vTPlaceholder from 'directives/v-t-placeholder';
-import vTTitle from 'directives/v-t-title';
-import vT from "directives/v-t";
-import vTPlugin from 'directives/v-t-plugin';
-import vPlugins from 'directives/v-plugins';
-import vOnline from 'directives/v-online';
-import vDownload from 'directives/v-download';
+import vDisabled                 from 'directives/v-disabled';
+import vChecked                  from 'directives/v-checked';
+import vSelectedFirst            from 'directives/v-selected-first';
+import vSelect2                  from 'directives/v-select2';
+import vTToltip                  from 'directives/v-t-tooltip';
+import vTHtml                    from 'directives/v-t-html';
+import vTPlaceholder             from 'directives/v-t-placeholder';
+import vTTitle                   from 'directives/v-t-title';
+import vT                        from "directives/v-t";
+import vTPlugin                  from 'directives/v-t-plugin';
+import vPlugins                  from 'directives/v-plugins';
+import vOnline                   from 'directives/v-online';
+import vDownload                 from 'directives/v-download';
 
 // constants
-import { FONT_AWESOME_ICONS } from 'app/constant';
+import { FONT_AWESOME_ICONS }    from 'app/constant';
 
-const { base, inherit, toRawType } = require('core/utils/utils');
-const { t, tPlugin }               = require('core/i18n/i18n.service');
-const G3WObject                    = require('core/g3wobject');
-const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
-const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
-
+const { base, inherit }          = require('core/utils/utils');
+const { t, tPlugin }             = require('core/i18n/i18n.service');
+const G3WObject                  = require('core/g3wobject');
 
 /**
  * Install global components
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
  */
-Vue.component(ImageComponent.name, ImageComponent);
+Vue.component(ImageComponent.name,         ImageComponent);
 Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
-Vue.component(GeospatialComponet.name, GeospatialComponet);
-Vue.component(BarLoader.name, BarLoader);
-Vue.component(Progressbar.name, Progressbar);
-Vue.component(Skeleton.name, Skeleton);
-Vue.component(HelpDiv.name, HelpDiv);
-Vue.component(Resize.name, Resize);
-Vue.component(LayerPositions.name, LayerPositions);
-Vue.component(DateTime.name, DateTime);
-Vue.component(Range.name, Range);
-Vue.component(ResizeIcon.name, ResizeIcon);
-Vue.component(Tabs.name, Tabs);
-Vue.component(Divider.name, Divider);
+Vue.component(GeospatialComponet.name,     GeospatialComponet);
+Vue.component(BarLoader.name,              BarLoader);
+Vue.component(Progressbar.name,            Progressbar);
+Vue.component(Skeleton.name,               Skeleton);
+Vue.component(HelpDiv.name,                HelpDiv);
+Vue.component(Resize.name,                 Resize);
+Vue.component(LayerPositions.name,         LayerPositions);
+Vue.component(DateTime.name,               DateTime);
+Vue.component(Range.name,                  Range);
+Vue.component(ResizeIcon.name,             ResizeIcon);
+Vue.component(Tabs.name,                   Tabs);
+Vue.component(Divider.name,                Divider);
+Vue.component('sidebar',                   SidebarComponent);
+Vue.component('navbarleftitems',           NavbaritemsLeftComponent);
+Vue.component('navbarrightitems',          NavbaritemsRightComponent);
+Vue.component('viewport',                  ViewportComponent);
+Vue.component('floatbar',                  FloatbarComponent);
+Vue.component('app',                       App);
 
 /**
  * Install application filters
@@ -104,19 +107,19 @@ Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
-Vue.directive("disabled", vDisabled);
-Vue.directive("checked", vChecked);
+Vue.directive("disabled",       vDisabled);
+Vue.directive("checked",        vChecked);
 Vue.directive("selected-first", vSelectedFirst);
-Vue.directive('select2', vSelect2);
-Vue.directive('t-tooltip', vTToltip);
-Vue.directive('t-html', vTHtml);
-Vue.directive('t-placeholder', vTPlaceholder);
-Vue.directive('t-title', vTTitle);
-Vue.directive("t", vT);
-Vue.directive("t-plugin", vTPlugin);
-Vue.directive("plugins", vPlugins);
-Vue.directive("online", vOnline);
-Vue.directive("download", vDownload);
+Vue.directive('select2',        vSelect2);
+Vue.directive('t-tooltip',      vTToltip);
+Vue.directive('t-html',         vTHtml);
+Vue.directive('t-placeholder',  vTPlaceholder);
+Vue.directive('t-title',        vTTitle);
+Vue.directive("t",              vT);
+Vue.directive("t-plugin",       vTPlugin);
+Vue.directive("plugins",        vPlugins);
+Vue.directive("online",         vOnline);
+Vue.directive("download",       vDownload);
 
 
 /**
@@ -145,7 +148,7 @@ Vue.use({
           font: this.font
         }
       },
-      addFontClass({name, className}={}){
+      addFontClass({name, className}={}) {
         let added = this.font[name] === undefined;
         if (added) this.font[name] = className;
         return added;
@@ -179,301 +182,91 @@ const layout = $.LayoutManager;
 // loading spinner at beginning
 layout.loading(true);
 
+// dataTable Translations and custom extentions 
+const setDataTableLanguage = function(dataTable = null) {
+  const languageOptions = {
+    "language": {
+      "sSearch": '',
+      "searchPlaceholder": t("dosearch"),
+      "sLengthMenu":       t("dataTable.lengthMenu"),
+      "paginate": {
+        "previous":        t("dataTable.previous"),
+        "next":            t("dataTable.next"),
+      },
+      "info":              t("dataTable.info"),
+      "zeroRecords":       t("dataTable.nodatafilterd"),
+      "infoFiltered":      '',
+    }
+  };
+  // set form control class to filter
+  $.extend( $.fn.dataTableExt.oStdClasses, { "sFilterInput": "form-control search" });
+  if (dataTable) {
+    dataTable.dataTable({ "oLanguage": languageOptions });
+  } else {
+    $.extend( true, $.fn.dataTable.defaults, languageOptions);
+  }
+};
+
 /**
  * ORIGINAL SOURCE: src/gui/app/index.js@3.4
+ * 
+ * @deprecated since 3.9.0. Will be removed in 4.0.0. (create your own vue app instead..) 
  */
 const ApplicationTemplate = function({ApplicationService}) {
+
   const appLayoutConfig = ApplicationService.getConfig().layout || {};
+
   // useful to build a difference layout/component based on mobile or not
   this._isMobile = isMobile.any;
+
   this._isIframe = appLayoutConfig.iframe;
+
   //ussefult ot not close user message when set content is called
   this.sizes = {
     sidebar: {
       width:0
     }
   };
-  /*
-    usefull to show onaly last waiting request output
-    at moment will be an object
-    {
-      stop: method to sot to show result
-    }
+
+  /**
+   * usefull to show onaly last waiting request output
+   * at moment will be an object
+   * {
+   * stop: method to sot to show result
+   * }
    */
   this.waitingoutputdataplace = null;
+
+  /**
+   * @deprecated since 3.9.0. Will be removed in 4.0.0. 
+   */
   this.init = function() {
-    // create Vue App
-    this._createApp();
-  };
-  // create application config
-  this._createTemplateConfig = function() {
-    const G3WTemplate = Vue.prototype.g3wtemplate;
-    const appTitle = ApplicationService.getConfig().apptitle || 'G3W Suite';
-    const ContentsComponent = require('gui/viewport/contentsviewer');
-    const CatalogComponent = require('gui/catalog/vue/catalog');
-    const SearchComponent = require('gui/search/vue/search');
-    const QueryBuilderUIFactory = require('gui/querybuilder/querybuilderuifactory');
-    const PrintComponent = require('gui/print/vue/print');
-    const MetadataComponent = require('gui/metadata/vue/metadata');
-    const ToolsComponent = require('gui/tools/vue/tools');
-    const WMSComponent = require('gui/wms/vue/wms');
-    const MapComponent = require('gui/map/vue/map');
-    const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
-    const SpatialBookMarksComponent = require('gui/spatialbookmarks/vue/spatialbookmarks');
-    return {
-      title: appTitle,
-      placeholders: {
-        navbar: {
-          components: []
-        },
-        sidebar: {
-          components: [
-            new MetadataComponent({
-              id: 'metadata',
-              open: false,
-              collapsible: false,
-              icon: G3WTemplate.getFontClass('file'),
-              mobile: true
-            }),
-            new SpatialBookMarksComponent({
-              id: 'spatialbookmarks',
-              open: false,
-              collapsible: true,
-              icon: G3WTemplate.getFontClass('bookmark'),
-              mobile: true
-            }),
-            new PrintComponent({
-              id: 'print',
-              open: false,
-              collapsible: true, //  it used to manage click event if can run setOpen component method
-              icon: G3WTemplate.getFontClass('print'),
-              mobile: false
-            }),
-            new SearchComponent({
-              id: 'search',
-              open: false,
-              collapsible: true,
-              icon: G3WTemplate.getFontClass('search'),
-              actions: [{
-                id:"querybuilder",
-                class: `${G3WTemplate.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
-                tooltip: 'Query Builder',
-                fnc:() => {
-                  GUI.closeContent();
-                  ApplicationTemplate.Services.sidebar.closeOpenComponents();
-                  QueryBuilderUIFactory.show({
-                    type: 'sidebar' // sidebar or modal
-                  });
-                },
-                style: {
-                  color: '#8DC3E3',
-                  padding: '6px',
-                  fontSize: '1.2em',
-                  borderRadius: '3px',
-                  marginRight: '5px'
-                }
-              }],
-              mobile: true
-            }),
-            // Component that store plugins
-            new ToolsComponent({
-              id: 'tools',
-              open: false,
-              collapsible: true,
-              icon: G3WTemplate.getFontClass('tools'),
-              mobile: true
-            }),
-            new WMSComponent({
-              id: 'wms',
-              open: false,
-              collapsible: true,
-              icon: G3WTemplate.getFontClass('layers'),
-              mobile: true
-            }),
-            new CatalogComponent({
-              id: 'catalog',
-              open: false,
-              collapsible: false,
-              isolate: true,
-              icon: G3WTemplate.getFontClass('map'),
-              mobile: true,
-              config: {
-                legend: {
-                  config: appLayoutConfig.legend
-                },
-              }
-            }),
-          ]
-        },
-        floatbar:{
-          components: []
-        }
-      },
-      othercomponents: [
-        new QueryResultsComponent({
-          id: 'queryresults'
-        })
-      ],
-      viewport: {
-        // placeholder of the content (view content). Secondary view (hidden)
-        components: {
-          map: new MapComponent({
-            id: 'map'
-          }),
-          content: new ContentsComponent({
-            id: 'contents'
-          })
-        }
-      }
-    }
+    console.warn('ApplicationTemplate class will be removed in v4.0.0, please create your own vue app instead..');
   };
 
-  //Vue app
-  this._createApp = function() {
-    this._setDataTableLanguage();
-    const self = this;
-    if (isMobile.any || this._isIframe) $('body').addClass('sidebar-collapse');
-    return new Vue({
-      el: '#app',
-      created() {
-        // set general metods for the application as  GUI.showForm etc ..
-        self._setupInterface();
-        // setup layout
-        self._setupLayout();
-        //register all services fro the application
-        self._setUpServices();
-        // create templateConfig
-        self.templateConfig = self._createTemplateConfig();
-        // listen lng change and reset datatable language
-        this.$watch(()=> ApplicationState.language, ()=>{
-          self._setDataTableLanguage();
-        });
-      },
-      async mounted() {
-        await this.$nextTick();
-        self._buildTemplate();
-        // setup Font, Css class methods
-        self._setUpTemplateDependencies(this);
-        $(document).localize();
-        self._setViewport(self.templateConfig.viewport);
-        const skinColor = $('.navbar').css('background-color');
-        GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
-        await this.$nextTick();
-        self.emit('ready');
-        self.sizes.sidebar.width = $('#g3w-sidebar').width();
-        //getSkinColor
-        GUI.ready();
-      }
-    })
-  };
-
-  this._setupLayout = function(){
-    if (!isMobile.any) {
-      // setup map controls
-      $("<style type='text/css'> .ol-control-tl {" +
-        "top: 7px;" +
-        "left:43px;" +
-      "}</style>").appendTo("head");
-    }
-    // Inizialization of the components of the application
-    Vue.component('sidebar', SidebarComponent);
-    //Navbar custom items
-    Vue.component('navbarleftitems', NavbaritemsLeftComponent);
-    Vue.component('navbarrightitems', NavbaritemsRightComponent);
-    Vue.component('viewport', ViewportComponent);
-    Vue.component('floatbar', FloatbarComponent);
-    Vue.component('app', App);
-  };
-
-  // dataTable Translations and custom extentions
-  this._setDataTableLanguage = function(dataTable=null) {
-    const languageOptions = {
-      "language": {
-        "sSearch": '',
-        "searchPlaceholder": t("dosearch"),
-        "sLengthMenu": t("dataTable.lengthMenu"),
-        "paginate": {
-          "previous": t("dataTable.previous"),
-          "next": t("dataTable.next"),
-        },
-        "info": t("dataTable.info"),
-        "zeroRecords": t("dataTable.nodatafilterd"),
-        "infoFiltered": ''
-      }
-    };
-    //set form control class to filter
-    $.extend( $.fn.dataTableExt.oStdClasses, {
-      "sFilterInput": "form-control search"
-    });
-    !dataTable ? $.extend( true, $.fn.dataTable.defaults, languageOptions) : dataTable.dataTable( {"oLanguage": languageOptions});
-  };
-
-  // route setting att beginning (is an example)
+  /**
+   * route setting at beginning (is an example)
+   */
   this._addRoutes = function() {
-    const RouterService = ApplicationService.getRouterService();
-    const mapService = GUI.getComponent('map').getService();
-    RouterService.addRoute('map/zoomto/{coordinate}/:zoom:', function(coordinate, zoom) {
-      coordinate = _.map(coordinate.split(','), function(xy) {
-        return Number(xy)
-      });
-      zoom = zoom ? Number(zoom): null;
-      if (coordinate.length) {
-        mapService.on('ready', function() {
-          this.zoomTo(coordinate, zoom);
-        })
-      }
-    })
+    ApplicationService
+      .getRouterService()
+      .addRoute(
+        'map/zoomto/{coordinate}/:zoom:',
+        function(coordinate, zoom) {
+          coordinate = _.map(coordinate.split(','), (xy) => Number(xy));
+          zoom       = zoom ? Number(zoom): null;
+          if (coordinate.length) {
+            GUI.getComponent('map').getService().on('ready', function() {
+              this.zoomTo(coordinate, zoom);
+            })
+          }
+        }
+      );
   };
 
-  //register all services
-  this._setUpServices = function() {
-    Object.keys(ApplicationTemplate.Services).forEach(element => {
-      const service = ApplicationTemplate.Services[element];
-      ApplicationService.registerService(element, service);
-    });
-    Object.values(GUI.getComponents()).forEach(component => {
-      ApplicationService.registerService(component.id, component.getService());
-    });
-    ApplicationTemplate.Services.viewport.on('resize', ()=>GUI.emit('resize'));
-  };
-  // build template function
-  this._buildTemplate = function() {
-    FloatbarService.init(layout);
-    const placeholdersConfig = this.templateConfig.placeholders;
-    Object.entries(placeholdersConfig).forEach(([placeholder, options]) => {
-      this._addComponents(options.components, placeholder);
-    });
-    //register other compoents
-    this._addOtherComponents();
-  };
-
-  //add component not related to placeholder
-  this._addOtherComponents = function() {
-    if (this.templateConfig.othercomponents) this._addComponents(this.templateConfig.othercomponents);
-  };
-  // viewport setting
-  this._setViewport = function(viewportOptions) {
-    // viewport components
-    // es.: map e content
-    /*
-
-    components: {
-      map: new MapComponent({
-        id: 'map'
-      }),
-      content: new ContentsComponent({
-        id: 'content',
-      })
-     }
-
-     */
-    if (viewportOptions) {
-      ApplicationTemplate.Services.viewport.init(viewportOptions);
-      this._addComponents(viewportOptions.components);
-    }
-  };
-
-  // add component to template
+  /**
+   * add component to template
+   */
   this._addComponent = function(component, placeholder, options={}) {
     this._addComponents([component], placeholder, options);
     return true;
@@ -482,27 +275,35 @@ const ApplicationTemplate = function({ApplicationService}) {
   // registry component
   this._addComponents = function(components, placeholder, options) {
     let register = true;
-    if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
-      const placeholderService = ApplicationTemplate.Services[placeholder];
-      if (placeholderService) register = placeholderService.addComponents(components, options);
+    if (
+      placeholder &&
+      ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1 &&
+      ApplicationTemplate.Services[placeholder]
+    ) {
+      register = ApplicationTemplate.Services[placeholder].addComponents(components, options);
     }
-    Object.entries(components).forEach(([key, component])=> {
-      if (register) {
-        ComponentsRegistry.registerComponent(component);
-        ApplicationService.registerService(component.id, component.getService())
-      }
-    })
+
+    Object
+      .entries(components)
+      .forEach(([ key, component ]) => {
+        if (register) {
+          ComponentsRegistry.registerComponent(component);
+          ApplicationService.registerService(component.id, component.getService())
+        }
+      });
   };
 
-  this._removeComponent = function(componentId, placeholder, options) {
-    const component = ComponentsRegistry.unregisterComponent(componentId);
-    placeholder && ApplicationTemplate.Services[placeholder] && ApplicationTemplate.Services[placeholder].removeComponent(component, options);
+  this._removeComponent = function(id, placeholder, options) {
+    const component = ComponentsRegistry.unregisterComponent(id);
+    if (placeholder && ApplicationTemplate.Services[placeholder]) {
+     ApplicationTemplate.Services[placeholder].removeComponent(component, options);
+    }
   };
 
-  this._showModalOverlay = function(bool=false, message) {
+  this._showModalOverlay = function(bool = false, message) {
     const mapService = GUI.getService('map');
     if (bool) mapService.startDrawGreyCover(message);
-    else mapService.stopDrawGreyCover();
+    else      mapService.stopDrawGreyCover();
   };
 
   this._isSidebarVisible = function() {
@@ -517,558 +318,6 @@ const ApplicationTemplate = function({ApplicationService}) {
   this._hideSidebar = function() {
     $('body').removeClass('sidebar-open');
     $('body').addClass('sidebar-collapse')
-  };
-
-  // setup Fonts Css dependencies methods
-  this._setUpTemplateDependencies = function(VueApp) {
-    GUI.isMobile = function() {
-      return isMobile.any;
-    };
-    // method that return Template Info
-    GUI.getTemplateInfo = function() {
-      return VueApp.g3wtemplate.getInfo();
-    };
-    GUI.getTemplateInfo = function() {
-      return VueApp.g3wtemplate.getInfo();
-    };
-    GUI.getFontClass = function(type) {
-      return VueApp.g3wtemplate.getFontClass(type);
-    };
-  };
-
-  /**
-   * Convert error to user message showed
-   * @param error
-   * @returns {string}
-   */
-  GUI.errorToMessage = function(error){
-    let message = 'server_error';
-    switch (toRawType(error)) {
-      case 'Error':
-        message = `CLIENT - ${error.message}`;
-        break;
-      case 'Object':
-        if (error.responseJSON) {
-          error = error.responseJSON;
-          if (error.result === false){
-            const {code='', data='', message:msg=''} = error.error;
-            message = `${code.toUpperCase()} ${data} ${msg}`;
-          }
-        } else if (error.responseText){
-          message = error.responseText;
-        }
-        break;
-      case 'Array':
-        message = error.map(error => GUI.errorToMessage(error)).join(' ');
-        break;
-      case 'String':
-      default:
-        message = error;
-    }
-    return message;
-  };
-
-  // setup Interaces
-  this._setupInterface = function() {
-    /* PLUBLIC INTERFACE */
-
-    /* Common methods */
-    GUI.layout = layout;
-    GUI.getSize = ({element, what}) => {
-      if (element && what)
-        return this.sizes[element][what];
-    };
-
-    GUI.addComponent = this._addComponent.bind(this);
-    GUI.removeComponent = this._removeComponent.bind(this);
-
-    /* Metodos to define */
-    GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
-
-    //LIST
-    GUI.showList = FloatbarService.showPanel.bind(FloatbarService);
-    GUI.closeList = FloatbarService.closePanel.bind(FloatbarService);
-    GUI.hideList = FloatbarService.hidePanel.bind(FloatbarService);
-
-    // TABLE
-    GUI.showTable = function() {};
-    GUI.closeTable = function() {};
-
-    //Function called from DataRouterservice for gui output
-    /**
-     *
-     * @param data
-     * @param options
-     */
-    GUI.outputDataPlace = async function(dataPromise, options={}){
-      // show parameter it used to set condition to show result or not
-      // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
-      const defaultOutputConfig = {condition:true, add:false, loading:true};
-      const {title='', show=defaultOutputConfig, before, after} = options;
-      // convert show in an object
-      const outputConfig = (toRawType(show) !== 'Object') ?
-        {
-          condition: show, // can be Function or Boolean otherwise is set true
-          add: false,
-          loading: true
-        } : {
-          ...defaultOutputConfig,
-          ...show
-        };
-      const {condition, add, loading} = outputConfig;
-      //check if waiting output data
-      // in case we stop and substiute with new request data
-      this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
-      let queryResultsService = add ? GUI.getService('queryresults'): loading && this.showContentFactory('query')(title);
-      this.waitingoutputdataplace = (() => {
-        let stop = false;
-        (async () =>{
-          try {
-            const data = await dataPromise;
-            //if set before call method and wait
-            before && await before(data);
-            // in case of usermessage show user message
-            data.usermessage && GUI.showUserMessage({
-              type: data.usermessage.type,
-              message: data.usermessage.message,
-              autoclose: data.usermessage.autoclose
-            });
-            if (!stop) {
-              // check condition
-              const showResult = (toRawType(condition) === 'Function') ? condition(data) : (toRawType(condition) === 'Boolean') ? condition : true;
-              if (showResult) {
-                (queryResultsService ? queryResultsService: this.showContentFactory('query')(title)).setQueryResponse(data, {
-                  add
-                });
-              }
-              else GUI.closeContent();
-              // call after is set with data
-              after && after(data);
-            }
-          } catch(error) {
-            const message = this.errorToMessage(error);
-            this.showUserMessage({
-              type: 'alert',
-              message,
-              textMessage: true
-            });
-            this.closeContent();
-          } finally {
-            if (!stop) this.waitingoutputdataplace = null;
-          }
-        })();
-        return {
-          stop: async ()=> {
-            stop = true;
-          }
-        }
-      })();
-    };
-
-    GUI.showContentFactory = function(type) {
-      let showPanelContent;
-      switch (type) {
-        case 'query':
-          showPanelContent = GUI.showQueryResults;
-          break;
-        case 'form':
-          showPanelContent = GUI.showForm;
-          break;
-      }
-      return showPanelContent;
-    };
-
-    GUI.showForm = function(options={}) {
-      const {perc, split='h', push, showgoback, crumb} = options;
-      const FormComponent = require('gui/form/vue/form');
-      // new isnstace every time
-      const formComponent = options.formComponent ? new options.formComponent(options) :  new FormComponent(options);
-      //get service
-      const formService = formComponent.getService();
-      // parameters : [content, title, push, perc, split, closable, crumb]
-      GUI.setContent({
-        perc,
-        content: formComponent,
-        split,
-        crumb,
-        push: !!push, //only one( if other delete previous component)
-        showgoback: !!showgoback,
-        closable: false
-      });
-      // return service
-      return formService;
-    };
-
-    /**
-     *
-     * @param pop remove or not content or pop
-     */
-    GUI.closeForm = function({pop=false}={}) {
-      this.emit('closeform', false);
-      pop ? GUI.popContent() : ViewportService.removeContent();
-      // force set modal to false
-      GUI.setModal(false);
-    };
-
-    GUI.disableElement = function({element, disable}) {
-      disable && $(element).addClass('g3w-disabled') || $(element).removeClass('g3w-disabled');
-    };
-
-    GUI.disableContent = function(disable) {
-      ViewportService.disableContent(disable);
-    };
-
-    GUI.disablePanel = function(disable=false) {
-      GUI.disableElement({
-        element: "#g3w-sidebarpanel-placeholder",
-        disable
-      })
-    };
-
-    // hide content
-    GUI.hideContent = function(bool, perc) {
-      return ViewportService.hideContent(bool, perc);
-    };
-
-    GUI.closeContent = function() {
-      this.emit('closecontent', false);
-      return ViewportService.closeContent();
-    };
-
-    GUI.closeOpenSideBarComponent = function(){
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
-    };
-
-    // show results info/search
-    GUI.showQueryResults = function(title, results) {
-      const queryResultsComponent = GUI.getComponent('queryresults');
-      const queryResultService = queryResultsComponent.getService();
-      queryResultService.reset();
-      results && queryResultService.setQueryResponse(results);
-      GUI.showContextualContent({
-        content: queryResultsComponent,
-        title: "info.title",
-        crumb: {
-          title: "info.title",
-          trigger: null
-        },
-        push: GUI.getPushContent(),
-        post_title: title
-      });
-      return queryResultService;
-    };
-
-    GUI.addNavbarItem = function(item) {
-      NavbarItemsService.addItem(item)
-    };
-
-    GUI.removeNavBarItem = function() {};
-
-    GUI.showPanel = SidebarService.showPanel.bind(SidebarService);
-
-    GUI.closePanel = SidebarService.closePanel.bind(SidebarService);
-
-    ///
-    GUI.disableApplication = function(bool=false){
-      ApplicationService.disableApplication(bool);
-    };
-
-    //showusermessage
-    GUI.showUserMessage = function(options={}) {
-      return ViewportService.showUserMessage(options);
-    };
-
-    GUI.closeUserMessage = function() {
-      ViewportService.closeUserMessage();
-    };
-
-    /* ------------------ */
-    GUI.notify = {
-      warning(message, autoclose=false){
-        GUI.showUserMessage({
-          type: 'warning',
-          message,
-          autoclose
-        })
-      },
-      error(message, autoclose=false){
-        GUI.showUserMessage({
-          type: 'alert',
-          message,
-          autoclose
-        })
-      },
-      info(message, autoclose=false){
-        GUI.showUserMessage(({
-          type: 'info',
-          message,
-          autoclose
-        }))
-      },
-      success(message){
-        GUI.showUserMessage({
-          type: 'success',
-          message,
-          autoclose: true
-        })
-      }
-    };
-
-    // proxy  bootbox library
-    GUI.dialog = bootbox;
-
-    //modal dialog//
-    GUI.showModalDialog = function(options={}) {
-      return GUI.dialog.dialog(options);
-    };
-
-    /* spinner */
-    GUI.showSpinner = function(options={}){
-      const container = options.container || 'body';
-      const id = options.id || 'loadspinner';
-      const where = options.where || 'prepend'; // append | prepend
-      const style = options.style || '';
-      const transparent = options.transparent ? 'background-color: transparent' : '';
-      const center = options.center ? 'margin: auto' : '';
-      if (!$("#"+id).length) {
-        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'" style="'+ center+'"></div></div>');
-      }
-    };
-
-    //hide spinner
-    GUI.hideSpinner = function(id='loadspinner'){
-      $("#"+id).remove();
-    };
-
-    /* end spinner*/
-    /* end common methods */
-
-    /*  */
-
-    // FLOATBAR //
-    GUI.showFloatbar = function() {
-      FloatbarService.open();
-    };
-
-    GUI.hideFloatbar = function() {
-      FloatbarService.close();
-    };
-
-    // SIDEBAR //
-    GUI.showSidebar = this._showSidebar.bind(this);
-    GUI.hideSidebar = this._hideSidebar.bind(this);
-    GUI.isSidebarVisible = this._isSidebarVisible.bind(this);
-
-    // RELOAD COMPONENTS
-    GUI.reloadComponents = function(){
-      ApplicationTemplate.Services.sidebar.reloadComponents();
-    };
-
-    // MODAL
-    GUI.setModal = this._showModalOverlay.bind(this);
-    
-    /**
-     * Toggle set full screen modal 
-     */
-    GUI.showFullModal = function({element = "#full-screen-modal", show = true} = {}) {
-      $(element).modal(show ? 'show' : 'hide')
-    };
-
-    GUI.disableSideBar = function(bool=true) {
-      ApplicationState.gui.sidebar.disabled = bool;
-    };
-
-    // VIEWPORT //
-    GUI.setPrimaryView = function(viewName) {
-      ViewportService.setPrimaryView(viewName);
-    };
-
-    // only map
-    GUI.showMap = function() {
-      ViewportService.showMap();
-    };
-
-    GUI.showContextualMap = function(perc=30, split) {
-      ViewportService.showContextualMap({
-        perc,
-        split
-      })
-    };
-
-    GUI.setContextualMapComponent = function(mapComponent) {
-      ViewportService.setContextualMapComponent(mapComponent);
-    };
-
-    GUI.resetContextualMapComponent = function() {
-      ViewportService.resetContextualMapComponent();
-    };
-
-    //  (100%) content
-    GUI.showContent = (options={}) => {
-      GUI.setLoadingContent(false);
-      options.perc = this._isMobile ? 100 : options.perc;
-      GUI.setContent(options);
-      return true;
-    };
-
-    GUI.showContextualContent = (options = {}) => {
-      options.perc = this._isMobile ? 100 : options.perc;
-      GUI.setContent(options);
-      return true;
-    };
-
-    // add component to stack (append)
-    // Differences between pushContent and setContent are :
-    //  - push every componet is added, set is refreshed
-    //  - pushContent has a new parameter (backonclose) when is clicked x
-    //  - the contentComponet is close all stack is closed
-    GUI.pushContent = (options = {}) => {
-      options.perc = this._isMobile ? 100 : options.perc;
-      options.push = true;
-      GUI.setContent(options);
-    };
-
-    // add content to stack
-    GUI.pushContextualContent = (options={}) => {
-      options.perc = this._isMobile ? 100 : options.perc;
-      GUI.pushContent(options);
-    };
-
-    // remove last content from stack
-    GUI.popContent = function() {
-      ViewportService.popContent();
-    };
-    //return number of component of stack
-    GUI.getContentLength = function() {
-      return ViewportService.contentLength();
-    };
-
-    GUI.getCurrentContentTitle = function(){
-      return ViewportService.getCurrentContentTitle();
-    };
-
-    GUI.getCurrentContentId = function(){
-      return ViewportService.getCurrentContentId();
-    };
-
-    /**
-     * change current content title
-     * @param title
-     */
-    GUI.changeCurrentContentTitle = function(title){
-      ViewportService.changeCurrentContentTitle(title);
-    };
-
-    /**
-     * change current content options
-     * @param options: {title, crumb}
-     */
-    GUI.changeCurrentContentOptions= function(options={}) {
-      ViewportService.changeCurrentContentOptions(options);
-    };
-
-    /**
-     * Method to get current content
-     */
-    GUI.getCurrentContent = function(){
-      return ViewportService.getCurrentContent();
-    };
-
-    GUI.toggleFullViewContent = function(){
-      ViewportService.toggleFullViewContent();
-    };
-
-    GUI.resetToDefaultContentPercentage = function(){
-      ViewportService.resetToDefaultContentPercentage();
-    };
-
-    GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
-      const projectVueMenuComponent = new ProjectsMenuComponent({
-        projects: projects && Array.isArray(projects) && projects,
-        cbk,
-        host
-      }).getInternalComponent();
-      return projectVueMenuComponent.$mount().$el;
-    };
-
-    GUI.setCloseUserMessageBeforeSetContent = function(bool=true){
-      this._closeUserMessageBeforeSetContent = bool;
-    };
-
-    GUI._setContent = (options={}) => {
-      this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
-      options.content     = options.content || null;
-      options.title       = options.title || "";
-      options.push        = _.isBoolean(options.push) ? options.push : false;
-      options.perc        = this._isMobile ? 100 : options.perc;
-      options.split       = options.split || 'h';
-      options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
-      options.showtitle   = _.isBoolean(options.showtitle) ? options.showtitle : true;
-      ViewportService.showContent(options);
-    };
-
-    GUI.hideClientMenu = function() {
-      ApplicationService.getConfig().user = null;
-    };
-
-    GUI.hideChangeMaps = function() {
-      ApplicationService.getConfig().projects = [];
-    };
-
-    // return specific classes
-    GUI.getTemplateClasses = function() {
-      return BootstrapVersionClasses
-    };
-
-    GUI.getTemplateClass = function({element, type}) {
-      return BootstrapVersionClasses[element][type];
-    };
-
-    GUI.setLoadingContent = function(loading = false) {
-      ApplicationTemplate.Services.viewport.setLoadingContent(loading);
-      return loading && new Promise((resolve)=>{
-        setTimeout(resolve, 200)
-      })
-    };
-
-    GUI.openProjectsMenu = function() {
-      const isProjectMenuComponent = GUI.getComponent('contents').getComponentById('projectsmenu');
-      if (isProjectMenuComponent) {
-        GUI.closeContent();
-        return;
-      }
-      if (this.isMobile()) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
-      GUI.setContent({
-        content: new ProjectsMenuComponent(),
-        title: '',
-        perc: 100
-      });
-    };
-
-    /**
-     * @since 3.8.0
-     */
-    GUI.openChangeMapMenu = function() {
-      const isChangeMapMenuComponent = GUI.getComponent('contents').getComponentById('changemapmenu');
-      if (isChangeMapMenuComponent) {
-        GUI.closeContent();
-        return;
-      }
-      if (this.isMobile()) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
-      GUI.setContent({
-        content: new ChangeMapMenuComponent(),
-        title: '',
-        perc: 100
-      });
-    }
   };
 
   base(this);
@@ -1117,7 +366,7 @@ ApplicationTemplate.fail = function({ error }) {
 };
 
 /**
- * Application starting point
+ * Application starting point (Create Vue App)
  *
  * create the ApplicationTemplate instance passing template interface configuration
  * and the applicationService instance that is useful to work with project API
@@ -1125,8 +374,65 @@ ApplicationTemplate.fail = function({ error }) {
 ApplicationService.init()
   .then(() => {
     const app = new ApplicationTemplate({ ApplicationService });
-    app.on('ready', () =>  ApplicationService.postBootstrap());
-    app.init();
+
+    setDataTableLanguage();
+
+    if (isMobile.any || app._isIframe) {
+      $('body').addClass('sidebar-collapse');
+    }
+    
+    return new Vue({
+
+      el: '#app',
+
+      /**
+       * 1. setup Interaces: general metods for the application as GUI.showForm etc ..
+       * 2. setup layout: setup map controls and inizialize the components of the application (eg. navbar custom items)
+       * 3. register all services for the application
+       * 4. create templateConfig
+       * 5. listen lng change and reset datatable language
+       */
+      created() {
+
+        // setup interfaces and create application config
+        app.templateConfig = GUI.init({
+          app,
+          layout,
+          service:  ApplicationService,
+          floatbar: FloatbarService,
+          viewport: ViewportService,
+          navbar:   NavbarItemsService,
+          sidebar:  SidebarService,
+          state:    ApplicationState,
+        });
+    
+        this.$watch( () => ApplicationState.language, () => { setDataTableLanguage(); } );
+      },
+
+      /**
+       * 1. build template
+       * 2. register other components
+       * 3. setup Fonts Css class methods
+       */
+      async mounted() {
+
+        await this.$nextTick();
+
+        // build template, register other components, setup Fonts Css class methods (vendor dependencies ?)
+        GUI.setup_deps({
+          app,
+          floatbar: FloatbarService,
+          VueApp: this,
+        }); 
+
+        await this.$nextTick();
+
+        app.sizes.sidebar.width = $('#g3w-sidebar').width();
+        GUI.ready(); // getSkinColor
+        ApplicationService.postBootstrap()
+      },
+
+    });
   })
   .catch(({ error=null, language }) => {
     if (error) {
