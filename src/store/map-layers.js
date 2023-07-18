@@ -3,13 +3,8 @@
  * @since v3.6
  */
 
-const { inherit, base } = require('core/utils/utils');
-const LayersStoresRegistry = require('core/layers/layersstoresregistry');
+import LayersStoresRegistry from 'core/layers/layersstoresregistry';
 
-function MapLayersStoresRegistry() {
-  base(this);
-}
-
-inherit(MapLayersStoresRegistry, LayersStoresRegistry);
+class MapLayersStoresRegistry extends LayersStoresRegistry {}
 
 export default new MapLayersStoresRegistry();

@@ -30,7 +30,9 @@ class PluginsRegistry extends G3WObject {
      */
     this.setters = {
       registerPlugin(plugin) {
-        if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
+        if (!this._plugins[plugin.name]) {
+          this._plugins[plugin.name] = plugin;
+        }
       },
     };
     this._setupListenersChain(this.setters);
@@ -39,9 +41,7 @@ class PluginsRegistry extends G3WObject {
      * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).
      * NOW WHEN CHANGE MAP IS TRIGGER, PAGE IS RELOADED.
      */
-    ProjectsRegistry.onafter('setCurrentProject', project =>{
-      this.gidProject = project.getGid();
-    });
+    ProjectsRegistry.onafter('setCurrentProject', project => { this.gidProject = project.getGid(); });
 
   }
 

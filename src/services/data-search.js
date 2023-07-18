@@ -109,7 +109,7 @@ class SearchService extends BaseService {
     } finally {
       return response;
     }
-  };
+  }
 
   /**
    * Load many layers with each one with its fids

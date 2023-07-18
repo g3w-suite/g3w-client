@@ -3,13 +3,8 @@
  * @since v3.6
  */
 
-const { base, inherit }    = require('core/utils/utils');
-const LayersStoresRegistry = require('core/layers/layersstoresregistry');
+import LayersStoresRegistry from 'core/layers/layersstoresregistry';
 
-function CatalogLayersStoresRegistry() {
-  base(this);
-}
-
-inherit(CatalogLayersStoresRegistry, LayersStoresRegistry);
+class CatalogLayersStoresRegistry extends LayersStoresRegistry { }
 
 export default new CatalogLayersStoresRegistry();

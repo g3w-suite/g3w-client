@@ -85,7 +85,7 @@ export default class G3WObject extends EventEmitter {
         if (undefined === key) {
           setters[setter].splice(0);
         } else {
-          setters[setter].forEach((listener, idx) => { listener.key === key && listener[setter].splice(idx, 1); })
+          setters[setter].forEach((listener, idx) => { listener.key === key && setters[setter].splice(idx, 1); })
         }
       });
   };

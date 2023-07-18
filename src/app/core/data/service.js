@@ -11,7 +11,8 @@ export class BaseService {
   }
 
   /**
-   * @param request is a Promise(jquery promise at moment
+   * @param request a jQuery Promise
+   * 
    * @returns {Promise<unknown>}
    */
   handleRequest(request) {

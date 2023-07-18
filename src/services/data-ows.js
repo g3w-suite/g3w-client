@@ -15,7 +15,7 @@ class OWSService extends BaseService {
    * 
    * @returns {Promise<{data: string, response: *}>}
    */
-  async wmsCapabilities({ url } ={})  {
+  async wmsCapabilities({ url } = {})  {
     try {
       return await XHR.post({
         url:         `${ApplicationService.getInterfaceOwsUrl()}`,

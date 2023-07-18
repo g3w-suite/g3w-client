@@ -3,18 +3,22 @@
  * @since v3.6
  */
 
-function ClipboardService() {
+class ClipboardService {
+
+  constructor() {
     this._data = {};
-    this.set = function(formId, data) {
-      const formLayer = formId.split('form')[0];
-      this._data[formLayer] = data;
-    };
+  }
+
+  set(formId, data) {
+    this._data[formId.split('form')[0]] = data;
+  }
   
-    this.get = function(formLayer) {
-      const data = this._data[formLayer] || {};
-      this._data[formLayer] = {};
-      return data;
-    };
+  get(formLayer) {
+    const data = this._data[formLayer] || {};
+    this._data[formLayer] = {};
+    return data;
+  }
+
 }
 
 export default new ClipboardService();
