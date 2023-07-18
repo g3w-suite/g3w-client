@@ -2,9 +2,9 @@ import ApplicationState                 from 'store/application-state';
 import ApplicationService               from 'services/application';
 import RouterService                    from 'services/router';
 import ComponentsRegistry               from 'store/components';
+import G3WObject                        from 'core/g3wobject';
 
 const { base, inherit, noop, toRawType } = require('core/utils/utils');
-const G3WObject                          = require('core/g3wobject');
 
 const ProjectsMenuComponent              = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent             = require('gui/changemapmenu/changemapmenu');

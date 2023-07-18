@@ -1,15 +1,15 @@
-import ApplicationState from 'store/application-state';
+import ApplicationState     from 'store/application-state';
 import { DOWNLOAD_FORMATS } from 'app/constant';
-import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
+import DataRouterService    from 'services/data';
+import ProjectsRegistry     from 'store/projects';
+import ApplicationService   from 'services/application';
+import G3WObject            from 'core/g3wobject';
 
-const { t } = require('core/i18n/i18n.service');
-const { inherit, base, XHR } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const { geometryFields, parseAttributes } =  require('core/utils/geo');
-const Relations = require('core/relations/relations');
-const ProviderFactory = require('core/layers/providers/providersfactory');
+const { t }                               = require('core/i18n/i18n.service');
+const { inherit, base, XHR }              = require('core/utils/utils');
+const { geometryFields, parseAttributes } = require('core/utils/geo');
+const Relations                           = require('core/relations/relations');
+const ProviderFactory                     = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {

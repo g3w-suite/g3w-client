@@ -6,9 +6,9 @@
 import ApplicationService from 'services/application';
 import ComponentsRegistry from 'store/components';
 import { VM }             from 'g3w-ol/constants';
+import G3WObject          from 'core/g3wobject';
 
 const { base, inherit }   = require('core/utils/utils');
-const G3WObject           = require('core/g3wobject');
 
 console.assert(undefined !== ApplicationService, 'ApplicationService is undefined');
 console.assert(undefined !== ComponentsRegistry, 'ComponentsRegistry is undefined');

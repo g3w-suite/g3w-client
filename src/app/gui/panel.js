@@ -1,7 +1,7 @@
 import GUI from 'services/gui';
+import G3WObject from 'core/g3wobject';
 
 const { inherit, resolve: resolvedValue } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 const Panel = function(options={}) {
   this.id = options.id || null;

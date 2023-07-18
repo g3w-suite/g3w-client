@@ -1,7 +1,7 @@
 import inputService from 'core/expression/inputservice';
+import G3WObject from 'core/g3wobject';
 
 const { inherit, base } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 function FormService() {
 

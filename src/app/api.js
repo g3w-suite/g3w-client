@@ -38,8 +38,8 @@ import ApiService                  from 'services/api';
 import RouterService               from 'services/router';
 
 import Mixins                      from 'mixins';
+import G3WObject                   from 'core/g3wobject';
 
-const G3WObject                    = require('core/g3wobject');
 const utils                        = require('core/utils/utils');
 const geoutils                     = require('core/utils/geo');
 const i18n                         = require('core/i18n/i18n.service');

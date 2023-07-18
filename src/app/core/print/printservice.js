@@ -1,8 +1,8 @@
 import ApplicationState from 'store/application-state';
 import ProjectsRegistry from 'store/projects';
+import G3WObject        from 'core/g3wobject';
 
 const { base, inherit, convertObjectToUrlParams } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi?MAP=/home/marco/geodaten/projekte/composertest.qgs&SERVICE=WMS&VERSION=1.3.0

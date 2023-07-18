@@ -6,120 +6,128 @@
 import ApplicationState                    from 'store/application-state';
 import { VIEWPORT as viewportConstraints } from 'app/constant';
 import GUI                                 from 'services/gui';
+import G3WObject                           from 'core/g3wobject';
 
-const { base, inherit, uniqueId }          = require('core/utils/utils');
-const G3WObject                            = require('core/g3wobject');
+const { uniqueId }          = require('core/utils/utils');
 
 console.assert(undefined !== GUI, 'GUI is undefined');
 
-const ViewportService = function() {
+class ViewportService extends G3WObject {
 
-  /**
-   * state of viewport
-   */
-  this.state = {
+  constructor() {
 
-    /**
-     * primary view (default)
-     */
-    primaryView: 'map',
-    
-    /**
-     * percentage of secondary view
-     * setted to 0 at beginning (not visible)
-     */
-     secondaryPerc: 0,
-     
-     /**
-      * Whether if content vertical or horizontal (changed on resize)
-      */
-    resized: {
-      start: false,
-      'h': false,
-      'v': false
-    },
+    super();
 
     /**
-     * splitting orientation (h = horizontal, v = vertical)
+     * state of viewport
      */
-    split: 'h',
+    this.state = {
 
-    /**
-     * map 
-     */
-    map: {
-      sizes: {
-        width:0,
-        height:0
+      /**
+       * primary view (default)
+       */
+      primaryView: 'map',
+      
+      /**
+       * percentage of secondary view
+       * setted to 0 at beginning (not visible)
+       */
+      secondaryPerc: 0,
+      
+      /**
+        * Whether if content vertical or horizontal (changed on resize)
+        */
+      resized: {
+        start: false,
+        'h': false,
+        'v': false
       },
-      aside: false
-    },
 
-    /**
-     * content 
-     */
-    content: {
-      loading: false,
-      disabled: false,
-      sizes: {
-        width: 0,
-        height: 0
-      },
-      // store the resize vertical or horizontal
-      resize: {
-        'h': {
-          perc: 0
+      /**
+       * splitting orientation (h = horizontal, v = vertical)
+       */
+      split: 'h',
+
+      /**
+       * map 
+       */
+      map: {
+        sizes: {
+          width:0,
+          height:0
         },
-        'v': {
-          perc: 0
+        aside: false
+      },
+
+      /**
+       * content 
+       */
+      content: {
+        loading: false,
+        disabled: false,
+        sizes: {
+          width: 0,
+          height: 0
+        },
+        // store the resize vertical or horizontal
+        resize: {
+          'h': {
+            perc: 0
+          },
+          'v': {
+            perc: 0
+          }
+        },
+        aside: true,
+        showgoback: true,
+        stack: [],            // array of stack content elements
+        closable: true,       // (x) is closable
+        backonclose: false,   // back on prevoius content
+        contentsdata:[],      // content data array
+      },
+
+      usermessage: {
+        id: null,             // unique id
+        show: false,
+        title: null,
+        message: null,
+        position: null,
+        type: null,
+        draggable: null,
+        cloasable: null,
+        autoclose: null,
+        textMessage: false,
+        hooks: {
+          header: null,
+          body: null,
+          footer: null
         }
       },
-      aside: true,
-      showgoback: true,
-      stack: [],            // array of stack content elements
-      closable: true,       // (x) is closable
-      backonclose: false,   // back on prevoius content
-      contentsdata:[],      // content data array
-    },
 
-    usermessage: {
-      id: null,             // unique id
-      show: false,
-      title: null,
-      message: null,
-      position: null,
-      type: null,
-      draggable: null,
-      cloasable: null,
-      autoclose: null,
-      textMessage: false,
-      hooks: {
-        header: null,
-        body: null,
-        footer: null
-      }
-    },
+    };
 
-  };
+    /**
+     * content of viewport (map and content)
+     */
+    this._components = {
+      map: null,
+      content: null
+    };
 
-  /**
-   * content of viewport (map and content)
-   */
-  this._components = {
-    map: null,
-    content: null
-  };
+    // default contents
+    this._defaultMapComponent    = undefined;
+    this._contextualMapComponent = undefined;
 
-  // default contents
-  this._defaultMapComponent    = undefined;
-  this._contextualMapComponent = undefined;
+    // minimun height and width of secondary view
+    this._secondaryViewMinWidth     = viewportConstraints.resize.content.min;
+    this._secondaryViewMinHeight    =  viewportConstraints.resize.content.min;
+    this._immediateComponentsLayout = true;
 
-  // minimun height and width of secondary view
-  this._secondaryViewMinWidth     = viewportConstraints.resize.content.min;
-  this._secondaryViewMinHeight    =  viewportConstraints.resize.content.min;
-  this._immediateComponentsLayout = true;
+    this._firstLayout();
 
-  this.init = function(options = {}) {
+  }
+
+  init(options = {}) {
     const {
       primaryview = 'map',
       split       = 'h',
@@ -134,16 +142,16 @@ const ViewportService = function() {
 
     // add component (map and content)
     this._addComponents(components);
-  };
+  }
 
   /**
    * set true or false of content 
    */
-  this.setResized = function (type, bool=false) {
+  setResized(type, bool=false) {
     this.state.resized[type] = bool;
-  };
+  }
 
-  this.showUserMessage = function({
+  showUserMessage({
     title,
     subtitle,
     message,
@@ -178,28 +186,28 @@ const ViewportService = function() {
       this.state.usermessage.hooks.footer = hooks.footer; // vue object or component
     });
     return this.state.usermessage;
-  };
+  }
 
-  this.closeUserMessage = function() {
+  closeUserMessage() {
     this.state.usermessage.id             = null;
     this.state.usermessage.show           = false;
     this.state.usermessage.textMessage    = false;
     this.state.usermessage.message        = '';
-  };
+  }
 
-  this.getState = function() {
+  getState() {
     return this.state;
-  };
+  }
 
-  this.getMapState = function() {
+  getMapState() {
     return this.state.map;
-  };
+  }
 
-  this.getContentState = function() {
+  getContentState() {
     return this.state.content;
-  };
+  }
 
-  this.setLoadingContent = function(loading=false) {
+  setLoadingContent(loading=false) {
     this.state.content.loading = loading;
   };
 
@@ -212,7 +220,7 @@ const ViewportService = function() {
    * }
    * ```
    */
-  this._addComponents = function(components) {
+  _addComponents(components) {
     Object
       .entries(components)
       .forEach(([viewName, component]) => {
@@ -230,15 +238,15 @@ const ViewportService = function() {
             .fail(err => console.log(err));
         }
       });
-  };
+  }
 
-  this.showMap = function() {
+  showMap() {
     this._toggleMapComponentVisibility(this._defaultMapComponent,true);
     this._components['map'] = this._defaultMapComponent;
     this._showView('map');
-  };
+  }
 
-  this.showContextualMap = function(options={}) {
+  showContextualMap(options={}) {
 
     if (!this._contextualMapComponent) {
       this._contextualMapComponent = this._defaultMapComponent;
@@ -258,19 +266,19 @@ const ViewportService = function() {
     }
 
     this._showView('map',options);
-  };
+  }
 
   // get default component
-  this.recoverDefaultMap = function() {
+  recoverDefaultMap() {
     if (this._components['map'] !== this._defaultMapComponent) {
       this._components['map'] = this._defaultMapComponent;
       this._toggleMapComponentVisibility(this._contextualMapComponent, false);
       this._toggleMapComponentVisibility(this._defaultMapComponent, true);
     }
     return this._components['map']
-  };
+  }
 
-  this.setContextualMapComponent = function(mapComponent) {
+  setContextualMapComponent(mapComponent) {
     if (mapComponent === this._defaultMapComponent) {
       return;
     }
@@ -278,25 +286,25 @@ const ViewportService = function() {
       this._contextualMapComponent.unmount();
     }
     this._contextualMapComponent = mapComponent;
-  };
+  }
 
-  this.resetContextualMapComponent = function() {
+  resetContextualMapComponent() {
     if (this._contextualMapComponent) {
      this._contextualMapComponent.unmount();
     }
     this._contextualMapComponent = this._defaultMapComponent;
-  };
+  }
 
-  this._toggleMapComponentVisibility = function(mapComponent,toggle) {
+  _toggleMapComponentVisibility(mapComponent,toggle) {
     mapComponent.internalComponent.$el.style.display = toggle ? 'block' : 'none';
-  };
+  }
 
   // close map method
-  this.closeMap = function() {
+  closeMap() {
     this.state.secondaryPerc = ('map' === this.state.primaryView) ? 100 : 0;
     this.recoverDefaultMap();
     this._layout();
-  };
+  }
 
    /**
     * Show content of the viewport content
@@ -307,7 +315,7 @@ const ViewportService = function() {
     * @param options.split   (optional, default 'h'): 'h' || 'v' splitting map and content orientation
     * @param options.perc    (optional, default 50): percentage of content
     */
-  this.showContent = function(options={}) {
+  showContent(options={}) {
     options.perc = options.perc !== undefined ? options.perc : this.getContentPercentageFromCurrentLayout();
     options.push = options.push || false;
     this._prepareContentView(options);
@@ -320,32 +328,32 @@ const ViewportService = function() {
         this._immediateComponentsLayout = true;
         this._layoutComponents(100 === options.perc ? 'show-content-full' : 'show-content');
       });
-  };
+  }
 
-  this.hideContent = function(bool) {
+  hideContent(bool) {
     const prevPercentage = this.getContentPercentageFromCurrentLayout(this.state.split);
     this.state.secondaryVisible = !bool;
     this._layout('hide-content');
     return prevPercentage;
-  };
+  }
 
-  this.resetToDefaultContentPercentage = function(){
+  resetToDefaultContentPercentage() {
     const rightpanel = this.getCurrentContentLayout();
     rightpanel[`${this.state.split === 'h'? 'width' : 'height'}`] = rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_default`];
     rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = false;
     this._layoutComponents();
-  };
+  }
 
-  this.toggleFullViewContent = function() {
+  toggleFullViewContent() {
     ApplicationState
       .gui
       .layout[ApplicationState.gui.layout.__current]
       .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
       .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`];
     this._layoutComponents();
-  };
+  }
 
-  this.isFullViewContent = function(){
+  isFullViewContent() {
     return ApplicationState
       .gui
       .layout[ApplicationState.gui.layout.__current]
@@ -355,14 +363,14 @@ const ViewportService = function() {
   /**
    * Number of components on stack
    */
-  this.contentLength = function() {
+  contentLength() {
     return this.state.content.contentsdata.length;
-  };
+  }
 
   /**
    * Remove last element (content) from stack
    */
-  this.popContent = function() {
+  popContent() {
     const d = $.Deferred();
 
     // check if content exist on compontents stack
@@ -386,43 +394,43 @@ const ViewportService = function() {
     }
 
     return d.promise();
-  };
+  }
 
   /**
    * Current component data
    */
-  this.getCurrentContent = function() {
+  getCurrentContent() {
     return this.contentLength() ? this.state.content.contentsdata[this.contentLength() -1] : null;
-  };
+  }
 
-  this.getCurrentContentTitle = function(){
+  getCurrentContentTitle() {
     const content = this.getCurrentContent();
     return content && content.options.title;
-  };
+  }
 
-  this.getCurrentContentId = function(){
+  getCurrentContentId() {
     const content = this.getCurrentContent();
     return content && content.options.id;
-  };
+  }
 
-  this.changeCurrentContentOptions = function(options={}){
+  changeCurrentContentOptions(options={}) {
     const content          = this.getCurrentContent();
     const { title, crumb } = options;
     if (content && title) content.options.title = title;
     if (content && crumb) content.options.crumb = crumb;
-  };
+  }
 
-  this.changeCurrentContentTitle = function(title=''){
+  changeCurrentContentTitle(title='') {
     const content = this.getCurrentContent();
     if (content) content.options.title = title;
-  };
+  }
 
-  this.isContentOpen = function() {
+  isContentOpen() {
     return !!this.state.content.contentsdata.length;
-  };
+  }
 
   // close  content
-  this.closeContent = function() {
+  closeContent() {
     const d = $.Deferred();
 
     if (this.isContentOpen()) {
@@ -435,50 +443,50 @@ const ViewportService = function() {
     }
   
     return d.promise()
-  };
+  }
 
-  this.disableContent = function(disabled){
+  disableContent(disabled) {
     this.state.content.disabled = disabled;
-  };
+  }
 
   /**
    * Check `backonclose` proprerty in order to remove
    * all content stack or just last component
    */
-  this.removeContent = function() {
+  removeContent() {
     if (this.state.content.backonclose && this.state.content.contentsdata.length > 1) {
       this.popContent();
     } else {
       return this.closeContent();
     }
-  };
+  }
 
-  this.isPrimaryView = function(viewName) {
+  isPrimaryView(viewName) {
     return this.state.primaryView == viewName;
-  };
+  }
 
-  this.setPrimaryView = function(viewTag) {
+  setPrimaryView(viewTag) {
     if (this.state.primaryView !== viewTag) {
       this.state.primaryView = viewTag;
     }
     this._layout();
-  };
+  }
 
-  this.showPrimaryView = function(perc=null) {
+  showPrimaryView(perc=null) {
     if (perc && this.state.secondaryVisible && 100 === this.state.secondaryPerc) {
       this.state.secondaryPerc = 100 - perc;
       this._layout();
     }
-  };
+  }
 
-  this.showSecondaryView = function(split=this.state.split, perc=this.state.perc) {
+  showSecondaryView(split=this.state.split, perc=this.state.perc) {
     this.state.secondaryVisible = true;
     this.state.split            = split;
     this.state.secondaryPerc    = perc;
     this._layout();
-  };
+  }
 
-  this.closeSecondaryView = function(event=null) {
+  closeSecondaryView(event=null) {
     const d = $.Deferred();
 
     const component = this._components[this._otherView(this.state.primaryView)];
@@ -501,31 +509,31 @@ const ViewportService = function() {
     return d.promise();
   };
 
-  this.getDefaultViewPerc = function(viewName) {
+  getDefaultViewPerc(viewName) {
     return this.isPrimaryView(viewName) ? 100 : 50;
-  };
+  }
 
   /**
    * return the opposite view
    */
-  this._otherView = function(viewName) {
+  _otherView(viewName) {
     return ('map' === viewName) ? 'content' : 'map';
-  };
+  }
 
-  this._isSecondary = function(view) {
+  _isSecondary(view) {
     return this.state.primaryView !== view;
   };
 
-  this._setPrimaryView = function(viewTag) {
+  _setPrimaryView(viewTag) {
     if (this.state.primaryView !== viewTag) {
       this.state.primaryView = viewTag;
     }
-  };
+  }
 
   /**
    * Set the state of content (right or bottom content other than map)
    */
-  this._prepareContentView = function(options={}) {
+  _prepareContentView(options={}) {
     const {
       title,
       split       = null,
@@ -543,7 +551,7 @@ const ViewportService = function() {
     this.state.content.style        = style;
     this.state.content.headertools  = headertools;
     this.state.content.showgoback   = showgoback;
-  };
+  }
 
 
   /**
@@ -554,7 +562,7 @@ const ViewportService = function() {
    * @param options.split splitting title
    * @param options.aside 
    */
-  this._showView = function(viewName, options={}) {
+  _showView(viewName, options={}) {
     const {
       perc  = this.getDefaultViewPerc(viewName),
       split = 'h'
@@ -573,9 +581,9 @@ const ViewportService = function() {
     } else {
       return this.closeSecondaryView();
     }
-  };
+  }
 
-  this._getReducedSizes = function() {
+  _getReducedSizes() {
     const contentEl = $('.content');
     const sideBarToggleEl = $('.sidebar-aside-toggle');
     const is_fullview = contentEl && this.state.secondaryVisible && this.isFullViewContent();
@@ -593,20 +601,20 @@ const ViewportService = function() {
         reducedHeight: 0,
       }
     }
-  };
+  }
 
   /**
    * main layout function
    */
-  this._layout = function(event=null) {
+  _layout(event=null) {
     const reducesdSizes = this._getReducedSizes();
     this._setViewSizes(reducesdSizes.reducedWidth, reducesdSizes.reducedHeight);
     if (this._immediateComponentsLayout) {
       this._layoutComponents(event);
     }
-  };
+  }
 
-  this._setViewSizes = function() {
+  _setViewSizes() {
     const p                       = this.state.primaryView;  // primary view.
     const s                       = this._otherView(p);      // secondary view.
     const { width: w, height: h } = this.getViewportSize();  // parent viewport (main).
@@ -631,53 +639,53 @@ const ViewportService = function() {
       this.state[p].sizes.height = h - this.state[s].sizes.height;
     }
 
-  };
+  }
 
-  this.getViewportSize = function(){
+  getViewportSize() {
     return {
       width:  this._viewportWidth(),
       height: this._viewportHeight(),
     }
-  };
+  }
 
-  this._viewportHeight = function() {
+  _viewportHeight() {
     return $(document).innerHeight() - $('.navbar-header').innerHeight();
-  };
+  }
 
-  this._viewportWidth = function() {
+  _viewportWidth() {
     const main_sidebar = $(".main-sidebar");
     const sideBarSpace = main_sidebar.length && (main_sidebar[0].getBoundingClientRect().width + main_sidebar.offset().left);
     return $('#app')[0].getBoundingClientRect().width - sideBarSpace;
-  };
+  }
 
   /**
    * Set resize. (Called by moveFnc on vertical or horiziontal component resize).
    */
-  this.resizeViewComponents = function(type, sizes={}, perc){
+  resizeViewComponents(type, sizes={}, perc){
     this.setResized(type, true);
     this.setContentPercentageFromCurrentLayout(type, perc);
     this._layout('resize');
-  };
+  }
 
   /**
    * Get current information layout
    */
-  this.setContentPercentageFromCurrentLayout = function(type = this.state.split, perc) {
+  setContentPercentageFromCurrentLayout(type = this.state.split, perc) {
     this.getCurrentContentLayout()['h' === type ? 'width' : 'height'] = perc;
   };
 
-  this.getContentPercentageFromCurrentLayout = function(type = this.state.split) {
+  getContentPercentageFromCurrentLayout(type = this.state.split) {
     return this.getCurrentContentLayout()['h' === type ? 'width' : 'height'];
   };
 
-  this.getCurrentContentLayout = function() {
+  getCurrentContentLayout() {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
-  };
+  }
 
   /**
    * Load viewport components after right size setting
    */
-  this._layoutComponents = function(event=null) {
+  _layoutComponents(event=null) {
     requestAnimationFrame(() => {
       const delta = this._getReducedSizes();
       const dw = delta.reducedWidth || 0;
@@ -699,12 +707,12 @@ const ViewportService = function() {
         })
       }
     });
-  };
+  }
 
   /**
    * Called at start of application (once)
    */
-  this._firstLayout = function() {
+  _firstLayout() {
     let drawing     = false;
     let resizeFired = false;
 
@@ -753,15 +761,9 @@ const ViewportService = function() {
 
     });
 
-  };
+  }
 
-  this._firstLayout();
-
-  base(this);
-
-};
-
-inherit(ViewportService, G3WObject);
+}
 
 //singleton
 export default new ViewportService();

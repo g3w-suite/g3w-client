@@ -1,5 +1,6 @@
+import G3WObject from 'core/g3wobject';
+
 const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 // Object to store and handle features of layer
 function FeaturesStore(options={}) {

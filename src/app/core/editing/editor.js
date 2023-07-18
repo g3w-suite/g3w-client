@@ -1,12 +1,12 @@
 import Applicationstate from 'store/application-state';
-import ChangesManager from 'services/editing';
+import ChangesManager   from 'services/editing';
 import SessionsRegistry from 'store/sessions';
+import G3WObject        from 'core/g3wobject';
 
 const { inherit, base } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const FeaturesStore = require('core/layers/features/featuresstore');
-const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
-const Layer = require('core/layers/layer');
+const FeaturesStore     = require('core/layers/features/featuresstore');
+const OlFeaturesStore   = require('core/layers/features/olfeaturesstore');
+const Layer             = require('core/layers/layer');
 
 // class Editor bind editor to layer to do main actions
 function Editor(options={}) {

@@ -3,8 +3,10 @@
  * @since v3.6
  */
 
+import G3WObject from 'core/g3wobject';
+
 const { base,inherit, Base64 } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+
 
 /*
  * RouterService based on  History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)

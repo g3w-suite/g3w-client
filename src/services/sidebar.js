@@ -4,57 +4,82 @@
  */
 
 import SidebarItemComponent from 'components/SidebarItem.vue';
+import G3WObject            from 'core/g3wobject';
 
-const { base, inherit }     = require('core/utils/utils');
 const { barstack: Stack }   = require('gui/utils/utils');
-const G3WObject             = require('core/g3wobject');
 
 /**
  * TODO: temporary need to remove it
  */
 const SidebarItem = Vue.extend(SidebarItemComponent);
 
-function SidebarService() {
+class SidebarService extends G3WObject {
 
-  //set sidebar stack
-  this.stack = new Stack();
+  /**
+   * Setter for close sidebarpanel to catch event
+   * of closing panel of the sidebar
+   * 
+   * @TODO upgrade babel version (class fields seems currently unsupported)
+   */
+  // setters = {
+  //   closeSidebarPanel() {},
+  //   openCloseItem(bool) {}
+  // }
 
-  // set setter for close sidebarpanel to catch event
-  // of closing panel of the sidebar
-  this.setters = {
-    closeSidebarPanel() {},
-    openCloseItem(bool) {}
-  };
+  constructor() {
 
-  //service state
-  this.state = {
-    components: [],
-    gui: {
-      title: ''
-    },
-    disabled: false
-  };
+    super();
+
+    // sidebar stack
+    this.stack = new Stack();
+
+    //service state
+    this.state = {
+      components: [],
+      gui: {
+        title: ''
+      },
+      disabled: false
+    };
+
+    /**
+     * @TODO replace it with class fields (remove and upgrade babel version)
+     */
+    this.setters = {
+      closeSidebarPanel() {
+        console.info('closing sidebar panel');
+      },
+      openCloseItem(bool) {
+        console.info('toggle sidebar item');
+      }
+    };
+    this._setupListenersChain(this.setters);
+
+    console.log(this);
+
+  }
+
 
   /**
    * init method
    */
-  this.init = function(layout) {
+  init(layout) {
     this.layout = layout;
-  };
+  }
 
   /**
    * add component to sidebar, internally call `addComponent`
    * method on each component of the sidebar 
    */
-  this.addComponents = function(components, options = {}) {
+  addComponents(components, options = {}) {
     components.forEach(component => this.addComponent(component, options));
     return true;
-  };
+  }
 
   /**
    * add component to the sidebar and set position inside the sidebar
    */
-  this.addComponent = function(component, options={}) {
+  addComponent(component, options={}) {
     const {
       position,
       before = true,
@@ -108,40 +133,40 @@ function SidebarService() {
     this.setComponentClickHandler(component);
 
     return true;
-  };
+  }
 
-  this.setComponentClickHandler = function(component) {
+  setComponentClickHandler(component) {
     component.click = ({open = false } = {}) => {
       open = open || false;
       $(component.getInternalComponent().$el).siblings('a').click();
       component.setOpen(open);
     }
-  };
+  }
 
   /**
    * get component by id
    */
-  this.getComponent = function(id) {
+  getComponent(id) {
     return this.state.components.find(item => item.getId() === id)
-  };
+  }
 
   /**
    * get all components
    */
-  this.getComponents = function() {
+  getComponents() {
     return this.state.components;
-  };
+  }
 
   /**
    * close for the moment only conlapsbale
    */
-  this.closeOpenComponents = function(collapsible=true){
+  closeOpenComponents(collapsible=true){
     this
       .getComponents()
       .forEach(item => item.closeWhenViewportContentIsOpen() && item.collapsible && item.click({ open: false }));
-  };
+  }
 
-  this.reloadComponent = function(id) {
+  reloadComponent(id) {
     const item = this.getComponent(id);
     if (item) {
       item.reload();
@@ -151,7 +176,7 @@ function SidebarService() {
   /**
    * force close and open of the panel
    */
-  this.reloadComponents = function() {
+  reloadComponents() {
     this.closePanel();
     this
       .state
@@ -164,7 +189,7 @@ function SidebarService() {
       });
   };
 
-  this.removeComponent = function(component, options = {}) {
+  removeComponent(component, options = {}) {
     const { position } = options;
     this
       .state
@@ -181,12 +206,12 @@ function SidebarService() {
           return false;
         }
       });
-  };
+  }
 
   /**
    * show panel on stack
    */
-  this.showPanel = function(panel, options = {}) {
+  showPanel(panel, options = {}) {
     return new Promise((resolve, reject) => {
       this.state.gui.title = panel.title;
       const data           = this.stack.getCurrentContentData();
@@ -198,9 +223,9 @@ function SidebarService() {
         .push(panel, { parent: "#g3w-sidebarpanel-placeholder", ...options })
         .then(content => resolve(content))
     })
-  };
+  }
 
-  this.closePanel = function() {
+  closePanel() {
     this.state.gui.title = null;
     this.closeSidebarPanel();
     this
@@ -213,18 +238,14 @@ function SidebarService() {
           $(data.content.internalPanel.$el).show();
         }
     });
-  };
+  }
 
-  this.closeAllPanels = function(){
+  closeAllPanels() {
     this.state.gui.title = null;
     this.closeSidebarPanel();
     this.stack.clear();
-  };
-
-  base(this);
+  }
 
 }
-
-inherit(SidebarService, G3WObject);
 
 export default new SidebarService();

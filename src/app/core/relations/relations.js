@@ -1,6 +1,7 @@
+import G3WObject from 'core/g3wobject';
+
 const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const Relation = require('core/relations/relation');
+const Relation          = require('core/relations/relation');
 
 // class Relations
 function Relations(options={}) {

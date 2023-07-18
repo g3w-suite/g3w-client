@@ -4,88 +4,101 @@
  */
 
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry from 'store/projects';
-import DataRouterService from 'services/data';
+import ProjectsRegistry            from 'store/projects';
+import DataRouterService           from 'services/data';
+import G3WObject                   from 'core/g3wobject';
 
-const { inherit, XHR, base, createSingleFieldParameter } = require('core/utils/utils');
+const { XHR, createSingleFieldParameter }                          = require('core/utils/utils');
 const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
-const G3WObject = require('core/g3wobject');
 
-function RelationsService(options={}) {
-  base(this);
-}
+class RelationsService extends G3WObject {
 
-inherit(RelationsService, G3WObject);
+  createUrl(options={}) {
+    const {
+      layer     = {},
+      relation  = {},
+      fid,
+      type      = 'data', // type : <editing, data, xls>
+      formatter = 1
+    } = options;
 
-const proto = RelationsService.prototype;
+    const {
+      father,
+      child,
+      referencedLayer,
+      referencingLayer,
+      id: relationId
+    } = relation;
 
-proto.createUrl = function(options={}){
-  const currentProject = ProjectsRegistry.getCurrentProject();
-  // type : <editing, data, xls>
-  const {layer={}, relation={}, fid, type='data', formatter=1} = options;
-  let layerId;
-  const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
-  if (father !== undefined) layerId = layer.id === father ? child: father;
-  else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
-  const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
-  const value = sanitizeFidFeature(fid);
-  return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=${formatter}`;
-};
-
-proto.getRelations = function(options={}) {
-  const url = this.createUrl(options);
-  return XHR.get({
-    url
-  })
-};
-
-/**
- * Get relations NM
- * @param nmRelation
- * @param features
- * @returns {Promise<[]>}
- */
-proto.getRelationsNM = async function({nmRelation, features=[]}={}){
-  const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
-  let relationsNM = []; // start with empty relations result
-  if (features.length) {
-    const values = features.map(feature => feature.attributes[referencingField]);
-    const responseFids = await DataRouterService.getData('search:features', {
-      inputs: {
-        layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
-        filter: `${createSingleFieldParameter({
-          field: referencedField,
-          value: values,
-          logicop: 'OR'
-        })}`,
-        formatter: 1, // set formatter to
-        search_endpoint: 'api'
-      },
-      outputs: null
-    });
-    if (responseFids.data && responseFids.data[0] && Array.isArray(responseFids.data[0].features)) {
-      relationsNM = responseFids.data[0].features.map(feature => {
-        const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) => {
-          accumulator[property] = feature.get(property);
-          return accumulator;
-        }, {});
-        return {
-          id: feature.getId(),
-          attributes,
-          geometry: feature.getGeometry()
-        }
-      })
-    }
+    return `${ProjectsRegistry.getCurrentProject().getLayerById(undefined === father ? (layer.id === referencedLayer ? referencingLayer: referencedLayer) : (layer.id === father ? child: father)).getUrl(type)}?relationonetomany=${relationId}|${sanitizeFidFeature(fid)}&formatter=${formatter}`;
   }
-  return relationsNM;
-};
 
-proto.save = function(options={}){
-  const url = this.createUrl(options);
-  return XHR.fileDownload({
-    url,
-    httpMethod: "GET"
-  })
-};
+  getRelations(options={}) {
+    return XHR.get({ url: this.createUrl(options) });
+  };
+
+  /**
+   * Get relations NM
+   * 
+   * @param nmRelation
+   * @param features
+   * @returns {Promise<[]>}
+   */
+  async getRelationsNM({nmRelation, features=[]}={}) {
+    const {
+      referencedLayer,
+      referencingLayer,
+      fieldRef: {
+        referencingField,
+        referencedField
+      }
+    } = nmRelation;
+
+    let response;
+
+    if (features.length) {
+      response = await DataRouterService
+        .getData('search:features', {
+          inputs: {
+            layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
+            filter: `${createSingleFieldParameter({
+              field: referencedField,
+              value: features.map(feature => feature.attributes[referencingField]),
+              logicop: 'OR'
+            })}`,
+            formatter: 1, // set formatter to
+            search_endpoint: 'api'
+          },
+          outputs: null
+        });
+    }
+
+    return (
+      features.length &&
+      response.data &&
+      response.data[0] &&
+      Array.isArray(response.data[0].features)
+      )
+        ? response.data[0].features.map(feature => {
+          return {
+            id: feature.getId(),
+            attributes: getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((acc, prop) => {
+              acc[prop] = feature.get(property);
+              return acc;
+            }, {}),
+            geometry: feature.getGeometry()
+          }
+        })
+        : []; // empty relation
+  }
+
+  save(options={}) {
+    return XHR.fileDownload({
+      url: this.createUrl(options),
+      httpMethod: "GET"
+    });
+  };
+
+}
 
 export default new RelationsService();

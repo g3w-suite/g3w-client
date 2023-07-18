@@ -1,10 +1,10 @@
 import WorkflowsStack from 'services/workflows';
-import GUI from 'services/gui';
+import GUI            from 'services/gui';
+import G3WObject      from 'core/g3wobject';
 
-const { base, inherit, resolve } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const Flow = require('core/workflow/flow');
-const { MESSAGES } = require('core/workflow/step');
+const { base, inherit, resolve }    = require('core/utils/utils');
+const Flow                          = require('core/workflow/flow');
+const { MESSAGES }                  = require('core/workflow/step');
 const createUserMessageStepsFactory = require('gui/workflow/createUserMessageStepsFactory');
 
 //Class to manage flow of steps

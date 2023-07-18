@@ -18,11 +18,10 @@ import ProjectsRegistry                  from 'store/projects';
 import ApiService                        from 'services/api';
 import ClipboardService                  from 'services/clipboard';
 import RouterService                     from 'services/router';
-
+import G3WObject                         from 'core/g3wobject';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
 const { base, inherit, XHR, uniqueId }   = require('core/utils/utils');
-const G3WObject                          = require('core/g3wobject');
 
 console.assert(undefined !== ComponentsRegistry, 'ComponentsRegistry is undefined');
 

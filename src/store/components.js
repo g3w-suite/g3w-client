@@ -5,7 +5,8 @@
  * @deprecated will be probably removed after v4.x. Use Vue Single File Components (SFC) instead
  */
 
-const G3WObject = require('core/g3wobject');
+import G3WObject from 'core/g3wobject';
+
 const { base, inherit } = require('core/utils/utils');
 
 //class Componet Registry (singleton)
