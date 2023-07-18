@@ -5,6 +5,8 @@ import G3WObject         from 'core/g3wobject';
 
 const { base, inherit, createFilterFormField } = require('core/utils/utils');
 
+console.assert(undefined !== GUI, 'GUI is undefined');
+
 function BaseIframeService(options={}){
   base(this);
   this.ready = false;
@@ -146,4 +148,4 @@ proto.clear = function(){
   //overwrite single service
 };
 
-module.exports = BaseIframeService;
+export default BaseIframeService;

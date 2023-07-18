@@ -7,7 +7,7 @@ import GUI from 'services/gui';
 
 const { splitContextAndMethod, uniqueId } = require('core/utils/utils');
 
-class IframePluginService{
+class IframePluginService {
   
   constructor(options={}) {
 
@@ -16,8 +16,12 @@ class IframePluginService{
      */
     this.pendingactions = {};
 
+    /**
+     * @TODO double check (missing variable assignment?)
+     */
     this.getMessage.bind(this);
     this.eventResponseServiceHandler.bind(this);
+
   }
 
   async init({ project } = {}) {
