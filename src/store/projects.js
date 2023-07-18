@@ -7,9 +7,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry     from 'store/map-layers';
 import G3WObject                   from 'core/g3wobject';
 
-
-const { base, inherit } = require('core/utils/utils');
-const Project = require('core/project/project');
+const Project                      = require('core/project/project');
 
 /* service
     setup: init method
@@ -18,57 +16,69 @@ const Project = require('core/project/project');
 */
 
 // Public interface
-function ProjectsRegistry() {
+class ProjectsRegistry extends G3WObject {
 
-  this.config              = null;
-  this.initialized         = false;
-  this.projectType         = null;
-  this.currentProjectGroup = null;
-  this.overviewproject     = undefined;
+  constructor() {
 
-  this.setters = {
+    super();
 
-    createProject(projectConfig) {
-      //hook to get project config and modify it
-    },
+    this.config              = null;
+    this.initialized         = false;
+    this.projectType         = null;
+    this.currentProjectGroup = null;
+    this.overviewproject     = undefined;
 
-    setCurrentProject(project) {
+    this.state = {
+      baseLayers:     {},
+      minScale:       null,
+      maxscale:       null,
+      currentProject: null,
+      qgis_version:   null
+    };
+  
+    // (lazy loading)
+    this._groupProjects  = [];
+    this._projectConfigs = {};
 
-      if (this.state.currentProject !== project) {
-        CatalogLayersStoresRegistry.removeLayersStores();
-        MapLayersStoresRegistry.removeLayersStores();
-      }
+    /**
+     * @TODO replace it with class fields (upgrade babel version and remove the followings)
+     */
+    this.setters = {
 
-      this.state.currentProject = project;
-      this.state.qgis_version   = project.getQgisVersion();
+      createProject(projectConfig) {
+        //hook to get project config and modify it
+      },
+  
+      setCurrentProject(project) {
+  
+        if (this.state.currentProject !== project) {
+          CatalogLayersStoresRegistry.removeLayersStores();
+          MapLayersStoresRegistry.removeLayersStores();
+        }
+  
+        this.state.currentProject = project;
+        this.state.qgis_version   = project.getQgisVersion();
+  
+        this.setProjectType(project.state.type);
+  
+        const projectLayersStore = project.getLayersStore();
+  
+        //set in first position (catalog)
+        CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+  
+        //set in first position (map)
+        MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+      },
 
-      this.setProjectType(project.state.type);
+    };
+    this._setupListenersChain(this.setters);
 
-      const projectLayersStore = project.getLayersStore();
+  }
 
-      //set in first position (catalog)
-      CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
-
-      //set in first position (map)
-      MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
-    }
-
-  };
-
-  this.state = {
-    baseLayers:     {},
-    minScale:       null,
-    maxscale:       null,
-    currentProject: null,
-    qgis_version:   null
-  };
-
-  // (lazy loading)
-  this._groupProjects  = [];
-  this._projectConfigs = {};
-
-  //Inizialize configuration for all project belong to group
-  this.init = function(config = {}) {
+  /**
+   * Inizialize configuration for all project belong to group 
+   */
+  init(config = {}) {
     const d = $.Deferred();
 
     // check if already initialized
@@ -97,9 +107,9 @@ function ProjectsRegistry() {
       .fail(error => d.reject(error));
 
     return d.promise();
-  };
+  }
 
-  this.clear = function() {
+  clear() {
     this.config          = null;
     this.initialized     = false;
     this.projectType     = null;
@@ -114,37 +124,37 @@ function ProjectsRegistry() {
       currentProject: null,
       qgis_version:   null
     };
-  };
+  }
 
-  this.setProjectType = function(projectType) {
+  setProjectType(projectType) {
     this.projectType = projectType;
-  };
+  }
 
-  this.getConfig = function() {
+  getConfig() {
     return this.config;
-  };
+  }
 
-  this.getState = function() {
+  getState() {
     return this.state;
-  };
+  }
 
-  this.setupState = function() {
+  setupState() {
     this.state.baseLayers = this.config.baselayers;
     this.state.minScale   = this.config.minscale;
     this.state.maxScale   = this.config.maxscale;
     this.state.crs        = this.config.crs;
     this.setProjects(this.config.projects);
-  };
+  }
 
-  this.getProjectType = function() {
+  getProjectType() {
     return this.projectType;
-  };
+  }
 
-  this.getProjects = function() {
+  getProjects() {
     return this._groupProjects;
-  };
+  }
 
-  this.setProjects = function(projects) {
+  setProjects(projects) {
     this.clearProjects();
     projects.forEach(project => {
       this.state.qgis_version    = project.qgis_version || this.state.qgis_version;
@@ -157,13 +167,13 @@ function ProjectsRegistry() {
       project.overviewprojectgid = this.overviewproject ? this.overviewproject.gid : null;
       this._groupProjects.push(project);
     });
-  };
+  }
 
-  this.clearProjects = function() {
+  clearProjects() {
     this._groupProjects = [];
-  };
+  }
 
-  this.getListableProjects = function() {
+  getListableProjects() {
     const currentProjectId = this.getCurrentProject().getId();
     return _
       .sortBy(this.getProjects()
@@ -174,9 +184,9 @@ function ProjectsRegistry() {
       }), 'title');
   };
 
-  this.getCurrentProject = function() {
+  getCurrentProject() {
     return this.state.currentProject;
-  };
+  }
 
   /**
    * Get project configuration
@@ -185,7 +195,7 @@ function ProjectsRegistry() {
    * @param {unknown} options.map_theme
    * @param {boolean} [options.reload = false] `true` = force to get project configuration from server
    */
-  this.getProject = function(projectGid, options = { reload:false}) {
+  getProject(projectGid, options = { reload:false}) {
     const d = $.Deferred();
     const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
 
@@ -221,23 +231,23 @@ function ProjectsRegistry() {
       })
       .fail(error => d.reject(error))
     return d.promise();
-  };
+  }
 
-  this._setProjectRelations = function(projectConfig) {
+  _setProjectRelations(projectConfig) {
     projectConfig.relations = (projectConfig.relations ? projectConfig.relations : [])
       .map(relation => {
         relation = this._updateRelation(projectConfig, relation);
         return relation;
       });
     return projectConfig.relations;
-  };
+  }
 
   /**
    * @FIXME add description
    * 
    * @since 3.8.0
    */
-  this._updateRelation = function(projectConfig, relation) {
+  _updateRelation(projectConfig, relation) {
     if ("ONE" === relation.type) {
       projectConfig.layers
       .find(layer => {
@@ -249,30 +259,30 @@ function ProjectsRegistry() {
       });
     }
     return relation;
-  };
+  }
 
-  this.getProjectConfigByGid = function(gid) {
+  getProjectConfigByGid(gid) {
     return this._groupProjects.find(project => project.gid === gid);
-  };
+  }
 
   /**
    * @param alias.gid
    * @param alias.url
    * @param alias.host
    */
-  this.setProjectAliasUrl = function(alias) {
+  setProjectAliasUrl(alias) {
     const project = this.config.projects.find(project => project.gid === alias.gid);
     if (project) {
       project.url = project && `${alias.host || ''}${alias.url}`;
     }
-  };
+  }
 
   /**
    * @param gid
    * 
    * @returns {string}
    */
-  this.getProjectUrl = function(gid) {
+  getProjectUrl(gid) {
     const baseurl       = this.config && this.config.urls && this.config.urls.baseurl;
     const projectConfig = this.getProjectConfigByGid(gid);
     const url           = projectConfig.url;
@@ -281,14 +291,14 @@ function ProjectsRegistry() {
     } catch(err) {
       return `${location.origin}${baseurl}${url}`;
     }
-  };
+  }
 
   /**
    * @since 3.8.0
    */
-  this.getBaseUrl = function(){
+  getBaseUrl() {
     return this.config.urls.baseurl;
-  };
+  }
 
   /**
    * Fetch project configuration from remote server 
@@ -296,7 +306,7 @@ function ProjectsRegistry() {
    * @param config project base config 
    * @param options.map_theme
    */
-  this._getProjectFullConfig = function(config, options={}) {
+  _getProjectFullConfig(config, options={}) {
     const d = $.Deferred();
 
     $
@@ -329,18 +339,15 @@ function ProjectsRegistry() {
       .fail(error => d.reject(error));
 
     return d.promise();
-  };
+  }
 
   /**
    * @since 3.8.0
    */
-  this.getCurrentProjectGroup = function(){
+  getCurrentProjectGroup() {
     return this.currentProjectGroup;
-  };
+  }
 
-  base(this);
 }
-
-inherit(ProjectsRegistry, G3WObject);
 
 export default new ProjectsRegistry();

@@ -8,39 +8,136 @@ import ComponentsRegistry from 'store/components';
 import { VM }             from 'g3w-ol/constants';
 import G3WObject          from 'core/g3wobject';
 
-const { base, inherit }   = require('core/utils/utils');
-
 console.assert(undefined !== ApplicationService, 'ApplicationService is undefined');
 console.assert(undefined !== ComponentsRegistry, 'ComponentsRegistry is undefined');
 
-function ControlsRegistry() {
+class ControlsRegistry extends G3WObject {
 
-  this._controls = {};
+  constructor() {
 
-  this._offlineids = [];
+    super();
 
-  /**
-   * @since 3.8.0
-   */
-  this.selectedLayer = null;
+    this._controls   = {};
 
-  /**
-   * @since 3.8.0
-   */
-  this.externalLayers = [];
-
-  ApplicationService.on('complete',
+    this._offlineids = [];
+  
     /**
-     * @TODO extract this into a class function (named callback function)
-     * 
-     * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
-     *
-     * @listens CatalogService~addExternalLayer
-     * @listens CatalogService~removeExternalLayer
-     *
      * @since 3.8.0
      */
-      () => {
+    this.selectedLayer = null;
+  
+    /**
+     * @since 3.8.0
+     */
+    this.externalLayers = [];
+  
+    ApplicationService.on('complete', this._handleTempLayers.bind(this));
+    ApplicationService.onbefore('offline', this._handleOffline.bind(this));
+    ApplicationService.onbefore('online', this._handleOnline.bind(this));
+
+    /**
+     * @TODO replace it with class fields (upgrade babel version and remove the followings)
+     */
+    this.setters = {
+      registerControl(id, control) {
+        this._registerControl(id, control);
+      },
+    };
+    this._setupListenersChain(this.setters);
+
+  }
+
+  /**
+   * @param { unknown | null } layer
+   * 
+   * @since 3.8.0
+   */
+  setSelectedLayer(layer) {
+    this.selectedLayer = layer;
+  }
+
+  /**
+   * @since 3.8.0
+   */
+  getSelectedLayer() {
+    return this.selectedLayer;
+  }
+
+  /**
+   * @returns {Array}
+   * 
+   * @since 3.8.0
+   */
+  getExternalLayers() {
+    return this.externalLayers;
+  }
+
+  /**
+   * @since 3.8.0
+   */
+  catalogSelectedLayer(layer) {
+    this.setSelectedLayer(layer.isSelected() ? layer : null);
+
+    this.callControlsEventHandler({
+      handler: 'onSelectLayer',
+      param: this.selectedLayer
+    });
+  }
+
+  /**
+   * NB `handler` = method name
+   * 
+   * @param {{ handler: string, param: any }}
+   * 
+   * @since 3.8.0
+   */
+  callControlsEventHandler({handler, param}) {
+    Object.values(this._controls).forEach((control) => {
+      if ('function' === typeof control[handler]) {
+        control[handler](param)
+      }
+    })
+  }
+
+  _registerControl(id, control) {
+    this._controls[id] = control;
+    if (control.offline === false) {
+      this._offlineids.push({
+        id,
+        enable: control.getEnable()
+      });
+      control.getEnable() && control.setEnable(ApplicationService.isOnline())
+    }
+  }
+
+  getControl(id) {
+    return this._controls[id];
+  }
+
+  getControls() {
+    return this._controls;
+  }
+
+  unregisterControl(id) {
+    const control = this.getControl(id);
+    if (!control) {
+      return false;
+    }
+    ComponentsRegistry.getComponent('map').getService().getMap().removeControl(control);
+    delete this._controls[id];
+    this._offlineids = this._offlineids.filter(_id => _id !== id);
+    return true;
+  };
+
+  /**
+   * Handle temporary layers added by `addlayers` map control (Polygon or Multipolygon)
+   *
+   * @listens CatalogService~addExternalLayer
+   * @listens CatalogService~removeExternalLayer
+   *
+   * @since 3.9.0
+   */
+    _handleTempLayers() {
 
       const CatalogService = ComponentsRegistry.getComponent('catalog').getService();
 
@@ -88,128 +185,27 @@ function ControlsRegistry() {
         }
       });
     }
-  );
 
-  ApplicationService.onbefore('offline',
     /**
-     * @TODO extract this into a class function (named callback function)
-     * 
-     * @since 3.8.0
+     * @since 3.9.0
      */
-    () => {
+    _handleOffline() {
       this._offlineids.forEach(controlItem => {
         const control = this._controls[controlItem.id];
         controlItem.enable = control.getEnable();
         control.setEnable(false);
       })
     }
-  );
 
-  ApplicationService.onbefore('online',
     /**
-     * @TODO extract this into a class function (named callback function)
-     * 
-     * @since 3.8.0
+     * @since 3.9.0
      */
-    () => {
+    _handleOnline() {
       this._offlineids.forEach(controlItem => {
         this._controls[controlItem.id].setEnable(controlItem.enable);
       })
     }
-  );
-
-  this.setters = {
-    registerControl(id, control) {
-      this._registerControl(id, control);
-    },
-  };
-
-  /**
-   * @param { unknown | null } layer
-   * 
-   * @since 3.8.0
-   */
-  this.setSelectedLayer= function(layer) {
-    this.selectedLayer = layer;
-  };
-
-  /**
-   * @since 3.8.0
-   */
-  this.getSelectedLayer = function(){
-    return this.selectedLayer;
-  };
-
-  /**
-   * @returns {Array}
-   * 
-   * @since 3.8.0
-   */
-  this.getExternalLayers = function(){
-    return this.externalLayers;
-  };
-
-  /**
-   * @since 3.8.0
-   */
-  this.catalogSelectedLayer = function(layer){
-    this.setSelectedLayer(layer.isSelected() ? layer : null);
-
-    this.callControlsEventHandler({
-      handler: 'onSelectLayer',
-      param: this.selectedLayer
-    });
-  };
-
-  /**
-   * NB `handler` = method name
-   * 
-   * @param {{ handler: string, param: any }}
-   * 
-   * @since 3.8.0
-   */
-  this.callControlsEventHandler = function({handler, param}){
-    Object.values(this._controls).forEach((control) => {
-      if ('function' === typeof control[handler]) {
-        control[handler](param)
-      }
-    })
-  };
-
-  this._registerControl = function(id, control) {
-    this._controls[id] = control;
-    if (control.offline === false) {
-      this._offlineids.push({
-        id,
-        enable: control.getEnable()
-      });
-      control.getEnable() && control.setEnable(ApplicationService.isOnline())
-    }
-  };
-
-  this.getControl = function(id) {
-    return this._controls[id];
-  };
-
-  this.getControls = function() {
-    return this._controls;
-  };
-
-  this.unregisterControl = function(id) {
-    const control = this.getControl(id);
-    if (!control) {
-      return false;
-    }
-    ComponentsRegistry.getComponent('map').getService().getMap().removeControl(control);
-    delete this._controls[id];
-    this._offlineids = this._offlineids.filter(_id => _id !== id);
-    return true;
-  };
-
-  base(this);
 
 }
-
-inherit(ControlsRegistry, G3WObject);
 
 export default new ControlsRegistry();
