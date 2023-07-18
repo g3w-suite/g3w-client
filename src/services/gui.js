@@ -4,7 +4,7 @@ import RouterService                    from 'services/router';
 import ComponentsRegistry               from 'store/components';
 import G3WObject                        from 'core/g3wobject';
 
-const { base, inherit, noop, toRawType } = require('core/utils/utils');
+const { noop, toRawType } = require('core/utils/utils');
 
 const ProjectsMenuComponent              = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent             = require('gui/changemapmenu/changemapmenu');
@@ -55,108 +55,189 @@ const PLACEHOLDERS = [
  * some methods are defined by the application,
  * app should call `GUI.ready()` when GUI is ready
  */
-function GUI() {
-
-  const self = this;
+class GUI extends G3WObject {
 
   /**
-   * common services known by application
-   */ 
-  this.Services = {
-    navbar: null,
-    sidebar: null,
-    viewport: null,
-    floatbar: null
-  };
-
-  this.setters = {
-
-    setContent(options={}) {
-      this.emit('opencontent', true);
-      this._setContent(options)
-    },
-
-  };
-
-  this.isready = false;
-
-  // show a Vue form
-  this.showListing      = noop;
-  this.closeListing     = noop;
-  this.hideListing      = noop;
-
-  // modal
-  this.hideQueryResults = noop;
-  this.hidePanel        = noop;
-
-  // TABLE
-  this.showTable        = noop;
-  this.closeTable       = noop;
-
-  this.removeNavBarItem = noop;
-
-  /**
-   * usefull to show onaly last waiting request output
-   * at moment will be an object
-   * {
-   * stop: method to sot to show result
-   * }
+   * @TODO upgrade babel version (class fields seems to be currently unsupported)
    */
-  this.waitingoutputdataplace = null;
+  // setters = {
+  //   setContent(options={}) {
+  //     this.emit('opencontent', true);
+  //     this._setContent(options)
+  //   },
+  // }
 
-  // ussefult ot not close user message when set content is called
-  this.sizes = {
-    sidebar: {
-      width:0
-    }
-  };
+  constructor() {
 
-  /**
-   * How new content has to be add
-   * 
-   * false = create new and close all open
-   */
-  this.push_content = false;
+    super();
 
-  this.setPushContent = function (bool=false) {
+     const self = this;
+
+    /**
+     * common services known by application
+     */ 
+    this.Services = {
+      navbar: null,
+      sidebar: null,
+      viewport: null,
+      floatbar: null
+    };
+
+    this.isready = false;
+
+    // show a Vue form
+    this.showListing      = noop;
+    this.closeListing     = noop;
+    this.hideListing      = noop;
+
+    // modal
+    this.hideQueryResults = noop;
+    this.hidePanel        = noop;
+
+    // TABLE
+    this.showTable        = noop;
+    this.closeTable       = noop;
+
+    this.removeNavBarItem = noop;
+
+    /**
+     * usefull to show onaly last waiting request output
+     * at moment will be an object
+     * {
+     * stop: method to sot to show result
+     * }
+     */
+    this.waitingoutputdataplace = null;
+
+    // ussefult ot not close user message when set content is called
+    this.sizes = {
+      sidebar: {
+        width:0
+      }
+    };
+
+    /**
+     * How new content has to be add
+     * 
+     * false = create new and close all open
+     */
+    this.push_content = false;
+
+    this._closeUserMessageBeforeSetContent = true;
+
+    this.notify = {
+
+      warning(message, autoclose=false) {
+        self.showUserMessage({
+          type: 'warning',
+          message,
+          autoclose
+        })
+      },
+  
+      error(message, autoclose=false) {
+        self.showUserMessage({
+          type: 'alert',
+          message,
+          autoclose
+        })
+      },
+  
+      info(message, autoclose=false) {
+        self.showUserMessage(({
+          type: 'info',
+          message,
+          autoclose
+        }))
+      },
+  
+      success(message) {
+        self.showUserMessage({
+          type: 'success',
+          message,
+          autoclose: true
+        })
+      },
+  
+    };
+
+    /**
+     * @TODO double check which of these bindings are strictly necessary
+     */
+    this.outputDataPlace                     = this.outputDataPlace.bind(this); 
+    this.showContentFactory                  = this.showContentFactory.bind(this);
+    this.showForm                            = this.showForm.bind(this);
+    this.disablePanel                        = this.disablePanel.bind(this);
+    this.showQueryResults                    = this.showQueryResults.bind(this);
+    this.showModalDialog                     = this.showModalDialog.bind(this);
+    this.setCloseUserMessageBeforeSetContent = this.setCloseUserMessageBeforeSetContent.bind(this);
+    this.showContent                         = this.showContent.bind(this);
+    this.showContextualContent               = this.showContextualContent.bind(this);
+    this.pushContent                         = this.pushContent.bind(this);
+    this.pushContextualContent               = this.pushContextualContent.bind(this);
+    this.setModal                            = this.setModal.bind(this);
+    this._addComponents                      = this._addComponents.bind(this);
+    this.addComponent                        = this.addComponent.bind(this);
+    this.removeComponent                     = this.removeComponent.bind(this);
+    this.getSize                             = this.getSize.bind(this);
+    this.closeOpenSideBarComponent           = this.closeOpenSideBarComponent.bind(this);
+    this.reloadComponents                    = this.reloadComponents.bind(this);
+    this.setLoadingContent                   = this.setLoadingContent.bind(this);
+    this.openProjectsMenu                    = this.openProjectsMenu.bind(this);
+    this.openChangeMapMenu                   = this.openChangeMapMenu.bind(this);
+
+    /**
+     * @TODO replace it with class fields (upgrade babel version and remove the followings)
+     */
+    this.setters = {
+      setContent(options={}) {
+        this.emit('opencontent', true);
+        this._setContent(options)
+      },
+    };
+    this._setupListenersChain(this.setters);
+
+  }
+
+  setPushContent(bool=false) {
     this.push_content = bool;
-  };
+  }
 
-  this.getPushContent = function() {
+  getPushContent() {
     return this.push_content;
-  };
+  }
 
-  this._closeUserMessageBeforeSetContent = true;
-
-  this.setComponent = function(component) {
+  setComponent(component) {
     ComponentsRegistry.registerComponent(component);
-  };
+  }
 
-  this.getComponent = function(id) {
+  getComponent(id) {
     return ComponentsRegistry.getComponent(id);
-  };
+  }
 
-  this.getComponents = function() {
+  getComponents() {
     return ComponentsRegistry.getComponents();
-  };
+  }
 
-  this.goto = function(url) {
+  goto(url) {
     RouterService.goto(url);
-  };
+  }
 
-  this.ready = function() {
+  ready() {
     this.emit('ready');
     this.isready = true;
-  };
+  }
 
-  this.guiResized = function() {
+  guiResized() {
     this.emit('guiresized');
-  };
+  }
 
-  // ready GUI
-  this.isReady = function() {
+  /**
+   * Wait until GUI is ready 
+   */
+  isReady() {
     return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
-  };
+  }
 
   /**
    * Passing a component application ui id return service that belong to component
@@ -164,24 +245,25 @@ function GUI() {
    * @param componentId
    * @returns {*}
    */
-  this.getService = function(componentId) {
+  getService(componentId) {
     const component = this.getComponent(componentId);
     if (component) {
       return component.getService();
     }
-  };
+  }
 
-  this.disableElement = function({element, disable}) {
+  disableElement({element, disable}) {
     disable && $(element).addClass('g3w-disabled') || $(element).removeClass('g3w-disabled');
-  };
+  }
 
   /**
    * Convert error to user message showed
    * 
    * @param error
+   * 
    * @returns {string}
    */
-  this.errorToMessage = function(error) {
+  errorToMessage(error) {
     let message = 'server_error';
     switch (toRawType(error)) {
       case 'Error':
@@ -206,7 +288,7 @@ function GUI() {
         message = error;
     }
     return message;
-  };
+  }
 
   //Function called from DataRouterservice for gui output
 
@@ -214,7 +296,7 @@ function GUI() {
    * @param data
    * @param options
    */
-  this.outputDataPlace = async function(dataPromise, options={}) {
+  async outputDataPlace(dataPromise, options={}) {
 
     // show parameter it used to set condition to show result or not
     // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
@@ -248,15 +330,15 @@ function GUI() {
 
     //check if waiting output data
     // in case we stop and substiute with new request data
-    if (self.waitingoutputdataplace) {
-      await self.waitingoutputdataplace.stop();
+    if (this.waitingoutputdataplace) {
+      await this.waitingoutputdataplace.stop();
     }
     
     let queryResultsService = add
-      ? self.getService('queryresults')
-      : loading && self.showContentFactory('query')(title);
+      ? this.getService('queryresults')
+      : loading && this.showContentFactory('query')(title);
 
-      self.waitingoutputdataplace = (() => {
+      this.waitingoutputdataplace = (() => {
       let stop = false;
       (async () => {
         try {
@@ -268,7 +350,7 @@ function GUI() {
           
           // in case of usermessage show user message
           if (data.usermessage) {
-            self.showUserMessage({
+            this.showUserMessage({
               type:      data.usermessage.type,
               message:   data.usermessage.message,
               autoclose: data.usermessage.autoclose
@@ -285,10 +367,10 @@ function GUI() {
               (
                 queryResultsService
                   ? queryResultsService
-                  : self.showContentFactory('query')(title)).setQueryResponse(data, { add }
+                  : this.showContentFactory('query')(title)).setQueryResponse(data, { add }
               );
             } else {
-              self.closeContent();
+              this.closeContent();
             }
             // call after is set with data
             if (after) {
@@ -296,16 +378,15 @@ function GUI() {
             }
           }
         } catch(error) {
-          const message = self.errorToMessage(error);
-          self.showUserMessage({
-            type: 'alert',
-            message,
-            textMessage: true
+          this.showUserMessage({
+            type:        'alert',
+            message:     this.errorToMessage(error),
+            textMessage: true,
           });
-          self.closeContent();
+          this.closeContent();
         } finally {
           if (!stop) {
-            self.waitingoutputdataplace = null;
+            this.waitingoutputdataplace = null;
           }
         }
       })();
@@ -314,19 +395,19 @@ function GUI() {
       };
     })();
 
-  };
+  }
 
   /**
    * panel content
    */
-  this.showContentFactory = function(type) {
+  showContentFactory(type) {
     switch (type) {
-      case 'query': return self.showQueryResults; 
-      case 'form':  return self.showForm;
+      case 'query': return this.showQueryResults; 
+      case 'form':  return this.showForm;
     }
-  };
+  }
 
-  this.showForm = function(options={}) {
+  showForm(options={}) {
     const {
       perc,
       split = 'h',
@@ -334,12 +415,12 @@ function GUI() {
       showgoback,
       crumb
     } = options;
-    // new isnstace every time
+    // new instance every time
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
     //get service
     const formService = formComponent.getService();
     // parameters : [content, title, push, perc, split, closable, crumb]
-    self.setContent({
+    this.setContent({
       perc,
       content: formComponent,
       split,
@@ -350,73 +431,37 @@ function GUI() {
     });
     // return service
     return formService;
-  };
+  }
 
-  this.disablePanel = function(disable=false) {
-    self.disableElement({ disable, element: "#g3w-sidebarpanel-placeholder" });
-  };
+  disablePanel(disable=false) {
+    this.disableElement({ disable, element: "#g3w-sidebarpanel-placeholder" });
+  }
 
   // show results info/search
-  this.showQueryResults = function(title, results) {
-    const queryResultsComponent = self.getComponent('queryresults');
+  showQueryResults(title, results) {
+    const queryResultsComponent = this.getComponent('queryresults');
     const queryResultService = queryResultsComponent.getService();
     queryResultService.reset();
     if (results) {
       queryResultService.setQueryResponse(results);
     } 
-    self.showContextualContent({
+    this.showContextualContent({
       content: queryResultsComponent,
       title: "info.title",
       crumb: {
         title: "info.title",
         trigger: null
       },
-      push: self.getPushContent(),
+      push: this.getPushContent(),
       post_title: title
     });
     return queryResultService;
-  };
+  }
 
-  this.notify = {
-
-    warning(message, autoclose=false) {
-      self.showUserMessage({
-        type: 'warning',
-        message,
-        autoclose
-      })
-    },
-
-    error(message, autoclose=false) {
-      self.showUserMessage({
-        type: 'alert',
-        message,
-        autoclose
-      })
-    },
-
-    info(message, autoclose=false) {
-      self.showUserMessage(({
-        type: 'info',
-        message,
-        autoclose
-      }))
-    },
-
-    success(message) {
-      self.showUserMessage({
-        type: 'success',
-        message,
-        autoclose: true
-      })
-    },
-
-  };
-
-  this.showModalDialog = function(options={}) {
-    console.assert(undefined !== self.dialog, 'dialog is undefined');
-    return self.dialog.dialog(options);
-  };
+  showModalDialog(options={}) {
+    console.assert(undefined !== this.dialog, 'dialog is undefined');
+    return this.dialog.dialog(options);
+  }
 
   /**
    * @param opts.id
@@ -426,7 +471,7 @@ function GUI() {
    * @param opts.transparent
    * @param opts.center
    */
-  this.showSpinner = function(opts={}) {
+  showSpinner(opts={}) {
     if ($("#" + opts.id).length) {
       return;
     }
@@ -444,111 +489,116 @@ function GUI() {
             ></div>
           </div>`
       );
-  };
+  }
 
-  this.hideSpinner = function(id='loadspinner') {
+  hideSpinner(id='loadspinner') {
     $("#" + id).remove();
-  };
+  }
 
   /**
    * Toggle full screen modal 
    */
-  this.showFullModal = function({ element = "#full-screen-modal", show = true } = {}) {
+  showFullModal({ element = "#full-screen-modal", show = true } = {}) {
     $(element).modal(show ? 'show' : 'hide')
   };
 
-  this.setCloseUserMessageBeforeSetContent = function(bool = true) {
-    self._closeUserMessageBeforeSetContent = bool;
-  };
+  setCloseUserMessageBeforeSetContent(bool = true) {
+    this._closeUserMessageBeforeSetContent = bool;
+  }
 
   // return specific classes
-  this.getTemplateClasses = function() {
+  getTemplateClasses() {
     console.assert(undefined !== BootstrapVersionClasses, 'BootstrapVersionClasses is undefined');
     return BootstrapVersionClasses
-  };
+  }
 
-  this.getTemplateClass = function({element, type}) {
+  getTemplateClass({element, type}) {
     console.assert(undefined !== BootstrapVersionClasses, 'BootstrapVersionClasses is undefined');
     return BootstrapVersionClasses[element][type];
   };
 
   // useful to build a difference layout/component based on mobile or not
-  this.isMobile = function() {
+  isMobile() {
     console.assert(undefined !== isMobile, 'isMobile is undefined');
     return isMobile.any;
-  };
+  }
 
   // (100%) content
-  this.showContent = function(options={}) {
-    self.setLoadingContent(false);
-    options.perc = self.isMobile() ? 100 : options.perc;
-    self.setContent(options);
+  showContent(options={}) {
+    this.setLoadingContent(false);
+    options.perc = this.isMobile() ? 100 : options.perc;
+    this.setContent(options);
     return true;
-  };
+  }
 
-  this.showContextualContent = function(options = {}) {
-    options.perc = self.isMobile() ? 100 : options.perc;
-    self.setContent(options);
+  showContextualContent(options = {}) {
+    options.perc = this.isMobile() ? 100 : options.perc;
+    this.setContent(options);
     return true;
-  };
+  }
 
-  // add component to stack (append)
-  // Differences between pushContent and setContent are :
-  //  - push every componet is added, set is refreshed
-  //  - pushContent has a new parameter (backonclose) when is clicked x
-  //  - the contentComponet is close all stack is closed
-  this.pushContent = function(options = {}) {
-    options.perc = self.isMobile() ? 100 : options.perc;
+  /**
+   * Append component to stack
+   * 
+   * Differences between pushContent and setContent are:
+   * - push every component is added, set is refreshed
+   * - pushContent has a new parameter (backonclose) when is clicked x
+   * - the contentComponet is close all stack is closed
+   */
+  pushContent(options = {}) {
+    options.perc = this.isMobile() ? 100 : options.perc;
     options.push = true;
-    self.setContent(options);
-  };
+    this.setContent(options);
+  }
 
-  // add content to stack
-  this.pushContextualContent = function(options={}) {
-    options.perc = self.isMobile() ? 100 : options.perc;
-    self.pushContent(options);
-  };
+  /**
+   * add content to stack
+   */
+  pushContextualContent(options = {}) {
+    options.perc = this.isMobile() ? 100 : options.perc;
+    this.pushContent(options);
+  }
 
   // MODAL
-  this.setModal = function(bool = false, message) {
-    const mapService = self.getService('map');
+  setModal(bool = false, message) {
+    const mapService = this.getService('map');
     if (bool) mapService.startDrawGreyCover(message);
     else      mapService.stopDrawGreyCover();
-  };
+  }
 
   // SIDEBAR
-  this.showSidebar = function() {
+  showSidebar() {
     $('body').addClass('sidebar-open');
     $('body').removeClass('sidebar-collapse')
-  };
+  }
 
-  this.hideSidebar = function() {
+  hideSidebar() {
     $('body').removeClass('sidebar-open');
     $('body').addClass('sidebar-collapse')
-  };
+  }
 
-  this.isSidebarVisible = function() {
+  isSidebarVisible() {
     return !$('body').hasClass('sidebar-collapse');
-  };
+  }
 
-  this.getProjectMenuDOM = function({projects, host, cbk}={}) {
+  getProjectMenuDOM({projects, host, cbk}={}) {
     const projectVueMenuComponent = new ProjectsMenuComponent({
       projects: projects && Array.isArray(projects) && projects,
       cbk,
       host
     }).getInternalComponent();
     return projectVueMenuComponent.$mount().$el;
-  };
+  }
 
   // registry component
-  this._addComponents = function(components, placeholder, options) {
+  _addComponents(components, placeholder, options) {
     let register = true;
     if (
       placeholder &&
       PLACEHOLDERS.indexOf(placeholder) > -1 &&
-      self.Services[placeholder]
+      this.Services[placeholder]
     ) {
-      register = self.Services[placeholder].addComponents(components, options);
+      register = this.Services[placeholder].addComponents(components, options);
     }
 
     Object
@@ -559,113 +609,115 @@ function GUI() {
           ApplicationService.registerService(component.id, component.getService())
         }
       });
-  };
+  }
 
   /**
    * add component to template
    */
-  this.addComponent = function(component, placeholder, options={}) {
-    self._addComponents([component], placeholder, options);
+  addComponent(component, placeholder, options={}) {
+    this._addComponents([component], placeholder, options);
     return true;
-  };
+  }
 
-  this.removeComponent = function(id, placeholder, options) {
+  removeComponent(id, placeholder, options) {
     const component = ComponentsRegistry.unregisterComponent(id);
-    if (placeholder && self.Services[placeholder]) {
-      self.Services[placeholder].removeComponent(component, options);
+    if (placeholder && this.Services[placeholder]) {
+      this.Services[placeholder].removeComponent(component, options);
     }
-  };
+  }
 
-  this.getSize = function({element, what}) {
-    if (element && what)
-      return self.sizes[element][what];
-  };
+  getSize({element, what}) {
+    if (element && what) {
+      return this.sizes[element][what];
+    }
+  }
 
-  this.closeOpenSideBarComponent = function() {
-    self.Services.sidebar.closeOpenComponents();
-  };
+  closeOpenSideBarComponent() {
+    this.Services.sidebar.closeOpenComponents();
+  }
 
   // RELOAD COMPONENTS
-  this.reloadComponents = function() {
-    self.Services.sidebar.reloadComponents();
-  };
+  reloadComponents() {
+    this.Services.sidebar.reloadComponents();
+  }
 
-  this.setLoadingContent = function(loading = false) {
-    self.Services.viewport.setLoadingContent(loading);
+  setLoadingContent(loading = false) {
+    this.Services.viewport.setLoadingContent(loading);
     if (loading) {
       return new Promise((resolve)=> { setTimeout(resolve, 200) });
     }
-  };
+  }
 
-  this.openProjectsMenu = function() {
-    const isProjectMenuComponent = self.getComponent('contents').getComponentById('projectsmenu');
+  openProjectsMenu() {
+    const isProjectMenuComponent = this.getComponent('contents').getComponentById('projectsmenu');
     if (isProjectMenuComponent) {
-      self.closeContent();
+      this.closeContent();
       return;
     }
-    if (self.isMobile()) {
-      self.hideSidebar();
+    if (this.isMobile()) {
+      this.hideSidebar();
       $('#main-navbar.navbar-collapse').removeClass('in');
     }
-    self.Services.sidebar.closeOpenComponents();
-    self.setContent({
+    this.Services.sidebar.closeOpenComponents();
+    this.setContent({
       content: new ProjectsMenuComponent(),
       title: '',
       perc: 100
     });
-  };
+  }
 
   /**
    * @since 3.8.0
    */
-  this.openChangeMapMenu = function() {
-    const isChangeMapMenuComponent = self.getComponent('contents').getComponentById('changemapmenu');
+  openChangeMapMenu() {
+    const isChangeMapMenuComponent = this.getComponent('contents').getComponentById('changemapmenu');
     if (isChangeMapMenuComponent) {
-      self.closeContent();
+      this.closeContent();
       return;
     }
-    if (self.isMobile()) {
-      self.hideSidebar();
+    if (this.isMobile()) {
+      this.hideSidebar();
       $('#main-navbar.navbar-collapse').removeClass('in');
     }
-    self.Services.sidebar.closeOpenComponents();
-    self.setContent({
+    this.Services.sidebar.closeOpenComponents();
+    this.setContent({
       content: new ChangeMapMenuComponent(),
       title: '',
       perc: 100
     });
-  };
+  }
 
   /**
    * images urls
    */
-  this.getResourcesUrl = function() {
+  getResourcesUrl() {
     return ApplicationService.getConfig().resourcesurl;
-  };
+  }
 
-  this.disableApplication = function(bool=false) {
+  disableApplication(bool=false) {
     ApplicationService.disableApplication(bool);
-  };
+  }
 
-  this.hideClientMenu = function() {
+  hideClientMenu() {
     ApplicationService.getConfig().user = null;
-  };
+  }
 
-  this.hideChangeMaps = function() {
+  hideChangeMaps() {
     ApplicationService.getConfig().projects = [];
-  };
+  }
 
-  this.disableSideBar = function(bool=true) {
+  disableSideBar(bool=true) {
     ApplicationState.gui.sidebar.disabled = bool;
   };
 
-
-  this.init = function({
+  init({
     floatbar,
     viewport,
     navbar,
     sidebar,
   }) {
+
+    const self = this;
 
     /**
      * Loading spinner
@@ -708,7 +760,6 @@ function GUI() {
     this.hideFloatbar                    = floatbar.close.bind(floatbar);
 
     this.addNavbarItem                   = navbar.addItem.bind(navbar);
-
 
     /**
      * @param pop whether to remove content or pop
@@ -771,7 +822,7 @@ function GUI() {
 
   };
 
-  this.setup_deps = function({ floatbar, VueApp }) {
+  setup_deps({ floatbar, VueApp }) {
 
     // build template
     floatbar.init(this.layout);
@@ -814,8 +865,8 @@ function GUI() {
                 class:     `${Vue.prototype.g3wtemplate.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
                 tooltip:   'Query Builder',
                 fnc:       () => {
-                  self.closeContent();
-                  self.Services.sidebar.closeOpenComponents();
+                  this.closeContent();
+                  this.Services.sidebar.closeOpenComponents();
                   QueryBuilderUIFactory.show({ type: 'sidebar' }); // sidebar or modal
                 },
                 style: {
@@ -895,11 +946,6 @@ function GUI() {
 
   };
 
-  // register setters
-  base(this);
-
 }
-
-inherit(GUI, G3WObject);
 
 export default new GUI();

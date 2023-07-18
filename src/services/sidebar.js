@@ -19,7 +19,7 @@ class SidebarService extends G3WObject {
    * Setter for close sidebarpanel to catch event
    * of closing panel of the sidebar
    * 
-   * @TODO upgrade babel version (class fields seems currently unsupported)
+   * @TODO upgrade babel version (class fields seems to be currently unsupported)
    */
   // setters = {
   //   closeSidebarPanel() {},
@@ -43,7 +43,7 @@ class SidebarService extends G3WObject {
     };
 
     /**
-     * @TODO replace it with class fields (remove and upgrade babel version)
+     * @TODO replace it with class fields (upgrade babel version and remove the followings)
      */
     this.setters = {
       closeSidebarPanel() {
@@ -54,8 +54,6 @@ class SidebarService extends G3WObject {
       }
     };
     this._setupListenersChain(this.setters);
-
-    console.log(this);
 
   }
 
