@@ -14,15 +14,12 @@ export default class LayersStoresRegistry extends G3WObject {
 
     /**
      * to react some application components that are binding to Layerstore
-     * 
-     * @TODO replace it with class fields (upgrade babel version and remove the followings)
      */
     this.setters = {
       addLayersStore:     this._addLayersStore.bind(this),
       removeLayersStore:  this._removeLayersStore.bind(this),
       removeLayersStores: this._removeLayersStores.bind(this),
     };
-    this._setupListenersChain(this.setters);
 
   }
 

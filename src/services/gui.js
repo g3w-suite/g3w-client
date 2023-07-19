@@ -57,16 +57,6 @@ const PLACEHOLDERS = [
  */
 class GUI extends G3WObject {
 
-  /**
-   * @TODO upgrade babel version (class fields seems to be currently unsupported)
-   */
-  // setters = {
-  //   setContent(options={}) {
-  //     this.emit('opencontent', true);
-  //     this._setContent(options)
-  //   },
-  // }
-
   constructor() {
 
     super();
@@ -186,16 +176,12 @@ class GUI extends G3WObject {
     this.openProjectsMenu                    = this.openProjectsMenu.bind(this);
     this.openChangeMapMenu                   = this.openChangeMapMenu.bind(this);
 
-    /**
-     * @TODO replace it with class fields (upgrade babel version and remove the followings)
-     */
     this.setters = {
       setContent(options={}) {
         this.emit('opencontent', true);
         this._setContent(options)
       },
     };
-    this._setupListenersChain(this.setters);
 
   }
 

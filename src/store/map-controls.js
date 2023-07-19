@@ -35,15 +35,11 @@ class ControlsRegistry extends G3WObject {
     ApplicationService.onbefore('offline', this._handleOffline.bind(this));
     ApplicationService.onbefore('online', this._handleOnline.bind(this));
 
-    /**
-     * @TODO replace it with class fields (upgrade babel version and remove the followings)
-     */
     this.setters = {
       registerControl(id, control) {
         this._registerControl(id, control);
       },
     };
-    this._setupListenersChain(this.setters);
 
   }
 

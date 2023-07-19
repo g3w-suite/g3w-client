@@ -25,9 +25,6 @@ class PluginsRegistry extends G3WObject {
     this.pluginsConfigs        = {};
     this._loadedPluginUrls     = [];
 
-    /**
-     * @TODO replace it with class fields (upgrade babel version and remove the followings)
-     */
     this.setters = {
       registerPlugin(plugin) {
         if (!this._plugins[plugin.name]) {
@@ -35,7 +32,6 @@ class PluginsRegistry extends G3WObject {
         }
       },
     };
-    this._setupListenersChain(this.setters);
 
     /**
      * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).

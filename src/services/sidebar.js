@@ -15,17 +15,6 @@ const SidebarItem = Vue.extend(SidebarItemComponent);
 
 class SidebarService extends G3WObject {
 
-  /**
-   * Setter for close sidebarpanel to catch event
-   * of closing panel of the sidebar
-   * 
-   * @TODO upgrade babel version (class fields seems to be currently unsupported)
-   */
-  // setters = {
-  //   closeSidebarPanel() {},
-  //   openCloseItem(bool) {}
-  // }
-
   constructor() {
 
     super();
@@ -43,7 +32,8 @@ class SidebarService extends G3WObject {
     };
 
     /**
-     * @TODO replace it with class fields (upgrade babel version and remove the followings)
+     * Setter for close sidebarpanel to catch event
+     * of closing panel of the sidebar
      */
     this.setters = {
       closeSidebarPanel() {
@@ -53,7 +43,6 @@ class SidebarService extends G3WObject {
         console.info('toggle sidebar item');
       }
     };
-    this._setupListenersChain(this.setters);
 
   }
 

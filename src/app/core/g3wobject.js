@@ -1,26 +1,45 @@
 const { noop, debounce, throttle } = require('core/utils/utils');
 
 /**
+ * Mimics the behavior of child class fields in parent class,
+ * which is the only way to define a property (eg `this.setters = { ... }`)
+ * before invoking the `super()` constructor.
+ * 
+ * @TODO upgrade babel version in order to declare `setters`, `throttles` `debounces` as class fields
+ * 
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields
+ */
+function defineClassField(obj, key, cb, initVal) {
+  // Field is already available within parent constructor
+  // in case of ES5 inheritance (ie. `inherit(ChildClass, G3WObject);`)
+  if (initVal) {
+    return cb.call(obj, initVal);
+  }
+  // Field is not available within parent constructor
+  // in case ES6 inheritance (ie. `class ChildClass extends G3WObject { };`);
+  let currVal = initVal;
+  return Object.defineProperty(obj, key, {
+    get() { return currVal; },
+    set(value) {
+      currVal = value;
+      if (value) { cb.call(obj, value); }
+    },
+  });
+}
+
+/**
  * Base object to handle a setter and its listeners.
  */
 export default class G3WObject extends EventEmitter {
-  
+
   constructor() {
     super();
 
     // Register the chain of events
 
-    if (this.setters) {
-      this._setupListenersChain(this.setters);
-    }
-
-    if (this.debounces) {
-      this._setupDebounces(this.debounces);
-    } 
-
-    if (this.throttles) {
-      this._setupThrottles(this.throttles);
-    }
+    defineClassField(this, 'setters',   this._setupListenersChain, this.setters);
+    defineClassField(this, 'throttles', this._setupThrottles,      this.throttles);
+    defineClassField(this, 'debounces', this._setupDebounces,      this.debounces);
   }
 
   /**
@@ -78,8 +97,10 @@ export default class G3WObject extends EventEmitter {
     return this._onsetter('before', setter, listener, true, priority);
   }
 
+  /**
+   *  Cicle each settersListeners (array) and find setter key (before/after) to be removed
+   */
   un(setter, key) {
-    // cicle on after before (key) and for each settersListeners (array) find key
     Object.entries(this.settersListeners)
       .forEach(([_key, setters]) => {
         if (undefined === key) {
@@ -90,11 +111,11 @@ export default class G3WObject extends EventEmitter {
       });
   };
 
- /**
-  * Base function to register and handle on<before/after> setter listeners
+/**
+  * Register and handle <before/after> listeners
   * 
-  * when=before|after,
-  * type=sync|async
+  * @param { 'before' | 'after' } when
+  * @param { 'sync' | 'async' }   type
   */
   _onsetter(when, setter, listener, async, priority = 0, once = false) {
     // unique listenerKey
@@ -102,7 +123,7 @@ export default class G3WObject extends EventEmitter {
     // check if setter function is registered
     // and then add info object to setters listeners
     // (sorted based on priority)
-    if (undefined !== this.settersListeners[when][setter]) {
+    if (this.settersListeners && undefined !== this.settersListeners[when][setter]) {
       key = `${Math.floor(Math.random() * 1000000) + Date.now()}`;
       this.settersListeners[when][setter].push({ key, fnc: listener, async, priority, once});
       this.settersListeners[when][setter] = _.sortBy(this.settersListeners[when][setter], listener => listener.priority);
@@ -196,7 +217,7 @@ export default class G3WObject extends EventEmitter {
       }
 
     }
-    return this.settersListeners
+    return this.settersListeners;
   }
 
   _setupDebounces(debounces) {

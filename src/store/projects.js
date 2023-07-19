@@ -40,9 +40,6 @@ class ProjectsRegistry extends G3WObject {
     this._groupProjects  = [];
     this._projectConfigs = {};
 
-    /**
-     * @TODO replace it with class fields (upgrade babel version and remove the followings)
-     */
     this.setters = {
 
       createProject(projectConfig) {
@@ -71,7 +68,6 @@ class ProjectsRegistry extends G3WObject {
       },
 
     };
-    this._setupListenersChain(this.setters);
 
   }
 

@@ -30,7 +30,7 @@ export class BaseService {
    * 
    * @since 3.8.0
    */
-  getSelectedExternalLayers({type = 'vector'}) {
+  getSelectedExternalLayers({ type = 'vector' }) {
     return GUI.getService('catalog').getExternalSelectedLayers({ type });
   }
 
@@ -50,7 +50,7 @@ export class BaseService {
    * 
    * @since 3.8.0
    */
-  hasExternalLayerSelected({type = 'vector'}) {
+  hasExternalLayerSelected({ type = 'vector' }) {
     return this.getSelectedExternalLayers({ type }).length > 0;
   }
 

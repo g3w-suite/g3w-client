@@ -3,16 +3,19 @@
  * @since v3.6
  */
 
-import GUI               from 'services/gui';
-import BasePluginService from 'core/iframe/services/plugins/service';
+import GUI             from 'services/gui';
+import PluginsRegistry from 'store/plugins';
+import { BaseService } from 'core/iframe/services/baseservice';
 
-class EditingService extends BasePluginService {
+class EditingService extends BaseService {
 
   constructor() {
 
     super();
 
     this.pluginName     = 'editing';
+
+    this.dependencyApi  = {};
 
     this.subscribevents = [];
 
@@ -119,6 +122,41 @@ class EditingService extends BasePluginService {
 
   }
 
+  async init({ layers = {} } = {}) {
+    this.layers = layers;
+
+    // check if the plugin in in configuration
+    if (!PluginsRegistry.isPluginInConfiguration(this.pluginName)) {
+      return;
+    }
+
+    const plugin = PluginsRegistry.getPlugin(this.pluginName);
+
+    if (plugin) {
+      this.setDependencyApi(plugin.getApi());
+      this.setReady(true);
+      return;
+    }
+
+    PluginsRegistry.onafter('registerPlugin',
+      async plugin => {
+        await plugin.isReady();
+        if (plugin.getName() === this.pluginName) {
+          this.setDependencyApi(plugin.getApi());
+          this.setReady(true);
+        }
+      }
+    );
+
+  }
+
+  setDependencyApi(api = {}) {
+    this.dependencyApi = api;
+  };
+
+  getDependecyApi() {
+    return this.dependencyApi;
+  }
 
   // METHODS CALLED FROM EACH ACTION METHOD
   // run before each action
