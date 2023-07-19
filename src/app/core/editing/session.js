@@ -2,454 +2,483 @@ import SessionsRegistry        from 'store/sessions';
 import MapLayersStoresRegistry from 'store/map-layers';
 import G3WObject               from 'core/g3wobject';
 
-const { base, inherit } = require('core/utils/utils');
-const History           = require('core/editing/history');
-const Layer             = require('core/layers/layer');
-const { is3DGeometry }  = require('core/utils/geo').Geometry;
+const History                  = require('core/editing/history');
+const Layer                    = require('core/layers/layer');
+const { is3DGeometry }         = require('core/utils/geo').Geometry;
 
-function Session(options={}) {
-  this.setters = {
-    start(options={}) {
-      return this._start(options);
-    },
-    getFeatures(options={}) {
-      return this._getFeatures(options);
-    },
-    stop() {
-      return this._stop();
-    },
-    saveChangesOnServer(commitItems){} // hook to get informed that are saved on server
-  };
-  base(this, options);
+module.exports = class Session extends G3WObject {
 
-  this.state = {
-    id: options.id,
-    started: false,
-    getfeatures: false
-  };
-  // editor
-  this._editor = options.editor;
-  this._history = new History({
-    id: this.state.id
-  });
-  this._temporarychanges = [];
-  this.register();
-}
+  constructor(options = {}) {
 
-inherit(Session, G3WObject);
+    super();
 
-const proto = Session.prototype;
+    this.state    = {
+      id:          options.id,
+      started:     false,
+      getfeatures: false
+    };
 
-proto.getId = function() {
-  return this.state.id;
-};
+    this._editor  = options.editor;
 
-proto.getLastHistoryState = function(){
-  return this._history.getLastState();
-};
+    this._history = new History({ id: this.state.id });
 
-proto.getLastStateId = function() {
-  return this._history.getLastState().id;
-};
-
-proto.deleteState = function(stateId) {
-  this._history.removeState(stateId);
-};
-
-proto.register = function() {
-  SessionsRegistry.register(this);
-};
-
-proto.unregister = function(){
-  SessionsRegistry.unregister(this.getId());
-};
-
-proto._start = function(options={}) {
-  const d = $.Deferred();
-  this._editor.start(options)
-    .then(features => {
-      this.state.started = true;
-      d.resolve(features);
-    })
-    .fail(err => {
-      d.reject(err);
-    });
-  return d.promise();
-};
-
-//method to getFeature from server by editor
-proto._getFeatures = function(options={}) {
-  const d = $.Deferred();
-  if (!this._allfeatures) {
-    this._allfeatures = !options.filter;
-    this._editor.getFeatures(options)
-      .then(promise => {
-        promise.then(features => {
-          this.state.getfeatures = true;
-          d.resolve(features);
-        }).fail(err => d.reject(err));
-      });
-  } else d.resolve([]);
-
-  return d.promise();
-};
-
-proto.isStarted = function() {
-  return this.state.started;
-};
-
-proto.getEditor = function() {
-  return this._editor;
-};
-
-proto.setEditor = function(editor) {
-  this._editor = editor;
-};
-
-// it used to save temporary changes to the layer
-// in history instance and feature store
-proto.save = function(options={}) {
-  //fill history
-  const d = $.Deferred();
-  // add temporary modify to history
-  if (this._temporarychanges.length) {
-    const uniqueId = options.id || Date.now();
-    this._history.add(uniqueId, this._temporarychanges)
-      .then(() => {
-        // clear to temporary changes
-        this._temporarychanges = [];
-        // resolve if uniqeu id
-        d.resolve(uniqueId);
-      });
-  } else {
-    d.resolve(null);
-  }
-  return d.promise();
-};
-
-proto.updateTemporaryChanges = function(feature) {
-  this._temporarychanges.forEach((change) => {
-    change.feature.setProperties(feature.getProperties());
-  })
-};
-
-// method to add temporary feature
-proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
-  /**
-   * Please take care of this to understand
-   */
-  removeNotEditableProperties && this._editor.removeNotEditablePropriertiesFromFeature(feature);
-  const newFeature = feature.clone();
-  this.push({
-    layerId,
-    feature: newFeature.add()
-  });
-  return newFeature;
-};
-
-// delete temporary feature
-proto.pushDelete = function(layerId, feature) {
-  this.push({
-    layerId,
-    feature: feature.delete()
-  });
-  return feature;
-};
-
-// add temporary feature changes
-proto.pushUpdate = function(layerId, newFeature, oldFeature) {
-  // in case of change attribute immediately after create feature
-  if (newFeature.isNew()) {
-    const temporarynewfeatureIndex = this._temporarychanges.findIndex((change) => {
-      return change.layerId === layerId && change.feature.getId() === newFeature.getId();
-    });
-    if (temporarynewfeatureIndex !== -1) {
-      const feature = newFeature.clone();
-      feature.add();
-      this._temporarychanges[temporarynewfeatureIndex].feature = feature;
-      return;
-    }
-  }
-  this.push({
-      layerId,
-      feature: newFeature.update()
-    },
-    {
-      layerId,
-      feature: oldFeature.update()
-    })
-};
-
-proto.removeChangesFromHistory = function(changeIds = []) {
-  this._history.removeStates(changeIds);
-};
-
-proto.moveRelationStatesOwnSession = function() {
-  const statesIds = {};
-  const {relations:relationItems } = this.getCommitItems();
-  for (let relationLayerId in relationItems) {
-    const relationStates = this._history.getRelationStates(relationLayerId);
-    const relationSession = SessionsRegistry.getSession(relationLayerId);
-    relationSession._history.insertStates(relationStates);
-    statesIds[relationLayerId] = relationStates.map(state => state.id);
-  }
-  return statesIds;
-};
-
-// it used to add temporary features
-// that will be added with save method
-proto.push = function(New, Old) {
-  /*
-  New e Old saranno oggetti contenti {
-      layerId: xxxx,
-      feature: feature
-    }
-   */
-  // check is set old (edit)
-  const feature = Old ? [Old, New] : New;
-  this._temporarychanges.push(feature);
-};
-
-
-// method to revert (cancel) all changes in history and clean session
-proto.revert = function() {
-  const d = $.Deferred();
-  this._editor.revert().then(()=>{
-    this._history.clear();
-    d.resolve();
-  });
-  return d.promise();
-};
-
-// handle temporary changes of layer
-proto._filterChanges = function() {
-  const id = this.getId();
-  const changes = {
-    own:[],
-    dependencies: {}
-  };
-  this._temporarychanges.forEach((temporarychange) => {
-    const change = Array.isArray(temporarychange) ? temporarychange[0] : temporarychange;
-    if (change.layerId === id) changes.own.push(change);
-    else {
-      if (!changes.dependencies[change.layerId])
-        changes.dependencies[change.layerId] = [];
-      // FILO
-      changes.dependencies[change.layerId].unshift(change);
-    }
-  });
-  return changes;
-};
-
-proto.rollback = function(changes) {
-  if (changes) return this._editor.rollback(changes);
-  else {
-    const d = $.Deferred();
-    const changes = this._filterChanges();
-    this._editor.rollback(changes.own).then(()=>{
-      const {dependencies} = changes;
-      for (const id in dependencies) {
-        SessionsRegistry.getSession(id).rollback(dependencies[id]);
-      }
-      d.resolve(dependencies);
-    });
     this._temporarychanges = [];
+
+    this.register();
+
+    this.setters = {
+      start:       this._start.bind(this),
+      getFeatures: this._getFeatures.bind(this),
+      stop:        this._stop.bind(this),
+      /**
+       * hook to  get informed that are saved on server
+       */
+      saveChangesOnServer(commitItems) { } 
+    };
+  }
+
+  getId() {
+    return this.state.id;
+  }
+
+  getLastHistoryState() {
+    return this._history.getLastState();
+  }
+
+  getLastStateId() {
+    return this._history.getLastState().id;
+  }
+
+  deleteState(id) {
+    this._history.removeState(id);
+  }
+
+  register() {
+    SessionsRegistry.register(this);
+  }
+
+  unregister() {
+    SessionsRegistry.unregister(this.getId());
+  }
+
+  _start(options = {}) {
+    const d = $.Deferred();
+
+    this._editor
+      .start(options)
+      .then(features => { this.state.started = true; d.resolve(features); })
+      .fail(err => { d.reject(err); });
+
     return d.promise();
   }
-};
 
-/**
- * Rollback child changes of current session
- * @param ids [array of child layer id]
- */
-proto.rollbackDependecies = function(ids=[]) {
-  ids.forEach(id => {
-    const changes = [];
-    this._temporarychanges = this._temporarychanges.filter(temporarychange => {
-      if (temporarychange.layerId === id) {
-        changes.push(temporarychange);
-        return false
+  /**
+   * Get features from server by editor
+   */
+  _getFeatures(options = {}) {
+    const d = $.Deferred();
+
+    if (this._allfeatures) {
+      d.resolve([]);
+    } else {
+      this._allfeatures = !options.filter;
+      this._editor
+        .getFeatures(options)
+        .then(promise => {
+          promise
+            .then(features => { this.state.getfeatures = true; d.resolve(features); })
+            .fail(err => d.reject(err));
+        });
+    }
+
+    return d.promise();
+  }
+
+  isStarted() {
+    return this.state.started;
+  }
+
+  getEditor() {
+    return this._editor;
+  }
+
+  setEditor(editor) {
+    this._editor = editor;
+  }
+
+  /**
+   * Save temporary changes to the layer in history and feature stores
+   */
+  save(options={}) {
+    const d = $.Deferred();
+
+    // add temporary changes to history
+    if (this._temporarychanges.length) {
+      const uniqueId = options.id || Date.now();
+      this._history
+        .add(uniqueId, this._temporarychanges)
+        // clear temporary changes and resolve with unique id
+        .then(() => { this._temporarychanges = []; d.resolve(uniqueId); });
+    } else {
+      d.resolve(null);
+    }
+
+    return d.promise();
+  }
+
+  updateTemporaryChanges(feature) {
+    this._temporarychanges.forEach((change) => { change.feature.setProperties(feature.getProperties()); })
+  }
+
+  /**
+   * Add temporary feature (ref: `removeNotEditableProperties`)
+   */
+  pushAdd(layerId, feature, removeNotEditableProperties = true) {
+    if (removeNotEditableProperties) {
+      this._editor.removeNotEditablePropriertiesFromFeature(feature);
+    } 
+    const newFeature = feature.clone();
+    this.push({ layerId, feature: newFeature.add() });
+    return newFeature;
+  }
+
+  /**
+   * Remove temporary feature
+   */
+  pushDelete(layerId, feature) {
+    this.push({ layerId, feature: feature.delete() });
+    return feature;
+  }
+
+  /**
+   * Add temporary feature changes
+   */
+  pushUpdate(layerId, newFeat, oldFeat) {
+    // in case of change attribute immediately after create feature
+    if (newFeat.isNew()) {
+      const featIndex = this._temporarychanges.findIndex((change) => change.layerId === layerId && change.feature.getId() === newFeat.getId());
+      if (-1 !== featIndex) {
+        const feature = newFeat.clone();
+        feature.add();
+        this._temporarychanges[featIndex].feature = feature;
+        return;
       }
-    });
-    changes.length && SessionsRegistry.getSession(id).rollback(changes);
-  });
-};
+    }
+    this.push({ layerId, feature: newFeat.update() }, { layerId, feature: oldFeat.update() })
+  }
 
-// method undo
-proto.undo = function(items) {
-  items = items || this._history.undo();
-  this._editor.setChanges(items.own, true);
-  this._history.canCommit();
-  return items.dependencies;
-};
+  removeChangesFromHistory(changeIds = []) {
+    this._history.removeStates(changeIds);
+  }
 
-// method redo
-proto.redo = function(items) {
-  items = items || this._history.redo();
-  this._editor.setChanges(items.own, true);
-  this._history.canCommit();
-  return items.dependencies;
-};
+  moveRelationStatesOwnSession() {
+    const ids           = {};
+    const { relations } = this.getCommitItems();
 
-proto._serializeCommit = function(itemsToCommit) {
-  const id = this.getId();
-  let state;
-  let layer;
-  const commitObj = {
-    add: [],
-    update: [],
-    delete: [],
-    relations: {}
-  };
-  for (const key in itemsToCommit) {
-    let isRelation = false;
-    const items = itemsToCommit[key];
-    if (key !== id) {
-      isRelation = true;
-      const sessionRelation = SessionsRegistry.getSession(key);
-      const lockids =  sessionRelation ? sessionRelation.getEditor().getLockIds(): [];
-      commitObj.relations[key] = {
-        lockids,
-        add: [],
-        update: [],
-        delete: []
-      };
-      layer = commitObj.relations[key];
-    } else layer = commitObj;
-    items.forEach((item) => {
-      state = item.getState();
-      const GeoJSONFormat = new ol.format.GeoJSON();
-      switch (state) {
-        case 'delete':
-          if (!item.isNew())
+    for (let id in relations) {
+      const states = this._history.getRelationStates(id);
+
+      SessionsRegistry
+        .getSession(id)
+        ._history
+        .insertStates(states);
+
+      ids[id] = states.map(state => state.id);
+    }
+
+    return ids;
+  }
+
+  /**
+   * Add temporary features that will be added with save method
+   * 
+   * @param {{id, feature}} newFeat
+   * @param {{id, feature}} oldFeat 
+   */
+  push(newFeat, oldFeat) {
+    // check is set old (edit)
+    this._temporarychanges.push(oldFeat ? [oldFeat, newFeat] : newFeat);
+  }
+
+  /**
+   * revert (cancel) all changes in history and clean session
+   */
+  revert() {
+    const d = $.Deferred();
+
+    this._editor
+      .revert()
+      .then(() => { this._history.clear(); d.resolve(); });
+
+    return d.promise();
+  }
+
+  /**
+   * handle temporary changes of layer
+   */
+  _filterChanges() {
+    const id      = this.getId();
+    const changes = {
+      own:          [],
+      dependencies: {},
+    };
+
+    this._temporarychanges
+      .forEach((temp) => {
+        const change = Array.isArray(temp) ? temp[0] : temp;
+        if (change.layerId === id) {
+          changes.own.push(change);
+          return;
+        }
+        changes.dependencies[change.layerId] = changes.dependencies[change.layerId] ? changes.dependencies[change.layerId] : [];
+        changes.dependencies[change.layerId].unshift(change); // FILO
+      });
+
+    return changes;
+  }
+
+  rollback(changes) {
+    if (changes) {
+      return this._editor.rollback(changes);
+    }
+
+    const d = $.Deferred();
+
+    changes = this._filterChanges();
+
+    this.
+      _editor
+      .rollback(changes.own)
+      .then(()=>{
+        for (const id in changes.dependencies) {
+          SessionsRegistry.getSession(id).rollback(changes.dependencies[id]);
+        }
+        d.resolve(changes.dependencies);
+      });
+
+    this._temporarychanges = [];
+
+    return d.promise();
+  }
+
+  /**
+   * Rollback child changes of current session
+   * 
+   * @param ids [array of child layer id]
+   */
+  rollbackDependecies(ids = []) {
+    ids
+      .forEach(id => {
+        const changes = [];
+        this._temporarychanges = this._temporarychanges.filter(temp => { if (temp.layerId === id) { changes.push(temp); return false; } });
+        if (changes.length) {
+          SessionsRegistry.getSession(id).rollback(changes);
+        }
+      });
+  }
+
+  undo(items) {
+    items = items || this._history.undo();
+    this._editor.setChanges(items.own, true);
+    this._history.canCommit();
+    return items.dependencies;
+  }
+
+  redo(items) {
+    items = items || this._history.redo();
+    this._editor.setChanges(items.own, true);
+    this._history.canCommit();
+    return items.dependencies;
+  }
+
+  _serializeCommit(newItems) {
+    const id        = this.getId();
+    const commit = {
+      add:       [],
+      update:    [],
+      delete:    [],
+      relations: {}
+    };
+
+    let state, layer;
+
+    for (const key in newItems) {
+      let isRelation = false;
+      const items    = newItems[key];
+
+      if (key === id) {
+        layer = commit;
+      } else {
+        isRelation            = true;
+        const session         = SessionsRegistry.getSession(key);
+        commit.relations[key] = {
+          lockids: session ? session.getEditor().getLockIds() : [],
+          add: [],
+          update: [],
+          delete: []
+        };
+        layer = commit.relations[key];
+      }
+
+      items
+        .forEach((item) => {
+
+          state = item.getState();
+          
+          if('delete' === state && !item.isNew()) {
             layer.delete.push(item.getId());
-          break;
-        default:
-          const value = GeoJSONFormat.writeFeatureObject(item);
-          const childs_properties = item.getProperties();
+            return;
+          }
+
+          const value = (new ol.format.GeoJSON()).writeFeatureObject(item);
+          const props = item.getProperties();
+
           for (const key in value.properties) {
-           if (value.properties[key] && typeof value.properties[key] === 'object' && value.properties[key].constructor === Object)
-             value.properties[key] = value.properties[key].value;
-           if (value.properties[key] === undefined && childs_properties[key])
-             value.properties[key] = childs_properties[key]
-          }
-          const action = item.isNew() ? 'add' : item.getState();
-          // in case of add i have to remove non editable properties
-          layer[action].push(value);
-          break;
+            if (value.properties[key] && 'object' === typeof value.properties[key] && Object === value.properties[key].constructor) {
+              value.properties[key] = value.properties[key].value;
+            }
+            
+            if (undefined === value.properties[key] && props[key])
+              value.properties[key] = props[key]
+            }
+
+            // in case of add need remove non editable properties
+            layer[item.isNew() ? 'add' : item.getState()].push(value);
+
+        });
+
+      // check in case of no edit remove relation key
+      if (isRelation && !layer.add.length && !layer.update.length && !layer.delete.length) {
+        delete commit.relations[key];
       }
-    });
-    // check in case of no edit remove relation key
-    if (isRelation && !layer.add.length && !layer.update.length && !layer.delete.length) {
-      delete commitObj.relations[key];
+
     }
+
+    return commit;
   }
-  return commitObj;
-};
 
-proto.getCommitItems = function() {
-  const commitItems = this._history.commit();
-  return this._serializeCommit(commitItems);
-};
-
-/**
- *
- * Set geometry: {type} of geojson to a 3D type if needed
- * @param layerId
- * @param commitItems
- */
-proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
-  const {relations} = commitItems;
-  const editingLayer = MapLayersStoresRegistry.getLayerById(layerId).getEditingLayer();
-  // check id there is a editing layer and if is a vector layer
-  if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR){
-    // get Geometry type layer
-    const geometryType = editingLayer.getGeometryType();
-    // if is a 3D layer i set on geoJON before send it to server
-    if (is3DGeometry(geometryType)){
-      ['add', 'update'].forEach(action =>{
-        commitItems[action].forEach(feature => feature.geometry.type = geometryType)
-      })
-    }
+  getCommitItems() {
+    return this._serializeCommit(this._history.commit());
   }
-  // the same control of relations layers
-  Object.keys(relations).forEach(layerId => this.set3DGeometryType({
-    layerId,
-    commitItems: relations[layerId]
-  }));
-};
 
-proto.commit = function({ids=null, items, relations=true}={}) {
-  const d = $.Deferred();
-  let commitItems;
-  if (ids) {
-    commitItems = this._history.commit(ids);
-    this._history.clear(ids);
-  } else {
-    if (items) commitItems = items;
-    else {
-      commitItems = this._history.commit();
-      commitItems = this._serializeCommit(commitItems);
+  /**
+   * Set geometry: {type} of geojson to a 3D type if needed
+   * 
+   * @param layerId
+   * @param commitItems
+   */
+  set3DGeometryType({
+    layerId = this.getId(),
+    commitItems,
+  } = {}) {
+    const layer = MapLayersStoresRegistry.getLayerById(layerId).getEditingLayer();
+
+    const type = layer && layer.getType() === Layer.LayerTypes.VECTOR && layer.getGeometryType();
+
+    // if is a 3D vector layer i set on geoJON before send it to server
+    if (type && is3DGeometry(type)) {
+      commitItems['add']   .forEach(feat => feat.geometry.type = type);
+      commitItems['update'].forEach(feat => feat.geometry.type = type);
     }
-    if (!relations) commitItems.relations = {};
-    this._editor.commit(commitItems)
+
+    // same control of relations layers
+    Object
+      .keys(commitItems.relations)
+      .forEach(id => this.set3DGeometryType({ layerId: id, commitItems: commitItems.relations[id] }));
+  }
+
+  commit({
+    ids = null,
+    items,
+    relations = true
+  } = {}) {
+
+    const d = $.Deferred();
+
+    let commit;
+
+    if (ids) {
+      commit = this._history.commit(ids);
+      this._history.clear(ids);
+      return d.promise();
+    }
+
+    commit           = items            || this._serializeCommit(this._history.commit());
+    commit.relations = commit.relations || {};
+    
+    this
+      ._editor
+      .commit(commit)
       .then(response => {
-        if (response && response.result) {
-          const {response:data} = response;
-          const {new_relations={}} = data;
-          for (const id in new_relations) {
-            const session = SessionsRegistry.getSession(id);
-            session.getEditor().applyCommitResponse({
-              response: new_relations[id],
-              result: true
-            })
-          }
-          this._history.clear();
-          this.saveChangesOnServer(commitItems);
-          d.resolve(commitItems, response)
-        } else d.reject(response);
+
+        if (!response || !response.result) {
+          d.reject(response);
+          return;
+        }
+
+        const { new_relations = {} } = response.response;
+
+        for (const id in new_relations) {
+          SessionsRegistry
+            .getSession(id)
+            .getEditor()
+            .applyCommitResponse({ response: new_relations[id], result: true })
+        }
+
+        this._history.clear();
+
+        this.saveChangesOnServer(commit);
+
+        d.resolve(commit, response)
       })
       .fail(err => d.reject(err));
+
+    return d.promise();
+
   }
-  return d.promise();
 
-};
+  _canStop() {
+    return this.state.started || this.state.getfeatures;
+  }
 
-proto._canStop = function() {
-  return this.state.started || this.state.getfeatures;
-};
+  /**
+   * stop session 
+   */
 
-//stop session
-proto._stop = function() {
-  const d = $.Deferred();
-  if (this._canStop())
-    this._editor.stop()
-      .then(() => {
-        this.clear();
-        d.resolve();
-      })
-      .fail(err =>  d.reject(err));
-  else d.resolve();
-  return d.promise();
-};
+  _stop() {
+    const d = $.Deferred();
 
-// clear all things bind to session
-proto.clear = function() {
-  this._allfeatures = false;
-  this.state.started = false;
-  this.state.getfeatures = false;
-  this.clearHistory();
-  this._editor.clear();
-};
+    if (!this._canStop()) {
+      d.resolve();
+      return;
+    }
 
-//return l'history
-proto.getHistory = function() {
-  return this._history;
-};
+      this
+        ._editor
+        .stop()
+        .then(() => { this.clear(); d.resolve(); })
+        .fail(err =>  d.reject(err));
 
-// clear history
-proto.clearHistory = function() {
-  this._history.clear();
-};
+    return d.promise();
+  }
 
-module.exports = Session;
+  /**
+   * clear all things bind to session
+   */
+  clear() {
+    this._allfeatures      = false;
+    this.state.started     = false;
+    this.state.getfeatures = false;
+    this.clearHistory();
+    this._editor.clear();
+  };
+
+  getHistory() {
+    return this._history;
+  };
+
+  clearHistory() {
+    this._history.clear();
+  };
+
+}
