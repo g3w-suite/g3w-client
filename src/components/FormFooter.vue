@@ -31,6 +31,10 @@
  * @TODO remove "Vue.extend" from module export
  */
 export default Vue.extend({
+
+  /** @since 3.8.6 */
+  name: 'form-footer',
+
   props: {
     state: {
       type: Object

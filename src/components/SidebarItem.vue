@@ -5,7 +5,7 @@
 
 <template>
   <li :id="component.id" v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}" v-disabled="state.disabled">
-    <bar-loader :loading="state.loading"></bar-loader>
+    <bar-loader :loading="state.loading"/>
     <a @click.prevent="onClickItem" ref="anchor_click" href="#" style="display: flex; justify-content: space-between; align-items: center">
       <div>
         <i :class="icon" :style="{color: iconColor}"></i>

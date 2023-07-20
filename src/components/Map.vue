@@ -51,6 +51,10 @@ import AddLayerComponent from 'components/MapAddLayer.vue';
 import MapFooter from 'components/MapFooter.vue';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'g3w-map',
+
   data() {
     const {service, target} = this.$options;
     return {
