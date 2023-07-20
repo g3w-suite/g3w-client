@@ -278,7 +278,7 @@ proto.runSpatialQuery = async function() {
     return;
   }
 
-  const { data = [] } = await DataRouterService.getData('query:polygon', {
+  await DataRouterService.getData('query:polygon', {
     inputs: {
       layerName: this.data.layer.getName ? this.data.layer.getName() : this.data.layer.get('name'),
       excludeSelected: true,
