@@ -15,12 +15,16 @@ function Service(options={}){
     adminwmsurls: wmsurls, // coming from admin wmsurls
     localwmsurls: [] // contain array of object {id, url}
   };
-  this.loadClientWmsUrls()
-    .then(urls => this.state.localwmsurls = urls);
+
+  GUI.isReady().then(()=> {
+    GUI.getService('map').isReady().then(async ()=>{
+      this.state.localwmsurls = await this.loadClientWmsUrls();
+    })
+  })
+
   ProjectsRegistry.onafter('setCurrentProject', async project => {
     this.projectId = project.getId();
     this.state.adminwmsurls = project.wmsurls || [];
-    this.state.localwmsurls = await this.loadClientWmsUrls();
   })
 }
 
@@ -308,7 +312,7 @@ proto.getLocalWMSData = function(){
  * @param data
  */
 proto.updateLocalWMSData = function(data){
-  // in case for the firs time is non present set empty object
+  // in case for the firs time is no present set empty object
   const alldata = ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {};
   alldata[this.projectId] = data;
   ApplicationService.setLocalItem({
