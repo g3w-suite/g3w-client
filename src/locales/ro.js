@@ -387,6 +387,7 @@ export default {
             copied: "Copiat"
           },
           download: {
+            unknow: 'Descarcă',
             shp: 'Descarcă Shapefile',
             gpx: 'Descarcă GPX',
             gpkg: 'Descarcă GPKG',
@@ -449,8 +450,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Nu mai afișa mesajul",
-    enlange_reduce:"Mărește/Micșorează",
-    reset_default:"Mărimea implicită",
+    enlange_reduce: "Mărește / Micșorează",
+    reset_default: "Mărimea implicită",
     add: "Adaugă",
     exitnosave: "Ieșire fără salvare",
     annul: "Anulează",
@@ -510,7 +511,16 @@ export default {
         tooltip: "Arie"
       },
       screenshot: {
-        error: "Eroare captură ecran"
+        error: "Eroare captură ecran",
+        securityError: `  
+        <p><b>Eroare de securitate</b>: un strat extern împiedică imprimarea hărții. Pentru a verifica, procedați după cum urmează:</p>
+        <ol>
+          <li>eliminați orice straturi externe adăugate manual (de exemplu, straturi WMS)</li>
+          <li>forțați reîncărcarea paginii: <code>CTRL + F5</code></li>
+          <li>tipărește din nou harta</li>
+        </ol>
+        <p>Pentru mai multe informații, vă rugăm să contactați administratorul serverului despre: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -greutate: bold;">&#x2139;&#xFE0F; securitate și pânze contaminate</a></p>
+        `
       }
     },
     catalog_items: {

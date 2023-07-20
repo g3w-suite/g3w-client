@@ -26,17 +26,17 @@
         { bold : isGroup },
          g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
-      @click="expandCollapse"
-      class="root collapse-expande-collapse-icon">
-    </span>
+      @click.stop="expandCollapse"
+      class="root collapse-expande-collapse-icon"
+    ></span>
 
     <!-- GROUP LAYER -->
     <span
       v-if="isGroup"
       @click.stop="toggle()"
       style="color: #ffffff"
-      :class="[triClass()]">
-    </span>
+      :class="[triClass()]"
+    ></span>
 
     <!-- TABLE LAYER -->
     <span
@@ -46,8 +46,8 @@
       :class="[
         parentFolder ? 'child' : 'root',
         g3wtemplate.getFontClass('table')
-      ]">
-    </span>
+      ]"
+    ></span>
 
     <template v-else>
 
@@ -56,7 +56,7 @@
         v-if="layerstree.external && layerstree.removable"
         style="color: red; padding-left: 1px;"
         :class="g3wtemplate.getFontClass('trash')"
-        @click="removeExternalLayer(layerstree.name, layerstree._type)"
+        @click.stop="removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
       <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
@@ -79,6 +79,7 @@
           class="collapse-expande-collapse-icon"
           :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
         ></span>
+
         <span
           @click.stop="toggle()"
           :style="{
@@ -93,7 +94,9 @@
           :class="[
             g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'),
             { 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }
-          ]"></span>
+          ]"
+        ></span>
+
       </span>
 
     </template>
@@ -155,7 +158,7 @@
       v-if="showLayerTocLegend"
       :legendplace="legendplace"
       :layer="layerstree"
-    ></layerlegend>
+    />
 
     <!-- CHILD NODES (GROUP) -->
     <ul
@@ -164,7 +167,9 @@
       :class="[`g3w-lendplace-${legendplace}`]"
       v-show="layerstree.expanded"
     >
+
       <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
+
         <tristate-tree
           :root="false"
           :legendConfig="legend"
@@ -174,8 +179,9 @@
           :layerstree="_layerstree"
           :storeid="storeid"
           :parent="layerstree"
-          :parent_mutually_exclusive="!!layerstree.mutually_exclusive">
-        </tristate-tree>
+          :parent_mutually_exclusive="!!layerstree.mutually_exclusive"
+        />
+
       </span>
     </ul>
 
@@ -193,6 +199,10 @@ import GUI from 'services/gui';
 const { downloadFile } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'catalog-tristate-tree',
+
   props : [
     'layerstree',
     'storeid',
@@ -205,19 +215,23 @@ export default {
     'root',
     'parent'
   ],
+
   components: {
     'layerlegend': LayerLegend
   },
+
   mixins: [ClickMixin],
+
   data() {
     return {
-      expanded: this.layerstree.expanded,
+      expanded:       this.layerstree.expanded,
       isGroupChecked: true,
       controltoggled: false,
-      n_childs: null,
-      filtered: false
+      n_childs:       null,
+      filtered:       false
     }
   },
+
   computed: {
 
     /**
@@ -308,8 +322,16 @@ export default {
       )
     },
   },
+
   watch:{
-    'layerstree.disabled'(bool) {},
+
+    /**
+     * @FIXME empty function ? 
+     */
+    'layerstree.disabled'(bool) {
+
+    },
+
     'layerstree.checked'(n, o) {
       if (this.isGroup) {
         this.handleGroupChecked(this.layerstree);
@@ -317,7 +339,9 @@ export default {
         this.handleLayerChecked(this.layerstree);
       }
     }
+
   },
+
   methods: {
 
     /**
@@ -433,12 +457,15 @@ export default {
     toggleFilterLayer() {
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
+
     clearSelection() {
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
+
     toggle() {
       this.layerstree.checked = !this.layerstree.checked;
     },
+
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
@@ -450,10 +477,14 @@ export default {
      * @fires CatalogEventHub~treenodeselected
      */
     select() {
-      if (this.layerstree.external && 'undefined' !== typeof this.layerstree.selected) {
+      // skip when `selected === undefined` (unselectable layer, eg. an external WMS layer) 
+      if (undefined === this.layerstree.selected) {
+        return;
+      }
+      if (this.layerstree.external) {
         CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
-        CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
+        CatalogEventHub.$emit('treenodeselected', this.storeid, this.layerstree);
       }
     },
 
