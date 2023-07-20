@@ -67,24 +67,31 @@ function QueryResultsService() {
   this.init = function() {
     this.clearState();
   };
-  // Is a vector layer used by query resul to show eventually query resuesta as coordnates, bbox, polygon, etc ..
-  const color = 'blue';
-  const stroke = new ol.style.Stroke({
-    color,
-    width: 3
-  });
-  const fill = new ol.style.Fill({
-    color
-  });
+
+   /**
+   * Vector layer used by query result to show query
+   * request as coordinates, bbox, polygon, etc ..
+   * 
+   * @type {ol.layer.Vector}
+   */
   this.resultsQueryLayer = new ol.layer.Vector({
-    style: new ol.style.Style({
-      stroke,
-      image: new ol.style.Circle({
-        fill,
-        radius: 6
-      }),
-    }),
-    source: new ol.source.Vector()
+    source: new ol.source.Vector(),
+    style(feature) {
+      const fill   = new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.7)' });
+      const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
+      if ('Point' === feature.getGeometry().getType()) {
+        return new ol.style.Style({
+          text: new ol.style.Text({
+            text: '\uf3c5',
+            font: '900 3em "Font Awesome 5 Free"',
+            fill,
+            stroke,
+            offsetY : -15
+          }),
+        });
+      }
+      return new ol.style.Style({ stroke });
+    }
   });
 
   this._vectorLayers = [];
@@ -94,23 +101,43 @@ function QueryResultsService() {
     mapcontrol: null, // add current toggled map control if toggled
     toggleeventhandler: null
   };
+
   this.setters = {
+
     /**
-     * Method call when response is handled by Data Provider
+     * Hook method called when response is handled by Data Provider
+     * 
      * @param queryResponse
-     * @param options: add is used to know if is a new query request or add/remove query request
+     * @param {{ add: boolean }} options `add` is used to know if is a new query request or add/remove query request
      */
-    setQueryResponse(queryResponse, options={add:false}) {
-      const {add} = options;
-      // in case of new request results reset the query otherwise maintain the previous request
-      if (!add) {
+    setQueryResponse(queryResponse, options = { add: false }) {
+
+      // set mandatory queryResponse fields
+      if (!queryResponse.data)  queryResponse.data    = [];
+      if (!queryResponse.query) queryResponse.query   = { external: { add: false, filter: {SELECTED: false }}};
+      if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: {SELECTED: false }};
+
+      // whether add response to current results using addLayerFeaturesToResultsAction
+      if (!options.add) {
+        // in case of new request results reset the query otherwise maintain the previous request
         this.clearState();
         this.state.query = queryResponse.query;
         this.state.type = queryResponse.type;
+
+        // if true add external layers to response
+        if (true === queryResponse.query.external.add) {
+          this._addVectorLayersDataToQueryResponse(queryResponse);
+        }
+
+        switch (this.state.query.type) {
+          case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
+          case 'bbox':        this.showBBOX(this.state.query.bbox); break;
+          case 'polygon':     this.state.query.geometry && this.showGeometry(this.state.query.geometry); break;
+        }
       }
-      const {data} = queryResponse;
-      const layers = this._digestFeaturesForLayers(data);
-      this.setLayersData(layers, options);
+
+      this.setLayersData(this._digestFeaturesForLayers(queryResponse.data), options);
+
     },
 
     /**
@@ -178,6 +205,7 @@ function QueryResultsService() {
      */
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
+
   base(this);
 
   this.addLayersPlotIds = function(layerIds=[]) {
@@ -194,7 +222,6 @@ function QueryResultsService() {
 
   this._setRelations(project);
   this._setAtlasActions(project);
-  this._addVectorLayersDataToQueryResponse();
   this._asyncFnc = {
     todo: noop,
     zoomToLayerFeaturesExtent: {
@@ -735,7 +762,6 @@ proto.clear = function() {
   this.removeAddFeaturesLayerResultInteraction({
     toggle: true
   });
-  this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
     todo: noop,
@@ -748,6 +774,7 @@ proto.clear = function() {
   };
   this.clearState();
   this.closeComponent();
+  this.removeQueryResultLayerFromMap();
 };
 
 proto.getCurrentLayersIds = function(){
@@ -879,7 +906,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
 
 proto.clearState = function(options={}) {
   this.state.layers.splice(0);
-  this.state.query = {};
+  this.state.query = null;
   this.state.querytitle = "";
   this.state.changed = false;
   // clear action if present
@@ -1254,7 +1281,6 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
           break;
       }
     }
-
   }
 
   return {
@@ -1264,37 +1290,29 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
 
 };
 
-proto._addVectorLayersDataToQueryResponse = function() {
-  this.onbefore('setQueryResponse', (queryResponse, options = {}) => {
-    const catalogService = GUI.getService('catalog');
+/**
+ * @TODO add description (eg. what is a vector layer ?)
+ */
+proto._addVectorLayersDataToQueryResponse = function(queryResponse) {
+  const catalogService = GUI.getService('catalog');
 
-    // sanity checks
-    if (!queryResponse.data)  queryResponse.data  = [];
-    if (!queryResponse.query) queryResponse.query = { external: { add: true, selected: false } };
+  /** @type { boolean | undefined } */
+  const isExternalFilterSelected = queryResponse.query.external.filter.SELECTED;
 
-    // skip when add response to current results using addLayerFeaturesToResultsAction or external false
-    if (options.add || false === queryResponse.query.external.add) {
-      return;
-    }
-
-    /** @type { boolean | undefined } */
-    const isExternalFilterSelected = queryResponse.query.external.filter.SELECTED;
-
-    // add visible layers to query response (vector layers)
-    this._vectorLayers
-      .forEach(layer => {
-        const isLayerSelected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
-        if (
-          layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
-                                  (true === isLayerSelected  && true === isExternalFilterSelected) ||
-                                  (false === isLayerSelected && false === isExternalFilterSelected) ||
-                                  ("undefined" === typeof isExternalFilterSelected)
-                                )
-        ) {
-          queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
-        }
-      });
-  });
+  // add visible layers to query response (vector layers)
+  this._vectorLayers
+    .forEach(layer => {
+      const isLayerSelected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
+      if (
+        layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
+                                (true === isLayerSelected  && true === isExternalFilterSelected) ||
+                                (false === isLayerSelected && false === isExternalFilterSelected) ||
+                                ("undefined" === typeof isExternalFilterSelected)
+                              )
+      ) {
+        queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+      }
+    });
 };
 
 //function to add custom component in query result
@@ -1354,44 +1372,44 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
   } else this.hideChart(container)
 };
 
-proto.printAtlas = function(layer, feature){
-  let {id:layerId, features} = layer;
-  const inputAtlasAttr = 'g3w_atlas_index';
-  features = feature ? [feature]: features;
-  const atlasLayer = this.getAtlasByLayerId(layerId);
-  if (atlasLayer.length > 1) {
-    let inputs='';
-    atlasLayer.forEach((atlas, index) => {
-      const id = getUniqueDomId();
-      inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
-                 <label for="${id}">${atlas.name}</label>
-                 <br>`;
-    });
+proto.printAtlas = function(layer, feature) {
+  const features   = feature ? [feature] : layer.features;
+  const atlasLayer = this.getAtlasByLayerId(layer.id);
 
-    GUI.showModalDialog({
-      title: t('sdk.atlas.template_dialog.title'),
-      message: inputs,
-      buttons: {
-        success: {
-          label: "OK",
-          className: "skin-button",
-          callback: ()=> {
-            const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
-            if (index !== null || index !== undefined) {
-              const atlas = atlasLayer[index];
-              this._printSingleAtlas({
-                atlas,
-                features
-              })
-            }
+  /** @FIXME add description */
+  if (atlasLayer.length <= 1) {
+    this._printSingleAtlas({ features, atlas: atlasLayer[0] });
+    return;
+  }
+
+  const inputAtlasAttr = 'g3w_atlas_index';
+  let inputs = '';
+
+  atlasLayer.forEach((atlas, index) => {
+    const id = getUniqueDomId();
+    inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>`;
+    inputs += `<label for="${id}">${atlas.name}</label>`;
+    inputs += `<br>`;
+  });
+
+  GUI.showModalDialog({
+    title: t('sdk.atlas.template_dialog.title'),
+    message: inputs,
+    buttons: {
+      success: {
+        label: "OK",
+        className: "skin-button",
+        callback: () => {
+          const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
+          if (undefined === index) {
+            return false; // prevent default
           }
+          this._printSingleAtlas({ features, atlas: atlasLayer[index] });
         }
       }
-    })
-  } else this._printSingleAtlas({
-      atlas: atlasLayer[0],
-      features
-    })
+    }
+  });
+
 };
 
 /**
@@ -1711,20 +1729,19 @@ proto.removeQueryResultLayerFromMap = function(){
   this.mapService.getMap().removeLayer(this.resultsQueryLayer)
 };
 
-// show layerQuery result on map
-proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
+/**
+ * Show layerQuery result on map
+ */
+proto.addQueryResultsLayerToMap = function({feature}){
+
   this.removeQueryResultLayerFromMap();
+
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
-  try {
-    const center = ol.extent.getCenter(feature.getGeometry().getExtent());
-    this.mapService.getMap().getView().setCenter(center);
-  } catch(err){
 
-  }
-  timeout && setTimeout(()=>{
-    this.removeQueryResultLayerFromMap();
-  }, timeout)
+  // make sure that layer is on top of other map.
+  this.mapService.setZIndexLayer({ layer: this.resultsQueryLayer })
+
 };
 
 /**

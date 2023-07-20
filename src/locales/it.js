@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Errore di connessione",
+      at_moment: "Al momento non è possibile caricare la mappa",
+      f5: "Premi Ctrl+F5"
+    },
     cookie_law: {
       message: "Questo sito utilizza i cookie per garantire una buona usabilità all'utilizzatore finale.",
       buttonText: "Ho capito!"
@@ -274,6 +279,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Disegna un poligono per interrogare"
+        },
         querybybbox: {
           tooltip: 'Interroga per BBOX',
           nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
@@ -315,6 +323,10 @@ export default {
             metric: 'Metri',
             nautical: 'Miglio Nautico'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Precedente",
+          zoom_next: "Zoom Successivo"
         }
       },
       relations: {
@@ -354,6 +366,7 @@ export default {
           textarea: "testuale",
           string: "stringa",
           date: "data",
+          datetime: "data",
           float: "float",
           table: "table"
         },
@@ -376,6 +389,7 @@ export default {
             copied: "Copiato"
           },
           download: {
+            unknow: "Scarica",
             shp: 'Scarica Shapefile',
             gpx: 'Scarica GPX',
             gpkg: 'Scarica GPKG',
@@ -398,12 +412,14 @@ export default {
     },
     toggle_color_scheme: "Cambia colore",
     logout: "Esci",
-    no_other_projects: "Non ci sono altri progetti in questo gruppo cartografico",
+    no_other_projects: "Nu există alte proiecte în acest grup de hărți",
+    no_other_groups: "Nu există alte grupuri în acest grup de macrocomenzi",
     yes: "Si",
     no: "No",
     back:"Indietro",
     backto: "Torna a ",
     changemap: "Cambia Mappa",
+    change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",
     no_results: "Nessun risultato trovato",
@@ -432,8 +448,12 @@ export default {
     save: "Salva",
     cancel: "Cancella",
     close: "Chiudi",
-    enlange_reduce:"Allarga/Riduci",
-    reset_default:"Dimensione Partenza",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Non mostrare più",
+    enlange_reduce: "Allarga / Riduci",
+    reset_default: "Dimensione predefinita",
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",
@@ -452,7 +472,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Elimina WMS url",
         layer_id_already_added: "WMS Layer già aggiunto",
-        url_already_added: "WMS URL già aggiunto",
+        url_already_added: "WMS URL/Nome già aggiunto",
         layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
       }
     },
@@ -494,7 +514,16 @@ export default {
         tooltip: "Area"
       },
       screenshot: {
-        error: "Errore nella creazione dello screenshot"
+        error: "Errore nella creazione dello screenshot",
+        securityError: `  
+        <p><b>Errore di sicurezza</b>: uno strato esterno impedisce la stampa della mappa. Per verificare, procedere come segue:</p>
+        <ol>
+          <li>rimuovi eventuali layer esterni aggiunti manualmente (es. layer WMS)</li>
+          <li>forza il ricaricamento della pagina: <code>CTRL + F5</code></li>
+          <li>stampa nuovamente la mappa</li>
+        </ol>
+        <p>Per maggiori informazioni contattare l'amministratore del server in merito a: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        `
       }
     },
     catalog_items: {
@@ -515,6 +544,6 @@ export default {
       info: "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
-    }
+    },
   },
 };
