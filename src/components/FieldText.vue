@@ -9,12 +9,18 @@
 import Field from 'components/Field.vue';
 
 export default {
-  name: "text",
+
+  /** @since 3.8.6 */
+  name: "field-text",
+
   props: ['state'],
+
   components: {
     Field
   },
-  created() {}
+
+  created() {},
+
 };
 </script>
 

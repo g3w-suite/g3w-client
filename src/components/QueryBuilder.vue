@@ -85,6 +85,10 @@ import ProjectsRegistry from 'store/projects';
 const operators = Object.values(OPERATORS);
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'query-builder',
+
   data() {
     const options = this.$options.options;
     const edit = options !== undefined;

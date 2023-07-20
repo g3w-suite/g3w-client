@@ -216,7 +216,7 @@ function QueryResultsService() {
       const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
       if ('Point' === feature.getGeometry().getType()) {
         return new ol.style.Style({
-          text: new ol.style.Text({ fill, stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"' })
+          text: new ol.style.Text({ fill, stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
         });
       }
       return new ol.style.Style({ stroke });
@@ -1467,7 +1467,6 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
           break;
       }
     }
-
   }
 
   return {
@@ -1582,6 +1581,7 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
   }
 };
 
+
 /**
  * @FIXME add description
  * 
@@ -1589,41 +1589,42 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
  * @param feature 
  */
 proto.printAtlas = function(layer, feature) {
-  const features = feature ? [feature]: layer.features;
-  const inputAtlasAttr = 'g3w_atlas_index';
+  const features   = feature ? [feature] : layer.features;
   const atlasLayer = this.getAtlasByLayerId(layer.id);
-  if (atlasLayer.length > 1) {
-    let inputs='';
-    atlasLayer.forEach((atlas, index) => {
-      const id = getUniqueDomId();
-      inputs += `<input
-                    id="${id}" ${inputAtlasAttr}="${index}"
-                    class="magic-radio"
-                    type="radio"
-                    name="template"
-                    value="${atlas.name}"
-                 /><label for="${id}">${atlas.name}</label><br>`;
-    });
 
-    GUI.showModalDialog({
-      title: t('sdk.atlas.template_dialog.title'),
-      message: inputs,
-      buttons: {
-        success: {
-          label: "OK",
-          className: "skin-button",
-          callback: () => {
-            const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
-            if (null !== index || undefined !== index) {
-              this._printSingleAtlas({ atlas: atlasLayer[index], features });
-            }
+  /** @FIXME add description */
+  if (atlasLayer.length <= 1) {
+    this._printSingleAtlas({ features, atlas: atlasLayer[0] });
+    return;
+  }
+
+  let inputs = '';
+
+  atlasLayer.forEach((atlas, index) => {
+    const id = getUniqueDomId();
+    inputs += `<input id="${id}" g3w_atlas_index="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>`;
+    inputs += `<label for="${id}">${atlas.name}</label>`;
+    inputs += `<br>`;
+  });
+
+  GUI.showModalDialog({
+    title: t('sdk.atlas.template_dialog.title'),
+    message: inputs,
+    buttons: {
+      success: {
+        label: "OK",
+        className: "skin-button",
+        callback: () => {
+          const index = $('input[name="template"]:checked').attr('g3w_atlas_index');
+          if (undefined === index) {
+            return false; // prevent default
           }
+          this._printSingleAtlas({ features, atlas: atlasLayer[index] });
         }
       }
-    });
-  } else {
-    this._printSingleAtlas({ atlas: atlasLayer[0], features });
-  }
+    }
+  });
+
 };
 
 /**

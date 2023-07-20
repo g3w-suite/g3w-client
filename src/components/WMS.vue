@@ -58,7 +58,10 @@
   const { isURL } = require('core/utils/utils');
 
   export default {
-    name: "sidebaritem",
+
+    /** @since 3.8.6 */
+    name: "wms",
+
     data(){
       return {
         url: null,

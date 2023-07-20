@@ -16,7 +16,10 @@
 
 <script>
   export default {
-    name: "metadatabbox",
+
+    /** @since 3.8.6 */
+    name: "metadata-bbox",
+
     props: {
       data: {}
     },
