@@ -211,6 +211,10 @@ proto.setUpdate = function(bool=false, options={}) {
   const { force = false } = options;
   this.force.update = force;
   this.state.update = this.force.update || bool;
+  if (false === this.state.update) {
+    // set original `field._value` equal to current value to get changes
+    this.state.fields.forEach(field => { field._value = field.value; })
+  }
 };
 
 /**
@@ -326,7 +330,7 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
     ].forEach(dependency_field => dependency_fields.add(dependency_field));
 
 
-    //Only in apply update listen changeInput
+    // Only in apply update listen changeInput
     if (apply_on_update) {
 
       this.default_expression_fields_on_update.push(field);
@@ -653,6 +657,9 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
   } catch(err) {
     console.warn(err);
   }
+
+  // enable listen changeInput
+  this.listenChangeInput = true;
 
 };
 
