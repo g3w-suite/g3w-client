@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Anslutningsfel",
+      at_moment: "För närvarande är inte möjligt visa karta",
+      f5: "Tryck på Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -24,6 +29,11 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Välj Template"
+        }
+      },
       spatialbookmarks: {
         title: "Rumsliga bokmärken",
         helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
@@ -261,12 +271,15 @@ export default {
           help: {
             title: 'Ohje - Förfrågan med polygon',
             message:`
-                <ul >
+                <ul>
                   <li>Välj polygonnivå i listan.</li>
                   <li>Kontrollera att nivån är synlig.</li>
                   <li>Välj egenskap på önskad nivå.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Fråga efter ritpolygon"
         },
         querybybbox: {
           tooltip: 'BBox-förfrågan som riktar sig till en nivå',
@@ -308,6 +321,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Föregående",
+          zoom_next: "Zoom Nästa"
         }
       },
       relations: {
@@ -348,6 +365,7 @@ export default {
           textarea: "text",
           string: "teckensträng",
           date: "datum",
+          datetime: "datum",
           float: "flyttal",
           table: "tabell"
         },
@@ -370,6 +388,7 @@ export default {
             copied: "Kopierad."
           },
           download: {
+            unknow: 'Ladda',
             shp: 'Ladda SHP-fil',
             gpx: 'Ladda GPX-fil',
             gpkg: 'Ladda GPKG-fil',
@@ -393,11 +412,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logga ut",
     no_other_projects: "Inga projekt för denna grupp",
+    no_other_groups: "Inga fler grupper för denna makrogrupp",
     yes: "Ja",
     no: "Nej",
     back: "Gå tillbaka",
     backto: "Tillbaka ",
     changemap: "Byt karta",
+    change_session: "Ändra session",
     component: "Allmän komponent",
     search: "Sök",
     no_results: "Inga sökresultat",
@@ -426,8 +447,12 @@ export default {
     save: "Spara",
     cancel: "Ånga",
     close: "Stäng",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Visa inte det här meddelandet igen",
+    enlange_reduce: "Förstora / Förminska",
+    reset_default: "Standardstorlek",
     add: "Lägg till",
     exitnosave: "Lämna programmet utan att spara",
     annul: "Ångra",
@@ -446,7 +471,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Nivån har redan lagts till.",
-        url_already_added: "WMS URL har redan lagts till.",
+        url_already_added: "WMS URL/Namn har redan lagts till.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
@@ -487,7 +512,16 @@ export default {
         tooltip: "Areal"
       },
       screenshot: {
-        error: "Screenshot error creation"
+        error: "Screenshot error creation",
+        securityError: `  
+        <p><b>Säkerhetsfel</b>: ett externt lager hindrar kartan från att skrivas ut. Gör så här för att kontrollera:</p>
+        <ol>
+          <li>ta bort alla manuellt tillagda externa lager (t.ex. WMS-lager)</li>
+          <li>tvinga om inläsning av sidan: <code>CTRL + F5</code></li>
+          <li>skriv ut kartan igen</li>
+        </ol>
+        <p>För mer information kontakta serveradministratören om: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -vikt: fet;">&#x2139;&#xFE0F; säkerhet och nedsmutsade dukar</a></p>
+        `
       }
     },
     catalog_items: {

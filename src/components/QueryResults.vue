@@ -6,7 +6,7 @@
 <template>
   <div id="search-results" class="queryresults-wrapper">
     <div class="skin-color" style="font-weight: bold; margin-bottom: 3px; font-size: 1.1em;" v-if="info.message">
-      <span v-if="info.icon" class="action-button skin-tooltip-bottom" :class="g3wtemplate.getFontClass(info.icon)" @click.stop.prevent="info.action"></span>
+      <span v-if="info.icon" class="action-button skin-tooltip-bottom" :class="g3wtemplate.getFontClass(info.icon)"></span>
       <span>{{info.message}}</span>
     </div>
     <div class="queryresults-container">
@@ -20,6 +20,7 @@
                   <span class="query-layer-feature-count" v-show="!layer.rawdata">({{layer.features.length}})</span>
                 </div>
                 <div class="box-features-action" @click.stop="">
+                  <!-- info format layer component -->
                   <infoformats :layer="layer"/>
                   <template v-if="layer.features.length > 1">
                     <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button"
@@ -192,6 +193,10 @@
   const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
 
   export default {
+
+    /** @since 3.8.6 */
+    name: 'queryresults',
+
     data() {
       return {
         state: this.$options.queryResultsService.state,
@@ -206,9 +211,6 @@
       'header-feature-body': HeaderFeatureBody
     },
     computed: {
-      layersFeaturesBoxes() {
-        return this.state.layersFeaturesBoxes;
-      },
       onelayerresult(){
         return this.state.layers.length  === 1;
       },
@@ -218,30 +220,50 @@
       hasResults() {
         return this.state.layers.length > 0;
       },
-      info(){
-        const info = {
-          icon: null,
-          message: null,
-          action: null
-        };
-        const {query, search} = this.state;
-        if (query){
-          if (query.type === 'coordinates') {
-            info.icon = 'marker';
-            info.message = `  ${query.coordinates[0]}, ${query.coordinates[1]}`;
-            info.action = () => this.$options.queryResultsService.showCoordinates(query.coordinates);
-          } else if (query.type ==="bbox")  {
-            info.icon = 'square';
-            info.message = `  [${query.bbox.join(' , ')}]`;
-            info.action = ()=>this.$options.queryResultsService.showBBOX(query.bbox);
-          } else if (query.type === "polygon") {
-            info.icon =  'draw';
-            info.message =  `${query.layer.getName()} - Feature Id: ${query.fid}`;
-            info.action = () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry);
+
+      /**
+       * @typedef QueryResultsInfo
+       * 
+       * @property { string | null }     icon
+       * @property { string | null }     message
+       * @property { (() => {}) | null } action
+       */
+      /**
+       * @returns {QueryResultsInfo} query info
+       */
+      info() {
+        if (this.state.query) {
+          const query = this.state.query;
+          switch (query.type) {
+            case 'coordinates':
+              return {
+                icon: 'marker',
+                message: `  ${query.coordinates[0]}, ${query.coordinates[1]}`
+              };
+            case 'bbox':
+              return {
+                icon: 'square',
+                message: `  [${query.bbox.join(' , ')}]`
+              };
+            case 'polygon':
+              return {
+                icon: 'draw',
+                message: (query.layerName) ?
+                  `${query.layerName} ${"undefined" !== typeof query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
+                  : ' '                                                                                         // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+              };
+            default:
+              console.warn(`Unsupported query type:  ${query.type}`);
+              break;
           }
-        } else if (search){}
-        return info;
+        } else if (this.state.search) {
+          /** @FIXME missing implementation? */
+        }
+
+        return { icon: null, message: null };
+
       }
+
     },
     methods: {
       /**
@@ -408,11 +430,11 @@
       },
       getLayerFeatureBox(layer, feature, relation_index){
         const boxid = this.getBoxId(layer, feature, relation_index);
-        if (this.layersFeaturesBoxes[boxid] === undefined) {
-          this.layersFeaturesBoxes[boxid] = Vue.observable({
+        if (this.state.layersFeaturesBoxes[boxid] === undefined) {
+          this.state.layersFeaturesBoxes[boxid] = Vue.observable({
             collapsed: true
           });
-          this.$watch(()=> this.layersFeaturesBoxes[boxid].collapsed, collapsed => {
+          this.$watch(() => this.state.layersFeaturesBoxes[boxid].collapsed, collapsed => {
             const index = layer.features.findIndex(_feature => feature.id === _feature.id);
             const container = this.getContainerFromFeatureLayer({
               layer,
@@ -425,20 +447,20 @@
               container
             })
           });
-          this.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
+          this.state.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
         }
-        return this.layersFeaturesBoxes[boxid];
+        return this.state.layersFeaturesBoxes[boxid];
       },
       // to CHECK NOT GOOD
       collapsedFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
-        return this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
+        return this.state.layersFeaturesBoxes[boxid] ? this.state.layersFeaturesBoxes[boxid].collapsed : true;
       },
       showFeatureInfo(layer, boxid) {
         this.$options.queryResultsService.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
-          show: !this.layersFeaturesBoxes[boxid].collapsed
+          show: this.state.layersFeaturesBoxes[boxid] ? !this.state.layersFeaturesBoxes[boxid].collapsed : false
         });
       },
       getBoxId(layer, feature, relation_index) {
@@ -446,7 +468,7 @@
       },
       async toggleFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
-        this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
+        this.state.layersFeaturesBoxes[boxid].collapsed = !this.state.layersFeaturesBoxes[boxid].collapsed;
         await this.$nextTick();
         this.showFeatureInfo(layer, boxid);
       },
@@ -480,7 +502,7 @@
                 const boxid = `${layer.id}_${feature.id}_${relation.name}`;
                 const elements = relation.elements;
                 elements.forEach((element, index) =>{
-                  this.layersFeaturesBoxes[boxid+index] = {
+                  this.state.layersFeaturesBoxes[boxid+index] = {
                     collapsed: true
                   };
                 });
@@ -489,7 +511,6 @@
           })
         });
 
-        this.onelayerresult = layers.length === 1;
         // check if is a single result layer and if has one feature
         if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
           const layer = layers[0];
@@ -516,7 +537,6 @@
     },
     beforeDestroy() {
       this.state.zoomToResult = true;
-      this.layersFeaturesBoxes = null;
     },
     destroyed() {
       this.$options.queryResultsService.clear();

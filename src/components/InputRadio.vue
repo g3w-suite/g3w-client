@@ -29,6 +29,10 @@ const Input = require('gui/inputs/input');
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-radio',
+
   mixins: [Input],
   data() {
     return {

@@ -13,7 +13,12 @@ const default_options = {
 
 // fa-location-dot
 const layer_style = new ol.style.Style({
-  text: new ol.style.Text({ text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', fill: new ol.style.Fill({ color: 'red' }) })
+  text: new ol.style.Text({
+    text: '\uf3c5',
+    font: '900 3em "Font Awesome 5 Free"',
+    fill: new ol.style.Fill({ color: 'red' }),
+    offsetY: -15, // move marker icon on base point coordinate and not center
+  })
 });
 
 function GeolocationControl() {
