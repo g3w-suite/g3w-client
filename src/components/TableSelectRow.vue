@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/table/vue/components/selectrow.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <span>

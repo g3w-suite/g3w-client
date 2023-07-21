@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/core/iframe/services/routerservice.js@v3.4
+ * @file
+ * @since v3.6
  */
+
 import GUI from 'services/gui';
 
 const { splitContextAndMethod, uniqueId } = require('core/utils/utils');

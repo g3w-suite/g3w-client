@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/notifications/plugins/vue/plugins.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template functional>
   <div id="plugins_notification" v-plugins style="color: #994b10">

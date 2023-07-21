@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/sidebar/sidebar.js@v3.4
+ * @file
+ * @since v3.7
  */
+
 import SidebarItemComponent from 'components/SidebarItem.vue';
 
 const { base, inherit } = require('core/utils/utils');

@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/core/iframe/services/plugins/editing/service.js@v3.4
+ * @file
+ * @since v3.6
  */
+
 import GUI from 'services/gui';
 
 const BasePluginService = require('core/iframe/services/plugins/service');

@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/querybuilder/vue/querybuilder.html@v3.4 -->
-<!-- gui/querybuilder/vue/querybuilder.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="query_builder" class="form-group" style="flex-wrap: nowrap !important">
@@ -84,6 +85,10 @@ import ProjectsRegistry from 'store/projects';
 const operators = Object.values(OPERATORS);
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'query-builder',
+
   data() {
     const options = this.$options.options;
     const edit = options !== undefined;

@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/editing/sessionsregistry.js@v3.4
+ * @file Store user session (login / logout)
+ * @since v3.6
  */
 
 const SessionsRegistry = function() {

@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/lonlat/vue/lonlat.html@v3.4 -->
-<!-- gui/inputs/lonlat/vue/lonlat.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div style="position: relative">
@@ -62,6 +63,10 @@ const { getUniqueDomId } = require('core/utils/utils');
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-lonlat',
+
   mixins: [Input],
   data(){
     return {

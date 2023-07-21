@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/metadata/vue/metadata.html@v3.4  -->
-<!-- gui/metadata/vue/metadata.js@v3.4  -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
     <div></div>
@@ -8,6 +9,10 @@
 
 <script>
 export default {
+
+  /** @since 3.8.6 */
+  name: 'metadata',
+
   data() {
     return {
       state: null

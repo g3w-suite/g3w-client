@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/float/vue/float.html@v3.4 -->
-<!-- gui/inputs/float/vue/float.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -24,6 +25,10 @@
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-float',
+
   mixins: [Input],
 };
 </script>

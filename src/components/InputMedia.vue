@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/media/vue/media.html@v3.4 -->
-<!-- gui/inputs/media/vue/media.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -36,6 +37,10 @@ const { t } = require('core/i18n/i18n.service');
 const { media_field: MediaField } = require('gui/fields/fields');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-media',
+
   mixins: [InputMixins],
   components: {
     'g3w-media': MediaField

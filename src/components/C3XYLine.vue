@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/charts/vue/c3/line/lineXY.html@v3.4 -->
-<!-- gui/charts/vue/c3/line/lineXY.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
 <div class="chart_wrapper" style="height: 100%; width: 100%">
@@ -29,6 +30,10 @@ import GUI from 'services/gui';
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
+  
+  /** @since 3.8.6 */
+  name: 'c3xyline',
+
   props: {
     showdata: {
       type: Boolean,

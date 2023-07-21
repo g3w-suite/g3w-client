@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/picklayer/vue/picklayer.html@v3.4 -->
-<!-- gui/inputs/picklayer/vue/picklayer.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -27,6 +28,10 @@ const Input = require('gui/inputs/input');
 const Service = require('gui/inputs/picklayer/service');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-picklayer',
+
   mixins: [Input],
   methods: {
     pickLayer() {

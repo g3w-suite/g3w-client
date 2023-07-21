@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/search/vue/panel/searchpanel.html@v3.4 -->
-<!-- gui/search/vue/panel/searchpanel.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3w-search-panel form-group" v-disabled="state.searching">
@@ -72,7 +73,10 @@ export default {
       }
     },
     async autocompleteRequest(params={}){
-      return this.$options.service.autocompleteRequest(params);
+      return this.$options.service.getUniqueValuesFromField({
+        ...params,
+        output: 'autocomplete'
+      });
     },
     changeDependencyFields({attribute:field, value}) {
       const subscribers = this.$options.service.getDependencies(field);

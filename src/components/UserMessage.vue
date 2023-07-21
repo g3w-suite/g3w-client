@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/usermessage/vue/usermessage.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
@@ -94,7 +96,7 @@
         default: 'top'
       },
       size: {
-        type: 'String', // values [small, medium,fullpage]
+        type: String, // values [small, medium,fullpage]
         default: 'fullpage'
       },
       message: {

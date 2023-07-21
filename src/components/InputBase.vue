@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/baseinput/baseinput.html@v3.4 -->
-<!-- gui/inputs/baseinput/baseinput.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="form-group" v-if="state.visible">
@@ -19,7 +20,7 @@
       </slot>
       <slot name="body"></slot>
       <slot name="message">
-        <p v-if="notvalid" class="error-input-message" style="margin: 0" v-html="state.validate.message"></p>
+        <p v-if="notvalid" class="g3w-long-text error-input-message" style="margin: 0" v-html="state.validate.message"></p>
         <p v-else-if="state.info" style="margin: 0 " v-html="state.info"></p>
       </slot>
       <div class="g3w_input_help skin-background-color extralighten" v-if="state.help && this.state.help.visible" v-html="state.help.message">

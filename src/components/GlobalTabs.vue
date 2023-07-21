@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/vue/global-components/tabs/tabs.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="tabs-wrapper" v-if="show">
@@ -16,44 +18,44 @@
         <div class="tab-content" :class="{editing: contenttype === 'editing'}">
           <template v-for="(tab, index) in root_tab">
             <div :id="ids[index]" class="tab-pane fade" :class="{'in active': index === 0}" v-if="tab.visible === undefined || tab.visible">
-              <node :showRelationByField="showRelationByField"
-                    :handleRelation="handleRelation"
-                    :feature="feature"
-                    :layerid="layerid"
-                    :contenttype="contenttype"
-                    :addToValidate="addToValidate"
-                    :removeToValidate="removeToValidate"
-                    :changeInput="changeInput"
-                    :fields="fields"
-                    :showTitle="false"
-                    :node="tab">
-              </node>
+              <node
+                :showRelationByField="showRelationByField"
+                :handleRelation="handleRelation"
+                :feature="feature"
+                :layerid="layerid"
+                :contenttype="contenttype"
+                :addToValidate="addToValidate"
+                :removeToValidate="removeToValidate"
+                :changeInput="changeInput"
+                :fields="fields"
+                :showTitle="false"
+                :node="tab"/>
             </div>
           </template>
         </div>
       </template>
       <node v-else :showRelationByField="showRelationByField"
-            :handleRelation="handleRelation"
-            :feature="feature"
-            :layerid="layerid"
-            :contenttype="contenttype"
-            :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
-            :changeInput="changeInput"
-            :fields="fields"
-            :showTitle="false"
-            :node="root_tab">
-      </node>
+        :handleRelation="handleRelation"
+        :feature="feature"
+        :layerid="layerid"
+        :contenttype="contenttype"
+        :addToValidate="addToValidate"
+        :removeToValidate="removeToValidate"
+        :changeInput="changeInput"
+        :fields="fields"
+        :showTitle="false"
+        :node="root_tab"/>
     </template>
   </div>
 </template>
 
 <script>
+
   import TabService from 'core/expression/tabservice';
   import Node from 'components/GlobalTabsNode.vue';
   import GUI from 'services/gui';
 
-  const { getUniqueDomId } = require ('core/utils/utils');
+  const { getUniqueDomId, noop } = require ('core/utils/utils');
 
   export default {
     name: "tabs",
@@ -77,9 +79,18 @@
       fields: {
         required: true
       },
-      addToValidate: Function,
-      removeToValidate: Function,
-      changeInput: Function,
+      addToValidate: {
+          type: Function,
+          default: noop
+      },
+      removeToValidate: {
+          type: Function,
+          default: noop
+      },
+      changeInput: {
+          type: Function,
+          default: noop
+      },
       showRelationByField: {
         type: Boolean,
         default: true
@@ -88,9 +99,6 @@
         type: Function,
         default: ({relation, layerId, feature}={}) => GUI.getService('queryresults').showRelation({relation, layerId, feature})
       }
-    },
-    components :{
-      Node
     },
     data() {
       return {

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/notifications/online/vue/online.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template functional>
   <div id="offline_notification" v-online:hide style="color: #999">

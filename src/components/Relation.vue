@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/relations/vue/relation.html@v3.4 -->
-<!-- gui/relations/vue/relation.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="query-relation" ref="query_relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;" v-if="table">
@@ -76,7 +77,20 @@ const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 let SIDEBARWIDTH;
 
 export default {
-  props: ['table', 'feature', 'relation', 'previousview', 'showChartButton', 'cardinality'],
+
+  /** @since 3.8.6 */
+  name: 'relation',
+
+  props: {
+    table: {},
+    feature: {
+      default: null
+    },
+    relation: {},
+    previousview: {},
+    showChartButton: {},
+    cardinality:{},
+  },
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
@@ -84,7 +98,6 @@ export default {
   },
   data(){
     return {
-      feature: null,
       fields: null,
       chart: false,
       headercomponent: null,

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/g3w-form-inputs.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <form class="form-horizontal g3w-form">

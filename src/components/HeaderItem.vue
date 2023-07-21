@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/header/headeritem.html@v3.4 -->
-<!-- gui/header/headeritem.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <li class="customheaderlink dropdown user user-menu" :title="state.title">
@@ -19,6 +20,10 @@
 
 <script>
 export default {
+
+  /** @since 3.8.6 */
+  name:'header-item',
+
   props: ['state'],
   methods: {
     showCustomModal(id) {

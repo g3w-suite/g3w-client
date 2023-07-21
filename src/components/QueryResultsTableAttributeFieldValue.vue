@@ -1,12 +1,14 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/tableattributefieldvalue.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
-    <g3w-vue v-if="isVue(field)" :feature="feature" :state="field"></g3w-vue>
+    <g3w-vue v-if="isVue(field)" :feature="feature" :state="field"/>
     <span v-else-if="isSimple(field)" v-html="field.value"></span>
-    <g3w-image v-else-if="isPhoto(field)" :value="field.value"></g3w-image>
-    <g3w-image v-else-if="isImage(field)" :value="field.value"></g3w-image>
-    <g3w-link v-else-if="isLink(field)" :state="{value: field.value}"></g3w-link>
+    <g3w-image v-else-if="isPhoto(field)" :value="field.value"/>
+    <g3w-image v-else-if="isImage(field)" :value="field.value"/>
+    <g3w-link v-else-if="isLink(field)" :state="{value: field.value}"/>
 </template>
 
 <script>

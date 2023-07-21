@@ -1,11 +1,14 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/vue/vue.mixins.js@v3.6
+ * @file
+ * @since v3.7
  */
+
 export default {
   methods: {
     getFieldService(){
-      if (this._fieldsService === undefined)
+      if (undefined === this._fieldsService) {
         this._fieldsService = require('gui/fields/fieldsservice');
+      }
       return this._fieldsService;
     },
     getFieldType(field) {

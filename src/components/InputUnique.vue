@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/unique/vue/unique.html@v3.4 -->
-<!-- gui/inputs/unique/vue/unique.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -23,6 +24,10 @@ const Input = require('gui/inputs/input');
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: "input-unique",
+
   mixins: [Input, selectMixin],
   data() {
     const id = `unique_${getUniqueDomId()}`;

@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/text/vue/text.html@v3.4 -->
-<!-- gui/inputs/text/vue/text.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -22,6 +23,10 @@
 const Input = require('gui/inputs/input');
 
 export default {
-  mixins: [Input]
+
+  /** @since 3.8.6 */
+  name: "input-text",
+
+  mixins: [Input],
 };
 </script>

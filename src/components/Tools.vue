@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/tools/vue/tools.html@v3.4 -->
-<!-- gui/tools/vue/tools.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul class="g3w-tools treeview-menu">
@@ -21,6 +22,10 @@
 import G3wTool from 'components/Tool.vue';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'g3w-tools',
+
   data() {
     return {
       state: null

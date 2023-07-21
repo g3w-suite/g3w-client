@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/vue/vue.mixins.js@v3.6
+ * @file
+ * @since v3.7
  */
+
 import GUI from 'services/gui';
 
 const { throttle, debounce } = require('core/utils/utils');

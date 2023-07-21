@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/floatbar/floatbar.js@v3.4
+ * @file
+ * @since v3.7
  */
 
 import GUI from 'services/gui';

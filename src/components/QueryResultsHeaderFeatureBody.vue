@@ -1,12 +1,14 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/headerfeaturebody.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <tr @click="toggleFeatureBoxAndZoom(layer,feature)"
       @mouseover="trigger({id:'highlightgeometry'}, layer, feature, index)"
       @mouseout="trigger({id:'clearHighlightGeometry'}, layer, feature, index)" class="featurebox-header"
       :class="[boxLayerFeature.collapsed ? '' : 'featurebox-header-open']">
-    <actions :layer="layer" :featureIndex="index" :trigger="trigger" :feature="feature" :actions="actions"></actions>
+    <actions :layer="layer" :featureIndex="index" :trigger="trigger" :feature="feature" :actions="actions"/>
     <td class="attribute" v-for="attribute in attributesSubset(layer)">
       <span class="skin-color" v-if="isLink(getLayerField({layer, feature, fieldName: attribute.name}))" :class="g3wtemplate.getFontClass('link')"></span>
       <span class="skin-color" v-else-if="isPhoto(getLayerField({layer, feature, fieldName: attribute.name}))" :class="g3wtemplate.getFontClass('image')"></span>

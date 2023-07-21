@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/print/vue/print.html@v3.4 -->
-<!-- gui/print/vue/print.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul id="print" class="treeview-menu">
@@ -64,6 +65,10 @@ import SelectAtlasFieldValues from 'components/PrintSelectAtlasFieldValues.vue';
 import FidAtlasValues from 'components/PrintFidAtlasValues.vue';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'print',
+
   data() {
     return {
       state: null,

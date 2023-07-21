@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/vue/global-components/layerpositions.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3w-layer-positions" :id="ids.layerpositions">

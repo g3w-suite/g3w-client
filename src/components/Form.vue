@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/vue/form.html@v3.4 -->
-<!-- gui/form/vue/form.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3wform_content" style="position: relative">
@@ -37,6 +38,10 @@ import HeaderFormComponent from 'components/FormHeader.vue';
 import G3wFormFooter from 'components/FormFooter.vue';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'g3w-form',
+
   data() {
     return {
       state: {},

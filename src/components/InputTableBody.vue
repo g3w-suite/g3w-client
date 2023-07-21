@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/table/vue/components/input-table-body.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <tbody>
@@ -18,6 +20,10 @@
 const Validators = require('core/utils/validators');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: "input-table-row",
+
   props: {
     columntypes: {
       type: Array,
@@ -29,10 +35,7 @@ export default {
     }
   },
 
-  name: "input-table-row",
-  computed: {
-
-  },
+  computed: {},
 
   methods: {
     deleteRow(index) {

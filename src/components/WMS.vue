@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/wms/vue/wms.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul class="treeview-menu g3w-tools menu-items">
@@ -56,7 +58,10 @@
   const { isURL } = require('core/utils/utils');
 
   export default {
-    name: "sidebaritem",
+
+    /** @since 3.8.6 */
+    name: "wms",
+
     data(){
       return {
         url: null,

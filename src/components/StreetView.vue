@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/streetview/vue/streetview.html@v3.4 -->
-<!-- gui/streetview/vue/streetview.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="streetview">
@@ -12,6 +13,10 @@
 
 <script>
 export default {
+
+  /** @since 3.8.6 */
+  name: 'streetview',
+
   data() {
     return {
       state: null

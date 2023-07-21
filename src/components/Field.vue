@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/fields/field.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="field" :style="{fontSize: isMobile() && '0.8em'}">

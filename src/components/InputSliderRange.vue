@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/sliderrange/vue/sliderrange.html@v3.4 -->
-<!-- gui/inputs/sliderrange/vue/sliderrange.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -25,6 +26,10 @@
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-slider-range',
+
   mixins: [Input],
   watch:{
     'state.input.options.min'(){

@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/relations/vue/relations.html@v3.4 -->
-<!-- gui/relations/vue/relations.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="query-relations" style="overflow-y:auto">
@@ -20,6 +21,10 @@
 
 <script>
 export default {
+
+  /** @since 3.8.6 */
+  name: 'relations',
+
   props: ['relations', 'feature', 'loading'],
   methods: {
     async showRelation(relation) {

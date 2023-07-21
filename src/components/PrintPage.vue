@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/print/vue/printpage.html@v3.4 -->
-<!-- gui/print/vue/printpage.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="print-output" style="height:100%; position: relative;">
@@ -31,6 +32,10 @@ import GUI from 'services/gui';
 const { imageToDataURL } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'print-page',
+
   data() {
     return {
       state: null,
