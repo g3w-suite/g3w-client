@@ -1,5 +1,5 @@
 const { base, inherit } = require('core/utils/utils');
-const BaseLayer = require('core/layers/baselayers/baselayer');
+const BaseLayer = require('core/layers/baselayer');
 const BasesLayers = require('g3w-ol/layers/bases');
 
 function BingLayer(options){

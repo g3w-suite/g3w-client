@@ -1,8 +1,11 @@
+import ApplicationState from 'store/application-state'
+
 const Layer        = require('core/layers/layer');
 const TableLayer   = require('core/layers/tablelayer');
 const VectorLayer  = require('core/layers/vectorlayer');
 const ImageLayer   = require('core/layers/imagelayer');
-const BaseLayers   = require('core/layers/baselayers/baselayers');
+const BaseLayer    = require('core/layers/baselayer');
+const BASE         = require('g3w-ol/layers/bases');
 const GeojsonLayer = require('core/layers/geojson');
 
 const TABLE_LAYERS = [
@@ -27,14 +30,108 @@ const IMAGE_LAYERS = [
   Layer.SourceTypes.MDAL,
 ];
 
-const BASE_LAYERS = [
-  Layer.ServerTypes.OSM,
-  Layer.ServerTypes.BING,
-  Layer.ServerTypes.TMS,
-  Layer.ServerTypes.WMS,
-  Layer.ServerTypes.WMTS,
-  Layer.ServerTypes.ARCGISMAPSERVER,
-];
+const BASE_LAYERS   = {
+
+  /**
+   * ORIGINAL SOURCE: src/core/layers/baselayers/osmlayer.js@3.8.6
+   */
+  [Layer.ServerTypes.OSM]: class OSMLayer extends BaseLayer {
+    _makeOlLayer() {
+      return BASE.OSM.get({
+        id:    this.config.name,
+        title: this.config.title,
+        url:   this.config.url,
+      });
+    }
+  },
+
+  /**
+   * ORIGINAL SOURCE: core/layers/baselayers/binglayer.js@3.8.6
+   */
+  [Layer.ServerTypes.BING]: class BingLayer extends BaseLayer {
+    _makeOlLayer() {
+      const key = ApplicationState.keys.vendorkeys.bing;
+      switch(this.config.source ? this.config.source.subtype : null) {
+        case 'streets':          return BASE.BING.get({ key, imagerySet: 'Road' });
+        case 'aerial':           return BASE.BING.get({ key, imagerySet: 'Aerial' });
+        case 'aerialwithlabels': return BASE.BING.get({ key, imagerySet: 'AerialWithLabels' });
+        default:                 return BASE.BING.get({ key, imagerySet: 'Aerial' });
+      }
+    }
+  },
+
+  /**
+   * ORIGINAL SOURCE: src/core/layers/baselayers/tmslayer.js@3.8.6
+   */
+  [Layer.ServerTypes.TMS]: class TMSLayer extends BaseLayer {
+    _makeOlLayer() {
+      // configuration to create TMS
+      const { url, attributions, minZoom, maxZoom, crs } = this.config;
+      return BASE.TMS.get({
+        url,
+        minZoom,
+        maxZoom,
+        attributions,
+        projection: this.getProjectionFromCrs(crs),
+      });
+    }
+  },
+
+  /**
+   * ORIGINAL SOURCE: src/require('core/layers/baselayers/arcgislayer.js@3.8.6
+   */
+  [Layer.ServerTypes.ARCGISMAPSERVER]: class ARCGISMAPSERVERLayer extends BaseLayer {
+    _makeOlLayer() {
+      // configuration to create TMS
+      const { url, attributions, crs } = this.config;
+      return BASE.TMS.get({
+        url,
+        source_type: 'arcgismapserver',
+        projection: this.getProjectionFromCrs(crs),
+        attributions,
+      });
+    }
+  },
+
+  /**
+   * ORIGINAL SOURCE: src/require('core/layers/baselayers/wmtslayer.js@3.8.6
+   */
+  [Layer.ServerTypes.WMTS]: class WMTSLayer extends BaseLayer {
+    _makeOlLayer() {
+      // use this config to get params
+      const { url, layer, attributions, matrixSet, format, style, requestEncoding, crs } = this.config;
+      return BASE.WMTS.get({
+        url,
+        layer,
+        attributions,
+        format,
+        projection: this.getProjectionFromCrs(crs),
+        requestEncoding,
+        matrixSet,
+        style,
+      });
+    }
+  },
+
+  /**
+   * ORIGINAL SOURCE: src/require('core/layers/baselayers/wmslayer.js@3.8.6
+   */
+  [Layer.ServerTypes.WMS]: class WMSLayer extends BaseLayer {
+    _makeOlLayer() {
+      // use this config to get params
+      const { url, layers, singleTile, attributions, crs, opacity } = this.config;
+      return BASE.WMS.get({
+        url,
+        layers,
+        singleTile,
+        attributions,
+        projection: this.getProjectionFromCrs(crs),
+        opacity,
+      });
+    }
+  },
+
+};
 
 // Class to build layer based on configuration
 class LayerFactory {
@@ -74,13 +171,13 @@ class LayerFactory {
     const is_table_layer   = is_table && no_geom;
     const is_image_layer   = (is_table && !no_geom) || is_image || is_wms
     const is_vector_layer  = is_local || is_wfs || (is_g3w && !is_geojson);
-    const is_base_layer    = BASE_LAYERS.includes(config.servertype);
+    const is_base_layer    = config.servertype in BASE_LAYERS;
     const is_geojson_layer = is_geojson;
 
     if (is_table_layer)   return TableLayer;
     if (is_image_layer)   return ImageLayer;
     if (is_vector_layer)  return VectorLayer;
-    if (is_base_layer)    return BaseLayers[config.servertype];
+    if (is_base_layer)    return BASE_LAYERS[config.servertype];
     if (is_geojson_layer) return GeojsonLayer;
 
     console.warn('Uknown layer server type', config);
