@@ -4,7 +4,7 @@
  */
 
 import appConfig from 'config';
-import { TIMEOUT, APP_VERSION } from 'app/constant';
+import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS, API_BASE_URLS } from 'app/constant';
 import ApplicationState from 'store/application-state';
 import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
@@ -92,6 +92,15 @@ const ApplicationService = function() {
     },
 
     /**
+     * @since 3.8.0
+     */
+    changeMapProject({url, epsg}) {
+      url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      history.replaceState(null, null, url);
+      location.replace(url);
+    },
+
+    /**
      * @FIXME add description
      */
     online() {
@@ -110,7 +119,7 @@ const ApplicationService = function() {
      */
     setFilterToken(filtertoken) {
       this._setFilterToken(filtertoken)
-    }
+    },
 
   };
 
@@ -148,9 +157,7 @@ const ApplicationService = function() {
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set Accept-Language request header based on config language
     $.ajaxSetup({
-      beforeSend(jqXHR) {
-        jqXHR.setRequestHeader('Accept-Language', this._config.user.i18n || 'en');
-      }
+      beforeSend: (xhr) => { xhr.setRequestHeader('Accept-Language', this._config.user.i18n || 'en'); }
     });
   };
 
@@ -164,23 +171,28 @@ const ApplicationService = function() {
   /**
    * @param {boolean} bool
    * @param {string} download_caller_id
+   * 
    * @returns {null}
    */
   this.setDownload = function(bool=false, download_caller_id) {
-    /**
-     * @FIXME weird nested if conditions
-     */
-    if (download_caller_id) {
-      if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
-        ApplicationState.download = false;
-        this.download_caller_id = null;
-      } else if (bool && this.download_caller_id === null) {
-        ApplicationState.download = bool;
-        this.download_caller_id = uniqueId();
-      }
-    } else {
+    const give_me_a_name_0 = !download_caller_id;
+    const give_me_a_name_1 = !bool && download_caller_id && this.download_caller_id === download_caller_id
+    const give_me_a_name_2 = !give_me_a_name_1 && download_caller_id && bool && this.download_caller_id === null;
+
+    if (give_me_a_name_0) {
       ApplicationState.download = bool;
     }
+
+    if (give_me_a_name_1) {
+      ApplicationState.download = false;
+      this.download_caller_id = null;
+    }
+
+    if (give_me_a_name_2) {
+      ApplicationState.download = bool;
+      this.download_caller_id = uniqueId();
+    }
+
     return this.download_caller_id;
   };
 
@@ -188,16 +200,16 @@ const ApplicationService = function() {
     return ApplicationState.download;
   };
 
- /**
+  /**
   * @param {string} plugin name of plugin
   */
   this.loadingPlugin = function(plugin) {
     ApplicationState.plugins.push(plugin);
   };
 
- /**
-  * @param {string} plugin name of plugin
-  */
+  /**
+   * @param {string} plugin name of plugin
+   */
   this.loadedPlugin = function(plugin) {
     ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
   };
@@ -229,8 +241,8 @@ const ApplicationService = function() {
   };
 
   this.registerOnlineOfflineEvent = function() {
-    this.registerWindowEvent({ evt: 'online', cb: () => this.online() });
-    this.registerWindowEvent({ evt: 'offline', cb: () => this.offline() })
+    this.registerWindowEvent({ evt: 'online',  cb:() => this.online() });
+    this.registerWindowEvent({ evt: 'offline', cb:() => this.offline() });
   };
 
   this.getBaseLayerId = function() {
@@ -301,7 +313,7 @@ const ApplicationService = function() {
    * @param {Object} data 
    */
   this.setOfflineItem = async function(id, data={}) {
-    this.setLocalItem({ id, data })
+    this.setLocalItem({ id, data });
   };
 
   this.setLocalItem = function({id, data}={}) {
@@ -339,7 +351,7 @@ const ApplicationService = function() {
   };
 
   /**
-   * check if is in Iframe 
+   * @returns {boolean} whether application is loaded within an <iframe>
    */
   this.isIframe = function() {
     return ApplicationState.iframe;
@@ -367,7 +379,7 @@ const ApplicationService = function() {
   };
 
   /**
-   * application proxy url
+   * @returns {string} application proxy url 
    */
   this.getProxyUrl = function() {
     return `${this._initConfig.proxyurl}`;
@@ -403,25 +415,32 @@ const ApplicationService = function() {
        */
       this.baseurl = initConfig.baseurl;
 
-      config.server.urls.baseurl = initConfig.baseurl;
-      config.server.urls.frontendurl = initConfig.frontendurl;
-      config.server.urls.staticurl = initConfig.staticurl;
-      config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
-      config.server.urls.mediaurl = initConfig.mediaurl;
-      config.server.urls.vectorurl = initConfig.vectorurl;
-      config.server.urls.proxyurl = initConfig.proxyurl;
-      config.server.urls.rasterurl = initConfig.rasterurl;
+      /** 
+       * @type {{ macrogroups: * | [], groups: * | [] }}
+       */
+      const {
+        macrogroups,
+        groups
+      } = await this.getMacrogroupsGroups();
+
+      /**
+       * write urls of static files and media url (base url and vector url)
+       */
+      config.server.urls.baseurl         = initConfig.baseurl;
+      config.server.urls.frontendurl     = initConfig.frontendurl;
+      config.server.urls.staticurl       = initConfig.staticurl;
+      config.server.urls.clienturl       = initConfig.staticurl + initConfig.client;
+      config.server.urls.mediaurl        = initConfig.mediaurl;
+      config.server.urls.vectorurl       = initConfig.vectorurl;
+      config.server.urls.proxyurl        = initConfig.proxyurl;
+      config.server.urls.rasterurl       = initConfig.rasterurl;
       config.server.urls.interfaceowsurl = initConfig.interfaceowsurl;
 
       config.main_map_title = initConfig.main_map_title;
-
-      config.group = initConfig.group;
-
-      config.user = initConfig.user;
-
-      config.credits = initConfig.credits;
-
-      config.i18n = initConfig.i18n;
+      config.group          = initConfig.group;
+      config.user           = initConfig.user;
+      config.credits        = initConfig.credits;
+      config.i18n           = initConfig.i18n;
 
       /**
        * get language from server
@@ -472,7 +491,7 @@ const ApplicationService = function() {
           return `${config.server.urls.baseurl+config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
         },
         /**
-         * needed by ProjectsRegistry to get informations about project configuration
+         * needed by ProjectsRegistry to get informations about project configuration 
          */
         getProjectConfigUrl(project) {
           return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
@@ -480,10 +499,35 @@ const ApplicationService = function() {
         plugins: config.group.plugins,
         tools: config.tools,
         views: config.views || {},
-        user: config.user || null
+        user: config.user || null,
+        /**
+         * @since 3.8.0
+         */
+        groups,
+        macrogroups,
       };
     } catch(error) {
       return Promise.reject(error);
+    }
+  };
+
+  /**
+   * @returns { Promise<{ macrogroups: * | [], groups: * | [] }> }
+   * 
+   * @since 3.8.0
+   */
+  this.getMacrogroupsGroups = async function() {
+    let macrogroups = [];
+    let groups = [];
+    try {
+      macrogroups = await XHR.get({ url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.macrogroups}` })
+    } catch(err) {}
+    try {
+      groups = await XHR.get({ url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.nomacrogoups}` })
+    } catch(err) {}
+    return {
+      macrogroups,
+      groups
     }
   };
 
@@ -532,6 +576,9 @@ const ApplicationService = function() {
     })
   };
 
+  /**
+   * Fetch configuration from server
+   */
   this.getInitConfigUrl = function() {
     return this._initConfigUrl;
   };
@@ -595,6 +642,7 @@ const ApplicationService = function() {
             this.startIFrameService({ project });
           }
           DataRouterService.init();
+          this.initLocalItems();
           resolve(true);
         }).fail(error => reject(error))
       }
@@ -628,7 +676,7 @@ const ApplicationService = function() {
   };
 
   /**
-   * iframeservice
+   * iframeservice 
    */
   this.startIFrameService = function({project}={}) {
     const iframeService = require('core/iframe/routerservice');
@@ -708,46 +756,56 @@ const ApplicationService = function() {
    * 
    * Perfom again all requests and rebuild interface on change project
    * 
-   * @param gid
-   * @param host
+   * @param project.gid
+   * @param project.host
+   * @param project.crs
    * @returns {JQuery.Promise<any, any, any>}
    */
-  this._changeProject = function({gid, host}={}) {
+  this._changeProject = function({gid, host, crs}={}) {
     const d = $.Deferred();
     this._gid = gid;
-    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(ProjectsRegistry.getProjectUrl(gid));
-    history.replaceState(null, null, url);
+    const projectUrl = ProjectsRegistry.getProjectUrl(gid);
+    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
+    /**
+     * @since 3.7.15
+     */
+    // in case of url with not same origin (CORS issue) trigger an error
+    try {
+      history.replaceState(null, null, url);
+    } catch (err) {}
     location.replace(url);
     d.resolve();
     return d.promise();
   };
 
+  /**
+   * Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
+   */
   this.setLayout = function(who='app', config={}) {
-    /**
-     * Set default height percentage of height when show
-     * vertical content (for example show table attribute)
-     */
-    if (config.rightpanel) {
-      Object.assign(config.rightpanel, {
-          width: config.rightpanel.width || 50,
-          height: config.rightpanel.height || 50,
-          width_default: config.rightpanel.width, // used eventually to reset starting values
-          height_default: config.rightpanel.height,
-          width_100: false,
-          height_100: false,
-        }
-      );
-    } else {
-      config.rightpanel = {
-        width: 50,
-        height: 50,
-        width_default: 50,
-        height_default: 50,
-        width_100: false,
-        height_100: false
-      };
-    }
+
+    const default_config = config.rightpanel || {
+      width:          50, // ie. width == 50%  
+      height:         50, // ie. height == 50%
+      width_default:  50,
+      height_default: 50,
+      width_100:      false,
+      height_100:     false,
+    };
+
+    config.rightpanel = Object.assign(
+      default_config,
+      {
+        width:          config.rightpanel.width  || default_config.width,
+        height:         config.rightpanel.height || default_config.width,
+        width_default:  config.rightpanel.width  || default_config.width,
+        height_default: config.rightpanel.height || default_config.width,
+        width_100:      false,
+        height_100:     false,
+      }
+    );
+
     ApplicationState.gui.layout[who] = config;
+
   };
 
   this.removeLayout = function(who) {
@@ -774,7 +832,18 @@ const ApplicationService = function() {
 
   this.clear = function() {
     this.unregisterOnlineOfflineEvent();
-  }
+  };
+
+  /**
+   * Initialize each local item if not yet initialized
+   * 
+   * @since v3.8
+   */
+  this.initLocalItems = function() {
+    Object
+      .keys(LOCAL_ITEM_IDS)
+      .forEach(id => { undefined === this.getLocalItem(id) && this.setLocalItem({ id, data: LOCAL_ITEM_IDS[id].value }); })
+  };
 };
 
 inherit(ApplicationService, G3WObject);
