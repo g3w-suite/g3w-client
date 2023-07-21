@@ -752,32 +752,34 @@ const ApplicationService = function() {
     return d.promise();
   };
 
+  /**
+   * Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
+   */
   this.setLayout = function(who='app', config={}) {
-    /**
-     * Set default height percentage of height when show
-     * vertical content (for example show table attribute)
-     */
-    if (config.rightpanel) {
-      Object.assign(config.rightpanel, {
-          width: config.rightpanel.width || 50,
-          height: config.rightpanel.height || 50,
-          width_default: config.rightpanel.width, // used eventually to reset starting values
-          height_default: config.rightpanel.height,
-          width_100: false,
-          height_100: false,
-        }
-      );
-    } else {
-      config.rightpanel = {
-        width: 50,
-        height: 50,
-        width_default: 50,
-        height_default: 50,
-        width_100: false,
-        height_100: false
-      };
-    }
+
+    const default_config = config.rightpanel || {
+      width:          50, // ie. width == 50%  
+      height:         50, // ie. height == 50%
+      width_default:  50,
+      height_default: 50,
+      width_100:      false,
+      height_100:     false,
+    };
+
+    config.rightpanel = Object.assign(
+      default_config,
+      {
+        width:          config.rightpanel.width  || default_config.width,
+        height:         config.rightpanel.height || default_config.width,
+        width_default:  config.rightpanel.width  || default_config.width,
+        height_default: config.rightpanel.height || default_config.width,
+        width_100:      false,
+        height_100:     false,
+      }
+    );
+
     ApplicationState.gui.layout[who] = config;
+
   };
 
   this.removeLayout = function(who) {

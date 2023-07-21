@@ -18,10 +18,9 @@
             :addToValidate="addToValidate"
             :removeToValidate="removeToValidate"
             :feature="feature"
-            :is="getComponent(getField(getNode(row, column)))">
-          </component>
+            :is="getComponent(getField(getNode(row, column)))"/>
           <template v-else>
-            <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
+            <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"/>
             <template v-else>
               <div v-if="showRelationByField" v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading" @click.stop="handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}">
                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
