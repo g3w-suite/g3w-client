@@ -15,7 +15,7 @@ BaseLayers.OSM.get = function({title, id, url}={}){
 };
 
 BaseLayers.TMS =  {
-  get({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
+  get({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions, crossOrigin='anonymous'}={}) {
     let layer;
     switch(source_type) {
       case 'xyz':
@@ -25,11 +25,12 @@ BaseLayers.TMS =  {
           minZoom,
           maxZoom,
           attributions,
-          projection
+          projection,
+          crossOrigin
         });
         break;
       case 'arcgismapserver':
-        layer = TiledArgisMapServer({
+        layer = RasterLayers.TiledArgisMapServer({
           url,
           visible,
           projection,

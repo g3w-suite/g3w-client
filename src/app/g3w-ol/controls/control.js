@@ -77,20 +77,33 @@ proto.isToggled = function() {
 proto.setEventKey = function({eventType, eventKey}){
   this.eventKeys[eventType] = {
     eventKey,
-    originalHandler: eventKey.linstener
+    originalHandler: eventKey.listener
   };
 };
 
-proto.resetOriginalHandlerEvent = function(eventType){
-  const eventKey = this.eventKeys[eventType].eventKey;
-  eventKey && ol.Observable.unByKey(eventKey);
-  this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
+/**
+ * Reset original handler method of control event.
+ * 
+ * @param {string} eventType
+ */
+proto.resetOriginalHandlerEvent = function(eventType) {
+  if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
+    ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
+    this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
+  }
 };
 
+/**
+ * Override original handler method of control event.
+ * 
+ * @param {string} eventType
+ * @param {() => {}} handler
+ */
 proto.overwriteEventHandler = function({eventType, handler}) {
-  const eventKey = this.eventKeys[eventType].eventKey;
-  eventKey && ol.Observable.unByKey(eventKey);
-  this.eventKeys[eventType].eventKey = this.on(eventType, handler);
+  if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
+    ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
+    this.eventKeys[eventType].eventKey = this.on(eventType, handler);
+  }
 };
 
 proto.getPosition = function(positionCode) {
@@ -174,14 +187,16 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
-proto.setEnable = function(enabled, toggled=false) {
-  const controlButton = $(this.element).find('button').first();
-  if (enabled) controlButton.removeClass('g3w-ol-disabled');
-  else {
-    controlButton.addClass('g3w-ol-disabled');
-    this._interaction && this._interaction.setActive(false);
+/**
+ * Toggle pointer events and `g3w-ol-disabled` class on map control button
+ * 
+ * @param {boolean} enabled wheter the map control button is clickable
+ */
+proto.setEnable = function(enabled) {
+  $(this.element).find('button').first().toggleClass('g3w-ol-disabled', !enabled);
+  if(!enabled && this._interaction) {
+    this._interaction.setActive(false);
   }
-  this.toggle && this.toggle(toggled);
   this._enabled = enabled;
 };
 
