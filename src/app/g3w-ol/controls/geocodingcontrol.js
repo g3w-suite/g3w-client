@@ -400,7 +400,6 @@ function GeocodingControl(options={}) {
     debug: false,
     viewbox: options.bbox,
     bounded: 1,
-    classMobile: options.isMobile ? 'nominatim-mobile' : '',
     mapCrs: options.mapCrs,
     fontIcon: GUI.getFontClass('search')
   };
@@ -430,6 +429,7 @@ function GeocodingControl(options={}) {
     source: new ol.source.Vector(),
     style: new ol.style.Style({
       text: new ol.style.Text({
+        offsetY: -15, //move marker icon on base point coordinate and not center
         text: '\uf3c5',
         font: '900 3em "Font Awesome 5 Free"',
         stroke: new ol.style.Stroke({
@@ -445,7 +445,7 @@ function GeocodingControl(options={}) {
 
   this.projection;
 
-  const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`;
+  const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container}`;
   const self = this;
 
   const GeocoderVueContainer = Vue.extend({
