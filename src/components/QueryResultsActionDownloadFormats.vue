@@ -19,7 +19,10 @@
 
 <script>
 export default {
-  name: "downloadformats",
+
+  /** @since 3.8.6 */
+  name: "queryresults-downloadformats",
+
   data(){
     const download_format = this.config.downloads[0].format;
     return {

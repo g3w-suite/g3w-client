@@ -5,10 +5,9 @@
 
 <template>
   <aside class="main-sidebar" :class="{ iframe: iframe, 'g3w-disabled': disabled }" >
-    <!-- sidebar: style can be found in sidebar.less -->
-    <!-- Sidebar toggle button-->
-    <!-- Toggle button on the left side of main sidebar only if not mobile -->
-    <a v-if="!isMobile()" href="#" class="sidebar-aside-toggle" data-toggle="offcanvas" role="button">
+    <!-- sidebar: style can be found in g3w-sidebar.less -->
+    <!-- Sidebar toggle button (desktop only) -->
+    <a href="#" class="sidebar-aside-toggle" data-toggle="offcanvas" role="button">
       <i :class="g3wtemplate.getFontClass('bars')"></i>
     </a>
     <div id="g3w-sidebar" class="sidebar">
