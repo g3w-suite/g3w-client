@@ -267,7 +267,7 @@ module.exports = {
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
-- g3-client: __${G3W_CONSTANT.APP_VERSION}__
+- g3w-client: __${G3W_CONSTANT.APP_VERSION}__
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());

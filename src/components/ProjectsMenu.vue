@@ -29,11 +29,14 @@
 import ProjectsRegistry from 'store/projects';
 import GUI from 'services/gui';
 
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'projects-menu',
 
   data() {
     return {

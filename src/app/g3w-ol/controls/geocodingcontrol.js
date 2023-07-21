@@ -429,6 +429,7 @@ function GeocodingControl(options={}) {
     source: new ol.source.Vector(),
     style: new ol.style.Style({
       text: new ol.style.Text({
+        offsetY: -15, //move marker icon on base point coordinate and not center
         text: '\uf3c5',
         font: '900 3em "Font Awesome 5 Free"',
         stroke: new ol.style.Stroke({

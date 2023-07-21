@@ -24,6 +24,10 @@
   import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
 
   export default {
+
+    /** @since 3.8.6 */
+    name: 'spatial-bookmark-group',
+
     props: {
       group: {
         type: Object,

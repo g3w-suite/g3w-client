@@ -25,13 +25,17 @@
  * @TODO remove "Vue.extend" from module export
  */
 export default Vue.extend({
+
+  /** @since 3.8.6 */
+  name: 'form-header',
+
   props: {
     headers: {
       type: Array,
       default:[]
     },
     currentid: {
-      type: 'String'
+      type: String
     },
     update: {
       type: Boolean
@@ -42,8 +46,13 @@ export default Vue.extend({
   },
   methods: {
     click(id) {
-      if (this.currentid !== id)
+      /**
+       * @deprecated since 3.6.2
+       * This was used when form headers has more than one (case relation)
+       */
+      if (this.currentid !== id && this.headers.length > 1) {
         this.$emit('clickheader', id);
+      }
     },
     resizeForm(perc){
       this.$emit('resize-form', perc);

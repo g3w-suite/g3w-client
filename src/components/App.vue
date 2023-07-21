@@ -1002,6 +1002,9 @@ const layout = $.LayoutManager;
 
 export default {
 
+  /** @since 3.8.6 */
+  name: 'app',
+
   mixins: [resizeMixin],
 
   data() {
