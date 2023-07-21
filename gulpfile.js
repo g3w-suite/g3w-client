@@ -241,7 +241,7 @@ gulp.task('images', function () {
  gulp.task('datatable-images', function () {
   return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/css/DataTables-1.10.16/images/'));
+    .pipe(gulp.dest(outputFolder + '/static/client/images/'));
 });
 
 /**

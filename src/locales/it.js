@@ -389,6 +389,7 @@ export default {
             copied: "Copiato"
           },
           download: {
+            unknow: "Scarica",
             shp: 'Scarica Shapefile',
             gpx: 'Scarica GPX',
             gpkg: 'Scarica GPKG',
@@ -451,8 +452,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Non mostrare più",
-    enlange_reduce: "Allarga/Riduci",
-    reset_default: "Dimensione Partenza",
+    enlange_reduce: "Allarga / Riduci",
+    reset_default: "Dimensione predefinita",
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",
@@ -513,7 +514,16 @@ export default {
         tooltip: "Area"
       },
       screenshot: {
-        error: "Errore nella creazione dello screenshot"
+        error: "Errore nella creazione dello screenshot",
+        securityError: `  
+        <p><b>Errore di sicurezza</b>: uno strato esterno impedisce la stampa della mappa. Per verificare, procedere come segue:</p>
+        <ol>
+          <li>rimuovi eventuali layer esterni aggiunti manualmente (es. layer WMS)</li>
+          <li>forza il ricaricamento della pagina: <code>CTRL + F5</code></li>
+          <li>stampa nuovamente la mappa</li>
+        </ol>
+        <p>Per maggiori informazioni contattare l'amministratore del server in merito a: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        `
       }
     },
     catalog_items: {

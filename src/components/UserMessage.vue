@@ -96,7 +96,7 @@
         default: 'top'
       },
       size: {
-        type: 'String', // values [small, medium,fullpage]
+        type: String, // values [small, medium,fullpage]
         default: 'fullpage'
       },
       message: {

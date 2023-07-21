@@ -75,6 +75,9 @@ const { XHR } = require('core/utils/utils');
 
 export default {
 
+  /** @since 3.8.6 */
+  name: 'change-map-menu',
+
   data() {
     return {
       
