@@ -1,15 +1,22 @@
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
+import ProjectsRegistry                   from 'store/projects';
+import ApplicationService                 from 'services/application';
 
-const { base, inherit, mixin } = require('core/utils/utils');
-const Layer = require('core/layers/layer');
-const VectorLayer = require('core/layers/vectorlayer');
-const WMSLayer = require('core/layers/map/wmslayer');
-const WMSTLayer = require('core/layers/map/wmstlayer');
-const ARCGISMAPSERVERLayer = require('core/layers/map/arcgismapserverlayer');
-const XYZLayer = require('core/layers/map/xyzlayer');
-const LegendService = require('core/layers/legend/legendservice');
-const GeoLayerMixin = require('core/layers/geolayermixin');
+const { base, inherit, mixin }            = require('core/utils/utils');
+const Layer                               = require('core/layers/layer');
+const VectorLayer                         = require('core/layers/vectorlayer');
+const WMSLayer                            = require('core/layers/map/wmslayer');
+const WMSTLayer                           = require('core/layers/map/wmstlayer');
+const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
+const XYZLayer                            = require('core/layers/map/xyzlayer');
+const { get_LEGEND_ON_LEGEND_OFF_Params } = require('core/utils/geo');
+const GeoLayerMixin                       = require('core/layers/geolayermixin');
+
+/**
+ * Stringify a query URL param (eg. `&WIDTH=700`)
+ */
+function __(name, value) {
+  return value ? name + value : '';
+}
 
 function ImageLayer(config={}, options={}) {
   /*{
@@ -42,15 +49,18 @@ function ImageLayer(config={}, options={}) {
     wms_use_layer_ids,
     styles
   }*/
+
   this.setters = {
     change(){},
   };
 
   base(this, config, options);
+
   this.config.baselayer = config.baselayer || false;
-  this.type = Layer.LayerTypes.IMAGE;
-  this.legendUrl = null;
-  this.customParams = {};
+  this.type             = Layer.LayerTypes.IMAGE;
+  this.legendUrl        = null;
+  this.customParams     = {};
+
   this.setup(config, options);
 }
 
@@ -60,23 +70,30 @@ mixin(ImageLayer, GeoLayerMixin);
 
 const proto = ImageLayer.prototype;
 
-proto.getLayerForEditing = async function({force=false, vectorurl, project_type, project}={}) {
-  if (this.isEditable() || force) {
-    const project = project || ProjectsRegistry.getCurrentProject();
-    const editableLayer = new VectorLayer(this.config, {
+proto.getLayerForEditing = async function({
+  force = false,
+  vectorurl,
+  project_type,
+  project
+} = {}) {
+
+  if (!this.isEditable() && !force) {
+    return null;
+  }
+
+  // set editing layer
+  try {
+    const editingLayer = await (new VectorLayer(this.config, {
       vectorurl,
       project_type,
-      project
-    });
-    // set editing layer
-    try {
-      const editingLayer = await editableLayer.layerForEditing;
-      this.setEditingLayer(editingLayer);
-      return editingLayer
-    } catch(err) {
-      return Promise.reject(err);
-    }
-  } else return null
+      project: project || ProjectsRegistry.getCurrentProject(),
+    })).layerForEditing;
+    this.setEditingLayer(editingLayer);
+    return editingLayer;
+  } catch(e) {
+    return Promise.reject(e);
+  }
+
 };
 
 proto.isBaseLayer = function() {
@@ -107,26 +124,30 @@ proto._getBaseLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName();
 };
 
-proto.getWMSLayerName = function({type='map'}={}) {
-  const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
-  let layerName = this._getBaseLayerName();
-  if (legendMapBoolean && this.config.source && (type === 'legend' ||this.config.source.external) && (this.config.source.layers || this.config.source.layer)) {
-    layerName = this.config.source.layers || this.config.source.layer;
-  }
-  return layerName;
+proto.getWMSLayerName = function({ type = 'map' } = {}) {
+  return (
+    ('map' === type ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true) &&
+    this.config.source &&
+    ('legend' === type || this.config.source.external) &&
+    (this.config.source.layers || this.config.source.layer)
+  )
+    ? this.config.source.layers || this.config.source.layer
+    : this._getBaseLayerName();
 };
 
-// values: map, legend
-proto.getWmsUrl = function({type='map'}={}) {
-  const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
-  const wmsUrl = (legendMapBoolean &&
+/**
+ * @param { 'map' | 'legend' } opts.type 
+ */
+proto.getWmsUrl = function({ type = 'map' } = {}) {
+  return (
+    type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true &&
     this.config.source &&
     (type === 'legend' || this.config.source.external) &&
     (this.config.source.type === 'wms' || this.config.source.type === 'wmst') &&
-    this.config.source.url) ?
-    this.config.source.url :
-    this.config.wmsUrl;
-  return wmsUrl
+    this.config.source.url
+  )
+    ? this.config.source.url
+    : this.config.wmsUrl;
 };
 
 proto.getWFSLayerName = function(){
@@ -134,13 +155,11 @@ proto.getWFSLayerName = function(){
 };
 
 proto.useProxy = function(){
-  return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats()
+  return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats();
 };
 
 proto.getWMSInfoLayerName = function() {
-  if ( this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats()) {
-    return this.getSource().layers;
-  } else return this._getBaseLayerName();
+  return this.useProxy() ? this.getSource().layers : this._getBaseLayerName();
 };
 
 proto.getPrintLayerName = function() {
@@ -148,31 +167,34 @@ proto.getPrintLayerName = function() {
 };
 
 proto.getStringBBox = function() {
-  const bbox = this.config.bbox;
-  return `${bbox.minx},${bbox.miny},${bbox.maxx},${bbox.maxy}`;
+  const { minx, miny, maxx, maxy } = this.config.bbox;
+  return `${minx},${miny},${maxx},${maxy}`;
 };
 
-proto.isWfsActive = function(){
-  return Array.isArray(this.config.ows) && this.config.ows.find(ows_type => ows_type === 'WFS') !== undefined;
+proto.isWfsActive = function() {
+  return Array.isArray(this.config.ows) && this.config.ows.find(type => 'WFS' === type) !== undefined;
 };
 
 /**
- * Metyhod to get wms url of the layer
- * @returns {*}
+ * Get wms url of the layer
  */
 proto.getFullWmsUrl = function() {
   const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
   return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url ;
 };
 
-//used to Catalog layer menu to show wms url
+/**
+ * Get WMS url (used by Catalog Layer Menu) 
+ */
 proto.getCatalogWmsUrl = function(){
   const metadata_wms_url = ProjectsRegistry.getCurrentProject().getMetadata().wms_url;
-  const catalogWmsUrl = this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url ;
+  const catalogWmsUrl = this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url;
   return catalogWmsUrl;
 };
 
-//used to Catalog layer menu to show wfs url
+/**
+ * Get WFS url (used by Catalog Layer Menu)  
+ */
 proto.getCatalogWfsUrl = function(){
   return `${this.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
 };
@@ -185,73 +207,154 @@ proto.getWfsUrl = function() {
 
 /**
  * Get query url based on type, external or same projection of map
+ * 
  * @returns {string}
  */
 proto.getQueryUrl = function() {
   let url = base(this, 'getQueryUrl');
-  if (this.getServerType() === Layer.ServerTypes.QGIS && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
-    if (this.getInfoFormats()) url = this.getSource().url;
-    else url =`${url}SOURCE=${this.config.source.type}`;
+  if (Layer.ServerTypes.QGIS === this.getServerType() && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
+    return this.getInfoFormats() ? this.getSource().url : `${url}SOURCE=${this.config.source.type}`;
   }
   return url;
 };
 
 proto.getIconUrlFromLegend = function() {
-  return this.getLegendUrl({
-    layertitle: false
-  })
+  return this.getLegendUrl({ layertitle: false });
 };
 
-proto.getLegendUrl = function(params={}, options={}) {
-  this.legendUrl = LegendService.get({
-    layer: this,
-    params: {
-      ...params,
-      ...this.customParams
-    },
-    options
-  });
+/**
+ * Retrieve legend url (ARCGISMAPSERVER or WMS)
+ * 
+ * ORIGINAL SOURCE: src/app/core/layers/legend/legendservice.js@3.8.5
+ * 
+ * @param {boolean}                                    opts.categories whether layer has categories
+ * @param {boolean}                                    opts.all        whether to show all categories (disables filter by map's BBOX).
+ * @param {'application/json' | 'image/png' | string}  opts.format     MIME Type used to set format of legend:
+ *                                                                          - `application/json`: if request from layers categories (icon and label),
+ *                                                                          - `image/png`: if request from legend tab
+ */
+proto.getLegendUrl = function(params = {}, opts = {}) {
+
+  /**
+   * ORIGINAL SOURCE: src/app/core/layers/legend/arcgismapserverlegend.js@3.8.5)
+   */
+  if (this.isArcgisMapserver()) {
+    const { source } = this.getConfig();
+    this.legendUrl   = source.url.replace('/rest/', '/') + '/WMSServer?' + [
+      'request=GetLegendGraphic',
+      'version=1.3.0',
+      'format=image/png',
+      `LAYER=${source.layer}`,
+    ].join('&');
+
+    return this.legendUrl;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/core/layers/legend/wmslegend.js@3.8.5)
+   */
+  let {
+    width,
+    height,
+    color       = "white",
+    fontsize    = 10,
+    transparent = true,
+    boxspace,
+    layerspace,
+    layertitle  = true,
+    layertitlespace,
+    symbolspace,
+    iconlabelspace,
+    symbolwidth,
+    symbolheight,
+    itemfontfamily,
+    layerfontfamily,
+    layerfontbold,
+    itemfontbold,
+    layerfontitalic,
+    itemfontitalic,
+    rulelabel,
+    crs,
+    bbox,
+    sld_version = '1.1.0',
+  } = {
+    ...params,
+    ...this.customParams
+  };
+
+  const base_url   = this.getWmsUrl({ type: 'legend' });
+  const ctx_legend = (
+    opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
+      ? get_LEGEND_ON_LEGEND_OFF_Params(this)
+      : undefined // disabled when `FORMAT=application/json` (otherwise it create some strange behaviour on WMS `getMap` when switching between layer styles)   
+  );
+
+  this.legendUrl = base_url + (base_url.indexOf('?') > -1 ? '&' : '?') + [
+    'SERVICE=WMS',
+    'VERSION=1.3.0',
+    'REQUEST=GetLegendGraphic',
+    `SLD_VERSION=${sld_version}`,
+    __('WIDTH=',           width),
+    __('HEIGHT=',          height),
+    `FORMAT=${(undefined === opts.format ? 'image/png' : opts.format)}`,
+    `TRANSPARENT=${transparent}`,
+    `ITEMFONTCOLOR=${color}`,
+    `LAYERFONTCOLOR=${color}`,
+    `LAYERTITLE=${layertitle}`,
+    `ITEMFONTSIZE=${fontsize}`,
+    __('CRS=',             crs),
+    __('BBOX=',            (opts.all && bbox && bbox.join(','))),
+    __('BOXSPACE=',        boxspace),
+    __('LAYERSPACE=',      layerspace),
+    __('LAYERTITLESPACE=', layertitlespace),
+    __('SYMBOLSPACE=',     symbolspace),
+    __('ICONLABELSPACE=',  iconlabelspace),
+    __('SYMBOLWIDTH=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
+    __('SYMBOLHEIGHT=',    (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
+    __('LAYERFONTFAMILY=', layerfontfamily),
+    __('ITEMFONTFAMILY=',  itemfontfamily),
+    __('LAYERFONTBOLD=',   layerfontbold),
+    __('ITEMFONTBOLD=',    itemfontbold),
+    __('LAYERFONTITALIC=', layerfontitalic),
+    __('ITEMFONTITALIC=',  itemfontitalic),
+    __('RULELABEL=',       rulelabel),
+    __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
+    __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
+    __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
+    `LAYER=${this.getWMSLayerName({ type: 'legend' })}`
+  ].join('&');
+
   return this.legendUrl;
 };
 
-proto.setMapParamstoLegendUrl = function({bbox, crs}){
-  this.customParams = {
-    ...this.customParams,
-    bbox,
-    crs
-  }
+proto.setMapParamstoLegendUrl = function({ bbox, crs }) {
+  this.customParams = { ...this.customParams, bbox, crs };
 };
 
 proto.getWfsCapabilities = function() {
-  return this.config.wfscapabilities || this.config.capabilities === 1 ;
+  return this.config.wfscapabilities || 1 === this.config.capabilities;
 };
 
-proto.getMapLayer = function(options={}, extraParams) {
-  const iframe_internal = ApplicationService.isIframe() && !this.isExternalWMS();
-  options.iframe_internal = iframe_internal;
-  let mapLayer;
-  const method = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
+proto.getMapLayer = function(options = {}, extraParams) {
+  options.iframe_internal = ApplicationService.isIframe() && !this.isExternalWMS();
+  const method            = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
+  const extent            = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
+  const url               = options.url || this.getWmsUrl();
+  const source            = this.config.source;
+
   if (this.isCached()) {
-    options.extent = this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null;
-    mapLayer = new XYZLayer(options, method);
-  } else {
-    if (this.isExternalWMS() && this.config.source && this.config.source.type === Layer.SourceTypes.ARCGISMAPSERVER) {
-      options = {
-        ...options,
-        ...this.config.source,
-      };
-      mapLayer = new ARCGISMAPSERVERLayer(options, extraParams)
-    } else {
-      options.url = options.url || this.getWmsUrl();
-      /** check in case WMST Layer
-       *
-       */
-      if (this.isExternalWMS() && this.config.source && this.config.source.type === Layer.SourceTypes.WMST)
-        mapLayer = new WMSTLayer(options, extraParams, method);
-      else mapLayer = new WMSLayer(options, extraParams, method);
-    }
+    return new XYZLayer({ ...options, extent }, method);
   }
-  return mapLayer;
+
+  if (this.isExternalWMS() && source && Layer.SourceTypes.ARCGISMAPSERVER === source.type) {
+    return new ARCGISMAPSERVERLayer({ ...options, ...source }, extraParams)
+  }
+
+  if (this.isExternalWMS() && source && Layer.SourceTypes.WMST === source.type) {
+    return new WMSTLayer({...options, url }, extraParams, method);
+  }
+
+  return new WMSLayer({ ...options, url }, extraParams, method);
 };
 
 
@@ -259,7 +362,7 @@ ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.QGIS,
   Layer.ServerTypes.Mapserver,
   Layer.ServerTypes.Geoserver,
-  Layer.ServerTypes.OGC
+  Layer.ServerTypes.OGC,
 ];
 
 module.exports = ImageLayer;
