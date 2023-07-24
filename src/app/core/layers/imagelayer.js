@@ -232,27 +232,13 @@ proto.getIconUrlFromLegend = function() {
  * @param {'application/json' | 'image/png' | string}  opts.format     MIME Type used to set format of legend:
  *                                                                          - `application/json`: if request from layers categories (icon and label),
  *                                                                          - `image/png`: if request from legend tab
+ * 
+ * @see https://docs.qgis.org/3.28/en/docs/server_manual/services/wms.html#getlegendgraphics
  */
 proto.getLegendUrl = function(params = {}, opts = {}) {
 
-  /**
-   * ORIGINAL SOURCE: src/app/core/layers/legend/arcgismapserverlegend.js@3.8.5)
-   */
-  if (this.isArcgisMapserver()) {
-    const { source } = this.getConfig();
-    this.legendUrl   = source.url.replace('/rest/', '/') + '/WMSServer?' + [
-      'request=GetLegendGraphic',
-      'version=1.3.0',
-      'format=image/png',
-      `LAYER=${source.layer}`,
-    ].join('&');
+  let base_url, url_params;
 
-    return this.legendUrl;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/app/core/layers/legend/wmslegend.js@3.8.5)
-   */
   let {
     width,
     height,
@@ -282,47 +268,70 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
     ...this.customParams
   };
 
-  const base_url   = this.getWmsUrl({ type: 'legend' });
-  const ctx_legend = (
-    opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
-      ? get_LEGEND_ON_LEGEND_OFF_Params(this)
-      : undefined // disabled when `FORMAT=application/json` (otherwise it create some strange behaviour on WMS `getMap` when switching between layer styles)   
-  );
+  /**
+   * ARCGIS Server
+   * 
+   * ORIGINAL SOURCE: src/app/core/layers/legend/arcgismapserverlegend.js@3.8.5
+   */
+  if (this.isArcgisMapserver()) {
+    base_url   = this.getConfig().source.url.replace('/rest/', '/') + '/WMSServer';
+    url_params = [
+      'request=GetLegendGraphic',
+      'version=1.3.0',
+      'format=image/png',
+      `LAYER=${this.getConfig().source.layer}`,
+    ];
+  }
 
-  this.legendUrl = base_url + (base_url.indexOf('?') > -1 ? '&' : '?') + [
-    'SERVICE=WMS',
-    'VERSION=1.3.0',
-    'REQUEST=GetLegendGraphic',
-    `SLD_VERSION=${sld_version}`,
-    __('WIDTH=',           width),
-    __('HEIGHT=',          height),
-    `FORMAT=${(undefined === opts.format ? 'image/png' : opts.format)}`,
-    `TRANSPARENT=${transparent}`,
-    `ITEMFONTCOLOR=${color}`,
-    `LAYERFONTCOLOR=${color}`,
-    `LAYERTITLE=${layertitle}`,
-    `ITEMFONTSIZE=${fontsize}`,
-    __('CRS=',             crs),
-    __('BBOX=',            (opts.all && bbox && bbox.join(','))),
-    __('BOXSPACE=',        boxspace),
-    __('LAYERSPACE=',      layerspace),
-    __('LAYERTITLESPACE=', layertitlespace),
-    __('SYMBOLSPACE=',     symbolspace),
-    __('ICONLABELSPACE=',  iconlabelspace),
-    __('SYMBOLWIDTH=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
-    __('SYMBOLHEIGHT=',    (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
-    __('LAYERFONTFAMILY=', layerfontfamily),
-    __('ITEMFONTFAMILY=',  itemfontfamily),
-    __('LAYERFONTBOLD=',   layerfontbold),
-    __('ITEMFONTBOLD=',    itemfontbold),
-    __('LAYERFONTITALIC=', layerfontitalic),
-    __('ITEMFONTITALIC=',  itemfontitalic),
-    __('RULELABEL=',       rulelabel),
-    __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
-    __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
-    __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
-    `LAYER=${this.getWMSLayerName({ type: 'legend' })}`
-  ].join('&');
+  /**
+   * WMS Server
+   * 
+   * ORIGINAL SOURCE: src/app/core/layers/legend/wmslegend.js@3.8.5
+   */
+  else {
+    const ctx_legend = (
+      opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
+        ? get_LEGEND_ON_LEGEND_OFF_Params(this)
+        : undefined // disabled when `FORMAT=application/json` (otherwise it create some strange behaviour on WMS `getMap` when switching between layer styles)   
+    );
+    base_url   = this.getWmsUrl({ type: 'legend' });
+    url_params = [
+      'SERVICE=WMS',
+      'VERSION=1.3.0',
+      'REQUEST=GetLegendGraphic',
+      `SLD_VERSION=${sld_version}`,
+      __('WIDTH=',           width),
+      __('HEIGHT=',          height),
+      `FORMAT=${(undefined === opts.format ? 'image/png' : opts.format)}`,
+      `TRANSPARENT=${transparent}`,
+      `ITEMFONTCOLOR=${color}`,
+      `LAYERFONTCOLOR=${color}`,
+      `LAYERTITLE=${layertitle}`,
+      `ITEMFONTSIZE=${fontsize}`,
+      __('CRS=',             crs),
+      __('BBOX=',            (opts.all && bbox && bbox.join(','))),
+      __('BOXSPACE=',        boxspace),
+      __('LAYERSPACE=',      layerspace),
+      __('LAYERTITLESPACE=', layertitlespace),
+      __('SYMBOLSPACE=',     symbolspace),
+      __('ICONLABELSPACE=',  iconlabelspace),
+      __('SYMBOLWIDTH=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
+      __('SYMBOLHEIGHT=',    (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
+      __('LAYERFONTFAMILY=', layerfontfamily),
+      __('ITEMFONTFAMILY=',  itemfontfamily),
+      __('LAYERFONTBOLD=',   layerfontbold),
+      __('ITEMFONTBOLD=',    itemfontbold),
+      __('LAYERFONTITALIC=', layerfontitalic),
+      __('ITEMFONTITALIC=',  itemfontitalic),
+      __('RULELABEL=',       rulelabel),
+      __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
+      __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
+      __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
+      `LAYER=${this.getWMSLayerName({ type: 'legend' })}`
+    ];
+  }
+
+  this.legendUrl = base_url + (base_url.indexOf('?') > -1 ? '&' : '?') + url_params.join('&');
 
   return this.legendUrl;
 };
