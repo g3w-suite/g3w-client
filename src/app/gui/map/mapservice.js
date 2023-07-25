@@ -25,7 +25,6 @@ const {
   getMapLayersByFilter,
   getGeoTIFFfromServer
 } = require('core/utils/geo');
-const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/g3w.ol').helpers;
 const { getScaleFromResolution, getResolutionFromScale } = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
@@ -1048,11 +1047,10 @@ proto._setMapControlsInsideContainerLenght = function() {
  * Get filtrable layer. Get parameter to custom filter Object
  */
 proto.filterableLayersAvailable = function(options={}) {
-  const layers = getMapLayersByFilter({
+  return getMapLayersByFilter({
     FILTERABLE: true,
     SELECTED_OR_ALL: true,
-  }, options);
-  return layers.filter(layer => layer.getProvider('filter') instanceof WFSProvider);
+  }, options).filter(layer => 'wfs' === layer.getProvider('filter').getName());
 };
 
 proto.setMapControlsAlignement = function(alignement='rv') {
