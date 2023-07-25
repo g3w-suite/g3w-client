@@ -1,13 +1,13 @@
-import { MAP_SETTINGS } from 'app/constant';
-import wms from 'gui/wms/vue/wms';
-import DataRouterService from 'services/data';
+import { MAP_SETTINGS }        from 'app/constant';
+import wms                     from 'gui/wms/vue/wms';
+import DataRouterService       from 'services/data';
 import MapLayersStoresRegistry from 'store/map-layers';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-import ControlsRegistry from 'store/map-controls';
-import GUI from 'services/gui';
+import ProjectsRegistry        from 'store/projects';
+import ApplicationService      from 'services/application';
+import ControlsRegistry        from 'store/map-controls';
+import GUI                     from 'services/gui';
 
-const { t } = require('core/i18n/i18n.service');
+const { t }                    = require('core/i18n/i18n.service');
 const {
   inherit,
   base,
@@ -15,30 +15,200 @@ const {
   uniqueId,
   throttle,
   toRawType,
-  createFilterFromString
-} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+  createFilterFromString,
+}                              = require('core/utils/utils');
+const G3WObject                = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
   createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
-  getGeoTIFFfromServer
-} = require('core/utils/geo');
-const WFSProvider = require('core/layers/providers/wfsprovider');
-const olhelpers = require('g3w-ol/g3w.ol').helpers;
-const { getScaleFromResolution, getResolutionFromScale } = require('core/utils/ol');
-const ControlsFactory = require('gui/map/control/factory');
-const VectorLayer = require('core/layers/vectorlayer');
+  getGeoTIFFfromServer,
+}                              = require('core/utils/geo');
+const WFSProvider              = require('core/layers/providers/wfsprovider');
+const BaseLayers               = require('g3w-ol/layers/bases');
+const {
+  getScaleFromResolution,
+  getResolutionFromScale
+}                              = require('core/utils/ol');
+const ControlsFactory          = require('gui/map/control/factory');
+const VectorLayer              = require('core/layers/vectorlayer');
 
-const SETTINGS = {
-  zoom : {
-    maxScale: 1000,
-  },
-  animation: {
-    duration: 2000
+class OlMapViewer {
+
+  constructor(opts = {}) {
+    const controls     = ol.control.defaults({ attribution: false, zoom: false });
+    const interactions = ol.interaction.defaults().extend([ new ol.interaction.DragRotate() ]);
+
+    interactions.removeAt(1); // remove douclickzoom
+
+    this.map = new ol.Map({
+      controls,
+      interactions,
+      ol3Logo: false,
+      view: opts.view instanceof ol.View ? opts.view : new ol.View(opts.view),
+      keyboardEventTarget: document,
+      target: opts.id,
+    });
   }
-};
+
+  destroy() {
+    if (this.map) {
+      this.map.dispose();
+      this.map = null
+    }
+  }
+
+  getView() {
+    return this.map.getView();
+  }
+
+  updateMap(mapObject) { }
+
+  updateView(){ }
+
+  getMap() {
+    return this.map;
+  }
+
+  setTarget(id) {
+    this.map.setTarget(id);
+  }
+
+  zoomTo(coordinate, zoom) {
+    const view = this.map.getView();
+    view.setCenter(coordinate);
+    view.setZoom(zoom);
+  };
+
+  goTo(coordinates, options) {
+    options = options || {};
+    const view    = this.map.getView();
+    const animate = options.animate || true;
+    const zoom    = options.zoom || false;
+    if (animate) {
+      view.animate(
+        { duration: 300, center: coordinates },
+        (zoom ? ({ zoom, duration: 300 }) : ({ duration: 300, resolution: view.getResolution() })
+      ));
+    } else {
+      view.setCenter(coordinates);
+      if (zoom) {
+        view.setZoom(zoom);
+      }
+    }
+  }
+
+  goToRes(coordinates, options) {
+    options = options || {};
+    const view       = this.map.getView();
+    const animate    = options.animate || true;
+    const resolution = options.resolution || view.getResolution();
+    if (animate) {
+      view.animate(
+        { duration: 200, center: coordinates },
+        { duration: 200, resolution }
+      );
+    } else {
+      view.setCenter(coordinates);
+      view.setResolution(resolution);
+    }
+  }
+
+  fit(geometry, options = {}) {
+    const view    = this.map.getView();
+    const animate = options.animate || true;
+    if (animate) {
+      view.animate({ duration: 200, center: view.getCenter() });
+      view.animate({ duration: 200, resolution: view.getResolution() });
+    }
+    if (options.animate) {
+      delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
+    }
+    view.fit(geometry, {
+      ...options,
+      constrainResolution: (undefined === options.constrainResolution && true || options.constrainResolution),
+      size:  this.map.getSize()
+    });
+  }
+
+  getZoom() {
+    return this.map.getView().getZoom();
+  }
+
+  getResolution() {
+    return this.map.getView().getResolution();
+  }
+
+  getCenter() {
+    return this.map.getView().getCenter();
+  }
+
+  getBBOX() {
+    return this.map.getView().calculateExtent(this.map.getSize());
+  };
+
+  getLayerByName(layerName) {
+    const layers = this.map.getLayers();
+    for (let i = 0; i < layers.getLength(); i++) {
+      if (layerName === layers.item(i).get('name')) {
+        return layers.item(i);
+      }
+    }
+    return null;
+  }
+
+  removeLayerByName(layerName) {
+    const layer = this.getLayerByName(layerName);
+    if (layer) {
+      this.map.removeLayer(layer);
+    }
+  }
+
+  getActiveLayers() {
+    const activelayers = [];
+    this
+      .map
+      .getLayers()
+      .forEach((layer) => {
+        const props = layer.getProperties();
+        if (props.visible && true !== props.basemap) {
+          activelayers.push(layer);
+        }
+      });
+    return activelayers;
+  };
+
+  removeLayers() {
+    this.map.getLayers().clear();
+  };
+
+  getLayersNoBase() {
+    const layers = [];
+    this
+      .map
+      .getLayers()
+      .forEach((layer) => {
+        const props = layer.getProperties();
+        if (true !== props.basemap) {
+          layers.push(layer);
+        }
+      });
+    return layers;
+  }
+
+  addBaseLayer(type) {
+    this.map.addLayer(type ? BaseLayers[type] : BaseLayers.BING.Aerial);
+  };
+
+  /**
+   *  @TODO double check (unusued and broken code ?)
+   */
+  changeBaseLayer(layerName) {
+    this.map.getLayers().insertAt(0, this.getLayerByName(layername));
+  }
+
+}
 
 function MapService(options={}) {
   this.state = {
@@ -370,7 +540,7 @@ proto._addHideMap = function({ratio, layers=[], mainview=false} = {}) {
     center: view.getCenter(),
     resolution: this.getResolution()
   };
-  const viewer = olhelpers.createViewer({
+  const viewer = new OlMapViewer({
     id: idMap.id,
     view: mainview ? view: view_options
   });
@@ -1447,7 +1617,7 @@ proto._calculateViewOptions = function({project, width, height}={}) {
 
 // set view based on project config
 proto._setupViewer = function(width, height) {
-  this.viewer = olhelpers.createViewer({
+  this.viewer = new OlMapViewer({
     id: this.target,
     view: this._calculateViewOptions({
       width,
