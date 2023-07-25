@@ -40,7 +40,7 @@
 
 <script>
   import ApplicationState from 'store/application-state';
-  import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
+  import { SidebarEventBus as VM } from 'app/eventbus';
   import sidebarService from 'services/sidebar';
 
   const { t } = require('core/i18n/i18n.service');
@@ -88,7 +88,7 @@
     },
     created() {
       this.iframe = ApplicationState.iframe;
-      SIDEBAREVENTBUS.$on('sidebaritemclick', ()=> $('.sidebar-toggle').click())
+      VM.$on('sidebaritemclick', ()=> $('.sidebar-toggle').click())
     }
   }
 </script>
