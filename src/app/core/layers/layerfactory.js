@@ -42,6 +42,10 @@ function LayerFactory() {
             Layer.SourceTypes.VECTORTILE,
             Layer.SourceTypes["VECTOR-TILE"],
             Layer.SourceTypes.MDAL,
+            /**
+             * @since 3.8.7
+             */
+            Layer.SourceTypes.ARCGISMAPSERVER,
           ].find(sourcetype => sourcetype === config.source.type)) LayerClass = ImageLayer;
         }
         break;
