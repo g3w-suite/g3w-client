@@ -480,13 +480,13 @@ const utils = {
    * @param field
    * @param value
    * @param operator
-   * @param logicop
+   * @param logicop // set OR as default
    * @param search_endpoint
    * @returns {string}
    */
-  createSingleFieldParameter({field, value, operator='eq', logicop, search_endpoint="api"}){
+  createSingleFieldParameter({field, value, operator='eq', logicop='OR', search_endpoint="api"}){
     if (search_endpoint === 'api') {
-      logicop = `|${logicop || 'OR'}` ; // set OR if undefined
+      logicop = `|${logicop}` ;
       if (Array.isArray(value)){
         let filter = '';
         const valueLenght = value.length;
@@ -501,7 +501,7 @@ const utils = {
       if (Array.isArray(value)){
         let filter = '';
         const valueLenght = value.length;
-        value.forEach((value, index) =>{
+        value.forEach((value, index) => {
           filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
         });
         return filter
