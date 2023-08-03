@@ -151,11 +151,13 @@ function SidebarService() {
 
   // close panel
   this.closePanel = function() {
-    this.state.gui.title = null;
     this.closeSidebarPanel();
     this.stack.pop().then(content => {
       content = null;
-      this.stack.getCurrentContentData() && $(this.stack.getCurrentContentData().content.internalPanel.$el).show();
+      if (this.stack.getCurrentContentData()) {
+        $(this.stack.getCurrentContentData().content.internalPanel.$el).show();
+        this.state.gui.title = this.stack.getCurrentContentData().content.title;
+      }
     });
   };
 
