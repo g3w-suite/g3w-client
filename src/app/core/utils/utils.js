@@ -486,12 +486,11 @@ const utils = {
    */
   createSingleFieldParameter({field, value, operator='eq', logicop='OR', search_endpoint="api"}){
     if (search_endpoint === 'api') {
-      logicop = `|${logicop}` ;
       if (Array.isArray(value)){
         let filter = '';
         const valueLenght = value.length;
         value.forEach((value, index) =>{
-          filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`;
+          filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `|${logicop},` : ''}`;
         });
         return filter
       } else {
