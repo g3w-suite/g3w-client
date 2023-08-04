@@ -12,25 +12,51 @@
             <bar-loader :loading="state.loading"/>
           </transition>
           <helpdiv message='sdk.print.help'/>
+
           <label for="templates" v-t="'sdk.print.template'"></label>
-          <select class="form-control" @change="onChangeTemplate" v-model="state.template" :style="{marginBottom: this.state.atlas && '10px'}" id="templates">
-            <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
+          <select
+            id="templates"
+            class="form-control"
+            @change="onChangeTemplate"
+            v-model="state.template"
+            :style="{marginBottom: this.state.atlas && '10px'}">
+
+            <option
+              v-for="print in state.print"
+              :value="print.name">{{ print.name }}
+            </option>
+
           </select>
+
           <template v-if="!state.atlas">
+
             <label for="scala" v-t="'sdk.print.scale'"></label>
-            <select class="form-control" @change="onChangeScale" v-model="state.scala" id="scala">
-              <option v-for="scala in state.scale" :value="scala.value">{{ scala.label }}</option>
+            <select
+              id="scala"
+              class="form-control"
+              @change="onChangeScale"
+              v-model="state.scala">
+
+              <option
+                v-for="scala in state.scale"
+                :value="scala.value">{{ scala.label }}
+              </option>
+
             </select>
+
             <label for="dpi">dpi</label>
             <select class="form-control" @change="onChangeDpi"  v-model="state.dpi" id="dpi" >
               <option v-for="dpi in state.dpis" >{{ dpi }}</option>
             </select>
+
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input min="-360" max="360"  @input="onChangeRotation" v-model="state.rotation" id="rotation" class="form-control" type="number">
             <label for="format" v-t="'sdk.print.format'"></label>
+
             <select class="form-control" v-model="state.output.format" id="format">
               <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
             </select>
+
           </template>
 
           <!-- since 3.8.7 -->
@@ -73,7 +99,8 @@
               class="sidebar-button-run btn"
               v-disabled="button.disabled"
               @click.stop.prevent="print"
-              v-download v-t="'create_print'"></button>
+              v-download v-t="'create_print'">
+            </button>
           </span>
         </div>
       </form>
