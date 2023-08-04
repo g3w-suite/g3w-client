@@ -9,9 +9,9 @@
       <form class="g3w-search-form form-horizonal">
         <div class="box-body">
           <transition :duration="500" name="fade">
-            <bar-loader :loading="state.loading"></bar-loader>
+            <bar-loader :loading="state.loading"/>
           </transition>
-          <helpdiv message='sdk.print.help'></helpdiv>
+          <helpdiv message='sdk.print.help'/>
           <label for="templates" v-t="'sdk.print.template'"></label>
           <select class="form-control" @change="onChangeTemplate" v-model="state.template" :style="{marginBottom: this.state.atlas && '10px'}" id="templates">
             <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
@@ -32,12 +32,27 @@
               <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
             </select>
           </template>
-          <template v-else-if="state.atlas.field_name">
-            <select-atlas-field-values @disable-print-button="setDisabledPrintButton" @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></select-atlas-field-values>
+
+          <!-- since 3.8.7 -->
+          <!-- Needed to recreate a component on change template -->
+          <template v-else-if="!templateChanged">
+              <template v-if="state.atlas.field_name">
+                  <select-atlas-field-values
+                    @disable-print-button="setDisabledPrintButton"
+                    @set-values="setAtlasValues"
+                    :atlas="state.atlas"
+                    :reset="!state.isShow"/>
+              </template>
+
+              <template v-else>
+                  <fid-atlas-values
+                    @disable-print-button="setDisabledPrintButton"
+                    @set-values="setAtlasValues"
+                    :atlas="state.atlas"
+                    :reset="!state.isShow"/>
+              </template>
           </template>
-          <template v-else>
-            <fid-atlas-values @disable-print-button="setDisabledPrintButton" @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></fid-atlas-values>
-          </template>
+
           <template v-if="state.labels && state.labels.length">
             <div class="print-labels-content" style="margin-top: 5px;">
               <label style="font-weight: bold; font-size: 1.1em; display: block; border-bottom: 2px solid #ffffff; margin-bottom: 5px;" class="skin-color" v-t="'sdk.print.labels'"></label>
@@ -52,7 +67,13 @@
         </div>
         <div class="box-footer" style="background-color: transparent">
           <span>
-            <button id="printbutton" style="width:100%; font-weight: bold" class="sidebar-button-run btn" v-disabled="button.disabled" @click.stop.prevent="print" v-download v-t="'create_print'"></button>
+            <button
+              id="printbutton"
+              style="width:100%; font-weight: bold"
+              class="sidebar-button-run btn"
+              v-disabled="button.disabled"
+              @click.stop.prevent="print"
+              v-download v-t="'create_print'"></button>
           </span>
         </div>
       </form>
@@ -72,6 +93,8 @@ export default {
   data() {
     return {
       state: null,
+      /** @since 3.8.7 **/
+      templateChanged: false,  // useful to redraw component related to change template
       button: {
         class: "btn-success",
         type:"stampa",
@@ -95,8 +118,11 @@ export default {
     setAtlasValues(values=[]){
       this.state.atlasValues = values;
     },
-    onChangeTemplate() {
+    async onChangeTemplate() {
+      this.templateChanged = true; // set true
       this.$options.service.changeTemplate();
+      await this.$nextTick();
+      this.templateChanged = false; // reset to false
     },
     onChangeScale() {
       this.$options.service.changeScale()
