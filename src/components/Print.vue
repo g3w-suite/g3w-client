@@ -63,19 +63,19 @@
           <!-- Needed to recreate a component on change template -->
           <template v-else-if="!templateChanged">
               <template v-if="state.atlas.field_name">
-                  <select-atlas-field-values
-                    @disable-print-button="setDisabledPrintButton"
-                    @set-values="setAtlasValues"
-                    :atlas="state.atlas"
-                    :reset="!state.isShow"/>
+                <select-atlas-field-values
+                  @disable-print-button="setDisabledPrintButton"
+                  @set-values="setAtlasValues"
+                  :atlas="state.atlas"
+                  :reset="!state.isShow"/>
               </template>
 
               <template v-else>
-                  <fid-atlas-values
-                    @disable-print-button="setDisabledPrintButton"
-                    @set-values="setAtlasValues"
-                    :atlas="state.atlas"
-                    :reset="!state.isShow"/>
+                <fid-atlas-values
+                  @disable-print-button="setDisabledPrintButton"
+                  @set-values="setAtlasValues"
+                  :atlas="state.atlas"
+                  :reset="!state.isShow"/>
               </template>
           </template>
 
