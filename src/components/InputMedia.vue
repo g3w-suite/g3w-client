@@ -37,6 +37,10 @@ const { t } = require('core/i18n/i18n.service');
 const { media_field: MediaField } = require('gui/fields/fields');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-media',
+
   mixins: [InputMixins],
   components: {
     'g3w-media': MediaField
