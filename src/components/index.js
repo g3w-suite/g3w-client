@@ -110,7 +110,6 @@ import Tools from './Tools.vue';
 import UserMessage from './UserMessage.vue';
 import ViewportContentsViewer from './ViewportContentsViewer.vue';
 import UserMessageSteps from './UserMessageSteps.js';
-import VieportContentsViewer from './VieportContentsViewer.vue';
 import WMS from './WMS.vue';
 import WMSLayersPanel from './WMSLayersPanel.vue';
 
@@ -230,7 +229,6 @@ export {
   UserMessage,
   ViewportContentsViewer,
   UserMessageSteps,
-  VieportContentsViewer,
   WMS,
   WMSLayersPanel,
 };
