@@ -1,7 +1,12 @@
+/**
+ * @file
+ * @since v3.8
+ */
+
 import ApplicationState from 'store/application-state';
 import GUI from 'services/gui';
 
-module.exports = function({steps={}}={}) {
+export default function({ steps={} } = {}) {
   return {
     data() {
       return {
