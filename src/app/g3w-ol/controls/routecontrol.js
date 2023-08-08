@@ -100,9 +100,9 @@ const RouteControl = function(options={}) {
 
   const _options = {
     offline: false,
-    visible: true, // always visible. Only change behavior if exist or not
     name: "route",
-    clickmap: true, // set ClickMap
+    clickmap: true, // set ClickMap,
+    visible: false, // set false at beginning
     customClass: GUI.getFontClass('route'),
     interactionClass: ol.interaction.Draw,
     interactionClassOptions: {
@@ -165,8 +165,20 @@ const RouteControl = function(options={}) {
     source: this.routeLayer.getSource()
   })
 
-  //get script script
+
+  //store map
+  this._map = null;
+
+  options = utils.merge(options,_options);
+
+  InteractionControl.call(this, options);
+
+  //get script and set visibility
   if (ApplicationState.keys.vendorkeys.google) {
+    this.setVisible(true);
+    /*
+    * @TODO Need to check if route is enabled with key
+    * */
     /**
      * load script google maps api
      */
@@ -178,12 +190,7 @@ const RouteControl = function(options={}) {
 
   /***/
 
-  //store map
-  this._map = null;
 
-  options = utils.merge(options,_options);
-
-  InteractionControl.call(this,options);
 };
 
 ol.inherits(RouteControl, InteractionControl);
