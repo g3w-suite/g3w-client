@@ -450,7 +450,7 @@ function GeocodingControl(options={}) {
   this.projection;
 
   const GeocoderVueContainer = Vue.extend(MapControlGeocoding({
-    containerClass: `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`,
+    containerClass: `${cssClasses.namespace} ${cssClasses.inputText.container}`,
     cssClasses,
     fontIcon,
     placeholder,
