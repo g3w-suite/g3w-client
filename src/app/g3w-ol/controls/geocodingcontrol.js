@@ -252,7 +252,7 @@ class Nominatim {
     this.active = true;
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
-      url: 'https://nominatim.openstreetmap.org/search/',
+      url: 'https://nominatim.openstreetmap.org/search',
       params: {
         q: '',
         format: 'json',
