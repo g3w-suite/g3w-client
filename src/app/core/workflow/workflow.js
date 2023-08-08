@@ -1,11 +1,12 @@
 import WorkflowsStack from 'services/workflows';
 import GUI from 'services/gui';
 
+import UserMessageSteps from 'components/UserMessageSteps';
+
 const { base, inherit, resolve } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Flow = require('core/workflow/flow');
 const { MESSAGES } = require('core/workflow/step');
-const createUserMessageStepsFactory = require('gui/workflow/createUserMessageStepsFactory');
 
 //Class to manage flow of steps
 function Workflow(options={}) {
@@ -170,9 +171,6 @@ proto.start = function(options={}) {
   this._steps = options.steps || this._steps;
   const showUserMessage = this._isThereUserMessaggeSteps();
   if (showUserMessage) {
-    const stepsComponent = createUserMessageStepsFactory({
-      steps: this._userMessageSteps
-    });
     GUI.showUserMessage({
       title: 'sdk.workflow.steps.title',
       type: 'tool',
@@ -180,7 +178,7 @@ proto.start = function(options={}) {
       size: 'small',
       closable: false,
       hooks: {
-        body: stepsComponent
+        body: UserMessageSteps({ steps: this._userMessageSteps })
       }
     });
   }
