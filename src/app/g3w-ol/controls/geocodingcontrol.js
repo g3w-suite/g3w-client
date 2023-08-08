@@ -404,7 +404,6 @@ function GeocodingControl(options={}) {
     debug: false,
     viewbox: options.bbox,
     bounded: 1,
-    classMobile: options.isMobile ? 'nominatim-mobile' : '',
     mapCrs: options.mapCrs,
     fontIcon: GUI.getFontClass('search')
   };
