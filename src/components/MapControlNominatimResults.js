@@ -1,6 +1,6 @@
 /**
  * @file
- * @since 3.8
+ * @since 3.9
  */
 
 export default function({ noresults }) {
