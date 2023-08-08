@@ -17,7 +17,7 @@
       </label>
     </div>
     <div v-else class="tool" @click="!disabled ? fireAction(tool) : null" :class="{tool_disabled: disabled}" style="position:relative">
-      <bar-loader :loading="tool.loading"></bar-loader>
+      <bar-loader :loading="tool.loading"/>
       <i :class="g3wtemplate.getFontClass(icon)"></i>
       <span v-if="tool.html" >
         <i :class="tool.html.icon"></i>

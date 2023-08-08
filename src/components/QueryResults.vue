@@ -13,7 +13,7 @@
       <template v-if="state.layers.length">
         <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
           <li v-show="(layerHasFeatures(layer) || layer.rawdata) && layer.show" v-for="layer in state.layers">
-            <bar-loader :loading="layer.loading"></bar-loader>
+            <bar-loader :loading="layer.loading"/>
             <div class="box box-primary">
               <div class="box-header with-border"  :class="{'mobile': isMobile()}" data-widget="collapse">
                 <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
