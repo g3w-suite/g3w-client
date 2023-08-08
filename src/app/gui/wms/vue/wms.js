@@ -7,7 +7,7 @@ const Component = require('gui/component/component');
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-function ToolsComponent(options={}) {
+function WmsComponent(options={}) {
   base(this, options);
   this._service = new Service(options);
   this.title = "WMS";
@@ -25,6 +25,6 @@ function ToolsComponent(options={}) {
   }
 }
 
-inherit(ToolsComponent, Component);
+inherit(WmsComponent, Component);
 
-module.exports = ToolsComponent;
+module.exports = WmsComponent;

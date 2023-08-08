@@ -387,6 +387,7 @@ export default {
             copied: "Copied"
           },
           download: {
+            unknow: 'Download',
             shp: 'Download Shapefile',
             gpx: 'Download GPX',
             gpkg: 'Download GPKG',
@@ -449,8 +450,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Don't show again",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    enlange_reduce: "Enlarge / Reduce",
+    reset_default: "Default size",
     add: "Add",
     exitnosave: "Exit without save",
     annul: "Cancel",
@@ -510,7 +511,16 @@ export default {
         tooltip: "Area"
       },
       screenshot: {
-        error: "Screenshot error creation"
+        error: "Screenshot error creation",
+        securityError: `  
+        <p><b>Security Error</b>: an external layer is preventing map from being printed. To check, proceed as follows:</p>
+        <ol>
+          <li>remove any manually added external layers (eg. WMS layers)</li>
+          <li>force page reload: <code>CTRL + F5</code></li>
+          <li>print again the map</li>
+        </ol>
+        <p>For more info please contact server administrator about: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        `
       }
     },
     catalog_items: {

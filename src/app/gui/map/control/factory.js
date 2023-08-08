@@ -17,6 +17,7 @@ const ScreenshotControl = require('g3w-ol/controls/screenshotcontrol');
 const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
 const ZoomHistoryControl = require('g3w-ol/controls/zoomhistorycontrol');
 const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 /**
  * @since 3.9.0
  *
@@ -50,15 +51,19 @@ ControlsFactory.CONTROLS = {
   'mouseposition': MousePositionControl,
   'scale': ScaleControl,
   'onclick': OnClikControl,
+  /**
+   * @since 3.8.3
+   */
+  'ontoggle': InteractionControl,
   'screenshot': ScreenshotControl,
   'geoscreenshot': geoScreenshotControl,
   'querybydrawpolygon': QueryByDrawPolygonControl,
-  
+
   /**
    * @since 3.8.0
    */
   'zoomhistory': ZoomHistoryControl,
-  
+
   /**
    * @deprecated since version ??. Will be removed in version ??. Use 'geocoding' control instead.
    */
