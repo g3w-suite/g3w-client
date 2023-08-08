@@ -1,6 +1,6 @@
 /**
  * @file
- * @since v3.8
+ * @since v3.9
  */
 
 export default function ({ className, customClass, tipLabel, label }) {
