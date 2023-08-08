@@ -296,12 +296,12 @@ proto.showRoute = function(){
                   return ol.proj.transform([lng(), lat()], 'EPSG:4326', this.projection)
                 }))
               }))
-
+            console.log(response.routes[0].bounds)
             // get response route bounds
             const routeBounds = ol.proj.transformExtent([
-              response.routes[0].bounds.Ha.lo,
+              response.routes[0].bounds.Ga.lo,
               response.routes[0].bounds.Ua.lo,
-              response.routes[0].bounds.Ha.hi,
+              response.routes[0].bounds.Ga.hi,
               response.routes[0].bounds.Ua.hi
             ], 'EPSG:4326', this.projection);
 
