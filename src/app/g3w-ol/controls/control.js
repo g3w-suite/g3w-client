@@ -1,3 +1,5 @@
+import MapControlButton from 'components/MapControlButton';
+
 const { layout } = require('g3w-ol/controls/utils');
 
 const Control = function(options={}) {
@@ -16,42 +18,13 @@ const Control = function(options={}) {
   this.positionCode = options.position || 'tl';
   this.priority = options.priority || 0;
   if (!options.element) {
-    const className = "ol-"+this.name.split(' ').join('-').toLowerCase();
-    const customClass = options.customClass;
-    const tipLabel = options.tipLabel || this.name;
-    const label = options.label || '';
-    const mapControlButtonVue =  Vue.extend({
-      functional: true,
-      render(h){
-        return h('div', {
-          class: {
-            [className]: !!className,
-            'ol-unselectable': true,
-            'ol-control': true
-          }
-        }, [
-            h('button', {
-              attrs: {
-                type: 'button',
-              },
-              directives: [{
-                name: 't-tooltip',
-                value: tipLabel
-              }]
-            }, [
-                label,
-                h('i', {
-                  class: {
-                    [customClass]: !!customClass
-                  }
-                })
-            ])
-          ]
-        )
-      }
-    });
-    const mapControlButtonDOMElement = new mapControlButtonVue().$mount().$el;
-    options.element = mapControlButtonDOMElement;
+    const mapControlButtonVue =  Vue.extend(MapControlButton({
+      className: "ol-"+this.name.split(' ').join('-').toLowerCase(),
+      customClass: options.customClass,
+      tipLabel: options.tipLabel || this.name,
+      label: options.label || ''
+    }));
+    options.element = new mapControlButtonVue().$mount().$el;
   }
   const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
