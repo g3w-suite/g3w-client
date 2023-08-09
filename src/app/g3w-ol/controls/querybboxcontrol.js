@@ -61,7 +61,11 @@ const QueryBBoxControl = function(options = {}) {
     help: {
       title:"sdk.mapcontrols.querybybbox.help.title",
       message:"sdk.mapcontrols.querybybbox.help.message",
-    }
+    },
+    /**
+     * @since 3.8.1
+     */
+    queryResultsLayer: true,
   };
 
   InteractionControl.call(this, _options);
