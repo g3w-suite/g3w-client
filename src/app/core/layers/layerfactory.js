@@ -28,6 +28,8 @@ const IMAGE_LAYERS = [
   Layer.SourceTypes.VECTORTILE,
   Layer.SourceTypes["VECTOR-TILE"],
   Layer.SourceTypes.MDAL,
+  /** @since 3.8.7 */
+  Layer.SourceTypes.ARCGISMAPSERVER,
 ];
 
 const BASE_LAYERS   = {

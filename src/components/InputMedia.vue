@@ -18,7 +18,7 @@
             type="file">
         </i>
       </div>
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
       <g3w-media :state="data">
         <div class="clearmedia" @click="clearMedia()">
           <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
