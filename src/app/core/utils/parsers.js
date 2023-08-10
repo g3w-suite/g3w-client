@@ -4,6 +4,12 @@ const { toRawType } = require('core/utils/utils');
 const Feature = require('core/layers/features/feature');
 const { t } = require('core/i18n/i18n.service');
 const olutils = require('core/utils/ol');
+
+/*
+* @since 3.9.0
+ */
+const X2JS = require('./xml2json.g3w.min');
+
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 /**

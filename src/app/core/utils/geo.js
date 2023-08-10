@@ -2,6 +2,12 @@ import CONSTANT from 'app/constant';
 import MapLayersStoresRegistry from 'store/map-layers';
 import GUI from 'services/gui';
 
+/**
+ * @since 3.9.0
+ */
+const JSZip = require("jszip");
+const shp = require('./shp.min');
+
 const { toRawType, uniqueId } = require('core/utils/utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
@@ -840,7 +846,7 @@ const geoutils = {
         const promiseKmz = new Promise(async (resolve, reject) => {
           const zip = new JSZip();
           const buffer = await data.arrayBuffer(data);
-          zip.load(buffer);
+          await zip.loadAsync(buffer);
           const kmlFiles = zip.file(/.kml$/i);
           /**
            * @TODO handle multiple network links
@@ -850,7 +856,7 @@ const geoutils = {
           // get last kml file (when doc.kml file has a reference to kml inside another folder)
           const kmlFile = kmlFiles[kmlFiles.length - 1];
           if (kmlFile) {
-            data = kmlFile.asText();
+            data = await kmlFile.async("string");
             resolve(createVectorLayer(new ol.format.KML({ extractStyles: false }), data, "EPSG:4326"));
           } else {
             reject();

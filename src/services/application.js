@@ -10,8 +10,6 @@ import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
 import ProjectsRegistry from 'store/projects';
 import ApiService from 'services/api';
-import ClipboardService from 'services/clipboard';
-import RouterService from 'services/router';
 import GUI from 'services/gui';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
@@ -111,11 +109,11 @@ const ApplicationService = function() {
   /**
    * Load application translations (i18n languages)
    */
-  this.setupI18n = function() {
+  this.setupI18n = async function() {
     const languageConfig = this._config._i18n;
     languageConfig.appLanguages = this._config.i18n.map(languageLabel => languageLabel[0]);
     this.setApplicationLanguage(languageConfig.language);
-    i18ninit(languageConfig);
+    await i18ninit(languageConfig);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set Accept-Language request header based on config language
     $.ajaxSetup({
@@ -336,13 +334,6 @@ const ApplicationService = function() {
   };
 
   /**
-   * router service
-   */
-  this.getRouterService = function() {
-    return RouterService;
-  };
-
-  /**
    * @returns {string} application proxy url 
    */
   this.getProxyUrl = function() {
@@ -354,13 +345,6 @@ const ApplicationService = function() {
    */
   this.getInterfaceOwsUrl = function() {
     return `${this._initConfig.interfaceowsurl}`;
-  };
-
-  /**
-   * clipboard service
-   */
-  this.getClipboardService = function() {
-    return ClipboardService;
   };
 
   /**
@@ -596,11 +580,10 @@ const ApplicationService = function() {
    * 7 - set current project `gid` (group id)
    * 8 - set current project EPSG (coordinate system)
    * 9 - check if application is loaded within an <IFRAME>
-   * 10 - initialize DataRouterService
    */
   this.bootstrap = function() {
-    return new Promise((resolve, reject) => {
-      this.setupI18n();
+    return new Promise(async (resolve, reject) => {
+      await this.setupI18n();
       const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
       if (!ApplicationState.ready) {
         $.when(
@@ -636,7 +619,6 @@ const ApplicationService = function() {
   this.postBootstrap = async function() {
     if (!this.complete) {
       try {
-        RouterService.init();
         await PluginsRegistry.init({
           pluginsBaseUrl: this._config.urls.staticurl,
           pluginsConfigs: this._config.plugins,

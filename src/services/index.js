@@ -1,6 +1,5 @@
 import ApiService from './api';
 import ApplicationService from './application';
-import ClipboardService from './clipboard';
 import ExpressionService from './data-expression';
 import OWSService from './data-ows';
 import ProxyService from './data-proxy';
@@ -9,13 +8,11 @@ import SearchService from './data-search';
 import DataService from './data';
 import ChangesManager from './editing';
 import GUI from './gui';
-import HistoryService from './history';
 import AppService from './iframe-app';
 import EditingService from './iframe-editing';
 import IframePluginService from './iframe-plugin';
 import QueryBuilderService from './querybuilder';
 import RelationsService from './relations';
-import RouterService from './router';
 import TaskService from './tasks';
 import WorkFlowsStack from './workflows';
 
@@ -26,7 +23,6 @@ import WorkFlowsStack from './workflows';
 export {
   ApiService,
   ApplicationService,
-  ClipboardService,
   ExpressionService,
   OWSService,
   ProxyService,
@@ -35,13 +31,11 @@ export {
   DataService,
   ChangesManager,
   GUI,
-  HistoryService,
   AppService,
   EditingService,
   IframePluginService,
   QueryBuilderService,
   RelationsService,
-  RouterService,
   TaskService,
   WorkFlowsStack,
 };

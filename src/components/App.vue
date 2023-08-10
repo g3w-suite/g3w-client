@@ -236,7 +236,8 @@
                 </a>
                 <div v-t="'credits.g3wSuiteDescription'" style="margin-top: 10px;"></div>
               </div>
-              <div v-t:pre ="'credits.productOf'" class="credit-title-logo g3w-credits-block" style="font-size: 1em; display: flex; justify-content: center">
+              <div class="credit-title-logo g3w-credits-block" style="font-size: 1em; display: flex; justify-content: center">
+                {{$t('credits.productOf')}}
                 <a style="text-align: center!important;" href="http://www.gis3w.it" target="_blank">
                   <img width="60" style="margin-left: 5px" :src="credits_logo" class="img-responsive center-block" alt="">
                 </a>
@@ -294,11 +295,6 @@ $.LayoutManager = $.LayoutManager || {
    * Modify these options to suit your implementation
    */
   options: {
-    //Add slimscroll to navbar menus
-    //This requires you to load the slimscroll plugin
-    //in every page before app.js
-    navbarMenuSlimscroll: true,
-    navbarMenuSlimscrollWidth: "0px", //The width of the scroll bar
     navbarMenuHeight: "200px", //The height of the inner menu
     //General animation speed for JS animated elements such as box collapse/expand and
     //sidebar treeview slide up/down. This options accepts an integer as milliseconds,
@@ -308,12 +304,10 @@ $.LayoutManager = $.LayoutManager || {
     sidebarToggleSelector: "[data-toggle='offcanvas']",
     //Activate sidebar push menu
     sidebarPushMenu: true,
-    //Activate sidebar slimscroll if the fixed layout is set (requires SlimScroll Plugin)
-    sidebarSlimScroll: false,
     //Enable sidebar expand on hover effect for sidebar mini
     //This option is forced to true if both the fixed layout and sidebar mini
     //are used together
-    sidebarExpandOnHover: false,
+    sidebarExpandOnHover: true,
     //BoxRefresh Plugin
     enableBoxRefresh: true,
     //Enable Fast Click. Fastclick.js creates a more
@@ -443,32 +437,8 @@ $.LayoutManager = $.LayoutManager || {
         }
       },
       fixSidebar () {
-        //Make sure the body tag has the .fixed class
-        if (!$("body").hasClass("fixed")) {
-          if (typeof $.fn.slimScroll != 'undefined') {
-            $(".sidebar").slimScroll({destroy: true}).height("auto");
-          }
-          return;
-        } else if (typeof $.fn.slimScroll == 'undefined' && window.console) {
-          window.console.error("Error: the fixed layout requires the slimscroll plugin!");
-        }
-        //Enable slimscroll for fixed layout (sidebar)
-        if ($.LayoutManager.options.sidebarSlimScroll && !isMobile.any) {
-          if (typeof $.fn.slimScroll != 'undefined') {
-            //Destroy if it exists
-            $("#g3w-sidebar").slimScroll({destroy: true}).height("auto");
-            //Add slimscroll
-            $("#g3w-sidebar").slimScroll({
-              touchScrollStep: 50,
-              height: ($(window).height() - $(".navbar-header").height() - 10) + "px",
-              color: "rgba(255,255,255,0.7)",
-              size: "3px"
-            });
-          }
-        } else {
-          $(".sidebar").css({'height': ($(window).height() - $(".navbar-header").height()) + "px"});
-          $(".sidebar").css('overflow-y', 'auto');
-        }
+        $(".sidebar").css({'height': ($(window).height() - $(".navbar-header").height()) + "px"});
+        $(".sidebar").css('overflow-y', 'auto');
       }
 
     };
@@ -721,8 +691,8 @@ $.LayoutManager = $.LayoutManager || {
       selectors: $.LayoutManager.options.boxWidgetOptions.boxWidgetSelectors,
       icons: $.LayoutManager.options.boxWidgetOptions.boxWidgetIcons,
       animationSpeed: $.LayoutManager.options.animationSpeed,
-      activate (_box) {
-        var _this = this;
+      activate(_box) {
+        const _this = this;
         if (!_box) {
           _box = document; // activate all boxes per default
         }
@@ -738,12 +708,12 @@ $.LayoutManager = $.LayoutManager || {
           _this.remove($(this));
         });
       },
-      collapse (element) {
-        var _this = this;
+      collapse(element) {
+        const _this = this;
         //Find the box parent
-        var box = element.parents(".box").first();
+        const box = element.parents(".box").first();
         //Find the body and the footer
-        var box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
+        const box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
         if (!box.hasClass("collapsed-box")) {
           //Convert minus into plus
           element.find(".btn-collapser")
@@ -764,9 +734,9 @@ $.LayoutManager = $.LayoutManager || {
           });
         }
       },
-      remove (element) {
+      remove(element) {
         //Find the box parent
-        var box = element.parents(".box").first();
+        const box = element.parents(".box").first();
         box.slideUp(this.animationSpeed);
       }
     };
@@ -967,14 +937,6 @@ $.LayoutManager = $.LayoutManager || {
       $.LayoutManager.controlSidebar.activate();
     }
 
-    //Add slimscroll to navbar dropdown
-    if (o.navbarMenuSlimscroll && typeof $.fn.slimscroll != 'undefined') {
-      $(".navbar .menu").slimscroll({
-        height: o.navbarMenuHeight,
-        alwaysVisible: false,
-        size: o.navbarMenuSlimscrollWidth
-      }).css("width", "100%");
-    }
 
     //Activate sidebar push menu
     if (o.sidebarPushMenu) {
@@ -1178,9 +1140,8 @@ export default {
         return state.text;
       }
       return $(`
-        <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
-          <img src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
-          <span style="margin-left: 5px;">${state.text}</span> 
+        <div style="font-weight: bold;" title=${state.text}>
+          <img style="margin-right: 3px;"  src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
         </span>`
       );
     },

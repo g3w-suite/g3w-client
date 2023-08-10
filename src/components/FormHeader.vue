@@ -13,7 +13,7 @@
       <span v-if="header.icon" style="margin-right: 5px">
         <i :class="header.icon"></i>
       </span>
-      <span v-t:pre="header.title" class="g3w-long-text">{{ header.name }}</span>
+      <span class="g3w-long-text">{{$t(header.title)}} {{ header.name }}</span>
      <component :valid="valid" :update="update" :is="header.component"/>
     </span>
     </section>

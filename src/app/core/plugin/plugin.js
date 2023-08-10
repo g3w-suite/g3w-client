@@ -15,7 +15,7 @@ const Plugin = function({
     config = PluginsRegistry.getPluginConfig(name),
     service = null,
     dependencies = [],
-    i18n = null,
+    i18n = false,
     fontClasses = [],
     api = {}
   } = {}) {
@@ -68,7 +68,7 @@ proto.getConfig = function(name = this.name) {
 };
 
 proto.setLocale = function(i18n) {
-  if (i18n && this.name) addI18nPlugin({ name: this.name, config: i18n});
+  if (true === i18n && this.name) addI18nPlugin({ name: this.name});
 };
 
 proto.setService = function(service) {

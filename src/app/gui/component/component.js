@@ -271,7 +271,6 @@ proto.mount = function(parent, append) {
     $(parent).append(iCinstance.$el);
   } else this.internalComponent.$mount(parent);
   this.internalComponent.$nextTick(() => {
-    $(parent).localize();
     this.emit('ready');
     d.resolve(true);
   });
