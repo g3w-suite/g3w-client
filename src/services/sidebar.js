@@ -213,7 +213,6 @@ class SidebarService extends G3WObject {
   }
 
   closePanel() {
-    this.state.gui.title = null;
     this.closeSidebarPanel();
     this
       .stack
@@ -223,6 +222,7 @@ class SidebarService extends G3WObject {
         const data = this.stack.getCurrentContentData();
         if (data) {
           $(data.content.internalPanel.$el).show();
+          this.state.gui.title = data.content.title;
         }
     });
   }

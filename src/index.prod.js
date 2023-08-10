@@ -9,10 +9,10 @@ import './deprecated';
 // expose global variables
 import './globals';
 
-//import core
+// core
 import ApplicationState          from 'store/application-state';
 
-//import services
+// services
 import ApplicationService        from 'services/application';
 import GUI                       from 'services/gui';
 import FloatbarService           from 'services/floatbar';
@@ -20,14 +20,14 @@ import NavbarItemsService        from 'services/navbaritems';
 import SidebarService            from 'services/sidebar';
 import ViewportService           from 'services/viewport';
 
-//components
+// components
 import App                       from 'components/App.vue';
 import ImageComponent            from 'components/GlobalImage.vue';
 import GalleryImagesComponent    from 'components/GlobalGallery.vue';
 import GeospatialComponet        from 'components/GlobalGeo.vue';
 import Skeleton                  from 'components/GlobalSkeleton.vue';
-import BarLoader                 from 'components/GlobalBarLoader';
-import Progressbar               from 'components/GlobalProgressBar';
+import BarLoader                 from 'components/GlobalBarLoader.vue';
+import Progressbar               from 'components/GlobalProgressBar.vue';
 import HelpDiv                   from 'components/GlobalHelpDiv.vue';
 import Resize                    from 'components/GlobalResize.vue'
 import LayerPositions            from 'components/GlobalLayerPositions.vue';
@@ -42,7 +42,7 @@ import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent          from 'components/Sidebar.vue';
 import ViewportComponent         from 'components/Viewport.vue';
 
-//directives
+// directives
 import vDisabled                 from 'directives/v-disabled';
 import vChecked                  from 'directives/v-checked';
 import vSelectedFirst            from 'directives/v-selected-first';
@@ -220,7 +220,7 @@ ApplicationService.init()
       el: '#app',
 
       /**
-       * 1. setup Interaces: general metods for the application as GUI.showForm etc ..
+       * 1. setup Interaces: general methods for the application as GUI.showForm etc ..
        * 2. setup layout: setup map controls and inizialize the components of the application (eg. navbar custom items)
        * 3. register all services for the application
        * 4. create templateConfig
