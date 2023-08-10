@@ -152,10 +152,7 @@
 
       </div>
 
-      <div
-        v-show = "state.content.loading"
-        class  = "bar-loader"
-      ></div>
+      <bar-loader :loading="state.content.loading"/>
 
     </div>
   </div>
