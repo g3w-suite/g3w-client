@@ -60,9 +60,6 @@
     async mounted(){
       await this.$nextTick();
       let {field_name:field, qgs_layer_id:layerId} = this.atlas;
-      setTimeout(()=>{
-
-      });
       this.select2 = $('#print_atlas_autocomplete').select2({
         width: '100%',
         multiple: true,
@@ -90,9 +87,10 @@
         this.values.push(value);
         this.emitValues();
       });
-      this.select2.on('select2:unselect', async evt =>{
-        const value =  evt.params.data.id;
-        this.values = this.values.filter(currentValue => currentValue !== value);
+      this.select2.on('select2:unselect', async evt => {
+        const value =  evt.params.data.id; // it seems always string
+        // need to check != instead of !== because we need to compare sometime number with string
+        this.values = this.values.filter(currentValue => currentValue != value);
         this.emitValues();
       });
     },
