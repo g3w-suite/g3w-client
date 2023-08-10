@@ -1,9 +1,11 @@
 import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import GUI from 'services/gui';
+import ProjectsRegistry  from 'store/projects';
+import GUI               from 'services/gui';
+import G3WObject         from 'core/g3wobject';
 
 const { base, inherit, createFilterFormField } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+
+console.assert(undefined !== GUI, 'GUI is undefined');
 
 function BaseIframeService(options={}){
   base(this);
@@ -146,4 +148,4 @@ proto.clear = function(){
   //overwrite single service
 };
 
-module.exports = BaseIframeService;
+export default BaseIframeService;

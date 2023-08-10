@@ -1,5 +1,6 @@
+import G3WObject from 'core/g3wobject';
+
 const { base, inherit, uniqueId } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 // Interface for Layers
 function LayersStore(config={}) {

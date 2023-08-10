@@ -1,10 +1,10 @@
-import { G3W_FID } from 'app/constant';
-import RelationsService from 'services/relations';
+import { G3W_FID }        from 'app/constant';
+import RelationsService   from 'services/relations';
 import ApplicationService from 'services/application';
-import GUI from 'services/gui';
+import GUI                from 'services/gui';
+import G3WObject          from 'core/g3wobject';
 
 const { inherit, base } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 function RelationsComponentService(options={}) {
   this.state = {};

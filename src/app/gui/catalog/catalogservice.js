@@ -1,9 +1,9 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
+import ProjectsRegistry            from 'store/projects';
+import ApplicationService          from 'services/application';
+import G3WObject                   from 'core/g3wobject';
 
 const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 function CatalogService() {
   this.state = {

@@ -1,8 +1,8 @@
 import GUI from 'services/gui';
+import G3WObject from 'core/g3wobject';
 
-const { inherit } = require('core/utils/utils');
+const { inherit }                         = require('core/utils/utils');
 const { createOlLayer, createLayerStyle } = require('core/utils/geo');
-const G3WObject = require('core/g3wobject');
 
 function VectorLayer(options = {}) {
   this.mapService = GUI.getComponent('map').getService();

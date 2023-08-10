@@ -1,25 +1,42 @@
-import GUI from 'services/gui';
-import {G3W_FID, LIST_OF_RELATIONS_TITLE, LIST_OF_RELATIONS_ID} from 'constant';
-import ProjectsRegistry from 'store/projects';
-import DataRouterService from 'services/data';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
+import GUI                                from 'services/gui';
+import {
+  G3W_FID,
+  LIST_OF_RELATIONS_TITLE,
+  LIST_OF_RELATIONS_ID
+}                                         from 'constant';
+import ProjectsRegistry                   from 'store/projects';
+import DataRouterService                  from 'services/data';
+import CatalogLayersStoresRegistry        from 'store/catalog-layers';
+import DownloadFormats                    from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-import ApplicationService from 'services/application';
+import ApplicationService                 from 'services/application';
+import G3WObject                          from 'core/g3wobject';
 
-const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
+const {
+  base,
+  inherit,
+  noop,
+  downloadFile,
+  throttle,
+  getUniqueDomId,
+  copyUrl
+}                                = require('core/utils/utils');
 const {
   createFeatureFromFeatureObject,
   intersects,
   within
-} = require('core/utils/geo');
-const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
-const {t} = require('core/i18n/i18n.service');
-const Layer = require('core/layers/layer');
-const G3WObject = require('core/g3wobject');
-const VectorLayer = require('core/layers/vectorlayer');
-const PrintService = require('core/print/printservice');
-const RelationsPage = require('gui/relations/vue/relationspage');
+}                                = require('core/utils/geo');
+const {
+  getAlphanumericPropertiesFromFeature,
+  createFeatureFromGeometry,
+  createFeatureFromBBOX,
+  createFeatureFromCoordinates
+}                                = require('core/utils/geo');
+const {t}                        = require('core/i18n/i18n.service');
+const Layer                      = require('core/layers/layer');
+const VectorLayer                = require('core/layers/vectorlayer');
+const PrintService               = require('core/print/printservice');
+const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 //used to get and set vue reactivity to queryresultservice

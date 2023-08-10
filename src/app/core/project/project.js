@@ -1,13 +1,17 @@
-import { QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS } from 'app/constant';
-import ApplicationState from 'store/application-state';
+import {
+  QUERY_POINT_TOLERANCE,
+  TOC_LAYERS_INIT_STATUS,
+  TOC_THEMES_INIT_STATUS
+}                         from 'app/constant';
+import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
+import G3WObject          from 'core/g3wobject';
 
 const { base, inherit, XHR } = require('core/utils/utils');
-const { crsToCrsObject } = require('core/utils/geo');
-const G3WObject = require('core/g3wobject');
-const LayerFactory = require('core/layers/layerfactory');
-const LayersStore = require('core/layers/layersstore');
-const Projections = require('g3w-ol/projection/projections');
+const { crsToCrsObject }     = require('core/utils/geo');
+const LayerFactory           = require('core/layers/layerfactory');
+const LayersStore            = require('core/layers/layersstore');
+const Projections            = require('g3w-ol/projection/projections');
 
 /**
  * @FIXME options param appears to be unusued

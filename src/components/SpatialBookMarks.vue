@@ -79,19 +79,19 @@
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS } from 'app/constant';
-  import GUI from 'services/gui';
-  import ApplicationService from 'services/application';
-  import ProjectsRegistry from 'store/projects';
-  import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
-  import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
-  import InputText from "components/InputText.vue";
+  import { LOCAL_ITEM_IDS }   from 'app/constant';
+  import GUI                  from 'services/gui';
+  import ApplicationService   from 'services/application';
+  import ProjectsRegistry     from 'store/projects';
+  import SpatialBookMarkGroup from 'components/SpatialBookMarkGroup.vue';
+  import SpatialBookMarkItem  from 'components/SpatialBookMarkItem.vue';
+  import InputText            from 'components/InputText.vue';
 
-  const { uniqueId } = require('core/utils/utils');
-  const { t } = require('core/i18n/i18n.service');
+  const { uniqueId }          = require('core/utils/utils');
+  const { t }                 = require('core/i18n/i18n.service');
 
 
-  const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
+  const USER_BOOKMARKS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id) || {};
 
   export default {
 
@@ -106,9 +106,10 @@
 
     data() {
       const project = ProjectsRegistry.getCurrentProject();
+      const id      = project.getId();
 
-      if ("undefined" === typeof SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
-        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = []
+      if (undefined === USER_BOOKMARKS[id]) {
+        USER_BOOKMARKS[id] = []
       }
 
       return {
@@ -120,18 +121,17 @@
 
         /** bookmark is an array of Object with follow structure:
          * {
-         *   name: <String> Unique identifier of spatial bootmark,
-         *   removable: <Boolean> true if set in QGIS project, false if add by user on G3W-SUITE application,
-         *   extent: <Array> Contain the map bbox coordinates
+         *   name:      <String> unique identifier of spatial bootmark,
+         *   removable: <Boolean> true = setted in QGIS project, false = added by user within G3W-SUITE application,
+         *   extent:    <Array> map bbox coordinates
          * }
          */
-
         project: {
           bookmarks: project.getSpatialBookmarks() || []
         },
 
         user: {
-          bookmarks: SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]
+          bookmarks: USER_BOOKMARKS[id]
         },
 
         addbookmarkinput: {
@@ -142,16 +142,17 @@
           type: 'varchar',
           input: {
             type: 'text',
-            options: {}
+            options: {},
           },
           visible: true,
           validate: {
             valid: false,
-            required: true
-          }
-        }
+            required: true,
+          },
+        },
 
-      }
+      };
+
     },
 
     computed: {
@@ -165,15 +166,18 @@
     methods: {
 
       addBookMark() {
-        this.user.bookmarks.push({
-          id: uniqueId(),
-          name: this.addbookmarkinput.value,
-          extent: GUI.getService('map').getMapExtent(),
-          removable: true,
-          crs:{
-            epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1]
-          }
-        });
+        this
+          .user
+          .bookmarks
+          .push({
+            id: uniqueId(),
+            name: this.addbookmarkinput.value,
+            extent: GUI.getService('map').getMapExtent(),
+            removable: true,
+            crs: {
+              epsg: 1 * GUI.getService('map').getCrs().split('EPSG:')[1]
+            }
+          });
         this.saveUserBookMarks();
         this.showaddform = false;
       },
@@ -184,10 +188,10 @@
       },
 
       saveUserBookMarks() {
-        SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
+        USER_BOOKMARKS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
         ApplicationService.setLocalItem({
           id: LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id,
-          data: SPATIAL_BOOKMARKS_LOCALITEMS
+          data: USER_BOOKMARKS,
         });
       },
 
@@ -203,9 +207,6 @@
         this.showaddform = false
       })
     },
-
-    /** @FIXME remove unusued method ? */
-    async mounted() {}
 
   };
 </script>

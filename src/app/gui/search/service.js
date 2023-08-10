@@ -1,9 +1,9 @@
 import QueryBuilderService from 'services/querybuilder';
-import ProjectsRegistry from 'store/projects';
+import ProjectsRegistry    from 'store/projects';
+import G3WObject           from 'core/g3wobject';
 
 const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const SearchPanel = require('gui/search/vue/panel/searchpanel');
+const SearchPanel       = require('gui/search/vue/panel/searchpanel');
 
 function Service() {
   base(this);

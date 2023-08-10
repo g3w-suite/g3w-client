@@ -1,13 +1,15 @@
 import { MAP_SETTINGS } from 'app/constant';
-import wms from 'gui/wms/vue/wms';
-import DataRouterService from 'services/data';
+import wms                     from 'gui/wms/vue/wms';
+import DataRouterService       from 'services/data';
 import MapLayersStoresRegistry from 'store/map-layers';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-import ControlsRegistry from 'store/map-controls';
-import GUI from 'services/gui';
+import ProjectsRegistry        from 'store/projects';
+import ApplicationService      from 'services/application';
+import ControlsRegistry        from 'store/map-controls';
+import GUI                     from 'services/gui';
+import G3WObject               from 'core/g3wobject';
 
-const { t } = require('core/i18n/i18n.service');
+
+const { t }                  = require('core/i18n/i18n.service');
 const {
   inherit,
   base,
@@ -16,20 +18,22 @@ const {
   throttle,
   toRawType,
   createFilterFromString
-} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+}                            = require('core/utils/utils');
 const {
   createVectorLayerFromFile,
   createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer
-} = require('core/utils/geo');
-const WFSProvider = require('core/layers/providers/wfsprovider');
-const olhelpers = require('g3w-ol/g3w.ol').helpers;
-const { getScaleFromResolution, getResolutionFromScale } = require('core/utils/ol');
-const ControlsFactory = require('gui/map/control/factory');
-const VectorLayer = require('core/layers/vectorlayer');
+}                            = require('core/utils/geo');
+const WFSProvider            = require('core/layers/providers/wfsprovider');
+const olhelpers              = require('g3w-ol/g3w.ol').helpers;
+const {
+  getScaleFromResolution,
+  getResolutionFromScale
+}                            = require('core/utils/ol');
+const ControlsFactory        = require('gui/map/control/factory');
+const VectorLayer            = require('core/layers/vectorlayer');
 
 const SETTINGS = {
   zoom : {

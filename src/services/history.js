@@ -3,8 +3,9 @@
  * @since v3.6
  */
 
+import G3WObject from 'core/g3wobject';
+
 const { inherit, base, Base64 } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
 
 /*
  * HistoryService basato su History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)

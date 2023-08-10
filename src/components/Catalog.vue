@@ -122,14 +122,14 @@
 </template>
 
 <script>
-import { MAP_SETTINGS } from 'app/constant';
-import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
-import ChangeMapThemesComponent from 'components/CatalogChangeMapThemes.vue';
-import CatalogLayerContextMenu from 'components/CatalogLayerContextMenu.vue';
+import { MAP_SETTINGS }            from 'app/constant';
+import CatalogEventHub             from 'gui/catalog/vue/catalogeventhub';
+import ChangeMapThemesComponent    from 'components/CatalogChangeMapThemes.vue';
+import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationService from 'services/application';
-import ControlsRegistry from 'store/map-controls';
-import GUI from 'services/gui';
+import ApplicationService          from 'services/application';
+import ControlsRegistry            from 'store/map-controls';
+import GUI                         from 'services/gui';
 
 const DEFAULT_ACTIVE_TAB = 'layers';
 

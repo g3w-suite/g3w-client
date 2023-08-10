@@ -4,10 +4,10 @@
  */
 
 import { G3W_FID, QUERY_POINT_TOLERANCE } from 'app/constant';
+import { BaseService }                    from 'core/data/service';
 
-const { base, inherit } = require('core/utils/utils');
 const { t } = require('core/i18n/i18n.service');
-const BaseService = require('core/data/service');
+
 const {
   getQueryLayersPromisesByCoordinates,
   getQueryLayersPromisesByGeometry,
@@ -15,24 +15,33 @@ const {
   getMapLayersByFilter
 } = require('core/utils/geo');
 
-function QueryService(){
-  base(this);
-  /**
-   *
-   * @type {{filtrable: {ows: string}}}
-   */
-  this.condition = {
-    filtrable: {
-      ows: 'WFS'
-    }
-  };
+class QueryService extends BaseService {
+
+  constructor() {
+    super();
+
+    /**
+     * @type {{filtrable: {ows: string}}}
+     */
+    this.condition = {
+      filtrable: {
+        ows: 'WFS'
+      }
+    };
+  }
+
 
   /**
-   * @param {{ feature: unknown, feature_count: unknown, filterConfig: unknown, multilayers: boolean, condition: boolean, excludeLayers: unknown[] }}
+   * @param {unknown}   opts.feature
+   * @param {unknown}   opts.feature_count
+   * @param {unknown}   opts.filterConfig
+   * @param {boolean}   opts.multilayers
+   * @param {boolean}   opts.condition
+   * @param {unknown[]} opts.excludeLayers
    * 
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({
+  polygon({
     feature,
     feature_count   = this.project.getQueryFeatureCount(),
     filterConfig    = {},
@@ -47,8 +56,8 @@ function QueryService(){
       add: true,
       filter: {
         SELECTED : false
-      }
-    }
+      },
+    },
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
@@ -65,6 +74,7 @@ function QueryService(){
         }
       });
     }
+
     return this.handleRequest(
       // request
       getQueryLayersPromisesByGeometry(
@@ -97,18 +107,18 @@ function QueryService(){
         external
       }
     );
-  };
+  }
 
   /**
-   *
-   * @param bbox
-   * @param feature_count
-   * @param multilayers
-   * @param condition
-   * @param layersFilterObject
+   * @param opts.bbox
+   * @param opts.feature_count
+   * @param opts.multilayers
+   * @param opts.condition
+   * @param opts.layersFilterObject
+   * 
    * @returns {Promise<unknown>}
    */
-  this.bbox = function({
+  bbox({
     bbox,
     feature_count      = this.project.getQueryFeatureCount(),
     filterConfig       = {},
@@ -118,7 +128,7 @@ function QueryService(){
     excludeSelected    = null,
     /** @since 3.8.0 **/
     addExternal = true,
-    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
+    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true },
   } = {}) {
 
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
@@ -156,21 +166,25 @@ function QueryService(){
       query
     );
 
-  };
+  }
 
   /**
-   * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
+   * @param {unknown}   opts.coordinates
+   * @param {unknown[]} opts.layerIds              - see: `QueryResultsService::addLayerFeaturesToResultsAction()`
+   * @param {boolean}   opts.multilayers
+   * @param {number}    opts.query_point_tolerance
+   * @param {number}    opts.feature_count
    * 
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({
+  async coordinates({
     coordinates,
-    layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
+    layerIds              = [],
     multilayers           = false,
     query_point_tolerance = QUERY_POINT_TOLERANCE,
     /** @since 3.8.0 **/
-    addExternal = true,
-    feature_count
+    addExternal           = true,
+    feature_count,
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const query = {
@@ -190,9 +204,9 @@ function QueryService(){
     }
 
     const layersFilterObject = {
-      QUERYABLE: true,
+      QUERYABLE:       true,
       SELECTED_OR_ALL: (0 === layerIds.length),
-      VISIBLE: true
+      VISIBLE:         true,
     };
 
 
@@ -227,55 +241,52 @@ function QueryService(){
         }
       ),
       // query
-      query
+      query,
     );
 
-  };
+  }
 
   /**
-   *
-   * @param request is a Promise(jquery promise at moment
+   * @param request a jQuery Promise
+   * 
    * @returns {Promise<unknown>}
    */
-  this.handleRequest = function(request, query={}){
-    return new Promise((resolve, reject) =>{
-      request.then(response => {
-        const results = this.handleResponse(response, query);
-        resolve(results);
-      }).fail(reject)
+  handleRequest(request, query = {}) {
+    return new Promise((resolve, reject) => {
+      request
+        .then(response => { resolve(this.handleResponse(response, query)); })
+        .fail(reject);
     })
-  };
+  }
 
   /**
-   *
    * @param response
+   * 
    * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
    */
-  this.handleResponse = function(response, query={}){
-    const layersResults = response;
+  handleResponse(response, query = {}) {
     const results = {
       query,
       type: 'ows',
       data: [],
       result: true // set result to true
     };
-    layersResults.forEach(result => result.data && result.data.forEach(data => results.data.push(data)));
+    response.forEach(result => result.data && result.data.forEach(data => results.data.push(data)));
     return results;
-  };
+  }
 
   /**
    * Exception response has user message attribute
    */
-  this.returnExceptionResponse = async function({usermessage}){
+  async returnExceptionResponse({ usermessage }){
     return {
       data: [],
       usermessage,
       result: true,
       error: true
     }
-  };
-}
+  }
 
-inherit(QueryService, BaseService);
+}
 
 export default new QueryService();

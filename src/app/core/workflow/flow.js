@@ -1,6 +1,7 @@
+import G3WObject from 'core/g3wobject';
+
 const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const Queque = require('core/workflow/queque');
+const Queque            = require('core/workflow/queque');
 
 //Class Flow of workflow step by step
 function Flow() {

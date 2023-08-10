@@ -6,6 +6,7 @@
 <template>
   <div>
     <section style="display: flex; justify-content: space-between; font-weight: bold;">
+
       <section style="align-self: flex-end">
         <span class="min-max-label">{{min}}</span>
         <span style="font-weight: bold;">{{unit}}</span>
@@ -36,11 +37,13 @@
       </section>
 
     </section>
+
     <template v-if="showValue">
       <span>{{value}}</span>
       <span style="font-weight: bold;">{{unit}}</span>
     </template>
-  </div>
+
+</div>
 </template>
 
 <script>
@@ -61,7 +64,7 @@
        * @TODO find out what changes from the `unit` props
        */
       label: {
-        type:"String",
+        type: String,
         default: ''
       },
 

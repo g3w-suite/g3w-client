@@ -27,7 +27,7 @@
         required: true
       },
       fnc: {
-        type:Function,
+        type: Function,
         required: true
       }
     }

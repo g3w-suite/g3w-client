@@ -1,7 +1,8 @@
+import G3WObject from 'core/g3wobject';
+
 const { base, inherit, getTimeoutPromise } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const { handleQueryResponse } =  require('core/utils/geo');
-const { response: responseParser } = require('core/utils/parsers');
+const { handleQueryResponse }              = require('core/utils/geo');
+const { response: responseParser }         = require('core/utils/parsers');
 
 function Provider(options = {}) {
   this._isReady = false;

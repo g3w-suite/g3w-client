@@ -1,7 +1,8 @@
+import G3WObject from 'core/g3wobject';
+
 const { resolve, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const Component = require('gui/component/component');
-const Panel = require('gui/panel');
+const Component            = require('gui/component/component');
+const Panel                = require('gui/panel');
 
 //Barstack Class
 // It used to mount panels stack

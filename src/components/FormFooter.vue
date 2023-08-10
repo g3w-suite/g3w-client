@@ -41,7 +41,7 @@ export default Vue.extend({
     },
     backToRoot: {
       type: Function,
-      default: ()=>{}
+      default: () => {}
     },
     isRootComponent:{
       type: Function

@@ -1,8 +1,9 @@
 import { SEARCH_ALLVALUE as ALLVALUE } from 'app/constant';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import GUI from 'services/gui';
+import CatalogLayersStoresRegistry     from 'store/catalog-layers';
+import DataRouterService               from 'services/data';
+import ProjectsRegistry                from 'store/projects';
+import GUI                             from 'services/gui';
+import G3WObject                       from 'core/g3wobject';
 
 const {
   base,
@@ -16,7 +17,6 @@ const {
   sortNumericArray
 } = require('core/utils/utils');
 
-const G3WObject = require('core/g3wobject');
 
 const NONVALIDVALUES = [null, undefined, ALLVALUE];
 

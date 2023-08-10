@@ -6,27 +6,29 @@
 <template>
   <baseinput :state="state">
     <input
-      :placeholder="state.default"
-      slot="body"
-      @keyup="isMobile() ? mobileChange($event) : change()"
-      :tabIndex="tabIndex"
-      v-disabled="!editable"
-      :field="state.name"
-      class="form-control"
-      v-model="state.value"
-      :class="{'input-error-validation' : notvalid}"
-      :id="state.name">
+      :placeholder = "state.default"
+      slot         = "body"
+      @keyup       = "isMobile() ? mobileChange($event) : change()"
+      :tabIndex    = "tabIndex"
+      v-disabled   = "!editable"
+      :field       = "state.name"
+      class        = "form-control"
+      v-model      = "state.value"
+      :class       = "{ 'input-error-validation' : notvalid }"
+      :id          = "state.name"
+    >
   </baseinput>
 </template>
 
 <script>
-const Input = require('gui/inputs/input');
+import { g3wInputMixin } from 'mixins';
 
 export default {
 
   /** @since 3.8.6 */
   name: "input-text",
 
-  mixins: [Input],
+  mixins: [ g3wInputMixin ],
+
 };
 </script>

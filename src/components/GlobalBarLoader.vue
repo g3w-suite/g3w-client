@@ -10,6 +10,9 @@
 <script>
   export default {
     name: "bar-loader",
-    props: ['loading', 'color'],
+    props: [
+      'loading',
+      'color'
+    ],
   };
 </script>
