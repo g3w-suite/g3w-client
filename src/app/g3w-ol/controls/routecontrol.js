@@ -184,13 +184,11 @@ const RouteControl = function(options={}) {
      */
     ScriptsRegister.load({
       url: `${GoogleStreetViewApiUrl}js?key=${ApplicationState.keys.vendorkeys.google}`
-    })
+    });
 
+    this.closeContentHandlerListener = this.clear.bind(this);
   }
-
   /***/
-
-
 };
 
 ol.inherits(RouteControl, InteractionControl);
@@ -324,16 +322,15 @@ proto.showRoute = function(){
             content.internalComponent.$on('zoom-to-route', () => {
               GUI.getService('map').zoomToExtent(routeBounds);
             });
-
             /**
              * end
              */
-
             GUI.setContent({
               content,
-              closable: false,
+              closable: true,
               title: 'Map Route'
             });
+            GUI.on('closecontent', this.closeContentHandlerListener);
             resolve();
           } else {
             reject();
@@ -343,9 +340,8 @@ proto.showRoute = function(){
       finally {
         GUI.disableApplication(false);
       }
-
     } else {
-      GUI.closeContent()
+      GUI.closeContent();
     }
   })
 };
@@ -368,6 +364,8 @@ proto.clear = function() {
   this.routeLayer.getSource().clear();
   this.pointsLayer.getSource().clear();
   this._map.removeInteraction(this.modifyInteraction);
+  //remove event listener
+  GUI.off('closecontent', this.closeContentHandlerListener);
   GUI.closeContent();
 };
 
