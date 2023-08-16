@@ -29,7 +29,6 @@
   "license": "MPL-2.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
-    "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
     "vue": "2.6.12",
     "vue-color": "^2.8.1",
