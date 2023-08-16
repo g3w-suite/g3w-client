@@ -55,7 +55,7 @@ const __H1 = __INFO + "\n";
 
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => (dep !== 'vue') && (dep !== 'util-deprecate'));
 
 // Built-in client plugins
 const default_plugins = [
