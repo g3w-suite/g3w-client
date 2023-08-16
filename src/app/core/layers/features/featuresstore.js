@@ -1,6 +1,9 @@
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
+
 // Object to store and handle features of layer
 function FeaturesStore(options={}) {
   this._features = options.features || [];
@@ -49,7 +52,7 @@ inherit(FeaturesStore, G3WObject);
 const proto = FeaturesStore.prototype;
 
 proto.clone = function() {
-  return _.cloneDeep(this);
+  return _cloneDeep(this);
 };
 
 proto.setProvider = function(provider) {
