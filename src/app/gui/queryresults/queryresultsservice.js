@@ -1003,7 +1003,7 @@ class QueryResultsService extends G3WObject {
    * 
    * @param featuresForLayer
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _handleFeatureForLayer(featuresForLayer) {
     const layerObj = {
@@ -1953,7 +1953,7 @@ class QueryResultsService extends G3WObject {
   /**
    * @FIXME add description
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   addQueryResultLayerToMap(feature) {
     this.resultsQueryLayer.getSource().addFeature(feature);
@@ -2125,7 +2125,7 @@ class QueryResultsService extends G3WObject {
   /**
    * Get layer from current state.layers showed on result
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _getLayer(layerId) {
     return this.state.layers.find(l => l.id === layerId);
@@ -2134,7 +2134,7 @@ class QueryResultsService extends G3WObject {
   /**
    * Get external layer from current state.layers showed on result
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _getExternalLayer(layerId) {
     return (this._getLayer(layerId) || {}).external;
@@ -2143,7 +2143,7 @@ class QueryResultsService extends G3WObject {
   /**
    * Get ids of the selected features
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _getFeaturesIds(features, external) {
     return features.map(f => external ? f.id : f.attributes[G3W_FID]);
@@ -2152,7 +2152,7 @@ class QueryResultsService extends G3WObject {
   /**
    * Extract features from layer object
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _getLayerFeatures(layer) {
     return layer.features || [];
@@ -2161,7 +2161,7 @@ class QueryResultsService extends G3WObject {
   /**
    * Loop and filter the features that we need to remove
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _featuresToRemove(features, external) {
     const features_ids = this._getFeaturesIds(features, external); // get id of the features
@@ -2171,7 +2171,7 @@ class QueryResultsService extends G3WObject {
   /**
    * Filter features to add
    * 
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _featuresToAdd(features, external) {
     const features_ids = this._getFeaturesIds(features, external);
@@ -2179,7 +2179,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _toggleLayerFeatureBox(layer, feature, collapsed) {
     const boxId = this.getBoxId(layer, feature);
@@ -2189,14 +2189,14 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _removeLayerFeatureBox(layer, feature_to_delete) {
     setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feature_to_delete)]);
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionGoToGeometry(layer) {
     this.state.layersactions[layer.id]
@@ -2211,7 +2211,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionShowQueryAndPlotsRelations(layer) {
     const relations = this._relations[layer.id].filter(relation => 'MANY' === relation.type);
@@ -2254,7 +2254,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionPrintAtlas(layer) {
     this.state.layersactions[layer.id]
@@ -2268,7 +2268,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionDownloadFeature(layer) {
     const [format] = layer.downloads; // NB: format == layer.downloads[0]
@@ -2293,7 +2293,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionMultiDownloadFeature(layer) {
     const state = this.createActionState({ layer });
@@ -2349,7 +2349,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionRemoveFeatureFromResult(layer) {
     this.state.layersactions[layer.id]
@@ -2367,7 +2367,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionSelection(layer) {
     this.state.layersactions[layer.id]
@@ -2390,7 +2390,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionLinkZoomToFid(layer) {
     this.state.layersactions[layer.id]
@@ -2408,7 +2408,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.8.0
+   * @since 3.9.0
    */
   _setActionEditing(layer) {
     this.state.layersactions[layer.id]
