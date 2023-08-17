@@ -25,7 +25,10 @@
   import ApplicationState from 'store/application-state';
 
   export default {
-    name: 'Mapfooter',
+
+    /** @since 3.8.6 */
+    name: 'map-footer-right',
+
     props: {
       service: {
         type: Object
@@ -62,7 +65,9 @@
     },
     async mounted() {
       this.service.once('ready', () => {
-        this.mouse.switch_icon = this.service.getEpsg() !== 'EPSG:4326';
+        this.mouse.switch_icon = this.service.getMapControlByType({
+          type: 'mouseposition'
+        }) && this.service.getEpsg() !== 'EPSG:4326';
         this.mouse.tooltip = `ESPG ${this.service.getCrs().split(':')[1]} <--> WGS84`;
       });
     }

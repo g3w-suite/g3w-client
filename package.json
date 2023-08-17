@@ -1,12 +1,13 @@
 {
   "name": "g3w-client",
-  "version": "3.8.0-alpha.1",
+  "version": "3.9.0-alpha.0",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
     "build": "gulp version && gulp build --max-old-space-size=2048",
     "build:plugins": "gulp version && gulp build:plugins",
+    "watch:plugins": "gulp version && gulp watch:plugins",
     "dev": "gulp dev --max-old-space-size=2048",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
@@ -28,7 +29,7 @@
   "license": "MPL-2.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
-    "regenerator-runtime": "^0.13.9",
+    "lodash.clonedeep": "^4.5.0",
     "util-deprecate": "^1.0.2",
     "shp-write": "^0.3.2",
     "vue": "2.6.12",
@@ -84,7 +85,7 @@
     "gulp-replace": "^0.6.1",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-streamify": "^1.0.2",
-    "gulp-uglify": "^1.5.4",
+    "gulp-uglify": "^3.0.2",
     "gulp-useref": "^3.0.7",
     "gulp-watch": "^4.3.5",
     "http-proxy": "^1.11.0",

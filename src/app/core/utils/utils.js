@@ -475,26 +475,38 @@ const utils = {
       })
     }
   },
-  createSingleFieldParameter({field, value, operator='eq', logicop=null, search_endpoint="api"}){
+  /**
+   * @since 3.8.7
+   * @param field
+   * @param value
+   * @param operator
+   * @param logicop // set OR as default
+   * @param search_endpoint
+   * @returns {string}
+   */
+  createSingleFieldParameter({field, value, operator='eq', logicop='OR', search_endpoint="api"}){
     if (search_endpoint === 'api') {
-      logicop = logicop && `|${logicop}`;
       if (Array.isArray(value)){
         let filter = '';
         const valueLenght = value.length;
         value.forEach((value, index) =>{
-          filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
+          filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `|${logicop},` : ''}`;
         });
         return filter
-      } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+      } else {
+        return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}`;
+      }
     } else {
       if (Array.isArray(value)){
         let filter = '';
         const valueLenght = value.length;
-        value.forEach((value, index) =>{
+        value.forEach((value, index) => {
           filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
         });
         return filter
-      } else return `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
+      } else {
+        return `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
+      }
     }
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
@@ -632,7 +644,42 @@ const utils = {
     const matchDayInDate = datetimeformat.match(/d/g);
     if (matchDayInDate && matchDayInDate.length < 3) datetimeformat = datetimeformat.replace(/d/g, 'D');
     return datetimeformat
-  }
+  },
+
+  /**
+   * Sort an array of strings (alphabetical order)
+   * 
+   * @since 3.8.0
+   */
+  sortAlphabeticallyArray(arr) {
+    return arr.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  },
+
+  /**
+   * Sort an array of numbers (natural order)
+   * 
+   * @since 3.8.0
+   */
+  sortNumericArray(arr, ascending = true) {
+    return arr.sort((a, b) => (ascending ? (a - b) : (b - a)));
+  },
+
+  /**
+   * @param {string} url1
+   * @param {string} url2
+   *
+   * @returns {boolean} whether URLs have same origin.
+   *
+   * @since 3.8.0
+   */
+  sameOrigin(url1, url2) {
+    try {
+      return new URL(url1).origin === new URL(url2).origin;
+    } catch(err) {
+      return false
+    }
+  },
+
 };
 
 module.exports = utils;

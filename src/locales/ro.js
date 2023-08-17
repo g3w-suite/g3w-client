@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Eroare de conexiune",
+      at_moment: "Momentan nu este posibil să afișați harta",
+      f5: "Apăsați Ctrl+F5"
+    },
     cookie_law: {
       message: "Acest website foloseste cookie-uri pentru a furniza vizitatorilor o experiență mult mai bună de navigare",
       buttonText: "Am înțeles!"
@@ -24,6 +29,26 @@ export default {
       message: "Poziție relativă la straturile din TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Selectați Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Marcaje spațiale",
+        helptext: "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",
+        input: {
+          name: "Nume"
+        },
+        sections: {
+          project:{
+            title: "Marcaje de proiect"
+          },
+          user: {
+            title: "Marcaje utilizator"
+          }
+        }
+      },
       search: {
         all: 'Toate',
         no_results: "Fără rezultat",
@@ -253,6 +278,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Interogare prin poligon de desen"
+        },
         querybybbox: {
           tooltip: 'Interogare BBox strat',
           nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
@@ -293,6 +321,10 @@ export default {
             metric: 'Metri',
             nautical: 'Mile Nautice'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Anterior",
+          zoom_next: "Zoom Urmatorul"
         }
       },
       relations: {
@@ -332,6 +364,7 @@ export default {
           textarea: "text",
           string: "string - text",
           date: "data",
+          datetime: "data",
           float: "float - nr. cu zecimale",
           table: "tabelă"
         },
@@ -354,6 +387,7 @@ export default {
             copied: "Copiat"
           },
           download: {
+            unknow: 'Descarcă',
             shp: 'Descarcă Shapefile',
             gpx: 'Descarcă GPX',
             gpkg: 'Descarcă GPKG',
@@ -377,11 +411,13 @@ export default {
     toggle_color_scheme: "Comutare schemă de culori",
     logout: "Deconectare",
     no_other_projects: "No more project for this group",
+    no_other_groups: "Nu mai sunt grupuri pentru acest macrogrup",
     yes: "Da",
     no: "Nu",
     back: "Înapoi",
     backto: "Înapoi la ",
     changemap: "Schimbare Hartă",
+    change_session: "Schimbați sesiunea",
     component: "Componentă Generică",
     search: "Căutare",
     no_results: "Niciun rezultat găsit",
@@ -410,8 +446,12 @@ export default {
     save: "Salvează",
     cancel: "Anulează",
     close: "Închide",
-    enlange_reduce:"Mărește/Micșorează",
-    reset_default:"Mărimea implicită",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Nu mai afișa mesajul",
+    enlange_reduce: "Mărește / Micșorează",
+    reset_default: "Mărimea implicită",
     add: "Adaugă",
     exitnosave: "Ieșire fără salvare",
     annul: "Anulează",
@@ -430,7 +470,7 @@ export default {
         add_wms_layer: "Adaugă strat WMS",
         delete_wms_url: "Șterge URL WMS",
         layer_id_already_added: "Strat WMS deja adăugat",
-        url_already_added: "URL WMS deja adăugat",
+        url_already_added: "URL WMS/Nume deja adăugat",
         layer_add_error: "Stratul WMS nu s-a adăugat. Verificați URL-ul sau parametrii WMS"
       }
     },
@@ -471,7 +511,16 @@ export default {
         tooltip: "Arie"
       },
       screenshot: {
-        error: "Eroare captură ecran"
+        error: "Eroare captură ecran",
+        securityError: `  
+        <p><b>Eroare de securitate</b>: un strat extern împiedică imprimarea hărții. Pentru a verifica, procedați după cum urmează:</p>
+        <ol>
+          <li>eliminați orice straturi externe adăugate manual (de exemplu, straturi WMS)</li>
+          <li>forțați reîncărcarea paginii: <code>CTRL + F5</code></li>
+          <li>tipărește din nou harta</li>
+        </ol>
+        <p>Pentru mai multe informații, vă rugăm să contactați administratorul serverului despre: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -greutate: bold;">&#x2139;&#xFE0F; securitate și pânze contaminate</a></p>
+        `
       }
     },
     catalog_items: {
@@ -481,7 +530,8 @@ export default {
         open_attribute_table: "Deschide Tabela Atribute",
         show_metadata: "Metadate",
         styles: 'Stiluri',
-        vector_color_menu:"Setează/Schimbă Culoare"
+        vector_color_menu:"Setează/Schimbă Culoare",
+        layer_opacity: "Opacitate"
       }
     },
     dataTable: {

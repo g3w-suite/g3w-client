@@ -18,7 +18,7 @@
             type="file">
         </i>
       </div>
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
       <g3w-media :state="data">
         <div class="clearmedia" @click="clearMedia()">
           <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
@@ -37,6 +37,10 @@ const { t } = require('core/i18n/i18n.service');
 const { media_field: MediaField } = require('gui/fields/fields');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-media',
+
   mixins: [InputMixins],
   components: {
     'g3w-media': MediaField

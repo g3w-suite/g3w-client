@@ -8,6 +8,9 @@ const Editor = require('core/editing/editor');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const Feature = require('core/layers/features/feature');
 
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
+
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
   // setters
@@ -154,7 +157,7 @@ proto.getFormPercentage = function(){
 };
 
 proto.clone = function() {
-  return _.cloneDeep(this);
+  return _cloneDeep(this);
 };
 
 proto.cloneFeatures = function() {
@@ -443,51 +446,80 @@ proto.setFieldsWithValues = function(feature, fields) {
   return attributes;
 };
 
-proto.getFieldsWithValues = function(obj, options={}) {
-  const {exclude=[], get_default_value=true}  = options;
-  let fields = JSON.parse(JSON.stringify(this.getEditingFields()));
+proto.getFieldsWithValues = function(obj, options = {}) {
+
+  const {
+    exclude = [],
+    get_default_value = true
+  }  = options;
+
+  let fields = _cloneDeep(this.getEditingFields());
   let feature;
-  if (obj instanceof Feature) feature = obj;
-  else if (obj instanceof ol.Feature) feature = new Feature({
-    feature: obj
-  });
-  else feature = obj && this.getFeatureById(obj);
-  if (feature) {
-    const attributes = feature.getProperties();
 
-    fields.forEach(field => {
-
-      field.value = attributes[field.name];
-      // store original value
-      field._value = attributes[field.name];
-      // at beginning set update false. Used to form
-      field.update = false;
-      if (field.input) {
-        const _configField = this.getEditingFields().find(_field => _field.name === field.name);
-        const options = _configField.input.options;
-        field.input.options.loading = options.loading || {state: null};
-        field.input.options.values = options.values;
-      }
-      /**
-       * exclude contain field to set visible false
-       */
-      field.visible = exclude.indexOf(field.name) === -1;
-      // for editing purpose
-      if (field.validate === undefined) field.validate = {};
-      field.forceNull = false;
-      field.validate.valid = true;
-      field.validate._valid = true; //useful to get previous value in certain case
-      field.value_from_default_value = false; // need to be check if default value is set by server configuration field
-      field.get_default_value = get_default_value; // specify if need to get value from form field.input.options.default value in case of missing value of field.value
-      field.validate.unique = field.validate.unique || false;
-      field.validate.exclude_values = new Set(); // for validate.unique purpose to check is new value iserted or change need to be di
-      field.validate.required = field.validate.required || false;
-      field.validate.mutually_valid = true;
-      field.validate.empty = !field.validate.required;
-      field.validate.message = null;
-      // end editing purpose
-    });
+  if (obj instanceof Feature) {
+    feature = obj;
+  } else if (obj instanceof ol.Feature) {
+    feature = new Feature({ feature: obj });
+  } else if (obj) {
+    feature = this.getFeatureById(obj);
+  } else {
+    return fields;
   }
+
+  const attributes = feature.getProperties();
+
+  fields.forEach(field => {
+
+    field.value = attributes[field.name];
+
+    // store original value
+    field._value = attributes[field.name];
+
+    // at beginning set update false. Used to form
+    field.update = false;
+
+    if (field.input) {
+      const options = this.getEditingFields().find(_field => _field.name === field.name).input.options;
+      field.input.options.loading = options.loading || { state: null };
+      field.input.options.values = options.values;
+    }
+
+    // exclude contain field to set visible false
+    field.visible = exclude.indexOf(field.name) === -1;
+
+    // for editing purpose
+    if (undefined === field.validate) {
+      field.validate = {};
+    }
+  
+    field.forceNull = false;
+    
+    field.validate.valid = true;
+    
+    //useful to get previous value in certain case
+    field.validate._valid = true;
+    
+    // need to be check if default value is set by server configuration field
+    field.value_from_default_value = false; 
+
+    // specify if need to get value from form field.input.options.default value in case of missing value of field.value
+    field.get_default_value = get_default_value;
+
+    field.validate.unique = field.validate.unique || false;
+
+    // for validate.unique purpose to check is new value iserted or change need to be di
+    field.validate.exclude_values = new Set();
+
+    field.validate.required = field.validate.required || false;
+
+    field.validate.mutually_valid = true;
+
+    field.validate.empty = !field.validate.required;
+
+    field.validate.message = null;
+
+  });
+
   return fields;
 };
 

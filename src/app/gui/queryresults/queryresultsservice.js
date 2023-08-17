@@ -21,7 +21,7 @@ const deprecate = require('util-deprecate');
 
 /**
  * Get and set vue reactivity to QueryResultsService
- * 
+ *
  * @type {Vue}
  */
 const VM = new Vue();
@@ -127,7 +127,7 @@ function QueryResultsService() {
 
     /**
      * An action is an object that contains:
-     * 
+     *
      * ```
      * {
      *   "id":       (required) Unique action Id
@@ -136,7 +136,7 @@ function QueryResultsService() {
      *   "state":    need to be reactive. Used for example to toggled state of action icon
      *   "hint":     Tooltip text
      *   "init":     Method called when action is loaded
-     *   "clear":    Method called before clear the service. Used for example to clear unwatch 
+     *   "clear":    Method called before clear the service. Used for example to clear unwatch
      *   "change":   Method called when feature of layer is changed
      *   "cbk":      (required) Method called when action is cliccked
      * }
@@ -175,7 +175,7 @@ function QueryResultsService() {
     /**
      * Used to show a custom component for a layer
      */
-    layerscustomcomponents:{} // 
+    layerscustomcomponents:{} //
 
   };
 
@@ -189,12 +189,27 @@ function QueryResultsService() {
  /**
    * Vector layer used by query result to show query
    * request as coordinates, bbox, polygon, etc ..
-   * 
+   *
    * @type {ol.layer.Vector}
    */
   this.resultsQueryLayer = new ol.layer.Vector({
     source: new ol.source.Vector(),
-    style: new ol.style.Style({ stroke: new ol.style.Stroke({ width: 3, color: 'blue' }), image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color: 'blue' }) }) }),
+    style(feature) {
+      const fill   = new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.7)' });
+      const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
+      if ('Point' === feature.getGeometry().getType()) {
+        return new ol.style.Style({
+          text: new ol.style.Text({
+            text: '\uf3c5',
+            font: '900 3em "Font Awesome 5 Free"',
+            fill,
+            stroke,
+            offsetY : -15
+          }),
+        });
+      }
+      return new ol.style.Style({ stroke });
+    }
   });
 
   /**
@@ -221,7 +236,7 @@ function QueryResultsService() {
     /**
      * Add current toggled map control if toggled
      */
-    mapcontrol: null, 
+    mapcontrol: null,
 
     /**
      * @FIXME add description
@@ -237,9 +252,9 @@ function QueryResultsService() {
 
     /**
      * Setter method called when response is handled by DataProvider
-     * 
+     *
      * @param queryResponse
-     * @param options: add is used to know if is a new query request or add/remove query request
+     * @param {{ add: boolean }} options `add` is used to know if is a new query request or add/remove query request
      */
     setQueryResponse(queryResponse, options={add:false}) {
       // in case of new request results reset the
@@ -248,6 +263,17 @@ function QueryResultsService() {
         this.clearState();
         this.state.query = queryResponse.query;
         this.state.type = queryResponse.type;
+
+        // if true add external layers to response
+        if (true === queryResponse.query.external.add) {
+          this._addVectorLayersDataToQueryResponse(queryResponse);
+        }
+
+        switch (this.state.query.type) {
+          case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
+          case 'bbox':        this.showBBOX(this.state.query.bbox); break;
+          case 'polygon':     this.state.query.geometry && this.showGeometry(this.state.query.geometry); break;
+        }
       }
       this.setLayersData(
         this._digestFeaturesForLayers(queryResponse.data),
@@ -257,7 +283,7 @@ function QueryResultsService() {
 
     /**
      * Setter method called when adding layer and feature for response
-     * 
+     *
      * @param layers
      * @param options
      */
@@ -275,7 +301,7 @@ function QueryResultsService() {
 
     /**
      * Method used to add custom component
-     * 
+     *
      * @param component
      */
     addComponent(component) {
@@ -284,15 +310,15 @@ function QueryResultsService() {
 
     /**
      * @FIXME add description
-     * 
-     * @param actions 
-     * @param layers 
+     *
+     * @param actions
+     * @param layers
      */
     addActionsForLayers(actions, layers) {},
 
     /**
      * @FIXME add description
-     * 
+     *
      * @param element
      */
     postRender(element) {},
@@ -304,7 +330,7 @@ function QueryResultsService() {
 
     /**
      * @FIXME add description
-     * 
+     *
      * @param layer
      */
     changeLayerResult(layer) {
@@ -323,7 +349,7 @@ function QueryResultsService() {
 
     /**
      * Setter method called when opening/closing feature info data content.
-     * 
+     *
      * @param open
      * @param layer
      * @param feature
@@ -400,12 +426,12 @@ const proto = QueryResultsService.prototype;
 /**
  * Register for plugin or other component of application to add
  * custom component on result for each layer feature or layer
- * 
+ *
  * @param id        unique id identification
  * @param layerId   Layer id of layer
  * @param component custom component
  * @param type      feature or layer
- * @param position 
+ * @param position
  */
 proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, component, type='feature', position='after'}={}) {
   if (undefined === this.state.layerscustomcomponents[layerId]) {
@@ -420,7 +446,7 @@ proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, componen
 
 /**
  * Check position
- * 
+ *
  * @param id
  * @param layerId
  * @param type
@@ -438,7 +464,7 @@ proto.unRegisterCustomComponent = function({id, layerId, type, position}) {
 
 /**
  * Add a feature to current layer result
- * 
+ *
  * @param layer
  * @param feature
  */
@@ -448,7 +474,7 @@ proto.addFeatureLayerToResult = function(layer, feature) {
 
 /**
  * Remove a feature from current layer result
- * 
+ *
  * @param layer
  * @param feature
  */
@@ -458,9 +484,9 @@ proto.removeFeatureLayerFromResult = function(layer, feature) {
 
 /**
  * Wrapper for download
- * 
- * @param downloadFnc 
- * @param options 
+ *
+ * @param downloadFnc
+ * @param options
  */
 proto.downloadApplicationWrapper = async function(downloadFnc, options={}) {
   const download_caller_id = ApplicationService.setDownload(true);
@@ -477,7 +503,7 @@ proto.downloadApplicationWrapper = async function(downloadFnc, options={}) {
 /**
  * Based on layer response check if features layer need to
  * be added or removed to current `state.layers` results
- * 
+ *
  * @param {Array} layer
  * @since v3.8.0
  */
@@ -500,7 +526,7 @@ proto.updateLayerResultFeatures = function(responseLayer) {
 
     // new layer features
     layer.features = [ ..._featuresToRemove, ..._featuresToAdd ];
-    
+
     // in case of removed features
     if (1 === _featuresToRemove.length) {
       this._toggleLayerFeatureBox(layer, _featuresToRemove[0], false);
@@ -521,7 +547,7 @@ proto.updateLayerResultFeatures = function(responseLayer) {
 
 /**
  * Called when layer result features is changed
- * 
+ *
  * @param layer
  */
 proto._changeLayerResult = function(layer) {
@@ -531,8 +557,8 @@ proto._changeLayerResult = function(layer) {
 
 /**
  * Check and do action if layer has no features after delete feature(s)
- * 
- * @param layer 
+ *
+ * @param layer
  */
 proto.checkIfLayerHasNoFeatures = function(layer) {
   if (layer && 0 === layer.features.length) {
@@ -547,11 +573,11 @@ proto.checkIfLayerHasNoFeatures = function(layer) {
 
 /**
  * Create boxid identify to query result hmtl
- * 
+ *
  * @param layer
  * @param feature
  * @param relation_index
- * 
+ *
  * @returns {string}
  */
 proto.getBoxId = function(layer, feature, relation_index) {
@@ -560,17 +586,17 @@ proto.getBoxId = function(layer, feature, relation_index) {
 
 /**
  * @FIXME add description
- * 
- * @param layers 
- * @param options 
+ *
+ * @param layers
+ * @param options
  */
 proto.setActionsForLayers = function(layers, options={add: false}) {
   if (options.add) {
     return;
   }
-  
+
   this.unlistenerlayeractionevents = [];
-  
+
   layers.forEach(layer => {
 
     const currentactiontoolslayer = {};
@@ -586,7 +612,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     this.state.currentactionfeaturelayer[layer.id] = Vue.observable(currentationfeaturelayer);
 
     const is_external_layer_or_wms = (layer.external) || (layer.source ? layer.source.type === 'wms' : false);
-    
+
     if (!this.state.layersactions[layer.id]) {
       this.state.layersactions[layer.id] = [];
     }
@@ -613,7 +639,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
 
       const relations = this._relations[layer.id].filter(relation => 'MANY' === relation.type);
       const chartRelationIds = [];
-      
+
       relations.forEach(relation => {
         const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
         if (id) {
@@ -664,7 +690,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           cbk: this.printAtlas.bind(this)
         });
     }
-    
+
     const state = this.createActionState({ layer });
 
     /**
@@ -833,7 +859,7 @@ proto.createActionState = function({layer, dynamicProperties=['toggled']}) {
 
 /**
  * Get action referred to layer getting the action id
- * 
+ *
  * @param layer layer linked to action
  * @param id    action id
  */
@@ -843,7 +869,7 @@ proto.getActionLayerById = function({layer, id}={}) {
 
 /**
  * Set current layer action tool in feature
- * 
+ *
  * @param layer current layer
  * @param index feature index
  * @param value component value or null
@@ -871,7 +897,7 @@ proto.addCurrentActionToolsLayer = function({id, layer, config={}}) {
 
 /**
  * Reset current action tools on layer when feature layer change
- * 
+ *
  * @param layer
  */
 proto.resetCurrentActionToolsLayer = function(layer) {
@@ -897,7 +923,7 @@ proto.setLayerActionTool = function({layer, component=null, config=null}={}) {
 
 /**
  * Copy `zoomtofid` url
- * 
+ *
  * @param layer
  * @param feature
  */
@@ -917,7 +943,6 @@ proto.clear = function() {
   this.mapService.clearHighlightGeometry();
   this.resultsQueryLayer.getSource().clear();
   this.removeAddFeaturesLayerResultInteraction({ toggle: true });
-  this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
     todo: noop,
@@ -930,6 +955,7 @@ proto.clear = function() {
   };
   this.clearState();
   this.closeComponent();
+  this.removeQueryResultLayerFromMap();
 };
 
 /**
@@ -969,7 +995,7 @@ proto.highlightFeaturesPermanently = function(layer) {
 
 /**
  * Check if one layer result
- * 
+ *
  * @returns {boolean}
  */
 proto.isOneLayerResult = function() {
@@ -978,7 +1004,7 @@ proto.isOneLayerResult = function() {
 
 /**
  * @FIXME add description
- * 
+ *
  * @param toggle boolean If true toggle true the mapcontrol
  */
 proto.removeAddFeaturesLayerResultInteraction = function({toggle=false}={}) {
@@ -1005,11 +1031,11 @@ proto.removeAddFeaturesLayerResultInteraction = function({toggle=false}={}) {
 
 /**
  * Adds feature to Features results
- * 
+ *
  * @param layer
  */
 proto.addLayerFeaturesToResultsAction = function(layer) {
-  
+
   // Check if layer is current layer to add or clear previous
   if (
     null !== this._addFeaturesLayerResultInteraction.id &&
@@ -1108,9 +1134,9 @@ proto.deactiveQueryInteractions = function() {
 
 /**
  * @FIXME add description
- * 
- * @param layer 
- * @param options 
+ *
+ * @param layer
+ * @param options
  */
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   options.highlight = !this.isOneLayerResult();
@@ -1126,7 +1152,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
  */
 proto.clearState = function(options={}) {
   this.state.layers.splice(0);
-  this.state.query = {};
+  this.state.query = null;
   this.state.querytitle = "";
   this.state.changed = false;
   // clear action if present
@@ -1152,8 +1178,8 @@ proto.getState = function() {
 
 /**
  * @FIXME add description
- * 
- * @param state 
+ *
+ * @param state
  */
 proto.setState = function(state) {
   this.state = state;
@@ -1161,8 +1187,8 @@ proto.setState = function(state) {
 
 /**
  * @FIXME add description
- * 
- * @param project 
+ *
+ * @param project
  */
 proto._setRelations = function(project) {
   const projectRelations = project.getRelations();
@@ -1170,7 +1196,7 @@ proto._setRelations = function(project) {
 };
 
 /**
- * @param layerId 
+ * @param layerId
  */
 proto.getAtlasByLayerId = function(layerId) {
   return this._atlas.filter(atlas => atlas.atlas.qgs_layer_id === layerId);
@@ -1178,8 +1204,8 @@ proto.getAtlasByLayerId = function(layerId) {
 
 /**
  * @FIXME add description
- * 
- * @param project 
+ *
+ * @param project
  */
 proto._setAtlasActions = function(project) {
   this._atlas = project.getPrint().filter(printconfig => printconfig.atlas) || [];
@@ -1187,7 +1213,7 @@ proto._setAtlasActions = function(project) {
 
 /**
  * @FIXME add description
- * 
+ *
  * @param querytitle
  */
 proto.setTitle = function(querytitle) {
@@ -1203,9 +1229,9 @@ proto.reset = function() {
 
 /**
  * Converts response from DataProvider into a QueryResult component data structure
- * 
+ *
  * @param featuresForLayers: Array contains for each layer features
- * 
+ *
  * @returns {[]}
  */
 proto._digestFeaturesForLayers = function(featuresForLayers=[]) {
@@ -1388,7 +1414,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers=[]) {
 
 /**
  * Set special attributes
- * 
+ *
  * @param layerSpecialAttributesName
  * @param feature
  */
@@ -1412,9 +1438,9 @@ proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName
 
 /**
  * Get `properties`, `geometry` and `id` from different types of feature
- * 
+ *
  * @param feature
- * 
+ *
  * @returns {{geometry: (undefined|*|null|ol.Feature), id: *, properties: string[]}|{geometry: *, id: *, properties: *}}
  */
 proto.getFeaturePropertiesAndGeometry = function(feature) {
@@ -1429,11 +1455,11 @@ proto.getFeaturePropertiesAndGeometry = function(feature) {
 
 /**
  * Parse attributes to show on result based on field
- * 
+ *
  * @param layerAttributes
  * @param feature
  * @param sourceType
- * 
+ *
  * @returns {{name: T, show: boolean, label: T}[]|*}
  */
 proto._parseAttributes = function(layerAttributes, feature, sourceType) {
@@ -1455,12 +1481,12 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
 
 /**
  * @FIXME add description
- * 
- * @param actionId 
- * @param layer 
- * @param feature 
- * @param index 
- * @param container 
+ *
+ * @param actionId
+ * @param layer
+ * @param feature
+ * @param index
+ * @param container
  */
 proto.trigger = async function(actionId, layer, feature, index, container) {
   if (this._actions[actionId]) {
@@ -1476,12 +1502,12 @@ proto.trigger = async function(actionId, layer, feature, index, container) {
 
 /**
  * @FIXME add description
- * 
- * @param action 
- * @param layer 
- * @param feature 
- * @param index 
- * @param container 
+ *
+ * @param action
+ * @param layer
+ * @param feature
+ * @param index
+ * @param container
  */
 proto.triggerLayerAction = async function(action, layer, feature, index, container) {
   if (action.cbk) {
@@ -1497,8 +1523,8 @@ proto.triggerLayerAction = async function(action, layer, feature, index, contain
 
 /**
  * @FIXME add description
- * 
- * @param vectorLayer 
+ *
+ * @param vectorLayer
  */
 proto.registerVectorLayer = function(vectorLayer) {
   if (-1 === this._vectorLayers.indexOf(vectorLayer)) {
@@ -1508,8 +1534,8 @@ proto.registerVectorLayer = function(vectorLayer) {
 
 /**
  * @FIXME add description
- * 
- * @param vectorLayer 
+ *
+ * @param vectorLayer
  */
 proto.unregisterVectorLayer = function(vectorLayer) {
   this._vectorLayers = this._vectorLayers.filter(layer => {
@@ -1520,10 +1546,10 @@ proto.unregisterVectorLayer = function(vectorLayer) {
 
 /**
  * @FIXME add description
- * 
- * @param vectorLayer 
- * @param query 
- * 
+ *
+ * @param vectorLayer
+ * @param query
+ *
  * @returns {Object|Boolean}
  */
 proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}) {
@@ -1597,9 +1623,9 @@ proto._addVectorLayersDataToQueryResponse = function() {
 };
 
 /**
- * Add custom component in query result 
- * 
- * @param component 
+ * Add custom component in query result
+ *
+ * @param component
  */
 proto._addComponent = function(component) {
   this.state.components.push(component)
@@ -1630,10 +1656,10 @@ proto._printSingleAtlas = function({atlas={}, features=[]}={}) {
 
 /**
  * @FIXME add description
- * 
- * @param ids 
- * @param container 
- * @param relationData 
+ *
+ * @param ids
+ * @param container
+ * @param relationData
  */
 proto.showChart = function(ids, container, relationData) {
   this.emit('show-chart', ids, container, relationData);
@@ -1648,13 +1674,13 @@ proto.hideChart = function(container) {
 
 /**
  * @FIXME add description
- * 
- * @param ids 
- * @param layer 
- * @param feature 
- * @param action 
- * @param index 
- * @param container 
+ *
+ * @param ids
+ * @param layer
+ * @param feature
+ * @param action
+ * @param index
+ * @param container
  */
 proto.showRelationsChart = function(ids=[], layer, feature, action, index, container) {
   action.state.toggled[index] = !action.state.toggled[index];
@@ -1671,9 +1697,9 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
 
 /**
  * @FIXME add description
- * 
- * @param layer 
- * @param feature 
+ *
+ * @param layer
+ * @param feature
  */
 proto.printAtlas = function(layer, feature) {
   const features = feature ? [feature]: layer.features;
@@ -1692,30 +1718,29 @@ proto.printAtlas = function(layer, feature) {
                  /><label for="${id}">${atlas.name}</label><br>`;
     });
 
-    GUI.showModalDialog({
-      title: "Seleziona Template",
-      message: inputs,
-      buttons: {
-        success: {
-          label: "OK",
-          className: "skin-button",
-          callback: () => {
-            const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
-            if (null !== index || undefined !== index) {
-              this._printSingleAtlas({ atlas: atlasLayer[index], features });
-            }
+  GUI.showModalDialog({
+    title: t('sdk.atlas.template_dialog.title'),
+    message: inputs,
+    buttons: {
+      success: {
+        label: "OK",
+        className: "skin-button",
+        callback: () => {
+          const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
+          if (undefined === index) {
+            return false; // prevent default
           }
+          this._printSingleAtlas({ features, atlas: atlasLayer[index] });
         }
       }
-    });
-  } else {
-    this._printSingleAtlas({ atlas: atlasLayer[0], features });
-  }
+    }
+  });
+
 };
 
 /**
  * @FIXME add description
- * 
+ *
  * @param layer
  */
 proto.showLayerDownloadFormats = function(layer) {
@@ -1730,12 +1755,12 @@ proto.showLayerDownloadFormats = function(layer) {
 
 /**
  * @FIXME add description
- * 
- * @param type 
- * @param layer 
- * @param features 
- * @param action 
- * @param index 
+ *
+ * @param type
+ * @param layer
+ * @param features
+ * @param action
+ * @param index
  */
 proto.downloadFeatures = async function(type, layer, features=[], action, index) {
   features = features
@@ -1751,7 +1776,7 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
 
   /**
    * A function that che be called in case of querybypolygon
-   * 
+   *
    * @param active
    */
   const runDownload = async (active=false) => {
@@ -1891,9 +1916,9 @@ proto.downloadXls = function({id:layerId}={}, feature) {
 /**
  *
  * @FIXME add description
- * 
- * @param layer 
- * @param actionId 
+ *
+ * @param layer
+ * @param actionId
  */
 proto.listenClearSelection = function(layer, actionId) {
   if (layer.external) {
@@ -1916,8 +1941,8 @@ proto.listenClearSelection = function(layer, actionId) {
 
 /**
  * @FIXME add description
- * 
- * @param layer 
+ *
+ * @param layer
  */
 proto.clearSelectionExtenalLayer = function(layer) {
   layer.selection.active = false;
@@ -1948,7 +1973,7 @@ proto.unlistenerEventsActions = function() {
 /**
  * @FIXME add description
  *
- * @param layer 
+ * @param layer
  */
 proto.addRemoveFilter = function(layer) {
   CatalogLayersStoresRegistry.getLayerById(layer.id).toggleFilterToken();
@@ -1956,7 +1981,7 @@ proto.addRemoveFilter = function(layer) {
 
 /**
  * @FIXME add description
- * 
+ *
  * @param layer
  */
 proto.selectionFeaturesLayer = function(layer) {
@@ -1971,7 +1996,7 @@ proto.selectionFeaturesLayer = function(layer) {
 
 /**
  * @FIXME add description
- * 
+ *
  * @param layer
  * @param feature
  * @param index
@@ -2020,7 +2045,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force) 
     layer.selection.active = layer.selection.features.reduce((accumulator, feature) => accumulator || feature.selection.selected, false)
 
   }
-  
+
   /**
    * A project layer on TOC
    */
@@ -2028,12 +2053,12 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force) 
 
     const fid = feature ? feature.attributes[G3W_FID] : null;
     const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
-    
+
     /** @FIXME add description */
     if (!hasAlreadySelectioned && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
       layer.addOlSelectionFeature({ id: fid, feature });
     }
-    
+
     /** @FIXME add description */
     if (undefined === force) {
       layer[hasAlreadySelectioned ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
@@ -2074,7 +2099,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force) 
 
 /**
  * Initial check of selection active on layer
- * 
+ *
  * @param layer
  * @param feature
  * @param index
@@ -2093,7 +2118,7 @@ proto.checkFeatureSelection = function({layer, feature, index, action}={}) {
 
 /**
  * @FIXME add description
- * 
+ *
  * @param layer
  * @param feature
  * @param action
@@ -2121,7 +2146,13 @@ proto.removeQueryResultLayerFromMap = function() {
  * Show layerQuery result on map
  */
 proto.addQueryResultsLayerToMap = function({feature, timeout=1500}) {
+/**
+ * Show layerQuery result on map
+ */
+proto.addQueryResultsLayerToMap = function({feature}){
+
   this.removeQueryResultLayerFromMap();
+
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
   try { this.mapService.getMap().getView().setCenter(ol.extent.getCenter(feature.getGeometry().getExtent())); }
@@ -2133,8 +2164,8 @@ proto.addQueryResultsLayerToMap = function({feature, timeout=1500}) {
 
 /**
  * Show feature from coordinates
- * 
- * @param coordinates 
+ *
+ * @param coordinates
  */
 proto.showCoordinates = function(coordinates) {
   this.addQueryResultsLayerToMap({ feature: createFeatureFromCoordinates(coordinates) });
@@ -2142,7 +2173,7 @@ proto.showCoordinates = function(coordinates) {
 
 /**
  * Show BBox
- * 
+ *
  * @param bbox
  */
 proto.showBBOX = function(bbox) {
@@ -2151,7 +2182,7 @@ proto.showBBOX = function(bbox) {
 
 /**
  * Show Geometry
- * 
+ *
  * @param geometry
  */
 proto.showGeometry = function(geometry) {
@@ -2160,7 +2191,7 @@ proto.showGeometry = function(geometry) {
 
 /**
  * @FIXME add description
- * 
+ *
  * @param layer
  * @param feature
  */
@@ -2188,7 +2219,7 @@ proto.goToGeometry = function(layer, feature) {
 };
 
 /**
- * Save layer result 
+ * Save layer result
  */
 proto.saveLayerResult = function({layer, type='csv'}={}) {
   this.downloadFeatures(type, layer, layer.features);
@@ -2196,9 +2227,9 @@ proto.saveLayerResult = function({layer, type='csv'}={}) {
 
 /**
  * @FIXME add description
- * 
- * @param layer 
- * @param feature 
+ *
+ * @param layer
+ * @param feature
  */
 proto.highlightGeometry = function(layer, feature) {
   if(feature.geometry) {
@@ -2211,8 +2242,8 @@ proto.highlightGeometry = function(layer, feature) {
 
 /**
  * @FIXME add description
- * 
- * @param layer 
+ *
+ * @param layer
  */
 proto.clearHighlightGeometry = function(layer) {
   this.mapService.clearHighlightGeometry();
@@ -2222,12 +2253,12 @@ proto.clearHighlightGeometry = function(layer) {
 };
 
 /**
- * 
+ *
  * Handle show Relation on result
- * 
+ *
  * - layerId = current layer father id
  * - feature = current feature father id
- * 
+ *
  * @param relationId
  */
 proto.showRelation = function({relation, layerId, feature}={}) {
@@ -2251,10 +2282,10 @@ proto.showRelation = function({relation, layerId, feature}={}) {
 
 /**
  * @FIXME add description
- * 
- * @param layer 
- * @param feature 
- * @param action 
+ *
+ * @param layer
+ * @param feature
+ * @param action
  */
 proto.showQueryRelations = function(layer, feature, action) {
   GUI.changeCurrentContentOptions({ crumb: { title: layer.title } });
@@ -2278,7 +2309,7 @@ proto.showQueryRelations = function(layer, feature, action) {
 
 /**
  * Get layer from current state.layers showed on result
- * 
+ *
  * @since v3.8.0
  */
 proto._getLayer = function(layerId) {
@@ -2287,7 +2318,7 @@ proto._getLayer = function(layerId) {
 
 /**
  * Get external layer from current state.layers showed on result
- * 
+ *
  * @since v3.8.0
  */
 proto._getExternalLayer = function(layerId) {
@@ -2296,7 +2327,7 @@ proto._getExternalLayer = function(layerId) {
 
 /**
  * Get ids of the selected features
- * 
+ *
  * @since v3.8.0
  */
 proto._getFeaturesIds = function(features, external) {
@@ -2305,7 +2336,7 @@ proto._getFeaturesIds = function(features, external) {
 
 /**
  * Extract features from layer object
- * 
+ *
  * @since v3.8.0
  */
 proto._getLayerFeatures = function(layer) {
@@ -2314,7 +2345,7 @@ proto._getLayerFeatures = function(layer) {
 
 /**
  * Loop and filter the features that we need to remove
- * 
+ *
  * @since v3.8.0
  */
 proto._featuresToRemove = function(features, external) {
@@ -2324,7 +2355,7 @@ proto._featuresToRemove = function(features, external) {
 
 /**
  * Filter features to add
- * 
+ *
  * @since v3.8.0
  */
 proto._featuresToAdd = function(features, external) {
