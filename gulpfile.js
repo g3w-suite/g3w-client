@@ -181,16 +181,13 @@ gulp.task('browserify:app', function() {
       imgurify
     ]
   });
+
+  //Set package.json dependencies modules as external. Not include inside app.min.js bundle
+  dependencies.forEach(dep => bundler.external(dep));
+
   if (production) {
     bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
-    dependencies.forEach(dep => bundler.external(dep)); // add external module node_modules on vendor
   } else {
-    bundler.on('prebundle', bundle => {
-      dependencies.forEach(dep => {
-        bundle.external(dep);
-        bundle.require(dep);
-      });
-    });
     bundler = watchify(bundler);
   }
 
@@ -212,6 +209,7 @@ gulp.task('browserify:app', function() {
       .pipe(rename('app.min.js'))
       .pipe(gulpif(production, sourcemaps.write('.')))
       .pipe(gulp.dest(outputFolder + '/static/client/js/'));
+
 
   if (production) {
     rebundle = () => bundle();
