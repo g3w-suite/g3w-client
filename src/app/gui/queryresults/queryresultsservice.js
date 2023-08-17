@@ -318,11 +318,11 @@ class QueryResultsService extends G3WObject {
    * Register for plugin or other component of application to add
    * custom component on result for each layer feature or layer
    * 
-   * @param id        unique id identification
-   * @param layerId   Layer id of layer
-   * @param component custom component
-   * @param type      feature or layer
-   * @param position 
+   * @param opts.id        unique id identification
+   * @param opts.layerId   Layer id of layer
+   * @param opts.component custom component
+   * @param opts.type      feature or layer
+   * @param opts.position 
    */
   registerCustomComponent({
     id       = getUniqueDomId(),
@@ -344,9 +344,9 @@ class QueryResultsService extends G3WObject {
   /**
    * Check position
    * 
-   * @param id
-   * @param layerId
-   * @param type
+   * @param opts.id
+   * @param opts.layerId
+   * @param opts.type
    */
   unRegisterCustomComponent({
     id,
@@ -591,8 +591,8 @@ class QueryResultsService extends G3WObject {
   /**
    * Get action referred to layer getting the action id
    * 
-   * @param layer layer linked to action
-   * @param id    action id
+   * @param opts.layer layer linked to action
+   * @param opts.id    action id
    */
   getActionLayerById({
     layer,
@@ -604,9 +604,9 @@ class QueryResultsService extends G3WObject {
   /**
    * Set current layer action tool in feature
    * 
-   * @param layer current layer
-   * @param index feature index
-   * @param value component value or null
+   * @param opts.layer current layer
+   * @param opts.index feature index
+   * @param opts.value component value or null
    */
   setCurrentActionLayerFeatureTool({
     layer,
@@ -749,7 +749,7 @@ class QueryResultsService extends G3WObject {
   /**
    * @FIXME add description
    * 
-   * @param toggle boolean If true toggle true the mapcontrol
+   * @param opts.toggle boolean If true toggle true the mapcontrol
    */
   removeAddFeaturesLayerResultInteraction({
     toggle = false
@@ -1903,10 +1903,10 @@ class QueryResultsService extends G3WObject {
   /**
    * Initial check of selection active on layer
    * 
-   * @param layer
-   * @param feature
-   * @param index
-   * @param action
+   * @param opts.layer
+   * @param opts.feature
+   * @param opts.index
+   * @param opts.action
    */
   checkFeatureSelection({
     layer,
@@ -2067,10 +2067,9 @@ class QueryResultsService extends G3WObject {
   /**
    * Handle show Relation on result
    * 
-   * - layerId = current layer father id
-   * - feature = current feature father id
-   * 
-   * @param relationId
+   * @param opts.relation
+   * @param opts.layerId  current layer father id
+   * @param opts.feature  current feature father id
    */
   showRelation({
     relation,
@@ -2539,10 +2538,10 @@ QueryResultsService.prototype.setters = {
   /**
    * Setter method called when opening/closing feature info data content.
    * 
-   * @param open
-   * @param layer
-   * @param feature
-   * @param container
+   * @param opts.open
+   * @param opts.layer
+   * @param opts.feature
+   * @param opts.container
    */
   openCloseFeatureResult({open, layer, feature, container}={}) {}
 
