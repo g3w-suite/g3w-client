@@ -30,6 +30,7 @@
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
+    "util-deprecate": "^1.0.2",
     "shp-write": "^0.3.2",
     "vue": "2.6.12",
     "vue-color": "^2.8.1",
@@ -82,7 +83,7 @@
     "gulp-replace": "^0.6.1",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-streamify": "^1.0.2",
-    "gulp-uglify": "^1.5.4",
+    "gulp-uglify": "^3.0.2",
     "gulp-useref": "^3.0.7",
     "gulp-watch": "^4.3.5",
     "imgurify": "^2.0.1",
