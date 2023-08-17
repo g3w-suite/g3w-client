@@ -55,7 +55,7 @@ const __H1 = __INFO + "\n";
 
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => (dep !== 'vue') && (dep !== 'util-deprecate'));
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
 
 // Built-in client plugins
 const default_plugins = [
@@ -182,8 +182,7 @@ gulp.task('browserify:app', function() {
     ]
   });
 
-  //Set package.json dependencies modules as external. Not include inside app.min.js bundle
-  dependencies.forEach(dep => bundler.external(dep));
+  dependencies.forEach(dep => bundler.external(dep));   // exclude external npm dependencies
 
   if (production) {
     bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
