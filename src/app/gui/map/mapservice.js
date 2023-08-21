@@ -148,13 +148,7 @@ class OlMapViewer {
   };
 
   getLayerByName(layerName) {
-    const layers = this.map.getLayers();
-    for (let i = 0; i < layers.getLength(); i++) {
-      if (layerName === layers.item(i).get('name')) {
-        return layers.item(i);
-      }
-    }
-    return null;
+    return this.map.getLayers().find(layer => layerName === layer.get('name'));
   }
 
   removeLayerByName(layerName) {
