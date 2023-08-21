@@ -1828,15 +1828,15 @@ class QueryResultsService extends G3WObject {
     /**
      * In case of external layer (vector) added by add external layer tool
      */
-    if (undefined !== "undefined" && layer.external) {
+    if (undefined !== layer.external && layer.external) {
 
       /** @FIXME add description */
       if (undefined === layer.selection.features) {
-        layer.selection.features = {};
+        layer.selection.features = [];
       }
 
       /** @FIXME add description */
-      if (undefined !== layer.selection.features.find(selectionFeature => selectionFeature.getId() === fid)) {
+      if (undefined === layer.selection.features.find(selectionFeature => selectionFeature.getId() === fid)) {
         /***
          * Feature used in selection tool action
          */
@@ -1858,9 +1858,8 @@ class QueryResultsService extends G3WObject {
         )
       ) {
           return;
-      }
-      /** @FIXME add description */
-      else {
+      } else {
+        /** @FIXME add description */
         feature.selection.selected = !feature.selection.selected;
       }
       /** @FIXME add description */
