@@ -611,8 +611,14 @@ export const LOCAL_ITEM_IDS = {
 /**
  * @since 3.8.0
  */
-
 export const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
+
+/**
+ * List of Open Layers spatial methods used to find features
+ * 
+ * @since 3.9.0
+ */
+export const SPATIAL_METHODS = ['intersects', 'within'];
 
 export default {
   APP_VERSION,
@@ -637,6 +643,7 @@ export default {
   QUERY_POINT_TOLERANCE,
   SEARCH_ALLVALUE,
   SEARCH_RETURN_TYPES,
+  SPATIAL_METHODS,
   TIMEOUT,
   TOC_LAYERS_INIT_STATUS,
   TOC_THEMES_INIT_STATUS,
