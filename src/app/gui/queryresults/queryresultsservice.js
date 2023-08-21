@@ -206,7 +206,7 @@ class QueryResultsService extends G3WObject {
       mapcontrol: null,
 
       /**
-       * @FIXME add description
+       * Method to handle interaction when a mapcontrol is toggled
        */
       toggleeventhandler: null
 
@@ -421,20 +421,26 @@ class QueryResultsService extends G3WObject {
           has_features     = layer && this._getLayerFeatures(layer).length > 0; // check if current layer has features on response
 
     if (has_features) {
-      const features_ids   = this._getFeaturesIds(layer.features, external);    // get features id from current layer on result
+      const features_ids   = this._getFeaturesIds(layer.features, external); // get features id from current layer on result
+      //cycle on response features
       responseFeatures
-        .forEach(feature => { 
+        .forEach(feature => {
+          //get feature id
           const feature_id = this._getFeatureId(feature, external);
-          if (undefined === features_ids.find(id => id === feature_id)) { // add feature
+          //check if already present on current layer features result
+          if (undefined === features_ids.find(id => id === feature_id)) {
+            // add feature
             layer.features.push(feature);
-          } else {                                                        // remove feature (because is already loaded)
+          } else {
+            // remove feature (because is already loaded)
             this._removeLayerFeatureBox(layer, feature);
-            layer.features = layer.features.filter(f => this._getFeatureId(f, external) !== feature_id);
+            // set new layer features removing already add feature
+            layer.features = this._getLayerFeatures(layer).filter(f => this._getFeatureId(f, external) !== feature_id);
           }
         });
-      layer
-        .features
-        .forEach(feature => this._toggleLayerFeatureBox(layer, feature, layer.features.length > 1));
+      //toggle current layer features based on features length of layer
+      this._getLayerFeatures(layer)
+        .forEach(feature => this._toggleLayerFeatureBox(layer, feature, this._getLayerFeatures(layer).length > 1));
     }
 
     // in case no more features on layer remove interaction pickcoordinate to get result from map
@@ -464,7 +470,7 @@ class QueryResultsService extends G3WObject {
    * @param layer
    */
   checkIfLayerHasNoFeatures(layer) {
-    if (layer && 0 === layer.features.length) {
+    if (layer && 0 === this._getLayerFeatures(layer).length) {
       // due to vue reactivity, wait a little bit before update layers
       setTimeout(() => {
         this.state.layers = this.state.layers.filter(l => l.id !== layer.id);
@@ -650,7 +656,7 @@ class QueryResultsService extends G3WObject {
    * @param layer
    */
   resetCurrentActionToolsLayer(layer) {
-    layer.features.forEach((_, idx) => {
+    this._getLayerFeatures(layer).forEach((_, idx) => {
       if (undefined === this.state.currentactiontools[layer.id]) {
         return;
       }
@@ -767,24 +773,26 @@ class QueryResultsService extends G3WObject {
     toggle = false
   } = {}) {
     const interaction = this._addFeaturesLayerResultInteraction;
-  
-    if (interaction.interaction) {
+
+    if (null !== interaction.toggleeventhandler) {
+      this.mapService.off('mapcontrol:toggled', interaction.toggleeventhandler);
+    }
+
+    //remove current interaction to get features from layer
+    if (null !== interaction.interaction) {
       this.mapService.removeInteraction(interaction.interaction);
     }
 
     // check if query map control is toggled and registered
-    if (toggle && interaction.mapcontrol) {
-      interaction.mapcontrol.toggle(true);
+    if (null !== interaction.mapcontrol) {
+      interaction.mapcontrol.toggle(toggle);
     }
 
-    if (interaction.toggleeventhandler) {
-      this.mapService.off('mapcontrol:toggled', interaction.toggleeventhandler);
-    }
-
+    //reset values
     interaction.interaction        = null;
     interaction.id                 = null;
-    interaction.mapcontrol         = null;
     interaction.toggleeventhandler = null;
+    interaction.mapcontrol = null;
   }
 
   /**
@@ -829,10 +837,11 @@ class QueryResultsService extends G3WObject {
       interaction.interaction
         .on('picked', async ({ coordinate: coordinates }) => {
           if (external_layer) {
+            //in case of external layer call setters method setQueryResponse directly
             this.setQueryResponse(
               {
                 data:  [ this.getVectorLayerFeaturesFromQueryRequest(this._vectorLayers.find(v => layer.id === v.get('id')), { coordinates }) ],
-                query: { coordinates }
+                query: {coordinates,}
               },
               { add: true }
             );
@@ -897,10 +906,9 @@ class QueryResultsService extends G3WObject {
     this.state.querytitle = "";
     this.state.changed = false;
     // clear action if present
-    Object.values(this.state.layersactions)
-      .forEach(layeractions =>
-        layeractions.forEach(action => action.clear && action.clear())
-      );
+    Object
+      .values(this.state.layersactions)
+      .forEach(layeractions => layeractions.forEach(action => action.clear && action.clear()));
     this.state.layersactions = {};
     this.state.actiontools = {};
     this.state.layeractiontool = {};

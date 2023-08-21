@@ -35,14 +35,17 @@ proto.setMap = function(map) {
  let eventSingleClickKey = null;
 
   this.on('toggled', ({toggled}) => {
-
     if (true !== toggled) {
       ol.Observable.unByKey(eventSingleClickKey);
       eventSingleClickKey = null;
     } else if (null === eventSingleClickKey && map) {
-      // register click on map event. It use to dispatch picked event by control
-      eventSingleClickKey = map
-        .on('singleclick', throttle(evt => this.dispatchEvent({ type: 'picked', coordinates:evt.coordinate })));
+      //need to be set timeout otherwise can be get picked from other interaction
+      setTimeout(() => {
+        // register click on map event. It uses to dispatch picked event by control
+        eventSingleClickKey = map
+          .on('singleclick', throttle(evt => this.dispatchEvent({ type: 'picked', coordinates:evt.coordinate })));
+      })
+
     }
   });
 
