@@ -34,6 +34,7 @@ const VectorLayer              = require('core/layers/vectorlayer');
 
 /**
  * @FIXME add description
+ * 
  * @since 3.9.0
  */
 
@@ -248,7 +249,7 @@ class OlMapViewer {
   };
 
   /**
-   *  @TODO double check (unusued and broken code ?)
+   * @TODO double check (unusued and broken code ?)
    */
   changeBaseLayer(layerName) {
     this.map.getLayers().insertAt(0, this.getLayerByName(layername));
