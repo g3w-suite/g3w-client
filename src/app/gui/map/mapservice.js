@@ -1,5 +1,4 @@
 import { MAP_SETTINGS }        from 'app/constant';
-import wms                     from 'gui/wms/vue/wms';
 import DataRouterService       from 'services/data';
 import MapLayersStoresRegistry from 'store/map-layers';
 import ProjectsRegistry        from 'store/projects';
