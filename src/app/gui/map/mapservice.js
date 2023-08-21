@@ -33,8 +33,10 @@ const ControlsFactory          = require('gui/map/control/factory');
 const VectorLayer              = require('core/layers/vectorlayer');
 
 /**
+ * @FIXME add description
  * @since 3.9.0
  */
+
 class OlMapViewer {
 
   constructor(opts = {}) {
@@ -53,6 +55,9 @@ class OlMapViewer {
     });
   }
 
+  /**
+   * @FIXME add description
+   */
   destroy() {
     if (this.map) {
       this.map.dispose();
@@ -60,28 +65,48 @@ class OlMapViewer {
     }
   }
 
+  /**
+   * @FIXME add description
+   */
   getView() {
     return this.map.getView();
   }
-
+  /**
+   * @FIXME add description
+   */
   updateMap(mapObject) { }
 
+  /**
+   * @FIXME add description
+   */
   updateView(){ }
 
+  /**
+   * @FIXME add description
+   */
   getMap() {
     return this.map;
   }
 
+  /**
+   * @FIXME add description
+   */
   setTarget(id) {
     this.map.setTarget(id);
   }
 
+  /**
+   * @FIXME add description
+   */
   zoomTo(coordinate, zoom) {
     const view = this.map.getView();
     view.setCenter(coordinate);
     view.setZoom(zoom);
   };
 
+  /**
+   * @FIXME add description
+   */
   goTo(coordinates, options = {}) {
     const view    = this.map.getView();
     const animate = options.animate || true;
@@ -99,6 +124,9 @@ class OlMapViewer {
     }
   }
 
+  /**
+   * @FIXME add description
+   */
   goToRes(coordinates, options = {}) {
     const view       = this.map.getView();
     const animate    = options.animate || true;
@@ -114,6 +142,9 @@ class OlMapViewer {
     }
   }
 
+  /**
+   * @FIXME add description
+   */
   fit(geometry, options = {}) {
     const view    = this.map.getView();
     const animate = options.animate || true;
@@ -131,26 +162,44 @@ class OlMapViewer {
     });
   }
 
+  /**
+   * @FIXME add description
+   */
   getZoom() {
     return this.map.getView().getZoom();
   }
 
+  /**
+   * @FIXME add description
+   */
   getResolution() {
     return this.map.getView().getResolution();
   }
 
+  /**
+   * @FIXME add description
+   */
   getCenter() {
     return this.map.getView().getCenter();
   }
 
+  /**
+   * @FIXME add description
+   */
   getBBOX() {
     return this.map.getView().calculateExtent(this.map.getSize());
   };
 
+  /**
+   * @FIXME add description
+   */
   getLayerByName(layerName) {
     return this.map.getLayers().find(layer => layerName === layer.get('name'));
   }
 
+  /**
+   * @FIXME add description
+   */
   removeLayerByName(layerName) {
     const layer = this.getLayerByName(layerName);
     if (layer) {
@@ -158,6 +207,9 @@ class OlMapViewer {
     }
   }
 
+  /**
+   * @FIXME add description
+   */
   getActiveLayers() {
     return this
       .map
@@ -168,10 +220,16 @@ class OlMapViewer {
       });
   };
 
+  /**
+   * @FIXME add description
+   */
   removeLayers() {
     this.map.getLayers().clear();
   };
 
+  /**
+   * @FIXME add description
+   */
   getLayersNoBase() {
     return this
       .map
@@ -182,6 +240,9 @@ class OlMapViewer {
       });
   }
 
+  /**
+   * @FIXME add description
+   */
   addBaseLayer(type) {
     this.map.addLayer(type ? BaseLayers[type] : BaseLayers.BING.Aerial);
   };
