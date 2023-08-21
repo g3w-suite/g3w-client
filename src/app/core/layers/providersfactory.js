@@ -978,34 +978,34 @@ const Providers = {
   /**
    * ORIGINAL SOURCE: src/app/core/layers/providers/kmlprovider.js@3.8.6
    */
-  kml: class KMLDataProvider extends DataProvider {
+  // kml: class KMLDataProvider extends DataProvider {
 
-    constructor(options = {}) {
-      super(options);
-      this._name = 'kml';
-    }
+  //   constructor(options = {}) {
+  //     super(options);
+  //     this._name = 'kml';
+  //   }
   
-    getData() {
-      return $.Deferred().promise();
-    }
+  //   getData() {
+  //     return $.Deferred().promise();
+  //   }
 
-  },
+  // },
 
   /**
    * ORIGINAL SOURCE: src/app/core/layers/providers/xmlprovider.js@3.8.6
    */
-  xml: class XMLDataProvider extends DataProvider {
+  // xml: class XMLDataProvider extends DataProvider {
 
-    constructor(options = {}) {
-      super();
-      this._name = 'xml';
-    }
+  //   constructor(options = {}) {
+  //     super();
+  //     this._name = 'xml';
+  //   }
   
-    getData() {
-      return $.Deferred().promise();
-    }
+  //   getData() {
+  //     return $.Deferred().promise();
+  //   }
 
-  },
+  // },
 
 
 };
