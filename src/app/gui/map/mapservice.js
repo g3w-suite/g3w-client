@@ -6,7 +6,6 @@ import ApplicationService      from 'services/application';
 import ControlsRegistry        from 'store/map-controls';
 import GUI                     from 'services/gui';
 
-const { t }                    = require('core/i18n/i18n.service');
 const {
   inherit,
   base,
