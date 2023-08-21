@@ -415,19 +415,19 @@ class QueryResultsService extends G3WObject {
   updateLayerResultFeatures(responseLayer) {
     const layer            = this._getLayer(responseLayer.id),               // get layer from current `state.layers` showed on result
           responseFeatures = this._getLayerFeatures(responseLayer),          // extract features from responseLayer object
-          external         = this._getExternalLayer(responseLayer.id)        // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
-          has_features     = layer && layer.features && layer.features.length; 
+          external         = this._getExternalLayer(responseLayer.id),        // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
+          has_features     = layer && this._getLayerFeatures(layer).length > 0; //check if current layer has features on response
 
     if (has_features) {
       const features_ids   = this._getFeaturesIds(layer.features, external); // get features id from current layer on result
       responseFeatures
         .forEach(feature => { 
           const feature_id = this._getFeatureId(feature, external);
-          if (features_ids.find(id => id === feature_id)) { // remove feature (because is already loaded)
+          if (undefined === features_ids.find(id => id === feature_id)) { // add feature
+            layer.features.push(feature);
+          } else {           // remove feature (because is already loaded)
             this._removeLayerFeatureBox(layer, feature);
             layer.features = layer.features.filter(f => this._getFeatureId(f, external) !== feature_id);
-          } else {                                         // add feature
-            layer.features.push(feature);
           }
         });
       layer
@@ -2159,7 +2159,7 @@ class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   _getFeaturesIds(features, external) {
-    return features.map(feature => this._getFeatureId(feature));
+    return features.map(feature => this._getFeatureId(feature, external));
   }
 
   /**
