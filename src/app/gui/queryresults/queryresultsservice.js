@@ -347,6 +347,7 @@ class QueryResultsService extends G3WObject {
    * @param opts.id
    * @param opts.layerId
    * @param opts.type
+   * @param opts.position
    */
   unRegisterCustomComponent({
     id,
@@ -354,17 +355,18 @@ class QueryResultsService extends G3WObject {
     type,
     position
   }) {
+    const component = this.state.layerscustomcomponents[layerId][type];
+    const by_id     = ({ id: componentId }) => componentId !== id;
+
     if (position) {
-      this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
+      component[position] = component[position].filter(by_id);
       return;
     }
 
     Object
-      .keys(this.state.layerscustomcomponents[layerId][type])
-      .forEach(position => {
-          this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
-      });
-  };
+      .keys(component[position])
+      .forEach(position => { component[position] = component[position].filter(by_id); });
+  }
 
   /**
    * Add a feature to current layer result
@@ -413,19 +415,19 @@ class QueryResultsService extends G3WObject {
    * @since 3.8.0
    */
   updateLayerResultFeatures(responseLayer) {
-    const layer            = this._getLayer(responseLayer.id),               // get layer from current `state.layers` showed on result
-          responseFeatures = this._getLayerFeatures(responseLayer),          // extract features from responseLayer object
-          external         = this._getExternalLayer(responseLayer.id),        // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
-          has_features     = layer && this._getLayerFeatures(layer).length > 0; //check if current layer has features on response
+    const layer            = this._getLayer(responseLayer.id),                  // get layer from current `state.layers` showed on result
+          responseFeatures = this._getLayerFeatures(responseLayer),             // extract features from responseLayer object
+          external         = this._getExternalLayer(responseLayer.id),          // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
+          has_features     = layer && this._getLayerFeatures(layer).length > 0; // check if current layer has features on response
 
     if (has_features) {
-      const features_ids   = this._getFeaturesIds(layer.features, external); // get features id from current layer on result
+      const features_ids   = this._getFeaturesIds(layer.features, external);    // get features id from current layer on result
       responseFeatures
         .forEach(feature => { 
           const feature_id = this._getFeatureId(feature, external);
           if (undefined === features_ids.find(id => id === feature_id)) { // add feature
             layer.features.push(feature);
-          } else {           // remove feature (because is already loaded)
+          } else {                                                        // remove feature (because is already loaded)
             this._removeLayerFeatureBox(layer, feature);
             layer.features = layer.features.filter(f => this._getFeatureId(f, external) !== feature_id);
           }
