@@ -34,6 +34,9 @@ const {
 const ControlsFactory          = require('gui/map/control/factory');
 const VectorLayer              = require('core/layers/vectorlayer');
 
+/**
+ * @since 3.9.0
+ */
 class OlMapViewer {
 
   constructor(opts = {}) {
@@ -81,8 +84,7 @@ class OlMapViewer {
     view.setZoom(zoom);
   };
 
-  goTo(coordinates, options) {
-    options = options || {};
+  goTo(coordinates, options = {}) {
     const view    = this.map.getView();
     const animate = options.animate || true;
     const zoom    = options.zoom || false;
@@ -99,8 +101,7 @@ class OlMapViewer {
     }
   }
 
-  goToRes(coordinates, options) {
-    options = options || {};
+  goToRes(coordinates, options = {}) {
     const view       = this.map.getView();
     const animate    = options.animate || true;
     const resolution = options.resolution || view.getResolution();
@@ -166,17 +167,13 @@ class OlMapViewer {
   }
 
   getActiveLayers() {
-    const activelayers = [];
-    this
+    return this
       .map
       .getLayers()
-      .forEach((layer) => {
+      .filter((layer) => {
         const props = layer.getProperties();
-        if (props.visible && true !== props.basemap) {
-          activelayers.push(layer);
-        }
+        return  (props.visible && true !== props.basemap);
       });
-    return activelayers;
   };
 
   removeLayers() {
@@ -184,17 +181,13 @@ class OlMapViewer {
   };
 
   getLayersNoBase() {
-    const layers = [];
-    this
+    return this
       .map
       .getLayers()
-      .forEach((layer) => {
+      .filter((layer) => {
         const props = layer.getProperties();
-        if (true !== props.basemap) {
-          layers.push(layer);
-        }
+        return (true !== props.basemap);
       });
-    return layers;
   }
 
   addBaseLayer(type) {
