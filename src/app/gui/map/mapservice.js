@@ -23,7 +23,6 @@ const {
   getMapLayersByFilter,
   getGeoTIFFfromServer,
 }                              = require('core/utils/geo');
-const WFSProvider              = require('core/layers/providers/wfsprovider');
 const BaseLayers               = require('g3w-ol/layers/bases');
 const {
   getScaleFromResolution,
