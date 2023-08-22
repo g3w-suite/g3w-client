@@ -8,6 +8,7 @@ const {
   appendParams,
   toRawType,
   getTimeoutPromise,
+  resolve: resolvedValue
 }                                  = require('core/utils/utils');
 const {
   handleQueryResponse,
@@ -80,7 +81,7 @@ class DataProvider extends G3WObject {
   }
 
   /**
-   * @returns {number} setted timeout for query 
+   * @returns {number} set timeout for query
    */
   getQueryResponseTimeoutKey({
     layers = [this._layer],
@@ -214,14 +215,13 @@ const Providers = {
         if ('table' !== this._layer.getType()) {
           this.setProjections()
         }
-        const data = raw
+        return raw
           ? response
           : response.result
-            ?  unique
+            ? unique
               ? response.data
-              : { data: responseParser.get('application/json')({ layers: [this._layer], response:response.vector.data, projections: this._projections }) }
+              : { data: Parsers.response.get('application/json')({ layers: [this._layer], response:response.vector.data, projections: this._projections }) }
             : Promise.reject();
-        return data;
       } catch(e) {
         return Promise.reject(e);
       }
@@ -237,10 +237,16 @@ const Providers = {
      * Query by filter
      * 
      * @param {boolean} opts.raw whether to get raw response
+     * @param opts.feature_count maximun feature for request
+     * @param opts.queryUrl url for request data
+     * @param opts.layers Array or request layers
+     * @param opts.I wms parameter request
+     * @param opts.J wms parameter request
      */
     query(opts = {}) {
       const d = $.Deferred();
 
+      //in case not alphanumeric layer set projection
       if ('table' !== this._layer.getType()) {
         this.setProjections();
       }
@@ -250,13 +256,14 @@ const Providers = {
       let { filter = null} = opts;
       filter = filter && Array.isArray(filter) ? filter : [filter];
 
-      // check if geometry filter. If not i have to remove projection layer
-      if (filter && filter[0].getType() !== 'geometry') {
-        this._projections.layer = null;
-      }
-
       if (filter) {
+        // check if geometry filter. If not i have to remove projection layer
+        if (filter[0].getType() !== 'geometry') {
+          this._projections.layer = null;
+        }
+
         filter = filter.map(filter => filter.get()).filter(value => value);
+
         XHR
           .get({
             url: opts.queryUrl || this._queryUrl,
@@ -272,15 +279,21 @@ const Providers = {
               CRS:           ('table' === this._layer.getType() ? ApplicationState.map.epsg : this._projections.map.getCode()),
               I:             opts.I,
               J:             opts.J,
-              FILTER:        filter && filter.length ? filter.join(';') : undefined,
-              WITH_GEOMETRY: isVector
+              FILTER:        filter.length ? filter.join(';') : undefined,
+              WITH_GEOMETRY: 'table' !== this._layer.getType()
             },
           })
-          .then(response => { d.resolve((opts.raw || false) ? response : this.handleQueryResponseFromServer(response, this._projections, opts.layers)); })
-          .catch(err => d.reject(err));
+          .then(response => d.resolve(
+            (opts.raw || false)
+              ? response
+              : this.handleQueryResponseFromServer(response, this._projections, opts.layers)
+            )
+          )
+          .catch(e => d.reject(e));
       } else {
         d.reject();
       }
+
       return d.promise();
     }
 
@@ -291,14 +304,13 @@ const Providers = {
       const d   = $.Deferred();
       const url = this._layer.getUrl('config');
       if (url) {
-        $
-        .get(url)
-        .then(config => d.resolve(config))
-        .fail(err => d.reject(err));
-        return d.promise();
+        $.get(url)
+          .then(config => d.resolve(config))
+          .fail(e => d.reject(e));
       } else {
         d.reject('not valid url');
       }
+      return d.promise();
     }
 
     getWidgetData(opts = {}) {
@@ -310,11 +322,10 @@ const Providers = {
      */
     unlock() {
       const d = $.Deferred();
-      $
-        .post(this._layer.getUrl('unlock'))
+      $.post(this._layer.getUrl('unlock'))
         .then(response => d.resolve(response))
-        .fail(err => d.reject(err));
-      return d.promise()
+        .fail(e => d.reject(e));
+      return d.promise();
     }
 
     /**
@@ -322,14 +333,13 @@ const Providers = {
      */
     commit(commitItems) {
       const d = $.Deferred();
-      $
-        .post({
-          url:         this._layer.getUrl('commit'),
-          data:        JSON.stringify(commitItems),
-          contentType: 'application/json',
-        })
+      $.post({
+        url:         this._layer.getUrl('commit'),
+        data:        JSON.stringify(commitItems),
+        contentType: 'application/json',
+      })
         .then(response => d.resolve(response))
-        .fail(err => d.reject(err));
+        .fail(e => d.reject(e));
       return d.promise();
     }
 
@@ -342,24 +352,29 @@ const Providers = {
       // filter null values
       Object
         .entries(params)
-        .forEach(([key, value]) => { if([null, void 0].includes(value)) delete params[key]; });
+        .forEach(([key, value]) => {
+          if ([null, undefined].includes(value)) {
+            delete params[key];
+          }
+        });
 
-        // check if data are requested in read or write mode;
-      let url;
+
+      const urlParams = $.param(params);
 
       if (!options.editing) {
-        $
-          .get({
-            url:         this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
-            contentType: 'application/json',
-          })
+        $.get({
+          url:         this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
+          contentType: 'application/json',
+        })
           .then(({ vector }) => {
             d.resolve({ data:  vector.data, count: vector.count })
           })
-          .fail(err => d.reject(err))
-          return d.promise();
-      }
+          .fail(e => d.reject(e))
 
+        return d.promise();
+      }
+      // check if data are requested in read or write mode;
+      let url;
       //editing mode
       let promise;
       url = this._layer.getUrl('editing');
@@ -367,7 +382,6 @@ const Providers = {
         d.reject('Url not valid');
         return;
       }
-      const urlParams = $.param(params);
       url +=  urlParams ? '?' + urlParams : '';
       const filter = options.filter || null;
 
@@ -376,43 +390,44 @@ const Providers = {
           url,
           contentType: 'application/json',
         });
-      }
-      else if (filter.bbox) { // bbox filter
-        promise = XHR.post({
-          url,
-          data: JSON.stringify({
-            in_bbox:     filter.bbox.join(','),
-            filtertoken: ApplicationState.tokens.filtertoken
-          }),
-          contentType: 'application/json',
-        })
-      } else if (filter.fid) { // fid filter
-        promise = RelationsService.getRelations(filter.fid);
-      } else if (filter.field) {
-        promise = XHR.post({
-          url,
-          data: JSON.stringify(filter),
-          contentType: 'application/json',
-        })
-      } else if (filter.fids) {
-        promise = XHR.get({
-          url,
-          params: filter
-        })
-      } else if (filter.nofeatures) {
-        promise = XHR.post({
-          url,
-          data: JSON.stringify({
-            field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
-          }),
-          contentType: 'application/json'
-        })
+      } else {
+        if (filter.bbox) { // bbox filter
+          promise = XHR.post({
+            url,
+            data: JSON.stringify({
+              in_bbox:     filter.bbox.join(','),
+              filtertoken: ApplicationState.tokens.filtertoken
+            }),
+            contentType: 'application/json',
+          })
+        } else if (filter.fid) { // fid filter
+          promise = RelationsService.getRelations(filter.fid);
+        } else if (filter.field) {
+          promise = XHR.post({
+            url,
+            data: JSON.stringify(filter),
+            contentType: 'application/json',
+          })
+        } else if (filter.fids) {
+          promise = XHR.get({
+            url,
+            params: filter
+          })
+        } else if (filter.nofeatures) {
+          promise = XHR.post({
+            url,
+            data: JSON.stringify({
+              field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
+            }),
+            contentType: 'application/json'
+          })
+        }
       }
 
       promise
         .then(({ vector, result, featurelocks }) => {
           // skip when server responde with false result (error)
-          if (!result) {
+          if (false === result) {
             d.reject({ message: t("info.server_error") });
             return;
           }
@@ -435,15 +450,19 @@ const Providers = {
             featurelocks,
           });
         })
-        .catch(err => d.reject({ message: t("info.server_error")}));
+        .catch(e => d.reject({ message: t("info.server_error")}));
+
+      return d.promise();
     }
 
     /**
      * @TODO check if deprecated (broken and unusued code ?)
      */
+
+    /*
     _loadLayerData(mode, customUrlParameters) {
       const d = $.Deferred();
-      Obkect.entries(this._layers).forEach(([layerCode, layer]) => {
+      Object.entries(this._layers).forEach(([layerCode, layer]) => {
         if (_.isNull(layer.vector)) noVectorlayerCodes.push(layerCode);
       });
       const vectorLayersSetup = noVectorlayerCodes.map(layerCode => this._setupVectorLayer(layerCode));
@@ -459,49 +478,68 @@ const Providers = {
               this.emit('loadingvectorlayersend');
               this.setReady(true);
             })
-            .fail(() =>  {
+            .fail((e) =>  {
               this._layers.forEach(layer => layer.vector = null);
-              d.reject();
+              d.reject(e);
               this.emit('errorloadingvectorlayersend');
               this.setReady(false);
             })
         })
-        .fail(() => {
+        .fail((e) => {
           this.setReady(false);
           this.emit('errorloadingvectorlayersend');
-          d.reject();
+          d.reject(e);
         });
       return d.promise();
     }
-  
-    setVectorLayersCodes(codes) {
+    */
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*setVectorLayersCodes(codes) {
       this._vectorLayersCodes = codes;
-    }
-  
-    getVectorLayersCodes() {
+    }*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*getVectorLayersCodes() {
       return this._vectorLayersCodes;
-    }
-  
-    getLayers() {
-      return this._layers;
-    }
-  
+    }*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    // getLayers() {
+    //   return this._layers;
+    // }
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*
     reloadVectorData(layerCode) {
       const d = $.Deferred();
       this.
         _createVectorLayerFromConfig(layerCode)
         .then(layer => {
-            this
-            ._getVectorLayerData(layer, this._mapService.state.bbox)
+          this._getVectorLayerData(layer, this._mapService.state.bbox)
             .then((response) => {
               this.setVectorLayerData(layer[this._editingApiField], response);
               layer.setData(response.vector.data);
               d.resolve(layer);
             });
-        });
+        })
+        .fail((e) => d.reject(e))
       return d.promise();
     }
-  
+    */
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*
     loadAllVectorsData(layerCodes) {
       const d = $.Deferred();
       const bbox = this._mapService.state.bbox;
@@ -515,37 +553,47 @@ const Providers = {
       let layers = this._layers;
       if (layerCodes) {
         layers = [];
-        layerCodes.forEach(layerCode => layers.push(this._layers[layerCode]));
+        layerCodes
+          .forEach(layerCode => layers.push(this._layers[layerCode]));
       }
 
-      $
-        .when
-        .apply(this, layers.map(Layer => this._loadVectorData(Layer.vector, bbox)))
+      $.when.apply(this,
+        layers.map(Layer => this._loadVectorData(Layer.vector, bbox)))
         .then(() => d.resolve(layerCodes))
-        .fail(() => d.reject());
+        .fail((e) => d.reject(e));
 
       return d.promise();
     }
-  
+    */
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*
     _setCustomUrlParameters(urlParams) {
       this._customUrlParameters = urlParams;
     };
-  
-    _checkVectorGeometryTypeFromConfig(vectorConfig) {
+    */
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+   /* _checkVectorGeometryTypeFromConfig(vectorConfig) {
       switch (vectorConfig.geometrytype) {
         case 'Line':      vectorConfig.geometrytype = 'LineString';      break;
         case 'MultiLine': vectorConfig.geometrytype = 'MultiLineString'; break;
       }
       return vectorConfig;
-    }
-  
-    _createVectorLayerFromConfig(layerCode) {
+    }*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*_createVectorLayerFromConfig(layerCode) {
       const d = $.Deferred();
-  
+
       const layerConfig = this._layers[layerCode];
-  
-      this
-        ._getVectorLayerConfig(layerConfig[this._editingApiField])
+
+      this._getVectorLayerConfig(layerConfig[this._editingApiField])
         .then(response => {
           const config = this._checkVectorGeometryTypeFromConfig(response.vector);
           const crs    = layerConfig.crs || this._mapService.getProjection().getCode();
@@ -556,7 +604,7 @@ const Providers = {
             crsLayer:     crs,
             id:           layerConfig.id,
             name:         layerConfig.name,
-            editing:      self._editingMode,
+            editing:      this._editingMode,
           });
           layer.setFields(config.fields);
           layer.setCrs(crs);
@@ -569,29 +617,30 @@ const Providers = {
           }
           d.resolve(layer);
         })
-        .fail(() => d.reject());
+        .fail((e) => d.reject(e));
 
       return d.promise();
-    }
-  
-    _setupVectorLayer(layerCode) {
-      const d = $.Deferred();
-      this
-        ._createVectorLayerFromConfig(layerCode)
-        .then(layer => {
-          this._layers[layerCode].vector = layer;
-          d.resolve(layerCode);
-        })
-        .fail(() => d.reject());
-      return d.promise();
-    };
+    }*/
 
     /**
      * @TODO check if deprecated (broken and unusued code ?)
      */
-    _loadVectorData(layer, bbox) {
-      return self
-        ._getVectorLayerData(layer, bbox)
+    /*_setupVectorLayer(layerCode) {
+      const d = $.Deferred();
+      this._createVectorLayerFromConfig(layerCode)
+        .then(layer => {
+          this._layers[layerCode].vector = layer;
+          d.resolve(layerCode);
+        })
+        .fail((e) => d.reject(e));
+      return d.promise();
+    };*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*_loadVectorData(layer, bbox) {
+      return this._getVectorLayerData(layer, bbox)
         .then(response => {
           this.setVectorLayerData(layer[this._editingApiField], response);
           if (this._editingMode && response.featurelocks) {
@@ -603,66 +652,97 @@ const Providers = {
           }
         })
         .fail(() => false)
-    }
+    }*/
 
-    getVectorLayerData(layerCode) {
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /* getVectorLayerData(layerCode) {
       return this._vectorLayersData[layerCode];
-    }
+    }*/
 
-    getVectorLayersData() {
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*getVectorLayersData() {
       return this._vectorLayersData;
-    }
+    }*/
 
-    setVectorLayerData(layerCode, layerData) {
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*setVectorLayerData(layerCode, layerData) {
       this._vectorLayersData[layerCode] = layerData;
-    }
+    }*/
 
-    setVectorFeaturesLock(layer, lock) {
-      _
-        .differenceBy(lock, layer.getFeatureLocks(), 'featureid')
-        .forEach((newLockId) => { layer.addLockId(newLockId) });
-    }
-  
-    cleanVectorFeaturesLock(layer) {
-      layer.cleanFeatureLocks();
-    }
-  
-    lockFeatures(layerName) {
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    // setVectorFeaturesLock(layer, lock) {
+    //   _.differenceBy(lock, layer.getFeatureLocks(), 'featureid')
+    //     .forEach((newLockId) => { layer.addLockId(newLockId) });
+    // }
+
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    // cleanVectorFeaturesLock(layer) {
+    //   layer.cleanFeatureLocks();
+    // }
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*lockFeatures(layerName) {
       const d = $.Deferred();
-      $
-        .get(this._baseUrl + layerName + "/?lock" + this._customUrlParameters + "&in_bbox=" + this._mapService.state.bbox.join(','))
+      $.get(this._baseUrl + layerName + "/?lock" + this._customUrlParameters + "&in_bbox=" + this._mapService.state.bbox.join(','))
         .done(data => {
           this.setVectorFeaturesLock(this._layers[layerName].vector, data.featurelocks);
           d.resolve(data);
         })
-        .fail(() => d.reject());
+        .fail((e) => d.reject(e));
       return d.promise();
-    }
-  
-    _getVectorLayerConfig(layerApiField) {
+    }*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*_getVectorLayerConfig(layerApiField) {
       const d = $.Deferred();
       $.get(this._baseUrl + layerApiField + "/?config" + this._customUrlParameters)
         .done(data => d.resolve(data))
-        .fail(() => d.reject());
+        .fail((e) => d.reject(e));
       return d.promise();
-    }
-  
-    _getVectorLayerData(layer, bbox) {
+    }*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*_getVectorLayerData(layer, bbox) {
       const d = $.Deferred();
-      $
-        .get(this._baseUrl + layer[this._editingApiField] + ('w' == this.getMode() ? '/?editing' : '/?') + this._customUrlParameters + "&in_bbox=" + bbox.join(','))
+      $.get(this._baseUrl + layer[this._editingApiField] + ('w' == this.getMode() ? '/?editing' : '/?') + this._customUrlParameters + "&in_bbox=" + bbox.join(','))
         .done(data => d.resolve(data))
-        .fail(() => d.reject());
+        .fail((e) => d.reject(e));
       return d.promise();
-    }
-  
-    _createVectorLayer(opts = {}) {
+    }*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*_createVectorLayer(opts = {}) {
       return new VectorLayer(opts);
-    }
-  
-    cleanUpLayers() {
+    }*/
+
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
+    /*cleanUpLayers() {
       this._loadedExtent = null;
     }
+    */
   
   },
 
@@ -694,13 +774,13 @@ const Providers = {
       const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
 
       let PARAMS_TOLERANCE = (
-        'map' === query_point_tolerance.unit
-          ? {
+        ('map' === query_point_tolerance.unit) ? //case true
+          {
             FILTER_GEOM: (new ol.format.WKT()).writeGeometry(
               ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, query_point_tolerance.value))
             ),
-          }
-          : {
+          } : //case false
+          {
             FI_POINT_TOLERANCE:   query_point_tolerance.value,
             FI_LINE_TOLERANCE:    query_point_tolerance.value,
             FI_POLYGON_TOLERANCE: query_point_tolerance.value,
@@ -776,7 +856,8 @@ const Providers = {
       };
 
       const base_params = {
-        url: layers[0].getQueryUrl(),
+        url: layers[0].getQueryUrl(), //url request
+        //parameter used by method request
         params: this._getRequestParameters({
           layers,
           feature_count,
@@ -802,8 +883,9 @@ const Providers = {
         this[method]({ ...base_params, layers })
           .then(handleResponse)
           .catch(err => d.reject(err))
-          .finally(()=> clearTimeout(timeoutKey));
+          .finally(() => clearTimeout(timeoutKey));
       }
+
       return d.promise();
     }
   
@@ -843,6 +925,7 @@ const Providers = {
         reproject     = false,
         feature_count = 10,
         layers        = [this._layer],
+        filter,
       } = opts;
 
       params.MAXFEATURES = feature_count;
@@ -853,32 +936,32 @@ const Providers = {
         query: {},
       });
   
-      this
-        ._doRequest(opts.filter, params, layers, reproject)
+      this._doRequest(filter, params, layers, reproject)
         .then(response => {
           const data = this.handleQueryResponseFromServer(
             response,
-            { map: this._layer.getMapProjection(), layer: (reproject ? this._layer.getProjection() : null) },
+            {
+              map: this._layer.getMapProjection(),
+              layer: (reproject ? this._layer.getProjection() : null)
+            },
             layers,
-            wms = false
+            false //wms parameter
           );
           // sanitize in case of nil:true
-          data
-            .forEach(layer => {
-              (layer.features || [])
+          data.forEach(layer => {
+            (layer.features || [])
               .forEach(feature => {
-                Object
-                  .entries(feature.getProperties())
+                Object.entries(feature.getProperties())
                   .forEach(([ attribute, value ]) => {
                     if ('Object' === toRawType(value) && value['xsi:nil']){
                       feature.set(attribute, 'NULL');
                     }
                   });
               });
-            });
+          });
           d.resolve({ data });
         })
-        .fail(e => d.reject(e))
+        .fail(error => d.reject(error))
         .always(() => { clearTimeout(timeoutKey); });
 
       return d.promise();
@@ -886,20 +969,18 @@ const Providers = {
   
     _post(url, params) {
       const d = $.Deferred();
-      $
-        .post(url.match(/\/$/) ? url : `${url}/`, params)
+      $.post(url.match(/\/$/) ? url : `${url}/`, params)
         .then(response => d.resolve(response))
-        .fail(err => d.reject(err));
+        .fail(error => d.reject(error));
       return d.promise();
     };
   
     // get request
     _get(url, params) {
       const d = $.Deferred();
-      $
-        .get((url.match(/\/$/) ? url : `${url}/`) + '?' + $.param(params)) // trasform parameters
+      $.get((url.match(/\/$/) ? url : `${url}/`) + '?' + $.param(params)) // transform parameters
         .then(response => d.resolve(response))
-        .fail(err => d.reject(err));
+        .fail(error => d.reject(error));
       return d.promise();
     };
   
@@ -909,67 +990,69 @@ const Providers = {
 
       filter = filter || new Filter({});
 
-      if (!filter) {
-        d.reject();
-        return d.promise()
-      }
+      if (filter) {
+        const layer = layers ? layers[0] : this._layer;
 
-      const layer = layers ? layers[0] : this._layer;
-
-      params = Object.assign(params, {
-        SERVICE:      'WFS',
-        VERSION:      '1.1.0',
-        REQUEST:      'GetFeature',
-        TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
-        OUTPUTFORMAT: layer.getInfoFormat(),
-        SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
-      });
-
-      let ol_filter;
-
-      switch (filter.getType()) {
-
-        case 'all':
-          return this._post(layer.getQueryUrl(), params);
-
-        case 'bbox':
-          ol_filter = ol.format.filter.bbox('the_geom', filter.get());
-          break;
-
-        case 'geometry':
-          //speatial methos. <inteserct, within>
-          const {spatialMethod = 'intersects'} = filter.getConfig();
-          ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
-          break;
-
-        case 'expression':
-          ol_filter = null;
-          break;
-
-      }
-
-      (
-        'GET' === layer.getOwsMethod() && 'geometry' !== filter.getType()
-          ? this._get
-          : this._post
-      )(
-        layer.getQueryUrl(),
-        {
-          ...params,
-          FILTER: `(${(
-            new ol.format.WFS().writeGetFeature({
-              featureTypes: [layer],
-              filter:       ol_filter,
-            })
-          ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
-        }
-      )
-        .then(response => { d.resolve(response) })
-        .fail(err => {
-          if (err.status === 200) d.resolve(err.responseText);
-          else d.reject(err)
+        params = Object.assign(params, {
+          SERVICE:      'WFS',
+          VERSION:      '1.1.0',
+          REQUEST:      'GetFeature',
+          TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
+          OUTPUTFORMAT: layer.getInfoFormat(),
+          SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
         });
-  
+
+        let ol_filter;
+
+        switch (filter.getType()) {
+
+          case 'all':
+            return this._post(layer.getQueryUrl(), params);
+
+          case 'bbox':
+            ol_filter = ol.format.filter.bbox('the_geom', filter.get());
+            break;
+
+          case 'geometry':
+            //speatial methos. <inteserct, within>
+            const {spatialMethod = 'intersects'} = filter.getConfig();
+            ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
+            break;
+
+          case 'expression':
+            ol_filter = null;
+            break;
+
+        }
+
+        (
+          'GET' === layer.getOwsMethod() && 'geometry' !== filter.getType()
+            ? this._get
+            : this._post
+        )(
+          layer.getQueryUrl(),
+          {
+            ...params,
+            FILTER: `(${(
+              new ol.format.WFS().writeGetFeature({
+                featureTypes: [layer],
+                filter:       ol_filter,
+              })
+            ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
+          }
+        )
+          .then(response => d.resolve(response))
+          .fail(err => {
+            if (err.status === 200) {
+              d.resolve(err.responseText);
+            } else {
+              d.reject(err)
+            }
+          });
+      } else { //no filter set
+        d.reject();
+      }
+
       return d.promise()
     }
   
