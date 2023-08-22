@@ -1425,7 +1425,7 @@ class QueryResultsService extends G3WObject {
         download: true
       })
       .then(({url}) => {
-        this.downloadApplicationWrapper(
+        GUI.downloadApplicationWrapper(
           downloadFile,
           { url, filename: template, mime_type: 'application/pdf' }
         )
@@ -1536,24 +1536,6 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Wrapper for download
-   *
-   * @param downloadFnc
-   * @param options
-   */
-  async downloadApplicationWrapper(downloadFnc, options = {}) {
-    const download_caller_id = ApplicationService.setDownload(true);
-    GUI.setLoadingContent(true);
-    try {
-      await downloadFnc(options);
-    } catch(err) {
-      GUI.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
-    }
-    ApplicationService.setDownload(false, download_caller_id);
-    GUI.setLoadingContent(false);
-  }
-
-  /**
    * @FIXME add description
    *
    * @param type
@@ -1585,7 +1567,7 @@ class QueryResultsService extends G3WObject {
         this.setLayerActionTool({ layer });
       }
 
-      await this.downloadApplicationWrapper(
+      await GUI.downloadApplicationWrapper(
         ({layer, type, data}= {}) => {
           return CatalogLayersStoresRegistry
             .getLayerById(layer.id)

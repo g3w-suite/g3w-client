@@ -1067,7 +1067,25 @@ const ApplicationTemplate = function({ApplicationService}) {
         title: '',
         perc: 100
       });
-    }
+    };
+
+    /**
+     * Wrapper for download
+     * @since 3.9.0
+     * @param downloadFnc function to call
+     * @param options Object parameters
+    */
+    GUI.downloadApplicationWrapper = async function(downloadFnc, options = {}) {
+      const download_caller_id = ApplicationService.setDownload(true);
+      GUI.setLoadingContent(true);
+      try {
+        await downloadFnc(options);
+      } catch(err) {
+        GUI.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
+      }
+      ApplicationService.setDownload(false, download_caller_id);
+      GUI.setLoadingContent(false);
+    };
   };
 
   base(this);
