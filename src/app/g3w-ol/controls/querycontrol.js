@@ -29,9 +29,8 @@ const proto = QueryControl.prototype;
 /**
  * @param {ol.Map} map
  * 
- * @fires   picked                     fired after map `singleclick`
+ * @fires   picked                     fired after map `singleclick` ?
  * @listens InteractionControl~toggled
- * @listens ol~singleclick
  */
 proto.setMap = function(map) {
  let key = null;
