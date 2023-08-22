@@ -991,17 +991,17 @@ class QueryResultsService extends G3WObject {
   _handleFeatureForLayer(featuresForLayer) {
 
     const layer        = featuresForLayer.layer;
-    const has_features = featuresForLayer.features && featuresForLayer.features.length;
+    const has_features = featuresForLayer.features && featuresForLayer.features.length > 0;
 
     const is_layer  = layer instanceof Layer;
-    const is_vector = layer instanceof ol.layer.Vector;
-    const is_string = 'string' === typeof layer || layer instanceof String;
+    const is_vector = layer instanceof ol.layer.Vector; //instance of openlayers layer Vector Class
+    const is_string = 'string' === typeof layer || layer instanceof String; // can be created by string
 
     let sourceType;
 
     if (is_string) {
       sourceType = Layer.LayerTypes.VECTOR;
-    } else {
+    } else if (is_layer) {
       try {
         sourceType = layer.getSourceType();
       } catch (error) {
@@ -1010,7 +1010,7 @@ class QueryResultsService extends G3WObject {
     }
 
     // set selection filter and relation if not wms
-    const not_wms = -1 === [
+    const not_wms_wcs_wmst = -1 === [
       Layer.SourceTypes.WMS,
       Layer.SourceTypes.WCS,
       Layer.SourceTypes.WMST
@@ -1018,7 +1018,9 @@ class QueryResultsService extends G3WObject {
     
     const name = is_string && layer.split('_');
 
-    const layerId = (is_layer ? layer.getId() : undefined) || (is_vector ? layer.get('id') : undefined) || (is_string ? layer : undefined);
+    const layerId = (is_layer ? layer.getId() : undefined) ||
+      (is_vector ? layer.get('id') : undefined) ||
+      (is_string ? layer : undefined);
 
     const layerObj = {
       id:                     layerId,
@@ -1031,17 +1033,21 @@ class QueryResultsService extends G3WObject {
       addfeaturesresults:     { active: false },
       [DownloadFormats.name]: { active: false },
       external:               (is_vector || is_string),
-      editable:               is_layer   ? layer.isEditable()                      : false,
-      inediting:              is_layer   ? layer.isInEditing()                     : false,
-      source:                 is_layer   ? layer.getSource()                       : undefined,
-      infoformats:            is_layer   ? layer.getInfoFormats()                  : [],
-      infoformat:             is_layer   ? layer.getInfoFormat()                   : undefined,
-      downloads:              is_layer   ? layer.getDownloadableFormats()          : [],
-      formStructure:          is_layer   ? this._parseLayerObjFormStructure(layer) : undefined,
-      relationsattributes:    (is_layer || is_vector || is_string) ? []            : undefined,
-      filter:                 (is_layer && not_wms) ? layer.state.filter           : {},
-      selection:              (is_layer && not_wms ? layer.state.selection : {}) || (is_vector ? layer.selection : {}),
-      title:                  (is_layer ? layer.getTitle() : undefined)          || (is_vector ? layer.get('name') : undefined) || (is_string && name ? (name.length > 4 ? name.slice(0, name.length -4).join(' ') : layer) : undefined),
+      editable:               is_layer   ? layer.isEditable()                       : false,
+      inediting:              is_layer   ? layer.isInEditing()                      : false,
+      source:                 is_layer   ? layer.getSource()                        : undefined,
+      infoformats:            is_layer   ? layer.getInfoFormats()                   : [],
+      infoformat:             is_layer   ? layer.getInfoFormat()                    : undefined,
+      downloads:              is_layer   ? layer.getDownloadableFormats()           : [],
+      formStructure:          is_layer   ? this._parseLayerObjFormStructure(layer)  : undefined,
+      relationsattributes:    (is_layer || is_vector || is_string) ? []             : undefined,
+      filter:                 (is_layer && not_wms_wcs_wmst) ? layer.state.filter   : {},
+      selection:              (is_layer && not_wms_wcs_wmst ? layer.state.selection : undefined) ||
+                              (is_vector ? layer.selection : undefined) ||
+                              {},
+      title:                  (is_layer ? layer.getTitle() : undefined)          ||
+                              (is_vector ? layer.get('name') : undefined) ||
+                              (is_string && name ? (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer) : undefined),
       attributes:             has_features ? this._parseLayerObjAttributes(layer, featuresForLayer.features, sourceType) : [],
       atlas:                  this.getAtlasByLayerId(layerId),
       rawdata:                featuresForLayer.rawdata ? featuresForLayer.rawdata : null, // rawdata response
@@ -1052,11 +1058,12 @@ class QueryResultsService extends G3WObject {
     if (has_features && !featuresForLayer.rawdata) {
       layerObj.attributes
         .forEach(attribute => {
-          if (layerObj.formStructure) {
-            const relationField = layer.getFields().find(field => field.name === attribute.name); // need to check all field also show false
-            if (!relationField) {
-              layerObj.formStructure.fields.push(attribute);
-            }
+          if (
+            layerObj.formStructure &&
+            undefined !== layer.getFields().find(field => field.name === attribute.name)
+          )
+          {
+            layerObj.formStructure.fields.push(attribute);
           }
           if (attribute.type === 'image') {
             layerObj.hasImageField = true;
@@ -1079,10 +1086,7 @@ class QueryResultsService extends G3WObject {
         });
     }
 
-    /** @FIXME missing return type ? */
-    if (has_features || featuresForLayer.rawdata) {
-      return layerObj;
-    }
+    return layerObj;
 
   }
 
