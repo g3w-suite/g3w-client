@@ -197,31 +197,30 @@ const Providers = {
       queryUrl,
       ordering,
     } = {}) {
-      const dataUrl = this._layer.getUrl('data');
-      const params = {
-        field,
-        suggest,
-        ordering,
-        formatter,
-        unique,
-        filtertoken: ApplicationState.tokens.filtertoken
-      };
       try {
         let response = await XHR.get({
-          url: `${queryUrl ?  queryUrl : dataUrl}`,
-          params,
+          url: `${queryUrl ? queryUrl : this._layer.getUrl('data')}`,
+          params: {
+            field,
+            suggest,
+            ordering,
+            formatter,
+            unique,
+            filtertoken: ApplicationState.tokens.filtertoken
+          },
         });
+
         // vector layer
         if ('table' !== this._layer.getType()) {
           this.setProjections()
         }
-        return raw
-          ? response
-          : response.result
-            ? unique
-              ? response.data
-              : { data: Parsers.response.get('application/json')({ layers: [this._layer], response:response.vector.data, projections: this._projections }) }
-            : Promise.reject();
+
+        if (raw)                       return response;
+        if (unique && response.result) return response.data;
+        if (response.result)           return { data: Parsers.response.get('application/json')({ layers: [this._layer], response: response.vector.data, projections: this._projections }) };
+
+        return Promise.reject();
+
       } catch(e) {
         return Promise.reject(e);
       }
