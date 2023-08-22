@@ -1416,7 +1416,6 @@ class QueryResultsService extends G3WObject {
     field_name = field_name || '$id';
 
     const values = features.map(feat => feat.attributes['$id' === field_name ?  G3W_FID : field_name]);
-    const download_caller_id = ApplicationService.setDownload(true);
 
     return this.printService
       .printAtlas({
@@ -1426,9 +1425,10 @@ class QueryResultsService extends G3WObject {
         download: true
       })
       .then(({url}) => {
-        downloadFile({ url, filename: template, mime_type: 'application/pdf' })
-          .catch(error => { GUI.showUserMessage({ type: 'alert', error }) })
-          .finally(() => { ApplicationService.setDownload(false, download_caller_id); GUI.setLoadingContent(false); });
+        this.downloadApplicationWrapper(
+          downloadFile,
+          { url, filename: template, mime_type: 'application/pdf' }
+        )
       });
   }
 
@@ -1585,19 +1585,19 @@ class QueryResultsService extends G3WObject {
         this.setLayerActionTool({ layer });
       }
 
-      const download_caller_id = ApplicationService.setDownload(true);
-
-      GUI.setLoadingContent(true);
-
-      try {
-        await CatalogLayersStoresRegistry.getLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve();
-      } catch(err) {
-        GUI.notify.error(err || t("info.server_error"));
-      }
-
-      ApplicationService.setDownload(false, download_caller_id);
-
-      GUI.setLoadingContent(false);
+      await this.downloadApplicationWrapper(
+        ({layer, type, data}= {}) => {
+          return CatalogLayersStoresRegistry
+            .getLayerById(layer.id)
+            .getDownloadFilefromDownloadDataType(type, { data }) ||
+          Promise.resolve();
+        },
+        {
+          layer,
+          type,
+          data
+        }
+      );
 
       const downloadsactions = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
 
