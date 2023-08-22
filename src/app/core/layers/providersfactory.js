@@ -934,7 +934,7 @@ class ProviderFactory {
   }
 
   build(providerType, serverType, sourceType, options) {
-    // return instace of seletced provider
+    // return instance of selected provider
     const providerClass = this.get(providerType, serverType, sourceType);
     return providerClass ? new providerClass(options) : null;
   }
