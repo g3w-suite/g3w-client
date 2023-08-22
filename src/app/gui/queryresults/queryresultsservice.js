@@ -206,7 +206,7 @@ class QueryResultsService extends G3WObject {
       mapcontrol: null,
 
       /**
-       * Method to handle interaction when a mapcontrol is toggled
+       * Method that handles interaction when a mapcontrol is toggled
        */
       toggleeventhandler: null
 
@@ -286,12 +286,6 @@ class QueryResultsService extends G3WObject {
 
   }
 
-  /**
-   * @FIXME add description
-   */
-  init() {
-    this.clearState();
-  }
 
   /**
    * @FIXME add description
@@ -407,8 +401,9 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Based on layer response check if features layer need to
-   * be added or removed to current `state.layers` results
+   * Loop over response features based on layer response and
+   * check if features layer need to be added or removed to
+   * current `state.layers` results.
    *
    * @param responseLayer layer structure coming from request
    *
@@ -421,25 +416,19 @@ class QueryResultsService extends G3WObject {
           has_features     = layer && this._getLayerFeatures(layer).length > 0; // check if current layer has features on response
 
     if (has_features) {
-      const features_ids   = this._getFeaturesIds(layer.features, external); // get features id from current layer on result
-      //cycle on response features
+      const features_ids   = this._getFeaturesIds(layer.features, external);    // get features id from current layer on result
       responseFeatures
         .forEach(feature => {
-          //get feature id
           const feature_id = this._getFeatureId(feature, external);
-          //check if already present on current layer features result
-          if (undefined === features_ids.find(id => id === feature_id)) {
-            // add feature
-            layer.features.push(feature);
-          } else {
-            // remove feature (because is already loaded)
+          if (features_ids.some(id => id === feature_id)) {                     // remove feature (because is already loaded)
             this._removeLayerFeatureBox(layer, feature);
-            // set new layer features removing already add feature
             layer.features = this._getLayerFeatures(layer).filter(f => this._getFeatureId(f, external) !== feature_id);
+          } else {                                                              // add feature
+            layer.features.push(feature);
           }
         });
-      //toggle current layer features based on features length of layer
-      this._getLayerFeatures(layer)
+      this
+        ._getLayerFeatures(layer)
         .forEach(feature => this._toggleLayerFeatureBox(layer, feature, this._getLayerFeatures(layer).length > 1));
     }
 
@@ -624,16 +613,13 @@ class QueryResultsService extends G3WObject {
     index,
     component = null
   } = {}) {
-    if (
-      component &&
-      this.state.currentactiontools[layer.id][index] &&
-      action.id !== this.state.currentactionfeaturelayer[layer.id][index].id &&
-      this.state.currentactionfeaturelayer[layer.id][index].toggleable
-    ) {
-      this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
-    }
-    this.state.currentactionfeaturelayer[layer.id][index] = component ? action : null;
-    this.state.currentactiontools[layer.id][index]        = component;
+    const tools   = this.state.currentactiontools[layer.id];
+    const feats   = this.state.currentactionfeaturelayer[layer.id];
+    const toggled = feats[index].state.toggled[index];
+
+    feats[index].state.toggled[index] = (component && tools[index] && action.id !== feats[index].id && feats[index].toggleable) ? toggled : false;
+    feats[index]                      = component ? action : null;
+    tools[index]                      = component;
   }
 
 
@@ -656,17 +642,20 @@ class QueryResultsService extends G3WObject {
    * @param layer
    */
   resetCurrentActionToolsLayer(layer) {
-    this._getLayerFeatures(layer).forEach((_, idx) => {
-      if (undefined === this.state.currentactiontools[layer.id]) {
-        return;
-      }
-      if (undefined === this.state.currentactiontools[layer.id][idx]) {
-        Vue.set(this.state.currentactiontools[layer.id], idx, null);
-      } else {
-        this.state.currentactiontools[layer.id][idx] = null;
-      }
-      this.state.currentactionfeaturelayer[layer.id][idx] = null;
-    })
+    this
+      ._getLayerFeatures(layer)
+      .forEach((_, idx) => {
+        const tool = this.state.currentactiontools[layer.id];
+        if (undefined === tool) {
+          return;
+        }
+        if (undefined === tool[idx]) {
+          Vue.set(tool, idx, null);
+        } else {
+          tool[idx] = null;
+        }
+        tool[idx] = null;
+      });
   }
 
   /**
@@ -778,7 +767,7 @@ class QueryResultsService extends G3WObject {
       this.mapService.off('mapcontrol:toggled', interaction.toggleeventhandler);
     }
 
-    //remove current interaction to get features from layer
+    // remove current interaction to get features from layer
     if (null !== interaction.interaction) {
       this.mapService.removeInteraction(interaction.interaction);
     }
@@ -788,11 +777,11 @@ class QueryResultsService extends G3WObject {
       interaction.mapcontrol.toggle(toggle);
     }
 
-    //reset values
+    // reset values
     interaction.interaction        = null;
     interaction.id                 = null;
     interaction.toggleeventhandler = null;
-    interaction.mapcontrol = null;
+    interaction.mapcontrol         = null;
   }
 
   /**
@@ -837,11 +826,11 @@ class QueryResultsService extends G3WObject {
       interaction.interaction
         .on('picked', async ({ coordinate: coordinates }) => {
           if (external_layer) {
-            //in case of external layer call setters method setQueryResponse directly
+            // call setQueryResponse setters method directly in case of external layer 
             this.setQueryResponse(
               {
                 data:  [ this.getVectorLayerFeaturesFromQueryRequest(this._vectorLayers.find(v => layer.id === v.get('id')), { coordinates }) ],
-                query: {coordinates,}
+                query: { coordinates }
               },
               { add: true }
             );
@@ -898,24 +887,29 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @param options object
+   * Reset internal state
    */
-  clearState(options = {}) {
+  clearState() {
     this.state.layers.splice(0);
-    this.state.query = null;
-    this.state.querytitle = "";
-    this.state.changed = false;
-    // clear action if present
-    Object
-      .values(this.state.layersactions)
-      .forEach(layeractions => layeractions.forEach(action => action.clear && action.clear()));
-    this.state.layersactions = {};
-    this.state.actiontools = {};
-    this.state.layeractiontool = {};
-    // current action tools
-    this.state.currentactiontools = {};
+    this.state.query               = null;
+    this.state.querytitle          = "";
+    this.state.changed             = false;
+    this._clearActions();
     this.state.layersFeaturesBoxes = {};
     this.removeAddFeaturesLayerResultInteraction();
+  }
+
+  /**
+   * Clear layer actions (if present)
+   * 
+   * @since 3.9.0
+   */
+  _clearActions() {
+    Object.values(this.state.layersactions).forEach(l => l.forEach(action => action.clear && action.clear()));
+    this.state.layersactions       = {};
+    this.state.actiontools         = {};
+    this.state.layeractiontool     = {};
+    this.state.currentactiontools  = {};
   }
 
   /**
@@ -967,13 +961,6 @@ class QueryResultsService extends G3WObject {
    */
   setTitle(querytitle) {
     this.state.querytitle = querytitle || "";
-  }
-
-  /**
-   * @FIXME add description
-   */
-  reset() {
-    this.clearState();
   }
 
   /**
@@ -1574,16 +1561,15 @@ class QueryResultsService extends G3WObject {
    * @param index
    */
   async downloadFeatures(type, layer, features = [], action, index) {
-    features = features
-                ? Array.isArray(features)
-                  ? features
-                  : [features]
-                : features;
-    const {
-      query = {}
-    } = this.state;
-    const fids = features.map(feature => feature.attributes[G3W_FID]).join(',');
-    const data = { fids };
+
+    if (features && !Array.isArray(features)) {
+      features = [features];
+    }
+
+    const { query = {} } = this.state;
+    const data           = {
+      fids: features.map(f => f.attributes[G3W_FID]).join(',')
+    };
 
     /**
      * A function that che be called in case of querybypolygon
@@ -1591,18 +1577,24 @@ class QueryResultsService extends G3WObject {
      * @param active
      */
     const runDownload = async (active=false) => {
+
       if (features.length > 1) {
         layer[DownloadFormats.name].active = active;
         this.setLayerActionTool({ layer });
       }
+
       const download_caller_id = ApplicationService.setDownload(true);
+
       GUI.setLoadingContent(true);
+
       try {
         await CatalogLayersStoresRegistry.getLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve();
       } catch(err) {
         GUI.notify.error(err || t("info.server_error"));
       }
+
       ApplicationService.setDownload(false, download_caller_id);
+
       GUI.setLoadingContent(false);
       const downloadsactions = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
 
@@ -2186,8 +2178,9 @@ class QueryResultsService extends G3WObject {
    */
   _toggleLayerFeatureBox(layer, feature, collapsed) {
     const boxId = this.getBoxId(layer, feature);
-    if (boxId && this.state.layersFeaturesBoxes[boxId]) {
-      setTimeout(() => this.state.layersFeaturesBoxes[boxId].collapsed = collapsed); // due to vue reactivity, wait a little bit before update layers
+    const box   = boxId && this.state.layersFeaturesBoxes[boxId];
+    if (box) {
+      setTimeout(() => box.collapsed = collapsed); // due to vue reactivity, wait a little bit before update layers
     }
   }
 
@@ -2428,6 +2421,14 @@ class QueryResultsService extends G3WObject {
  * @deprecated since 3.8.0 Will be deleted in 4.x. Use QueryResultsService::updateLayerResultFeatures(layer) instead
  */
 QueryResultsService.prototype.addRemoveFeaturesToLayerResult = deprecate(QueryResultsService.prototype.updateLayerResultFeatures, '[G3W-CLIENT] QueryResultsService::addRemoveFeaturesToLayerResult(layer) is deprecated');
+
+/**
+ * Alias functions
+ * 
+ * @TODO choose which ones deprecate
+ */
+QueryResultsService.prototype.init  = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.reset = QueryResultsService.prototype.clearState;
 
 /**
  * Core methods used from other classes to react before or after its call
