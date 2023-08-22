@@ -235,18 +235,20 @@ const Providers = {
     /**
      * Query by filter
      * 
-     * @param {boolean} opts.raw whether to get raw response
-     * @param opts.feature_count maximun feature for request
-     * @param opts.queryUrl url for request data
-     * @param opts.layers Array or request layers
-     * @param opts.I wms parameter request
-     * @param opts.J wms parameter request
+     * @param { boolean } opts.raw           whether to get raw response
+     * @param { number }  opts.feature_count maximum feature for request
+     * @param { string }  opts.queryUrl      url for request data
+     * @param { Array }   opts.layers        Array or request layers
+     * @param opts.I                         wms request parameter 
+     * @param opts.J                         wms request parameter 
      */
     query(opts = {}) {
       const d = $.Deferred();
 
-      //in case not alphanumeric layer set projection
-      if ('table' !== this._layer.getType()) {
+      const is_table = 'table' === this._layer.getType();
+
+      // in case not alphanumeric layer set projection
+      if (!is_table) {
         this.setProjections();
       }
 
@@ -255,11 +257,12 @@ const Providers = {
       let { filter = null} = opts;
       filter = filter && Array.isArray(filter) ? filter : [filter];
 
+      // check if geometry filter. If not i have to remove projection layer
+      if (filter && filter[0].getType() !== 'geometry') {
+        this._projections.layer = null;
+      }
+
       if (filter) {
-        // check if geometry filter. If not i have to remove projection layer
-        if (filter[0].getType() !== 'geometry') {
-          this._projections.layer = null;
-        }
 
         filter = filter.map(filter => filter.get()).filter(value => value);
 
@@ -275,19 +278,20 @@ const Providers = {
               QUERY_LAYERS:  layers,
               INFO_FORMAT:   this._infoFormat,
               FEATURE_COUNT: opts.feature_count || 10,
-              CRS:           ('table' === this._layer.getType() ? ApplicationState.map.epsg : this._projections.map.getCode()),
+              CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
               I:             opts.I,
               J:             opts.J,
               FILTER:        filter.length ? filter.join(';') : undefined,
-              WITH_GEOMETRY: 'table' !== this._layer.getType()
+              WITH_GEOMETRY: !is_table,
             },
           })
-          .then(response => d.resolve(
-            (opts.raw || false)
-              ? response
-              : this.handleQueryResponseFromServer(response, this._projections, opts.layers)
-            )
-          )
+          .then(response => {
+            if (opts.raw) {
+              d.resolve(response);  
+            } else {
+              d.resolve(this.handleQueryResponseFromServer(response, this._projections, opts.layers));
+            }
+          })
           .catch(e => d.reject(e));
       } else {
         d.reject();
@@ -374,7 +378,7 @@ const Providers = {
       }
       // check if data are requested in read or write mode;
       let url;
-      //editing mode
+      // editing mode
       let promise;
       url = this._layer.getUrl('editing');
       if (!url) {
@@ -389,38 +393,36 @@ const Providers = {
           url,
           contentType: 'application/json',
         });
-      } else {
-        if (filter.bbox) { // bbox filter
-          promise = XHR.post({
-            url,
-            data: JSON.stringify({
-              in_bbox:     filter.bbox.join(','),
-              filtertoken: ApplicationState.tokens.filtertoken
-            }),
-            contentType: 'application/json',
-          })
-        } else if (filter.fid) { // fid filter
-          promise = RelationsService.getRelations(filter.fid);
-        } else if (filter.field) {
-          promise = XHR.post({
-            url,
-            data: JSON.stringify(filter),
-            contentType: 'application/json',
-          })
-        } else if (filter.fids) {
-          promise = XHR.get({
-            url,
-            params: filter
-          })
-        } else if (filter.nofeatures) {
-          promise = XHR.post({
-            url,
-            data: JSON.stringify({
-              field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
-            }),
-            contentType: 'application/json'
-          })
-        }
+      } else if (filter.bbox) { // bbox filter
+        promise = XHR.post({
+          url,
+          data: JSON.stringify({
+            in_bbox:     filter.bbox.join(','),
+            filtertoken: ApplicationState.tokens.filtertoken
+          }),
+          contentType: 'application/json',
+        })
+      } else if (filter.fid) { // fid filter
+        promise = RelationsService.getRelations(filter.fid);
+      } else if (filter.field) {
+        promise = XHR.post({
+          url,
+          data: JSON.stringify(filter),
+          contentType: 'application/json',
+        })
+      } else if (filter.fids) {
+        promise = XHR.get({
+          url,
+          params: filter
+        })
+      } else if (filter.nofeatures) {
+        promise = XHR.post({
+          url,
+          data: JSON.stringify({
+            field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
+          }),
+          contentType: 'application/json'
+        })
       }
 
       promise
@@ -457,7 +459,6 @@ const Providers = {
     /**
      * @TODO check if deprecated (broken and unusued code ?)
      */
-
     /*
     _loadLayerData(mode, customUrlParameters) {
       const d = $.Deferred();
@@ -772,22 +773,7 @@ const Providers = {
 
       const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
 
-      let PARAMS_TOLERANCE = (
-        ('map' === query_point_tolerance.unit) ? //case true
-          {
-            FILTER_GEOM: (new ol.format.WKT()).writeGeometry(
-              ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, query_point_tolerance.value))
-            ),
-          } : //case false
-          {
-            FI_POINT_TOLERANCE:   query_point_tolerance.value,
-            FI_LINE_TOLERANCE:    query_point_tolerance.value,
-            FI_POLYGON_TOLERANCE: query_point_tolerance.value,
-            G3W_TOLERANCE:        query_point_tolerance.value * resolution,
-            I:                    Math.floor((coordinates[0] - extent[0]) / resolution), // x
-            J:                    Math.floor((extent[3] - coordinates[1]) / resolution), // y
-          }
-      );
+      const is_map_tolerance = ('map' === query_point_tolerance.unit);  
 
       /**
        * Add LEGEND_ON and/or LEGEND_OFF in case of layer that has categories
@@ -809,24 +795,30 @@ const Providers = {
         });
 
       return {
-        SERVICE:       'WMS',
-        VERSION:       '1.3.0',
-        REQUEST:       'GetFeatureInfo',
-        CRS:           this._projections.map.getCode(),
-        LAYERS:        layerNames,
-        QUERY_LAYERS:  layerNames,
-        filtertoken:   ApplicationState.tokens.filtertoken,
-        INFO_FORMAT:   infoFormat,
-        FEATURE_COUNT: feature_count,
-        WITH_GEOMETRY: true,
+        SERVICE:              'WMS',
+        VERSION:              '1.3.0',
+        REQUEST:              'GetFeatureInfo',
+        CRS:                  this._projections.map.getCode(),
+        LAYERS:               layerNames,
+        QUERY_LAYERS:         layerNames,
+        filtertoken:          ApplicationState.tokens.filtertoken,
+        INFO_FORMAT:          infoFormat,
+        FEATURE_COUNT:        feature_count,
+        WITH_GEOMETRY:        true,
         DPI,
-        ...PARAMS_TOLERANCE,
-        WIDTH:         size[0],
-        HEIGHT:        size[1],
-        LEGEND_ON:     LEGEND_PARAMS.LEGEND_ON.length ? LEGEND_PARAMS.LEGEND_ON.join(';') : undefined,
-        LEGEND_OFF:    LEGEND_PARAMS.LEGEND_OFF.length ? LEGEND_PARAMS.LEGEND_OFF.join(';') : undefined,
-        STYLES: '',
-        BBOX: ('ne' === this._projections.map.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
+        FILTER_GEOM:          is_map_tolerance ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, query_point_tolerance.value))) : undefined,
+        FI_POINT_TOLERANCE:   is_map_tolerance ? undefined : query_point_tolerance.value,
+        FI_LINE_TOLERANCE:    is_map_tolerance ? undefined : query_point_tolerance.value,
+        FI_POLYGON_TOLERANCE: is_map_tolerance ? undefined : query_point_tolerance.value,
+        G3W_TOLERANCE:        is_map_tolerance ? undefined : query_point_tolerance.value * resolution,
+        I:                    is_map_tolerance ? undefined : Math.floor((coordinates[0] - extent[0]) / resolution), // x
+        J:                    is_map_tolerance ? undefined : Math.floor((extent[3] - coordinates[1]) / resolution), // y
+        WIDTH:                size[0],
+        HEIGHT:               size[1],
+        LEGEND_ON:            LEGEND_PARAMS.LEGEND_ON.length ? LEGEND_PARAMS.LEGEND_ON.join(';') : undefined,
+        LEGEND_OFF:           LEGEND_PARAMS.LEGEND_OFF.length ? LEGEND_PARAMS.LEGEND_OFF.join(';') : undefined,
+        STYLES:               '',
+        BBOX:                 ('ne' === this._projections.map.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
       };
     }
   
@@ -854,9 +846,9 @@ const Providers = {
         })
       };
 
+      // base request
       const base_params = {
-        url: layers[0].getQueryUrl(), //url request
-        //parameter used by method request
+        url: layers[0].getQueryUrl(),
         params: this._getRequestParameters({
           layers,
           feature_count,
@@ -935,7 +927,8 @@ const Providers = {
         query: {},
       });
   
-      this._doRequest(filter, params, layers, reproject)
+      this
+        ._doRequest(filter, params, layers, reproject)
         .then(response => {
           const data = this.handleQueryResponseFromServer(
             response,
@@ -944,7 +937,7 @@ const Providers = {
               layer: (reproject ? this._layer.getProjection() : null)
             },
             layers,
-            false //wms parameter
+            false // wms parameter
           );
           // sanitize in case of nil:true
           data.forEach(layer => {
@@ -989,68 +982,70 @@ const Providers = {
 
       filter = filter || new Filter({});
 
-      if (filter) {
-        const layer = layers ? layers[0] : this._layer;
-
-        params = Object.assign(params, {
-          SERVICE:      'WFS',
-          VERSION:      '1.1.0',
-          REQUEST:      'GetFeature',
-          TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
-          OUTPUTFORMAT: layer.getInfoFormat(),
-          SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
-        });
-
-        let ol_filter;
-
-        switch (filter.getType()) {
-
-          case 'all':
-            return this._post(layer.getQueryUrl(), params);
-
-          case 'bbox':
-            ol_filter = ol.format.filter.bbox('the_geom', filter.get());
-            break;
-
-          case 'geometry':
-            //speatial methos. <inteserct, within>
-            const {spatialMethod = 'intersects'} = filter.getConfig();
-            ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
-            break;
-
-          case 'expression':
-            ol_filter = null;
-            break;
-
-        }
-
-        (
-          'GET' === layer.getOwsMethod() && 'geometry' !== filter.getType()
-            ? this._get
-            : this._post
-        )(
-          layer.getQueryUrl(),
-          {
-            ...params,
-            FILTER: `(${(
-              new ol.format.WFS().writeGetFeature({
-                featureTypes: [layer],
-                filter:       ol_filter,
-              })
-            ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
-          }
-        )
-          .then(response => d.resolve(response))
-          .fail(err => {
-            if (err.status === 200) {
-              d.resolve(err.responseText);
-            } else {
-              d.reject(err)
-            }
-          });
-      } else { //no filter set
+      // skip when..
+      if (!filter) {
         d.reject();
+        return d.promise();
       }
+
+      const layer = layers ? layers[0] : this._layer;
+
+      params = Object.assign(params, {
+        SERVICE:      'WFS',
+        VERSION:      '1.1.0',
+        REQUEST:      'GetFeature',
+        TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
+        OUTPUTFORMAT: layer.getInfoFormat(),
+        SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
+      });
+
+      let ol_filter;
+
+      switch (filter.getType()) {
+
+        case 'all':
+          return this._post(layer.getQueryUrl(), params);
+
+        case 'bbox':
+          ol_filter = ol.format.filter.bbox('the_geom', filter.get());
+          break;
+
+        case 'geometry':
+          //speatial methos. <inteserct, within>
+          const {spatialMethod = 'intersects'} = filter.getConfig();
+          ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
+          break;
+
+        case 'expression':
+          ol_filter = null;
+          break;
+
+      }
+
+      (
+        'GET' === layer.getOwsMethod() && 'geometry' !== filter.getType()
+          ? this._get
+          : this._post
+      )(
+        layer.getQueryUrl(),
+        {
+          ...params,
+          FILTER: `(${(
+            new ol.format.WFS().writeGetFeature({
+              featureTypes: [layer],
+              filter:       ol_filter,
+            })
+          ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
+        }
+      )
+        .then(response => d.resolve(response))
+        .fail(err => {
+          if (err.status === 200) {
+            d.resolve(err.responseText);
+          } else {
+            d.reject(err)
+          }
+        });
 
       return d.promise()
     }
