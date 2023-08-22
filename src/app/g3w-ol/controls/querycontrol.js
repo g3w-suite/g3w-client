@@ -41,8 +41,7 @@ proto.setMap = function(map) {
       ol.Observable.unByKey(key);
       key = null;
     } else if (null === key && map) {
-      // set timeout otherwise it can be get picked by another interaction
-      setTimeout(() => { key = map.on('singleclick', throttle(evt => this.dispatchEvent({ type: 'picked', coordinates: evt.coordinate }))); })
+      key = this.getInteraction().on('picked', throttle(evt => this.runQuery({coordinates: evt.coordinate })));
     }
   });
 
