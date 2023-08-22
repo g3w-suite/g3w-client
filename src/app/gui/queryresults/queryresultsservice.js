@@ -382,23 +382,6 @@ class QueryResultsService extends G3WObject {
     this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
   }
 
-  /**
-   * Wrapper for download
-   *
-   * @param downloadFnc
-   * @param options
-   */
-  async downloadApplicationWrapper(downloadFnc, options = {}) {
-    const download_caller_id = ApplicationService.setDownload(true);
-    GUI.setLoadingContent(true);
-    try {
-      await downloadFnc(options);
-    } catch(err) {
-      GUI.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
-    }
-    ApplicationService.setDownload(false, download_caller_id);
-    GUI.setLoadingContent(false);
-  }
 
   /**
    * Loop over response features based on layer response and
@@ -606,6 +589,7 @@ class QueryResultsService extends G3WObject {
    * @param opts.layer current layer
    * @param opts.index feature index
    * @param opts.value component value or null
+   * @param opts.component vue component
    */
   setCurrentActionLayerFeatureTool({
     layer,
@@ -613,15 +597,21 @@ class QueryResultsService extends G3WObject {
     index,
     component = null
   } = {}) {
-    const tools   = this.state.currentactiontools[layer.id];
+    const tools   = this.state.currentactiontools[layer.id]; //get current action tools
     const feats   = this.state.currentactionfeaturelayer[layer.id];
-    const toggled = feats[index].state.toggled[index];
+    feats[index]  = component ? action : null;
+    tools[index]  = component; //set component
 
-    feats[index].state.toggled[index] = (component && tools[index] && action.id !== feats[index].id && feats[index].toggleable) ? toggled : false;
-    feats[index]                      = component ? action : null;
-    tools[index]                      = component;
+    //need to check if pass component and
+    if (
+      tools[index] &&  // if component is set
+      action.id !== feats[index].id &&  // same action
+      feats[index].toggleable // check if toggleable
+    ) {
+      feats[index].state.toggled[index] = false;
+    }
+
   }
-
 
   /**
    * @param opts.id     action layer id
@@ -1542,6 +1532,24 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
+   * Wrapper for download
+   *
+   * @param downloadFnc
+   * @param options
+   */
+  async downloadApplicationWrapper(downloadFnc, options = {}) {
+    const download_caller_id = ApplicationService.setDownload(true);
+    GUI.setLoadingContent(true);
+    try {
+      await downloadFnc(options);
+    } catch(err) {
+      GUI.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
+    }
+    ApplicationService.setDownload(false, download_caller_id);
+    GUI.setLoadingContent(false);
+  }
+
+  /**
    * @FIXME add description
    *
    * @param type
@@ -1586,6 +1594,7 @@ class QueryResultsService extends G3WObject {
       ApplicationService.setDownload(false, download_caller_id);
 
       GUI.setLoadingContent(false);
+
       const downloadsactions = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
 
       /** @FIXME add description */
@@ -2284,7 +2293,6 @@ class QueryResultsService extends G3WObject {
   _setActionMultiDownloadFeature(layer) {
 
     const downloads = [];
-
     layer.downloads
       .forEach(format => {
         downloads.push({
