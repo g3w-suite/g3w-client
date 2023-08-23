@@ -8,7 +8,6 @@ const {
   appendParams,
   toRawType,
   getTimeoutPromise,
-  resolve: resolvedValue
 }                                  = require('core/utils/utils');
 const {
   handleQueryResponse,
