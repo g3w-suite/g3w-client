@@ -53,6 +53,13 @@ class QueryResultsService extends G3WObject {
     super();
 
     /**
+     * BACKCOMP
+     */
+    this._changeLayerResult = this.setters.changeLayerResult;
+    this._addComponent      = this.setters.addComponent;
+
+
+    /**
      * Service used to work with atlas (print functionality) action tool
      */
     this.printService = new PrintService();
@@ -1295,45 +1302,44 @@ class QueryResultsService extends G3WObject {
 
     let features = [];
 
+    const has_coords = coordinates && Array.isArray(coordinates);
+    const has_bbox   = bbox && Array.isArray(bbox);
+    const is_poly    = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
+
     // case query coordinates
-    if (coordinates && Array.isArray(coordinates)) {
-      const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
+    if (has_coords) {
       this.mapService.viewer.map.forEachFeatureAtPixel(
-        pixel,
+        this.mapService.viewer.map.getPixelFromCoordinate(coordinates),
         (feature, layer) => { features.push(feature); },
         { layerFilter(layer) { return layer === vectorLayer; } }
       );
     }
 
-    // TODO: rewrite this in order to avoid nested else-if conditions
-    else {
+    // case query bbox
+    if (has_bbox && !has_coords) {
+      //set geometry has Polygon
+      geometry = ol.geom.Polygon.fromExtent(bbox);
+    }
 
-      // case query bbox
-      if (bbox && Array.isArray(bbox)) {
-        //set geometry has Polygon
-        geometry = ol.geom.Polygon.fromExtent(bbox);
-      }
-
-      // check query geometry (Polygon or MultiPolygon)
-      if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
-        switch (vectorLayer.constructor) {
-          case VectorLayer:
-            features = vectorLayer.getIntersectedFeatures(geometry);
-            break;
-          case ol.layer.Vector:
-            vectorLayer.getSource().getFeatures().forEach(feature => {
-              let add;
-              switch (filterConfig.spatialMethod) {
-                case 'intersects': add = intersects(geometry, feature.getGeometry());                  break;
-                case 'within':     add = within(geometry, feature.getGeometry());                      break;
-                default:           add = geometry.intersectsExtent(feature.getGeometry().getExtent()); break;
-              }
-              if (true === add) {
-                features.push(feature);
-              }
-            });
-            break;
-        }
+    // check query geometry (Polygon or MultiPolygon)
+    if (is_poly && !has_coords) {
+      switch (vectorLayer.constructor) {
+        case VectorLayer:
+          features = vectorLayer.getIntersectedFeatures(geometry);
+          break;
+        case ol.layer.Vector:
+          vectorLayer.getSource().getFeatures().forEach(feature => {
+            let add;
+            switch (filterConfig.spatialMethod) {
+              case 'intersects': add = intersects(geometry, feature.getGeometry());                  break;
+              case 'within':     add = within(geometry, feature.getGeometry());                      break;
+              default:           add = geometry.intersectsExtent(feature.getGeometry().getExtent()); break;
+            }
+            if (true === add) {
+              features.push(feature);
+            }
+          });
+          break;
       }
     }
 
@@ -1345,69 +1351,22 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @TODO add description (eg. what is a vector layer ?)
-   */
-  _addVectorLayersDataToQueryResponse(queryResponse) {
-    const catalogService = GUI.getService('catalog');
-
-    /** @type { boolean | undefined } */
-    const isExternalFilterSelected = queryResponse.query.external.filter.SELECTED;
-
-    // add visible layers to query response (vector layers)
-    this._vectorLayers
-      .forEach(layer => {
-        const isLayerSelected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
-        if (
-          layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
-                                  (true === isLayerSelected  && true === isExternalFilterSelected) ||
-                                  (false === isLayerSelected && false === isExternalFilterSelected) ||
-                                  ("undefined" === typeof isExternalFilterSelected)
-                                )
-        ) {
-          queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
-        }
-      });
-  }
-
-  /**
-   * Add custom component in query result
-   *
-   * @param component
-   */
-  _addComponent(component) {
-    this.state.components.push(component)
-  }
-
-  /**
    *  @FIXME add description
    */
   _printSingleAtlas({
     atlas    = {},
     features = [],
   } = {}) {
-
-    // TODO: make it easier to understand.. (what variables are declared? which ones are aliased?)
-    let {
-      name:  template,
-      atlas: { field_name = '' }
-    } = atlas;
-
-    field_name = field_name || '$id';
-
-    const values = features.map(feat => feat.attributes['$id' === field_name ?  G3W_FID : field_name]);
-
+    let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
     return this.printService
       .printAtlas({
-        field: field_name,
-        values,
-        template,
+        field,
+        values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
+        template: atlas.name,
         download: true
       })
       .then(({url}) => {
-        GUI.downloadWrapper(
-          downloadFile,
-          { url, filename: template, mime_type: 'application/pdf' }
-        )
+        GUI.downloadWrapper(downloadFile, { url, filename: atlas.name, mime_type: 'application/pdf' })
       });
   }
 
@@ -1714,7 +1673,7 @@ class QueryResultsService extends G3WObject {
     layer.selection.active = false;
     const action = (
       this.state.layersactions[layer.id] &&
-      this.state.layersactions[layer.id].find(action => action.id === 'selection')
+      this.state.layersactions[layer.id].find(action => 'selection' === action.id)
     );
     layer.selection.features
       .forEach((feature, index) => {
@@ -2397,7 +2356,6 @@ QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.prototy
  */
 QueryResultsService.prototype.init               = QueryResultsService.prototype.clearState;
 QueryResultsService.prototype.reset              = QueryResultsService.prototype.clearState;
-QueryResultsService.prototype._changeLayerResult = QueryResultsService.prototype.changeLayerResult
 
 /**
  * Core methods used from other classes to react before or after its call
@@ -2419,23 +2377,41 @@ QueryResultsService.prototype.setters = {
 
     // whether add response to current results using addLayerFeaturesToResultsAction
     if (false === options.add) {
-
       // in case of new request results reset the query otherwise maintain the previous request
       this.clearState();
       this.state.query = queryResponse.query;
       this.state.type  = queryResponse.type;
+    }
 
-      // if true add external layers to response
-      if (true === queryResponse.query.external.add) {
-        this._addVectorLayersDataToQueryResponse(queryResponse);
-      }
+    // whether add external layers to response
+    if (true === queryResponse.query.external.add && false === options.add) {
+      const catalogService = GUI.getService('catalog');
 
+      /** @type { boolean | undefined } */
+      const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
+  
+      // add visible layers to query response (vector layers)
+      this._vectorLayers
+        .forEach(layer => {
+          const is_selected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
+          if (
+            layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
+                                    (true === is_selected  && true === FILTER_SELECTED) ||
+                                    (false === is_selected && false === FILTER_SELECTED) ||
+                                    (undefined === FILTER_SELECTED)
+                                  )
+          ) {
+            queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+          }
+        });
+    }
+
+    if (false === options.add) {
       switch (this.state.query.type) {
         case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
         case 'bbox':        this.showBBOX(this.state.query.bbox); break;
         case 'polygon':     this.showGeometry(this.state.query.geometry); break;
       }
-
     }
 
     // Convert response from DataProvider into a QueryResult component data structure
@@ -2477,12 +2453,12 @@ QueryResultsService.prototype.setters = {
   },
 
   /**
-   * Method used to add custom component
+   * Add custom component in query result
    *
    * @param component
    */
   addComponent(component) {
-    this._addComponent(component)
+    this.state.components.push(component)
   },
 
   /**
