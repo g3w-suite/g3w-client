@@ -20,8 +20,6 @@ const geoutils                     = require('core/utils/ol');
 const Filter                       = require('core/layers/filter/filter');
 
 
-//overwrite method to read feature
-// da un geojson
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 const DPI = geoutils.getDPI();
 
@@ -133,7 +131,7 @@ const Providers = {
           .then((response) => { d.resolve(parser.readFeatures(response.results, params)) })
           .fail((err)      => { d.reject(err) });
       }
-      return d.promise()
+      return d.promise();
     }
 
     getDataTable({ page } = {}) {
@@ -145,6 +143,9 @@ const Providers = {
       return d.promise();
     }
 
+    /**
+     * @TODO check if deprecated (broken and unusued code ?)
+     */
     digestFeaturesForTable() {
       return {
         headers : [],
@@ -174,14 +175,14 @@ const Providers = {
     * token: current token if provide
     * action: create, update, delete
     */
-
     async deleteFilterToken() {
       await XHR.get({ url: this._filtertokenUrl, params: { mode: 'delete' } });
     }
 
     async getFilterToken(params = {}) {
       try {
-        return (await XHR.get({ url: this._filtertokenUrl, params }) || {}).filtertoken;
+        const {data={}} = await XHR.get({url: this._filtertokenUrl, params});
+        return data.filtertoken;
       } catch(e) {
         return Promise.reject(e);
       }
