@@ -983,11 +983,13 @@ class QueryResultsService extends G3WObject {
       (is_string ? layer : undefined);
 
     const attributes = has_features ? this._parseLayerObjAttributes(layer, features, sourceType) : [];
+    const external   = (is_vector || is_string);
 
     const layerObj = {
       id,
       attributes,
-      features:               has_features ? this._parseLayerObjFeatures(features, rawdata)              : [],
+      external,
+      features:               has_features ? this._parseLayerObjFeatures(features, rawdata, external)             : [],
       hasgeometry:            this._hasLayerObjGeometry(features, rawdata),
       hasImageField:          this._hasLayerObjImageField(features, rawdata, attributes),
       loading:                false,
@@ -995,7 +997,6 @@ class QueryResultsService extends G3WObject {
       expandable:             true,
       addfeaturesresults:     { active: false },
       [DownloadFormats.name]: { active: false },
-      external:               (is_vector || is_string),
       editable:               is_layer   ? layer.isEditable()                                                     : false,
       inediting:              is_layer   ? layer.isInEditing()                                                    : false,
       source:                 is_layer   ? layer.getSource()                                                      : undefined,
@@ -1046,14 +1047,14 @@ class QueryResultsService extends G3WObject {
   /**
    * @since 3.9.0
    */
-  _parseLayerObjFeatures(features, rawdata) {
+  _parseLayerObjFeatures(features, rawdata, external) {
     const _features = [];
     if (!rawdata) {
       features.forEach(f => {
         const props = this.getFeaturePropertiesAndGeometry(f);
         _features
           .push({
-            id:         layerObj.external ? f.getId() : props.id,
+            id:         external ? f.getId() : props.id,
             attributes: props.properties,
             geometry:   props.geometry,
             selection:  props.selection,
@@ -1095,7 +1096,7 @@ class QueryResultsService extends G3WObject {
       attributes
         .forEach(attr => {
           if (layer.getFields().some(field => field.name === attr.name)) {
-            layerObj.formStructure.fields.push(attr);
+            formStructure.fields.push(attr);
           }
         });
     }
@@ -2347,7 +2348,7 @@ QueryResultsService.prototype.addRemoveFeaturesToLayerResult = deprecate(QueryRe
 /**
  * @deprecated since 3.9.0 Will be deleted in 4.x. Use GUI::downloadWrapper(downloadFnc, options) instead
  */
-QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.prototype.downloadWrapper, '[G3W-CLIENT] QueryResultsService::downloadApplicationWrapper(layer) is deprecated');
+QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.downloadWrapper, '[G3W-CLIENT] QueryResultsService::downloadApplicationWrapper(layer) is deprecated');
 
 /**
  * Alias functions
