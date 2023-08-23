@@ -952,33 +952,6 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Converts response from DataProvider into a QueryResult component data structure
-   *
-   * @param featuresForLayers: Array contains for each layer features
-   *
-   * @returns {[]}
-   */
-  _digestFeaturesForLayers(featuresForLayers = []) {
-    const layers = [];
-    /**
-     * @TODO find out why we need such a level of depth (ie. a nested foreach + triple variables named `featuresForLayer` ?)
-     */
-    featuresForLayers.forEach(featuresForLayer => {
-      (
-        Array.isArray(featuresForLayer)
-        ? featuresForLayer
-        : [featuresForLayer]
-      ).forEach(featuresForLayer => {
-        const layer = this._handleFeatureForLayer(featuresForLayer);
-        if (layer) {
-          layers.push(layer)
-        }
-      });
-    });
-    return layers;
-  }
-
-  /**
    * Convert response from server
    *
    * @param featuresForLayer.layer
@@ -988,7 +961,7 @@ class QueryResultsService extends G3WObject {
    *
    * @since 3.9.0
    */
-  _handleFeatureForLayer({ layer, features, rawdata, error }) {
+  _responseToLayer({ layer, features, rawdata, error }) {
 
     const has_features = features && features.length > 0;
 
@@ -1017,83 +990,45 @@ class QueryResultsService extends G3WObject {
     
     const name = is_string && layer.split('_');
 
-    const layerId = (is_layer ? layer.getId() : undefined) ||
+    const id = (is_layer ? layer.getId() : undefined) ||
       (is_vector ? layer.get('id') : undefined) ||
       (is_string ? layer : undefined);
 
+    const attributes = has_features ? this._parseLayerObjAttributes(layer, features, sourceType) : [];
 
     const layerObj = {
-      id:                     layerId,
-      attributes:             has_features ? this._parseLayerObjAttributes(layer, features, sourceType) : [],
-      features:               has_features ? this._parseLayerObjFeatures(features, rawdata)             : [],
+      id,
+      attributes,
+      features:               has_features ? this._parseLayerObjFeatures(features, rawdata)              : [],
       hasgeometry:            this._hasLayerObjGeometry(features, rawdata),
-      hasImageField:          false,
+      hasImageField:          this._hasLayerObjImageField(features, rawdata, attributes),
       loading:                false,
       show:                   true,
       expandable:             true,
       addfeaturesresults:     { active: false },
       [DownloadFormats.name]: { active: false },
       external:               (is_vector || is_string),
-      editable:               is_layer   ? layer.isEditable()                       : false,
-      inediting:              is_layer   ? layer.isInEditing()                      : false,
-      source:                 is_layer   ? layer.getSource()                        : undefined,
-      infoformat:             is_layer   ? layer.getInfoFormat()                    : undefined,
-      infoformats:            is_layer   ? layer.getInfoFormats()                   : [],
-      downloads:              is_layer   ? layer.getDownloadableFormats()           : [],
-      formStructure:          is_layer   ? this._parseLayerObjFormStructure(layer)  : undefined,
-      relationsattributes:    (is_layer || is_vector || is_string) ? []             : undefined,
-      filter:                 (is_layer && not_wms_wcs_wmst) ? layer.state.filter   : {},
+      editable:               is_layer   ? layer.isEditable()                                                     : false,
+      inediting:              is_layer   ? layer.isInEditing()                                                    : false,
+      source:                 is_layer   ? layer.getSource()                                                      : undefined,
+      infoformat:             is_layer   ? layer.getInfoFormat()                                                  : undefined,
+      infoformats:            is_layer   ? layer.getInfoFormats()                                                 : [],
+      downloads:              is_layer   ? layer.getDownloadableFormats()                                         : [],
+      formStructure:          is_layer   ? this._parseLayerObjFormStructure(layer, features, rawdata, attributes) : undefined,
+      relationsattributes:    (is_layer || is_vector || is_string) ? []                                           : undefined,
+      filter:                 (is_layer && not_wms_wcs_wmst) ? layer.state.filter                                 : {},
       selection:              (is_layer && not_wms_wcs_wmst ? layer.state.selection : undefined) ||
                               (is_vector ? layer.selection : undefined) ||
                               {},
       title:                  (is_layer ? layer.getTitle() : undefined) ||
                               (is_vector ? layer.get('name') : undefined) ||
                               (is_string && name ? (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer) : undefined),
-      atlas:                  this.getAtlasByLayerId(layerId),
+      atlas:                  this.getAtlasByLayerId(id),
       rawdata:                rawdata ? rawdata : null,
       error:                  error   ? error   : '',
     };
 
-    /** @FIXME add description */
-    if (has_features && !rawdata) {
-      layerObj.attributes
-        .forEach(attribute => {
-          if (
-            layerObj.formStructure &&
-            undefined !== layer.getFields().find(field => field.name === attribute.name)
-          )
-          {
-            layerObj.formStructure.fields.push(attribute);
-          }
-          if (attribute.type === 'image') {
-            layerObj.hasImageField = true;
-          }
-        });
-    }
-
     return layerObj;
-
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _parseLayerObjFeatures(features, rawdata) {
-    const features = [];
-    if (!rawdata) {
-      features.forEach(f => {
-        const props = this.getFeaturePropertiesAndGeometry(f);
-        features
-          .push({
-            id:         layerObj.external ? f.getId() : props.id,
-            attributes: props.properties,
-            geometry:   props.geometry,
-            selection:  props.selection,
-            show:       true,
-          });
-      });
-    }
-    return features;
   }
 
   /**
@@ -1109,9 +1044,42 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
+   * @since 3.9.0 
+   */
+  _hasLayerObjImageField(features, rawdata, attributes) {
+    /** @FIXME add description */
+    return Array.isArray(features) && features.length && !rawdata && attributes.some(attr => {
+      if ('image' === attr.type) {
+        return true;
+      }
+    });
+  }
+
+  /**
    * @since 3.9.0
    */
-  _parseLayerObjFormStructure(layer) {
+  _parseLayerObjFeatures(features, rawdata) {
+    const _features = [];
+    if (!rawdata) {
+      features.forEach(f => {
+        const props = this.getFeaturePropertiesAndGeometry(f);
+        _features
+          .push({
+            id:         layerObj.external ? f.getId() : props.id,
+            attributes: props.properties,
+            geometry:   props.geometry,
+            selection:  props.selection,
+            show:       true,
+          });
+      });
+    }
+    return _features;
+  }
+
+  /**
+   * @since 3.9.0
+   */
+  _parseLayerObjFormStructure(layer, features, rawdata, attributes) {
     const structure = layer.hasFormStructure() && layer.getLayerEditingFormStructure();
     if (false === (structure && this._relations && this._relations.length)) {
       return;
@@ -1128,10 +1096,22 @@ class QueryResultsService extends G3WObject {
     for (const node of structure) {
       setRelationField(node);
     }
-    return {
+
+    const formStructure = {
       structure,
       fields: layer.getFields().filter(field => field.show), // get features show
     };
+
+    /** @FIXME add description */
+    if (!rawdata && Array.isArray(features) && features.length) {
+      attributes
+        .forEach(attr => {
+          if (layer.getFields().some(field => field.name === attr.name)) {
+            layerObj.formStructure.fields.push(attr);
+          }
+        });
+    }
+    return formStructure;
   }
 
   /**
@@ -2476,7 +2456,22 @@ QueryResultsService.prototype.setters = {
 
     }
 
-    this.setLayersData(this._digestFeaturesForLayers(queryResponse.data), options);
+    // Convert response from DataProvider into a QueryResult component data structure
+    const layers = [];
+    queryResponse.data.forEach(featuresForLayer => {
+      (
+        Array.isArray(featuresForLayer)
+        ? featuresForLayer
+        : [featuresForLayer]
+      ).forEach(featuresForLayer => {
+        const layer = this._responseToLayer(featuresForLayer);
+        if (layer) {
+          layers.push(layer)
+        }
+      });
+    });
+
+    this.setLayersData(layers, options);
 
   },
 
