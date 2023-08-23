@@ -723,7 +723,7 @@ proto.search = function(options={}, params={}) {
   } else {
     d.reject(t('sdk.search.layer_not_searchable'));
   }
-    return d.promise();
+  return d.promise();
 };
 
 /**
