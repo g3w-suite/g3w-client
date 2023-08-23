@@ -950,11 +950,19 @@ class QueryResultsService extends G3WObject {
    * @param featuresForLayer.rawdata  rawdata response
    * @param featuresForLayer.error
    *
+   * return layerObj or undefined in case of no features
+   *
    * @since 3.9.0
    */
   _responseToLayer({ layer, features, rawdata, error }) {
 
-    const has_features = features && features.length > 0;
+    const has_features = Array.isArray(features) ? features.length > 0 : false;
+
+    // in case no features related to layer return undefined
+    // so no layer is returned
+    if (false === has_features){
+      return;
+    }
 
     const is_layer  = layer instanceof Layer;
     const is_vector = layer instanceof ol.layer.Vector;                     // instance of openlayers layer Vector Class
@@ -2427,7 +2435,7 @@ QueryResultsService.prototype.setters = {
         : [featuresForLayer]
       ).forEach(featuresForLayer => {
         const layer = this._responseToLayer(featuresForLayer);
-        if (layer) {
+        if (undefined !== layer) {
           layers.push(layer)
         }
       });
