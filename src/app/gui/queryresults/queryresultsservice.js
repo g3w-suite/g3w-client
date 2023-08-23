@@ -427,16 +427,6 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Called when layer result features is changed
-   *
-   * @param layer
-   */
-  _changeLayerResult(layer) {
-    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
-    this.resetCurrentActionToolsLayer(layer);                                                     // reset layer current actions tools
-  }
-
-  /**
    * Check and do action if layer has no features after delete feature(s)
    *
    * @param layer
@@ -2414,8 +2404,9 @@ QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.prototy
  * 
  * @TODO choose which ones deprecate
  */
-QueryResultsService.prototype.init  = QueryResultsService.prototype.clearState;
-QueryResultsService.prototype.reset = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.init               = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.reset              = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype._changeLayerResult = QueryResultsService.prototype.changeLayerResult
 
 /**
  * Core methods used from other classes to react before or after its call
@@ -2523,12 +2514,13 @@ QueryResultsService.prototype.setters = {
   closeComponent() {},
 
   /**
-   * @FIXME add description
+   * Called when layer result features is changed
    *
    * @param layer
    */
   changeLayerResult(layer) {
-    this._changeLayerResult(layer);
+    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
+    this.resetCurrentActionToolsLayer(layer);                                                     // reset layer current actions tools
   },
 
   /**
