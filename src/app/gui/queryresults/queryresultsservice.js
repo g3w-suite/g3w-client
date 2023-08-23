@@ -597,16 +597,16 @@ class QueryResultsService extends G3WObject {
     index,
     component = null
   } = {}) {
-    const tools   = this.state.currentactiontools[layer.id]; //get current action tools
+    const tools   = this.state.currentactiontools[layer.id];        // get current action tools
     const feats   = this.state.currentactionfeaturelayer[layer.id];
     feats[index]  = component ? action : null;
-    tools[index]  = component; //set component
+    tools[index]  = component;                                      // set component
 
-    //need to check if pass component and
+    // need to check if pass component and
     if (
-      tools[index] &&  // if component is set
+      tools[index] &&                   // if component is set
       action.id !== feats[index].id &&  // same action
-      feats[index].toggleable // check if toggleable
+      feats[index].toggleable           // check if toggleable
     ) {
       feats[index].state.toggled[index] = false;
     }
@@ -983,7 +983,7 @@ class QueryResultsService extends G3WObject {
    *
    * @param featuresForLayer.layer
    * @param featuresForLayer.features
-   * @param featuresForLayer.rawdata
+   * @param featuresForLayer.rawdata  rawdata response
    * @param featuresForLayer.error
    *
    * @since 3.9.0
@@ -994,7 +994,7 @@ class QueryResultsService extends G3WObject {
     const has_features = featuresForLayer.features && featuresForLayer.features.length > 0;
 
     const is_layer  = layer instanceof Layer;
-    const is_vector = layer instanceof ol.layer.Vector; //instance of openlayers layer Vector Class
+    const is_vector = layer instanceof ol.layer.Vector;                     // instance of openlayers layer Vector Class
     const is_string = 'string' === typeof layer || layer instanceof String; // can be created by string
 
     let sourceType;
@@ -1022,10 +1022,11 @@ class QueryResultsService extends G3WObject {
       (is_vector ? layer.get('id') : undefined) ||
       (is_string ? layer : undefined);
 
+
     const layerObj = {
       id:                     layerId,
-      features:               [],
-      hasgeometry:            false,
+      features:               has_features ? this._parseLayerObjFeatures(featuresForLayer.features, featuresForLayer.rawdata) : [],
+      hasgeometry:            has_features ? this._hasLayerObjGeometry(featuresForLayer.features, featuresForLayer.rawdata)   : false,
       hasImageField:          false,
       loading:                false,
       show:                   true,
@@ -1036,8 +1037,8 @@ class QueryResultsService extends G3WObject {
       editable:               is_layer   ? layer.isEditable()                       : false,
       inediting:              is_layer   ? layer.isInEditing()                      : false,
       source:                 is_layer   ? layer.getSource()                        : undefined,
-      infoformats:            is_layer   ? layer.getInfoFormats()                   : [],
       infoformat:             is_layer   ? layer.getInfoFormat()                    : undefined,
+      infoformats:            is_layer   ? layer.getInfoFormats()                   : [],
       downloads:              is_layer   ? layer.getDownloadableFormats()           : [],
       formStructure:          is_layer   ? this._parseLayerObjFormStructure(layer)  : undefined,
       relationsattributes:    (is_layer || is_vector || is_string) ? []             : undefined,
@@ -1045,12 +1046,12 @@ class QueryResultsService extends G3WObject {
       selection:              (is_layer && not_wms_wcs_wmst ? layer.state.selection : undefined) ||
                               (is_vector ? layer.selection : undefined) ||
                               {},
-      title:                  (is_layer ? layer.getTitle() : undefined)          ||
+      title:                  (is_layer ? layer.getTitle() : undefined) ||
                               (is_vector ? layer.get('name') : undefined) ||
                               (is_string && name ? (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer) : undefined),
       attributes:             has_features ? this._parseLayerObjAttributes(layer, featuresForLayer.features, sourceType) : [],
       atlas:                  this.getAtlasByLayerId(layerId),
-      rawdata:                featuresForLayer.rawdata ? featuresForLayer.rawdata : null, // rawdata response
+      rawdata:                featuresForLayer.rawdata ? featuresForLayer.rawdata : null,
       error:                  featuresForLayer.error   ? featuresForLayer.error   : '',
     };
 
@@ -1069,25 +1070,43 @@ class QueryResultsService extends G3WObject {
             layerObj.hasImageField = true;
           }
         });
-      featuresForLayer.features
-        .forEach(feature => {
-          const props = this.getFeaturePropertiesAndGeometry(feature);
-          if (props.geometry) {
-            layerObj.hasgeometry = true;
-          }
-          layerObj.features
-            .push({
-              id: layerObj.external ? feature.getId() : props.id,
-              attributes: props.properties,
-              geometry: props.geometry,
-              selection: props.selection,
-              show: true
-            });
-        });
     }
 
     return layerObj;
 
+  }
+
+  /**
+   * @since 3.9.0
+   */
+  _parseLayerObjFeatures(features, rawdata) {
+    const features = [];
+    if (!rawdata) {
+      features.forEach(f => {
+        const props = this.getFeaturePropertiesAndGeometry(f);
+        features
+          .push({
+            id:         layerObj.external ? f.getId() : props.id,
+            attributes: props.properties,
+            geometry:   props.geometry,
+            selection:  props.selection,
+            show:       true,
+          });
+      });
+    }
+    return features;
+  }
+
+  /**
+   * @since 3.9.0
+   */
+  _hasLayerObjGeometry(features, rawdata) {
+    return !rawdata && features.some(f => {
+      const props = this.getFeaturePropertiesAndGeometry(feature);
+      if (props.geometry) {
+        return true;
+      }
+    });
   }
 
   /**
@@ -1425,7 +1444,7 @@ class QueryResultsService extends G3WObject {
         download: true
       })
       .then(({url}) => {
-        GUI.downloadApplicationWrapper(
+        GUI.downloadWrapper(
           downloadFile,
           { url, filename: template, mime_type: 'application/pdf' }
         )
@@ -1567,7 +1586,7 @@ class QueryResultsService extends G3WObject {
         this.setLayerActionTool({ layer });
       }
 
-      await GUI.downloadApplicationWrapper(
+      await GUI.downloadWrapper(
         ({layer, type, data}= {}) => {
           return CatalogLayersStoresRegistry
             .getLayerById(layer.id)
@@ -2405,6 +2424,11 @@ class QueryResultsService extends G3WObject {
  * @deprecated since 3.8.0 Will be deleted in 4.x. Use QueryResultsService::updateLayerResultFeatures(layer) instead
  */
 QueryResultsService.prototype.addRemoveFeaturesToLayerResult = deprecate(QueryResultsService.prototype.updateLayerResultFeatures, '[G3W-CLIENT] QueryResultsService::addRemoveFeaturesToLayerResult(layer) is deprecated');
+
+/**
+ * @deprecated since 3.9.0 Will be deleted in 4.x. Use GUI::downloadWrapper(downloadFnc, options) instead
+ */
+QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.prototype.downloadWrapper, '[G3W-CLIENT] QueryResultsService::downloadApplicationWrapper(layer) is deprecated');
 
 /**
  * Alias functions
