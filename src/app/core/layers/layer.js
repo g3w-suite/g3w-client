@@ -799,7 +799,7 @@ proto.getLayerEditingFormStructure = function(fields) {
 };
 
 /**
- * Duplicated beacuase we had to check if it
+ * Duplicated because we had to check if it
  * is used by some plugins to avoid to break
  * backward compatibility
  */
