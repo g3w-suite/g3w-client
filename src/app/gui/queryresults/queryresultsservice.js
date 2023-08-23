@@ -700,15 +700,6 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Sort Response layer as Catalog layer project order.
-   * 
-   * @param layers Array of layers
-   */
-  _orderResponseByProjectLayers(layers=[]) {
-    layers.sort((a, b) => (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
-  }
-
-  /**
    * @param bool whether to zoom to results
    */
   setZoomToResults(bool = true) {
@@ -2476,7 +2467,8 @@ QueryResultsService.prototype.setters = {
     if (false === options.add) {
       // set the right order of result layers based on TOC
       this._currentLayerIds = layers.map(layer => layer.id);
-      this._orderResponseByProjectLayers(layers);
+      // sort layers as Catalog project layers.
+      layers.sort((a, b) => (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
     }
     // get features from add pick layer in case of a new request query
     layers.forEach(layer => { options.add ? this.updateLayerResultFeatures(layer) : this.state.layers.push(layer); });
