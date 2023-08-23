@@ -2351,7 +2351,7 @@ QueryResultsService.prototype.addRemoveFeaturesToLayerResult = deprecate(QueryRe
 /**
  * @deprecated since 3.9.0 Will be deleted in 4.x. Use GUI::downloadWrapper(downloadFnc, options) instead
  */
-QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.downloadWrapper, '[G3W-CLIENT] QueryResultsService::downloadApplicationWrapper(layer) is deprecated');
+QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.downloadWrapper, '[G3W-CLIENT] QueryResultsService::downloadApplicationWrapper(downloadFnc, options) is deprecated');
 
 /**
  * Alias functions
