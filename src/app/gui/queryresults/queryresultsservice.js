@@ -1025,7 +1025,7 @@ class QueryResultsService extends G3WObject {
    */
   _hasLayerObjGeometry(features, rawdata) {
     return Array.isArray(features) && !rawdata && features.some(f => {
-      const props = this.getFeaturePropertiesAndGeometry(feature);
+      const props = this.getFeaturePropertiesAndGeometry(f);
       if (props.geometry) {
         return true;
       }
