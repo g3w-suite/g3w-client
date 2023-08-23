@@ -126,8 +126,7 @@ const Providers = {
       if (opts.data) {
         d.resolve(parser.readFeatures(opts.data, params))
       } else {
-        $
-          .get({ url: opts.url || this.getLayer().get('source').url })
+        $.get({ url: opts.url || this.getLayer().get('source').url })
           .then((response) => { d.resolve(parser.readFeatures(response.results, params)) })
           .fail((err)      => { d.reject(err) });
       }
@@ -136,8 +135,7 @@ const Providers = {
 
     getDataTable({ page } = {}) {
       const d = $.Deferred();
-      this
-        .getFeatures()
+      this.getFeatures()
         .then(() => { d.resolve(this._features) })
         .fail((err) => { d.reject(err) });
       return d.promise();
@@ -212,7 +210,7 @@ const Providers = {
 
         // vector layer
         if ('table' !== this._layer.getType()) {
-          this.setProjections()
+          this.setProjections();
         }
 
         if (raw)                       return response;
@@ -266,25 +264,24 @@ const Providers = {
 
         filter = filter.map(filter => filter.get()).filter(value => value);
 
-        XHR
-          .get({
-            url: opts.queryUrl || this._queryUrl,
-            params: {
-              SERVICE:       'WMS',
-              VERSION:       '1.3.0',
-              REQUEST:       'GetFeatureInfo',
-              filtertoken:   ApplicationState.tokens.filtertoken,
-              LAYERS:        layers,
-              QUERY_LAYERS:  layers,
-              INFO_FORMAT:   this._infoFormat,
-              FEATURE_COUNT: opts.feature_count || 10,
-              CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
-              I:             opts.I,
-              J:             opts.J,
-              FILTER:        filter.length ? filter.join(';') : undefined,
-              WITH_GEOMETRY: !is_table,
-            },
-          })
+        XHR.get({
+          url: opts.queryUrl || this._queryUrl,
+          params: {
+            SERVICE:       'WMS',
+            VERSION:       '1.3.0',
+            REQUEST:       'GetFeatureInfo',
+            filtertoken:   ApplicationState.tokens.filtertoken,
+            LAYERS:        layers,
+            QUERY_LAYERS:  layers,
+            INFO_FORMAT:   this._infoFormat,
+            FEATURE_COUNT: opts.feature_count || 10,
+            CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
+            I:             opts.I,
+            J:             opts.J,
+            FILTER:        filter.length ? filter.join(';') : undefined,
+            WITH_GEOMETRY: !is_table,
+          },
+        })
           .then(response => {
             if (opts.raw) {
               d.resolve(response);  
@@ -504,7 +501,7 @@ const Providers = {
             if (LEGEND_ON)  LEGEND_PARAMS.LEGEND_ON.push(LEGEND_ON);
             if (LEGEND_OFF) LEGEND_PARAMS.LEGEND_OFF.push(LEGEND_OFF);
           }
-        });
+      });
 
       return {
         SERVICE:              'WMS',
