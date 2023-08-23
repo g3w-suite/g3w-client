@@ -1,4 +1,5 @@
-import RouterService from 'services/router';
+import ApplicationService from 'services/application';
+import RouterService      from 'services/router';
 import ComponentsRegistry from 'store/components';
 
 const { base, inherit, noop } = require('core/utils/utils');
@@ -90,5 +91,25 @@ function GUI() {
 }
 
 inherit(GUI, G3WObject);
+
+/**
+ * Wrapper for download
+ * 
+ * @param { Function } downloadFnc function to call
+ * @param { Object }   options     Object parameters
+ * 
+ * @since 3.9.0
+ */
+GUI.prototype.downloadWrapper = async function(downloadFnc, options = {}) {
+  const download_caller_id = ApplicationService.setDownload(true);
+  GUI.setLoadingContent(true);
+  try {
+    await downloadFnc(options);
+  } catch(err) {
+    GUI.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
+  }
+  ApplicationService.setDownload(false, download_caller_id);
+  GUI.setLoadingContent(false);
+};
 
 export default new GUI();
