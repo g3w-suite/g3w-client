@@ -988,10 +988,9 @@ class QueryResultsService extends G3WObject {
    *
    * @since 3.9.0
    */
-  _handleFeatureForLayer(featuresForLayer) {
+  _handleFeatureForLayer({ layer, features, rawdata, error }) {
 
-    const layer        = featuresForLayer.layer;
-    const has_features = featuresForLayer.features && featuresForLayer.features.length > 0;
+    const has_features = features && features.length > 0;
 
     const is_layer  = layer instanceof Layer;
     const is_vector = layer instanceof ol.layer.Vector;                     // instance of openlayers layer Vector Class
@@ -1025,8 +1024,9 @@ class QueryResultsService extends G3WObject {
 
     const layerObj = {
       id:                     layerId,
-      features:               has_features ? this._parseLayerObjFeatures(featuresForLayer.features, featuresForLayer.rawdata) : [],
-      hasgeometry:            has_features ? this._hasLayerObjGeometry(featuresForLayer.features, featuresForLayer.rawdata)   : false,
+      attributes:             has_features ? this._parseLayerObjAttributes(layer, features, sourceType) : [],
+      features:               has_features ? this._parseLayerObjFeatures(features, rawdata)             : [],
+      hasgeometry:            has_features ? this._hasLayerObjGeometry(features, rawdata)               : false,
       hasImageField:          false,
       loading:                false,
       show:                   true,
@@ -1049,14 +1049,13 @@ class QueryResultsService extends G3WObject {
       title:                  (is_layer ? layer.getTitle() : undefined) ||
                               (is_vector ? layer.get('name') : undefined) ||
                               (is_string && name ? (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer) : undefined),
-      attributes:             has_features ? this._parseLayerObjAttributes(layer, featuresForLayer.features, sourceType) : [],
       atlas:                  this.getAtlasByLayerId(layerId),
-      rawdata:                featuresForLayer.rawdata ? featuresForLayer.rawdata : null,
-      error:                  featuresForLayer.error   ? featuresForLayer.error   : '',
+      rawdata:                rawdata ? rawdata : null,
+      error:                  error   ? error   : '',
     };
 
     /** @FIXME add description */
-    if (has_features && !featuresForLayer.rawdata) {
+    if (has_features && !rawdata) {
       layerObj.attributes
         .forEach(attribute => {
           if (
