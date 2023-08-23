@@ -794,7 +794,10 @@ class QueryResultsService extends G3WObject {
 
       const external_layer = this._getExternalLayer(layer.id);
 
-      interaction.mapcontrol  = interaction.mapcontrol || this.mapService.getCurrentToggledMapControl();
+      interaction.mapcontrol  =
+        interaction.mapcontrol ||
+        this.mapService.getCurrentToggledMapControl() ||
+        null; //need to be set null when this.mapService.getCurrentToggledMapControl() is undefined
       interaction.interaction = new PickCoordinatesInteraction();
 
       this.mapService.addInteraction(interaction.interaction, { close: false });
