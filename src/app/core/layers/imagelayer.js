@@ -121,33 +121,49 @@ proto.isArcgisMapserver = function() {
 };
 
 proto._getBaseLayerName = function() {
-  return this.isWmsUseLayerIds() ? this.getId() : this.getName();
+  return this.isWmsUseLayerIds()
+    ? this.getId()
+    : this.getName();
+};
+
+/**
+ * @since 3.9.0
+ */
+proto._hasExternalWMSOrLegend = function(type = 'map') {
+  const { source } = this.config;
+
+  return (
+      source && (
+      ('map' !== type || (this.isExternalWMS() && this.isLayerProjectionASMapProjection())) &&
+      ('legend' === type || source.external)
+    )
+  );
 };
 
 proto.getWMSLayerName = function({ type = 'map' } = {}) {
-  return (
-    ('map' === type ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true) &&
-    this.config.source &&
-    ('legend' === type || this.config.source.external) &&
-    (this.config.source.layers || this.config.source.layer)
-  )
-    ? this.config.source.layers || this.config.source.layer
-    : this._getBaseLayerName();
+  const { source }   = this.config || ({ source: {} });
+  const source_layer = source.layers || source.layer;
+
+  /** @FIXME add description */
+  if (source_layer && this._hasExternalWMSOrLegend(type)) {
+    return source_layer;
+  }
+
+  return this._getBaseLayerName();
 };
 
 /**
  * @param { 'map' | 'legend' } opts.type 
  */
 proto.getWmsUrl = function({ type = 'map' } = {}) {
-  return (
-    type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true &&
-    this.config.source &&
-    (type === 'legend' || this.config.source.external) &&
-    (this.config.source.type === 'wms' || this.config.source.type === 'wmst') &&
-    this.config.source.url
-  )
-    ? this.config.source.url
-    : this.config.wmsUrl;
+  const { source } = this.config || ({ source: {} });
+
+  /** @FIXME add description */
+  if (source.url && this._hasExternalWMSOrLegend(type) && ['wms', 'wmst'].includes(source.type)) {
+    return source.url;
+  }
+
+  return this.config.wmsUrl;
 };
 
 proto.getWFSLayerName = function(){
@@ -159,11 +175,15 @@ proto.useProxy = function(){
 };
 
 proto.getWMSInfoLayerName = function() {
-  return this.useProxy() ? this.getSource().layers : this._getBaseLayerName();
+  return this.useProxy()
+    ? this.getSource().layers
+    : this._getBaseLayerName();
 };
 
 proto.getPrintLayerName = function() {
-  return this.isWmsUseLayerIds() ? this.getId() : this.getName();
+  return this.isWmsUseLayerIds()
+    ? this.getId()
+    : this.getName();
 };
 
 proto.getStringBBox = function() {
@@ -172,24 +192,35 @@ proto.getStringBBox = function() {
 };
 
 proto.isWfsActive = function() {
-  return Array.isArray(this.config.ows) && this.config.ows.find(type => 'WFS' === type) !== undefined;
+  return Array.isArray(this.config.ows) && this.config.ows.some(type => 'WFS' === type);
 };
 
 /**
  * Get wms url of the layer
  */
 proto.getFullWmsUrl = function() {
-  const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
-  return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url ;
+  const { wms_url } = ProjectsRegistry.getCurrentProject().getState().metadata;
+
+  /** @FIXME add description */
+  if (wms_url) {
+    return wms_url;
+  }
+
+  return this.getWmsUrl();
 };
 
 /**
  * Get WMS url (used by Catalog Layer Menu) 
  */
-proto.getCatalogWmsUrl = function(){
-  const metadata_wms_url = ProjectsRegistry.getCurrentProject().getMetadata().wms_url;
-  const catalogWmsUrl = this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url;
-  return catalogWmsUrl;
+proto.getCatalogWmsUrl = function() {
+  const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata().wms_url;
+
+  /** @FIXME add description */
+  if (wms_url && !this.isExternalWMS()) {
+    return wms_url;
+  }
+
+  return `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities`;
 };
 
 /**
@@ -201,7 +232,14 @@ proto.getCatalogWfsUrl = function(){
 
 
 proto.getWfsUrl = function() {
-  return ProjectsRegistry.getCurrentProject().getMetadata().wms_url || this.config.wmsUrl;
+  const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata();
+
+  /** @FIXME add description */
+  if (wms_url) {
+    return wms_url;
+  }
+
+  return this.config.wmsUrl;
 };
 
 
@@ -211,10 +249,23 @@ proto.getWfsUrl = function() {
  * @returns {string}
  */
 proto.getQueryUrl = function() {
-  let url = base(this, 'getQueryUrl');
-  if (Layer.ServerTypes.QGIS === this.getServerType() && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
-    return this.getInfoFormats() ? this.getSource().url : `${url}SOURCE=${this.config.source.type}`;
+  const url       = base(this, 'getQueryUrl');
+  const is_qgis = (
+    Layer.ServerTypes.QGIS === this.getServerType() &&
+    this.isExternalWMS() &&
+    this.isLayerProjectionASMapProjection()
+  );
+
+  /** @FIXME add description */
+  if (is_qgis && this.getInfoFormats()) {
+    return this.getSource().url;
   }
+
+  /** @FIXME add description */
+  if (is_qgis) {
+    return `${url}SOURCE=${this.config.source.type}`;
+  }
+
   return url;
 };
 
