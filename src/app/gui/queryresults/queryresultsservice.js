@@ -1561,7 +1561,7 @@ class QueryResultsService extends G3WObject {
 
     /** @FIXME add description */
     if ('polygon' !== query.type) {
-      runDownload();
+      await runDownload();
       return;
     }
 
@@ -1581,10 +1581,10 @@ class QueryResultsService extends G3WObject {
           label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
         },
       ],
-      // choose between only feature attribute or also polygon attibute
+      // choose between only feature attribute or also polygon attribute
       download: (type) => {
-        if ('polygon' === type) { // id type polygon add paramateres to api download
-          data.sbp_qgs_layer_id = query.layer.getId();
+        if ('polygon' === type) { // id type polygon add parameters to api download
+          data.sbp_qgs_layer_id = layer.id;
           data.sbp_fid          = query.fid;
         } else {                  // force to remove
           delete data.sbp_fid;
@@ -1609,19 +1609,21 @@ class QueryResultsService extends G3WObject {
         action,
         component: QueryPolygonCsvAttributesComponent,
       });
-    } 
-
-    /** @FIXME add description */
-    if (1 !== features.length && undefined === downloadsactions) {
-      layer[type].active = !layer[type].active;
     }
 
     /** @FIXME add description */
     if (1 !== features.length) {
+      if (undefined === downloadsactions) {
+        layer[type].active = !layer[type].active;
+      }
+      const has_component_and_config = (
+        (undefined === downloadsactions && layer[type].active) ||
+        (undefined !== downloadsactions)
+      )
       this.setLayerActionTool({
         layer,
-        component: (layer[type].active || undefined !== downloadsactions) ? QueryPolygonCsvAttributesComponent : null,
-        config:    (layer[type].active || undefined !== downloadsactions) ? config : null,
+        component: has_component_and_config  ? QueryPolygonCsvAttributesComponent : null,
+        config: has_component_and_config ? config : null,
       });
     }
 
