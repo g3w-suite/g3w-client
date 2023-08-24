@@ -191,7 +191,7 @@
 
 <script>
 import LayerLegend from 'components/CatalogLayerLegend.vue';
-import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+import { CatalogEventBus as VM } from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ClickMixin from 'mixins/click';
 import GUI from 'services/gui';
@@ -437,7 +437,7 @@ export default {
            * @TODO is it necessary to emit the `layer-change-style` event here?
            */
           // if (visible && 'toc' === this.legendplace) {
-          //  setTimeout(() => CatalogEventHub.$emit('layer-change-style', { layerId: id }));
+          //  setTimeout(() => VM.$emit('layer-change-style', { layerId: id }));
           // }
           if (parentGroup.mutually_exclusive) {
             parentGroup.nodes.forEach(node => node.checked = node.id === id);
@@ -449,17 +449,17 @@ export default {
         } else {
           layer.setVisible(false);
         }
-        CatalogEventHub.$emit('treenodevisible', layer);
+        VM.$emit('treenodevisible', layer);
       }
 
     },
 
     toggleFilterLayer() {
-      CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
+      VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
     clearSelection() {
-      CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
+      VM.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
 
     toggle() {
@@ -473,8 +473,8 @@ export default {
     /**
      * Select legend item
      *
-     * @fires CatalogEventHub~treenodeexternalselected
-     * @fires CatalogEventHub~treenodeselected
+     * @fires CatalogEventBus~treenodeexternalselected
+     * @fires CatalogEventBus~treenodeselected
      */
     select() {
       // skip when `selected === undefined` (unselectable layer, eg. an external WMS layer) 
@@ -482,9 +482,9 @@ export default {
         return;
       }
       if (this.layerstree.external) {
-        CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
+        VM.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
-        CatalogEventHub.$emit('treenodeselected', this.storeid, this.layerstree);
+        VM.$emit('treenodeselected', this.storeid, this.layerstree);
       }
     },
 
@@ -547,7 +547,7 @@ export default {
         !this.isGroup &&
         (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
       ) {
-        CatalogEventHub.$emit('showmenulayer', layerstree, evt);
+        VM.$emit('showmenulayer', layerstree, evt);
       }
     }
 
