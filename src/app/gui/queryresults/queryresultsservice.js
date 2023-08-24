@@ -1612,18 +1612,17 @@ class QueryResultsService extends G3WObject {
     }
 
     /** @FIXME add description */
+    if (undefined === downloadsactions && 1 !== features.length) {
+      layer[type].active = !layer[type].active;
+    }
+
+    /** @FIXME add description */
     if (1 !== features.length) {
-      if (undefined === downloadsactions) {
-        layer[type].active = !layer[type].active;
-      }
-      const has_component_and_config = (
-        (undefined === downloadsactions && layer[type].active) ||
-        (undefined !== downloadsactions)
-      )
+      const has_config = (downloadsactions || (layer[type].active && undefined === downloadsactions));
       this.setLayerActionTool({
         layer,
-        component: has_component_and_config  ? QueryPolygonCsvAttributesComponent : null,
-        config: has_component_and_config ? config : null,
+        component: has_config ? QueryPolygonCsvAttributesComponent : null,
+        config:    has_config ? config : null,
       });
     }
 
