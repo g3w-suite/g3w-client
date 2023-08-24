@@ -202,7 +202,7 @@ proto.getFullWmsUrl = function() {
   const { wms_url } = ProjectsRegistry.getCurrentProject().getState().metadata;
 
   /** @FIXME add description */
-  if (wms_url) {
+  if (wms_url && !this.isExternalWMS()) {
     return wms_url;
   }
 
