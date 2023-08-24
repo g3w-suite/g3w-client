@@ -77,7 +77,7 @@ proto.getLayerForEditing = async function({
   project
 } = {}) {
 
-  if (!this.isEditable() && !force) {
+  if (!force && !this.isEditable()) {
     return null;
   }
 
