@@ -35,9 +35,12 @@ function ScreenshotControl(options = {}) {
   //set visibility based on layers
   this.setVisible(this.checkVisible(this.layers));
 
-  //listen add/remove External Layer event to check visibility of the control
-  GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
-  GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+  //only if is visible (no CORS issue) need to listen add/remove layer
+  if (this.isVisible()) {
+    //listen add/remove External Layer event to check visibility of the control
+    GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+    GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+  }
 }
 
 ol.inherits(ScreenshotControl, OnClickControl);
@@ -46,6 +49,7 @@ const proto = ScreenshotControl.prototype;
 
 /**
  * Method call when new layer is add to Project
+ * Example wms or vector layer
  * @since 3.8.3
  *
  */
@@ -100,6 +104,8 @@ function isCrossOrigin(layer) {
   let source_url;                                                             // store eventually layer url
   let is_coors = false;
   if (isVectorLayer(layer)) {                                                 // skip vector layers
+    is_coors = false;
+  } else if (layer.getVisible && !layer.getVisible()) {                       // skip hidden layers
     is_coors = false;
   } else if (isImageLayer(layer)) {                                           // check raster layers
     source_url = layer.getSource().getUrl();
