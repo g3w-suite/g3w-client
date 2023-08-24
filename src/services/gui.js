@@ -102,14 +102,14 @@ inherit(GUI, G3WObject);
  */
 GUI.prototype.downloadWrapper = async function(downloadFnc, options = {}) {
   const download_caller_id = ApplicationService.setDownload(true);
-  GUI.setLoadingContent(true);
+  this.setLoadingContent(true);
   try {
     await downloadFnc(options);
   } catch(err) {
-    GUI.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
+    this.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
   }
   ApplicationService.setDownload(false, download_caller_id);
-  GUI.setLoadingContent(false);
+  this.setLoadingContent(false);
 };
 
 export default new GUI();
