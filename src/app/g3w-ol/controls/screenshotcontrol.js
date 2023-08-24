@@ -23,16 +23,19 @@ function ScreenshotControl(options = {}) {
     tipLabel: "Screenshot",
     label: "\ue90f",
     toggled: false,
-    visible: false,
+    visible: true, // set initial to true
     layers: [],
     ...options
   };
 
   this.layers     = options.layers;
-  options.visible = this.checkVisible(this.layers);
 
   OnClickControl.call(this, options);
 
+  //set visibility based on layers
+  this.setVisible(this.checkVisible(this.layers));
+
+  //listen add/remove External Layer event to check visibility of the control
   GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
   GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
 }
@@ -42,7 +45,9 @@ ol.inherits(ScreenshotControl, OnClickControl);
 const proto = ScreenshotControl.prototype;
 
 /**
- * @since 3.8.3 
+ * Method call when new layer is add to Project
+ * @since 3.8.3
+ *
  */
 proto._addLayer = function(layer) {
   this.layers.push(layer);
@@ -51,6 +56,7 @@ proto._addLayer = function(layer) {
 };
 
 /**
+ * Method call when a layer is removed from Project
  * @since 3.8.3 
  */
 proto._removeLayer = function(layer) {
@@ -58,6 +64,10 @@ proto._removeLayer = function(layer) {
   this.change(this.layers);
 };
 
+/**
+ * Method call when layer is add/removed to/from project
+ * @param layers
+ */
 proto.change = function(layers = []) {
   this.setVisible(this.checkVisible(layers));
 };
@@ -76,21 +86,25 @@ proto.change = function(layers = []) {
  * @returns {boolean}
  */
 proto.checkVisible = function(layers = []) {
-  return !layers.some(isCrossOrigin);
+  //need to be visible. If it was not visible an CORS issue was raise.
+  // Need to reload and remove layer
+  return this.isVisible() && !layers.some(isCrossOrigin);
 };
 
+/**
+ * Check if layer has CORS issue
+ * @param layer
+ * @returns {boolean}
+ */
 function isCrossOrigin(layer) {
-  let source_url;
+  let source_url;                                                             // store eventually layer url
   let is_coors = false;
-
   if (isVectorLayer(layer)) {                                                 // skip vector layers
-    is_coors = false;
-  } else if (layer.getVisible && !layer.getVisible()) {                       // skip hidden layers
     is_coors = false;
   } else if (isImageLayer(layer)) {                                           // check raster layers
     source_url = layer.getSource().getUrl();
-    is_coors   = source_url && !sameOrigin(source_url, location);
-  } else if (layer.getConfig().source && layer.getConfig().source.external) { // check external layers (raster)
+    is_coors   = source_url && !sameOrigin(source_url, location);             //case OL raster layer
+  } else if (layer.getConfig().source && layer.getConfig().source.external) { // check external (project/wms) layers (raster)
     source_url = layer.getConfig().source.url;
     is_coors   = source_url && !sameOrigin(source_url, location);
   }
