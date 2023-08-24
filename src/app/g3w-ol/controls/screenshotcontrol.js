@@ -80,19 +80,22 @@ proto.checkVisible = function(layers = []) {
 };
 
 function isCrossOrigin(layer) {
-  if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) {   // skip vector or hidden layers
-    return;
-  }
-
   let source_url;
+  let is_coors = false;
 
-  if (isImageLayer(layer)) {                                                 // raster layers
-    source_url = layer.getSource().getUrl()
-  } else if(layer.getConfig().source && layer.getConfig().source.external) { // external layers (raster)
-    source_url = layer.getConfig().source.url
+  if (isVectorLayer(layer)) {                                                 // skip vector layers
+    is_coors = false;
+  } else if (layer.getVisible && !layer.getVisible()) {                       // skip hidden layers
+    is_coors = false;
+  } else if (isImageLayer(layer)) {                                           // check raster layers
+    source_url = layer.getSource().getUrl();
+    is_coors   = source_url && !sameOrigin(source_url, location);
+  } else if (layer.getConfig().source && layer.getConfig().source.external) { // check external layers (raster)
+    source_url = layer.getConfig().source.url;
+    is_coors   = source_url && !sameOrigin(source_url, location);
   }
 
-  return source_url && !sameOrigin(source_url, location);
+  return is_coors;
 }
 
 function isVectorLayer(layer) {
