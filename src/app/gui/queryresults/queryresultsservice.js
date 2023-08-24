@@ -484,7 +484,7 @@ class QueryResultsService extends G3WObject {
       const action_tools = {};
       const action_layer = {};
 
-      layer.features.forEach((_, idx) => {
+      this._getLayerFeatures(layer).forEach((_, idx) => {
         action_tools[idx] = null;
         action_layer[idx] = null;
       });
@@ -2309,6 +2309,20 @@ class QueryResultsService extends G3WObject {
           if("undefined" !== typeof layer.selection.active) {
             this.checkFeatureSelection({ layer, index, feature, action })
           }
+        },
+        /**@since 3.9.0**/
+        //when add new feature need to create reactive toggled
+        // it is call on query result context so this is referred to service
+        // and not action
+        change({features}){
+          features
+            .forEach((feature, index) => {
+              //exclude existing feature
+              if (undefined === this.state.toggled[index]) {
+                //add reactive property of array
+                VM.$set(this.state.toggled, index, false);
+              }
+          });
         },
         cbk: throttle(this.addToSelection.bind(this))
       });
