@@ -950,17 +950,16 @@ class QueryResultsService extends G3WObject {
    * @param featuresForLayer.rawdata  rawdata response
    * @param featuresForLayer.error
    *
-   * return layerObj or undefined in case of no features
+   * @returns { layerObj | undefined }
    *
    * @since 3.9.0
    */
   _responseToLayer({ layer, features, rawdata, error }) {
 
-    const has_features = Array.isArray(features) ? features.length > 0 : false;
+    const has_features = Array.isArray(features) && features.length > 0;
 
-    // in case no features related to layer return undefined
-    // so no layer is returned
-    if (false === has_features){
+    // Skip when layer has no features
+    if (false === has_features) {
       return;
     }
 
@@ -993,14 +992,14 @@ class QueryResultsService extends G3WObject {
       (is_vector ? layer.get('id') : undefined) ||
       (is_string ? layer : undefined);
 
-    const attributes = has_features ? this._parseLayerObjAttributes(layer, features, sourceType) : [];
+    const attributes = this._parseLayerObjAttributes(layer, features, sourceType);
     const external   = (is_vector || is_string);
 
     const layerObj = {
       id,
       attributes,
       external,
-      features:               has_features ? this._parseLayerObjFeatures(features, rawdata, external)             : [],
+      features:               this._parseLayerObjFeatures(features, rawdata, external),
       hasgeometry:            this._hasLayerObjGeometry(features, rawdata),
       hasImageField:          this._hasLayerObjImageField(features, rawdata, attributes),
       loading:                false,
@@ -2435,7 +2434,7 @@ QueryResultsService.prototype.setters = {
         : [featuresForLayer]
       ).forEach(featuresForLayer => {
         const layer = this._responseToLayer(featuresForLayer);
-        if (undefined !== layer) {
+        if (layer) {
           layers.push(layer)
         }
       });
