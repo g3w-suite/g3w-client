@@ -83,7 +83,8 @@ function isCrossOrigin(layer) {
   if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) return;
   const source_url = isImageLayer(layer)
     ? layer.getSource().getUrl()
-    : layer.getConfig().source && layer.getConfig().source.url;
+    //need to be external true otherwise no need to check
+    : layer.getConfig().source && layer.getConfig().source.external && layer.getConfig().source.url;
   return source_url && !sameOrigin(source_url, location);
 }
 
