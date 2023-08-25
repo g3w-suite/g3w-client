@@ -156,7 +156,7 @@ class LayerFactory {
       return;
     }
 
-    //Check ServerTypes
+    // Check Server Type
     const is_qgis    = Layer.ServerTypes.QGIS     === config.servertype;
     const is_ogc     = Layer.ServerTypes.OGC      === config.servertype;
     const is_g3w     = Layer.ServerTypes.G3WSUITE === config.servertype
@@ -166,19 +166,19 @@ class LayerFactory {
     const is_wfs     = is_ogc && config.source && Layer.SourceTypes.WFS === config.source.type ;
     const is_geojson = is_g3w && config.source && Layer.SourceTypes.GEOJSON  === config.source.type ;
 
-    //Check geometrytype
+    // Check Geometry Type
     const is_empty   = config.geometrytype === 'NoGeometry';
     const has_geom   = config.geometrytype && WITH_GEOMETRY.includes(config.source && config.source.type);
     const no_geom    = !config.geometrytype && NO_GEOMETRY.includes(config.source && config.source.type);
 
-    //Check layer type
+    // Check Layer type
     const is_table_layer   = is_qgis && has_geom && is_empty;
     const is_image_layer   = is_wms || no_geom || (is_qgis && has_geom);
     const is_vector_layer  = is_local || is_wfs || (is_g3w && !is_geojson);
     const is_base_layer    = config.servertype in BASE_LAYERS;
     const is_geojson_layer = is_geojson;
 
-    //Return Class
+    // Return Layer Class
     if (is_table_layer)   return TableLayer;
     if (is_image_layer)   return ImageLayer;
     if (is_vector_layer)  return VectorLayer;
