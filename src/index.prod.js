@@ -14,7 +14,6 @@ import ApplicationState from 'store/application-state';
 
 //import services
 import ApplicationService from 'services/application';
-import viewport from "services/viewport";
 import GUI from 'services/gui';
 import FloatbarService from "services/floatbar";
 import NavbarItemsService from 'services/navbaritems';
@@ -30,8 +29,8 @@ import ImageComponent from 'components/GlobalImage.vue';
 import GalleryImagesComponent from 'components/GlobalGallery.vue';
 import GeospatialComponet from 'components/GlobalGeo.vue';
 import Skeleton from 'components/GlobalSkeleton.vue';
-import BarLoader from 'components/GlobalBarLoader';
-import Progressbar from 'components/GlobalProgressBar';
+import BarLoader from 'components/GlobalBarLoader.vue';
+import Progressbar from 'components/GlobalProgressBar.vue';
 import HelpDiv from 'components/GlobalHelpDiv.vue';
 import Resize from 'components/GlobalResize.vue'
 import LayerPositions from 'components/GlobalLayerPositions.vue';
@@ -866,9 +865,9 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     // MODAL
     GUI.setModal = this._showModalOverlay.bind(this);
-    
+
     /**
-     * Toggle set full screen modal 
+     * Toggle set full screen modal
      */
     GUI.showFullModal = function({element = "#full-screen-modal", show = true} = {}) {
       $(element).modal(show ? 'show' : 'hide')

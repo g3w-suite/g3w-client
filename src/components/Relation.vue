@@ -70,9 +70,9 @@ import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI from 'services/gui';
 import { fieldsMixin, resizeMixin } from 'mixins';
+import { RelationEventBus as VM } from 'app/eventbus';
 
 const { throttle } = require('core/utils/utils');
-const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 
 let SIDEBARWIDTH;
 
@@ -146,7 +146,7 @@ export default {
           } : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
         }
       }
-      RelationPageEventBus.$on('reload', () => {
+      VM.$on('reload', () => {
         this.reloadLayout();
       });
       this.showChart = throttle(async ()=> {

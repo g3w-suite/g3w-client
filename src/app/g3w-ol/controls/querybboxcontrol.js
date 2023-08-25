@@ -1,4 +1,4 @@
-import { SPATIALMETHODS } from 'g3w-ol/constants';
+import { SPATIAL_LMETHODS } from 'app/constant';
 import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
@@ -24,7 +24,7 @@ const condition = {
 const QueryBBoxControl = function(options = {}) {
 
   const {
-    spatialMethod = SPATIALMETHODS[0]
+    spatialMethod = SPATIAL_METHODS[0]
   } = options;
 
   /**

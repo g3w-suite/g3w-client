@@ -22,7 +22,7 @@
 </template>
 
 <script>
-  import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
+  import { SidebarEventBus as VM } from 'app/eventbus';
   import SidebarItemAction from 'components/SidebarItemAction.vue';
 
   export default {
@@ -62,7 +62,7 @@
               }
             }
           });
-          !this.component.collapsible && isMobile.any && SIDEBAREVENTBUS.$emit('sidebaritemclick');
+          !this.component.collapsible && isMobile.any && VM.$emit('sidebaritemclick');
         }
         this.component.setOpen(!this.component.state.open);
       }

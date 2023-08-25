@@ -9,7 +9,7 @@ const { inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const { geometryFields, parseAttributes } =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
-const ProviderFactory = require('core/layers/providers/providersfactory');
+const ProviderFactory = require('core/layers/providersfactory');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
@@ -723,7 +723,7 @@ proto.search = function(options={}, params={}) {
   } else {
     d.reject(t('sdk.search.layer_not_searchable'));
   }
-    return d.promise();
+  return d.promise();
 };
 
 /**
@@ -799,7 +799,7 @@ proto.getLayerEditingFormStructure = function(fields) {
 };
 
 /**
- * Duplicated beacuase we had to check if it
+ * Duplicated because we had to check if it
  * is used by some plugins to avoid to break
  * backward compatibility
  */
