@@ -167,15 +167,13 @@ class LayerFactory {
     const is_geojson = is_g3w && config.source && Layer.SourceTypes.GEOJSON  === config.source.type ;
 
     //Check geometrytype
-    const has_geometrytype   = config.geometrytype;
-    const no_geom            = config.geometrytype === 'NoGeometry';
-
-    const is_qgis_with_geometrytype = is_qgis && has_geometrytype && SOURCE_WITH_GEOMETRY_TYPE.includes(config.source.type);
-    const is_qgis_no_geometrytype   = is_qgis && !has_geometrytype && SOURCE_NO_GEOMETRY_TYPE.includes(config.source.type);
+    const has_geom         = config.geometrytype && SOURCE_WITH_GEOMETRY_TYPE.includes(config.source.type);
+    const no_geom          = config.geometrytype === 'NoGeometry';
+    const no_geometrytype  = !config.geometrytype && SOURCE_NO_GEOMETRY_TYPE.includes(config.source.type);
 
     //Check layer type
-    const is_table_layer   = is_qgis_with_geometrytype && no_geom;
-    const is_image_layer   = is_wms || (is_qgis_with_geometrytype && false === no_geom) || is_qgis_no_geometrytype;
+    const is_table_layer   = is_qgis && with_geometrytype && no_geom;
+    const is_image_layer   = is_wms || (is_qgis && has_geom && false === no_geom) || no_geometrytype;
     const is_vector_layer  = is_local || is_wfs || (is_g3w && !is_geojson);
     const is_base_layer    = config.servertype in BASE_LAYERS;
     const is_geojson_layer = is_geojson;
