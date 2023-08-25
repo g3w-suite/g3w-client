@@ -172,7 +172,7 @@ class LayerFactory {
     const no_geometrytype  = !config.geometrytype && SOURCE_NO_GEOMETRY_TYPE.includes(config.source.type);
 
     //Check layer type
-    const is_table_layer   = is_qgis && with_geometrytype && no_geom;
+    const is_table_layer   = is_qgis && has_geom && no_geom;
     const is_image_layer   = is_wms || (is_qgis && has_geom && false === no_geom) || no_geometrytype;
     const is_vector_layer  = is_local || is_wfs || (is_g3w && !is_geojson);
     const is_base_layer    = config.servertype in BASE_LAYERS;
