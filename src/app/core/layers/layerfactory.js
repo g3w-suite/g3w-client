@@ -156,7 +156,7 @@ class LayerFactory {
       return;
     }
 
-    //Check ServerTypes
+    // Check Server Type
     const is_qgis    = Layer.ServerTypes.QGIS     === config.servertype;
     const is_ogc     = Layer.ServerTypes.OGC      === config.servertype;
     const is_g3w     = Layer.ServerTypes.G3WSUITE === config.servertype
@@ -180,7 +180,7 @@ class LayerFactory {
     const is_base_layer    = config.servertype in BASE_LAYERS;
     const is_geojson_layer = is_geojson;
 
-    //Return Class
+    // Return Layer Class
     if (is_table_layer)   return TableLayer;
     if (is_image_layer)   return ImageLayer;
     if (is_vector_layer)  return VectorLayer;
