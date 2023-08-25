@@ -162,18 +162,20 @@ class LayerFactory {
     const is_g3w     = Layer.ServerTypes.G3WSUITE === config.servertype
     const is_local   = Layer.ServerTypes.LOCAL    === config.servertype;
 
-    const is_wms     = is_ogc && config.source && Layer.SourceTypes.WMS === config.source.type;
-    const is_wfs     = is_ogc && config.source && Layer.SourceTypes.WFS === config.source.type ;
-    const is_geojson = is_g3w && config.source && Layer.SourceTypes.GEOJSON  === config.source.type ;
+    //get source
+    const source = config.source || {};
+
+    const is_wms     = is_ogc && Layer.SourceTypes.WMS === source.type;
+    const is_wfs     = is_ogc && Layer.SourceTypes.WFS === source.type ;
+    const is_geojson = is_g3w && Layer.SourceTypes.GEOJSON  === source.type ;
 
     //Check geometrytype
-    const is_empty   = config.geometrytype === 'NoGeometry';
-    const has_geom   = config.geometrytype && SOURCE_WITH_GEOMETRY_TYPE.includes(config.source.type);
-    const no_geom    = !config.geometrytype && SOURCE_NO_GEOMETRY_TYPE.includes(config.source.type);
+    const has_geom   = config.geometrytype && config.geometrytype !== 'NoGeometry' && SOURCE_WITH_GEOMETRY_TYPE.includes(source.type);
+    const no_geom    = !config.geometrytype && SOURCE_NO_GEOMETRY_TYPE.includes(source.type);
 
     //Check layer type
-    const is_table_layer   = is_qgis && has_geom && is_empty;
-    const is_image_layer   = is_wms || no_geom || (is_qgis && has_geom);
+    const is_table_layer   = is_qgis && has_geom && config.geometrytype === 'NoGeometry';
+    const is_image_layer   = is_wms || is_qgis && (no_geom || has_geom);
     const is_vector_layer  = is_local || is_wfs || (is_g3w && !is_geojson);
     const is_base_layer    = config.servertype in BASE_LAYERS;
     const is_geojson_layer = is_geojson;
