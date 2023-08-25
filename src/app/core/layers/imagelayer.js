@@ -14,8 +14,16 @@ const GeoLayerMixin                       = require('core/layers/geolayermixin')
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
  */
+
+/**
+ * Utility function that return a string if value is set or null
+ * @param name
+ * @param value
+ * @returns {string|null}
+ * @private
+ */
 function __(name, value) {
-  return value ? name + value : '';
+  return value ? `${name}${value}` : null;
 }
 
 function ImageLayer(config={}, options={}) {
@@ -319,6 +327,37 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
     ...this.customParams
   };
 
+
+  const {
+
+    /**
+     * If layer has categories or not.
+     *
+     * @type {Boolean}
+     */
+    categories=false,
+
+    /**
+     * All categories. No filter by BBOX of map.
+     *
+     * @type {Boolean}
+     */
+    all=false,
+
+    /**
+     * Mime Type used to set format of legend.
+     *
+     * `application/json` = if request from layers categories (icon and label)
+     * `image/png`        = if request from legend tab
+     *
+     * @type {String}
+     */
+    format='image/png',
+
+  } = opts;
+
+
+
   /**
    * ARCGIS Server
    * 
@@ -341,7 +380,7 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
    */
   else {
     const ctx_legend = (
-      opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
+      categories && (['image/png', undefined].includes(format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
         ? get_LEGEND_ON_LEGEND_OFF_Params(this)
         : undefined // disabled when `FORMAT=application/json` (otherwise it create some strange behaviour on WMS `getMap` when switching between layer styles)   
     );
@@ -353,21 +392,21 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
       `SLD_VERSION=${sld_version}`,
       __('WIDTH=',           width),
       __('HEIGHT=',          height),
-      `FORMAT=${(undefined === opts.format ? 'image/png' : opts.format)}`,
+      `FORMAT=${(undefined === format ? 'image/png' : format)}`,
       `TRANSPARENT=${transparent}`,
       `ITEMFONTCOLOR=${color}`,
       `LAYERFONTCOLOR=${color}`,
       `LAYERTITLE=${layertitle}`,
       `ITEMFONTSIZE=${fontsize}`,
       __('CRS=',             crs),
-      __('BBOX=',            (opts.all && bbox && bbox.join(','))),
+      __('BBOX=',            (false === all && bbox && bbox.join(','))), // all mean no BBOX otherwise need to be filter categories by bbox
       __('BOXSPACE=',        boxspace),
       __('LAYERSPACE=',      layerspace),
       __('LAYERTITLESPACE=', layertitlespace),
       __('SYMBOLSPACE=',     symbolspace),
       __('ICONLABELSPACE=',  iconlabelspace),
-      __('SYMBOLWIDTH=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
-      __('SYMBOLHEIGHT=',    (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
+      __('SYMBOLWIDTH=',     (categories && 'application/json' === format ? 16 : symbolwidth)),
+      __('SYMBOLHEIGHT=',    (categories && 'application/json' === format ? 16 : symbolheight)),
       __('LAYERFONTFAMILY=', layerfontfamily),
       __('ITEMFONTFAMILY=',  itemfontfamily),
       __('LAYERFONTBOLD=',   layerfontbold),
@@ -377,12 +416,12 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
       __('RULELABEL=',       rulelabel),
       __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
       __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
-      __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
+      __('STYLES=',          (categories && 'application/json' === format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
       `LAYER=${this.getWMSLayerName({ type: 'legend' })}`
-    ];
+    ].filter(p => p); // need to filter only with value
   }
 
-  this.legendUrl = base_url + (base_url.indexOf('?') > -1 ? '&' : '?') + url_params.join('&');
+  this.legendUrl = `${base_url}${(base_url.indexOf('?') > -1 ? '&' : '?')}${url_params.join('&')}`;
 
   return this.legendUrl;
 };
