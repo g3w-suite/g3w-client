@@ -1067,7 +1067,8 @@ const ApplicationTemplate = function({ApplicationService}) {
         title: '',
         perc: 100
       });
-    }
+    };
+
   };
 
   base(this);
