@@ -8,7 +8,7 @@ const BaseLayer    = require('core/layers/baselayer');
 const BASE         = require('g3w-ol/layers/bases');
 const GeojsonLayer = require('core/layers/geojson');
 
-const SOURCE_WITH_GEOMETRY_TYPE = [
+const WITH_GEOMETRY = [
   Layer.SourceTypes.VIRTUAL,
   Layer.SourceTypes.POSTGIS,
   Layer.SourceTypes.MSSQL,
@@ -20,7 +20,7 @@ const SOURCE_WITH_GEOMETRY_TYPE = [
   Layer.SourceTypes.MDAL,
 ];
 
-const SOURCE_NO_GEOMETRY_TYPE = [
+const NO_GEOMETRY = [
   Layer.SourceTypes.WMST,
   Layer.SourceTypes.WCS,
   Layer.SourceTypes.WMS,
