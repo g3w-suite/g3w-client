@@ -15,7 +15,7 @@
       <div v-show="panelsinstack" class="g3w-sidebarpanel">
         <div id="g3w-sidebarpanel-header-placeholder" style="overflow: hidden;line-height: 14px; font-size:1.5em">
           <div style="display: flex;" :style="{justifyContent: state.gui.title ? 'space-between' : 'flex-end' }">
-            <h4 v-if="state.gui.title" style="display: inline-block; font-weight: bold" v-t="state.gui.title"></h4>
+            <h4 v-if="title" style="display: inline-block; font-weight: bold" v-t="title"></h4>
             <div>
             <span v-if="panels.length > 1" @click="closePanel" data-placement="left" data-toggle="tooltip" v-t-tooltip.create="'back'" class="skin-tooltip-left g3w-span-button close-pane-button fa-stack">
               <i :class="g3wtemplate.getFontClass('circle')" class="fa-stack-1x panel-button"></i>
@@ -40,7 +40,7 @@
 
 <script>
   import ApplicationState from 'store/application-state';
-  import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
+  import { SidebarEventBus as VM } from 'app/eventbus';
   import sidebarService from 'services/sidebar';
 
   const { t } = require('core/i18n/i18n.service');
@@ -58,6 +58,9 @@
       }
     },
     computed: {
+      title(){
+        return this.state.gui.title;
+      },
       disabled(){
         return ApplicationState.gui.sidebar.disabled;
       },
@@ -88,7 +91,7 @@
     },
     created() {
       this.iframe = ApplicationState.iframe;
-      SIDEBAREVENTBUS.$on('sidebaritemclick', ()=> $('.sidebar-toggle').click())
+      VM.$on('sidebaritemclick', ()=> $('.sidebar-toggle').click())
     }
   }
 </script>
