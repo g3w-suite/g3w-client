@@ -1914,15 +1914,15 @@ const geoutils = {
     let LEGEND_ON, LEGEND_OFF;
     (layer.getCategories() || [])
       .forEach(({
-        newVal,
-        oldVal,
+        checked,
+        _checked,
         ruleKey
       }) => {
-        // skip when there's no difference from original `checked` status (oldVal) and current changed by toc categories (newVal)
-        if (newVal === oldVal) {
+        // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)
+        if (checked === _checked) {
           return;
         }
-        if (newVal) {
+        if (checked) {
           LEGEND_ON  = (undefined === LEGEND_ON ? `${layer.getWMSLayerName()}:` : `${LEGEND_ON},`) + ruleKey;
         } else {
           LEGEND_OFF = (undefined === LEGEND_OFF ? `${layer.getWMSLayerName()}:` : `${LEGEND_OFF},`) + ruleKey;
