@@ -29,20 +29,18 @@ const proto = QueryControl.prototype;
 /**
  * @param {ol.Map} map
  * 
+ * @fires   picked                     fired after map `singleclick` ?
  * @listens InteractionControl~toggled
  */
 proto.setMap = function(map) {
- let eventSingleClickKey = null;
+ let key = null;
 
-  this.on('toggled', ({toggled}) => {
-
+  this.on('toggled', ({ toggled }) => {
     if (true !== toggled) {
-      ol.Observable.unByKey(eventSingleClickKey);
-      eventSingleClickKey = null;
-    } else if (null === eventSingleClickKey && map) {
-      // register click on map event. It use to dispatch picked event by control
-      eventSingleClickKey = map
-        .on('singleclick', throttle(evt => this.dispatchEvent({ type: 'picked', coordinates:evt.coordinate })));
+      ol.Observable.unByKey(key);
+      key = null;
+    } else if (null === key && map) {
+      key = this.getInteraction().on('picked', throttle(evt => this.runQuery({coordinates: evt.coordinate })));
     }
   });
 
@@ -56,6 +54,7 @@ proto.setMap = function(map) {
 
 /**
  * @since 3.8.0
+ * 
  * @param event
  */
 proto.runQuery = async function({coordinates}) {
