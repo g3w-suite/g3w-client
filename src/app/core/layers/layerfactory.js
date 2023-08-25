@@ -170,12 +170,12 @@ class LayerFactory {
     const is_geojson = is_g3w && Layer.SourceTypes.GEOJSON  === source.type ;
 
     //Check geometrytype
-    const has_geom   = config.geometrytype && config.geometrytype !== 'NoGeometry' && SOURCE_WITH_GEOMETRY_TYPE.includes(source.type);
-    const no_geom    = !config.geometrytype && SOURCE_NO_GEOMETRY_TYPE.includes(source.type);
+    const has_geom   = config.geometrytype && WITH_GEOMETRY.includes(source.type);
+    const no_geom    = !config.geometrytype && NO_GEOMETRY.includes(source.type);
 
     //Check layer type
     const is_table_layer   = is_qgis && has_geom && config.geometrytype === 'NoGeometry';
-    const is_image_layer   = is_wms || is_qgis && (no_geom || has_geom);
+    const is_image_layer   = is_wms || is_qgis && (no_geom || (has_geom && config.geometrytype !== 'NoGeometry'));
     const is_vector_layer  = is_local || is_wfs || (is_g3w && !is_geojson);
     const is_base_layer    = config.servertype in BASE_LAYERS;
     const is_geojson_layer = is_geojson;
