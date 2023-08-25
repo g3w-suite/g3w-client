@@ -50,6 +50,7 @@ const proto = ScreenshotControl.prototype;
 /**
  * Method call when new layer is add to Project
  * Example wms or vector layer
+ * 
  * @since 3.8.3
  *
  */
@@ -61,6 +62,7 @@ proto._addLayer = function(layer) {
 
 /**
  * Method call when a layer is removed from Project
+ * 
  * @since 3.8.3 
  */
 proto._removeLayer = function(layer) {
@@ -70,6 +72,7 @@ proto._removeLayer = function(layer) {
 
 /**
  * Method call when layer is add/removed to/from project
+ * 
  * @param layers
  */
 proto.change = function(layers = []) {
@@ -96,26 +99,37 @@ proto.checkVisible = function(layers = []) {
 };
 
 /**
- * Check if layer has CORS issue
+ * Check if a layer has a Cross Origin source URI
+ * 
  * @param layer
- * @returns {boolean}
+ * 
+ * @returns {boolean} `true` whether the given layer could cause CORS issues (eg. while printing raster layers). 
  */
 function isCrossOrigin(layer) {
-  let source_url;                                                             // store eventually layer url
-  let is_coors = false;
-  if (isVectorLayer(layer)) {                                                 // skip vector layers
-    is_coors = false;
-  } else if (layer.getVisible && !layer.getVisible()) {                       // skip hidden layers
-    is_coors = false;
-  } else if (isImageLayer(layer)) {                                           // check raster layers
+  let source_url;
+
+  // skip levels that can't cause CORS issues
+  if (isHiddenLayer(layer) || isVectorLayer(layer)) {
+    return false;
+  }
+  
+  // check raster layers (OpenLayers)
+  if (isImageLayer(layer)) { 
     source_url = layer.getSource().getUrl();
-    is_coors   = source_url && !sameOrigin(source_url, location);             //case OL raster layer
-  } else if (layer.getConfig().source && layer.getConfig().source.external) { // check external (project/wms) layers (raster)
-    source_url = layer.getConfig().source.url;
-    is_coors   = source_url && !sameOrigin(source_url, location);
+    return source_url && !sameOrigin(source_url, location);
   }
 
-  return is_coors;
+  // check external rasters (WMS layers)
+  if (isExternalImageLayer(layer)) { 
+    source_url = layer.getConfig().source.url;
+    return source_url && !sameOrigin(source_url, location);
+  }
+
+  return false;
+}
+
+function isHiddenLayer(layer) {
+  return layer.getVisible && !layer.getVisible();
 }
 
 function isVectorLayer(layer) {
@@ -124,6 +138,13 @@ function isVectorLayer(layer) {
 
 function isImageLayer(layer) {
   return (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image);
+}
+
+/**
+ * @see https://github.com/g3w-suite/g3w-client/issues/475
+ */
+function isExternalImageLayer(layer) {
+  return layer.getConfig().source && layer.getConfig().source.external;
 }
 
 module.exports = ScreenshotControl;
