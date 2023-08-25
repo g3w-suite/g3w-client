@@ -119,7 +119,7 @@ function isCrossOrigin(layer) {
     return source_url && !sameOrigin(source_url, location);
   }
 
-  // check external rasters (WMS layers)
+  // check if layer has external property to true (Ex. core/layers/map/wmslayer.js instance)
   if (isExternalImageLayer(layer)) { 
     source_url = layer.getConfig().source.url;
     return source_url && !sameOrigin(source_url, location);
