@@ -1010,7 +1010,6 @@ const geoutils = {
         const layerCrs = layer.getProjection().getCode();
         /**
          * convert geometry in from mapCRS (geometry) to layerCrs
-         * @since 3.8.9 fix
          */
         filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs))
 
@@ -1076,7 +1075,7 @@ const geoutils = {
         let layersLenght = layers.length;
         layers.forEach(layer => {
           const layerCrs = layer.getProjection().getCode();
-          filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+          filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs))
           layer.query({
             filter,
             filterConfig,
