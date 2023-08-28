@@ -6,7 +6,7 @@
 <template>
 
   <div
-    v-show="show"
+    v-if="show"
     class="layer-legend"
     @click.stop.prevent=""
   >
