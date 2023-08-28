@@ -169,7 +169,8 @@ function PluginsRegistry() {
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
-            .fail(()=>{
+            .fail((jqxhr, settings, exception)=>{
+              console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
               this.removeLoadingPlugin(name, false);
               reject();
             })

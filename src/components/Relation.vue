@@ -189,9 +189,9 @@ import DownloadFormats              from 'components/QueryResultsActionDownloadF
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import GUI                          from 'services/gui';
 import { fieldsMixin, resizeMixin } from 'mixins';
+import { RelationEventBus as VM }   from 'app/eventbus';
 
-const { throttle }         = require('core/utils/utils');
-const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
+const { throttle } = require('core/utils/utils');
 
 let SIDEBARWIDTH;
 
@@ -282,19 +282,20 @@ export default {
         };
       }
 
-      RelationPageEventBus.$on('reload', () => { this.reloadLayout(); });
+      RelationPageEventBus.$on('reload', () => {
+        this.reloadLayout();
+      });
 
-      this.showChart = throttle(async () => {
-        this.chart          = !this.chart;
+      this.showChart = throttle(async ()=> {
+        this.chart = !this.chart;
         await this.$nextTick();
-        this.chartContainer = this.chartContainer || $('#chart_content');
+        this.chartContainer = this.chartContainer ||  $('#chart_content');
         this.$emit(
           this.chart ? 'show-chart': 'hide-chart',
           this.chartContainer,
-          // relation data
           {
             relations: [this.relation],
-            fid:       this.feature.attributes[G3W_FID],
+            fid: this.feature.attributes[G3W_FID],
           }
         );
       });

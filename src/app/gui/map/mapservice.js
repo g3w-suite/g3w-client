@@ -1,13 +1,11 @@
-import { MAP_SETTINGS } from 'app/constant';
-import wms from 'gui/wms/vue/wms';
-import DataRouterService from 'services/data';
+import { MAP_SETTINGS }        from 'app/constant';
+import DataRouterService       from 'services/data';
 import MapLayersStoresRegistry from 'store/map-layers';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-import ControlsRegistry from 'store/map-controls';
-import GUI from 'services/gui';
+import ProjectsRegistry        from 'store/projects';
+import ApplicationService      from 'services/application';
+import ControlsRegistry        from 'store/map-controls';
+import GUI                     from 'services/gui';
 
-const { t } = require('core/i18n/i18n.service');
 const {
   inherit,
   base,
@@ -15,30 +13,248 @@ const {
   uniqueId,
   throttle,
   toRawType,
-  createFilterFromString
-} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+  createFilterFromString,
+}                              = require('core/utils/utils');
+const G3WObject                = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
   createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
-  getGeoTIFFfromServer
-} = require('core/utils/geo');
-const WFSProvider = require('core/layers/providers/wfsprovider');
-const olhelpers = require('g3w-ol/g3w.ol').helpers;
-const { getScaleFromResolution, getResolutionFromScale } = require('core/utils/ol');
-const ControlsFactory = require('gui/map/control/factory');
-const VectorLayer = require('core/layers/vectorlayer');
+  getGeoTIFFfromServer,
+}                              = require('core/utils/geo');
+const BaseLayers               = require('g3w-ol/layers/bases');
+const {
+  getScaleFromResolution,
+  getResolutionFromScale
+}                              = require('core/utils/ol');
+const ControlsFactory          = require('gui/map/control/factory');
+const VectorLayer              = require('core/layers/vectorlayer');
 
-const SETTINGS = {
-  zoom : {
-    maxScale: 1000,
-  },
-  animation: {
-    duration: 2000
+/**
+ * @FIXME add description
+ * 
+ * @since 3.9.0
+ */
+
+class OlMapViewer {
+
+  constructor(opts = {}) {
+    const controls     = ol.control.defaults({ attribution: false, zoom: false });
+    const interactions = ol.interaction.defaults().extend([ new ol.interaction.DragRotate() ]);
+
+    interactions.removeAt(1); // remove douclickzoom
+
+    this.map = new ol.Map({
+      controls,
+      interactions,
+      ol3Logo: false,
+      view: opts.view instanceof ol.View ? opts.view : new ol.View(opts.view),
+      keyboardEventTarget: document,
+      target: opts.id,
+    });
   }
-};
+
+  /**
+   * @FIXME add description
+   */
+  destroy() {
+    if (this.map) {
+      this.map.dispose();
+      this.map = null
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getView() {
+    return this.map.getView();
+  }
+  /**
+   * @FIXME add description
+   */
+  updateMap(mapObject) { }
+
+  /**
+   * @FIXME add description
+   */
+  updateView(){ }
+
+  /**
+   * @FIXME add description
+   */
+  getMap() {
+    return this.map;
+  }
+
+  /**
+   * @FIXME add description
+   */
+  setTarget(id) {
+    this.map.setTarget(id);
+  }
+
+  /**
+   * @FIXME add description
+   */
+  zoomTo(coordinate, zoom) {
+    const view = this.map.getView();
+    view.setCenter(coordinate);
+    view.setZoom(zoom);
+  };
+
+  /**
+   * @FIXME add description
+   */
+  goTo(coordinates, options = {}) {
+    const view    = this.map.getView();
+    const animate = options.animate || true;
+    const zoom    = options.zoom || false;
+    if (animate) {
+      view.animate(
+        { duration: 300, center: coordinates },
+        (zoom ? ({ zoom, duration: 300 }) : ({ duration: 300, resolution: view.getResolution() })
+      ));
+    } else {
+      view.setCenter(coordinates);
+      if (zoom) {
+        view.setZoom(zoom);
+      }
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  goToRes(coordinates, options = {}) {
+    const view       = this.map.getView();
+    const animate    = options.animate || true;
+    const resolution = options.resolution || view.getResolution();
+    if (animate) {
+      view.animate(
+        { duration: 200, center: coordinates },
+        { duration: 200, resolution }
+      );
+    } else {
+      view.setCenter(coordinates);
+      view.setResolution(resolution);
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  fit(geometry, options = {}) {
+    const view    = this.map.getView();
+    const animate = options.animate || true;
+    if (animate) {
+      view.animate({ duration: 200, center: view.getCenter() });
+      view.animate({ duration: 200, resolution: view.getResolution() });
+    }
+    if (options.animate) {
+      delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
+    }
+    view.fit(geometry, {
+      ...options,
+      constrainResolution: (undefined === options.constrainResolution && true || options.constrainResolution),
+      size:  this.map.getSize()
+    });
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getZoom() {
+    return this.map.getView().getZoom();
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getResolution() {
+    return this.map.getView().getResolution();
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getCenter() {
+    return this.map.getView().getCenter();
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getBBOX() {
+    return this.map.getView().calculateExtent(this.map.getSize());
+  };
+
+  /**
+   * @FIXME add description
+   */
+  getLayerByName(layerName) {
+    return this.map.getLayers().find(layer => layerName === layer.get('name'));
+  }
+
+  /**
+   * @FIXME add description
+   */
+  removeLayerByName(layerName) {
+    const layer = this.getLayerByName(layerName);
+    if (layer) {
+      this.map.removeLayer(layer);
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getActiveLayers() {
+    return this
+      .map
+      .getLayers()
+      .filter((layer) => {
+        const props = layer.getProperties();
+        return  (props.visible && true !== props.basemap);
+      });
+  };
+
+  /**
+   * @FIXME add description
+   */
+  removeLayers() {
+    this.map.getLayers().clear();
+  };
+
+  /**
+   * @FIXME add description
+   */
+  getLayersNoBase() {
+    return this
+      .map
+      .getLayers()
+      .filter((layer) => {
+        const props = layer.getProperties();
+        return (true !== props.basemap);
+      });
+  }
+
+  /**
+   * @FIXME add description
+   */
+  addBaseLayer(type) {
+    this.map.addLayer(type ? BaseLayers[type] : BaseLayers.BING.Aerial);
+  };
+
+  /**
+   * @TODO double check (unusued and broken code ?)
+   */
+  changeBaseLayer(layerName) {
+    this.map.getLayers().insertAt(0, this.getLayerByName(layername));
+  }
+
+}
 
 function MapService(options={}) {
   this.state = {
@@ -370,7 +586,7 @@ proto._addHideMap = function({ratio, layers=[], mainview=false} = {}) {
     center: view.getCenter(),
     resolution: this.getResolution()
   };
-  const viewer = olhelpers.createViewer({
+  const viewer = new OlMapViewer({
     id: idMap.id,
     view: mainview ? view: view_options
   });
@@ -1048,11 +1264,10 @@ proto._setMapControlsInsideContainerLenght = function() {
  * Get filtrable layer. Get parameter to custom filter Object
  */
 proto.filterableLayersAvailable = function(options={}) {
-  const layers = getMapLayersByFilter({
+  return getMapLayersByFilter({
     FILTERABLE: true,
     SELECTED_OR_ALL: true,
-  }, options);
-  return layers.filter(layer => layer.getProvider('filter') instanceof WFSProvider);
+  }, options).filter(layer => 'wfs' === layer.getProvider('filter').getName());
 };
 
 proto.setMapControlsAlignement = function(alignement='rv') {
@@ -1447,7 +1662,7 @@ proto._calculateViewOptions = function({project, width, height}={}) {
 
 // set view based on project config
 proto._setupViewer = function(width, height) {
-  this.viewer = olhelpers.createViewer({
+  this.viewer = new OlMapViewer({
     id: this.target,
     view: this._calculateViewOptions({
       width,
