@@ -996,7 +996,7 @@ const geoutils = {
         feature_count,
         filterConfig,
         multilayers,
-        projection:mapProjection
+        projection: mapProjection
       })
     } else {
       const d = $.Deferred();
@@ -1009,9 +1009,11 @@ const geoutils = {
         const filter = new Filter(filterConfig);
         const layerCrs = layer.getProjection().getCode();
         /**
-         * convert
+         * convert geometry in from mapCRS (geometry) to layerCrs
+         * @since 3.8.9 fix
          */
-        filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs))
+
         layer.query({
           filter,
           feature_count
@@ -1045,7 +1047,6 @@ const geoutils = {
     const mapCrs = projection.getCode();
     const filter = new Filter(filterConfig);
     if (multilayers) {
-      let filterGeometry = geometry;
       if (!layers.length) d.resolve([]);
       const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
       const numberRequestd = Object.keys(multiLayers).length;
@@ -1056,8 +1057,7 @@ const geoutils = {
         const multilayer = multiLayers[key][0];
         const provider = multilayer.getProvider('filter');
         const layerCrs = multilayer.getProjection().getCode();
-        if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-        filter.setGeometry(filterGeometry);
+        filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs) : geometry)
         provider.query({
           filter,
           layers,
