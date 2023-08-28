@@ -16,7 +16,7 @@
       :active="active"
       :legend="legend"
       :layers="visiblelayers"
-    ></layerslegend-items>
+    />
 
   </div>
 
