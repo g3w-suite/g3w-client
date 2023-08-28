@@ -57,7 +57,10 @@
 
   const {
     getUniqueDomId,
-    noop,
+    noop
+  }                        = require ('core/utils/utils');
+
+  const {
     getFormDataExpressionRequestFromFeature,
     convertFeatureToGEOJSON,
   }                        = require('core/utils/geo');
