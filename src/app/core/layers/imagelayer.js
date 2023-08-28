@@ -291,7 +291,7 @@ proto.getIconUrlFromLegend = function() {
  * 
  * @see https://docs.qgis.org/3.28/en/docs/server_manual/services/wms.html#getlegendgraphics
  */
-proto.getLegendUrl = function(params = {}, opts = {}) {
+proto.getLegendUrl = function(params = {}, opts = {categories:false,  all:false,format:'image/png',}) {
 
   let base_url, url_params;
 
