@@ -13,14 +13,11 @@ const GeoLayerMixin                       = require('core/layers/geolayermixin')
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
- */
-
-/**
- * Utility function that return a string if value is set or null
+ * 
  * @param name
  * @param value
- * @returns {string|null}
- * @private
+ * 
+ * @returns { string | null } a string if value is set or null
  */
 function __(name, value) {
   return value ? `${name}${value}` : null;
@@ -286,9 +283,9 @@ proto.getIconUrlFromLegend = function() {
  * 
  * ORIGINAL SOURCE: src/app/core/layers/legend/legendservice.js@3.8.5
  * 
- * @param {boolean}                                    opts.categories whether layer has categories
- * @param {boolean}                                    opts.all        whether to show all categories (disables filter by map's BBOX).
- * @param {'application/json' | 'image/png' | string}  opts.format     MIME Type used to set format of legend:
+ * @param { boolean }                                    opts.categories whether layer has categories
+ * @param { boolean }                                    opts.all        whether to show all categories (disables filter by map's BBOX).
+ * @param { 'application/json' | 'image/png' | string }  opts.format     MIME Type used to set format of legend:
  *                                                                          - `application/json`: if request from layers categories (icon and label),
  *                                                                          - `image/png`: if request from legend tab
  * 
@@ -327,37 +324,6 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
     ...this.customParams
   };
 
-
-  const {
-
-    /**
-     * If layer has categories or not.
-     *
-     * @type {Boolean}
-     */
-    categories=false,
-
-    /**
-     * All categories. No filter by BBOX of map.
-     *
-     * @type {Boolean}
-     */
-    all=false,
-
-    /**
-     * Mime Type used to set format of legend.
-     *
-     * `application/json` = if request from layers categories (icon and label)
-     * `image/png`        = if request from legend tab
-     *
-     * @type {String}
-     */
-    format='image/png',
-
-  } = opts;
-
-
-
   /**
    * ARCGIS Server
    * 
@@ -380,7 +346,7 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
    */
   else {
     const ctx_legend = (
-      categories && (['image/png', undefined].includes(format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
+      opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
         ? get_LEGEND_ON_LEGEND_OFF_Params(this)
         : undefined // disabled when `FORMAT=application/json` (otherwise it create some strange behaviour on WMS `getMap` when switching between layer styles)   
     );
@@ -392,21 +358,21 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
       `SLD_VERSION=${sld_version}`,
       __('WIDTH=',           width),
       __('HEIGHT=',          height),
-      `FORMAT=${(undefined === format ? 'image/png' : format)}`,
+      `FORMAT=${(undefined === opts.format ? 'image/png' : opts.format)}`,
       `TRANSPARENT=${transparent}`,
       `ITEMFONTCOLOR=${color}`,
       `LAYERFONTCOLOR=${color}`,
       `LAYERTITLE=${layertitle}`,
       `ITEMFONTSIZE=${fontsize}`,
       __('CRS=',             crs),
-      __('BBOX=',            (false === all && bbox && bbox.join(','))), // all mean no BBOX otherwise need to be filter categories by bbox
+      __('BBOX=',            ([false, undefined].includes(opts.all) && bbox && bbox.join(','))),
       __('BOXSPACE=',        boxspace),
       __('LAYERSPACE=',      layerspace),
       __('LAYERTITLESPACE=', layertitlespace),
       __('SYMBOLSPACE=',     symbolspace),
       __('ICONLABELSPACE=',  iconlabelspace),
-      __('SYMBOLWIDTH=',     (categories && 'application/json' === format ? 16 : symbolwidth)),
-      __('SYMBOLHEIGHT=',    (categories && 'application/json' === format ? 16 : symbolheight)),
+      __('SYMBOLWIDTH=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
+      __('SYMBOLHEIGHT=',    (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
       __('LAYERFONTFAMILY=', layerfontfamily),
       __('ITEMFONTFAMILY=',  itemfontfamily),
       __('LAYERFONTBOLD=',   layerfontbold),
@@ -416,7 +382,7 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
       __('RULELABEL=',       rulelabel),
       __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
       __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
-      __('STYLES=',          (categories && 'application/json' === format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
+      __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
       `LAYER=${this.getWMSLayerName({ type: 'legend' })}`
     ].filter(p => p); // need to filter only with value
   }
