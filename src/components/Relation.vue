@@ -282,7 +282,7 @@ export default {
         };
       }
 
-      RelationPageEventBus.$on('reload', () => {
+      VM.$on('reload', () => {
         this.reloadLayout();
       });
 
