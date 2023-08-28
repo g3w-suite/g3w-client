@@ -23,37 +23,37 @@ function __(name, value) {
   return value ? `${name}${value}` : null;
 }
 
+/**
+ * @param config.id
+ * @param config.title
+ * @param config.name
+ * @param config.origname
+ * @param config.multilayerid
+ * @param config.servertype
+ * @param config.source
+ * @param config.crs
+ * @param config.projection
+ * @param config.bbox
+ * @param config.capabilities
+ * @param config.cache_url
+ * @param config.baselayer
+ * @param config.geometrytype
+ * @param config.editops
+ * @param config.expanded
+ * @param config.fields
+ * @param config.wmsUrl
+ * @param config.infoformat
+ * @param config.infourl
+ * @param config.maxscale
+ * @param config.minscale
+ * @param config.visible
+ * @param config.scalebasedvisibility
+ * @param config.wfscapabilities
+ * @param config.ows_method
+ * @param config.wms_use_layer_ids
+ * @param config.styles
+ */
 function ImageLayer(config={}, options={}) {
-  /*{
-    id,
-    title,
-    name,
-    origname,
-    multilayerid,
-    servertype,
-    source,
-    crs,
-    projection,
-    bbox,
-    capabilities,
-    cache_url,
-    baselayer,
-    geometrytype,
-    editops,
-    expanded,
-    fields,
-    wmsUrl,
-    infoformat,
-    infourl,
-    maxscale,
-    minscale,
-    visible,
-    scalebasedvisibility,
-    wfscapabilities
-    ows_method
-    wms_use_layer_ids,
-    styles
-  }*/
 
   this.setters = {
     change(){},
