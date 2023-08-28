@@ -91,11 +91,11 @@ proto.getLayerForEditing = async function({
 
   // set editing layer
   try {
-    const { layerForEditing } = await (new VectorLayer(this.config, {
+    const layerForEditing  = await new VectorLayer(this.config, {
       vectorurl,
       project_type,
       project: project || ProjectsRegistry.getCurrentProject(),
-    }));
+    }).layerForEditing;
     this.setEditingLayer(layerForEditing);
     return layerForEditing;
   } catch(e) {
