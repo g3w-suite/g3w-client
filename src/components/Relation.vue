@@ -282,17 +282,16 @@ export default {
         };
       }
 
-      VM.$on('reload', () => {
-        this.reloadLayout();
-      });
+      VM.$on('reload', () => { this.reloadLayout(); });
 
       this.showChart = throttle(async ()=> {
         this.chart = !this.chart;
         await this.$nextTick();
-        this.chartContainer = this.chartContainer ||  $('#chart_content');
+        this.chartContainer = this.chartContainer || $('#chart_content');
         this.$emit(
           this.chart ? 'show-chart': 'hide-chart',
           this.chartContainer,
+          // relation data
           {
             relations: [this.relation],
             fid: this.feature.attributes[G3W_FID],
