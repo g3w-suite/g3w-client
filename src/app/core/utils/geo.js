@@ -1057,7 +1057,7 @@ const geoutils = {
         const multilayer = multiLayers[key][0];
         const provider = multilayer.getProvider('filter');
         const layerCrs = multilayer.getProjection().getCode();
-        filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs) : geometry)
+        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs))
         provider.query({
           filter,
           layers,
