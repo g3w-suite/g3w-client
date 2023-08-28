@@ -20,7 +20,7 @@ const GeoLayerMixin                       = require('core/layers/geolayermixin')
  * @returns { string | null } a string if value is set or null
  */
 function __(name, value) {
-  return value ? `${name}${value}` : null;
+  return (value || 0 === value) ? `${name}${value}` : null;
 }
 
 /**
@@ -355,15 +355,15 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
       'SERVICE=WMS',
       'VERSION=1.3.0',
       'REQUEST=GetLegendGraphic',
-      `SLD_VERSION=${sld_version}`,
+      __('SLD_VERSION=',     sld_version),
       __('WIDTH=',           width),
       __('HEIGHT=',          height),
-      `FORMAT=${(undefined === opts.format ? 'image/png' : opts.format)}`,
-      `TRANSPARENT=${transparent}`,
-      `ITEMFONTCOLOR=${color}`,
-      `LAYERFONTCOLOR=${color}`,
-      `LAYERTITLE=${layertitle}`,
-      `ITEMFONTSIZE=${fontsize}`,
+      __('FORMAT=',          (undefined === opts.format ? 'image/png' : opts.format)),
+      __('TRANSPARENT=',     transparent),
+      __('ITEMFONTCOLOR=',   color),
+      __('LAYERFONTCOLOR=',  color),
+      __('LAYERTITLE=',      layertitle),
+      __('ITEMFONTSIZE=',    fontsize),
       __('CRS=',             crs),
       __('BBOX=',            ([false, undefined].includes(opts.all) && bbox && bbox.join(','))),
       __('BOXSPACE=',        boxspace),
@@ -383,9 +383,12 @@ proto.getLegendUrl = function(params = {}, opts = {}) {
       __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
       __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
       __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
-      `LAYER=${this.getWMSLayerName({ type: 'legend' })}`
-    ].filter(p => p); // need to filter only with value
+      __('LAYER=',           this.getWMSLayerName({ type: 'legend' }))
+    ]; 
   }
+
+  // discard nullish parameters (without a value)
+  url_params = url_params.filter(p => p)
 
   this.legendUrl = `${base_url}${(base_url.indexOf('?') > -1 ? '&' : '?')}${url_params.join('&')}`;
 
