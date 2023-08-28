@@ -1914,8 +1914,8 @@ const geoutils = {
     let LEGEND_ON, LEGEND_OFF;
     (layer.getCategories() || [])
       .forEach(({
-        checked,
-        _checked,
+        checked,  // new Value
+        _checked, // old Value
         ruleKey
       }) => {
         // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)

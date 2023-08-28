@@ -13,14 +13,11 @@ const GeoLayerMixin                       = require('core/layers/geolayermixin')
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
- */
-
-/**
- * Utility function that return a string if value is set or null
+ * 
  * @param name
  * @param value
- * @returns {string|null}
- * @private
+ * 
+ * @returns { string | null } a string if value is set or null
  */
 function __(name, value) {
   return value ? `${name}${value}` : null;
