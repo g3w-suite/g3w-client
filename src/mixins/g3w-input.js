@@ -5,7 +5,7 @@
  * 
  * @TODO merge into `src/mixins/base-input.js`
  * 
- * @since 3.8.5
+ * @since 3.9.0
  */
 
 import ApplicationState                       from 'store/application-state';
@@ -575,7 +575,7 @@ const InputsServices = {
     }
 
     /**
-     * @since 3.8.5 
+     * @since 3.9.0
      */
     mapControlToggleEventHandler(e) {
       if (
@@ -588,7 +588,7 @@ const InputsServices = {
     }
 
     /**
-     * @since 3.8.5 
+     * @since 3.9.0
      */
     onMapClick(evt) {
       evt.originalEvent.stopPropagation();
@@ -642,7 +642,7 @@ export default {
     /**
      * Factory method
      * 
-     * @since 3.8.5
+     * @since 3.9.0
      */
     createInputService(type, options) {
       console.assert(undefined !== InputsServices[type], 'Uknwon InputsService type: ', type);

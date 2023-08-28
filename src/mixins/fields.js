@@ -152,7 +152,7 @@ const fieldsservice = {
   },
 
   /**
-   * @since 3.8.5
+   * @since 3.9.0
    */
   getFields() {
     return Fields;
