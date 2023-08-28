@@ -218,7 +218,7 @@ proto.getFullWmsUrl = function() {
  * Get WMS url (used by Catalog Layer Menu) 
  */
 proto.getCatalogWmsUrl = function() {
-  const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata().wms_url;
+  const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata();
 
   /** @FIXME add description */
   if (wms_url && !this.isExternalWMS()) {
