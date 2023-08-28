@@ -12,7 +12,6 @@ import ApplicationService from 'services/application';
  */
 import G3WInput from 'components/InputG3W.vue';
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
-import inputService from 'core/expression/inputservice';
 import FormBody from 'components/FormBody.vue';
 import FormFooter from 'components/FormFooter.vue';
 import C3XYLine from 'components/C3XYLine.vue';
@@ -197,7 +196,10 @@ module.exports = {
       WorkflowsStack
     },
     input: {
-      inputService
+      inputService: {
+        handleFilterExpressionFormInput: FormService._getFilterExpression,
+        handleDefaultExpressionFormInput: FormService._getDefaultExpression,
+      }
     }
   },
 

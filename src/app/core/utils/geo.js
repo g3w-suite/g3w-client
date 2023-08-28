@@ -1911,29 +1911,25 @@ const geoutils = {
   },
   get_LEGEND_ON_LEGEND_OFF_Params(layer) {
     let LEGEND_ON, LEGEND_OFF;
-    if (layer.getCategories()) {
-      /**
-       * checked: current status
-       * _checked: original status
-       * handle only difference (diff) from original checked status and current chenge by toc categories
-       */
-      layer.getCategories().forEach(({checked, _checked, ruleKey}) => {
-        if (checked !== _checked) {
-          if (checked) {
-            if (typeof LEGEND_ON === 'undefined') LEGEND_ON = `${layer.getWMSLayerName()}:`;
-            else LEGEND_ON = `${LEGEND_ON},`;
-            LEGEND_ON = `${LEGEND_ON}${ruleKey}`
-          } else {
-            if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = `${layer.getWMSLayerName()}:`;
-            else  LEGEND_OFF = `${LEGEND_OFF},`;
-            LEGEND_OFF = `${LEGEND_OFF}${ruleKey}`;
-          }
+    (layer.getCategories() || [])
+      .forEach(({
+        checked,  // new Value
+        _checked, // old Value
+        ruleKey
+      }) => {
+        // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)
+        if (checked === _checked) {
+          return;
+        }
+        if (checked) {
+          LEGEND_ON  = (undefined === LEGEND_ON ? `${layer.getWMSLayerName()}:` : `${LEGEND_ON},`) + ruleKey;
+        } else {
+          LEGEND_OFF = (undefined === LEGEND_OFF ? `${layer.getWMSLayerName()}:` : `${LEGEND_OFF},`) + ruleKey;
         }
       });
-    }
     return {
       LEGEND_ON,
-      LEGEND_OFF
+      LEGEND_OFF,
     }
   },
 

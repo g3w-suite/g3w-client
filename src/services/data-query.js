@@ -48,7 +48,9 @@ function QueryService(){
       filter: {
         SELECTED : false
       }
-    }
+    },
+    /**@since 3.9.0**/
+    type = 'polygon'
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
@@ -92,7 +94,7 @@ function QueryService(){
         fid,
         geometry,
         layerName,
-        type: 'polygon',
+        type,
         filterConfig,
         external
       }
