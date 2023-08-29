@@ -84,11 +84,7 @@
 <script>
   import G3wInput         from 'components/InputG3W.vue';
   import ProjectsRegistry from 'store/projects';
-  import G3WField         from 'components/FieldG3W.vue';
-
-  const Fields = G3WField.components;
-
-  console.assert(undefined !== Fields, 'Fields is undefined');
+  import { fieldsMixin } from 'mixins';
 
   export default {
 
@@ -108,9 +104,10 @@
       'handleRelation'
     ],
 
+    mixins: [fieldsMixin],
+
     components: {
       G3wInput,
-      ...Fields
     },
 
     data() {

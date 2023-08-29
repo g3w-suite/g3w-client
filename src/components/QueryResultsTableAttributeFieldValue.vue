@@ -12,8 +12,6 @@
 </template>
 
 <script>
-  import Link            from 'components/FieldLink.vue';
-  import VueField        from 'components/FieldVue.vue';
   import { fieldsMixin } from 'mixins';
 
   console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
@@ -35,11 +33,6 @@
     },
 
     mixins: [fieldsMixin],
-
-    components: {
-      'g3w-link': Link,
-      'g3w-vue':  VueField,
-    },
 
   };
 </script>

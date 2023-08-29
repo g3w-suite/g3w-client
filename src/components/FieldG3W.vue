@@ -32,10 +32,10 @@ export default {
 
   },
 
-  components: fieldsMixin.methods.getFieldService().getFields(),
+  mixins: [fieldsMixin],
 
   created() {
-    this.type = fieldsMixin.methods.getFieldService().getType(this.state);
+    this.type = this.getType(this.state);
   },
 
 };
