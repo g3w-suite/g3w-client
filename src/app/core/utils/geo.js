@@ -1008,7 +1008,7 @@ const geoutils = {
       layers.forEach(layer => {
         const filter   = new Filter(filterConfig);
         const layerCrs = layer.getProjection().getCode();
-        // Convert geometry from `mapCRS` to `layerCrs`
+        // Convert filter geometry from `mapCRS` to `layerCrs`
         filter.setGeometry(
           (mapCrs === layerCrs)
             ? geometry
@@ -1053,11 +1053,16 @@ const geoutils = {
       let layersLength = numberRequestd;
       for (let key in multiLayers) {
         const _multilayer = multiLayers[key];
-        const layers = _multilayer;
-        const multilayer = multiLayers[key][0];
-        const provider = multilayer.getProvider('filter');
-        const layerCrs = multilayer.getProjection().getCode();
-        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs))
+        const layers      = _multilayer;
+        const multilayer  = multiLayers[key][0];
+        const provider    = multilayer.getProvider('filter');
+        const layerCrs    = multilayer.getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(
+          (mapCrs === layerCrs)
+            ? geometry
+            : geometry.clone().transform(mapCrs, layerCrs)
+        );
         provider.query({
           filter,
           layers,
@@ -1076,7 +1081,12 @@ const geoutils = {
         let layersLenght = layers.length;
         layers.forEach(layer => {
           const layerCrs = layer.getProjection().getCode();
-          filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs))
+          // Convert filter geometry from `mapCRS` to `layerCrs`
+          filter.setGeometry(
+            (mapCrs === layerCrs)
+              ? geometry
+              : geometry.clone().transform(mapCrs, layerCrs)
+          );
           layer.query({
             filter,
             filterConfig,
