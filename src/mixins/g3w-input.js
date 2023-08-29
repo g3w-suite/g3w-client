@@ -15,9 +15,6 @@ import MapLayersStoresRegistry                from 'store/map-layers';
 import ApplicationService                     from 'services/application';
 import GUI                                    from 'services/gui';
 
-import baseInputMixin                         from 'mixins/base-input';
-import BaseInputComponent                     from 'components/InputBase.vue';
-
 const { convertQGISDateTimeFormatToMoment }   = require('core/utils/utils');
 const { getQueryLayersPromisesByCoordinates } = require('core/utils/geo');
 
@@ -29,8 +26,6 @@ const PickCoordinatesInteraction              = require('g3w-ol/interactions/pic
 const { toRawType }                           = require('core/utils/utils');
 const { t }                                   = require('core/i18n/i18n.service');
 
-console.assert(undefined !== baseInputMixin,     'baseInputMixin is undefined');
-console.assert(undefined !== BaseInputComponent, 'BaseInputComponent is undefined');
 
 /**
  * Limit a number between min / max values
@@ -614,10 +609,33 @@ export default {
 
   props: ['state'],
 
-  mixins: [ baseInputMixin ],
+  //Property coming from original source mixins/base-input.js
+  computed: {
 
-  components: {
-    'baseinput': BaseInputComponent
+    tabIndex() {
+      return this.editable ? 0 : -1;
+    },
+
+    notvalid() {
+      return (false === this.state.validate.valid);
+    },
+
+    editable() {
+      return this.state.editable;
+    },
+
+    showhelpicon() {
+      return this.state.help && this.state.help.message.trim();
+    },
+
+    disabled() {
+      return !this.editable || ['loading', 'error'].includes(this.loadingState);
+    },
+
+    loadingState() {
+      return this.state.input.options.loading ? this.state.input.options.loading.state : null;
+    }
+
   },
 
   watch: {
@@ -638,6 +656,37 @@ export default {
   },
 
   methods: {
+
+    // Methods coming from original source mixins/base-input.js
+
+    showHideHelp() {
+      this.state.help.visible = !this.state.help.visible
+    },
+
+    // used to text input to listen mobile changes
+    mobileChange(event) {
+      this.state.value = event.target.value;
+      this.change();
+    },
+
+    /**
+     * Called when input value change
+     *
+     * @fires changeinput
+     */
+    change() {
+      this.service.setEmpty();
+      this.service.setUpdate();
+      // validate input if is required or need to be unique
+      if (this.state.validate.required || this.state.validate.unique) {
+        this.service.validate();
+      }
+      this.$emit('changeinput', this.state);
+    },
+
+    isVisible() {},
+
+    // End Methods coming from original source mixins/base-input.js
 
     /**
      * Factory method
