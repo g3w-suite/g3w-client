@@ -5,7 +5,6 @@
 
 <template>
   <div class="form-group" v-if="state.visible">
-
     <!-- INPUT LABEL -->
     <slot name="label">
       <label :for="state.name" v-disabled="!editable" class="col-sm-12 control-label">{{ state.label }}
@@ -64,14 +63,13 @@
 </template>
 
 <script>
-import baseInputMixin from 'mixins/base-input';
 
-console.assert(undefined !== baseInputMixin, 'baseInputMixin is undefined');
+import { g3wInputMixin } from 'mixins';
 
 export default {
-  name: "InputBase",
+  name: "baseinput",
   props: ['state'],
-  ...baseInputMixin
+  mixins: [g3wInputMixin]
 }
 </script>
 
