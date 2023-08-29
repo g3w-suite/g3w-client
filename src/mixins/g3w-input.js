@@ -609,29 +609,46 @@ export default {
 
   props: ['state'],
 
-  //Property coming from original source mixins/base-input.js
   computed: {
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     tabIndex() {
       return this.editable ? 0 : -1;
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     notvalid() {
       return (false === this.state.validate.valid);
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     editable() {
       return this.state.editable;
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     showhelpicon() {
       return this.state.help && this.state.help.message.trim();
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     disabled() {
       return !this.editable || ['loading', 'error'].includes(this.loadingState);
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     loadingState() {
       return this.state.input.options.loading ? this.state.input.options.loading.state : null;
     }
@@ -657,20 +674,27 @@ export default {
 
   methods: {
 
-    // Methods coming from original source mixins/base-input.js
-
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     showHideHelp() {
       this.state.help.visible = !this.state.help.visible
     },
 
-    // used to text input to listen mobile changes
+    /**
+     * Used by textual inputs for listening to mobile changes
+     * 
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     mobileChange(event) {
       this.state.value = event.target.value;
       this.change();
     },
 
     /**
-     * Called when input value change
+     * Called when input value change.
+     * 
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      *
      * @fires changeinput
      */
@@ -684,9 +708,10 @@ export default {
       this.$emit('changeinput', this.state);
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     */
     isVisible() {},
-
-    // End Methods coming from original source mixins/base-input.js
 
     /**
      * Factory method
