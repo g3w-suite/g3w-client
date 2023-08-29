@@ -605,10 +605,11 @@ const InputsServices = {
  */
 InputsServices['select_autocomplete'] = InputsServices['select'];
 
-export default {
-
-  props: ['state'],
-
+/**
+ *
+ * @since 3.9.0
+ */
+export const baseInputMixin = {
   computed: {
 
     /**
@@ -654,26 +655,7 @@ export default {
     }
 
   },
-
-  watch: {
-
-    'notvalid'(notvalid) {
-      if (notvalid) {
-       this.service.setErrorMessage(this.state);
-      }
-    },
-
-    'state.value'() {
-      if (undefined !== this.state.input.options.default_expression) {
-        // postpone `state.value` watch parent that use mixin
-        setTimeout(() => this.change());
-      }
-    },
-
-  },
-
   methods: {
-
     /**
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      */
@@ -683,7 +665,7 @@ export default {
 
     /**
      * Used by textual inputs for listening to mobile changes
-     * 
+     *
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      */
     mobileChange(event) {
@@ -693,7 +675,7 @@ export default {
 
     /**
      * Called when input value change.
-     * 
+     *
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      *
      * @fires changeinput
@@ -713,6 +695,34 @@ export default {
      */
     isVisible() {},
 
+  }
+}
+
+export default {
+
+  props: ['state'],
+
+  computed: baseInputMixin.computed,
+
+  watch: {
+
+    'notvalid'(notvalid) {
+      if (notvalid) {
+       this.service.setErrorMessage(this.state);
+      }
+    },
+
+    'state.value'() {
+      if (undefined !== this.state.input.options.default_expression) {
+        // postpone `state.value` watch parent that use mixin
+        setTimeout(() => this.change());
+      }
+    },
+
+  },
+
+  methods: {
+    ...baseInputMixin.methods,
     /**
      * Factory method
      * 
