@@ -969,7 +969,7 @@ const geoutils = {
    * @param multilayers
    * @returns {JQuery.Promise<any, any, any>}
    */
-  getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}){
+  getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}) {
     let queriesPromise;
     const geometry = ol.geom.Polygon.fromExtent(bbox);
     const map = GUI.getComponent('map').getService().getMap();
@@ -981,7 +981,7 @@ const geoutils = {
         feature_count,
         filterConfig,
         multilayers,
-        projection:mapProjection
+        projection: mapProjection
       })
     } else {
       const d = $.Deferred();
@@ -991,12 +991,14 @@ const geoutils = {
       const queryErrors = [];
       let layersLenght = layers.length;
       layers.forEach(layer => {
-        const filter = new Filter(filterConfig);
+        const filter   = new Filter(filterConfig);
         const layerCrs = layer.getProjection().getCode();
-        /**
-         * convert
-         */
-        filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(
+          (mapCrs === layerCrs)
+            ? geometry
+            : geometry.clone().transform(mapCrs, layerCrs)
+        );
         layer.query({
           filter,
           feature_count
@@ -1030,19 +1032,22 @@ const geoutils = {
     const mapCrs = projection.getCode();
     const filter = new Filter(filterConfig);
     if (multilayers) {
-      let filterGeometry = geometry;
       if (!layers.length) d.resolve([]);
       const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
       const numberRequestd = Object.keys(multiLayers).length;
       let layersLength = numberRequestd;
       for (let key in multiLayers) {
         const _multilayer = multiLayers[key];
-        const layers = _multilayer;
-        const multilayer = multiLayers[key][0];
-        const provider = multilayer.getProvider('filter');
-        const layerCrs = multilayer.getProjection().getCode();
-        if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-        filter.setGeometry(filterGeometry);
+        const layers      = _multilayer;
+        const multilayer  = multiLayers[key][0];
+        const provider    = multilayer.getProvider('filter');
+        const layerCrs    = multilayer.getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(
+          (mapCrs === layerCrs)
+            ? geometry
+            : geometry.clone().transform(mapCrs, layerCrs)
+        );
         provider.query({
           filter,
           layers,
@@ -1061,7 +1066,12 @@ const geoutils = {
         let layersLenght = layers.length;
         layers.forEach(layer => {
           const layerCrs = layer.getProjection().getCode();
-          filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+          // Convert filter geometry from `mapCRS` to `layerCrs`
+          filter.setGeometry(
+            (mapCrs === layerCrs)
+              ? geometry
+              : geometry.clone().transform(mapCrs, layerCrs)
+          );
           layer.query({
             filter,
             filterConfig,
@@ -1070,7 +1080,7 @@ const geoutils = {
             .fail(error => queryErrors.push(error))
             .always(() => {
               layersLenght -= 1;
-              if (layersLenght === 0){
+              if (layersLenght === 0) {
                 queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
               }
             })
@@ -1134,7 +1144,7 @@ const geoutils = {
           resolution,
         }).then(response => {
           queryResponses.push(response)
-        }).fail(error =>{
+        }).fail(error => {
           rejectedResponses+=1;
           queryErrors.push(error);
         }).always(() => {
