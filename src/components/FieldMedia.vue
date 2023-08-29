@@ -16,7 +16,11 @@
 </template>
 
 <script>
-import { mediaMixin } from 'mixins';
+
+//due circular dependencies
+import mediaMixin from 'mixins/media';
+
+console.assert(undefined !== mediaMixin, 'mediaMixin is undefined');
 
 export default {
 
