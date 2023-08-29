@@ -47,6 +47,14 @@ const Fields = {
 Fields['simple_field'] = Fields['text_field'];
 Fields['photo_field']  = Fields['image_field'];
 
+/**
+ * Named component
+ * components/QueryResultsTableAttributeFieldValue.vue
+ */
+Fields['g3w_link']     = Fields['link_field'];
+Fields['g3w_vue']      = Fields['vue_field'];
+
+
 /******************************************************* */
 
 /**
@@ -151,20 +159,22 @@ const fieldsservice = {
     CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
   },
 
-  /**
-   * @since 3.9.0
-   */
-  getFields() {
-    return Fields;
-  },
-
 };
 
 /******************************************************* */
 
 export default {
-
+  /**
+   * @since 3.9.0
+   */
+  components: {
+    ...Fields
+  },
   methods: {
+
+    getType(field) {
+      return this.getFieldService().getType(field);
+    },
 
     getFieldService() {
       // if (undefined === this._fieldsService) {

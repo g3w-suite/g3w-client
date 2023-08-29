@@ -15,7 +15,6 @@ import G3wFormInputs               from 'components/InputG3WFormInputs.vue';
 import FormBody                    from 'components/FormBody.vue';
 import FormFooter                  from 'components/FormFooter.vue';
 import C3XYLine                    from 'components/C3XYLine.vue';
-import G3WField                    from 'components/FieldG3W.vue';
 
 /**
  * CORE modules
@@ -88,7 +87,7 @@ const QueryResultsComponent        = require('gui/queryresults/vue/queryresults'
 const FormComponent                = require('gui/form/vue/form');
 const FormService                  = require('gui/form/formservice');
 const ChartsFactory                = require('gui/charts/chartsfactory');
-const Fields                       = G3WField.components;
+const Fields                       = Mixins.fieldsMixin.components;
 const InputsComponents             = G3WInput.components;
 const SearchPanelService           = require('gui/search/vue/panel/searchservice');
 
