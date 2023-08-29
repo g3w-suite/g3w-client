@@ -1,67 +1,26 @@
 /**
  * @file
- * @deprecated v3.9.0
+ * @deprecated since 3.9.0. Will be removed in 4.x. Use g3wInputMixin instead. 
  */
+
+import g3wInputMixin from './g3w-input';
 
 export default {
 
   computed: {
-
-    tabIndex() {
-      return this.editable ? 0 : -1;
-    },
-
-    notvalid() {
-      return (false === this.state.validate.valid);
-    },
-
-    editable() {
-      return this.state.editable;
-    },
-
-    showhelpicon() {
-      return this.state.help && this.state.help.message.trim();
-    },
-
-    disabled() {
-      return !this.editable || ['loading', 'error'].includes(this.loadingState);
-    },
-
-    loadingState() {
-      return this.state.input.options.loading ? this.state.input.options.loading.state : null;
-    }
-
+    tabIndex:     g3wInputMixin.computed.tabIndex,
+    notvalid:     g3wInputMixin.computed.notvalid,
+    editable:     g3wInputMixin.computed.editable,
+    showhelpicon: g3wInputMixin.computed.showhelpicon,
+    disabled:     g3wInputMixin.computed.disabled,
+    loadingState: g3wInputMixin.computed.loadingState,
   },
 
   methods: {
-
-    showHideHelp() {
-      this.state.help.visible = !this.state.help.visible
-    },
-
-    // used to text input to listen mobile changes
-    mobileChange(event) {
-      this.state.value = event.target.value;
-      this.change();
-    },
-
-    /**
-     * Called when input value change
-     * 
-     * @fires changeinput
-     */
-    change() {
-      this.service.setEmpty();
-      this.service.setUpdate();
-      // validate input if is required or need to be unique
-      if (this.state.validate.required || this.state.validate.unique) {
-        this.service.validate();
-      }
-      this.$emit('changeinput', this.state);
-    },
-
-    isVisible() {},
-
+    showHideHelp: g3wInputMixin.methods.showHideHelp,
+    mobileChange: g3wInputMixin.methods.mobileChange,
+    change:       g3wInputMixin.methods.change,
+    isVisible:    g3wInputMixin.methods.isVisible,
   },
 
 };
