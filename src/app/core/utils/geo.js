@@ -1006,13 +1006,14 @@ const geoutils = {
       const queryErrors = [];
       let layersLenght = layers.length;
       layers.forEach(layer => {
-        const filter = new Filter(filterConfig);
+        const filter   = new Filter(filterConfig);
         const layerCrs = layer.getProjection().getCode();
-        /**
-         * convert geometry in from mapCRS (geometry) to layerCrs
-         */
-        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs))
-
+        // Convert geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(
+          (mapCrs === layerCrs)
+            ? geometry
+            : geometry.clone().transform(mapCrs, layerCrs)
+        );
         layer.query({
           filter,
           feature_count
