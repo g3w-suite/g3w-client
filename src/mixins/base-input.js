@@ -150,6 +150,45 @@ class Service {
    * Check state's value validity
    */
   validate() {
+    /**
+     * @TODO uncomment and double check code below (conditionals refactor)
+     */
+
+    // const is_empty       = this.state.validate.empty;
+    // const is_required    = this.state.validate.required;
+    // const is_numeric     = ['integer', 'float'].includes(this.state.input.type);
+    // const has_number     = is_numeric && +this.state.value >= 0;
+    // const exclude_values = this.state.validate.exclude_values && this.state.validate.exclude_values.size;
+    // const is_excluded    = exclude_values && this.state.validate.exclude_values.has(this.state.value);
+
+    // // check unique
+    // if (is_empty) {
+    //   this.state.validate.unique = true;
+    // }
+
+    // // check empty
+    // if (is_empty || !has_number) {
+    //   this.state.validate.empty  = true;
+    //   this.state.value           = null;
+    // }
+
+    // // invalid
+    // if (is_required && (is_empty || (!has_number || is_excluded))) {
+    //   this.state.validate.valid = false;
+    // }
+
+    // // valid
+    // if (!is_empty && (!is_excluded || (!is_required && !has_number))) {
+    //   this.state.validate.valid = true;
+    // }
+
+    // // validate
+    // if ((!is_required && is_empty) || (!is_empty && (!exclude_values || has_number))) {
+    //   this.state.validate.valid = this._validator.validate(this.state.value);
+    // }
+
+    // return this.state.validate.valid;
+
     if (this.state.validate.empty) {
       this.state.validate.empty  = true;
       this.state.value           = null;
