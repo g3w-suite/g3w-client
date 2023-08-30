@@ -30,11 +30,11 @@
 </template>
 
 <script>
-import TableBody from 'components/TableBody.vue';
-import SelectRow from 'components/TableSelectRow.vue';
+import TableBody       from 'components/TableBody.vue';
+import SelectRow       from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import Field from 'components/FieldG3W.vue';
-import GUI from 'services/gui';
+import G3WField        from 'components/G3WField.vue';
+import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
 const { debounce } = require('core/utils/utils');
@@ -128,7 +128,7 @@ export default {
               );
               contentDOM = SelectRowInstance.$mount().$el;
             } else {
-              const fieldClass = Vue.extend(Field);
+              const fieldClass = Vue.extend(G3WField);
               const fieldInstance = new fieldClass({
                 propsData: {
                   state: {

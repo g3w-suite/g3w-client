@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <div slot="body" ref="datetimepicker_body">
 
       <div
@@ -36,7 +36,7 @@
       </div>
 
     </div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

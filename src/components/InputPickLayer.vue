@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <div slot="body">
       <span
         style  = "
@@ -29,7 +29,7 @@
         v-model    = "state.value"
       >
     </div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <div slot="body">
       <span v-for="(value, index) in state.input.options.values" :key="value.key">
         <input
@@ -21,7 +21,7 @@
         <label :for="ids[index]">{{ value.key }}</label>
       </span>
     </div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

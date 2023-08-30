@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
 
     <div
       slot       = "body"
@@ -32,7 +32,7 @@
       </table>
 
     </div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

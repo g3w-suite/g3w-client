@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <select
       :id          = "id"
       slot         = "body"
@@ -20,7 +20,7 @@
         :value = "getValue(value)"
       >{{ getValue(value) }}</option>
     </select>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

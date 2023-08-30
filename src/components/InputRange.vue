@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <input
       slot                = "body"
       @keydown.69.prevent = ""
@@ -20,7 +20,7 @@
       type                = "number"
       :step               = "step"
     >
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

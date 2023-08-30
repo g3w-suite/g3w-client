@@ -10,8 +10,8 @@ import ApplicationService          from 'services/application';
 /**
  * Single File Components
  */
-import G3WInput                    from 'components/InputG3W.vue';
-import G3wFormInputs               from 'components/InputG3WFormInputs.vue';
+import G3WInput                    from 'components/G3WInput.vue';
+import G3WFormInputs               from 'components/G3WFormInputs.vue';
 import FormBody                    from 'components/FormBody.vue';
 import FormFooter                  from 'components/FormFooter.vue';
 import C3XYLine                    from 'components/C3XYLine.vue';
@@ -233,7 +233,7 @@ module.exports = {
         Footer: FormFooter
       },
       Inputs: {
-        G3wFormInputs,
+        G3wFormInputs: G3WFormInputs,
         G3WInput,
         InputsComponents
       },

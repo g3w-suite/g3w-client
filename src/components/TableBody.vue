@@ -14,7 +14,7 @@
         :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}, {'selected': feature.selected}]">
       <td v-for="(header, hindex) in headers" :tab-index="1">
         <select-row @selected="addRemoveSelectedFeature" :feature="feature" v-if="hindex===0"></select-row>
-        <field v-else :feature="feature" :state="getField(feature, header)"></field>
+        <g3w-field v-else :feature="feature" :state="getField(feature, header)" />
       </td>
     </tr>
   </tbody>
@@ -22,7 +22,7 @@
 
 <script>
 import SelectRow from 'components/TableSelectRow.vue'
-import Field from 'components/FieldG3W.vue';
+import G3WField from 'components/G3WField.vue';
 
 export default {
   name: "table-body",
@@ -54,7 +54,7 @@ export default {
     }
   },
   components: {
-    Field,
+    G3WField,
     SelectRow
   },
   methods: {

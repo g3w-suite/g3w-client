@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
 
     <template v-slot:body="bodySlotProps">
 
@@ -23,7 +23,7 @@
       >
     </template>
 
-  </baseinput>
+  </g3w-input>
 
 </template>
 

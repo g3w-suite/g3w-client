@@ -766,6 +766,15 @@ export default {
    * @fires changeinput
    */
   created() {
+
+    if (this._isLegacyG3WInput && 'child' !== this.state.type && !this.state.input.options) {
+      this.state.input.options = {};
+    }
+
+    if (this._isLegacyG3WInput){
+      return;
+    }
+
     this.service = this.createInputService(this.state.input.type, { state: this.state });
 
     this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));

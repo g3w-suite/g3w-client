@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <input
       :placeholder = "state.default"
       type         = "color"
@@ -19,7 +19,7 @@
       :class       = "{ 'input-error-validation' : notvalid }"
       :id          = "state.name"
     >
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

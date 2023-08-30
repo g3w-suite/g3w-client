@@ -8,7 +8,6 @@ import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
 import CatalogTristateTree from './CatalogTristateTree.vue';
 import Field from './Field.vue';
-import FieldG3W from './FieldG3W.vue';
 import FieldGallery from './FieldGallery.vue';
 import FieldGeo from './FieldGeo.vue';
 import FieldImage from './FieldImage.vue';
@@ -22,6 +21,9 @@ import FormAddons from './FormAddons.vue';
 import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
+import G3WField from './G3WField.vue';
+import G3WFormInputs from './G3WFormInputs.vue';
+import G3WInput from './G3WInput.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
 import GlobalDateTime from './GlobalDateTime.vue';
@@ -42,8 +44,6 @@ import InputCheckbox from './InputCheckbox.vue';
 import InputColor from './InputColor.vue';
 import InputDateTimePicker from './InputDateTimePicker.vue';
 import InputFloat from './InputFloat.vue';
-import InputG3W from './InputG3W.vue';
-import InputG3WFormInputs from './InputG3WFormInputs.vue';
 import InputInteger from './InputInteger.vue';
 import InputLonLat from './InputLonLat.vue';
 import InputMedia from './InputMedia.vue';
@@ -126,12 +126,9 @@ export {
   CatalogLayersGroup,
   CatalogLayersLegendItems,
   CatalogTristateTree,
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   ChangeMapMenu,
   Field,
-  FieldG3W,
   FieldGallery,
   FieldGeo,
   FieldImage,
@@ -145,6 +142,12 @@ export {
   FormBody,
   FormFooter,
   FormHeader,
+  /** @since 3.9.0 */
+  G3WField,
+  /** @since 3.9.0 */
+  G3WFormInputs,
+  /** @since 3.9.0 */
+  G3WInput,
   GlobalHelpDiv,
   GlobalBarLoader,
   GlobalDateTime,
@@ -165,8 +168,6 @@ export {
   InputColor,
   InputDateTimePicker,
   InputFloat,
-  InputG3W,
-  InputG3WFormInputs,
   InputInteger,
   InputLonLat,
   InputMedia,

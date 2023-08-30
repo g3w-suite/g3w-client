@@ -29,7 +29,7 @@
     </div>
 
     <!-- LONGITUDE -->
-    <baseinput :state="state">
+    <g3w-input :state="state">
       <label
         slot  = "label"
         :for  = "lonId"
@@ -53,10 +53,10 @@
           placeholder = "Lon"
         >
       </div>
-    </baseinput>
+    </g3w-input>
 
     <!-- LATITUDE -->
-    <baseinput :state="state">
+    <g3w-input :state="state">
       <label
         slot  = "label"
         :for  = "latId"
@@ -80,7 +80,7 @@
           placeholder = "Lon"
         >
       </div>
-    </baseinput>
+    </g3w-input>
 
   </div>
 </template>

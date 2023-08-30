@@ -4,9 +4,8 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <template v-slot:body="bodySlotProps">
-
       <input
         :placeholder = "state.default"
         @keyup       = "isMobile() ? bodySlotProps.mobileChange($event) : bodySlotProps.change()"
@@ -19,9 +18,7 @@
         :id          = "state.name"
       >
     </template>
-
-  </baseinput>
-
+  </g3w-input>
 </template>
 
 <script>

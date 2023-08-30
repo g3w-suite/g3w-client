@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <div v-disabled="!editable" style="height: 20px; margin-top:8px;" slot="body">
       <input
         @change   = "changeCheckBox"
@@ -18,7 +18,7 @@
       >
       <label :for="id">{{ label }}</label>
     </div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

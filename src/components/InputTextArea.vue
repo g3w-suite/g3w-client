@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <textarea
       @keydown.stop = ""
       :placeholder  = "state.default"
@@ -18,7 +18,7 @@
       :class        = "{ 'input-error-validation' : notvalid }"
       v-model       = "state.value"
     ></textarea>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

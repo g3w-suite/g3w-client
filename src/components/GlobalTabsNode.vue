@@ -82,7 +82,7 @@
 </template>
 
 <script>
-  import G3wInput         from 'components/InputG3W.vue';
+  import G3wInput         from 'components/G3WInput.vue';
   import ProjectsRegistry from 'store/projects';
   import { fieldsMixin }  from 'mixins';
 

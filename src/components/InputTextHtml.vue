@@ -1,5 +1,5 @@
 <template>
-  <baseinput :state="state" v-disabled="!editable">
+  <g3w-input :state="state" v-disabled="!editable">
     <div
       @keydown.stop = ""
       ref           = "quill_editor"
@@ -7,7 +7,7 @@
       class         = "form-control"
       :style        = "{ border: novalid ? '1px solid reed' : '1px solid #ccc' }"
     ></div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

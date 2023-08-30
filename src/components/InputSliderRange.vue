@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <div slot="body" >
       <span style="font-weight: bold">{{state.value}}</span>
       <input
@@ -21,7 +21,7 @@
         :step      = "state.input.options.step"
       >
     </div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

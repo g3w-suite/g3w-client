@@ -144,7 +144,7 @@
               </template>
               <template v-else>
                 <td v-for="value in row">
-                  <field :state="{value:value}" />
+                  <g3w-field :state="{value:value}" />
                 </td>
               </template>
             </tr>
@@ -184,7 +184,7 @@
 
 <script>
 import { G3W_FID }                  from 'app/constant';
-import Field                        from 'components/FieldG3W.vue';
+import G3WField                     from 'components/G3WField.vue';
 import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import GUI                          from 'services/gui';
@@ -216,7 +216,7 @@ export default {
   mixins: [ fieldsMixin, resizeMixin ],
 
   components: {
-    Field
+    G3WField,
   },
 
   data() {

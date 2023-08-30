@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import G3wInput from 'components/InputG3W.vue';
+import G3wInput from 'components/G3WInput.vue';
 
 export default {
   name: "g3w-form-inputs",
@@ -50,7 +50,7 @@ export default {
 
   },
   components: {
-    G3wInput
+    G3wInput,
   }
 };
 </script>

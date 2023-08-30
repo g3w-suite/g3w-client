@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
     <div slot="body" v-disabled="!editable">
 
       <div
@@ -41,7 +41,7 @@
       </g3w-media>
 
     </div>
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>

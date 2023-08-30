@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <g3w-input :state="state">
 
     <!-- LABEL -->
     <span
@@ -55,7 +55,7 @@
       v-t   = "'server_error'"
     ></p>
 
-  </baseinput>
+  </g3w-input>
 </template>
 
 <script>
