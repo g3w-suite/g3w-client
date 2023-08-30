@@ -6,7 +6,7 @@
 <template>
   <baseinput :state="state">
     <template v-slot:body="bodySlotProps">
-      {{bodySlotProps.change}}
+
       <input
         :placeholder = "state.default"
         @keyup       = "isMobile() ? bodySlotProps.mobileChange($event) : bodySlotProps.change()"
@@ -19,7 +19,9 @@
         :id          = "state.name"
       >
     </template>
+
   </baseinput>
+
 </template>
 
 <script>
