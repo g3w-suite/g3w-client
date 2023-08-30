@@ -33,13 +33,14 @@
         </div>
       </slot>
 
+      <!-- INPUT ELEMENT (eg. components/InputText.vue) -->
       <slot
-        name="body"
-        :editable="editable"
-        :notvalid="notvalid"
-        :tabIndex="tabIndex"
-        :change="change"
-        :mobileChange="mobileChange"
+        name          = "body"
+        :editable     = "editable"
+        :notvalid     = "notvalid"
+        :tabIndex     = "tabIndex"
+        :change       = "change"
+        :mobileChange = "mobileChange"
       />
 
       <!-- ERROR MESSAGES -->

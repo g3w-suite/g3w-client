@@ -5,7 +5,7 @@
 
 <template>
   <baseinput :state="state">
-    <template v-slot:body="{editable, notvalid, tabIndex, change, mobileChange}">
+    <template v-slot:body="{ editable, notvalid, tabIndex, change, mobileChange }">
       <input
         :placeholder = "state.default"
         @keyup       = "isMobile() ? mobileChange($event) : change()"
@@ -18,7 +18,6 @@
         :id          = "state.name"
       >
     </template>
-
   </baseinput>
 </template>
 
@@ -28,6 +27,7 @@ export default {
 
   /** @since 3.8.6 */
   name: "input-text",
+
   props: {
     state: {
       type: Object,
