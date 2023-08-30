@@ -1,11 +1,14 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/viewport/viewport.js@v3.4
+ * @file
+ * @since v3.7
  */
-import ApplicationState from 'core/applicationstate';
-import {viewport as viewportConstraints} from 'gui/constraints';
-const {base, inherit, uniqueId} = require('core/utils/utils');
+
+import ApplicationState from 'store/application-state';
+import { VIEWPORT as viewportConstraints } from 'app/constant';
+import GUI from 'services/gui';
+
+const { base, inherit, uniqueId } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
 
 const ViewportService = function() {
   // state of viewport
@@ -99,7 +102,7 @@ const ViewportService = function() {
     this.state.resized[type] = bool;
   };
 
-  this.showUserMessage = function({title, message, type, position, size, draggable, duration, textMessage=false, closable, autoclose, hooks={}}={}) {
+  this.showUserMessage = function({title, subtitle, message, type, position, size, draggable, duration, textMessage=false, closable, autoclose, hooks={}}={}) {
     this.closeUserMessage();
     setTimeout(() => {
       this.state.usermessage.id = uniqueId();
@@ -107,6 +110,7 @@ const ViewportService = function() {
       this.state.usermessage.message = message;
       this.state.usermessage.textMessage = textMessage;
       this.state.usermessage.title = title;
+      this.state.usermessage.subtitle = subtitle;
       this.state.usermessage.position = position;
       this.state.usermessage.duration = duration;
       this.state.usermessage.type = type;
@@ -316,7 +320,21 @@ const ViewportService = function() {
 
   this.getCurrentContentTitle = function(){
     const currentContent = this.getCurrentContent();
-    return currentContent && currentContent.options.title
+    return currentContent && currentContent.options.title;
+  };
+
+  this.getCurrentContentId = function(){
+    const currentContent = this.getCurrentContent();
+    return currentContent && currentContent.options.id;
+  };
+
+  this.changeCurrentContentOptions = function(options={}){
+    const currentContent = this.getCurrentContent();
+    if (currentContent) {
+      const {title, crumb} = options;
+      if (title) currentContent.options.title = title;
+      if (crumb) currentContent.options.crumb = crumb;
+    }
   };
 
   this.changeCurrentContentTitle = function(title=''){

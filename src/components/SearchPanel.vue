@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/search/vue/panel/searchpanel.html@v3.4 -->
-<!-- gui/search/vue/panel/searchpanel.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3w-search-panel form-group" v-disabled="state.searching">
@@ -10,28 +11,22 @@
       <form class="g3w-search-form">
         <span v-for="forminput in state.forminputs" :key="forminput.id">
           <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
-            <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
-            </label>
-              <input type="number" min="0" @change="changeNumericInput(forminput)" @input="changeNumericInput(forminput)"
-                v-model="forminput.value" class="form-control"
-                :id="forminput.id">
+            <search-panel-label :forminput="forminput"/>
+            <input type="number" min="0" @change="changeNumericInput(forminput)" @input="changeNumericInput(forminput)"
+              v-model="forminput.value" class="form-control" :id="forminput.id">
             </div>
-          <div v-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
-            <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
-            </label>
+          <div v-else-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
+            <search-panel-label :forminput="forminput"/>
             <input @focus="onFocus" type="text" v-model="forminput.value" @change="changeInput(forminput)" class="form-control" :id="forminput.id" >
           </div>
-          <div v-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text" v-disabled="state.loading[forminput.options.dependance] || (forminput.loading || forminput.options.disabled) ">
-            <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
-              <span>{{forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
-            </label>
-            <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance] || forminput.loading"></bar-loader>
-            <select2  :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"></select2>
+          <div v-else-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text" v-disabled="isSelectDisabled(forminput)">
+            <search-panel-label :forminput="forminput"/>
+            <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance] || forminput.loading"/>
+            <select2 :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"/>
+          </div>
+           <div v-if="forminput.type === 'datetimefield'" class="form-group text" v-disabled="state.loading[forminput.options.dependance] || false">
+             <search-panel-label :forminput="forminput"/>
+             <search-datetime :forminput="forminput" @change="changeInput"/>
           </div>
           <div v-if="forminput.logicop" class="search-logicop skin-border-color">
             <h4>{{ forminput.logicop }}</h4>
@@ -47,12 +42,15 @@
 </template>
 
 <script>
-import Select2 from 'components/SearchSelect2.vue'
-import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
+import Select2 from 'components/SearchSelect2.vue';
+import SearchDatetime from 'components/SearchDatetime.vue';
+import SearchPanelLabel from 'components/SearchPanelLabel.vue';
 
 export default {
   components:{
-    Select2
+    Select2,
+    SearchDatetime,
+    SearchPanelLabel
   },
   data() {
     return {
@@ -60,20 +58,25 @@ export default {
     }
   },
   methods: {
-    getLabelOperator(operator){
-      return `[ ${EXPRESSION_OPERATORS[operator]} ]`
+    isSelectDisabled(forminput){
+      return [
+        this.state.loading[forminput.options.dependance],
+        forminput.loading,
+        forminput.options.disabled
+      ].reduce((disabled, current=false) => disabled || current , false)
     },
     async onFocus(event) {
       if (this.isMobile()) {
         const top = $(event.target).position().top - 10 ;
         await this.$nextTick();
-        setTimeout(() => {
-          $('.sidebar').scrollTop(top);
-          }, 500);
+        setTimeout(() => $('.sidebar').scrollTop(top), 500);
       }
     },
     async autocompleteRequest(params={}){
-      return this.$options.service.autocompleteRequest(params);
+      return this.$options.service.getUniqueValuesFromField({
+        ...params,
+        output: 'autocomplete'
+      });
     },
     changeDependencyFields({attribute:field, value}) {
       const subscribers = this.$options.service.getDependencies(field);

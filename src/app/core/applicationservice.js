@@ -4,7 +4,7 @@
 import ApplicationService from 'services/application';
 
 /**
- * FIXME: application is broken using like the following line
+ * @FIXME application is broken using like the following line
  */
 // import { ApplicationService } from 'services';
 

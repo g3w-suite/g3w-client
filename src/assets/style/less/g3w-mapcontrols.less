@@ -49,7 +49,7 @@
 .ol-mouse-position-default {
   right: 50px;
   border-radius: 4px;
-  z-index: 100;
+  z-index: 1;
 }
 
 .ol-mouse-position-default {
@@ -201,14 +201,11 @@
     box-sizing: inherit;
   }
   &.gcd-txt-container {
-    &.nominatim-mobile {
-      left:0;
-    }
     position: absolute;
     max-width: 250px;
     height: 4.375em;
     top: 7px;
-    left: 40px;
+    left: 45px;
     width: 40%;
     height: 6px;
     @media (max-width: @screen-xs-max) {
@@ -231,7 +228,7 @@
   }
   .gcd-gl-input {
     position: absolute;
-    z-index: 99;
+    z-index: 1;
     top: 0.25em;
     left: 2.5em;
     width: 14.84375em;
@@ -245,7 +242,7 @@
   }
   .gcd-gl-reset {
     position: absolute;
-    z-index: 100;
+    z-index: 1;
     top: 0;
     right: 0;
     width: 1.5625em;
@@ -355,7 +352,7 @@
   #search_nominatim {
     position: absolute;
     right: 0;
-    z-index: 100;
+    z-index: 1;
     width: 2.5em;
     height: 100%;
     border-radius: 0;
@@ -373,7 +370,7 @@
   }
   .gcd-txt-reset {
     position: absolute;
-    z-index: 100;
+    z-index: 1;
     top: 0;
     right: 30px;
     width: 2.5em;
@@ -391,7 +388,7 @@
   }
   .gcd-txt-input {
     position: absolute;
-    z-index: 99;
+    z-index: 1;
     top: 0;
     left: 0;
     width: 100%;
@@ -489,7 +486,7 @@
 
 .controls-toggle {
   position: absolute;
-  z-index: 10000;
+  z-index: 1;
   left:0 !important;
   top: 50px;
   cursor: pointer;
@@ -535,7 +532,7 @@
 .g3w-map-controls {
   position: absolute;
   flex-wrap: wrap;
-  z-index: 100;
+  z-index: 1;
   display: flex;
   .tooltip {
     font-weight: bold;

@@ -1,9 +1,12 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/component/componentsregistry.js@v3.4
+ * @file Store legacy frontend components
+ * @since v3.6
+ * 
+ * @deprecated will be probably removed after v4.x. Use Vue Single File Components (SFC) instead
  */
 
 const G3WObject = require('core/g3wobject');
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 
 //class Componet Registry (singleton)
 // store all components added

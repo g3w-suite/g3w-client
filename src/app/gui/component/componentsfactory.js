@@ -1,5 +1,7 @@
-const GUI = require ('gui/gui');
-const Component = require('./component');
+import GUI from 'services/gui';
+
+const Component = require('gui/component/component');
+
 const ComponentsFactory = {
   // build a componet
   build({vueComponentObject, service, propsData}, options={}) {

@@ -1,51 +1,60 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/relations/vue/relationspage.html@v3.4 -->
-<!-- gui/relations/vue/relationspage.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="query-relations-page">
-      <component
-          :loading="loading"
-          @save-relation="saveRelations"
-          @show-chart="showChart"
-          @hide-chart="hideChart"
-          :ref="currentview"
-          :previousview="previousview"
-          :is="currentview"
-          :showChartButton="showChartButton"
-          :relations="relations"
-          :relation="relation"
-          :nmRelation="nmRelation"
-          :feature="feature"
-          :table="table">
-      </component>
+    <component :loading="loading" @save-relation="saveRelations" @show-chart="showChart" @hide-chart="hideChart"
+      :ref="currentview"
+      :previousview="previousview"
+      :is="currentview"
+      :showChartButton="showChartButton"
+      :relations="relations"
+      :relation="relation"
+      :nmRelation="nmRelation"
+      :feature="feature"
+      :table="table"/>
   </div>
 </template>
 
 <script>
+import GUI from 'services/gui';
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent from 'components/Relation.vue';
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import { RelationEventBus as VM } from 'app/eventbus';
 
-const GUI = require('gui/gui');
 const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
-const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'relation-page',
+
   data() {
-    this. chartRelationIds = this.$options.chartRelationIds || [];
+    this.chartRelationIds = this.$options.chartRelationIds || [];
+    const {
+      table,
+      relation=null,
+      relations,
+      nmRelation,
+      feature,
+      currentview,
+      service
+    } = this.$options;
     return {
       loading: false,
       state: null,
       error: false,
-      table: this.$options.table ? this.$options.service.buildRelationTable(this.$options.table) : null,
-      relation: this.$options.relation || null,
-      relations: this.$options.relations,
-      nmRelation: this.$options.nmRelation,
+      table: table ? service.buildRelationTable(table) : null,
+      relation,
+      relations,
+      nmRelation,
       showChartButton: false,
-      feature: this.$options.feature,
-      currentview: this.$options.currentview,
-      previousview: this.$options.currentview
+      feature,
+      currentview,
+      previousview: currentview
     }
   },
   provide() {
@@ -62,7 +71,7 @@ export default {
       this.$options.service.saveRelations(type)
     },
     reloadLayout() {
-      RelationPageEventBus.$emit('reload');
+      VM.$emit('reload');
     },
     showChart(container, relationData){
       const relationLayerId = this.relation.referencingLayer;
@@ -73,8 +82,6 @@ export default {
     },
     async showRelation(relation) {
       GUI.setLoadingContent(true);
-      if (GUI.getCurrentContentTitle() === LIST_OF_RELATIONS_TITLE)
-        GUI.changeCurrentContentTitle(relation.name);
       this.loading = true;
       this.relation = relation;
       let relationLayerId = relation.referencingLayer;
@@ -97,8 +104,16 @@ export default {
         }
         this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
+
+        GUI.changeCurrentContentOptions({
+          title: relation.name,
+          crumb: {
+            title: relation.name
+          }
+        });
+        await this.$nextTick();
+        this.previousview = this.currentview;
         this.currentview = 'relation';
-        this.previousview = 'relations'
       } catch(err){
         // manage error here
       }
@@ -108,13 +123,26 @@ export default {
     setRelationsList() {
       this.previousview = 'relation';
       this.currentview = 'relations';
+      GUI.changeCurrentContentOptions({
+        crumb: {
+          title: LIST_OF_RELATIONS_TITLE
+        }
+      });
       this.loading = false;
     }
   },
   beforeMount() {
-    if (this.relations.length === 1 && this.relations[0].type === 'ONE')  this.showRelation(this.relations[0])
+    if (this.currentview === 'relation' || (this.relations.length === 1 && this.relations[0].type === 'ONE')) this.showRelation(this.relations[0])
   },
   async mounted() {
+    /**
+     * Order relations by name
+     */
+    this.relations.sort(({name:relationName1}, {name:relationName2}) => {
+      if (relationName1 < relationName2) return -1;
+      if (relationName1 > relationName2) return 1;
+      return 0;
+    });
     await this.$nextTick();
     if (this.error)
       requestAnimationFrame(() => {

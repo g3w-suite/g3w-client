@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/fields/image.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <field :state="state">
@@ -13,10 +15,13 @@
 <script>
 import Field from 'components/Field.vue';
 
-const {toRawType} = require('core/utils/utils');
+const { toRawType } = require('core/utils/utils');
 
 export default {
-  name: "image",
+
+  /** @since 3.8.6 */
+  name: "field-image",
+
   props: ['state'],
   data() {
     return {

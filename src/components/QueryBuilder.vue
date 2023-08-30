@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/querybuilder/vue/querybuilder.html@v3.4 -->
-<!-- gui/querybuilder/vue/querybuilder.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="query_builder" class="form-group" style="flex-wrap: nowrap !important">
@@ -26,7 +27,7 @@
       <div id="query_builder_values" class="margin-between-element">
         <div id="query_builder_values_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.values'"></div>
         <div v-if="!manual" id="query_builder_values_content" class="querybuilder-content margin-between-element">
-          <bar-loader :loading="loading.values"></bar-loader>
+          <bar-loader :loading="loading.values"/>
           <table class="table table-striped content-table">
             <tbody>
               <tr v-for="value in values" @click="select.value = value" :class="{'skin-background-color lighten': select.value===value}" :key="value" @dblclick="addToExpression({value: value, type: 'value'})" style="cursor: pointer">
@@ -63,7 +64,7 @@
           </div>
         </div>
         <div id="query_builder_message" class="margin-between-element">
-          <bar-loader :loading="loading.test"></bar-loader>
+          <bar-loader :loading="loading.test"/>
           <span class="bold skin-color" v-show="message" v-t="'sdk.querybuilder.messages.number_of_features'"></span><span class="bold skin-color">{{message}}</span>
         </div>
         <div id="query_builder_footer_buttons" class="content-end margin-between-element">
@@ -77,13 +78,17 @@
 </template>
 
 <script>
-import Service from "gui/querybuilder/service";
-import {OPERATORS} from 'core/layers/filter/operators';
+import QueryBuilderService from 'services/querybuilder';
+import { FILTER_OPERATORS as OPERATORS } from 'app/constant';
+import ProjectsRegistry from 'store/projects';
 
-const ProjectsRegistry = require('core/project/projectsregistry');
 const operators = Object.values(OPERATORS);
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'query-builder',
+
   data() {
     const options = this.$options.options;
     const edit = options !== undefined;
@@ -137,7 +142,7 @@ export default {
     async all(){
       this.loading.values = true;
       try {
-        this.values = await Service.getValues({
+        this.values = await QueryBuilderService.getValues({
           layerId: this.currentlayer.id,
           field: this.select.field
         });
@@ -159,7 +164,7 @@ export default {
       this.loading.test = true;
       let number_of_features;
       try {
-        number_of_features = await Service.test({
+        number_of_features = await QueryBuilderService.test({
           layerId,
           filter: this.filter
         });
@@ -174,7 +179,7 @@ export default {
       const layerId = this.currentlayer.id;
       this.loading.test = true;
       try {
-        const response = await Service.run({
+        const response = await QueryBuilderService.run({
           layerId,
           filter: this.filter
         });
@@ -182,7 +187,7 @@ export default {
       this.loading.test = false;
     },
     save() {
-      Service.save({
+      QueryBuilderService.save({
         layerId: this.currentlayer.id,
         filter: this.filter,
         projectId: this.projectId,
@@ -216,9 +221,9 @@ export default {
       return {
         id: layer.id,
         label: layer.name,
-        fields: layer.fields.map(field => ({
-          label:field.label,
-          name: field.name
+        fields: layer.fields.filter(field => field.show).map(({label, name}) => ({
+          label,
+          name
         })).filter(field => excludejoinfields.indexOf(field) === -1)
       }
     });

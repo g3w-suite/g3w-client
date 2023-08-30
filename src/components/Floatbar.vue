@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/floatbar/floatbar.html@v3.4 -->
-<!-- gui/floatbar/floatbar.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <aside class="control-sidebar control-sidebar-light" >
@@ -23,7 +24,7 @@
 </template>
 
 <script>
-  import floatbarService from "services/floatbar";
+  import floatbarService from 'services/floatbar';
 
   export default {
     name: "Floatbar",

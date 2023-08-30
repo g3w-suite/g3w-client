@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/fields/link.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <field :state="state">
@@ -11,7 +13,10 @@
 import Field from 'components/Field.vue';
 
 export default {
-  name: "link",
+
+  /** @since 3.8.6 */
+  name: "field-link",
+
   props: ['state'],
   data() {
     return {

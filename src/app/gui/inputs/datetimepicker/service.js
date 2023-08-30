@@ -1,5 +1,6 @@
-const {inherit, base} = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
+import ApplicationService from 'services/application';
+
+const { inherit, base, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
 const Service = require('gui/inputs/service');
 
 function DateTimePickerService(options={}) {
@@ -17,12 +18,7 @@ proto.getLocale = function() {
 };
 
 proto.convertQGISDateTimeFormatToMoment = function(datetimeformat) {
-  datetimeformat = datetimeformat.replace('yyyy', 'YYYY');
-  const matchDayInDate = datetimeformat.match(/d/g);
-  if (matchDayInDate && matchDayInDate.length < 3) {
-    datetimeformat = datetimeformat.replace('d'.repeat(matchDayInDate.length), 'D'.repeat(matchDayInDate.length))
-  }
-  return datetimeformat
+  return convertQGISDateTimeFormatToMoment(datetimeformat);
 };
 
 proto.setValidatorOptions = function(options) {

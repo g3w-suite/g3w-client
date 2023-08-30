@@ -1,11 +1,13 @@
+import PluginsRegistry from 'store/plugins';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+
 const { base, inherit, toRawType } = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
 const ComponentsFactory = require('gui/component/componentsfactory');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const PluginsRegistry = require('core/plugin/pluginsregistry');
 const { addI18nPlugin } = require('core/i18n/i18n.service');
+
 const TIMEOUT = 10000;
 
 const Plugin = function({
@@ -84,7 +86,9 @@ proto.setDependencies = function(dependencies) {
 
 proto.setApi = function(api = {}) {
   this._api = api;
-  // FIXME: useless assignment ?
+  /**
+   * @FIXME useless assignment ?
+   */
   api.getConfig = this._api.getConfig; // add alias for "api.getConfig()" method
 };
 
@@ -110,7 +114,7 @@ proto.setLayout = function(config = ApplicationService.cloneLayout('app')) {
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  * 
  * @see g3wsdk.core.ApplicationState.gui.layout.__current
  */
@@ -119,7 +123,7 @@ proto.setCurrentLayout = function() {
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  * 
  * @see g3wsdk.core.ApplicationState.gui.layout
  */
@@ -128,7 +132,7 @@ proto.removeLayout = function() {
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  */
 proto.setReady = function(isReady) {
   this._ready = isReady;
@@ -136,7 +140,9 @@ proto.setReady = function(isReady) {
     this.setLayout();
   }
   this.emit('set-ready', isReady, this.name);
-  // FIXME: empty delay ?
+  /**
+   * @FIXME empty delay ?
+   */
   setTimeout(() => {
     clearTimeout(this._timeout);
     PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
@@ -144,7 +150,7 @@ proto.setReady = function(isReady) {
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  */
 proto.isReady = function() {
   return new Promise((resolve) => {
@@ -176,7 +182,7 @@ proto.registerPlugin = function(projectId) {
 };
 
 /**
- * FIXME: explain better what it does
+ * @FIXME explain better what it does
  * 
  * Get plugin dependencies 
  */
@@ -186,7 +192,7 @@ proto.getDependencyPlugins = function(pluginsName) {
 };
 
 /**
- * FIXME: explain better what it does
+ * @FIXME explain better what it does
  * 
  * Create to not replace above plugin method used by non changed old plugin
  */
@@ -198,7 +204,7 @@ proto.getDependencyPluginsObject = async function(pluginsName) {
 };
 
 /**
- * FIXME: explain better what it does
+ * @FIXME explain better what it does
  * 
  * Get plugin dependency
  */
@@ -206,7 +212,9 @@ proto.getDependencyPlugin = function(pluginName) {
   if (PluginsRegistry.isTherePlugin(pluginName)) {
     return new Promise((resolve) => {
       const plugin = PluginsRegistry.getPlugin(pluginName);
-      // TODO: refactor weird shortcircuiting logic
+      /**
+       * @TODO refactor weird shortcircuiting logic
+       */
       plugin
       && plugin.isReady().then(() => resolve(plugin.getApi()))
       || PluginsRegistry.onafter('registerPlugin', plugin => {
@@ -225,21 +233,21 @@ proto.setHookLoading = function({ hook = "tools", loading = false } = {}) {
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  */
 proto.addToolGroup = function({ hook = "tools", position:order, title:group } = {}) {
   this.getHookService(hook).addToolGroup(order, group);
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  */
 proto.removeToolGroup = function({ hook, group } = {}) {
   this.getHookService(hook).removeToolGroup(group.title);
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  */
 proto.addTools = function(
   {
@@ -285,14 +293,14 @@ proto.addTools = function(
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  */
 proto.setToolState = function({ id, state = { type:null, message: null } } = {}) {
   this.hookservices[this._hook].setToolState({ id, state });
 };
 
 /**
- * FIXME: add description
+ * @FIXME add description
  */
 proto.removeTools = function() {
   this.hookservices[this._hook].removeTools();
@@ -340,34 +348,46 @@ proto.createSideBarComponent = function(
   return PluginSiderbarComponent;
 };
 
-// DEPRECATED: will be removed after v3.4
+/**
+ * @deprecated since v3.4.
+ */
 proto.unload  = function() {
   this.service && this.service.clearAllEvents();
   this.emit('unload');
   //console.log('UNLOAD can be overwrite by plugin');
 };
 
-// DEPRECATED: will be removed after v3.4
+/**
+ * @deprecated since v3.4.
+ */
 proto.load = function() {
   //console.log('LOAD  need to be overwrite by plugin');
 };
 
-// TODO: it could be depecrated after v3.4 ?
+/**
+ * @TODO it could be depecrated after v3.4 ?
+ */
 proto.getProject = function() {
   return ProjectsRegistry.getCurrentProject();
 };
 
-// TODO: it could be depecrated after v3.4 ?
+/**
+ * @TODO it could be depecrated after v3.4 ?
+ */
 proto.addDependency = function(dependency) {
   this.dependencies.push(dependency);
 };
 
-// TODO: it could be depecrated after v3.4 ?
+/**
+ * @TODO it could be depecrated after v3.4 ?
+ */
 proto.addFontClass = function({ name, className }) {
   Vue.prototype.g3wtemplate.addFontClass({ name, className });
 };
 
-// TODO: it could be depecrated after v3.4 ?
+/**
+ * @TODO it could be depecrated after v3.4 ?
+ */
 proto.addFontClasses = function(fonClasses = []) {
   fonClasses.forEach(fontClass => this.addFontClass(fontClass));
 };

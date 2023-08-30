@@ -1,6 +1,6 @@
-const t = require('core/i18n/i18n.service').t;
-const {getResolutionFromScale, getScaleFromResolution} = require('core/utils/ol');
-const SCALES = [1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000];
+const {t} = require('core/i18n/i18n.service');
+const { getResolutionFromScale, getScaleFromResolution } = require('core/utils/ol');
+import { PRINT_SCALES } from 'app/constant';
 
 const ScaleControl = function(options= {}) {
   this.isMobile = options.isMobile || false;
@@ -114,7 +114,7 @@ proto._setScales = function(map) {
   const mapUnits = map.getView().getProjection().getUnits();
   const currentResolution = map.getView().getResolution();
   const currentScale = parseInt(getScaleFromResolution(currentResolution, mapUnits));
-  this.scales = SCALES.filter(scale => scale < currentScale);
+  this.scales = PRINT_SCALES.map(scale => scale.value).filter(scale => scale < currentScale);
   this.scales.unshift(currentScale);
   this._createControl();
 };

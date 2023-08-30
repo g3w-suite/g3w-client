@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/components/addons/vue/addon.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template functional>
   <span class="circle-icon skin-background-color lighten" @click.stop="fnc" :id="id" :title="title || id">

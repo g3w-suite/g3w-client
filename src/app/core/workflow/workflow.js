@@ -1,10 +1,13 @@
-const {base, inherit, resolve}= require('core/utils/utils');
+import WorkflowsStack from 'services/workflows';
+import GUI from 'services/gui';
+
+import UserMessageSteps from 'components/UserMessageSteps';
+
+const { base, inherit, resolve } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const Flow = require('./flow');
-const WorkflowsStack = require('./workflowsstack');
-const {MESSAGES} = require('./step');
-const createUserMessageStepsFactory = require('gui/workflow/createUserMessageStepsFactory');
-const GUI = require('gui/gui');
+const Flow = require('core/workflow/flow');
+const { MESSAGES } = require('core/workflow/step');
+
 //Class to manage flow of steps
 function Workflow(options={}) {
   const {inputs=null, context=null, flow=new Flow(), steps=[], runOnce=false} = options;
@@ -64,6 +67,15 @@ proto.removeChild = function() {
   this._child = null;
 };
 
+proto.setInput = function({key, value}) {
+  this._inputs[key] = value;
+};
+
+/**
+ * maybe unused method. Remove
+ * @param inputs
+ * @private
+ */
 proto._setInputs = function(inputs) {
  this._inputs = inputs;
 };
@@ -119,7 +131,7 @@ proto.clearMessages = function() {
 
 proto.getLastStep = function() {
   const length = this._steps.length;
-  return length ? this._steps[length] : null;
+  return length ? this._steps[length-1] : null;
 };
 
 proto.getRunningStep = function() {
@@ -159,9 +171,6 @@ proto.start = function(options={}) {
   this._steps = options.steps || this._steps;
   const showUserMessage = this._isThereUserMessaggeSteps();
   if (showUserMessage) {
-    const stepsComponent = createUserMessageStepsFactory({
-      steps: this._userMessageSteps
-    });
     GUI.showUserMessage({
       title: 'sdk.workflow.steps.title',
       type: 'tool',
@@ -169,7 +178,7 @@ proto.start = function(options={}) {
       size: 'small',
       closable: false,
       hooks: {
-        body: stepsComponent
+        body: UserMessageSteps({ steps: this._userMessageSteps })
       }
     });
   }
@@ -195,9 +204,8 @@ proto.start = function(options={}) {
 // stop workflow during flow
 proto.stop = function() {
   this._promise = null;
-  ////console.log('Workflow stopping .... ');
   const d = $.Deferred();
-  // stop child workflow indpendent from father workflow
+  // stop child workflow
   this._stopChild()
     // in every case remove child
     .always(() => {

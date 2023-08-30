@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/usermessage/vue/usermessage.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
@@ -7,8 +9,9 @@
       <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
         <slot name="header">
-          <h4 v-if="title" v-t="title"></h4>
-          <h4 v-else> {{ type.toUpperCase() }}</h4>
+          <h4  v-if="title" v-t="title"></h4>
+          <h4  v-else> {{ type.toUpperCase() }}</h4>
+          <h5 class="usermessage-header-subtitle" v-if="subtitle" v-t="subtitle"></h5>
         </slot>
       </div>
       <div class="usermessage-header-right">
@@ -26,7 +29,9 @@
 </template>
 
 <script>
-  const GUI = require('gui/gui');
+  import { ZINDEXES } from 'app/constant';
+  import GUI from 'services/gui';
+
   const COLORS = {
     success: {
       backgroundColor: '#62ac62',
@@ -54,6 +59,22 @@
       fontWeight: "bold"
     },
   };
+  /**
+   * Add custom style to handle different type of usermessage
+   * @type {{alert: {}, success: {}, warning: {}, loading: {}, tool: {"z-index": string}, info: {}}}
+   */
+  const STYLES = {
+    success: {},
+    info: {},
+    warning: {},
+    alert: {},
+    tool: {
+      "z-index": ZINDEXES.usermessage.tool,
+      left: "40px"
+    },
+    loading: {},
+  };
+
   export default {
     name: "usermessage",
     props: {
@@ -66,12 +87,16 @@
         type: String,
         default: null,
       },
+      subtitle: {
+        type: String,
+        default: null,
+      },
       position: {
         type: String,
         default: 'top'
       },
       size: {
-        type: 'String', // values [small, medium,fullpage]
+        type: String, // values [small, medium,fullpage]
         default: 'fullpage'
       },
       message: {
@@ -156,8 +181,9 @@
         }
       }
       this.style = {
-      ...COLORS[this.type],
-      ...position,
+        ...COLORS[this.type],
+        ...position,
+        ...STYLES[this.type]
       }
     },
     async mounted(){
@@ -207,16 +233,21 @@
     font-size: 1.1em;
   }
 
- .usermessage-header-title, .usermessage-header-title h4 {
+  .usermessage-header-title, .usermessage-header-title h4 {
     font-weight: bold;
-   text-align: center;
+    text-align: center;
   }
 
   .usermessage-content.mobile  .usermessage-header-title h4 {
-    margin: 3px;
+    margin: 0;
   }
 
- .usermessage-header-right {
+  .usermessage-header-subtitle {
+    font-weight: bold;
+    margin: 5px;
+  }
+
+  .usermessage-header-right {
     padding: 5px;
   }
 

@@ -1,8 +1,13 @@
-const utils = require('core/utils/ol');
-const InteractionControl = require('./interactioncontrol');
-const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
+import GUI from 'services/gui';
+import ProjectsRegistry from 'store/projects';
+import DataRouterService from 'services/data';
 
-const QueryControl = function(options={}){
+const { throttle }               = require('core/utils/utils');
+const utils                      = require('core/utils/ol');
+const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+
+const QueryControl = function(options = {}){
   const _options = {
     offline: false,
     name: "querylayer",
@@ -11,7 +16,9 @@ const QueryControl = function(options={}){
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
   };
+
   options = utils.merge(options, _options);
+
   InteractionControl.call(this, options);
 };
 
@@ -19,22 +26,52 @@ ol.inherits(QueryControl, InteractionControl);
 
 const proto = QueryControl.prototype;
 
+/**
+ * @param {ol.Map} map
+ * 
+ * @fires   picked                     fired after map `singleclick` ?
+ * @listens InteractionControl~toggled
+ */
 proto.setMap = function(map) {
-  let eventToggledKey;
-  const querySingleClickFnc = event => {
-    this.dispatchEvent({
-      type: 'picked',
-      coordinates: event.coordinate
-    });
-    this._autountoggle && this.toggle(true);
-  };
-  if (map) {
-    eventToggledKey = this.on('toggled', event => {
-      const toggled = event.target.isToggled();
-      toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);
-    });
-  } else ol.Observable.unByKey(eventToggledKey);
+ let key = null;
+
+  this.on('toggled', ({ toggled }) => {
+    if (true !== toggled) {
+      ol.Observable.unByKey(key);
+      key = null;
+    } else if (null === key && map) {
+      key = this.getInteraction().on('picked', throttle(evt => this.runQuery({coordinates: evt.coordinate })));
+    }
+  });
+
+  this.setEventKey({
+    eventType: 'picked',
+    eventKey: this.on('picked', this.runQuery)
+  });
+
   InteractionControl.prototype.setMap.call(this, map);
+};
+
+/**
+ * @since 3.8.0
+ * 
+ * @param event
+ */
+proto.runQuery = async function({coordinates}) {
+  GUI.closeOpenSideBarComponent();
+  try {
+    const project = ProjectsRegistry.getCurrentProject();
+    await DataRouterService.getData('query:coordinates', {
+      inputs: {
+        coordinates,
+        feature_count: project.getQueryFeatureCount(),
+        query_point_tolerance: project.getQueryPointTolerance(),
+        multilayers: project.isQueryMultiLayers(this.name),
+      }
+    });
+  } catch(err) {
+    console.warn('Error running spatial query: ', err)
+  }
 };
 
 module.exports = QueryControl;

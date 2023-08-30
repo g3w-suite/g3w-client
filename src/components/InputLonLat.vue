@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/lonlat/vue/lonlat.html@v3.4 -->
-<!-- gui/inputs/lonlat/vue/lonlat.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div style="position: relative">
@@ -24,6 +25,7 @@
         :class="{'input-error-validation' : notvalid}"
         class="form-control"
         style="width:100%; margin-bottom: 5px;"
+        :tabIndex="tabIndex"
         v-disabled="!editable"
         v-model="state.values.lon"
         type="number"
@@ -42,6 +44,7 @@
           @change="changeLonLat"
           class="form-control"
           style="width:100%; margin-bottom: 5px;"
+          :tabIndex="tabIndex"
           v-disabled="!editable"
           v-model="state.values.lat"
           type="number"
@@ -60,6 +63,10 @@ const { getUniqueDomId } = require('core/utils/utils');
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-lonlat',
+
   mixins: [Input],
   data(){
     return {

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/actiontools/downloadformats.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3w-download-formats-content" style="width: 100%; display: flex" @click.prevent.stop="">
@@ -17,7 +19,10 @@
 
 <script>
 export default {
+
+  /** @since 3.8.7 */
   name: "downloadformats",
+
   data(){
     const download_format = this.config.downloads[0].format;
     return {

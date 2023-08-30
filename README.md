@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.7.0-alpha.0
+# G3W-CLIENT v3.9.0-alpha.1
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -84,14 +84,24 @@ For more info about this project dependencies see:
 
 ## How to develop
 
+From within your [g3w-client](https://github.com/g3w-suite/g3w-client) local repository:
+
+```sh
+cd ./g3w-client
+```
+
 You can start the built-in development servers by using the following:
 
 ```sh
-npm run docker:up # g3w-admin
+npm run docker:up      # backend server   (g3w-admin)
 ```
 
 ```sh
-npm run dev       # g3w-client
+npm run dev            # frontend server  (g3w-client)
+```
+
+```sh
+npm run watch:plugins  # watch built-in plugins (editing, openrouteservice, qplotly, qtimeseries)
 ```
 
 If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
@@ -102,8 +112,8 @@ If everything went fine, you can now visit you local development server URL to s
 # project_type  = "qdjango";
 # project_id    = "1"
 
-http://localhost:8000/en/map/countries/qdjango/1   # g3w-admin  (production)
-http://localhost:3000/?project=countries/qdjango/1 # g3w-client (development)
+http://localhost:8000/en/map/countries/qdjango/1 # g3w-admin  (production)
+http://localhost:3000/en/map/countries/qdjango/1 # g3w-client (development)
 ```
 
 ```sh
@@ -112,9 +122,46 @@ http://localhost:3000/?project=countries/qdjango/1 # g3w-client (development)
 # project_type  = "qdjango";
 # project_id    = "2"
 
-http://localhost:8000/en/map/eleprofile/qdjango/2   # g3w-admin  (production)
-http://localhost:3000/?project=eleprofile/qdjango/2 # g3w-client (development)
+http://localhost:8000/en/map/eleprofile/qdjango/2 # g3w-admin  (production)
+http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
 ```
+
+### Plugins
+
+If you want develop client plugins you need place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder:
+
+```sh
+.
+└── src/
+    └── plugins/
+        ├── base
+        ├── eleprofile
+        ├── sidebar
+        └── ...
+```
+
+Update your [`config.js`](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js) file accordingly:
+
+```js
+// overrides global `window.initConfig.group.plugins` property for custom plugin development
+
+const G3W_PLUGINS = [
+  'base',
+  'eleprofile',
+  'sidebar',
+  ...
+];
+```
+
+And then start again the development servers:
+
+```sh
+npm run docker:up      # backend server (g3w-admin)
+npm run dev            # frontend server (g3w-client)
+npm run watch:plugins  # watch built-in plugins + any custom plugin (eg. base, eleprofile, sidebar)
+```
+
+For further information about plugin development, see also: [`src/plugins/README.md`](https://github.com/g3w-suite/g3w-client/blob/dev/src/src/plugins/README.md)
 
 ---
 
@@ -195,7 +242,43 @@ For more info:
 
 <details>
 
-<summary>3. How can I translate this project?</summary>
+<summary>3. How can I keep client plugins updated ?</summary>
+
+Currently built-in and custom plugins are managed with several "independent" git repositories, so there is currently no automated task to achieve this.
+
+You can use the following commands to fetch the latest changes of built-in plugins:
+
+```sh
+cd /g3w-client/src/plugins/editing
+
+git pull editing
+```
+
+```sh
+cd /g3w-client/src/plugins/openrouteservice
+
+git pull openrouteservice
+```
+
+```sh
+cd /g3w-client/src/plugins/qplotly
+
+git pull qplotly
+```
+
+```sh
+cd /g3w-client/src/plugins/qtimeseries
+
+git pull qtimeseries
+```
+
+If you are looking for an alternative workflow, also try to take a look at [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) or [git subtrees](https://www.atlassian.com/git/tutorials/git-subtree)
+
+</details>
+
+<details>
+
+<summary>4. How can I translate this project?</summary>
 
 Depending on your current project version, you can edit one of the following files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request):
 
@@ -211,8 +294,8 @@ All notable changes to this project are documented in the [releases](https://git
 ---
 
 **Compatibile with:**
-[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.4.x)
-[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.4.x)
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.6-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.6.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.6-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.6.x)
 
 ---
 

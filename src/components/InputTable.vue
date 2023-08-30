@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/table/vue/table.html@v3.4 -->
-<!-- gui/inputs/table/vue/table.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -23,6 +24,10 @@ import InputTableBody from 'components/InputTableBody.vue';
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-table',
+
   mixins: [Input],
   components: {
     InputTableHeader,

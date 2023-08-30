@@ -1,5 +1,5 @@
-const QueryBuilder = require('./vue/querybuilder');
-const QueryBuilderPanel = require('./vue/panel/querybuilderpanel');
+const QueryBuilder = require('gui/querybuilder/vue/querybuilder');
+const QueryBuilderPanel = require('gui/querybuilder/vue/panel/querybuilderpanel');
 
 const QuerybuilderUIfactory = {
   type: null,

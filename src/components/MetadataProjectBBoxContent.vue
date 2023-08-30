@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/metadata/vue/components/project/metadatabboxcontent.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="wrap-content-tab">
@@ -14,7 +16,10 @@
 
 <script>
   export default {
-    name: "metadatabbox",
+
+    /** @since 3.8.6 */
+    name: "metadata-bbox",
+
     props: {
       data: {}
     },

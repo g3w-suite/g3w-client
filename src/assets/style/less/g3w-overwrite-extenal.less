@@ -56,6 +56,10 @@ table.dataTable {
   }
 }
 
+.modal-backdrop {
+  z-index: 1 !important;
+}
+
 .modal-background-dark {
   .modal-title {
     font-weight: bold;
@@ -103,10 +107,20 @@ table.dataTable {
   font-weight: bold;
 }
 
+.select2-selection--single, .select2-selection__choice {
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 .bootstrap-datetimepicker-widget.dropdown-menu {
   color: #000000;
   white-space: normal !important;
   &:after, &:before {
     content: none !important;
   }
+}
+
+.ql-tooltip[data-mode="link"] {
+  left: 0 !important;
 }

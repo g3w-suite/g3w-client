@@ -1,7 +1,9 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/fields/gallery.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
 
-<!-- TODO: check if "gui/fields/gallery.vue@v3.4" component is depreacated -->
+  @TODO check if "gui/fields/gallery.vue@v3.4" component is depreacated
+-->
 
 <template>
   <div class="modal fade modal-fullscreen force-fullscreen" :id="id" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true" >
@@ -31,7 +33,7 @@
 </template>
 
 <script>
-const ProjectsRegistry = require('core/project/projectsregistry');
+import ProjectsRegistry from 'store/projects';
 
 export default {
   name: "g3w-images-gallery",

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/metadata/vue/components/layer/layer.vue@v3.4  -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="row-info">
@@ -111,7 +113,7 @@
 </template>
 
 <script>
-  import MetadataMixin from 'gui/metadata/vue/components/metadatamixin';
+  import { metadataMixin as MetadataMixin } from 'mixins';
 
   export default {
     name: "layer",

@@ -1,4 +1,5 @@
-const Validators = require('core/validators/inputs/validators');
+const Validators = require('core/utils/validators');
+const {toRawType} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 
 function Service(options = {}) {
@@ -28,20 +29,42 @@ proto.getValue = function() {
   return this.state.value;
 };
 
+/**
+ * @param value
+ *
+ * @returns {void}
+ */
 proto.setValue = function(value) {
-  if (value === null || value === undefined) {
-    if (Array.isArray(this.state.input.options)) {
-      if (this.state.input.options[0].default)
-        this.state.value = this.state.input.options[0].default;
-      else if(Array.isArray(this.state.input.options.values)) {
-        if (this.state.input.options.values.length) {
-          this.state.value =  this.state.input.options.values[0] &&
-            this.state.input.options.values[0].value
-            || this.state.input.options.values[0]
-        }
-      }
-    } else this.state.value = this.state.input.options.default;
+  if (null !== value && "undefined" !== typeof value) {
+    return;
   }
+
+  const {options}   = this.state.input;
+  let default_value = options.default;
+
+  /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
+  if (Array.isArray(options)) {
+    if (options[0].default) {
+      default_value = options[0].default;
+    } else if (Array.isArray(options.values) && options.values.length > 0) {
+      default_value = options.values[0] && (options.values[0].value || options.values[0]);
+    }
+  }
+
+  // check if default value is set
+  const get_default_value = (
+    this.state.get_default_value && // ref: core/layers/tablelayer.js::getFieldsWithValues()
+    undefined !== default_value &&
+    null !== default_value
+  );
+
+  // check if we can state.check get_default_value from input.options.default is set
+  if (get_default_value && undefined === options.default_expression) {
+    this.state.value = default_value;
+  }
+
+  this.state.value_from_default_value = get_default_value;
+
 };
 
 proto.addValueToValues = function(value) {
@@ -85,11 +108,8 @@ proto.validate = function() {
         this.state.validate.valid = !this.state.validate.required;
       } else this.state.validate.valid = this._validator.validate(this.state.value);
     }
-    if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
-      if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
-        this.state.validate.valid = false;
-        this.state.validate.unique = false;
-      } else this.state.validate.unique = true;
+    if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
+      this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
     } else this.state.validate.valid = this._validator.validate(this.state.value);
   }
   return this.state.validate.valid;
@@ -103,7 +123,7 @@ proto.setErrorMessage = function(input) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
   else if (input.validate.min_field)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
-  else if (!input.validate.unique && input.validate.exclude_values)
+  else if (input.validate.unique && input.validate.exclude_values && input.validate.exclude_values.size)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   else if (input.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
@@ -116,6 +136,20 @@ proto.setErrorMessage = function(input) {
     }
     this.state.validate.message = this.state.info || message;
   } else this.state.validate.message = this.state.info;
+};
+/**
+ * Method to set update
+ */
+proto.setUpdate = function(){
+  const {value, _value} = this.state;
+  if (this.state.input.type === 'media' && toRawType(value) !== 'Object' && toRawType(_value) !== 'Object') {
+    this.state.update = value.value != _value.value;
+  } else if (this.state.input.type === "datetimepicker") {
+    //check
+    this.state.update = (null !== value ? value.toUpperCase(): value) != (_value ? _value.toUpperCase(): _value);
+  } else {
+    this.state.update = value != _value;
+  }
 };
 
 module.exports = Service;

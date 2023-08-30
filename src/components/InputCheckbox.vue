@@ -1,12 +1,14 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/checkbox/vue/checkbox.html@v3.4 -->
-<!-- gui/inputs/checkbox/vue/checkbox.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
     <div v-disabled="!editable" style="height: 20px; margin-top:8px;" slot="body">
       <input
         @change="changeCheckBox"
+        :tabIndex="tabIndex"
         style="width:100%"
         :class="{'input-error-validation' : notvalid}"
         class="magic-checkbox"
@@ -19,16 +21,21 @@
 </template>
 
 <script>
+import { widgetMixins } from 'mixins';
+
 const Input = require('gui/inputs/input');
-const widgetMixins = require('gui/inputs/widgetmixins');
-const {getUniqueDomId} = require('core/utils/utils');
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name:'input-checkbox',
+
   mixins: [Input, widgetMixins],
   data() {
     return {
       value: null,
-      label:null,
+      label: null,
       id: getUniqueDomId() // new id
     }
   },
@@ -54,10 +61,7 @@ export default {
     this.value = this.state.forceNull ? this.value : this.service.convertValueToChecked();
   },
   mounted() {
-    if (!this.state.forceNull) {
-      this.setLabel();
-      this.change();
-    }
+    if (!this.state.forceNull) this.setLabel();
   }
 };
 </script>

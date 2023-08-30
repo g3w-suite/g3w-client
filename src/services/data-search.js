@@ -1,9 +1,10 @@
 /**
- * ORIGINAL SOURCE: src/app/core/data/search/service.js@v3.4
+ * @file
+ * @since v3.6
  */
 
-const {base, inherit} = require('core/utils/utils');
-const {createOlFeatureFromApiResponseFeature} = require('core/utils/geo');
+const { base, inherit } = require('core/utils/utils');
+const { createOlFeatureFromApiResponseFeature } = require('core/utils/geo');
 const BaseService = require('core/data/service');
 
 function SearchService(){

@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/unique/vue/unique.html@v3.4 -->
-<!-- gui/inputs/unique/vue/unique.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -8,6 +9,7 @@
       :id="id"
       slot="body"
       style="width:100%"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       class="form-control">
       <option value="null"></option>
@@ -17,11 +19,15 @@
 </template>
 
 <script>
+import { selectMixin } from 'mixins';
 const Input = require('gui/inputs/input');
-const {selectMixin} = require('gui/vue/vue.mixins');
-const {getUniqueDomId} = require('core/utils/utils');
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: "input-unique",
+
   mixins: [Input, selectMixin],
   data() {
     const id = `unique_${getUniqueDomId()}`;

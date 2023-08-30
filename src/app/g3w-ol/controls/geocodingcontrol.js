@@ -1,7 +1,12 @@
-import ApplicationState from "core/applicationstate";
+import ApplicationState from 'store/application-state';
+import GUI from 'services/gui';
+
+import MapControlGeocoding from 'components/MapControlGeocoding';
+import MapControlNominatimResults from 'components/MapControlNominatimResults';
+
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
-const GUI = require('gui/gui');
+const Projections = require('g3w-ol/projection/projections');
 /**
  * Classes for all element of dom control
  * @type {{country: string, hidden: string, city: string, road: string, spin: string, namespace: string, inputText: {container: string, result: string, input: string, reset: string, control: string}, olControl: string, inputResetId: string, inputQueryId: string}}
@@ -251,7 +256,7 @@ class Nominatim {
     this.active = true;
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
-      url: 'https://nominatim.openstreetmap.org/search/',
+      url: 'https://nominatim.openstreetmap.org/search',
       params: {
         q: '',
         format: 'json',
@@ -390,7 +395,7 @@ function GeocodingControl(options={}) {
     placeholder: options.placeholder || 'Città, indirizzo ... ',
     noresults: options.noresults || 'Nessun risultato ',
     notresponseserver: options.notresponseserver || 'Il server non risponde',
-    lang: ApplicationState.lng || 'it-IT',
+    lang: ApplicationState.language || 'it-IT',
     limit: options.limit || 5,
     keepOpen: true,
     preventDefault: false,
@@ -399,7 +404,6 @@ function GeocodingControl(options={}) {
     debug: false,
     viewbox: options.bbox,
     bounded: 1,
-    classMobile: options.isMobile ? 'nominatim-mobile' : '',
     mapCrs: options.mapCrs,
     fontIcon: GUI.getFontClass('search')
   };
@@ -429,6 +433,7 @@ function GeocodingControl(options={}) {
     source: new ol.source.Vector(),
     style: new ol.style.Style({
       text: new ol.style.Text({
+        offsetY: -15, //move marker icon on base point coordinate and not center
         text: '\uf3c5',
         font: '900 3em "Font Awesome 5 Free"',
         stroke: new ol.style.Stroke({
@@ -444,85 +449,23 @@ function GeocodingControl(options={}) {
 
   this.projection;
 
-  const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`;
-  const self = this;
-
-  const GeocoderVueContainer = Vue.extend({
-    functional: true,
-    render(h){
-      return h('div', {class: {[containerClass]: true}}, [
-        h('div', {
-          class: {
-            [cssClasses.inputText.control]: true,
-          }
-        }, [
-          h('input', {
-            attrs: {
-              type: 'text',
-              id: cssClasses.inputQueryId,
-              autocomplete: 'off'
-            },
-            class:{
-              [cssClasses.inputText.input]: true
-            },
-            directives:[
-              {
-                name: 't-placeholder',
-                value: placeholder
-              }
-            ]
-          }),
-          h('button', {
-            attrs: {
-              type: 'button',
-              id: 'search_nominatim'
-            },
-            class:{
-              btn: true
-            },
-            on: {
-              click() {
-                const value = $(`input.${cssClasses.inputText.input}`).val();
-                self.query(value);
-              }
-            }
-          }, [h('i', {
-            attrs: {
-              'aria-hidden': true
-            },
-            style: {
-              color:'#ffffff'
-            },
-            class: {
-              [fontIcon]: true
-            }
-          })]),
-          h('button', {
-            attrs: {
-              type: 'button',
-              id:  cssClasses.inputResetId
-            },
-            class: {
-              [`${cssClasses.inputText.reset}  ${cssClasses.hidden}`]: true
-            }
-          }),
-        ]),
-        h('ul', {
-          class: {
-            [cssClasses.inputText.result]: true
-          }
-        })])
-    }
-  });
+  const GeocoderVueContainer = Vue.extend(MapControlGeocoding({
+    containerClass: `${cssClasses.namespace} ${cssClasses.inputText.container}`,
+    cssClasses,
+    fontIcon,
+    placeholder,
+    ctx: this
+  }));
   this.container = new GeocoderVueContainer().$mount().$el;
   this.lastQuery = '';
   this.registeredListeners = {
     mapClick: false
   };
 
-  this.showMarker = function(coordinates) {
+  this.showMarker = function(coordinates, options={transform: true}) {
+    const {transform} = options;
     this.hideMarker();
-    coordinates = ol.proj.transform(coordinates, 'EPSG:4326', this.getMap().getView().getProjection());
+    coordinates = transform ? ol.proj.transform(coordinates, 'EPSG:4326', this.getMap().getView().getProjection()) : coordinates;
     const geometry =  new ol.geom.Point(coordinates);
     const feature = new ol.Feature(geometry);
     this.layer.getSource().addFeature(feature);
@@ -578,13 +521,27 @@ function GeocodingControl(options={}) {
     this.hideMarker();
     return new Promise(async (resolve, reject) => {
       const isNumber = value => toRawType(value) === 'Number' && !Number.isNaN(value);
-      let lonlat = null;
-      if (q && q.split(',').length === 2) {
-        lonlat = q.split(',');
-        lonlat = isNumber(1*lonlat[0]) && isNumber(1*lonlat[1]) ? lonlat.map(coordinate => 1*coordinate) : null;
+      let coordinates = null;
+      let transform = false;
+      if (q) {
+        const [x, y, epsg] = q.split(',');
+        coordinates = isNumber(1*x) && isNumber(1*y) ? [1*x, 1*y] : null;
+        try {
+          /**
+           * check if is sett epsg code and if is register on project
+           */
+          if (epsg && Projections.get(`EPSG:${epsg.trim()}`)) {
+            coordinates = ol.proj.transform(coordinates, Projections.get(`EPSG:${epsg.trim()}`), 'EPSG:4326');
+            transform = true;
+          }
+        } catch(err){}
       }
-      if (lonlat) this.showMarker(coordinates);
-      else {
+      if (coordinates) {
+        this.showMarker(coordinates, {
+          transform
+        });
+        resolve(coordinates);
+      } else {
         if (this.lastQuery === q && this.result.firstChild) { return; }
         const promises = [];
         /**
@@ -615,9 +572,7 @@ function GeocodingControl(options={}) {
                 header,
                 results
               });
-              if (results) this.listenMapClick();
             }
-
           }
         });
         utils.removeClass(this.reset, cssClasses.spin);
@@ -639,18 +594,7 @@ function GeocodingControl(options={}) {
         ul.appendChild(li);
       });
     } else {
-      const {noresults} = this.options;
-      const elementVue = Vue.extend({
-        functional: true,
-        render(h){
-          return h('li', {
-            class: {
-              'nominatim-noresult': true
-            },
-            directives:[{name: 't', value: noresults}]
-          })
-        }
-      });
+      const elementVue = Vue.extend(MapControlNominatimResults({noresults: this.options.noresults}));
       const li = new elementVue().$mount().$el;
       ul.appendChild(li);
     }
@@ -696,7 +640,6 @@ function GeocodingControl(options={}) {
     utils.removeClass(this.input, cssClasses.spin);
     utils.addClass(this.control, cssClasses.glass.expanded);
     setTimeout( () =>  this.input.focus(), 100);
-    this.listenMapClick();
   };
   this.collapse = function() {
     this.input.value = '';
@@ -704,18 +647,7 @@ function GeocodingControl(options={}) {
     utils.addClass(this.reset, cssClasses.hidden);
     this.clearResults();
   };
-  this.listenMapClick = function() {
-    // already registered
-    if (this.registeredListeners.mapClick) return;
-    const mapElement = this.getMap().getTargetElement();
-    this.registeredListeners.mapClick = true;
-    //one-time fire click
-    mapElement.addEventListener('click', evt => {
-      this.clearResults(true);
-      mapElement.removeEventListener(evt.type, this, false);
-      this.registeredListeners.mapClick = false;
-    }, false);
-  };
+
   this.clearResults = function() {
     utils.removeAllChildren(this.result);
     this.hideMarker();

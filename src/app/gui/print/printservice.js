@@ -1,16 +1,18 @@
-const {base, inherit, downloadFile} = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
-const {t} = require('core/i18n/i18n.service');
-const GUI = require('gui/gui');
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import {
+  PRINT_SCALES as scale,
+  PRINT_RESOLUTIONS as dpis,
+  PRINT_FORMATS as formats
+} from 'app/constant';
+import GUI from 'services/gui';
+
+const { base, inherit, downloadFile } = require('core/utils/utils');
+const { t } = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
-const ProjectsRegistry = require('core/project/projectsregistry');
 const PrintService = require('core/print/printservice');
-const {getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees} = require('core/utils/ol');
-const printConfig = require('./printconfig');
-const PrintPage = require('./vue/printpage');
-const scale = printConfig.scale;
-const dpis = printConfig.dpis;
-const formats = printConfig.formats;
+const { getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees } = require('core/utils/ol');
+const PrintPage = require('gui/print/vue/printpage');
 
 function PrintComponentService() {
   base(this);
@@ -213,12 +215,12 @@ proto._calculateInternalPrintExtent = function() {
   const scala = parseFloat(this.state.scala);
   const {h: height, w: width} = this.state.maps.find(map=> !map.overview);
   const resolutionInMeters = this._mapService.getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution);
-  const w = (((width / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
-  const h = (((height  / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
+  const w = (((width / 1000.0) * scala) / resolutionInMeters);
+  const h = (((height  / 1000.0) * scala) / resolutionInMeters);
   // get current map center ( in pixel)
   const center = [
-    (this.state.size[0] * ol.has.DEVICE_PIXEL_RATIO) / 2, // X
-    (this.state.size[1] * ol.has.DEVICE_PIXEL_RATIO) / 2  // Y
+    (this.state.size[0]) / 2, // X
+    (this.state.size[1]) / 2  // Y
   ];
   // Calculate the inner bbox in pixel
   const xmin = center[0] - (w / 2);
@@ -332,7 +334,7 @@ proto.showPrintArea = function(bool) {
 
 proto.reload = function() {
   this._project = ProjectsRegistry.getCurrentProject();
-  this._mapService = GUI.getComponent('map').getService();
+  this._mapService = GUI.getService('map');
   this._map = this._mapService.viewer.map;
   this.state.print = this._project.state.print || [];
   this.state.visible = this.state.print.length > 0;

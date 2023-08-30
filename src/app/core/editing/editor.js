@@ -1,10 +1,12 @@
-import Applicationstate from 'core/applicationstate';
-const {inherit, base} = require('core/utils/utils');
+import Applicationstate from 'store/application-state';
+import ChangesManager from 'services/editing';
+import SessionsRegistry from 'store/sessions';
+
+const { inherit, base } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
 const Layer = require('core/layers/layer');
-const ChangesManager = require('./changesmanager');
 
 // class Editor bind editor to layer to do main actions
 function Editor(options={}) {
@@ -92,9 +94,7 @@ proto.setLayer = function(layer) {
 };
 
 proto.removeNotEditablePropriertiesFromFeature = function(feature){
-  this._noteditablefileds.forEach(field => {
-    feature.unset([field]);
-  });
+  this._noteditablefileds.forEach(field => feature.unset([field]));
 };
 
 //clone features method
@@ -112,25 +112,21 @@ proto._doGetFeaturesRequest = function(options={}) {
   return doRequest && this._canDoGetFeaturesRequest(options)
 };
 
-// fget features methods
+// get features from server method
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   const doRequest = this._doGetFeaturesRequest(options);
   if (!doRequest) d.resolve();
   else
     this._layer.getFeatures(options)
-      .then((promise) => {
-        promise.then((features) => {
+      .then(promise => {
+        promise.then(features => {
           this._addFeaturesFromServer(features);
           this._allfeatures = !options.filter;
           return d.resolve(features);
-        }).fail((err) => {
-          return d.reject(err);
-        })
+        }).fail(err => d.reject(err))
       })
-      .fail(function (err) {
-        d.reject(err);
-      });
+      .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -156,9 +152,7 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
     const layer = this.getLayerById(relationLayerId);
     const editingLayerSource = this.getEditingLayer(relationLayerId).getEditingSource();
     const features = editingLayerSource.readFeatures();
-    features.forEach((feature) => {
-      feature.clearState();
-    });
+    features.forEach(feature => feature.clearState());
     layer.getSource().setFeatures(features);
     layer.applyCommitResponse({
       response,
@@ -168,25 +162,13 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
   }
 };
 
-/**
- * Handle multi fields relations
- * 
- * @param relationId
- * @param ids
- * @param fields
- * @param values
- * @since v3.8
- */
-proto.setFieldValueToRelationFields = function({relationId, ids, fields, values=[]}={}){
-  const SessionsRegistry = require('./sessionsregistry');
+proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
   const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
   ids.forEach(id => {
     const feature = editingLayerSource.getFeatureById(id);
     if (feature) {
-      fields.forEach((field, index) => {
-        const fieldvalue = feature.get(field);
-        fieldvalue == values[0] && feature.set(field, values[1][index]);
-      })
+      const fieldvalue = feature.get(field);
+      fieldvalue == values[0] && feature.set(field, values[1]);
     }
   })
 };
@@ -203,12 +185,12 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
       feature.setProperties(idobj.properties);
       relations.forEach(relation =>{
         Object.entries(relation).forEach(([relationId, options]) => {
-          const father_values = options.fatherFields.map(fatherField => feature.get(fatherField));
-          this.setFieldValueToRelationFields({
+          const value = feature.get(options.fatherField);
+          this.setFieldValueToRelationField({
             relationId,
             ids: options.ids,
-            fields: options.childFields,
-            values:[idobj.clientid, father_values]
+            field: options.childField,
+            values:[idobj.clientid, value]
           })
         })
       })
@@ -235,8 +217,8 @@ proto.commit = function(commitItems) {
     return {
       [relationId]:{
         ids: [...add, ...updates],
-        fatherFields: layerRelation.getFatherFields(),
-        childFields: layerRelation.getChildFields()
+        fatherField: layerRelation.getFatherField(),
+        childField: layerRelation.getChildField()
       }
     }
   }) : [];

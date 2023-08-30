@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/editing/changesmanager.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 //lass that is usefult to apply changes to features (undo/redo) singleton

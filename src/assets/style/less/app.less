@@ -57,14 +57,53 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 .g3w-disabled {
   cursor: not-allowed !important;
   pointer-events: none !important;
-  opacity: 0.2 !important;
+  opacity: 0.5 !important;
 }
 
 .g3w-hide {
   display: none !important;
 }
 
-*:focus {outline:none}
+.g3w-long-text {
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+*:focus {
+  outline: none;
+}
+
+//@since 3.8.0
+.g3w-modal-project-message {
+
+  &.Info{
+    .modal-header {
+      background-color: @blue;
+    }
+  }
+  &.Warning{
+    .modal-header{
+      background-color: @yellow;
+    }
+  }
+
+  &.Error {
+    .modal-header {
+      background-color: @red;
+    }
+  }
+
+  &.Critical{
+    .modal-header {
+      background-color: @purple;
+    }
+  }
+
+  h4.modal-title {
+    color: #FFFFFF !important;
+  }
+}
 
 // core less styles
 @import "g3w-custom-fonts";

@@ -1,7 +1,9 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/table/vue/components/link.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
 
-<!-- TODO: check if "gui/table/vue/components/link.vue@v3.4" component is depreacated -->
+  @TODO check if "gui/table/vue/components/link.vue@v3.4" component is depreacated
+-->
 
 <template>
   <a :href="href" target="_blank">
@@ -11,7 +13,10 @@
 
 <script>
 export default {
-  name: "link",
+
+  /** @since 3.8.6 */
+  name: "table-link",
+
   props: ['href']
 };
 </script>

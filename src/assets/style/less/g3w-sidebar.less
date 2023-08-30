@@ -4,15 +4,21 @@
 @control-sidebar-width: 450px;
 
 .main-sidebar{
-    &.iframe{
-      padding-top:0 !important;
-      a.sidebar-aside-toggle {
-        top: 0! important;
-      }
+  &.iframe{
+    padding-top:0 !important;
+    a.sidebar-aside-toggle {
+      top: 0! important;
     }
+  }
+  a.sidebar-aside-toggle {
+    @media (max-width: @screen-xs-max) {
+      display: none !important;
+    }
+  }
   &.mobile {
     width: @sidebar-width-small;
   }
+  //z-index: 1 !important;
 }
 
 #g3w-sidebar.sidebar {
@@ -62,6 +68,8 @@
     #g3w-sidebarpanel-header-placeholder {
       //height: 4%;
       min-height: 35px;
+      border-bottom: 1px solid #FFFFFF;
+      margin-bottom: 5px;
     }
     .g3w-sidebarpanel-placeholder {
       //height: 95%;
@@ -116,14 +124,6 @@
     }
   }
 
-  .sidebar-menu {
-    .new_line_too_long_text {
-      overflow: hidden;
-      white-space: normal;
-      //text-overflow: ellipsis;
-    }
-  }
-
   .sidebar-menu > li , .sidebar-divider{
     border-bottom: 1px solid #21292d;
     &:last-child {
@@ -157,6 +157,9 @@
     .fa-file-code-o, .fa-file-code {
       color: #ffffff;
     }
+  }
+  #g3w-sidebarcomponents #spatialbookmarks.sidebaritem a i {
+    color: #00bcd4;
   }
 }
 

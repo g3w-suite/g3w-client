@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/integer/vue/integer.html@v3.4 -->
-<!-- gui/inputs/integer/vue/integer.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -10,6 +11,7 @@
       @input="change"
       class="form-control"
       style="width:100%"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       :class="{'input-error-validation' : notvalid}"
       v-model="state.value"
@@ -22,6 +24,10 @@
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-integer',
+
   mixins: [Input],
 };
 </script>

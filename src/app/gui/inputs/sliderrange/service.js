@@ -1,6 +1,6 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const Service = require('gui/inputs/service');
-const Validators = require('core/validators/inputs/validators');
+const Validators = require('core/utils/validators');
 
 function SliderRangeService(options={}) {
   const {state} = options;

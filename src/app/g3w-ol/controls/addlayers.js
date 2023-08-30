@@ -1,4 +1,5 @@
-const Control = require('./control');
+const Control = require('g3w-ol/controls/control');
+
 function AddLayersControl() {
   const options = {
     name: "addlayer",

@@ -1,4 +1,5 @@
-const InteractionControl = require('./interactioncontrol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+
 function GeolocationControl() {
   const options = {
     visible: false, // set initial to false. Is set visible if is autorized
@@ -11,6 +12,7 @@ function GeolocationControl() {
     source: new ol.source.Vector(),
     style: new ol.style.Style({
       text: new ol.style.Text({
+        offsetY: -15, //move marker icon on base point coordinate and not center
         text: '\uf3c5',
         font: '900 3em "Font Awesome 5 Free"',
         fill: new ol.style.Fill({

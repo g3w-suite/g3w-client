@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/actiontools/querypolygoncsvattributes.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div style="width:100%">
@@ -16,12 +18,15 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate'
+  import ApplicationState from 'store/application-state'
   
-  const {t}= require('core/i18n/i18n.service');
+  const {t} = require('core/i18n/i18n.service');
 
   export default {
-    name: "querypolygonaddattributes",
+
+    /** @since 3.8.6 */
+    name: "queryresults-querypolygonaddattributes",
+
     props: {
       layer: {
         type: Object
@@ -37,7 +42,7 @@
       }
     },
     created() {
-      this.unwatch =  this.$watch(()=>ApplicationState.lng, ()=>{
+      this.unwatch =  this.$watch(()=>ApplicationState.language, ()=>{
         this.config.choices.forEach(choice => $(this.$refs[choice.type]).text(t(choice.label)));
         $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
       })

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/vue/global-components/geo.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="geo-content">
@@ -10,7 +12,7 @@
 </template>
 
 <script>
-  const {geoMixin} = require('gui/vue/vue.mixins');
+  import { geoMixin } from 'mixins';
 
   export default {
     name: "g3w-geospatial",

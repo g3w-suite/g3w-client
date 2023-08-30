@@ -1,92 +1,55 @@
-const Projection = require('./projection');
-const ADDEDPROJECTIONS = ['EPSG:4326', 'EPSG:3857'];
+import { API_BASE_URLS } from 'constant';
+
+const Projection       = require('g3w-ol/projection/projection');
+const { XHR }          = require('core/utils/utils');
+const {normalizeEpsg } = require('core/utils/geo');
 
 const Projections = {
-  get(crs={},  extent) {
-    const cachedProjection = ADDEDPROJECTIONS.indexOf(crs.epsg) !== -1 ?  ol.proj.get(crs.epsg) : null;
+
+  /**
+   * @since v3.8
+   */
+  isRegistered(epsg) {
+    return ol.proj.get(epsg);
+  },
+
+  get(crs={}) {
+    const cachedProjection = this.isRegistered(crs.epsg);
     if (cachedProjection) return cachedProjection;
     const projection = new Projection({
-      crs,
-      extent
+      crs
     });
     ol.proj.addProjection(projection);
-    ADDEDPROJECTIONS.push(crs.epsg);
+    ol.proj.proj4.register(proj4);
     return projection;
   },
-  setApplicationProjections() {
-    this.get({
-      epsg: "EPSG:3003",
-      proj4: "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs",
-      axisinverted: false,
-      geographic: false,
-    });
 
-    this.get({
-      epsg: "EPSG:3004",
-      proj4: "+proj=tmerc +lat_0=0 +lon_0=15 +k=0.9996 +x_0=2520000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs",
-      axisinverted: false,
-      geographic: false,
-    });
-
-    this.get({
-      epsg: "EPSG:3045",
-      proj4:"+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
-      axisinverted: true,
-      geographic: false,
-     });
-
-    this.get({
-      epsg:"EPSG:6708",
-      proj4:"+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
-      axisinverted: true,
-      geographic: false
-    });
-
-    this.get({
-      epsg:"EPSG:32632",
-      proj4:"+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs",
-      axisinverted: false,
-      geographic: false
-    });
-
-    this.get({
-      epsg:"EPSG:32633",
-      proj4:"+proj=utm +zone=33 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
-      axisinverted: false,
-      geographic: false
-    });
-
-    this.get({
-      epsg:"EPSG:32634",
-      proj4:"+proj=utm +zone=34 +datum=WGS84 +units=m +no_defs",
-      axisinverted: false,
-      geographic: false
-    });
-
-    this.get({
-      epsg:"EPSG:25833",
-      proj4:"+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs",
-      axisinverted: false,
-      geographic: false
-    });
-
-    this.get({
-      epsg:"EPSG:23032",
-      proj4:"+proj=utm +zone=32 +ellps=intl +units=m +no_defs",
-      axisinverted: false,
-      geographic: false,
-    });
-
-    this.get({
-      epsg:"EPSG:23033",
-      proj4:"+proj=utm +zone=33 +ellps=intl +units=m +no_defs",
-      axisinverted: false,
-      geographic: false
-   });
-    //REGISTER AT THE END THE CUSTOM PROJECTIONS
-    ol.proj.proj4.register(proj4)
+  /**
+   * Check and register epsg
+   * 
+   * @param epsg : "EPSG:<CODE>" Ex. "EPSG:4326"
+   * @returns {Promise<Projection>}
+   * @since v3.8
+   */
+  registerProjection(epsg) {
+    return new Promise((resolve, reject) => {
+      let projection = this.isRegistered(epsg);
+      // check if already register
+      if (projection) resolve(projection);
+      else {
+        XHR.get({url: `${API_BASE_URLS.CRS}${epsg.split(':')[1]}`})
+          .then(({result, data}) => {
+            if (result)  {
+              data.epsg = normalizeEpsg(data.epsg);
+              projection = this.get(data);
+              ol.proj.proj4.register(proj4);
+              resolve(projection);
+            }
+          })
+          .catch(err => reject(err))
+      }
+    })
   }
 };
-
 
 module.exports = Projections;

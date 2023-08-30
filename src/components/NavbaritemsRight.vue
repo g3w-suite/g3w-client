@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/navbar/navbarrightitems.html@v3.4 -->
-<!-- gui/navbar/navbaritems.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul class="nav navbar-nav navbar-right">
@@ -12,7 +13,10 @@
   import NavbarItemsService from 'services/navbaritems';
 
   export default {
-    name: "NavbaritemRight",
+
+    /** @since 3.8.6 */
+    name: "navbar-item-right",
+
     data() {
       return {
         items: NavbarItemsService.state.items.right

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/search/vue/panel/select2.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <select :name="forminput.attribute" class="form-control" :id="forminput.id" v-disabled="forminput.options.disabled || forminput.loading">
@@ -11,12 +13,12 @@
 </template>
 
 <script>
-  import { ALLVALUE }  from 'gui/search/constants';
+  import { SEARCH_ALLVALUE as ALLVALUE } from 'app/constant';
+  import { select2Mixin } from 'mixins';
 
   const autocompleteOptions = require('gui/external/select2/options/autocomplete');
   const { t } = require('core/i18n/i18n.service');
   const { debounce } = require('core/utils/utils');
-  const {select2Mixin} = require('gui/vue/vue.mixins');
 
   export default {
     name: "select2",
@@ -37,7 +39,7 @@
       },
       _initSelect2Element() {
         const { type, attribute, options } = this.forminput;
-        // get numgigaut and validate it
+        // get numdigaut and validate it
         const numdigaut = options.numdigaut && !Number.isNaN(1*options.numdigaut) && 1*options.numdigaut > 0 && 1*options.numdigaut || 2;
         const isAutocomplete = type === 'autocompletefield';
         this.select2 = $(this.$el).select2({

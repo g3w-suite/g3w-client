@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/tools/vue/tool.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div>
@@ -15,7 +17,7 @@
       </label>
     </div>
     <div v-else class="tool" @click="!disabled ? fireAction(tool) : null" :class="{tool_disabled: disabled}" style="position:relative">
-      <bar-loader :loading="tool.loading"></bar-loader>
+      <bar-loader :loading="tool.loading"/>
       <i :class="g3wtemplate.getFontClass(icon)"></i>
       <span v-if="tool.html" >
         <i :class="tool.html.icon"></i>
@@ -30,8 +32,10 @@
 </template>
 
 <script>
-const AppState = require('core/applicationservice').getState();
-const GUI = require('gui/gui');
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+
+const AppState = ApplicationService.getState();
 
 const TOOLSTATE = {
   alert: {

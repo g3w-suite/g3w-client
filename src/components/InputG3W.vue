@@ -1,8 +1,10 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/g3w-input.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
-  <div>
+  <div v-if="state.visible">
     <div v-if="state.type !== 'child'">
       <component
         @changeinput="changeInput"

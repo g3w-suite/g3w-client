@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/table/vue/components/g3w-table-toolbar.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div  style="display: flex; justify-content: space-between; padding: 1px;">
@@ -11,7 +13,7 @@
 </template>
 
 <script>
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 
 export default {
   name: "g3w-table-toolbar",

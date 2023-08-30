@@ -1,6 +1,7 @@
-import ApplicationState from 'core/applicationstate';
-const {base, inherit} = require('core/utils/utils');
-const MapLayer = require('./maplayer');
+import ApplicationState from 'store/application-state';
+
+const { base, inherit } = require('core/utils/utils');
+const MapLayer = require('core/layers/map/maplayer');
 const RasterLayers = require('g3w-ol/layers/rasters');
 
 function WMSLayer(options={}, extraParams={}, method='GET') {
@@ -67,21 +68,33 @@ proto._getVisibleLayers = function() {
   return this.layers.filter(layer => layer.isVisible());
 };
 
+/**
+ * @param {boolean} withLayers
+ * 
+ * @returns {RasterLayers.WMSLayer}
+ * 
+ * @listens ol.source.ImageWMS~imageloadstart
+ * @listens ol.source.ImageWMS~imageloadend
+ * @listens ol.source.ImageWMS~imageloaderror
+ */
 proto._makeOlLayer = function(withLayers) {
-  const wmsConfig = {
-    url: this.config.url,
-    id: this.config.id,
-    projection: this.config.projection,
-    iframe_internal: this.iframe_internal,
-    layers: this.layers
-  };
-  if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
-  const representativeLayer = this.layers[0];
-  if (representativeLayer && representativeLayer.getWmsUrl) wmsConfig.url = representativeLayer.getWmsUrl();
-  const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
+  const olLayer = new RasterLayers.WMSLayer(
+    // wmsConfig
+    {
+      url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
+      id:              this.config.id,
+      projection:      this.config.projection,
+      iframe_internal: this.iframe_internal,
+      layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
+      /** @since 3.7.11 */
+      format:          this.config.format
+    },
+    this.extraParams,
+    this._method
+  );
   olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
-  olLayer.getSource().on('imageloadend', () => this.emit("loadend"));
-  olLayer.getSource().on('imageloaderror', ()=> this.emit("loaderror"));
+  olLayer.getSource().on('imageloadend',   () => this.emit("loadend"));
+  olLayer.getSource().on('imageloaderror', () => this.emit("loaderror"));
   return olLayer
 };
 
@@ -91,13 +104,39 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   //check disabled layers
   !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
+  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
   if (visibleLayers.length > 0) {
-    const STYLES = visibleLayers.map(layer => layer.getStyle()).join(',');
+    const CATEGORIES_LAYERS = {};
+    const STYLES = [];
+    const OPACITIES = [];
+    visibleLayers.map(layer => {
+      const layerId = layer.getWMSLayerName();
+      CATEGORIES_LAYERS[layerId] = { ...get_LEGEND_ON_LEGEND_OFF_Params(layer) };
+      STYLES.push(layer.getStyle());
+      OPACITIES.push(parseInt((layer.getOpacity()/100) * 255))
+    });
+
+    let LEGEND_ON;
+    let LEGEND_OFF;
+    Object.keys(CATEGORIES_LAYERS).forEach(layerId => {
+      if (CATEGORIES_LAYERS[layerId].LEGEND_OFF) {
+        if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = CATEGORIES_LAYERS[layerId].LEGEND_OFF;
+        else LEGEND_OFF = `${LEGEND_OFF};${CATEGORIES_LAYERS[layerId].LEGEND_OFF}`;
+      }
+      if (CATEGORIES_LAYERS[layerId].LEGEND_ON) {
+        if (typeof LEGEND_ON === 'undefined') LEGEND_ON = CATEGORIES_LAYERS[layerId].LEGEND_ON;
+        else LEGEND_ON = `${LEGEND_ON};${CATEGORIES_LAYERS[layerId].LEGEND_ON}`;
+      }
+    });
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
      params = {
       ...params,
       filtertoken: ApplicationState.tokens.filtertoken,
-      STYLES,
+      STYLES: STYLES.join(','),
+      /** @since v3.8 */
+      OPACITIES: OPACITIES.join(','),
+      LEGEND_ON,
+      LEGEND_OFF,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
       }).join(',')}`

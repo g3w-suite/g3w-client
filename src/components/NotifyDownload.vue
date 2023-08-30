@@ -1,9 +1,11 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/notifications/download/vue/download.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template functional>
   <div id="download_notification" v-download.show title="DOWNLOAD" class="skin-color">
-    <bar-loader loading="true"></bar-loader>
+    <bar-loader loading="true"/>
     <i style="padding:3px" :class="g3wtemplate.getFontClass('download')"></i>
   </div>
 </template>

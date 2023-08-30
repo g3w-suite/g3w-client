@@ -1,17 +1,15 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/select/vue/select.html@v3.4 -->
-<!-- gui/inputs/select/vue/select.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
-    <div style="position:relative; width: 100%" slot="loading" v-if="loadingState === 'loading'">
-      <bar-loader loading="true"></bar-loader>
-    </div>
     <span slot="label-action" data-placement="top" v-t-tooltip="'sdk.form.inputs.tooltips.picklayer'" v-disabled="disabled"
       @click="pickLayerValue" v-if="showPickLayer" style="cursor: pointer; position:relative; top: 2px; font-size: 1.2em"
       :class="g3wtemplate.font['crosshairs']" class="skin-color">
     </span>
-    <div slot="body" v-disabled="disabled">
+    <div slot="body" v-disabled="disabled" :tabIndex="tabIndex">
       <select ref="select" style="width:100%;"  class="form-control">
         <option v-if="showNullOption" :value="select2NullValue"></option>
         <option :value="getValue(value.value)" v-for="value in state.input.options.values" :key="getValue(value.value)">{{ value.key }}</option>
@@ -22,17 +20,22 @@
 </template>
 
 <script>
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import MapLayersStoresRegistry from 'store/map-layers';
+import GUI from 'services/gui';
+import { selectMixin, select2Mixin } from 'mixins';
+
 const PickLayerInputService = require('gui/inputs/picklayer/service');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Layer = require('core/layers/layer');
 const InputMixin = require('gui/inputs/input');
-const {selectMixin, select2Mixin} = require('gui/vue/vue.mixins');
-const GUI = require('gui/gui');
 
 const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-select',
+
   mixins: [InputMixin, selectMixin, select2Mixin],
   data() {
     return {
@@ -47,9 +50,7 @@ export default {
     select2NullValue(){
       return this.showNullOption && G3W_SELECT2_NULL_VALUE;
     },
-    disabled(){
-      return !this.editable || this.loadingState === 'loading' || this.loadingState === 'error';
-    }
+
   },
   watch: {
     async 'state.input.options.values'(values) {
@@ -111,7 +112,7 @@ export default {
     if (this.state.input.type === 'select_autocomplete') {
       const dependencyLayerId = this.state.input.options.layer_id;
       try {
-        const dependencyLayer = MapLayersStoreRegistry.getLayerById(dependencyLayerId).getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
+        const dependencyLayer = MapLayersStoresRegistry.getLayerById(dependencyLayerId).getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
         this.showPickLayer = dependencyLayer ? dependencyLayer.getType() !== Layer.LayerTypes.TABLE : false;
         const {value:field, layer_id} = this.state.input.options;
         const options = {

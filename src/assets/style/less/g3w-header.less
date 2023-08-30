@@ -21,6 +21,7 @@ header.main-header {
 }
 
 .main-header {
+  max-height: 50px;
   .navbar {
     max-height: 50px;
     box-shadow: 0 3px 15px 0 rgba(0, 0, 0, 0.3);
@@ -89,6 +90,16 @@ header.main-header {
   margin-bottom:0
 }
 
+#g3w-small-screen-hamburger-sidebar {
+  display: none;
+}
+
+@media (max-width: @screen-xs-max) {
+  #g3w-small-screen-hamburger-sidebar {
+    display: block;
+  }
+}
+
 .logo-wrapper {
   display: flex;
   max-height: 50px;
@@ -103,8 +114,12 @@ header.main-header {
       height: 100%;
     }
   }
+
+  // TODO: remove isMobile(), use only css @media queries
+  @media (max-width: @screen-xs-max) { padding-left: 5px; }
+  &.mobile { padding: 5px; }
+
   &.mobile{
-    padding: 5px;
     .project_title_content {
       margin-top: 2px;
       .sub_title {

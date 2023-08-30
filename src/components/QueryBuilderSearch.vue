@@ -1,10 +1,12 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/querybuilder/vue/g3w-search-querybuilder.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <li>
     <div style="position:relative">
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
       <div class="querybuliserch-tools" style="display:flex; align-items: baseline">
         <i :class="g3wtemplate.getFontClass('filter')" style="margin-right: 14px; margin-left: 1px;"></i>
         <span style="white-space: pre-wrap">{{querybuildersearch.name}}</span>
@@ -38,7 +40,7 @@
 </template>
 
 <script>
-  import Service from 'gui/querybuilder/service';
+  import QueryBuilderService from 'services/querybuilder';
 
   const QueryBuilderUIFactory = require('gui/querybuilder/querybuilderuifactory');
 
@@ -58,7 +60,7 @@
     methods: {
       async remove(){
         try {
-          await Service.delete(this.querybuildersearch);
+          await QueryBuilderService.delete(this.querybuildersearch);
           this.$emit('delete');
         } catch(err){}
 
@@ -75,7 +77,7 @@
       },
       run() {
         this.loading = true;
-        Service.run({
+        QueryBuilderService.run({
           layerId: this.querybuildersearch.layerId,
           filter:  this.querybuildersearch.filter
         }).finally(()=>{

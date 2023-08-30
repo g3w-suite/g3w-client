@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/map/vue/components/addlayer.html@v3.4 -->
-<!-- gui/map/vue/components/addlayer.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <!-- Modal -->
@@ -21,8 +22,12 @@
           </div>
           <layerspositions @layer-position-change="setLayerMapPosition($event)"></layerspositions>
           <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
-          <chrome-picker v-model="layer.color" @change-color="onChangeColor" style="width:100%; margin:auto"></chrome-picker>
-          <bar-loader :loading="loading"></bar-loader>
+          <chrome-picker
+            v-model="layer.color"
+            @input="onChangeColor"
+            style="width:100%; margin:auto"
+          ></chrome-picker>
+          <bar-loader :loading="loading"/>
           <form id="addcustomlayer">
             <input ref="input_file" type="file" title=" " @change="onAddLayer($event)" :accept="accepted_extension">
             <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
@@ -33,7 +38,7 @@
             <p style="font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
           </form>
           <div v-if="csv_extension" style="padding: 15px; border: 1px solid grey; border-radius: 3px">
-            <bar-loader :loading="csv.loading"></bar-loader>
+            <bar-loader :loading="csv.loading"/>
             <div class="select_field">
               <label v-t="'mapcontrols.add_layer_control.select_csv_separator'" for="g3w-select-field-layer"></label>
               <select class="form-control" id="g3w-select-separator" v-model="csv.separator">
@@ -62,7 +67,7 @@
           </div>
           <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
           <div class="modal-footer">
-          <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!add"></button>
+          <button v-t="'add'" type="button" class="btn btn-success pull-left" @click.stop="addLayer" :disabled="!add"></button>
           <button v-t="'close'" type="button" class="btn btn-default" data-dismiss="modal"></button>
         </div>
       </div>
@@ -72,14 +77,18 @@
 </template>
 
 <script>
-import {EPSG} from 'app/constant';
+import { Chrome as ChromeComponent } from 'vue-color';
 
-const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
+import { EPSG } from 'app/constant';
+
+const Projections = require('g3w-ol/projection/projections');
+
+const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('core/utils/geo');
+
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
 
 //Vue color componet
-const ChromeComponent = VueColor.Chrome;
 ChromeComponent.mounted = async function() {
   await this.$nextTick();    // remove all the tihing that aren't useful
   $('.vue-color__chrome__toggle-btn').remove();
@@ -92,6 +101,10 @@ ChromeComponent.mounted = async function() {
 };
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'map-add-layer',
+
   props: ['service'],
   data() {
     //add map crs if not present
@@ -142,6 +155,23 @@ export default {
   components: {
     'chrome-picker': ChromeComponent
   },
+  computed:{
+
+    /**
+     * @returns {boolean} check wether current uploaded file has CSV extension
+     */
+    csv_extension() {
+      return this.layer.type === 'csv';
+    },
+
+    /**
+     * @FIXME add description
+     */
+    add() {
+      return this.layer.data || this.csv.valid;
+    }
+
+  },
   methods: {
     setLayerMapPosition(position){
       this.position = position;
@@ -158,7 +188,6 @@ export default {
       this.layer.color = val;
     },
     async onAddLayer(evt) {
-      this.csv.valid = true;
       const reader = new FileReader();
       const name = evt.target.files[0].name;
       let type = evt.target.files[0].name.split('.');
@@ -177,7 +206,7 @@ export default {
             const csv_data = evt.target.result.split(/\r\n|\n/).filter(row => row);
             const [headers, ...values] = csv_data;
             const handle_csv_headers = separator => {
-              let data;
+              let data = null;
               this.csv.loading = true;
               const csv_headers = headers.split(separator);
               const headers_length = csv_headers.length;
@@ -239,11 +268,20 @@ export default {
       } catch(err){this.setError('add_external_layer');}
     },
     async addLayer() {
-      if (this.vectorLayer || this.csv.valid){
-        this.loading = true;
-        //Recreate always the vector layer because we can set the right epsg after first load the file
-        // if we change the epsg of the layer after loaded
+      if (this.layer.data || this.csv.valid) {
+        const {crs} = this.layer;
         try {
+          /**
+           * waiting to register a epsg choose if all go right
+           */
+          try {
+            await Projections.registerProjection(crs);
+          } catch(error) {
+            this.setError(error);
+            return;
+          }
+
+          this.loading = true;
           this.vectorLayer = await createVectorLayerFromFile(this.layer);
           this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
             color: this.layer.color,
@@ -253,47 +291,47 @@ export default {
             crs: this.layer.crs,
             type: this.layer.type,
             position: this.position
-
-        });
+          });
           $(this.$refs.modal_addlayer).modal('hide');
-          this.clearLayer();
+          this.clear();
+
         } catch(err){
           this.setError('add_external_layer');
         }
         this.loading = false
       }
     },
-    clearLayer() {
+
+    /**
+     * @since 3.8.0
+     */
+    clear() {
       this.clearError();
-      this.loading = false;
-      this.layer.name = null;
+      this.loading     = false;
+      this.layer.name  = null;
       this.layer.title = null;
-      this.layer.id = null;
-      this.layer.type = null;
-      this.layer.crs = this.service.getCrs();
+      this.layer.id    = null;
+      this.layer.type  = null;
+      this.layer.crs   = this.service.getCrs();
       this.layer.color = {
         hex: '#194d33',
-        rgba: {
-          r: 25,
-          g: 77,
-          b: 51,
-          a: 1
-        },
+        rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
       };
-      this.layer.data = null;
+      this.layer.data  = null;
       this.vectorLayer = null;
-      this.fields = [];
-      this.field = null;
-    }
-  },
-  computed:{
-    csv_extension(){
-      return this.layer.type === 'csv';
+      this.fields      = [];
+      this.field       = null;
+      this.csv.valid   = false;
     },
-    add(){
-      return this.vectorLayer || this.csv.valid;
+
+    /**
+     * @deprecated since v3.8.0. Will be removed in v3.9. Use `clear()` method instead.
+     */
+    clearLayer() {
+      this.clear();
     }
+
   },
   watch:{
     'csv.x'(value){
@@ -309,11 +347,13 @@ export default {
   },
   async mounted(){
     await this.$nextTick();
-    this.modal =  $('#modal-addlayer').modal('hide');
-    this.modal.on('hidden.bs.modal',  () => this.clearLayer());
+    this.modal = $('#modal-addlayer').modal('hide');
+    this.modal.on('hide.bs.modal',  () => {
+      this.clear();
+    });
   },
   beforeDestroy() {
-    this.clearLayer();
+    this.clear();
     this.modal.modal('hide');
     this.modal.remove();
   }

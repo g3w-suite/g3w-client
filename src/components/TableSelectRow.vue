@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/table/vue/components/selectrow.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <span>
@@ -11,7 +13,7 @@
 </template>
 
 <script>
-const {getUniqueDomId} = require('core/utils/utils');
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
   name: "select-row",

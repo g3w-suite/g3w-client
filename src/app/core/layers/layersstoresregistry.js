@@ -1,4 +1,4 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 // Registy Layers
@@ -7,15 +7,9 @@ function LayersStoresRegistry() {
   this.storesArray = [];
   // to react some application components that are binding to Layerstore
   this.setters = {
-    addLayersStore(layersStore, idx) {
-      this._addLayersStore(layersStore, idx);
-    },
-    removeLayersStore(layerStore) {
-      this._removeLayersStore(layerStore);
-    },
-    removeLayersStores() {
-      this._removeLayersStores();
-    }
+    addLayersStore: this._addLayersStore.bind(this),
+    removeLayersStore: this._removeLayersStore.bind(this),
+    removeLayersStores: this._removeLayersStores.bind(this),
   };
 
   base(this);

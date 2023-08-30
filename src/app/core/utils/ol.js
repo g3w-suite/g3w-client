@@ -1,7 +1,11 @@
-// FIXME: remove weird import (utility functions should be stateles)
-import ApplicationState from "core/applicationstate";
+/**
+ * @FIXME remove weird import (utility functions should be stateles)
+ */
+import ApplicationState from 'store/application-state';
 
-// FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+/**
+ * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
+ */
 // const { Geometry } = require('core/utils/geo');
 
 const INCHES_PER_UNIT = {
@@ -90,7 +94,9 @@ const utils = {
       //return projection.getUnits() === 'degrees';
     },
     getLengthMessageText({unit, projection, geometry}={}){
-      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+      /**
+       * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
+       */
       const { Geometry } = require('core/utils/geo');
       //
       const geometryType = geometry.getType();
@@ -123,7 +129,7 @@ const utils = {
         segments_info_meausure+=`${this.getLengthMessageText({
           unit, 
           projection,
-          geometry: new ol.geom.LineString([segments[segmentLength-3], segments[segmentLength-2]])
+          geometry: new ol.geom.LineString(segments)
         })} <br>`;
       }
       switch (unit) {
@@ -139,8 +145,10 @@ const utils = {
       return message;
     },
     formatMeasure({geometry, projection}={}, options={}){
-      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
-      const { Geometry } = require('core/utils/geo');
+      /**
+       * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
+       */
+      const { Geometry, multiGeometryToSingleGeometries } = require('core/utils/geo');
       //
       const geometryType = geometry.getType();
       const unit = this.getCurrentMapUnit();
@@ -151,7 +159,13 @@ const utils = {
           geometry
         });
       } else if (Geometry.isPolygonGeometryType(geometryType)){
-        const segments = geometry.getLinearRing().getCoordinates();
+        let segments;
+        if (Geometry.isMultiGeometry(geometryType)) {
+          segments = [];
+          multiGeometryToSingleGeometries(geometry).forEach(geometry => {
+            geometry.getLinearRing().getCoordinates().forEach(coordinates => segments.push(coordinates))
+          })
+        } else segments = geometry.getLinearRing().getCoordinates();
         return this.getAreaMessageText({unit, geometry, projection, segments});
       }
     },
@@ -188,7 +202,9 @@ const utils = {
         unbyKey
       }
     },
-    // FIXME: utility functions should be stateles (move it elsewhere)
+    /**
+     * @FIXME utility functions should be stateles (move it elsewhere)
+     */
     getCurrentMapUnit(){
       return ApplicationState.map.unit;
     },

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/metadata/vue/components/project/metadatatabcontent.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="wrap-content-tab">
@@ -26,7 +28,10 @@
 
 <script>
   export default {
-    name: "metadatatabcontent",
+
+    /** @since 3.8.6 */
+    name: "metadata-tab-content",
+
     props: {
       data: {},
       fieldName: {}

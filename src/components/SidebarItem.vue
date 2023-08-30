@@ -1,10 +1,11 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/sidebar/sidebar-item.html@v3.4 -->
-<!-- gui/sidebar/sidebar.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <li :id="component.id" v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}" v-disabled="state.disabled">
-    <bar-loader :loading="state.loading"></bar-loader>
+    <bar-loader :loading="state.loading"/>
     <a @click.prevent="onClickItem" ref="anchor_click" href="#" style="display: flex; justify-content: space-between; align-items: center">
       <div>
         <i :class="icon" :style="{color: iconColor}"></i>
@@ -12,14 +13,7 @@
       </div>
       <div>
         <span v-if="info.state" style="position: absolute; right: 5px; font-weight: bold" :class="info.class" :style="info.style" :title="info.tooltip">{{ info.state }}</span>
-        <span v-for="action in actions" :key="action.id" data-placement="left" data-toggle="tooltip"
-          @click.stop="action.fnc"
-          style="font-weight: bold; padding:3px;"
-          :class="action.class"
-          class="action skin-tooltip-left"
-          :style="action.style"
-          :title="action.tooltip">
-      </span>
+        <sidebar-item-action v-for="action in actions" :component="component.internalComponent" :key="action.id" :action="action"/>
       </div>
       <i v-if="collapsible" :class="g3wtemplate.getFontClass('angle-left')" class="pull-right"></i>
     </a>
@@ -28,10 +22,8 @@
 </template>
 
 <script>
-  /*
-  * Temporaney
-   */
-  import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
+  import { SidebarEventBus as VM } from 'app/eventbus';
+  import SidebarItemAction from 'components/SidebarItemAction.vue';
 
   export default {
     name: "SidebarItem",
@@ -52,6 +44,9 @@
         collapsible: null
       };
     },
+    components: {
+      SidebarItemAction
+    },
     methods: {
       onClickItem(evt) {
         // force to close
@@ -67,17 +62,13 @@
               }
             }
           });
-          !this.component.collapsible && isMobile.any && SIDEBAREVENTBUS.$emit('sidebaritemclick');
+          !this.component.collapsible && isMobile.any && VM.$emit('sidebaritemclick');
         }
         this.component.setOpen(!this.component.state.open);
       }
     },
     created() {
       this.component.openClose = () => this.$refs.anchor_click.click();
-    },
-    async mounted() {
-      await this.$nextTick();
-      $('.sidebaritem .action[data-toggle="tooltip"]').tooltip();
     }
   }
 </script>

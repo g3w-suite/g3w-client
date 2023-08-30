@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/color/vue/color.html@v3.4 -->
-<!-- gui/inputs/color/vue/color.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
@@ -9,6 +10,7 @@
       type="color"
       slot="body"
       @change="change"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       :field="state.name"
       class="form-control"
@@ -23,6 +25,10 @@
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-color',
+
   mixins: [Input]
 };
 </script>

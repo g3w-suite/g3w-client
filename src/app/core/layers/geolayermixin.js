@@ -1,8 +1,10 @@
+import GUI from 'services/gui';
+import ApplicationService from 'services/application';
+
 const Projections = require('g3w-ol/projection/projections');
 const { getScaleFromResolution } = require('core/utils/ol');
-const { sanitizeUrl } = require('core/utils/utils');
-const {createFeatureFromGeometry} = require('core/utils/geo');
-const GUI = require('gui/gui');
+const { createFeatureFromFeatureObject } = require('core/utils/geo');
+const { XHR, sanitizeUrl } = require('core/utils/utils');
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
 };
@@ -19,17 +21,22 @@ proto.setup = function(config={}, options={}) {
   const { project } = options;
   this.config.map_crs = project.getProjection().getCode();
   this.config.multilayerid = config.multilayer;
+  this.legendCategories = {};
   // Features that contain
   this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
   // state extend of layer setting geolayer property to true
-  // and adding informations of bbox
+  // and adding information of bbox
   _.extend(this.state, {
     geolayer: config.geometrytype !== "NoGeometry",
     legend: {
       url: null,
       loading: false,
       error: false,
-      show: true
+     /**
+      * @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead
+      */
+      show: true,
+      change: false, // used for when categories changed (checkbox on TOC) and legend is on TAB
     },
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
@@ -41,12 +48,84 @@ proto.setup = function(config={}, options={}) {
     minscale: config.minscale,
     maxscale: config.maxscale,
     ows_method: config.ows_method,
-    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
+
+    /**
+     * @type {boolean}
+     */
+    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
+
+    /**
+     * Has more than one categories legend
+     * 
+     * @type {boolean}
+     */
+    categories: false,
+
+    /**
+     * Toggle legend item state (expandend or collapsed) in catalog layers (TOC)
+     * 
+     * @type {number}
+     *
+     * @since v3.8
+     */
+    expanded: config.expanded,
+
+    /**
+     * Layer opacity
+     * 
+     * @type {number} opacity range = [0, 100]
+     * 
+     * @since v3.8
+     */
+    opacity: config.opacity || 100,
+
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
   config.source && config.source.url && this._sanitizeSourceUrl()
 };
+
+/**
+ * Legend Graphic section
+ */
+proto.getLegendGraphic = function({all=true}={}){
+  const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
+  const legendurl = this.getLegendUrl(legendParams, {
+    categories: true,
+    all, // true meaning no bbox no filter just all referred to
+    format: 'application/json' // is the format to request categories (icon and label of each category)
+  });
+  return XHR.get({
+    url: legendurl
+  });
+};
+
+/**
+ * Set layer categories legend
+ * @param categories
+ */
+proto.setCategories = function(categories=[]) {
+  this.legendCategories[this.getCurrentStyle().name] = categories;
+  //set categories state attribute to true only if exist at least a rule key
+  this.state.categories = categories.length > 0 && categories.filter(category => category.ruleKey).length > 0;
+};
+
+/**
+ * Return eventually categories of layers legend
+ * @returns {string[] | string | [] | *[] | boolean | {default: {level: *, appenders: string[]}}}
+ */
+proto.getCategories = function(){
+  return this.legendCategories[this.getCurrentStyle().name];
+};
+
+proto.clearCategories = function(){
+  this.legendCategories = {};
+  this.state.categories = false;
+};
+
+/**
+ * End Legend Graphic section
+ */
 
 /**
  * Clear all selection openlayer features
@@ -64,17 +143,11 @@ proto.getOlSelectionFeature = function(id){
   return this.olSelectionFeatures[id];
 };
 
-proto.updateOlSelectionFeature = function({id, geometry}={}){
+proto.updateOlSelectionFeature = function({id, feature}={}){
   const featureObject = this.getOlSelectionFeature(id);
   if (featureObject) {
-    geometry = new ol.geom[geometry.type](geometry.coordinates);
-    const feature = featureObject.feature;
-    /**
-     * add a property of feature __layerId used whe we work with selected Layer features
-     */
-    feature.__layerId = this.getId();
+    featureObject.feature = feature;
     const mapService = GUI.getService('map');
-    feature.setGeometry(geometry);
     mapService.setSelectionFeatures('update', {
       feature
     })
@@ -103,9 +176,9 @@ proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };
 
-proto.addOlSelectionFeature = function({id, geometry}={}){
+proto.addOlSelectionFeature = function({id, feature}={}){
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-    feature: createFeatureFromGeometry({id, geometry}),
+    feature: createFeatureFromFeatureObject({id, feature}),
     added: false
   };
   return this.olSelectionFeatures[id];
@@ -238,6 +311,18 @@ proto.getStyle = function(){
 };
 
 /**
+ * Get transparency property
+ * 
+ * @returns {number}
+ * 
+ * @since v3.8
+ */
+
+proto.getOpacity = function() {
+  return this.state.opacity;
+};
+
+/**
  * Method to change current style  of layer
  * @param currentStyleName
  * @returns {boolean}
@@ -250,6 +335,10 @@ proto.setCurrentStyle = function(currentStyleName){
     style.current = style.name === currentStyleName;
   });
   return changed;
+};
+
+proto.getCurrentStyle = function(){
+  return this.config.styles.find(style => style.current);
 };
 
 /**

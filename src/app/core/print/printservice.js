@@ -1,6 +1,7 @@
-import ApplicationState from 'core/applicationstate';
-const ProjectsRegistry = require('core/project/projectsregistry');
-const {base, inherit, convertObjectToUrlParams} = require('core/utils/utils');
+import ApplicationState from 'store/application-state';
+import ProjectsRegistry from 'store/projects';
+
+const { base, inherit, convertObjectToUrlParams } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /*
@@ -27,7 +28,9 @@ const COMMON_REQUEST_PARAMETERS = { SERVICE: 'WMS', VERSION: '1.3.0', };
 const getAtlasParamsFromOptions = function(options={}){
   const {field, values, template, download=false} = options;
   const multiValues = values.length > 1;
-  // TODO: refactor weird ternary logic
+  /**
+   * @TODO refactor weird ternary logic
+   */
   const EXPRESSION = `${field}${multiValues ? 
     ' IN (' 
     : '='}${values.map(value => '\''+value+'\'').join()}${multiValues 

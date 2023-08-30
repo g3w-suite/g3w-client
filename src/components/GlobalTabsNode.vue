@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/vue/global-components/tabs/node.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="tab-node group">
@@ -7,7 +9,7 @@
     <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}">
       <template v-for="column in columnNumber" style="padding:2px">
         <template v-if="getNode(row, column)">
-          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 5px"
+          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 5px 3px 5px 3px;"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
@@ -16,22 +18,20 @@
             :addToValidate="addToValidate"
             :removeToValidate="removeToValidate"
             :feature="feature"
-            :is="getComponent(getField(getNode(row, column)))">
-          </component>
+            :is="getComponent(getField(getNode(row, column)))"/>
           <template v-else>
-            <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
+            <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"/>
             <template v-else>
-              <div v-if="showRelationByField" v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading" @click="handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}">
-                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"></bar-loader>
+              <div v-if="showRelationByField" v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading" @click.stop="handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}">
+                <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
+                <div style="display: flex; align-items: center">
                   <div  class="query_relation_field">
                     <i :class="g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
                   </div>
-                  <span>
-                    <span class="query_relation_field_message">
-                      <span></span>
-                      <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
-                    </span>
+                  <span class="query_relation_field_message g3w-long-text">
+                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
                   </span>
+                </div>
               </div>
             </template>
           </template>
@@ -43,10 +43,10 @@
 
 <script>
   import G3wInput from 'components/InputG3W.vue';
+  import ProjectsRegistry from 'store/projects';
+  import GUI from 'services/gui';
 
   const Fields = require('gui/fields/fields');
-  const ProjectRegistry = require('core/project/projectsregistry');
-  const GUI = require('gui/gui');
 
   export default {
     name: "node",
@@ -100,7 +100,7 @@
     },
     methods: {
       loadingRelation(relation){
-        const layer = ProjectRegistry.getCurrentProject().getLayerById(this.layerid);
+        const layer = ProjectsRegistry.getCurrentProject().getLayerById(this.layerid);
         const relation_project = layer.getRelationById(relation.name);
         return relation_project.state;
       },
@@ -109,13 +109,13 @@
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
       getRelationName(relationId) {
-        const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
+        const relation = ProjectsRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
       isRelationChildLayerNotEditable(relation){
         const {nmRelationId, name} = relation;
         ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
-        const currentProject = ProjectRegistry.getCurrentProject();
+        const currentProject = ProjectsRegistry.getCurrentProject();
         const projectRelation = currentProject.getRelationById(name);
         const relationLayerId = projectRelation.referencingLayer;
         const relationLayer = currentProject.getLayerById(relationLayerId);
@@ -123,7 +123,7 @@
         return !relationLayer.isEditable();
         // if (nmRelationId) return true;
         // else {
-        //   const currentProject = ProjectRegistry.getCurrentProject();
+        //   const currentProject = ProjectsRegistry.getCurrentProject();
         //   const projectRelation = currentProject.getRelationById(name);
         //   const relationLayerId = projectRelation.referencingLayer;
         //   const relationLayer = currentProject.getLayerById(relationLayerId);
@@ -131,7 +131,7 @@
         //   return !relationLayer.isEditable();
         // }
         // const relationId = nmRelationId || name;
-        // const currentProject = ProjectRegistry.getCurrentProject();
+        // const currentProject = ProjectsRegistry.getCurrentProject();
         // const projectRelation = currentProject.getRelationById(relationId);
         // const relationLayerId = nmRelationId ? projectRelation.referencedLayer : projectRelation.referencingLayer;
         // const relationLayer = currentProject.getLayerById(relationLayerId);
@@ -184,9 +184,9 @@
     border-radius: 2px;
   }
   .node-row {
-    margin-bottom: 5px;
+    margin-bottom: 0;
     column-gap: 2px;
-    margin-top: 3px;
+    margin-top: 0;
     display: grid;
     grid-auto-columns: minmax(0, 1fr);
     grid-auto-flow: column;

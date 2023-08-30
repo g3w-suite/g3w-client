@@ -1,10 +1,11 @@
+import SessionsRegistry from 'store/sessions';
+import MapLayersStoresRegistry from 'store/map-layers';
+
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const History = require('./history');
+const History = require('core/editing/history');
 const Layer = require('core/layers/layer');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const { is3DGeometry } = require('core/utils/geo').Geometry;
-const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
   this.setters = {
@@ -15,7 +16,7 @@ function Session(options={}) {
       return this._getFeatures(options);
     },
     stop() {
-      this._stop();
+      return this._stop();
     },
     saveChangesOnServer(commitItems){} // hook to get informed that are saved on server
   };
@@ -41,6 +42,10 @@ const proto = Session.prototype;
 
 proto.getId = function() {
   return this.state.id;
+};
+
+proto.getLastHistoryState = function(){
+  return this._history.getLastState();
 };
 
 proto.getLastStateId = function() {
@@ -253,17 +258,21 @@ proto.rollback = function(changes) {
   }
 };
 
+/**
+ * Rollback child changes of current session
+ * @param ids [array of child layer id]
+ */
 proto.rollbackDependecies = function(ids=[]) {
   ids.forEach(id => {
     const changes = [];
     this._temporarychanges = this._temporarychanges.filter(temporarychange => {
-      if (temporarychange.layerId !== id) {
+      if (temporarychange.layerId === id) {
         changes.push(temporarychange);
-        return true
+        return false
       }
-    changes.length && SessionsRegistry.getSession(id).rollback(changes);
     });
-  })
+    changes.length && SessionsRegistry.getSession(id).rollback(changes);
+  });
 };
 
 // method undo
@@ -351,7 +360,7 @@ proto.getCommitItems = function() {
  */
 proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
   const {relations} = commitItems;
-  const editingLayer = MapLayersStoreRegistry.getLayerById(layerId).getEditingLayer();
+  const editingLayer = MapLayersStoresRegistry.getLayerById(layerId).getEditingLayer();
   // check id there is a editing layer and if is a vector layer
   if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR){
     // get Geometry type layer

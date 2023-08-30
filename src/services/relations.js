@@ -1,11 +1,15 @@
 /**
- * ORIGINAL SOURCE: src/app/core/relations/relationsservice.js@v3.4
+ * @file
+ * @since v3.6
  */
 
-const {inherit, XHR, base, createSingleFieldParameter} = require('core/utils/utils');
-const {sanitizeFidFeature, getFeaturesFromResponseVectorApi, covertVectorFeaturesToResultFeatures, getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ProjectsRegistry from 'store/projects';
+import DataRouterService from 'services/data';
+
+const { inherit, XHR, base, createSingleFieldParameter } = require('core/utils/utils');
+const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 function RelationsService(options={}) {
   base(this);
@@ -16,17 +20,16 @@ inherit(RelationsService, G3WObject);
 const proto = RelationsService.prototype;
 
 proto.createUrl = function(options={}){
-  const ProjectsRegistry = require('core/project/projectsregistry');
   const currentProject = ProjectsRegistry.getCurrentProject();
   // type : <editing, data, xls>
-  const {layer={}, relation={}, fid, type='data'} = options;
+  const {layer={}, relation={}, fid, type='data', formatter=1} = options;
   let layerId;
   const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
   if (father !== undefined) layerId = layer.id === father ? child: father;
   else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
   const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
   const value = sanitizeFidFeature(fid);
-  return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=1`;
+  return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=${formatter}`;
 };
 
 proto.getRelations = function(options={}) {
@@ -43,7 +46,6 @@ proto.getRelations = function(options={}) {
  * @returns {Promise<[]>}
  */
 proto.getRelationsNM = async function({nmRelation, features=[]}={}){
-  const DataRouterService = require('core/data/routerservice');
   const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
   let relationsNM = []; // start with empty relations result
   if (features.length) {

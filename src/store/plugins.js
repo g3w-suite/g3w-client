@@ -1,9 +1,12 @@
 /**
- * ORIGINAL SOURCE: src/app/core/plugin/pluginsregistry.js@v3.4
+ * @file Store G3W-CLIENT plugins (editing, qplotly, qtimeseries, ...)
+ * @since v3.6
  */
 
-const {base, inherit} = require('core/utils/utils');
-const ProjectsRegistry = require('core/project/projectsregistry');
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /**
@@ -57,12 +60,10 @@ function PluginsRegistry() {
   };
 
   this.addLoadingPlugins = function(){
-    const ApplicationService = require('core/applicationservice');
     Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
   this.removeLoadingPlugin = function(plugin, ready){
-    const ApplicationService = require('core/applicationservice');
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
@@ -168,7 +169,8 @@ function PluginsRegistry() {
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
-            .fail(()=>{
+            .fail((jqxhr, settings, exception)=>{
+              console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
               this.removeLoadingPlugin(name, false);
               reject();
             })

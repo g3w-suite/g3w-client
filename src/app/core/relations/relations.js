@@ -1,6 +1,6 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const Relation = require('./relation');
+const Relation = require('core/relations/relation');
 
 /**
  * Handle QGIS Relations Properties: one (1-N) and many to many (N-M)

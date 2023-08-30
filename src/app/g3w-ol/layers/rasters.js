@@ -1,5 +1,6 @@
-const RasterLayers = {};
 const DPI = require('core/utils/ol').getDPI();
+
+const RasterLayers = {};
 
 const loadImageTileFunction = function({method='GET', type='image', sourceOptions={}}) {
   window.URL = window.URL || window.webkitURL;
@@ -30,7 +31,7 @@ RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
+RasterLayers.WMSLayer = function(layerObj, extraParams={}, method='GET'){
   const options = {
     layerObj,
     extraParams,
@@ -40,8 +41,8 @@ RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
 };
 
 RasterLayers.WMTSLayer = function(layerObj, extraParams){
- const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
- return new ol.layer.Tile({
+  const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
+  return new ol.layer.Tile({
     opacity: 1,
     source: new ol.source.WMTS(options)
   })
@@ -60,11 +61,12 @@ RasterLayers.ImageArgisMapServer = function(options={}){
 };
 
 RasterLayers.TiledArgisMapServer = function(options={}){
-  const {url, visible=true, extent, projection, attributions} = options;
+  const {url, visible=true, extent, projection, attributions, crossOrigin} = options;
   const source = new ol.source.TileArcGISRest({
     url,
     projection,
-    attributions
+    attributions,
+    crossOrigin
   });
   return  new ol.layer.Tile({
     extent,
@@ -74,7 +76,14 @@ RasterLayers.TiledArgisMapServer = function(options={}){
 };
 
 RasterLayers._WMSLayer = function(options={}) {
-  const {layerObj, method='GET', extraParams, tiled=false} = options;
+
+  const {
+    layerObj,
+    method='GET',
+    extraParams,
+    tiled=false
+  } = options;
+
   const {
     iframe_internal=false,
     layers='',
@@ -86,8 +95,12 @@ RasterLayers._WMSLayer = function(options={}) {
     visible,
     extent,
     maxResolution,
+    /**
+     * @since @3.7.11
+     */
+    format
   } = layerObj;
-  const projection = layerObj.projection ? layerObj.projection.getCode() : null;
+
   let params = {
     LAYERS: layers,
     VERSION: version,
@@ -96,20 +109,25 @@ RasterLayers._WMSLayer = function(options={}) {
     DPI
   };
 
-  params = Object.assign({}, params, extraParams);
+  /**
+   * Check if not undefined otherwise FORMAT parameter is not send
+   * 
+   * @since 3.7.11
+   */
+  if ("undefined" !== typeof format) {
+    params.FORMAT = format
+  }
+
   const sourceOptions = {
     url: layerObj.url,
-    params,
+    params: Object.assign({}, params, extraParams),
     ratio: 1,
-    projection
+    projection: (layerObj.projection) ? layerObj.projection.getCode() : null
   };
 
-  if (iframe_internal || method === 'POST')
-    loadImageTileFunction({
-      method,
-      type: 'image',
-      sourceOptions
-    });
+  if (iframe_internal || 'POST' === method) {
+    loadImageTileFunction({ method, sourceOptions, type: 'image' });
+  }
 
   const imageOptions = {
     id,
@@ -117,32 +135,29 @@ RasterLayers._WMSLayer = function(options={}) {
     opacity,
     visible,
     extent,
-    maxResolution
+    maxResolution,
   };
 
-  let imageClass;
-  let source;
   if (tiled) {
-    source = new ol.source.TileWMS(sourceOptions);
-    imageClass = ol.layer.Tile;
-  } else {
-    source = new ol.source.ImageWMS(sourceOptions);
-    imageClass = ol.layer.Image;
+    imageOptions.source = new ol.source.TileWMS(sourceOptions);
+    return new ol.layer.Tile(imageOptions);
   }
-  imageOptions.source = source;
-  const image = new imageClass(imageOptions);
-  return image;
+
+  imageOptions.source = new ol.source.ImageWMS(sourceOptions);
+  return new ol.layer.Image(imageOptions);
+
 };
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
   const iframe_internal = options.iframe_internal || false;
-  const {url, projection, maxZoom, minZoom, visible=true} = options;
+  const {url, projection, maxZoom, minZoom, visible=true, crossOrigin} = options;
   if (!url) return;
   const sourceOptions = {
     url,
     maxZoom,
     minZoom,
-    projection
+    projection,
+    crossOrigin
   };
   if (iframe_internal)
     loadImageTileFunction({

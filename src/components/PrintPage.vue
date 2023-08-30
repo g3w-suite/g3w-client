@@ -1,11 +1,12 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/print/vue/printpage.html@v3.4 -->
-<!-- gui/print/vue/printpage.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="print-output" style="height:100%; position: relative;">
     <transition :duration="500" name="fade">
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
     </transition>
     <iframe  v-if="format === 'pdf'" :type="state.mime_type" ref="printoutput"  style="border:0;width:100%;height:100%;" :src="state.url"></iframe>
     <div v-else-if="format === 'png'" class="g3w-print-png-output" style="display: flex; flex-direction: column; position: relative; height: 100%">
@@ -25,12 +26,16 @@
 </template>
 
 <script>
-import {TIMEOUT} from "app/constant";
+import { TIMEOUT } from 'app/constant';
+import GUI from 'services/gui';
 
-const {imageToDataURL} = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { imageToDataURL } = require('core/utils/utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'print-page',
+
   data() {
     return {
       state: null,
