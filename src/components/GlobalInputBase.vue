@@ -33,7 +33,14 @@
         </div>
       </slot>
 
-      <slot name="body"></slot>
+      <slot
+        name="body"
+        :editable="editable"
+        :notvalid="notvalid"
+        :tabIndex="tabIndex"
+        :change="change"
+        :mobileChange="mobileChange"
+      />
 
       <!-- ERROR MESSAGES -->
       <slot name="message">
@@ -71,7 +78,7 @@ console.assert(undefined !== baseInputMixin, 'baseInputMixin is undefined');
 export default {
   name: "baseinput",
   props: ['state'],
-  mixins: [baseInputMixin]
+  mixins: [baseInputMixin],
 }
 </script>
 
