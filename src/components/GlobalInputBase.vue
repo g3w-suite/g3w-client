@@ -66,6 +66,8 @@
 
 import { baseInputMixin } from 'mixins';
 
+console.assert(undefined !== baseInputMixin, 'baseInputMixin is undefined');
+
 export default {
   name: "baseinput",
   props: ['state'],

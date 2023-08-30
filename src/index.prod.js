@@ -44,9 +44,6 @@ import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent from 'components/Sidebar.vue';
 import ViewportComponent from 'components/Viewport.vue';
-/**
- * @since 3.9.0
- * **/
 import InputBase from 'components/GlobalInputBase.vue'
 
 //directives
@@ -93,6 +90,7 @@ Vue.component(Range.name, Range);
 Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
+/** @since 3.9.0 **/
 Vue.component(InputBase.name, InputBase);
 
 /**

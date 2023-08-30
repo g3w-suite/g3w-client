@@ -84,7 +84,9 @@
 <script>
   import G3wInput         from 'components/InputG3W.vue';
   import ProjectsRegistry from 'store/projects';
-  import { fieldsMixin } from 'mixins';
+  import { fieldsMixin }  from 'mixins';
+
+  console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
 
   export default {
 
