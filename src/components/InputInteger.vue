@@ -5,31 +5,39 @@
 
 <template>
   <baseinput :state="state">
-    <input
-      :placeholder = "state.default"
-      @change      = "change"
-      @input       = "change"
-      class        = "form-control"
-      style        = "width: 100%"
-      :tabIndex    = "tabIndex"
-      v-disabled   = "!editable"
-      :class       = "{ 'input-error-validation' : notvalid }"
-      v-model      = "state.value"
-      slot         = "body"
-      type         = "number"
-    >
+
+    <template v-slot:body="bodySlotProps">
+      <input
+        :placeholder = "state.default"
+        @change      = "bodySlotProps.change"
+        @input       = "bodySlotProps.change"
+        class        = "form-control"
+        style        = "width: 100%"
+        :tabIndex    = "bodySlotProps.tabIndex"
+        v-disabled   = "!bodySlotProps.editable"
+        :class       = "{ 'input-error-validation' : bodySlotProps.notvalid }"
+        v-model      = "state.value"
+        type         = "number"
+      >
+    </template>
+
   </baseinput>
+
 </template>
 
 <script>
-import { baseInputMixin } from 'mixins';
 
 export default {
 
   /** @since 3.8.6 */
   name: 'input-integer',
 
-  mixins: [ baseInputMixin ],
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    }
+  }
 
 };
 </script>
