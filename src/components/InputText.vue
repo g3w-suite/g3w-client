@@ -19,7 +19,6 @@
         :id          = "state.name"
       >
     </template>
-
   </baseinput>
 </template>
 
@@ -29,6 +28,7 @@ export default {
 
   /** @since 3.8.6 */
   name: "input-text",
+
   props: {
     state: {
       type: Object,
