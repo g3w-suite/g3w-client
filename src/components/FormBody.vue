@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import G3WFormInputs from 'components/G3WFormInputs.vue';
+import G3wFormInputs from 'components/G3WFormInputs.vue';
 
 /**
  * @TODO remove "Vue.extend" from module export
@@ -61,7 +61,7 @@ export default Vue.extend({
   },
 
   components: {
-    G3WFormInputs
+    G3wFormInputs
   },
 
   methods: {
