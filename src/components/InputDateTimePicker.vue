@@ -41,7 +41,7 @@
 
 <script>
 import ApplicationState               from 'store/application-state';
-import { g3wInputMixin, resizeMixin } from 'mixins';
+import { baseInputMixin, resizeMixin } from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
 
@@ -51,7 +51,7 @@ export default {
   name: 'input-datetime-picker',
 
   mixins: [
-    g3wInputMixin,
+    baseInputMixin,
     resizeMixin
   ],
 

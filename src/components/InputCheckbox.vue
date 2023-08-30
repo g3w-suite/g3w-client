@@ -22,9 +22,9 @@
 </template>
 
 <script>
-import { g3wInputMixin, widgetMixins } from 'mixins';
+import { baseInputMixin, widgetMixins } from 'mixins';
 
-console.assert(undefined !== g3wInputMixin);
+console.assert(undefined !== baseInputMixin);
 
 const { getUniqueDomId } = require('core/utils/utils');
 
@@ -34,7 +34,7 @@ export default {
   name:'input-checkbox',
 
   mixins: [
-    g3wInputMixin,
+    baseInputMixin,
     widgetMixins
   ],
 

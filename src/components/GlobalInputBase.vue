@@ -64,12 +64,12 @@
 
 <script>
 
-import { g3wInputMixin } from 'mixins';
+import { baseInputMixin } from 'mixins';
 
 export default {
   name: "baseinput",
   props: ['state'],
-  mixins: [g3wInputMixin]
+  mixins: [baseInputMixin]
 }
 </script>
 

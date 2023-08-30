@@ -13,7 +13,6 @@ import select2Mixin      from 'mixins/select2';
 import formInputsMixins  from 'mixins/form-inputs';
 import widgetMixins      from 'mixins/widget';
 import metadataMixin     from 'mixins/metadata';
-import g3wInputMixin     from 'mixins/g3w-input';
 import baseInputMixin    from "mixins/base-input";
 
 const mixins = {
@@ -27,7 +26,6 @@ const mixins = {
   formInputsMixins,
   widgetMixins,
   metadataMixin,
-  g3wInputMixin,
   baseInputMixin,
 };
 export {fieldsMixin};
@@ -39,9 +37,8 @@ export {select2Mixin};
 export {formInputsMixins};
 export {widgetMixins};
 export {metadataMixin};
-export {g3wInputMixin};
+export {baseInputMixin};
 export {autocompleteMixin};
-export {baseInputMixin}
 
 export {mixins};
 export default mixins;

@@ -24,14 +24,14 @@
 </template>
 
 <script>
-import { g3wInputMixin } from 'mixins';
+import { baseInputMixin } from 'mixins';
 
 export default {
 
   /** @since 3.8.6 */
   name: 'input-range',
 
-  mixins: [ g3wInputMixin ],
+  mixins: [ baseInputMixin ],
 
   data() {
     const { min, max, Step:step } = this.state.input.options.values[0];

@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { g3wInputMixin, selectMixin } from 'mixins';
+import { baseInputMixin, selectMixin } from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
 
@@ -34,7 +34,7 @@ export default {
   name: "input-unique",
 
   mixins: [
-    g3wInputMixin,
+    baseInputMixin,
     selectMixin
   ],
 

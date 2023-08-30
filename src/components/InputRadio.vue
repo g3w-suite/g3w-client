@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { g3wInputMixin } from 'mixins';
+import { baseInputMixin } from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
 
@@ -34,7 +34,7 @@ export default {
   /** @since 3.8.6 */
   name: 'input-radio',
 
-  mixins: [ g3wInputMixin ],
+  mixins: [ baseInputMixin ],
 
   data() {
     return {

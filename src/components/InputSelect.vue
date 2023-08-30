@@ -62,7 +62,7 @@
 import CatalogLayersStoresRegistry                    from 'store/catalog-layers';
 import MapLayersStoresRegistry                        from 'store/map-layers';
 import GUI                                            from 'services/gui';
-import { g3wInputMixin, selectMixin, select2Mixin }   from 'mixins';
+import { baseInputMixin, selectMixin, select2Mixin }   from 'mixins';
 
 const Layer = require('core/layers/layer');
 
@@ -74,7 +74,7 @@ export default {
   name: 'input-select',
 
   mixins: [
-    g3wInputMixin,
+    baseInputMixin,
     selectMixin,
     select2Mixin
   ],

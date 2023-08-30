@@ -46,7 +46,7 @@
 
 <script>
 import GUI               from 'services/gui';
-import { g3wInputMixin } from 'mixins';
+import { baseInputMixin } from 'mixins';
 import MediaField        from 'components/FieldMedia.vue';
 
 const { getUniqueDomId } = require('core/utils/utils');
@@ -59,7 +59,7 @@ export default {
   /** @since 3.8.6 */
   name: 'input-media',
 
-  mixins: [ g3wInputMixin ],
+  mixins: [ baseInputMixin ],
 
   components: {
     'g3w-media': MediaField
