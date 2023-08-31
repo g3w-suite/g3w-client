@@ -235,7 +235,10 @@ module.exports = {
       Inputs: {
         G3wFormInputs: G3WFormInputs,
         G3WInput,
-        InputsComponents
+        InputsComponents: /* BACKCOMP (v3.x), ref: src/app/gui/inputs/inputs.js@3.8 */
+                          Object 
+                            .entries(InputsComponents)
+                            .reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {}),
       },
       Charts: {
         ChartsFactory,
