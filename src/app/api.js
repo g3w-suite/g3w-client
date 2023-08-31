@@ -232,7 +232,7 @@ module.exports = {
         Footer: FormFooter
       },
       /**
-       * BACKCOMP (v3.x)
+       * BACKCOMPS (v3.x)
        * 
        * ref: src/components/G3WFormInputs.vue@3.8
        * ref: src/app/gui/inputs/inputs.js@3.8
