@@ -12,6 +12,7 @@
               :state         = "field"
               :addToValidate = "addToValidate"
               :changeInput   = "changeInput"
+              :removeToValidate = "removeToValidate"
               @addToValidate = "addToValidate"
               @changeInput   = "changeInput"
             />
@@ -41,6 +42,9 @@ export default {
       type: Function
     },
     changeInput: {
+      type: Function
+    },
+    removeToValidate: {
       type: Function
     },
     show_required_field_message: {
