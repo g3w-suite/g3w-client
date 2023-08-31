@@ -159,7 +159,28 @@ import * as InputUnique         from 'components/InputUnique.vue';
 
 import { baseInputMixin } from 'mixins';
 
-console.assert(undefined !== baseInputMixin,      'baseInputMixin is undefined');
+Object
+  .entries({
+    baseInputMixin,
+    InputCheckbox,
+    InputColor,
+    InputDateTimePicker,
+    InputFloat,
+    InputInteger,
+    InputLonLat,
+    InputMedia,
+    InputPickLayer,
+    InputRadio,
+    InputRange,
+    InputSelect,
+    InputSliderRange,
+    InputTable,
+    InputText,
+    InputTextArea,
+    InputTextHtml,
+    InputUnique,
+  })
+  .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 const vm = {
 
@@ -395,10 +416,6 @@ const vm = {
  */
 vm.components['select_autocomplete_input'] = vm.components['select_input'];
 vm.components['string_input']              = vm.components['text_input'];
-
-Object
-  .entries(vm.components)
-  .forEach(([k, v]) => console.assert(undefined !== v, `${k} component is undefined`));
 
 export default vm;
 
