@@ -22,7 +22,7 @@
 
     @TODO deprecate it or merge within the `Base G3WInput component` section
   -->
-  <div v-if="state.visible && !this._isLegacyG3WInput">
+  <div v-if="state.visible && this._isLegacyG3WInput">
 
     <div
       v-if  = "'child' === state.type"
