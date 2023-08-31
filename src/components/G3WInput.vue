@@ -344,8 +344,8 @@ const vm = {
      * @since 3.9.0
      */
     _isLegacyG3WInput() {
-      const props = { a: this.addToValidate, b: this.removeToValidate, c: this.changeInput};
-      return Object.values(props).every(v => Function === typeof v) && !Object.values(props).some(v => undefined === v);
+      const props = { a: this.addToValidate, b: this.removeToValidate, c: this.changeInput };
+      return Object.values(props).every(v => "function" === typeof v) && !Object.values(props).some(v => undefined === v);
     },
 
     /**
@@ -371,11 +371,18 @@ const vm = {
     $props: {
       immediate: true,
       handler() {
-        const props = { a: this.addToValidate, b: this.removeToValidate, c: this.changeInput};
-        is_valid = Object.values(props).every(v => Function === typeof v) || Object.values(props).every(v => undefined === v);
-        if (!is_valid) {
-          console.error('Invalid or missing required props: `addToValidate`, `removeToValidate`, `changeInput`');
-        }
+        const props = {
+          addToValidate:    this.addToValidate,
+          removeToValidate: this.removeToValidate,
+          changeInput:      this.changeInput
+        };
+        console.assert(
+          Object.values(props).every(v => "function" === typeof v) ||
+          Object.values(props).every(v => undefined === v),
+          '[%o] Invalid or missing required props: %o',
+          this.type,
+          props
+        );
       }
     },
 
@@ -388,6 +395,10 @@ const vm = {
  */
 vm.components['select_autocomplete_input'] = vm.components['select_input'];
 vm.components['string_input']              = vm.components['text_input'];
+
+Object
+  .entries(vm.components)
+  .forEach(([k, v]) => console.assert(undefined !== v, `${k} component is undefined`));
 
 export default vm;
 
