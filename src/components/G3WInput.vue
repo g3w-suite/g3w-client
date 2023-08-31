@@ -187,7 +187,9 @@ const vm = {
   /** @since 3.9.0 */
   name: 'g3w-input',
 
-  mixins: [baseInputMixin],
+  mixins: [
+    baseInputMixin,
+  ],
 
   props: {
 
@@ -229,8 +231,6 @@ const vm = {
 
   /**
    * ORIGINAL SOURCE: src/app/gui/inputs/inputs.js@3.8
-   * 
-   * @TODO find how to get rid of all those `vue.extend` calls
    */
    components: {
 
@@ -239,119 +239,119 @@ const vm = {
      * 
      * @since 3.9.0
      */
-    'text_input': Vue.extend(InputText),
+    'text_input': InputText,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/texthtml/vue/texthtml.js@3.8
      * 
      * @since 3.9.0
      */
-    'texthtml_input': Vue.extend(InputTextHtml),
+    'texthtml_input': InputTextHtml,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/textarea/vue/textarea.js@3.8
      * 
      * @since 3.9.0
      */
-    'textarea_input': Vue.extend(InputTextArea),
+    'textarea_input': InputTextArea,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/integer/vue/integer.js@3.8
      * 
      * @since 3.9.0
      */
-    'integer_input': Vue.extend(InputInteger),
+    'integer_input': InputInteger,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/float/vue/float.js@3.8
      * 
      * @since 3.9.0
      */
-    'float_input': Vue.extend(InputFloat),
+    'float_input': InputFloat,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/radio/vue/radio.js@3.8
      * 
      * @since 3.9.0
      */
-    'radio_input': Vue.extend(InputRadio),
+    'radio_input': InputRadio,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/checkbox/vue/checkbox.js@3.8
      * 
      * @since 3.9.0
      */
-    'check_input': Vue.extend(InputCheckbox),
+    'check_input': InputCheckbox,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/range/vue/range.js@3.8
      * 
      * @since 3.9.0
      */
-    'range_input': Vue.extend(InputRange),
+    'range_input': InputRange,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/datetimepicker/vue/datetimepicker.js@3.8
      * 
      * @since 3.9.0
      */
-    'datetimepicker_input': Vue.extend(InputDateTimePicker),
+    'datetimepicker_input': InputDateTimePicker,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/unique/vue/unique.js@3.8
      * 
      * @since 3.9.0
      */
-    'unique_input': Vue.extend(InputUnique),
+    'unique_input': InputUnique,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/select/vue/select.js@3.8
      * 
      * @since 3.9.0
      */
-    'select_input': Vue.extend(InputSelect),
+    'select_input': InputSelect,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/media/vue/media.js@3.8
      * 
      * @since 3.9.0
      */
-    'media_input': Vue.extend(InputMedia),
+    'media_input': InputMedia,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/picklayer/vue/picklayer.js@3.8
      * 
      * @since 3.9.0
      */
-    'picklayer_input': Vue.extend(InputPickLayer),
+    'picklayer_input': InputPickLayer,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/color/vue/color.js@3.8
      * 
      * @since 3.9.0
      */
-    'color_input': Vue.extend(InputColor),
+    'color_input': InputColor,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/sliderrange/vue/sliderrange.js@3.8
      * 
      * @since 3.9.0
      */
-    'slider_input': Vue.extend(InputSliderRange),
+    'slider_input': InputSliderRange,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/lonlat/vue/lonlat.js@3.8
      * 
      * @since 3.9.0
      */
-    'lonlat_input': Vue.extend(InputLonLat),
+    'lonlat_input': InputLonLat,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/table/vue/table.js@3.8
      * 
      * @since 3.9.0
      */
-    'table_input': Vue.extend(InputTable),
+    'table_input': InputTable,
 
     },
 
