@@ -22,14 +22,15 @@
           />
         </template>
         <template v-else>
-          <g3w-form-inputs
-            :state            = "state"
-            :addToValidate    = "addToValidate"
-            :removeToValidate = "removeToValidate"
-            :changeInput      = "changeInput"
-            @changeinput      = "changeInput"
-            @addinput         = "addToValidate"
-            @removeinput      = "removeToValidate"
+          <g3w-input
+            _legacy            = "g3w-form"
+            :state             = "state"
+            :addToValidate     = "addToValidate"
+            :removeToValidate  = "removeToValidate"
+            :changeInput       = "changeInput"
+            @changeinput       = "changeInput"
+            @addinput          = "addToValidate"
+            @removeinput       = "removeToValidate"
           />
         </template>
       </div>
@@ -39,8 +40,6 @@
 </template>
 
 <script>
-import G3wFormInputs from 'components/G3WFormInputs.vue';
-
 /**
  * @TODO remove "Vue.extend" from module export
  */
@@ -58,10 +57,6 @@ export default Vue.extend({
     return {
       show: true
     }
-  },
-
-  components: {
-    G3wFormInputs
   },
 
   methods: {

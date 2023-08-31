@@ -5,11 +5,44 @@
   
   @since   3.9.0
 
-  @version 2.0 ADD SOURCE FROM: src/components/InputG3W.vue@3.8 
+  @version 2.0 ADD SOURCE FROM: src/components/InputG3WFormInputs.vue@3.8
+  @version 2.0 ADD SOURCE FROM: src/components/InputG3W.vue@3.8
   @version 1.0 ORIGINAL SOURCE: src/components/InputBase.vue@3.7
 -->
 
 <template>
+
+  <!--
+    Legacy InputG3WFormInputs component
+    
+    @example `<g3w-input _legacy="g3w-form" :addToValidate :removeToValidate :changeInput />`
+
+    ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
+    
+    @since 3.9.0
+
+    @TODO deprecate it or merge within the `Base G3WInput component` section
+  -->
+  <form v-if="_isLegacyInputG3WFormInputs" class="form-horizontal g3w-form">
+    <div class="box-primary">
+      <div class="box-body">
+          <template v-for="field in state.fields">
+            <g3w-input
+              :state         = "field"
+              :addToValidate = "addToValidate"
+              :changeInput   = "changeInput"
+              :removeToValidate = "removeToValidate"
+              @addToValidate = "addToValidate"
+              @changeInput   = "changeInput"
+            />
+          </template>
+      </div>
+      <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">
+        <span class="hide-cursor-caret-color">*</span>
+        <span class="hide-cursor-caret-color" v-t="'sdk.form.footer.required_fields'"></span>
+      </div>
+    </div>
+  </form>
 
   <!--
     Legacy InputG3W component
@@ -22,7 +55,7 @@
 
     @TODO deprecate it or merge within the `Base G3WInput component` section
   -->
-  <div v-if="state.visible && this._isLegacyG3WInput">
+  <div v-else-if="state.visible && _isLegacyG3WInput">
 
     <div
       v-if  = "'child' === state.type"
@@ -227,6 +260,33 @@ const vm = {
       required: false
     },
 
+    /**
+     * ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
+     * 
+     * @TODO double check optional props
+     * 
+     * @since 3.9.0
+     */
+    // state:                       { type: Object, default: { fields: [] } },
+    // addToValidate:               { type: Function },
+    // changeInput:                 { type: Function },
+    // removeToValidate:            { type: Function },
+    show_required_field_message: { type: Boolean, default: false },
+
+    /**
+     * Legacy input type.
+     * 
+     * BACKCOMP ONLY (v3.x)
+     * 
+     * ref: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
+     * 
+     * @since 3.9.0
+     */
+     _legacy: {
+      type: String,
+      default: "",
+    },
+
   },
 
   /**
@@ -358,6 +418,17 @@ const vm = {
   computed: {
 
     /**
+     * Whether this is a Legacy InputG3WFormInputs component
+     * 
+     * @example `<g3w-input :show_required_field_message :addToValidate :removeToValidate :changeInput />`
+     * 
+     * @since 3.9.0
+     */
+    _isLegacyInputG3WFormInputs() {
+      return 'g3w-form' === this._legacy;
+    },
+
+    /**
      * Whether this is a Legacy InputG3W component
      * 
      * @example `<g3w-input :addToValidate :removeToValidate :changeInput />`
@@ -422,6 +493,18 @@ export default vm;
 </script>
 
 <style scoped>
+  #g3w-for-inputs-required-inputs-message {
+    margin-bottom:5px;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .box-body {
+    padding: 5px;
+  }
+
   .control-label {
     text-align: left !important;
     padding-top: 0 !important;

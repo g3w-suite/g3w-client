@@ -22,7 +22,6 @@ import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
 import G3WField from './G3WField.vue';
-import G3WFormInputs from './G3WFormInputs.vue';
 import G3WInput from './G3WInput.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
@@ -144,8 +143,6 @@ export {
   FormHeader,
   /** @since 3.9.0 */
   G3WField,
-  /** @since 3.9.0 */
-  G3WFormInputs,
   /** @since 3.9.0 */
   G3WInput,
   GlobalHelpDiv,

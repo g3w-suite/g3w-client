@@ -11,7 +11,6 @@ import ApplicationService          from 'services/application';
  * Single File Components
  */
 import G3WInput                    from 'components/G3WInput.vue';
-import G3WFormInputs               from 'components/G3WFormInputs.vue';
 import FormBody                    from 'components/FormBody.vue';
 import FormFooter                  from 'components/FormFooter.vue';
 import C3XYLine                    from 'components/C3XYLine.vue';
@@ -232,14 +231,28 @@ module.exports = {
         Body: FormBody,
         Footer: FormFooter
       },
-      Inputs: {
-        G3wFormInputs: G3WFormInputs,
+      /**
+       * BACKCOMP (v3.x)
+       * 
+       * ref: src/components/G3WFormInputs.vue@3.8
+       * ref: src/app/gui/inputs/inputs.js@3.8
+       * 
+       * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
+       * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.InputsComponents`
+       */
+      Inputs: new Proxy({
+        G3wFormInputs: G3WInput, 
         G3WInput,
-        InputsComponents: /* BACKCOMP (v3.x), ref: src/app/gui/inputs/inputs.js@3.8 */
-                          Object 
-                            .entries(InputsComponents)
-                            .reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {}),
-      },
+        InputsComponents: Object.entries(InputsComponents).reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {}),
+      }, {
+        get: (target, prop) => {
+          let input_type = target[prop] && target[prop].props && target[prop].props._legacy;
+          if (input_type) {
+            input_type = 'G3wFormInputs' === prop ? 'g3w-form' : '';
+          }
+          return Reflect.get(...arguments);
+        }
+      }),
       Charts: {
         ChartsFactory,
         c3: {
