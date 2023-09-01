@@ -767,6 +767,7 @@ export default {
    */
   created() {
     console.log(
+      '[ ' + this.state.name + ' ]',
       this.state.input.type,
       this._isLegacyG3WInput,
       this._isLegacyG3WForm,
