@@ -8,31 +8,27 @@
   <form class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
-        <template v-if="hasFormStructure">
-          <tabs
-            :layerid          = "state.layerid"
-            :feature          = "state.feature"
-            :handleRelation   = "handleRelation"
-            :contenttype      = "'editing'"
-            :addToValidate    = "addToValidate"
-            :changeInput      = "changeInput"
-            :removeToValidate = "removeToValidate"
-            :tabs             = "state.formstructure"
-            :fields           = "state.fields"
-          />
-        </template>
-        <template v-else>
-          <g3w-input
-            _legacy            = "g3w-form"
-            :state             = "state"
-            :addToValidate     = "addToValidate"
-            :removeToValidate  = "removeToValidate"
-            :changeInput       = "changeInput"
-            @changeinput       = "changeInput"
-            @addinput          = "addToValidate"
-            @removeinput       = "removeToValidate"
-          />
-        </template>
+        <tabs v-if="hasFormStructure"
+          :layerid          = "state.layerid"
+          :feature          = "state.feature"
+          :handleRelation   = "handleRelation"
+          :contenttype      = "'editing'"
+          :addToValidate    = "addToValidate"
+          :changeInput      = "changeInput"
+          :removeToValidate = "removeToValidate"
+          :tabs             = "state.formstructure"
+          :fields           = "state.fields"
+        />
+        <g3w-input v-else
+          _legacy            = "g3w-form"
+          :state             = "state"
+          :addToValidate     = "addToValidate"
+          :removeToValidate  = "removeToValidate"
+          :changeInput       = "changeInput"
+          @changeinput       = "changeInput"
+          @addinput          = "addToValidate"
+          @removeinput       = "removeToValidate"
+        />
       </div>
     </div>
   </form>
