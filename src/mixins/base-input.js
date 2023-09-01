@@ -766,6 +766,12 @@ export default {
    * @fires changeinput
    */
   created() {
+    console.log(
+      this.state.input.type,
+      this._isLegacyG3WInput,
+      this._isLegacyG3WForm,
+    );
+
     if (this._isLegacyG3WInput && 'child' !== this.state.type && this.state.input && !this.state.input.options) {
       this.state.input.options = {};
     }
