@@ -231,28 +231,41 @@ module.exports = {
         Body: FormBody,
         Footer: FormFooter
       },
-      /**
-       * BACKCOMPS (v3.x)
-       * 
-       * ref: src/components/G3WFormInputs.vue@3.8
-       * ref: src/app/gui/inputs/inputs.js@3.8
-       * 
-       * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
-       * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.InputsComponents`
-       */
-      Inputs: new Proxy({
-        G3wFormInputs: G3WInput, 
+      Inputs: {
+        /**
+         * BACKCOMP (v3.x)
+         * 
+         * ref: g3w-client/src/components/G3WFormInputs.vue@3.8
+         * ref: g3w-client-plugin-billboards/components/panel.vue
+         * 
+         * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
+         */
+        G3wFormInputs: {
+          functional: true,
+          render(h, { data, children }) {
+            return h(
+              G3WInput,
+              {
+                ...data,
+                props: {
+                  ...data.props,
+                  _legacy: { type: String, default: "g3w-form" },
+                },
+              },
+              children
+            );
+          },
+        },
         G3WInput,
+        /**
+         * BACKCOMP (v3.x)
+         * 
+         * ref: src/components/G3WFormInputs.vue@3.8
+         * 
+         * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
+         */
         InputsComponents: Object.entries(InputsComponents).reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {}),
-      }, {
-        get: (target, prop) => {
-          let input_type = target[prop] && target[prop].props && target[prop].props._legacy;
-          if (input_type) {
-            input_type = 'G3wFormInputs' === prop ? 'g3w-form' : '';
-          }
-          return Reflect.get(...arguments);
-        }
-      }),
+      },
       Charts: {
         ChartsFactory,
         c3: {

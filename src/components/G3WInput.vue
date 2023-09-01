@@ -28,12 +28,12 @@
       <div class="box-body">
           <template v-for="field in state.fields">
             <g3w-input
-              :state         = "field"
-              :addToValidate = "addToValidate"
-              :changeInput   = "changeInput"
+              :state            = "field"
+              :addToValidate    = "addToValidate"
+              :changeInput      = "changeInput"
               :removeToValidate = "removeToValidate"
-              @addToValidate = "addToValidate"
-              @changeInput   = "changeInput"
+              @addToValidate    = "addToValidate"
+              @changeInput      = "changeInput"
             />
           </template>
       </div>
