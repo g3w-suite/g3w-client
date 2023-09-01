@@ -5,24 +5,21 @@
 
 <template>
   <g3w-input :state="state">
-
-    <template v-slot:body="bodySlotProps">
+    <template #body="{ change, tabIndex, editable, notvalid }">
       <input
         :placeholder = "state.default"
-        @change      = "bodySlotProps.change"
-        @input       = "bodySlotProps.change"
+        @change      = "change"
+        @input       = "change"
         class        = "form-control"
         style        = "width: 100%"
-        :tabIndex    = "bodySlotProps.tabIndex"
-        v-disabled   = "!bodySlotProps.editable"
-        :class       = "{ 'input-error-validation' : bodySlotProps.notvalid }"
+        :tabIndex    = "tabIndex"
+        v-disabled   = "!editable"
+        :class       = "{ 'input-error-validation' : notvalid }"
         v-model      = "state.value"
         type         = "number"
       >
     </template>
-
   </g3w-input>
-
 </template>
 
 <script>

@@ -5,16 +5,16 @@
 
 <template>
   <g3w-input :state="state">
-    <template v-slot:body="bodySlotProps">
+    <template #body="{ mobileChange, change, tabIndex, editable, notvalid }">
       <input
         :placeholder = "state.default"
-        @keyup       = "isMobile() ? bodySlotProps.mobileChange($event) : bodySlotProps.change()"
-        :tabIndex    = "bodySlotProps.tabIndex"
-        v-disabled   = "!bodySlotProps.editable"
+        @keyup       = "isMobile() ? mobileChange($event) : change()"
+        :tabIndex    = "tabIndex"
+        v-disabled   = "!editable"
         :field       = "state.name"
         class        = "form-control"
         v-model      = "state.value"
-        :class       = "{ 'input-error-validation' : bodySlotProps.notvalid }"
+        :class       = "{ 'input-error-validation' : notvalid }"
         :id          = "state.name"
       >
     </template>
