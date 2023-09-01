@@ -15,7 +15,7 @@
   <!--
     Legacy InputG3WFormInputs component
     
-    @example `<g3w-input _legacy="g3w-form" />`
+    @example <g3w-input _legacy="g3w-form" />
 
     ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
     
@@ -48,7 +48,7 @@
   <!--
     Legacy InputG3W component
     
-    @example `<g3w-input _legacy="g3w-input" />`
+    @example <g3w-input _legacy="g3w-input" />
 
     ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
     
@@ -99,7 +99,7 @@
   <!--
     Base G3WInput component
 
-    @example `<g3w-input :state />`
+    @example <g3w-input :state />
 
     ORIGINAL SOURCE: src/components/InputBase.vue@3.8
 
@@ -110,7 +110,11 @@
 
     <!-- INPUT LABEL -->
     <slot name="label">
-      <label :for="state.name" v-disabled="!editable" class="col-sm-12 control-label">{{ state.label }}
+      <label
+        :for       = "state.name"
+        v-disabled = "!editable"
+        class      = "col-sm-12 control-label"
+      >{{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
         <i
           v-if   = "showhelpicon"
@@ -423,7 +427,7 @@ const vm = {
     /**
      * Whether this is a Legacy InputG3WFormInputs component
      * 
-     * @example `<g3w-input _legacy="g3w-input" />`
+     * @example <g3w-input _legacy="g3w-form" />
      * 
      * @since 3.9.0
      */
@@ -434,7 +438,7 @@ const vm = {
     /**
      * Whether this is a Legacy InputG3W component
      * 
-     * @example `<g3w-input _legacy="g3w-input" />`
+     * @example <g3w-input _legacy="g3w-input" />
      * 
      * @since 3.9.0
      */
