@@ -211,7 +211,7 @@ proto.getFeatures = function(options={}, params={}) {
     let filter = options.filter || null;
     if (filter) {
       // filterbbox
-      if (filter.bbox) {
+      if (undefined !== filter.bbox) {
         const bbox = filter.bbox;
         filter = {
           in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`,
@@ -224,7 +224,8 @@ proto.getFeatures = function(options={}, params={}) {
           contentType
         })
         // filter fid
-      } else if (filter.fid) {
+        //need to check if undefined otherwise id filter fid = 0 is excluded
+      } else if (undefined !== filter.fid) {
         const options = filter.fid;
         promise = RelationsService.getRelations(options);
       } else if (filter.field) {
@@ -234,12 +235,12 @@ proto.getFeatures = function(options={}, params={}) {
           data: jsonFilter,
           contentType
         })
-      } else if (filter.fids){
+      } else if (undefined !== filter.fids) { //Need to check if not undefined otherwise id filter fids = 0 is excluded
         promise = XHR.get({
           url,
           params: filter
         })
-      } else if (filter.nofeatures){
+      } else if (undefined !== filter.nofeatures){
         const jsonFilter = JSON.stringify({
           field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
         });
