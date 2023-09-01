@@ -15,7 +15,7 @@
   <!--
     Legacy InputG3WFormInputs component
     
-    @example `<g3w-input _legacy="g3w-form" :addToValidate :removeToValidate :changeInput />`
+    @example `<g3w-input _legacy="g3w-form" />`
 
     ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
     
@@ -23,11 +23,12 @@
 
     @TODO deprecate it or merge within the `Base G3WInput component` section
   -->
-  <form v-if="_isLegacyInputG3WFormInputs" class="form-horizontal g3w-form">
+  <form v-if="_isLegacyG3WForm" class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
           <template v-for="field in state.fields">
             <g3w-input
+              _legacy           = "g3w-input"
               :state            = "field"
               :addToValidate    = "addToValidate"
               :changeInput      = "changeInput"
@@ -47,7 +48,7 @@
   <!--
     Legacy InputG3W component
     
-    @example `<g3w-input :addToValidate :removeToValidate :changeInput />`
+    @example `<g3w-input _legacy="g3w-input" />`
 
     ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
     
@@ -66,6 +67,7 @@
       <div> {{ state.description }} </div>
       <g3w-input
         v-for="field in state.fields"
+        _legacy           = "g3w-input"
         :key              = "field.name"
         :state            = "field"
         @changeinput      = "changeInput"
@@ -111,7 +113,7 @@
         <span v-if="state.validate && state.validate.required">*</span>
         <i
           v-if   = "showhelpicon"
-          :class ="g3wtemplate.font['info']"
+          :class = "g3wtemplate.font['info']"
           class  = "skin-color"
           style  = "margin-left: 3px; cursor: pointer"
           @click = "showHideHelp"
@@ -420,24 +422,23 @@ const vm = {
     /**
      * Whether this is a Legacy InputG3WFormInputs component
      * 
-     * @example `<g3w-input :show_required_field_message :addToValidate :removeToValidate :changeInput />`
+     * @example `<g3w-input _legacy="g3w-input" />`
      * 
      * @since 3.9.0
      */
-    _isLegacyInputG3WFormInputs() {
+    _isLegacyG3WForm() {
       return 'g3w-form' === this._legacy;
     },
 
     /**
      * Whether this is a Legacy InputG3W component
      * 
-     * @example `<g3w-input :addToValidate :removeToValidate :changeInput />`
+     * @example `<g3w-input _legacy="g3w-input" />`
      * 
      * @since 3.9.0
      */
     _isLegacyG3WInput() {
-      const props = { a: this.addToValidate, b: this.removeToValidate, c: this.changeInput };
-      return Object.values(props).every(v => "function" === typeof v) && !Object.values(props).some(v => undefined === v);
+      return 'g3w-input' === this._legacy;
     },
 
     /**
@@ -448,33 +449,6 @@ const vm = {
     type() {
       if ('child' !== this.state.type) {
         return `${this.state.input.type ? this.state.input.type : this.state.type}_input`;
-      }
-    },
-
-  },
-
-  watch: {
-
-    /**
-     * Validate optional props
-     * 
-     * @since 3.9.0
-     */
-    $props: {
-      immediate: true,
-      handler() {
-        const props = {
-          addToValidate:    this.addToValidate,
-          removeToValidate: this.removeToValidate,
-          changeInput:      this.changeInput
-        };
-        console.assert(
-          Object.values(props).every(v => "function" === typeof v) ||
-          Object.values(props).every(v => undefined === v),
-          '[%o] Invalid or missing required props: %o',
-          this.type,
-          props
-        );
       }
     },
 

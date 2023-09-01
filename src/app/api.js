@@ -107,7 +107,7 @@ console.assert(undefined !== InputsComponents, 'InputsComponents is undefined');
 console.assert(undefined !== FieldsService,    'FieldsService is undefined');
 console.assert(undefined !== Fields,           'Fields is undefined');
 
-module.exports = {
+const g3wsdk = {
 
   // APP CONSTANTS
   constant: G3W_CONSTANT, // TODO: rename to "constants" which is more appropriate (in version 4.0)
@@ -232,39 +232,9 @@ module.exports = {
         Footer: FormFooter
       },
       Inputs: {
-        /**
-         * BACKCOMP (v3.x)
-         * 
-         * ref: g3w-client/src/components/G3WFormInputs.vue@3.8
-         * ref: g3w-client-plugin-billboards/components/panel.vue
-         * 
-         * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
-         */
-        G3wFormInputs: {
-          functional: true,
-          render(h, { data, children }) {
-            return h(
-              G3WInput,
-              {
-                ...data,
-                props: {
-                  ...data.props,
-                  _legacy: { type: String, default: "g3w-form" },
-                },
-              },
-              children
-            );
-          },
-        },
-        G3WInput,
-        /**
-         * BACKCOMP (v3.x)
-         * 
-         * ref: src/components/G3WFormInputs.vue@3.8
-         * 
-         * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
-         */
-        InputsComponents: Object.entries(InputsComponents).reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {}),
+        // G3wFormInputs,
+        // G3WInput,
+        // InputsComponents,
       },
       Charts: {
         ChartsFactory,
@@ -314,3 +284,62 @@ module.exports = {
   // G3W-CLIENT version
   version: G3W_CONSTANT.APP_VERSION
 };
+
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: g3w-client/src/components/InputG3W.vue@3.8
+ */
+g3wsdk.gui.vue.Inputs.G3WInput = {
+  functional: true,
+  render(h, { data, children }) {
+    return h(
+      g3wsdk.gui.vue.Inputs.G3WInput,
+      {
+        ...data,
+        props: {
+          ...data.props,
+          _legacy: { type: String, default: "g3w-input" },
+        },
+      },
+      children
+    );
+  },
+};
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: g3w-client/src/components/G3WFormInputs.vue@3.8
+ * ref: g3w-client-plugin-billboards/components/panel.vue
+ * 
+ * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
+ */
+g3wsdk.gui.vue.Inputs.G3wFormInputs = {
+  functional: true,
+  render(h, { data, children }) {
+    return h(
+      g3wsdk.gui.vue.Inputs.G3WInput,
+      {
+        ...data,
+        props: {
+          ...data.props,
+          _legacy: { type: String, default: "g3w-form" },
+        },
+      },
+      children
+    );
+  },
+};
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/components/G3WFormInputs.vue@3.8
+ * 
+ * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
+ */
+g3wsdk.gui.vue.Inputs.InputsComponents = Object.entries(InputsComponents).reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {});
+
+module.exports = g3wsdk;

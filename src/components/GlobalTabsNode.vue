@@ -36,6 +36,7 @@
             :removeToValidate = "removeToValidate"
             :feature          = "feature"
             :is               = "getComponent(getField(getNode(row, column)))"
+            :_legacy          = "_getLegacy(getField(getNode(row, column)))"
           />
 
           <!-- NODE GROUP / RELATION -->
@@ -247,6 +248,10 @@
         if (field.relation) return;
         else if (field.query) return field.input.type;
         else return 'g3w-input';
+      },
+
+      _getLegacy(field) {
+        return (field.relation || field.query) ? undefined : 'g3w-input' ;
       },
 
     },
