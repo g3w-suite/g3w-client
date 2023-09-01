@@ -770,7 +770,7 @@ export default {
       this.state.input.options = {};
     }
 
-    if (this._isLegacyG3WInput){
+    if (this._isLegacyG3WInput || this._isLegacyG3WForm) {
       return;
     }
 
