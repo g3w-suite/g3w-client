@@ -14,14 +14,12 @@
 
   <!--
     Legacy InputG3WFormInputs component
-    
+
     @example <g3w-input _legacy="g3w-form" />
 
     ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
-    
-    @since 3.9.0
 
-    @TODO deprecate it or merge within the `Base G3WInput component` section
+    @since 3.9.0
   -->
   <form v-if="_isLegacyG3WForm" class="form-horizontal g3w-form">
     <div class="box-primary">
@@ -47,14 +45,12 @@
 
   <!--
     Legacy InputG3W component
-    
+
     @example <g3w-input _legacy="g3w-input" />
 
     ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
-    
-    @since 3.9.0
 
-    @TODO deprecate it or merge within the `Base G3WInput component` section
+    @since 3.9.0
   -->
   <div v-else-if="state.visible && _isLegacyChildG3WInput">
 
