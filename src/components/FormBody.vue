@@ -9,10 +9,10 @@
     <div class="box-primary">
       <div class="box-body">
         <tabs v-if="hasFormStructure"
+          contenttype       = "editing"
           :layerid          = "state.layerid"
           :feature          = "state.feature"
           :handleRelation   = "handleRelation"
-          :contenttype      = "'editing'"
           :addToValidate    = "addToValidate"
           :changeInput      = "changeInput"
           :removeToValidate = "removeToValidate"
