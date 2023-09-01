@@ -766,8 +766,7 @@ export default {
    * @fires changeinput
    */
   created() {
-
-    if (this._isLegacyG3WInput && 'child' !== this.state.type && !this.state.input.options) {
+    if (this._isLegacyG3WInput && 'child' !== this.state.type && this.state.input && !this.state.input.options) {
       this.state.input.options = {};
     }
 

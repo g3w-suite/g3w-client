@@ -56,10 +56,9 @@
 
     @TODO deprecate it or merge within the `Base G3WInput component` section
   -->
-  <div v-else-if="state.visible && _isLegacyG3WInput">
+  <div v-else-if="state.visible && _isLegacyChildG3WInput">
 
     <div
-      v-if  = "'child' === state.type"
       style = "border-top: 2px solid"
       class = "skin-border-color field-child"
     >
@@ -79,7 +78,10 @@
       />
     </div>
 
-    <div v-else>
+  </div>
+
+  <div v-else-if="state.visible && _isLegacyG3WInput">
+    <div>
       <component
         @changeinput      = "changeInput"
         :changeInput      = "changeInput"
@@ -92,7 +94,6 @@
       />
       <span class="divider"></span>
     </div>
-
   </div>
 
   <!--
@@ -439,6 +440,13 @@ const vm = {
      */
     _isLegacyG3WInput() {
       return 'g3w-input' === this._legacy;
+    },
+
+    /**
+     * @since 3.9.0
+     */
+    _isLegacyChildG3WInput() {
+      return 'g3w-input' === this._legacy && 'child' === this.state.type;
     },
 
     /**
