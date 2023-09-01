@@ -24,17 +24,17 @@
   <form v-if="_isLegacyG3WForm" class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
-          <template v-for="field in state.fields">
-            <g3w-input
-              _legacy           = "g3w-input"
-              :state            = "field"
-              :addToValidate    = "addToValidate"
-              :changeInput      = "changeInput"
-              :removeToValidate = "removeToValidate"
-              @addToValidate    = "addToValidate"
-              @changeInput      = "changeInput"
-            />
-          </template>
+        <template v-for="field in state.fields">
+          <g3w-input
+            _legacy           = "g3w-input"
+            :state            = "field"
+            :addToValidate    = "addToValidate"
+            :changeInput      = "changeInput"
+            :removeToValidate = "removeToValidate"
+            @addToValidate    = "addToValidate"
+            @changeInput      = "changeInput"
+          />
+        </template>
       </div>
       <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">
         <span class="hide-cursor-caret-color">*</span>
