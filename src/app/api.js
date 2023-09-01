@@ -295,7 +295,7 @@ g3wsdk.gui.vue.Inputs.G3WInput = {
   functional: true,
   render(h, { data, children }) {
     return h(
-      g3wsdk.gui.vue.Inputs.G3WInput,
+      G3WInput,
       {
         ...data,
         props: {
