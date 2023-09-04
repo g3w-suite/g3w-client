@@ -66,6 +66,7 @@ export default Vue.extend({
     },
 
     changeInput(input) {
+      console.log('form changed');
       this.$emit('changeinput', input);
     },
 

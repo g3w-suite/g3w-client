@@ -232,9 +232,13 @@ class Service {
 
   setUpdate() {
     const { value, _value } = this.state;
-    if (this.state.input.type === 'media' && 'Object' !== toRawType(value) && 'Object' !== toRawType(_value)) {
+
+    const is_media = 'media' === this.state.input.type && 'Object' !== toRawType(value) && 'Object' !== toRawType(_value); 
+    const is_date  = 'datetimepicker' === this.state.input.type
+
+    if (is_media) {
       this.state.update = value.value != _value.value;
-    } else if (this.state.input.type === "datetimepicker") {
+    } else if (is_date) {
       //check
       this.state.update = (null !== value ? value.toUpperCase() : value) != (_value ? _value.toUpperCase(): _value);
     } else {
@@ -735,13 +739,21 @@ export default {
      * @fires changeinput
      */
     change() {
+      console.log('input changed');
+
       this.service.setEmpty();
       this.service.setUpdate();
       // validate input if is required or need to be unique
       if (this.state.validate.required || this.state.validate.unique) {
         this.service.validate();
       }
+
+      console.log(this);
+
       this.$emit('changeinput', this.state);
+
+      // TODO: double check listener for `InputText.vue`
+      // this.$parent.$emit('changeinput', this.state);
     },
 
     /**
@@ -769,15 +781,18 @@ export default {
     console.log(
       '[ ' + this.state.name + ' ]',
       this.state.input.type,
-      this._isLegacyG3WInput,
-      this._isLegacyG3WForm,
+      this.__isInput,
+      this.__isForm,
+      this.$scopedSlots,
+      this.$slots,
+      // this
     );
 
-    if (this._isLegacyG3WInput && 'child' !== this.state.type && this.state.input && !this.state.input.options) {
+    if (this.__isInput && 'child' !== this.state.type && this.state.input && !this.state.input.options) {
       this.state.input.options = {};
     }
 
-    if (this._isLegacyG3WInput || this._isLegacyG3WForm) {
+    if (this.__isInput || this.__isForm) {
       return;
     }
 

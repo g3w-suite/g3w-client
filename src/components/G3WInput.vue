@@ -21,7 +21,7 @@
 
     @since 3.9.0
   -->
-  <form v-if="_isLegacyG3WForm" class="form-horizontal g3w-form">
+  <form v-if="__isForm" class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
         <template v-for="field in state.fields">
@@ -52,7 +52,7 @@
 
     @since 3.9.0
   -->
-  <div v-else-if="state.visible && _isLegacyChildG3WInput">
+  <div v-else-if="state.visible && __isChild">
 
     <div
       style = "border-top: 2px solid"
@@ -76,7 +76,7 @@
 
   </div>
 
-  <div v-else-if="state.visible && _isLegacyG3WInput">
+  <div v-else-if="state.visible && __isInput">
     <div>
       <component
         @changeinput      = "changeInput"
@@ -128,9 +128,9 @@
       <!-- LOADING BAR -->
       <slot name="loading">
         <div
-          v-if="'loading' === loadingState"
-          style="position:relative; width: 100%"
-          slot="loading"
+          v-if  = "'loading' === loadingState"
+          slot  = "loading"
+          style = "position:relative; width: 100%"
         >
           <bar-loader loading="true" />
         </div>
@@ -427,7 +427,7 @@ const vm = {
      * 
      * @since 3.9.0
      */
-    _isLegacyG3WForm() {
+    __isForm() {
       return 'g3w-form' === this._legacy;
     },
 
@@ -438,14 +438,14 @@ const vm = {
      * 
      * @since 3.9.0
      */
-    _isLegacyG3WInput() {
+    __isInput() {
       return 'g3w-input' === this._legacy;
     },
 
     /**
      * @since 3.9.0
      */
-    _isLegacyChildG3WInput() {
+    __isChild() {
       return 'g3w-input' === this._legacy && 'child' === this.state.type;
     },
 
