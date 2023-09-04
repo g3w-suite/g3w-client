@@ -8,6 +8,8 @@ const { response: responseParser } = require('core/utils/parsers');
 const Feature = require('core/layers/features/feature');
 const Parsers = require('core/utils/parsers');
 
+const is_defined = d => undefined !== d;
+
 function QGISProvider(options = {}) {
   base(this);
   this._name = 'qgis';
@@ -211,7 +213,7 @@ proto.getFeatures = function(options={}, params={}) {
     let filter = options.filter || null;
     if (filter) {
       // filterbbox
-      if (undefined !== filter.bbox) {
+      if (is_defined(filter.bbox)) {
         const bbox = filter.bbox;
         filter = {
           in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`,
@@ -225,7 +227,7 @@ proto.getFeatures = function(options={}, params={}) {
         })
         // filter fid
         //need to check if undefined otherwise id filter fid = 0 is excluded
-      } else if (undefined !== filter.fid) {
+      } else if (is_defined(filter.fid)) {
         const options = filter.fid;
         promise = RelationsService.getRelations(options);
       } else if (filter.field) {
@@ -235,12 +237,12 @@ proto.getFeatures = function(options={}, params={}) {
           data: jsonFilter,
           contentType
         })
-      } else if (undefined !== filter.fids) { //Need to check if not undefined otherwise id filter fids = 0 is excluded
+      } else if (is_defined(filter.fids)) { //Need to check if not undefined otherwise id filter fids = 0 is excluded
         promise = XHR.get({
           url,
           params: filter
         })
-      } else if (undefined !== filter.nofeatures){
+      } else if (is_defined(filter.nofeatures)){
         const jsonFilter = JSON.stringify({
           field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
         });
