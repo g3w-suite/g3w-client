@@ -5,31 +5,35 @@
 
 <template>
   <g3w-input :state="state">
-    <textarea
-      @keydown.stop = ""
-      :placeholder  = "state.default"
-      @input        = "change"
-      @change       = "change"
-      slot          = "body"
-      style         = "max-width: 100%; min-width: 100%"
-      rows          = "3"
-      :tabIndex     = "tabIndex"
-      v-disabled    = "!editable"
-      :class        = "{ 'input-error-validation' : notvalid }"
-      v-model       = "state.value"
-    ></textarea>
+    <template #body="{ change, tabIndex, editable, notvalid }">
+      <textarea
+        @keydown.stop = ""
+        :placeholder  = "state.default"
+        @input        = "change"
+        @change       = "change"
+        style         = "max-width: 100%; min-width: 100%"
+        rows          = "3"
+        :tabIndex     = "tabIndex"
+        v-disabled    = "!editable"
+        :class        = "{ 'input-error-validation' : notvalid }"
+        v-model       = "state.value"
+      ></textarea>
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import { baseInputMixin } from 'mixins';
-
 export default {
 
   /** @since 3.8.6 */
   name: "input-textarea",
 
-  mixins: [ baseInputMixin ],
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
+  },
 
 };
 </script>
