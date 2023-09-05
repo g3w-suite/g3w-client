@@ -5,26 +5,27 @@
 
 <template>
   <g3w-input :state="state">
-    <select
-      :id          = "id"
-      slot         = "body"
-      style        = "width: 100%"
-      :tabIndex    = "tabIndex"
-      v-disabled   = "!editable"
-      class        = "form-control"
-    >
-      <option value="null"></option>
-      <option
-        v-for  = "value in state.input.options.values"
-        :key   = "value"
-        :value = "getValue(value)"
-      >{{ getValue(value) }}</option>
-    </select>
+    <template #body="{ tabIndex, editable }">
+      <select
+        :id          = "id"
+        style        = "width: 100%"
+        :tabIndex    = "tabIndex"
+        v-disabled   = "!editable"
+        class        = "form-control"
+      >
+        <option value="null"></option>
+        <option
+          v-for  = "value in state.input.options.values"
+          :key   = "value"
+          :value = "getValue(value)"
+        >{{ getValue(value) }}</option>
+      </select>
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import { baseInputMixin, selectMixin } from 'mixins';
+import { selectMixin } from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
 
@@ -34,12 +35,18 @@ export default {
   name: "input-unique",
 
   mixins: [
-    baseInputMixin,
     selectMixin
   ],
 
   data() {
     return { id: `unique_${getUniqueDomId()}` };
+  },
+
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
   },
 
   watch: {
@@ -51,7 +58,7 @@ export default {
         : null;
 
       if (null !== this.state.value && -1 === values.indexOf(this.state.value)) {
-        this.service.addValueToValues(this.state.value);
+        this.$parent.getService().addValueToValues(this.state.value);
       }
 
       await this.$nextTick();
@@ -64,14 +71,38 @@ export default {
 
   },
 
+  methods: {
+
+    /**
+     * @since 3.9.0 
+     */
+    onSelect2Change(e) {
+      const { data } = e.params;
+      this.changeSelect(data.$value ? data.$value : data.id);
+    },
+    
+    /**
+     * @override selectMixin::changeSelect(value)
+     */
+    changeSelect(value) {
+      this.state.value = ('null' === value ? null : value);
+      this.$parent.change();
+    },
+
+  },
+
   async mounted() {
+
     await this.$nextTick();
+
     if (!this.state.input.options.editable) {
       return;
     }
+
     this.select2 = $(`#${this.id}`).select2({ dropdownParent: $('#g3w-view-content'), tags: true, language: this.getLanguage() });
     this.select2.val(this.state.value).trigger('change');
-    this.select2.on('select2:select', e => { this.changeSelect(e.params.data.$value ? e.params.data.$value : e.params.data.id); })
+    this.select2.on('select2:select', this.onSelect2Change.bind(this));
+
   },
 
 };
