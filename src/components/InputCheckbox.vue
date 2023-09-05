@@ -1,30 +1,34 @@
 <!--
   @file
   @since v3.7
+
+  @version 2.0 ADD SOURCE FROM: src/mixins/widget.js@3.8
 -->
 
 <template>
   <g3w-input :state="state">
-    <div v-disabled="!editable" style="height: 20px; margin-top:8px;" slot="body">
-      <input
-        @change   = "changeCheckBox"
-        :tabIndex = "tabIndex"
-        style     = "width: 100%"
-        :class    = "{ 'input-error-validation' : notvalid }"
-        class     = "magic-checkbox"
-        v-model   = "value"
-        type      = "checkbox"
-        :id       = "id"
+    <template #body="{ tabIndex, editable, notvalid }">
+      <div
+        v-disabled  = "!editable"
+        style       ="height: 20px; margin-top:8px;"
       >
-      <label :for="id">{{ label }}</label>
-    </div>
+        <input
+          @change   = "changeCheckBox"
+          :tabIndex = "tabIndex"
+          style     = "width: 100%"
+          :class    = "{ 'input-error-validation' : notvalid }"
+          class     = "magic-checkbox"
+          v-model   = "value"
+          type      = "checkbox"
+          :id       = "id"
+        >
+        <label :for="id">{{ label }}</label>
+      </div>
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import { baseInputMixin, widgetMixins } from 'mixins';
-
-console.assert(undefined !== baseInputMixin);
 
 const { getUniqueDomId } = require('core/utils/utils');
 
@@ -33,28 +37,45 @@ export default {
   /** @since 3.8.6 */
   name:'input-checkbox',
 
-  mixins: [
-    baseInputMixin,
-    widgetMixins
-  ],
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
+  },
 
   data() {
     return {
-      value: null,
-      label: null,
-      id: getUniqueDomId(),
+      value:   null,
+      label:   null,
+      changed: false,
+      id:      getUniqueDomId(),
     }
+  },
+
+  watch: {
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/widget.js@3.8
+     */
+    'state.value'(value) {
+      if (this.changed) {
+        this.changed = false;
+      } else {
+        this.stateValueChanged(value);
+      } 
+    },
+
   },
 
   methods: {
 
     setLabel() {
-      // convert label
-      this.label = this.service.convertCheckedToValue(this.value);
+      this.label = this.$parent.getInputService().convertCheckedToValue(this.value); // convert label.
     },
 
     setValue() {
-      this.value = this.service.convertValueToChecked();
+      this.value = this.$parent.getInputService().convertValueToChecked();
     },
 
     changeCheckBox() {
@@ -67,12 +88,20 @@ export default {
       this.setLabel();
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/widget.js@3.8
+     */
+    widgetChanged() {
+      this.changed = true;
+      this.$parent.change();
+    },
+
   },
 
   created() {
     this.value = this.state.forceNull
       ? this.value
-      : this.service.convertValueToChecked();
+      : this.$parent.getInputService().convertValueToChecked();
   },
 
   mounted() {
