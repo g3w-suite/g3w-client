@@ -5,42 +5,42 @@
 
 <template>
   <g3w-input :state="state">
-    <div slot="body">
-      <span
-        style  = "
-          left: 0;
-          top: 7px;
-          position: absolute
-        "
-        :class = "g3wtemplate.font['crosshairs']"
-        class  = "skin-color"
-      ></span>
-      <input
-        @input     = "change"
-        @click     = "pickLayer"
-        @blur      = "unpick"
-        style      = "width: 100%;"
-        :style     = "{cursor: editable ? 'pointer': null}"
-        class      = "form-control"
-        readonly   = "readonly"
-        :tabIndex  = "tabIndex"
-        v-disabled = "!editable"
-        :class     = "{ 'input-error-validation' : notvalid }"
-        v-model    = "state.value"
-      >
-    </div>
+    <template #body="{ change, tabIndex, editable, notvalid }">
+      <div>
+        <span
+          :class = "g3wtemplate.font['crosshairs']"
+          class  = "skin-color icon-picklayer"
+        ></span>
+        <input
+          @input     = "change"
+          @click     = "pickLayer"
+          @blur      = "unpick"
+          style      = "width: 100%;"
+          :style     = "{ cursor: (editable ? 'pointer': null) }"
+          class      = "form-control"
+          readonly   = "readonly"
+          :tabIndex  = "tabIndex"
+          v-disabled = "!editable"
+          :class     = "{ 'input-error-validation' : notvalid }"
+          v-model    = "state.value"
+        >
+      </div>
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import { baseInputMixin }  from 'mixins';
-
 export default {
 
   /** @since 3.8.6 */
   name: 'input-picklayer',
 
-  mixins: [ baseInputMixin ],
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
+  },
 
   methods: {
 
@@ -48,7 +48,7 @@ export default {
       this.pickservice
         .pick()
         .then(value => this.state.value = value)
-        .catch((e)=>{ console.warn(e); })
+        .catch(console.warn)
     },
 
     unpick() {
@@ -58,7 +58,7 @@ export default {
   },
 
   created() {
-    this.pickservice = this.createInputService('picklayer', this.state.input.options);
+    this.pickservice = this.$parent.createInputService('picklayer', this.state.input.options);
   },
 
   beforeDestroy() {
@@ -68,3 +68,11 @@ export default {
 
 };
 </script>
+
+<style scoped>
+  .icon-picklayer {
+    left: 0;
+    top: 7px;
+    position: absolute;
+  }
+</style>
