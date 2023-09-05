@@ -5,32 +5,36 @@
 
 <template>
   <g3w-input :state="state">
-    <input
-      :placeholder = "state.default"
-      type         = "color"
-      slot         = "body"
-      @change      = "change"
-      :tabIndex    = "tabIndex"
-      v-disabled   = "!editable"
-      :field       = "state.name"
-      class        = "form-control"
-      style        = "cursor: pointer"
-      v-model      = "state.value"
-      :class       = "{ 'input-error-validation' : notvalid }"
-      :id          = "state.name"
-    >
+    <template #body="{ change, tabIndex, editable, notvalid }">
+      <input
+        :placeholder = "state.default"
+        type         = "color"
+        @change      = "change"
+        :tabIndex    = "tabIndex"
+        v-disabled   = "!editable"
+        :field       = "state.name"
+        class        = "form-control"
+        style        = "cursor: pointer"
+        v-model      = "state.value"
+        :class       = "{ 'input-error-validation' : notvalid }"
+        :id          = "state.name"
+      >
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import { baseInputMixin } from 'mixins';
-
 export default {
 
   /** @since 3.8.6 */
   name: 'input-color',
 
-  mixins: [ baseInputMixin ],
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
+  },
 
 };
 </script>
