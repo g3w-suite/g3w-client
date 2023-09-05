@@ -699,7 +699,7 @@ export default {
 
     'notvalid'(notvalid) {
       if (notvalid) {
-       this.service.setErrorMessage(this.state);
+        this.getInputService().setErrorMessage(this.state);
       }
     },
 
@@ -741,12 +741,14 @@ export default {
     change() {
       console.log('input changed', this);
 
-      this.service.setEmpty();
-      this.service.setUpdate();
+      const service = this.getInputService();
+
+      service.setEmpty();
+      service.setUpdate();
 
       // validate input if is required or need to be unique
       if (this.state.validate.required || this.state.validate.unique) {
-        this.service.validate();
+        service.validate();
       }
 
       this.$emit('changeinput', this.state);
