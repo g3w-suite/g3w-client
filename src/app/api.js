@@ -100,6 +100,8 @@ const AreaInteraction              = require('g3w-ol/interactions/areainteractio
 const LengthInteraction            = require('g3w-ol/interactions/lengthinteraction');
 const g3wolutils                   = require('core/utils/ol');
 
+const deprecate                    = require('util-deprecate');
+
 /**
  * Test assertions
  */
@@ -285,6 +287,7 @@ const g3wsdk = {
   version: G3W_CONSTANT.APP_VERSION
 };
 
+console.log(G3WInput);
 
 /**
  * BACKCOMP (v3.x)
@@ -341,5 +344,43 @@ g3wsdk.gui.vue.Inputs.G3wFormInputs = {
  * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
  */
 g3wsdk.gui.vue.Inputs.InputsComponents = Object.entries(InputsComponents).reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/base-input.vue@3.8
+ * 
+ * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Mixins.baseInputMixin`
+ */
+g3wsdk.gui.vue.Mixins.baseInputMixin = {
+
+  props: ['state'],
+
+  computed: {
+    tabIndex:           deprecate(G3WInput.computed.tabIndex,           '[G3W-CLIENT] baseInputMixin::tabIndex is deprecated'),
+    notvalid:           deprecate(G3WInput.computed.notvalid,           '[G3W-CLIENT] baseInputMixin::notvalid is deprecated'),
+    editable:           deprecate(G3WInput.computed.editable,           '[G3W-CLIENT] baseInputMixin::editable is deprecated'),
+    showhelpicon:       deprecate(G3WInput.computed.showhelpicon,       '[G3W-CLIENT] baseInputMixin::showhelpicon is deprecated'),
+    disabled:           deprecate(G3WInput.computed.disabled,           '[G3W-CLIENT] baseInputMixin::disabled is deprecated'),
+    loadingState:       deprecate(G3WInput.computed.loadingState,       '[G3W-CLIENT] baseInputMixin::loadingState is deprecated'),
+  },
+
+  watch: {
+    'notvalid':         deprecate(G3WInput.watch['notvalid'],           '[G3W-CLIENT] baseInputMixin::watch[\'notvalid\'] is deprecated'),
+    'state.value':      deprecate(G3WInput.watch['state.value'],        '[G3W-CLIENT] baseInputMixin::watch[\'state.value\'] is deprecated'),
+  },
+
+  methods: {
+    showHideHelp:       deprecate(G3WInput.methods.showHideHelp,        '[G3W-CLIENT] baseInputMixin::showHideHelp. is deprecated'),
+    mobileChange:       deprecate(G3WInput.methods.mobileChange,        '[G3W-CLIENT] baseInputMixin::mobileChange is deprecated'),
+    change:             deprecate(G3WInput.methods.change,              '[G3W-CLIENT] baseInputMixin::change is deprecated'),
+    isVisible:          deprecate(G3WInput.methods.isVisible,           '[G3W-CLIENT] baseInputMixin::isVisible is deprecated'),
+    createInputService: deprecate(G3WInput.methods.createInputService,  '[G3W-CLIENT] baseInputMixin::createInputService is deprecated'),
+    getInputService:    deprecate(G3WInput.methods.getInputService,     '[G3W-CLIENT] baseInputMixin::getInputService is deprecated'),
+  },
+
+  created:              deprecate(G3WInput.created,                     '[G3W-CLIENT] baseInputMixin is deprecated'),
+  destroyed:            deprecate(G3WInput.destroyed,                   '[G3W-CLIENT] baseInputMixin is deprecated'),
+};
 
 module.exports = g3wsdk;
