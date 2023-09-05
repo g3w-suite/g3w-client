@@ -26,6 +26,26 @@ export default {
     },
   },
 
+  watch: {
+
+    'state.value'(value) {
+
+      if (this.edit_state.edit) {
+        return;
+      }
+
+      const { firstChild } = this.quill.container;
+
+      if (this.edit_state.show_html) {
+        firstChild.innerText = value;
+      } else {
+        firstChild.innerHTML = value;
+      }
+
+    },
+
+  },
+
   methods: {
 
     setupTableCustomTools() {
@@ -146,26 +166,6 @@ export default {
     this.handler = this.handler.bind(this);
 
     this.quill.on('text-change', this.handler);
-  },
-
-  watch: {
-
-    'state.value'(value) {
-
-      if (this.edit_state.edit) {
-        return;
-      }
-
-      const { firstChild } = this.quill.container;
-
-      if (this.edit_state.show_html) {
-        firstChild.innerText = value;
-      } else {
-        firstChild.innerHTML = value;
-      }
-
-    },
-
   },
 
   beforeDestroy() {
