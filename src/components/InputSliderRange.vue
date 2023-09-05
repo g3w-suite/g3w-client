@@ -41,11 +41,11 @@ export default {
   watch: {
 
     'state.input.options.min'() {
-      this.$parent.getService().changeInfoMessage()
+      this.$parent.getInputService().changeInfoMessage()
     },
 
     'state.input.options.max'() {
-      this.$parent.getService().changeInfoMessage()
+      this.$parent.getInputService().changeInfoMessage()
     },
 
   },

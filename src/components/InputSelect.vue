@@ -194,7 +194,7 @@ export default {
       }
 
       if (this.autocomplete && this.state.value) {
-        this.$parent.getService().getKeyByValue({ search: this.state.value });
+        this.$parent.getInputService().getKeyByValue({ search: this.state.value });
       }
 
     } catch(e) {

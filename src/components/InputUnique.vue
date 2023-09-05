@@ -58,7 +58,7 @@ export default {
         : null;
 
       if (null !== this.state.value && -1 === values.indexOf(this.state.value)) {
-        this.$parent.getService().addValueToValues(this.state.value);
+        this.$parent.getInputService().addValueToValues(this.state.value);
       }
 
       await this.$nextTick();

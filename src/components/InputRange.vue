@@ -62,7 +62,7 @@ export default {
 
       // if is not empty check validity from validator
       if (!isEmpty) {
-        this.state.validate.valid = this.$parent.getService().getValidator().validate(this.state.value);
+        this.state.validate.valid = this.$parent.getInputService().getValidator().validate(this.state.value);
       }
 
       this.$parent.change();
