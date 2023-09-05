@@ -150,67 +150,39 @@ class Service {
    * Check state's value validity
    */
   validate() {
-    /**
-     * @TODO uncomment and double check code below (conditionals refactor)
-     */
+    const is_empty       = this.state.validate.empty;
+    const is_required    = this.state.validate.required;
+    const is_numeric     = ['integer', 'float'].includes(this.state.input.type);
+    const has_number     = is_numeric && +this.state.value >= 0;
+    const exclude_values = this.state.validate.exclude_values && this.state.validate.exclude_values.size;
+    const is_excluded    = exclude_values && this.state.validate.exclude_values.has(this.state.value);
 
-    // const is_empty       = this.state.validate.empty;
-    // const is_required    = this.state.validate.required;
-    // const is_numeric     = ['integer', 'float'].includes(this.state.input.type);
-    // const has_number     = is_numeric && +this.state.value >= 0;
-    // const exclude_values = this.state.validate.exclude_values && this.state.validate.exclude_values.size;
-    // const is_excluded    = exclude_values && this.state.validate.exclude_values.has(this.state.value);
+    // check unique
+    if (is_empty) {
+      this.state.validate.unique = true;
+    }
 
-    // // check unique
-    // if (is_empty) {
-    //   this.state.validate.unique = true;
-    // }
-
-    // // check empty
-    // if (is_empty || !has_number) {
-    //   this.state.validate.empty  = true;
-    //   this.state.value           = null;
-    // }
-
-    // // invalid
-    // if (is_required && (is_empty || (!has_number || is_excluded))) {
-    //   this.state.validate.valid = false;
-    // }
-
-    // // valid
-    // if (!is_empty && (!is_excluded || (!is_required && !has_number))) {
-    //   this.state.validate.valid = true;
-    // }
-
-    // // validate
-    // if ((!is_required && is_empty) || (!is_empty && (!exclude_values || has_number))) {
-    //   this.state.validate.valid = this._validator.validate(this.state.value);
-    // }
-
-    // return this.state.validate.valid;
-
-    if (this.state.validate.empty) {
+    // check empty
+    if (is_empty || !has_number) {
       this.state.validate.empty  = true;
       this.state.value           = null;
-      this.state.validate.unique = true;
-      // check if require or check validation
-      this.state.validate.valid = this.state.validate.required ? false : this._validator.validate(this.state.value);
-    } else {
-      if ('integer' === this.state.input.type || 'float' === this.state.input.type) {
-        if (+this.state.value < 0) {
-          this.state.value          = null;
-          this.state.validate.empty = true;
-          this.state.validate.valid = !this.state.validate.required;
-        } else {
-          this.state.validate.valid = this._validator.validate(this.state.value);
-        }
-      }
-      if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
-        this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
-      } else {
-        this.state.validate.valid = this._validator.validate(this.state.value);
-      }
     }
+
+    // invalid
+    if (is_required && (is_empty || (!has_number || is_excluded))) {
+      this.state.validate.valid = false;
+    }
+
+    // valid
+    if (!is_empty && (!is_excluded || (!is_required && !has_number))) {
+      this.state.validate.valid = true;
+    }
+
+    // validate
+    if ((!is_required && is_empty) || (!is_empty && (!exclude_values || has_number))) {
+      this.state.validate.valid = this._validator.validate(this.state.value);
+    }
+
     return this.state.validate.valid;
   }
 
@@ -233,17 +205,28 @@ class Service {
   setUpdate() {
     const { value, _value } = this.state;
 
-    const is_media = 'media' === this.state.input.type && 'Object' !== toRawType(value) && 'Object' !== toRawType(_value); 
-    const is_date  = 'datetimepicker' === this.state.input.type
+    const is_media  = 'media' === this.state.input.type && false === [toRawType(value), toRawType(_value)].includes('Object'); 
+    const is_date   = 'datetimepicker' === this.state.input.type;
 
+    // default
+    let curr = value;
+    let old  = _value; 
+
+    // media
     if (is_media) {
-      this.state.update = value.value != _value.value;
-    } else if (is_date) {
-      //check
-      this.state.update = (null !== value ? value.toUpperCase() : value) != (_value ? _value.toUpperCase(): _value);
-    } else {
-      this.state.update = value != _value;
+      curr = value.value;
+      old = _value.value;
     }
+
+    // datetimepicker
+    if (is_date && null !== value) {
+      curr = value.toUpperCase();
+    }
+    if (is_date && _value) {
+      old = _value.toUpperCase();
+    }
+
+    this.state.update = (curr != old);
   }
 
 };
