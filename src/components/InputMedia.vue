@@ -5,48 +5,45 @@
 
 <template>
   <g3w-input :state="state">
-    <div slot="body" v-disabled="!editable">
+    <template #body="{ tabIndex, editable, notvalid }">
+      <div v-disabled="!editable">
 
-      <div
-        class  = "g3w_input_button skin-border-color"
-        @click = "onClick"
-        style  = "
-          border-style: solid;
-          border-width: 2px;
-          border-radius: 4px;
-          width: 100%;
-          cursor: pointer;
-          text-align: center;
-        "
-      >
-        <i :class="g3wtemplate.getFontClass('file-upload')" class="fa-2x skin-color" style="padding: 5px;">
-          <input
-            :id       = "mediaid"
-            style     = "display:none"
-            :name     = "state.name"
-            :tabIndex = "tabIndex"
-            :data-url = "state.input.options.uploadurl"
-            :class    = "{ 'input-error-validation' : notvalid }"
-            type      = "file"
+        <div
+          class  = "g3w_input_button skin-border-color"
+          @click = "onClick"
+        >
+          <i
+            :class = "g3wtemplate.getFontClass('file-upload')"
+            class  = "fa-2x skin-color"
+            style  = "padding: 5px;"
           >
-        </i>
-      </div>
-
-      <bar-loader :loading="loading" />
-
-      <g3w-media :state="data">
-        <div class="clearmedia" @click="clearMedia()">
-          <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
+            <input
+              :id       = "mediaid"
+              style     = "display: none;"
+              :name     = "state.name"
+              :tabIndex = "tabIndex"
+              :data-url = "state.input.options.uploadurl"
+              :class    = "{ 'input-error-validation' : notvalid }"
+              type      = "file"
+            >
+          </i>
         </div>
-      </g3w-media>
 
-    </div>
+        <bar-loader :loading="loading" />
+
+        <g3w-media :state="data">
+          <div class="clearmedia" @click="clearMedia()">
+            <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
+          </div>
+        </g3w-media>
+
+      </div>
+    </template>
   </g3w-input>
 </template>
 
 <script>
 import GUI               from 'services/gui';
-import { baseInputMixin } from 'mixins';
 import MediaField        from 'components/FieldMedia.vue';
 
 const { getUniqueDomId } = require('core/utils/utils');
@@ -59,7 +56,12 @@ export default {
   /** @since 3.8.6 */
   name: 'input-media',
 
-  mixins: [ baseInputMixin ],
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
+  },
 
   components: {
     'g3w-media': MediaField
@@ -68,11 +70,11 @@ export default {
   data() {
     return {
       data: {
-        value: null,
-        mime_type: null
+        value:     null,
+        mime_type: null,
       },
-      mediaid: `media_${getUniqueDomId()}`,
-      loading: false
+      mediaid:     `media_${getUniqueDomId()}`,
+      loading:     false,
     }
   },
 
@@ -96,8 +98,10 @@ export default {
     },
 
     clearMedia() {
-      this.data.value = this.data.mime_type = this.state.value = null;
-      this.change();
+      this.data.value     = null;
+      this.data.mime_type = null;
+      this.state.value    = null;
+      this.$parent.change();
     },
 
   },
@@ -109,35 +113,33 @@ export default {
     }
   },
 
-  mounted() {
+  async mounted() {
 
-    const fieldName = this.state.name;
+    const name                = this.state.name;
+    const csrfmiddlewaretoken = this.$cookie.get('csrftoken');
 
-    const formData = {
-      name: fieldName,
-      csrfmiddlewaretoken: this.$cookie.get('csrftoken')
-    };
+    await this.$nextTick();
 
-    this.$nextTick(() => {
-      $(`#${this.mediaid}`)
-        .fileupload({
-          dataType: 'json',
-          formData,
-          start:  () => { this.loading = true; },
-          always: () => { this.loading = false; },
-          fail:   () => { GUI.notify.error(t("info.server_error")); },
-          done:   (e, data) => {
-            const response = data.result[fieldName];
-            if (response) {
-              this.data.value     = response.value;
-              this.data.mime_type = response.mime_type;
-              this.state.value    = this.data;
-              this.change();
-            }
-          },
-        });
-    });
-
+    $(`#${this.mediaid}`)
+      .fileupload({
+        dataType: 'json',
+        formData: {
+          name,
+          csrfmiddlewaretoken
+        },
+        start:  () => { this.loading = true; },
+        always: () => { this.loading = false; },
+        fail:   () => { GUI.notify.error(t("info.server_error")); },
+        done:   (e, data) => {
+          const response = data.result[name];
+          if (response) {
+            this.data.value     = response.value;
+            this.data.mime_type = response.mime_type;
+            this.state.value    = this.data;
+            this.$parent.change();
+          }
+        },
+      });
   },
 
   beforeDestroy() {
@@ -146,3 +148,14 @@ export default {
 
 };
 </script>
+
+<style scoped>
+  .g3w_input_button {
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 4px;
+    width: 100%;
+    cursor: pointer;
+    text-align: center;
+  }
+</style>
