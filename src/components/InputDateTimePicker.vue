@@ -5,43 +5,45 @@
 
 <template>
   <g3w-input :state="state">
-    <div slot="body" ref="datetimepicker_body">
+    <template #body="{ tabIndex, editable, notvalid }">
+      <div ref="datetimepicker_body">
 
-      <div
-        ref    = "datimewidget_container"
-        :style = "{
-          top:      widget_container.top + 'px',
-          left:     widget_container.left + 'px',
-          position: 'fixed',
-          zIndex:   10000
-        }"
-      ></div>
+        <div
+          ref    = "datimewidget_container"
+          :style = "{
+            top:      widget_container.top + 'px',
+            left:     widget_container.left + 'px',
+            position: 'fixed',
+            zIndex:   10000,
+          }"
+        ></div>
 
-      <div
-        class      = 'input-group date'
-        :id        = 'iddatetimepicker'
-        v-disabled = "!editable"
-      >
-        <input
-          type      = 'text'
-          :id       = "idinputdatetimepiker"
-          :tabIndex = "tabIndex"
-          :readonly = "!editable || isMobile() ? 'readonly' : null"
-          :class    = "{ 'input-error-validation' : notvalid }"
-          class     = "form-control"
-        />
-        <span class="input-group-addon caret">
-          <span :class="[ g3wtemplate.getFontClass(timeOnly() ? 'time' : 'calendar') ]"></span>
-        </span>
+        <div
+          class      = 'input-group date'
+          :id        = 'iddatetimepicker'
+          v-disabled = "!editable"
+        >
+          <input
+            type      = 'text'
+            :id       = "idinputdatetimepiker"
+            :tabIndex = "tabIndex"
+            :readonly = "!editable || isMobile() ? 'readonly' : null"
+            :class    = "{ 'input-error-validation' : notvalid }"
+            class     = "form-control"
+          />
+          <span class="input-group-addon caret">
+            <span :class="[ g3wtemplate.getFontClass(timeOnly() ? 'time' : 'calendar') ]"></span>
+          </span>
+        </div>
+
       </div>
-
-    </div>
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import ApplicationState               from 'store/application-state';
-import { baseInputMixin, resizeMixin } from 'mixins';
+import ApplicationState  from 'store/application-state';
+import { resizeMixin }   from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
 
@@ -51,28 +53,31 @@ export default {
   name: 'input-datetime-picker',
 
   mixins: [
-    baseInputMixin,
-    resizeMixin
+    resizeMixin,
   ],
 
   data() {
-    const uniqueValue = getUniqueDomId();
+    const id = getUniqueDomId();
     return {
-      widget_container: {
-        top: 0,
-        left: 0
-      },
-      iddatetimepicker: 'datetimepicker_' + uniqueValue,
-      idinputdatetimepiker: 'inputdatetimepicker_' + uniqueValue,
+      widget_container:     { top: 0, left: 0 },
+      iddatetimepicker:     `datetimepicker_${id}`,
+      idinputdatetimepiker: `inputdatetimepicker_${id}`,
     }
+  },
+
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
   },
 
   methods: {
 
     resize() {
-      const domeDataPicker = $(`#${this.iddatetimepicker}`);
-      if (domeDataPicker && domeDataPicker.data("DateTimePicker")) {
-        domeDataPicker.data("DateTimePicker").hide();
+      const picker = $(`#${this.iddatetimepicker}`);
+      if (picker && picker.data("DateTimePicker")) {
+        picker.data("DateTimePicker").hide();
       }
     },
 
@@ -89,7 +94,7 @@ export default {
         _.isEmpty(_.trim(newDate))
           ? null
           : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
-      this.change();
+      this.$parent.change();
     },
 
     /**
@@ -119,16 +124,21 @@ export default {
   watch: {
 
     async 'state.value'(value) {
+      const picker = $(`#${this.idinputdatetimepiker}`);
+
       // skip when current `state.value` equals to current datetimepicker widget value,
       // it means it was changed by others (eg. default expression evaluation)
-      if (value === $(`#${this.idinputdatetimepiker}`).val()) {
+      if (value === picker.val()) {
         return;
       }
+
       const date = null !== value
         ? moment(value, this.datetimefieldformat).format(this.datetimedisplayformat)
         : value;
+
       await this.$nextTick();
-      $(`#${this.idinputdatetimepiker}`).val(date);
+
+      picker.val(date);
     },
 
   },
@@ -153,12 +163,15 @@ export default {
     } = formats[0];
 
     await this.$nextTick();
+
     // set has widget input property instance
 
-    this.datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(displayformat);
-    this.datetimefieldformat   = this.service.convertQGISDateTimeFormatToMoment(fieldformat);
+    const service = this.$parent.getInputService();
 
-    this.service.setValidatorOptions({ fielddatetimeformat: this.datetimefieldformat });
+    this.datetimedisplayformat = service.convertQGISDateTimeFormatToMoment(displayformat);
+    this.datetimefieldformat   = service.convertQGISDateTimeFormatToMoment(fieldformat);
+
+    service.setValidatorOptions({ fielddatetimeformat: this.datetimefieldformat });
 
     $(`#${this.iddatetimepicker}`)
       .datetimepicker({
@@ -182,7 +195,7 @@ export default {
           horizontal: layout.horizontal || 'left'
         },
         showClose:         true,
-        locale:            this.service.getLocale()
+        locale:            service.getLocale()
       });
 
     $(`#${this.iddatetimepicker}`).on("dp.change", this.onDatePickerChange);
