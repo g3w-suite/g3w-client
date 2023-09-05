@@ -93,6 +93,23 @@
   </div>
 
   <!--
+    Like a "BaseInputMixin" wrapper (ref: `this.$parent`)
+
+    @example
+
+      <g3w-input _legacy="mixin">
+        <g3w-input id="input-1" :state="state" />
+        <g3w-input id="input-2" :state="state" />
+        ...
+      </g3w-input>
+
+    @since 3.9.0
+  -->
+  <div v-else-if="state.visible && __isMixin">
+    <slot></slot>
+  </div>
+
+  <!--
     Base G3WInput component
 
     @example <g3w-input :state />
@@ -432,7 +449,7 @@ const vm = {
     },
 
     /**
-     * Whether this is a Legacy InputG3W component
+     * Whether this is a InputG3W component
      * 
      * @example <g3w-input _legacy="g3w-input" />
      * 
@@ -448,6 +465,23 @@ const vm = {
     __isChild() {
       return 'g3w-input' === this._legacy && 'child' === this.state.type;
     },
+
+    /**
+     * Whether this is a baseInputMixin wrapper
+     * 
+     * @example
+     * 
+     *  <g3w-input _legacy="mixin">
+     *    <g3w-input id="input-1" :state="state" />
+     *    <g3w-input id="input-2" :state="state" />
+     *    ...
+     *  </g3w-input>
+     * 
+     * @since 3.9.0
+     */
+    __isMixin() {
+      return 'mixin' === this._legacy;
+    }
 
     /**
      * ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
