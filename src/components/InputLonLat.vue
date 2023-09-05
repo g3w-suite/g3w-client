@@ -6,88 +6,79 @@
 <template>
   <div style="position: relative">
 
-    <div
-      style="
-        display: flex;
-        justify-content: flex-end;
-        height: 35px;
-        margin-right: 12px;
-        margin-bottom: 5px
-      "
-    >
+    <div class="g3w-input-lat-lon">
       <button
         ref                 = "g3w-input-lat-lon"
         @click.prevent.stop = "toggleGetCoordinate"
-        :style              = "{ border: coordinatebutton.active ? '2px solid' : 0 }"
+        :style              = "{ border: (coordinatebutton.active ? '2px solid' : 0) }"
         data-placement      = "left"
         data-toggle         = "tooltip"
         v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
         class               = "action skin-tooltip-left skin-color skin-border-color"
-        style               = "border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
         :class              = "g3wtemplate.font['crosshairs']"
       ></button>
     </div>
 
     <!-- LONGITUDE -->
     <g3w-input :state="state">
-      <label
-        slot  = "label"
-        :for  = "lonId"
-        class = "col-sm-4 control-label"
-      >{{state.labels.lon}} <span v-if="state.validate && state.validate.required">*</span>
-      </label>
-      
-      <div slot="body">
-        <input
-          :id         = "lonId"
-          @change     = "changeLonLat"
-          :class      = "{ 'input-error-validation' : notvalid }"
-          class       = "form-control"
-          style       = "width: 100%; margin-bottom: 5px;"
-          :tabIndex   = "tabIndex"
-          v-disabled  = "!editable"
-          v-model     = "state.values.lon"
-          type        = "number"
-          min         = "-180"
-          max         = "180"
-          placeholder = "Lon"
-        >
-      </div>
+
+      <template #label>
+        <label :for="lonId" class="col-sm-4 control-label">{{state.labels.lon}} <span v-if="is_required">*</span></label>
+      </template>
+
+      <template #body="{ tabIndex, editable, notvalid }">
+        <div>
+          <input
+            :id         = "lonId"
+            @change     = "changeLonLat"
+            :class      = "{ 'input-error-validation' : notvalid }"
+            class       = "form-control"
+            style       = "width: 100%; margin-bottom: 5px;"
+            :tabIndex   = "tabIndex"
+            v-disabled  = "!editable"
+            v-model     = "state.values.lon"
+            type        = "number"
+            min         = "-180"
+            max         = "180"
+            placeholder = "Lon"
+          >
+        </div>
+      </template>
+
     </g3w-input>
 
     <!-- LATITUDE -->
     <g3w-input :state="state">
-      <label
-        slot  = "label"
-        :for  = "latId"
-        class = "col-sm-4 control-label"
-      >{{ state.labels.lat }} <span v-if="state.validate && state.validate.required">*</span>
-      </label>
-  
-      <div slot="body" >
-        <input
-          :id         = "latId"
-          @change     = "changeLonLat"
-          class       = "form-control"
-          style       = "width: 100%; margin-bottom: 5px;"
-          :tabIndex   = "tabIndex"
-          v-disabled  = "!editable"
-          v-model     = "state.values.lat"
-          type        = "number"
-          :class      = "{ 'input-error-validation' : notvalid }"
-          min         = "-90"
-          max         = "90"
-          placeholder = "Lon"
-        >
-      </div>
+
+      <template #label>
+        <label :for="latId" class="col-sm-4 control-label">{{ state.labels.lat }} <span v-if="is_required">*</span></label>
+      </template>
+
+      <template #body="{ tabIndex, editable, notvalid }">
+        <div>
+          <input
+            :id         = "latId"
+            @change     = "changeLonLat"
+            class       = "form-control"
+            style       = "width: 100%; margin-bottom: 5px;"
+            :tabIndex   = "tabIndex"
+            v-disabled  = "!editable"
+            v-model     = "state.values.lat"
+            type        = "number"
+            :class      = "{ 'input-error-validation' : notvalid }"
+            min         = "-90"
+            max         = "90"
+            placeholder = "Lon"
+          >
+        </div>
+      </template>
+
     </g3w-input>
 
   </div>
 </template>
 
 <script>
-import { baseInputMixin } from 'mixins';
-
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
@@ -95,16 +86,19 @@ export default {
   /** @since 3.8.6 */
   name: 'input-lonlat',
 
-  mixins: [ baseInputMixin ],
-
   data() {
     return {
-      lonId: getUniqueDomId(),
-      latId: getUniqueDomId(),
-      coordinatebutton: {
-        active: false
-      }
+      lonId:            getUniqueDomId(),
+      latId:            getUniqueDomId(),
+      coordinatebutton: { active: false },
     };
+  },
+
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
   },
 
   computed:{
@@ -112,6 +106,13 @@ export default {
     getCoordinateActive() {
       return this.service.state.getCoordinateActive;
     },
+
+    /**
+     * @since 3.9.0
+     */
+    is_required() {
+      return this.state.validate && this.state.validate.required;
+    }
 
   },
 
@@ -128,7 +129,10 @@ export default {
 
     setValue() {
       this.state.value = [
-        [1 * this.state.values.lon, 1 * this.state.values.lat]
+        [
+          1 * this.state.values.lon,
+          1 * this.state.values.lat,
+        ],
       ];
     },
 
@@ -142,7 +146,11 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    this.$nextTick(() => { $(this.$refs['g3w-input-lat-lon']).tooltip({ trigger: 'hover' }); });
+    await this.$nextTick();
+
+    console.log(this.$parent.$options.name);
+
+    $(this.$refs['g3w-input-lat-lon']).tooltip({ trigger: 'hover' });
   },
 
   destroyed() {
@@ -151,3 +159,19 @@ export default {
 
 };
 </script>
+
+<style scoped>
+  div.g3w-input-lat-lon {
+    display: flex;
+    justify-content: flex-end;
+    height: 35px;
+    margin-right: 12px;
+    margin-bottom: 5px;
+  }
+  div.g3w-input-lat-lon > button.action {
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+  }
+</style>
