@@ -5,36 +5,37 @@
 
 <template>
   <g3w-input :state="state">
-    <div slot="body">
-      <span v-for="(value, index) in state.input.options.values" :key="value.key">
-        <input
-          :id        = "ids[index]"
-          :name      = "name"
-          :value     = "value.value"
-          style      = "width: 100%"
-          :tabIndex  = "tabIndex"
-          v-disabled = "!editable"
-          :class     = "{ 'input-error-validation' : notvalid }"
-          class      = "magic-radio"
-          v-model    = "radio_value"
-          type       = "radio">
-        <label :for="ids[index]">{{ value.key }}</label>
-      </span>
-    </div>
+    <template #body="{ tabIndex, editable, notvalid }">
+      <div>
+        <span
+          v-for = "(value, index) in state.input.options.values"
+          :key  = "value.key"
+        >
+          <input
+            :id        = "ids[index]"
+            :name      = "name"
+            :value     = "value.value"
+            style      = "width: 100%"
+            :tabIndex  = "tabIndex"
+            v-disabled = "!editable"
+            :class     = "{ 'input-error-validation' : notvalid }"
+            class      = "magic-radio"
+            v-model    = "radio_value"
+            type       = "radio">
+          <label :for="ids[index]">{{ value.key }}</label>
+        </span>
+      </div>
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import { baseInputMixin } from 'mixins';
-
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
 
   /** @since 3.8.6 */
   name: 'input-radio',
-
-  mixins: [ baseInputMixin ],
 
   data() {
     return {
@@ -47,11 +48,18 @@ export default {
     };
   },
 
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
+  },
+
   watch: {
 
     'radio_value'() {
       this.state.value = this.radio_value;
-      this.change()
+      this.$parent.change()
     },
 
   },
