@@ -739,21 +739,22 @@ export default {
      * @fires changeinput
      */
     change() {
-      console.log('input changed');
+      console.log('input changed', this);
 
       this.service.setEmpty();
       this.service.setUpdate();
+
       // validate input if is required or need to be unique
       if (this.state.validate.required || this.state.validate.unique) {
         this.service.validate();
       }
 
-      console.log(this);
-
       this.$emit('changeinput', this.state);
 
-      // TODO: double check listener for `InputText.vue`
-      // this.$parent.$emit('changeinput', this.state);
+      // emit to <child #slot="body"> from parent <g3w-input> 
+      if (this.$slots && this.$slots.body && this.$slots.body[0].context && this.$slots.body[0].context.$emit) {
+        this.$slots.body[0].context.$emit('changeinput', this.state);
+      }
     },
 
     /**
@@ -769,7 +770,23 @@ export default {
     createInputService(type, options) {
       console.assert(undefined !== InputsServices[type], 'Uknwon InputsService type: ', type);
       return new InputsServices[type](options);
-    }
+    },
+
+    /**
+     * @since 3.9.0
+     */
+    getInputService() {
+      if (!this.service) {
+        this.service = this.createInputService(this.state.input.type, { state: this.state });
+
+        this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
+    
+        if (this.state.editable && this.state.validate.required) {
+          this.service.validate();
+        }
+      }
+      return this.service;
+    },
 
   },
 
@@ -796,14 +813,8 @@ export default {
       return;
     }
 
-    this.service = this.createInputService(this.state.input.type, { state: this.state });
+    this.service = this.getInputService();
 
-    this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
-
-    if (this.state.editable && this.state.validate.required) {
-      this.service.validate();
-    }
- 
     this.$emit('addinput', this.state);
 
     /**

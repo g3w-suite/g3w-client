@@ -16,7 +16,6 @@
         v-model      = "state.value"
         :class       = "{ 'input-error-validation' : notvalid }"
         :id          = "state.name"
-        :foo         = "testProp(change)"
       >
     </template>
   </g3w-input>
@@ -34,12 +33,6 @@ export default {
       type: Object,
       required: true,
     },
-  },
-
-  methods: {
-    testProp(prop) {
-      console.log('scopedSlot', prop);
-    }
   },
 
 };
