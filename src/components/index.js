@@ -52,8 +52,6 @@ import InputRange from './InputRange.vue';
 import InputSelect from './InputSelect.vue';
 import InputSliderRange from './InputSliderRange.vue';
 import InputTable from './InputTable.vue';
-import InputTableBody from './InputTableBody.vue';
-import InputTableHeader from './InputTableHeader.vue';
 import InputText from './InputText.vue';
 import InputTextArea from './InputTextArea.vue';
 import InputHtml from './InputTextHtml.vue';
@@ -174,8 +172,6 @@ export {
   InputSelect,
   InputSliderRange,
   InputTable,
-  InputTableBody,
-  InputTableHeader,
   InputText,
   InputTextArea,
   InputHtml,
