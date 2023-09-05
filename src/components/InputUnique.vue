@@ -76,6 +76,21 @@ export default {
     /**
      * @since 3.9.0 
      */
+    getSelect2() {
+      let select2 = this.select2;
+
+      if (!select2 && this.state.input.options.editable) {
+        select2 = $(`#${this.id}`).select2({ dropdownParent: $('#g3w-view-content'), tags: true, language: this.getLanguage() });
+        select2.val(this.state.value).trigger('change');
+        select2.on('select2:select', this.onSelect2Change.bind(this));
+      }
+
+      return select2;
+    },
+
+    /**
+     * @since 3.9.0 
+     */
     onSelect2Change(e) {
       const { data } = e.params;
       this.changeSelect(data.$value ? data.$value : data.id);
@@ -95,14 +110,7 @@ export default {
 
     await this.$nextTick();
 
-    if (!this.state.input.options.editable) {
-      return;
-    }
-
-    this.select2 = $(`#${this.id}`).select2({ dropdownParent: $('#g3w-view-content'), tags: true, language: this.getLanguage() });
-    this.select2.val(this.state.value).trigger('change');
-    this.select2.on('select2:select', this.onSelect2Change.bind(this));
-
+    this.select2 = this.getSelect2();
   },
 
 };
