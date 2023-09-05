@@ -5,33 +5,30 @@
 
 <template>
   <g3w-input :state="state">
-    <input
-      slot                = "body"
-      @keydown.69.prevent = ""
-      @keydown.13.stop    = ""
-      @change             = "checkValue"
-      @blur               = "checkValue"
-      style               = "width: 100%; padding-right: 5px;"
-      class               = "form-control"
-      :tabIndex           = "tabIndex"
-      v-disabled          = "!editable"
-      :class              = "{ 'input-error-validation' : notvalid }"
-      v-model             = "state.value"
-      type                = "number"
-      :step               = "step"
-    >
+    <template #body="{ tabIndex, editable, notvalid }">
+      <input
+        @keydown.69.prevent = ""
+        @keydown.13.stop    = ""
+        @change             = "checkValue"
+        @blur               = "checkValue"
+        style               = "width: 100%; padding-right: 5px;"
+        class               = "form-control"
+        :tabIndex           = "tabIndex"
+        v-disabled          = "!editable"
+        :class              = "{ 'input-error-validation' : notvalid }"
+        v-model             = "state.value"
+        type                = "number"
+        :step               = "step"
+      >
+    </template>
   </g3w-input>
 </template>
 
 <script>
-import { baseInputMixin } from 'mixins';
-
 export default {
 
   /** @since 3.8.6 */
   name: 'input-range',
-
-  mixins: [ baseInputMixin ],
 
   data() {
     const { min, max, Step:step } = this.state.input.options.values[0];
@@ -40,6 +37,13 @@ export default {
       max,
       step,
     };
+  },
+
+  props: {
+    state: {
+      type: Object,
+      required: true,
+    },
   },
 
   methods: {
@@ -58,10 +62,10 @@ export default {
 
       // if is not empty check validity from validator
       if (!isEmpty) {
-        this.state.validate.valid = this.service.getValidator().validate(this.state.value);
+        this.state.validate.valid = this.$parent.getService().getValidator().validate(this.state.value);
       }
 
-      this.change();
+      this.$parent.change();
     },
 
   },
