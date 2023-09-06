@@ -5,6 +5,7 @@
   
   @since   3.9.0
 
+  @version 2.0 ADD SOURCE FROM: src/app/core/utils/validators.js@3.8
   @version 2.0 ADD SOURCE FROM: src/gui/inputs/input.js@3.8
   @version 2.0 ADD SOURCE FROM: src/mixins/base-input.js@3.8
   @version 2.0 ADD SOURCE FROM: src/components/InputG3WFormInputs.vue@3.8
@@ -221,23 +222,33 @@ import * as InputUnique         from 'components/InputUnique.vue';
 import ApplicationState                       from 'store/application-state';
 import CatalogLayersStoresRegistry            from 'store/catalog-layers';
 import MapLayersStoresRegistry                from 'store/map-layers';
-
 import ApplicationService                     from 'services/application';
 import GUI                                    from 'services/gui';
 
-const { convertQGISDateTimeFormatToMoment }   = require('core/utils/utils');
+const {
+  truefnc,
+  toRawType,
+  convertQGISDateTimeFormatToMoment,
+}                                             = require('core/utils/utils');
 const { getQueryLayersPromisesByCoordinates } = require('core/utils/geo');
-
-const Validators                              = require('core/utils/validators');
-
 const PickFeatureInteraction                  = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction              = require('g3w-ol/interactions/pickcoordinatesinteraction');
-
-const { toRawType }                           = require('core/utils/utils');
 const { t }                                   = require('core/i18n/i18n.service');
 
 Object
   .entries({
+    ApplicationState,
+    CatalogLayersStoresRegistry,
+    MapLayersStoresRegistry,
+    ApplicationService,
+    GUI,
+    truefnc,
+    toRawType,
+    convertQGISDateTimeFormatToMoment,
+    getQueryLayersPromisesByCoordinates,
+    PickFeatureInteraction,
+    PickCoordinatesInteraction,
+    t,
     InputCheckbox,
     InputColor,
     InputDateTimePicker,
@@ -274,6 +285,70 @@ function _clamp(num, min, max) {
 function _hasValue(value) {
   return null !== value && undefined !== value;
 }
+
+/******************************************************* */
+
+/**
+ * Input Validators
+ * 
+ * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+ */
+const Validators = {
+  validators: {
+
+    float(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        const float = Number(1 * value);
+        return !Number.isNaN(float);
+      }
+    },
+
+    integer(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        const integer = 1 * value;
+        return !_.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
+      }
+    },
+
+    checkbox(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        const values = this.options.values || [];
+        return values.indexOf(value) !== -1;
+      }
+    },
+
+    datetimepicker(options = {}) {
+      this.options = options;
+      this.validate = function(value, options) {
+        const fielddatetimeformat = options.fielddatetimeformat;
+        return moment(value, fielddatetimeformat, true).isValid();
+      }
+    },
+
+    range(options = {}) {
+      const { min, max } = options;
+      this.validate = function(value) {
+        value = 1 * value;
+        return value >= min && value <= max;
+      }
+    },
+
+    default(options = {}) {
+      this.options = options;
+      this.validate = truefnc;
+    },
+
+  },
+
+  get(type, options={}) {
+    const Validator = this.validators[type] || this.validators.default;
+    return new Validator(options);
+  }
+
+};
 
 /******************************************************* */
 
