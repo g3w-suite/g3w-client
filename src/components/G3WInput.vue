@@ -114,7 +114,13 @@
   <!--
     Base G3WInput component
 
-    @example <g3w-input :state />
+    @example
+
+      <g3w-input :state>
+        <template #label> ... </template>
+        <template #body> ... </template>
+        ...
+      </g3w-input>
 
     ORIGINAL SOURCE: src/components/InputBase.vue@3.8
 
@@ -182,7 +188,7 @@
 
       <!-- HELP MESSAGE -->
       <div
-        v-if        = "state.help && this.state.help.visible"
+        v-if        = "state.help && state.help.visible"
         class       = "g3w_input_help skin-background-color extralighten"
         v-html      = "state.help.message"
       ></div>
@@ -319,7 +325,7 @@ class Service {
       return;
     }
 
-    const { options }   = this.state.input;
+    const { options } = this.state.input;
     let default_value = options.default;
 
     /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
@@ -367,11 +373,9 @@ class Service {
   }
 
   setEmpty() {
-    this.state.validate.empty = !(
-      (Array.isArray(this.state.value) &&
-      this.state.value.length
-      ) ||
-      !_.isEmpty(_.trim(this.state.value))
+    this.state.validate.empty = (
+      !(Array.isArray(this.state.value) && this.state.value.length > 0) &&
+      _.isEmpty(_.trim(this.state.value))
     );
   }
 
@@ -416,19 +420,39 @@ class Service {
   }
 
   setErrorMessage(input) {
-    if (input.validate.mutually && !input.validate.mutually_valid) {
-      this.state.validate.message =  `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${input.validate.mutually.join(',')} )`;
-    } else if (input.validate.max_field) {
-      this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
-    } else if (input.validate.min_field) {
-      this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
-    } else if (input.validate.unique && input.validate.exclude_values && input.validate.exclude_values.size) {
-      this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-    } else if (input.validate.required) {
-      this.state.validate.message = this.state.info || `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )` + (this.state.info ? ` <div><b>${this.state.info}</b></div>` : '');
-    } else {
-      this.state.validate.message = this.state.info;
+    const {
+      mutually,
+      mutually_valid,
+      max_field,
+      min_field,
+      unique,
+      exclude_values,
+      required,
+    } = input.validate;
+
+    let message = this.state.info;
+
+    if (required) {
+      message = this.state.info || `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )` + (this.state.info ? ` <div><b>${this.state.info}</b></div>` : '');
     }
+
+    if (unique && exclude_values && exclude_values.size) {
+      message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
+    }
+
+    if (min_field) {
+      message = `${t("sdk.form.inputs.input_validation_min_field")} (${min_field})`;
+    }
+
+    if (max_field) {
+      message = `${t("sdk.form.inputs.input_validation_max_field")} (${max_field})`;
+    }
+
+    if (mutually && !mutually_valid) {
+      message =  `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${mutually.join(',')} )`;
+    }
+
+    this.state.validate.message = message;
   }
 
   setUpdate() {
@@ -1112,7 +1136,7 @@ const vm = {
       }
     },
 
-        /**
+    /**
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      */
      tabIndex() {
@@ -1222,6 +1246,8 @@ const vm = {
 
     /**
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
+     * 
+     * @TODO check if deperecated
      */
     isVisible() {},
 
