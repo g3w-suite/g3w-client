@@ -439,7 +439,6 @@ proto.clear = function() {
   this.state.started = false;
   this.state.getfeatures = false;
   this.clearHistory();
-  this._editor.clear();
 };
 
 //return l'history
