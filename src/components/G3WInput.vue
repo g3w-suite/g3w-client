@@ -286,64 +286,40 @@ function _hasValue(value) {
   return null !== value && undefined !== value;
 }
 
-/******************************************************* */
-
 /**
- * Input Validators
- * 
  * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
  */
-const Validators = {
-  validators: {
+function _isFloat(value) {
+  return !Number.isNaN(Number(1 * value));
+}
 
-    float(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
-        return !Number.isNaN(Number(1 * value));
-      }
-    },
+/**
+ * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+ */
+function _isInteger(value) {
+  return !_.isNaN(1 * value) && Number.isSafeInteger(1 * value) && (1 * value) <= 2147483647;
+}
 
-    integer(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
-        return !_.isNaN(1 * value) && Number.isSafeInteger(1 * value) && (1 * value) <= 2147483647;
-      }
-    },
+/**
+ * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+ */
+function _isCheckBox(values, value) {
+  return -1 !== (values || []).indexOf(value);
+}
 
-    checkbox(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
-        return -1 !== (this.options.values || []).indexOf(value);
-      }
-    },
+/**
+ * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+ */
+function _isDateTime(value, options) {
+  return moment(value, options.fielddatetimeformat, true).isValid();
+}
 
-    datetimepicker(options = {}) {
-      this.options = options;
-      this.validate = function(value, options) {
-        return moment(value, options.fielddatetimeformat, true).isValid();
-      }
-    },
-
-    range(options = {}) {
-      const { min, max } = options;
-      this.validate = function(value) {
-        return (1 * value) >= min && (1 * value) <= max;
-      }
-    },
-
-    default(options = {}) {
-      this.options = options;
-      this.validate = truefnc;
-    },
-
-  },
-
-  get(type, options={}) {
-    const Validator = this.validators[type] || this.validators.default;
-    return new Validator(options);
-  }
-
-};
+/**
+ * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+ */
+function _isValueInRange(min, max, value) {
+  return (1 * value) >= min && (1 * value) <= max;
+}
 
 /******************************************************* */
 
@@ -367,8 +343,22 @@ class Service {
     this.setValue(this.state.value);
     this.setEmpty(this.state.value);
 
-    // input validator
-    this._validator = Validators.get(this.state.type, (options.validatorOptions || this.state.input.options) || {});
+    /**
+     * Input Validators
+     * 
+     * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+     */
+    const vOptions = (options.validatorOptions || this.state.input.options || {});
+    this._validator = {
+      options: vOptions,
+      validate: ({
+        'range':          _isValueInRange.bind(vOptions.min, vOptions.max),
+        'datetimepicker': _isDateTime,
+        'checkbox':       _isCheckBox.bind(vOptions.values),
+        'integer':        _isInteger,
+        'float':          _isFloat,
+      })[this.state.type] || truefnc,
+    };
 
     this.setErrorMessage(options.state);
   }
@@ -635,7 +625,10 @@ const InputsServices = {
       const { min, max } = options.state.input.options.values[0];
       options.state.info = `[MIN: ${min} - MAX: ${max}]`;
       super(options);
-      this.setValidator(Validators.get('range', { min: 1 * min, max: 1 * max }));
+      
+      // range validator
+      const vOptions = { min: 1 * min, max: 1 * max };
+      this.setValidator({ options: vOptions, validate: _isValueInRange.bind(vOptions.min, vOptions.max) });
     }
 
     isValueInRange(value, min, max) {
@@ -846,7 +839,9 @@ const InputsServices = {
 
       super(options);
 
-      this.setValidator(Validators.get('range', { min: 1 * min, max: 1 * max }));
+      // range validator
+      const vOptions = { min: 1 * min, max: 1 * max };
+      this.setValidator({ options: vOptions, validate: _isValueInRange.bind(vOptions.min, vOptions.max) });
     }
 
     changeInfoMessage() {
