@@ -170,6 +170,10 @@ proto.rollback = function(changes=[]) {
   return d.promise()
 };
 
+/**
+ * @TODO check if used otherwise nee to be deprecate
+ * @param relationsResponse
+ */
 proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
   for (const relationLayerId in relationsResponse) {
     const response = relationsResponse[relationLayerId];
@@ -194,17 +198,19 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
  * @param values
  */
 proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
-  const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
   ids.forEach(id => {
-    const feature = editingLayerSource.getFeatureById(id);
-    if (feature) {
-      const fieldvalue = feature.get(field);
-      fieldvalue == values[0] && feature.set(field, values[1]);
+    const feature = SessionsRegistry.getSession(relationId).getEditor().getEditingSource().getFeatureById(id);
+    if (feature && feature.get(field) == values[0]) {
+      feature.set(field, values[1]);
     }
   })
 };
 
-// apply response data from server in case of new inserted feature
+/**
+ * Apply response data from server in case of new inserted feature
+ * @param response Object return from server
+ * @param relations Array of relations related to commit request/response
+ */
 proto.applyCommitResponse = function(response={}, relations=[]) {
   if (response && response.result) {
     const {response:data} = response;
@@ -226,9 +232,13 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
         })
       })
     });
-    const features = this._featuresstore.readFeatures();
+    //get features
+    const features = this.readEditingFeatures();
+    //clear state (new, update etc..)
     features.forEach(feature => feature.clearState());
+    //substitute to existing features
     this._layer.setFeatures(features);
+    //add eventually new lock ids due to new features
     this._layer.getSource().addLockIds(lockids);
   }
 };
@@ -248,25 +258,31 @@ proto.commit = function(commitItems) {
   const relations = commitItems.add.length ? //check if new feature will be committed to server ("add" key of commited item)
     //Loop relations attribute (Array)
     Object.keys(commitItems.relations)
-      .map(relationId => {
-        const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
-        const updates = commitItems.relations[relationId].update.map(relation => relation.id);
-        const add = commitItems.relations[relationId].add.map(relation => relation.id);
+      .map(relationLayerId => {//relationLayerId is layer id of relation
+        //get relation
+        const relation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationLayerId);
+        //get updates items
+        const updates = commitItems.relations[relationLayerId].update.map(relation => relation.id);
+        //get add (new) items
+        const add = commitItems.relations[relationLayerId].add.map(relation => relation.id);
+        //Create an object with key as relationLayerId
         return {
-          [relationId]:
+          [relationLayerId]:
             {
-              ids: [...add, ...updates],
-              fatherField: layerRelation.getFatherField(),
-              childField: layerRelation.getChildField()
+              ids: [...add, ...updates], //Array with features ids
+              fatherField: relation.getFatherField(), //relation Father layer field
+              childField: relation.getChildField() //relation child layer field
             }
         }
       }) : [];
-
+  //Do commit request
   this._layer.commit(commitItems)
-    .then(promise => {
+    .then(promise => { //return a promise (jquery promise) because is a layer setters function
       promise
         .then(response => {
+          //handle server commit response
           this.applyCommitResponse(response, relations);
+          //resolve response
           d.resolve(response);
         })
         .fail(err => d.reject(err))
