@@ -192,16 +192,27 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
 
 /**
  * Method to handle relation feature saved on server
- * @param relationId
- * @param ids
- * @param field
- * @param values
+ * @param layerId id of relation layer
+ * @param ids Array of changes/new feature id
+ * @param field field object. {name: field name, value }
  */
-proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
+proto.setFieldValueToRelationField = function(
+  {
+    layerId,
+    ids=[],
+    field,
+  } = {}
+) {
+  //Loop of relation ids and set father feature field value field.name
   ids.forEach(id => {
-    const feature = SessionsRegistry.getSession(relationId).getEditor().getEditingSource().getFeatureById(id);
-    if (feature && feature.get(field) == values[0]) {
-      feature.set(field, values[1]);
+    const feature = SessionsRegistry
+      .getSession(layerId) //get session by layerId
+      .getEditor() //get editor of session
+      .getEditingSource() //get source
+      .getFeatureById(id); //get feature by id
+    //Check if feature is found and feature has field value
+    if (feature) {
+      feature.set(field.name, field.value);
     }
   })
 };
@@ -209,27 +220,45 @@ proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]
 /**
  * Apply response data from server in case of new inserted feature
  * @param response Object return from server
- * @param relations Array of relations related to commit request/response
+ * @param relations Array of relations objects related to commit request/response
  */
 proto.applyCommitResponse = function(response={}, relations=[]) {
   if (response && response.result) {
     const {response:data} = response;
+    // ids Array of object of new features
+    // {
+    //  clientid: cointain temporary __new id of feature created
+    //  id: new id set by server to substitute to temporary
+    // }
     const ids = data.new;
+    //Array of new lock ids
     const lockids = data.new_lockids;
+
+    //Loop on Array new ids layer features
     ids.forEach(idobj => {
+      //get current feature from source based on temporary __new id
       const feature = this._featuresstore.getFeatureById(idobj.clientid);
+      //set new id returned by server
       feature.setId(idobj.id);
+      //set properties of feature returned by server
       feature.setProperties(idobj.properties);
-      relations.forEach(relation => {
-        Object.entries(relation).forEach(([relationId, options]) => {
-          const value = feature.get(options.fatherField);
-          this.setFieldValueToRelationField({
-            relationId,
-            ids: options.ids,
-            field: options.childField,
-            values:[idobj.clientid, value]
+
+      //Loop relations array items
+      relations.forEach(r => {
+        Object.entries(r)
+          .forEach(([layerId, options]) => {
+            //get father feature property value
+            //to set to child relation value field
+            const value = feature.get(options.fatherField);
+            this.setFieldValueToRelationField({
+              layerId, //child layerId
+              ids: options.ids, // ids of features belong to relation that need to update
+              field: {
+                name: options.childField,
+                value,
+              }
+            })
           })
-        })
       })
     });
     //get features
@@ -389,13 +418,19 @@ proto.isStarted = function() {
   return this._started;
 };
 
+/**
+ * Method to clear all filled variable
+ */
 proto.clear = function() {
   this._started = false;
   this._filter.bbox = null;
   this._allfeatures = false;
   this._featuresstore.clear();
   this._layer.getFeaturesStore().clear();
-  this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());
+  //in case of vector layer
+  if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
+    this._layer.resetEditingSource(this._featuresstore.getFeaturesCollection());
+  }
 };
 
 
