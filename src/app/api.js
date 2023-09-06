@@ -11,6 +11,7 @@ import ApplicationService          from 'services/application';
  * Single File Components
  */
 import G3WInput                    from 'components/G3WInput.vue';
+import G3WField                    from 'components/G3WField.vue';
 import FormBody                    from 'components/FormBody.vue';
 import FormFooter                  from 'components/FormFooter.vue';
 import C3XYLine                    from 'components/C3XYLine.vue';
@@ -73,7 +74,7 @@ const Workflow                     = require('core/workflow/workflow');
 const Panel                        = require('gui/panel');
 const ControlFactory               = require('gui/map/control/factory');
 const ComponentsFactory            = require('gui/component/componentsfactory');
-const FieldsService                = Mixins.fieldsMixin.methods.getFieldService();
+const FieldsService                = G3WField.methods.getFieldService();
 const Component                    = require('gui/component/component');
 const MetadataComponent            = require('gui/metadata/vue/metadata');
 const SearchComponent              = require('gui/search/vue/search');
@@ -86,7 +87,7 @@ const QueryResultsComponent        = require('gui/queryresults/vue/queryresults'
 const FormComponent                = require('gui/form/vue/form');
 const FormService                  = require('gui/form/formservice');
 const ChartsFactory                = require('gui/charts/chartsfactory');
-const Fields                       = Mixins.fieldsMixin.components;
+const Fields                       = G3WField.components;
 const InputsComponents             = G3WInput.components;
 const SearchPanelService           = require('gui/search/vue/panel/searchservice');
 
@@ -105,9 +106,15 @@ const deprecate                    = require('util-deprecate');
 /**
  * Test assertions
  */
-console.assert(undefined !== InputsComponents, 'InputsComponents is undefined');
-console.assert(undefined !== FieldsService,    'FieldsService is undefined');
-console.assert(undefined !== Fields,           'Fields is undefined');
+Object
+  .entries({
+    G3WInput,
+    G3WField,
+    InputsComponents,
+    FieldsService,
+    Fields,
+  })
+  .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 const g3wsdk = {
 
@@ -316,8 +323,6 @@ g3wsdk.gui.vue.Inputs.G3WInput = {
  * 
  * ref: g3w-client/src/components/G3WFormInputs.vue@3.8
  * ref: g3w-client-plugin-billboards/components/panel.vue
- * 
- * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
  */
 g3wsdk.gui.vue.Inputs.G3wFormInputs = {
   functional: true,
@@ -340,8 +345,6 @@ g3wsdk.gui.vue.Inputs.G3wFormInputs = {
  * BACKCOMP (v3.x)
  * 
  * ref: src/components/G3WFormInputs.vue@3.8
- * 
- * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
  */
 g3wsdk.gui.vue.Inputs.InputsComponents = Object.entries(InputsComponents).reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {});
 
@@ -349,38 +352,59 @@ g3wsdk.gui.vue.Inputs.InputsComponents = Object.entries(InputsComponents).reduce
  * BACKCOMP (v3.x)
  * 
  * ref: src/mixins/base-input.vue@3.8
- * 
- * @TODO find out which plugins make use of: `g3wsdk.gui.vue.Mixins.baseInputMixin`
  */
 g3wsdk.gui.vue.Mixins.baseInputMixin = {
 
   props: ['state'],
 
   computed: {
-    tabIndex:           deprecate(G3WInput.computed.tabIndex,           '[G3W-CLIENT] baseInputMixin::tabIndex is deprecated'),
-    notvalid:           deprecate(G3WInput.computed.notvalid,           '[G3W-CLIENT] baseInputMixin::notvalid is deprecated'),
-    editable:           deprecate(G3WInput.computed.editable,           '[G3W-CLIENT] baseInputMixin::editable is deprecated'),
-    showhelpicon:       deprecate(G3WInput.computed.showhelpicon,       '[G3W-CLIENT] baseInputMixin::showhelpicon is deprecated'),
-    disabled:           deprecate(G3WInput.computed.disabled,           '[G3W-CLIENT] baseInputMixin::disabled is deprecated'),
-    loadingState:       deprecate(G3WInput.computed.loadingState,       '[G3W-CLIENT] baseInputMixin::loadingState is deprecated'),
+    tabIndex:           deprecate(G3WInput.computed.tabIndex,           '[G3W-SDK] baseInputMixin::tabIndex is deprecated'),
+    notvalid:           deprecate(G3WInput.computed.notvalid,           '[G3W-SDK] baseInputMixin::notvalid is deprecated'),
+    editable:           deprecate(G3WInput.computed.editable,           '[G3W-SDK] baseInputMixin::editable is deprecated'),
+    showhelpicon:       deprecate(G3WInput.computed.showhelpicon,       '[G3W-SDK] baseInputMixin::showhelpicon is deprecated'),
+    disabled:           deprecate(G3WInput.computed.disabled,           '[G3W-SDK] baseInputMixin::disabled is deprecated'),
+    loadingState:       deprecate(G3WInput.computed.loadingState,       '[G3W-SDK] baseInputMixin::loadingState is deprecated'),
   },
 
   watch: {
-    'notvalid':         deprecate(G3WInput.watch['notvalid'],           '[G3W-CLIENT] baseInputMixin::watch[\'notvalid\'] is deprecated'),
-    'state.value':      deprecate(G3WInput.watch['state.value'],        '[G3W-CLIENT] baseInputMixin::watch[\'state.value\'] is deprecated'),
+    'notvalid':         deprecate(G3WInput.watch['notvalid'],           '[G3W-SDK] baseInputMixin::watch[\'notvalid\'] is deprecated'),
+    'state.value':      deprecate(G3WInput.watch['state.value'],        '[G3W-SDK] baseInputMixin::watch[\'state.value\'] is deprecated'),
   },
 
   methods: {
-    showHideHelp:       deprecate(G3WInput.methods.showHideHelp,        '[G3W-CLIENT] baseInputMixin::showHideHelp. is deprecated'),
-    mobileChange:       deprecate(G3WInput.methods.mobileChange,        '[G3W-CLIENT] baseInputMixin::mobileChange is deprecated'),
-    change:             deprecate(G3WInput.methods.change,              '[G3W-CLIENT] baseInputMixin::change is deprecated'),
-    isVisible:          deprecate(G3WInput.methods.isVisible,           '[G3W-CLIENT] baseInputMixin::isVisible is deprecated'),
-    createInputService: deprecate(G3WInput.methods.createInputService,  '[G3W-CLIENT] baseInputMixin::createInputService is deprecated'),
-    getInputService:    deprecate(G3WInput.methods.getInputService,     '[G3W-CLIENT] baseInputMixin::getInputService is deprecated'),
+    showHideHelp:       deprecate(G3WInput.methods.showHideHelp,        '[G3W-SDK] baseInputMixin::showHideHelp. is deprecated'),
+    mobileChange:       deprecate(G3WInput.methods.mobileChange,        '[G3W-SDK] baseInputMixin::mobileChange is deprecated'),
+    change:             deprecate(G3WInput.methods.change,              '[G3W-SDK] baseInputMixin::change is deprecated'),
+    isVisible:          deprecate(G3WInput.methods.isVisible,           '[G3W-SDK] baseInputMixin::isVisible is deprecated'),
+    createInputService: deprecate(G3WInput.methods.createInputService,  '[G3W-SDK] baseInputMixin::createInputService is deprecated'),
+    getInputService:    deprecate(G3WInput.methods.getInputService,     '[G3W-SDK] baseInputMixin::getInputService is deprecated'),
   },
 
-  created:              deprecate(G3WInput.created,                     '[G3W-CLIENT] baseInputMixin is deprecated'),
-  destroyed:            deprecate(G3WInput.destroyed,                   '[G3W-CLIENT] baseInputMixin is deprecated'),
+  created:              deprecate(G3WInput.created,                     '[G3W-SDK] baseInputMixin is deprecated'),
+  destroyed:            deprecate(G3WInput.destroyed,                   '[G3W-SDK] baseInputMixin is deprecated'),
 };
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/fields.vue@3.8
+ */
+g3wsdk.gui.vue.Mixins.fieldsMixin = {
+
+  components: G3WField.components,
+
+  methods: {
+    getType:            deprecate(G3WField.methods.getType,            '[G3W-SDK] fieldsMixin::getType is deprecated'),
+    getFieldService:    deprecate(G3WField.methods.getFieldService,    '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
+    getFieldType:       deprecate(G3WField.methods.getFieldType,       '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
+    isSimple:           deprecate(G3WField.methods.isSimple,           '[G3W-SDK] fieldsMixin::isSimple is deprecated'),
+    isLink:             deprecate(G3WField.methods.isLink,             '[G3W-SDK] fieldsMixin::isLink is deprecated'),
+    isImage:            deprecate(G3WField.methods.isImage,            '[G3W-SDK] fieldsMixin::isImage is deprecated'),
+    isPhoto:            deprecate(G3WField.methods.isPhoto,            '[G3W-SDK] fieldsMixin::isPhoto is deprecated'),
+    isVue:              deprecate(G3WField.methods.isVue,              '[G3W-SDK] fieldsMixin::isVue is deprecated'),
+    sanitizeFieldValue: deprecate(G3WField.methods.sanitizeFieldValue, '[G3W-SDK] fieldsMixin::sanitizeFieldValue is deprecated'),
+  },
+
+}
 
 module.exports = g3wsdk;

@@ -4,20 +4,20 @@
 -->
 
 <template>
-  <field :state="state">
-    <div slot="field">
-      <component
-        :feature = "feature"
-        :value   = "state.value"
-        :is      = "state.vueoptions.component"
-      />
-    </div>
-  </field>
+  <g3w-field :state="state">
+    <template #field>
+      <div>
+        <component
+          :feature = "feature"
+          :value   = "state.value"
+          :is      = "state.vueoptions.component"
+        />
+      </div>
+    </template>
+  </g3w-field>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
 export default {
 
   name: "vuefield",
@@ -40,9 +40,5 @@ export default {
 
   },
 
-  components: {
-    Field
-  },
-
-}
+};
 </script>

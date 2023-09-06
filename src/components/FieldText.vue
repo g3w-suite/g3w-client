@@ -2,22 +2,16 @@
 <!-- gui/fields/text.vue@v3.4 -->
 
 <template>
-  <field :state="state"></field>
+  <g3w-field :state="state"></g3w-field>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
 export default {
 
   /** @since 3.8.6 */
   name: "field-text",
 
   props: ['state'],
-
-  components: {
-    Field
-  },
 
 };
 </script>

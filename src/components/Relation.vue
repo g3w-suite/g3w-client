@@ -144,7 +144,7 @@
               </template>
               <template v-else>
                 <td v-for="value in row">
-                  <g3w-field :state="{value:value}" />
+                  <g3w-field :state="{value:value}" _legacy="g3w-field" />
                 </td>
               </template>
             </tr>
@@ -188,14 +188,25 @@ import G3WField                     from 'components/G3WField.vue';
 import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import GUI                          from 'services/gui';
-import { fieldsMixin, resizeMixin } from 'mixins';
+import { resizeMixin }              from 'mixins';
 import { RelationEventBus as VM }   from 'app/eventbus';
 
 const { throttle } = require('core/utils/utils');
 
 let SIDEBARWIDTH;
 
-console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
+Object
+    .entries({
+      G3W_FID,
+      G3WField,
+      DownloadFormats,
+      CatalogLayersStoresRegistry,
+      GUI,
+      resizeMixin,
+      VM,
+      throttle,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
@@ -213,11 +224,11 @@ export default {
 
   inject: ['relationnoback'],
 
-  mixins: [ fieldsMixin, resizeMixin ],
+  mixins: [ 
+    resizeMixin,
+  ],
 
-  components: {
-    G3WField,
-  },
+  components: G3WField.components,
 
   data() {
     return {
@@ -233,6 +244,7 @@ export default {
       },
     };
   },
+  
 
   computed: {
 
@@ -386,7 +398,7 @@ export default {
       return this.table.fields.map((field, index) => {
         field.value = row[index];
         field.query = true;
-        field.input = { type: `${this.getFieldType(field)}` };
+        field.input = { type: `${G3WField.methods.getFieldService().getType(field)}` };
         return field;
       });
     },
@@ -402,7 +414,7 @@ export default {
     },
 
     fieldIs(type, value) {
-      return type === this.getFieldType(value);
+      return type === G3WField.methods.getFieldService().getType(field);
     },
 
     is(type, value) {

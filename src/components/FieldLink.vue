@@ -4,19 +4,18 @@
 -->
 
 <template>
-  <field :state="state">
-    <button
-      slot   = "field"
-      class  = "btn skin-button field_link"
-      v-t    = "'info.link_button'"
-      @click = "openLink(value)"
-    ></button>
-  </field>
+  <g3w-field :state="state">
+    <template #field>
+      <button
+        class  = "btn skin-button field_link"
+        v-t    = "'info.link_button'"
+        @click = "openLink(value)"
+      ></button>
+    </template>
+  </g3w-field>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
 export default {
 
   /** @since 3.8.6 */
@@ -28,10 +27,6 @@ export default {
     return {
       value: null,
     };
-  },
-
-  components: {
-    Field
   },
 
   methods: {

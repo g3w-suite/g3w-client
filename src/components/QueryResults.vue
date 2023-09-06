@@ -438,8 +438,7 @@
 </template>
 
 <script>
-  import { fieldsMixin } from 'mixins';
-
+  import G3WField                 from 'components/G3WField.vue';
   import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
@@ -451,7 +450,14 @@
   const headerActionsCellWidth      = 10;
   const HEADERTYPESFIELD            = ['varchar', 'integer', 'float', 'date'];
 
-  console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
+  Object
+    .entries({
+      G3WField,
+      TableAttributeFieldValue,
+      InfoFormats,
+      HeaderFeatureBody,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
   export default {
 
@@ -466,12 +472,12 @@
       };
     },
 
-    mixins: [fieldsMixin],
 
     components: {
       TableAttributeFieldValue,
       'infoformats':         InfoFormats,
-      'header-feature-body': HeaderFeatureBody
+      'header-feature-body': HeaderFeatureBody,
+      ...G3WField.components
     },
 
     computed: {
@@ -575,7 +581,7 @@
             value: feature.attributes[field.name],
           };
           _field.input = {
-            type: `${this.getFieldType(_field)}`
+            type: `${G3WField.methods.getFieldService().getType(_field)}`
           };
           fields.push(_field);
         }

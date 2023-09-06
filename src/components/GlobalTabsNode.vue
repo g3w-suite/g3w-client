@@ -83,11 +83,17 @@
 </template>
 
 <script>
-  import G3wInput         from 'components/G3WInput.vue';
+  import G3WInput         from 'components/G3WInput.vue';
+  import G3WField         from 'components/G3WField.vue';
   import ProjectsRegistry from 'store/projects';
-  import { fieldsMixin }  from 'mixins';
 
-  console.assert(undefined !== fieldsMixin, 'fieldsMixin is undefined');
+  Object
+    .entries({
+      G3WInput,
+      G3WField,
+      ProjectsRegistry,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
   export default {
 
@@ -107,10 +113,9 @@
       'handleRelation'
     ],
 
-    mixins: [fieldsMixin],
-
     components: {
-      G3wInput,
+      G3WInput,
+      ...G3WField.components,
     },
 
     data() {

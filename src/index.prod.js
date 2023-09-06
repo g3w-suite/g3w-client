@@ -45,6 +45,7 @@ import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent from 'components/Sidebar.vue';
 import ViewportComponent from 'components/Viewport.vue';
 import G3WInput from 'components/G3WInput.vue';
+import G3WField from 'components/G3WField.vue';
 
 //directives
 import vDisabled from 'directives/v-disabled';
@@ -92,6 +93,8 @@ Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
 /** @since 3.9.0 **/
 Vue.component(G3WInput.name, G3WInput);
+/** @since 3.9.0 **/
+Vue.component(G3WField.name, G3WField);
 
 /**
  * Install application filters

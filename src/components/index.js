@@ -7,7 +7,6 @@ import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
 import CatalogTristateTree from './CatalogTristateTree.vue';
-import Field from './Field.vue';
 import FieldGallery from './FieldGallery.vue';
 import FieldGeo from './FieldGeo.vue';
 import FieldImage from './FieldImage.vue';

@@ -325,7 +325,7 @@ function _isValueInRange(min, max, value) {
 
 /**
  * Base class
- * 
+ *
  * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
  */
 class Service {
@@ -1005,7 +1005,7 @@ const vm = {
      * 
      * BACKCOMP ONLY (v3.x)
      * 
-     * ref: `g3wsdk.gui.vue.Inputs.G3wFormInputs`
+     * ref: `g3wsdk.gui.vue.Inputs.*`
      * 
      * @since 3.9.0
      */

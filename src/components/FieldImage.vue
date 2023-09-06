@@ -4,30 +4,27 @@
 -->
 
 <template>
-  <field :state="state">
-    <div
-      slot  = "field"
-      style = "text-align: left"
-    >
-      <img
-        v-for  = "(value, index) in values"
-        class  = "img-responsive"
-        style  = "max-height: 50px"
-        @click = "showGallery(index)"
-        :src   = "getSrc(value)"
-      />
-      <g3w-images-gallery
-        :id     = "galleryId"
-        :active = "active"
-        :images = "getGalleryImages()"
-      />
-    </div>
-  </field>
+  <g3w-field :state="state">
+    <template #field>
+      <div style = "text-align: left">
+        <img
+          v-for  = "(value, index) in values"
+          class  = "img-responsive"
+          style  = "max-height: 50px"
+          @click = "showGallery(index)"
+          :src   = "getSrc(value)"
+        />
+        <g3w-images-gallery
+          :id     = "galleryId"
+          :active = "active"
+          :images = "getGalleryImages()"
+        />
+      </div>
+    </template>
+  </g3w-field>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
 const { toRawType } = require('core/utils/utils');
 
 export default {
@@ -43,10 +40,6 @@ export default {
       active:    null,
       value:     undefined !== this.state.value.mime_type  ? this.state.value.value : this.state.value,
     };
-  },
-
-  components: {
-    Field
   },
 
   computed: {
