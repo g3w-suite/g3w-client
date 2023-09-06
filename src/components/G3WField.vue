@@ -81,82 +81,45 @@ Object
 
 const URLPattern    = /^(https?:\/\/[^\s]+)/g;
 const PhotoPattern  = /[^\s]+.(png|jpg|jpeg|gif)$/g;
-const FieldType     = {
-  SIMPLE:    'simple',
-  GEO:       'geo',
-  LINK:      'link',
-  PHOTO:     'photo',
-  PHOTOLINK: 'photolink',
-  IMAGE:     'image',
-  POINTLINK: 'pointlink',
-  ROUTE:     'route',
-  VUE:       'vue',
-};
 
 /******************************************************* */
+
+/**
+ * Get Type field from field value
+ * 
+ * @param field object containing the value of the field
+ * 
+ * @returns {string}
+ */
+function _getType(field) {
+
+  const is_nested = (
+    field.value &&
+    'Object' === toRawType(field.value) &&
+    !field.value.coordinates &&
+    !field.value.vue
+  );
+
+  const value = is_nested ? field.value.value : field.value;
+
+  const is_geo      = value && typeof 'object' == value && value.coordinates;
+  const is_vue      = 'vue' === field.type || (value && typeof 'object' == value && !value.coordinates && value.vue);
+  const is_photo    = value && ((Array.isArray(value) && value.length && value[0].photo) || (value.toString().toLowerCase().match(PhotoPattern)));
+  const is_link     = value && value.toString().match(URLPattern);
+
+  if (is_vue)   return 'vue_field';
+  if (is_geo)   return 'geo_field';
+  if (is_photo) return 'photo_field';
+  if (is_link)  return 'link_field';
+
+  return 'simple_field';
+
+}
 
 /**
  * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
  */
 const fieldsservice = {
-
-  /**
-   * Get Type field from field value
-   * 
-   * @param field object containing the value of the field
-   * 
-   * @returns {string}
-   */
-  getType(field) {
-    if ('vue' === field.type) {
-      return `${field.type}_field`;
-    }
-
-    const GIVE_ME_A_NAME = field.value && 'Object' === toRawType(field.value) && !field.value.coordinates && !field.value.vue;
-
-    const value = GIVE_ME_A_NAME
-      ? field.value.value
-      : field.value;
-
-    const is_simple   = !value;
-    const is_geo      = (value && typeof 'object' == value) && value.coordinates;
-    const is_vue      = (value && typeof 'object' == value) && !value.coordinates && value.vue;
-    const is_photo    = (value && Array.isArray(value)) && value.length && value[0].photo;
-    const is_simple_2 = (value && Array.isArray(value)) && !(value.length && value[0].photo);
-    const is_photo_2  = value && value.toString().toLowerCase().match(PhotoPattern);
-    const is_link     = value && value.toString().match(URLPattern);
-
-    if (is_simple)   return `${FieldType.SIMPLE}_field`;
-    if (is_geo)      return `${FieldType.GEO}_field`;
-    if (is_vue)      return `${FieldType.VUE}_field`;
-    if (is_photo)    return `${FieldType.PHOTO}_field`;
-    if (is_simple_2) return `${FieldType.SIMPLE}_field`;
-    if (is_photo_2)  return `${FieldType.PHOTO}_field`;
-    if (is_link)     return `${FieldType.LINK}_field`;
-
-    return `${FieldType.SIMPLE}_field`;
-
-  },
-
-  isSimple(field) {
-    return `${FieldType.SIMPLE}_field` === this.getType(field);
-  },
-
-  isLink(field) {
-    return `${FieldType.LINK}_field` === this.getType(field);
-  },
-
-  isImage(field) {
-    return `${FieldType.IMAGE}_field` === this.getType(field);
-  },
-
-  isPhoto(field) {
-    return `${FieldType.PHOTO}_field` === this.getType(field);
-  },
-
-  isVue(field) {
-    return `${FieldType.VUE}_field` === this.getType(field);
-  },
 
   /**
    * Add a new field type to Fields
@@ -272,13 +235,6 @@ const vm = {
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
-    getType(field) {
-      return this.getFieldService().getType(field);
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
-     */
     getFieldService() {
       // if (undefined === this._fieldsService) {
       //   this._fieldsService = fieldsservice;
@@ -290,43 +246,46 @@ const vm = {
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
-    getFieldType(field) {
-      return this.getFieldService().getType(field);
-    },
+    getType: _getType,
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    getFieldType: _getType,
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isSimple(field) {
-      return this.getFieldService().isSimple(field);
+      return 'simple_field' === _getType(field);
     },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isLink(field) {
-      return this.getFieldService().isLink(field);
+      return 'link_field' === _getType(field);
     },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isImage(field) {
-      return this.getFieldService().isImage(field);
+      return 'image_field' === _getType(field);
     },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isPhoto(field) {
-      return this.getFieldService().isPhoto(field);
-    },
+      return 'photo_field' === _getType(field);
+    }, 
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isVue(field) {
-      return this.getFieldService().isVue(field);
+      return 'vue_field' === _getType(field);
     },
 
     /**
@@ -356,6 +315,13 @@ vm.components['simple_field'] = vm.components['text_field'];
 vm.components['photo_field']  = vm.components['image_field'];
 vm.components['g3w_link']     = vm.components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue
 vm.components['g3w_vue']      = vm.components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue
+
+fieldsservice.getType         = vm.methods.getType;
+fieldsservice.isVue           = vm.methods.isVue;
+fieldsservice.isPhoto         = vm.methods.isPhoto;
+fieldsservice.isLink          = vm.methods.isLink;
+fieldsservice.isSimple        = vm.methods.isSimple;
+fieldsservice.isImage         = vm.methods.isImage;
 
 export default vm;
 </script>
