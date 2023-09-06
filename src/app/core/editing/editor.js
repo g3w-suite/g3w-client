@@ -119,7 +119,7 @@ proto._cloneFeatures = function(features=[]) {
   return features.map(feature => feature.clone());
 };
 
-proto._addFeaturesFromServer = function(features=[]){
+proto._addFeaturesFromServer = function(features=[]) {
   features = this._cloneFeatures(features);
   this._featuresstore.addFeatures(features);
 };
@@ -132,9 +132,9 @@ proto._doGetFeaturesRequest = function(options={}) {
 // get features from server method
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
-  const doRequest = this._doGetFeaturesRequest(options);
-  if (!doRequest) d.resolve();
-  else
+  //check if can do a request
+  if (!this._doGetFeaturesRequest(options)) d.resolve();
+  else {
     this._layer.getFeatures(options)
       .then(promise => {
         promise.then(features => {
@@ -144,6 +144,8 @@ proto._getFeatures = function(options={}) {
         }).fail(err => d.reject(err))
       })
       .fail(err => d.reject(err));
+  }
+
   return d.promise();
 };
 
@@ -236,10 +238,13 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
 
     //Loop on Array new ids layer features
     ids.forEach(idobj => {
+
       //get current feature from source based on temporary __new id
       const feature = this._featuresstore.getFeatureById(idobj.clientid);
+
       //set new id returned by server
       feature.setId(idobj.id);
+
       //set properties of feature returned by server
       feature.setProperties(idobj.properties);
 
@@ -260,9 +265,11 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
             })
           })
       })
+
     });
     //get features
     const features = this.readEditingFeatures();
+
     //clear state (new, update etc..)
     features.forEach(feature => feature.clearState());
     //substitute to existing features
@@ -381,7 +388,7 @@ proto._setFeatures = function(features) {
 /*
 Read feature from source
  */
-proto.readFeatures = function(){
+proto.readFeatures = function() {
   return this._layer.readFeatures();
 };
 
@@ -389,7 +396,7 @@ proto.readFeatures = function(){
  * Read feature from editing layer source
  * @returns {*}
  */
-proto.readEditingFeatures = function(){
+proto.readEditingFeatures = function() {
   return this._featuresstore.readFeatures()
 };
 
