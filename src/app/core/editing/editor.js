@@ -36,7 +36,7 @@ function Editor(options={}) {
     bbox: null
   };
 
-  this._allfeatures = false;
+  this._allfeatures = false; //apply to all features of source
   // referred layer
   this._layer = options.layer;
   // editing featurestore
@@ -51,6 +51,13 @@ inherit(Editor, G3WObject);
 
 const proto = Editor.prototype;
 
+/**
+ * Method to check if it can get feature request to server
+ * Avoid to repeat request checking filter request for example
+ * @param options
+ * @returns {boolean}
+ * @private
+ */
 proto._canDoGetFeaturesRequest = function(options={}) {
   let doRequest = true;
   if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
@@ -65,6 +72,10 @@ proto._canDoGetFeaturesRequest = function(options={}) {
   return doRequest
 };
 
+/**
+ * Get editing source layer feature
+ * @returns {*}
+ */
 proto.getEditingSource = function() {
   return this._featuresstore;
 };
@@ -76,6 +87,12 @@ proto.getSource = function() {
   this._layer.getSource();
 };
 
+/**
+ * Apply changes to source features
+ * @param items
+ * @param reverse
+ * @private
+ */
 proto._applyChanges = function(items=[], reverse=true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
@@ -108,7 +125,7 @@ proto._addFeaturesFromServer = function(features=[]){
 };
 
 proto._doGetFeaturesRequest = function(options={}) {
-  const doRequest = Applicationstate.online &&  !this._allfeatures;
+  const doRequest = Applicationstate.online && !this._allfeatures;
   return doRequest && this._canDoGetFeaturesRequest(options)
 };
 
@@ -130,7 +147,9 @@ proto._getFeatures = function(options={}) {
   return d.promise();
 };
 
-// method to revert (cancel) all changes in history and clean session
+/**
+ * Method to revert (cancel) all changes in history and clean session
+ */
 proto.revert = function() {
   const d = $.Deferred();
   const features  = this._cloneFeatures(this._layer.readFeatures());
@@ -139,6 +158,11 @@ proto.revert = function() {
   return d.promise();
 };
 
+/**
+ * Rollback changes
+ * @param changes
+ * @returns {*}
+ */
 proto.rollback = function(changes=[]) {
   const d = $.Deferred();
   this._applyChanges(changes, true);
@@ -190,7 +214,7 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
       const feature = this._featuresstore.getFeatureById(idobj.clientid);
       feature.setId(idobj.id);
       feature.setProperties(idobj.properties);
-      relations.forEach(relation =>{
+      relations.forEach(relation => {
         Object.entries(relation).forEach(([relationId, options]) => {
           const value = feature.get(options.fatherField);
           this.setFieldValueToRelationField({
@@ -209,6 +233,10 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
   }
 };
 
+/**
+ * Get lockids from layer
+ * @returns {*}
+ */
 proto.getLockIds = function(){
   return this._layer.getSource().getLockIds();
 };
@@ -217,18 +245,23 @@ proto.getLockIds = function(){
 proto.commit = function(commitItems) {
   const d = $.Deferred();
   // in case of relations bind to new feature
-  const relations = commitItems.add.length ? Object.keys(commitItems.relations).map(relationId => {
-    const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
-    const updates = commitItems.relations[relationId].update.map(relation => relation.id);
-    const add = commitItems.relations[relationId].add.map(relation => relation.id);
-    return {
-      [relationId]:{
-        ids: [...add, ...updates],
-        fatherField: layerRelation.getFatherField(),
-        childField: layerRelation.getChildField()
-      }
-    }
-  }) : [];
+  const relations = commitItems.add.length ? //check if new feature will be committed to server ("add" key of commited item)
+    //Loop relations attribute (Array)
+    Object.keys(commitItems.relations)
+      .map(relationId => {
+        const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
+        const updates = commitItems.relations[relationId].update.map(relation => relation.id);
+        const add = commitItems.relations[relationId].add.map(relation => relation.id);
+        return {
+          [relationId]:
+            {
+              ids: [...add, ...updates],
+              fatherField: layerRelation.getFatherField(),
+              childField: layerRelation.getChildField()
+            }
+        }
+      }) : [];
+
   this._layer.commit(commitItems)
     .then(promise => {
       promise
@@ -239,6 +272,7 @@ proto.commit = function(commitItems) {
         .fail(err => d.reject(err))
     })
     .fail(err => d.reject(err));
+
   return d.promise();
 };
 
@@ -256,7 +290,6 @@ proto.start = function(options={}) {
           this._started = true;
         })
         .fail(err => d.reject(err))
-
     })
     .fail(err => d.reject(err));
   return d.promise()
@@ -264,26 +297,53 @@ proto.start = function(options={}) {
 
 //action to layer
 
+/**
+ * Add Feature to source
+ * @param feature
+ * @private
+ */
 proto._addFeature = function(feature) {
   this._featuresstore.addFeature(feature);
 };
 
+/**
+ * Delete feature from source
+ * @param feature
+ * @private
+ */
 proto._deleteFeature = function(feature) {
   this._featuresstore.deleteFeature(feature);
 };
 
+/**
+ * Update feature
+ * @param feature
+ * @private
+ */
 proto._updateFeature = function(feature) {
   this._featuresstore.updateFeature(feature);
 };
 
+/**
+ * Set features
+ * @param features
+ * @private
+ */
 proto._setFeatures = function(features) {
   this._featuresstore.setFeatures(features);
 };
 
+/*
+Read feature from source
+ */
 proto.readFeatures = function(){
   return this._layer.readFeatures();
 };
 
+/**
+ * Read feature from editing layer source
+ * @returns {*}
+ */
 proto.readEditingFeatures = function(){
   return this._featuresstore.readFeatures()
 };
@@ -305,6 +365,10 @@ proto._save = function() {
   this._layer.save();
 };
 
+/**
+ * Chef if editor is start
+ * @returns {boolean|*}
+ */
 proto.isStarted = function() {
   return this._started;
 };
