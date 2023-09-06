@@ -299,40 +299,35 @@ const Validators = {
     float(options = {}) {
       this.options = options;
       this.validate = function(value) {
-        const float = Number(1 * value);
-        return !Number.isNaN(float);
+        return !Number.isNaN(Number(1 * value));
       }
     },
 
     integer(options = {}) {
       this.options = options;
       this.validate = function(value) {
-        const integer = 1 * value;
-        return !_.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
+        return !_.isNaN(1 * value) && Number.isSafeInteger(1 * value) && (1 * value) <= 2147483647;
       }
     },
 
     checkbox(options = {}) {
       this.options = options;
       this.validate = function(value) {
-        const values = this.options.values || [];
-        return values.indexOf(value) !== -1;
+        return -1 !== (this.options.values || []).indexOf(value);
       }
     },
 
     datetimepicker(options = {}) {
       this.options = options;
       this.validate = function(value, options) {
-        const fielddatetimeformat = options.fielddatetimeformat;
-        return moment(value, fielddatetimeformat, true).isValid();
+        return moment(value, options.fielddatetimeformat, true).isValid();
       }
     },
 
     range(options = {}) {
       const { min, max } = options;
       this.validate = function(value) {
-        value = 1 * value;
-        return value >= min && value <= max;
+        return (1 * value) >= min && (1 * value) <= max;
       }
     },
 
