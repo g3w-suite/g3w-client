@@ -162,6 +162,13 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
   }
 };
 
+/**
+ * Method to handle relation feature saved on server
+ * @param relationId
+ * @param ids
+ * @param field
+ * @param values
+ */
 proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
   const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
   ids.forEach(id => {
