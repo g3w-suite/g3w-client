@@ -19,6 +19,7 @@ function TableLayer(config={}, options={}) {
     clearFeatures() {
       this._clearFeatures();
     },
+    //add Feature
     addFeature(feature) {
       this._addFeature(feature);
     },
@@ -32,22 +33,26 @@ function TableLayer(config={}, options={}) {
       this._setFeatures(features);
     },
     // get data from every sources (server, wms, etc..)
-    // throught provider related to featuresstore
+    // through provider related to featuresstore
     getFeatures(options={}) {
       const d = $.Deferred();
       this._featuresstore.getFeatures(options)
         .then(promise => {
-          promise.then(features => {
-            this.emit('getFeatures', features);
-            return d.resolve(features);
-          }).fail(err => d.reject(err))
+          promise
+            .then(features => {
+              this.emit('getFeatures', features);
+              return d.resolve(features);
+            })
+            .fail(err => d.reject(err))
         })
         .fail(err => d.reject(err));
+
       return d.promise();
     },
     commit(commitItems) {
       const d = $.Deferred();
-      this._featuresstore.commit(commitItems)
+      this._featuresstore
+        .commit(commitItems)
         .then(promise => {
           promise
             .then(response => {
@@ -87,9 +92,11 @@ function TableLayer(config={}, options={}) {
 
   // get configuration from server if is editable
   this._editatbleLayer;
+  //in case of editable layer
   if (this.isEditable()) {
     // add state info for the layer
     this.layerForEditing = new Promise((resolve, reject) => {
+      //get editing layer config
       this.getEditingConfig()
         .then(({vector, constraints={}, capabilities=DEFAULT_EDITING_CAPABILITIES}={}) => {
           this.config.editing.fields = vector.fields;
@@ -125,6 +132,7 @@ function TableLayer(config={}, options={}) {
       }
     };
   }
+  //set feature store to store feature
   this._featuresstore = new FeaturesStore({
     provider: this.providers.data
   });
@@ -135,7 +143,7 @@ inherit(TableLayer, Layer);
 const proto = TableLayer.prototype;
 
 //sync selection
-proto.syncSelectionFilterFeatures = function(commitItems){
+proto.syncSelectionFilterFeatures = function(commitItems) {
   try {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
     layer.isGeoLayer() && commitItems.update.forEach(updateItem =>{
@@ -148,7 +156,7 @@ proto.syncSelectionFilterFeatures = function(commitItems){
   } catch(err){}
 };
 
-proto.setFormPercentage = function(perc){
+proto.setFormPercentage = function(perc) {
   this.config.editing.form.perc = perc;
 };
 
@@ -210,7 +218,7 @@ proto.getEditingLayer = function() {
 };
 
 //check if is editingLayer useful to get editingstyle
-proto.isEditingLayer = function(){
+proto.isEditingLayer = function() {
   return !!this.config.editing
 };
 
@@ -241,7 +249,7 @@ proto.isFieldRequired = function(fieldName) {
   return required;
 };
 
-// unlock editng features
+// unlock editing features
 proto.unlock = function() {
   const d = $.Deferred();
   this._featuresstore.unlock()
