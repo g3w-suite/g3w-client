@@ -20,26 +20,9 @@
       :actions      = "actions"
     />
 
-    <td
-      v-for = "attribute in attributesSubset(layer)"
-      class = "attribute"
-    >
-      <span
-        v-if      = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class     = "skin-color"
-        :class    = "g3wtemplate.getFontClass('link')"
-      ></span>
-      <span
-        v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class     = "skin-color"
-        :class    = "g3wtemplate.getFontClass('image')"
-      ></span>
-      <span 
-        v-else-if = "isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class     = "skin-color"
-        :class    = "g3wtemplate.getFontClass('image')"
-      ></span>
-      <span v-else>{{feature.attributes[attribute.name]}}</span>
+    <td v-for="attr in attributesSubset(layer)" class="attribute">
+      <span v-if="getIcon(attr)" class="skin-color" :class="getIcon(attr)"></span>
+      <span v-else>{{feature.attributes[attr.name]}}</span>
     </td>
 
     <td
@@ -123,25 +106,29 @@
     methods: {
 
       /**
-       * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+       * @since 3.9.0
        */
-      isLink(field) {
-        return G3WField.methods.getFieldService().isLink(field);
-      },
+      getIcon(attr) {
 
-      /**
-       * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
-       */
-      isImage(field) {
-        return G3WField.methods.getFieldService().isImage(field);
-      },
+        const field = this.getLayerField({
+          layer:     this.layer,
+          feature:   this.feature,
+          fieldName: attr.name,
+        });
 
-      /**
-       * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
-       */
-      isPhoto(field) {
-        return G3WField.methods.getFieldService().isPhoto(field);
-      },
+        const service = G3WField.methods.getFieldService();
+
+        if (service.isLink(field)) {
+          return this.g3wtemplate.getFontClass('link');
+        }
+
+        if (service.isPhoto(field) || service.isImage(field)) {
+          return this.g3wtemplate.getFontClass('image');
+        }
+
+        return '';
+
+      }
 
     }
 

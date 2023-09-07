@@ -14,50 +14,53 @@
     >{{ node.name }}</h5>
 
     <div
-      v-for  = "node in nodes"
+      v-for  = "row in rows"
       class  = "node-row"
       :class = "{ mobile: isMobile() }"
-      :style="{ padding: node ? '2px' : undefined }"
     >
 
-      <!-- NODE FIELD -->
-      <component
-        v-if              = "'field' === getNodeType(node)"
-        class             = "tab-node-field"
-        :state            = "getField(node)"
-        @changeinput      = "changeInput"
-        @addinput         = "addToValidate"
-        @removeinput      = "removeToValidate"
-        :changeInput      = "changeInput"
-        :addToValidate    = "addToValidate"
-        :removeToValidate = "removeToValidate"
-        :feature          = "feature"
-        :is               = "_getComponent(node)"
-        :_legacy          = "_getLegacy(node)"
-      />
+      <template v-for="node in getNodes(row)" :style="{ padding: node ? '2px' : undefined }">
 
-      <!-- NODE GROUP -->
-      <tabs
-        v-else-if         = "'group' === getNodeType(node)"
-        class             = "sub-group"
-        :group            = "true"
-        :tabs             = "[node]"
-        v-bind            = "$props"
-      />
+        <!-- NODE FIELD -->
+        <component
+          v-if              = "'field' === getNodeType(node)"
+          class             = "tab-node-field"
+          :state            = "getField(node)"
+          @changeinput      = "changeInput"
+          @addinput         = "addToValidate"
+          @removeinput      = "removeToValidate"
+          :changeInput      = "changeInput"
+          :addToValidate    = "addToValidate"
+          :removeToValidate = "removeToValidate"
+          :feature          = "feature"
+          :is               = "_getComponent(node)"
+          :_legacy          = "_getLegacy(node)"
+        />
 
-      <!-- NODE RELATION -->
-      <div
-        v-else-if         = "showRelationByField"
-        class             = "tab-node-relation"
-        v-disabled        = "is_disabled(node)"
-        @click.stop       = "onRelationClick(node)"
-      >
-        <bar-loader :loading="is_loading(node)" />
-        <div class="tab-node-flex">
-          <div  class="query_relation_field">                      <i :class="getRelationIcon(context)"></i>    </div>
-          <span class="query_relation_field_message g3w-long-text"><span>{{ getRelationName(node.name) }}</span></span>
+        <!-- NODE GROUP -->
+        <tabs
+          v-else-if         = "'group' === getNodeType(node)"
+          class             = "sub-group"
+          :group            = "true"
+          :tabs             = "[node]"
+          v-bind            = "$props"
+        />
+
+        <!-- NODE RELATION -->
+        <div
+          v-else-if         = "showRelationByField"
+          class             = "tab-node-relation"
+          v-disabled        = "is_disabled(node)"
+          @click.stop       = "onRelationClick(node)"
+        >
+          <bar-loader :loading="is_loading(node)" />
+          <div class="tab-node-flex">
+            <div  class="query_relation_field">                      <i :class="getRelationIcon(context)"></i>    </div>
+            <span class="query_relation_field_message g3w-long-text"><span>{{ getRelationName(node.name) }}</span></span>
+          </div>
         </div>
-      </div>
+
+      </template>
 
     </div>
 
@@ -156,17 +159,6 @@
         return this.showTitle && this.node.showlabel && this.node.groupbox;
       },
 
-      /**
-       * @since 3.9.0
-       */
-       nodes() {
-        const nodes = [];
-        for (let row = 0; row < this.rows; row++) {
-          nodes.push(this.getNodes(row));
-        }
-        return nodes.flat();
-       },
-
     },
 
     methods: {
@@ -205,7 +197,7 @@
        */
       onRelationClick(node) {
         return this.handleRelation({
-          layerId: this.layerId,
+          layerId: this.layerid,
           feature: this.feature,
           relation: node
         });
@@ -215,7 +207,7 @@
        * @since 3.9.0 
        */
       getRelationIcon(context) {
-        return g3wtemplate.font['query' === context ? 'relation' : 'pencil'];
+        return this.g3wtemplate.font['query' === context ? 'relation' : 'pencil'];
       },
 
       getRelationName(relationId) {

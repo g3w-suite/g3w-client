@@ -85,7 +85,6 @@ import QueryResultsActionInfoFormats from './QueryResultsActionInfoFormats.vue';
 import QueryResultsActionQueryPolygonCSVAttributes from './QueryResultsActionQueryPolygonCSVAttributes.vue';
 import QueryResultsActions from './QueryResultsActions.vue';
 import QueryResultsHeaderFeatureBody from './QueryResultsHeaderFeatureBody.vue';
-import QueryResultsAttributeFieldValue from './QueryResultsTableAttributeFieldValue.vue';
 import Relation from './Relation.vue';
 import Relations from './Relations.vue';
 import RelationsPage from './RelationsPage.vue';

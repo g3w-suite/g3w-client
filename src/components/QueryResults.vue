@@ -379,9 +379,10 @@
                               class      = "attr-value"
                               :attribute = "attribute.name"
                             >
-                              <table-attribute-field-value
+                              <g3w-field
                                 :feature = "feature"
                                 :field   = "getLayerField({ layer, feature, fieldName: attribute.name })"
+                                _legacy  = "g3w-query"
                               />
                             </td>
                           </tr>
@@ -439,7 +440,6 @@
 
 <script>
   import G3WField                 from 'components/G3WField.vue';
-  import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
 
@@ -453,7 +453,6 @@
   Object
     .entries({
       G3WField,
-      TableAttributeFieldValue,
       InfoFormats,
       HeaderFeatureBody,
     })
@@ -474,9 +473,9 @@
 
 
     components: {
-      TableAttributeFieldValue,
-      'infoformats':         InfoFormats,
-      'header-feature-body': HeaderFeatureBody,
+      'tableattributefieldvalue': G3WField, // TODO: check if deprecated
+      'infoformats':              InfoFormats,
+      'header-feature-body':      HeaderFeatureBody,
       ...G3WField.components
     },
 

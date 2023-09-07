@@ -10,6 +10,21 @@
 <template>
 
   <!--
+    Legacy QueryResultsTableAttributeFieldValue component
+
+    @example <g3w-field _legacy="g3w-query" />
+
+    ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
+
+    @since 3.9.0
+  -->
+  <g3w-vue   v-if     ="__isQuery && isVue(field)"    :feature="feature" :state="field"/>
+  <span      v-else-if="__isQuery && isSimple(field)" v-html="field.value"></span>
+  <g3w-image v-else-if="__isQuery && isPhoto(field)"  :value="field.value"/>
+  <g3w-image v-else-if="__isQuery && isImage(field)"  :value="field.value"/>
+  <g3w-link  v-else-if="__isQuery && isLink(field)"   :state="{value: field.value}"/>
+
+  <!--
     Legacy FieldG3W component
 
     @example <g3w-field _legacy="g3w-field" />
@@ -19,11 +34,28 @@
     @since 3.7
   -->
   <component
-    v-if     = "__isField"
+    v-else-if     = "__isField"
     :is      = "type"
     :feature = "feature"
     :state   = "state"
   />
+
+  <!--
+    Like a "fieldsMixin" wrapper just for: `this.$parent`
+
+    @example
+
+      <g3w-field _legacy="mixin">
+        <g3w-field id="field-1" :state="state" />
+        <g3w-field id="field-2" :state="state" />
+        ...
+      </g3w-field>
+
+    @since 3.9.0
+  -->
+  <div v-else-if="__isMixin">
+    <slot></slot>
+  </div>
 
   <!--
     Base Field component
@@ -186,6 +218,14 @@ const vm = {
     },
 
     /**
+     * ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
+     */
+    field: {
+      type: Object,
+       default: {},
+    },
+
+    /**
      * Legacy field type.
      * 
      * BACKCOMP ONLY (v3.x)
@@ -226,6 +266,34 @@ const vm = {
      */
      __isField() {
       return 'g3w-field' === this._legacy;
+    },
+
+    /**
+     * Whether this is a Legacy QueryResultsTableAttributeFieldValue component
+     * 
+     * @example <g3w-field _legacy="g3w-query" />
+     * 
+     * @since 3.9.0
+     */
+     __isQuery() {
+      return 'g3w-query' === this._legacy;
+    },
+
+    /**
+     * Whether this is a fieldsMixin wrapper
+     * 
+     * @example
+     * 
+     *  <g3w-field _legacy="mixin">
+     *    <g3w-field id="input-1" :state="state" />
+     *    <g3w-field id="input-2" :state="state" />
+     *    ...
+     *  </g3w-field>
+     * 
+     * @since 3.9.0
+     */
+     __isMixin() {
+      return 'mixin' === this._legacy;
     },
 
   },
