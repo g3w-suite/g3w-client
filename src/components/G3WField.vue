@@ -34,10 +34,9 @@
     @since 3.7
   -->
   <component
-    v-else-if     = "__isField"
-    :is      = "type"
-    :feature = "feature"
-    :state   = "state"
+    v-else-if = "__isField"
+    :is       = "type"
+    v-bind    = "$attrs"
   />
 
   <!--
@@ -192,6 +191,27 @@ const vm = {
     },
 
     /**
+     * ORIGINAL SOURCE: src/components/Relation.vue@3.8
+     */
+    layer: {
+      type: Object,
+      default: undefined,
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/components/Relation.vue@3.8
+     */
+    config: {
+      type: Object,
+      default: undefined,
+    },
+
+    type: {
+      type: String,
+      default: '',
+    },
+
+    /**
      * Legacy field type.
      * 
      * BACKCOMP ONLY (v3.x)
@@ -335,7 +355,9 @@ const vm = {
    * ORIGINAL SOURCE: src/components/FieldG3W.vue@3.8
    */
   created() {
-    if (this.__isField) {
+    if (this.is) {
+      this.type = this.is;
+    } else if (this.__isField && !this.type) {
       this.type = this.getType(this.state);
     }
   },

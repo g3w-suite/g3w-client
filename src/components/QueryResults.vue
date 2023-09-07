@@ -150,17 +150,19 @@
               style  = "padding: 5px"
               :class = "{ 'mobile': isMobile() }"
             >
-              <component
+              <g3w-field
                 :is     = "state.layeractiontool[layer.id].component"
                 :layer  = "layer"
                 :config = "state.layeractiontool[layer.id].config"
+                _legacy = "g3w-field"
               />
             </div>
 
-            <component
-              v-for  = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
-              :is    = "component"
-              :layer = "layer"
+            <g3w-field
+              v-for   = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
+              :is     = "component"
+              :layer  = "layer"
+              _legacy = "g3w-field"
             />
 
             <div
@@ -224,13 +226,14 @@
                         v-if     = "state.currentactiontools[layer.id][index]"
                         :colspan = "getColSpan(layer)"
                       >
-                        <component
+                        <g3w-field
                           :is           = "state.currentactiontools[layer.id][index]"
                           :colspan      = "getColSpan(layer)"
                           :layer        = "layer"
                           :feature      = "feature"
                           :featureIndex = "index"
                           :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
+                          _legacy       = "g3w-field"
                         />
                       </td>
                     </tr>
@@ -240,10 +243,11 @@
                       <td
                         :colspan="getColSpan(layer)"
                       >
-                        <component
+                        <g3w-field
                           :is      = "component"
                           :layer   = "layer"
                           :feature = "feature"
+                          _legacy  = "g3w-field"
                         />
                       </td>
                     </tr>
@@ -269,10 +273,11 @@
                       <td
                         :colspan="getColSpan(layer)"
                       >
-                        <component
+                        <g3w-field
                           :is      = "component"
                           :layer   = "layer"
                           :feature = "feature"
+                          _legacy  = "g3w-field"
                         />
                       </td>
                     </tr>
@@ -331,13 +336,14 @@
                         v-if     = "state.currentactiontools[layer.id][index]"
                         :colspan = "getColSpan(layer)"
                       >
-                        <component
+                        <g3w-field
                           :is           = "state.currentactiontools[layer.id][index]"
                           :colspan      = "getColSpan(layer)"
                           :layer        = "layer"
                           :feature      = "feature"
                           :featureIndex = "index"
                           :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
+                          _legacy       = "g3w-field"
                         />
                       </td>
                     </tr>
@@ -347,11 +353,12 @@
                       <td
                         colspan="getColSpan(layer)"
                       >
-                        <component
+                        <g3w-field
                           class    = "box-body"
                           :is      = "component"
                           :layer   = "layer"
                           :feature = "feature"
+                          _legacy  = "g3w-field"
                         />
                       </td>
                     </tr>
@@ -396,11 +403,12 @@
                       <td
                         colspan="getColSpan(layer)"
                       >
-                        <component
+                        <g3w-field
                           class    = "box-body"
                           :is      = "component"
                           :layer   = "layer"
                           :feature = "feature"
+                          _legacy  = "g3w-field"
                         />
                       </td>
                     </tr>
@@ -415,9 +423,10 @@
               class  = "box-body"
               :class = "{'mobile': isMobile()}"
             >
-              <component
-                :is    = "component"
-                :layer = "layer"
+              <g3w-field
+                :is     = "component"
+                :layer  = "layer"
+                _legacy = "g3w-field"
               />
             </div>
           </div>
@@ -426,9 +435,10 @@
         <li
           v-for="component in state.components"
         >
-          <component
+          <g3w-field
+            :is          = "component"
             @showresults = "showResults()"
-            :is         = "component"
+            _legacy      = "g3w-field"
           />
         </li>
       </ul>
@@ -439,7 +449,6 @@
 </template>
 
 <script>
-  import G3WField                 from 'components/G3WField.vue';
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
 
@@ -452,7 +461,6 @@
 
   Object
     .entries({
-      G3WField,
       InfoFormats,
       HeaderFeatureBody,
     })
@@ -473,10 +481,8 @@
 
 
     components: {
-      'tableattributefieldvalue': G3WField, // TODO: check if deprecated
-      'infoformats':              InfoFormats,
-      'header-feature-body':      HeaderFeatureBody,
-      ...G3WField.components
+      'infoformats':         InfoFormats,
+      'header-feature-body': HeaderFeatureBody,
     },
 
     computed: {

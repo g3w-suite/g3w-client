@@ -77,10 +77,11 @@
         ref    = "tablecontent"
       >
         <div v-if="headercomponent" class="relation-header-component">
-          <component
+          <g3w-field
             :is     = "headercomponent"
             :layer  = "downloadLayer.state"
             :config = "downloadLayer.config"
+            _legacy = 'g3w-field'
           />
         </div>
         <table
@@ -180,7 +181,6 @@
 
 <script>
 import { G3W_FID }                  from 'app/constant';
-import G3WField                     from 'components/G3WField.vue';
 import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import GUI                          from 'services/gui';
@@ -194,7 +194,6 @@ let SIDEBARWIDTH;
 Object
     .entries({
       G3W_FID,
-      G3WField,
       DownloadFormats,
       CatalogLayersStoresRegistry,
       GUI,
@@ -223,8 +222,6 @@ export default {
   mixins: [ 
     resizeMixin,
   ],
-
-  components: G3WField.components,
 
   data() {
     return {
