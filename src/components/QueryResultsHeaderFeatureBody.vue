@@ -125,13 +125,6 @@
       /**
        * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
        */
-      isSimple(field) {
-        return G3WField.methods.getFieldService().isSimple(field);
-      },
-
-      /**
-       * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
-       */
       isLink(field) {
         return G3WField.methods.getFieldService().isLink(field);
       },
