@@ -9,83 +9,68 @@
     class = "tabs-wrapper"
   >
 
-    <template
-      v-for  = "root_tab in root_tabs"
-    >
+    <template v-for="tabs in root_tabs">
 
-      <template
-        v-if = "Array.isArray(root_tab)"
+      <ul
+        v-if = "is_multi(tabs)"
+        class="formquerytabs nav nav-tabs"
       >
-        <ul class="formquerytabs nav nav-tabs">
-          <template
-            v-for = "(tab, index) in root_tab"
-          >
-            <li
-              v-if   = "undefined === tab.visible || tab.visible"
-              :class = "{active: index === 0}"
-            >
-              <a
-                data-toggle = "tab"
-                class       = "tab_a"
-                :href       = "`#${ids[index]}`"
-                :class      = "{
-                  'mobile': isMobile(),
-                  'group-title': group,
-                }"
-                :style      = "{
-                  fontSize: isMobile() ? '1.0em' : `${group ? '1.1': '1.2'}em`
-                }"
-              >
-                {{tab.name}} <span v-if="'editing' === contenttype && tab.required" style="padding-left: 3px; font-size: 1.1em;">*</span>
-              </a>
-            </li>
-          </template>
-        </ul>
-        <div
-          class  = "tab-content"
-          :class = "{ editing: 'editing' === contenttype}"
+        <li
+          v-for   = "(tab, index) in tabs"
+          :class  = "{
+            active: index === 0,
+            hidden: is_hidden(tab),
+          }"
         >
-          <template
-            v-for = "(tab, index) in root_tab"
+          <a
+            v-if        = "!is_hidden(tab)"
+            data-toggle = "tab"
+            class       = "tab_a"
+            :href       = "`#${ids[index]}`"
+            :class      = "{
+              'mobile': isMobile(),
+              'group-title': group,
+            }"
+            :style      = "{
+              fontSize: isMobile() ? '1.0em' : `${group ? '1.1': '1.2'}em`
+            }"
           >
-            <div
-              v-if   = "undefined === tab.visible || tab.visible"
-              :id    = "ids[index]"
-              class  = "tab-pane fade"
-              :class = "{'in active': 0 === index}"
-            >
-              <node
-                :showRelationByField = "showRelationByField"
-                :handleRelation      = "handleRelation"
-                :feature             = "feature"
-                :layerid             = "layerid"
-                :contenttype         = "contenttype"
-                :addToValidate       = "addToValidate"
-                :removeToValidate    = "removeToValidate"
-                :changeInput         = "changeInput"
-                :fields              = "fields"
-                :showTitle           = "false"
-                :node                = "tab"
-              />
-            </div>
-          </template>
-        </div>
-      </template>
+            {{tab.name}} <span v-if="is_required(tab)" style="padding-left: 3px; font-size: 1.1em;">*</span>
+          </a>
+        </li>
+      </ul>
 
-      <node
-        v-else
-        :showRelationByField = "showRelationByField"
-        :handleRelation      = "handleRelation"
-        :feature             = "feature"
-        :layerid             = "layerid"
-        :contenttype         = "contenttype"
-        :addToValidate       = "addToValidate"
-        :removeToValidate    = "removeToValidate"
-        :changeInput         = "changeInput"
-        :fields              = "fields"
-        :showTitle           = "false"
-        :node                = "root_tab"
-      />
+      <div
+        :class = "{
+          'tab-content': is_multi(tabs),
+          editing:       is_multi(tabs) && 'editing' === contenttype,
+        }"
+      >
+        <div
+          v-for   = "(tab, index) in getTabs(tabs)"
+          :id     = "is_multi(tabs) ? ids[index] : undefined"
+          :class  = "{
+            'tab-pane fade':  is_multi(tabs),
+            'in active':      is_multi(tabs) && 0 === index,
+            hidden:           is_multi(tabs) && is_hidden(tab),
+          }"
+        >
+          <node
+            v-if                 = "is_multi(tabs) ? !is_hidden(tab) : true"
+            :showRelationByField = "showRelationByField"
+            :handleRelation      = "handleRelation"
+            :feature             = "feature"
+            :layerid             = "layerid"
+            :contenttype         = "contenttype"
+            :addToValidate       = "addToValidate"
+            :removeToValidate    = "removeToValidate"
+            :changeInput         = "changeInput"
+            :fields              = "fields"
+            :showTitle           = "false"
+            :node                = "tab"
+          />
+        </div>
+      </div>
 
     </template>
 
@@ -220,6 +205,34 @@
         return this.fields.find(field => field.name === fieldName);
       },
 
+      /**
+       * @since 3.9.0
+       */
+      getTabs(root_tab) {
+        return this.is_multi(root_tab) ? root_tab : [root_tab];
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+      is_multi(root_tab) {
+        return  Array.isArray(root_tab);
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+      is_hidden(tab) {
+        return (undefined === tab.visible || tab.visible) ? undefined : 'hidden';
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+      is_required(tab) {
+        return 'editing' === this.contenttype && tab.required;
+      },
+
     },
 
     components: {
@@ -315,7 +328,7 @@
     flex: 1;
   }
   .tab-content {
-    //margin-top: 10px;
+    margin-top: 10px;
   }
   .nav-tabs > li > a.mobile {
     padding: 5px 10px;
@@ -323,7 +336,7 @@
   .tab_a {
     padding:5px;
     margin-right: 0 !important;
-    //border: 1px solid #eeeeee;
+    border: 1px solid #eeeeee;
     border-bottom: 0;
     margin-bottom: 3px;
     border-radius: 3px 3px 0 0;

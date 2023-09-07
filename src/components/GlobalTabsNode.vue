@@ -10,73 +10,55 @@
     <h5
       v-if   = "showGroupTile"
       class  = "title group-title"
-      :class = "{'mobile': isMobile()}"
-      :style = "{ fontSize: isMobile() ? '1em' : '1.1em' }"
+      :class = "{ mobile: isMobile() }"
     >{{ node.name }}</h5>
 
     <div
-      v-for  = "row in rows"
+      v-for  = "node in nodes"
       class  = "node-row"
-      :class = "{'mobile': isMobile()}"
+      :class = "{ mobile: isMobile() }"
+      :style="{ padding: node ? '2px' : undefined }"
     >
-      <template v-for="column in columnNumber" style="padding:2px">
 
-        <template v-if="getNode(row, column)">
+      <!-- NODE FIELD -->
+      <component
+        v-if              = "'field' === getNodeType(node)"
+        class             = "tab-node-field"
+        :state            = "getField(node)"
+        @changeinput      = "changeInput"
+        @addinput         = "addToValidate"
+        @removeinput      = "removeToValidate"
+        :changeInput      = "changeInput"
+        :addToValidate    = "addToValidate"
+        :removeToValidate = "removeToValidate"
+        :feature          = "feature"
+        :is               = "_getComponent(node)"
+        :_legacy          = "_getLegacy(node)"
+      />
 
-          <!-- NODE FIELD -->
-          <component
-            v-if              = "getNodeType(getNode(row, column)) === 'field'"
-            style             = "padding: 5px 3px 5px 3px;"
-            :state            = "getField(getNode(row, column))"
-            @changeinput      = "changeInput"
-            @addinput         = "addToValidate"
-            @removeinput      = "removeToValidate"
-            :changeInput      = "changeInput"
-            :addToValidate    = "addToValidate"
-            :removeToValidate = "removeToValidate"
-            :feature          = "feature"
-            :is               = "getComponent(getField(getNode(row, column)))"
-            :_legacy          = "_getLegacy(getField(getNode(row, column)))"
-          />
+      <!-- NODE GROUP -->
+      <tabs
+        v-else-if         = "'group' === getNodeType(node)"
+        class             = "sub-group"
+        :group            = "true"
+        :tabs             = "[node]"
+        v-bind            = "$props"
+      />
 
-          <!-- NODE GROUP / RELATION -->
-          <template v-else>
+      <!-- NODE RELATION -->
+      <div
+        v-else-if         = "showRelationByField"
+        class             = "tab-node-relation"
+        v-disabled        = "is_disabled(node)"
+        @click.stop       = "onRelationClick(node)"
+      >
+        <bar-loader :loading="is_loading(node)" />
+        <div class="tab-node-flex">
+          <div  class="query_relation_field">                      <i :class="getRelationIcon(context)"></i>    </div>
+          <span class="query_relation_field_message g3w-long-text"><span>{{ getRelationName(node.name) }}</span></span>
+        </div>
+      </div>
 
-            <tabs
-              v-if            = "'group' === getNodeType(getNode(row, column))"
-              class           = "sub-group"
-              style           = "width: 100% !important"
-              :group          = "true"
-              :tabs           = "[getNode(row, column)]"
-              v-bind          = "$props"
-            />
-
-            <template v-else>
-              <div
-                v-if          = "showRelationByField"
-                v-disabled    = "isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading"
-                @click.stop   = "handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})"
-                :style        = "{cursor: showRelationByField && 'pointer'}"
-              >
-                <bar-loader :loading="loadingRelation(getNode(row, column)).loading" />
-
-                <div style="display: flex; align-items: center">
-                  <div class="query_relation_field">
-                    <i :class="g3wtemplate.font[`${'query' === context ? 'relation' : 'pencil'}`]"></i>
-                  </div>
-                  <span class="query_relation_field_message g3w-long-text">
-                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name) }}</span>
-                  </span>
-                </div>
-
-              </div>
-            </template>
-
-          </template>
-
-        </template>
-
-      </template>
     </div>
 
   </div>
@@ -120,27 +102,32 @@
 
     data() {
       return {
-        context: this.contenttype,
-        editing_required: false
+        context:          this.contenttype,
+        editing_required: false,
       };
     },
 
     computed: {
 
       filterNodes() {
-        const filterNodes = this.node.nodes && this.node.nodes.filter(node => {
-          if (this.getNodeType(node) === 'group') {
+        return (this.node.nodes || []).filter(node => {
+
+          /** @FIXME add description */
+          if ('group' === this.getNodeType(node)) {
             return true;
-          } else if (!node.nodes && node.name && this.getNodeType(node) != 'group') {
+          }
+
+          /** @FIXME add description */
+          if (!node.nodes && node.name) {
             node.relation = true;
             return true;
-          } else {
-            return !!this.fields.find(field => {
-              return field.name === (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) || node.relation;
-            })
           }
+
+          /** @FIXME add description */
+          return !!this.fields.find(field => (
+            field.name === (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) || node.relation
+          ));
         });
-        return filterNodes || [];
       },
 
       nodesLength() {
@@ -148,23 +135,37 @@
       },
 
       rows() {
-        let rowCount = 1;
+        // rows = 0
         if (this.nodesLength === 0) {
-          rowCount = 0;
-        } else if (this.columnNumber <= this.nodesLength) {
-          rowCount = Math.floor(this.nodesLength / this.columnNumber) + (this.nodesLength % this.columnNumber);
+          return 0;
         }
-        return rowCount;
+        // rows > 0
+        if (this.columnNumber <= this.nodesLength) {
+          return Math.floor(this.nodesLength / this.columnNumber) + (this.nodesLength % this.columnNumber);
+        }
+        // rows = 1
+        return 1;
       },
 
       columnNumber() {
-        const columnCount = parseInt(this.node.columncount) ? parseInt(this.node.columncount) : 1;
+        const columnCount = parseInt(this.node.columncount) || 1;
         return columnCount > this.nodesLength ? this.nodesLength : columnCount;
       },
 
       showGroupTile() {
         return this.showTitle && this.node.showlabel && this.node.groupbox;
       },
+
+      /**
+       * @since 3.9.0
+       */
+       nodes() {
+        const nodes = [];
+        for (let row = 0; row < this.rows; row++) {
+          nodes.push(this.getNodes(row));
+        }
+        return nodes.flat();
+       },
 
     },
 
@@ -179,8 +180,42 @@
       },
 
       isRelationDisabled(relation) {
-        return undefined === this.getRelationName(relation.name) || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
-        //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
+        return (
+          undefined === this.getRelationName(relation.name) ||
+          ('editing' === this.contenttype && /*(*/ this.isRelationChildLayerNotEditable(relation) /*|| relation.nmRelationId )*/)
+        );
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+      is_disabled(node) {
+        return this.isRelationDisabled(node) || this.loadingRelation(node).loading;
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+      is_loading(node) {
+        return this.loadingRelation(node).loading;
+      },
+
+      /**
+       * @since 3.9.0
+       */
+      onRelationClick(node) {
+        return this.handleRelation({
+          layerId: this.layerId,
+          feature: this.feature,
+          relation: node
+        });
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+      getRelationIcon(context) {
+        return g3wtemplate.font['query' === context ? 'relation' : 'pencil'];
       },
 
       getRelationName(relationId) {
@@ -235,27 +270,45 @@
       },
 
       getNodeType(node) {
-        const type = (
-          node.groupbox ||
-          node.nodes
-            ? 'group'
-            : node.relation
-              ? 'relation'
-              : 'field'
-        );
+        let type;
+        
+        if (node.groupbox || node.nodes) type = 'group';
+        else if (node.relation)          type = 'relation';
+        else                             type = 'field';
+
+        /** @FIXME add description */
         if ('field' === type && [undefined, ''].includes(node.alias)) {
           node.alias = node.field_name;
         }
+
         return type;
       },
 
       getComponent(field) {
-        if (field.relation) return;
-        else if (field.query) return field.input.type;
-        else return 'g3w-input';
+        // relation --> no element ?
+        if (field.relation) {
+          return;
+        }
+        // query --> <input>
+        if (field.query) {
+          return field.input.type;
+        }
+        // default --> <g3w-input>
+        return 'g3w-input';
       },
 
-      _getLegacy(field) {
+      /**
+       * @since 3.9.0 
+       */
+      _getComponent(node) {
+        return this.getComponent(this.getField(node));
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+      _getLegacy(node) {
+        const field = this.getField(node);
         return (field.relation || field.query) ? undefined : 'g3w-input' ;
       },
 
@@ -288,5 +341,27 @@
   }
   .row.mobile {
     margin-bottom: 0 !important;
+  }
+  .tab-node > .group-title {
+    font-size: 1.1em;
+  }
+  .tab-node > .group-title.mobile {
+    font-size: 1em;
+  }
+  .node-row > .sub-group {
+    width: 100% !important;
+  }
+  .tab-node-field {
+    padding: 5px 3px 5px 3px;
+  }
+  .tab-node-relation {
+    cursor: pointer;
+  }
+  .tab-node-flex {
+    display: flex;
+    align-items: center;
+  }
+  .query_relation_field_message > span {
+    text-transform: uppercase;
   }
 </style>

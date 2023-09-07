@@ -19,7 +19,7 @@
     @since 3.7
   -->
   <component
-    v-if="__isField"
+    v-if     = "__isField"
     :is      = "type"
     :feature = "feature"
     :state   = "state"
@@ -40,7 +40,7 @@
     :style = "{ fontSize: isMobile() && '0.8em' }"
   >
 
-    <div v-if="state.label" class="col-sm-6  field_label">
+    <div v-if="state.label" class="col-sm-6 field_label">
       <slot name="label">{{state.label}}</slot>
     </div>
 
