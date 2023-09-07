@@ -104,18 +104,22 @@ function TableLayer(config={}, options={}) {
           this.config.editing.constraints = constraints;
           //set default editing capabilities
           this.config.editing.capabilities = capabilities;
-          this.config.editing.style = vector.style;
-          this.config.editing.form = {
-            perc: null
-          };
+
+          //set editing form perc to nut at beginning
+          this.config.editing.form = {perc: null};
           this._setOtherConfigParameters(vector);
-          vector.style && this.setColor(vector.style.color);
+          //get style
+          this.config.editing.style = vector.style;
+          //set color of layer
+          if (vector.style) {
+            this.setColor(vector.style.color);
+          }
           // create an instance of editor
           this._editor = new Editor({
             layer: this
           });
-
           resolve(this);
+          //set ready
           this.setReady(true);
         })
         .fail(err => {
@@ -146,12 +150,18 @@ const proto = TableLayer.prototype;
 proto.syncSelectionFilterFeatures = function(commitItems) {
   try {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
-    layer.isGeoLayer() && commitItems.update.forEach(updateItem =>{
-      const {id, geometry} = updateItem;
-      layer.getOlSelectionFeature(id) && layer.updateOlSelectionFeature({id,geometry});
-    });
-    commitItems.delete.forEach(id =>{
-      layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
+    //if layer has geometry
+    if (layer.isGeoLayer()) {
+      commitItems.update.forEach(({id, geometry}={}) => {
+        if (layer.getOlSelectionFeature(id)) {
+          layer.updateOlSelectionFeature({id, geometry});
+        }
+      });
+    }
+    commitItems.delete.forEach(id => {
+      if (layer.hasSelectionFid(id)) {
+        layer.excludeSelectionFid(id);
+      }
     })
   } catch(err){}
 };
@@ -192,12 +202,24 @@ proto.readFeatures = function() {
   return this._featuresstore.readFeatures();
 };
 
-// return layer for editing
+/**
+ * Get editing layer
+ * @param vectorurl
+ * @param project_type
+ * @returns {Promise<*>}
+ */
 proto.getLayerForEditing = async function({vectorurl, project_type}={}) {
-  vectorurl && this.setVectorUrl(vectorurl);
-  project_type && this.setProjectType(project_type);
+  if (vectorurl) {
+    this.setVectorUrl(vectorurl);
+  }
+  if (project_type) {
+    this.setProjectType(project_type);
+  }
   this.setEditingUrl();
+  //clone this layer
   const editableLayer = this.clone();
+  PIPPO = this._featuresstore;
+  PLUTO = editableLayer._featuresstore
   try {
     return await editableLayer.layerForEditing;
   } catch(err) {

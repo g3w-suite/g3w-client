@@ -9,8 +9,18 @@ const BaseService = require('core/data/service');
 
 function SearchService(){
   base(this);
-  // method to searchfeature features
-  this.features = async function(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count, ordering}){
+  // method to search features
+  this.features = async function(
+    options = {
+      layer,
+      search_endpoint,
+      filter,
+      raw:false,
+      queryUrl,
+      feature_count,
+      formatter:1,
+      ordering,
+    }) {
     const promisesSearch =[];
     const {layer, ...params} = options;
     const {raw=false, filter} = options;
@@ -39,7 +49,7 @@ function SearchService(){
         provider.query({
           ...params,
           layers,
-          ...layers[0].getSearchParams() // nee to get search params
+          ...layers[0].getSearchParams() // need to get search params
         }).then(data =>{
           resolve({
             data
@@ -71,7 +81,12 @@ function SearchService(){
    * @param fid
    * @returns {Promise<{data: [], layer}|{data: [{features: ([*]|[]), query: {type: string}, layer: *}]}>}
    */
-  this.fids = async function({layer, formatter=0, fids=[]}={}){
+  this.fids = async function(
+    {
+      layer,
+      formatter=0,
+      fids=[]
+    }={}){
     const response = {
       data: [
         {
@@ -86,7 +101,9 @@ function SearchService(){
     try {
       const features = layer && await layer.getFeatureByFids({fids, formatter});
       features && features.forEach(feature => response.data[0].features.push(createOlFeatureFromApiResponseFeature(feature)));
-    } catch(err){}
+    } catch(err){
+      //@TODO
+    }
     return response;
   };
 
@@ -97,7 +114,12 @@ function SearchService(){
    * @param formatter: how we want visualize
    * @returns {Promise<void>}
    */
-  this.layersfids = async function({layers=[], fids=[], formatter=0}={}){
+  this.layersfids = async function(
+    {
+      layers=[],
+      fids=[],
+      formatter=0
+    }={}) {
     const promises = [];
     const response = {
       data: [],
@@ -105,7 +127,7 @@ function SearchService(){
         type: 'search'
       }
     };
-    layers.forEach((layer, index) =>{
+    layers.forEach((layer, index) => {
       promises.push(this.fids({
         layer,
         fids: fids[index],
@@ -114,7 +136,10 @@ function SearchService(){
     });
     try {
       const layersresponses = await Promise.all(promises);
-      layersresponses.forEach(layerresponse =>response.data.push(layerresponse.data))
+      layersresponses
+        .forEach(layerresponse => {
+          response.data.push(layerresponse.data)
+        })
     } catch(err){
       console.log(err)
     }

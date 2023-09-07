@@ -11,6 +11,14 @@
 import version from '../version';
 
 /**
+ * @since v3.7.0
+ */
+
+import eventbus from "./eventbus";
+
+export const APP_EVENTBUS = eventbus;
+
+/**
  * Same as "package.json" version
  * 
  * @type {string}
@@ -434,7 +442,6 @@ export const API_BASE_URLS = {
    * @since v3.8
    */
   CRS: '/crs/',
-
 };
 
 /**
@@ -623,6 +630,7 @@ export const SPATIAL_METHODS = ['intersects', 'within'];
 export default {
   APP_VERSION,
   API_BASE_URLS,
+  APP_EVENTBUS,
   DEFAULT_EDITING_CAPABILITIES,
   DOWNLOAD_FORMATS,
   FILTER_OPERATORS,

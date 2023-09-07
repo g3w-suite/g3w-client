@@ -665,10 +665,11 @@ proto.searchFeatures = function(options={}, params={}) {
           suggest={},
           unique,
           queryUrl,
-          ordering
+          ordering,
+          formatter = 1,//@since v3.7.0
         } = options;
         try {
-          resolve(await this.getFilterData({ queryUrl, raw, field, ordering, suggest, unique }));
+          resolve(await this.getFilterData({ queryUrl, raw, field, ordering, suggest, unique, formatter }));
         } catch(err) {
           reject(err);
         }
@@ -692,15 +693,17 @@ proto.getFilterData = async function({
   queryUrl,
   ordering
 }={}) {
-  return await this.getProvider('data').getFilterData({
-    queryUrl,
-    field,
-    raw,
-    ordering,
-    suggest,
-    formatter,
-    unique
-  });
+  return await this
+    .getProvider('data')
+    .getFilterData({
+      queryUrl,
+      field,
+      raw,
+      ordering,
+      suggest,
+      formatter,
+      unique
+    });
 };
 
 /**
