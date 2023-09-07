@@ -3,6 +3,9 @@ import { TIMEOUT, FILTER_EXPRESSION_OPERATORS as EXPRESSION_OPERATORS } from 'ap
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
 
+const URLPattern    = /^(https?:\/\/[^\s]+)/g;
+const PhotoPattern  = /[^\s]+.(png|jpg|jpeg|gif)$/g;
+
 /**
  * Decimal adjustment of a number.
  *
@@ -679,6 +682,40 @@ const utils = {
       return false
     }
   },
+
+  /**
+   * Get Type field from field value
+   * 
+   * @param field object containing the value of the field
+   * 
+   * @returns {string}
+   * 
+   * @since 3.9.0
+   */
+  getFieldType(field) {
+
+    const is_nested = (
+      field.value &&
+      'Object' === utils.toRawType(field.value) &&
+      !field.value.coordinates &&
+      !field.value.vue
+    );
+
+    const value = is_nested ? field.value.value : field.value;
+
+    const is_geo      = value && typeof 'object' == value && value.coordinates;
+    const is_vue      = 'vue' === field.type || (value && typeof 'object' == value && !value.coordinates && value.vue);
+    const is_photo    = value && ((Array.isArray(value) && value.length && value[0].photo) || (value.toString().toLowerCase().match(PhotoPattern)));
+    const is_link     = value && value.toString().match(URLPattern);
+
+    if (is_vue)   return 'vue_field';
+    if (is_geo)   return 'geo_field';
+    if (is_photo) return 'photo_field';
+    if (is_link)  return 'link_field';
+
+    return 'simple_field';
+
+  }
 
 };
 

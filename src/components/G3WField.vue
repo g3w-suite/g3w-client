@@ -96,7 +96,7 @@ import geo_field    from 'components/FieldGeo.vue';
 import media_field  from 'components/FieldMedia.vue';
 import vue_field    from 'components/FieldVue.vue';
 
-const { toRawType } = require('core/utils/utils');
+const { getFieldType } = require('core/utils/utils');
 
 Object
   .entries({
@@ -107,46 +107,12 @@ Object
     geo_field,
     media_field,
     vue_field,
-    toRawType,
+    getFieldType,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
-const URLPattern    = /^(https?:\/\/[^\s]+)/g;
-const PhotoPattern  = /[^\s]+.(png|jpg|jpeg|gif)$/g;
 
 /******************************************************* */
-
-/**
- * Get Type field from field value
- * 
- * @param field object containing the value of the field
- * 
- * @returns {string}
- */
-function _getType(field) {
-
-  const is_nested = (
-    field.value &&
-    'Object' === toRawType(field.value) &&
-    !field.value.coordinates &&
-    !field.value.vue
-  );
-
-  const value = is_nested ? field.value.value : field.value;
-
-  const is_geo      = value && typeof 'object' == value && value.coordinates;
-  const is_vue      = 'vue' === field.type || (value && typeof 'object' == value && !value.coordinates && value.vue);
-  const is_photo    = value && ((Array.isArray(value) && value.length && value[0].photo) || (value.toString().toLowerCase().match(PhotoPattern)));
-  const is_link     = value && value.toString().match(URLPattern);
-
-  if (is_vue)   return 'vue_field';
-  if (is_geo)   return 'geo_field';
-  if (is_photo) return 'photo_field';
-  if (is_link)  return 'link_field';
-
-  return 'simple_field';
-
-}
 
 /**
  * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
@@ -246,7 +212,7 @@ const vm = {
    * 
    * @since 3.9.0
    */
-   components: {
+  components: {
     text_field,
     link_field,
     image_field,
@@ -314,46 +280,46 @@ const vm = {
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
-    getType: _getType,
+    getType: getFieldType,
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
-    getFieldType: _getType,
+    getFieldType: getFieldType,
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isSimple(field) {
-      return 'simple_field' === _getType(field);
+      return 'simple_field' === getFieldType(field);
     },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isLink(field) {
-      return 'link_field' === _getType(field);
+      return 'link_field' === getFieldType(field);
     },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isImage(field) {
-      return 'image_field' === _getType(field);
+      return 'image_field' === getFieldType(field);
     },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isPhoto(field) {
-      return 'photo_field' === _getType(field);
+      return 'photo_field' === getFieldType(field);
     }, 
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     isVue(field) {
-      return 'vue_field' === _getType(field);
+      return 'vue_field' === getFieldType(field);
     },
 
     /**

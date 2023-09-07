@@ -14,9 +14,8 @@
     >
 
     <div
-      class = "header skin-background-color lighten"
+      class = "header skin-background-color lighten relation-header"
       ref   = "relation-header"
-      style = "padding: 3px; display: flex; justify-content: space-between; align-items: center; width: 100%;"
     >
       <div
         style  = "border-radius: 3px;"
@@ -31,12 +30,11 @@
           :class                   = "g3wtemplate.getFontClass('exit')"
           @click.stop              = "back"
         ></span>
-        <span style="font-weight: bold" class="relation-tile skin-color"> {{ relation.name }}</span>
+        <span class="relation-tile skin-color"> {{ relation.name }}</span>
       </div>
       <div
         v-if="table.rows.length"
         class="relations-table-tools"
-        style="font-size: 1.1em; margin-bottom: 3px"
       >
         <span
           v-if                    = "downloadButton"
@@ -66,7 +64,7 @@
 
     <div
       v-if  = "table.rows.length"
-      style = "display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 3px; height: 95%;"
+      class = "relation-wrapper"
       ref   = "relationwrapper"
     >
       <div
@@ -78,19 +76,17 @@
         }"
         ref    = "tablecontent"
       >
-        <template v-if="headercomponent">
-          <div style="width: 100%; display: flex; margin-left: auto; margin-bottom: 5px; margin-right: 4px;">
-            <component
-              :is     = "headercomponent"
-              :layer  = "downloadLayer.state"
-              :config = "downloadLayer.config"
-            />
-          </div>
-        </template>
+        <div v-if="headercomponent" class="relation-header-component">
+          <component
+            :is     = "headercomponent"
+            :layer  = "downloadLayer.state"
+            :config = "downloadLayer.config"
+          />
+        </div>
         <table
           ref   = "relationtable"
           class = "hover relationtable table table-striped row-border"
-          style = "width:100%"
+          style = ""
         >
           <thead>
             <tr style="height: 0! important">
@@ -132,21 +128,21 @@
                   :class                   = "g3wtemplate.getFontClass('pencil')"
                 ></span>
               </td>
-              <template v-if="table.formStructure && table.rowFormStructure === row">
-                <td :colspan="table.columns.length" class="row-wrap-tabs">
-                  <tabs
-                    :layerid = "table.layerId"
-                    :feature = "table.features[index]"
-                    :fields  = "fields"
-                    :tabs    = "table.formStructure"
-                  />
-                </td>
-              </template>
-              <template v-else>
-                <td v-for="value in row">
-                  <g3w-field :state="{value:value}" _legacy="g3w-field" />
-                </td>
-              </template>
+              <td
+                v-if     = "table.formStructure && table.rowFormStructure === row"
+                :colspan = "table.columns.length"
+                class    = "row-wrap-tabs"
+              >
+                <tabs
+                  :layerid = "table.layerId"
+                  :feature = "table.features[index]"
+                  :fields  = "fields"
+                  :tabs    = "table.formStructure"
+                />
+              </td>
+              <td v-else v-for="value in row">
+                <g3w-field :state="{value:value}" _legacy="g3w-field" />
+              </td>
             </tr>
           </tbody>
         </table>
@@ -398,7 +394,7 @@ export default {
       return this.table.fields.map((field, index) => {
         field.value = row[index];
         field.query = true;
-        field.input = { type: `${G3WField.methods.getFieldService().getType(field)}` };
+        field.input = { type: getFieldType(field) };
         return field;
       });
     },
@@ -411,14 +407,6 @@ export default {
 
     back() {
       this.$parent.setRelationsList();
-    },
-
-    fieldIs(type, value) {
-      return type === G3WField.methods.getFieldService().getType(field);
-    },
-
-    is(type, value) {
-      return this.fieldIs(type, value);
     },
 
     moveFnc(evt) {
@@ -475,3 +463,37 @@ export default {
 
 };
 </script>
+
+<style scoped>
+.relation-header {
+  padding: 3px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.relation-tile {
+  font-weight: bold;
+}
+.relations-table-tools {
+  font-size: 1.1em;
+  margin-bottom: 3px;
+}
+.relation-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  margin-top: 3px;
+  height: 95%;
+}
+.relation-header-component {
+  width: 100%;
+  display: flex;
+  margin-left: auto;
+  margin-bottom: 5px;
+  margin-right: 4px;
+}
+.relationtable {
+  width: 100%;
+}
+</style>

@@ -41,12 +41,13 @@
 
 <script>
   import Actions  from 'components/QueryResultsActions.vue';
-  import G3WField from 'components/G3WField.vue';
+
+  const { getFieldType } = require('core/utils/utils');
 
   Object
     .entries({
       Actions,
-      G3WField,
+      getFieldType,
     })
     .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
   
@@ -100,7 +101,6 @@
 
     components: {
       actions: Actions,
-      ...G3WField.components,
     },
 
     methods: {
@@ -116,17 +116,11 @@
           fieldName: attr.name,
         });
 
-        const service = G3WField.methods.getFieldService();
-
-        if (service.isLink(field)) {
-          return this.g3wtemplate.getFontClass('link');
-        }
-
-        if (service.isPhoto(field) || service.isImage(field)) {
-          return this.g3wtemplate.getFontClass('image');
-        }
-
-        return '';
+        return this.g3wtemplate.getFontClass(({
+          'link_field':  'link',
+          'image_field': 'image',
+          'photo_field': 'image',
+        })[getFieldType(field)]);
 
       }
 

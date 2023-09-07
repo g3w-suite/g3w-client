@@ -443,7 +443,7 @@
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
 
-  const { throttle } = require('core/utils/utils');
+  const { throttle, getFieldType } = require('core/utils/utils');
 
   const maxSubsetLength             = 3;
   const headerExpandActionCellWidth = 10;
@@ -579,9 +579,7 @@
             query: true,
             value: feature.attributes[field.name],
           };
-          _field.input = {
-            type: `${G3WField.methods.getFieldService().getType(_field)}`
-          };
+          _field.input = { type: getFieldType(_field) };
           fields.push(_field);
         }
         return fields;
