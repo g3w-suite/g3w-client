@@ -36,6 +36,7 @@ function Editor(options={}) {
     bbox: null
   };
 
+  //set true if all feature are already add. Case table layer
   this._allfeatures = false; //apply to all features of source
   // referred layer
   this._layer = options.layer;
@@ -135,13 +136,16 @@ proto._getFeatures = function(options={}) {
   //check if can do a request
   if (!this._doGetFeaturesRequest(options)) d.resolve();
   else {
+    //get layer features
     this._layer.getFeatures(options)
       .then(promise => {
-        promise.then(features => {
-          this._addFeaturesFromServer(features);
-          this._allfeatures = !options.filter;
-          return d.resolve(features);
-        }).fail(err => d.reject(err))
+        promise
+          .then(features => {
+            this._addFeaturesFromServer(features);
+            this._allfeatures = !options.filter;
+            return d.resolve(features);
+          })
+          .fail(err => d.reject(err))
       })
       .fail(err => d.reject(err));
   }
@@ -263,7 +267,9 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
                 value,
               }
             })
+            
           })
+
       })
 
     });
