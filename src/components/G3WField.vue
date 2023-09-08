@@ -2,6 +2,11 @@
   @file
   @since 3.9.0
 
+  @version 2.0 ADD SOURCE FROM: src/mixins/media.js@3.8
+  @version 2.0 ADD SOURCE FROM: src/components/FieldLink.vue@3.8
+  @version 2.0 ADD SOURCE FROM: src/components/FieldMedia.vue@3.8
+  @version 2.0 ADD SOURCE FROM: src/components/FieldText.vue@3.8
+  @version 2.0 ADD SOURCE FROM: src/components/FieldVue.vue@3.8
   @version 2.0 ADD SOURCE FROM: src/mixins/fields.js@3.8
   @version 2.0 ADD SOURCE FROM: src/components/Field.vue@3.8
   @version 1.0 ORIGINAL SOURCE: src/components/FieldG3W.vue@3.8
@@ -12,16 +17,36 @@
   <!--
     Legacy QueryResultsTableAttributeFieldValue component
 
+    @example <g3w-field _legacy="g3w-layer-attrs" />
+
+    ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
+
+    @since 3.9.0
+  -->
+  <table v-if="__isLayerAttrs" class="feature_attributes">
+    <tr v-for="attr in layer.attributes.filter(attr => attr.show)">
+      <td class="attr-label">{{ attr.label }}</td>
+      <td class="attr-value" :attribute="attr.name">
+        <g3w-field
+          v-bind  = "$attrs"
+          :field  = "$attrs.getLayerField({ layer, feature, fieldName: attr.name })"
+          _legacy = "g3w-query"
+        />
+      </td>
+    </tr>
+  </table>
+
+  <!--
+    Legacy QueryResultsTableAttributeFieldValue component
+
     @example <g3w-field _legacy="g3w-query" />
 
     ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
 
     @since 3.9.0
   -->
-  <g3w-vue   v-if     ="__isQuery && isVue(field)"                        :feature="feature" :state="field"/>
-  <span      v-else-if="__isQuery && isSimple(field)"                     v-html="field.value"></span>
-  <g3w-image v-else-if="__isQuery && (isPhoto(field) || isImage(field))"  :value="field.value"/>
-  <g3w-link  v-else-if="__isQuery && isLink(field)"                       :state="{ value: field.value }"/>
+  <span      v-else-if = "__isQuery && isSimple(field)"                     v-html="field.value"></span>
+  <g3w-image v-else-if = "__isQuery && (isPhoto(field) || isImage(field))"  :value="field.value"/>
 
   <!--
     Legacy FieldG3W component
@@ -37,23 +62,6 @@
     :is       = "type"
     v-bind    = "$attrs"
   />
-
-  <!--
-    Like a "fieldsMixin" wrapper just for: `this.$parent`
-
-    @example
-
-      <g3w-field _legacy="mixin">
-        <g3w-field id="field-1" :state="state" />
-        <g3w-field id="field-2" :state="state" />
-        ...
-      </g3w-field>
-
-    @since 3.9.0
-  -->
-  <div v-else-if="__isMixin">
-    <slot></slot>
-  </div>
 
   <!--
     Base Field component
@@ -75,8 +83,82 @@
     </div>
 
     <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
+
       <slot name="field">
-        <span style="word-wrap: break-word;" v-html="state.value"></span>
+
+        <!--
+          Legacy FieldVue component
+
+          @example <g3w-field _legacy="g3w-vuefield" />
+
+          ORIGINAL SOURCE: src/components/FieldVue.vue@3.8
+
+          @since 3.9.0
+        -->
+        <div v-if="__isVueField || (__isQuery && isVue(field))">
+          <component
+            :feature = "feature"
+            :value   = "undefined === field.value       ? null        : field.value"
+            :is      = "(undefined === field.vueoptions ? {}          : field.vueoptions.component) || {}"
+            v-html   = "__isVueField                    ? undefined   : field.value"
+          />
+        </div>
+
+        <!--
+          Legacy FieldLink component
+
+          @example <g3w-field _legacy="g3w-linkfield" />
+
+          ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
+
+          @since 3.9.0
+        -->
+        <button
+          v-else-if = "__isLinkField || (__isQuery && isLink(field))"
+          class     = "btn skin-button field_link"
+          v-t       = "'info.link_button'"
+          @click    = "() => window.open(
+            (__isLinkField ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
+            '_blank'
+          )"
+        ></button>
+
+        <!--
+          Legacy FieldMedia component
+
+          @example <g3w-field _legacy="g3w-mediafield" />
+
+          ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
+
+          @since 3.9.0
+        -->
+        <div v-else-if="__isMediaField">
+          <div v-if="state.value" class="preview">
+            <a :href="state.value" target="_blank">
+              <div class="previewtype" :class="getMediaType(state.mime_type)">
+                <i class="fa-2x" :class="g3wtemplate.font[getMediaType(state.mime_type)]"></i>
+              </div>
+            </a>
+            <div class="filename">{{ state.value ? state.value.split('/').pop() : state.value }}</div>
+            <slot></slot>
+          </div>
+        </div>
+
+        <!--
+          Base FieldText component
+
+          @example <g3w-field :state />
+
+          ORIGINAL SOURCE: src/components/FieldText.vue@3.8
+
+          @since 3.9.0
+        -->
+        <span
+          v-else
+          style  = "word-wrap: break-word;"
+          v-html = "state.value"
+        ></span>
+
       </slot>
     </div>
 
@@ -87,25 +169,18 @@
 <script>
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 
-import text_field   from 'components/FieldText.vue';
-import link_field   from 'components/FieldLink.vue';
 import image_field  from 'components/FieldImage.vue'
 import geo_field    from 'components/FieldGeo.vue';
-import media_field  from 'components/FieldMedia.vue';
-import vue_field    from 'components/FieldVue.vue';
 
-const { getFieldType } = require('core/utils/utils');
+const { getFieldType, getMediaFieldType } = require('core/utils/utils');
 
 Object
   .entries({
     CatalogLayersStoresRegistry,
-    text_field,
-    link_field,
     image_field,
     geo_field,
-    media_field,
-    vue_field,
     getFieldType,
+    getMediaFieldType,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
@@ -163,6 +238,13 @@ const fieldsservice = {
 const vm = {
 
   name: "g3w-field",
+
+  data() {
+    return {
+      /** @since 3.9.0 */
+      window: window,
+    }
+  },
 
   props: {
 
@@ -232,12 +314,8 @@ const vm = {
    * @since 3.9.0
    */
   components: {
-    text_field,
-    link_field,
     image_field,
     geo_field,
-    media_field,
-    vue_field,
   },
 
   computed: {
@@ -265,20 +343,47 @@ const vm = {
     },
 
     /**
-     * Whether this is a fieldsMixin wrapper
+     * Whether this is a Legacy QueryResultsTableAttributeFieldValue component
      * 
-     * @example
-     * 
-     *  <g3w-field _legacy="mixin">
-     *    <g3w-field id="input-1" :state="state" />
-     *    <g3w-field id="input-2" :state="state" />
-     *    ...
-     *  </g3w-field>
+     * @example <g3w-field _legacy="g3w-table" />
      * 
      * @since 3.9.0
      */
-     __isMixin() {
-      return 'mixin' === this._legacy;
+     __isLayerAttrs() {
+      return 'g3w-layer-attrs' === this._legacy;
+    },
+
+    /**
+     * Whether this is a Legacy FieldVue component
+     * 
+     * @example <g3w-field _legacy="g3w-vuefield" />
+     * 
+     * @since 3.9.0
+     */
+     __isVueField() {
+      return 'g3w-vuefield' === this._legacy;
+    },
+
+    /**
+     * Whether this is a Legacy FieldLink component
+     * 
+     * @example <g3w-field _legacy="g3w-linkfield" />
+     * 
+     * @since 3.9.0
+     */
+     __isLinkField() {
+      return 'g3w-linkfield' === this._legacy;
+    },
+
+    /**
+     * Whether this is a Legacy FieldMedia component
+     * 
+     * @example <g3w-field _legacy="g3w-mediafield" />
+     * 
+     * @since 3.9.0
+     */
+     __isMediaField() {
+      return 'g3w-mediafield' === this._legacy;
     },
 
   },
@@ -300,6 +405,13 @@ const vm = {
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
      */
     getType: getFieldType,
+
+    /**
+     * @since 3.9.0
+     */
+    getMediaType(mime_type) {
+      return getMediaFieldType(mime_type).type;
+    },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
@@ -332,7 +444,15 @@ const vm = {
      */
     isPhoto(field) {
       return 'photo_field' === getFieldType(field);
-    }, 
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/media.js@3.8 
+     */
+    isMedia(value) {
+      if (value && typeof  value === 'object' && value.constructor === Object) return !!value.mime_type;
+      return false;
+    },
 
     /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
@@ -354,6 +474,7 @@ const vm = {
    * ORIGINAL SOURCE: src/components/FieldG3W.vue@3.8
    */
   created() {
+    console.log(this);
     if (this.is) {
       this.type = this.is;
     } else if (this.__isField && !this.type) {
@@ -366,10 +487,59 @@ const vm = {
 /**
  * BACKCOMP
  */
+vm.components['text_field']   = vm;
+vm.components['link_field']   = {
+  functional: true,
+  render(h, { data, children }) {
+    return h(
+      vm,
+      {
+        ...data,
+        props: {
+          ...data.props,
+          _legacy: "g3w-linkfield",
+        },
+      },
+      children
+    );
+  },
+};
+vm.components['media_field']   = {
+  functional: true,
+  render(h, { data, children }) {
+    return h(
+      vm,
+      {
+        ...data,
+        props: {
+          ...data.props,
+          _legacy: "g3w-mediafield",
+        },
+      },
+      children
+    );
+  },
+};
+vm.components['vue_field']    = {
+  functional: true,
+  render(h, { data, children }) {
+    return h(
+      vm,
+      {
+        ...data,
+        props: {
+          ...data.props,
+          _legacy: "g3w-vuefield",
+        },
+      },
+      children
+    );
+  },
+};
 vm.components['simple_field'] = vm.components['text_field'];
 vm.components['photo_field']  = vm.components['image_field'];
-vm.components['g3w_link']     = vm.components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue
-vm.components['g3w_vue']      = vm.components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue
+vm.components['g3w_link']     = vm.components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
+vm.components['g3w_vue']      = vm.components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
 
 fieldsservice.getType         = vm.methods.getType;
 fieldsservice.isVue           = vm.methods.isVue;
@@ -399,5 +569,15 @@ export default vm;
 
   .field_value {
     padding-left: 0 !important;
+  }
+
+  .field_text_table {
+    background-color: transparent !important;
+  }
+  .field_text_table .field_label {
+    font-weight: bold;
+  }
+  .field_link {
+    max-width: 100%;
   }
 </style>

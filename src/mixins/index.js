@@ -4,7 +4,6 @@
  */
 
 import autocompleteMixin from 'mixins/autocomplete';
-import mediaMixin        from 'mixins/media';
 import geoMixin          from 'mixins/geo';
 import resizeMixin       from 'mixins/resize';
 import selectMixin       from 'mixins/select';
@@ -15,7 +14,6 @@ import metadataMixin     from 'mixins/metadata';
 
 const mixins = {
   autocompleteMixin,
-  mediaMixin,
   geoMixin,
   resizeMixin,
   selectMixin,
@@ -24,7 +22,6 @@ const mixins = {
   widgetMixins,
   metadataMixin,
 };
-export {mediaMixin};
 export {geoMixin};
 export {resizeMixin};
 export {selectMixin};

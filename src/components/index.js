@@ -7,13 +7,8 @@ import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
 import CatalogTristateTree from './CatalogTristateTree.vue';
-import FieldGallery from './FieldGallery.vue';
 import FieldGeo from './FieldGeo.vue';
 import FieldImage from './FieldImage.vue';
-import FieldLink from './FieldLink.vue';
-import FieldMedia from './FieldMedia.vue';
-import FieldText from './FieldText.vue';
-import FieldVue from './FieldVue.vue';
 import Form from './Form.vue';
 import FormAddon from './FormAddon.vue';
 import FormAddons from './FormAddons.vue';
@@ -123,14 +118,8 @@ export {
   CatalogTristateTree,
   /** @since 3.8.0 */
   ChangeMapMenu,
-  Field,
-  FieldGallery,
   FieldGeo,
   FieldImage,
-  FieldLink,
-  FieldMedia,
-  FieldText,
-  FieldVue,
   Form,
   FormAddon,
   FormAddons,

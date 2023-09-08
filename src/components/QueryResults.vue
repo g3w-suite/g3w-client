@@ -370,31 +370,12 @@
                       <td
                         :colspan="getColSpan(layer)"
                       >
-
-                        <table
-                          class="feature_attributes"
-                        >
-                          <tr
-                            v-for="attribute in layer.attributes.filter(attribute => attribute.show)"
-                          >
-                            <td
-                              class="attr-label"
-                            >
-                              {{ attribute.label }}
-                            </td>
-                            <td
-                              class      = "attr-value"
-                              :attribute = "attribute.name"
-                            >
-                              <g3w-field
-                                :feature = "feature"
-                                :field   = "getLayerField({ layer, feature, fieldName: attribute.name })"
-                                _legacy  = "g3w-query"
-                              />
-                            </td>
-                          </tr>
-                        </table>
-
+                      <g3w-field
+                        :layer         = "layer"
+                        :feature       = "feature"
+                        :getLayerField = "getLayerField"
+                        _legacy        = "g3w-layer-attrs"
+                      />
                       </td>
                     </tr>
                     <tr

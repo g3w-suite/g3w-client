@@ -310,7 +310,7 @@ g3wsdk.gui.vue.Inputs.G3WInput = {
         ...data,
         props: {
           ...data.props,
-          _legacy: { type: String, default: "g3w-input" },
+          _legacy: 'g3w-input',
         },
       },
       children
@@ -333,7 +333,7 @@ g3wsdk.gui.vue.Inputs.G3wFormInputs = {
         ...data,
         props: {
           ...data.props,
-          _legacy: { type: String, default: "g3w-form" },
+          _legacy: 'g3w-form',
         },
       },
       children
@@ -405,6 +405,23 @@ g3wsdk.gui.vue.Mixins.fieldsMixin = {
     sanitizeFieldValue: deprecate(G3WField.methods.sanitizeFieldValue, '[G3W-SDK] fieldsMixin::sanitizeFieldValue is deprecated'),
   },
 
+}
+
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/fields.vue@3.8
+ */
+g3wsdk.gui.vue.Mixins.mediaMixin = {
+  computed: {
+    filename: deprecate(function() {
+      return this.value ? this.value.split('/').pop() : this.value; }, '[G3W-SDK] mediaMixin::filename is deprecated'),
+  },
+  methods: {
+    isMedia:      deprecate(G3WField.methods.isMedia,                  '[G3W-SDK] mediaMixin::isMedia is deprecated'),
+    getMediaType: deprecate(G3WField.methods.getMediaType,             '[G3W-SDK] mediaMixin::getMediaType is deprecated'),
+  },
 }
 
 module.exports = g3wsdk;

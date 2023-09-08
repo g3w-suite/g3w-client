@@ -31,11 +31,11 @@
 
         <bar-loader :loading="loading" />
 
-        <g3w-media :state="data">
+        <g3w-field :state="data" _legacy="g3w-mediafield">
           <div class="clearmedia" @click="clearMedia()">
             <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
           </div>
-        </g3w-media>
+        </g3w-field>
 
       </div>
     </template>
@@ -44,12 +44,9 @@
 
 <script>
 import GUI               from 'services/gui';
-import MediaField        from 'components/FieldMedia.vue';
 
 const { getUniqueDomId } = require('core/utils/utils');
 const { t }              = require('core/i18n/i18n.service');
-
-console.assert(undefined !== MediaField, 'MediaField is undefined');
 
 export default {
 
@@ -61,10 +58,6 @@ export default {
       type: Object,
       required: true,
     },
-  },
-
-  components: {
-    'g3w-media': MediaField
   },
 
   data() {

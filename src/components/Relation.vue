@@ -142,7 +142,7 @@
                 />
               </td>
               <td v-else v-for="value in row">
-                <g3w-field :state="{value:value}" _legacy="g3w-field" />
+                <g3w-field :state="{value: value}" _legacy="g3w-field" />
               </td>
             </tr>
           </tbody>
