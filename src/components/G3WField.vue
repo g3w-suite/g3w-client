@@ -18,11 +18,10 @@
 
     @since 3.9.0
   -->
-  <g3w-vue   v-if     ="__isQuery && isVue(field)"    :feature="feature" :state="field"/>
-  <span      v-else-if="__isQuery && isSimple(field)" v-html="field.value"></span>
-  <g3w-image v-else-if="__isQuery && isPhoto(field)"  :value="field.value"/>
-  <g3w-image v-else-if="__isQuery && isImage(field)"  :value="field.value"/>
-  <g3w-link  v-else-if="__isQuery && isLink(field)"   :state="{value: field.value}"/>
+  <g3w-vue   v-if     ="__isQuery && isVue(field)"                        :feature="feature" :state="field"/>
+  <span      v-else-if="__isQuery && isSimple(field)"                     v-html="field.value"></span>
+  <g3w-image v-else-if="__isQuery && (isPhoto(field) || isImage(field))"  :value="field.value"/>
+  <g3w-link  v-else-if="__isQuery && isLink(field)"                       :state="{ value: field.value }"/>
 
   <!--
     Legacy FieldG3W component

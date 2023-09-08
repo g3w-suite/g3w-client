@@ -27,17 +27,12 @@
   <form v-if="__isForm" class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
-        <template v-for="field in state.fields">
-          <g3w-input
-            _legacy           = "g3w-input"
-            :state            = "field"
-            :addToValidate    = "addToValidate"
-            :changeInput      = "changeInput"
-            :removeToValidate = "removeToValidate"
-            @addToValidate    = "addToValidate"
-            @changeInput      = "changeInput"
-          />
-        </template>
+        <g3w-input
+          v-for   = "field in state.fields"
+          v-bind  = "$props"
+          :state  = "field"
+          _legacy = "g3w-input"
+        />
       </div>
       <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">
         <span class="hide-cursor-caret-color">*</span>
@@ -64,16 +59,11 @@
       <h4 style="font-weight: bold">{{ state.label}}</h4>
       <div> {{ state.description }} </div>
       <g3w-input
-        v-for="field in state.fields"
-        _legacy           = "g3w-input"
-        :key              = "field.name"
-        :state            = "field"
-        @changeinput      = "changeInput"
-        :changeInput      = "changeInput"
-        @addinput         = "addToValidate"
-        :addToValidate    = "addToValidate"
-        @removeinput      = "removeToValidate"
-        :removeToValidate = "removeToValidate"
+        v-for   ="field in state.fields"
+        v-bind  = "$props"
+        :state  = "field"
+        :key    = "field.name"
+        _legacy = "g3w-input"
       />
     </div>
 
@@ -82,14 +72,9 @@
   <div v-else-if="state.visible && __isInput">
     <div>
       <component
-        @changeinput      = "changeInput"
-        :changeInput      = "changeInput"
-        @addinput         = "addToValidate"
-        :addToValidate    = "addToValidate"
-        @removeinput      = "removeToValidate"
-        :removeToValidate = "removeToValidate"
-        :state            = "state"
-        :is               = "type"
+        v-bind = "$props"
+        :state = "state"
+        :is    = "type"
       />
       <span class="divider"></span>
     </div>

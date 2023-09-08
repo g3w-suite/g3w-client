@@ -686,13 +686,15 @@ const utils = {
   /**
    * Get Type field from field value
    * 
+   * ORIGINAL SOURCE: src/mixins/fields.js@3.8
+   * 
    * @param field object containing the value of the field
    * 
-   * @returns {string}
+   * @returns { 'vue_field' | 'geo_field' | 'photo_field' | 'link_field' | 'simple_field' }
    * 
    * @since 3.9.0
    */
-  getFieldType(field) {
+  getFieldType(field = {}) {
 
     const is_nested = (
       field.value &&
@@ -715,7 +717,7 @@ const utils = {
 
     return 'simple_field';
 
-  }
+  },
 
 };
 
