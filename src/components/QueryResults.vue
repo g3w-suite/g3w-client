@@ -11,8 +11,7 @@
 
     <div
       v-if  = "info.message"
-      class = "skin-color"
-      style = "font-weight: bold; margin-bottom: 3px; font-size: 1.1em;"
+      class = "query-results-info-message skin-color"
     >
       <span
         v-if   = "info.icon"
@@ -25,14 +24,13 @@
     <div class="queryresults-container">
 
       <div v-if="!state.layers.length && state.changed" class="query-results-not-found">
-          <h4 class="skin-color" style="font-weight: bold; text-align: center" v-t="'info.no_results'"></h4>
+          <h4 class="skin-color" v-t="'info.no_results'"></h4>
       </div>
 
       <ul
         v-if  = "state.layers.length && hasLayers"
         class = "queryresults"
         id    = "queryresults"
-        style = "position: relative"
       >
         <li
           v-for  = "layer in state.layers"
@@ -147,21 +145,20 @@
             <div
               v-if   = "state.layeractiontool[layer.id].component"
               class  = "g3w-layer-action-tools with-border"
-              style  = "padding: 5px"
               :class = "{ 'mobile': isMobile() }"
             >
               <g3w-field
-                :is     = "state.layeractiontool[layer.id].component"
-                :layer  = "layer"
-                :config = "state.layeractiontool[layer.id].config"
-                _legacy = "g3w-field"
+                :layer   = "layer"
+                :config  = "state.layeractiontool[layer.id].config"
+                :_type   = "state.layeractiontool[layer.id].component"
+                _legacy  = "g3w-field"
               />
             </div>
 
             <g3w-field
-              v-for   = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
-              :is     = "component"
+              v-for   = "({ component }) in getLayerCustomComponents(layer.id, 'layer', 'before')"
               :layer  = "layer"
+              :_type  = "component"
               _legacy = "g3w-field"
             />
 
@@ -170,6 +167,7 @@
               :class="{'mobile': isMobile()}"
             >
 
+              <!-- OUTPUT as TEXT/PLAIN -->
               <div
                 v-if   = "layer.rawdata"
                 class  = "queryresults-text-html"
@@ -177,126 +175,20 @@
                 v-html = "layer.rawdata"
               ></div>
 
-              <table
-                v-else-if = "hasFormStructure(layer)"
-                class     = "table"
-                :class    = "{ 'mobile': isMobile() }"
-              >
-                <thead>
-                  <tr>
-                    <th
-                      v-if="state.layersactions[layer.id].length"
-                      :style="{
-                        width: `${state.layersactions[layer.id].length * 26}px`,
-                        maxWidth:`${state.layersactions[layer.id].length * 26}px`,
-                      }"
-                    ></th>
-                    <th
-                      v-for="(attribute, index) in attributesSubset(layer)"
-                      class="centered"
-                    >
-                      {{attribute.label}}
-                    </th>
-                    <th
-                      v-if="!hasLayerOneFeature(layer)"
-                      class="collapsed"
-                    ></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <template
-                    v-if="feature.show"
-                    v-for="(feature, index) in layer.features"
-                  >
-                    <header-feature-body
-                      :actions                 = "state.layersactions[layer.id]"
-                      :layer                   = "layer"
-                      :feature                 = "feature"
-                      :index                   = "index"
-                      :onelayerresult          = "onelayerresult"
-                      :trigger                 = "trigger"
-                      :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                      :hasLayerOneFeature      = "hasLayerOneFeature"
-                      :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                      :attributesSubset        = "attributesSubset"
-                      :getLayerField           = "getLayerField"
-                    />
-                    <tr class="g3w-feature-result-action-tools">
-                      <td
-                        v-if     = "state.currentactiontools[layer.id][index]"
-                        :colspan = "getColSpan(layer)"
-                      >
-                        <g3w-field
-                          :is           = "state.currentactiontools[layer.id][index]"
-                          :colspan      = "getColSpan(layer)"
-                          :layer        = "layer"
-                          :feature      = "feature"
-                          :featureIndex = "index"
-                          :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
-                          _legacy       = "g3w-field"
-                        />
-                      </td>
-                    </tr>
-                    <tr
-                      v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')"
-                    >
-                      <td
-                        :colspan="getColSpan(layer)"
-                      >
-                        <g3w-field
-                          :is      = "component"
-                          :layer   = "layer"
-                          :feature = "feature"
-                          _legacy  = "g3w-field"
-                        />
-                      </td>
-                    </tr>
-                    <tr
-                      v-show = "!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
-                      :id    = "`${layer.id}_${index}`"
-                      class  = "featurebox-body"
-                    >
-                      <td
-                        :colspan="getColSpan(layer)"
-                      >
-                        <tabs
-                          :fields   = "getQueryFields(layer, feature)"
-                          :layerid  = "layer.id"
-                          :feature  = "feature"
-                          :tabs     = "getLayerFormStructure(layer)"
-                        />
-                      </td>
-                    </tr>
-                    <tr
-                      v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')"
-                    >
-                      <td
-                        :colspan="getColSpan(layer)"
-                      >
-                        <g3w-field
-                          :is      = "component"
-                          :layer   = "layer"
-                          :feature = "feature"
-                          _legacy  = "g3w-field"
-                        />
-                      </td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
-
+              <!-- OUTPUT as HTML -->
               <table
                 v-else
                 class  = "table"
-                :class = "{'mobile': isMobile()}"
+                :class = "{ 'mobile': isMobile() }"
               >
+
                 <thead>
                   <tr>
                     <th
                       v-if   = "state.layersactions[layer.id].length"
                       :style = "{
-                        width: `${state.layersactions[layer.id].length *26}px`,
-                        maxWidth:`${state.layersactions[layer.id].length * 26}px`
+                        width:    `${state.layersactions[layer.id].length * 26}px`,
+                        maxWidth: `${state.layersactions[layer.id].length * 26}px`,
                       }"
                     ></th>
                     <th
@@ -311,102 +203,115 @@
                     ></th>
                   </tr>
                 </thead>
-                <tbody
-                  v-if   = "feature.show"
-                  v-for  = "(feature, index) in layer.features"
-                  :key   = "feature.id"
-                >
-                    <header-feature-body
-                      :actions                 = "state.layersactions[layer.id]"
-                      :layer                   = "layer"
-                      :feature                 = "feature"
-                      :index                   = "index"
-                      :onelayerresult          = "onelayerresult"
-                      :trigger                 = "trigger"
-                      :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                      :hasLayerOneFeature      = "hasLayerOneFeature"
-                      :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                      :attributesSubset        = "attributesSubset"
-                      :getLayerField           = "getLayerField"
-                    />
-                    <tr
-                      class="g3w-feature-result-action-tools"
-                    >
-                      <td
-                        v-if     = "state.currentactiontools[layer.id][index]"
-                        :colspan = "getColSpan(layer)"
-                      >
-                        <g3w-field
-                          :is           = "state.currentactiontools[layer.id][index]"
-                          :colspan      = "getColSpan(layer)"
-                          :layer        = "layer"
-                          :feature      = "feature"
-                          :featureIndex = "index"
-                          :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
-                          _legacy       = "g3w-field"
-                        />
-                      </td>
-                    </tr>
-                    <tr
-                      v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')"
-                    >
-                      <td
-                        colspan="getColSpan(layer)"
-                      >
-                        <g3w-field
-                          class    = "box-body"
-                          :is      = "component"
-                          :layer   = "layer"
-                          :feature = "feature"
-                          _legacy  = "g3w-field"
-                        />
-                      </td>
-                    </tr>
-                    <tr
-                      v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
-                      :id="`${layer.id}_${index}`"
-                      class="featurebox-body"
-                    >
-                      <td
-                        :colspan="getColSpan(layer)"
-                      >
-                      <g3w-field
-                        :layer         = "layer"
-                        :feature       = "feature"
-                        :getLayerField = "getLayerField"
-                        _legacy        = "g3w-layer-attrs"
-                      />
-                      </td>
-                    </tr>
-                    <tr
-                      v-for="({ component }) in getLayerCustomComponents(layer.id, 'feature', 'after')"
-                    >
-                      <td
-                        colspan="getColSpan(layer)"
-                      >
-                        <g3w-field
-                          class    = "box-body"
-                          :is      = "component"
-                          :layer   = "layer"
-                          :feature = "feature"
-                          _legacy  = "g3w-field"
-                        />
-                      </td>
-                    </tr>
-                </tbody>
-                <tbody v-else></tbody>
-              </table>
 
+                <!-- HTML SECTIONS: use multiple <tbody> tags when layer has no Form Structure -->
+                <component
+                  :is = "hasFormStructure(layer) ? 'tbody' : 'fragment'"
+                >
+                  <component
+                    :is   = "hasFormStructure(layer) ? 'fragment' : 'tbody'"
+                    v-for = "(feature, index) in layer.features"
+                    :key  = "hasFormStructure(layer) ? undefined : feature.id"
+                  >
+                    <template v-if="feature.show">
+                      <header-feature-body
+                        :actions                 = "state.layersactions[layer.id]"
+                        :layer                   = "layer"
+                        :feature                 = "feature"
+                        :index                   = "index"
+                        :onelayerresult          = "onelayerresult"
+                        :trigger                 = "trigger"
+                        :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
+                        :hasLayerOneFeature      = "hasLayerOneFeature"
+                        :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
+                        :attributesSubset        = "attributesSubset"
+                        :getLayerField           = "getLayerField"
+                      />
+                      <tr class="g3w-feature-result-action-tools">
+                        <td
+                          v-if     = "state.currentactiontools[layer.id][index]"
+                          :colspan = "getColSpan(layer)"
+                        >
+                          <g3w-field
+                            :colspan      = "getColSpan(layer)"
+                            :layer        = "layer"
+                            :feature      = "feature"
+                            :featureIndex = "index"
+                            :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
+                            :_type        = "state.currentactiontools[layer.id][index]"
+                            _legacy       = "g3w-field"
+                          />
+                        </td>
+                      </tr>
+                      <tr
+                        v-for = "({ component }) in getLayerCustomComponents(layer.id, 'feature', 'before')"
+                      >
+                        <td
+                          :colspan="getColSpan(layer)"
+                        >
+                          <g3w-field
+                            :class   = "{ 'box-body': !hasFormStructure(layer) }"
+                            :layer   = "layer"
+                            :feature = "feature"
+                            :_type   = "component"
+                            _legacy  = "g3w-field"
+                          />
+                        </td>
+                      </tr>
+                      <tr
+                        v-show = "!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
+                        :id    = "`${layer.id}_${index}`"
+                        class  = "featurebox-body"
+                      >
+                        <td
+                          :colspan="getColSpan(layer)"
+                        >
+                          <tabs
+                            v-if      = "hasFormStructure(layer)"
+                            :fields   = "getQueryFields(layer, feature)"
+                            :layerid  = "layer.id"
+                            :feature  = "feature"
+                            :tabs     = "getLayerFormStructure(layer)"
+                          />
+                          <g3w-field
+                            v-else
+                            :layer         = "layer"
+                            :feature       = "feature"
+                            :getLayerField = "getLayerField"
+                            _legacy        = "g3w-layer-attrs"
+                          />
+                        </td>
+                      </tr>
+                      <tr
+                        v-for = "({ component }) in getLayerCustomComponents(layer.id, 'feature', 'after')"
+                      >
+                        <td
+                          :colspan="getColSpan(layer)"
+                        >
+                          <g3w-field
+                            :class   = "{ 'box-body': !hasFormStructure(layer) }"
+                            :layer   = "layer"
+                            :feature = "feature"
+                            :_type   = "component"
+                            _legacy  = "g3w-field"
+                          />
+                        </td>
+                      </tr>
+                    </template>
+                  </component>
+                </component>
+
+              </table>
             </div>
 
             <div
-              v-for  = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')"
+              v-for  = "({ component }) in getLayerCustomComponents(layer.id, 'layer', 'after')"
               class  = "box-body"
               :class = "{'mobile': isMobile()}"
             >
               <g3w-field
-                :is     = "component"
                 :layer  = "layer"
+                :_type  = "component"
                 _legacy = "g3w-field"
               />
             </div>
@@ -417,8 +322,8 @@
           v-for="component in state.components"
         >
           <g3w-field
-            :is          = "component"
             @showresults = "showResults()"
+            :_type       = "component"
             _legacy      = "g3w-field"
           />
         </li>
@@ -430,6 +335,7 @@
 </template>
 
 <script>
+  import { Fragment }             from 'vue-fragment'
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
 
@@ -442,6 +348,7 @@
 
   Object
     .entries({
+      Fragment,
       InfoFormats,
       HeaderFeatureBody,
     })
@@ -462,6 +369,7 @@
 
 
     components: {
+      Fragment,
       'infoformats':         InfoFormats,
       'header-feature-body': HeaderFeatureBody,
     },
@@ -625,7 +533,7 @@
       },
 
       layerHasFeatures(layer) {
-        return layer.features && layer.features.length > 0 ? true: false;
+        return !!(layer.features && layer.features.length > 0);
       },
 
       selectionFeaturesLayer(layer) {
@@ -641,7 +549,7 @@
       },
 
       geometryAvailable(feature) {
-        return feature.geometry ? true : false;
+        return !!feature.geometry;
       },
 
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
@@ -885,3 +793,24 @@
 
   };
 </script>
+
+<style scoped>
+.query-results-info-message {
+  font-weight: bold;
+  margin-bottom: 3px;
+  font-size: 1.1em;
+}
+
+.queryresults-container > .query-results-not-found > h4 {
+  font-weight: bold;
+  text-align: center;
+}
+
+.queryresults-container > ul.queryresults {
+  position: relative;
+}
+
+.g3w-layer-action-tools {
+  padding: 5px;
+}
+</style>

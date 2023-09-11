@@ -28,7 +28,7 @@
           v-if      = "0 === hindex"
           @selected = "addRemoveSelectedFeature"
           :feature = "feature"
-        ></select-row>
+        />
         <g3w-field
           v-else
           _legacy  = "g3w-field"

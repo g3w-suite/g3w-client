@@ -134,7 +134,7 @@ export default {
                   state: {
                     value: feature.attributes[header.name]
                   },
-                  _legacy: 'g3w-field',
+                  _legacy: "g3w-field",
                 }
               });
               fieldInstance.$mount();

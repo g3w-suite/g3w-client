@@ -475,8 +475,8 @@ const vm = {
    */
   created() {
     console.log(this);
-    if (this.is) {
-      this.type = this.is;
+    if (this._type) {                          // TODO: replace static `_type` calls with `getFieldType(field)` ?
+      this.type = this._type;
     } else if (this.__isField && !this.type) {
       this.type = this.getType(this.state);
     }

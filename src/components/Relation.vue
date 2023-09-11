@@ -81,7 +81,7 @@
             :is     = "headercomponent"
             :layer  = "downloadLayer.state"
             :config = "downloadLayer.config"
-            _legacy = 'g3w-field'
+            _legacy = "g3w-field"
           />
         </div>
         <table
@@ -142,7 +142,7 @@
                 />
               </td>
               <td v-else v-for="value in row">
-                <g3w-field :state="{value: value}" _legacy="g3w-field" />
+                <g3w-field :state="({ value })" _legacy="g3w-field" />
               </td>
             </tr>
           </tbody>

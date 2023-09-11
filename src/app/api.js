@@ -310,7 +310,7 @@ g3wsdk.gui.vue.Inputs.G3WInput = {
         ...data,
         props: {
           ...data.props,
-          _legacy: 'g3w-input',
+          _legacy: "g3w-input",
         },
       },
       children
@@ -333,7 +333,7 @@ g3wsdk.gui.vue.Inputs.G3wFormInputs = {
         ...data,
         props: {
           ...data.props,
-          _legacy: 'g3w-form',
+          _legacy: "g3w-form",
         },
       },
       children
