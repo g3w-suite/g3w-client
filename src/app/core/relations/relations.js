@@ -30,17 +30,28 @@ const proto = Relations.prototype;
 proto._createRelationsInfo = function() {
   let father;
   let child;
-  Object.entries(this._relations).forEach(([relationKey, relation]) => {
-    father = relation.getFather();
-    child = relation.getChild();
-    this._relationsInfo.father_child[father+child] = relationKey;
-    if (!this._relationsInfo.fathers[father]) this._relationsInfo.fathers[father] = [];
-    if (!this._relationsInfo.children[child]) this._relationsInfo.children[child] = [];
-    this._relationsInfo.fathers[father].push(child);
-    this._relationsInfo.children[child].push(father);
+  Object.entries(this._relations)
+    .forEach(([relationKey, relation]) => {
+      father = relation.getFather();
+      child = relation.getChild();
+      //set
+      this._relationsInfo.father_child[father+child] = relationKey;
+
+      if (!this._relationsInfo.fathers[father]) {
+        this._relationsInfo.fathers[father] = [];
+      }
+      if (!this._relationsInfo.children[child]) {
+        this._relationsInfo.children[child] = [];
+      }
+      this._relationsInfo.fathers[father].push(child);
+      this._relationsInfo.children[child].push(father);
   });
 };
 
+/**
+ *
+ * @private
+ */
 proto._clearRelationsInfo = function() {
   this._relationsInfo = {
     children: {},
@@ -49,6 +60,10 @@ proto._clearRelationsInfo = function() {
   };
 };
 
+/**
+ *
+ * @private
+ */
 proto._reloadRelationsInfo = function() {
   this._clearRelationsInfo();
   this._createRelationsInfo();
@@ -56,45 +71,72 @@ proto._reloadRelationsInfo = function() {
 
 // number of relations
 proto.getLength = function() {
-  return this._length
+  return this._length;
 };
 
+/**
+ *
+ * @param type
+ * @returns {*|{}|[]|{}}
+ */
 proto.getRelations = function({type=null}={}) {
-  if (!type) return this._relations;
-  else {
+  if (type) {
+    //check if relation has type
     if (['ONE','MANY'].indexOf(type) !== -1) {
       const relations = {};
       for (const name in this._relations) {
         const relation = this._relations[name];
-        if (relation.getType() === type) relations[name] = relation;
+        if (relation.getType() === type) {
+          relations[name] = relation;
+        }
       }
       return relations;
-    } else return {};
+    } else {
+      return {};
+    }
+  } else {
+    return this._relations;
   }
 };
 
 // array of relation
 proto.getArray = function() {
-  const relations = [];
-  Object.entries(this._relations).forEach(([relName, relation]) => {
-    relations.push(relation);
-  });
-  return relations;
+  return Object
+    .entries(this._relations)
+    .map(([_, relation]) => relation);
 };
 
-proto.setRelations = function(relations) {
+/**
+ *
+ * @param relations
+ */
+proto.setRelations = function(relations=[]) {
   this._relations = Array.isArray(relations) ? relations : [];
 };
 
+/**
+ *
+ * @param id
+ * @returns {*}
+ */
 proto.getRelationById = function(id) {
   return this._relations[id];
 };
 
+/**
+ *
+ * @param father
+ * @param child
+ * @returns {*}
+ */
 proto.getRelationByFatherChildren = function(father, child) {
-  const relationId = this._relationsInfo.father_child[father+child];
-  return this.getRelationById(relationId);
+  return this.getRelationById(this._relationsInfo.father_child[father+child]);
 };
 
+/**
+ *
+ * @param relation
+ */
 proto.addRelation = function(relation) {
   if (relation instanceof Relation) {
     this._relations[relation.getId()] = relation;
@@ -102,41 +144,77 @@ proto.addRelation = function(relation) {
   }
 };
 
+/**
+ *
+ * @param relation
+ */
 proto.removeRelation = function(relation) {
-  let relationId;
   if (relation instanceof Relation) {
-    relationId = relation.getId();
-    delete this._relations[relationId];
+    delete this._relations[relation.getId()];
     this._reloadRelationsInfo();
   }
 };
 
+/**
+ *
+ * @param childId
+ * @returns {boolean|boolean}
+ */
 proto.hasChildren = function(childId) {
   const children = this.getChildren(childId);
-  return  children ? !!children.length: false;
+  return children ? children.length > 0: false;
 };
 
+/**
+ *
+ * @param fatherId
+ * @returns {boolean|boolean}
+ */
 proto.hasFathers = function(fatherId) {
   const fathers = this.getFathers(fatherId);
-  return fathers ? !!fathers.length : false;
+  return fathers ? fathers.length > 0 : false;
 };
 
-// get children based on father id
+/**
+ * Get children based on father id
+ * @param fatherId
+ * @returns {*|null}
+ */
 proto.getChildren = function(fatherId) {
-  if (!this.isFather(fatherId)) return null;
-  return this._relationsInfo.fathers[fatherId];
+  if (this.isFather(fatherId)) {
+    return this._relationsInfo.fathers[fatherId];
+  } else {
+    return null;
+  }
 };
 
-// get fathers based on childId
+/**
+ * Get fathers based on childId
+ * @param childId
+ * @returns {*|null}
+ */
 proto.getFathers = function(childId) {
-  if (!this.isChild(childId)) return null;
-  return this._relationsInfo.children[childId];
+  if (this.isChild(childId)) {
+    return this._relationsInfo.children[childId];
+  } else {
+    return null;
+  }
 };
 
+/**
+ *
+ * @param id
+ * @returns {boolean}
+ */
 proto.isChild = function(id) {
   return !!this._relationsInfo.children[id];
 };
 
+/**
+ *
+ * @param id
+ * @returns {boolean}
+ */
 proto.isFather = function(id) {
   return !!this._relationsInfo.fathers[id];
 };
