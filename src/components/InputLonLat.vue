@@ -4,9 +4,8 @@
 -->
 
 <template>
-  <g3w-input :state="state" _legacy="mixin">
-
-    <div style="position: relative">
+  <g3w-input :state="state">
+    <div slot="default" style="position: relative">
 
       <div class="g3w-input-lat-lon">
         <button
@@ -76,7 +75,6 @@
         </template>
 
       </g3w-input>
-
     </div>
   </g3w-input>
 </template>

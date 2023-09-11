@@ -15,11 +15,9 @@
 <template>
 
   <!--
-    Legacy QueryResultsTableAttributeFieldValue component
+    ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
 
     @example <g3w-field _legacy="g3w-layer-attrs" />
-
-    ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
 
     @since 3.9.0
   -->
@@ -27,37 +25,33 @@
     <tr v-for="attr in $attrs.layer.attributes.filter(attr => attr.show)">
       <td class="attr-label">{{ attr.label }}</td>
       <td class="attr-value" :attribute="attr.name">
+        <span
+          v-if   = "'simple_field' === getFieldType($attrs.getLayerField({ layer: $attrs.layer, feature: $attrs.feature, fieldName: attr.name }))"
+          v-html = "field.value"
+        ></span>
+        <g3w-image
+          v-else-if = "['photo_field', 'image_field'].includes(getFieldType($attrs.getLayerField({ layer: $attrs.layer, feature: $attrs.feature, fieldName: attr.name })))"
+          :value    = "field.value"
+        />
         <g3w-field
-          v-bind  = "{ $attrs, state }"
+          v-else
+          v-bind  = "{ ...$attrs, state }"
           :field  = "$attrs.getLayerField({
             layer:     $attrs.layer,
             feature:   $attrs.feature,
             fieldName: attr.name,
           })"
-          _legacy = "g3w-query"
+          _legacy = "g3w-layer-attrs"
         />
       </td>
     </tr>
   </table>
 
-  <!--
-    Legacy QueryResultsTableAttributeFieldValue component
-
-    @example <g3w-field _legacy="g3w-query" />
-
-    ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
-
-    @since 3.9.0
-  -->
-  <span      v-else-if = "__isQuery && isSimple(field)"                     v-html="field.value"></span>
-  <g3w-image v-else-if = "__isQuery && (isPhoto(field) || isImage(field))"  :value="field.value"/>
 
   <!--
-    Legacy FieldG3W component
+    ORIGINAL SOURCE: src/components/G3WField.vue@3.8
 
     @example <g3w-field _legacy="g3w-field" />
-
-    ORIGINAL SOURCE: src/components/G3WField.vue@3.8
 
     @since 3.7
   -->
@@ -68,105 +62,98 @@
   />
 
   <!--
-    Base Field component
+    ORIGINAL SOURCE: src/components/Field.vue@3.8
 
     @example <g3w-field :state />
 
-    ORIGINAL SOURCE: src/components/Field.vue@3.8
-
     @since 3.9.0
   -->
-  <div
-    v-else
-    class  = "field"
-    :style = "{ fontSize: isMobile() && '0.8em' }"
-  >
+  <slot v-else name="default">
 
-    <div v-if="state.label" class="col-sm-6 field_label">
-      <slot name="label">{{state.label}}</slot>
-    </div>
+    <div
+      class  = "field"
+      :style = "{ fontSize: isMobile() && '0.8em' }"
+    >
 
-    <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
+      <div v-if="state.label" class="col-sm-6 field_label">
+        <slot name="label">{{state.label}}</slot>
+      </div>
 
-      <slot name="field">
+      <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
 
-        <!--
-          Legacy FieldVue component
+        <slot name="field">
 
-          @example <g3w-field _legacy="g3w-vuefield" />
+          <!--
+            ORIGINAL SOURCE: src/components/FieldVue.vue@3.8
 
-          ORIGINAL SOURCE: src/components/FieldVue.vue@3.8
+            @example <g3w-field _legacy="g3w-vuefield" />
 
-          @since 3.9.0
-        -->
-        <div v-if="__isVueField || (__isQuery && isVue(field))">
-          <component
-            :feature = "feature"
-            :value   = "undefined === field.value       ? null        : field.value"
-            :is      = "(undefined === field.vueoptions ? {}          : field.vueoptions.component) || {}"
-            v-html   = "__isVueField                    ? undefined   : field.value"
-          />
-        </div>
-
-        <!--
-          Legacy FieldLink component
-
-          @example <g3w-field _legacy="g3w-linkfield" />
-
-          ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
-
-          @since 3.9.0
-        -->
-        <button
-          v-else-if = "__isLinkField || (__isQuery && isLink(field))"
-          class     = "btn skin-button field_link"
-          v-t       = "'info.link_button'"
-          @click    = "() => window.open(
-            (__isLinkField ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
-            '_blank'
-          )"
-        ></button>
-
-        <!--
-          Legacy FieldMedia component
-
-          @example <g3w-field _legacy="g3w-mediafield" />
-
-          ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
-
-          @since 3.9.0
-        -->
-        <div v-else-if="__isMediaField">
-          <div v-if="state.value" class="preview">
-            <a :href="state.value" target="_blank">
-              <div class="previewtype" :class="getMediaType(state.mime_type)">
-                <i class="fa-2x" :class="g3wtemplate.font[getMediaType(state.mime_type)]"></i>
-              </div>
-            </a>
-            <div class="filename">{{ state.value ? state.value.split('/').pop() : state.value }}</div>
-            <slot></slot>
+            @since 3.9.0
+          -->
+          <div v-if="__isVueField || (__isLayerAttrs && isVue(field))">
+            <component
+              :feature = "feature"
+              :value   = "undefined === field.value       ? null        : field.value"
+              :is      = "(undefined === field.vueoptions ? {}          : field.vueoptions.component) || {}"
+              v-html   = "__isVueField                    ? undefined   : field.value"
+            />
           </div>
-        </div>
 
-        <!--
-          Base FieldText component
+          <!--
+            ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
 
-          @example <g3w-field :state />
+            @example <g3w-field _legacy="g3w-linkfield" />
 
-          ORIGINAL SOURCE: src/components/FieldText.vue@3.8
+            @since 3.9.0
+          -->
+          <button
+            v-else-if = "__isLinkField || (__isLayerAttrs && isLink(field))"
+            class     = "btn skin-button field_link"
+            v-t       = "'info.link_button'"
+            @click    = "() => window.open(
+              (__isLinkField ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
+              '_blank'
+            )"
+          ></button>
 
-          @since 3.9.0
-        -->
-        <span
-          v-else
-          style  = "word-wrap: break-word;"
-          v-html = "state.value"
-        ></span>
+          <!--
+            ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
 
-      </slot>
+            @example <g3w-field _legacy="g3w-mediafield" />
+
+            @since 3.9.0
+          -->
+          <div v-else-if="__isMediaField">
+            <div v-if="state.value" class="preview">
+              <a :href="state.value" target="_blank">
+                <div class="previewtype" :class="getMediaType(state.mime_type)">
+                  <i class="fa-2x" :class="g3wtemplate.font[getMediaType(state.mime_type)]"></i>
+                </div>
+              </a>
+              <div class="filename">{{ state.value ? state.value.split('/').pop() : state.value }}</div>
+              <slot></slot>
+            </div>
+          </div>
+
+          <!--
+            ORIGINAL SOURCE: src/components/FieldText.vue@3.8
+
+            @example <g3w-field :state />
+
+            @since 3.9.0
+          -->
+          <span
+            v-else
+            style  = "word-wrap: break-word;"
+            v-html = "state.value"
+          ></span>
+
+        </slot>
+      </div>
+
     </div>
 
-  </div>
+  </slot>
 
 </template>
 
@@ -328,17 +315,6 @@ const vm = {
      */
      __isField() {
       return 'g3w-field' === this._legacy;
-    },
-
-    /**
-     * Whether this is a Legacy QueryResultsTableAttributeFieldValue component
-     * 
-     * @example <g3w-field _legacy="g3w-query" />
-     * 
-     * @since 3.9.0
-     */
-     __isQuery() {
-      return 'g3w-query' === this._legacy;
     },
 
     /**

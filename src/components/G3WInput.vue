@@ -16,15 +16,13 @@
 <template>
 
   <!--
-    Legacy InputG3WFormInputs component
+    ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
 
     @example <g3w-input _legacy="g3w-form" />
 
-    ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
-
     @since 3.9.0
   -->
-  <form v-if="__isForm" class="form-horizontal g3w-form">
+  <form v-if="__isMulti" class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
         <g3w-input
@@ -42,11 +40,9 @@
   </form>
 
   <!--
-    Legacy InputG3W component
+    ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
 
     @example <g3w-input _legacy="g3w-input" />
-
-    ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
 
     @since 3.9.0
   -->
@@ -81,23 +77,6 @@
   </div>
 
   <!--
-    Like a "BaseInputMixin" wrapper just for: `this.$parent`
-
-    @example
-
-      <g3w-input _legacy="mixin">
-        <g3w-input id="input-1" :state="state" />
-        <g3w-input id="input-2" :state="state" />
-        ...
-      </g3w-input>
-
-    @since 3.9.0
-  -->
-  <div v-else-if="state.visible && __isMixin">
-    <slot></slot>
-  </div>
-
-  <!--
     Base G3WInput component
 
     @example
@@ -112,76 +91,78 @@
 
     @since 3.7.0
   -->
+  <slot v-else-if="state.visible" name="default">
+    <div class="form-group">
 
-  <div v-else-if="state.visible" class="form-group">
+      <!-- INPUT LABEL -->
+      <slot name="label">
+        <label
+          :for       = "state.name"
+          v-disabled = "!editable"
+          class      = "col-sm-12 control-label"
+        >{{ state.label }}
+          <span v-if="state.validate && state.validate.required">*</span>
+          <i
+            v-if   = "showhelpicon"
+            :class = "g3wtemplate.font['info']"
+            class  = "skin-color"
+            style  = "margin-left: 3px; cursor: pointer"
+            @click = "showHideHelp"
+          ></i>
+          <slot name="label-action"></slot>
+        </label>
+      </slot>
 
-    <!-- INPUT LABEL -->
-    <slot name="label">
-      <label
-        :for       = "state.name"
-        v-disabled = "!editable"
-        class      = "col-sm-12 control-label"
-      >{{ state.label }}
-        <span v-if="state.validate && state.validate.required">*</span>
-        <i
-          v-if   = "showhelpicon"
-          :class = "g3wtemplate.font['info']"
-          class  = "skin-color"
-          style  = "margin-left: 3px; cursor: pointer"
-          @click = "showHideHelp"
-        ></i>
-        <slot name="label-action"></slot>
-      </label>
-    </slot>
+      <div class="col-sm-12">
 
-    <div class="col-sm-12">
+        <!-- LOADING BAR -->
+        <slot name="loading">
+          <div
+            v-if  = "'loading' === loadingState"
+            slot  = "loading"
+            style = "position:relative; width: 100%"
+          >
+            <bar-loader loading="true" />
+          </div>
+        </slot>
 
-      <!-- LOADING BAR -->
-      <slot name="loading">
+        <!-- INPUT ELEMENT (eg. components/InputText.vue) -->
+        <slot
+          name          = "body"
+          :editable     = "editable"
+          :notvalid     = "notvalid"
+          :tabIndex     = "tabIndex"
+          :change       = "change"
+          :mobileChange = "mobileChange"
+        />
+
+        <!-- ERROR MESSAGES -->
+        <slot name="message">
+          <p
+            v-if      = "notvalid"
+            class     = "g3w-long-text error-input-message"
+            style     = "margin: 0"
+            v-html    = "state.validate.message"
+          ></p>
+          <p
+            v-else-if = "state.info"
+            style     = "margin: 0"
+            v-html    = "state.info"
+          ></p>
+        </slot>
+
+        <!-- HELP MESSAGE -->
         <div
-          v-if  = "'loading' === loadingState"
-          slot  = "loading"
-          style = "position:relative; width: 100%"
-        >
-          <bar-loader loading="true" />
-        </div>
-      </slot>
+          v-if        = "state.help && state.help.visible"
+          class       = "g3w_input_help skin-background-color extralighten"
+          v-html      = "state.help.message"
+        ></div>
 
-      <!-- INPUT ELEMENT (eg. components/InputText.vue) -->
-      <slot
-        name          = "body"
-        :editable     = "editable"
-        :notvalid     = "notvalid"
-        :tabIndex     = "tabIndex"
-        :change       = "change"
-        :mobileChange = "mobileChange"
-      />
-
-      <!-- ERROR MESSAGES -->
-      <slot name="message">
-        <p
-          v-if      = "notvalid"
-          class     = "g3w-long-text error-input-message"
-          style     = "margin: 0"
-          v-html    = "state.validate.message"
-        ></p>
-        <p
-          v-else-if = "state.info"
-          style     = "margin: 0"
-          v-html    = "state.info"
-        ></p>
-      </slot>
-
-      <!-- HELP MESSAGE -->
-      <div
-        v-if        = "state.help && state.help.visible"
-        class       = "g3w_input_help skin-background-color extralighten"
-        v-html      = "state.help.message"
-      ></div>
+      </div>
 
     </div>
 
-  </div>
+  </slot>
 </template>
 
 <script>
@@ -1136,7 +1117,7 @@ const vm = {
      * 
      * @since 3.9.0
      */
-    __isForm() {
+    __isMulti() {
       return 'g3w-form' === this._legacy;
     },
 
@@ -1156,23 +1137,6 @@ const vm = {
      */
     __isChild() {
       return 'g3w-input' === this._legacy && 'child' === this.state.type;
-    },
-
-    /**
-     * Whether this is a baseInputMixin wrapper
-     * 
-     * @example
-     * 
-     *  <g3w-input _legacy="mixin">
-     *    <g3w-input id="input-1" :state="state" />
-     *    <g3w-input id="input-2" :state="state" />
-     *    ...
-     *  </g3w-input>
-     * 
-     * @since 3.9.0
-     */
-    __isMixin() {
-      return 'mixin' === this._legacy;
     },
 
     /**
@@ -1338,7 +1302,7 @@ const vm = {
       '[ ' + this.state.name + ' ]',
       this.state.input.type,
       this.__isInput,
-      this.__isForm,
+      this.__isMulti,
       this.$scopedSlots,
       this.$slots,
       // this
@@ -1348,7 +1312,7 @@ const vm = {
       this.state.input.options = {};
     }
 
-    if (this.__isInput || this.__isForm) {
+    if (this.__isInput || this.__isMulti) {
       return;
     }
 
