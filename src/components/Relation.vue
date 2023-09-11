@@ -78,9 +78,9 @@
       >
         <div v-if="headercomponent" class="relation-header-component">
           <g3w-field
-            :is     = "headercomponent"
             :layer  = "downloadLayer.state"
             :config = "downloadLayer.config"
+            :_type  = "headercomponent"
             _legacy = "g3w-field"
           />
         </div>
@@ -107,9 +107,15 @@
             <tr
               v-for  = "(row, index) in table.rows"
               :key   = "table.rows_fid[index]"
+              class  = "relation-row"
               :class = "{ 'selected': table.rowFormStructure === row }"
             >
-              <td v-if="table.formStructure || isEditable">
+
+              <!-- RELATION ACTIONS -->
+              <td
+                v-if  = "table.formStructure || isEditable"
+                class = "relation-actions"
+              >
                 <span
                   v-if                     = "table.formStructure"
                   @click.stop              = "showFormStructureRow($event, row)"
@@ -129,6 +135,8 @@
                   :class                   = "g3wtemplate.getFontClass('pencil')"
                 ></span>
               </td>
+
+              <!-- RELATION TABS -->
               <td
                 v-if     = "table.formStructure && table.rowFormStructure === row"
                 :colspan = "table.columns.length"
@@ -141,9 +149,16 @@
                   :tabs    = "table.formStructure"
                 />
               </td>
-              <td v-else v-for="value in row">
+
+              <!-- RELATION FIELDS -->
+              <td
+                v-else
+                v-for = "value in row"
+                class = "relation-field"
+              >
                 <g3w-field :state="({ value })" _legacy="g3w-field" />
               </td>
+
             </tr>
           </tbody>
         </table>

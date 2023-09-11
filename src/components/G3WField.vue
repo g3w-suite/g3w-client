@@ -24,12 +24,16 @@
     @since 3.9.0
   -->
   <table v-if="__isLayerAttrs" class="feature_attributes">
-    <tr v-for="attr in layer.attributes.filter(attr => attr.show)">
+    <tr v-for="attr in $attrs.layer.attributes.filter(attr => attr.show)">
       <td class="attr-label">{{ attr.label }}</td>
       <td class="attr-value" :attribute="attr.name">
         <g3w-field
-          v-bind  = "$attrs"
-          :field  = "$attrs.getLayerField({ layer, feature, fieldName: attr.name })"
+          v-bind  = "{ $attrs, state }"
+          :field  = "$attrs.getLayerField({
+            layer:     $attrs.layer,
+            feature:   $attrs.feature,
+            fieldName: attr.name,
+          })"
           _legacy = "g3w-query"
         />
       </td>
@@ -60,7 +64,7 @@
   <component
     v-else-if = "__isField"
     :is       = "type"
-    v-bind    = "$attrs"
+    v-bind    = "{...$attrs, state }"
   />
 
   <!--
@@ -258,39 +262,34 @@ const vm = {
     /**
      * ORIGINAL SOURCE: src/components/FieldG3W.vue@3.8
      */
-    feature: {
-      type: Object,
-      default: {},
-    },
+    // feature: {
+    //   type: Object,
+    //   default: {},
+    // },
 
     /**
      * ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@3.8
      */
-    field: {
-      type: Object,
-       default: {},
-    },
+    // field: {
+    //   type: Object,
+    //    default: {},
+    // },
 
     /**
      * ORIGINAL SOURCE: src/components/Relation.vue@3.8
      */
-    layer: {
-      type: Object,
-      default: undefined,
-    },
+    // layer: {
+    //   type: Object,
+    //   default: undefined,
+    // },
 
     /**
      * ORIGINAL SOURCE: src/components/Relation.vue@3.8
      */
-    config: {
-      type: Object,
-      default: undefined,
-    },
-
-    type: {
-      type: String,
-      default: '',
-    },
+    // config: {
+    //   type: Object,
+    //   default: undefined,
+    // },
 
     /**
      * Legacy field type.
@@ -475,6 +474,18 @@ const vm = {
    */
   created() {
     console.log(this);
+
+    /** @TODO make it a required `$props` instead? */
+    if (!this.feature) {
+      this.feature = {};
+    }
+
+    /** @TODO make it a required `$props` instead? */
+    if(!this.field) {
+      this.field = {};
+    }
+
+        /** @TODO make it a required `$props` instead? */
     if (this._type) {                          // TODO: replace static `_type` calls with `getFieldType(field)` ?
       this.type = this._type;
     } else if (this.__isField && !this.type) {
