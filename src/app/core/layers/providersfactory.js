@@ -23,6 +23,9 @@ const Filter                       = require('core/layers/filter/filter');
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 const DPI = geoutils.getDPI();
 
+const is_defined = d => undefined !== d;
+
+
 /**
  * ORIGINAL SOURCE: src/app/core/layers/providers/provider.js@3.8.6
  */
@@ -390,7 +393,7 @@ const Providers = {
           url,
           contentType: 'application/json',
         });
-      } else if (filter.bbox) { // bbox filter
+      } else if (is_defined(filter.bbox)) { // bbox filter
         promise = XHR.post({
           url,
           data: JSON.stringify({
@@ -399,7 +402,7 @@ const Providers = {
           }),
           contentType: 'application/json',
         })
-      } else if (filter.fid) { // fid filter
+      } else if (is_defined(filter.fid)) { // fid filter
         promise = RelationsService.getRelations(filter.fid);
       } else if (filter.field) {
         promise = XHR.post({
@@ -407,12 +410,12 @@ const Providers = {
           data: JSON.stringify(filter),
           contentType: 'application/json',
         })
-      } else if (filter.fids) {
+      } else if (is_defined(filter.fids)) {
         promise = XHR.get({
           url,
           params: filter
         })
-      } else if (filter.nofeatures) {
+      } else if (is_defined(filter.nofeatures)) {
         promise = XHR.post({
           url,
           data: JSON.stringify({
