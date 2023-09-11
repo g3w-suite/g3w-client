@@ -21,7 +21,7 @@
 
     @since 3.9.0
   -->
-  <table v-if="__isLayerAttrs" class="feature_attributes">
+  <table v-if="__isMulti" class="feature_attributes">
     <tr v-for="attr in $attrs.layer.attributes.filter(attr => attr.show)">
       <td class="attr-label">{{ attr.label }}</td>
       <td class="attr-value" :attribute="attr.name">
@@ -90,7 +90,7 @@
 
             @since 3.9.0
           -->
-          <div v-if="__isVueField || (__isLayerAttrs && isVue(field))">
+          <div v-if="__isVueField || (__isMulti && isVue(field))">
             <component
               :feature = "feature"
               :value   = "undefined === field.value       ? null        : field.value"
@@ -107,7 +107,7 @@
             @since 3.9.0
           -->
           <button
-            v-else-if = "__isLinkField || (__isLayerAttrs && isLink(field))"
+            v-else-if = "__isLinkField || (__isMulti && isLink(field))"
             class     = "btn skin-button field_link"
             v-t       = "'info.link_button'"
             @click    = "() => window.open(
@@ -324,7 +324,7 @@ const vm = {
      * 
      * @since 3.9.0
      */
-     __isLayerAttrs() {
+     __isMulti() {
       return 'g3w-layer-attrs' === this._legacy;
     },
 
