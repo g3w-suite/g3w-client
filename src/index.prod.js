@@ -97,16 +97,16 @@ Vue.component(Range.name, Range);
 Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
-/** @since 3.9.0 **/
-Vue.component(G3WInput.name, G3WInput);
-/** @since 3.9.0 **/
-Vue.component(G3WField.name, G3WField);
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('g3w-image',          _alias(G3WField, { _legacy: "g3w-imagefield" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('g3w-images-gallery', _alias(G3WField, { _legacy: "g3w-galleryfield" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('g3w-geospatial',     _alias(G3WField, { _legacy: "g3w-geofield" }));
+/** @since 3.9.0 **/
+Vue.component(G3WInput.name, G3WInput);
+/** @since 3.9.0 **/
+Vue.component(G3WField.name, G3WField);
 
 /**
  * Install application filters

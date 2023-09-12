@@ -19,185 +19,231 @@
 
 <template>
 
-  <!--
-    ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
-    ORIGINAL SOURCE: src/components/G3WField.vue@3.8
-    ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
+<!--
+  ORIGINAL SOURCE: src/components/G3WField.vue@3.8
 
-    @example <g3w-field _legacy="g3w-imagefield" />
+  @example <g3w-field _legacy="g3w-field" />
 
-    @since 3.9.0
-  -->
-  <div v-if="__isImageField || __isGalleryField || (isImage(field) || isPhoto(field))" class="container-fluid">
-    <div v-if="!__isGalleryField" class="row">
-      <div v-for="(img, index) in values" class="g3w-image col-md-6 col-sm-12">
-        <img
-          class  = "img-thumbnail"
-          @click = "showGallery(index)"
-          :src   = "('object' === img ? img.photo: img)"
-        />
+  @since 3.7
+-->
+<component
+  v-if   = "__isField"
+  :is    = "type"
+  v-bind = "{...$attrs, state }"
+/>
+
+<!--
+  ORIGINAL SOURCE: src/components/Field.vue@3.8
+
+  @example <g3w-field :state />
+
+  @since 3.9.0
+-->
+<fragment v-else>
+  <slot name="default">
+
+    <span
+      v-if   = "!_legacy && isSimple(field)"
+      v-html = "field.value"
+    ></span>
+
+    <!--
+      ORIGINAL SOURCE: src/components/G3WField.vue@3.8
+      ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
+
+      @example <g3w-field _legacy="g3w-galleryfield" />
+
+      @since 3.9.0
+    -->
+    <div v-else-if="__isGalleryField" class="container-fluid">
+      <div class="row">
+        <div v-for="(img, index) in values" class="g3w-image col-md-6 col-sm-12">
+          <img
+            class  = "img-thumbnail"
+            @click = "_showGallery(index)"
+            :src   = "_getSrc(img)"
+          />
+        </div>
       </div>
-    </div>
-    <div
-      class           = "modal gallery fade modal-fullscreen force-fullscreen"
-      ref             = "gallery"
-      :id             = "$attrs.id || 'gallery_' + time"
-      tabindex        = "-1"
-      role            = "dialog"
-      aria-labelledby = ""
-      aria-hidden     = "true"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-body">
-            <div :id="'carousel_' + time" class="carousel slide" data-interval="false">
-              <div class="carousel-inner">
-                <div v-for="(img, index) in images" class="item" :class="$attrs.active == index ? 'active' : ''">
-                  <img style="margin:auto" :src="_imgSrc(img.src)">
+      <div
+        class           = "modal gallery fade modal-fullscreen force-fullscreen"
+        ref             = "gallery"
+        :id             = "'gallery_' + time"
+        tabindex        = "-1"
+        role            = "dialog"
+        aria-labelledby = ""
+        aria-hidden     = "true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-body">
+              <div :id="'carousel_' + time" class="carousel slide" data-interval="false">
+                <div class="carousel-inner">
+                  <div v-for="(img, index) in images" class="item" :class="active == index ? 'active' : ''">
+                    <img style="margin:auto" :src="_imgSrc(img.src)">
+                  </div>
                 </div>
+                <a v-if="images.length > 1" class="left carousel-control" :href="'carousel_' + time" role="button" data-slide="prev">
+                  <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                </a>
+                <a v-if="images.length > 1" class="right carousel-control" :href="'carousel_' + time" role="button" data-slide="next">
+                  <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                </a>
               </div>
-              <a v-if="images.length > 1" class="left carousel-control" :href="'carousel_' + time" role="button" data-slide="prev">
-                <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
-              </a>
-              <a v-if="images.length > 1" class="right carousel-control" :href="'carousel_' + time" role="button" data-slide="next">
-                <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
-              </a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
     <!--
-    ORIGINAL SOURCE: src/components/FieldGeo.vue@3.8
-    ORIGINAL SOURCE: src/components/GlobalGeo.vue@3.8
+      ORIGINAL SOURCE: src/components/FieldGeo.vue@3.8
+      ORIGINAL SOURCE: src/components/GlobalGeo.vue@3.8
 
-    @example <g3w-field _legacy="g3w-geofield" />
+      @example <g3w-field _legacy="g3w-geofield" />
 
-    @since 3.9.0
-  -->
-  <div v-else-if="__isGeoField || isGeo(field)" class="geo-content">
-    <span
-      @click.stop = "_showLayer()"
-      class       = "show-hide-geo"
-      :class      = "[ g3wtemplate.font[visible ? 'eye-close' : 'eye'] ]"
-    ></span>
-  </div>
-
-  <!--
-    ORIGINAL SOURCE: src/components/G3WField.vue@3.8
-
-    @example <g3w-field _legacy="g3w-field" />
-
-    @since 3.7
-  -->
-  <component
-    v-else-if = "__isField"
-    :is       = "type"
-    v-bind    = "{...$attrs, state }"
-  />
-
-  <!--
-    ORIGINAL SOURCE: src/components/Field.vue@3.8
-
-    @example <g3w-field :state />
-
-    @since 3.9.0
-  -->
-  <fragment v-else>
-    <slot name="default">
-
+      @since 3.9.0
+    -->
+    <div v-else-if="__isGeoField || isGeo(field)" class="geo-content">
       <span
-        v-if   = "_legacy && isSimple(field)"
-        v-html = "field.value"
+        @click.stop = "_showLayer()"
+        class       = "show-hide-geo"
+        :class      = "[ g3wtemplate.font[visible ? 'eye-close' : 'eye'] ]"
       ></span>
+    </div>
 
-      <div
-        v-else
-        class  = "field"
-        :style = "{ fontSize: isMobile() && '0.8em' }"
-      >
+    <div
+      v-else
+      class  = "field"
+      :style = "{ fontSize: isMobile() && '0.8em' }"
+    >
 
-        <div v-if="state.label" class="col-sm-6 field_label">
-          <slot name="label">{{state.label}}</slot>
-        </div>
-
-        <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
-
-          <slot name="field">
-
-            <!--
-              ORIGINAL SOURCE: src/components/FieldVue.vue@3.8
-
-              @example <g3w-field _legacy="g3w-vuefield" />
-
-              @since 3.9.0
-            -->
-            <div v-if="__isVueField || (_legacy && isVue(field))">
-              <component
-                :feature = "feature"
-                :value   = "undefined === field.value       ? null        : field.value"
-                :is      = "(undefined === field.vueoptions ? {}          : field.vueoptions.component) || {}"
-                v-html   = "__isVueField                    ? undefined   : field.value"
-              />
-            </div>
-
-            <!--
-              ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
-
-              @example <g3w-field _legacy="g3w-linkfield" />
-
-              @since 3.9.0
-            -->
-            <button
-              v-else-if = "__isLinkField || (_legacy && isLink(field))"
-              class     = "btn skin-button field_link"
-              v-t       = "'info.link_button'"
-              @click    = "() => window.open(
-                (__isLinkField ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
-                '_blank'
-              )"
-            ></button>
-
-            <!--
-              ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
-
-              @example <g3w-field _legacy="g3w-mediafield" />
-
-              @since 3.9.0
-            -->
-            <div v-else-if="__isMediaField">
-              <div v-if="state.value" class="preview">
-                <a :href="state.value" target="_blank">
-                  <div class="previewtype" :class="getMediaType(state.mime_type)">
-                    <i class="fa-2x" :class="g3wtemplate.font[getMediaType(state.mime_type)]"></i>
-                  </div>
-                </a>
-                <div class="filename">{{ state.value ? state.value.split('/').pop() : state.value }}</div>
-                <slot></slot>
-              </div>
-            </div>
-
-            <!--
-              ORIGINAL SOURCE: src/components/FieldText.vue@3.8
-
-              @example <g3w-field :state />
-
-              @since 3.9.0
-            -->
-            <span
-              v-else
-              style  = "word-wrap: break-word;"
-              v-html = "state.value"
-            ></span>
-
-          </slot>
-        </div>
-
+      <div v-if="state.label" class="col-sm-6 field_label">
+        <slot name="label">{{state.label}}</slot>
       </div>
 
-    </slot>
+      <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
+
+        <slot name="field">
+
+          <!--
+            ORIGINAL SOURCE: src/components/FieldVue.vue@3.8
+
+            @example <g3w-field _legacy="g3w-vuefield" />
+
+            @since 3.9.0
+          -->
+          <div v-if="__isVueField || isVue(field)">
+            <component
+              :feature = "feature"
+              :value   = "undefined === field.value       ? null        : field.value"
+              :is      = "(undefined === field.vueoptions ? {}          : field.vueoptions.component) || {}"
+              v-html   = "__isVueField                    ? undefined   : field.value"
+            />
+          </div>
+
+          <!--
+            ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
+
+            @example <g3w-field _legacy="g3w-linkfield" />
+
+            @since 3.9.0
+          -->
+          <button
+            v-else-if = "__isLinkField || isLink(field)"
+            class     = "btn skin-button field_link"
+            v-t       = "'info.link_button'"
+            @click    = "() => window.open(
+              (__isLinkField ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
+              '_blank'
+            )"
+          ></button>
+
+          <!--
+            ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
+
+            @example <g3w-field _legacy="g3w-mediafield" />
+
+            @since 3.9.0
+          -->
+          <div v-else-if="__isMediaField">
+            <div v-if="state.value" class="preview">
+              <a :href="state.value" target="_blank">
+                <div class="previewtype" :class="getMediaType(state.mime_type)">
+                  <i class="fa-2x" :class="g3wtemplate.font[getMediaType(state.mime_type)]"></i>
+                </div>
+              </a>
+              <div class="filename">{{ state.value ? state.value.split('/').pop() : state.value }}</div>
+              <slot></slot>
+            </div>
+          </div>
+
+          <!--
+            ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
+            ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
+
+            @example <g3w-field _legacy="g3w-imagefield" />
+
+            @since 3.9.0
+          -->
+          <div v-else-if="__isImageField || isPhoto(field) || isImage(field)" style = "text-align: left">
+            <img
+              v-for  = "(img, index) in values"
+              class  = "img-responsive"
+              style  = "max-height: 50px;"
+              @click = "_showGallery(index)"
+              :src   = "_getSrc(img)"
+            />
+            <div
+              class           = "modal gallery fade modal-fullscreen force-fullscreen"
+              ref             = "gallery"
+              :id             = "'gallery_' + time"
+              tabindex        = "-1"
+              role            = "dialog"
+              aria-labelledby = ""
+              aria-hidden     = "true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div :id="'carousel_' + time" class="carousel slide" data-interval="false">
+                      <div class="carousel-inner">
+                        <div v-for="(img, index) in images" class="item" :class="active == index ? 'active' : ''">
+                          <img style="margin:auto" :src="_imgSrc(img.src)">
+                        </div>
+                      </div>
+                      <a v-if="images.length > 1" class="left carousel-control" :href="'carousel_' + time" role="button" data-slide="prev">
+                        <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                      </a>
+                      <a v-if="images.length > 1" class="right carousel-control" :href="'carousel_' + time" role="button" data-slide="next">
+                        <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!--
+            ORIGINAL SOURCE: src/components/FieldText.vue@3.8
+
+            @example <g3w-field :state />
+
+            @since 3.9.0
+          -->
+          <span
+            v-else
+            style  = "word-wrap: break-word;"
+            v-html = "state.value"
+          ></span>
+
+        </slot>
+      </div>
+
+    </div>
+
+  </slot>
   </fragment>
 
 </template>
@@ -208,7 +254,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
 import GUI                         from 'services/gui';
 
-const { getFieldType, getMediaFieldType } = require('core/utils/utils');
+const { getFieldType, getMediaFieldType, toRawType } = require('core/utils/utils');
 
 Object
   .entries({
@@ -291,7 +337,8 @@ const vm = {
      * ORIGINAL SOURCE: src/components/FieldG3W.vue@3.8
      */
     state: {
-      required: true
+      // required: true
+      default: {},
     },
 
     /**
@@ -434,14 +481,15 @@ const vm = {
      * ORIGINAL SOURCE: src/components/GlobalImage.vue@3.8
      */
     values() {
-      return Array.isArray(this.field.value) ? this.field.value : [this.field.value];
+      return Array.isArray(this.state.value) ? this.state.value : [this.state.value];
     },
 
     /**
      * ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
      */
     images() {
-      return this.values.map((img) => ({ src: ('object' === img ? img.photo: img) }));
+      console.log(this);
+      return this.values.map((img) => ({ src: ('Object' === toRawType(img) ? img.photo: img) }));
     }
 
   },
@@ -540,8 +588,8 @@ const vm = {
      */
     _showGallery(idx) {
       this.active = idx;
-      if ('object' === typeof this.value) {
-        this.value.active = true;
+      if ('Object' === toRawType(this.state.value)) {
+        this.state.value.active = true;
       }
       $('#' + this.$refs.gallery.id).modal('show');
     },
@@ -553,6 +601,15 @@ const vm = {
      */
     _imgSrc(url) {
       return (_.startsWith(url,'/') || _.startsWith(url,'http') ? '' : ProjectsRegistry.getConfig().mediaurl) + url;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
+     * 
+     * @since 3.9.0
+     */
+    _getSrc(img) {
+      return 'Object' === toRawType(img) ? img.photo: img;
     },
 
     /**
@@ -573,7 +630,7 @@ const vm = {
    * ORIGINAL SOURCE: src/components/FieldG3W.vue@3.8
    */
   created() {
-    console.log(this);
+    // console.log(this);
 
     /** @TODO make it a required `$props` instead? */
     if (!this.feature) {
@@ -582,10 +639,10 @@ const vm = {
 
     /** @TODO make it a required `$props` instead? */
     if(!this.field) {
-      this.field = {};
+      this.field = this.state;
     }
 
-        /** @TODO make it a required `$props` instead? */
+    /** @TODO make it a required `$props` instead? */
     if (this._type) {                          // TODO: replace static `_type` calls with `getFieldType(field)` ?
       this.type = this._type;
     } else if (this.__isField && !this.type) {
@@ -596,7 +653,7 @@ const vm = {
     if (this.__isGeoField || this.isGeo(this.field)) {
       const mapService = GUI.getComponent('map').getService();
       let style;
-      switch (this.data.type) {
+      switch (this.$attrs.data.type) {
         case 'Point':
         case 'MultiPoint':
           style = [
@@ -627,7 +684,7 @@ const vm = {
           break;
       }
       const features = new ol.format.GeoJSON().readFeatures(
-        this.data,
+        this.$attrs.data,
         { featureProjection: mapService.getProjection().getCode() }
       );
       this.layer = new ol.layer.Vector({

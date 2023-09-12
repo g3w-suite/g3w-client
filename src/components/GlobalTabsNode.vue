@@ -301,7 +301,7 @@
        */
       _getLegacy(node) {
         const field = this.getField(node);
-        return (field.relation || field.query) ? undefined : 'g3w-input' ;
+        return (field.relation || field.query) ? undefined : 'g3w-input';
       },
 
     },

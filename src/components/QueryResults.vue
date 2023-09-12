@@ -283,8 +283,7 @@
                                 <g3w-field
                                   :layer   = "layer"
                                   :feature = "feature"
-                                  :field   = "getLayerField({ layer, feature, fieldName: attr.name })"
-                                  _legacy  = "foo"
+                                  :state   = "getLayerField({ layer, feature, fieldName: attr.name })"
                                 />
                               </td>
                             </tr>
