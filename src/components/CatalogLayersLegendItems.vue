@@ -26,13 +26,17 @@
 </template>
 
 <script>
-import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+import { CatalogEventBus as VM } from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ApplicationService from 'services/application';
 import ProjectsRegistry from 'store/projects';
 import GUI from 'services/gui';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'catalog-layers-legend-items',
+
   props: {
     layers: {
       default: []
@@ -281,7 +285,7 @@ export default {
     /**
      * listen when layer has changed style
      */
-    CatalogEventHub.$on('layer-change-style', (options={}) => {
+    VM.$on('layer-change-style', (options={}) => {
       this.getLegendSrc();
     });
   },

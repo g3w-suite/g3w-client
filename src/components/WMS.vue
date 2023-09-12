@@ -6,7 +6,7 @@
 <template>
   <ul class="treeview-menu g3w-tools menu-items">
     <li v-if="loading">
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
     </li>
     <li style="display: flex; flex-direction: column; justify-content: space-between; background: transparent !important; margin-bottom: 10px;">
       <div class="wms_url_input_content">
@@ -58,7 +58,10 @@
   const { isURL } = require('core/utils/utils');
 
   export default {
-    name: "sidebaritem",
+
+    /** @since 3.8.6 */
+    name: "wms",
+
     data(){
       return {
         url: null,

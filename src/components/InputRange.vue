@@ -26,6 +26,10 @@
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-range',
+
   mixins: [Input],
   data() {
     const {min, max, Step:step} = this.state.input.options.values[0];

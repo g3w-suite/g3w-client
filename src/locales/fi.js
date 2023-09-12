@@ -450,8 +450,8 @@ export default {
      * @since 3.8.0
      */
     dont_show_again: "Älä näytä viestiä uudelleen",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    enlange_reduce: "Suurenna / Pienennä",
+    reset_default: "Oletuskoko",
     add: "Lisää",
     exitnosave: "Poistu tallentamatta",
     annul: "Peruuta",

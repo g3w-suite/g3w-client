@@ -5,7 +5,7 @@
 
 <template>
   <li :id="component.id" v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}" v-disabled="state.disabled">
-    <bar-loader :loading="state.loading"></bar-loader>
+    <bar-loader :loading="state.loading"/>
     <a @click.prevent="onClickItem" ref="anchor_click" href="#" style="display: flex; justify-content: space-between; align-items: center">
       <div>
         <i :class="icon" :style="{color: iconColor}"></i>
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-  import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
+  import { SidebarEventBus as VM } from 'app/eventbus';
   import SidebarItemAction from 'components/SidebarItemAction.vue';
 
   export default {
@@ -62,7 +62,7 @@
               }
             }
           });
-          !this.component.collapsible && isMobile.any && SIDEBAREVENTBUS.$emit('sidebaritemclick');
+          !this.component.collapsible && isMobile.any && VM.$emit('sidebaritemclick');
         }
         this.component.setOpen(!this.component.state.open);
       }

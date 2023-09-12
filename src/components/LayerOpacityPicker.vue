@@ -45,10 +45,11 @@
 
 <script>
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import { CatalogEventBus as VM } from 'app/eventbus';
 
   export default {
 
+    /** @since 3.8.6 */
     name: 'Layeropacitypicker',
 
     props: {
@@ -76,7 +77,7 @@
       /**
        * @param {{ id:? string, value: number }}
        * 
-       * @fires CatalogEventHub~layer-change-opacity
+       * @fires CatalogEventBus~layer-change-opacity
        */
       setLayerOpacity( { id = this.layer.id, value: opacity }) {
         // skip if nothing has changed
@@ -86,7 +87,7 @@
         this.layer.opacity = opacity;
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (layer) {
-          CatalogEventHub.$emit('layer-change-opacity', { layerId: id });
+          VM.$emit('layer-change-opacity', { layerId: id });
           layer.change();
         }
       },

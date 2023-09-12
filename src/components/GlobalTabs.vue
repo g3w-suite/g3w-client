@@ -18,44 +18,52 @@
         <div class="tab-content" :class="{editing: contenttype === 'editing'}">
           <template v-for="(tab, index) in root_tab">
             <div :id="ids[index]" class="tab-pane fade" :class="{'in active': index === 0}" v-if="tab.visible === undefined || tab.visible">
-              <node :showRelationByField="showRelationByField"
-                    :handleRelation="handleRelation"
-                    :feature="feature"
-                    :layerid="layerid"
-                    :contenttype="contenttype"
-                    :addToValidate="addToValidate"
-                    :removeToValidate="removeToValidate"
-                    :changeInput="changeInput"
-                    :fields="fields"
-                    :showTitle="false"
-                    :node="tab">
-              </node>
+              <node
+                :showRelationByField="showRelationByField"
+                :handleRelation="handleRelation"
+                :feature="feature"
+                :layerid="layerid"
+                :contenttype="contenttype"
+                :addToValidate="addToValidate"
+                :removeToValidate="removeToValidate"
+                :changeInput="changeInput"
+                :fields="fields"
+                :showTitle="false"
+                :node="tab"/>
             </div>
           </template>
         </div>
       </template>
       <node v-else :showRelationByField="showRelationByField"
-            :handleRelation="handleRelation"
-            :feature="feature"
-            :layerid="layerid"
-            :contenttype="contenttype"
-            :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
-            :changeInput="changeInput"
-            :fields="fields"
-            :showTitle="false"
-            :node="root_tab">
-      </node>
+        :handleRelation="handleRelation"
+        :feature="feature"
+        :layerid="layerid"
+        :contenttype="contenttype"
+        :addToValidate="addToValidate"
+        :removeToValidate="removeToValidate"
+        :changeInput="changeInput"
+        :fields="fields"
+        :showTitle="false"
+        :node="root_tab"/>
     </template>
   </div>
 </template>
 
 <script>
-  import TabService from 'core/expression/tabservice';
-  import Node from 'components/GlobalTabsNode.vue';
-  import GUI from 'services/gui';
 
-  const { getUniqueDomId } = require ('core/utils/utils');
+  import DataRouterService from 'services/data';
+  import Node              from 'components/GlobalTabsNode.vue';
+  import GUI               from 'services/gui';
+
+  const {
+    getUniqueDomId,
+    noop
+  }                        = require ('core/utils/utils');
+
+  const {
+    getFormDataExpressionRequestFromFeature,
+    convertFeatureToGEOJSON,
+  }                        = require('core/utils/geo');
 
   export default {
     name: "tabs",
@@ -79,9 +87,18 @@
       fields: {
         required: true
       },
-      addToValidate: Function,
-      removeToValidate: Function,
-      changeInput: Function,
+      addToValidate: {
+          type: Function,
+          default: noop
+      },
+      removeToValidate: {
+          type: Function,
+          default: noop
+      },
+      changeInput: {
+          type: Function,
+          default: noop
+      },
       showRelationByField: {
         type: Boolean,
         default: true
@@ -90,9 +107,6 @@
         type: Function,
         default: ({relation, layerId, feature}={}) => GUI.getService('queryresults').showRelation({relation, layerId, feature})
       }
-    },
-    components :{
-      Node
     },
     data() {
       return {
@@ -108,14 +122,23 @@
       }
     },
     methods: {
+      /**
+       * ORIGINAL SOURCE: src/app/core/expression/tabservice.js@3.8.6
+       */
       async setVisibility(tab){
-        const visible = await TabService.getVisibility({
-          qgs_layer_id: this.layerid,
-          expression: tab.visibility_expression.expression,
-          feature: this.feature,
-          contenttype: this.contenttype
-        });
-        tab.visible =  visible;
+        tab.visible = DataRouterService
+          .getData(
+            'expression:expression_eval',
+              {
+              inputs: {
+                qgs_layer_id: this.layerid,
+                form_data:    ('editing' === this.contenttype ? convertFeatureToGEOJSON : getFormDataExpressionRequestFromFeature)(this.feature || {}),
+                expression:   tab.visibility_expression.expression,
+                formatter:    ('query' === this.contenttype ? 1 : 0),
+              },
+              outputs: false,
+            }
+          );
       },
       // method to set required tab for editing
       setEditingRequireTab(obj){

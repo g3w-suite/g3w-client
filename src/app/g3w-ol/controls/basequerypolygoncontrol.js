@@ -2,7 +2,7 @@
  * @file
  * @since v3.8
  */
-import { SPATIALMETHODS } from 'g3w-ol/constants';
+import { SPATIAL_METHODS } from 'app/constant';
 
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 const { merge }          = require('core/utils/ol');
@@ -13,7 +13,7 @@ const VALIDGEOMETRIES    = Geometry.getAllPolygonGeometryTypes();
 const BaseQueryPolygonControl = function(options = {}) {
 
   const {
-    spatialMethod=SPATIALMETHODS[0],
+    spatialMethod=SPATIAL_METHODS[0],
     onSelectlayer,
     interactionClass
   } = options;

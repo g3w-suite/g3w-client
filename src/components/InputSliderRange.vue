@@ -26,6 +26,10 @@
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-slider-range',
+
   mixins: [Input],
   watch:{
     'state.input.options.min'(){

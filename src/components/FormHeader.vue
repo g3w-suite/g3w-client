@@ -25,13 +25,17 @@
  * @TODO remove "Vue.extend" from module export
  */
 export default Vue.extend({
+
+  /** @since 3.8.6 */
+  name: 'form-header',
+
   props: {
     headers: {
       type: Array,
       default:[]
     },
     currentid: {
-      type: 'String'
+      type: String
     },
     update: {
       type: Boolean

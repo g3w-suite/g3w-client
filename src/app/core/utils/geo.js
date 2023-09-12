@@ -996,7 +996,7 @@ const geoutils = {
         feature_count,
         filterConfig,
         multilayers,
-        projection:mapProjection
+        projection: mapProjection
       })
     } else {
       const d = $.Deferred();
@@ -1006,12 +1006,14 @@ const geoutils = {
       const queryErrors = [];
       let layersLenght = layers.length;
       layers.forEach(layer => {
-        const filter = new Filter(filterConfig);
+        const filter   = new Filter(filterConfig);
         const layerCrs = layer.getProjection().getCode();
-        /**
-         * convert
-         */
-        filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(
+          (mapCrs === layerCrs)
+            ? geometry
+            : geometry.clone().transform(mapCrs, layerCrs)
+        );
         layer.query({
           filter,
           feature_count
@@ -1045,19 +1047,22 @@ const geoutils = {
     const mapCrs = projection.getCode();
     const filter = new Filter(filterConfig);
     if (multilayers) {
-      let filterGeometry = geometry;
       if (!layers.length) d.resolve([]);
       const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
       const numberRequestd = Object.keys(multiLayers).length;
       let layersLength = numberRequestd;
       for (let key in multiLayers) {
         const _multilayer = multiLayers[key];
-        const layers = _multilayer;
-        const multilayer = multiLayers[key][0];
-        const provider = multilayer.getProvider('filter');
-        const layerCrs = multilayer.getProjection().getCode();
-        if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-        filter.setGeometry(filterGeometry);
+        const layers      = _multilayer;
+        const multilayer  = multiLayers[key][0];
+        const provider    = multilayer.getProvider('filter');
+        const layerCrs    = multilayer.getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(
+          (mapCrs === layerCrs)
+            ? geometry
+            : geometry.clone().transform(mapCrs, layerCrs)
+        );
         provider.query({
           filter,
           layers,
@@ -1076,7 +1081,12 @@ const geoutils = {
         let layersLenght = layers.length;
         layers.forEach(layer => {
           const layerCrs = layer.getProjection().getCode();
-          filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+          // Convert filter geometry from `mapCRS` to `layerCrs`
+          filter.setGeometry(
+            (mapCrs === layerCrs)
+              ? geometry
+              : geometry.clone().transform(mapCrs, layerCrs)
+          );
           layer.query({
             filter,
             filterConfig,
@@ -1912,29 +1922,25 @@ const geoutils = {
   },
   get_LEGEND_ON_LEGEND_OFF_Params(layer) {
     let LEGEND_ON, LEGEND_OFF;
-    if (layer.getCategories()) {
-      /**
-       * checked: current status
-       * _checked: original status
-       * handle only difference (diff) from original checked status and current chenge by toc categories
-       */
-      layer.getCategories().forEach(({checked, _checked, ruleKey}) => {
-        if (checked !== _checked) {
-          if (checked) {
-            if (typeof LEGEND_ON === 'undefined') LEGEND_ON = `${layer.getWMSLayerName()}:`;
-            else LEGEND_ON = `${LEGEND_ON},`;
-            LEGEND_ON = `${LEGEND_ON}${ruleKey}`
-          } else {
-            if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = `${layer.getWMSLayerName()}:`;
-            else  LEGEND_OFF = `${LEGEND_OFF},`;
-            LEGEND_OFF = `${LEGEND_OFF}${ruleKey}`;
-          }
+    (layer.getCategories() || [])
+      .forEach(({
+        checked,  // new Value
+        _checked, // old Value
+        ruleKey
+      }) => {
+        // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)
+        if (checked === _checked) {
+          return;
+        }
+        if (checked) {
+          LEGEND_ON  = (undefined === LEGEND_ON ? `${layer.getWMSLayerName()}:` : `${LEGEND_ON},`) + ruleKey;
+        } else {
+          LEGEND_OFF = (undefined === LEGEND_OFF ? `${layer.getWMSLayerName()}:` : `${LEGEND_OFF},`) + ruleKey;
         }
       });
-    }
     return {
       LEGEND_ON,
-      LEGEND_OFF
+      LEGEND_OFF,
     }
   },
 

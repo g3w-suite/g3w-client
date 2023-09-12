@@ -55,7 +55,7 @@ const __H1 = __INFO + "\n";
 
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
 
 // Built-in client plugins
 const default_plugins = [
@@ -181,16 +181,12 @@ gulp.task('browserify:app', function() {
       imgurify
     ]
   });
+
+  dependencies.forEach(dep => bundler.external(dep));   // exclude external npm dependencies
+
   if (production) {
     bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
-    dependencies.forEach(dep => bundler.external(dep)); // add external module node_modules on vendor
   } else {
-    bundler.on('prebundle', bundle => {
-      dependencies.forEach(dep => {
-        bundle.external(dep);
-        bundle.require(dep);
-      });
-    });
     bundler = watchify(bundler);
   }
 
@@ -212,6 +208,7 @@ gulp.task('browserify:app', function() {
       .pipe(rename('app.min.js'))
       .pipe(gulpif(production, sourcemaps.write('.')))
       .pipe(gulp.dest(outputFolder + '/static/client/js/'));
+
 
   if (production) {
     rebundle = () => bundle();
@@ -241,7 +238,7 @@ gulp.task('images', function () {
  gulp.task('datatable-images', function () {
   return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/css/DataTables-1.10.16/images/'));
+    .pipe(gulp.dest(outputFolder + '/static/client/images/'));
 });
 
 /**

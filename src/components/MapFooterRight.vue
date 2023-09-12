@@ -25,7 +25,10 @@
   import ApplicationState from 'store/application-state';
 
   export default {
-    name: 'Mapfooter',
+
+    /** @since 3.8.6 */
+    name: 'map-footer-right',
+
     props: {
       service: {
         type: Object
