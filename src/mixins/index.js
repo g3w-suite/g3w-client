@@ -4,7 +4,6 @@
  */
 
 import autocompleteMixin from 'mixins/autocomplete';
-import geoMixin          from 'mixins/geo';
 import resizeMixin       from 'mixins/resize';
 import selectMixin       from 'mixins/select';
 import select2Mixin      from 'mixins/select2';
@@ -14,7 +13,6 @@ import metadataMixin     from 'mixins/metadata';
 
 const mixins = {
   autocompleteMixin,
-  geoMixin,
   resizeMixin,
   selectMixin,
   select2Mixin,
@@ -22,7 +20,6 @@ const mixins = {
   widgetMixins,
   metadataMixin,
 };
-export {geoMixin};
 export {resizeMixin};
 export {selectMixin};
 export {select2Mixin};

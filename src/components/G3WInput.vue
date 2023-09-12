@@ -91,81 +91,86 @@
 
     @since 3.7.0
   -->
-  <slot v-else-if="state.visible" name="default">
-    <div class="form-group">
 
-      <!-- INPUT LABEL -->
-      <slot name="label">
-        <label
-          :for       = "state.name"
-          v-disabled = "!editable"
-          class      = "col-sm-12 control-label"
-        >{{ state.label }}
-          <span v-if="state.validate && state.validate.required">*</span>
-          <i
-            v-if   = "showhelpicon"
-            :class = "g3wtemplate.font['info']"
-            class  = "skin-color"
-            style  = "margin-left: 3px; cursor: pointer"
-            @click = "showHideHelp"
-          ></i>
-          <slot name="label-action"></slot>
-        </label>
-      </slot>
+  <fragment v-else-if="state.visible">
+    <slot name="default">
+      <div class="form-group">
 
-      <div class="col-sm-12">
+        <!-- INPUT LABEL -->
+        <slot name="label">
+          <label
+            :for       = "state.name"
+            v-disabled = "!editable"
+            class      = "col-sm-12 control-label"
+          >{{ state.label }}
+            <span v-if="state.validate && state.validate.required">*</span>
+            <i
+              v-if   = "showhelpicon"
+              :class = "g3wtemplate.font['info']"
+              class  = "skin-color"
+              style  = "margin-left: 3px; cursor: pointer"
+              @click = "showHideHelp"
+            ></i>
+            <slot name="label-action"></slot>
+          </label>
+        </slot>
 
-        <!-- LOADING BAR -->
-        <slot name="loading">
+        <div class="col-sm-12">
+
+          <!-- LOADING BAR -->
+          <slot name="loading">
+            <div
+              v-if  = "'loading' === loadingState"
+              slot  = "loading"
+              style = "position:relative; width: 100%"
+            >
+              <bar-loader loading="true" />
+            </div>
+          </slot>
+
+          <!-- INPUT ELEMENT (eg. components/InputText.vue) -->
+          <slot
+            name          = "body"
+            :editable     = "editable"
+            :notvalid     = "notvalid"
+            :tabIndex     = "tabIndex"
+            :change       = "change"
+            :mobileChange = "mobileChange"
+          />
+
+          <!-- ERROR MESSAGES -->
+          <slot name="message">
+            <p
+              v-if      = "notvalid"
+              class     = "g3w-long-text error-input-message"
+              style     = "margin: 0"
+              v-html    = "state.validate.message"
+            ></p>
+            <p
+              v-else-if = "state.info"
+              style     = "margin: 0"
+              v-html    = "state.info"
+            ></p>
+          </slot>
+
+          <!-- HELP MESSAGE -->
           <div
-            v-if  = "'loading' === loadingState"
-            slot  = "loading"
-            style = "position:relative; width: 100%"
-          >
-            <bar-loader loading="true" />
-          </div>
-        </slot>
+            v-if        = "state.help && state.help.visible"
+            class       = "g3w_input_help skin-background-color extralighten"
+            v-html      = "state.help.message"
+          ></div>
 
-        <!-- INPUT ELEMENT (eg. components/InputText.vue) -->
-        <slot
-          name          = "body"
-          :editable     = "editable"
-          :notvalid     = "notvalid"
-          :tabIndex     = "tabIndex"
-          :change       = "change"
-          :mobileChange = "mobileChange"
-        />
-
-        <!-- ERROR MESSAGES -->
-        <slot name="message">
-          <p
-            v-if      = "notvalid"
-            class     = "g3w-long-text error-input-message"
-            style     = "margin: 0"
-            v-html    = "state.validate.message"
-          ></p>
-          <p
-            v-else-if = "state.info"
-            style     = "margin: 0"
-            v-html    = "state.info"
-          ></p>
-        </slot>
-
-        <!-- HELP MESSAGE -->
-        <div
-          v-if        = "state.help && state.help.visible"
-          class       = "g3w_input_help skin-background-color extralighten"
-          v-html      = "state.help.message"
-        ></div>
+        </div>
 
       </div>
 
-    </div>
+    </slot>
+  </fragment>
 
-  </slot>
 </template>
 
 <script>
+import { Fragment }             from 'vue-fragment';
 
 import * as InputCheckbox       from 'components/InputCheckbox.vue';
 import * as InputColor          from 'components/InputColor.vue';
@@ -986,6 +991,8 @@ const vm = {
    * ORIGINAL SOURCE: src/app/gui/inputs/inputs.js@3.8
    */
   components: {
+
+    Fragment,
 
     /**
      * ORIGINAL SOURCE: src/gui/inputs/text/vue/text.js@3.8

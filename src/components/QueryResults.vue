@@ -273,13 +273,22 @@
                             :feature  = "feature"
                             :tabs     = "getLayerFormStructure(layer)"
                           />
-                          <g3w-field
+                          <table
                             v-else
-                            :layer         = "layer"
-                            :feature       = "feature"
-                            :getLayerField = "getLayerField"
-                            _legacy        = "g3w-layer-attrs"
-                          />
+                            class="feature_attributes"
+                          >
+                            <tr v-for="attr in layer.attributes.filter(attr => attr.show)">
+                              <td class="attr-label">{{ attr.label }}</td>
+                              <td class="attr-value" :attribute="attr.name">
+                                <g3w-field
+                                  :layer   = "layer"
+                                  :feature = "feature"
+                                  :field   = "getLayerField({ layer, feature, fieldName: attr.name })"
+                                  _legacy  = "foo"
+                                />
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                       <tr

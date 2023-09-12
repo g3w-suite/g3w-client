@@ -25,9 +25,6 @@ import ComponentsRegistry from 'store/components';
 
 //components
 import App from 'components/App.vue';
-import ImageComponent from 'components/GlobalImage.vue';
-import GalleryImagesComponent from 'components/GlobalGallery.vue';
-import GeospatialComponet from 'components/GlobalGeo.vue';
 import Skeleton from 'components/GlobalSkeleton.vue';
 import BarLoader from 'components/GlobalBarLoader.vue';
 import Progressbar from 'components/GlobalProgressBar.vue';
@@ -77,9 +74,7 @@ const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
  */
-Vue.component(ImageComponent.name, ImageComponent);
 Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
-Vue.component(GeospatialComponet.name, GeospatialComponet);
 Vue.component(BarLoader.name, BarLoader);
 Vue.component(Progressbar.name, Progressbar);
 Vue.component(Skeleton.name, Skeleton);
@@ -95,6 +90,10 @@ Vue.component(Divider.name, Divider);
 Vue.component(G3WInput.name, G3WInput);
 /** @since 3.9.0 **/
 Vue.component(G3WField.name, G3WField);
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('g3w-image', G3WField);
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('g3w-geospatial', G3WField);
 
 /**
  * Install application filters

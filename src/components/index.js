@@ -7,8 +7,6 @@ import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
 import CatalogTristateTree from './CatalogTristateTree.vue';
-import FieldGeo from './FieldGeo.vue';
-import FieldImage from './FieldImage.vue';
 import Form from './Form.vue';
 import FormAddon from './FormAddon.vue';
 import FormAddons from './FormAddons.vue';
@@ -21,9 +19,6 @@ import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
 import GlobalDateTime from './GlobalDateTime.vue';
 import GlobalDivider from './GlobalDivider.vue';
-import GlobalGallery from './GlobalGallery.vue';
-import GlobalGeo from './GlobalGeo.vue';
-import GlobalImage from './GlobalImage.vue';
 import GlobalLayerPositions from './GlobalLayerPositions.vue';
 import GlobalProgressBar from './GlobalProgressBar.vue';
 import GlobalRange from './GlobalRange.vue';
@@ -118,8 +113,6 @@ export {
   CatalogTristateTree,
   /** @since 3.8.0 */
   ChangeMapMenu,
-  FieldGeo,
-  FieldImage,
   Form,
   FormAddon,
   FormAddons,
@@ -134,9 +127,6 @@ export {
   GlobalBarLoader,
   GlobalDateTime,
   GlobalDivider,
-  GlobalGallery,
-  GlobalGeo,
-  GlobalImage,
   GlobalLayerPositions,
   GlobalProgressBar,
   GlobalRange,

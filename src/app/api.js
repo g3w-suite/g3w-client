@@ -296,27 +296,21 @@ const g3wsdk = {
 
 console.log(G3WInput);
 
+function _alias(vm, props) {
+  return {
+    functional: true,
+    render(h, { data, children }) {
+      return h( vm, { ...data, props: { ...data.props, props } }, children);
+    },
+  };
+}
+
 /**
  * BACKCOMP (v3.x)
  * 
  * ref: g3w-client/src/components/InputG3W.vue@3.8
  */
-g3wsdk.gui.vue.Inputs.G3WInput = {
-  functional: true,
-  render(h, { data, children }) {
-    return h(
-      G3WInput,
-      {
-        ...data,
-        props: {
-          ...data.props,
-          _legacy: "g3w-input",
-        },
-      },
-      children
-    );
-  },
-};
+g3wsdk.gui.vue.Inputs.G3WInput = _alias(G3WInput, { _legacy: "g3w-input" } );
 
 /**
  * BACKCOMP (v3.x)
@@ -324,22 +318,7 @@ g3wsdk.gui.vue.Inputs.G3WInput = {
  * ref: g3w-client/src/components/G3WFormInputs.vue@3.8
  * ref: g3w-client-plugin-billboards/components/panel.vue
  */
-g3wsdk.gui.vue.Inputs.G3wFormInputs = {
-  functional: true,
-  render(h, { data, children }) {
-    return h(
-      g3wsdk.gui.vue.Inputs.G3WInput,
-      {
-        ...data,
-        props: {
-          ...data.props,
-          _legacy: "g3w-form",
-        },
-      },
-      children
-    );
-  },
-};
+g3wsdk.gui.vue.Inputs.G3wFormInputs = _alias(g3wsdk.gui.vue.Inputs.G3WInput, { _legacy: "g3w-form" } )
 
 /**
  * BACKCOMP (v3.x)
@@ -351,7 +330,7 @@ g3wsdk.gui.vue.Inputs.InputsComponents = Object.entries(InputsComponents).reduce
 /**
  * BACKCOMP (v3.x)
  * 
- * ref: src/mixins/base-input.vue@3.8
+ * ref: src/mixins/base-input.js@3.8
  */
 g3wsdk.gui.vue.Mixins.baseInputMixin = {
 
@@ -387,7 +366,7 @@ g3wsdk.gui.vue.Mixins.baseInputMixin = {
 /**
  * BACKCOMP (v3.x)
  * 
- * ref: src/mixins/fields.vue@3.8
+ * ref: src/mixins/fields.js@3.8
  */
 g3wsdk.gui.vue.Mixins.fieldsMixin = {
 
@@ -407,11 +386,10 @@ g3wsdk.gui.vue.Mixins.fieldsMixin = {
 
 }
 
-
 /**
  * BACKCOMP (v3.x)
  * 
- * ref: src/mixins/fields.vue@3.8
+ * ref: src/mixins/media.js@3.8
  */
 g3wsdk.gui.vue.Mixins.mediaMixin = {
   computed: {
@@ -422,6 +400,19 @@ g3wsdk.gui.vue.Mixins.mediaMixin = {
     isMedia:      deprecate(G3WField.methods.isMedia,                  '[G3W-SDK] mediaMixin::isMedia is deprecated'),
     getMediaType: deprecate(G3WField.methods.getMediaType,             '[G3W-SDK] mediaMixin::getMediaType is deprecated'),
   },
+};
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/geo.js@3.8
+ */
+g3wsdk.gui.vue.Mixins.geoMixin = {
+  methods: {
+    showLayer: deprecate(G3WField.methods._showLayer,                  '[G3W-SDK] geoMixin::showLayer is deprecated'),
+  },
+  created: deprecate(G3WField.created,                                 '[G3W-SDK] geoMixin is deprecated'),
+  created: deprecate(G3WField.beforeDestroy,                           '[G3W-SDK] geoMixin is deprecated'),
 }
 
 module.exports = g3wsdk;
