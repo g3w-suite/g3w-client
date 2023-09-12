@@ -43,7 +43,7 @@
   <slot name="default">
 
     <span
-      v-if   = "!_legacy && isSimple(field)"
+      v-if   = "_legacy && isSimple(field)"
       v-html = "field.value"
     ></span>
 

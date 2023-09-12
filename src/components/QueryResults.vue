@@ -284,6 +284,7 @@
                                   :layer   = "layer"
                                   :feature = "feature"
                                   :state   = "getLayerField({ layer, feature, fieldName: attr.name })"
+                                  _legacy  = "foo"
                                 />
                               </td>
                             </tr>
