@@ -593,7 +593,7 @@ const vm = {
     }
 
     // ORIGINAL SOURCE: src/components/GlobalGeo.vue@3.8
-    if (this.__isGeoField || this.isGeo(field)) {
+    if (this.__isGeoField || this.isGeo(this.field)) {
       const mapService = GUI.getComponent('map').getService();
       let style;
       switch (this.data.type) {
