@@ -488,7 +488,6 @@ const vm = {
      * ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
      */
     images() {
-      console.log(this);
       return this.values.map((img) => ({ src: ('Object' === toRawType(img) ? img.photo: img) }));
     }
 
@@ -630,8 +629,6 @@ const vm = {
    * ORIGINAL SOURCE: src/components/FieldG3W.vue@3.8
    */
   created() {
-    // console.log(this);
-
     /** @TODO make it a required `$props` instead? */
     if (!this.feature) {
       this.feature = {};
