@@ -70,11 +70,22 @@ const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
 
 
 /**
+ * BACKCOMP
+ */
+function _alias(vm, props) {
+  return {
+    functional: true,
+    render(h, { data, children }) {
+      return h( vm, { ...data, props: { ...data.props, props } }, children);
+    },
+  };
+}
+
+/**
  * Install global components
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
  */
-Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
 Vue.component(BarLoader.name, BarLoader);
 Vue.component(Progressbar.name, Progressbar);
 Vue.component(Skeleton.name, Skeleton);
@@ -91,9 +102,11 @@ Vue.component(G3WInput.name, G3WInput);
 /** @since 3.9.0 **/
 Vue.component(G3WField.name, G3WField);
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-image', G3WField);
+Vue.component('g3w-image',          _alias(G3WField, { _legacy: "g3w-imagefield" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-geospatial', G3WField);
+Vue.component('g3w-images-gallery', _alias(G3WField, { _legacy: "g3w-galleryfield" }));
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('g3w-geospatial',     _alias(G3WField, { _legacy: "g3w-geofield" }));
 
 /**
  * Install application filters

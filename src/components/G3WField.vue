@@ -28,8 +28,8 @@
 
     @since 3.9.0
   -->
-  <div v-if="__isImageField || (isImage(field) || isPhoto(field))" class="container-fluid">
-    <div class="row">
+  <div v-if="__isImageField || __isGalleryField || (isImage(field) || isPhoto(field))" class="container-fluid">
+    <div v-if="!__isGalleryField" class="row">
       <div v-for="(img, index) in values" class="g3w-image col-md-6 col-sm-12">
         <img
           class  = "img-thumbnail"
@@ -406,6 +406,17 @@ const vm = {
      */
      __isImageField() {
       return 'g3w-imagefield' === this._legacy;
+    },
+
+    /**
+     * Whether this is a Legacy GlobalGallery component
+     * 
+     * @example <g3w-field _legacy="g3w-galleryfield" />
+     * 
+     * @since 3.9.0
+     */
+     __isGalleryField() {
+      return 'g3w-galleryfield' === this._legacy;
     },
 
     /**
