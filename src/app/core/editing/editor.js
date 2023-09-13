@@ -162,46 +162,115 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
   }
 };
 
-proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
-  const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
+/**
+ *
+ * @param relationId
+ * @param ids
+ * @param field
+ * @param values
+ * @returns {boolean} if find feature/s that have temporary parent client id __new__
+ */
+proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}) {
+  //get editing relation layer source
+  const editingLayerSource = SessionsRegistry
+    .getSession(relationId)
+    .getEditor()
+    .getEditingSource();
+
+  //get relation feature by id
   ids.forEach(id => {
+    //get feature from source
     const feature = editingLayerSource.getFeatureById(id);
+    //if found feature
     if (feature) {
+      //get feature value by field
       const fieldvalue = feature.get(field);
-      fieldvalue == values[0] && feature.set(field, values[1]);
+      if (fieldvalue == values[0]) {
+        feature.set(field, values[1]);
+      }
     }
   })
 };
 
-// apply response data from server in case of new inserted feature
+
+/**
+ * Apply response data from server in case of new inserted feature
+ * @param response
+ * @param relations
+ */
 proto.applyCommitResponse = function(response={}, relations=[]) {
   if (response && response.result) {
     const {response:data} = response;
+    //get ids from new attribute of response
     const ids = data.new;
+    //get new lockId
     const lockids = data.new_lockids;
-    ids.forEach(idobj => {
-      const feature = this._featuresstore.getFeatureById(idobj.clientid);
-      feature.setId(idobj.id);
-      feature.setProperties(idobj.properties);
-      relations.forEach(relation =>{
-        Object.entries(relation).forEach(([relationId, options]) => {
-          const value = feature.get(options.fatherField);
-          this.setFieldValueToRelationField({
-            relationId,
-            ids: options.ids,
-            field: options.childField,
-            values:[idobj.clientid, value]
+    /**
+     * - clientid is temporary id create by client __new__
+     * - id is the new id create by server and store
+     * - properties are properties of the feature saved on server
+     */
+    ids.forEach(({clientid, id, properties}={}) => {
+      const feature = this._featuresstore.getFeatureById(clientid);
+      feature.setId(id); //set new id
+      feature.setProperties(properties);
+      //handle relations if provided
+      relations.forEach(relation => {
+        Object
+          .entries(relation)
+          .forEach(([relationId, options]) => {
+
+            //Need to backport compatibility before v3.7.0
+            const fatherField = Array.isArray(options.fatherField)
+              ? options.fatherField :
+              [options.fatherField];
+
+            //Need to backport compatibility before v3.7.0
+            const childField = Array.isArray(options.childField)
+              ? options.childField :
+              [options.childField];
+            //Check if parent layer field is pk
+            const fatherPkField = fatherField.find(fField => this._layer.isPkField(fField));
+            //if found
+            if (fatherPkField) {
+              //for each field
+              this.setFieldValueToRelationField({
+                relationId, //relation layer id
+                ids: options.ids, //ids of features of relation layers to check
+                field: childField[fatherField.indexOf(fatherPkField)], //get relation field to overwrite
+                values: [clientid, id] //[<old temporary id value>, <new id value>]
+              })
+            }
           })
-        })
       })
     });
-    const features = this._featuresstore.readFeatures();
+    //read feature from editor featurestore
+    const features = this.readEditingFeatures();
+
+    //reaset state of the features (update, new etc..)
     features.forEach(feature => feature.clearState());
+
+    //set layer features (substitute to actual features)
     this._layer.setFeatures(features);
-    this._layer.getSource().addLockIds(lockids);
+
+    //add lockIds
+    this.addLockIds(lockids);
   }
 };
 
+/**
+ * Add lock id to current layer
+ * @since v3.7.0
+ * @param lockids
+ */
+proto.addLockIds = function(lockids) {
+  this._layer.getSource().addLockIds(lockids);
+}
+
+/**
+ *
+ * @returns {*}
+ */
 proto.getLockIds = function(){
   return this._layer.getSource().getLockIds();
 };
@@ -210,18 +279,28 @@ proto.getLockIds = function(){
 proto.commit = function(commitItems) {
   const d = $.Deferred();
   // in case of relations bind to new feature
-  const relations = commitItems.add.length ? Object.keys(commitItems.relations).map(relationId => {
-    const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
-    const updates = commitItems.relations[relationId].update.map(relation => relation.id);
-    const add = commitItems.relations[relationId].add.map(relation => relation.id);
-    return {
-      [relationId]:{
-        ids: [...add, ...updates],
-        fatherField: layerRelation.getFatherField(),
-        childField: layerRelation.getChildField()
-      }
-    }
-  }) : [];
+  const relations = commitItems.add.length ?
+    //check if there are commit relations
+    Object
+      .keys(commitItems.relations)
+      .map(relationId => {
+        //get Layer relation
+        const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
+        //get updates changes
+        const updates = commitItems.relations[relationId].update.map(relation => relation.id);
+        //get add new relations
+        const add = commitItems.relations[relationId].add.map(relation => relation.id);
+        return {
+          [relationId]: {
+            ids: [...add, ...updates], //store id of relation added or changed
+            fatherField: layerRelation.getFatherField(), //father Fields <Array>
+            childField: layerRelation.getChildField() //child Fields <Array>
+          }
+        }
+      }) :
+
+    []; //empty Array
+
   this._layer.commit(commitItems)
     .then(promise => {
       promise
