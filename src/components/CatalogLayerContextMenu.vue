@@ -23,9 +23,9 @@
     <li v-if="!layerMenu.layer.projectLayer">
       <div style="display: flex; justify-content: space-between; align-items: center">
         <layerspositions
-          @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})"
-          style="display: flex; flex-direction: column; justify-content: space-between"
-          :position="layerMenu.layer.position"
+          @layer-position-change = "changeLayerMapPosition({position:$event, layer: layerMenu.layer})"
+          style                  = "display: flex; flex-direction: column; justify-content: space-between"
+          :position              = "layerMenu.layer.position"
         />
       </div>
     </li>

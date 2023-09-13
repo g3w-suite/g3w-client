@@ -1,20 +1,43 @@
 <!--
   @file
-  @since v3.7
+  
+  ORIGINAL SOURCE: src/components/GlobalDateTime.vue@3.8
+
+  @since 3.9.0
 -->
 
 <template>
-  <div ref="datimecontainer">
-    <label :for="id" style="display: block" v-t="label"></label>
-    <div class="form-group">
-      <div class='input-group date' ref="iddatetimepicker">
-        <input :id="id" ref="idinputdatetimepiker" type='text' @change="changeInput" class="form-control" />
-        <span class="input-group-addon caret">
-          <span class="datetimeinput" :class="[type === 'time'? g3wtemplate.getFontClass('time') :  g3wtemplate.getFontClass('calendar')]"></span>
-        </span>
+  <g3w-input :state="{ visible: true, type: 'datetime' }" _legacy="g3w-input" _plain="true">
+    <template #default>
+      <div ref="datimecontainer">
+        <label
+          :for  = "id"
+          style = "display: block;"
+          v-t   = "label"
+        ></label>
+        <div class="form-group">
+          <div
+            ref   = "iddatetimepicker"
+            class = "input-group date"
+          >
+            <input
+              ref     = "idinputdatetimepiker"
+              :id     = "id"
+              type    = "text"
+              @change = "changeInput"
+              class   = "form-control"
+            />
+            <span class="input-group-addon caret">
+              <span
+                class  = "datetimeinput"
+                :class = "g3wtemplate.getFontClass(type === 'time' ? 'time' : 'calendar')"
+              ></span>
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </g3w-input>
 </template>
 
 <script>
@@ -23,45 +46,64 @@
   const { getUniqueDomId } = require('core/utils/utils');
 
   export default {
-    name: "datetime",
+
+    /** @since 3.9.0 */
+    name: "input-datetime",
+
     props: {
+
       type:{
         type: String,
         default: 'date' // time
       },
+
       format: {
         type: String,
         default: 'YYYY-MM-DD'
       },
+
       minDate:{
         default: false
       },
+
       maxDate: {
         default: false
       },
+
       enabledDates: {
         default: false
       },
+
       value: {},
+
       label: {
         default: 'Date'
-      }
+      },
+
     },
-    data(){
+
+    data() {
       return {
-        datetimevalue: this.value
-      }
+        datetimevalue: this.value,
+      };
     },
+
     methods: {
-      changeInput(evt){},
+
+      changeInput(evt) {},
+
       change(value) {
-        const date = moment(value).format(this.format);
-        this.$emit('change', date)
-      }
+        this.$emit('change', moment(value).format(this.format)) // emit date.
+      },
+
     },
+
     async mounted() {
+
       await this.$nextTick();
+
       this.datetimeinputelement = $(this.$refs.iddatetimepicker);
+
       this.datetimeinputelement.datetimepicker({
         minDate: this.minDate,
         maxDate: this.maxDate,
@@ -77,34 +119,46 @@
           horizontal: 'right'
         },
       });
+
       this.datetimeinputelement.on("dp.change", ({date}) => {
         this.change(date);
       });
+
       this.datetimeinputelement.on("dp.hide", evt => {
         /**
          * for developement purpose. It used to leave open datimepicker open
          */
         //$(this.$refs.iddatetimepicker).data("DateTimePicker").show();
       });
+
       ApplicationState.ismobile && setTimeout(() => datetimeinputelement.blur());
+
     },
+
     watch: {
-      value(datetime){
+
+      value(datetime) {
         this.datetimevalue = datetime;
         this.datetimeinputelement.data("DateTimePicker").date(datetime)
       },
-      async minDate(mindatetime){
+
+      async minDate(mindatetime) {
         this.datetimeinputelement.data("DateTimePicker").minDate(mindatetime);
       },
-      async maxDate(maxdatetime){
+
+      async maxDate(maxdatetime) {
         this.datetimeinputelement.data("DateTimePicker").maxDate(maxdatetime);
       },
-      enabledDates(dates){
+
+      enabledDates(dates) {
         this.datetimeinputelement.data("DateTimePicker").enabledDates(dates);
-      }
+      },
+
     },
+
     created(){
       this.id = getUniqueDomId();
-    }
+    },
+
   }
 </script>

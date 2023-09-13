@@ -29,10 +29,7 @@ import Skeleton from 'components/GlobalSkeleton.vue';
 import BarLoader from 'components/GlobalBarLoader.vue';
 import Progressbar from 'components/GlobalProgressBar.vue';
 import HelpDiv from 'components/GlobalHelpDiv.vue';
-import Resize from 'components/GlobalResize.vue'
-import LayerPositions from 'components/GlobalLayerPositions.vue';
-import DateTime from 'components/GlobalDateTime.vue';
-import Range from 'components/GlobalRange.vue';
+import Resize from 'components/GlobalResize.vue';
 import ResizeIcon from 'components/GlobalResizeIcon.vue';
 import Tabs from 'components/GlobalTabs.vue';
 import Divider from 'components/GlobalDivider.vue';
@@ -91,12 +88,15 @@ Vue.component(Progressbar.name, Progressbar);
 Vue.component(Skeleton.name, Skeleton);
 Vue.component(HelpDiv.name, HelpDiv);
 Vue.component(Resize.name, Resize);
-Vue.component(LayerPositions.name, LayerPositions);
-Vue.component(DateTime.name, DateTime);
-Vue.component(Range.name, Range);
 Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('layerspositions',    _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'layer_positions' }, _plain: "true" }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('datetime',           _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'datetime' }, _plain: "true" }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('range',              _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'range_slider' }, _plain: "true" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('g3w-image',          _alias(G3WField, { _legacy: "g3w-imagefield" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/

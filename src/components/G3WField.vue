@@ -35,7 +35,13 @@
 <!--
   ORIGINAL SOURCE: src/components/Field.vue@3.8
 
-  @example <g3w-field :state />
+  @example
+
+    <g3w-field :state>
+      <template #label> ... </template>
+      <template #body> ... </template>
+      ...
+    </g3w-field>
 
   @since 3.9.0
 -->

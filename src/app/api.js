@@ -318,7 +318,7 @@ g3wsdk.gui.vue.Inputs.G3WInput = _alias(G3WInput, { _legacy: "g3w-input" } );
  * ref: g3w-client/src/components/G3WFormInputs.vue@3.8
  * ref: g3w-client-plugin-billboards/components/panel.vue
  */
-g3wsdk.gui.vue.Inputs.G3wFormInputs = _alias(g3wsdk.gui.vue.Inputs.G3WInput, { _legacy: "g3w-form" } )
+g3wsdk.gui.vue.Inputs.G3wFormInputs = _alias(FormBody, { _legacy: "g3w-form-inputs" } )
 
 /**
  * BACKCOMP (v3.x)

@@ -8,36 +8,11 @@
   @version 2.0 ADD SOURCE FROM: src/app/core/utils/validators.js@3.8
   @version 2.0 ADD SOURCE FROM: src/gui/inputs/input.js@3.8
   @version 2.0 ADD SOURCE FROM: src/mixins/base-input.js@3.8
-  @version 2.0 ADD SOURCE FROM: src/components/InputG3WFormInputs.vue@3.8
   @version 2.0 ADD SOURCE FROM: src/components/InputG3W.vue@3.8
   @version 1.0 ORIGINAL SOURCE: src/components/InputBase.vue@3.7
 -->
 
 <template>
-
-  <!--
-    ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
-
-    @example <g3w-input _legacy="g3w-form" />
-
-    @since 3.9.0
-  -->
-  <form v-if="__isMulti" class="form-horizontal g3w-form">
-    <div class="box-primary">
-      <div class="box-body">
-        <g3w-input
-          v-for   = "field in state.fields"
-          v-bind  = "$props"
-          :state  = "field"
-          _legacy = "g3w-input"
-        />
-      </div>
-      <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">
-        <span class="hide-cursor-caret-color">*</span>
-        <span class="hide-cursor-caret-color" v-t="'sdk.form.footer.required_fields'"></span>
-      </div>
-    </div>
-  </form>
 
   <!--
     ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
@@ -46,7 +21,7 @@
 
     @since 3.9.0
   -->
-  <div v-else-if="state.visible && __isChild">
+  <div v-if="state.visible && __isChild">
 
     <div
       style = "border-top: 2px solid"
@@ -66,7 +41,13 @@
   </div>
 
   <div v-else-if="state.visible && __isInput">
-    <div>
+    <component
+      v-if   = "$attrs._plain"
+      v-bind = "$props"
+      :state = "state"
+      :is    = "type"
+    />
+    <div v-else>
       <component
         v-bind = "$props"
         :state = "state"
@@ -175,13 +156,16 @@ import { Fragment }             from 'vue-fragment';
 import * as InputCheckbox       from 'components/InputCheckbox.vue';
 import * as InputColor          from 'components/InputColor.vue';
 import * as InputDateTimePicker from 'components/InputDateTimePicker.vue';
+import * as InputDateTime       from 'components/InputDateTime.vue';
 import * as InputFloat          from 'components/InputFloat.vue';
 import * as InputInteger        from 'components/InputInteger.vue';
+import * as InputLayerPositions from 'components/InputLayerPositions.vue';
 import * as InputLonLat         from 'components/InputLonLat.vue';
 import * as InputMedia          from 'components/InputMedia.vue';
 import * as InputPickLayer      from 'components/InputPickLayer.vue';
 import * as InputRadio          from 'components/InputRadio.vue';
 import * as InputRange          from 'components/InputRange.vue';
+import * as InputRangeSlider    from 'components/InputRangeSlider.vue';
 import * as InputSelect         from 'components/InputSelect.vue';
 import * as InputSliderRange    from 'components/InputSliderRange.vue';
 import * as InputTable          from 'components/InputTable.vue';
@@ -223,13 +207,16 @@ Object
     InputCheckbox,
     InputColor,
     InputDateTimePicker,
+    InputDateTime,
     InputFloat,
     InputInteger,
+    InputLayerPositions,
     InputLonLat,
     InputMedia,
     InputPickLayer,
     InputRadio,
     InputRange,
+    InputRangeSlider,
     InputSelect,
     InputSliderRange,
     InputTable,
@@ -959,19 +946,6 @@ const vm = {
     },
 
     /**
-     * ORIGINAL SOURCE: src/components/InputG3WFormInputs.vue@3.8
-     * 
-     * @TODO double check optional props
-     * 
-     * @since 3.9.0
-     */
-    // state:                       { type: Object, default: { fields: [] } },
-    // addToValidate:               { type: Function },
-    // changeInput:                 { type: Function },
-    // removeToValidate:            { type: Function },
-    show_required_field_message: { type: Boolean, default: false },
-
-    /**
      * Legacy input type.
      * 
      * BACKCOMP ONLY (v3.x)
@@ -1113,20 +1087,18 @@ const vm = {
      */
     'table_input': InputTable,
 
+    /** @since 3.9.0 */
+    'datetime_input': InputDateTime,
+
+    /** @since 3.9.0 */
+    'layer_positions_input': InputLayerPositions,
+
+    /** @since 3.9.0 */
+    'range_slider_input': InputRangeSlider,
+
   },
 
   computed: {
-
-    /**
-     * Whether this is a Legacy InputG3WFormInputs component
-     * 
-     * @example <g3w-input _legacy="g3w-form" />
-     * 
-     * @since 3.9.0
-     */
-    __isMulti() {
-      return 'g3w-form' === this._legacy;
-    },
 
     /**
      * Whether this is a InputG3W component
@@ -1309,17 +1281,16 @@ const vm = {
       '[ ' + this.state.name + ' ]',
       this.state.input.type,
       this.__isInput,
-      this.__isMulti,
       this.$scopedSlots,
       this.$slots,
       // this
     );
 
-    if (this.__isInput && 'child' !== this.state.type && this.state.input && !this.state.input.options) {
+    if (this.state.input && !this.state.input.options) {
       this.state.input.options = {};
     }
 
-    if (this.__isInput || this.__isMulti) {
+    if (this.__isInput) {
       return;
     }
 
@@ -1383,18 +1354,6 @@ export default vm;
 </script>
 
 <style scoped>
-  #g3w-for-inputs-required-inputs-message {
-    margin-bottom:5px;
-    font-weight: bold;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .box-body {
-    padding: 5px;
-  }
-
   .control-label {
     text-align: left !important;
     padding-top: 0 !important;

@@ -27,7 +27,10 @@
 
     <div v-if="added" class="g3w-wms-external-panel-layer-added-message" v-t="'sidebar.wms.layer_id_already_added'"></div>
 
-    <layerspositions @layer-position-change="position=$event" :position="position" />
+    <layerspositions
+      @layer-position-change = "position=$event"
+      :position              = "position"
+    />
 
     <button @click.stop="addWMSlayer" v-disabled="0 === selectedlayers.length" class="btn wms-add-layer-button sidebar-button skin-button">
       <i style="font-weight: bold;" :class="g3wtemplate.getFontClass('plus-square')" ></i>

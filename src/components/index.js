@@ -17,11 +17,8 @@ import G3WField from './G3WField.vue';
 import G3WInput from './G3WInput.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
-import GlobalDateTime from './GlobalDateTime.vue';
 import GlobalDivider from './GlobalDivider.vue';
-import GlobalLayerPositions from './GlobalLayerPositions.vue';
 import GlobalProgressBar from './GlobalProgressBar.vue';
-import GlobalRange from './GlobalRange.vue';
 import GlobalResize from './GlobalResize.vue';
 import GlobalResizeIcon from './GlobalResizeIcon.vue';
 import GlobalSkeleton from './GlobalSkeleton.vue';
@@ -30,14 +27,17 @@ import GlobalTabsNode from './GlobalTabsNode.vue';
 import HeaderItem from './HeaderItem.vue';
 import InputCheckbox from './InputCheckbox.vue';
 import InputColor from './InputColor.vue';
+import InputDateTime from './InputDateTime.vue';
 import InputDateTimePicker from './InputDateTimePicker.vue';
 import InputFloat from './InputFloat.vue';
 import InputInteger from './InputInteger.vue';
+import InputLayerPositions from './InputLayerPositions.vue';
 import InputLonLat from './InputLonLat.vue';
 import InputMedia from './InputMedia.vue';
 import InputPickLayer from './InputPickLayer.vue';
 import InputRadio from './InputRadio.vue';
 import InputRange from './InputRange.vue';
+import InputRangeSlider from './InputRangeSlider.vue';
 import InputSelect from './InputSelect.vue';
 import InputSliderRange from './InputSliderRange.vue';
 import InputTable from './InputTable.vue';
@@ -125,11 +125,8 @@ export {
   G3WInput,
   GlobalHelpDiv,
   GlobalBarLoader,
-  GlobalDateTime,
   GlobalDivider,
-  GlobalLayerPositions,
   GlobalProgressBar,
-  GlobalRange,
   GlobalResize,
   GlobalResizeIcon,
   GlobalSkeleton,
@@ -138,14 +135,20 @@ export {
   HeaderItem,
   InputCheckbox,
   InputColor,
+  /** @since 3.9.0 */
+  InputDateTime,
   InputDateTimePicker,
   InputFloat,
+  /** @since 3.9.0 */
+  InputLayerPositions,
   InputInteger,
   InputLonLat,
   InputMedia,
   InputPickLayer,
   InputRadio,
   InputRange,
+  /** @since 3.9.0 */
+  InputRangeSlider,
   InputSelect,
   InputSliderRange,
   InputTable,

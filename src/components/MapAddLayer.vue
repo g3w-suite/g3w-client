@@ -20,7 +20,9 @@
               <option v-for="option in options" :value="option">{{option}}</option>
             </select>
           </div>
-          <layerspositions @layer-position-change="setLayerMapPosition($event)"></layerspositions>
+          <layerspositions
+            @layer-position-change = "setLayerMapPosition($event)"
+          />
           <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
           <chrome-picker
             v-model="layer.color"
