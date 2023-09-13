@@ -20,18 +20,40 @@ const TableService = function(options = {}) {
   this.selectedfeaturesfid = this.layer.getSelectionFids();
   this.geolayer = this.layer.isGeoLayer();
   this.relationsGeometry = [];
-  !this.geolayer && this.layer.getRelations().getArray().forEach(relation => {
-    const relationLayer = CatalogLayersStoresRegistry.getLayerById(relation.getChild());
-    if (relationLayer.isGeoLayer()) {
-      this.relationsGeometry.push({
-        layer: relationLayer,
-        child_field: relation.getChildField(),
-        field: relation.getFatherField(),
-        features: {}
-      })
-    }
-  });
-  this.projection = this.geolayer  ? this.layer.getProjection() : null;
+  //In case if no geometry layer
+  if (!this.geolayer) {
+    //check layer Relation
+    this.layer.getRelations()
+      .getArray()
+      .forEach(relation => {
+        //get project layer
+        const relationLayer = CatalogLayersStoresRegistry.getLayerById(relation.getFather());
+        if (
+          //need to check if current layer is not child layer of relation
+          (this.layer.getId() !== relation.getFather()) &&
+          //need to be geolayer (has geometry)
+          relationLayer.isGeoLayer()
+        ) {
+          this.relationsGeometry.push({
+            layer: relationLayer,
+            //need to check if Array for backport compatibility
+            //before v3.7.0 (or in case of not reload project)
+            father_fields: Array.isArray(relation.getFatherField()) ?
+              relation.getFatherField() :
+              [relation.getFatherField()],  //is Array since v3.7.0
+            //need to check if Array for backport compatibility
+            //before v3.7.0 (or in case of not reload project)
+            fields: Array.isArray(relation.getChildField()) ?
+              relation.getChildField() :
+              [relation.getChildField()], // is Array since v3.7.0
+            features: {}
+          })
+        }
+     });
+  }
+
+  this.projection = this.geolayer ? this.layer.getProjection() : null;
+
   this.mapService = GUI.getService('map');
   this.getAll = false;
   this.paginationfilter = false;
@@ -379,11 +401,11 @@ proto.getDataFromBBOX = async function(){
     this.mapBBoxEventHandlerKey.cb = this.state.pagination ? () => {
       this.setInBBoxParam();
       this.emit('ajax-reload');
-    } : async ()=>{
-      this.setInBBoxParam();
-      this.filterChangeHandler({
-        type: 'in_bbox'
-      });
+    } : async () => {
+        this.setInBBoxParam();
+        this.filterChangeHandler({
+          type: 'in_bbox'
+        });
     };
     this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
     this.mapBBoxEventHandlerKey.cb();
@@ -450,49 +472,76 @@ proto.zoomAndHighLightFeature = function(feature, zoom=true) {
  * Zoom to eventually features relation
  */
 proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom=true){
-  if (this.relationsGeometry.length) {
+  //check if there are relation features geometry
+  if (this.relationsGeometry.length > 0) {
+    //Utility function to create uniqueKey
+    const createFeatureKey = values => values.join('__')
     const features = [];
     const promises = [];
-    const values = []; // usefult to check if add or not
-    this.relationsGeometry.forEach(({layer, child_field, field, features}) =>{
-      const value = feature.attributes[field];
-      values.push(value);
-      if (features[value] === undefined) {
-        let promise;
-        if (zoom){
-          promise = DataRouterService.getData('search:features', {
-            inputs:{
-              layer,
-              filter:`${child_field}|eq|${value}`,
-              formatter: 1, // set formatter to 1
-              search_endpoint: 'api'
-            },
-            outputs: false
-          });
-        } else promise = Promise.reject();
-        promises.push(promise);
-      } else promises.push(Promise.resolve(
-        {
-          data:[
+    const field_values = []; // useful to check if add or not
+    this.relationsGeometry
+      .forEach(({layer, father_fields, fields, features}) => {
+        const values = fields.map(field => feature.attributes[field]);
+        const featureKey = createFeatureKey(values);
+        field_values.push(values);
+        if (features[featureKey] === undefined) {
+          let promise;
+          if (zoom) {
+            const filter = father_fields.reduce((filter, field, index) => {
+              filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
+              return filter;
+            }, '');
+            promise = DataRouterService.getData('search:features', {
+              inputs: {
+                layer,
+                filter,
+                formatter: 1, // set formatter to 1
+                search_endpoint: 'api'
+              },
+              outputs: false //just a request not show on result
+            });
+          } else {
+            promise = Promise.reject();
+          }
+          promises.push(promise);
+        } else {
+          promises.push(Promise.resolve(
             {
-              features: features[value]
-            }
-          ]
-      }))
-    });
+              data:[
+                {
+                  features: features[featureKey]
+                }
+              ]
+            }))
+        }
+      });
     const promisesData = await Promise.allSettled(promises);
+
     promisesData.forEach(({status, value}, index) => {
-      if (status === 'fulfilled'){
+      //Only in case of result
+      if (status === 'fulfilled') {
+
         const _features = value.data[0] ? value.data[0].features : [];
+
         _features.forEach(feature => features.push(feature));
-        if (this.relationsGeometry[index].features[values[index]] === undefined){
-          this.relationsGeometry[index].features[values[index]] = _features;
+
+        const featureKey = createFeatureKey(field_values[index]);
+
+        if (this.relationsGeometry[index].features[featureKey] === undefined) {
+
+          this.relationsGeometry[index].features[featureKey] = _features;
+
         }
       }
     });
-    zoom ? this.mapService.zoomToFeatures(features, {
-      highlight: true
-    }) : this.mapService.highlightFeatures(features);
+
+    if (zoom) {
+      this.mapService.zoomToFeatures(features, {
+        highlight: true
+      })
+    } else {
+      this.mapService.highlightFeatures(features);
+    }
   }
 };
 
