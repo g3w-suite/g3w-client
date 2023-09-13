@@ -63,8 +63,8 @@
     @example
 
       <g3w-input :state>
-        <template #label> ... </template>
-        <template #body> ... </template>
+        <template #input-label> ... </template>
+        <template #input-body> ... </template>
         ...
       </g3w-input>
 
@@ -78,7 +78,7 @@
       <div class="form-group">
 
         <!-- INPUT LABEL -->
-        <slot name="label">
+        <slot name="input-label">
           <label
             :for       = "state.name"
             v-disabled = "!editable"
@@ -92,7 +92,7 @@
               style  = "margin-left: 3px; cursor: pointer"
               @click = "showHideHelp"
             ></i>
-            <slot name="label-action"></slot>
+            <slot name="input-label-action"></slot>
           </label>
         </slot>
 
@@ -111,7 +111,7 @@
 
           <!-- INPUT ELEMENT (eg. components/InputText.vue) -->
           <slot
-            name          = "body"
+            name          = "input-body"
             :editable     = "editable"
             :notvalid     = "notvalid"
             :tabIndex     = "tabIndex"
@@ -120,7 +120,7 @@
           />
 
           <!-- ERROR MESSAGES -->
-          <slot name="message">
+          <slot name="input-message">
             <p
               v-if      = "notvalid"
               class     = "g3w-long-text error-input-message"
@@ -1231,7 +1231,7 @@ const vm = {
 
       this.$emit('changeinput', this.state);
 
-      // emit to <child #slot="body"> from parent <g3w-input> 
+      // emit to <child #slot="input-body"> from parent <g3w-input> 
       if (this.$slots && this.$slots.body && this.$slots.body[0].context && this.$slots.body[0].context.$emit) {
         this.$slots.body[0].context.$emit('changeinput', this.state);
       }

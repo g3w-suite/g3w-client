@@ -5,7 +5,7 @@
 
 <template>
   <g3w-input :state="state">
-    <template #body="{ tabIndex, editable }">
+    <template #input-body="{ tabIndex, editable }">
       <select
         :id          = "id"
         style        = "width: 100%"

@@ -5,7 +5,7 @@
 
 <template>
   <g3w-input :state="state">
-    <template #body="{ change, tabIndex, editable, notvalid }">
+    <template #input-body="{ change, tabIndex, editable, notvalid }">
       <input
         :placeholder = "state.default"
         @change      = "change"

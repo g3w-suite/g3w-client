@@ -1,6 +1,6 @@
 <template>
   <g3w-input :state="state">
-    <template #body="{ editable }">
+    <template #input-body="{ editable }">
       <div v-disabled="!editable">
         <div
           @keydown.stop = ""

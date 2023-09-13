@@ -5,77 +5,79 @@
 
 <template>
   <g3w-input :state="state">
-    <div slot="default" style="position: relative">
+    <template #default>
+      <div style="position: relative">
 
-      <div class="g3w-input-lat-lon">
-        <button
-          ref                 = "g3w-input-lat-lon"
-          @click.prevent.stop = "toggleGetCoordinate"
-          :style              = "{ border: (coordinatebutton.active ? '2px solid' : 0) }"
-          data-placement      = "left"
-          data-toggle         = "tooltip"
-          v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
-          class               = "action skin-tooltip-left skin-color skin-border-color"
-          :class              = "g3wtemplate.font['crosshairs']"
-        ></button>
+        <div class="g3w-input-lat-lon">
+          <button
+            ref                 = "g3w-input-lat-lon"
+            @click.prevent.stop = "toggleGetCoordinate"
+            :style              = "{ border: (coordinatebutton.active ? '2px solid' : 0) }"
+            data-placement      = "left"
+            data-toggle         = "tooltip"
+            v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
+            class               = "action skin-tooltip-left skin-color skin-border-color"
+            :class              = "g3wtemplate.font['crosshairs']"
+          ></button>
+        </div>
+
+        <!-- LONGITUDE -->
+        <g3w-input :state="state">
+
+          <template #input-label>
+            <label :for="lonId" class="col-sm-4 control-label">{{state.labels.lon}} <span v-if="is_required">*</span></label>
+          </template>
+
+          <template #input-body="{ tabIndex, editable, notvalid }">
+            <div>
+              <input
+                :id         = "lonId"
+                @change     = "changeLonLat"
+                :class      = "{ 'input-error-validation' : notvalid }"
+                class       = "form-control"
+                style       = "width: 100%; margin-bottom: 5px;"
+                :tabIndex   = "tabIndex"
+                v-disabled  = "!editable"
+                v-model     = "state.values.lon"
+                type        = "number"
+                min         = "-180"
+                max         = "180"
+                placeholder = "Lon"
+              >
+            </div>
+          </template>
+
+        </g3w-input>
+
+        <!-- LATITUDE -->
+        <g3w-input :state="state">
+
+          <template #input-label>
+            <label :for="latId" class="col-sm-4 control-label">{{ state.labels.lat }} <span v-if="is_required">*</span></label>
+          </template>
+
+          <template #input-body="{ tabIndex, editable, notvalid }">
+            <div>
+              <input
+                :id         = "latId"
+                @change     = "changeLonLat"
+                class       = "form-control"
+                style       = "width: 100%; margin-bottom: 5px;"
+                :tabIndex   = "tabIndex"
+                v-disabled  = "!editable"
+                v-model     = "state.values.lat"
+                type        = "number"
+                :class      = "{ 'input-error-validation' : notvalid }"
+                min         = "-90"
+                max         = "90"
+                placeholder = "Lon"
+              >
+            </div>
+          </template>
+
+        </g3w-input>
       </div>
-
-      <!-- LONGITUDE -->
-      <g3w-input :state="state">
-
-        <template #label>
-          <label :for="lonId" class="col-sm-4 control-label">{{state.labels.lon}} <span v-if="is_required">*</span></label>
-        </template>
-
-        <template #body="{ tabIndex, editable, notvalid }">
-          <div>
-            <input
-              :id         = "lonId"
-              @change     = "changeLonLat"
-              :class      = "{ 'input-error-validation' : notvalid }"
-              class       = "form-control"
-              style       = "width: 100%; margin-bottom: 5px;"
-              :tabIndex   = "tabIndex"
-              v-disabled  = "!editable"
-              v-model     = "state.values.lon"
-              type        = "number"
-              min         = "-180"
-              max         = "180"
-              placeholder = "Lon"
-            >
-          </div>
-        </template>
-
-      </g3w-input>
-
-      <!-- LATITUDE -->
-      <g3w-input :state="state">
-
-        <template #label>
-          <label :for="latId" class="col-sm-4 control-label">{{ state.labels.lat }} <span v-if="is_required">*</span></label>
-        </template>
-
-        <template #body="{ tabIndex, editable, notvalid }">
-          <div>
-            <input
-              :id         = "latId"
-              @change     = "changeLonLat"
-              class       = "form-control"
-              style       = "width: 100%; margin-bottom: 5px;"
-              :tabIndex   = "tabIndex"
-              v-disabled  = "!editable"
-              v-model     = "state.values.lat"
-              type        = "number"
-              :class      = "{ 'input-error-validation' : notvalid }"
-              min         = "-90"
-              max         = "90"
-              placeholder = "Lon"
-            >
-          </div>
-        </template>
-
-      </g3w-input>
-    </div>
+    </template>
   </g3w-input>
 </template>
 

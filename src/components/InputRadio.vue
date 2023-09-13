@@ -5,7 +5,7 @@
 
 <template>
   <g3w-input :state="state">
-    <template #body="{ tabIndex, editable, notvalid }">
+    <template #input-body="{ tabIndex, editable, notvalid }">
       <div>
         <span
           v-for = "(value, index) in state.input.options.values"

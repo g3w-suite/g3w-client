@@ -5,7 +5,7 @@
 
 <template>
   <g3w-input :state="state">
-    <template #body="{ mobileChange, change, tabIndex, editable, notvalid }">
+    <template #input-body="{ mobileChange, change, tabIndex, editable, notvalid }">
       <input
         :placeholder = "state.default"
         @keyup       = "isMobile() ? mobileChange($event) : change()"

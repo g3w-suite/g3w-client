@@ -7,7 +7,7 @@
   <g3w-input :state="state">
 
     <!-- LABEL -->
-    <template #label-action>
+    <template #input-label-action>
       <span
         v-if           = "showPickLayer"
         data-placement = "top"
@@ -20,7 +20,7 @@
     </template>
 
     <!-- DROPDOWN -->
-    <template #body>
+    <template #input-body>
       <div
         v-disabled = "$parent.disabled"
         :tabIndex  = "$parent.tabIndex"
@@ -44,7 +44,7 @@
     </template>
 
     <!-- ERROR TEXT -->
-    <template #message>
+    <template #input-message>
       <p
         v-if  = "'error' === $parent.loadingState"
         class = "error-input-message"

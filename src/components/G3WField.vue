@@ -125,12 +125,12 @@
     >
 
       <div v-if="state.label" class="col-sm-6 field_label">
-        <slot name="label">{{state.label}}</slot>
+        <slot name="field-label">{{state.label}}</slot>
       </div>
 
       <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
 
-        <slot name="field">
+        <slot name="field-value">
 
           <!--
             ORIGINAL SOURCE: src/components/FieldVue.vue@3.8

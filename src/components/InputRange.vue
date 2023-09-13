@@ -5,7 +5,7 @@
 
 <template>
   <g3w-input :state="state">
-    <template #body="{ tabIndex, editable, notvalid }">
+    <template #input-body="{ tabIndex, editable, notvalid }">
       <input
         @keydown.69.prevent = ""
         @keydown.13.stop    = ""

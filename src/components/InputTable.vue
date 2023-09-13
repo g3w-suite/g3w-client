@@ -5,7 +5,7 @@
 
 <template>
   <g3w-input :state="state">
-    <template #body="{ editable, notvalid }">
+    <template #input-body="{ editable, notvalid }">
 
       <div
         v-disabled = "!editable"
