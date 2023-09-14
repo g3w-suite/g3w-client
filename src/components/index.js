@@ -37,9 +37,7 @@ import InputMedia from './InputMedia.vue';
 import InputPickLayer from './InputPickLayer.vue';
 import InputRadio from './InputRadio.vue';
 import InputRange from './InputRange.vue';
-import InputRangeSlider from './InputRangeSlider.vue';
 import InputSelect from './InputSelect.vue';
-import InputSliderRange from './InputSliderRange.vue';
 import InputTable from './InputTable.vue';
 import InputText from './InputText.vue';
 import InputTextArea from './InputTextArea.vue';
@@ -147,10 +145,7 @@ export {
   InputPickLayer,
   InputRadio,
   InputRange,
-  /** @since 3.9.0 */
-  InputRangeSlider,
   InputSelect,
-  InputSliderRange,
   InputTable,
   InputText,
   InputTextArea,
