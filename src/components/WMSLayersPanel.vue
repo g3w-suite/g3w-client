@@ -8,31 +8,75 @@
 
     <bar-loader :loading="loading" />
 
-    <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
+    <h3 class="skin-color g3w-wms-panel-title">{{ title }}</h3>
 
-    <helpdiv v-if="abstract" :message="abstract" />
+    <helpdiv
+      v-if     = "abstract"
+      :message = "abstract"
+    />
 
-    <label for="g3w-wms-layers" v-t="'sidebar.wms.panel.label.layers'"></label>
-    <select id="g3w-wms-layers" multiple="multiple" clear="true" v-select2="'selectedlayers'">
-      <option v-for="layer in layers" :value="layer.name" :key="layer.name">{{layer.title}}</option>
+    <!-- WMS LAYER -->
+    <label
+      for = "g3w-wms-layers"
+      v-t = "'sidebar.wms.panel.label.layers'"
+    ></label>
+    <select
+      id        = "g3w-wms-layers"
+      multiple  = "multiple"
+      clear     = "true"
+      v-select2 = "'selectedlayers'"
+    >
+      <option
+        v-for  = "layer in layers"
+        :value = "layer.name"
+        :key   = "layer.name"
+      >{{layer.title}}</option>
     </select>
 
-    <label for="g3w-wms-projections" v-t="'sidebar.wms.panel.label.projections'"></label>
-    <select id="g3w-wms-projections" v-select2="'epsg'">
-      <option v-for="projection in projections" :key="projection" :value="projection">{{projection}}</option>
+    <!-- WMS PROJECTION -->
+    <label
+      for = "g3w-wms-projections"
+      v-t = "'sidebar.wms.panel.label.projections'"
+    ></label>
+    <select
+      id        = "g3w-wms-projections"
+      v-select2 = "'epsg'"
+    >
+      <option
+        v-for  = "projection in projections"
+        :key   = "projection"
+        :value = "projection"
+      >{{projection}}</option>
     </select>
 
-    <label for="g3w-wms-layer-name" v-t="'sidebar.wms.panel.label.name'"></label>
-    <input class="form-control" id="g3w-wms-layer-name" v-model="name">
+    <!-- WMS NAME -->
+    <label
+      for = "g3w-wms-layer-name"
+      v-t = "'sidebar.wms.panel.label.name'"
+    ></label>
+    <input
+      class   = "form-control"
+      id      = "g3w-wms-layer-name"
+      v-model = "name"
+    >
 
-    <div v-if="added" class="g3w-wms-external-panel-layer-added-message" v-t="'sidebar.wms.layer_id_already_added'"></div>
+    <div
+      v-if  = "added"
+      class = "g3w-wms-external-panel-layer-added-message"
+      v-t   = "'sidebar.wms.layer_id_already_added'"
+    ></div>
 
+    <!-- WMS POSITION -->
     <layerspositions
       @layer-position-change = "position=$event"
       :position              = "position"
     />
 
-    <button @click.stop="addWMSlayer" v-disabled="0 === selectedlayers.length" class="btn wms-add-layer-button sidebar-button skin-button">
+    <button
+      @click.stop = "addWMSlayer"
+      v-disabled  = "0 === selectedlayers.length"
+      class       = "btn wms-add-layer-button sidebar-button skin-button"
+    >
       <i style="font-weight: bold;" :class="g3wtemplate.getFontClass('plus-square')" ></i>
     </button>
 
