@@ -79,6 +79,63 @@ function setNODE_ENV() {
   console.log('[G3W-CLIENT] loaded plugins: ', dev_plugins, '\n');
 }
 
+/**
+ * @since v.3.9
+ */
+const browserify_plugin = function(name) {
+
+  let bundler = browserify(`./${name}/index.js`, {
+    basedir: `${g3w.pluginsFolder}`,
+    paths: [`${g3w.pluginsFolder}`],
+    debug: !production,
+    cache: {},
+    packageCache: {}
+  });
+
+  if (!production) bundler = watchify(bundler);
+  bundler.transform(vueify)
+    .transform(babelify, {
+      babelrc: true
+    });
+  bundler.transform(stringify, {
+    appliesTo: { includeExtensions: ['.html'] }
+  });
+
+  let bundle = function(){
+    return bundler.bundle()
+      .on('error', function(err) {
+        console.log(err);
+        process.exit();
+      })
+      .pipe(source(`${g3w.pluginsFolder}/${name}/build.js`))
+      .pipe(buffer())
+      .pipe(gulpif(production, sourcemaps.init()))
+      .pipe(gulpif(production, uglify({
+          compress: {
+            drop_console: true
+          }
+        }).on('error', gutil.log))
+      )
+      .pipe(rename(`${g3w.pluginsFolder}/${name}/plugin.js`))
+      .pipe(gulpif(production, sourcemaps.write('.')))
+      .pipe(gulp.dest('.'));
+  };
+
+  let rebundle;
+
+  const del = require('del');
+
+  del([`${name}/plugin.js.map`]);
+  if (!production) {
+    rebundle = () => bundle();
+    bundler.on('update', rebundle);
+  } else {
+    rebundle = () => bundle();
+  }
+  return rebundle();
+};
+
+
 setNODE_ENV();
 
 // gulp.task('clean:dist',   () => del([`${g3w.distFolder}/**/*`], { force: true }));
@@ -357,9 +414,6 @@ gulp.task('clone:default_plugins', function() {
     if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
       execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, {stdio: 'inherit'});
     }
-    if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
-      execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
-    }
   }
 });
 
@@ -378,30 +432,15 @@ gulp.task('clone:default_plugins', function() {
  */
 gulp.task('build:dev_plugins', function() {
   for (const pluginName of dev_plugins) {
-    console.log(H1__ + `Building plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __H1);
-    try {
-      execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
-    } catch(e) { /* soft fails on missing `gulp default` task */ }
+    const src = `${g3w.pluginsFolder}/${pluginName}`;
+    console.log(H1__ + `Building plugin: ${src}/plugin.js` + __H1);
+    browserify_plugin(pluginName);
   }
 });
 
-/**
- * Run `gulp watch` on each g3w.plugins folder
- */
-gulp.task('watch:plugins', function() {
-  for (const pluginName of dev_plugins) {
-    console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
-    exec(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js watch`,
-      (error, stdout, stderr) => {
-        if (error) { console.error(`exec error: ${error}`); return; }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-      }
-    );
-  }
-});
 
 /**
+ * @since v3.9
  * @see https://fettblog.eu/gulp-browserify-multiple-bundles/
  */
 gulp.task('stream', function() {
@@ -593,7 +632,6 @@ gulp.task('dev', done => runSequence(
   // 'clean:admin',
   'clean:overrides',
   'clone:default_plugins',
-  // 'watch:plugins',
   'build:dev_plugins',
   'build:client',
   'browser-sync',
