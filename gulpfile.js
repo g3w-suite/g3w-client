@@ -272,7 +272,16 @@ gulp.task('browserify:app', function() {
   if (production) {
     rebundle = () => bundle();
   } else {
-    rebundle = () => bundle().pipe(browserSync.reload({ stream: true }));
+    rebundle = (changedFiles=[]) => {
+      // check if config file is change
+      if (changedFiles.find(f => f === path.resolve('./config.js'))) {
+        fs.readFile("./config.js", "utf8", (err, data) => {
+          console.log(g3w)
+        })
+      } else {
+        bundle().pipe(browserSync.reload({ stream: true }));
+      }
+    }
     bundler.on('update', rebundle);
   }
   return rebundle();
