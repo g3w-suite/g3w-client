@@ -218,17 +218,12 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
       relations.forEach(relation => {
         Object
           .entries(relation)
-          .forEach(([relationId, options]) => {
-
-            //Need to backport compatibility before v3.7.0
-            const fatherField = Array.isArray(options.fatherField)
-              ? options.fatherField :
-              [options.fatherField];
-
-            //Need to backport compatibility before v3.7.0
-            const childField = Array.isArray(options.childField)
-              ? options.childField :
-              [options.childField];
+          .forEach(([relationId, options={}]) => {
+            const {
+              fatherField,
+              childField,
+              ids
+            } = options;
             //Check if parent layer field is pk
             const fatherPkField = fatherField.find(fField => this._layer.isPkField(fField));
             //if found
@@ -236,7 +231,7 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
               //for each field
               this.setFieldValueToRelationField({
                 relationId, //relation layer id
-                ids: options.ids, //ids of features of relation layers to check
+                ids, //ids of features of relation layers to check
                 field: childField[fatherField.indexOf(fatherPkField)], //get relation field to overwrite
                 values: [clientid, id] //[<old temporary id value>, <new id value>]
               })
@@ -247,7 +242,7 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
     //read feature from editor featurestore
     const features = this.readEditingFeatures();
 
-    //reaset state of the features (update, new etc..)
+    //reset state of the features (update, new etc..)
     features.forEach(feature => feature.clearState());
 
     //set layer features (substitute to actual features)

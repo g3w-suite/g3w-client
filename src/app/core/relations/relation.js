@@ -11,14 +11,25 @@ function Relation(config={}) {
   const id = config.id || `id_${uniqueSuffix}`;
   const name = config.name || `name_${uniqueSuffix}`;
   const origname = config.origname || `origname_${uniqueSuffix}`;
+
+  /**
+   * For backport compatibility before v3.7.0
+   */
+  const fatherField = Array.isArray(config.fieldRef.referencedField) ?
+      config.fieldRef.referencedField:
+      [config.fieldRef.referencedField];
+  const childField = Array.isArray(config.fieldRef.referencingField) ?
+      config.fieldRef.referencingField:
+      [config.fieldRef.referencingField];
+
   this.state = {
     id,
     name,
     origname,
     father: config.referencedLayer,
     child: config.referencingLayer,
-    fatherField: config.fieldRef.referencedField,
-    childField: config.fieldRef.referencingField,
+    fatherField,
+    childField,
     type: config.type,
     loading: false
   };

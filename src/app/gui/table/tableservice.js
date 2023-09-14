@@ -38,14 +38,8 @@ const TableService = function(options = {}) {
             layer: relationLayer,
             //need to check if Array for backport compatibility
             //before v3.7.0 (or in case of not reload project)
-            father_fields: Array.isArray(relation.getFatherField()) ?
-              relation.getFatherField() :
-              [relation.getFatherField()],  //is Array since v3.7.0
-            //need to check if Array for backport compatibility
-            //before v3.7.0 (or in case of not reload project)
-            fields: Array.isArray(relation.getChildField()) ?
-              relation.getChildField() :
-              [relation.getChildField()], // is Array since v3.7.0
+            father_fields: relation.getFatherField(),
+            fields: relation.getChildField(),
             features: {}
           })
         }
