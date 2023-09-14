@@ -11,7 +11,6 @@ import ApplicationService          from 'services/application';
  * Single File Components
  */
 import G3WInput                    from 'components/G3WInput.vue';
-import G3WField                    from 'components/G3WField.vue';
 import FormBody                    from 'components/FormBody.vue';
 import FormFooter                  from 'components/FormFooter.vue';
 import C3XYLine                    from 'components/C3XYLine.vue';
@@ -74,7 +73,7 @@ const Workflow                     = require('core/workflow/workflow');
 const Panel                        = require('gui/panel');
 const ControlFactory               = require('gui/map/control/factory');
 const ComponentsFactory            = require('gui/component/componentsfactory');
-const FieldsService                = G3WField.methods.getFieldService();
+const FieldsService                = G3WInput.methods.getFieldService();
 const Component                    = require('gui/component/component');
 const MetadataComponent            = require('gui/metadata/vue/metadata');
 const SearchComponent              = require('gui/search/vue/search');
@@ -87,7 +86,7 @@ const QueryResultsComponent        = require('gui/queryresults/vue/queryresults'
 const FormComponent                = require('gui/form/vue/form');
 const FormService                  = require('gui/form/formservice');
 const ChartsFactory                = require('gui/charts/chartsfactory');
-const Fields                       = G3WField.components;
+const Fields                       = G3WInput.components;
 const InputsComponents             = G3WInput.components;
 const SearchPanelService           = require('gui/search/vue/panel/searchservice');
 
@@ -109,7 +108,6 @@ const deprecate                    = require('util-deprecate');
 Object
   .entries({
     G3WInput,
-    G3WField,
     InputsComponents,
     FieldsService,
     Fields,
@@ -300,7 +298,7 @@ function _alias(vm, props) {
   return {
     functional: true,
     render(h, { data, children }) {
-      return h( vm, { ...data, props: { ...data.props, props } }, children);
+      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
     },
   };
 }
@@ -370,18 +368,18 @@ g3wsdk.gui.vue.Mixins.baseInputMixin = {
  */
 g3wsdk.gui.vue.Mixins.fieldsMixin = {
 
-  components: G3WField.components,
+  components: G3WInput.components,
 
   methods: {
-    getType:            deprecate(G3WField.methods.getType,            '[G3W-SDK] fieldsMixin::getType is deprecated'),
-    getFieldService:    deprecate(G3WField.methods.getFieldService,    '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
-    getFieldType:       deprecate(G3WField.methods.getFieldType,       '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
-    isSimple:           deprecate(G3WField.methods.isSimple,           '[G3W-SDK] fieldsMixin::isSimple is deprecated'),
-    isLink:             deprecate(G3WField.methods.isLink,             '[G3W-SDK] fieldsMixin::isLink is deprecated'),
-    isImage:            deprecate(G3WField.methods.isImage,            '[G3W-SDK] fieldsMixin::isImage is deprecated'),
-    isPhoto:            deprecate(G3WField.methods.isPhoto,            '[G3W-SDK] fieldsMixin::isPhoto is deprecated'),
-    isVue:              deprecate(G3WField.methods.isVue,              '[G3W-SDK] fieldsMixin::isVue is deprecated'),
-    sanitizeFieldValue: deprecate(G3WField.methods.sanitizeFieldValue, '[G3W-SDK] fieldsMixin::sanitizeFieldValue is deprecated'),
+    getType:            deprecate(G3WInput.methods.getType,            '[G3W-SDK] fieldsMixin::getType is deprecated'),
+    getFieldService:    deprecate(G3WInput.methods.getFieldService,    '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
+    getFieldType:       deprecate(G3WInput.methods.getFieldType,       '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
+    isSimple:           deprecate(G3WInput.methods.isSimple,           '[G3W-SDK] fieldsMixin::isSimple is deprecated'),
+    isLink:             deprecate(G3WInput.methods.isLink,             '[G3W-SDK] fieldsMixin::isLink is deprecated'),
+    isImage:            deprecate(G3WInput.methods.isImage,            '[G3W-SDK] fieldsMixin::isImage is deprecated'),
+    isPhoto:            deprecate(G3WInput.methods.isPhoto,            '[G3W-SDK] fieldsMixin::isPhoto is deprecated'),
+    isVue:              deprecate(G3WInput.methods.isVue,              '[G3W-SDK] fieldsMixin::isVue is deprecated'),
+    sanitizeFieldValue: deprecate(G3WInput.methods.sanitizeFieldValue, '[G3W-SDK] fieldsMixin::sanitizeFieldValue is deprecated'),
   },
 
 }
@@ -397,8 +395,8 @@ g3wsdk.gui.vue.Mixins.mediaMixin = {
       return this.value ? this.value.split('/').pop() : this.value; }, '[G3W-SDK] mediaMixin::filename is deprecated'),
   },
   methods: {
-    isMedia:      deprecate(G3WField.methods.isMedia,                  '[G3W-SDK] mediaMixin::isMedia is deprecated'),
-    getMediaType: deprecate(G3WField.methods.getMediaType,             '[G3W-SDK] mediaMixin::getMediaType is deprecated'),
+    isMedia:      deprecate(G3WInput.methods.isMedia,                  '[G3W-SDK] mediaMixin::isMedia is deprecated'),
+    getMediaType: deprecate(G3WInput.methods.getMediaType,             '[G3W-SDK] mediaMixin::getMediaType is deprecated'),
   },
 };
 
@@ -409,10 +407,10 @@ g3wsdk.gui.vue.Mixins.mediaMixin = {
  */
 g3wsdk.gui.vue.Mixins.geoMixin = {
   methods: {
-    showLayer: deprecate(G3WField.methods._showLayer,                  '[G3W-SDK] geoMixin::showLayer is deprecated'),
+    showLayer: deprecate(G3WInput.methods._showLayer,                  '[G3W-SDK] geoMixin::showLayer is deprecated'),
   },
-  created: deprecate(G3WField.created,                                 '[G3W-SDK] geoMixin is deprecated'),
-  created: deprecate(G3WField.beforeDestroy,                           '[G3W-SDK] geoMixin is deprecated'),
+  created: deprecate(G3WInput.created,                                 '[G3W-SDK] geoMixin is deprecated'),
+  created: deprecate(G3WInput.beforeDestroy,                           '[G3W-SDK] geoMixin is deprecated'),
 }
 
 module.exports = g3wsdk;

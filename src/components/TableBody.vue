@@ -29,8 +29,9 @@
           @selected = "addRemoveSelectedFeature"
           :feature = "feature"
         />
-        <g3w-field
+        <g3w-input
           v-else
+          mode     = "read"
           _legacy  = "g3w-field"
           :feature = "feature"
           :state   = "getField(feature, header)"

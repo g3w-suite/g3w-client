@@ -13,7 +13,6 @@ import FormAddons from './FormAddons.vue';
 import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
-import G3WField from './G3WField.vue';
 import G3WInput from './G3WInput.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
@@ -30,6 +29,7 @@ import InputColor from './InputColor.vue';
 import InputDateTime from './InputDateTime.vue';
 import InputDateTimePicker from './InputDateTimePicker.vue';
 import InputFloat from './InputFloat.vue';
+import InputGeo from './InputGeo.vue';
 import InputInteger from './InputInteger.vue';
 import InputLayerPositions from './InputLayerPositions.vue';
 import InputLonLat from './InputLonLat.vue';
@@ -120,8 +120,6 @@ export {
   FormFooter,
   FormHeader,
   /** @since 3.9.0 */
-  G3WField,
-  /** @since 3.9.0 */
   G3WInput,
   GlobalHelpDiv,
   GlobalBarLoader,
@@ -139,6 +137,8 @@ export {
   InputDateTime,
   InputDateTimePicker,
   InputFloat,
+  /** @since 3.9.0 */
+  InputGeo,
   /** @since 3.9.0 */
   InputLayerPositions,
   InputInteger,

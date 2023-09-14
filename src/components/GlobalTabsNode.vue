@@ -22,8 +22,8 @@
       <template v-for="node in getNodes(row)" :style="{ padding: node ? '2px' : undefined }">
 
         <!-- NODE FIELD -->
-        <component
-          v-if              = "'field' === getNodeType(node)"
+        <g3w-input
+          v-if              = "'field' === getNodeType(node) && !getField(node).relation"
           class             = "tab-node-field"
           :state            = "getField(node)"
           @changeinput      = "changeInput"
@@ -33,8 +33,9 @@
           :addToValidate    = "addToValidate"
           :removeToValidate = "removeToValidate"
           :feature          = "feature"
-          :is               = "_getComponent(node)"
-          :_legacy          = "_getLegacy(node)"
+          :_type            = "getField(node).query ? getField(node).input.type : undefined"
+          _legacy          = "g3w-input"
+          mode              = "read"
         />
 
         <!-- NODE GROUP -->
@@ -68,14 +69,10 @@
 </template>
 
 <script>
-  import G3WInput         from 'components/G3WInput.vue';
-  import G3WField         from 'components/G3WField.vue';
   import ProjectsRegistry from 'store/projects';
 
   Object
     .entries({
-      G3WInput,
-      G3WField,
       ProjectsRegistry,
     })
     .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -97,11 +94,6 @@
       'showRelationByField',
       'handleRelation'
     ],
-
-    components: {
-      G3WInput,
-      ...G3WField.components,
-    },
 
     data() {
       return {
@@ -160,7 +152,6 @@
       },
 
     },
-
     methods: {
   
       loadingRelation(relation) {
@@ -274,34 +265,6 @@
         }
 
         return type;
-      },
-
-      getComponent(field) {
-        // relation --> no element ?
-        if (field.relation) {
-          return;
-        }
-        // query --> <input>
-        if (field.query) {
-          return field.input.type;
-        }
-        // default --> <g3w-input>
-        return 'g3w-input';
-      },
-
-      /**
-       * @since 3.9.0 
-       */
-      _getComponent(node) {
-        return this.getComponent(this.getField(node));
-      },
-
-      /**
-       * @since 3.9.0 
-       */
-      _getLegacy(node) {
-        const field = this.getField(node);
-        return (field.relation || field.query) ? undefined : 'g3w-input';
       },
 
     },

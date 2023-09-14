@@ -5,6 +5,11 @@
   
   @since   3.9.0
 
+  @version 2.0 ADD SOURCE FROM: src/components/FieldText.vue@3.8
+  @version 2.0 ADD SOURCE FROM: src/components/FieldVue.vue@3.8
+  @version 2.0 ADD SOURCE FROM: src/mixins/fields.js@3.8
+  @version 2.0 ADD SOURCE FROM: src/mixins/media.js@3.8
+  @version 2.0 ADD SOURCE FROM: src/components/Field.vue@3.8
   @version 2.0 ADD SOURCE FROM: src/app/core/utils/validators.js@3.8
   @version 2.0 ADD SOURCE FROM: src/gui/inputs/input.js@3.8
   @version 2.0 ADD SOURCE FROM: src/mixins/base-input.js@3.8
@@ -15,47 +20,82 @@
 <template>
 
   <!--
-    ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
+    @example <g3w-input mode="read" _legacy="g3w-field" _type=".." />
+    @example <g3w-input mode="read" _legacy="g3w-vuefield" />
+    @example <g3w-input mode="edit" _legacy="g3w-input" _type=".." />
+  -->
+  <component
+    v-if = "['g3w-field', 'g3w-input', 'g3w-vuefield'].includes(_legacy) || isVue(field)"
+    :is  = "('edit' == mode && state.visible && 'g3w-input' === _legacy && !$attrs._plain) ? 'div' : 'fragment'"
+  >
+    <component
+      v-bind   = "{ $attrs, state }"
+      :feature = "('g3w-vuefield' === this._legacy || isVue(field)) ? feature                                                                      : undefined"
+      :value   = "('g3w-vuefield' === this._legacy || isVue(field)) ? (undefined === field.value      ? null         : field.value)                : undefined"
+      :is      = "('g3w-vuefield' === this._legacy || isVue(field)) ? (undefined === field.vueoptions ? {}           : field.vueoptions.component) : type"
+      v-html   = "('g3w-vuefield' === this._legacy || isVue(field)) ? ('g3w-vuefield' === this._legacy ? undefined   : field.value)                : undefined"
+    />
+    <span v-if="('edit' == mode && state.visible && 'g3w-input' === _legacy && !$attrs._plain) ? 'div' : 'fragment'" class="divider"></span>
+  </component>
 
-    @example <g3w-input _legacy="g3w-input" />
+  <!--
+    ORIGINAL SOURCE: src/components/Field.vue@3.8
+
+    @example
+
+      <g3w-input mode="read" :state>
+        <template #field-label> ... </template>
+        <template #field-body> ... </template>
+        ...
+      </g3w-input>
 
     @since 3.9.0
   -->
-  <div v-if="state.visible && __isChild">
+  <fragment v-else-if="'read' == mode">
+    <slot name="default">
 
-    <div
-      style = "border-top: 2px solid"
-      class = "skin-border-color field-child"
-    >
-      <h4 style="font-weight: bold">{{ state.label}}</h4>
-      <div> {{ state.description }} </div>
-      <g3w-input
-        v-for   ="field in state.fields"
-        v-bind  = "$props"
-        :state  = "field"
-        :key    = "field.name"
-        _legacy = "g3w-input"
-      />
-    </div>
+      <span
+        v-if   = "_legacy && isSimple(field)"
+        v-html = "field.value"
+      ></span>
 
-  </div>
+      <div
+        v-else
+        class  = "field"
+        :style = "{ fontSize: isMobile() && '0.8em' }"
+      >
 
-  <div v-else-if="state.visible && __isInput">
-    <component
-      v-if   = "$attrs._plain"
-      v-bind = "$props"
-      :state = "state"
-      :is    = "type"
-    />
-    <div v-else>
-      <component
-        v-bind = "$props"
-        :state = "state"
-        :is    = "type"
-      />
-      <span class="divider"></span>
-    </div>
-  </div>
+        <div v-if="state.label" class="col-sm-6 field_label">
+          <slot name="field-label">{{ state.label }}</slot>
+        </div>
+
+        <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
+
+          <slot
+            name   = "field-value"
+            :state = "state"
+            :field = "field"
+          >
+
+            <!--
+              ORIGINAL SOURCE: src/components/FieldText.vue@3.8
+
+              @example <g3w-input mode="read" :state />
+
+              @since 3.9.0
+            -->
+            <span
+              style  = "word-wrap: break-word;"
+              v-html = "state.value"
+            ></span>
+
+          </slot>
+        </div>
+
+      </div>
+
+    </slot>
+  </fragment>
 
   <!--
     Base G3WInput component
@@ -73,9 +113,37 @@
     @since 3.7.0
   -->
 
-  <fragment v-else-if="state.visible">
+  <fragment v-else-if="'edit' == mode && state.visible">
+
     <slot name="default">
-      <div class="form-group">
+
+      <!--
+        ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
+
+        @example <g3w-input _legacy="g3w-input" />
+
+        @since 3.9.0
+      -->
+      <div v-if="'g3w-input' === _legacy && 'child' === state.type">
+
+        <div
+          style = "border-top: 2px solid"
+          class = "skin-border-color field-child"
+        >
+          <h4 style="font-weight: bold">{{ state.label }}</h4>
+          <div> {{ state.description }} </div>
+          <g3w-input
+            v-for   ="field in state.fields"
+            v-bind  = "{ $attrs, state }"
+            :state  = "field"
+            :key    = "field.name"
+            _legacy = "g3w-input"
+          />
+        </div>
+
+      </div>
+
+      <div v-else class="form-group">
 
         <!-- INPUT LABEL -->
         <slot name="input-label">
@@ -158,6 +226,7 @@ import * as InputColor          from 'components/InputColor.vue';
 import * as InputDateTimePicker from 'components/InputDateTimePicker.vue';
 import * as InputDateTime       from 'components/InputDateTime.vue';
 import * as InputFloat          from 'components/InputFloat.vue';
+import * as InputGeo            from 'components/InputGeo.vue';
 import * as InputInteger        from 'components/InputInteger.vue';
 import * as InputLayerPositions from 'components/InputLayerPositions.vue';
 import * as InputLonLat         from 'components/InputLonLat.vue';
@@ -165,9 +234,7 @@ import * as InputMedia          from 'components/InputMedia.vue';
 import * as InputPickLayer      from 'components/InputPickLayer.vue';
 import * as InputRadio          from 'components/InputRadio.vue';
 import * as InputRange          from 'components/InputRange.vue';
-import * as InputRangeSlider    from 'components/InputRangeSlider.vue';
 import * as InputSelect         from 'components/InputSelect.vue';
-import * as InputSliderRange    from 'components/InputSliderRange.vue';
 import * as InputTable          from 'components/InputTable.vue';
 import * as InputText           from 'components/InputText.vue';
 import * as InputTextArea       from 'components/InputTextArea.vue';
@@ -176,6 +243,7 @@ import * as InputUnique         from 'components/InputUnique.vue';
 
 import ApplicationState                       from 'store/application-state';
 import CatalogLayersStoresRegistry            from 'store/catalog-layers';
+import ProjectsRegistry                       from 'store/projects';
 import MapLayersStoresRegistry                from 'store/map-layers';
 import ApplicationService                     from 'services/application';
 import GUI                                    from 'services/gui';
@@ -184,6 +252,8 @@ const {
   truefnc,
   toRawType,
   convertQGISDateTimeFormatToMoment,
+  getFieldType,
+  getMediaFieldType,
 }                                             = require('core/utils/utils');
 const { getQueryLayersPromisesByCoordinates } = require('core/utils/geo');
 const PickFeatureInteraction                  = require('g3w-ol/interactions/pickfeatureinteraction');
@@ -194,12 +264,15 @@ Object
   .entries({
     ApplicationState,
     CatalogLayersStoresRegistry,
+    ProjectsRegistry,
     MapLayersStoresRegistry,
     ApplicationService,
     GUI,
     truefnc,
     toRawType,
     convertQGISDateTimeFormatToMoment,
+    getFieldType,
+    getMediaFieldType,
     getQueryLayersPromisesByCoordinates,
     PickFeatureInteraction,
     PickCoordinatesInteraction,
@@ -209,6 +282,7 @@ Object
     InputDateTimePicker,
     InputDateTime,
     InputFloat,
+    InputGeo,
     InputInteger,
     InputLayerPositions,
     InputLonLat,
@@ -216,9 +290,7 @@ Object
     InputPickLayer,
     InputRadio,
     InputRange,
-    InputRangeSlider,
     InputSelect,
-    InputSliderRange,
     InputTable,
     InputText,
     InputTextArea,
@@ -277,6 +349,14 @@ function _isDateTime(value, options) {
  */
 function _isValueInRange(min, max, value) {
   return (1 * value) >= min && (1 * value) <= max;
+}
+
+function _defaultState(state) {
+  state               = state               || {}; 
+  state.input         = state.input         || {};
+  state.input.options = state.input.options || {}; 
+  state.validate      = state.validate      || {}; 
+  return state;
 }
 
 /******************************************************* */
@@ -510,38 +590,17 @@ class Service {
  * ORIGINAL SOURCE: src/app/gui/inputs/services.js@3.8
  */
 const InputsServices = {
-  'text':           Service,
-  'textarea':       Service,
-  'texthtml':       Service,
-  'string':         Service,
-  'color':          Service,
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/integer/service.js@3.8
-   */
-  'integer': class extends Service {},
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/float/service.js@3.8
-   */
-  'float': class extends Service {},
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/radio/service.js@3.8
-   */
-  'radio': class extends Service {},
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/unique/service.js@3.8
-   */
-  'unique': class extends Service {},
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/media/service.js@3.8
-   */
-  'media': class extends Service {},
+  'text':           class extends Service {},
+  'textarea':       class extends Service {},
+  'texthtml':       class extends Service {},
+  'string':         class extends Service {},
+  'color':          class extends Service {},
+  'integer':        class extends Service {},
+  'float':          class extends Service {},
+  'radio':          class extends Service {},
+  'unique':         class extends Service {},
+  'media':          class extends Service {},
   
-
   /**
    * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8
    */
@@ -899,6 +958,55 @@ const InputsServices = {
 
 };
 
+
+/******************************************************* */
+
+/**
+ * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
+ */
+const fieldsservice = {
+
+  /**
+   * Add a new field type to Fields
+   * 
+   * @param type
+   * @param field
+   */
+  add({ type, field }) {
+    vm.components[type] = field;
+  },
+
+  /**
+   * Remove field from Fields list
+   * 
+   * @param type
+   */
+  remove(type) {
+    delete vm.components[type];
+  },
+
+  /**
+   * Change type of field (example to set vue type)
+   * 
+   * @param layerId
+   * @param field
+   */
+  changeConfigFieldType({layerId, field={}}) {
+    CatalogLayersStoresRegistry.getLayerById(layerId).changeConfigFieldType(field);
+  },
+
+  /**
+   * Reset origin type
+   * 
+   * @param layerId
+   * @param field
+   */
+  resetConfigFieldType({layerId, field={}}) {
+    CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
+  },
+
+};
+
 /**
  * BACKCOMP
  */
@@ -912,37 +1020,20 @@ const vm = {
   props: {
 
     state: {
-      required: true
+      /**
+       * @see https://v3-migration.vuejs.org/breaking-changes/props-default-this.html
+       */
+      default() {
+        this.state = _defaultState(this.state);
+        return this.state;
+      },
     },
 
     /**
-     * ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
-     * 
      * @since 3.9.0
      */
-    addToValidate: {
-      type: Function,
-      required: false,
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
-     * 
-     * @since 3.9.0
-     */
-    removeToValidate: {
-      type: Function,
-      required: false,
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
-     * 
-     * @since 3.9.0
-     */
-    changeInput: {
-      type: Function,
-      required: false
+    mode: {
+      default: 'edit',
     },
 
     /**
@@ -951,6 +1042,7 @@ const vm = {
      * BACKCOMP ONLY (v3.x)
      * 
      * ref: `g3wsdk.gui.vue.Inputs.*`
+     * ref: `g3wsdk.gui.vue.Fields`
      * 
      * @since 3.9.0
      */
@@ -959,6 +1051,20 @@ const vm = {
       default: "",
     },
 
+    /**
+     * @since 3.9.0
+     */
+    _plain: {
+      default: false
+    }
+
+  },
+
+  data() {
+    return {
+      /** @since 3.9.0 */
+      window: window,
+    }
   },
 
   /**
@@ -966,6 +1072,9 @@ const vm = {
    */
   components: {
 
+    /**
+     * @since 3.9.0
+     */
     Fragment,
 
     /**
@@ -1067,13 +1176,6 @@ const vm = {
     'color_input': InputColor,
 
     /**
-     * ORIGINAL SOURCE: src/gui/inputs/sliderrange/vue/sliderrange.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'slider_input': InputSliderRange,
-
-    /**
      * ORIGINAL SOURCE: src/gui/inputs/lonlat/vue/lonlat.js@3.8
      * 
      * @since 3.9.0
@@ -1087,36 +1189,24 @@ const vm = {
      */
     'table_input': InputTable,
 
-    /** @since 3.9.0 */
+    /**
+     * @since 3.9.0
+     */
     'datetime_input': InputDateTime,
 
-    /** @since 3.9.0 */
+    /**
+     * @since 3.9.0
+     */
     'layer_positions_input': InputLayerPositions,
 
-    /** @since 3.9.0 */
-    'range_slider_input': InputRangeSlider,
+    /**
+     * @since 3.9.0
+     */
+    'geo_input': InputGeo,
 
   },
 
   computed: {
-
-    /**
-     * Whether this is a InputG3W component
-     * 
-     * @example <g3w-input _legacy="g3w-input" />
-     * 
-     * @since 3.9.0
-     */
-    __isInput() {
-      return 'g3w-input' === this._legacy;
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    __isChild() {
-      return 'g3w-input' === this._legacy && 'child' === this.state.type;
-    },
 
     /**
      * ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
@@ -1124,15 +1214,21 @@ const vm = {
      * @since 3.9.0
      */
     type() {
-      if ('child' !== this.state.type) {
-        return `${this.state.input.type ? this.state.input.type : this.state.type}_input`;
+      /** @TODO make it a required `$props` instead? */
+      if (this._type) {                          // TODO: replace static `_type` calls with `getFieldType(field)` ?
+        return this._type;
+      } else if ('g3w-field' === this._legacy /*&& !this.type*/) {
+        return this.getType(this.state);
+      }
+      if ('edit' === this.mode && 'child' !== this.state.type) {
+        return `${this.state.input && this.state.input.type ? this.state.input.type : this.state.type}_input`;
       }
     },
 
     /**
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      */
-     tabIndex() {
+    tabIndex() {
       return this.editable ? 0 : -1;
     },
 
@@ -1140,7 +1236,7 @@ const vm = {
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      */
     notvalid() {
-      return (false === this.state.validate.valid);
+      return this.state.validate && (false === this.state.validate.valid);
     },
 
     /**
@@ -1168,7 +1264,7 @@ const vm = {
      * ORIGINAL SOURCE: src/mixins/base-input.js@3.8
      */
     loadingState() {
-      return this.state.input.options.loading ? this.state.input.options.loading.state : null;
+      return this.state.input && this.state.input.options.loading ? this.state.input.options.loading.state : null;
     },
 
   },
@@ -1250,7 +1346,7 @@ const vm = {
      * @since 3.9.0
      */
     createInputService(type, options) {
-      console.assert(undefined !== InputsServices[type], 'Uknwon InputsService type: ', type);
+      console.assert(undefined !== InputsServices[type], 'Uknwon InputsService type: %s', type);
       return new InputsServices[type](options);
     },
 
@@ -1270,6 +1366,88 @@ const vm = {
       return this.service;
     },
 
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+     getFieldService() {
+      // if (undefined === this._fieldsService) {
+      //   this._fieldsService = fieldsservice;
+      // }
+      // return this._fieldsService;
+      return fieldsservice;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    getType: getFieldType,
+
+    /**
+     * @since 3.9.0
+     */
+    getMediaType(mime_type) {
+      return getMediaFieldType(mime_type).type;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    getFieldType: getFieldType,
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    isSimple(field) {
+      return 'simple_field' === getFieldType(field);
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    isLink(field) {
+      return 'link_field' === getFieldType(field);
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    isImage(field) {
+      return 'image_field' === getFieldType(field);
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    isPhoto(field) {
+      return 'photo_field' === getFieldType(field);
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/media.js@3.8 
+     */
+    isMedia(value) {
+      if (value && typeof  value === 'object' && value.constructor === Object) return !!value.mime_type;
+      return false;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    isVue(field) {
+      return 'vue_field' === getFieldType(field);
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     */
+    sanitizeFieldValue(value) {
+      return (Array.isArray(value) && !value.length) ? '' : value;
+    },
+
+  },
+
+  breforeCreate() {
+    this.state = _defaultState(this.state);
   },
 
   /**
@@ -1277,20 +1455,27 @@ const vm = {
    * @fires changeinput
    */
   created() {
+    this.state = _defaultState(this.state);
+
     console.log(
       '[ ' + this.state.name + ' ]',
       this.state.input.type,
-      this.__isInput,
-      this.$scopedSlots,
-      this.$slots,
-      // this
+      this.type,
+      'g3w-input' === this._legacy,
+      this,
     );
 
-    if (this.state.input && !this.state.input.options) {
-      this.state.input.options = {};
+    /** @TODO make it a required `$props` instead? */
+    if (!this.feature) {
+      this.feature = {};
     }
 
-    if (this.__isInput) {
+    /** @TODO make it a required `$props` instead? */
+    if(!this.field) {
+      this.field = this.state;
+    }
+
+    if ('g3w-input' === this._legacy || 'read' === this.mode || ['layer_positions', 'datetime', 'range_slider'].includes(this.state.type)) {
       return;
     }
 
@@ -1332,6 +1517,12 @@ const vm = {
 
   },
 
+  beforeDestroy() {
+    if (this.layer) {
+      GUI.getComponent('map').getService().getMap().removeLayer(this.layer);
+    }
+  },
+
   /**
    * @fires removeinput remove input to form (in case for example tab visibility condition)
    * 
@@ -1346,11 +1537,42 @@ const vm = {
 /**
  * BACKCOMP
  */
+function _alias(vm, props) {
+  return {
+    functional: true,
+    render(h, { data, children }) {
+      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
+    },
+  };
+}
+
+vm.components['text_field']                = vm;
+vm.components['vue_field']                 = _alias(vm, { _legacy: "g3w-vuefield" });
+
+vm.components['link_field']                = _alias(InputMedia, { _type: 'media',   _legacy: "g3w-field", mode: 'read' });
+vm.components['media_field']               = _alias(InputMedia, { _type: 'media',   _legacy: "g3w-field", mode: 'read' });
+vm.components['image_field']               = _alias(InputMedia, { _type: 'image',   _legacy: "g3w-field", mode: 'read' });
+vm.components['gallery_field']             = _alias(InputMedia, { _type: 'gallery', _legacy: "g3w-field", mode: 'read' });
+vm.components['geo_field']                 = _alias(InputGeo,   { _type: 'geo',     _legacy: "g3w-field", mode: 'read' });
+
+vm.components['simple_field']              = vm.components['text_field'];
+vm.components['photo_field']               = vm.components['image_field'];
+vm.components['g3w_link']                  = vm.components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
+vm.components['g3w_vue']                   = vm.components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
+
 vm.components['select_autocomplete_input'] = vm.components['select_input'];
 vm.components['string_input']              = vm.components['text_input'];
+vm.components['slider_input']              = vm.components['range_input'];
+vm.components['range_slider_input']        = vm.components['range_input']; 
+
+fieldsservice.getType                      = vm.methods.getType;
+fieldsservice.isVue                        = vm.methods.isVue;
+fieldsservice.isPhoto                      = vm.methods.isPhoto;
+fieldsservice.isLink                       = vm.methods.isLink;
+fieldsservice.isSimple                     = vm.methods.isSimple;
+fieldsservice.isImage                      = vm.methods.isImage;
 
 export default vm;
-
 </script>
 
 <style scoped>
@@ -1358,5 +1580,36 @@ export default vm;
     text-align: left !important;
     padding-top: 0 !important;
     margin-bottom: 3px;
+  }
+  .field {
+    background-color: transparent !important;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    display: flex;
+    align-items: center;
+  }
+  .value {
+    position: relative;
+  }
+  .field div {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+  .field_value {
+    padding-left: 0 !important;
+  }
+  .field_text_table {
+    background-color: transparent !important;
+  }
+  .field_text_table .field_label {
+    font-weight: bold;
+  }
+  .field_link {
+    max-width: 100%;
+  }
+  .show-hide-geo {
+    color: #3C8DBC;
+    cursor: pointer;
+    font-size: 1.2em;
   }
 </style>

@@ -704,11 +704,12 @@ const utils = {
     );
 
     const value = is_nested ? field.value.value : field.value;
+    const text  = value && value.toString().toLowerCase();
 
-    const is_geo      = value && typeof 'object' == value && value.coordinates;
-    const is_vue      = 'vue' === field.type || (value && typeof 'object' == value && !value.coordinates && value.vue);
-    const is_photo    = value && ((Array.isArray(value) && value.length && value[0].photo) || (value.toString().toLowerCase().match(PhotoPattern)));
-    const is_link     = value && value.toString().match(URLPattern);
+    const is_geo      = 'object' == typeof value && value.coordinates;
+    const is_vue      = 'vue' === field.type || ('object' == typeof value && !value.coordinates && value.vue);
+    const is_photo    = (Array.isArray(value) && value.length && value[0].photo) || text.match(PhotoPattern);
+    const is_link     = text.match(URLPattern);
 
     if (is_vue)   return 'vue_field';
     if (is_geo)   return 'geo_field';

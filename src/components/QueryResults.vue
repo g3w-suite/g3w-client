@@ -147,7 +147,8 @@
               class  = "g3w-layer-action-tools with-border"
               :class = "{ 'mobile': isMobile() }"
             >
-              <g3w-field
+              <g3w-input
+                mode     = "read"
                 :layer   = "layer"
                 :config  = "state.layeractiontool[layer.id].config"
                 :_type   = "state.layeractiontool[layer.id].component"
@@ -155,7 +156,8 @@
               />
             </div>
 
-            <g3w-field
+            <g3w-input
+              mode     = "read"
               v-for   = "({ component }) in getLayerCustomComponents(layer.id, 'layer', 'before')"
               :layer  = "layer"
               :_type  = "component"
@@ -232,7 +234,8 @@
                           v-if     = "state.currentactiontools[layer.id][index]"
                           :colspan = "getColSpan(layer)"
                         >
-                          <g3w-field
+                        <g3w-input
+                            mode          = "read"
                             :colspan      = "getColSpan(layer)"
                             :layer        = "layer"
                             :feature      = "feature"
@@ -249,7 +252,8 @@
                         <td
                           :colspan="getColSpan(layer)"
                         >
-                          <g3w-field
+                          <g3w-input
+                            mode     = "read"
                             :class   = "{ 'box-body': !hasFormStructure(layer) }"
                             :layer   = "layer"
                             :feature = "feature"
@@ -280,7 +284,8 @@
                             <tr v-for="attr in layer.attributes.filter(attr => attr.show)">
                               <td class="attr-label">{{ attr.label }}</td>
                               <td class="attr-value" :attribute="attr.name">
-                                <g3w-field
+                                <g3w-input
+                                  mode     = "read"
                                   :layer   = "layer"
                                   :feature = "feature"
                                   :state   = "getLayerField({ layer, feature, fieldName: attr.name })"
@@ -297,7 +302,8 @@
                         <td
                           :colspan="getColSpan(layer)"
                         >
-                          <g3w-field
+                        <g3w-input
+                            mode     = "read"
                             :class   = "{ 'box-body': !hasFormStructure(layer) }"
                             :layer   = "layer"
                             :feature = "feature"
@@ -318,7 +324,8 @@
               class  = "box-body"
               :class = "{'mobile': isMobile()}"
             >
-              <g3w-field
+              <g3w-input
+                mode    = "read"
                 :layer  = "layer"
                 :_type  = "component"
                 _legacy = "g3w-field"
@@ -330,7 +337,8 @@
         <li
           v-for="component in state.components"
         >
-          <g3w-field
+          <g3w-input
+            mode         = "read"
             @showresults = "showResults()"
             :_type       = "component"
             _legacy      = "g3w-field"

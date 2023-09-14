@@ -32,13 +32,136 @@
 
         <bar-loader :loading="loading" />
 
-        <g3w-field :state="data" _legacy="g3w-mediafield">
+        <g3w-input mode="read" :state="data" _legacy="g3w-mediafield">
           <div class="clearmedia" @click="clearMedia()">
             <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
           </div>
-        </g3w-field>
+        </g3w-input>
 
       </div>
+    </template>
+
+    <!--
+      ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
+      ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
+      ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
+      ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
+
+      @example <g3w-input mode="read" _legacy="g3w-field" _type="link" />
+      @example <g3w-input mode="read" _legacy="g3w-field" _type="media" />
+      @example <g3w-input mode="read" _legacy="g3w-field" _type="image" />
+      @example <g3w-input mode="read" _legacy="g3w-field" _type="gallery" />
+
+      @since 3.9.0
+    -->
+    <template #field-value="{ state, field }">
+
+      <!-- LINK FIELD -->
+      <button
+        v-if = "'link' === this._type || $parent.isLink(field)"
+        class     = "btn skin-button field_link"
+        v-t       = "'info.link_button'"
+        @click    = "() => window.open(
+          ('link' === this._type ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
+          '_blank'
+        )"
+      ></button>
+
+      <!-- MEDIA FIELD -->
+      <div v-else-if="'media' === this._type">
+        <div v-if="state.value" class="preview">
+          <a :href="state.value" target="_blank">
+            <div class="previewtype" :class="getMediaType(state.mime_type)">
+              <i class="fa-2x" :class="g3wtemplate.font[getMediaType(state.mime_type)]"></i>
+            </div>
+          </a>
+          <div class="filename">{{ state.value ? state.value.split('/').pop() : state.value }}</div>
+          <slot></slot>
+        </div>
+      </div>
+
+      <!-- IMAGE FIELD -->
+      <div v-else-if="'image' === this._type || $parent.isPhoto(field) || $parent.isImage(field)" style="text-align: left">
+        <img
+          v-for  = "(img, index) in values"
+          class  = "img-responsive"
+          style  = "max-height: 50px;"
+          @click = "_showGallery(index)"
+          :src   = "_getSrc(img)"
+        />
+        <div
+          class           = "modal gallery fade modal-fullscreen force-fullscreen"
+          ref             = "gallery"
+          :id             = "'gallery_' + time"
+          tabindex        = "-1"
+          role            = "dialog"
+          aria-labelledby = ""
+          aria-hidden     = "true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-body">
+                <div :id="'carousel_' + time" class="carousel slide" data-interval="false">
+                  <div class="carousel-inner">
+                    <div v-for="(img, index) in images" class="item" :class="active == index ? 'active' : ''">
+                      <img style="margin:auto" :src="_imgSrc(img.src)">
+                    </div>
+                  </div>
+                  <a v-if="images.length > 1" class="left carousel-control" :href="'carousel_' + time" role="button" data-slide="prev">
+                    <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                  </a>
+                  <a v-if="images.length > 1" class="right carousel-control" :href="'carousel_' + time" role="button" data-slide="next">
+                    <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GALLERY FIELD -->
+      <div v-else-if="'gallery' === this._type" class="container-fluid">
+        <div class="row">
+          <div v-for="(img, index) in values" class="g3w-image col-md-6 col-sm-12">
+            <img
+              class  = "img-thumbnail"
+              @click = "_showGallery(index)"
+              :src   = "_getSrc(img)"
+            />
+          </div>
+        </div>
+        <div
+          class           = "modal gallery fade modal-fullscreen force-fullscreen"
+          ref             = "gallery"
+          :id             = "'gallery_' + time"
+          tabindex        = "-1"
+          role            = "dialog"
+          aria-labelledby = ""
+          aria-hidden     = "true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-body">
+                <div :id="'carousel_' + time" class="carousel slide" data-interval="false">
+                  <div class="carousel-inner">
+                    <div v-for="(img, index) in images" class="item" :class="active == index ? 'active' : ''">
+                      <img style="margin:auto" :src="_imgSrc(img.src)">
+                    </div>
+                  </div>
+                  <a v-if="images.length > 1" class="left carousel-control" :href="'carousel_' + time" role="button" data-slide="prev">
+                    <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                  </a>
+                  <a v-if="images.length > 1" class="right carousel-control" :href="'carousel_' + time" role="button" data-slide="next">
+                    <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </template>
 
   </g3w-input>
@@ -65,23 +188,46 @@ export default {
   data() {
     return {
       data: {
-        value:     null,
-        mime_type: null,
+        value: null,
+        mime_type: null
       },
       mediaid:     `media_${getUniqueDomId()}`,
       loading:     false,
+      /** @since 3.9.0 */
+      active:      null,   // image field
+      /** @since 3.9.0 */
+      time:        Date.now(),
     }
   },
 
-  methods: {
+  computed: {
 
+    /**
+     * ORIGINAL SOURCE: src/components/GlobalImage.vue@3.8
+     */
+     values() {
+      return Array.isArray(this.state.value) ? this.state.value : [this.state.value];
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
+     */
+    images() {
+      return this.values.map((img) => ({ src: ('Object' === toRawType(img) ? img.photo: img) }));
+    },
+
+  },
+
+  methods: {
     onClick(e) {
       document.getElementById(this.mediaid).click();
     },
 
     createImage(file, field) {
-      const reader  = new FileReader();
-      reader.onload = function(e) { field.value = e.target.result; };
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        field.value = e.target.result;
+      };
       reader.readAsDataURL(file);
     },
 
@@ -99,58 +245,111 @@ export default {
       this.$parent.change();
     },
 
-  },
+    /**
+     * ORIGINAL SOURCE: src/components/GlobalImage.vue
+     * 
+     * @since 3.9.0
+     */
+     _showGallery(idx) {
+      this.active = idx;
+      if ('Object' === toRawType(this.state.value)) {
+        this.state.value.active = true;
+      }
+      $('#' + this.$refs.gallery.id).modal('show');
+    },
 
+    /**
+     * ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
+     * 
+     * @since 3.9.0
+     */
+     _imgSrc(url) {
+      return (_.startsWith(url,'/') || _.startsWith(url,'http') ? '' : ProjectsRegistry.getConfig().mediaurl) + url;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
+     * 
+     * @since 3.9.0
+     */
+    _getSrc(img) {
+      return 'Object' === toRawType(img) ? img.photo: img;
+    },
+
+  },
   created() {
     if (this.state.value) {
-      this.data.value     = this.state.value.value;
+      this.data.value = this.state.value.value;
       this.data.mime_type = this.state.value.mime_type;
     }
   },
-
-  async mounted() {
-
-    const name                = this.state.name;
-    const csrfmiddlewaretoken = this.$cookie.get('csrftoken');
-
-    await this.$nextTick();
-
-    $(`#${this.mediaid}`)
-      .fileupload({
+  mounted() {
+    const fieldName = this.state.name;
+    const formData = {
+      name: fieldName,
+      csrfmiddlewaretoken: this.$cookie.get('csrftoken')
+    };
+    this.$nextTick(() => {
+      $(`#${this.mediaid}`).fileupload({
         dataType: 'json',
-        formData: {
-          name,
-          csrfmiddlewaretoken
+        formData,
+        start: ()=>{
+          this.loading = true;
         },
-        start:  () => { this.loading = true; },
-        always: () => { this.loading = false; },
-        fail:   () => { GUI.notify.error(t("info.server_error")); },
-        done:   (e, data) => {
-          const response = data.result[name];
+        done: (e, data) => {
+          const response = data.result[fieldName];
           if (response) {
-            this.data.value     = response.value;
+            this.data.value = response.value;
             this.data.mime_type = response.mime_type;
-            this.state.value    = this.data;
-            this.$parent.change();
+            this.state.value = this.data;
+            this.change();
           }
         },
+        fail: () => {
+          GUI.notify.error(t("info.server_error"));
+        },
+        always: () => {
+          this.loading = false;
+        }
       });
+    });
   },
-
   beforeDestroy() {
     $(`#${this.mediaid}`).fileupload('destroy');
-  },
-
+  }
 };
 </script>
-
 <style scoped>
-  .g3w_input_button {
-    border-style: solid;
-    border-width: 2px;
-    border-radius: 4px;
-    width: 100%;
+  .img-responsive {
     cursor: pointer;
+  }
+  .g3w-image {
+    padding-left: 0 !important;
+    min-width: 100px;
+    max-width: 100%;
+    cursor:pointer;
+  }
+  .modal.gallery .modal-content {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 3px;
+  }
+  .modal.gallery .modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .modal.gallery {
     text-align: center;
+    padding: 0!important;
+  }
+  .modal.gallery:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -4px;
+  }
+  .modal.gallery .carousel .carousel-control span {
+    color: #3c8dbc
   }
 </style>

@@ -39,7 +39,6 @@ import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent from 'components/Sidebar.vue';
 import ViewportComponent from 'components/Viewport.vue';
 import G3WInput from 'components/G3WInput.vue';
-import G3WField from 'components/G3WField.vue';
 
 //directives
 import vDisabled from 'directives/v-disabled';
@@ -73,7 +72,8 @@ function _alias(vm, props) {
   return {
     functional: true,
     render(h, { data, children }) {
-      return h( vm, { ...data, props: { ...data.props, props } }, children);
+      console.log(props, data);
+      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
     },
   };
 }
@@ -91,22 +91,22 @@ Vue.component(Resize.name, Resize);
 Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('layerspositions',    _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'layer_positions' }, _plain: "true" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('datetime',           _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'datetime' }, _plain: "true" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('range',              _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'range_slider' }, _plain: "true" }));
-/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-image',          _alias(G3WField, { _legacy: "g3w-imagefield" }));
-/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-images-gallery', _alias(G3WField, { _legacy: "g3w-galleryfield" }));
-/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-geospatial',     _alias(G3WField, { _legacy: "g3w-geofield" }));
 /** @since 3.9.0 **/
 Vue.component(G3WInput.name, G3WInput);
-/** @since 3.9.0 **/
-Vue.component(G3WField.name, G3WField);
+
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('layerspositions',    _alias(G3WInput, { _legacy: "g3w-input", _plain: "true", state: { /*visible: true,*/ type: 'layer_positions' } }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('datetime',           _alias(G3WInput, { _legacy: "g3w-input", _plain: "true", state: { /*visible: true,*/ type: 'datetime' } }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('range',              _alias(G3WInput, { _legacy: "g3w-input", mode: 'edit', _type: 'range_slider' }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('g3w-image',          _alias(G3WInput, { _legacy: "g3w-field", mode: 'read', _type: 'image' }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('g3w-images-gallery', _alias(G3WInput, { _legacy: "g3w-field", mode:'read', _type: 'gallery' }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('g3w-geospatial',     _alias(G3WInput, { _legacy: "g3w-field", mode: 'read', _type: 'geo' }));
+
 
 /**
  * Install application filters
