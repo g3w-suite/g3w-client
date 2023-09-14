@@ -16,6 +16,7 @@ const gutil       = require('gulp-util');
 // Gulp vinyl (virtual memory filesystem stuff)
 const buffer      = require('vinyl-buffer');
 const source      = require('vinyl-source-stream');
+const es          = require('event-stream');
 
 // Node.js
 const exec        = require('child_process').exec;
@@ -74,7 +75,8 @@ function setNODE_ENV() {
   process.env.NODE_ENV = production ? 'production' : 'development';
   outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
   console.log('[G3W-CLIENT] environment: ' + process.env.NODE_ENV);
-  console.log('[G3W-CLIENT] output folder: ' + outputFolder + '\n');
+  console.log('[G3W-CLIENT] output folder: ' + outputFolder);
+  console.log('[G3W-CLIENT] loaded plugins: ', dev_plugins, '\n');
 }
 
 setNODE_ENV();
@@ -400,6 +402,104 @@ gulp.task('watch:plugins', function() {
 });
 
 /**
+ * @see https://fettblog.eu/gulp-browserify-multiple-bundles/
+ */
+gulp.task('stream', function() {
+    return es.merge.apply(
+      null,
+      dev_plugins.map(function(pluginName) {
+
+        console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
+
+        const entry = `./index.js`;
+
+        let bundler = browserify({
+          entries: [entry]
+         }, {
+          basedir:      `${g3w.pluginsFolder}/${pluginName}/`,
+          paths:        [`${g3w.pluginsFolder}/${pluginName}/`, `${g3w.pluginsFolder}/`],
+          debug:        !production,
+          cache:        {},
+          packageCache: {},
+          transform: [
+            vueify,
+            [ babelify, { babelrc: true } ],
+            [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
+          ],
+         });
+
+        // del([`${g3w.pluginsFolder}/${pluginName}/plugin.js.map`]);
+
+        const rebundle = () => {
+          return bundler
+            .bundle()
+            .on('update', gutil.log.log)
+            .on('error', (err) => { gutil.log(err); process.exit(); })
+            .pipe(source(entry))
+            // .pipe(buffer())
+            .pipe(gulpif(production, sourcemaps.init()))
+            .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
+            // .pipe(gulpif(production, sourcemaps.write(`${g3w.pluginsFolder}/${pluginName}/`)))
+            // .pipe(gulp.dest(`${g3w.pluginsFolder}/${pluginName}/`));
+            .pipe(rename({ basename: 'plugin' }))
+            .pipe(gulp.dest(`${g3w.pluginsFolder}/${pluginName}/`));
+        };
+      
+        if (!production) {
+          bundler = watchify(bundler);
+          bundler.on('update', rebundle);
+        }
+        return rebundle();
+      })
+    );
+});
+
+gulp.task('watch:new-plugins', function() {
+  for (const pluginName of dev_plugins) {
+    console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
+
+    let bundler = browserify(
+      `${pluginName}/index.js`,
+      {
+        basedir:      `${g3w.pluginsFolder}/`,
+        paths:        ['./', '../'],
+        debug:        !production,
+        cache:        {},
+        packageCache: {},
+        transform: [
+          vueify,
+          [ babelify, { babelrc: true } ],
+          [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
+        ],
+      }
+    );
+  
+    del([`${g3w.pluginsFolder}/${pluginName}/plugin.js.map`]);
+  
+    const rebundle = () => {
+      return bundler
+        .bundle()
+        .on('update', console.log)
+        .on('error', (err) => { console.log(err); process.exit(); })
+        .pipe(source('build.js'))
+        .pipe(buffer())
+        .pipe(gulpif(production, sourcemaps.init()))
+        .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
+        .pipe(rename('plugin.js'))
+        .pipe(gulpif(production, sourcemaps.write(`${g3w.pluginsFolder}/${pluginName}/`)))
+        .pipe(gulp.dest(`${g3w.pluginsFolder}/${pluginName}/`));
+    };
+  
+    if (!production) {
+      bundler = watchify(bundler);
+      bundler.on('update', rebundle);
+    }
+
+    /*return*/ rebundle();
+  }
+});
+
+/**
  * Ask the developer which plugins wants to deploy
  */
 gulp.task('select-plugins', function() {
@@ -493,6 +593,7 @@ gulp.task('dev', done => runSequence(
   // 'clean:admin',
   'clean:overrides',
   'clone:default_plugins',
+  // 'watch:plugins',
   'build:dev_plugins',
   'build:client',
   'browser-sync',
