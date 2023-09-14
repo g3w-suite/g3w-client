@@ -704,7 +704,7 @@ const utils = {
     );
 
     const value = is_nested ? field.value.value : field.value;
-    const text  = value && value.toString().toLowerCase();
+    const text  = (value || '').toString().toLowerCase() ;
 
     const is_geo      = 'object' == typeof value && value.coordinates;
     const is_vue      = 'vue' === field.type || ('object' == typeof value && !value.coordinates && value.vue);
