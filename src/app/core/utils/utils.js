@@ -704,10 +704,10 @@ const utils = {
     );
 
     const value = is_nested ? field.value.value : field.value;
-    const text  = (value || '').toString().toLowerCase() ;
+    const text  = (value || '').toString().toLowerCase();
 
-    const is_geo      = 'object' == typeof value && value.coordinates;
-    const is_vue      = 'vue' === field.type || ('object' == typeof value && !value.coordinates && value.vue);
+    const is_geo      = 'Object' === utils.toRawType(value) && value.coordinates;
+    const is_vue      = 'vue' === field.type || ('Object' === utils.toRawType(value) && !value.coordinates && value.vue);
     const is_photo    = (Array.isArray(value) && value.length && value[0].photo) || text.match(PhotoPattern);
     const is_link     = text.match(URLPattern);
 

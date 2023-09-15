@@ -7,7 +7,7 @@
 -->
 
 <template>
-  <g3w-input :state="{ visible: true, type: 'layer_positions' }" _legacy="g3w-input" _plain="true">
+  <g3w-input>
     <template #default>
       <div
         :id   = "ids.layerpositions"

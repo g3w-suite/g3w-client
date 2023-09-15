@@ -45,7 +45,7 @@
 import ApplicationState  from 'store/application-state';
 import { resizeMixin }   from 'mixins';
 
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
 
 export default {
 
@@ -168,8 +168,8 @@ export default {
 
     const service = this.$parent.getInputService();
 
-    this.datetimedisplayformat = service.convertQGISDateTimeFormatToMoment(displayformat);
-    this.datetimefieldformat   = service.convertQGISDateTimeFormatToMoment(fieldformat);
+    this.datetimedisplayformat = convertQGISDateTimeFormatToMoment(displayformat);
+    this.datetimefieldformat   = convertQGISDateTimeFormatToMoment(fieldformat);
 
     service.setValidatorOptions({ fielddatetimeformat: this.datetimefieldformat });
 

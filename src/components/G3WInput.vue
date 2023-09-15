@@ -19,24 +19,37 @@
 
 <template>
 
+<fragment>
+
   <!--
     @example <g3w-input mode="read" _legacy="g3w-field" _type=".." />
     @example <g3w-input mode="read" _legacy="g3w-vuefield" />
     @example <g3w-input mode="edit" _legacy="g3w-input" _type=".." />
   -->
-  <component
+  <!-- <component
     v-if = "['g3w-field', 'g3w-input', 'g3w-vuefield'].includes(_legacy) || isVue(field)"
     :is  = "('edit' == mode && state.visible && 'g3w-input' === _legacy && !$attrs._plain) ? 'div' : 'fragment'"
   >
     <component
-      v-bind   = "{ $attrs, state }"
+      v-bind   = "{
+          ...$attrs,
+          ...$props,
+          _legacy: '',
+      }"
       :feature = "('g3w-vuefield' === this._legacy || isVue(field)) ? feature                                                                      : undefined"
       :value   = "('g3w-vuefield' === this._legacy || isVue(field)) ? (undefined === field.value      ? null         : field.value)                : undefined"
       :is      = "('g3w-vuefield' === this._legacy || isVue(field)) ? (undefined === field.vueoptions ? {}           : field.vueoptions.component) : type"
       v-html   = "('g3w-vuefield' === this._legacy || isVue(field)) ? ('g3w-vuefield' === this._legacy ? undefined   : field.value)                : undefined"
     />
     <span v-if="('edit' == mode && state.visible && 'g3w-input' === _legacy && !$attrs._plain) ? 'div' : 'fragment'" class="divider"></span>
-  </component>
+  </component> -->
+
+  <component
+    v-if    = "!_legacy && !$attrs._legacyCycle"
+    :is     = "type || 'g3w-input'"
+    v-bind = "{ ...$attrs, ...$props, state, _legacyCycle: true }"
+  />
+
 
   <!--
     ORIGINAL SOURCE: src/components/Field.vue@3.8
@@ -52,10 +65,11 @@
     @since 3.9.0
   -->
   <fragment v-else-if="'read' == mode">
+
     <slot name="default">
 
       <span
-        v-if   = "_legacy && isSimple(field)"
+        v-if   = "'foo' == _legacy && isSimple(field)"
         v-html = "field.value"
       ></span>
 
@@ -78,6 +92,22 @@
           >
 
             <!--
+              ORIGINAL SOURCE: src/components/FieldVue.vue@3.8
+
+              @example <g3w-field _legacy="g3w-vuefield" />
+
+              @since 3.9.0
+            -->
+            <div v-if="'g3w-vuefield' === this._legacy || isVue(field)">
+              <component
+                :feature = "feature"
+                :value   = "undefined === field.value       ? null        : field.value"
+                :is      = "(undefined === field.vueoptions ? {}          : field.vueoptions.component) || {}"
+                v-html   = "__isVueField                    ? undefined   : field.value"
+              />
+            </div>
+
+            <!--
               ORIGINAL SOURCE: src/components/FieldText.vue@3.8
 
               @example <g3w-input mode="read" :state />
@@ -85,6 +115,7 @@
               @since 3.9.0
             -->
             <span
+              v-else
               style  = "word-wrap: break-word;"
               v-html = "state.value"
             ></span>
@@ -114,6 +145,21 @@
   -->
 
   <fragment v-else-if="'edit' == mode && state.visible">
+
+    <div v-if="'g3w-input' == _legacy && !$attrs._legacyCycle">
+      <component
+        v-if    = "$attrs._plain"
+        v-bind  = "{ ...$attrs, ...$props, state, _legacyCycle: true }"
+        :is     = "type"
+      />
+      <div v-else>
+        <component
+          v-bind = "{ ...$attrs, ...$props, state, _legacyCycle: true }"
+          :is    = "type"
+        />
+        <span class="divider"></span>
+      </div>
+    </div>
 
     <slot name="default">
 
@@ -215,6 +261,9 @@
 
     </slot>
   </fragment>
+
+</fragment>
+
 
 </template>
 
@@ -590,16 +639,16 @@ class Service {
  * ORIGINAL SOURCE: src/app/gui/inputs/services.js@3.8
  */
 const InputsServices = {
-  'text':           class extends Service {},
-  'textarea':       class extends Service {},
-  'texthtml':       class extends Service {},
-  'string':         class extends Service {},
-  'color':          class extends Service {},
-  'integer':        class extends Service {},
-  'float':          class extends Service {},
-  'radio':          class extends Service {},
-  'unique':         class extends Service {},
-  'media':          class extends Service {},
+  // 'text':           class extends Service {},
+  // 'textarea':       class extends Service {},
+  // 'texthtml':       class extends Service {},
+  // 'string':         class extends Service {},
+  // 'color':          class extends Service {},
+  // 'integer':        class extends Service {},
+  // 'float':          class extends Service {},
+  // 'radio':          class extends Service {},
+  // 'unique':         class extends Service {},
+  // 'media':          class extends Service {},
   
   /**
    * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8
@@ -671,6 +720,9 @@ const InputsServices = {
       return applicationConfig.user.i18n ? applicationConfig.user.i18n : 'en';
     };
   
+    /**
+     * @deprecated since 3.9.0. Use core/utils::convertQGISDateTimeFormatToMoment(datetimeformat) instead.
+     */
     convertQGISDateTimeFormatToMoment(datetimeformat) {
       return convertQGISDateTimeFormatToMoment(datetimeformat);
     }
@@ -1054,9 +1106,17 @@ const vm = {
     /**
      * @since 3.9.0
      */
-    _plain: {
-      default: false
-    }
+    _type: {
+      type: String,
+      default: "",
+    },
+
+    /**
+     * @since 3.9.0
+     */
+    // _plain: {
+    //   default: false
+    // }
 
   },
 
@@ -1214,12 +1274,18 @@ const vm = {
      * @since 3.9.0
      */
     type() {
-      /** @TODO make it a required `$props` instead? */
-      if (this._type) {                          // TODO: replace static `_type` calls with `getFieldType(field)` ?
+
+      // $props override
+      if (this._type) {
         return this._type;
-      } else if ('g3w-field' === this._legacy /*&& !this.type*/) {
+      }
+
+      // read mode --> (field)
+      if ('read' === this.mode ) {
         return this.getType(this.state);
       }
+
+      // edit mode --> (input)
       if ('edit' === this.mode && 'child' !== this.state.type) {
         return `${this.state.input && this.state.input.type ? this.state.input.type : this.state.type}_input`;
       }
@@ -1346,7 +1412,10 @@ const vm = {
      * @since 3.9.0
      */
     createInputService(type, options) {
-      console.assert(undefined !== InputsServices[type], 'Uknwon InputsService type: %s', type);
+      if (undefined === InputsServices[type]) {
+        console.error('[g3w-input] Uknwon InputsService type: ', type);
+        InputsServices[type] = class extends Service {};
+      }
       return new InputsServices[type](options);
     },
 
@@ -1547,13 +1616,13 @@ function _alias(vm, props) {
 }
 
 vm.components['text_field']                = vm;
-vm.components['vue_field']                 = _alias(vm, { _legacy: "g3w-vuefield" });
+vm.components['vue_field']                 = _alias(vm, { _legacy: "g3w-vuefield", mode: "read" });
 
-vm.components['link_field']                = _alias(InputMedia, { _type: 'media',   _legacy: "g3w-field", mode: 'read' });
-vm.components['media_field']               = _alias(InputMedia, { _type: 'media',   _legacy: "g3w-field", mode: 'read' });
-vm.components['image_field']               = _alias(InputMedia, { _type: 'image',   _legacy: "g3w-field", mode: 'read' });
-vm.components['gallery_field']             = _alias(InputMedia, { _type: 'gallery', _legacy: "g3w-field", mode: 'read' });
-vm.components['geo_field']                 = _alias(InputGeo,   { _type: 'geo',     _legacy: "g3w-field", mode: 'read' });
+vm.components['link_field']                = _alias(InputMedia, { _type: "link",    mode: "read" });
+vm.components['media_field']               = _alias(InputMedia, { _type: "media",   mode: "read" });
+vm.components['image_field']               = _alias(InputMedia, { _type: "image",   mode: "read" });
+vm.components['gallery_field']             = _alias(InputMedia, { _type: "gallery", mode: "read" });
+vm.components['geo_field']                 = _alias(InputGeo,   { _type: "geo",     mode: "read" });
 
 vm.components['simple_field']              = vm.components['text_field'];
 vm.components['photo_field']               = vm.components['image_field'];
@@ -1563,7 +1632,7 @@ vm.components['g3w_vue']                   = vm.components['vue_field'];  // see
 vm.components['select_autocomplete_input'] = vm.components['select_input'];
 vm.components['string_input']              = vm.components['text_input'];
 vm.components['slider_input']              = vm.components['range_input'];
-vm.components['range_slider_input']        = vm.components['range_input']; 
+vm.components['range_slider_input']        = vm.components['range_input'];
 
 fieldsservice.getType                      = vm.methods.getType;
 fieldsservice.isVue                        = vm.methods.isVue;

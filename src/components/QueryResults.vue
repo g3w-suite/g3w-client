@@ -152,7 +152,6 @@
                 :layer   = "layer"
                 :config  = "state.layeractiontool[layer.id].config"
                 :_type   = "state.layeractiontool[layer.id].component"
-                _legacy  = "g3w-field"
               />
             </div>
 
@@ -161,7 +160,6 @@
               v-for   = "({ component }) in getLayerCustomComponents(layer.id, 'layer', 'before')"
               :layer  = "layer"
               :_type  = "component"
-              _legacy = "g3w-field"
             />
 
             <div
@@ -242,7 +240,6 @@
                             :featureIndex = "index"
                             :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
                             :_type        = "state.currentactiontools[layer.id][index]"
-                            _legacy       = "g3w-field"
                           />
                         </td>
                       </tr>
@@ -258,7 +255,6 @@
                             :layer   = "layer"
                             :feature = "feature"
                             :_type   = "component"
-                            _legacy  = "g3w-field"
                           />
                         </td>
                       </tr>
@@ -308,7 +304,6 @@
                             :layer   = "layer"
                             :feature = "feature"
                             :_type   = "component"
-                            _legacy  = "g3w-field"
                           />
                         </td>
                       </tr>
@@ -328,7 +323,6 @@
                 mode    = "read"
                 :layer  = "layer"
                 :_type  = "component"
-                _legacy = "g3w-field"
               />
             </div>
           </div>
@@ -341,7 +335,6 @@
             mode         = "read"
             @showresults = "showResults()"
             :_type       = "component"
-            _legacy      = "g3w-field"
           />
         </li>
       </ul>

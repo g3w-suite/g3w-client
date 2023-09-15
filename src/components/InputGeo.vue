@@ -4,7 +4,7 @@
   ORIGINAL SOURCE: src/components/FieldGeo.vue@3.8
   ORIGINAL SOURCE: src/components/GlobalGeo.vue@3.8
 
-  @example <g3w-input mode="read" _legacy="g3w-field" _type="geo" />
+  @example <g3w-input mode="read" _type="geo" />
 
   @since 3.9.0
 -->
@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import GUI from 'services/gui';
 
 export default {
 

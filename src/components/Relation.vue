@@ -82,7 +82,6 @@
             :layer  = "downloadLayer.state"
             :config = "downloadLayer.config"
             :_type  = "headercomponent"
-            _legacy = "g3w-field"
           />
         </div>
         <table
@@ -152,18 +151,17 @@
               </td>
 
               <!-- RELATION FIELDS -->
-              <td
-                v-else
-                v-for = "value in row"
-                class = "relation-field"
-              >
-                <g3w-input
-                  mode    = "read"
-                  :state  = "({ value })"
-                  _legacy ="g3w-field"
-                />
-              </td>
-
+              <template                 v-else>
+                <td
+                  v-for = "value in row"
+                  class = "relation-field"
+                >
+                  <g3w-input
+                    mode    = "read"
+                    :state  = "({ value })"
+                  />
+                </td>
+            </template>
             </tr>
           </tbody>
         </table>

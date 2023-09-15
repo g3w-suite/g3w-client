@@ -47,10 +47,10 @@
       ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
       ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
 
-      @example <g3w-input mode="read" _legacy="g3w-field" _type="link" />
-      @example <g3w-input mode="read" _legacy="g3w-field" _type="media" />
-      @example <g3w-input mode="read" _legacy="g3w-field" _type="image" />
-      @example <g3w-input mode="read" _legacy="g3w-field" _type="gallery" />
+      @example <g3w-input mode="read" _type="link" />
+      @example <g3w-input mode="read" _type="media" />
+      @example <g3w-input mode="read" _type="image" />
+      @example <g3w-input mode="read" _type="gallery" />
 
       @since 3.9.0
     -->

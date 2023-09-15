@@ -118,7 +118,7 @@
       @mouseover.self     = "showColorMenu(true, $event)"
     >
       <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
-      <span class="menu-icon skin-color-dark" class="layer-menu-icon-pos-1" :class="g3wtemplate.getFontClass('arrow-right')"></span>
+      <span class="menu-icon skin-color-dark layer-menu-icon-pos-1" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul
         v-if   = "layerMenu.colorMenu.show"
         style  = "position:fixed"

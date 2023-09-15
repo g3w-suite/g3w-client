@@ -1,6 +1,8 @@
 <!--
   @file
   @since v3.7
+
+  @deprecated since 3.9.0. Use `class="divider"` instead. Will be removed in 4.1.x
 -->
 
 <template>
@@ -8,8 +10,10 @@
 </template>
 
 <script>
+  const deprecate = require('util-deprecate');
   export default {
-    name: "divider"
+    name: "divider",
+    created: deprecate(function foo() {}, '<dividier> tag is deprecated. Use `class="divider"` instead.'),
   }
 </script>
 

@@ -72,7 +72,6 @@ function _alias(vm, props) {
   return {
     functional: true,
     render(h, { data, children }) {
-      console.log(props, data);
       return h( vm, { ...data, props: { ...data.props, ...props } }, children);
     },
   };
@@ -95,17 +94,17 @@ Vue.component(Divider.name, Divider);
 Vue.component(G3WInput.name, G3WInput);
 
 /** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('layerspositions',    _alias(G3WInput, { _legacy: "g3w-input", _plain: "true", state: { /*visible: true,*/ type: 'layer_positions' } }));
+Vue.component('layerspositions',    _alias(G3WInput, { _legacy: "g3w-input", state: { input: { type: "layer_positions" } } }));
 /** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('datetime',           _alias(G3WInput, { _legacy: "g3w-input", _plain: "true", state: { /*visible: true,*/ type: 'datetime' } }));
+Vue.component('datetime',           _alias(G3WInput, { _legacy: "g3w-input", state: { input: { type: "datetime" } } } ));
 /** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('range',              _alias(G3WInput, { _legacy: "g3w-input", mode: 'edit', _type: 'range_slider' }));
+Vue.component('range',              _alias(G3WInput, { _legacy: "g3w-input", state: { input: { type: "range_slider" } } }));
 /** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-image',          _alias(G3WInput, { _legacy: "g3w-field", mode: 'read', _type: 'image' }));
+Vue.component('g3w-image',          _alias(G3WInput, { mode:'read', _type: "image" }));
 /** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-images-gallery', _alias(G3WInput, { _legacy: "g3w-field", mode:'read', _type: 'gallery' }));
+Vue.component('g3w-images-gallery', _alias(G3WInput, { mode:'read', _type: "gallery" }));
 /** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-geospatial',     _alias(G3WInput, { _legacy: "g3w-field", mode: 'read', _type: 'geo' }));
+Vue.component('g3w-geospatial',     _alias(G3WInput, { mode:'read', _type: "geo" }));
 
 
 /**
