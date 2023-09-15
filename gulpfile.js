@@ -54,29 +54,36 @@ const __INFO = " \#\#\# \033[0m";
 const H1__ = "\n\n" + INFO__;
 const __H1 = __INFO + "\n";
 
-
-// Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
-
-// Built-in client plugins
-const default_plugins = [
-  'editing',
-  'openrouteservice',
-  'qplotly',
-  'qtimeseries'
-];
-// Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
-const dev_plugins = Array.from(new Set(
-  default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins))
-));
-
-// production const to set environmental variable
-function setNODE_ENV() {
-  process.env.NODE_ENV = production ? 'production' : 'development';
-  outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
-  console.log('[G3W-CLIENT] environment: ' + process.env.NODE_ENV);
-  console.log('[G3W-CLIENT] output folder: ' + outputFolder);
-  console.log('[G3W-CLIENT] loaded plugins: ', dev_plugins, '\n');
+/**
+ * @since v.3.9
+ * @returns {*}
+ */
+const select_plugins = (exclude=[]) => {
+  return prompt.prompt({
+      type: 'checkbox',
+      name: 'plugins',
+      message: 'Plugins',
+      // exclude from plugin list "client" and all "_templates" plugins
+      choices: fs.readdirSync(g3w.pluginsFolder)
+        .filter(file => {
+          try {
+            return file !== 'client'
+              && exclude.indexOf(file) === -1
+              && file.indexOf('_templates') === -1
+              && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
+              && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
+          } catch (e) {
+            console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
+            return false;
+          }
+        })
+    },
+    response => {
+      //need to update dev plugins
+      response.plugins.forEach(plugin => dev_plugins.push(plugin));
+      process.env.G3W_PLUGINS = response.plugins;
+    }
+  )
 }
 
 /**
@@ -135,6 +142,40 @@ const browserify_plugin = function(name) {
   return rebundle();
 };
 
+// production const to set environmental variable
+function setNODE_ENV() {
+  process.env.NODE_ENV = production ? 'production' : 'development';
+  outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
+  console.log('[G3W-CLIENT] environment: ' + process.env.NODE_ENV);
+  console.log('[G3W-CLIENT] output folder: ' + outputFolder);
+  console.log('[G3W-CLIENT] loaded plugins: ', dev_plugins, '\n');
+}
+
+// Retrieve project dependencies ("g3w-client")
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
+
+// Built-in client plugins
+const default_plugins = [
+  //'editing',
+  'openrouteservice',
+  'qplotly',
+  'qtimeseries'
+];
+// Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
+//create Proxy to be reactive
+const dev_plugins = new Proxy(
+  Array.from(
+    new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))
+  ), {
+  set(target, property, value, receiver) {
+    if (property !== 'length') {
+      target[property] = value;
+      // you have to return true to accept the changes
+      browserify_plugin(value);
+    }
+    return true;
+  }
+});
 
 setNODE_ENV();
 
@@ -502,6 +543,18 @@ gulp.task('stream', function() {
     );
 });
 
+/**
+ *
+ * To add a Plugin during development
+ * without rebuild client
+ *@since 3.9
+ */
+gulp.task('add:build_dev_plugins', function() {
+  return gulp
+    .src('./package.json')
+    .pipe(select_plugins(dev_plugins));
+})
+
 gulp.task('watch:new-plugins', function() {
   for (const pluginName of dev_plugins) {
     console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
@@ -547,45 +600,25 @@ gulp.task('watch:new-plugins', function() {
   }
 });
 
+
 /**
- * Ask the developer which plugins wants to deploy
+ * * Ask the developer which plugins wants to deploy
  */
 gulp.task('select-plugins', function() {
   return gulp
     .src('./package.json')
     .pipe(
       prompt.prompt({
-        type: 'list',
-        name: 'env',
-        message: 'Environment',
-        choices: ['development', 'production'],
+          type: 'list',
+          name: 'env',
+          message: 'Environment',
+          choices: ['development', 'production'],
         }, (response) => {
-          production = response.env == 'production';
-          setNODE_ENV();
-        }
-      )
+        production = response.env == 'production';
+        setNODE_ENV();
+      })
     )
-    .pipe(
-      prompt.prompt({
-        type: 'checkbox',
-        name: 'plugins',
-        message: 'Plugins',
-        // exclude from plugin list "client" and all "template_" plugins
-        choices: fs.readdirSync(g3w.pluginsFolder).filter(file => {
-          try {
-            return file !== 'client'
-                && file.indexOf('template_') === -1
-                && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
-                && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
-          } catch (e) {
-            console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
-            return false;
-          }
-        })
-      },
-      response => process.env.G3W_PLUGINS = response.plugins
-      )
-    );
+    .pipe(select_plugins())
 });
 
 /**
