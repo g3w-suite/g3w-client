@@ -594,7 +594,11 @@ gulp.task('select-plugins', function() {
 gulp.task('deploy-plugins', function() {
   const pluginNames  = process.env.G3W_PLUGINS.split(',');
   const nodePath     = path;
-  const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
+  const outputFolder = production ? g3w.admin_plugins_folder : `${g3w.admin_overrides_folder}/static`;
+  //In case of production need to build plugin in production (minify) mode
+  if (production) {
+    pluginNames.forEach(name => browserify_plugin(name));
+  }
   return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
     .pipe(rename((path, file) => {
         const pluginName   = nodePath.basename(file.base);
