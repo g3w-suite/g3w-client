@@ -241,8 +241,8 @@
                         </td>
 
                         <td v-for="attr in attributesSubset(layer)" class="attribute">
-                          <span v-if="getIcon(attr)" class="skin-color" :class="getIcon(attr)"></span>
-                          <span v-else>{{feature.attributes[attr.name]}}</span>
+                          <span v-if="getIcon({ layer, feature, attr })" class="skin-color" :class="getIcon({ layer, feature, attr })"></span>
+                          <span v-else>{{ feature.attributes[attr.name] }}</span>
                         </td>
 
                         <td
@@ -766,11 +766,11 @@
       /**
        * @since 3.9.0
        */
-      getIcon(attr) {
+      getIcon({ layer, feature, attr }) {
 
         const field = this.getLayerField({
-          layer:     this.layer,
-          feature:   this.feature,
+          layer:     layer,
+          feature:   feature,
           fieldName: attr.name,
         });
 
