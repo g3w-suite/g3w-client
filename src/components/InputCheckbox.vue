@@ -70,12 +70,49 @@ export default {
 
   methods: {
 
+    /**
+     * convert label.
+     * 
+     * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8::convertCheckedToValue(checked)
+     */
     setLabel() {
-      this.label = this.$parent.getInputService().convertCheckedToValue(this.value); // convert label.
+      const service   = this.$parent.getInputService();
+      const checked   = this._hasValue(this.value) ? this.value : false;
+      const { value } = service.getState().input.options.values.find(d => checked === d.checked);
+  
+      service._setValue(value);
+  
+      this.label = service.getValue();
     },
 
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8::convertValueToChecked()
+     */
     setValue() {
-      this.value = this.$parent.getInputService().convertValueToChecked();
+      const service = this.$parent.getInputService();
+      const value   = service.getValue();
+
+      if (!this._hasValue(value)) {
+        return false;
+      }
+
+      let option = service.getState().input.options.values.find(d => value === d.value);
+
+      if (undefined === option) {
+        option           = service.getState().input.options.values.find(value => false === value.checked);
+        service._setValue(option.value);
+      }
+
+      this.value = option.checked;
+    },
+
+    /**
+     * Check if a variable is not `null` or `undefined` (nullish coalescing values)
+     * 
+     * @since 3.9.0 
+     */
+    _hasValue(value) {
+      return null !== value && undefined !== value;
     },
 
     changeCheckBox() {
@@ -101,7 +138,7 @@ export default {
   created() {
     this.value = this.state.forceNull
       ? this.value
-      : this.$parent.getInputService().convertValueToChecked();
+      : this.setValue();
   },
 
   mounted() {

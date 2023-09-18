@@ -125,7 +125,79 @@ export default {
   methods: {
 
     toggleGetCoordinate() {
-      this.$parent.getInputService().toggleGetCoordinate();
+      const { coordinatebutton } = this.$parent.getInputService();
+      if (coordinatebutton.active) {
+        this._stopToGetCoordinates();
+      } else {
+        this._startToGetCoordinates();
+      }
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8::startToGetCoordinates()
+     * 
+     * @since 3.9.0
+     */
+    _startToGetCoordinates() {
+      const service              = this.$parent.getInputService();
+      const { coordinatebutton } = service;
+
+      coordinatebutton.active = true;
+
+      service.mapService.deactiveMapControls();
+      service.mapService.on('mapcontrol:toggled', this._mapControlToggleEventHandler.bind(this));
+      service.eventMapKey = service.map.on('click', this._onMapClick)
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8::startToGetCoordinates()
+     * 
+     * @since 3.9.0
+     */
+    _stopToGetCoordinates() {
+      const service              = this.$parent.getInputService();
+      const { coordinatebutton } = service;
+
+      coordinatebutton.active = false;
+
+      ol.Observable.unByKey(service.eventMapKey);
+      service.mapService.off('mapcontrol:toggled', this._mapControlToggleEventHandler.bind(this));
+    },
+
+    
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+     * 
+     * @param event.target
+     * 
+     * @since 3.9.0
+     */
+    _mapControlToggleEventHandler({ target }) {
+      const { coordinatebutton } = this.$parent.getInputService();
+      if (
+        target.isToggled() &&
+        target.isClickMap() &&
+        coordinatebutton.active
+      ) {
+        this.toggleGetCoordinate();
+      }
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    _onMapClick(evt) {
+      evt.originalEvent.stopPropagation();
+      evt.preventDefault();
+      const service = this.$parent.getInputService();
+      const coord   = service.mapEpsg !== service.outputEpsg
+        ? ol.proj.transform(evt.coordinate, service.mapEpsg, service.outputEpsg)
+        : evt.coordinate;
+      service._setValue([coord]);
+      service.getState().values.lon = coord[0];
+      service.getState().values.lat = coord[1];
     },
 
     changeLonLat() {
@@ -147,7 +219,7 @@ export default {
   created() {
     this.state.values = this.state.values || { lon:0, lat:0 };
     this.$parent.setValue();
-    this.$parent.getInputService().setCoordinateButtonReactiveObject(this.coordinatebutton);
+    this.$parent.getInputService().coordinatebutton = this.coordinatebutton;
   },
 
   async mounted() {
@@ -158,7 +230,7 @@ export default {
   },
 
   destroyed() {
-    this.$parent.getInputService().clear();
+    this._stopToGetCoordinates();
   },
 
 };

@@ -195,7 +195,7 @@ export default {
           horizontal: layout.horizontal || 'left'
         },
         showClose:         true,
-        locale:            service.getLocale()
+        locale:            this.$parent.getLocale()
       });
 
     $(`#${this.iddatetimepicker}`).on("dp.change", this.onDatePickerChange);

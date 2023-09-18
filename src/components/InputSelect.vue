@@ -169,6 +169,45 @@ export default {
       this.$parent.change();
     },
 
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8::getData()
+     * 
+     * @since 3.9.0
+     */
+    _getData(opts = {}) {
+      const service = this.$parent.getInputService();
+      opts          = Object.assign({}, {
+        layer_id:  service.getState().input.options.layer_id,
+        key:       service.getState().input.options.key,
+        value:     service.getState().input.options.value,
+        search:    undefined
+      }, opts);
+      return new Promise((resolve, reject) => {
+        if (!this._layer) {
+          this._layer = CatalogLayersStoresRegistry.getLayerById(layer_id);
+        }
+        this._layer
+          .getDataTable({
+            suggest: `${key}|${search}`.trim(),
+            ordering: key
+          })
+          .then(response => {
+            const values = [];
+            const features = response.features;
+            for (let i = 0; i < features.length; i++) {
+              values.push({
+                text:features[i].properties[key],
+                id: i,
+                $value: features[i].properties[value]
+              })
+            }
+            resolve(values);
+          })
+          .fail(err => reject(err));
+      });
+    },
+
   },
 
   created() {
@@ -193,8 +232,22 @@ export default {
         });
       }
 
+      // ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8::getKeyByValue()
       if (this.autocomplete && this.state.value) {
-        this.$parent.getInputService().getKeyByValue({ search: this.state.value });
+        const service = this.$parent.getInputService();
+        const options = service.getState().input.options;
+        const { value, key } = options;
+
+        this
+          ._getData({
+              key:    value,
+              value:  key,
+              search: service.getValue()
+          })
+          .then(d => {
+            options.values.push({ key: d[0].$value, value: d[0].text }); // add value
+          })
+          .catch(err => console.log(err));
       }
 
     } catch(e) {
@@ -225,8 +278,7 @@ export default {
               $('.select2-results__option.loading-results').siblings().hide();
               this.resetValues();
               this
-                .getService()
-                .getData({ search: params.data.term })
+                ._getData({ search: params.data.term })
                 .then(success)
                 .catch(failure);
             },

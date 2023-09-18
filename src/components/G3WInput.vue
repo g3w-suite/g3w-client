@@ -309,6 +309,8 @@ const PickFeatureInteraction                  = require('g3w-ol/interactions/pic
 const PickCoordinatesInteraction              = require('g3w-ol/interactions/pickcoordinatesinteraction');
 const { t }                                   = require('core/i18n/i18n.service');
 
+const deprecate                               = require('util-deprecate');
+
 Object
   .entries({
     ApplicationState,
@@ -345,6 +347,7 @@ Object
     InputTextArea,
     InputTextHtml,
     InputUnique,
+    deprecate,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
@@ -408,661 +411,6 @@ function _defaultState(state) {
   return state;
 }
 
-/******************************************************* */
-
-/**
- * Base class
- *
- * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
- */
-class Service {
-
-  constructor(options = {}) {
-    /** state of input */
-    this.state = options.state || {};
-
-    // // type of input
-    // if (this.state.validate.required) {
-    //   this.setValue(this.state.value);
-    // }
-
-    // initial value of input (based on value or default options value)
-    this.setValue(this.state.value);
-    this.setEmpty(this.state.value);
-
-    /**
-     * Input Validators
-     * 
-     * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
-     */
-    const vOptions = (options.validatorOptions || this.state.input.options || {});
-    this._validator = {
-      options: vOptions,
-      validate: ({
-        'range':          _isValueInRange.bind(vOptions.min, vOptions.max),
-        'datetimepicker': _isDateTime,
-        'checkbox':       _isCheckBox.bind(vOptions.values),
-        'integer':        _isInteger,
-        'float':          _isFloat,
-      })[this.state.type] || truefnc,
-    };
-
-    this.setErrorMessage(options.state);
-  }
-
-  getState() {
-    return this.state;
-  }
-  
-  getValue() {
-    return this.state.value;
-  }
-
-  /**
-   * Initial value of input (based on value or default options value)
-   * 
-   * @TODO potential ambiguous method name, rename into something more explicit (eg. `this.setDefaultValue(value)`)
-   * 
-   * @param value
-   *
-   * @returns {void}
-   */
-  setValue(value) {
-    if (_hasValue(value)) {
-      return;
-    }
-
-    const { options } = this.state.input;
-    let default_value = options.default;
-
-    /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
-    if (Array.isArray(options)) {
-      if (options[0].default) {
-        default_value = options[0].default;
-      } else if (Array.isArray(options.values) && options.values.length > 0) {
-        default_value = options.values[0] && (options.values[0].value || options.values[0]);
-      }
-    }
-
-    // check if default value is set
-    const get_default_value = (
-      this.state.get_default_value && // ref: core/layers/tablelayer.js::getFieldsWithValues()
-      _hasValue(default_value)
-    );
-
-    // check if we can state.check get_default_value from input.options.default is set
-    if (get_default_value && undefined === options.default_expression) {
-      this.state.value = default_value;
-    }
-
-    this.state.value_from_default_value = get_default_value;
-
-  }
-
-  addValueToValues(value) {
-    this.state.input.options.values.unshift(value)
-  }
-
-  _getValidatorType() {
-    return this.state.type;
-  }
-
-  setState(state={}) {
-    this.state = _.isObject(state) ? state : {};
-  }
-
-  getValidator() {
-    return this._validator;
-  }
-
-  setValidator(validator) {
-    this._validator = validator;
-  }
-
-  setEmpty() {
-    this.state.validate.empty = (
-      !(Array.isArray(this.state.value) && this.state.value.length > 0) &&
-      _.isEmpty(_.trim(this.state.value))
-    );
-  }
-
-  /**
-   * Check state's value validity
-   */
-  validate() {
-    const is_empty       = this.state.validate.empty;
-    const is_required    = this.state.validate.required;
-    const is_numeric     = ['integer', 'float'].includes(this.state.input.type);
-    const has_number     = is_numeric && +this.state.value >= 0;
-    const exclude_values = this.state.validate.exclude_values && this.state.validate.exclude_values.size;
-    const is_excluded    = exclude_values && this.state.validate.exclude_values.has(this.state.value);
-
-    // check unique
-    if (is_empty) {
-      this.state.validate.unique = true;
-    }
-
-    // check empty
-    if (is_empty || !has_number) {
-      this.state.validate.empty  = true;
-      this.state.value           = null;
-    }
-
-    // invalid
-    if (is_required && (is_empty || (!has_number || is_excluded))) {
-      this.state.validate.valid = false;
-    }
-
-    // valid
-    if (!is_empty && (!is_excluded || (!is_required && !has_number))) {
-      this.state.validate.valid = true;
-    }
-
-    // validate
-    if ((!is_required && is_empty) || (!is_empty && (!exclude_values || has_number))) {
-      this.state.validate.valid = this._validator.validate(this.state.value);
-    }
-
-    return this.state.validate.valid;
-  }
-
-  setErrorMessage(input) {
-    const {
-      mutually,
-      mutually_valid,
-      max_field,
-      min_field,
-      unique,
-      exclude_values,
-      required,
-    } = input.validate;
-
-    let message = this.state.info;
-
-    if (required) {
-      message = this.state.info || `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )` + (this.state.info ? ` <div><b>${this.state.info}</b></div>` : '');
-    }
-
-    if (unique && exclude_values && exclude_values.size) {
-      message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-    }
-
-    if (min_field) {
-      message = `${t("sdk.form.inputs.input_validation_min_field")} (${min_field})`;
-    }
-
-    if (max_field) {
-      message = `${t("sdk.form.inputs.input_validation_max_field")} (${max_field})`;
-    }
-
-    if (mutually && !mutually_valid) {
-      message =  `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${mutually.join(',')} )`;
-    }
-
-    this.state.validate.message = message;
-  }
-
-  setUpdate() {
-    const { value, _value } = this.state;
-
-    const is_media  = 'media' === this.state.input.type && false === [toRawType(value), toRawType(_value)].includes('Object'); 
-    const is_date   = 'datetimepicker' === this.state.input.type;
-
-    // default
-    let curr = value;
-    let old  = _value; 
-
-    // media
-    if (is_media) {
-      curr = value.value;
-      old = _value.value;
-    }
-
-    // datetimepicker
-    if (is_date && null !== value) {
-      curr = value.toUpperCase();
-    }
-    if (is_date && _value) {
-      old = _value.toUpperCase();
-    }
-
-    this.state.update = (curr != old);
-  }
-
-};
-
-/******************************************************* */
-
-/**
- * Factory object 
- * 
- * ORIGINAL SOURCE: src/app/gui/inputs/services.js@3.8
- */
-const InputsServices = {
-  // 'text':           class extends Service {},
-  // 'textarea':       class extends Service {},
-  // 'texthtml':       class extends Service {},
-  // 'string':         class extends Service {},
-  // 'color':          class extends Service {},
-  // 'integer':        class extends Service {},
-  // 'float':          class extends Service {},
-  // 'radio':          class extends Service {},
-  // 'unique':         class extends Service {},
-  // 'media':          class extends Service {},
-  
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8
-   */
-  'check': class extends Service {
- 
-    constructor(options = {}) {
-      const value              = options.state.input.options.values.find(value => false === value.checked);
-      options.validatorOptions = { values: options.state.input.options.values.map(value => value) };
-      options.state.value      = (null === options.state.value && !options.state.forceNull) ? value.value : options.state.value;
-      super(options);
-    }
-
-    convertCheckedToValue(checked) {
-      checked          = _hasValue(checked) ? checked : false;
-      this.state.value = this.state.input.options.values.find(value => checked === value.checked).value;
-      return this.state.value;
-    }
-
-    convertValueToChecked() {
-      if (!_hasValue(this.state.value)) {
-        return false;
-      }
-      let option = this.state.input.options.values.find(value => this.state.value === value.value);
-      if (undefined === option) {
-        option           = this.state.input.options.values.find(value => false === value.checked);
-        this.state.value = option.value;
-      }
-      return option.checked;
-    }
-
-  },
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/range/service.js@3.8
-   */
-  'range': class extends Service {
-
-    constructor(options = {}) {
-      const { min, max } = options.state.input.options.values[0];
-      options.state.info = `[MIN: ${min} - MAX: ${max}]`;
-      super(options);
-      
-      // range validator
-      const vOptions = { min: 1 * min, max: 1 * max };
-      this.setValidator({ options: vOptions, validate: _isValueInRange.bind(vOptions.min, vOptions.max) });
-    }
-
-    isValueInRange(value, min, max) {
-      return value <= max && value >= min;
-    }
-
-  },
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/datetimepicker/service.js@3.8
-   */
-  'datetimepicker': class extends Service {
-
-    constructor(options = {}) {
-      super(options);
-
-      /** @TODO double check (in v3.8 this assignment was before `super(options)` call) */
-      this.validatorOptions = {};
-    }
-
-    getLocale() {
-      const applicationConfig = ApplicationService.getConfig();
-      return applicationConfig.user.i18n ? applicationConfig.user.i18n : 'en';
-    };
-  
-    /**
-     * @deprecated since 3.9.0. Use core/utils::convertQGISDateTimeFormatToMoment(datetimeformat) instead.
-     */
-    convertQGISDateTimeFormatToMoment(datetimeformat) {
-      return convertQGISDateTimeFormatToMoment(datetimeformat);
-    }
-  
-    setValidatorOptions(options) {
-      this.validatorOptions = options;
-    }
-  
-  },
- 
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8
-   */
-  'select': class extends Service {
-
-    constructor(options = {}) {
-      super(options);
-      this.layer = null;
-    }
-
-    _getLayerById(layer_id) {
-      return CatalogLayersStoresRegistry.getLayerById(layer_id);
-    }
-
-    addValue(value) {
-      this.state.input.options.values.push(value);
-    };
-
-    getKeyByValue({search}={}) {
-      const options = this.state.input.options;
-      const { value, key } = options;
-      this
-        .getData({ key: value, value: key, search })
-        .then(arrayValues => {
-          const [_value] = arrayValues;
-          this.addValue({ key: _value.$value, value: _value.text })
-        })
-        .catch(err => console.log(err));
-    }
-
-    getData({
-      layer_id = this.state.input.options.layer_id,
-      key      = this.state.input.options.key,
-      value    = this.state.input.options.value,
-      search
-    } = {}) {
-      return new Promise((resolve, reject) => {
-        if (!this._layer) this._layer = this._getLayerById(layer_id);
-        this._layer
-          .getDataTable({
-            suggest: `${key}|${search}`.trim(),
-            ordering: key
-          })
-          .then(response => {
-            const values = [];
-            const features = response.features;
-            for (let i = 0; i < features.length; i++) {
-              values.push({
-                text:features[i].properties[key],
-                id: i,
-                $value: features[i].properties[value]
-              })
-            }
-            resolve(values);
-          })
-          .fail(err => reject(err));
-      });
-    }
-
-  },
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
-   */
-  'picklayer': class {
-  
-    constructor(options = {}) {
-      this.pick_type   = options.pick_type || 'wms';
-      this.ispicked    = false;
-      this.fields      = options.fields || [options.value];
-      this.layerId     = options.layer_id;
-      this.mapService  = GUI.getService('map');
-      this.interaction = 'map' === this.pick_type
-        ? new PickFeatureInteraction({ layers: [this.mapService.getLayerById(this.layerId)] })
-        : new PickCoordinatesInteraction();
-    }
-
-    isPicked() {
-      return this.ispicked;
-    }
-
-    //bind interrupt event
-    escKeyUpHandler({ keyCode, data: { owner } }) {
-      if (27 === keyCode) {
-       owner.unpick();
-      }
-    }
-
-    unbindEscKeyUp() {
-      $(document).unbind('keyup', this.escKeyUpHandler);
-    }
-
-    bindEscKeyUp() {
-      $(document).on('keyup', { owner: this }, this.escKeyUpHandler);
-    };
-
-    pick() {
-      return new Promise((resolve, reject) => {
-        this.bindEscKeyUp();
-  
-        const values = {};
-  
-        this.ispicked = true;
-  
-        const afterPick = feature => {
-          if (feature) {
-            const attributes = feature.getProperties();
-            this.fields.forEach(field => { values[field] = attributes[field]; });
-            resolve(values);
-          } else {
-            reject();
-          }
-          this.ispicked = false;
-          this.unpick();
-        };
-  
-        GUI.setModal(false);
-  
-        this.mapService.addInteraction(this.interaction);
-  
-        this.interaction.once('picked', event => {
-          switch(this.pick_type) {
-            case 'map':
-              afterPick(event.feature);
-              break;
-            case 'wms':
-              const layer = MapLayersStoresRegistry.getLayerById(this.layerId);
-              if (layer) {
-                getQueryLayersPromisesByCoordinates(
-                  [layer],
-                  {
-                    map: this.mapService.getMap(),
-                    feature_count: 1,
-                    coordinates: event.coordinate
-                  }
-                )
-                .then(response => {
-                  const { data = [] } = response[0];
-                  const feature = data.length && data[0].features[0] || null;
-                  afterPick(feature);
-                })
-              }
-              break;
-          }
-        })
-      })
-    }
-
-    unpick() {
-      this.mapService.removeInteraction(this.interaction);
-      GUI.setModal(true);
-      this.unbindEscKeyUp();
-      this.ispicked = false;
-    }
-
-    clear() {
-      if (this.isPicked()) {
-       this.unpick();
-      }
-      this.mapService = this.interaction = this.field = null;
-    }
-  
-  },
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/sliderrange/service.js@3.8
-   */
-  'slider': class extends Service {
-
-    constructor(options = {}) {
-      const { min, max } = options.state.input.option;
-      options.state.info = `[MIN: ${min} - MAX: ${max}]`;
-
-      super(options);
-
-      // range validator
-      const vOptions = { min: 1 * min, max: 1 * max };
-      this.setValidator({ options: vOptions, validate: _isValueInRange.bind(vOptions.min, vOptions.max) });
-    }
-
-    changeInfoMessage() {
-      this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
-    }
-
-    /** @override */
-    validate() {
-      this.state.value          = 1 * this.state.value;
-      this.state.validate.valid = this.state.value >= this.state.input.options.min || this.state.value <= this.state.input.options.max;
-    }
-
-  },
-
-  /**
-   * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
-   */
-  'lonlat': class extends Service {
-  
-    constructor(options = {}) {
-      super(options);
-
-      this.coordinatebutton             = undefined;
-      this.mapService                   = GUI.getComponent('map').getService();
-      this.mapEpsg                      = this.mapService.getCrs();
-      this.mapControlToggleEventHandler = this.mapControlToggleEventHandler.bind(this);
-      this.onMapClick                   = this.onMapClick.bind(this);
-      this.map                          = this.mapService.getMap();
-      this.outputEpsg                   = this.state.epsg || this.mapEpsg;
-    }
-
-    setCoordinateButtonReactiveObject(button) {
-      this.coordinatebutton = button;
-    }
-
-    validate() {
-      this.state.values.lon     = _clamp(this.state.values.lon, -180, 180);
-      this.state.values.lat     = _clamp(this.state.values.lon, -90, 90);
-      this.state.validate.valid = !Number.isNaN(1 * this.state.values.lon);
-    }
-  
-    toggleGetCoordinate() {
-      if (this.coordinatebutton.active) {
-        this.stopToGetCoordinates();
-      } else {
-        this.startToGetCoordinates();
-      }
-    }
-  
-    startToGetCoordinates() {
-      this.coordinatebutton.active = true;
-
-      this.mapService.deactiveMapControls();
-      this.mapService.on('mapcontrol:toggled', this.mapControlToggleEventHandler);
-      this.eventMapKey = this.map.on('click', this.onMapClick)
-    }
-
-    stopToGetCoordinates() {
-      this.coordinatebutton.active = false;
-
-      ol.Observable.unByKey(this.eventMapKey);
-      this.mapService.off('mapcontrol:toggled', this.mapControlToggleEventHandler)
-    }
-
-    clear() {
-      this.stopToGetCoordinates();
-    }
-
-    /**
-     * @since 3.9.0
-     */
-    mapControlToggleEventHandler(e) {
-      if (
-        e.target.isToggled() &&
-        e.target.isClickMap() &&
-        this.coordinatebutton.active
-      ) {
-        this.toggleGetCoordinate();
-      }
-    }
-
-    /**
-     * @since 3.9.0
-     */
-    onMapClick(evt) {
-      evt.originalEvent.stopPropagation();
-      evt.preventDefault();
-      const coord = this.mapEpsg !== this.outputEpsg
-        ? ol.proj.transform(evt.coordinate, this.mapEpsg, this.outputEpsg)
-        : evt.coordinate;
-      this.state.value      = [coord];
-      this.state.values.lon = coord[0];
-      this.state.values.lat = coord[1];
-    }
-  
-  },
-
-};
-
-
-/******************************************************* */
-
-/**
- * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
- */
-const fieldsservice = {
-
-  /**
-   * Add a new field type to Fields
-   * 
-   * @param type
-   * @param field
-   */
-  add({ type, field }) {
-    vm.components[type] = field;
-  },
-
-  /**
-   * Remove field from Fields list
-   * 
-   * @param type
-   */
-  remove(type) {
-    delete vm.components[type];
-  },
-
-  /**
-   * Change type of field (example to set vue type)
-   * 
-   * @param layerId
-   * @param field
-   */
-  changeConfigFieldType({layerId, field={}}) {
-    CatalogLayersStoresRegistry.getLayerById(layerId).changeConfigFieldType(field);
-  },
-
-  /**
-   * Reset origin type
-   * 
-   * @param layerId
-   * @param field
-   */
-  resetConfigFieldType({layerId, field={}}) {
-    CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
-  },
-
-};
-
-/**
- * BACKCOMP
- */
-InputsServices['select_autocomplete'] = InputsServices['select'];
 
 const vm = {
 
@@ -1411,12 +759,154 @@ const vm = {
      * 
      * @since 3.9.0
      */
-    createInputService(type, options) {
-      if (undefined === InputsServices[type]) {
-        console.error('[g3w-input] Uknwon InputsService type: ', type);
-        InputsServices[type] = class extends Service {};
+    createInputService(type, options = {}) {
+
+      /**
+       * BACKOMP (v3.x)
+       */
+      if ('select_autocomplete' === type) {
+        type = 'select';
       }
-      return new InputsServices[type](options);
+
+      /**
+       * BACKOMP (v3.x)
+       * 
+       * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8
+       */
+      if ('check' === type) {
+        const value              = options.state.input.options.values.find(value => false === value.checked);
+        options.validatorOptions = { values: options.state.input.options.values.map(value => value) };
+        options.state.value      = (null === options.state.value && !options.state.forceNull) ? value.value : options.state.value;
+      }
+
+      /**
+       * BACKOMP (v3.x)
+       * 
+       * ORIGINAL SOURCE: src/app/gui/inputs/range/service.js@3.8
+       */
+      if ('range' === type) {
+        const { min, max }       = options.state.input.options.values[0];
+        options.state.info       = `[MIN: ${min} - MAX: ${max}]`;
+        options.validatorOptions = { min: 1 * min, max: 1 * max };
+      }
+
+      /**
+       * BACKOMP (v3.x)
+       * 
+       * ORIGINAL SOURCE: src/app/gui/inputs/slider/service.js@3.8
+       */
+      if ('slider' === type) {
+        const { min, max }       = options.state.input.option;
+        options.state.info       = `[MIN: ${min} - MAX: ${max}]`;
+        options.validatorOptions = { min: 1 * min, max: 1 * max };
+      }
+
+      /**
+       * Base class
+       *
+       * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+       */
+      // const service = new Service(options);
+
+       /** state of input */
+      //  this.state = options.state || {};
+
+      // // type of input
+      // if (this.state.validate.required) {
+      //   this.setValue(this.state.value);
+      // }
+
+      // initial value of input (based on value or default options value)
+      this.setDefault(this.state.value);
+      this.setEmpty(this.state.value);
+
+      // input validator (default = true)
+      this.setValidator({
+        options: (options.validatorOptions || this.state.input.options || {}),
+        validate: truefnc,
+      });
+
+      this.setErrorMessage(options.state);
+
+      /**
+       * Input Validators
+       * 
+       * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+       */
+      const vOptions = (options.validatorOptions || options.state.input.options || {});
+      this.setValidator({
+        options: vOptions,
+        validate: ({
+          'range':          _isValueInRange.bind(vOptions.min, vOptions.max),
+          'slider':         _isValueInRange.bind(vOptions.min, vOptions.max),
+          'datetimepicker': _isDateTime,
+          'checkbox':       _isCheckBox.bind(vOptions.values),
+          'integer':        _isInteger,
+          'float':          _isFloat,
+        })[options.state.type] || truefnc,
+      });
+
+      /**
+       * BACKOMP (v3.x)
+       * 
+       * ORIGINAL SOURCE: src/app/gui/inputs/slider/service.js@3.8
+       */
+       if ('slider' === type) {
+        /** @override */
+        this.validate = () => {
+          this.state.value          = 1 * this.state.value;
+          this.state.validate.valid = this.state.value >= this.state.input.options.min || this.state.value <= this.state.input.options.max;
+        };
+      }
+
+      /**
+       * BACKOMP (v3.x)
+       * 
+       * ORIGINAL SOURCE: src/app/gui/inputs/datetimepicker/service.js@3.8
+       */
+      if ('datetimepicker' === type) {
+        this.setValidatorOptions({});
+      }
+
+      /**
+       * BACKOMP (v3.x)
+       * 
+       * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+       */
+       if ('picklayer' === type) {
+        this.pick_type   = options.pick_type || 'wms';
+        this.ispicked    = false;
+        this.fields      = options.fields || [options.value];
+        this.layerId     = options.layer_id;
+        this.mapService  = GUI.getService('map');
+        this.interaction = 'map' === this.pick_type
+          ? new PickFeatureInteraction({ layers: [this.mapService.getLayerById(this.layerId)] })
+          : new PickCoordinatesInteraction();
+      }
+
+      /**
+       * BACKOMP (v3.x)
+       * 
+       * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+       */
+      if ('lonlat' === type) {
+        this.coordinatebutton             = undefined;
+        this.mapService                   = GUI.getComponent('map').getService();
+        this.mapEpsg                      = this.mapService.getCrs();
+        this.mapControlToggleEventHandler = this.mapControlToggleEventHandler.bind(this);
+        this.onMapClick                   = this.onMapClick.bind(this);
+        this.map                          = this.mapService.getMap();
+        this.outputEpsg                   = options.state.epsg || this.mapEpsg;
+        /** @override */
+        this.validate = () => {
+          this.state.values.lon     = _clamp(this.state.values.lon, -180, 180);
+          this.state.values.lat     = _clamp(this.state.values.lon, -90, 90);
+          this.state.validate.valid = !Number.isNaN(1 * this.state.values.lon);
+        };
+      }
+
+      return this;
+
     },
 
     /**
@@ -1436,14 +926,59 @@ const vm = {
     },
 
     /**
-     * ORIGINAL SOURCE: src/mixins/fields.js@3.8 
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8
+     * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
      */
      getFieldService() {
-      // if (undefined === this._fieldsService) {
-      //   this._fieldsService = fieldsservice;
-      // }
-      // return this._fieldsService;
-      return fieldsservice;
+      return {
+
+        /**
+         * Add a new field type to Fields
+         * 
+         * @param type
+         * @param field
+         */
+        add({ type, field }) {
+          vm.components[type] = field;
+        },
+
+        /**
+         * Remove field from Fields list
+         * 
+         * @param type
+         */
+        remove(type) {
+          delete vm.components[type];
+        },
+
+        /**
+         * Change type of field (example to set vue type)
+         * 
+         * @param layerId
+         * @param field
+         */
+        changeConfigFieldType({layerId, field={}}) {
+          CatalogLayersStoresRegistry.getLayerById(layerId).changeConfigFieldType(field);
+        },
+
+        /**
+         * Reset origin type
+         * 
+         * @param layerId
+         * @param field
+         */
+        resetConfigFieldType({layerId, field={}}) {
+          CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
+        },
+
+        getType:  vm.methods.getType,
+        isVue:    vm.methods.isVue,
+        isPhoto:  vm.methods.isPhoto,
+        isLink:   vm.methods.isLink,
+        isSimple: vm.methods.isSimple,
+        isImage:  vm.methods.isImage,
+
+      };
     },
 
     /**
@@ -1511,6 +1046,269 @@ const vm = {
      */
     sanitizeFieldValue(value) {
       return (Array.isArray(value) && !value.length) ? '' : value;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/datetimepicker/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    getLocale() {
+      const applicationConfig = ApplicationService.getConfig();
+      return applicationConfig.user.i18n ? applicationConfig.user.i18n : 'en';
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    getState() {
+      return this.state;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    getValue() {
+      return this.state.value;
+    },
+
+    /**
+     * @since 3.9.0 
+     */
+    _setValue(val) {
+      this.state.value = val;
+    },
+
+    /**
+     * @since 3.9.0 
+     */
+    setInfo(message) {
+      this.state.info = message;
+    },
+
+    /**
+     * @FIXME ambiguous method name, rename into something more explicit (eg. `this.setDefault(value)`)
+     * 
+     * Initial value of input (based on value or default options value)
+     * 
+     * @param value
+     *
+     * @returns {void}
+     */
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    setValue(value) {
+      if (_hasValue(value)) {
+        return;
+      }
+
+      const { options } = this.state.input;
+      let default_value = options.default;
+
+      /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
+      if (Array.isArray(options)) {
+        if (options[0].default) {
+          default_value = options[0].default;
+        } else if (Array.isArray(options.values) && options.values.length > 0) {
+          default_value = options.values[0] && (options.values[0].value || options.values[0]);
+        }
+      }
+
+      // check if default value is set
+      const get_default_value = (
+        this.state.get_default_value && // ref: core/layers/tablelayer.js::getFieldsWithValues()
+        _hasValue(default_value)
+      );
+
+      // check if we can state.check get_default_value from input.options.default is set
+      if (get_default_value && undefined === options.default_expression) {
+        this.state.value = default_value;
+      }
+
+      this.state.value_from_default_value = get_default_value;
+
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    addValueToValues(value) {
+      this.state.input.options.values.unshift(value)
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    _getValidatorType() {
+      return this.state.type;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    setState(state={}) {
+      this.state = _.isObject(state) ? state : {};
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    getValidator() {
+      return this._validator;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    setValidator(validator) {
+      this._validator = validator;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    setEmpty() {
+      this.state.validate.empty = (
+        !(Array.isArray(this.state.value) && this.state.value.length > 0) &&
+        _.isEmpty(_.trim(this.state.value))
+      );
+    },
+
+    /**
+     * Check state's value validity
+     */
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    validate() {
+      const is_empty       = this.state.validate.empty;
+      const is_required    = this.state.validate.required;
+      const is_numeric     = ['integer', 'float'].includes(this.state.input.type);
+      const has_number     = is_numeric && +this.state.value >= 0;
+      const exclude_values = this.state.validate.exclude_values && this.state.validate.exclude_values.size;
+      const is_excluded    = exclude_values && this.state.validate.exclude_values.has(this.state.value);
+
+      // check unique
+      if (is_empty) {
+        this.state.validate.unique = true;
+      }
+
+      // check empty
+      if (is_empty || !has_number) {
+        this.state.validate.empty  = true;
+        this.state.value           = null;
+      }
+
+      // invalid
+      if (is_required && (is_empty || (!has_number || is_excluded))) {
+        this.state.validate.valid = false;
+      }
+
+      // valid
+      if (!is_empty && (!is_excluded || (!is_required && !has_number))) {
+        this.state.validate.valid = true;
+      }
+
+      // validate
+      if ((!is_required && is_empty) || (!is_empty && (!exclude_values || has_number))) {
+        this.state.validate.valid = this._validator.validate(this.state.value);
+      }
+
+      return this.state.validate.valid;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    setErrorMessage(input) {
+      const {
+        mutually,
+        mutually_valid,
+        max_field,
+        min_field,
+        unique,
+        exclude_values,
+        required,
+      } = input.validate;
+
+      let message = this.state.info;
+
+      if (required) {
+        message = this.state.info || `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )` + (this.state.info ? ` <div><b>${this.state.info}</b></div>` : '');
+      }
+
+      if (unique && exclude_values && exclude_values.size) {
+        message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
+      }
+
+      if (min_field) {
+        message = `${t("sdk.form.inputs.input_validation_min_field")} (${min_field})`;
+      }
+
+      if (max_field) {
+        message = `${t("sdk.form.inputs.input_validation_max_field")} (${max_field})`;
+      }
+
+      if (mutually && !mutually_valid) {
+        message =  `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${mutually.join(',')} )`;
+      }
+
+      this.state.validate.message = message;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+     * 
+     * @since 3.9.0
+     */
+    setUpdate() {
+      const { value, _value } = this.state;
+
+      const is_media  = 'media' === this.state.input.type && false === [toRawType(value), toRawType(_value)].includes('Object'); 
+      const is_date   = 'datetimepicker' === this.state.input.type;
+
+      // default
+      let curr = value;
+      let old  = _value; 
+
+      // media
+      if (is_media) {
+        curr = value.value;
+        old = _value.value;
+      }
+
+      // datetimepicker
+      if (is_date && null !== value) {
+        curr = value.toUpperCase();
+      }
+      if (is_date && _value) {
+        old = _value.toUpperCase();
+      }
+
+      this.state.update = (curr != old);
     },
 
   },
@@ -1603,10 +1401,11 @@ const vm = {
 
 };
 
-/**
+
+/*******************************************************
  * BACKCOMP
- */
-function _alias(vm, props) {
+ *******************************************************/
+ function _alias(vm, props) {
   return {
     functional: true,
     render(h, { data, children }) {
@@ -1634,12 +1433,390 @@ vm.components['string_input']              = vm.components['text_input'];
 vm.components['slider_input']              = vm.components['range_input'];
 vm.components['range_slider_input']        = vm.components['range_input'];
 
-fieldsservice.getType                      = vm.methods.getType;
-fieldsservice.isVue                        = vm.methods.isVue;
-fieldsservice.isPhoto                      = vm.methods.isPhoto;
-fieldsservice.isLink                       = vm.methods.isLink;
-fieldsservice.isSimple                     = vm.methods.isSimple;
-fieldsservice.isImage                      = vm.methods.isImage;
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use components/InputCheckbox.vue instead.
+ */
+vm.methods.convertCheckedToValue = deprecate('[G3W-INPUT] checkbox service is deprecated', function(checked) {
+  checked          = _hasValue(checked) ? checked : false;
+  this.state.value = this.state.input.options.values.find(value => checked === value.checked).value;
+  return this.state.value;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputCheckbox.vue` instead.
+ */
+vm.methods.convertValueToChecked = deprecate('[G3W-INPUT] checkbox service is deprecated', function() {
+  if (!_hasValue(this.state.value)) {
+    return false;
+  }
+  let option = this.state.input.options.values.find(value => this.state.value === value.value);
+  if (undefined === option) {
+    option           = this.state.input.options.values.find(value => false === value.checked);
+    this.state.value = option.value;
+  }
+  return option.checked;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/range/service.js@3.8
+ * 
+ * @deprecated since 3.9.0
+ */
+vm.methods.isValueInRange = deprecate('[G3W-INPUT] range service is deprecated', function(value, min, max) {
+  return value <= max && value >= min;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/datetimepicker/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use core/utils::convertQGISDateTimeFormatToMoment(datetimeformat) instead.
+ */
+vm.methods.convertQGISDateTimeFormatToMoment = deprecate('[G3W-INPUT] datetimepicker service is deprecated', convertQGISDateTimeFormatToMoment);
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/datetimepicker/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputDateTimePicker.vue` instead.
+ */
+vm.methods.setValidatorOptions = deprecate('[G3W-INPUT] datetimepicker service is deprecated', function(options) {
+  this.validatorOptions = options;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
+ */
+vm.methods._getLayerById = deprecate('[G3W-INPUT] select service is deprecated', function(layer_id) {
+  return CatalogLayersStoresRegistry.getLayerById(layer_id);
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
+ */
+vm.methods.addValue = deprecate('[G3W-INPUT] select service is deprecated', function(value) {
+  this.state.input.options.values.push(value);
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
+ */
+vm.methods.getKeyByValue = deprecate('[G3W-INPUT] select service is deprecated', function({search}={}) {
+  const options = this.state.input.options;
+  const { value, key } = options;
+  this
+    .getData({ key: value, value: key, search })
+    .then(arrayValues => {
+      const [_value] = arrayValues;
+      this.addValue({ key: _value.$value, value: _value.text })
+    })
+    .catch(err => console.log(err));
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
+ */
+vm.methods.getData = deprecate('[G3W-INPUT] select service is deprecated', function({
+  layer_id = this.state.input.options.layer_id,
+  key      = this.state.input.options.key,
+  value    = this.state.input.options.value,
+  search
+} = {}) {
+  return new Promise((resolve, reject) => {
+    if (!this._layer) this._layer = this._getLayerById(layer_id);
+    this._layer
+      .getDataTable({
+        suggest: `${key}|${search}`.trim(),
+        ordering: key
+      })
+      .then(response => {
+        const values = [];
+        const features = response.features;
+        for (let i = 0; i < features.length; i++) {
+          values.push({
+            text:features[i].properties[key],
+            id: i,
+            $value: features[i].properties[value]
+          })
+        }
+        resolve(values);
+      })
+      .fail(err => reject(err));
+  });
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/sliderrange/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputRange.vue` instead.
+ */
+vm.methods.changeInfoMessage = deprecate('[G3W-INPUT] sliderrange service is deprecated', function() {
+  this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
+ */
+vm.methods.isPicked = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+  return this.ispicked;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
+ */
+vm.methods.escKeyUpHandler = deprecate('[G3W-INPUT] picklayer service is deprecated', function({ keyCode, data: { owner } }) {
+  if (27 === keyCode) {
+    owner.unpick();
+  }
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
+ */
+vm.methods.unbindEscKeyUp = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+  $(document).unbind('keyup', this.escKeyUpHandler);
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
+ */
+vm.methods.bindEscKeyUp = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+  $(document).on('keyup', { owner: this }, this.escKeyUpHandler); // bind interrupt event.
+});
+
+  /**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
+ */
+vm.methods.pick = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+  return new Promise((resolve, reject) => {
+    this.bindEscKeyUp();
+
+    const values = {};
+
+    this.ispicked = true;
+
+    const afterPick = feature => {
+      if (feature) {
+        const attributes = feature.getProperties();
+        this.fields.forEach(field => { values[field] = attributes[field]; });
+        resolve(values);
+      } else {
+        reject();
+      }
+      this.ispicked = false;
+      this.unpick();
+    };
+
+    GUI.setModal(false);
+
+    this.mapService.addInteraction(this.interaction);
+
+    this.interaction.once('picked', event => {
+      switch(this.pick_type) {
+        case 'map':
+          afterPick(event.feature);
+          break;
+        case 'wms':
+          const layer = MapLayersStoresRegistry.getLayerById(this.layerId);
+          if (layer) {
+            getQueryLayersPromisesByCoordinates(
+              [layer],
+              {
+                map: this.mapService.getMap(),
+                feature_count: 1,
+                coordinates: event.coordinate
+              }
+            )
+            .then(response => {
+              const { data = [] } = response[0];
+              const feature = data.length && data[0].features[0] || null;
+              afterPick(feature);
+            })
+          }
+          break;
+      }
+    })
+  })
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
+ */
+vm.methods.unpick = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+  this.mapService.removeInteraction(this.interaction);
+  GUI.setModal(true);
+  this.unbindEscKeyUp();
+  this.ispicked = false;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` and `src/components/InputLonLat.vue` instead.
+ */
+vm.methods.clear = deprecate('[G3W-INPUT] picklayer/lonlat services are deprecated', function() {
+  // lonlat
+  if (this.coordinatebutton) {
+    this.stopToGetCoordinates();
+    return;
+  }
+  // picklayer
+  if (this.isPicked()) {
+    this.unpick();
+  }
+  this.mapService = this.interaction = this.field = null;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
+ */
+vm.methods.setCoordinateButtonReactiveObject = deprecate('[G3W-INPUT] lonlat service is deprecated', function(button) {
+  this.coordinatebutton = button;
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
+ */
+vm.methods.toggleGetCoordinate = deprecate('[G3W-INPUT] lonlat service is deprecated', function() {
+  if (this.coordinatebutton.active) {
+    this.stopToGetCoordinates();
+  } else {
+    this.startToGetCoordinates();
+  }
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
+ */
+vm.methods.startToGetCoordinates = deprecate('[G3W-INPUT] lonlat service is deprecated', function() {
+  this.coordinatebutton.active = true;
+
+  this.mapService.deactiveMapControls();
+  this.mapService.on('mapcontrol:toggled', this.mapControlToggleEventHandler);
+  this.eventMapKey = this.map.on('click', this.onMapClick)
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
+ */
+vm.methods.stopToGetCoordinates = deprecate('[G3W-INPUT] lonlat service is deprecated', function() {
+  this.coordinatebutton.active = false;
+
+  ol.Observable.unByKey(this.eventMapKey);
+  this.mapService.off('mapcontrol:toggled', this.mapControlToggleEventHandler)
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+ * 
+ * @since 3.9.0
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
+ */
+vm.methods.mapControlToggleEventHandler = deprecate('[G3W-INPUT] lonlat service is deprecated', function(e) {
+  if (
+    e.target.isToggled() &&
+    e.target.isClickMap() &&
+    this.coordinatebutton.active
+  ) {
+    this.toggleGetCoordinate();
+  }
+});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@3.8
+ * 
+ * @since 3.9.0
+ * 
+ * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
+ */
+vm.methods.onMapClick = deprecate('[G3W-INPUT] lonlat service is deprecated', function(evt) {
+  evt.originalEvent.stopPropagation();
+  evt.preventDefault();
+  const coord = this.mapEpsg !== this.outputEpsg
+    ? ol.proj.transform(evt.coordinate, this.mapEpsg, this.outputEpsg)
+    : evt.coordinate;
+  this.state.value      = [coord];
+  this.state.values.lon = coord[0];
+  this.state.values.lat = coord[1];
+});
 
 export default vm;
 </script>

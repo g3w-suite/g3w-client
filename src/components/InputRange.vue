@@ -325,6 +325,17 @@ export default {
       this.$emit('change-range', { value, id: this.id });
     },
 
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/sliderrange/service.js@3.8::changeInfoMessage()
+     * 
+     * @since 3.9.0
+     */
+     _updateInfoMessage() {
+      const service      = this.$parent.getInputService();
+      const { min, max } = service.getState().input.options;
+      service.setInfo(`[MIN: ${min} - MAX: ${max}]`);
+    },
+
   },
 
   watch: {
@@ -348,7 +359,7 @@ export default {
      * @since v3.9.0
      */
     min() {
-      this.$parent.getInputService().changeInfoMessage()
+      this._updateInfoMessage();
     },
 
     /**
@@ -357,7 +368,7 @@ export default {
      * @since v3.9.0
      */
     max() {
-      this.$parent.getInputService().changeInfoMessage()
+      this._updateInfoMessage();
     },
 
   },

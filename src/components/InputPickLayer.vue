@@ -52,7 +52,16 @@ export default {
     },
 
     unpick() {
-      setTimeout(() => !this.pickservice.isPicked() && this.pickservice.unpick(), 200)
+      setTimeout(() => !this._isPicked() && this.pickservice.unpick(), 200)
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@3.8::isPicked()
+     * 
+     * @since 3.9.0
+     */
+    _isPicked() {
+      return this.pickservice.ispicked;
     },
 
   },
