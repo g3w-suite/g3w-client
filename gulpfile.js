@@ -169,7 +169,7 @@ const dev_plugins = new Proxy(
   ), {
   set(target, property, value, receiver) {
     if (property !== 'length') {
-      target[property] = value;
+      Reflect.set(target, property, value);
       // you have to return true to accept the changes
       browserify_plugin(value);
     }
