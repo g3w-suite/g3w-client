@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="state">
+
+    <!--
+      @example <g3w-input mode="edit" _type="table" />
+     -->
     <template #input-body="{ editable, notvalid }">
 
       <div
@@ -62,6 +66,7 @@
       </div>
 
     </template>
+
   </g3w-input>
 </template>
 

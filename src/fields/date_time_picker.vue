@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="state">
+    
+    <!-- 
+      @example <g3w-input mode="edit" _type="datetimepicker" />
+     -->
     <template #input-body="{ tabIndex, editable, notvalid }">
       <div ref="datetimepicker_body">
 
@@ -41,6 +45,7 @@
 
       </div>
     </template>
+
   </g3w-input>
 </template>
 

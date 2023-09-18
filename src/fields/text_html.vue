@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="state">
+
+    <!--
+      @example <g3w-input mode="edit" _type="texthtml" />
+     -->
     <template #input-body="{ editable }">
       <div v-disabled="!editable">
         <div
@@ -18,6 +22,7 @@
         ></div>
       </div>
     </template>
+
   </g3w-input>
 </template>
 

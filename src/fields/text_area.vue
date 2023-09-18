@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="state">
+
+    <!--
+      @example <g3w-input mode="edit" _type="textarea" />
+     -->
     <template #input-body="{ change, tabIndex, editable, notvalid }">
       <textarea
         @keydown.stop = ""
@@ -22,7 +26,8 @@
         v-model       = "state.value"
       ></textarea>
     </template>
-  </g3w-input>
+
+</g3w-input>
 </template>
 
 <script>

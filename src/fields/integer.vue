@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="state">
+    
+    <!--
+      @example <g3w-input mode="edit" _type="integer" />
+     -->
     <template #input-body="{ change, tabIndex, editable, notvalid }">
       <input
         :placeholder = "state.default"
@@ -22,6 +26,7 @@
         type         = "number"
       >
     </template>
+
   </g3w-input>
 </template>
 

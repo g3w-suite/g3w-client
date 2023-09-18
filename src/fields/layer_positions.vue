@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input>
+
+    <!--
+      @example <g3w-input mode="edit" _type="layer_positions" />
+     -->
     <template #default>
       <div
         :id   = "ids.layerpositions"
@@ -39,6 +43,7 @@
         </div>
       </div>
     </template>
+
   </g3w-input>
 </template>
 

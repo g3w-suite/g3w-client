@@ -11,7 +11,9 @@
 <template>
   <g3w-input :state="state">
 
-    <!-- @example <g3w-input mode="edit" _type="layer" /> -->
+    <!--
+      @example <g3w-input mode="edit" _type="layer" />
+    -->
     <template #input-body="{ change, tabIndex, editable, notvalid }">
       <div>
         <span
@@ -34,7 +36,9 @@
       </div>
     </template>
 
-    <!-- @example <g3w-input mode="edit" _type="layer" /> -->
+    <!--
+        @example <g3w-input mode="edit" _type="layer" />
+    -->
     <template #field-value>
       <div class="geo-content">
         <span

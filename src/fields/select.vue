@@ -7,6 +7,9 @@
 -->
 
 <template>
+  <!--
+      @example <g3w-input mode="edit" _type="select" />
+  -->
   <g3w-input :state="state">
 
     <!-- LABEL -->

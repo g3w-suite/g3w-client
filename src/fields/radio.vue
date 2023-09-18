@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="state">
+
+    <!--
+      @example <g3w-input mode="edit" _type="radio" />
+     -->
     <template #input-body="{ tabIndex, editable, notvalid }">
       <div>
         <span
@@ -29,6 +33,7 @@
         </span>
       </div>
     </template>
+
   </g3w-input>
 </template>
 

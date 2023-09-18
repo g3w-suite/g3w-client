@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="state">
+
+    <!-- 
+      @example <g3w-input mode="edit" _type="lonlat" />
+     -->
     <template #default>
       <div style="position: relative">
 
@@ -81,6 +85,7 @@
         </g3w-input>
       </div>
     </template>
+
   </g3w-input>
 </template>
 

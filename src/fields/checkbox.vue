@@ -9,6 +9,10 @@
 
 <template>
   <g3w-input :state="state">
+
+    <!-- 
+      @example <g3w-input mode="edit" _type="checkbox" />
+     -->
     <template #input-body="{ tabIndex, editable, notvalid }">
       <div
         v-disabled  = "!editable"
@@ -27,6 +31,7 @@
         <label :for="id">{{ label }}</label>
       </div>
     </template>
+
   </g3w-input>
 </template>
 

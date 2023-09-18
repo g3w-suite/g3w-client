@@ -8,6 +8,10 @@
 
 <template>
   <g3w-input :state="{ visible: true, type: 'datetime' }" _legacy="g3w-input" _plain="true">
+
+    <!--
+      @example <g3w-input mode="edit" _type="datetime" />
+     -->
     <template #default>
       <div ref="datimecontainer">
         <label
@@ -37,6 +41,7 @@
         </div>
       </div>
     </template>
+
   </g3w-input>
 </template>
 
