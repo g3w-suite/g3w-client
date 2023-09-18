@@ -1258,6 +1258,22 @@ const vm = {
 
 /**
  * BACKCOMP (v3.x)
+ */
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('layerspositions',    _alias(vm, { _legacy: "g3w-input", state: { input: { type: "layer_positions" } } }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('datetime',           _alias(vm, { _legacy: "g3w-input", state: { input: { type: "datetime" } } } ));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('range',              _alias(vm, { _legacy: "g3w-input", state: { input: { type: "range_slider" } } }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('g3w-image',          _alias(vm, { mode:'read', _type: "image" }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('g3w-images-gallery', _alias(vm, { mode:'read', _type: "gallery" }));
+/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
+Vue.component('g3w-geospatial',     _alias(vm, { mode:'read', _type: "geo" }));
+
+/**
+ * BACKCOMP (v3.x)
  * 
  * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@3.8
  * 

@@ -64,19 +64,6 @@ const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
 
-
-/**
- * BACKCOMP
- */
-function _alias(vm, props) {
-  return {
-    functional: true,
-    render(h, { data, children }) {
-      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
-    },
-  };
-}
-
 /**
  * Install global components
  *
@@ -92,20 +79,6 @@ Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
 /** @since 3.9.0 **/
 Vue.component(G3WInput.name, G3WInput);
-
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('layerspositions',    _alias(G3WInput, { _legacy: "g3w-input", state: { input: { type: "layer_positions" } } }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('datetime',           _alias(G3WInput, { _legacy: "g3w-input", state: { input: { type: "datetime" } } } ));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('range',              _alias(G3WInput, { _legacy: "g3w-input", state: { input: { type: "range_slider" } } }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-image',          _alias(G3WInput, { mode:'read', _type: "image" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-images-gallery', _alias(G3WInput, { mode:'read', _type: "gallery" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-geospatial',     _alias(G3WInput, { mode:'read', _type: "geo" }));
-
 
 /**
  * Install application filters
