@@ -783,58 +783,80 @@ const vm = {
     },
 
     /**
+     * Add a new field type to Fields
+     * 
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8
+     * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
+     * 
+     * @param type
+     * @param field
+     * 
+     * @since 3.9.0
+     */
+    _addFieldComponent({ type, field }) {
+      vm.components[type] = field;
+    },
+
+    /**
+     * Remove field from Fields list
+     * 
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8
+     * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
+     * 
+     * @param type
+     * 
+     * @since 3.9.0
+     */
+     _removeFieldComponent(type) {
+      delete vm.components[type];
+    },
+
+    /**
+     * Change type of field (example to set vue type)
+     * 
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8
+     * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
+     * 
+     * @param layerId
+     * @param field
+     * 
+     * @since 3.9.0
+     */
+    _changeConfigFieldType({layerId, field={}}) {
+      CatalogLayersStoresRegistry.getLayerById(layerId).changeConfigFieldType(field);
+    },
+
+    /**
+     * Reset origin type
+     * 
+     * ORIGINAL SOURCE: src/mixins/fields.js@3.8
+     * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
+     * 
+     * @param layerId
+     * @param field
+     * 
+     * @since 3.9.0
+     */
+    _resetConfigFieldType({layerId, field={}}) {
+      CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
+    },
+
+    /**
      * ORIGINAL SOURCE: src/mixins/fields.js@3.8
      * ORIGINAL SOURCE: src/gui/fields/fieldsservice.js@3.8
      */
      getFieldService() {
       return {
-
-        /**
-         * Add a new field type to Fields
-         * 
-         * @param type
-         * @param field
-         */
-        add({ type, field }) {
-          vm.components[type] = field;
-        },
-
-        /**
-         * Remove field from Fields list
-         * 
-         * @param type
-         */
-        remove(type) {
-          delete vm.components[type];
-        },
-
-        /**
-         * Change type of field (example to set vue type)
-         * 
-         * @param layerId
-         * @param field
-         */
-        changeConfigFieldType({layerId, field={}}) {
-          CatalogLayersStoresRegistry.getLayerById(layerId).changeConfigFieldType(field);
-        },
-
-        /**
-         * Reset origin type
-         * 
-         * @param layerId
-         * @param field
-         */
-        resetConfigFieldType({layerId, field={}}) {
-          CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
-        },
-
-        getType:  vm.methods.getType,
-        isVue:    vm.methods.isVue,
-        isPhoto:  vm.methods.isPhoto,
-        isLink:   vm.methods.isLink,
-        isSimple: vm.methods.isSimple,
-        isImage:  vm.methods.isImage,
-
+        add:                   vm.methods._addFieldComponent,
+        remove:                vm.methods._removeFieldComponent,
+        changeConfigFieldType: vm.methods._changeConfigFieldType,
+        resetConfigFieldType:  vm.methods._resetConfigFieldType,
+        getType:               vm.methods.getType,
+        isVue:                 vm.methods.isVue,
+        isPhoto:               vm.methods.isPhoto,
+        isLink:                vm.methods.isLink,
+        isSimple:              vm.methods.isSimple,
+        isImage:               vm.methods.isImage,
       };
     },
 
