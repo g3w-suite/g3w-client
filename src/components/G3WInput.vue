@@ -56,6 +56,8 @@
   />
 
   <!--
+    Field mode (READ)
+
     ORIGINAL SOURCE: src/components/Field.vue@3.8
 
     @example
@@ -133,7 +135,7 @@
   </fragment>
 
   <!--
-    Base G3WInput component
+    Input mode (EDIT)
 
     @example
 
