@@ -171,11 +171,11 @@ components['string_input']              = components['text_input'];
 components['slider_input']              = components['range_input'];
 components['range_slider_input']        = components['range_input'];
 
-vm.components['link_field']             = _alias(fields['media_input'], { _type: "link",    mode: "read" });
-vm.components['media_field']            = _alias(fields['media_input'], { _type: "media",   mode: "read" });
-vm.components['image_field']            = _alias(fields['media_input'], { _type: "image",   mode: "read" });
-vm.components['gallery_field']          = _alias(fields['media_input'], { _type: "gallery", mode: "read" });
-vm.components['geo_input']              = _alias(fields['picklayer_input'],   { _type: "geo",     mode: "read" });
-vm.components['geo_field']              = _alias(fields['picklayer_input'],   { _type: "geo",     mode: "read" });
+components['link_field']             = _alias(components['media_input'], { _type: "link",    mode: "read" });
+components['media_field']            = _alias(components['media_input'], { _type: "media",   mode: "read" });
+components['image_field']            = _alias(components['media_input'], { _type: "image",   mode: "read" });
+components['gallery_field']          = _alias(components['media_input'], { _type: "gallery", mode: "read" });
+components['geo_input']              = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
+components['geo_field']              = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
 
 export default components;
