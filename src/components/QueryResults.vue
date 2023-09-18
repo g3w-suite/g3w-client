@@ -378,8 +378,9 @@
 </template>
 
 <script>
-  import { Fragment }             from 'vue-fragment'
-  import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
+  import { Fragment }       from 'vue-fragment'
+  import InfoFormats        from 'components/QueryResultsActionInfoFormats.vue';
+  import QueryResultsAction from 'components/QueryResultsAction.vue';
 
   const { throttle, getFieldType } = require('core/utils/utils');
 
@@ -411,7 +412,8 @@
 
     components: {
       Fragment,
-      'infoformats':         InfoFormats,
+      'infoformats': InfoFormats,
+      'action':      QueryResultsAction,
     },
 
     computed: {
