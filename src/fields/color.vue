@@ -7,35 +7,34 @@
   <g3w-input :state="state">
     <template #input-body="{ change, tabIndex, editable, notvalid }">
       <input
+        :placeholder = "state.default"
+        type         = "color"
         @change      = "change"
-        @input       = "change"
         :tabIndex    = "tabIndex"
         v-disabled   = "!editable"
-        :class       = "{ 'input-error-validation' : notvalid }"
-        v-model      = "state.value"
-        :step        = "state.step || 1"
-        :placeholder = "state.default"
+        :field       = "state.name"
         class        = "form-control"
-        style        = "width: 100%"
-        type         = "number"
+        style        = "cursor: pointer"
+        v-model      = "state.value"
+        :class       = "{ 'input-error-validation' : notvalid }"
+        :id          = "state.name"
       >
     </template>
   </g3w-input>
 </template>
 
 <script>
-
 export default {
 
   /** @since 3.8.6 */
-  name: 'input-float',
+  // name: 'input-color',
 
   props: {
     state: {
       type: Object,
       required: true,
-    }
-  }
+    },
+  },
 
 };
 </script>

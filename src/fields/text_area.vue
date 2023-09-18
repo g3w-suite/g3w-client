@@ -26,7 +26,7 @@
 export default {
 
   /** @since 3.8.6 */
-  name: "input-textarea",
+  // name: "input-textarea",
 
   props: {
     state: {

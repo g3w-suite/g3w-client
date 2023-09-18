@@ -100,7 +100,7 @@ const { debounce } = require('core/utils/utils');
 export default {
 
   /** @since 3.8.6 */
-  name: 'input-range',
+  // name: 'input-range',
 
   data() {
 

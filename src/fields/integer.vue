@@ -27,7 +27,7 @@
 export default {
 
   /** @since 3.8.6 */
-  name: 'input-integer',
+  // name: 'input-integer',
 
   props: {
     state: {

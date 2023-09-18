@@ -5,17 +5,19 @@
 
 <template>
   <g3w-input :state="state">
-    <template #input-body="{ mobileChange, change, tabIndex, editable, notvalid }">
+    <template #input-body="{ change, tabIndex, editable, notvalid }">
       <input
-        :placeholder = "state.default"
-        @keyup       = "isMobile() ? mobileChange($event) : change()"
+        @change      = "change"
+        @input       = "change"
         :tabIndex    = "tabIndex"
         v-disabled   = "!editable"
-        :field       = "state.name"
-        class        = "form-control"
-        v-model      = "state.value"
         :class       = "{ 'input-error-validation' : notvalid }"
-        :id          = "state.name"
+        v-model      = "state.value"
+        :step        = "state.step || 1"
+        :placeholder = "state.default"
+        class        = "form-control"
+        style        = "width: 100%"
+        type         = "number"
       >
     </template>
   </g3w-input>
@@ -26,14 +28,14 @@
 export default {
 
   /** @since 3.8.6 */
-  name: "input-text",
+  // name: 'input-float',
 
   props: {
     state: {
       type: Object,
       required: true,
-    },
-  },
+    }
+  }
 
 };
 </script>

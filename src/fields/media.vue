@@ -176,7 +176,7 @@ const { t }              = require('core/i18n/i18n.service');
 export default {
 
   /** @since 3.8.6 */
-  name: 'input-media',
+  // name: 'input-media',
 
   props: {
     state: {

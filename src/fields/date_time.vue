@@ -48,7 +48,7 @@
   export default {
 
     /** @since 3.9.0 */
-    name: "input-datetime",
+    // name: "input-datetime",
 
     props: {
 
@@ -105,19 +105,17 @@
       this.datetimeinputelement = $(this.$refs.iddatetimepicker);
 
       this.datetimeinputelement.datetimepicker({
-        minDate: this.minDate,
-        maxDate: this.maxDate,
-        defaultDate: this.datetimevalue,
-        useCurrent: false,
-        allowInputToggle: true,
-        enabledDates: this.enabledDates,
-        showClose: true,
-        format: this.format,
-        locale: ApplicationState.language,
+        minDate:           this.minDate,
+        maxDate:           this.maxDate,
+        defaultDate:       this.datetimevalue,
+        useCurrent:        false,
+        allowInputToggle:  true,
+        enabledDates:      this.enabledDates,
+        showClose:         true,
+        format:            this.format,
+        locale:            ApplicationState.language,
         toolbarPlacement: 'top',
-        widgetPositioning: {
-          horizontal: 'right'
-        },
+        widgetPositioning: { horizontal: 'right' },
       });
 
       this.datetimeinputelement.on("dp.change", ({date}) => {

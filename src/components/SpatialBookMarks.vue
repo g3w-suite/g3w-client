@@ -29,7 +29,11 @@
 
         <helpdiv message="sdk.spatialbookmarks.helptext"/>
         <div class="container add-bookmark-input" style="padding: 5px; width: 100%">
-          <input-text :state="addbookmarkinput" />
+          <g3w-input
+            :state="addbookmarkinput"
+            _type="text"
+            mode="edit"
+          />
         </div>
         <div style="margin-top: 5px;">
           <button
@@ -85,7 +89,6 @@
   import ProjectsRegistry from 'store/projects';
   import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
   import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
-  import InputText from "components/InputText.vue";
 
   const { uniqueId } = require('core/utils/utils');
   const { t } = require('core/i18n/i18n.service');
@@ -101,7 +104,6 @@
     components: {
       SpatialBookMarkGroup,
       SpatialBookMarkItem,
-      InputText,
     },
 
     data() {

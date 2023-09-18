@@ -5,16 +5,14 @@
 
 <template>
   <g3w-input :state="state">
-    <template #input-body="{ change, tabIndex, editable, notvalid }">
+    <template #input-body="{ mobileChange, change, tabIndex, editable, notvalid }">
       <input
         :placeholder = "state.default"
-        type         = "color"
-        @change      = "change"
+        @keyup       = "isMobile() ? mobileChange($event) : change()"
         :tabIndex    = "tabIndex"
         v-disabled   = "!editable"
         :field       = "state.name"
         class        = "form-control"
-        style        = "cursor: pointer"
         v-model      = "state.value"
         :class       = "{ 'input-error-validation' : notvalid }"
         :id          = "state.name"
@@ -24,10 +22,11 @@
 </template>
 
 <script>
+
 export default {
 
   /** @since 3.8.6 */
-  name: 'input-color',
+  // name: "input-text",
 
   props: {
     state: {

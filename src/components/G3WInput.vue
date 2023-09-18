@@ -1,7 +1,7 @@
 <!--
   @file    Base input component
   
-  @example see: components/InputText.vue
+  @example see: src/fields/text.vue
   
   @since   3.9.0
 
@@ -44,12 +44,16 @@
     <span v-if="('edit' == mode && state.visible && 'g3w-input' === _legacy && !$attrs._plain) ? 'div' : 'fragment'" class="divider"></span>
   </component> -->
 
+  <!--
+    Instantiate internal component (recursive).
+
+    @example <g3w-input _type="text" />
+  -->
   <component
     v-if    = "!_legacy && !$attrs._legacyCycle"
     :is     = "type || 'g3w-input'"
     v-bind = "{ ...$attrs, ...$props, state, _legacyCycle: true }"
   />
-
 
   <!--
     ORIGINAL SOURCE: src/components/Field.vue@3.8
@@ -268,28 +272,8 @@
 </template>
 
 <script>
-import { Fragment }             from 'vue-fragment';
-
-import * as InputCheckbox       from 'components/InputCheckbox.vue';
-import * as InputColor          from 'components/InputColor.vue';
-import * as InputDateTimePicker from 'components/InputDateTimePicker.vue';
-import * as InputDateTime       from 'components/InputDateTime.vue';
-import * as InputFloat          from 'components/InputFloat.vue';
-import * as InputGeo            from 'components/InputGeo.vue';
-import * as InputInteger        from 'components/InputInteger.vue';
-import * as InputLayerPositions from 'components/InputLayerPositions.vue';
-import * as InputLonLat         from 'components/InputLonLat.vue';
-import * as InputMedia          from 'components/InputMedia.vue';
-import * as InputPickLayer      from 'components/InputPickLayer.vue';
-import * as InputRadio          from 'components/InputRadio.vue';
-import * as InputRange          from 'components/InputRange.vue';
-import * as InputSelect         from 'components/InputSelect.vue';
-import * as InputTable          from 'components/InputTable.vue';
-import * as InputText           from 'components/InputText.vue';
-import * as InputTextArea       from 'components/InputTextArea.vue';
-import * as InputTextHtml       from 'components/InputTextHtml.vue';
-import * as InputUnique         from 'components/InputUnique.vue';
-
+import { Fragment }                           from 'vue-fragment';
+import fields                                 from 'fields'; 
 import ApplicationState                       from 'store/application-state';
 import CatalogLayersStoresRegistry            from 'store/catalog-layers';
 import ProjectsRegistry                       from 'store/projects';
@@ -328,25 +312,7 @@ Object
     PickFeatureInteraction,
     PickCoordinatesInteraction,
     t,
-    InputCheckbox,
-    InputColor,
-    InputDateTimePicker,
-    InputDateTime,
-    InputFloat,
-    InputGeo,
-    InputInteger,
-    InputLayerPositions,
-    InputLonLat,
-    InputMedia,
-    InputPickLayer,
-    InputRadio,
-    InputRange,
-    InputSelect,
-    InputTable,
-    InputText,
-    InputTextArea,
-    InputTextHtml,
-    InputUnique,
+    fields,
     deprecate,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -411,6 +377,17 @@ function _defaultState(state) {
   return state;
 }
 
+/**
+ * BACKCOMP 
+ */
+ function _alias(vm, props) {
+  return {
+    functional: true,
+    render(h, { data, children }) {
+      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
+    },
+  };
+}
 
 const vm = {
 
@@ -468,13 +445,6 @@ const vm = {
 
   },
 
-  data() {
-    return {
-      /** @since 3.9.0 */
-      window: window,
-    }
-  },
-
   /**
    * ORIGINAL SOURCE: src/app/gui/inputs/inputs.js@3.8
    */
@@ -485,132 +455,17 @@ const vm = {
      */
     Fragment,
 
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/text/vue/text.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'text_input': InputText,
+    ...fields,
 
     /**
-     * ORIGINAL SOURCE: src/gui/inputs/texthtml/vue/texthtml.js@3.8
-     * 
-     * @since 3.9.0
+     * @NB please don't add anything else here, make use of `src/fields/index.js` for listing future fields and backcomps
      */
-    'texthtml_input': InputTextHtml,
 
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/textarea/vue/textarea.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'textarea_input': InputTextArea,
+    /** BACKCOMP (v3.x) */
+    'text_field': vm,
 
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/integer/vue/integer.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'integer_input': InputInteger,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/float/vue/float.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'float_input': InputFloat,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/radio/vue/radio.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'radio_input': InputRadio,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/checkbox/vue/checkbox.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'check_input': InputCheckbox,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/range/vue/range.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'range_input': InputRange,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/datetimepicker/vue/datetimepicker.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'datetimepicker_input': InputDateTimePicker,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/unique/vue/unique.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'unique_input': InputUnique,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/select/vue/select.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'select_input': InputSelect,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/media/vue/media.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'media_input': InputMedia,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/picklayer/vue/picklayer.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'picklayer_input': InputPickLayer,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/color/vue/color.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'color_input': InputColor,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/lonlat/vue/lonlat.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'lonlat_input': InputLonLat,
-
-    /**
-     * ORIGINAL SOURCE: src/gui/inputs/table/vue/table.js@3.8
-     * 
-     * @since 3.9.0
-     */
-    'table_input': InputTable,
-
-    /**
-     * @since 3.9.0
-     */
-    'datetime_input': InputDateTime,
-
-    /**
-     * @since 3.9.0
-     */
-    'layer_positions_input': InputLayerPositions,
-
-    /**
-     * @since 3.9.0
-     */
-    'geo_input': InputGeo,
+    /** BACKCOMP (v3.x) */
+    'vue_field': _alias(vm, { _legacy: "g3w-vuefield", mode: "read" }),
 
   },
 
@@ -1400,38 +1255,6 @@ const vm = {
   }
 
 };
-
-
-/*******************************************************
- * BACKCOMP
- *******************************************************/
- function _alias(vm, props) {
-  return {
-    functional: true,
-    render(h, { data, children }) {
-      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
-    },
-  };
-}
-
-vm.components['text_field']                = vm;
-vm.components['vue_field']                 = _alias(vm, { _legacy: "g3w-vuefield", mode: "read" });
-
-vm.components['link_field']                = _alias(InputMedia, { _type: "link",    mode: "read" });
-vm.components['media_field']               = _alias(InputMedia, { _type: "media",   mode: "read" });
-vm.components['image_field']               = _alias(InputMedia, { _type: "image",   mode: "read" });
-vm.components['gallery_field']             = _alias(InputMedia, { _type: "gallery", mode: "read" });
-vm.components['geo_field']                 = _alias(InputGeo,   { _type: "geo",     mode: "read" });
-
-vm.components['simple_field']              = vm.components['text_field'];
-vm.components['photo_field']               = vm.components['image_field'];
-vm.components['g3w_link']                  = vm.components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
-vm.components['g3w_vue']                   = vm.components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
-
-vm.components['select_autocomplete_input'] = vm.components['select_input'];
-vm.components['string_input']              = vm.components['text_input'];
-vm.components['slider_input']              = vm.components['range_input'];
-vm.components['range_slider_input']        = vm.components['range_input'];
 
 /**
  * BACKCOMP (v3.x)

@@ -68,7 +68,7 @@ const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty 
 export default {
 
   /** @since 3.8.6 */
-  name: 'input-select',
+  // name: 'input-select',
 
   mixins: [
     selectMixin,

@@ -24,25 +24,6 @@ import GlobalSkeleton from './GlobalSkeleton.vue';
 import GlobalTabs from './GlobalTabs.vue';
 import GlobalTabsNode from './GlobalTabsNode.vue';
 import HeaderItem from './HeaderItem.vue';
-import InputCheckbox from './InputCheckbox.vue';
-import InputColor from './InputColor.vue';
-import InputDateTime from './InputDateTime.vue';
-import InputDateTimePicker from './InputDateTimePicker.vue';
-import InputFloat from './InputFloat.vue';
-import InputGeo from './InputGeo.vue';
-import InputInteger from './InputInteger.vue';
-import InputLayerPositions from './InputLayerPositions.vue';
-import InputLonLat from './InputLonLat.vue';
-import InputMedia from './InputMedia.vue';
-import InputPickLayer from './InputPickLayer.vue';
-import InputRadio from './InputRadio.vue';
-import InputRange from './InputRange.vue';
-import InputSelect from './InputSelect.vue';
-import InputTable from './InputTable.vue';
-import InputText from './InputText.vue';
-import InputTextArea from './InputTextArea.vue';
-import InputHtml from './InputTextHtml.vue';
-import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
@@ -127,28 +108,6 @@ export {
   GlobalTabs,
   GlobalTabsNode,
   HeaderItem,
-  InputCheckbox,
-  InputColor,
-  /** @since 3.9.0 */
-  InputDateTime,
-  InputDateTimePicker,
-  InputFloat,
-  /** @since 3.9.0 */
-  InputGeo,
-  /** @since 3.9.0 */
-  InputLayerPositions,
-  InputInteger,
-  InputLonLat,
-  InputMedia,
-  InputPickLayer,
-  InputRadio,
-  InputRange,
-  InputSelect,
-  InputTable,
-  InputText,
-  InputTextArea,
-  InputHtml,
-  InputUnique,
   LayerOpacityPicker,
   Map,
   MapAddLayer,

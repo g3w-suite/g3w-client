@@ -50,7 +50,7 @@
   export default {
 
     /** @since 3.9.0 */
-    name: "input-layerpositions",
+    // name: "input-layerpositions",
 
     props: {
       position:{

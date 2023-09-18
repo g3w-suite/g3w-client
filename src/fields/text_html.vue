@@ -17,7 +17,7 @@
 export default {
 
   /** @since 3.8.6 */
-  name: "input-html",
+  // name: "input-html",
 
   props: {
     state: {

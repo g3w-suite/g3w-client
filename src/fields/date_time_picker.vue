@@ -50,7 +50,7 @@ const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('core/util
 export default {
 
   /** @since 3.8.6 */
-  name: 'input-datetime-picker',
+  // name: 'input-datetime-picker',
 
   mixins: [
     resizeMixin,
