@@ -71,8 +71,6 @@ import QueryResultsAction from './QueryResultsAction.vue';
 import QueryResultsActionDownloadFormats from './QueryResultsActionDownloadFormats.vue';
 import QueryResultsActionInfoFormats from './QueryResultsActionInfoFormats.vue';
 import QueryResultsActionQueryPolygonCSVAttributes from './QueryResultsActionQueryPolygonCSVAttributes.vue';
-import QueryResultsActions from './QueryResultsActions.vue';
-import QueryResultsHeaderFeatureBody from './QueryResultsHeaderFeatureBody.vue';
 import Relation from './Relation.vue';
 import Relations from './Relations.vue';
 import RelationsPage from './RelationsPage.vue';
@@ -178,9 +176,7 @@ export {
   QueryResultsActionDownloadFormats,
   QueryResultsActionInfoFormats,
   QueryResultsActionQueryPolygonCSVAttributes,
-  QueryResultsActions,
-  QueryResultsHeaderFeatureBody,
-  QueryResultsAttributeFieldValue,
+    QueryResultsAttributeFieldValue,
   Relation,
   Relations,
   RelationsPage,

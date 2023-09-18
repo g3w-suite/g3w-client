@@ -38,7 +38,7 @@
                 @changeinput       = "_changeInput"
                 @addinput          = "_addToValidate"
                 @removeinput       = "_removeToValidate"
-                _legacy = "g3w-input"
+                _legacy            = "g3w-input"
               />
             </div>
           </div>

@@ -214,19 +214,50 @@
                     :key  = "hasFormStructure(layer) ? undefined : feature.id"
                   >
                     <template v-if="feature.show">
-                      <header-feature-body
-                        :actions                 = "state.layersactions[layer.id]"
-                        :layer                   = "layer"
-                        :feature                 = "feature"
-                        :index                   = "index"
-                        :onelayerresult          = "onelayerresult"
-                        :trigger                 = "trigger"
-                        :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                        :hasLayerOneFeature      = "hasLayerOneFeature"
-                        :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                        :attributesSubset        = "attributesSubset"
-                        :getLayerField           = "getLayerField"
-                      />
+
+                      <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureBody.vue@3.8 -->
+                      <tr
+                        @click     = "toggleFeatureBoxAndZoom(layer,feature)"
+                        @mouseover = "trigger({id: 'highlightgeometry'}, layer, feature, index)"
+                        @mouseout  = "trigger({id: 'clearHighlightGeometry'}, layer, feature, index)"
+                        class      = "featurebox-header"
+                        :class     = "[getLayerFeatureBox(layer, feature).collapsed ? '' : 'featurebox-header-open']"
+                      >
+
+                        <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@3.8 -->
+                        <td v-if="state.layersactions[layer.id].length" class="g3w-feature-actions">
+                          <action
+                            v-for   = "action in state.layersactions[layer.id]"
+                            :key    = "action.id"
+                            v-bind  = "{
+                              layer:        layer,
+                              featureIndex: index,
+                              trigger:      trigger,
+                              feature:      feature,
+                              actions:      state.layersactions[layer.id]
+                            }"
+                            :action = "action"
+                          />
+                        </td>
+
+                        <td v-for="attr in attributesSubset(layer)" class="attribute">
+                          <span v-if="getIcon(attr)" class="skin-color" :class="getIcon(attr)"></span>
+                          <span v-else>{{feature.attributes[attr.name]}}</span>
+                        </td>
+
+                        <td
+                          v-if   = "!hasLayerOneFeature(layer)"
+                          class  = "collapsed"
+                          :class = "{noAttributes: (0 === attributesSubset(layer).length) }"
+                        >
+                          <span
+                            class="fa link morelink skin-color"
+                            :class="[g3wtemplate.font[getLayerFeatureBox(layer, feature).collapsed ? 'plus' : 'minus']]"
+                          ></span>
+                        </td>
+
+                      </tr>
+
                       <tr class="g3w-feature-result-action-tools">
                         <td
                           v-if     = "state.currentactiontools[layer.id][index]"
@@ -243,6 +274,7 @@
                           />
                         </td>
                       </tr>
+
                       <tr
                         v-for = "({ component }) in getLayerCustomComponents(layer.id, 'feature', 'before')"
                       >
@@ -308,6 +340,7 @@
                         </td>
                       </tr>
                     </template>
+
                   </component>
                 </component>
 
@@ -347,7 +380,6 @@
 <script>
   import { Fragment }             from 'vue-fragment'
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
 
   const { throttle, getFieldType } = require('core/utils/utils');
 
@@ -360,7 +392,6 @@
     .entries({
       Fragment,
       InfoFormats,
-      HeaderFeatureBody,
     })
     .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
@@ -381,7 +412,6 @@
     components: {
       Fragment,
       'infoformats':         InfoFormats,
-      'header-feature-body': HeaderFeatureBody,
     },
 
     computed: {
@@ -733,6 +763,25 @@
         window.open(link_url, '_blank');
       },
 
+      /**
+       * @since 3.9.0
+       */
+      getIcon(attr) {
+
+        const field = this.getLayerField({
+          layer:     this.layer,
+          feature:   this.feature,
+          fieldName: attr.name,
+        });
+
+        return this.g3wtemplate.getFontClass(({
+          'link_field':  'link',
+          'image_field': 'image',
+          'photo_field': 'image',
+        })[getFieldType(field)]);
+
+      },
+
     },
 
     watch: {
@@ -822,5 +871,10 @@
 
 .g3w-layer-action-tools {
   padding: 5px;
+}
+
+.noAttributes {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
