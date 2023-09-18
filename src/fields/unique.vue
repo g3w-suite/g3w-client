@@ -1,6 +1,9 @@
 <!--
   @file
-  @since v3.7
+  
+  ORIGINAL SOURCE: src/components/InputUnique.vue@3.8
+
+  @since 3.9.0
 -->
 
 <template>

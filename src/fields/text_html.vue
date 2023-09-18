@@ -1,3 +1,11 @@
+<!--
+  @file
+  
+  ORIGINAL SOURCE: src/components/InputTextHtml.vue@3.8
+
+  @since 3.9.0
+-->
+
 <template>
   <g3w-input :state="state">
     <template #input-body="{ editable }">

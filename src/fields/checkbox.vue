@@ -1,8 +1,10 @@
 <!--
   @file
-  @since v3.7
 
-  @version 2.0 ADD SOURCE FROM: src/mixins/widget.js@3.8
+  ORIGINAL SOURCE: src/mixins/widget.js@3.8
+  ORIGINAL SOURCE: src/components/InputCheckbox.vue@3.8
+
+  @since 3.9.0
 -->
 
 <template>

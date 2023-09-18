@@ -1,11 +1,21 @@
 <!--
   @file
-  @since v3.7
+  
+  ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
+  ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
+  ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
+  ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
+  ORIGINAL SOURCE: src/components/InputMedia.vue@3.8
+
+  @since 3.9.0
 -->
 
 <template>
   <g3w-input :state="state">
 
+    <!--
+      @example <g3w-input mode="edit" _type="media" />
+    -->
     <template #input-body="{ tabIndex, editable, notvalid }">
       <div v-disabled="!editable">
 
@@ -42,17 +52,10 @@
     </template>
 
     <!--
-      ORIGINAL SOURCE: src/components/FieldLink.vue@3.8
-      ORIGINAL SOURCE: src/components/FieldMedia.vue@3.8
-      ORIGINAL SOURCE: src/components/FieldImage.vue@3.8
-      ORIGINAL SOURCE: src/components/GlobalGallery.vue@3.8
-
       @example <g3w-input mode="read" _type="link" />
       @example <g3w-input mode="read" _type="media" />
       @example <g3w-input mode="read" _type="image" />
       @example <g3w-input mode="read" _type="gallery" />
-
-      @since 3.9.0
     -->
     <template #field-value="{ state, field }">
 

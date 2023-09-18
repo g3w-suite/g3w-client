@@ -5,7 +5,7 @@
   ORIGINAL SOURCE: src/components/FieldGeo.vue@3.8
   ORIGINAL SOURCE: src/components/GlobalGeo.vue@3.8
 
-  @since v3.7
+  @since 3.9.0
 -->
 
 <template>

@@ -1,6 +1,11 @@
 <!--
   @file
-  @since v3.7
+  
+  ORIGINAL SOURCE: src/components/GlobalRange.vue@3.8
+  ORIGINAL SOURCE: src/components/InputRange.vue@3.8
+  ORIGINAL SOURCE: src/components/InputSliderRange.vue@3.8
+
+  @since 3.9.0
 -->
 
 <template>
@@ -8,6 +13,8 @@
 
     <!--
       ORIGINAL SOURCE: src/components/GlobalRange.vue@3.8
+
+      @example <g3w-input mode="edit" _type="range" />
     -->
     <template v-if="'range_slider' == _type" #default>
       <div>
@@ -55,6 +62,8 @@
     <template v-else #input-body="{ change, tabIndex, editable, notvalid }">
       <!--
         ORIGINAL SOURCE: src/components/InputRange.vue@3.8
+
+        @example <g3w-input mode="read" _type="number" />
       -->
       <input
         v-if = "'number' == _type"
@@ -74,7 +83,7 @@
         ORIGINAL SOURCE: src/components/InputSliderRange.vue@3.8
       -->
       <div v-else>
-        <span style="font-weight: bold">{{state.value}}</span>
+        <span style="font-weight: bold">{{ state.value }}</span>
         <input
           @change    = "change"
           class      = "g3w-input-range"
