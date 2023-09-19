@@ -1266,17 +1266,17 @@ const vm = {
  * BACKCOMP (v3.x)
  */
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('layerspositions',    _alias(vm, { _legacy: "g3w-input", mode: 'input', state: { input: { type: "layer_positions" } } }));
+Vue.component('layerspositions',    _alias(vm, { mode: 'input', _type: "layer_positions_input" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('datetime',           _alias(vm, { _legacy: "g3w-input", mode: 'input', state: { input: { type: "datetime" } } } ));
+Vue.component('datetime',           _alias(vm, { mode: 'input', _type: "datetime_input" } ));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('range',              _alias(vm, { _legacy: "g3w-input", mode: 'input', state: { input: { type: "range_slider" } } }));
+Vue.component('range',              _alias(vm, { mode: 'input', _type: "range_slider_input" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-image',          _alias(vm, { mode: 'read', _type: "image" }));
+Vue.component('g3w-image',          _alias(vm, { mode: 'read', _type: "image_field" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-images-gallery', _alias(vm, { mode: 'read', _type: "gallery" }));
+Vue.component('g3w-images-gallery', _alias(vm, { mode: 'read', _type: "gallery_field" }));
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-geospatial',     _alias(vm, { mode: 'read', _type: "geo" }));
+Vue.component('g3w-geospatial',     _alias(vm, { mode: 'read', _type: "geo_field" }));
 
 /**
  * BACKCOMP (v3.x)

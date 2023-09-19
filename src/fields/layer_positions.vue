@@ -58,7 +58,7 @@
     // name: "input-layerpositions",
 
     props: {
-      position:{
+      position: {
         type: String,
         default: MAP_SETTINGS.LAYER_POSITIONS.default
       }
