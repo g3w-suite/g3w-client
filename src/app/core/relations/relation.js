@@ -15,6 +15,8 @@ function Relation(config={}) {
     id,
     name,
     origname,
+    editable: config.editable || false, //@since v3.7.0
+    prefix: config.prefix, //@since v3.7.0
     father: config.referencedLayer,
     child: config.referencingLayer,
     fatherField: config.fieldRef.referencedField,
@@ -158,7 +160,24 @@ proto.isLoading = function(){
 };
 
 /**
+ * Get editable property
+ * @since v3.7.0
+ */
+proto.isEditable = function(){
+  return this.state.editable;
+};
+
+/**
  * End editing loading purpose
  */
+
+/**
+ * Get Prefix (for Relation 1:1)
+ * @since v3.7.0
+ * @returns String
+ */
+proto.getPrefix = function(){
+  return this.state.prefix;
+}
 
 module.exports = Relation;
