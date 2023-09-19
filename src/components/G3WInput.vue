@@ -22,29 +22,6 @@
 <fragment>
 
   <!--
-    @example <g3w-input mode="read" _legacy="g3w-field" _type=".." />
-    @example <g3w-input mode="read" _legacy="g3w-vuefield" />
-    @example <g3w-input mode="edit" _legacy="g3w-input" _type=".." />
-  -->
-  <!-- <component
-    v-if = "['g3w-field', 'g3w-input', 'g3w-vuefield'].includes(_legacy) || isVue(field)"
-    :is  = "('edit' == mode && state.visible && 'g3w-input' === _legacy && !$attrs._plain) ? 'div' : 'fragment'"
-  >
-    <component
-      v-bind   = "{
-          ...$attrs,
-          ...$props,
-          _legacy: '',
-      }"
-      :feature = "('g3w-vuefield' === this._legacy || isVue(field)) ? feature                                                                      : undefined"
-      :value   = "('g3w-vuefield' === this._legacy || isVue(field)) ? (undefined === field.value      ? null         : field.value)                : undefined"
-      :is      = "('g3w-vuefield' === this._legacy || isVue(field)) ? (undefined === field.vueoptions ? {}           : field.vueoptions.component) : type"
-      v-html   = "('g3w-vuefield' === this._legacy || isVue(field)) ? ('g3w-vuefield' === this._legacy ? undefined   : field.value)                : undefined"
-    />
-    <span v-if="('edit' == mode && state.visible && 'g3w-input' === _legacy && !$attrs._plain) ? 'div' : 'fragment'" class="divider"></span>
-  </component> -->
-
-  <!--
     Instantiate internal component (recursive).
 
     @example <g3w-input _type="text" />
@@ -75,7 +52,7 @@
     <slot name="default">
 
       <span
-        v-if   = "'foo' == _legacy && isSimple(field)"
+        v-if   = "null === state.label && isSimple(field)"
         v-html = "field.value"
       ></span>
 
@@ -425,7 +402,7 @@ const vm = {
      * 
      * @since 3.9.0
      */
-     _legacy: {
+    _legacy: {
       type: String,
       default: "",
     },
