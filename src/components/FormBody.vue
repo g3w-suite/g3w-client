@@ -182,12 +182,12 @@ export default Vue.extend({
     /**
      * Whether this is a InputG3WFormInputs component
      * 
-     * @example <form-body _legacy="g3w-form-inputs" />
+     * @example <form-body _legacy="form-inputs" />
      * 
      * @since 3.9.0
      */
      __hasWrapper() {
-      return 'g3w-form-inputs' !== this._legacy;
+      return 'form-inputs' !== this._legacy;
     },
 
   },
