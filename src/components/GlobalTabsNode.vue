@@ -22,7 +22,7 @@
       <template v-for="node in getNodes(row)" :style="{ padding: node ? '2px' : undefined }">
 
         <!-- NODE FIELD -->
-        <g3w-input
+        <g3w-field
           v-if              = "'field' === getNodeType(node) && !getField(node).relation"
           class             = "tab-node-field"
           :state            = "getField(node)"
@@ -35,7 +35,6 @@
           :feature          = "feature"
           :_type            = "getField(node).query ? getField(node).input.type : undefined"
           _legacy           = "g3w-input"
-          mode              = "read"
         />
 
         <!-- NODE GROUP -->

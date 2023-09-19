@@ -29,10 +29,10 @@
 
         <helpdiv message="sdk.spatialbookmarks.helptext"/>
         <div class="container add-bookmark-input" style="padding: 5px; width: 100%">
-          <g3w-input
-            :state="addbookmarkinput"
-            _type="text"
-            mode="edit"
+          <g3w-field
+            :state = "addbookmarkinput"
+            mode   = "input"
+            _type  = "text"
           />
         </div>
         <div style="margin-top: 5px;">

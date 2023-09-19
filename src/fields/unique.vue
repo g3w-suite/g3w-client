@@ -7,7 +7,7 @@
 -->
 
 <template>
-  <g3w-input :state="state">
+  <g3w-field :state="state">
     <template #input-body="{ tabIndex, editable }">
       <select
         :id          = "id"
@@ -24,7 +24,7 @@
         >{{ getValue(value) }}</option>
       </select>
     </template>
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>

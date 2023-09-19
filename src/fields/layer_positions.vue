@@ -7,10 +7,10 @@
 -->
 
 <template>
-  <g3w-input>
+  <g3w-field>
 
     <!--
-      @example <g3w-input mode="edit" _type="layer_positions" />
+      @example <g3w-field mode="input" _type="layer_positions" />
      -->
     <template #default>
       <div
@@ -44,7 +44,7 @@
       </div>
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>

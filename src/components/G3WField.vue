@@ -22,14 +22,14 @@
 <fragment>
 
   <!--
-    Instantiate internal component (recursive).
+    Internal recursion.
 
-    @example <g3w-input _type="text" />
+    @example <g3w-field _type="text" />
   -->
   <component
-    v-if    = "!_legacy && !$attrs._legacyCycle"
-    :is     = "type || 'g3w-input'"
-    v-bind = "{ ...$attrs, ...$props, state, _legacyCycle: true }"
+    v-if    = "!_legacy && _isRecursion"
+    :is     = "type || 'g3w-field'"
+    v-bind = "{ ...$attrs, ...$props }"
   />
 
   <!--
@@ -39,11 +39,11 @@
 
     @example
 
-      <g3w-input mode="read" :state>
+      <g3w-field mode="read" :state>
         <template #field-label> ... </template>
         <template #field-body> ... </template>
         ...
-      </g3w-input>
+      </g3w-field>
 
     @since 3.9.0
   -->
@@ -93,7 +93,7 @@
             <!--
               ORIGINAL SOURCE: src/components/FieldText.vue@3.8
 
-              @example <g3w-input mode="read" :state />
+              @example <g3w-field mode="read" :state />
 
               @since 3.9.0
             -->
@@ -116,40 +116,43 @@
 
     @example
 
-      <g3w-input :state>
+      <g3w-field :state>
         <template #input-label> ... </template>
         <template #input-body> ... </template>
         ...
-      </g3w-input>
+      </g3w-field>
 
     ORIGINAL SOURCE: src/components/InputBase.vue@3.8
 
     @since 3.7.0
   -->
 
-  <fragment v-else-if="'edit' == mode && state.visible">
+  <fragment v-else-if="'input' == mode && state.visible">
 
-    <div v-if="'g3w-input' == _legacy && !$attrs._legacyCycle">
+    <div v-if="'g3w-input' == _legacy && _isRecursion">
       <component
         v-if    = "$attrs._plain"
-        v-bind  = "{ ...$attrs, ...$props, state, _legacyCycle: true }"
+        v-bind  = "{ ...$attrs, ...$props }"
         :is     = "type"
       />
       <div v-else>
         <component
-          v-bind = "{ ...$attrs, ...$props, state, _legacyCycle: true }"
+          v-bind = "{ ...$attrs, ...$props }"
           :is    = "type"
         />
         <span class="divider"></span>
       </div>
     </div>
 
-    <slot name="default">
+    <slot
+      v-else
+      name="default"
+    >
 
       <!--
         ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
 
-        @example <g3w-input _legacy="g3w-input" />
+        @example <g3w-field _legacy="g3w-input" />
 
         @since 3.9.0
       -->
@@ -161,11 +164,12 @@
         >
           <h4 style="font-weight: bold">{{ state.label }}</h4>
           <div> {{ state.description }} </div>
-          <g3w-input
+          <g3w-field
             v-for   ="field in state.fields"
             v-bind  = "{ $attrs, state }"
             :state  = "field"
             :key    = "field.name"
+            mode    = "input"
             _legacy = "g3w-input"
           />
         </div>
@@ -371,7 +375,7 @@ function _defaultState(state) {
 const vm = {
 
   /** @since 3.9.0 */
-  name: 'g3w-input',
+  name: 'g3w-field',
 
   props: {
 
@@ -389,7 +393,7 @@ const vm = {
      * @since 3.9.0
      */
     mode: {
-      default: 'edit',
+      default: 'read',
     },
 
     /**
@@ -441,6 +445,20 @@ const vm = {
   computed: {
 
     /**
+     * Whether to stop recursion for inner fields (eg. src/fields/text.vue)
+     * 
+     * @since 3.9.0
+     */
+    _isRecursion() {
+      return (
+        this.$parent &&
+        this.$parent.$parent &&
+        this.$parent.$parent.$options &&
+        'g3w-field' !== this.$parent.$parent.$options.name
+      );
+    },
+
+    /**
      * ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
      * 
      * @since 3.9.0
@@ -458,7 +476,7 @@ const vm = {
       }
 
       // edit mode --> (input)
-      if ('edit' === this.mode && 'child' !== this.state.type) {
+      if ('input' === this.mode && 'child' !== this.state.type) {
         return `${this.state.input && this.state.input.type ? this.state.input.type : this.state.type}_input`;
       }
     },
@@ -565,7 +583,7 @@ const vm = {
 
       this.$emit('changeinput', this.state);
 
-      // emit to <child #slot="input-body"> from parent <g3w-input> 
+      // emit to <child #slot="input-body"> from parent <g3w-field> 
       if (this.$slots && this.$slots.body && this.$slots.body[0].context && this.$slots.body[0].context.$emit) {
         this.$slots.body[0].context.$emit('changeinput', this.state);
       }
@@ -1204,19 +1222,19 @@ const vm = {
      * ```
      * {
      *  "name": "id",
-     *   "type": "integer",
-     *   "label": "id",
-     *   "editable": false,
-     *   "validate": {
-     *       "required": true,
-     *       "unique": true
-     *   },
-     *   "pk": true,
-     *   "default": "nextval('g3wsuite.zone_id_seq'::regclass)",
-     *   "input": {
-     *       "type": "text",
-     *       "options": {}
-     *   }
+     *  "type": "integer",
+     *  "label": "id",
+     *  "editable": false,
+     *  "validate": {
+     *     "required": true,
+     *     "unique": true
+     *  },
+     *  "pk": true,
+     *  "default": "nextval('g3wsuite.zone_id_seq'::regclass)",
+     *  "input": {
+     *     "type": "text",
+     *     "options": {}
+     *  }
      * }
      * 
      * ```
@@ -1247,18 +1265,18 @@ const vm = {
 /**
  * BACKCOMP (v3.x)
  */
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('layerspositions',    _alias(vm, { _legacy: "g3w-input", state: { input: { type: "layer_positions" } } }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('datetime',           _alias(vm, { _legacy: "g3w-input", state: { input: { type: "datetime" } } } ));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('range',              _alias(vm, { _legacy: "g3w-input", state: { input: { type: "range_slider" } } }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-image',          _alias(vm, { mode:'read', _type: "image" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-images-gallery', _alias(vm, { mode:'read', _type: "gallery" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('g3w-geospatial',     _alias(vm, { mode:'read', _type: "geo" }));
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('layerspositions',    _alias(vm, { _legacy: "g3w-input", mode: 'input', state: { input: { type: "layer_positions" } } }));
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('datetime',           _alias(vm, { _legacy: "g3w-input", mode: 'input', state: { input: { type: "datetime" } } } ));
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('range',              _alias(vm, { _legacy: "g3w-input", mode: 'input', state: { input: { type: "range_slider" } } }));
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('g3w-image',          _alias(vm, { mode: 'read', _type: "image" }));
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('g3w-images-gallery', _alias(vm, { mode: 'read', _type: "gallery" }));
+/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
+Vue.component('g3w-geospatial',     _alias(vm, { mode: 'read', _type: "geo" }));
 
 /**
  * BACKCOMP (v3.x)
@@ -1267,7 +1285,7 @@ Vue.component('g3w-geospatial',     _alias(vm, { mode:'read', _type: "geo" }));
  * 
  * @deprecated since 3.9.0. Use components/InputCheckbox.vue instead.
  */
-vm.methods.convertCheckedToValue = deprecate('[G3W-INPUT] checkbox service is deprecated', function(checked) {
+vm.methods.convertCheckedToValue = deprecate('[G3W-FIELD] checkbox service is deprecated', function(checked) {
   checked          = _hasValue(checked) ? checked : false;
   this.state.value = this.state.input.options.values.find(value => checked === value.checked).value;
   return this.state.value;
@@ -1280,7 +1298,7 @@ vm.methods.convertCheckedToValue = deprecate('[G3W-INPUT] checkbox service is de
  * 
  * @deprecated since 3.9.0. Use `src/components/InputCheckbox.vue` instead.
  */
-vm.methods.convertValueToChecked = deprecate('[G3W-INPUT] checkbox service is deprecated', function() {
+vm.methods.convertValueToChecked = deprecate('[G3W-FIELD] checkbox service is deprecated', function() {
   if (!_hasValue(this.state.value)) {
     return false;
   }
@@ -1299,7 +1317,7 @@ vm.methods.convertValueToChecked = deprecate('[G3W-INPUT] checkbox service is de
  * 
  * @deprecated since 3.9.0
  */
-vm.methods.isValueInRange = deprecate('[G3W-INPUT] range service is deprecated', function(value, min, max) {
+vm.methods.isValueInRange = deprecate('[G3W-FIELD] range service is deprecated', function(value, min, max) {
   return value <= max && value >= min;
 });
 
@@ -1310,7 +1328,7 @@ vm.methods.isValueInRange = deprecate('[G3W-INPUT] range service is deprecated',
  * 
  * @deprecated since 3.9.0. Use core/utils::convertQGISDateTimeFormatToMoment(datetimeformat) instead.
  */
-vm.methods.convertQGISDateTimeFormatToMoment = deprecate('[G3W-INPUT] datetimepicker service is deprecated', convertQGISDateTimeFormatToMoment);
+vm.methods.convertQGISDateTimeFormatToMoment = deprecate('[G3W-FIELD] datetimepicker service is deprecated', convertQGISDateTimeFormatToMoment);
 
 /**
  * BACKCOMP (v3.x)
@@ -1319,7 +1337,7 @@ vm.methods.convertQGISDateTimeFormatToMoment = deprecate('[G3W-INPUT] datetimepi
  * 
  * @deprecated since 3.9.0. Use `src/components/InputDateTimePicker.vue` instead.
  */
-vm.methods.setValidatorOptions = deprecate('[G3W-INPUT] datetimepicker service is deprecated', function(options) {
+vm.methods.setValidatorOptions = deprecate('[G3W-FIELD] datetimepicker service is deprecated', function(options) {
   this.validatorOptions = options;
 });
 
@@ -1330,7 +1348,7 @@ vm.methods.setValidatorOptions = deprecate('[G3W-INPUT] datetimepicker service i
  * 
  * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
  */
-vm.methods._getLayerById = deprecate('[G3W-INPUT] select service is deprecated', function(layer_id) {
+vm.methods._getLayerById = deprecate('[G3W-FIELD] select service is deprecated', function(layer_id) {
   return CatalogLayersStoresRegistry.getLayerById(layer_id);
 });
 
@@ -1341,7 +1359,7 @@ vm.methods._getLayerById = deprecate('[G3W-INPUT] select service is deprecated',
  * 
  * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
  */
-vm.methods.addValue = deprecate('[G3W-INPUT] select service is deprecated', function(value) {
+vm.methods.addValue = deprecate('[G3W-FIELD] select service is deprecated', function(value) {
   this.state.input.options.values.push(value);
 });
 
@@ -1352,7 +1370,7 @@ vm.methods.addValue = deprecate('[G3W-INPUT] select service is deprecated', func
  * 
  * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
  */
-vm.methods.getKeyByValue = deprecate('[G3W-INPUT] select service is deprecated', function({search}={}) {
+vm.methods.getKeyByValue = deprecate('[G3W-FIELD] select service is deprecated', function({search}={}) {
   const options = this.state.input.options;
   const { value, key } = options;
   this
@@ -1371,7 +1389,7 @@ vm.methods.getKeyByValue = deprecate('[G3W-INPUT] select service is deprecated',
  * 
  * @deprecated since 3.9.0. Use `src/components/InputSelect.vue` instead.
  */
-vm.methods.getData = deprecate('[G3W-INPUT] select service is deprecated', function({
+vm.methods.getData = deprecate('[G3W-FIELD] select service is deprecated', function({
   layer_id = this.state.input.options.layer_id,
   key      = this.state.input.options.key,
   value    = this.state.input.options.value,
@@ -1407,7 +1425,7 @@ vm.methods.getData = deprecate('[G3W-INPUT] select service is deprecated', funct
  * 
  * @deprecated since 3.9.0. Use `src/components/InputRange.vue` instead.
  */
-vm.methods.changeInfoMessage = deprecate('[G3W-INPUT] sliderrange service is deprecated', function() {
+vm.methods.changeInfoMessage = deprecate('[G3W-FIELD] sliderrange service is deprecated', function() {
   this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
 });
 
@@ -1418,7 +1436,7 @@ vm.methods.changeInfoMessage = deprecate('[G3W-INPUT] sliderrange service is dep
  * 
  * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
  */
-vm.methods.isPicked = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+vm.methods.isPicked = deprecate('[G3W-FIELD] picklayer service is deprecated', function() {
   return this.ispicked;
 });
 
@@ -1429,7 +1447,7 @@ vm.methods.isPicked = deprecate('[G3W-INPUT] picklayer service is deprecated', f
  * 
  * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
  */
-vm.methods.escKeyUpHandler = deprecate('[G3W-INPUT] picklayer service is deprecated', function({ keyCode, data: { owner } }) {
+vm.methods.escKeyUpHandler = deprecate('[G3W-FIELD] picklayer service is deprecated', function({ keyCode, data: { owner } }) {
   if (27 === keyCode) {
     owner.unpick();
   }
@@ -1442,7 +1460,7 @@ vm.methods.escKeyUpHandler = deprecate('[G3W-INPUT] picklayer service is depreca
  * 
  * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
  */
-vm.methods.unbindEscKeyUp = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+vm.methods.unbindEscKeyUp = deprecate('[G3W-FIELD] picklayer service is deprecated', function() {
   $(document).unbind('keyup', this.escKeyUpHandler);
 });
 
@@ -1453,7 +1471,7 @@ vm.methods.unbindEscKeyUp = deprecate('[G3W-INPUT] picklayer service is deprecat
  * 
  * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
  */
-vm.methods.bindEscKeyUp = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+vm.methods.bindEscKeyUp = deprecate('[G3W-FIELD] picklayer service is deprecated', function() {
   $(document).on('keyup', { owner: this }, this.escKeyUpHandler); // bind interrupt event.
 });
 
@@ -1464,7 +1482,7 @@ vm.methods.bindEscKeyUp = deprecate('[G3W-INPUT] picklayer service is deprecated
  * 
  * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
  */
-vm.methods.pick = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+vm.methods.pick = deprecate('[G3W-FIELD] picklayer service is deprecated', function() {
   return new Promise((resolve, reject) => {
     this.bindEscKeyUp();
 
@@ -1523,7 +1541,7 @@ vm.methods.pick = deprecate('[G3W-INPUT] picklayer service is deprecated', funct
  * 
  * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` instead.
  */
-vm.methods.unpick = deprecate('[G3W-INPUT] picklayer service is deprecated', function() {
+vm.methods.unpick = deprecate('[G3W-FIELD] picklayer service is deprecated', function() {
   this.mapService.removeInteraction(this.interaction);
   GUI.setModal(true);
   this.unbindEscKeyUp();
@@ -1538,7 +1556,7 @@ vm.methods.unpick = deprecate('[G3W-INPUT] picklayer service is deprecated', fun
  * 
  * @deprecated since 3.9.0. Use `src/components/InputPickLayer.vue` and `src/components/InputLonLat.vue` instead.
  */
-vm.methods.clear = deprecate('[G3W-INPUT] picklayer/lonlat services are deprecated', function() {
+vm.methods.clear = deprecate('[G3W-FIELD] picklayer/lonlat services are deprecated', function() {
   // lonlat
   if (this.coordinatebutton) {
     this.stopToGetCoordinates();
@@ -1558,7 +1576,7 @@ vm.methods.clear = deprecate('[G3W-INPUT] picklayer/lonlat services are deprecat
  * 
  * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
  */
-vm.methods.setCoordinateButtonReactiveObject = deprecate('[G3W-INPUT] lonlat service is deprecated', function(button) {
+vm.methods.setCoordinateButtonReactiveObject = deprecate('[G3W-FIELD] lonlat service is deprecated', function(button) {
   this.coordinatebutton = button;
 });
 
@@ -1569,7 +1587,7 @@ vm.methods.setCoordinateButtonReactiveObject = deprecate('[G3W-INPUT] lonlat ser
  * 
  * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
  */
-vm.methods.toggleGetCoordinate = deprecate('[G3W-INPUT] lonlat service is deprecated', function() {
+vm.methods.toggleGetCoordinate = deprecate('[G3W-FIELD] lonlat service is deprecated', function() {
   if (this.coordinatebutton.active) {
     this.stopToGetCoordinates();
   } else {
@@ -1584,7 +1602,7 @@ vm.methods.toggleGetCoordinate = deprecate('[G3W-INPUT] lonlat service is deprec
  * 
  * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
  */
-vm.methods.startToGetCoordinates = deprecate('[G3W-INPUT] lonlat service is deprecated', function() {
+vm.methods.startToGetCoordinates = deprecate('[G3W-FIELD] lonlat service is deprecated', function() {
   this.coordinatebutton.active = true;
 
   this.mapService.deactiveMapControls();
@@ -1599,7 +1617,7 @@ vm.methods.startToGetCoordinates = deprecate('[G3W-INPUT] lonlat service is depr
  * 
  * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
  */
-vm.methods.stopToGetCoordinates = deprecate('[G3W-INPUT] lonlat service is deprecated', function() {
+vm.methods.stopToGetCoordinates = deprecate('[G3W-FIELD] lonlat service is deprecated', function() {
   this.coordinatebutton.active = false;
 
   ol.Observable.unByKey(this.eventMapKey);
@@ -1615,7 +1633,7 @@ vm.methods.stopToGetCoordinates = deprecate('[G3W-INPUT] lonlat service is depre
  * 
  * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
  */
-vm.methods.mapControlToggleEventHandler = deprecate('[G3W-INPUT] lonlat service is deprecated', function(e) {
+vm.methods.mapControlToggleEventHandler = deprecate('[G3W-FIELD] lonlat service is deprecated', function(e) {
   if (
     e.target.isToggled() &&
     e.target.isClickMap() &&
@@ -1634,7 +1652,7 @@ vm.methods.mapControlToggleEventHandler = deprecate('[G3W-INPUT] lonlat service 
  * 
  * @deprecated since 3.9.0. Use `src/components/InputLonLat.vue` instead.
  */
-vm.methods.onMapClick = deprecate('[G3W-INPUT] lonlat service is deprecated', function(evt) {
+vm.methods.onMapClick = deprecate('[G3W-FIELD] lonlat service is deprecated', function(evt) {
   evt.originalEvent.stopPropagation();
   evt.preventDefault();
   const coord = this.mapEpsg !== this.outputEpsg
@@ -1654,7 +1672,7 @@ vm.methods.onMapClick = deprecate('[G3W-INPUT] lonlat service is deprecated', fu
  * 
  * @deprecated since 3.9.0. Use `setDefault(value)` instead.
  */
-vm.methods.setValue = deprecate('[G3W-INPUT] setValue method is deprecated', vm.methods.setDefault);
+vm.methods.setValue = deprecate('[G3W-FIELD] setValue method is deprecated', vm.methods.setDefault);
 
 /**
  * BACKCOMP (v3.x)

@@ -1,5 +1,5 @@
 /**
- * @file list of fields that can be used by `src/components/G3WInput.vue`
+ * @file list of fields that can be used by `src/components/G3WField.vue`
  * 
  * @since 3.9.0
  */
@@ -26,8 +26,11 @@ import * as unique           from 'fields/unique.vue';
 function _alias(vm, props) {
   return {
     functional: true,
-    render(h, { data, children }) {
-      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
+    // props: vm.props,
+    render(h, ctx) {
+      const d = h( vm, { ...ctx.data, props: { ...ctx.data.props, ...props } }, ctx.children)
+      // const d = h( vm, { ...ctx, props: { ...ctx.props, ...props } }, ctx.children)
+      return d;
     },
   };
 }
@@ -162,12 +165,12 @@ const components = {
  * BACKCOMP (v3.x)
  *******************************************************/
 
-components['link_field']                = _alias(components['media_input'], { _type: "link",    mode: "read" });
-components['media_field']               = _alias(components['media_input'], { _type: "media",   mode: "read" });
-components['image_field']               = _alias(components['media_input'], { _type: "image",   mode: "read" });
-components['gallery_field']             = _alias(components['media_input'], { _type: "gallery", mode: "read" });
-components['geo_input']                 = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
-components['geo_field']                 = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
+components['link_field']                = _alias(components['media_input'],     { _mediaType: "link",    mode: "read" });
+components['media_field']               = _alias(components['media_input'],     { _mediaType: "media",   mode: "read" });
+components['image_field']               = _alias(components['media_input'],     { _mediaType: "image",   mode: "read" });
+components['gallery_field']             = _alias(components['media_input'],     { _mediaType: "gallery", mode: "read" });
+components['geo_input']                 = _alias(components['picklayer_input'], { _mediaType: "geo",     mode: "read" });
+components['geo_field']                 = _alias(components['picklayer_input'], { _mediaType: "geo",     mode: "read" });
 
 components['photo_field']               = components['image_field'];
 components['g3w_link']                  = components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue@3.8

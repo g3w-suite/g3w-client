@@ -11,10 +11,10 @@
 -->
 
 <template>
-  <g3w-input :state="state">
+  <g3w-field :state="state">
 
     <!--
-      @example <g3w-input mode="edit" _type="media" />
+      @example <g3w-field mode="input" _type="media" />
     -->
     <template #input-body="{ tabIndex, editable, notvalid }">
       <div v-disabled="!editable">
@@ -42,36 +42,36 @@
 
         <bar-loader :loading="loading" />
 
-        <g3w-input mode="read" :state="data" _legacy="g3w-mediafield">
+        <g3w-field :state="data" _legacy="g3w-mediafield">
           <div class="clearmedia" @click="clearMedia()">
             <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
           </div>
-        </g3w-input>
+        </g3w-field>
 
       </div>
     </template>
 
     <!--
-      @example <g3w-input mode="read" _type="link" />
-      @example <g3w-input mode="read" _type="media" />
-      @example <g3w-input mode="read" _type="image" />
-      @example <g3w-input mode="read" _type="gallery" />
+      @example <g3w-field mode="read" _type="link" />
+      @example <g3w-field mode="read" _type="media" />
+      @example <g3w-field mode="read" _type="image" />
+      @example <g3w-field mode="read" _type="gallery" />
     -->
     <template #field-value="{ state, field }">
 
       <!-- LINK FIELD -->
       <button
-        v-if = "'link' === this._type || $parent.isLink(field)"
+        v-if = "'link' === _mediaType || $parent.isLink(field)"
         class     = "btn skin-button field_link"
         v-t       = "'info.link_button'"
         @click    = "() => window.open(
-          ('link' === this._type ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
+          ('link' === _mediaType ? ((state.value && 'object' === typeof state.value) ? state.value.value : state.value) : (field.value)),
           '_blank'
         )"
       ></button>
 
       <!-- MEDIA FIELD -->
-      <div v-else-if="'media' === this._type">
+      <div v-else-if="'media' === _mediaType">
         <div v-if="state.value" class="preview">
           <a :href="state.value" target="_blank">
             <div class="previewtype" :class="getMediaType(state.mime_type)">
@@ -84,7 +84,7 @@
       </div>
 
       <!-- IMAGE FIELD -->
-      <div v-else-if="'image' === this._type || $parent.isPhoto(field) || $parent.isImage(field)" style="text-align: left">
+      <div v-else-if="'image' === _mediaType || $parent.isPhoto(field) || $parent.isImage(field)" style="text-align: left">
         <img
           v-for  = "(img, index) in values"
           class  = "img-responsive"
@@ -124,7 +124,7 @@
       </div>
 
       <!-- GALLERY FIELD -->
-      <div v-else-if="'gallery' === this._type" class="container-fluid">
+      <div v-else-if="'gallery' === _mediaType" class="container-fluid">
         <div class="row">
           <div v-for="(img, index) in values" class="g3w-image col-md-6 col-sm-12">
             <img
@@ -167,7 +167,7 @@
 
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>
@@ -186,6 +186,9 @@ export default {
       type: Object,
       required: true,
     },
+    _mediaType: {
+      default: ''
+    }
   },
 
   data() {
@@ -200,6 +203,8 @@ export default {
       active:      null,   // image field
       /** @since 3.9.0 */
       time:        Date.now(),
+      /** @since 3.9.0 */
+      window:      window,
     }
   },
 
@@ -280,12 +285,15 @@ export default {
     },
 
   },
+
   created() {
+    console.log('media', this);
     if (this.state.value) {
       this.data.value = this.state.value.value;
       this.data.mime_type = this.state.value.mime_type;
     }
   },
+
   mounted() {
     const fieldName = this.state.name;
     const formData = {
@@ -317,9 +325,11 @@ export default {
       });
     });
   },
+
   beforeDestroy() {
     $(`#${this.mediaid}`).fileupload('destroy');
-  }
+  },
+
 };
 </script>
 <style scoped>

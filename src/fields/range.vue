@@ -9,12 +9,12 @@
 -->
 
 <template>
-  <g3w-input :state="state">
+  <g3w-field :state="state">
 
     <!--
       ORIGINAL SOURCE: src/components/GlobalRange.vue@3.8
 
-      @example <g3w-input mode="edit" _type="range" />
+      @example <g3w-field mode="input" _type="range" />
     -->
     <template v-if="'range_slider' == _type" #default>
       <div>
@@ -63,7 +63,7 @@
       <!--
         ORIGINAL SOURCE: src/components/InputRange.vue@3.8
 
-        @example <g3w-input mode="read" _type="number" />
+        @example <g3w-field mode="read" _type="number" />
       -->
       <input
         v-if = "'number' == _type"
@@ -100,7 +100,7 @@
 
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>

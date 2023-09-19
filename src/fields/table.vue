@@ -7,10 +7,10 @@
 -->
 
 <template>
-  <g3w-input :state="state">
+  <g3w-field :state="state">
 
     <!--
-      @example <g3w-input mode="edit" _type="table" />
+      @example <g3w-field mode="input" _type="table" />
      -->
     <template #input-body="{ editable, notvalid }">
 
@@ -67,7 +67,7 @@
 
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>

@@ -33,7 +33,7 @@
 import TableBody       from 'components/TableBody.vue';
 import SelectRow       from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import G3WInput        from 'components/G3WInput.vue';
+import G3WField        from 'components/G3WField.vue';
 import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
@@ -128,13 +128,12 @@ export default {
               );
               contentDOM = SelectRowInstance.$mount().$el;
             } else {
-              const fieldClass = Vue.extend(G3WInput);
+              const fieldClass = Vue.extend(G3WField);
               const fieldInstance = new fieldClass({
                 propsData: {
                   state: {
                     value: feature.attributes[header.name]
                   },
-                  mode:    "read",
                 }
               });
               fieldInstance.$mount();

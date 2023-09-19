@@ -77,8 +77,7 @@
         ref    = "tablecontent"
       >
         <div v-if="headercomponent" class="relation-header-component">
-          <g3w-input
-            mode    = "read"
+          <g3w-field
             :layer  = "downloadLayer.state"
             :config = "downloadLayer.config"
             :_type  = "headercomponent"
@@ -156,8 +155,7 @@
                   v-for = "value in row"
                   class = "relation-field"
                 >
-                  <g3w-input
-                    mode    = "read"
+                  <g3w-field
                     :state  = "({ value })"
                   />
                 </td>

@@ -7,10 +7,10 @@
 -->
 
 <template>
-  <g3w-input :state="state">
+  <g3w-field :state="state">
 
     <!-- 
-      @example <g3w-input mode="edit" _type="lonlat" />
+      @example <g3w-field mode="input" _type="lonlat" />
      -->
     <template #default>
       <div style="position: relative">
@@ -29,7 +29,7 @@
         </div>
 
         <!-- LONGITUDE -->
-        <g3w-input :state="state">
+        <g3w-field :state="state" mode="input">
 
           <template #input-label>
             <label :for="lonId" class="col-sm-4 control-label">{{state.labels.lon}} <span v-if="is_required">*</span></label>
@@ -54,10 +54,10 @@
             </div>
           </template>
 
-        </g3w-input>
+        </g3w-field>
 
         <!-- LATITUDE -->
-        <g3w-input :state="state">
+        <g3w-field :state="state" mode="input">
 
           <template #input-label>
             <label :for="latId" class="col-sm-4 control-label">{{ state.labels.lat }} <span v-if="is_required">*</span></label>
@@ -82,11 +82,11 @@
             </div>
           </template>
 
-        </g3w-input>
+        </g3w-field>
       </div>
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>

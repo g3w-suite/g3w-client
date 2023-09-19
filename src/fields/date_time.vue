@@ -7,10 +7,10 @@
 -->
 
 <template>
-  <g3w-input :state="{ visible: true, type: 'datetime' }" _legacy="g3w-input" _plain="true">
+  <g3w-field :state="{ visible: true, type: 'datetime' }" _legacy="g3w-input" _plain="true">
 
     <!--
-      @example <g3w-input mode="edit" _type="datetime" />
+      @example <g3w-field mode="input" _type="datetime" />
      -->
     <template #default>
       <div ref="datimecontainer">
@@ -42,7 +42,7 @@
       </div>
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>

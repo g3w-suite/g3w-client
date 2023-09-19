@@ -9,10 +9,10 @@
 -->
 
 <template>
-  <g3w-input :state="state">
+  <g3w-field :state="state">
 
     <!--
-      @example <g3w-input mode="edit" _type="layer" />
+      @example <g3w-field mode="input" _type="layer" />
     -->
     <template #input-body="{ change, tabIndex, editable, notvalid }">
       <div>
@@ -37,7 +37,7 @@
     </template>
 
     <!--
-        @example <g3w-input mode="edit" _type="layer" />
+        @example <g3w-field mode="input" _type="layer" />
     -->
     <template #field-value>
       <div class="geo-content">
@@ -49,7 +49,7 @@
       </div>
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>
@@ -71,7 +71,7 @@ export default {
    * ORIGINAL SOURCE: src/components/FieldGeo.vue@3.8
    * ORIGINAL SOURCE: src/components/GlobalGeo.vue@3.8
    *
-   * @example <g3w-input mode="read" _type="geo" />
+   * @example <g3w-field mode="read" _type="geo" />
    * 
    * @since 3.9.0
    */

@@ -8,9 +8,9 @@
 
 <template>
   <!--
-      @example <g3w-input mode="edit" _type="select" />
+      @example <g3w-field mode="input" _type="select" />
   -->
-  <g3w-input :state="state">
+  <g3w-field :state="state">
 
     <!-- LABEL -->
     <template #input-label-action>
@@ -58,7 +58,7 @@
       ></p>
     </template>
 
-  </g3w-input>
+  </g3w-field>
 </template>
 
 <script>

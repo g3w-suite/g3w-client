@@ -13,7 +13,7 @@ import FormAddons from './FormAddons.vue';
 import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
-import G3WInput from './G3WInput.vue';
+import G3WField from './G3WField.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
 import GlobalDivider from './GlobalDivider.vue';
@@ -97,7 +97,7 @@ export {
   FormFooter,
   FormHeader,
   /** @since 3.9.0 */
-  G3WInput,
+  G3WField,
   GlobalHelpDiv,
   GlobalBarLoader,
   GlobalDivider,

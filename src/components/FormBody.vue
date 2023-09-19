@@ -29,7 +29,7 @@
         <form v-else class="form-horizontal g3w-form">
           <div class="box-primary">
             <div class="box-body">
-              <g3w-input
+              <g3w-field
                 v-for              = "field in state.fields"
                 :state             = "field"
                 :addToValidate     = "_addToValidate"
@@ -38,6 +38,7 @@
                 @changeinput       = "_changeInput"
                 @addinput          = "_addToValidate"
                 @removeinput       = "_removeToValidate"
+                mode               = "input"
                 _legacy            = "g3w-input"
               />
             </div>
@@ -56,7 +57,7 @@
 <form v-else class="form-horizontal g3w-form">
   <div class="box-primary">
     <div class="box-body">
-      <g3w-input
+      <g3w-field
         v-for             = "field in state.fields"
         :state            = "field"
         :addToValidate    = "addToValidate"
@@ -65,6 +66,7 @@
         @changeinput      = "changeInput"
         @addinput         = "addToValidate"
         @removeinput      = "removeToValidate"
+        mode              = "input"
         _legacy           = "g3w-input"
       />
     </div>
