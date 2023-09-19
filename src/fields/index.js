@@ -162,20 +162,18 @@ const components = {
  * BACKCOMP (v3.x)
  *******************************************************/
 
-components['simple_field']              = components['text_field'];
+components['link_field']                = _alias(components['media_input'], { _type: "link",    mode: "read" });
+components['media_field']               = _alias(components['media_input'], { _type: "media",   mode: "read" });
+components['image_field']               = _alias(components['media_input'], { _type: "image",   mode: "read" });
+components['gallery_field']             = _alias(components['media_input'], { _type: "gallery", mode: "read" });
+components['geo_input']                 = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
+components['geo_field']                 = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
+
 components['photo_field']               = components['image_field'];
 components['g3w_link']                  = components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
-components['g3w_vue']                   = components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
 components['select_autocomplete_input'] = components['select_input'];
 components['string_input']              = components['text_input'];
 components['slider_input']              = components['range_input'];
 components['range_slider_input']        = components['range_input'];
-
-components['link_field']             = _alias(components['media_input'], { _type: "link",    mode: "read" });
-components['media_field']            = _alias(components['media_input'], { _type: "media",   mode: "read" });
-components['image_field']            = _alias(components['media_input'], { _type: "image",   mode: "read" });
-components['gallery_field']          = _alias(components['media_input'], { _type: "gallery", mode: "read" });
-components['geo_input']              = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
-components['geo_field']              = _alias(components['picklayer_input'],   { _type: "geo",     mode: "read" });
 
 export default components;

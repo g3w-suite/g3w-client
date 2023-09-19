@@ -459,16 +459,6 @@ const vm = {
 
     ...fields,
 
-    /**
-     * @NB please don't add anything else here, make use of `src/fields/index.js` for listing future fields and backcomps
-     */
-
-    /** BACKCOMP (v3.x) */
-    'text_field': vm,
-
-    /** BACKCOMP (v3.x) */
-    'vue_field': _alias(vm, { _legacy: "g3w-vuefield", mode: "read" }),
-
   },
 
   computed: {
@@ -970,20 +960,17 @@ const vm = {
     },
 
     /**
-     * @FIXME ambiguous method name, rename into something more explicit (eg. `this.setDefault(value)`)
-     * 
      * Initial value of input (based on value or default options value)
+     * 
+     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
      * 
      * @param value
      *
      * @returns {void}
-     */
-    /**
-     * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
      * 
      * @since 3.9.0
      */
-    setValue(value) {
+    setDefault(value) {
       if (_hasValue(value)) {
         return;
       }
@@ -1680,6 +1667,27 @@ vm.methods.onMapClick = deprecate('[G3W-INPUT] lonlat service is deprecated', fu
   this.state.values.lon = coord[0];
   this.state.values.lat = coord[1];
 });
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ORIGINAL SOURCE: src/app/gui/inputs/service.js@3.8
+ * 
+ * @since 3.9.0
+ * 
+ * @deprecated since 3.9.0. Use `setDefault(value)` instead.
+ */
+vm.methods.setValue = deprecate('[G3W-INPUT] setValue method is deprecated', vm.methods.setDefault);
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * @NB please don't add anything else here, make use of `src/fields/index.js` for listing future fields and backcomps
+ */
+vm.components['text_field']    = vm;
+vm.components['vue_field']     = _alias(vm, { _legacy: "g3w-vuefield", mode: "read" });
+vm.components['simple_field']  = vm.components['text_field'];
+vm.components['g3w_vue']       = vm.components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
 
 export default vm;
 </script>
