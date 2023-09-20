@@ -135,7 +135,6 @@ export {
   QueryResultsActionDownloadFormats,
   QueryResultsActionInfoFormats,
   QueryResultsActionQueryPolygonCSVAttributes,
-    QueryResultsAttributeFieldValue,
   Relation,
   Relations,
   RelationsPage,

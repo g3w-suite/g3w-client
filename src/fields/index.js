@@ -22,6 +22,7 @@ import * as text             from 'fields/text.vue';
 import * as text_area        from 'fields/text_area.vue';
 import * as text_html        from 'fields/text_html.vue';
 import * as unique           from 'fields/unique.vue';
+import * as legacy           from 'fields/legacy.vue';
 
 function _alias(vm, props) {
   return {
@@ -176,7 +177,14 @@ components['photo_field']               = components['image_field'];
 components['g3w_link']                  = components['link_field']; // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
 components['select_autocomplete_input'] = components['select_input'];
 components['string_input']              = components['text_input'];
+components['text_field']                = components['text_input'];
+components['simple_field']              = components['text_input'];
 components['slider_input']              = components['range_input'];
 components['range_slider_input']        = components['range_input'];
+
+components['legacy']                    = _alias(legacy, { mode: "input" });
+components['vue_field']                 = _alias(legacy, { mode: "read", _legacyType: "vue" });
+components['g3w_vue']                   = components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
+
 
 export default components;

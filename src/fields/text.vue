@@ -1,6 +1,7 @@
 <!--
   @file
-  
+
+  ORIGINAL SOURCE: src/components/FieldText.vue@3.8
   ORIGINAL SOURCE: src/components/InputText.vue@3.8
 
   @since 3.9.0
@@ -24,6 +25,16 @@
         :class       = "{ 'input-error-validation' : notvalid }"
         :id          = "state.name"
       >
+    </template>
+
+    <!--
+      @example <g3w-field mode="read" _type="text" />
+    -->
+    <template #field-value="{ state }">
+      <span
+        style  = "word-wrap: break-word;"
+        v-html = "state.value"
+      ></span>
     </template>
 
   </g3w-field>

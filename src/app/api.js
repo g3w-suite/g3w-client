@@ -308,7 +308,7 @@ function _alias(vm, props) {
  * 
  * ref: g3w-client/src/components/InputG3W.vue@3.8
  */
-g3wsdk.gui.vue.Inputs.G3WInput = _alias(G3WField, { mode: "input", _legacy: "g3w-input" } );
+g3wsdk.gui.vue.Inputs.G3WInput = _alias(G3WField, { mode: "input", _type: "legacy" } );
 
 /**
  * BACKCOMP (v3.x)

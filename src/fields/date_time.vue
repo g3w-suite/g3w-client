@@ -7,7 +7,7 @@
 -->
 
 <template>
-  <g3w-field :state="{ visible: true, type: 'datetime' }" _legacy="g3w-input" _plain="true">
+  <g3w-field :state="{ visible: true, type: 'datetime' }" _type="legacy" _plain="true">
 
     <!--
       @example <g3w-field mode="input" _type="datetime" />

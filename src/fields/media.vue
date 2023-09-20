@@ -42,7 +42,7 @@
 
         <bar-loader :loading="loading" />
 
-        <g3w-field :state="data" _legacy="g3w-mediafield">
+        <g3w-field :state="data" _type="media" _mediaType="media">
           <div class="clearmedia" @click="clearMedia()">
             <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
           </div>
@@ -171,10 +171,10 @@
 </template>
 
 <script>
-import GUI               from 'services/gui';
+import GUI                            from 'services/gui';
 
-const { getUniqueDomId } = require('core/utils/utils');
-const { t }              = require('core/i18n/i18n.service');
+const { getUniqueDomId, toRawType } = require('core/utils/utils');
+const { t }                         = require('core/i18n/i18n.service');
 
 export default {
 

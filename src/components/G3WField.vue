@@ -27,8 +27,8 @@
     @example <g3w-field _type="text" />
   -->
   <component
-    v-if    = "!_legacy && _isRecursion"
-    :is     = "type || 'g3w-field'"
+    v-if    = "(type in $options.components) && _isRecursion"
+    :is     = "type"
     v-bind = "{ ...$attrs, ...$props }"
   />
 
@@ -49,15 +49,12 @@
   -->
   <fragment v-else-if="'read' == mode">
 
-    <slot name="default">
-
-      <span
-        v-if   = "null === state.label && isSimple(field)"
-        v-html = "field.value"
-      ></span>
+    <slot
+      name   = "default"
+      v-bind = "{ mode, state }"
+    >
 
       <div
-        v-else
         class  = "field"
         :style = "{ fontSize: isMobile() && '0.8em' }"
       >
@@ -67,43 +64,11 @@
         </div>
 
         <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
-
           <slot
             name   = "field-value"
             :state = "state"
             :field = "field"
-          >
-
-            <!--
-              ORIGINAL SOURCE: src/components/FieldVue.vue@3.8
-
-              @example <g3w-field _legacy="g3w-vuefield" />
-
-              @since 3.9.0
-            -->
-            <div v-if="'g3w-vuefield' === this._legacy || isVue(field)">
-              <component
-                :feature = "feature"
-                :value   = "undefined === field.value       ? null        : field.value"
-                :is      = "(undefined === field.vueoptions ? {}          : field.vueoptions.component) || {}"
-                v-html   = "__isVueField                    ? undefined   : field.value"
-              />
-            </div>
-
-            <!--
-              ORIGINAL SOURCE: src/components/FieldText.vue@3.8
-
-              @example <g3w-field mode="read" :state />
-
-              @since 3.9.0
-            -->
-            <span
-              v-else
-              style  = "word-wrap: break-word;"
-              v-html = "state.value"
-            ></span>
-
-          </slot>
+          />
         </div>
 
       </div>
@@ -114,69 +79,27 @@
   <!--
     Input mode (EDIT)
 
+    ORIGINAL SOURCE: src/components/InputBase.vue@3.8
+
     @example
 
-      <g3w-field :state>
+      <g3w-field mode="input" :state>
         <template #input-label> ... </template>
         <template #input-body> ... </template>
         ...
       </g3w-field>
-
-    ORIGINAL SOURCE: src/components/InputBase.vue@3.8
 
     @since 3.7.0
   -->
 
   <fragment v-else-if="'input' == mode && state.visible">
 
-    <div v-if="'g3w-input' == _legacy && _isRecursion">
-      <component
-        v-if    = "$attrs._plain"
-        v-bind  = "{ ...$attrs, ...$props }"
-        :is     = "type"
-      />
-      <div v-else>
-        <component
-          v-bind = "{ ...$attrs, ...$props }"
-          :is    = "type"
-        />
-        <span class="divider"></span>
-      </div>
-    </div>
-
     <slot
-      v-else
-      name="default"
+      name   = "default"
+      v-bind = "{ mode, state }"
     >
 
-      <!--
-        ORIGINAL SOURCE: src/components/InputG3W.vue@3.8
-
-        @example <g3w-field _legacy="g3w-input" />
-
-        @since 3.9.0
-      -->
-      <div v-if="'g3w-input' === _legacy && 'child' === state.type">
-
-        <div
-          style = "border-top: 2px solid"
-          class = "skin-border-color field-child"
-        >
-          <h4 style="font-weight: bold">{{ state.label }}</h4>
-          <div> {{ state.description }} </div>
-          <g3w-field
-            v-for   ="field in state.fields"
-            v-bind  = "{ $attrs, state }"
-            :state  = "field"
-            :key    = "field.name"
-            mode    = "input"
-            _legacy = "g3w-input"
-          />
-        </div>
-
-      </div>
-
-      <div v-else class="form-group">
+      <div class="form-group">
 
         <!-- INPUT LABEL -->
         <slot name="input-label">
@@ -391,24 +314,12 @@ const vm = {
 
     /**
      * @since 3.9.0
-     */
-    mode: {
-      default: 'read',
-    },
-
-    /**
-     * Legacy input type.
-     * 
-     * BACKCOMP ONLY (v3.x)
      * 
      * ref: `g3wsdk.gui.vue.Inputs.*`
      * ref: `g3wsdk.gui.vue.Fields`
-     * 
-     * @since 3.9.0
      */
-    _legacy: {
-      type: String,
-      default: "",
+    mode: {
+      default: 'read',
     },
 
     /**
@@ -418,13 +329,6 @@ const vm = {
       type: String,
       default: "",
     },
-
-    /**
-     * @since 3.9.0
-     */
-    // _plain: {
-    //   default: false
-    // }
 
   },
 
@@ -440,6 +344,12 @@ const vm = {
 
     ...fields,
 
+    /**
+     * @NB please don't add anything else here,
+     *     make use of `src/fields/index.js` for
+     *     listing future fields and backcomps
+     */
+
   },
 
   computed: {
@@ -450,7 +360,7 @@ const vm = {
      * @since 3.9.0
      */
     _isRecursion() {
-      return (
+      return !!(
         this.$parent &&
         this.$parent.$parent &&
         this.$parent.$parent.$options &&
@@ -1189,7 +1099,7 @@ const vm = {
       '[ ' + this.state.name + ' ]',
       this.state.input.type,
       this.type,
-      'g3w-input' === this._legacy,
+      'legacy' === this._type,
       this,
     );
 
@@ -1203,7 +1113,10 @@ const vm = {
       this.field = this.state;
     }
 
-    if ('g3w-input' === this._legacy || 'read' === this.mode || ['layer_positions', 'datetime', 'range_slider'].includes(this.state.type)) {
+    if (
+      'legacy' === this._type ||
+      'read' === this.mode ||
+      ['layer_positions', 'datetime', 'range_slider'].includes(this.state.type)) {
       return;
     }
 
@@ -1265,16 +1178,22 @@ const vm = {
 /**
  * BACKCOMP (v3.x)
  */
+
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('layerspositions',    _alias(vm, { mode: 'input', _type: "layer_positions_input" }));
+
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('datetime',           _alias(vm, { mode: 'input', _type: "datetime_input" } ));
+
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('range',              _alias(vm, { mode: 'input', _type: "range_slider_input" }));
+
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('g3w-image',          _alias(vm, { mode: 'read', _type: "image_field" }));
+
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('g3w-images-gallery', _alias(vm, { mode: 'read', _type: "gallery_field" }));
+
 /** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
 Vue.component('g3w-geospatial',     _alias(vm, { mode: 'read', _type: "geo_field" }));
 
@@ -1673,16 +1592,6 @@ vm.methods.onMapClick = deprecate('[G3W-FIELD] lonlat service is deprecated', fu
  * @deprecated since 3.9.0. Use `setDefault(value)` instead.
  */
 vm.methods.setValue = deprecate('[G3W-FIELD] setValue method is deprecated', vm.methods.setDefault);
-
-/**
- * BACKCOMP (v3.x)
- * 
- * @NB please don't add anything else here, make use of `src/fields/index.js` for listing future fields and backcomps
- */
-vm.components['text_field']    = vm;
-vm.components['vue_field']     = _alias(vm, { _legacy: "g3w-vuefield", mode: "read" });
-vm.components['simple_field']  = vm.components['text_field'];
-vm.components['g3w_vue']       = vm.components['vue_field'];  // see: components/QueryResultsTableAttributeFieldValue.vue@3.8
 
 export default vm;
 </script>

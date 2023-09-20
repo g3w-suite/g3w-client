@@ -34,7 +34,6 @@
           :removeToValidate = "removeToValidate"
           :feature          = "feature"
           :_type            = "getField(node).query ? getField(node).input.type : undefined"
-          _legacy           = "g3w-input"
         />
 
         <!-- NODE GROUP -->

@@ -39,7 +39,7 @@
                 @addinput          = "_addToValidate"
                 @removeinput       = "_removeToValidate"
                 mode               = "input"
-                _legacy            = "g3w-input"
+                _type              = "legacy"
               />
             </div>
           </div>
@@ -67,7 +67,7 @@
         @addinput         = "addToValidate"
         @removeinput      = "removeToValidate"
         mode              = "input"
-        _legacy           = "g3w-input"
+        _type             = "legacy"
       />
     </div>
     <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">
