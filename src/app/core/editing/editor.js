@@ -195,14 +195,13 @@ proto.setFieldValueToRelationField = function({
  * @param relations
  */
 proto.applyCommitResponse = function(response = {}, relations = []) {
-
-  // skip when ..
-  if (!(response && response.result)) {
+  // skip when no response or response.result is false
+  if (!(response || response.result)) {
     return;
   }
 
-  const ids     = response.data.new;         // get ids from new attribute of response
-  const lockids = response.data.new_lockids; // get new lockId
+  const ids     = response.response.new;         // get ids from new attribute of response
+  const lockids = response.response.new_lockids; // get new lockId
 
   ids.forEach(({
     clientid,                                // temporary id created by client __new__
