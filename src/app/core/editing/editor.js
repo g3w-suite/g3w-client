@@ -190,62 +190,56 @@ proto.setFieldValueToRelationField = function({
 
 /**
  * Apply response data from server in case of new inserted feature
+ * 
  * @param response
  * @param relations
  */
-proto.applyCommitResponse = function(response={}, relations=[]) {
-  if (response && response.result) {
-    const {response:data} = response;
-    //get ids from new attribute of response
-    const ids = data.new;
-    //get new lockId
-    const lockids = data.new_lockids;
-    /**
-     * - clientid is temporary id create by client __new__
-     * - id is the new id create by server and store
-     * - properties are properties of the feature saved on server
-     */
-    ids.forEach(({clientid, id, properties}={}) => {
-      const feature = this._featuresstore.getFeatureById(clientid);
-      feature.setId(id); //set new id
-      feature.setProperties(properties);
-      //handle relations if provided
-      relations.forEach(relation => {
-        Object
-          .entries(relation)
-          .forEach(([relationId, options={}]) => {
-            const {
-              fatherField,
-              childField,
-              ids
-            } = options;
-            //Check if parent layer field is pk
-            const fatherPkField = fatherField.find(fField => this._layer.isPkField(fField));
-            //if found
-            if (fatherPkField) {
-              //for each field
-              this.setFieldValueToRelationField({
-                relationId, //relation layer id
-                ids, //ids of features of relation layers to check
-                field: childField[fatherField.indexOf(fatherPkField)], //get relation field to overwrite
-                values: [clientid, id] //[<old temporary id value>, <new id value>]
-              })
-            }
-          })
-      })
-    });
-    //read feature from editor featurestore
-    const features = this.readEditingFeatures();
+proto.applyCommitResponse = function(response = {}, relations = []) {
 
-    //reset state of the features (update, new etc..)
-    features.forEach(feature => feature.clearState());
-
-    //set layer features (substitute to actual features)
-    this._layer.setFeatures(features);
-
-    //add lockIds
-    this.addLockIds(lockids);
+  // skip when ..
+  if (!(response && response.result)) {
+    return;
   }
+
+  const ids     = response.data.new;         // get ids from new attribute of response
+  const lockids = response.data.new_lockids; // get new lockId
+
+  ids.forEach(({
+    clientid,                                // temporary id created by client __new__
+    id,                                      // the new id created and stored on server
+    properties                               // properties of the feature saved on server
+  } = {}) => {
+
+    const feature = this._featuresstore.getFeatureById(clientid);
+
+    feature.setId(id);                       // set new id
+    feature.setProperties(properties);
+
+    relations.forEach(relation => {                                              // handle relations (if provided)
+      Object
+        .entries(relation)
+        .forEach(([ relationId, options = {}]) => {
+          const is_pk = options.fatherField.find(d => this._layer.isPkField(d)); // check if parent field is a Primary Key
+          if (is_pk) {                                                       
+            this.setFieldValueToRelationField({                                  // for each field
+              relationId,                                                        // relation layer id
+              ids: options.ids,                                                  // ids of features of relation layers to check
+              field: options.childField[options.fatherField.indexOf(is_pk)],     // relation field to overwrite
+              values: [clientid, id]                                             // [<old temporary id value>, <new id value>]
+            });
+          }
+        });
+    });
+
+  });
+
+  const features = this.readEditingFeatures();
+
+  features.forEach(f => f.clearState());       // reset state of the editing features (update, new etc..)
+
+  this._layer.setFeatures(features);           // substitute layer features with actual editing features
+
+  this.addLockIds(lockids);                    // add lockIds
 };
 
 /**
@@ -346,7 +340,10 @@ proto.readFeatures = function(){
   return this._layer.readFeatures();
 };
 
-proto.readEditingFeatures = function(){
+/**
+ * @returns features stored in editor featurestore
+ */
+proto.readEditingFeatures = function() {
   return this._featuresstore.readFeatures()
 };
 
