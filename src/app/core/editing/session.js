@@ -414,13 +414,13 @@ proto.commit = function({
     .commit(commit)
     .then(response => {
 
-      // skip when ..
-      if (!(response && response.result)) {
+      // skip when response is null or undefined or response.result is false
+      if (!(response || response.result)) {
         d.reject(response);
         return;
       }
       
-      const { new_relations = {} } = response.data; // check if new relations are saved on server
+      const { new_relations = {} } = response.response; // check if new relations are saved on server
 
       // sync server data with local data
       for (const id in new_relations) {
