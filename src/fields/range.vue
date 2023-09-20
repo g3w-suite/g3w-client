@@ -104,12 +104,24 @@
 </template>
 
 <script>
+import G3WField    from 'components/G3WField.vue';
 const { debounce } = require('core/utils/utils');
+
+Object
+    .entries({
+      G3WField,
+      debounce,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
   /** @since 3.8.6 */
   // name: 'input-range',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   data() {
 

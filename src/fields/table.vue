@@ -71,10 +71,18 @@
 </template>
 
 <script>
+import G3WField from 'components/G3WField.vue';
+
+console.assert(undefined !== G3WField, 'G3WField is undefined');
+
 export default {
 
   /** @since 3.8.6 */
   // name: 'input-table',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
     state: {

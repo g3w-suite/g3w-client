@@ -67,10 +67,12 @@
 </template>
 
 <script>
+  import G3WField         from 'components/G3WField.vue';
   import ProjectsRegistry from 'store/projects';
 
   Object
     .entries({
+      G3WField,
       ProjectsRegistry,
     })
     .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -78,6 +80,10 @@
   export default {
 
     name: "node",
+
+    components: {
+      'g3w-field': G3WField,
+    },
 
     props: [
       'contenttype',

@@ -53,12 +53,24 @@
 </template>
 
 <script>
-import GUI from 'services/gui';
+import GUI      from 'services/gui';
+import G3WField from 'components/G3WField.vue';
+
+Object
+    .entries({
+      GUI,
+      G3WField,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
   /** @since 3.8.6 */
   // name: 'input-picklayer',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
     state: {

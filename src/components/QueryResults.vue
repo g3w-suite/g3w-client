@@ -369,7 +369,8 @@
 </template>
 
 <script>
-  import { Fragment }       from 'vue-fragment'
+  import { Fragment }       from 'vue-fragment';
+  import G3WField           from 'components/G3WField.vue';
   import InfoFormats        from 'components/QueryResultsActionInfoFormats.vue';
   import QueryResultsAction from 'components/QueryResultsAction.vue';
 
@@ -383,7 +384,11 @@
   Object
     .entries({
       Fragment,
+      G3WField,
       InfoFormats,
+      QueryResultsAction,
+      throttle,
+      getFieldType,
     })
     .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
@@ -403,6 +408,7 @@
 
     components: {
       Fragment,
+      'g3w-field':   G3WField,
       'infoformats': InfoFormats,
       'action':      QueryResultsAction,
     },

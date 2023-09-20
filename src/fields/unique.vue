@@ -28,14 +28,27 @@
 </template>
 
 <script>
+import G3WField        from 'components/G3WField.vue';
 import { selectMixin } from 'mixins';
 
 const { getUniqueDomId } = require('core/utils/utils');
+
+Object
+    .entries({
+      G3WField,
+      selectMixin,
+      getUniqueDomId,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
   /** @since 3.8.6 */
   // name: "input-unique",
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   mixins: [
     selectMixin

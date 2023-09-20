@@ -65,9 +65,21 @@
 import CatalogLayersStoresRegistry     from 'store/catalog-layers';
 import MapLayersStoresRegistry         from 'store/map-layers';
 import GUI                             from 'services/gui';
+import G3WField                        from 'components/G3WField.vue';
 import { selectMixin, select2Mixin }   from 'mixins';
 
 const Layer = require('core/layers/layer');
+
+Object
+    .entries({
+      CatalogLayersStoresRegistry,
+      MapLayersStoresRegistry,
+      GUI,
+      G3WField,
+      selectMixin,
+      select2Mixin,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 
@@ -75,6 +87,10 @@ export default {
 
   /** @since 3.8.6 */
   // name: 'input-select',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   mixins: [
     selectMixin,

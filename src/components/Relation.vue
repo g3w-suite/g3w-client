@@ -197,6 +197,7 @@
 
 <script>
 import { G3W_FID }                  from 'app/constant';
+import G3WField                     from 'components/G3WField.vue';
 import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import GUI                          from 'services/gui';
@@ -210,6 +211,7 @@ let SIDEBARWIDTH;
 Object
     .entries({
       G3W_FID,
+      G3WField,
       DownloadFormats,
       CatalogLayersStoresRegistry,
       GUI,
@@ -223,6 +225,10 @@ export default {
 
   /** @since 3.8.6 */
   name: 'relation',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
     table:           {},

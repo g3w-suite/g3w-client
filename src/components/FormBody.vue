@@ -79,6 +79,9 @@
 </template>
 
 <script>
+import G3WField from 'components/G3WField.vue';
+
+console.assert(undefined !== G3WField, 'G3WField is undefined')
 
 /**
  * @TODO remove "Vue.extend" from module export
@@ -87,6 +90,10 @@ export default Vue.extend({
 
   /** @since 3.8.6 */
   name: 'form-body',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
 

@@ -48,14 +48,27 @@
 </template>
 
 <script>
+  import G3WField         from 'components/G3WField.vue';
   import { MAP_SETTINGS } from 'app/constant';
 
   const { getUniqueDomId } = require('core/utils/utils');
+
+  Object
+    .entries({
+      G3WField,
+      MAP_SETTINGS,
+      getUniqueDomId,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
   export default {
 
     /** @since 3.9.0 */
     // name: "input-layerpositions",
+
+    components: {
+      'g3w-field': G3WField,
+    },
 
     props: {
       position: {

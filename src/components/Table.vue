@@ -39,6 +39,18 @@ import { resizeMixin } from 'mixins';
 
 const { debounce } = require('core/utils/utils');
 
+Object
+    .entries({
+      TableBody,
+      SelectRow,
+      G3wTableToolbar,
+      G3WField,
+      GUI,
+      resizeMixin,
+      debounce,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
+
 let dataTable;
 let fieldsComponents = [];
 let eventHandlers = {
@@ -58,6 +70,7 @@ export default {
     }
   },
   components: {
+    'g3w-field': G3WField,
     TableBody
   },
   methods: {

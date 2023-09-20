@@ -83,16 +83,30 @@
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS } from 'app/constant';
-  import GUI from 'services/gui';
-  import ApplicationService from 'services/application';
-  import ProjectsRegistry from 'store/projects';
-  import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
-  import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
+  import { LOCAL_ITEM_IDS }   from 'app/constant';
+  import GUI                  from 'services/gui';
+  import ApplicationService   from 'services/application';
+  import ProjectsRegistry     from 'store/projects';
+  import G3WField             from 'components/G3WField.vue';
+  import SpatialBookMarkGroup from 'components/SpatialBookMarkGroup.vue';
+  import SpatialBookMarkItem  from 'components/SpatialBookMarkItem.vue';
 
   const { uniqueId } = require('core/utils/utils');
   const { t } = require('core/i18n/i18n.service');
 
+  Object
+    .entries({
+      LOCAL_ITEM_IDS,
+      GUI,
+      ApplicationService,
+      ProjectsRegistry,
+      G3WField,
+      SpatialBookMarkGroup,
+      SpatialBookMarkItem,
+      uniqueId,
+      t,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
@@ -102,6 +116,7 @@
     name: 'spatial-bookmarks',
 
     components: {
+      'g3w-field': G3WField,
       SpatialBookMarkGroup,
       SpatialBookMarkItem,
     },

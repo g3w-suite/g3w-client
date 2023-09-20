@@ -171,15 +171,30 @@
 </template>
 
 <script>
-import GUI                            from 'services/gui';
+import GUI                          from 'services/gui';
+import G3WField                     from 'components/G3WField.vue';
 
 const { getUniqueDomId, toRawType } = require('core/utils/utils');
 const { t }                         = require('core/i18n/i18n.service');
+
+Object
+    .entries({
+      GUI,
+      G3WField,
+      getUniqueDomId,
+      toRawType,
+      t,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
   /** @since 3.8.6 */
   // name: 'input-media',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
     state: {

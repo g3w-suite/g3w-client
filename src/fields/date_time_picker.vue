@@ -51,14 +51,29 @@
 
 <script>
 import ApplicationState  from 'store/application-state';
+import G3WField          from 'components/G3WField.vue';
 import { resizeMixin }   from 'mixins';
 
 const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
+
+Object
+    .entries({
+      ApplicationState,
+      G3WField,
+      resizeMixin,
+      getUniqueDomId,
+      convertQGISDateTimeFormatToMoment,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
   /** @since 3.8.6 */
   // name: 'input-datetime-picker',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   mixins: [
     resizeMixin,

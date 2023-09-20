@@ -179,7 +179,6 @@
 
 <script>
 import { Fragment }                           from 'vue-fragment';
-import fields                                 from 'fields'; 
 import ApplicationState                       from 'store/application-state';
 import CatalogLayersStoresRegistry            from 'store/catalog-layers';
 import ProjectsRegistry                       from 'store/projects';
@@ -218,7 +217,6 @@ Object
     PickFeatureInteraction,
     PickCoordinatesInteraction,
     t,
-    fields,
     deprecate,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -342,12 +340,10 @@ const vm = {
      */
     Fragment,
 
-    ...fields,
-
     /**
      * @NB please don't add anything else here,
-     *     make use of `src/fields/index.js` for
-     *     listing future fields and backcomps
+     *     make use of `src/fields/index.js`
+     *     for future fields and backcomps
      */
 
   },
@@ -1084,8 +1080,11 @@ const vm = {
 
   },
 
-  breforeCreate() {
-    this.state = _defaultState(this.state);
+  beforeCreate() {
+    // "async" components defintion.
+    this.$options.components = vm.components = Object.assign(this.$options.components, require('fields').default);
+
+    // this.state = _defaultState(this.state);
   },
 
   /**

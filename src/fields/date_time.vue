@@ -47,13 +47,26 @@
 
 <script>
   import ApplicationState from 'store/application-state';
+  import G3WField         from 'components/G3WField.vue';
 
   const { getUniqueDomId } = require('core/utils/utils');
+
+  Object
+    .entries({
+      ApplicationState,
+      G3WField,
+      getUniqueDomId,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
   export default {
 
     /** @since 3.9.0 */
     // name: "input-datetime",
+
+    components: {
+      'g3w-field': G3WField,
+    },
 
     props: {
 

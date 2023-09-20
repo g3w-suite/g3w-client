@@ -67,7 +67,15 @@
 </template>
 
 <script>
+import G3WField from 'components/G3WField.vue';
+
+console.assert(undefined !== G3WField, 'G3WField is undefined');
+
 export default {
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
 
