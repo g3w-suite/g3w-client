@@ -294,8 +294,8 @@ proto.commit = function(commit) {
   /** @TODO simplfy nested promises */
   this._layer
     .commit(commit)
-    .then(d => {
-      d
+    .then(p => {
+      p
         .then(r => { this.applyCommitResponse(r, relations); d.resolve(r); })
         .fail(e => d.reject(e))
     })

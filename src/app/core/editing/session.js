@@ -380,59 +380,68 @@ proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
 };
 
 /**
- * Commit method to save changes on server
- * @param ids
- * @param items
- * @param relations
+ * Commit changes on server (save)
+ * 
+ * @param opts.ids
+ * @param opts.items
+ * @param opts.relations
+ * 
  * @returns {*}
  */
-proto.commit = function({ids=null, items, relations=true}={}) {
+proto.commit = function({
+  ids = null,
+  items,
+  relations = true
+} = {}) {
+
   const d = $.Deferred();
-  let commitItems;
+
+  let commit; // committed items
+
   if (ids) {
-    commitItems = this._history.commit(ids);
+    commit = this._history.commit(ids);
     this._history.clear(ids);
-  } else {
-    if (items) {
-      commitItems = items;
-    }
-    else {
-      commitItems = this._history.commit();
-      commitItems = this._serializeCommit(commitItems);
-    }
-    if (!relations) {
-      commitItems.relations = {};
-    }
-    this._editor.commit(commitItems)
-      .then(response => {
-        if (response && response.result) {
-          const {response:data} = response;
-          //check if new relations are saved on server
-          const {new_relations={}} = data;
-          for (const id in new_relations) {
-            //get session of relation by id
-            const session = SessionsRegistry.getSession(id);
-            //apply commit response to current editing relation layer
-            //to sync server data to current data
-            session.getEditor().applyCommitResponse({
-              response: new_relations[id],
-              result: true
-            })
-          }
-          //clear history
-          this._history.clear();
-
-          //call setters to fire event
-          this.saveChangesOnServer(commitItems);
-
-          d.resolve(commitItems, response);
-
-        } else {
-          d.reject(response);
-        }
-      })
-      .fail(err => d.reject(err));
+    return d.promise();
   }
+
+  commit = items || this._serializeCommit(this._history.commit());
+
+  if (!relations) {
+    commit.relations = {};
+  }
+
+  this._editor
+    .commit(commit)
+    .then(response => {
+
+      // skip when ..
+      if (!(response && response.result)) {
+        d.reject(response);
+        return;
+      }
+      
+      const { new_relations = {} } = response.data; // check if new relations are saved on server
+
+      // sync server data with local data
+      for (const id in new_relations) {
+        SessionsRegistry
+          .getSession(id)               // get session of relation by id
+          .getEditor()
+          .applyCommitResponse({        // apply commit response to current editing relation layer
+            response: new_relations[id],
+            result: true
+          });
+      }
+
+      this._history.clear();            // clear history
+
+      this.saveChangesOnServer(commit); // dispatch setter event.
+
+      d.resolve(commit, response);
+
+    })
+    .fail(err => d.reject(err));
+
   return d.promise();
 
 };
