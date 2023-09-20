@@ -163,33 +163,28 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
 };
 
 /**
- *
- * @param relationId
- * @param ids
- * @param field
- * @param values
- * @returns {boolean} if find feature/s that have temporary parent client id __new__
+ * @param opts.relationId
+ * @param opts.ids
+ * @param opts.field
+ * @param opts.values
  */
-proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}) {
-  //get editing relation layer source
-  const editingLayerSource = SessionsRegistry
+proto.setFieldValueToRelationField = function({
+  relationId,
+  ids,
+  field,
+  values = []
+} = {}) {
+  const source = SessionsRegistry                     // get source of editing relation layer.
     .getSession(relationId)
     .getEditor()
     .getEditingSource();
 
-  //get relation feature by id
-  ids.forEach(id => {
-    //get feature from source
-    const feature = editingLayerSource.getFeatureById(id);
-    //if found feature
-    if (feature) {
-      //get feature value by field
-      const fieldvalue = feature.get(field);
-      if (fieldvalue == values[0]) {
-        feature.set(field, values[1]);
-      }
+  ids.forEach(id => {                                 // get relation feature by id.
+    const feature = source.getFeatureById(id);
+    if (feature && feature.get(field) == values[0]) { // check field value.
+      feature.set(field, values[1]);
     }
-  })
+  });
 };
 
 
