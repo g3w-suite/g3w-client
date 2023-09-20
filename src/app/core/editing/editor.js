@@ -243,58 +243,64 @@ proto.applyCommitResponse = function(response = {}, relations = []) {
 };
 
 /**
- * Add lock id to current layer
- * @since v3.7.0
- * @param lockids
+ * @param lockids locks be added to current layer
+ * 
+ * @since 3.9.0
  */
 proto.addLockIds = function(lockids) {
   this._layer.getSource().addLockIds(lockids);
 }
 
 /**
- *
  * @returns {*}
  */
 proto.getLockIds = function(){
   return this._layer.getSource().getLockIds();
 };
 
-// run after server apply changed to origin resource
-proto.commit = function(commitItems) {
+/**
+ * Run after server has applied changes to origin resource
+ * 
+ * @param commit commit items 
+ * 
+ * @returns jQuery promise
+ */
+proto.commit = function(commit) {
+
   const d = $.Deferred();
-  // in case of relations bind to new feature
-  const relations = commitItems.add.length ?
-    //check if there are commit relations
-    Object
-      .keys(commitItems.relations)
-      .map(relationId => {
-        //get Layer relation
-        const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
-        //get updates changes
-        const updates = commitItems.relations[relationId].update.map(relation => relation.id);
-        //get add new relations
-        const add = commitItems.relations[relationId].add.map(relation => relation.id);
-        return {
-          [relationId]: {
-            ids: [...add, ...updates], //store id of relation added or changed
-            fatherField: layerRelation.getFatherField(), //father Fields <Array>
-            childField: layerRelation.getChildField() //child Fields <Array>
-          }
-        }
-      }) :
 
-    []; //empty Array
+  let relations = [];
 
-  this._layer.commit(commitItems)
-    .then(promise => {
-      promise
-        .then(response => {
-          this.applyCommitResponse(response, relations);
-          d.resolve(response);
-        })
-        .fail(err => d.reject(err))
+  // check if there are commit relations binded to new feature
+  if (commit.add.length) {
+    relations = 
+      Object
+        .keys(commit.relations)
+        .map(relationId => {
+          const relation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
+          return {
+            [relationId]: {
+              ids: [                                                  // ids of "added" or "updated" relations 
+                ...commit.relations[relationId].add.map(r => r.id),   // added
+                ...commit.relations[relationId].update.map(r => r.id) // updated
+              ],                                      
+              fatherField: relation.getFatherField(), //father Fields <Array>
+              childField: relation.getChildField() //child Fields <Array>
+            }
+          };
+        });
+  }
+
+  /** @TODO simplfy nested promises */
+  this._layer
+    .commit(commit)
+    .then(d => {
+      d
+        .then(r => { this.applyCommitResponse(r, relations); d.resolve(r); })
+        .fail(e => d.reject(e))
     })
-    .fail(err => d.reject(err));
+    .fail(e => d.reject(e));
+
   return d.promise();
 };
 
