@@ -231,7 +231,8 @@ proto.getWMSLayers = async function(url){
     info_formats:[],
     abstract: null,
     map_formats: [],
-    title: null
+    title: null,
+    getMap, //@since v3.9.0 https://github.com/g3w-suite/g3w-admin/issues/600
   };
   try {
     response = await DataRouterService.getData('ows:wmsCapabilities', {
