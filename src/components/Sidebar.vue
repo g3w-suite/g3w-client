@@ -4,13 +4,16 @@
 -->
 
 <template>
-  <aside class="main-sidebar" :class="{ iframe: iframe, 'g3w-disabled': disabled }" >
+  <aside class="main-sidebar" :class="{ iframe: iframe}" >
     <!-- sidebar: style can be found in g3w-sidebar.less -->
     <!-- Sidebar toggle button (desktop only) -->
-    <a href="#" class="sidebar-aside-toggle" data-toggle="offcanvas" role="button">
+    <a
+      href="#"
+      class="sidebar-aside-toggle"
+      data-toggle="offcanvas" role="button">
       <i :class="g3wtemplate.getFontClass('bars')"></i>
     </a>
-    <div id="g3w-sidebar" class="sidebar">
+    <div id="g3w-sidebar" class="sidebar" :class="{'g3w-disabled': disabled}">
       <div id="disable-sidebar"></div>
       <div v-show="panelsinstack" class="g3w-sidebarpanel">
         <div id="g3w-sidebarpanel-header-placeholder" style="overflow: hidden;line-height: 14px; font-size:1.5em">

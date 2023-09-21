@@ -256,11 +256,20 @@ proto._setOtherConfigParameters = function(config) {
 
 // return layer fields
 proto.getEditingFields = function(editable=false) {
-  let fields = this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
-  if (editable) fields = fields.filter(field => field.editable);
+  let fields = this.config.editing.fields.length ?
+    this.config.editing.fields :
+    this.config.fields;
+  if (editable) {
+    fields = fields.filter(field => field.editable);
+  }
   return fields;
 };
 
+/**
+ * Check if field is a pk
+ * @param field
+ * @returns {unknown}
+ */
 proto.isPkField = function(field){
   const find_field = this.getEditingFields().find(_field => _field.name === field);
   return find_field && find_field.pk;
