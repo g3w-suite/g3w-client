@@ -1,68 +1,91 @@
 import Applicationstate from 'store/application-state';
-import ChangesManager from 'services/editing';
+import ChangesManager   from 'services/editing';
 import SessionsRegistry from 'store/sessions';
 
 const { inherit, base } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const FeaturesStore = require('core/layers/features/featuresstore');
-const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
-const Layer = require('core/layers/layer');
+const G3WObject         = require('core/g3wobject');
+const FeaturesStore     = require('core/layers/features/featuresstore');
+const OlFeaturesStore   = require('core/layers/features/olfeaturesstore');
+const Layer             = require('core/layers/layer');
 
-// class Editor bind editor to layer to do main actions
-function Editor(options={}) {
+/**
+ * Editor Class: bind editor to layer to do main actions
+ * 
+ * @param config
+ * 
+ * @constructor
+ */
+function Editor(options = {}) {
+
+  /**
+   * Setter hooks.
+   */
   this.setters = {
-    save() {
-      this._save();
-    },
-    addFeature(feature) {
-      this._addFeature(feature);
-    },
-    updateFeature(feature) {
-      this._updateFeature(feature);
-    },
-    deleteFeature(feature) {
-      this._deleteFeature(feature);
-    },
-    setFeatures(features=[]) {
-      this._setFeatures(features);
-    },
-    getFeatures(options={}) {
-      return this._getFeatures(options);
-    }
+    save:          this._save,
+    addFeature:    this._addFeature,
+    updateFeature: this._updateFeature,
+    deleteFeature: this._deleteFeature,
+    setFeatures:   this._setFeatures,
+    getFeatures:   this._getFeatures,
   };
+
   base(this);
-  // filter to getFeaturerequest
+
+  /**
+   * Filter to getFeaturerequest
+   */
   this._filter = {
     bbox: null
   };
 
+  /**
+   * @FIXME add description
+   */
   this._allfeatures = false;
-  // referred layer
+
+  /**
+   * Referred layer
+   */
   this._layer = options.layer;
-  // editing featurestore
+
+  /**
+   * Store editing features
+   */
   this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
-  // editor is active or not
+
+  /**
+   * Whether editor is active or not
+   * 
+   * @type { boolean }
+   */
   this._started = false;
-  // not editable fields
+
+  /**
+   * Not editable fields
+   */
   this._noteditablefileds = this._layer.getEditingNotEditableFields() || [];
+
 }
 
 inherit(Editor, G3WObject);
 
 const proto = Editor.prototype;
 
-proto._canDoGetFeaturesRequest = function(options={}) {
-  let doRequest = true;
-  if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
-    const {bbox} = options.filter || {};
-    if (bbox) {
-      if (!this._filter.bbox) this._filter.bbox = bbox;
-      else if (!ol.extent.containsExtent(this._filter.bbox, bbox)) {
-        this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
-      } else doRequest = false;
-    }
+proto._canDoGetFeaturesRequest = function(options = {}) {
+  const { bbox }       = options.filter || {};
+  const GIVE_ME_A_NAME = bbox && Layer.LayerTypes.VECTOR === this._layer.getType()
+
+  if (GIVE_ME_A_NAME && !this._filter.bbox) {
+    this._filter.bbox = bbox;
+    return true;
   }
-  return doRequest
+  
+  if (GIVE_ME_A_NAME && !ol.extent.containsExtent(this._filter.bbox, bbox)) {
+    this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
+    return true;
+  }
+
+  return false;
 };
 
 proto.getEditingSource = function() {
@@ -76,7 +99,7 @@ proto.getSource = function() {
   this._layer.getSource();
 };
 
-proto._applyChanges = function(items=[], reverse=true) {
+proto._applyChanges = function(items = [], reverse=true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
@@ -93,16 +116,18 @@ proto.setLayer = function(layer) {
   return this._layer;
 };
 
-proto.removeNotEditablePropriertiesFromFeature = function(feature){
+proto.removeNotEditablePropriertiesFromFeature = function(feature) {
   this._noteditablefileds.forEach(field => feature.unset([field]));
 };
 
-//clone features method
-proto._cloneFeatures = function(features=[]) {
-  return features.map(feature => feature.clone());
+/**
+ * @param features features to be cloned
+ */
+proto._cloneFeatures = function(features = []) {
+  return features.map(f => f.clone());
 };
 
-proto._addFeaturesFromServer = function(features=[]){
+proto._addFeaturesFromServer = function(features = []) {
   features = this._cloneFeatures(features);
   this._featuresstore.addFeatures(features);
 };
@@ -112,29 +137,38 @@ proto._doGetFeaturesRequest = function(options={}) {
   return doRequest && this._canDoGetFeaturesRequest(options)
 };
 
-// get features from server method
+/**
+ * get features from server method
+ */
 proto._getFeatures = function(options={}) {
-  const d = $.Deferred();
+  const d         = $.Deferred();
   const doRequest = this._doGetFeaturesRequest(options);
-  if (!doRequest) d.resolve();
-  else
-    this._layer.getFeatures(options)
-      .then(promise => {
-        promise.then(features => {
-          this._addFeaturesFromServer(features);
-          this._allfeatures = !options.filter;
-          return d.resolve(features);
-        }).fail(err => d.reject(err))
+  if (!doRequest) {
+    d.resolve();
+  } else{
+    /** @TODO simplfy nested promises */
+    this._layer
+      .getFeatures(options)
+      .then(p => {
+        p
+          .then(features => {
+            this._addFeaturesFromServer(features);
+            this._allfeatures = !options.filter;
+            return d.resolve(features);
+          })
+          .fail(d.reject)
       })
-      .fail(err => d.reject(err));
+      .fail(d.reject);
+  }
   return d.promise();
 };
 
-// method to revert (cancel) all changes in history and clean session
+/**
+ * revert (cancel) all changes in history and clean session
+ */
 proto.revert = function() {
   const d = $.Deferred();
-  const features  = this._cloneFeatures(this._layer.readFeatures());
-  this._featuresstore.setFeatures(features);
+  this._featuresstore.setFeatures(this._cloneFeatures(this._layer.readFeatures()));
   d.resolve();
   return d.promise();
 };
@@ -146,19 +180,23 @@ proto.rollback = function(changes=[]) {
   return d.promise()
 };
 
-proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
-  for (const relationLayerId in relationsResponse) {
-    const response = relationsResponse[relationLayerId];
-    const layer = this.getLayerById(relationLayerId);
-    const editingLayerSource = this.getEditingLayer(relationLayerId).getEditingSource();
-    const features = editingLayerSource.readFeatures();
-    features.forEach(feature => feature.clearState());
+/**
+ * 
+ * @param relations relations response 
+ */
+proto.applyChangesToNewRelationsAfterCommit = function(relations) {
+  let layer, source, features;
+  for (const id in relations) {
+    layer    = this.getLayerById(id);
+    source   = this.getEditingLayer(id).getEditingSource();
+    features = source.readFeatures();
+    features.forEach(f => f.clearState());
     layer.getSource().setFeatures(features);
     layer.applyCommitResponse({
-      response,
-      result: true
+      response: relations[id],
+      result: true,
     });
-    editingLayerSource.setFeatures(layer.getSource().readFeatures());
+    source.setFeatures(layer.getSource().readFeatures());
   }
 };
 
@@ -254,7 +292,7 @@ proto.addLockIds = function(lockids) {
 /**
  * @returns {*}
  */
-proto.getLockIds = function(){
+proto.getLockIds = function() {
   return this._layer.getSource().getLockIds();
 };
 
@@ -304,45 +342,61 @@ proto.commit = function(commit) {
   return d.promise();
 };
 
-//start editing function
-proto.start = function(options={}) {
+/**
+ * start editing
+ */
+proto.start = function(options = {}) {
   const d = $.Deferred();
-  // load features of layer based on filter type
-  this.getFeatures(options)
-    .then(promise => {
-      promise
+
+  /** @TODO simplfy nested promises */
+  this
+    .getFeatures(options)       // load layer features based on filter type
+    .then(p => {
+      p
         .then(features => {
-          // the features are already inside featuresstore
-          d.resolve(features);
-          //if all ok set to started
-          this._started = true;
+          d.resolve(features);  // features are already inside featuresstore
+          this._started = true; // if all ok set to started
         })
-        .fail(err => d.reject(err))
+        .fail(d.reject)
 
     })
-    .fail(err => d.reject(err));
+    .fail(d.reject);
+
   return d.promise()
 };
 
-//action to layer
-
+/**
+ * Add feature (action to layer)
+ */
 proto._addFeature = function(feature) {
   this._featuresstore.addFeature(feature);
 };
 
+/**
+ * Delete feature (action to layer)
+ */
 proto._deleteFeature = function(feature) {
   this._featuresstore.deleteFeature(feature);
 };
 
+/**
+ * Update feature (action to layer)
+ */
 proto._updateFeature = function(feature) {
   this._featuresstore.updateFeature(feature);
 };
 
-proto._setFeatures = function(features) {
+/**
+ * Set features (action to layer)
+ */
+proto._setFeatures = function(features = []) {
   this._featuresstore.setFeatures(features);
 };
 
-proto.readFeatures = function(){
+/**
+ * Read features (action to layer)
+ */
+proto.readFeatures = function() {
   return this._layer.readFeatures();
 };
 
@@ -353,19 +407,21 @@ proto.readEditingFeatures = function() {
   return this._featuresstore.readFeatures()
 };
 
-// stop editor
+/**
+ * stop editor
+ */
 proto.stop = function() {
   const d = $.Deferred();
-  this._layer.unlock()
-    .then(response => {
-      this.clear();
-      d.resolve(response);
-    })
-    .fail(err => d.reject(err));
+  this._layer
+    .unlock()
+    .then(response => { this.clear(); d.resolve(response); })
+    .fail(d.reject);
   return d.promise();
 };
 
-//run save layer
+/**
+ * run save layer 
+ */
 proto._save = function() {
   this._layer.save();
 };
@@ -375,12 +431,16 @@ proto.isStarted = function() {
 };
 
 proto.clear = function() {
-  this._started = false;
+  this._started     = false;
   this._filter.bbox = null;
   this._allfeatures = false;
+
   this._featuresstore.clear();
   this._layer.getFeaturesStore().clear();
-  this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());
+
+  if (Layer.LayerTypes.VECTOR === this._layer.getType()) {
+    this._layer.resetEditingSource(this._featuresstore.getFeaturesCollection());
+  }
 };
 
 
