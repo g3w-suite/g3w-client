@@ -2,7 +2,7 @@ const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /**
- * Class Relation
+ * Relation Class
  * 
  * @param config
  * 
