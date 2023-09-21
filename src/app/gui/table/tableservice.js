@@ -752,10 +752,10 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
 
         const relation = this.relationsGeometry[index];
         const k        = _createFeatureKey(field_values[index]);
-        const data     = value.data[0];
+        const data     = value && value.data[0];
        
         if (undefined === relation.features[k]) {
-          relation.features[k] = data.features || [];
+          relation.features[k] = data && data.features || [];
         }        
 
         relation.features[k].forEach(f => features.push(f));
