@@ -195,6 +195,7 @@ proto.setFieldValueToRelationField = function({
  * @param relations
  */
 proto.applyCommitResponse = function(response = {}, relations = []) {
+
   // skip when no response or response.result is false
   if (!(response || response.result)) {
     return;

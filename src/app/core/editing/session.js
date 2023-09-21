@@ -398,6 +398,7 @@ proto.commit = function({
 
   let commit; // committed items
 
+  // skip when ..
   if (ids) {
     commit = this._history.commit(ids);
     this._history.clear(ids);

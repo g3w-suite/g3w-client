@@ -3,36 +3,30 @@ const G3WObject = require('core/g3wobject');
 
 /**
  * Class Relation
+ * 
  * @param config
+ * 
  * @constructor
  */
-function Relation(config={}) {
-  const uniqueSuffix = Date.now();
-  const id = config.id || `id_${uniqueSuffix}`;
-  const name = config.name || `name_${uniqueSuffix}`;
-  const origname = config.origname || `origname_${uniqueSuffix}`;
+function Relation(config = {}) {
 
-  /**
-   * For backport compatibility before v3.7.0
-   */
-  const fatherField = Array.isArray(config.fieldRef.referencedField) ?
-      config.fieldRef.referencedField:
-      [config.fieldRef.referencedField];
-  const childField = Array.isArray(config.fieldRef.referencingField) ?
-      config.fieldRef.referencingField:
-      [config.fieldRef.referencingField];
+  const suffix = Date.now();
+
+  /** BACKCOMP (g3w-admin < v.3.7.0) */
+  const multi_fields = [].concat(config.fieldRef.referencedField);
 
   this.state = {
-    id,
-    name,
-    origname,
-    father: config.referencedLayer,
-    child: config.referencingLayer,
-    fatherField,
-    childField,
-    type: config.type,
-    loading: false
+    id:          config.id       || `id_${suffix}`,
+    name:        config.name     || `name_${suffix}`,
+    origname:    config.origname || `origname_${suffix}`,
+    father:      config.referencedLayer,
+    child:       config.referencingLayer,
+    fatherField: multi_fields,
+    childField:  multi_fields,
+    type:        config.type,
+    loading:     false
   };
+
   base(this);
 }
 
@@ -42,6 +36,7 @@ const proto = Relation.prototype;
 
 /**
  * Get relation id
+ * 
  * @returns {string}
  */
 proto.getId = function() {
@@ -58,6 +53,7 @@ proto.setId = function(id) {
 
 /**
  * Get Relation name
+ * 
  * @returns {string}
  */
 proto.getName = function() {
@@ -66,6 +62,7 @@ proto.getName = function() {
 
 /**
  * Set Relation name
+ * 
  * @param name
  */
 proto.setName = function(name) {
@@ -73,7 +70,10 @@ proto.setName = function(name) {
 };
 
 /**
+ * @TODO check if deprecated (ie. `this.state.title` is not defined in class constructor)
+ * 
  * Get Relation title
+ * 
  * @returns {*}
  */
 proto.getTitle = function() {
@@ -81,8 +81,12 @@ proto.getTitle = function() {
 };
 
 /**
+ * @TODO check if deprecated (ie. `this.state.title` is not defined in class constructor)
+ * 
  * Set Relation title
+ * 
  * @param title
+ * 
  * @returns {*}
  */
 proto.setTitle = function(title) {
@@ -91,6 +95,7 @@ proto.setTitle = function(title) {
 
 /**
  * Return relation child layer id
+ * 
  * @returns {*}
  */
 proto.getChild = function() {
@@ -99,6 +104,7 @@ proto.getChild = function() {
 
 /**
  * Return relation father layer id
+ * 
  * @returns {*}
  */
 proto.getFather = function() {
@@ -107,6 +113,7 @@ proto.getFather = function() {
 
 /**
  * Return all state Object of relation
+ * 
  * @returns {*|{father: *, fatherField: *, name: string, origname: (string|*|string), id: string, type, loading: boolean, childField: *, child: *}}
  */
 proto.getState = function() {
@@ -115,6 +122,7 @@ proto.getState = function() {
 
 /**
  * Retur relation type (MANY, ONE, etc..)
+ * 
  * @returns {*}
  */
 proto.getType = function() {
@@ -123,7 +131,8 @@ proto.getType = function() {
 
 /**
  * Return Relation fields
- * @returns {{father, child}}
+ * 
+ * @returns {{ father, child }}
  */
 proto.getFields = function() {
   return {
@@ -134,6 +143,7 @@ proto.getFields = function() {
 
 /**
  * Return father relation field name
+ * 
  * @returns {*}
  */
 proto.getFatherField = function() {
@@ -142,6 +152,7 @@ proto.getFatherField = function() {
 
 /**
  * Return relation child layer field name
+ * 
  * @returns {*}
  */
 proto.getChildField = function() {
@@ -149,11 +160,8 @@ proto.getChildField = function() {
 };
 
 /**
- * For editing purpose
- */
-
-/**
- * Set Loading state relation
+ * Set Loading state relation (for editing purpose)
+ * 
  * @param bool
  */
 proto.setLoading = function(bool=false){
@@ -161,15 +169,12 @@ proto.setLoading = function(bool=false){
 };
 
 /**
- * Check Loading state Relation
+ * Check Loading state Relation (for editing purpose)
+ * 
  * @returns {boolean}
  */
 proto.isLoading = function(){
   return this.state.loading;
 };
-
-/**
- * End editing loading purpose
- */
 
 module.exports = Relation;
