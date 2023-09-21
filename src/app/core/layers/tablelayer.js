@@ -101,12 +101,29 @@ function TableLayer(config={}, options={}) {
           this.config.editing.form = {
             perc: null
           };
+
           this._setOtherConfigParameters(vector);
-          vector.style && this.setColor(vector.style.color);
+
+          if (vector.style) {
+            this.setColor(vector.style.color);
+          }
           // create an instance of editor
           this._editor = new Editor({
             layer: this
           });
+
+          /**
+           * @since v3.7.0
+           *
+           */
+          //Need because also vectorlayer.js is child of tablelayer
+          if (this.type === Layer.LayerTypes.TABLE) {
+            //get eventaully selected fields
+            //that has value and key
+            const selectFields = this.config.editing.fields.find(field => {
+              return ['select_autocomplete', 'select'].indexOf(field.input.type) !== -1;
+            })
+          }
 
           resolve(this);
           this.setReady(true);
@@ -116,6 +133,7 @@ function TableLayer(config={}, options={}) {
           this.setReady(false);
         })
     });
+
     this.state = {
       ...this.state,
       editing: {
@@ -186,9 +204,14 @@ proto.readFeatures = function() {
 
 // return layer for editing
 proto.getLayerForEditing = async function({vectorurl, project_type}={}) {
-  vectorurl && this.setVectorUrl(vectorurl);
-  project_type && this.setProjectType(project_type);
+  if (vectorurl) {
+    this.setVectorUrl(vectorurl);
+  }
+  if (project_type) {
+    this.setProjectType(project_type);
+  }
   this.setEditingUrl();
+
   const editableLayer = this.clone();
   try {
     return await editableLayer.layerForEditing;
@@ -210,7 +233,7 @@ proto.getEditingLayer = function() {
 };
 
 //check if is editingLayer useful to get editingstyle
-proto.isEditingLayer = function(){
+proto.isEditingLayer = function() {
   return !!this.config.editing
 };
 
@@ -226,7 +249,7 @@ proto.getEditingConstrains = function() {
   return this.config.editing.constraints;
 };
 
-proto.getEditingCapabilities = function(){
+proto.getEditingCapabilities = function() {
   return this.config.editing.capabilities;
 };
 
@@ -257,11 +280,13 @@ proto._setOtherConfigParameters = function(config) {
 // return layer fields
 proto.getEditingFields = function(editable=false) {
   let fields = this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
-  if (editable) fields = fields.filter(field => field.editable);
+  if (editable) {
+    fields = fields.filter(field => field.editable);
+  }
   return fields;
 };
 
-proto.isPkField = function(field){
+proto.isPkField = function(field) {
   const find_field = this.getEditingFields().find(_field => _field.name === field);
   return find_field && find_field.pk;
 };
