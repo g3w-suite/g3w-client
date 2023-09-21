@@ -11,6 +11,13 @@ const { SELECTION_STATE }       = require('core/layers/layer');
 const PAGELENGTHS = [10, 25, 50];
 
 /**
+ * Create a unique feature key
+ */
+function _createFeatureKey(values) {
+  return values.join('__');
+}
+
+/**
  * TableService Class
  * 
  * @param options.layer
@@ -571,66 +578,90 @@ proto.getData = function({
 };
 
 proto.setInBBoxParam = function() {
-  this.state.tools.geolayer.in_bbox = this.state.tools.geolayer.active ? this.mapService.getMapBBOX().join(',') : undefined;
+  const { geolayer } = this.state.tools;
+  geolayer.in_bbox = geolayer.active ? this.mapService.getMapBBOX().join(',') : undefined;
 };
 
 proto.resetMapBBoxEventHandlerKey = function() {
-  ol.Observable.unByKey(this.mapBBoxEventHandlerKey.key);
-  this.mapBBoxEventHandlerKey.key = null;
-  this.mapBBoxEventHandlerKey.cb = null;
+  const listener = this.mapBBoxEventHandlerKey;
+  ol.Observable.unByKey(listener.key);
+  listener.key = null;
+  listener.cb  = null;
 };
 
 proto.getDataFromBBOX = async function() {
-  this.state.tools.geolayer.active = !this.state.tools.geolayer.active;
-  if (this.state.tools.geolayer.active) {
-    this.mapBBoxEventHandlerKey.cb = this.state.pagination ? () => {
+  const { geolayer } = this.state.tools;
+
+  geolayer.active = !geolayer.active;
+
+  const is_active = geolayer.active;
+  const listener  = this.mapBBoxEventHandlerKey;
+
+  if (is_active && this.state.pagination) {
+    listener.cb = () => {
       this.setInBBoxParam();
       this.emit('ajax-reload');
-    } : async () => {
-        this.setInBBoxParam();
-        this.filterChangeHandler({
-          type: 'in_bbox'
-        });
     };
-    this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
-    this.mapBBoxEventHandlerKey.cb();
-  } else {
-    this.mapBBoxEventHandlerKey.cb && this.mapBBoxEventHandlerKey.cb();
+  }
+
+  if (is_active && !this.state.pagination) {
+    listener.cb = async () => {
+      this.setInBBoxParam();
+      this.filterChangeHandler({ type: 'in_bbox' });
+    };
+  }
+
+  if (is_active) {
+    listener.key = this.mapService.getMap().on('moveend', listener.cb);
+  }
+
+  if (listener.cb) {
+    listener.cb();
+  }
+
+  if (!is_active) {
     this.resetMapBBoxEventHandlerKey();
   }
 };
 
 proto.addFeature = function(feature) {
   const tableFeature = {
-    id: feature.id,
-    selected: this.state.tools.filter.active || this.layer.hasSelectionFid(feature.id),
-    attributes: feature.attributes ? feature.attributes : feature.properties
+    id:         feature.id,
+    selected:   this.state.tools.filter.active    || this.layer.hasSelectionFid(feature.id),
+    attributes: feature.attributes                || feature.properties,
+    geometry:   this.geolayer && feature.geometry || undefined
   };
-  if (this.geolayer && feature.geometry) {
-    this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
-      id: tableFeature.id,
+
+  const has_geom  = this.geolayer && feature.geometry;
+  const selection = has_geom && this.layer.getOlSelectionFeature(feature.id);
+
+  if (has_geom && !selection) {
+    this.layer.addOlSelectionFeature({
+      id:      feature.id,
       feature: this.createFeatureForSelection(feature)
     });
-    tableFeature.geometry = feature.geometry;
   }
+
   this.state.features.push(tableFeature);
 };
 
-proto.checkSelectAll = function(features=this.state.features) {
-  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || (features.length && features.reduce((accumulator, feature) => accumulator && feature.selected, true));
+proto.checkSelectAll = function(features = this.state.features) {
+  this.state.selectAll = (
+    this.selectedfeaturesfid.has(SELECTION_STATE.ALL) ||
+    (features.length && features.reduce((selectAll, f) => selectAll && f.selected, true))
+  );
 };
 
 proto.addFeatures = function(features=[]) {
-  features.forEach(feature => this.addFeature(feature));
-  this.state.tools.show = this.layer.getFilterActive() ||  this.selectedfeaturesfid.size > 0;
+  features.forEach(f => this.addFeature(f));
+  this.state.tools.show = this.layer.getFilterActive() || this.selectedfeaturesfid.size > 0;
   this.checkSelectAll();
 };
 
 proto.reloadData = async function(pagination=false) {
   this.state.features.splice(0);
   this.state.pagination = pagination;
-  const tabledata = await this.getData();
-  const {data=[], reloadData} = tabledata;
+  const { data = [] }   = await this.getData();
   return data;
 };
 
@@ -639,108 +670,123 @@ proto._setLayout = function() {
 };
 
 proto._returnGeometry = function(feature) {
-  let geometry;
-  if (feature.attributes) geometry = feature.geometry;
-  else if (feature.geometry) geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
-  return geometry;
+  if (feature.attributes) return feature.geometry;
+  if (feature.geometry)   return coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
 };
 
-proto.zoomAndHighLightFeature = function(feature, zoom=true) {
-  const geometry = feature.geometry;
-  if (geometry) {
-    if (this._async.state) this._async.fnc = this.mapService.highlightGeometry.bind(mapService, geometry, {zoom});
-    else this.mapService.highlightGeometry(geometry , { zoom });
+proto.zoomAndHighLightFeature = function(feature, zoom = true) {
+  // async highlight
+  if (feature.geometry && this._async.state) {
+    this._async.fnc = this.mapService.highlightGeometry.bind(mapService, feature.geometry, { zoom });
+  }
+  // sync highlight
+  if (feature.geometry && !this._async.state) {
+    this.mapService.highlightGeometry(feature.geometry , { zoom });
   }
 };
 
 /**
  * Zoom to eventually features relation
  */
-proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom=true) {
-  //check if there are relation features geometry
-  if (this.relationsGeometry.length > 0) {
-    //Utility function to create uniqueKey
-    const createFeatureKey = values => values.join('__')
-    const features = [];
-    const promises = [];
-    const field_values = []; // useful to check if add or not
-    this.relationsGeometry
-      .forEach(({layer, father_fields, fields, features}) => {
-        const values = fields.map(field => feature.attributes[field]);
-        const featureKey = createFeatureKey(values);
-        field_values.push(values);
-        if (features[featureKey] === undefined) {
-          let promise;
-          if (zoom) {
-            const filter = father_fields.reduce((filter, field, index) => {
-              filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
-              return filter;
-            }, '');
-            promise = DataRouterService.getData('search:features', {
-              inputs: {
-                layer,
-                filter,
-                formatter: 1, // set formatter to 1
-                search_endpoint: 'api'
-              },
-              outputs: false //just a request not show on result
-            });
-          } else {
-            promise = Promise.reject();
-          }
-          promises.push(promise);
-        } else {
-          promises.push(Promise.resolve(
-            {
-              data:[
-                {
-                  features: features[featureKey]
-                }
-              ]
-            }))
-        }
-      });
-    const promisesData = await Promise.allSettled(promises);
+proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = true) {
 
-    promisesData.forEach(({status, value}, index) => {
-      //Only in case of result
-      if (status === 'fulfilled') {
+  // skip when there are no relation features geometry
+  if (!this.relationsGeometry.length > 0) {
+    return;
+  }
 
-        const _features = value.data[0] ? value.data[0].features : [];
+  const features     = [];
+  const promises     = [];
+  const field_values = []; // check if add or not
 
-        _features.forEach(feature => features.push(feature));
+  this.relationsGeometry
+    .forEach(({
+      layer,
+      father_fields,
+      fields,
+      features
+    }) => {
+      const values = fields.map(f => feature.attributes[f]);
+      const k      = _createFeatureKey(values);
 
-        const featureKey = createFeatureKey(field_values[index]);
+      field_values.push(values);
+      
+      let promise;
 
-        if (this.relationsGeometry[index].features[featureKey] === undefined) {
+      if (zoom && undefined === features[k]) {
+        promise = DataRouterService
+          .getData('search:features', {
+            inputs: {
+              layer,
+              formatter:       1,
+              search_endpoint: 'api',
+              filter: (
+                father_fields
+                  .reduce((filter, field, index) => {
+                    filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
+                    return filter;
+                  }, '')
+              ),
+             },
+            outputs: false, // just a request not show on result
+          });
+      }
 
-          this.relationsGeometry[index].features[featureKey] = _features;
+      if (zoom && undefined === features[k]) {
+        promise = Promise.reject();
+      }
 
-        }
+      if (undefined !== features[k]) {
+        promise = Promise.resolve({ data: [{ features: features[k] }] });
+      }
+
+      promises.push(promise);
+    });
+
+  (await Promise.allSettled(promises))
+    .forEach(({
+      status,
+      value
+    }, index) => {
+      if ('fulfilled' === status) {
+
+        const relation = this.relationsGeometry[index];
+        const k        = _createFeatureKey(field_values[index]);
+        const data     = value.data[0];
+       
+        if (undefined === relation.features[k]) {
+          relation.features[k] = data.features || [];
+        }        
+
+        relation.features[k].forEach(f => features.push(f));
+
       }
     });
 
-    if (zoom) {
-      this.mapService.zoomToFeatures(features, {
-        highlight: true
-      })
-    } else {
-      this.mapService.highlightFeatures(features);
-    }
+  if (zoom) {
+    this.mapService.zoomToFeatures(features, { highlight: true });
+  } else {
+    this.mapService.highlightFeatures(features);
   }
+
 };
 
 proto.clear = function() {
-  this.layer.off('unselectionall', this.clearAllSelection);
+  this.layer.off('unselectionall',    this.clearAllSelection);
   this.layer.off('filtertokenchange', this.filterChangeHandler);
+
   this.resetMapBBoxEventHandlerKey();
+
   this.allfeaturesnumber = null;
-  this.mapService = null;
-  this._async.state && setTimeout(()=> {
-    this._async.fnc();
-    this._async.state = false;
-    this._async.fnc = noop;
-  });
+  this.mapService        = null;
+
+  if (this._async.state) {
+    setTimeout(() => {
+      this._async.fnc();
+      this._async.state = false;
+      this._async.fnc   = noop;
+    });
+  }
 };
 
 module.exports = TableService;
