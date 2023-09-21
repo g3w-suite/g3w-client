@@ -113,7 +113,7 @@ const TableService = function(options = {}) {
       geolayer: {
         show:      this.geolayer,
         active:    false,
-        in_bbox:   void 0                  // <-- TODO: double check
+        in_bbox:   undefined,
       },
       show:        false,
       filter:      this.layer.state.filter
@@ -571,7 +571,7 @@ proto.getData = function({
 };
 
 proto.setInBBoxParam = function() {
-  this.state.tools.geolayer.in_bbox = this.state.tools.geolayer.active ? this.mapService.getMapBBOX().join(',') : void 0;
+  this.state.tools.geolayer.in_bbox = this.state.tools.geolayer.active ? this.mapService.getMapBBOX().join(',') : undefined;
 };
 
 proto.resetMapBBoxEventHandlerKey = function() {

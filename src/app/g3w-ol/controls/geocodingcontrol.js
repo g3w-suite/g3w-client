@@ -122,7 +122,7 @@ const utils = {
    * @return (find_all) {Element} : {Array}
    */
   find(selector, context, find_all) {
-    if(context === void 0) context = window.document;
+    if(context === undefined) context = window.document;
     let simpleRe = /^(#?[\w-]+|\.[\w-.]+)$/,
       periodRe = /\./g,
       slice = Array.prototype.slice,
