@@ -1,110 +1,202 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import DataRouterService from 'services/data';
-import GUI from 'services/gui';
+import DataRouterService           from 'services/data';
+import GUI                         from 'services/gui';
 
-const { inherit, noop } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const { t } = require('core/i18n/i18n.service');
-const { coordinatesToGeometry } =  require('core/utils/geo');
-const { SELECTION_STATE } = require('core/layers/layer');
+const { inherit, noop }         = require('core/utils/utils');
+const G3WObject                 = require('core/g3wobject');
+const { t }                     = require('core/i18n/i18n.service');
+const { coordinatesToGeometry } = require('core/utils/geo');
+const { SELECTION_STATE }       = require('core/layers/layer');
 
 const PAGELENGTHS = [10, 25, 50];
 
+/**
+ * TableService Class
+ * 
+ * @param options.layer
+ * @param options.formatter
+ * 
+ * @constructor
+ */
 const TableService = function(options = {}) {
-  this.currentPage = 0; // number of pages
-  this.layer = options.layer;
-  this.formatter = options.formatter;
-  const headers = this.getHeaders();
-  this.allfeaturesnumber;
-  this.nopaginationsfilter = [];
-  this.selectedfeaturesfid = this.layer.getSelectionFids();
-  this.geolayer = this.layer.isGeoLayer();
-  this.relationsGeometry = [];
-  //In case if no geometry layer
-  if (!this.geolayer) {
-    //check layer Relation
-    this.layer.getRelations()
-      .getArray()
-      .forEach(relation => {
-        //get project layer
-        const relationLayer = CatalogLayersStoresRegistry.getLayerById(relation.getFather());
-        if (
-          //need to check if current layer is not child layer of relation
-          (this.layer.getId() !== relation.getFather()) &&
-          //need to be geolayer (has geometry)
-          relationLayer.isGeoLayer()
-        ) {
-          this.relationsGeometry.push({
-            layer: relationLayer,
-            //need to check if Array for backport compatibility
-            //before v3.7.0 (or in case of not reload project)
-            father_fields: relation.getFatherField(),
-            fields: relation.getChildField(),
-            features: {}
-          })
-        }
-     });
-  }
 
+  /**
+   * Number of pages
+   */
+  this.currentPage = 0;
+ 
+  /**
+   * @FIXME add description
+   */
+  this.layer = options.layer;
+
+  /**
+   * @FIXME add description
+   */
+  this.formatter = options.formatter;
+
+  /**
+   * @FIXME add description
+   */
+  this.allfeaturesnumber = undefined;
+
+  /**
+   * @FIXME add description
+   */
+  this.nopaginationsfilter = [];
+
+  /**
+   * @FIXME add description
+   */
+  this.selectedfeaturesfid = this.layer.getSelectionFids();
+
+  /**
+   * Whether layer has geometry
+   */
+  this.geolayer = this.layer.isGeoLayer();
+
+  /**
+   * @FIXME add description
+   */
+  this.relationsGeometry = this._relationsGeometry();
+  
+  /**
+   * @FIXME add description
+   */
   this.projection = this.geolayer ? this.layer.getProjection() : null;
 
+  /**
+   * @FIXME add description
+   */
   this.mapService = GUI.getService('map');
+
+  /**
+   * @FIXME add description
+   */
   this.getAll = false;
+
+  /**
+   * @FIXME add description
+   */
   this.paginationfilter = false;
+
+  /**
+   * @FIXME add description
+   */
   this.mapBBoxEventHandlerKey = {
     key: null,
     cb: null
   };
-  this.clearAllSelection = () => {
-    this.state.features.forEach(feature => feature.selected = false);
-    this.state.tools.show = false;
-    this.state.selectAll = false;
-  };
+
+
+  // bind context on event listeners
+  this.clearAllSelection   = this.clearAllSelection.bind(this);
+  this.filterChangeHandler = this.filterChangeHandler.bind(this); 
+  this.onGUIContent        = this.onGUIContent.bind(this);
+
+  /**
+   * @FIXME add description
+   */
   this.state = {
-    pageLengths: PAGELENGTHS,
-    pageLength: this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
-    features: [],
-    title: this.layer.getTitle(),
-    headers,
-    geometry: true,
-    loading: false,
-    allfeatures: 0,
-    pagination: !this.getAll,
-    selectAll: false,
+    pageLengths:   PAGELENGTHS,
+    pageLength:    this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
+    features:      [],
+    title:         this.layer.getTitle(),
+    headers:       this.getHeaders(),
+    geometry:      true,
+    loading:       false,
+    allfeatures:   0,
+    pagination:    !this.getAll,
+    selectAll:     false,
     nofilteredrow: false,
     tools: {
       geolayer: {
-        show: this.geolayer,
-        active: false,
-        in_bbox: void 0
+        show:      this.geolayer,
+        active:    false,
+        in_bbox:   void 0                  // <-- TODO: double check
       },
-      show: false,
-      filter: this.layer.state.filter
+      show:        false,
+      filter:      this.layer.state.filter
     }
   };
-  // pagination filter features
+
+  /**
+   * Pagination filter features
+   */
   this._async = {
     state: false,
-    fnc: noop
+    fnc:   noop
   };
-  GUI.onbefore('setContent', options => {
-    this._async.state = options.perc === 100;
-  });
-  this.layer.on('unselectionall', this.clearAllSelection);
-  this.filterChangeHandler = async ({type}={})=>{
-    this.allfeaturesnumber = undefined;
-    let data = [];
-    // emit redraw if in_bbox filter or not select all
-    const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
-    if (!this.state.pagination) data = emitRedraw ? await this.reloadData() : [];
-    emitRedraw && this.emit('redraw', data);
-  };
+
+  GUI.onbefore('setContent',         this.onGUIContent);
+  this.layer.on('unselectionall',    this.clearAllSelection);
   this.layer.on('filtertokenchange', this.filterChangeHandler);
 };
 
 inherit(TableService, G3WObject);
 
 const proto = TableService.prototype;
+
+/**
+ * @since 3.9.0
+ */
+proto._relationsGeometry = function() {
+
+  // layer has geometry  
+  if (this.geolayer) {
+    return [];
+  }
+
+  const relations = [];
+
+  this.layer
+    .getRelations()
+    .getArray()
+    .forEach(relation => {
+      const layer = CatalogLayersStoresRegistry.getLayerById(relation.getFather()); // get project layer
+      if (
+        this.layer.getId() !== relation.getFather() && // current layer is not child layer of relation
+        layer.isGeoLayer()                             // relation layer has geometry
+      ) {
+        relations.push({
+          layer,
+          father_fields: relation.getFatherField(),    // NB: since g3w-admin@v3.7.0 this is an Array value.
+          fields:        relation.getChildField(),     // NB: since g3w-admin@v3.7.0 this is an Array value.
+          features:      {},
+        })
+      }
+    });
+
+  return relations;
+};
+
+/**
+ * @since 3.9.0
+ */
+proto.clearAllSelection = function() {
+  this.state.features.forEach(feature => feature.selected = false);
+  this.state.tools.show = false;
+  this.state.selectAll = false;
+};
+
+/**
+ * @since 3.9.0
+ */
+proto.filterChangeHandler = async function ({type}={}) {
+  this.allfeaturesnumber = undefined;
+  let data = [];
+  // emit redraw if in_bbox filter or not select all
+  const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
+  if (!this.state.pagination) data = emitRedraw ? await this.reloadData() : [];
+  emitRedraw && this.emit('redraw', data);
+};
+
+/**
+ * @since 3.9.0
+ */
+proto.onGUIContent = function(options) {
+  this._async.state = (100 === options.perc);
+};
 
 proto.toggleFilterToken = async function(){
   await this.layer.toggleFilterToken();
