@@ -71,21 +71,42 @@ inherit(Editor, G3WObject);
 
 const proto = Editor.prototype;
 
+/**
+ * Return if request can do
+ * Required for vector Layer when bbox are inside to already request bbox no request is done
+ *
+ * @param options
+ * @returns {boolean}
+ * @private
+ */
 proto._canDoGetFeaturesRequest = function(options = {}) {
-  const { bbox }       = options.filter || {};
-  const GIVE_ME_A_NAME = bbox && Layer.LayerTypes.VECTOR === this._layer.getType()
 
-  if (GIVE_ME_A_NAME && !this._filter.bbox) {
-    this._filter.bbox = bbox;
-    return true;
-  }
-  
-  if (GIVE_ME_A_NAME && !ol.extent.containsExtent(this._filter.bbox, bbox)) {
-    this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
-    return true;
-  }
+  const { bbox } = options.filter || {};
 
-  return false;
+  //check if bbox is pass as filter parameter
+  //bbox array [xmin, ymin, xmax, ymax]
+
+  if ( bbox && Layer.LayerTypes.VECTOR === this._layer.getType()) {
+
+    //check if already filter bbox is set
+    //null if the first time
+    if (null === this._filter.bbox) {
+      this._filter.bbox = bbox; //set store bbox
+      return true; // need to be do a request
+    }
+
+    //check if current bbox is contained (inside) already bbox request
+    const bboxRequestDone = ol.extent.containsExtent(this._filter.bbox, bbox);
+
+    this._filter.bbox =  bboxRequestDone ?
+      this._filter.bbox : //set same
+      ol.extent.extend(this._filter.bbox, bbox); // extend bbox store
+
+    return bboxRequestDone
+
+  }
+  //otherwise need to be done the request always
+  return true;
 };
 
 proto.getEditingSource = function() {
@@ -133,8 +154,10 @@ proto._addFeaturesFromServer = function(features = []) {
 };
 
 proto._doGetFeaturesRequest = function(options={}) {
-  const doRequest = Applicationstate.online &&  !this._allfeatures;
-  return doRequest && this._canDoGetFeaturesRequest(options)
+  if  (Applicationstate.online && !this._allfeatures) {
+    return this._canDoGetFeaturesRequest(options);
+  }
+  return false;
 };
 
 /**
