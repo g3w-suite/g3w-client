@@ -474,7 +474,7 @@ proto.clear = function() {
   this._editor.clear();
 };
 
-//return l'history
+//return history
 proto.getHistory = function() {
   return this._history;
 };
