@@ -286,69 +286,90 @@ proto.addRemoveSelectedFeature = function(feature) {
 proto.createFeatureForSelection = function(feature) {
   return {
     attributes: feature.attributes ? feature.attributes : feature.properties,
-    geometry: this._returnGeometry(feature)
+    geometry: this._returnGeometry(feature),
   }
 };
 
 proto.getAllFeatures = function(params) {
   GUI.setLoadingContent(true);
-  return new Promise((resolve, reject) =>{
-    this.layer.getDataTable(params || {})
-      .then(data =>{
-        const {features} = data;
-        if (this.geolayer && features) {
-          if (!params) {
-            const LoadedFeaturesId = this.state.features.map(feature => feature.id);
-            features.forEach(feature => {
-              if (LoadedFeaturesId.indexOf(feature.id) === -1) {
-                feature.geometry && this.layer.addOlSelectionFeature({
-                  id: feature.id,
-                  feature: this.createFeatureForSelection(feature)
-                });
-              }
-            });
-            this.getAll = true;
-          }
-          resolve(features);
+  return new Promise((resolve, reject) => {
+    this.layer
+      .getDataTable(params || {})
+      .then(data => {
+        const is_valid = this.geolayer && data.features;
+
+        if (is_valid && !params) {
+          const loaded_features = this.state.features.map(f => f.id);
+          data.features.forEach(f => {
+            if (-1 === loaded_features.indexOf(f.id) && f.geometry) {
+              this.layer.addOlSelectionFeature({
+                id: f.id,
+                feature: this.createFeatureForSelection(f),
+              });
+            }
+          });
+          this.getAll = true;
         }
+
+        if (is_valid) {
+          resolve(data.features);
+        }        
       })
-      .fail(()=> reject())
-      .always(()=>GUI.setLoadingContent(false))
-  })
+      .fail(()   => reject())
+      .always(() => GUI.setLoadingContent(false));
+  });
 };
 
 proto.switchSelection = async function() {
-  if (!this.state.pagination) { // no pagination
-    if (this.nopaginationsfilter.length) { //filtered
-      let selected = false;
-      const filterFeatures = [];
-      this.state.features.forEach((feature, index) =>{
-        if (this.nopaginationsfilter.indexOf(index) !== -1) filterFeatures.push(feature);
-        feature.selected = !feature.selected;
-        this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](feature.id);
-        selected = selected || feature.selected;
-      });
-      this.state.tools.show = selected;
-      this.checkSelectAll(filterFeatures)
-    } else { // no filter
-      this.state.features.forEach(feature => {
-        feature.selected = !feature.selected;
-      });
-      this.layer.invertSelectionFids();
-      this.checkSelectAll();
-      this.state.tools.show = this.selectedfeaturesfid.size > 0;
-    }
-  } else { // pagination
-    let selected = false;
-    this.state.features.forEach(feature => {
-      feature.selected = !feature.selected;
-      selected = feature.selected;
+  const has_pagination = this.state.pagination;
+  const filter         = this.nopaginationsfilter;
+  const filtered       = !has_pagination && filter.length ? [] : undefined;
+  let selected         = false;
+
+  // pagination
+  if (has_pagination) {
+    this.state.features.forEach(f => {
+      f.selected = !f.selected;
+      selected   = f.selected;
     });
-    !this.getAll && await this.getAllFeatures();
-    this.state.selectAll = this.paginationfilter ? selected: this.state.selectAll;
+  }
+
+  if (has_pagination && !this.getAll) {
+    await this.getAllFeatures();
+  }
+
+  this.state.selectAll = (has_pagination && this.paginationfilter) ? selected : this.state.selectAll;
+
+  // filtered
+  if (!has_pagination && filter.length) {
+    this.state.features.forEach((f, i) => {
+      if (-1 !== filter.indexOf(i)) {
+        filtered.push(f);
+      }
+      f.selected = !f.selected;
+      this.layer[f.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](f.id);
+      selected = selected || f.selected;
+    });
+    this.state.tools.show = selected;
+  }
+  
+  // no filter
+  if (!has_pagination && !filter.length) {
+    this.state.features.forEach(f => { f.selected = !f.selected; });
+  }
+
+  if (has_pagination || !filter.length) {
     this.layer.invertSelectionFids();
+  }
+
+  if (!has_pagination) {
+    this.checkSelectAll(filtered);
+  }
+
+  if (has_pagination || !filter.length) {
     this.state.tools.show = this.selectedfeaturesfid.size > 0;
   }
+
 };
 
 proto.clearLayerSelection = function() {
