@@ -377,59 +377,80 @@ proto.clearLayerSelection = function() {
 };
 
 /**
- * Called when alla selected feature is checked
+ * Called when a selected feature is checked
+ * 
  * @returns {Promise<void>}
  */
 proto.selectAllFeatures = async function() {
+
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
-  if (!this.state.pagination) { //no pagination no filter
-    if (this.nopaginationsfilter.length) {  //check if filter is set (no pagination)
-      let selected = false;
-      this.state.features.forEach((feature, index) =>{
-        if (this.nopaginationsfilter.indexOf(index) !== -1) {
-          feature.selected = this.state.selectAll;
-          this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
-          selected = selected || feature.selected;
-        }
-      });
-      this.state.tools.show = selected;
-    } else {
-      this.state.tools.show = this.state.selectAll;
-      this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
-      this.state.features.forEach(feature => feature.selected = this.state.selectAll);
-    }
-  } else { //pagination
-    if (this.paginationfilter) { // filtered
-      if (this.state.featurescount >= this.state.allfeatures)
-        this.state.features.forEach(feature => {
-          feature.selected = this.state.selectAll;
-          this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
-        });
-      else {
-        const {search, ordering, formatter, in_bbox } = this.paginationParams;
-        const features = await this.getAllFeatures({
-          search,
-          ordering,
-          formatter,
-          in_bbox
-        });
-        features.forEach(feature =>{
-          !this.getAll && this.geolayer && feature.geometry && this.layer.addOlSelectionFeature({
-            id: feature.id,
-            feature: this.createFeatureForSelection(feature)
-          });
-          this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-        })
+
+  const has_pagination = this.state.pagination;
+  const filter         = this.nopaginationsfilter;
+  let selected         = false;
+
+  // filtered
+  if (!has_pagination && filter.length) {
+    this.state.features.forEach((f, i) =>{
+      if (-1 !== filter.indexOf(i)) {
+        f.selected = this.state.selectAll;
+        this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
+        selected = selected || f.selected;
       }
-      this.state.features.forEach(feature => feature.selected = this.state.selectAll);
-    } else {
-      this.state.features.forEach(feature => feature.selected = this.state.selectAll);
-      !this.getAll && await this.getAllFeatures();
-      this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
-    }
+    });
+    this.state.tools.show = selected;
+  }
+
+  // no filter
+  if (!has_pagination && !filter.length) {
+    this.state.tools.show = this.state.selectAll;
+    this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
+    this.state.features.forEach(f => f.selected = this.state.selectAll);
+  }
+
+  // filtered pagination
+  if (has_pagination && this.paginationfilter && this.state.featurescount >= this.state.allfeatures) {
+    this.state.features.forEach(f => {
+      f.selected = this.state.selectAll;
+      this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
+    });
+  }
+
+  if (has_pagination && this.paginationfilter && this.state.featurescount < this.state.allfeatures) {
+    const features = await this.getAllFeatures({
+      search:    this.paginationParams.search,
+      ordering:  this.paginationParams.ordering,
+      formatter: this.paginationParams.formatter,
+      in_bbox:   this.paginationParams.in_bbox,
+    });
+    features.forEach(f => {
+      if (!this.getAll && this.geolayer && f.geometry) {
+        this.layer.addOlSelectionFeature({
+          id: f.id,
+          feature: this.createFeatureForSelection(f)
+        });
+      }
+      this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](f.id);
+    })
+  }
+
+  if (has_pagination) {
+    this.state.features.forEach(f => f.selected = this.state.selectAll);
+  }
+
+  if (has_pagination && !this.paginationfilter && !this.getAll) {
+    await this.getAllFeatures();
+  }
+
+  if (has_pagination && !this.paginationfilter) {
+    this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
+  }
+
+  if (has_pagination) {
     this.state.tools.show = this.state.selectAll || this.selectedfeaturesfid.size > 0;
   }
+
 };
 
 /**
