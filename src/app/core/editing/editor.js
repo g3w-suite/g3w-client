@@ -40,7 +40,10 @@ function Editor(options={}) {
   // referred layer
   this._layer = options.layer;
   // editing featurestore
-  this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
+  this._featuresstore = this._createSource();
+  //@since v3.7.0 eventually store the same number of features but with different properties values
+  //for example derived from formatted 1 parameter request for Table Layer
+  this._syncfeaturesstore = null;
   // editor is active or not
   this._started = false;
   // not editable fields
@@ -311,5 +314,30 @@ proto.clear = function() {
   this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());
 };
 
+/**
+ * @since v3.7.0
+ * @returns {FeaturesStore|OlFeaturesStore}
+ * @private
+ */
+proto._createSource = function() {
+  return this._layer.getType() === Layer.LayerTypes.TABLE ?
+    new FeaturesStore() :
+    new OlFeaturesStore();
+}
+
+/**
+ * @since v3.7.0
+ * @returns {null}
+ */
+proto.getSyncEditingSource = function() {
+  return this._syncfeaturesstore;
+}
+
+/**
+ * @since v3.7.0
+ */
+proto.setSyncEditingSource = function(source) {
+  this._syncfeaturesstore = source || this._createSource();
+}
 
 module.exports = Editor;
