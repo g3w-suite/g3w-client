@@ -454,13 +454,17 @@ proto.selectAllFeatures = async function() {
 };
 
 /**
- * Method to set filtered features
- * @param featuresIndex
+ * Set filtered features
+ * 
+ * @param index features index
  */
-proto.setFilteredFeature = function(featuresIndex) {
-  this.nopaginationsfilter = featuresIndex;
-  this.checkSelectAll((featuresIndex.length === this.allfeaturesnumber || featuresIndex.length === 0) ? undefined
-    : this.nopaginationsfilter.map(index=> this.state.features[index]));
+proto.setFilteredFeature = function(index) {
+  const filter = this.nopaginationsfilter = index;
+  if (0 === index.length || index.length === this.allfeaturesnumber) {
+    this.checkSelectAll();
+  } else {
+    this.checkSelectAll(filter.map(i => this.state.features[i]));
+  }
 };
 
 proto.setAttributeTablePageLength = function(length) {
@@ -468,77 +472,101 @@ proto.setAttributeTablePageLength = function(length) {
 };
 
 /**
- * Main method to get data table layer
- * @param start
- * @param order
- * @param length
- * @param columns
- * @param search
- * @param firstCall
- * @returns {Promise<unknown>}
+ * Get DataTable layer
+ * 
+ * @param data.start
+ * @param data.order
+ * @param data.length
+ * @param data.columns
+ * @param data.search
+ * @param data.firstCall
+ * 
+ * @returns {Promise<{{ data: [], recordsTotal: number, recordsFiltered: number }}>}
  */
-proto.getData = function({start = 0, order = [], length = this.state.pageLength, columns=[], search={value:null}, firstCall=false} = {}) {
+proto.getData = function({
+  start     = 0,
+  order     = [],
+  length    = this.state.pageLength,
+  columns   = [],
+  search    = { value: null },
+  firstCall = false
+} = {}) {
+
   // reset features before load
   GUI.setLoadingContent(true);
+
   this.setAttributeTablePageLength(length);
+
   return new Promise((resolve, reject) => {
-    if (!this.state.headers.length)
+
+    // skip when ..
+    if (!this.state.headers.length) {
       resolve({
         data: [],
         recordsTotal: 0,
         recordsFiltered: 0
       });
-    else {
-      let searchText = search.value && search.value.length > 0 ? search.value : null;
-      this.state.features.splice(0);
-      if (!order.length) {
-        order.push({
-          column: 1,
-          dir: 'asc'
-        })
-      }
-      const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
-      this.currentPage = start === 0 || (this.state.pagination && this.state.tools.filter.active) ? 1 : (start/length) + 1;
-      const in_bbox = this.state.tools.geolayer.in_bbox;
-      const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|ilike|${column.search.value}|and`).join(',') : undefined;
-      this.paginationParams = {
-        field: field || undefined,
-        page: this.currentPage,
-        page_size: length,
-        search: searchText,
-        in_bbox,
-        formatter: this.formatter,
-        ordering
-      };
-      const getDataPromise = this.state.pagination ?
-        this.layer.getDataTable(this.paginationParams) :
-        this.layer.getDataTable({
-          ordering,
-          in_bbox,
-          formatter: this.formatter
-      });
-      getDataPromise
-        .then(data => {
-          const {features=[]} = data;
-          this.state.allfeatures = data.count || this.state.features.length;
-          this.state.featurescount = features.length;
-          this.allfeaturesnumber = this.allfeaturesnumber === undefined ? data.count : this.allfeaturesnumber;
-          this.paginationfilter = data.count !== this.allfeaturesnumber;
-          this.state.pagination = firstCall ? this.state.tools.filter.active || features.length < this.allfeaturesnumber : this.state.pagination;
-          this.addFeatures(features);
-          resolve({
-            data: this.setDataForDataTable(),
-            recordsFiltered: data.count,
-            recordsTotal: data.count
-          });
-        })
-        .fail(err => {
-          GUI.notify.error(t("info.server_error"));
-          reject(err);
-        }).always(()=>{
-          GUI.setLoadingContent(false);
-        })
+      return;
     }
+
+    let searchText = search.value && search.value.length > 0 ? search.value : null;
+
+    this.state.features.splice(0);
+
+    if (!order.length) {
+      order.push({
+        column: 1,
+        dir: 'asc',
+      });
+    }
+
+    const ordering = ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name;
+
+    this.currentPage = 1 + ((0 === start || (this.state.pagination && this.state.tools.filter.active)) ? (start/length) : 0);
+  
+    const in_bbox = this.state.tools.geolayer.in_bbox;
+
+    const field =  this.state.pagination
+      ? columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',')
+      : undefined;
+
+    this.paginationParams = {
+      field:     field || undefined,
+      page:      this.currentPage,
+      page_size: length,
+      search:    searchText,
+      in_bbox,
+      formatter: this.formatter,
+      ordering
+    };
+
+    this.layer
+      .getDataTable(
+        this.state.pagination
+          ? this.paginationParams
+          : ({ ordering, in_bbox, formatter: this.formatter })
+      )
+      .then(data => {
+        const { features = [] }  = data;
+
+        this.state.allfeatures   = data.count || this.state.features.length;
+        this.state.featurescount = features.length;
+        this.allfeaturesnumber   = (undefined === this.allfeaturesnumber ? data.count : this.allfeaturesnumber);
+        this.paginationfilter    = (data.count !== this.allfeaturesnumber);
+        this.state.pagination    = firstCall
+          ? this.state.tools.filter.active || features.length < this.allfeaturesnumber
+          : this.state.pagination;
+
+        this.addFeatures(features);
+
+        resolve({
+          data:            this.setDataForDataTable(),
+          recordsFiltered: data.count,
+          recordsTotal:    data.count
+        });
+      })
+      .fail(err  => { GUI.notify.error(t("info.server_error")); reject(err); })
+      .always(() => { GUI.setLoadingContent(false); })
   });
 };
 
