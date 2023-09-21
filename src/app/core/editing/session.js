@@ -415,8 +415,8 @@ proto.commit = function({
     .commit(commit)
     .then(response => {
 
-      // skip when response is null or undefined or response.result is false
-      if (!(response || response.result)) {
+      // skip when response is null or undefined and response.result is false
+      if (!(response && response.result)) {
         d.reject(response);
         return;
       }
