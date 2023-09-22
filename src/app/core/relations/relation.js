@@ -75,7 +75,7 @@ proto.setName = function(name) {
  * 
  * Get Relation title
  * 
- * @returns {*}
+ * @returns { undefined }
  */
 proto.getTitle = function() {
   return this.state.title;
@@ -88,7 +88,7 @@ proto.getTitle = function() {
  * 
  * @param title
  * 
- * @returns {*}
+ * @returns { undefined }
  */
 proto.setTitle = function(title) {
   return this.state.title = title;
@@ -109,27 +109,21 @@ proto.getFather = function() {
 };
 
 /**
- * Return all state Object of relation
- * 
- * @returns {*|{father: *, fatherField: *, name: string, origname: (string|*|string), id: string, type, loading: boolean, childField: *, child: *}}
+ * @returns state Object of relation
  */
 proto.getState = function() {
   return this.state;
 };
 
 /**
- * Retur relation type (MANY, ONE, etc..)
- * 
- * @returns {*}
+ * @returns { 'MANY' | ONE' | string } relation type
  */
 proto.getType = function() {
   return this.state.type;
 };
 
 /**
- * Return Relation fields
- * 
- * @returns {{ father, child }}
+ * @returns {{ father, child }} relation fields
  */
 proto.getFields = function() {
   return {
@@ -168,7 +162,7 @@ proto.setLoading = function(bool=false){
 /**
  * Check Loading state Relation (for editing purpose)
  * 
- * @returns {boolean}
+ * @returns { boolean }
  */
 proto.isLoading = function(){
   return this.state.loading;
