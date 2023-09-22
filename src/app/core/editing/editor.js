@@ -105,9 +105,17 @@ proto._cloneFeatures = function(features=[]) {
   return features.map(feature => feature.clone());
 };
 
-proto._addFeaturesFromServer = function(features=[]){
+proto._addFeaturesFromServer = function(features=[]) {
   features = this._cloneFeatures(features);
   this._featuresstore.addFeatures(features);
+};
+
+/**
+ * @since v3.7.0
+ * @private
+ */
+proto._addSyncFeaturesFromServer = function(features=[]) {
+  this._syncfeaturesstore.addFeatures(features);
 };
 
 proto._doGetFeaturesRequest = function(options={}) {
@@ -281,11 +289,11 @@ proto._setFeatures = function(features) {
   this._featuresstore.setFeatures(features);
 };
 
-proto.readFeatures = function(){
+proto.readFeatures = function() {
   return this._layer.readFeatures();
 };
 
-proto.readEditingFeatures = function(){
+proto.readEditingFeatures = function() {
   return this._featuresstore.readFeatures()
 };
 
@@ -344,5 +352,13 @@ proto.getSyncEditingSource = function() {
 proto.setSyncEditingSource = function(source) {
   this._syncfeaturesstore = source || this._createSource();
 }
+
+/**
+ *
+ * @returns Array of features
+ */
+proto.readEditingSyncFeatures = function() {
+  return this._syncfeaturesstore.readFeatures();
+};
 
 module.exports = Editor;
