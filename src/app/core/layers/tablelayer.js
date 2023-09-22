@@ -33,9 +33,9 @@ function TableLayer(config={}, options={}) {
     },
     // get data from every sources (server, wms, etc..)
     // throught provider related to featuresstore
-    getFeatures(options={}) {
+    getFeatures(options={}, params={}) {
       const d = $.Deferred();
-      this._featuresstore.getFeatures(options)
+      this._featuresstore.getFeatures(options, params)
         .then(promise => {
           promise.then(features => {
             this.emit('getFeatures', features);
@@ -224,13 +224,36 @@ proto.getLayerForEditing = async function({vectorurl, project_type}={}) {
   }
 };
 
+/**
+ *
+ * @returns return ol source of features
+ */
 proto.getEditingSource = function() {
   return this._editor.getEditingSource();
 };
 
+/**
+ *
+ * @returns Array of features
+ */
 proto.readEditingFeatures = function() {
   return this._editor.readEditingFeatures();
 };
+
+/**
+ * @since v3.7.0
+ */
+proto.getEditingSyncSource = function(){
+  return this._editor.getSyncEditingSource();
+}
+
+/**
+ * @since v3.7.0
+ * @returns Array of features
+ */
+proto.readEditingSyncFeatures = function(){
+  return this._editor.readEditingSyncFeatures();
+}
 
 proto.getEditingLayer = function() {
   return this;

@@ -29,8 +29,8 @@ function FeaturesStore(options={}) {
     clear() {
       this._clearFeatures();
     },
-    getFeatures(options={}) {
-      return this._getFeatures(options);
+    getFeatures(options={}, params={}) {
+      return this._getFeatures(options, params);
     },
     commit(commitItems, featurestore) {
       return this._commit(commitItems, featurestore);
@@ -77,17 +77,22 @@ proto.unlock = function() {
 };
 
 // method get all features from server or attribute _features
-proto._getFeatures = function(options={}) {
+proto._getFeatures = function(options={}, params={}) {
   const d = $.Deferred();
   if (this._provider) {
-    this._provider.getFeatures(options)
+    this._provider
+      .getFeatures(options, params)
       .then(options => {
         const features = this._filterFeaturesResponse(options);
         this.addFeatures(features);
         d.resolve(features);
       })
-      .fail(err => d.reject(err))
-  } else d.resolve(this._readFeatures());
+      .fail(err => {
+        d.reject(err)
+      })
+  } else {
+    d.resolve(this._readFeatures());
+  }
   return d.promise();
 };
 

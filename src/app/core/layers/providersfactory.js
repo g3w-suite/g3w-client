@@ -366,7 +366,7 @@ const Providers = {
 
       if (!options.editing) {
         $.get({
-          url:         this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
+          url:         `${this._layer.getUrl('data')}${urlParams ? '?' + urlParams : ''}`,
           contentType: 'application/json',
         })
           .then(({ vector }) => {
