@@ -70,8 +70,8 @@ proto._createRelationsInfo = function() {
  */
 proto._clearRelationsInfo = function() {
   this._relationsInfo = {
-    children:     {},     // array child (unique ids)
-    fathers:      {},     // array father (unique ids)
+    children:     {},     // relations having a father relation (key -> child_id)
+    fathers:      {},     // relations having a child relation  (key = father_id)
     father_child: {},     // info parent child
   };
 };
@@ -180,43 +180,45 @@ proto.removeRelation = function(relation) {
 };
 
 /**
- * @param childId
+ * @param relation_id
  * 
  * @returns { boolean }
  */
-proto.hasChildren = function(childId) {
-  const children = this.getChildren(childId);
+proto.hasChildren = function(relation_id) {
+  const children = this.getChildren(relation_id);
   return (children && children.length > 0);
 };
 
 /**
- *
- * @param fatherId
- * @returns {boolean|boolean}
+ * @param relation_id
+ * 
+ * @returns { boolean }
  */
-proto.hasFathers = function(fatherId) {
-  const fathers = this.getFathers(fatherId);
+proto.hasFathers = function(relation_id) {
+  const fathers = this.getFathers(relation_id);
   return (fathers && fathers.length > 0);
 };
 
 /**
- * Get children based on father id
+ * Get children relations
  * 
- * @param fatherId
+ * @param relation_id father relation id
  * 
  * @returns { * | null }
  */
-proto.getChildren = function(fatherId) {
-  return this.isFather(fatherId) ? this._relationsInfo.fathers[fatherId] : null;
+proto.getChildren = function(relation_id) {
+  return this.isFather(relation_id) ? this._relationsInfo.fathers[relation_id] : null;
 };
 
 /**
- * Get fathers based on childId
- * @param childId
- * @returns {*|null}
+ * Get father relations
+ * 
+ * @param relation_id child relation id
+ * 
+ * @returns { * | null }
  */
-proto.getFathers = function(childId) {
-  return this.isChild(childId) ? this._relationsInfo.children[childId] : null;
+proto.getFathers = function(relation_id) {
+  return this.isChild(relation_id) ? this._relationsInfo.children[relation_id] : null;
 };
 
 /**
