@@ -8,6 +8,7 @@ const G3WObject = require('core/g3wobject');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
 const Layer = require('core/layers/layer');
+const Feature = require('core/layers/features/feature');
 
 // class Editor bind editor to layer to do main actions
 function Editor(options={}) {
@@ -134,24 +135,22 @@ proto._getFeatures = function(options={}) {
     const returnPromiseFeatures = async (features=[]) => {
       if (syncDataPromise) {
         try {
-          const {data} = syncDataPromise;
+          const {data} = await syncDataPromise;
           if (data && data[0] && data[0].features) {
             const syncFeatures = [];
             //Check if the number of features are the same
             if (features.length === data[0].features.length) {
               //@TODO need check id is equal
-              this._addSyncFeaturesFromServer(data[0].features.map((feature, index) => {
-                const _tempF = new Feature({
-                  feature
-                })
-                _tempF.setUid(features[index].getUid());
-                return _tempF;
+              this._addSyncFeaturesFromServer(features.map((feature, index) => {
+                const syncFeature = feature.clone()
+                syncFeature.setProperties(data[0].features[index].getProperties());
+                return syncFeature;
               }));
             }
           }
         } catch(err) {
           console.log(err)
-          //TODO In case of errore
+          //TODO In case of error
         }
       }
       this._addFeaturesFromServer(features);
