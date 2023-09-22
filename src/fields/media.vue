@@ -172,6 +172,7 @@
 
 <script>
 import GUI                          from 'services/gui';
+import ProjectsRegistry             from 'store/projects';
 import G3WField                     from 'components/G3WField.vue';
 
 const { getUniqueDomId, toRawType } = require('core/utils/utils');
@@ -180,6 +181,7 @@ const { t }                         = require('core/i18n/i18n.service');
 Object
     .entries({
       GUI,
+      ProjectsRegistry,
       G3WField,
       getUniqueDomId,
       toRawType,
