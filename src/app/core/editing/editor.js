@@ -157,7 +157,8 @@ proto._getFeatures = function(options={}) {
       this._allfeatures = !options.filter;
       return d.resolve(features);
     }
-    if (this.getSyncEditingSource()){
+    //check if we need to store sync features
+    if (this.getSyncEditingSource()) {
       syncDataPromise = DataRouterService.getData('search:features', {
         inputs: {
           layer: this._layer,
@@ -166,6 +167,7 @@ proto._getFeatures = function(options={}) {
         outputs: false
       })
     }
+
     this._layer.getFeatures(options)
       .then(promise => {
         promise
