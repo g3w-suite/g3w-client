@@ -1,6 +1,7 @@
 import Applicationstate from 'store/application-state';
 import ChangesManager from 'services/editing';
 import SessionsRegistry from 'store/sessions';
+import DataRouterService from 'services/data';
 
 const { inherit, base } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -127,17 +128,53 @@ proto._doGetFeaturesRequest = function(options={}) {
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   const doRequest = this._doGetFeaturesRequest(options);
+  let syncDataPromise;
   if (!doRequest) d.resolve();
-  else
+  else {
+    const returnPromiseFeatures = async (features=[]) => {
+      if (syncDataPromise) {
+        try {
+          const {data} = syncDataPromise;
+          if (data && data[0] && data[0].features) {
+            const syncFeatures = [];
+            //Check if the number of features are the same
+            if (features.length === data[0].features.length) {
+              //@TODO need check id is equal
+              this._addSyncFeaturesFromServer(data[0].features.map((feature, index) => {
+                const _tempF = new Feature({
+                  feature
+                })
+                _tempF.setUid(features[index].getUid());
+                return _tempF;
+              }));
+            }
+          }
+        } catch(err) {
+          console.log(err)
+          //TODO In case of errore
+        }
+      }
+      this._addFeaturesFromServer(features);
+      this._allfeatures = !options.filter;
+      return d.resolve(features);
+    }
+    if (this.getSyncEditingSource()){
+      syncDataPromise = DataRouterService.getData('search:features', {
+        inputs: {
+          layer: this._layer,
+          search_endpoint: 'api'
+        },
+        outputs: false
+      })
+    }
     this._layer.getFeatures(options)
       .then(promise => {
-        promise.then(features => {
-          this._addFeaturesFromServer(features);
-          this._allfeatures = !options.filter;
-          return d.resolve(features);
-        }).fail(err => d.reject(err))
+        promise
+          .then(returnPromiseFeatures)
+          .fail(err => d.reject(err))
       })
       .fail(err => d.reject(err));
+  }
   return d.promise();
 };
 
