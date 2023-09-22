@@ -254,11 +254,13 @@ proto._setOtherConfigParameters = function(config) {
   // overwrite by vector layer
 };
 
-// return layer fields
-proto.getEditingFields = function(editable=false) {
-  let fields = this.config.editing.fields.length ?
-    this.config.editing.fields :
-    this.config.fields;
+/**
+ * @returns layer fields 
+ */
+proto.getEditingFields = function(editable = false) {
+  let fields = this.config.editing.fields.length
+    ? this.config.editing.fields
+    : this.config.fields;
   if (editable) {
     fields = fields.filter(field => field.editable);
   }
@@ -266,12 +268,12 @@ proto.getEditingFields = function(editable=false) {
 };
 
 /**
- * Check if field is a pk
  * @param field
- * @returns {unknown}
+ * 
+ * @returns {boolean} whether field is a Primary Key
  */
-proto.isPkField = function(field){
-  const find_field = this.getEditingFields().find(_field => _field.name === field);
+proto.isPkField = function(field) {
+  const find_field = this.getEditingFields().find(f => f.name === field);
   return find_field && find_field.pk;
 };
 

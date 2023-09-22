@@ -72,40 +72,32 @@ inherit(Editor, G3WObject);
 const proto = Editor.prototype;
 
 /**
- * Return if request can do
- * Required for vector Layer when bbox are inside to already request bbox no request is done
+ * Used when vector Layer's bbox is contained into an already requested bbox (so no a new request is done).
  *
- * @param options
- * @returns {boolean}
+ * @param { number[] } options.filter.bbox bounding box Array [xmin, ymin, xmax, ymax] 
+ * 
+ * @returns { boolean } whether can perform a server request
+ * 
  * @private
  */
 proto._canDoGetFeaturesRequest = function(options = {}) {
-
   const { bbox } = options.filter || {};
+  const is_vector = bbox && Layer.LayerTypes.VECTOR === this._layer.getType();
 
-  //check if bbox is pass as filter parameter
-  //bbox array [xmin, ymin, xmax, ymax]
-
-  if ( bbox && Layer.LayerTypes.VECTOR === this._layer.getType()) {
-
-    //check if already filter bbox is set
-    //null if the first time
-    if (null === this._filter.bbox) {
-      this._filter.bbox = bbox; //set store bbox
-      return true; // need to be do a request
-    }
-
-    //check if current bbox is contained (inside) already bbox request
-    const bboxRequestDone = ol.extent.containsExtent(this._filter.bbox, bbox);
-
-    this._filter.bbox =  bboxRequestDone ?
-      this._filter.bbox : //set same
-      ol.extent.extend(this._filter.bbox, bbox); // extend bbox store
-
-    return bboxRequestDone
-
+  // first request --> need to peform request
+  if (is_vector && null === this._filter.bbox) {
+    this._filter.bbox = bbox;                                                      // store bbox
+    return true;
   }
-  //otherwise need to be done the request always
+
+  // subsequent requests --> check if bbox is contained into an already requested bbox 
+  if (is_vector) {
+    const is_cached = ol.extent.containsExtent(this._filter.bbox, bbox);
+    if (!is_cached) this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox); // extend bbox
+    return is_cached;
+  }
+
+  // default --> perform request 
   return true;
 };
 
