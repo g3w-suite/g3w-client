@@ -33,6 +33,7 @@
           :addToValidate    = "addToValidate"
           :removeToValidate = "removeToValidate"
           :feature          = "feature"
+          :mode             = "'editing' === context ? 'input' : 'read'"
           :_type            = "getField(node).query ? getField(node).input.type : undefined"
         />
 
