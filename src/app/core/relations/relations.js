@@ -64,8 +64,6 @@ proto._createRelationsInfo = function() {
       children[c].push(f);
   });
 
-  console.log(this._relationsInfo);
-
 };
 
 /**
