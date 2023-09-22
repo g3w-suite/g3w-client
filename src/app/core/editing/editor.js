@@ -142,6 +142,11 @@ proto.revert = function() {
   return d.promise();
 };
 
+/**
+ * Rollback changes
+ * @param changes
+ * @returns {*}
+ */
 proto.rollback = function(changes=[]) {
   const d = $.Deferred();
   this._applyChanges(changes, true);

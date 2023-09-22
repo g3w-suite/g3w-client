@@ -120,9 +120,13 @@ function TableLayer(config={}, options={}) {
           if (this.type === Layer.LayerTypes.TABLE) {
             //get eventaully selected fields
             //that has value and key
-            const selectFields = this.config.editing.fields.find(field => {
-              return ['select_autocomplete', 'select'].indexOf(field.input.type) !== -1;
-            })
+            if (
+                this.config.editing.fields.find(field => ['select_autocomplete', 'select'].includes(field.input.type))
+              ) {
+              //create a sync source to store sync features with different values of properties
+              //based for example to different request formatter parameter value (0, 1)
+              this._editor.setSyncEditingSource();
+            }
           }
 
           resolve(this);
