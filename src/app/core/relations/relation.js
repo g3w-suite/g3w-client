@@ -45,6 +45,7 @@ proto.getId = function() {
 
 /**
  * Set Relation id
+ * 
  * @param id
  */
 proto.setId = function(id) {
@@ -94,18 +95,14 @@ proto.setTitle = function(title) {
 };
 
 /**
- * Return relation child layer id
- * 
- * @returns {*}
+ * @returns { string } layerId of child relation
  */
 proto.getChild = function() {
   return this.state.child;
 };
 
 /**
- * Return relation father layer id
- * 
- * @returns {*}
+ * @returns { string } layerId of father relation
  */
 proto.getFather = function() {
   return this.state.father;
