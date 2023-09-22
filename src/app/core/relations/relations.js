@@ -204,7 +204,7 @@ proto.hasFathers = function(relation_id) {
  * 
  * @param layer_id
  * 
- * @returns { * | null }
+ * @returns { Array | null } child layer (Ids) within same relation
  */
 proto.getChildren = function(layer_id) {
   return this.isFather(layer_id) ? this._relationsInfo.fathers[layer_id] : null;
@@ -215,7 +215,7 @@ proto.getChildren = function(layer_id) {
  * 
  * @param layer_id
  * 
- * @returns { * | null }
+ * @returns { Array | null } father layer Ids within same relation
  */
 proto.getFathers = function(layer_id) {
   return this.isChild(layer_id) ? this._relationsInfo.children[layer_id] : null;
