@@ -13,7 +13,7 @@
     <a
       href        = "#"
       class       = "sidebar-aside-toggle"
-      :class = "{ 'g3w-disabled': disabled }"
+      :class      = "{ 'g3w-disabled': disabled }"
       data-toggle = "offcanvas" role="button">
       <i :class="g3wtemplate.getFontClass('bars')"></i>
     </a>
