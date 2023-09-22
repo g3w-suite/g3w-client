@@ -95,14 +95,14 @@ proto.setTitle = function(title) {
 };
 
 /**
- * @returns { string } layerId of child relation
+ * @returns { string[] } layerId of child relation
  */
 proto.getChild = function() {
   return this.state.child;
 };
 
 /**
- * @returns { string } layerId of father relation
+ * @returns { string[] } layerId of father relation
  */
 proto.getFather = function() {
   return this.state.father;
