@@ -1,25 +1,34 @@
 const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const Relation = require('core/relations/relation');
+const G3WObject         = require('core/g3wobject');
+const Relation          = require('core/relations/relation');
 
-// class Relations
-function Relations(options={}) {
-  const {relations} = options;
-  //store relations
+/**
+ * Relations Class
+ *
+ * @param options
+ *
+ * @constructor
+ */
+function Relations(options = {}) {
+
+  /**
+   * Relations store
+   */
   this._relations = {};
-  this._length = relations ? relations.length : 0;
-  // to build relations between layers
-  this._relationsInfo = {
-    children: {}, // array child (unique ids)
-    fathers: {}, // array father (unique ids)
-    father_child: {} // info parent child
-  };
+
+  /**
+   * Number of relations
+   */
+  this._length = options.relations ? options.relations.length : 0;
+
   let relation;
-  relations.forEach(relationConfig => {
+  options.relations.forEach(relationConfig => {
     relation = new Relation(relationConfig);
     this._relations[relation.getId()] = relation;
   });
-  this._createRelationsInfo();
+
+  this._reloadRelationsInfo();
+
   base(this);
 }
 
@@ -27,40 +36,49 @@ inherit(Relations, G3WObject);
 
 const proto = Relations.prototype;
 
+/**
+ * Populate `this._relationsInfo` object.
+ */
 proto._createRelationsInfo = function() {
-  let father;
-  let child;
-  Object.entries(this._relations)
-    .forEach(([relationKey, relation]) => {
-      father = relation.getFather();
-      child = relation.getChild();
-      //set
-      this._relationsInfo.father_child[father+child] = relationKey;
 
-      if (!this._relationsInfo.fathers[father]) {
-        this._relationsInfo.fathers[father] = [];
-      }
-      if (!this._relationsInfo.children[child]) {
-        this._relationsInfo.children[child] = [];
-      }
-      this._relationsInfo.fathers[father].push(child);
-      this._relationsInfo.children[child].push(father);
+  // sanity check
+  if (!this._relationsInfo) {
+    this._clearRelationsInfo();
+  }
+
+  let f, c;
+  const { father_child, fathers, children } = this._relationsInfo;
+
+  Object
+    .entries(this._relations)
+    .forEach(([relationKey, relation]) => {
+
+      f = relation.getFather();
+      c = relation.getChild();
+
+      father_child[f + c] = relationKey;       // relationKey = [father_layerId + child_layerId]
+      fathers[f]          = fathers[f]  || [];
+      children[c]         = children[c] || [];
+
+      fathers[f].push(c);
+      children[c].push(f);
   });
+
 };
 
 /**
- *
  * @private
  */
 proto._clearRelationsInfo = function() {
   this._relationsInfo = {
-    children: {},
-    fathers: {},
-    father_children: {}
+    children:     {},     // hashmap: <child_layerId,  Array<father_relationId>>
+    fathers:      {},     // hashmap: <father_layerId, Array<child_relationId[]>>
+    father_child: {},     // hashmap: <relationKey, relationId>
   };
 };
 
 /**
+ * Build relations between layers.
  *
  * @private
  */
@@ -69,37 +87,45 @@ proto._reloadRelationsInfo = function() {
   this._createRelationsInfo();
 };
 
-// number of relations
+/**
+ * @returns { number } number of relations
+ */
 proto.getLength = function() {
   return this._length;
 };
 
 /**
+ * @param relation.type
  *
- * @param type
- * @returns {*|{}|[]|{}}
+ * @returns { {} | Relation[] } relations filtered by type
  */
-proto.getRelations = function({type=null}={}) {
-  if (type) {
-    //check if relation has type
-    if (['ONE','MANY'].indexOf(type) !== -1) {
-      const relations = {};
-      for (const name in this._relations) {
-        const relation = this._relations[name];
-        if (relation.getType() === type) {
-          relations[name] = relation;
-        }
-      }
-      return relations;
-    } else {
-      return {};
-    }
-  } else {
+proto.getRelations = function({
+  type = null,
+} = {}) {
+
+  // type = null
+  if (!type) {
     return this._relations;
   }
+
+  // type = { 'ONE' | 'MANY' }
+  if (-1 !== ['ONE','MANY'].indexOf(type)) {
+    const relations = {};
+    for (const name in this._relations) {
+      const relation = this._relations[name];
+      if (type === relation.getType()) {
+        relations[name] = relation;
+      }
+    }
+    return relations;
+  }
+
+  return {};
 };
 
-// array of relation
+/**
+ * @returns { Relation[] }
+ */
 proto.getArray = function() {
   return Object
     .entries(this._relations)
@@ -107,7 +133,6 @@ proto.getArray = function() {
 };
 
 /**
- *
  * @param relations
  */
 proto.setRelations = function(relations=[]) {
@@ -115,26 +140,25 @@ proto.setRelations = function(relations=[]) {
 };
 
 /**
- *
  * @param id
- * @returns {*}
+ *
+ * @returns { Relation }
  */
 proto.getRelationById = function(id) {
   return this._relations[id];
 };
 
 /**
+ * @param father father layerId
+ * @param child  child_layerId
  *
- * @param father
- * @param child
- * @returns {*}
+ * @returns { Relation }
  */
 proto.getRelationByFatherChildren = function(father, child) {
-  return this.getRelationById(this._relationsInfo.father_child[father+child]);
+  return this.getRelationById(this._relationsInfo.father_child[father + child]);
 };
 
 /**
- *
  * @param relation
  */
 proto.addRelation = function(relation) {
@@ -176,44 +200,40 @@ proto.hasFathers = function(fatherId) {
 };
 
 /**
- * Get children based on father id
- * @param fatherId
- * @returns {*|null}
- */
-proto.getChildren = function(fatherId) {
-  if (this.isFather(fatherId)) {
-    return this._relationsInfo.fathers[fatherId];
-  } else {
-    return null;
-  }
-};
-
-/**
- * Get fathers based on childId
- * @param childId
- * @returns {*|null}
- */
-proto.getFathers = function(childId) {
-  if (this.isChild(childId)) {
-    return this._relationsInfo.children[childId];
-  } else {
-    return null;
-  }
-};
-
-/**
+ * Extract children relations
  *
+ * @param layer_id
+ *
+ * @returns { Array | null } child layer (Ids) within same relation
+ */
+proto.getChildren = function(layer_id) {
+  return this.isFather(layer_id) ? this._relationsInfo.fathers[layer_id] : null;
+};
+
+/**
+ * Extract father relations
+ *
+ * @param layer_id
+ *
+ * @returns { Array | null } father layer Ids within same relation
+ */
+proto.getFathers = function(layer_id) {
+  return this.isChild(layer_id) ? this._relationsInfo.children[layer_id] : null;
+};
+
+/**
  * @param id
- * @returns {boolean}
+ *
+ * @returns { boolean }
  */
 proto.isChild = function(id) {
   return !!this._relationsInfo.children[id];
 };
 
 /**
- *
  * @param id
- * @returns {boolean}
+ *
+ * @returns { boolean }
  */
 proto.isFather = function(id) {
   return !!this._relationsInfo.fathers[id];

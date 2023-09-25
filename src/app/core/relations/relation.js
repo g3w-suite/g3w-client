@@ -7,23 +7,26 @@ const G3WObject = require('core/g3wobject');
  * @constructor
  */
 function Relation(config={}) {
-  const uniqueSuffix = Date.now();
-  const id = config.id || `id_${uniqueSuffix}`;
-  const name = config.name || `name_${uniqueSuffix}`;
-  const origname = config.origname || `origname_${uniqueSuffix}`;
+  const suffix = Date.now();
+  /** BACKCOMP (g3w-admin < v.3.7.0) */
+  const multi_fields = [].concat(config.fieldRef.referencedField);
+
   this.state = {
-    id,
-    name,
-    origname,
+    id:          config.id       || `id_${suffix}`,
+    name:        config.name     || `name_${suffix}`,
+    origname:    config.origname || `origname_${suffix}`,
     editable: config.editable || false, //@since v3.7.0
     prefix: config.prefix, //@since v3.7.0
     father: config.referencedLayer,
     child: config.referencingLayer,
-    fatherField: config.fieldRef.referencedField,
-    childField: config.fieldRef.referencingField,
+    /** BACKCOMP (g3w-admin < v.3.7.0) */
+    fatherField: [].concat(config.fieldRef.referencedField),
+    /** BACKCOMP (g3w-admin < v.3.7.0) */
+    childField: [].concat(config.fieldRef.referencingField),
     type: config.type,
     loading: false
   };
+
   base(this);
 }
 
@@ -33,6 +36,7 @@ const proto = Relation.prototype;
 
 /**
  * Get relation id
+ *
  * @returns {string}
  */
 proto.getId = function() {
@@ -41,6 +45,7 @@ proto.getId = function() {
 
 /**
  * Set Relation id
+ *
  * @param id
  */
 proto.setId = function(id) {
@@ -49,6 +54,7 @@ proto.setId = function(id) {
 
 /**
  * Get Relation name
+ *
  * @returns {string}
  */
 proto.getName = function() {
@@ -57,6 +63,7 @@ proto.getName = function() {
 
 /**
  * Set Relation name
+ *
  * @param name
  */
 proto.setName = function(name) {
@@ -81,40 +88,35 @@ proto.setTitle = function(title) {
 };
 
 /**
- * Return relation child layer id
- * @returns {*}
+ * @returns { string[] } layerId of child relation
  */
 proto.getChild = function() {
   return this.state.child;
 };
 
 /**
- * Return relation father layer id
- * @returns {*}
+ * @returns { string[] } layerId of father relation
  */
 proto.getFather = function() {
   return this.state.father;
 };
 
 /**
- * Return all state Object of relation
- * @returns {*|{father: *, fatherField: *, name: string, origname: (string|*|string), id: string, type, loading: boolean, childField: *, child: *}}
+ * @returns state Object of relation
  */
 proto.getState = function() {
   return this.state;
 };
 
 /**
- * Retur relation type (MANY, ONE, etc..)
- * @returns {*}
+ * @returns { 'MANY' | ONE' | string } relation type
  */
 proto.getType = function() {
   return this.state.type;
 };
 
 /**
- * Return Relation fields
- * @returns {{father, child}}
+ * @returns {{ father, child }} relation fields
  */
 proto.getFields = function() {
   return {
@@ -125,6 +127,7 @@ proto.getFields = function() {
 
 /**
  * Return father relation field name
+ *
  * @returns {*}
  */
 proto.getFatherField = function() {
@@ -133,6 +136,7 @@ proto.getFatherField = function() {
 
 /**
  * Return relation child layer field name
+ *
  * @returns {*}
  */
 proto.getChildField = function() {
@@ -140,11 +144,8 @@ proto.getChildField = function() {
 };
 
 /**
- * For editing purpose
- */
-
-/**
- * Set Loading state relation
+ * Set Loading state relation (for editing purpose)
+ *
  * @param bool
  */
 proto.setLoading = function(bool=false){
@@ -152,8 +153,9 @@ proto.setLoading = function(bool=false){
 };
 
 /**
- * Check Loading state Relation
- * @returns {boolean}
+ * Check Loading state Relation (for editing purpose)
+ *
+ * @returns { boolean }
  */
 proto.isLoading = function(){
   return this.state.loading;
