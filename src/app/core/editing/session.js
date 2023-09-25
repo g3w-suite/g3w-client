@@ -200,7 +200,7 @@ proto.moveRelationStatesOwnSession = function() {
 // that will be added with save method
 proto.push = function(New, Old) {
   /*
-  New e Old saranno oggetti contenti {
+  New e Old are Object contains {
       layerId: xxxx,
       feature: feature
     }
