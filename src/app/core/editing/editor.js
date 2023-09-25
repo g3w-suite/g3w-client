@@ -259,53 +259,45 @@ proto.setFieldValueToRelationField = function(
 
 /**
  * Apply response data from server in case of new inserted feature
- * @param response Object return from server
- * @param relations Array of relations objects related to commit request/response
+ *
+ * @param response
+ * @param relations
  */
-proto.applyCommitResponse = function(response={}, relations=[]) {
-  if (response && response.result) {
-    const {response:data} = response;
-    // ids Array of object of new features
-    // {
-    //  clientid: cointain temporary __new id of feature created
-    //  id: new id set by server to substitute to temporary
-    // }
-    const ids = data.new;
-    //Array of new lock ids
-    const lockids = data.new_lockids;
+proto.applyCommitResponse = function(response = {}, relations = []) {
 
-    //Loop on Array new ids layer features
-    ids.forEach(idobj => {
+  // skip when no response and response.result is false
+  if (!(response && response.result)) {
+    return;
+  }
 
-      //get current feature from source based on temporary __new id
-      const feature = this._featuresstore.getFeatureById(idobj.clientid);
+  const ids     = response.response.new;         // get ids from new attribute of response
+  const lockids = response.response.new_lockids; // get new lockId
 
-      //set new id returned by server
-      feature.setId(idobj.id);
+  ids.forEach(({
+    clientid,                                // temporary id created by client __new__
+    id,                                      // the new id created and stored on server
+    properties                               // properties of the feature saved on server
+  } = {}) => {
 
-      //set properties of feature returned by server
-      feature.setProperties(idobj.properties);
+    const feature = this._featuresstore.getFeatureById(clientid);
 
-      //Loop relations array items
-      relations.forEach(r => {
-        Object.entries(r)
-          .forEach(([layerId, options]) => {
-            //get father feature property value
-            //to set to child relation value field
-            const value = feature.get(options.fatherField);
-            this.setFieldValueToRelationField({
-              layerId, //child layerId
-              ids: options.ids, // ids of features belong to relation that need to update
-              field: {
-                name: options.childField,
-                value,
-              }
-            })
+    feature.setId(id);                       // set new id
+    feature.setProperties(properties);
 
-          })
-
-      })
-
+    relations.forEach(relation => {                                              // handle relations (if provided)
+      Object
+        .entries(relation)
+        .forEach(([ relationId, options = {}]) => {
+          const is_pk = options.fatherField.find(d => this._layer.isPkField(d)); // check if parent field is a Primary Key
+          if (is_pk) {
+            this.setFieldValueToRelationField({                                  // for each field
+              relationId,                                                        // relation layer id
+              ids: options.ids,                                                  // ids of features of relation layers to check
+              field: options.childField[options.fatherField.indexOf(is_pk)],     // relation field to overwrite
+              values: [clientid, id]                                             // [<old temporary id value>, <new id value>]
+            });
+          }
+        });
     });
 
   });
@@ -329,7 +321,6 @@ proto.addLockIds = function(lockids) {
 }
 
 /**
- * Get lockids from layer
  * @returns {*}
  */
 proto.getLockIds = function() {
