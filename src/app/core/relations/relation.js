@@ -8,23 +8,24 @@ const G3WObject = require('core/g3wobject');
  */
 function Relation(config={}) {
   const suffix = Date.now();
-  /** BACKCOMP (g3w-admin < v.3.7.0) */
-  const multi_fields = [].concat(config.fieldRef.referencedField);
 
   this.state = {
+    loading:     false,
     id:          config.id       || `id_${suffix}`,
     name:        config.name     || `name_${suffix}`,
     origname:    config.origname || `origname_${suffix}`,
-    editable: config.editable || false, //@since v3.7.0
-    prefix: config.prefix, //@since v3.7.0
-    father: config.referencedLayer,
-    child: config.referencingLayer,
+    father:      config.referencedLayer,
+    child:       config.referencingLayer,
+    type:        config.type,
+    /** @since 3.9.0 */
+    editable:    config.editable || false,
+    /** @since 3.9.0 */
+    prefix:      config.prefix,
     /** BACKCOMP (g3w-admin < v.3.7.0) */
     fatherField: [].concat(config.fieldRef.referencedField),
     /** BACKCOMP (g3w-admin < v.3.7.0) */
-    childField: [].concat(config.fieldRef.referencingField),
-    type: config.type,
-    loading: false
+    childField:  [].concat(config.fieldRef.referencingField),
+
   };
 
   base(this);
@@ -71,7 +72,12 @@ proto.setName = function(name) {
 };
 
 /**
+ * @FIXME `this.state.title` is not defined in class constructor
+ * 
  * Get Relation title
+ * 
+ * @returns { undefined }
+ * 
  * @returns {*}
  */
 proto.getTitle = function() {
@@ -79,8 +85,13 @@ proto.getTitle = function() {
 };
 
 /**
+ * @FIXME `this.state.title` is not defined in class constructor)
+ * 
  * Set Relation title
+ * 
  * @param title
+ * 
+ * @returns { undefined }
  * @returns {*}
  */
 proto.setTitle = function(title) {
@@ -163,7 +174,8 @@ proto.isLoading = function(){
 
 /**
  * Get editable property
- * @since v3.7.0
+ * 
+ * @since 3.9.0
  */
 proto.isEditable = function(){
   return this.state.editable;
@@ -175,8 +187,10 @@ proto.isEditable = function(){
 
 /**
  * Get Prefix (for Relation 1:1)
- * @since v3.7.0
+ * 
  * @returns String
+ * 
+ * @since 3.9.0
  */
 proto.getPrefix = function(){
   return this.state.prefix;
