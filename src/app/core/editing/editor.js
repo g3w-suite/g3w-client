@@ -50,6 +50,8 @@ function Editor(options = {}) {
 
   /**
    * Store editing features
+   * 
+   * @type { FeaturesStore | OlFeaturesStore }
    */
   this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
 
@@ -103,7 +105,8 @@ proto._canDoGetFeaturesRequest = function(options = {}) {
 
 /**
  * Get editing source layer feature
- * @returns {*}
+ * 
+ * @returns { FeaturesStore | OlFeaturesStore }
  */
 proto.getEditingSource = function() {
   return this._featuresstore;
@@ -118,11 +121,13 @@ proto.getSource = function() {
 
 /**
  * Apply changes to source features
+ * 
  * @param items
  * @param reverse
+ * 
  * @private
  */
-proto._applyChanges = function(items=[], reverse=true) {
+proto._applyChanges = function(items = [], reverse = true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
@@ -200,10 +205,12 @@ proto.revert = function() {
 
 /**
  * Rollback changes
+ * 
  * @param changes
+ * 
  * @returns {*}
  */
-proto.rollback = function(changes=[]) {
+proto.rollback = function(changes = []) {
   const d = $.Deferred();
   this._applyChanges(changes, true);
   d.resolve();
@@ -211,7 +218,6 @@ proto.rollback = function(changes=[]) {
 };
 
 /**
- *
  * @param relations relations response
  */
 proto.applyChangesToNewRelationsAfterCommit = function(relations) {
@@ -231,10 +237,12 @@ proto.applyChangesToNewRelationsAfterCommit = function(relations) {
 };
 
 /**
- * Method to handle relation feature saved on server
- * @param layerId id of relation layer
- * @param ids Array of changes/new feature id
- * @param field field object. {name: field name, value }
+ * Handle relation feature saved on server
+ * 
+ * @param opts.layerId     - id of relation layer
+ * @param opts.ids         - Array of changes (new feature id)
+ * @param opts.field.name  - field name
+ * @param opts.field.value - field value
  */
 proto.setFieldValueToRelationField = function(
   {
@@ -243,16 +251,14 @@ proto.setFieldValueToRelationField = function(
     field,
   } = {}
 ) {
-  //Loop of relation ids and set father feature field value field.name
-  ids.forEach(id => {
-    const feature = SessionsRegistry
-      .getSession(layerId) //get session by layerId
-      .getEditor() //get editor of session
-      .getEditingSource() //get source
-      .getFeatureById(id); //get feature by id
-    //Check if feature is found and feature has field value
+  const source = SessionsRegistry              // get source of editing layer.
+    .getSession(layerId)
+    .getEditor()
+    .getEditingSource();
+  ids.forEach(id => {                          // loop relation ids
+    const feature = source.getFeatureById(id);
     if (feature) {
-      feature.set(field.name, field.value);
+      feature.set(field.name, field.value);    // set father feature `value` and `name`
     }
   })
 };
@@ -353,8 +359,8 @@ proto.commit = function(commit) {
                 ...commit.relations[relationId].add.map(r => r.id),   // added
                 ...commit.relations[relationId].update.map(r => r.id) // updated
               ],
-              fatherField: relation.getFatherField(), //father Fields <Array>
-              childField: relation.getChildField() //child Fields <Array>
+              fatherField: relation.getFatherField(), // father Fields <Array>
+              childField: relation.getChildField()    // child Fields <Array>
             }
           };
         });
@@ -458,8 +464,7 @@ proto._save = function() {
 };
 
 /**
- * Chef if editor is start
- * @returns {boolean|*}
+ * @returns { boolean } whether has started editor 
  */
 proto.isStarted = function() {
   return this._started;
@@ -475,7 +480,8 @@ proto.clear = function() {
 
   this._featuresstore.clear();
   this._layer.getFeaturesStore().clear();
-  //in case of vector layer
+
+  // vector layer
   if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
     this._layer.resetEditingSource(this._featuresstore.getFeaturesCollection());
   }
