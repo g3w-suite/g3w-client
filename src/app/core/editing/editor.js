@@ -49,7 +49,10 @@ function Editor(options = {}) {
    * Referred layer
    */
   this._layer = options.layer;
-  // editing featurestore
+
+  /**
+   * Store editing features
+   */
   this._featuresstore = this._createSource();
   //@since v3.7.0 eventually store the same number of features but with different properties values
   //for example derived from formatted 1 parameter request for Table Layer
@@ -171,15 +174,16 @@ proto._getFeatures = function(options={}) {
         try {
           const {data} = await syncDataPromise;
           if (data && data[0] && data[0].features) {
-            const syncFeatures = [];
             //Check if the number of features are the same
             if (features.length === data[0].features.length) {
               //@TODO need check id is equal
-              this._addSyncFeaturesFromServer(features.map((feature, index) => {
-                const syncFeature = feature.clone()
-                syncFeature.setProperties(data[0].features[index].getProperties());
-                return syncFeature;
-              }));
+              this._addSyncFeaturesFromServer(data[0].features.map((feature, index) => {
+                const _tempF = new Feature({
+                  feature
+                })
+                _tempF._setUid(features[index].getUid());
+                return _tempF;
+              }))
             }
           }
         } catch(err) {
@@ -223,11 +227,6 @@ proto.revert = function() {
   return d.promise();
 };
 
-/**
- * Rollback changes
- * @param changes
- * @returns {*}
- */
 proto.rollback = function(changes=[]) {
   const d = $.Deferred();
   this._applyChanges(changes, true);
@@ -529,7 +528,7 @@ proto.setSyncEditingSource = function(source) {
  * @returns Array of features
  */
 proto.readEditingSyncFeatures = function() {
-  return this._syncfeaturesstore.readFeatures();
+  return this._syncfeaturesstore && this._syncfeaturesstore.readFeatures();
 };
 
 module.exports = Editor;
