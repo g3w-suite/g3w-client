@@ -581,12 +581,10 @@ const geoutils = {
     return feature;
   },
 
-  createFeatureFromGeometry({id,geometry}={}) {
-    if (geometry) {
-      const feature = new ol.Feature(geometry);
-      feature.setId(id);
-      return feature;
-    }
+  createFeatureFromGeometry({id, geometry}={}) {
+    const feature = new ol.Feature(geometry);
+    feature.setId(id);
+    return feature;
   },
 
   /**
@@ -601,9 +599,21 @@ const geoutils = {
    */
   createFeatureFromFeatureObject({id, feature={}}) {
     const {geometry, attributes} = feature;
-    feature = geoutils.createFeatureFromGeometry({id,geometry});
+    feature = geoutils.createFeatureFromGeometry({id, geometry});
     Object.keys(attributes).forEach(attribute => feature.set(attribute, attributes[attribute]));
     return feature;
+  },
+
+  /**
+   * @since v3.9.0
+   * @param features
+   * @returns {{}[]}
+   */
+  createFeaturesFromVectorDataApi(features=[]){
+    return features.map(f => geoutils.createFeatureFromFeatureObject({
+      id: f.id,
+      feature: {geometry: f.geometry, attributes: f.properties}
+    }))
   },
 
   createOlLayer(options = {}) {
