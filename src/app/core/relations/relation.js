@@ -2,11 +2,13 @@ const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /**
- * Class Relation
+ * Relation Class
+ * 
  * @param config
+ * 
  * @constructor
  */
-function Relation(config={}) {
+function Relation(config = {}) {
   const suffix = Date.now();
 
   this.state = {
@@ -132,7 +134,7 @@ proto.getType = function() {
 proto.getFields = function() {
   return {
     father: this.state.fatherField,
-    child: this.state.childField
+    child:  this.state.childField,
   };
 };
 

@@ -180,23 +180,23 @@ proto.removeRelation = function(relation) {
 };
 
 /**
- *
- * @param childId
- * @returns {boolean|boolean}
+ * @param layer_id
+ * 
+ * @returns { boolean }
  */
-proto.hasChildren = function(childId) {
-  const children = this.getChildren(childId);
-  return children ? children.length > 0: false;
+proto.hasChildren = function(layer_id) {
+  const children = this.getChildren(layer_id);
+  return (children && children.length > 0);
 };
 
 /**
- *
- * @param fatherId
- * @returns {boolean|boolean}
+ * @param layer_id
+ * 
+ * @returns { boolean }
  */
-proto.hasFathers = function(fatherId) {
-  const fathers = this.getFathers(fatherId);
-  return fathers ? fathers.length > 0 : false;
+proto.hasFathers = function(layer_id) {
+  const fathers = this.getFathers(layer_id);
+  return (fathers && fathers.length > 0);
 };
 
 /**
