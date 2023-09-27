@@ -137,13 +137,15 @@ proto.updateTemporaryChanges = function(feature) {
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
   /**
-   * @TODO check if need to deprecate it. All properties are need
+   * @TODO check if it need to deprecate it. All properties are need
    * Please take care of this to understand
    * In case of removeNotEditableProperties true, remove not editable field
    * from feature properties
    */
+  const editor = layerId === this.getId() ? this._editor : SessionsRegistry.getSession(layerId).getEditor();
+
   if (removeNotEditableProperties) {
-    this._editor.removeNotEditablePropriertiesFromFeature(feature);
+    editor.removeNotEditablePropriertiesFromFeature(feature);
   }
   const newFeature = feature.clone();
 
@@ -153,7 +155,7 @@ proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
   });
 
   //add feature to sync source
-  this._editor.upateSyncEditingSource({
+  editor.upateSyncEditingSource({
     action: 'add',
     feature: newFeature
   });
@@ -163,6 +165,8 @@ proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
 
 // delete temporary feature
 proto.pushDelete = function(layerId, feature) {
+  //in case of relation, layerId is of the child and different from current session
+  const editor = layerId === this.getId() ? this._editor : SessionsRegistry.getSession(layerId).getEditor();
 
   this.push({
     layerId,
@@ -170,7 +174,7 @@ proto.pushDelete = function(layerId, feature) {
   });
 
   //delete feature to sync source
-  this._editor.upateSyncEditingSource({
+  editor.upateSyncEditingSource({
     action: 'delete',
     feature
   });
@@ -180,7 +184,8 @@ proto.pushDelete = function(layerId, feature) {
 
 // add temporary feature changes
 proto.pushUpdate = function(layerId, newFeature, oldFeature) {
-
+  //in case of relation, layerId is of the child and different from current session
+  const editor = layerId === this.getId() ? this._editor : SessionsRegistry.getSession(layerId).getEditor();
   // in case of change attribute immediately after create feature
   //check if is a new feature
   if (newFeature.isNew()) {
@@ -198,7 +203,7 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
       feature.add();
 
       //update feature to sync source
-      this._editor.upateSyncEditingSource({
+      editor.upateSyncEditingSource({
         action: 'update',
         feature
       });
@@ -210,7 +215,7 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
   }
 
   //update feature to sync source
-  this._editor.upateSyncEditingSource({
+  editor.upateSyncEditingSource({
     action: 'update',
     feature: newFeature
   });
