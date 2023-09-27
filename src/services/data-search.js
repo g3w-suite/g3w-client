@@ -29,22 +29,22 @@ function SearchService() {
     layer,
     search_endpoint,
     filter,
-    raw:false,
+    raw: false,
     queryUrl,
     feature_count,
-    formatter:1,
+    formatter: 1,
     ordering,
   }) {
     
     const promises                = [];
     const { layer, ...params }    = options;
     const { raw = false, filter } = options;
-    const data                    = [];
+    let data                      = [];
     const layers                  = Array.isArray(layer) ? layer : [layer];                         // check if layer is array
     params.filter                 = Array.isArray(params.filter) ? params.filter : [params.filter]; // check if filter is array
 
     // if 'api' or 'ows' search_endpoint
-    if ('api' === params.search_endpoint){
+    if ('api' === params.search_endpoint) {
       layers.forEach((layer, i) => promises.push(layer.searchFeatures({ ...params, filter: params.filter[i] })));
     } else {
       promises
@@ -93,8 +93,8 @@ function SearchService() {
    */
   this.fids = async function({
     layer,
-    formatter=0,
-    fids=[]
+    formatter = 0,
+    fids      = [],
   } = {}) {
     const features = []; 
     try {
@@ -124,9 +124,9 @@ function SearchService() {
    * @returns { Promise<{ data: [], query: { type: 'search' }}> }
    */
   this.layersfids = async function({
-    layers=[],
-    fids=[],
-    formatter=0
+    layers    = [],
+    fids      = [],
+    formatter = 0,
   } = {}) {
     const promises = [];
     const data     = [];
