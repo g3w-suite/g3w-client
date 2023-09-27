@@ -32,6 +32,7 @@ function Session(options={}) {
   this._history = new History({
     id: this.state.id
   });
+  //store temporary change not save on history
   this._temporarychanges = [];
   this.register();
 }
@@ -136,40 +137,84 @@ proto.updateTemporaryChanges = function(feature) {
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
   /**
+   * @TODO check if need to deprecate it. All properties are need
    * Please take care of this to understand
+   * In case of removeNotEditableProperties true, remove not editable field
+   * from feature properties
    */
-  removeNotEditableProperties && this._editor.removeNotEditablePropriertiesFromFeature(feature);
+  if (removeNotEditableProperties) {
+    this._editor.removeNotEditablePropriertiesFromFeature(feature);
+  }
   const newFeature = feature.clone();
+
   this.push({
     layerId,
     feature: newFeature.add()
   });
+
+  //add feature to sync source
+  this._editor.upateSyncEditingSource({
+    action: 'add',
+    feature: newFeature
+  });
+
   return newFeature;
 };
 
 // delete temporary feature
 proto.pushDelete = function(layerId, feature) {
+
   this.push({
     layerId,
     feature: feature.delete()
   });
+
+  //delete feature to sync source
+  this._editor.upateSyncEditingSource({
+    action: 'delete',
+    feature
+  });
+
   return feature;
 };
 
 // add temporary feature changes
 proto.pushUpdate = function(layerId, newFeature, oldFeature) {
+
   // in case of change attribute immediately after create feature
+  //check if is a new feature
   if (newFeature.isNew()) {
-    const temporarynewfeatureIndex = this._temporarychanges.findIndex((change) => {
-      return change.layerId === layerId && change.feature.getId() === newFeature.getId();
-    });
+
+    //check if new feature update are stored in temporary changes
+    const temporarynewfeatureIndex = this._temporarychanges
+        .findIndex(change => {
+          return change.layerId === layerId &&
+                 change.feature.getId() === newFeature.getId();
+        });
+
+    //if found
     if (temporarynewfeatureIndex !== -1) {
       const feature = newFeature.clone();
       feature.add();
+
+      //update feature to sync source
+      this._editor.upateSyncEditingSource({
+        action: 'update',
+        feature
+      });
+
       this._temporarychanges[temporarynewfeatureIndex].feature = feature;
+
       return;
     }
   }
+
+  //update feature to sync source
+  this._editor.upateSyncEditingSource({
+    action: 'update',
+    feature: newFeature
+  });
+
   this.push({
       layerId,
       feature: newFeature.update()
@@ -242,8 +287,9 @@ proto._filterChanges = function() {
 };
 
 proto.rollback = function(changes) {
-  if (changes) return this._editor.rollback(changes);
-  else {
+  if (changes) {
+    return this._editor.rollback(changes);
+  } else {
     const d = $.Deferred();
     const changes = this._filterChanges();
     this._editor.rollback(changes.own).then(()=>{

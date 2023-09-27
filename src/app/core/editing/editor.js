@@ -2,8 +2,10 @@ import Applicationstate from 'store/application-state';
 import ChangesManager   from 'services/editing';
 import SessionsRegistry from 'store/sessions';
 import DataRouterService from 'services/data';
+import RelationsService  from 'services/relations';
 
 const { inherit, base } = require('core/utils/utils');
+const { createFeaturesFromVectorDataApi } = require('core/utils/geo');
 const G3WObject         = require('core/g3wobject');
 const FeaturesStore     = require('core/layers/features/featuresstore');
 const OlFeaturesStore   = require('core/layers/features/olfeaturesstore');
@@ -113,7 +115,18 @@ proto.getSource = function() {
 };
 
 proto._applyChanges = function(items = [], reverse=true) {
-  ChangesManager.execute(this._featuresstore, items, reverse);
+  const changes = ChangesManager.execute(this._featuresstore, items, reverse);
+  //in case of sync feature store, apply changes on features
+  if (this._syncfeaturesstore) {
+    Object
+      .entries(changes)
+      .forEach(([action, features=[]]) => {
+        features.forEach(feature => this.upateSyncEditingSource({
+          action,
+          feature
+        }))
+    })
+  }
 };
 
 proto.setChanges = function(items, reverse) {
@@ -172,18 +185,29 @@ proto._getFeatures = function(options={}) {
     const returnPromiseFeatures = async (features=[]) => {
       if (syncDataPromise) {
         try {
-          const {data} = await syncDataPromise;
+          const response = await syncDataPromise;
+          let data;
+          if (response.data) {
+            data = response.data;
+          } else if (response.vector.data) {
+            response.vector.data.features = createFeaturesFromVectorDataApi((
+              response.vector.data.features
+              || []
+            ))
+            data = [response.vector.data]
+          }
+
           if (data && data[0] && data[0].features) {
             //Check if the number of features are the same
             if (features.length === data[0].features.length) {
               //@TODO need check id is equal
-              this._addSyncFeaturesFromServer(data[0].features.map((feature, index) => {
-                const _tempF = new Feature({
-                  feature
+              this._addSyncFeaturesFromServer(
+                data[0].features.map((feature, index) => {
+                  const _tempF = new Feature({feature})
+                  _tempF._setUid(features[index].getUid());
+                  return _tempF;
                 })
-                _tempF._setUid(features[index].getUid());
-                return _tempF;
-              }))
+              )
             }
           }
         } catch(err) {
@@ -197,13 +221,25 @@ proto._getFeatures = function(options={}) {
     }
     //check if we need to store sync features
     if (this.getSyncEditingSource()) {
-      syncDataPromise = DataRouterService.getData('search:features', {
-        inputs: {
-          layer: this._layer,
-          search_endpoint: 'api'
-        },
-        outputs: false
-      })
+      //in case of get relations
+      /**
+       * @TODO rename filter fid with other name for example relation. More readable.
+       */
+      if (options.filter && options.filter.fid) {
+        syncDataPromise = RelationsService.getRelations({
+          ...options.filter.fid,
+          type: 'data', //overwrite data and not editing type
+          formatter: 1 // need formatter 1
+        })
+      } else {
+        syncDataPromise = DataRouterService.getData('search:features', {
+          inputs: {
+            layer: this._layer,
+            search_endpoint: 'api'
+          },
+          outputs: false
+        })
+      }
     }
 
     this._layer.getFeatures(options)
@@ -231,7 +267,7 @@ proto.rollback = function(changes=[]) {
   const d = $.Deferred();
   this._applyChanges(changes, true);
   d.resolve();
-  return d.promise()
+  return d.promise();
 };
 
 /**
@@ -490,6 +526,10 @@ proto.clear = function() {
   this._allfeatures = false;
 
   this._featuresstore.clear();
+  //need to clear sync feature store
+  if (this._syncfeaturesstore) {
+    this._syncfeaturesstore.clear();
+  }
   this._layer.getFeaturesStore().clear();
 
   if (Layer.LayerTypes.VECTOR === this._layer.getType()) {
@@ -519,16 +559,57 @@ proto.getSyncEditingSource = function() {
 /**
  * @since v3.7.0
  */
+proto.createSyncEditingSource = function({watch}={}){
+  this.setSyncEditingSource();
+  //in case of watch parameter and is a function
+  // is called when receive this.upateSyncEditingSource
+  if (watch && watch instanceof Function) {
+    this._syncfeaturesstore._watch = watch;
+  }
+};
+
+/**
+ * @since v3.7.0
+ */
 proto.setSyncEditingSource = function(source) {
   this._syncfeaturesstore = source || this._createSource();
 }
 
 /**
- *
+ * @since v3.7.0
  * @returns Array of features
  */
 proto.readEditingSyncFeatures = function() {
   return this._syncfeaturesstore && this._syncfeaturesstore.readFeatures();
 };
+
+/**
+ * @since v3.7.0
+ */
+proto.upateSyncEditingSource = function({action, feature}={}){
+  if (this._syncfeaturesstore) {
+    switch (action) {
+      case 'delete':
+        this._syncfeaturesstore.removeFeature(feature);
+        return;
+      case 'add':
+        //need to clone it to avoid to change original feature of editing source
+        feature = feature.clone();
+        this._addSyncFeaturesFromServer([feature]);
+        break;
+      case 'update':
+        //need to clone it to avoid to change original feature of editing source
+        feature = feature.clone();
+        this._syncfeaturesstore.updateFeature(feature);
+        break;
+    }
+    //check in case of add or update
+    // if watch private method is set to sync features store
+    if (this._syncfeaturesstore._watch) {
+      this._syncfeaturesstore._watch(this._syncfeaturesstore.getFeatureById(feature.getId()));
+    }
+  }
+}
+
 
 module.exports = Editor;
