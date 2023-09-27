@@ -33,9 +33,9 @@ function TableLayer(config={}, options={}) {
     },
     // get data from every sources (server, wms, etc..)
     // throught provider related to featuresstore
-    getFeatures(options={}, params={}) {
+    getFeatures(options={}) {
       const d = $.Deferred();
-      this._featuresstore.getFeatures(options, params)
+      this._featuresstore.getFeatures(options)
         .then(promise => {
           promise.then(features => {
             this.emit('getFeatures', features);
@@ -114,18 +114,31 @@ function TableLayer(config={}, options={}) {
 
           /**
            * @since v3.7.0
-           *
            */
           //Need because also vectorlayer.js is child of tablelayer
           if (this.type === Layer.LayerTypes.TABLE) {
-            //get eventaully selected fields
+            //get all selected fields
             //that has value and key
-            if (
-                this.config.editing.fields.find(field => ['select_autocomplete', 'select'].includes(field.input.type))
-              ) {
+            const fields = this.config
+              .editing
+              .fields
+              .filter(field => ['select_autocomplete', 'select'].includes(field.input.type))
+
+            if (fields.length > 0) {
               //create a sync source to store sync features with different values of properties
               //based for example to different request formatter parameter value (0, 1)
-              this._editor.setSyncEditingSource();
+              this._editor.createSyncEditingSource({
+                watch(feature) {
+                  fields.forEach(field => {
+                    const {key=null} = field
+                      .input
+                      .options
+                      .values
+                      .find(({_, value}) => value == feature.get(field.name)) || {};
+                    feature.set(field.name, key) ;
+                  })
+                }
+              });
             }
           }
 
@@ -243,7 +256,7 @@ proto.readEditingFeatures = function() {
 /**
  * @since v3.7.0
  */
-proto.getEditingSyncSource = function(){
+proto.getEditingSyncSource = function() {
   return this._editor.getSyncEditingSource();
 }
 
@@ -251,7 +264,7 @@ proto.getEditingSyncSource = function(){
  * @since v3.7.0
  * @returns Array of features
  */
-proto.readEditingSyncFeatures = function(){
+proto.readEditingSyncFeatures = function() {
   return this._editor.readEditingSyncFeatures();
 }
 
@@ -316,6 +329,14 @@ proto.getEditingFields = function(editable = false) {
   }
   return fields;
 };
+
+/**
+ * Return pk field
+ * @since v3.9.0
+ */
+proto.getPkField = function() {
+  return this.getEditingFields().find(f => f.pk);
+}
 
 /**
  * @param field
