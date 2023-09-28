@@ -49,10 +49,12 @@ let production   = false;
 let outputFolder = g3w.admin_overrides_folder;
 
 // ANSI color codes
-const INFO__ = "\x1b[0;32m\#\#\# ";
-const __INFO = " \#\#\# \x1b[0m";
-const H1__   = "\n\n" + INFO__;
-const __H1   = __INFO + "\n";
+const GREEN__ = '\x1b[0;32m';
+const __GREEN = '\x1b[0m';
+const INFO__  = GREEN__ +'\#\#\# ';
+const __INFO  = ' \#\#\# ' + __GREEN;
+const H1__    = '\n\n' + INFO__;
+const __H1    = __INFO + '\n';
 
 // production const to set environmental variable
 function setNODE_ENV() {
@@ -92,9 +94,10 @@ setNODE_ENV();
  */
 const browserify_plugin = (pluginName) => {
 
-  const src = `${g3w.pluginsFolder}/${pluginName}`;
+  const src             = `${g3w.pluginsFolder}/${pluginName}`;
+  const overridesFolder = `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;
 
-  console.log('\n' + INFO__ + `Building plugin: ${src}/plugin.js` + __INFO);
+  console.log(INFO__ + `Building plugin:` + __GREEN + ' → ' + overridesFolder);
 
   let bundler = browserify(`./${pluginName}/index.js`, {
     basedir: `${g3w.pluginsFolder}`,
@@ -109,7 +112,7 @@ const browserify_plugin = (pluginName) => {
     ],
   });
 
-  del([`${pluginName}/plugin.js.map`]);
+  del([`${src}/plugin.js.map`]);
 
   const rebundle = () => {
     return bundler
@@ -122,7 +125,7 @@ const browserify_plugin = (pluginName) => {
       .pipe(rename('plugin.js'))
       .pipe(gulpif(production, sourcemaps.write(src)))
       .pipe(gulp.dest(src))
-      .pipe(gulpif(!production, gulp.dest(`${outputFolder}/${pluginName}/js/`)));
+      .pipe(gulpif(!production, gulp.dest(overridesFolder)));
   };
 
   if (!production) {
@@ -246,6 +249,8 @@ gulp.task('concatenate:vendor_js', function() {
  */
 gulp.task('browserify:app', function() {
 
+  console.log(); // print an empty line :)
+
   /**
    * Make sure that all g3w.plugins bundles are there (NB: without watching them)
    * 
@@ -265,9 +270,8 @@ gulp.task('browserify:app', function() {
 
   const src = `./src/index.${production ? 'prod' : 'dev'}.js`
 
-  console.log('\n' + INFO__ + `Entry point: ${src}` + __INFO + '\n');
+  console.log('\n' + INFO__ + 'App entry point:' + __GREEN + ' → ' + src + '\n');
 
-  let rebundle;
   let bundler = browserify(
     src,
     {
@@ -296,39 +300,28 @@ gulp.task('browserify:app', function() {
     bundler = watchify(bundler);
   }
 
-  const bundle = () => bundler.bundle()
-      .on('error', err => {
-        console.log('ERROR: running gulp task "browserify:app"');
-        console.log(err);
-        this.emit('end');
-        process.exit()
-        // del([
-        //   `${outputFolder}/static/js/app.js`,
-        //   `${outputFolder}/static/css/app.css`
-        // ]).then(() => process.exit());
-      })
-      .pipe(source('build.js'))
-      .pipe(buffer())
-      .pipe(gulpif(production, sourcemaps.init()))
-      .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-      .pipe(rename('app.min.js'))
-      .pipe(gulpif(production, sourcemaps.write('.')))
-      .pipe(gulp.dest(outputFolder + '/static/client/js/'));
+  const rebundle = () => bundler.bundle()
+    .on('error', err => {
+      console.log('ERROR: running gulp task "browserify:app"', err);
+      this.emit('end');
+      process.exit()
+      // del([
+      //   `${outputFolder}/static/js/app.js`,
+      //   `${outputFolder}/static/css/app.css`
+      // ]).then(() => process.exit());
+    })
+    .pipe(source('build.js'))
+    .pipe(buffer())
+    .pipe(gulpif(production, sourcemaps.init()))
+    .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
+    .pipe(rename('app.min.js'))
+    .pipe(gulpif(production, sourcemaps.write('.')))
+    .pipe(gulp.dest(outputFolder + '/static/client/js/'));
 
-
-  if (production) {
-    rebundle = () => bundle();
-  } else {
-    rebundle = (changedFiles = []) => { // live reload --> refresh browser after changing local files
-      const configFile = path.resolve('./config.js');
-      if (changedFiles.some(f => f === configFile)) {
-        fs.readFile('./config.js', "utf8", (err, data) => { console.log(H1__ + `[G3W-CONFIG]` + __H1) })
-      } else {
-        bundle().pipe(browserSync.reload({ stream: true }));
-      }
-    }
+  if (!production) {
     bundler.on('update', rebundle);
   }
+
   return rebundle();
 });
 
