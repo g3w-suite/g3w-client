@@ -90,11 +90,15 @@ const dev_plugins = new Proxy(
 setNODE_ENV();
 
 /**
+ * Method to build plugin
  * @since 3.9.0
+ * @param pluginName <String> name og plugin ex. editing, etc..
  */
 const browserify_plugin = (pluginName) => {
 
+  //plugin folder
   const src             = `${g3w.pluginsFolder}/${pluginName}`;
+  //folder where admin get plugin on development environment
   const overridesFolder = `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;
 
   console.log(INFO__ + `Building plugin:` + __GREEN + ' → ' + overridesFolder);
@@ -112,6 +116,7 @@ const browserify_plugin = (pluginName) => {
     ],
   });
 
+  //remove source map file
   del([`${src}/plugin.js.map`]);
 
   const rebundle = () => {
@@ -124,7 +129,9 @@ const browserify_plugin = (pluginName) => {
       .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
       .pipe(rename('plugin.js'))
       .pipe(gulpif(production, sourcemaps.write(src)))
+      //put plugin,js to plugin folder
       .pipe(gulp.dest(src))
+      //put plugin.js to static folder for admin
       .pipe(gulpif(!production, gulp.dest(overridesFolder)));
   };
 
@@ -140,6 +147,7 @@ const browserify_plugin = (pluginName) => {
 
 /**
  * @since 3.9.0
+ * @param exclude <Array> Array of plugin to exclude
  */
 const select_plugins = (exclude = []) => {
   return prompt.prompt({
@@ -464,7 +472,6 @@ gulp.task('clone:default_plugins', function() {
   }
 });
 
-
 /**
  * @TODO deprecate this ? (real world use case.. )
  * 
@@ -485,15 +492,18 @@ gulp.task('select-plugins', function() {
   return gulp
     .src('./package.json')
     .pipe(
-      prompt.prompt({
+      prompt.prompt(
+        {
           type: 'list',
           name: 'env',
           message: 'Environment',
           choices: ['development', 'production'],
-        }, (response) => {
-        production = response.env == 'production';
-        setNODE_ENV();
-      })
+        },
+        (response) => {
+          production = response.env == 'production';
+          setNODE_ENV();
+        }
+      )
     )
     .pipe(select_plugins())
 });
@@ -511,10 +521,10 @@ gulp.task('deploy-plugins', function() {
   }
   return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
     .pipe(rename((path, file) => {
-        const pluginName   = nodePath.basename(file.base);
-        const staticFolder = production ? `${pluginName}/static/${pluginName}/js/` : `${pluginName}/js/`;
-        path.dirname = `${outputFolder}/${staticFolder}`;
-        console.log(`[G3W-CLIENT] file updated: ${path.dirname}${path.basename}${path.extname}`);
+      const pluginName   = nodePath.basename(file.base);
+      const staticFolder = production ? `${pluginName}/static/${pluginName}/js/` : `${pluginName}/js/`;
+      path.dirname = `${outputFolder}/${staticFolder}`;
+      console.log(`[G3W-CLIENT] file updated: ${path.dirname}${path.basename}${path.extname}`);
     }))
     .pipe(gulp.dest('.'));
 });
@@ -576,7 +586,7 @@ gulp.task('test', function() {
         new karma.Server({
           configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
           singleRun: true
-        },() => { resolve() }).start();
+        }, () => { resolve() }).start();
       });
     }
     done();
