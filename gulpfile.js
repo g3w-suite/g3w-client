@@ -466,6 +466,8 @@ gulp.task('clone:default_plugins', function() {
 
 
 /**
+ * @TODO deprecate this ? (real world use case.. )
+ * 
  * Ask the developer which plugins wants to add to current developing session (without rebuild client)
  * 
  * @since 3.9.0
