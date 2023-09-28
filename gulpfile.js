@@ -130,7 +130,9 @@ const browserify_plugin = (pluginName) => {
 
   if (!production) {
     bundler = watchify(bundler);
-    bundler.on('update', rebundle);
+    bundler
+      .on('update', rebundle)
+      .on('log', (info) => gutil.log(GREEN__ + '[' + pluginName + ']' + __GREEN + ' → ', info));
   }
 
   return rebundle();
@@ -289,16 +291,11 @@ gulp.task('browserify:app', function() {
       [ babelify, { babelrc: true } ],
       [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
       imgurify
-    ]
+    ],
+    ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
   });
 
-  dependencies.forEach(dep => bundler.external(dep));   // exclude external npm dependencies
-
-  if (production) {
-    bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
-  } else {
-    bundler = watchify(bundler);
-  }
+  bundler.external(dependencies);                               // exclude external npm dependencies
 
   const rebundle = () => bundler.bundle()
     .on('error', err => {
@@ -319,7 +316,10 @@ gulp.task('browserify:app', function() {
     .pipe(gulp.dest(outputFolder + '/static/client/js/'));
 
   if (!production) {
-    bundler.on('update', rebundle);
+    bundler = watchify(bundler);
+    bundler
+      .on('update', rebundle)
+      .on('log', (info) => gutil.log(GREEN__ + '[client]' + __GREEN + ' → ', info));
   }
 
   return rebundle();
