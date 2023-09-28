@@ -16,7 +16,7 @@ const gutil       = require('gulp-util');
 // Gulp vinyl (virtual memory filesystem stuff)
 const buffer      = require('vinyl-buffer');
 const source      = require('vinyl-source-stream');
-const es          = require('event-stream');
+// const es          = require('event-stream');
 
 // Node.js
 const exec        = require('child_process').exec;
@@ -94,7 +94,7 @@ const browserify_plugin = (pluginName) => {
 
   const src = `${g3w.pluginsFolder}/${pluginName}`;
 
-  console.log('\n', INFO__ + `Building plugin: ${src}/plugin.js` + __INFO, '\n');
+  console.log('\n' + INFO__ + `Building plugin: ${src}/plugin.js` + __INFO);
 
   let bundler = browserify(`./${pluginName}/index.js`, {
     basedir: `${g3w.pluginsFolder}`,
@@ -245,9 +245,31 @@ gulp.task('concatenate:vendor_js', function() {
  * Compile client application (src/app/main.js --> app.min.js)
  */
 gulp.task('browserify:app', function() {
+
+  /**
+   * Make sure that all g3w.plugins bundles are there (NB: without watching them)
+   * 
+   * CORE PLUGINS:
+   * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
+   * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
+   * - [submodule "src/plugins/qplotly"]     --> src/plugins/qplotly/plugin.js
+   * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
+   * 
+   * CUSTOM PLUGINS:
+   * - [submodule "src/plugins/eleprofile"]  --> src/plugins/eleprofile/plugin.js
+   * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
+   */
+  if (!production) {
+    dev_plugins.forEach(browserify_plugin); // TODO: await all plugins ?
+  }
+
+  const src = `./src/index.${production ? 'prod' : 'dev'}.js`
+
+  console.log('\n' + INFO__ + `Entry point: ${src}` + __INFO + '\n');
+
   let rebundle;
   let bundler = browserify(
-    `./src/index.${production ? 'prod' : 'dev'}.js`,
+    src,
     {
     basedir: './',
     paths: ['./src/', './src/app/', './src/plugins/'],
@@ -449,22 +471,6 @@ gulp.task('clone:default_plugins', function() {
   }
 });
 
-/**
- * Make sure that all g3w.plugins bundles are there (NB: without watching them)
- * 
- * CORE PLUGINS:
- * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
- * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
- * - [submodule "src/plugins/qplotly"]     --> src/plugins/qplotly/plugin.js
- * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
- * 
- * CUSTOM PLUGINS:
- * - [submodule "src/plugins/eleprofile"]  --> src/plugins/eleprofile/plugin.js
- * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
- */
-gulp.task('build:dev_plugins', function() {
-  dev_plugins.forEach(browserify_plugin); // TODO: await all plugins ?
-});
 
 /**
  * Ask the developer which plugins wants to add to current developing session (without rebuild client)
@@ -554,7 +560,6 @@ gulp.task('dev', done => runSequence(
   // 'clean:admin',
   'clean:overrides',
   'clone:default_plugins',
-  'build:dev_plugins',
   'build:client',
   'browser-sync',
   done
