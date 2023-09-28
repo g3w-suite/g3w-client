@@ -1,4 +1,4 @@
-//Gulp
+// Gulp
 const gulp        = require('gulp');
 const cleanCSS    = require('gulp-clean-css');
 const concat      = require('gulp-concat');
@@ -49,16 +49,94 @@ let production   = false;
 let outputFolder = g3w.admin_overrides_folder;
 
 // ANSI color codes
-const INFO__ = "\033[0;32m\#\#\# ";
-const __INFO = " \#\#\# \033[0m";
-const H1__ = "\n\n" + INFO__;
-const __H1 = __INFO + "\n";
+const INFO__ = "\x1b[0;32m\#\#\# ";
+const __INFO = " \#\#\# \x1b[0m";
+const H1__   = "\n\n" + INFO__;
+const __H1   = __INFO + "\n";
+
+// production const to set environmental variable
+function setNODE_ENV() {
+  process.env.NODE_ENV = production ? 'production' : 'development';
+  outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
+  console.log('[G3W-CLIENT] environment: ',    process.env.NODE_ENV);
+  console.log('[G3W-CLIENT] output folder: ',  outputFolder);
+  console.log('[G3W-CLIENT] loaded plugins: ', dev_plugins, '\n');
+}
+
+// Retrieve project dependencies ("g3w-client")
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
+
+// Built-in client plugins
+const default_plugins = [
+  'editing',
+  'openrouteservice',
+  'qplotly',
+  'qtimeseries'
+];
+// Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
+const dev_plugins = new Proxy(
+  Array.from(new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))), {
+  set(target, prop, pluginName) {
+    if ('length' !== prop) {            // live reload --> rebuild `dev_plugins` after changing local config (ref: `G3W_PLUGINS`)
+      Reflect.set(target, prop, pluginName);
+      browserify_plugin(pluginName);
+    }
+    return true;
+  }
+});
+
+setNODE_ENV();
 
 /**
- * @since v.3.9
- * @returns {*}
+ * @since 3.9.0
  */
-const select_plugins = (exclude=[]) => {
+const browserify_plugin = (pluginName) => {
+
+  const src = `${g3w.pluginsFolder}/${pluginName}`;
+
+  console.log('\n', INFO__ + `Building plugin: ${src}/plugin.js` + __INFO, '\n');
+
+  let bundler = browserify(`./${pluginName}/index.js`, {
+    basedir: `${g3w.pluginsFolder}`,
+    paths: [`${g3w.pluginsFolder}`],
+    debug: !production,
+    cache: {},
+    packageCache: {},
+    transform: [
+      vueify,
+      [ babelify, { babelrc: true } ],
+      [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
+    ],
+  });
+
+  del([`${pluginName}/plugin.js.map`]);
+
+  const rebundle = () => {
+    return bundler
+      .bundle()
+      .on('error', (err) => { gutil.log(err); process.exit(); })
+      .pipe(source(`${src}/build.js`))
+      .pipe(buffer())
+      .pipe(gulpif(production, sourcemaps.init()))
+      .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
+      .pipe(rename('plugin.js'))
+      .pipe(gulpif(production, sourcemaps.write(src)))
+      .pipe(gulp.dest(src))
+      .pipe(gulpif(!production, gulp.dest(`${outputFolder}/${pluginName}/js/`)));
+  };
+
+  if (!production) {
+    bundler = watchify(bundler);
+    bundler.on('update', rebundle);
+  }
+
+  return rebundle();
+};
+
+/**
+ * @since 3.9.0
+ */
+const select_plugins = (exclude = []) => {
   return prompt.prompt({
       type: 'checkbox',
       name: 'plugins',
@@ -79,105 +157,11 @@ const select_plugins = (exclude=[]) => {
         })
     },
     response => {
-      //need to update dev plugins
-      response.plugins.forEach(plugin => dev_plugins.push(plugin));
+      response.plugins.forEach(plugin => dev_plugins.push(plugin)); // update dev plugins
       process.env.G3W_PLUGINS = response.plugins;
     }
   )
-}
-
-/**
- * @since v.3.9
- */
-const browserify_plugin = function(name) {
-
-  let bundler = browserify(`./${name}/index.js`, {
-    basedir: `${g3w.pluginsFolder}`,
-    paths: [`${g3w.pluginsFolder}`],
-    debug: !production,
-    cache: {},
-    packageCache: {}
-  });
-
-  if (!production) bundler = watchify(bundler);
-  bundler.transform(vueify)
-    .transform(babelify, {
-      babelrc: true
-    });
-  bundler.transform(stringify, {
-    appliesTo: { includeExtensions: ['.html'] }
-  });
-
-  let bundle = function(){
-    return bundler.bundle()
-      .on('error', function(err) {
-        console.log(err);
-        process.exit();
-      })
-      .pipe(source(`${g3w.pluginsFolder}/${name}/build.js`))
-      .pipe(buffer())
-      .pipe(gulpif(production, sourcemaps.init()))
-      .pipe(gulpif(production, uglify({
-          compress: {
-            drop_console: true
-          }
-        }).on('error', gutil.log))
-      )
-      .pipe(rename(`${g3w.pluginsFolder}/${name}/plugin.js`))
-      .pipe(gulpif(production, sourcemaps.write('.')))
-      .pipe(gulp.dest('.'));
-  };
-
-  let rebundle;
-
-  const del = require('del');
-
-  del([`${name}/plugin.js.map`]);
-  if (!production) {
-    rebundle = () => bundle();
-    bundler.on('update', rebundle);
-  } else {
-    rebundle = () => bundle();
-  }
-  return rebundle();
 };
-
-// production const to set environmental variable
-function setNODE_ENV() {
-  process.env.NODE_ENV = production ? 'production' : 'development';
-  outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
-  console.log('[G3W-CLIENT] environment: ' + process.env.NODE_ENV);
-  console.log('[G3W-CLIENT] output folder: ' + outputFolder);
-  console.log('[G3W-CLIENT] loaded plugins: ', dev_plugins, '\n');
-}
-
-// Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
-
-// Built-in client plugins
-const default_plugins = [
-  //'editing',
-  'openrouteservice',
-  'qplotly',
-  'qtimeseries'
-];
-// Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
-//create Proxy to be reactive
-const dev_plugins = new Proxy(
-  Array.from(
-    new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))
-  ), {
-  set(target, property, value, receiver) {
-    if (property !== 'length') {
-      Reflect.set(target, property, value);
-      // you have to return true to accept the changes
-      browserify_plugin(value);
-    }
-    return true;
-  }
-});
-
-setNODE_ENV();
 
 // gulp.task('clean:dist',   () => del([`${g3w.distFolder}/**/*`], { force: true }));
 gulp.task('clean:dist',      () => del([`${outputFolder}/static/*`, `${outputFolder}/templates/*`], { force: true }));
@@ -313,12 +297,10 @@ gulp.task('browserify:app', function() {
   if (production) {
     rebundle = () => bundle();
   } else {
-    rebundle = (changedFiles=[]) => {
-      // check if config file is change
-      if (changedFiles.find(f => f === path.resolve('./config.js'))) {
-        fs.readFile("./config.js", "utf8", (err, data) => {
-          console.log(g3w)
-        })
+    rebundle = (changedFiles = []) => { // live reload --> refresh browser after changing local files
+      const configFile = path.resolve('./config.js');
+      if (changedFiles.some(f => f === configFile)) {
+        fs.readFile('./config.js', "utf8", (err, data) => { console.log(H1__ + `[G3W-CONFIG]` + __H1) })
       } else {
         bundle().pipe(browserSync.reload({ stream: true }));
       }
@@ -481,128 +463,22 @@ gulp.task('clone:default_plugins', function() {
  * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
  */
 gulp.task('build:dev_plugins', function() {
-  for (const pluginName of dev_plugins) {
-    const src = `${g3w.pluginsFolder}/${pluginName}`;
-    console.log(H1__ + `Building plugin: ${src}/plugin.js` + __H1);
-    browserify_plugin(pluginName);
-  }
-});
-
-
-/**
- * @since v3.9
- * @see https://fettblog.eu/gulp-browserify-multiple-bundles/
- */
-gulp.task('stream', function() {
-    return es.merge.apply(
-      null,
-      dev_plugins.map(function(pluginName) {
-
-        console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
-
-        const entry = `./index.js`;
-
-        let bundler = browserify({
-          entries: [entry]
-         }, {
-          basedir:      `${g3w.pluginsFolder}/${pluginName}/`,
-          paths:        [`${g3w.pluginsFolder}/${pluginName}/`, `${g3w.pluginsFolder}/`],
-          debug:        !production,
-          cache:        {},
-          packageCache: {},
-          transform: [
-            vueify,
-            [ babelify, { babelrc: true } ],
-            [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
-          ],
-         });
-
-        // del([`${g3w.pluginsFolder}/${pluginName}/plugin.js.map`]);
-
-        const rebundle = () => {
-          return bundler
-            .bundle()
-            .on('update', gutil.log.log)
-            .on('error', (err) => { gutil.log(err); process.exit(); })
-            .pipe(source(entry))
-            // .pipe(buffer())
-            .pipe(gulpif(production, sourcemaps.init()))
-            .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-            // .pipe(gulpif(production, sourcemaps.write(`${g3w.pluginsFolder}/${pluginName}/`)))
-            // .pipe(gulp.dest(`${g3w.pluginsFolder}/${pluginName}/`));
-            .pipe(rename({ basename: 'plugin' }))
-            .pipe(gulp.dest(`${g3w.pluginsFolder}/${pluginName}/`));
-        };
-      
-        if (!production) {
-          bundler = watchify(bundler);
-          bundler.on('update', rebundle);
-        }
-        return rebundle();
-      })
-    );
+  dev_plugins.forEach(browserify_plugin); // TODO: await all plugins ?
 });
 
 /**
- *
- * To add a Plugin during development
- * without rebuild client
- *@since 3.9
+ * Ask the developer which plugins wants to add to current developing session (without rebuild client)
+ * 
+ * @since 3.9.0
  */
-gulp.task('add:build_dev_plugins', function() {
+gulp.task('add:dev_plugins', function() {
   return gulp
     .src('./package.json')
     .pipe(select_plugins(dev_plugins));
 })
 
-gulp.task('watch:new-plugins', function() {
-  for (const pluginName of dev_plugins) {
-    console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
-
-    let bundler = browserify(
-      `${pluginName}/index.js`,
-      {
-        basedir:      `${g3w.pluginsFolder}/`,
-        paths:        ['./', '../'],
-        debug:        !production,
-        cache:        {},
-        packageCache: {},
-        transform: [
-          vueify,
-          [ babelify, { babelrc: true } ],
-          [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
-        ],
-      }
-    );
-  
-    del([`${g3w.pluginsFolder}/${pluginName}/plugin.js.map`]);
-  
-    const rebundle = () => {
-      return bundler
-        .bundle()
-        .on('update', console.log)
-        .on('error', (err) => { console.log(err); process.exit(); })
-        .pipe(source('build.js'))
-        .pipe(buffer())
-        .pipe(gulpif(production, sourcemaps.init()))
-        .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-        .pipe(rename('plugin.js'))
-        .pipe(gulpif(production, sourcemaps.write(`${g3w.pluginsFolder}/${pluginName}/`)))
-        .pipe(gulp.dest(`${g3w.pluginsFolder}/${pluginName}/`));
-    };
-  
-    if (!production) {
-      bundler = watchify(bundler);
-      bundler.on('update', rebundle);
-    }
-
-    /*return*/ rebundle();
-  }
-});
-
-
 /**
- * * Ask the developer which plugins wants to deploy
+ * Ask the developer which plugins wants to deploy
  */
 gulp.task('select-plugins', function() {
   return gulp
@@ -630,7 +506,7 @@ gulp.task('deploy-plugins', function() {
   const outputFolder = production ? g3w.admin_plugins_folder : `${g3w.admin_overrides_folder}/static`;
   //In case of production need to build plugin in production (minify) mode
   if (production) {
-    pluginNames.forEach(name => browserify_plugin(name));
+    pluginNames.forEach(browserify_plugin);
   }
   return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
     .pipe(rename((path, file) => {
@@ -728,7 +604,7 @@ gulp.task('version', function () {
 /**
  * Set production to true
  */
- gulp.task('production', function(){
+ gulp.task('production', function() {
   production = true;
   setNODE_ENV();
 });
