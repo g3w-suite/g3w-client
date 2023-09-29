@@ -131,15 +131,22 @@ const browserify_plugin = (pluginName) => {
   del([`${src}/plugin.js.map`]);
 
   const rebundle = () => {
-    return bundler
-      .bundle()
-      .on('error', (err) => { gutil.log(err); process.exit(); })
-      .pipe(source(`${src}/build.js`))
-      .pipe(buffer())
-      .pipe(gulpif(production, sourcemaps.init()))
-      .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-      .pipe(rename('plugin.js'))
-      .pipe(gulpif(production, sourcemaps.write(src)))
+    return merge(
+        gulp
+          .src(`${g3w.pluginsFolder}/_version.js`),
+        bundler
+          .bundle()
+          .on('error', (err) => { gutil.log(err); process.exit(); })
+          .pipe(source(`${src}/build.js`))
+          .pipe(buffer())
+          .pipe(gulpif(production, sourcemaps.init()))
+          .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
+          .pipe(rename('plugin.js'))
+          .pipe(gulpif(production, sourcemaps.write(src)))
+      )
+      .pipe(concat('plugin.js'))
+      .pipe(replace('process.env.plugin_name', `"${pluginName}"`))
+      .pipe(replace('process.env.plugin_version', `"${loaded_plugins[pluginName]}"`))
       .pipe(gulp.dest(src))                                   // put plugin.js to plugin folder (git source)
       .pipe(gulpif(!production, gulp.dest(overridesFolder))); // put plugin.js to static folder (dev environment)
   };

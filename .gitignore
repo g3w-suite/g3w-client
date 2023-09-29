@@ -21,3 +21,4 @@ package-lock.json
 /src/libs/sdk/g3w-ol3/config/config.js
 /src/plugins/**
 !/src/plugins/README.md
+!/src/plugins/_version.js
