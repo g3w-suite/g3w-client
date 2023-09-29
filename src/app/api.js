@@ -102,6 +102,9 @@ const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
 const g3wolutils = require('core/utils/ol');
 
+const vm              = new Vue();
+const plugins_timeout = 10000;
+
 module.exports = {
 
   // APP CONSTANTS
@@ -265,13 +268,22 @@ module.exports = {
 
   // G3W-SUITE debug info
   info: () => {
-    $script(
-      'https://unpkg.com/platform@1.3.6/platform.js',
-      () => {
+    Promise
+      .all([
+        new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
+        Promise.race([
+          new Promise((resolve)   => vm.$watch(() => ApplicationState.plugins, p => { if (0 === p.length && !vm.plugins_loaded) { vm.plugins_loaded = true; resolve(); } })),
+          new Promise((_, reject) => setTimeout(reject, plugins_timeout))
+        ])
+      ])
+      .finally(() => {
+        const platform = window.platform || {};
+        const plugins  = window.g3wsdk.loaded_plugins || {};
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
 - g3w-client: __${G3W_CONSTANT.APP_VERSION}__
+- g3w-client-plugins: [ ${Object.entries(plugins).map((p) => (`__${p[0]}@v${p[1]}__`)).join(', ')} ]
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
