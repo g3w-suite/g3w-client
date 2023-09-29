@@ -270,8 +270,8 @@ gulp.task('browserify:app', function() {
    * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
    */
   if (!production) {
-    console.log();                          // print an empty line :)
-    dev_plugins.forEach(browserify_plugin); // TODO: await all plugins ?
+    console.log();                          // print an empty line
+    dev_plugins.forEach(browserify_plugin); // build all plugins (async)
   }
 
   const src = `./src/index.${production ? 'prod' : 'dev'}.js`
