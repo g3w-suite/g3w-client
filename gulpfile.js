@@ -96,11 +96,8 @@ setNODE_ENV();
  * @since 3.9.0
  */
 const browserify_plugin = (pluginName) => {
-
-  //plugin folder
-  const src             = `${g3w.pluginsFolder}/${pluginName}`;
-  //folder where admin get plugin on development environment
-  const overridesFolder = `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;
+  const src             = `${g3w.pluginsFolder}/${pluginName}`;                     // plugin folder (git source)
+  const overridesFolder = `${g3w.admin_overrides_folder}/static/${pluginName}/js/`; // plugin folder (dev environment)
 
   console.log(INFO__ + `Building plugin:` + __GREEN + ' → ' + overridesFolder);
 
@@ -117,7 +114,7 @@ const browserify_plugin = (pluginName) => {
     ],
   });
 
-  //remove source map file
+  // remove source map file
   del([`${src}/plugin.js.map`]);
 
   const rebundle = () => {
@@ -130,10 +127,8 @@ const browserify_plugin = (pluginName) => {
       .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
       .pipe(rename('plugin.js'))
       .pipe(gulpif(production, sourcemaps.write(src)))
-      //put plugin,js to plugin folder
-      .pipe(gulp.dest(src))
-      //put plugin.js to static folder for admin
-      .pipe(gulpif(!production, gulp.dest(overridesFolder)));
+      .pipe(gulp.dest(src))                                   // put plugin.js to plugin folder (git source)
+      .pipe(gulpif(!production, gulp.dest(overridesFolder))); // put plugin.js to static folder (dev environment)
   };
 
   if (!production) {
@@ -351,7 +346,7 @@ gulp.task('images', function () {
 /**
  * Deploy datatables images (src/assets/vendors/datatables)
  */
- gulp.task('datatable-images', function () {
+gulp.task('datatable-images', function () {
   return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
     .pipe(flatten())
     .pipe(gulp.dest(outputFolder + '/static/client/images/'));
@@ -382,7 +377,7 @@ gulp.task('less', ['fonts'], function() {
       plugins: [LessGlob]                        // plugin to manage globs import es: @import path/***
     }))
     //.pipe(gulpif(production, cleanCSS({ keepSpecialComments: 0 }), replace(/\w+fonts/g, 'fonts')))
-    .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
+    .pipe(replace(/\w+fonts/g, 'fonts'))         // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
     .pipe(cleanCSS({ keepSpecialComments: 0 }))
     .pipe(rename('app.min.css'))
     .pipe(gulp.dest(outputFolder + '/static/client/css/'))
@@ -395,9 +390,7 @@ gulp.task('custom-less', function () {
   const customLessFolder = path.join(g3w.assetsFolder, 'style', 'less', 'g3w-skins-custom', process.env.CUSTOM_LESS_FOLDER);
   return gulp.src(path.join(customLessFolder, 'main.less'))
     .pipe(concat('custom.less'))
-    .pipe(less({
-      plugins: [LessGlob] //plugin to manage globs import es: @import path/***
-    }))
+    .pipe(less({ plugins: [LessGlob] }))         // plugin to manage globs import es: @import path/***
     .pipe(gulp.dest(`${customLessFolder}/css/`))
 });
 
