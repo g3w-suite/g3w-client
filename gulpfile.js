@@ -91,9 +91,9 @@ const dev_plugins = new Proxy(
 setNODE_ENV();
 
 /**
- * Method to build plugin
+ * @param { string } pluginName name of build plugin to build (eg. 'editing')
+ * 
  * @since 3.9.0
- * @param pluginName <String> name og plugin ex. editing, etc..
  */
 const browserify_plugin = (pluginName) => {
 
@@ -147,8 +147,9 @@ const browserify_plugin = (pluginName) => {
 };
 
 /**
+ * @param { string[] } exclude array of plugins to be excluded (eg. ['editing', 'qtimeseries'])
+ * 
  * @since 3.9.0
- * @param exclude <Array> Array of plugin to exclude
  */
 const select_plugins = (exclude = []) => {
   return prompt.prompt({
