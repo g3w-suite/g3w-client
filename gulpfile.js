@@ -461,7 +461,7 @@ gulp.task('clone:default_plugins', function() {
   console.log(H1__ + `Cloning default plugins` + __H1);
   for (const pluginName of default_plugins) {
     if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
-      execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, {stdio: 'inherit'});
+      execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, { stdio: 'inherit' });
     }
   }
 });
@@ -574,7 +574,7 @@ gulp.task('dev', done => runSequence(
  */
 gulp.task('check:node_modules', function(){
   if (packageJSON.version !== packageLock.version) {
-    execSync(`npm install`, {stdio: 'inherit'});
+    execSync(`npm install`, { stdio: 'inherit' });
     console.log(H1__ + 'Process exited early due to missing packages being installed' + __H1);
     process.exit();
   }
