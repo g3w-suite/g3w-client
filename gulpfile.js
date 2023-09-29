@@ -40,6 +40,7 @@ const watchify    = require('watchify');
 const runSequence = require('run-sequence'); // same as "gulp.series" (v4)
 
 const packageJSON = require('./package.json');
+const packageLock = require('./package-lock.json');
 const g3w         = require('./config');
 
 ///////////////////////////////////////////////////////
@@ -547,6 +548,7 @@ gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatena
  */
 gulp.task('build', done => runSequence(
   'production',
+  'check:node_modules',
   // 'clean:admin',
   'clone:default_plugins',
   'build:client',
@@ -562,6 +564,7 @@ gulp.task('build', done => runSequence(
  * outputFolder = g3w.admin_overrides_folder
  */
 gulp.task('dev', done => runSequence(
+  'check:node_modules',
   // 'clean:admin',
   'clean:overrides',
   'clone:default_plugins',
@@ -570,6 +573,19 @@ gulp.task('dev', done => runSequence(
   done
   )
 );
+
+/**
+ * Checks for npm inconsistencies between `package.json` and `package-json.lock` versions
+ * 
+ * @since 3.9.0
+ */
+gulp.task('check:node_modules', function(){
+  if (packageJSON.version !== packageLock.version) {
+    execSync(`npm install`, {stdio: 'inherit'});
+    console.log(H1__ + 'Process exited early due to missing packages being installed' + __H1);
+    process.exit();
+  }
+});
 
 /**
  * [TEST] Run test once and exit
