@@ -256,8 +256,6 @@ gulp.task('concatenate:vendor_js', function() {
  */
 gulp.task('browserify:app', function() {
 
-  console.log(); // print an empty line :)
-
   /**
    * Make sure that all g3w.plugins bundles are there (NB: without watching them)
    * 
@@ -272,6 +270,7 @@ gulp.task('browserify:app', function() {
    * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
    */
   if (!production) {
+    console.log();                          // print an empty line :)
     dev_plugins.forEach(browserify_plugin); // TODO: await all plugins ?
   }
 
