@@ -170,13 +170,13 @@ For further information about plugin development, see also: [`src/plugins/README
 
 ## 
 
-- [ ] Ensure all https://github.com/g3w-suite/g3w-client/milestones issues and pull requests are resolved.
+- [ ] Ensure all [milestones](https://github.com/g3w-suite/g3w-client/milestones) issues and pull requests are resolved.
 - [ ] Create or checkeout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
 - [ ] Compile local code: `npm run build`
 - [ ] New tag: `git tag v3.5.1`
 - [ ] Push local code to remote: `git push`
 - [ ] Push local tags to remote: `git push --tags`
-- [ ] Draft a new GitHub relase: https://github.com/g3w-suite/g3w-client/releases
+- [ ] Draft a new [GitHub Relase](https://github.com/g3w-suite/g3w-client/releases/new)
 
 <details>
 
@@ -228,7 +228,7 @@ Fore more info:
 ##
 
 - [ ] Create a new branch from client release zip archive: https://github.com/g3w-suite/g3w-client/releases
-- [ ] Create a new PR with title: `Bump g3w-client from <old_version> to <new_version>`
+- [ ] Create a new PR with title: `⬆️ Bump g3w-client from <old_version> to <new_version>`
 - [ ] Add the [`dependencies`](https://github.com/g3w-suite/g3w-admin/pulls?q=is%3Apr+is%3Aclosed+label%3Adependencies) label
 - [ ] Add a link to changelog page in PR description (eg: `**g3w-client: [v3.8.10](https://github.com/g3w-suite/g3w-client/releases/tag/v3.8.10)**`)
 
