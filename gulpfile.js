@@ -58,7 +58,7 @@ const __INFO   = ' \#\#\# ' + __RESET;
 const H1__     = '\n\n' + INFO__;
 const __H1     = __INFO + '\n';
 
-// production const to set environmental variable
+// Conditionally set environmental variables (PROD / DEV)
 function setNODE_ENV() {
   process.env.NODE_ENV = production ? 'production' : 'development';
   outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
@@ -104,7 +104,7 @@ const loaded_plugins = Object.fromEntries(dev_plugins.map(pluginName => {
 setNODE_ENV();
 
 /**
- * @param { string } pluginName name of build plugin to build (eg. 'editing')
+ * @param { string } pluginName name of plugin to build (eg. 'editing')
  * 
  * @since 3.9.0
  */
@@ -530,7 +530,7 @@ gulp.task('deploy-plugins', function() {
   const pluginNames  = process.env.G3W_PLUGINS.split(',');
   const nodePath     = path;
   const outputFolder = production ? g3w.admin_plugins_folder : `${g3w.admin_overrides_folder}/static`;
-  //In case of production need to build plugin in production (minify) mode
+  // Minify `plugin.js` in production mode
   if (production) {
     pluginNames.forEach(browserify_plugin);
   }
