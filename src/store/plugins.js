@@ -102,7 +102,10 @@ function PluginsRegistry() {
    * @private
    */
   this._loadPlugins = function() {
-    const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => this._setup(name, pluginConfig));
+    const pluginLoadPromises = Object
+      .entries(this.pluginsConfigs)
+        .map(([name, pluginConfig]) => this._setup(name, pluginConfig));
+
     return Promise.allSettled(pluginLoadPromises)
   };
 
@@ -112,9 +115,16 @@ function PluginsRegistry() {
   this.setDependencyPluginConfig = function() {
     for (const pluginName in this.pluginsConfigs){
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
-      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName => {
-        this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
-      })
+      if (dependecyPluginConfig) {
+        Object
+          .keys(dependecyPluginConfig)
+          .forEach(pluginName => {
+            this.pluginsConfigs[pluginName] = {
+              ...this.pluginsConfigs[pluginName],
+              ...dependecyPluginConfig[pluginName]
+            }
+          })
+      }
     }
   };
 
@@ -127,7 +137,9 @@ function PluginsRegistry() {
       // law plugin
       this.pluginsConfigs[law] = this.otherPluginsConfig[law];
       this.pluginsConfigs[law].gid = this.otherPluginsConfig.gid;
-    } else delete this.pluginsConfigs[law];
+    } else {
+      delete this.pluginsConfigs[law];
+    }
   };
 
   /**
@@ -147,12 +159,14 @@ function PluginsRegistry() {
         plugin.unload();
         delete this._plugins[pluginName];
         scripts.each((index, scr) => {
-          this._loadedPluginUrls.forEach((pluginUrl, idx) => {
-            if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
-              scr.parentNode.removeChild( scr );
-              this._loadedPluginUrls.splice(idx, 1);
-              return false;
-            }})
+          this._loadedPluginUrls
+            .forEach((pluginUrl, idx) => {
+              if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
+                scr.parentNode.removeChild( scr );
+                this._loadedPluginUrls.splice(idx, 1);
+                return false;
+              }
+            })
         });
       }
       this._loadedPluginUrls = [];
@@ -164,7 +178,7 @@ function PluginsRegistry() {
       try {
         const plugins = await this._loadPlugins();
         resolve(plugins);
-      } catch(error){
+      } catch(error) {
         reject(error)
       }
     })
@@ -179,6 +193,7 @@ function PluginsRegistry() {
     Object.entries(config)
       .filter(([,pluginConfig]) => pluginConfig.gid === this.gidProject)
       .forEach(([pluginName, pluginConfig]) =>enabledPluginConfig[pluginName] = pluginConfig);
+
     this.pluginsConfigs = enabledPluginConfig;
   };
 
