@@ -3,7 +3,7 @@
 - [ ] Ensure all https://github.com/g3w-suite/g3w-client/milestones issues and pull requests are resolved.
 - [ ] Create or checkeout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
 - [ ] Compile local code: `npm run build`
-- [ ] New tag: `git tag v3.5`
+- [ ] New tag: `git tag v3.5.1`
 - [ ] Push local code to remote: `git push`
 - [ ] Push local tags to remote: `git push --tags`
 - [ ] Draft a new GitHub relase: https://github.com/g3w-suite/g3w-client/releases
