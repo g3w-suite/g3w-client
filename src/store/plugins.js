@@ -10,35 +10,51 @@ const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /**
- * law project configuration on project is handle as plugin
+ * 'law' project configuration on project is handle as plugin
+ * 
  * @type {string[]}
  */
 const OTHERPLUGINS = ['law'];
 
 function PluginsRegistry() {
+
   this.config = null;
-  //Object where store plugin
-  //key plugin name
-  //value plugin object
+
+  /**
+   * Object where store plugin
+   *   key   = plugin name 
+   *   value = plugin instance
+   */
   this._plugins = {};
-  //Name array of initConfig.group.plugins names
+
+  /**
+   * Name array of initConfig.group.plugins names
+   */
   this._configurationPlugins = [];
-  //Store initConfig.group.plugins object configuration
+
+  /**
+   * Store initConfig.group.plugins object configuration
+   */
   this.pluginsConfigs = {};
-  //store array of plugin loaded url
+
+  /**
+   * Store array of plugin loaded url 
+   */
   this._loadedPluginUrls = [];
+
   this.setters = {
-    //setters to register plugin
-    //call by every plugin when all is ready
+
+    /**
+     * Setter method to register plugin (called by every plugin when all is ready)  
+     */
     registerPlugin(plugin) {
-      //if not registered add plugin
-      //key name of plugin
-      //value plugin object
+      // store plugin into registry (if not already registered )
       if (!this._plugins[plugin.name]) {
         this._plugins[plugin.name] = plugin;
       }
     }
   };
+
   /**
    * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).
    * NOW WHEN CHANGE MAP IS TRIGGER, PAGE IS RELOADED.
@@ -91,7 +107,6 @@ function PluginsRegistry() {
   };
 
   /**
-   *
    * @param plugin
    * @param ready //TODO used ???
    */
@@ -100,8 +115,8 @@ function PluginsRegistry() {
   };
 
   /**
-   *
    * @returns {Promise<{-readonly [P in keyof Promise<unknown>[]]: PromiseSettledResult<Awaited<Promise<unknown>[][P]>>}>}
+   * 
    * @private
    */
   this._loadPlugins = function() {
@@ -146,11 +161,14 @@ function PluginsRegistry() {
   };
 
   /**
-   * reaload plugin in case of change map
+   * Reaload plugin in case of change map
+   * 
    * @deprecated since 3.7
+   * 
    * @param initConfig
    * @param project
-   * @returns {Promise<unknown>}
+   * 
+   * @returns { Promise<unknown> }
    */
   this.reloadPlugins = function(initConfig, project) {
     return new Promise(async (resolve, reject) => {
@@ -189,6 +207,7 @@ function PluginsRegistry() {
 
   /**
    * Set plugin config only filtered by gid configuration
+   * 
    * @param config
    */
   this.setPluginsConfig = function(config={}) {
@@ -201,9 +220,12 @@ function PluginsRegistry() {
   };
 
   /**
-   * Method to load external script
+   * Load an external script
+   * 
    * @param url
+   * 
    * @returns {*}
+   * 
    * @private
    */
   this._loadScript = function(url) {
@@ -212,9 +234,12 @@ function PluginsRegistry() {
 
   /**
    * Load/Setup plugin script
+   * 
    * @param name
    * @param pluginConfig
+   * 
    * @returns {Promise<unknown>}
+   * 
    * @private
    */
   this._setup = function(name, pluginConfig) {
@@ -262,8 +287,8 @@ function PluginsRegistry() {
   };
 
   /**
-   *
    * @param pluginName
+   * 
    * @returns <Object> Plugin configuration server object
    */
   this.getPluginConfig = function(pluginName) {
@@ -271,7 +296,6 @@ function PluginsRegistry() {
   };
 
   /**
-   *
    * @returns <Object> key pluginName, value plugin instance
    */
   this.getPlugins = function() {
@@ -279,8 +303,8 @@ function PluginsRegistry() {
   };
 
   /**
-   *
    * @param pluginName
+   * 
    * @returns Plugin instance
    */
   this.getPlugin = function(pluginName) {
@@ -288,18 +312,20 @@ function PluginsRegistry() {
   };
 
   /**
-   * Method to check if a plugin is in configuration and will be added to application
+   * Check if a plugin is in configuration and will be added to application
+   * 
    * @param pluginName
-   * @returns {boolean}
+   * 
+   * @returns { boolean }
    */
   this.isPluginInConfiguration = function(pluginName) {
     return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
   /**
-   *
    * @param pluginName
-   * @returns Return plugin Configuration
+   * 
+   * @returns plugin Configuration
    */
   this.isTherePlugin = function(pluginName) {
     return this.pluginsConfigs[pluginName];
