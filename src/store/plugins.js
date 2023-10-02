@@ -17,14 +17,26 @@ const OTHERPLUGINS = ['law'];
 
 function PluginsRegistry() {
   this.config = null;
+  //Object where store plugin
+  //key plugin name
+  //value plugin object
   this._plugins = {};
+  //Name array of initConfig.group.plugins names
   this._configurationPlugins = [];
+  //Store initConfig.group.plugins object configuration
   this.pluginsConfigs = {};
+  //store array of plugin loaded url
   this._loadedPluginUrls = [];
   this.setters = {
     //setters to register plugin
+    //call by every plugin when all is ready
     registerPlugin(plugin) {
-      if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
+      //if not registered add plugin
+      //key name of plugin
+      //value plugin object
+      if (!this._plugins[plugin.name]) {
+        this._plugins[plugin.name] = plugin;
+      }
     }
   };
   /**
@@ -38,16 +50,21 @@ function PluginsRegistry() {
   base(this);
 
   // initialize plugin
+  //call by applications.js services folder
   this.init = function(options={}) {
     return new Promise(async (resolve, reject) =>{
+      //get plugin loading urls
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations
       this.setPluginsConfig(options.pluginsConfigs);
       // filter
-      Object.keys(this.pluginsConfigs).forEach(pluginName => this._configurationPlugins.push(pluginName));
+      Object.keys(this.pluginsConfigs)
+        .forEach(pluginName => this._configurationPlugins.push(pluginName));
       this.addLoadingPlugins();
       // plugins that aren't in configuration server but in project
       this.otherPluginsConfig = options.otherPluginsConfig;
+      //set other plugin on in initConfig.group.plugins
+      // law for example
       this.setOtherPlugins();
       this.setDependencyPluginConfig();
       try {
@@ -59,20 +76,37 @@ function PluginsRegistry() {
     })
   };
 
+  /**
+   * Based on server configuration plugins initiConfig.group.plugins
+   * set loading plugin
+   */
   this.addLoadingPlugins = function(){
     Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
+  /**
+   *
+   * @param plugin
+   * @param ready
+   */
   this.removeLoadingPlugin = function(plugin, ready){
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
+  /**
+   *
+   * @returns {Promise<{-readonly [P in keyof Promise<unknown>[]]: PromiseSettledResult<Awaited<Promise<unknown>[][P]>>}>}
+   * @private
+   */
   this._loadPlugins = function() {
     const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => this._setup(name, pluginConfig));
     return Promise.allSettled(pluginLoadPromises)
   };
 
-  this.setDependencyPluginConfig = function(){
+  /**
+   *
+   */
+  this.setDependencyPluginConfig = function() {
     for (const pluginName in this.pluginsConfigs){
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
       dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName => {
@@ -81,6 +115,9 @@ function PluginsRegistry() {
     }
   };
 
+  /**
+   * Method to set other plugin
+   */
   this.setOtherPlugins = function() {
     const law = OTHERPLUGINS[0];
     if (this.otherPluginsConfig && this.otherPluginsConfig[law] && this.otherPluginsConfig[law].length) {
@@ -131,7 +168,7 @@ function PluginsRegistry() {
   };
 
   /**
-   * setup plugin config only filtered by gid configuration
+   * Set plugin config only filtered by gid configuration
    * @param config
    */
   this.setPluginsConfig = function(config={}) {
@@ -152,12 +189,20 @@ function PluginsRegistry() {
     return $.getScript(url);
   };
 
-  //load plugin script
+  /**
+   * Load/Setup plugin script
+   * @param name
+   * @param pluginConfig
+   * @returns {Promise<unknown>}
+   * @private
+   */
   this._setup = function(name, pluginConfig) {
     return new Promise(async (resolve, reject) => {
       if (!_.isNull(pluginConfig)) {
         const {jsscripts=[]} = pluginConfig;
+        //Array contains plugin dependencies
         const depedencypluginlibrariespromises = [];
+        //Need to wait plugin dependencies before load plugin
         for (const script of jsscripts) {
           depedencypluginlibrariespromises.push(new Promise((resolve, reject) => {
             this._loadScript(script)
@@ -166,46 +211,76 @@ function PluginsRegistry() {
           }));
         }
         try {
+          //when plugin dependencies are loaded
           await Promise.all(depedencypluginlibrariespromises);
           const baseUrl = `${this.pluginsBaseUrl}${name}`;
+          //create script url
           const scriptUrl = `${baseUrl}/js/plugin.js?${Date.now()}`;
           pluginConfig.baseUrl= this.pluginsBaseUrl;
           this._loadScript(scriptUrl)
             .done(() => {
+              //add url to loaded plugin urls
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
             .fail((jqxhr, settings, exception)=>{
               console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
+              //remove plugin in case of error
               this.removeLoadingPlugin(name, false);
               reject();
             })
-        } catch(err){
+        } catch(err) {
+          //remove plugin in case of error of dependencies
           this.removeLoadingPlugin(name, false);
           reject();
         }
-      } else resolve()
+      } else {
+        resolve()
+      }
     })
   };
 
+  /**
+   *
+   * @param pluginName
+   * @returns {*}
+   */
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
 
+  /**
+   *
+   * @returns {*|{}}
+   */
   this.getPlugins = function() {
     return this._plugins;
   };
 
+  /**
+   *
+   * @param pluginName
+   * @returns {*}
+   */
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
 
-  // method to check if a plugin is in configuration and will be added to application
-  this.isPluginInConfiguration = function(pluginName){
+  /**
+   * Method to check if a plugin is in configuration and will be added to application
+   * @param pluginName
+   * @returns {boolean}
+   */
+  this.isPluginInConfiguration = function(pluginName) {
     return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
-  this.isTherePlugin = function(pluginName){
+  /**
+   *
+   * @param pluginName
+   * @returns {*}
+   */
+  this.isTherePlugin = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   }
 }
