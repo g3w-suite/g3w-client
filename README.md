@@ -180,7 +180,7 @@ For further information about plugin development, see also: [`src/plugins/README
 
 <details>
 
-<summary> Some info about <code>git tag</code> usage </summary>
+<summary> 1.1 <code>git tag</code> usage </summary>
 
 **Listing local tags:**
 ```sh
