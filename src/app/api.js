@@ -281,14 +281,11 @@ module.exports = {
         /** @since 3.8.0 */
         const platform = window.platform || {};
 
-        /** @since 3.9.0 */
-        const plugins  = window.g3wsdk.loaded_plugins || {};
-
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
 - g3w-client: __${G3W_CONSTANT.APP_VERSION}__
-- g3w-client-plugins: [ ${Object.entries(plugins).map((p) => (`__${p[0]}@v${p[1]}__`)).join(', ')} ]
+- g3w-client-plugins: [ ${Object.values(PluginsRegistry._plugins).map((p) => (`__${p.name}@v${p._version}__`)).join(', ')} ]
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
