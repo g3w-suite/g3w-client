@@ -102,9 +102,6 @@ const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
 const g3wolutils = require('core/utils/ol');
 
-const vm              = new Vue();
-const plugins_timeout = 10000;
-
 module.exports = {
 
   // APP CONSTANTS
@@ -272,8 +269,8 @@ module.exports = {
       .all([
         new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
         Promise.race([
-          new Promise((resolve)   => vm.$watch(() => ApplicationState.plugins, p => { if (0 === p.length && !vm.plugins_loaded) { vm.plugins_loaded = true; resolve(); } })),
-          new Promise((_, reject) => setTimeout(reject, plugins_timeout))
+          new Promise((resolve)         => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve)),
+          new Promise((resolve, reject) => setTimeout(() => ApplicationService.complete ? resolve() : reject('Some plugin is not properly loaded ?'), 10000))
         ])
       ])
       .finally(() => {
