@@ -277,8 +277,13 @@ module.exports = {
         ])
       ])
       .finally(() => {
+
+        /** @since 3.8.0 */
         const platform = window.platform || {};
+
+        /** @since 3.9.0 */
         const plugins  = window.g3wsdk.loaded_plugins || {};
+
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
@@ -288,6 +293,7 @@ module.exports = {
 - operating system: __${platform.os.toString()}__
 `.trim());
       });
+
   },
 
   // G3W-CLIENT version
