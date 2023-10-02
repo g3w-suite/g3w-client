@@ -77,19 +77,22 @@ function PluginsRegistry() {
   };
 
   /**
-   * Based on server configuration plugins initiConfig.group.plugins
+   * Based on server configuration plugins initConfig.group.plugins
    * set loading plugin
    */
-  this.addLoadingPlugins = function(){
-    Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
+  this.addLoadingPlugins = function() {
+    //add to Application service plugin that need to be load
+    Object
+      .keys(this.pluginsConfigs)
+      .forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
   /**
    *
    * @param plugin
-   * @param ready
+   * @param ready //TODO used ???
    */
-  this.removeLoadingPlugin = function(plugin, ready){
+  this.removeLoadingPlugin = function(plugin, ready) {
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
