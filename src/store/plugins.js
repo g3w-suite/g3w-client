@@ -53,7 +53,7 @@ function PluginsRegistry() {
       try {
         const plugins = await this._loadPlugins();
         resolve(plugins);
-      } catch(error){
+      } catch(error) {
         reject(error);
       }
     })
