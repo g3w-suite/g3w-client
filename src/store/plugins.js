@@ -90,7 +90,13 @@ function PluginsRegistry() {
     } else delete this.pluginsConfigs[law];
   };
 
-  // reaload plugin in case of change map
+  /**
+   * reaload plugin in case of change map
+   * @deprecated since 3.7
+   * @param initConfig
+   * @param project
+   * @returns {Promise<unknown>}
+   */
   this.reloadPlugins = function(initConfig, project) {
     return new Promise(async (resolve, reject) => {
       const scripts = $('script');
