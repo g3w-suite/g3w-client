@@ -66,9 +66,12 @@ function PluginsRegistry() {
       //set other plugin on in initConfig.group.plugins
       // law for example
       this.setOtherPlugins();
+      ///
       this.setDependencyPluginConfig();
       try {
+        //load plugins
         const plugins = await this._loadPlugins();
+        //resolve plugins promises
         resolve(plugins);
       } catch(error) {
         reject(error);
@@ -104,16 +107,16 @@ function PluginsRegistry() {
   this._loadPlugins = function() {
     const pluginLoadPromises = Object
       .entries(this.pluginsConfigs)
-        .map(([name, pluginConfig]) => this._setup(name, pluginConfig));
+      .map(([name, pluginConfig]) => this._setup(name, pluginConfig));
 
     return Promise.allSettled(pluginLoadPromises)
   };
 
   /**
-   *
+   *@TODO need to check if used
    */
   this.setDependencyPluginConfig = function() {
-    for (const pluginName in this.pluginsConfigs){
+    for (const pluginName in this.pluginsConfigs) {
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
       if (dependecyPluginConfig) {
         Object
@@ -241,7 +244,7 @@ function PluginsRegistry() {
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
-            .fail((jqxhr, settings, exception)=>{
+            .fail((jqxhr, settings, exception) => {
               console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
               //remove plugin in case of error
               this.removeLoadingPlugin(name, false);
@@ -261,7 +264,7 @@ function PluginsRegistry() {
   /**
    *
    * @param pluginName
-   * @returns {*}
+   * @returns <Object> Plugin configuration server object
    */
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
@@ -269,7 +272,7 @@ function PluginsRegistry() {
 
   /**
    *
-   * @returns {*|{}}
+   * @returns <Object> key pluginName, value plugin instance
    */
   this.getPlugins = function() {
     return this._plugins;
@@ -278,7 +281,7 @@ function PluginsRegistry() {
   /**
    *
    * @param pluginName
-   * @returns {*}
+   * @returns Plugin instance
    */
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
@@ -296,7 +299,7 @@ function PluginsRegistry() {
   /**
    *
    * @param pluginName
-   * @returns {*}
+   * @returns Return plugin Configuration
    */
   this.isTherePlugin = function(pluginName) {
     return this.pluginsConfigs[pluginName];
