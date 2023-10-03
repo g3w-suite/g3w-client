@@ -5,6 +5,7 @@
 
 import appConfig from 'config';
 import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS, API_BASE_URLS } from 'app/constant';
+import {VM} from 'eventbus';
 import ApplicationState from 'store/application-state';
 import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
@@ -648,7 +649,21 @@ const ApplicationService = function() {
         });
       } catch(err) {
         /* FAIL SILENTLY */
+        console.warn(err);
       } finally {
+        const promise = ApplicationState.plugins.length === 0 ?
+          Promise.resolve() :
+          new Promise((resolve) => {
+            VM.$watch(
+                () => ApplicationState.plugins,
+                (plugins) => {
+                  if (plugins.length === 0) {
+                    resolve();
+                  }
+                }
+            )
+          })
+        await promise;
         this.complete = true;
         this.emit('complete');
       }
