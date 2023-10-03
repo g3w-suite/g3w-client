@@ -11,6 +11,11 @@ const Feature = require('core/layers/features/feature');
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
 
+const EDITING_KEY_VALUE_INPUT_FIELD_TYPES = [
+  'select_autocomplete',
+  'select'
+];
+
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
   // setters
@@ -101,8 +106,12 @@ function TableLayer(config={}, options={}) {
           this.config.editing.form = {
             perc: null
           };
+
           this._setOtherConfigParameters(vector);
-          vector.style && this.setColor(vector.style.color);
+
+          if (vector.style) {
+            this.setColor(vector.style.color);
+          }
           // create an instance of editor
           this._editor = new Editor({
             layer: this
@@ -116,6 +125,7 @@ function TableLayer(config={}, options={}) {
           this.setReady(false);
         })
     });
+
     this.state = {
       ...this.state,
       editing: {
@@ -186,9 +196,14 @@ proto.readFeatures = function() {
 
 // return layer for editing
 proto.getLayerForEditing = async function({vectorurl, project_type}={}) {
-  vectorurl && this.setVectorUrl(vectorurl);
-  project_type && this.setProjectType(project_type);
+  if (vectorurl) {
+    this.setVectorUrl(vectorurl);
+  }
+  if (project_type) {
+    this.setProjectType(project_type);
+  }
   this.setEditingUrl();
+
   const editableLayer = this.clone();
   try {
     return await editableLayer.layerForEditing;
@@ -197,10 +212,18 @@ proto.getLayerForEditing = async function({vectorurl, project_type}={}) {
   }
 };
 
+/**
+ *
+ * @returns return ol source of features
+ */
 proto.getEditingSource = function() {
   return this._editor.getEditingSource();
 };
 
+/**
+ *
+ * @returns Array of features
+ */
 proto.readEditingFeatures = function() {
   return this._editor.readEditingFeatures();
 };
@@ -210,7 +233,7 @@ proto.getEditingLayer = function() {
 };
 
 //check if is editingLayer useful to get editingstyle
-proto.isEditingLayer = function(){
+proto.isEditingLayer = function() {
   return !!this.config.editing
 };
 
@@ -226,7 +249,7 @@ proto.getEditingConstrains = function() {
   return this.config.editing.constraints;
 };
 
-proto.getEditingCapabilities = function(){
+proto.getEditingCapabilities = function() {
   return this.config.editing.capabilities;
 };
 
@@ -255,7 +278,7 @@ proto._setOtherConfigParameters = function(config) {
 };
 
 /**
- * @returns layer fields 
+ * @returns layer fields
  */
 proto.getEditingFields = function(editable = false) {
   let fields = this.config.editing.fields.length
@@ -268,8 +291,16 @@ proto.getEditingFields = function(editable = false) {
 };
 
 /**
+ * Return pk field
+ * @since v3.9.0
+ */
+proto.getPkField = function() {
+  return this.getEditingFields().find(f => f.pk);
+}
+
+/**
  * @param field
- * 
+ *
  * @returns {boolean} whether field is a Primary Key
  */
 proto.isPkField = function(field) {
@@ -546,5 +577,15 @@ proto.createNewFeature = function() {
   return feature;
 };
 
+/**
+ * @since 3.9.0
+ * @returns Array o null
+ */
+proto.getEditingKeyValuesFields = function() {
+  return this.config
+    .editing
+    .fields
+    .filter(field => EDITING_KEY_VALUE_INPUT_FIELD_TYPES.includes(field.input.type))
+}
 
 module.exports = TableLayer;
