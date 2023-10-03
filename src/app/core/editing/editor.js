@@ -190,7 +190,11 @@ proto._getFeatures = function(options = {}) {
         .then((features = []) => {
           // formatter = 1 --> we need to store sync features
           if (this.getSyncEditingSource()) {
-            _getSyncFeaturesFromServer(features, options.filter)
+            _getSyncFeaturesFromServer({
+              editor: this,
+              features,
+              relation: options.filter
+            })
           }
           this._addFeaturesFromServer(features);
           this._allfeatures = !options.filter;
@@ -576,9 +580,20 @@ proto.upateSyncEditingSource = function({
 }
 
 /**
+
+ * Private
  * @since 3.9.0
+ * @param editor
+ * @param features
+ * @param relation
+ * @returns {Promise<void>}
+ * @private
  */
-const _getSyncFeaturesFromServer = async function(editor, features, relation) {
+const _getSyncFeaturesFromServer = async function({
+  editor,
+  features,
+  relation
+} = {}) {
   try {
     const response = (relation && relation.fid)
       ? await RelationsService.getRelations({ ...relation.fid, type: 'data', formatter: 1 })
