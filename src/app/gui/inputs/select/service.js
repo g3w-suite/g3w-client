@@ -37,10 +37,23 @@ proto.getKeyByValue = function({search}={}) {
   }).catch(err => console.log(err));
 };
 
-proto.getData = function({layer_id= this.state.input.options.layer_id, key=this.state.input.options.key, value=this.state.input.options.value, search} = {}) {
+/**
+ * Set input.options.values of select input
+ * @param opts.layer_id
+ * @param opts.key
+ * @param opts.value
+ * @param opts.search
+ * @returns {Promise<unknown>}
+ */
+proto.getData = function({
+  layer_id= this.state.input.options.layer_id,
+  key=this.state.input.options.key,
+  value=this.state.input.options.value,
+  search
+} = {}) {
   const search_value = `${key}|${search}`.trim();
   return new Promise((resolve, reject) => {
-    if (!this._layer) this._layer = this._getLayerById(layer_id);
+    this._layer = this._layer || this._getLayerById(layer_id);
     this._layer.getDataTable({
       suggest: search_value,
       ordering: key
