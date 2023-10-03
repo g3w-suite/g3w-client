@@ -17,12 +17,6 @@ import FormFooter from 'components/FormFooter.vue';
 import C3XYLine from 'components/C3XYLine.vue';
 
 /**
- * @since v3.9.0
- * Plugins version
- */
-import PluginsVersion from 'plugins/_version';
-
-/**
  * CORE modules
  */
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -274,11 +268,7 @@ module.exports = {
     Promise
       .allSettled([
         new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
-        new Promise((resolve) => {
-          ApplicationService.complete ?
-            resolve() :
-            ApplicationService.on('complete', resolve)
-        })
+        new Promise((resolve) => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve))
       ])
       .finally(() => {
 
@@ -289,12 +279,11 @@ module.exports = {
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
 - g3w-client: __${G3W_CONSTANT.APP_VERSION}__
-- g3w-client-plugins: [\n ${Object.values(PluginsRegistry._plugins).map((p) => (`   ${p.name}@v${PluginsVersion[p.name]}`)).join(',\n ')} \n]
+- plugins:\n${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
       });
-    return 'Loading ......'
   },
 
   // G3W-CLIENT version
