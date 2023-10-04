@@ -100,10 +100,6 @@ npm run docker:up      # backend server   (g3w-admin)
 npm run dev            # frontend server  (g3w-client)
 ```
 
-```sh
-npm run watch:plugins  # watch built-in plugins (editing, openrouteservice, qplotly, qtimeseries)
-```
-
 If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
 
 ```sh
@@ -158,7 +154,6 @@ And then start again the development servers:
 ```sh
 npm run docker:up      # backend server (g3w-admin)
 npm run dev            # frontend server (g3w-client)
-npm run watch:plugins  # watch built-in plugins + any custom plugin (eg. base, eleprofile, sidebar)
 ```
 
 For further information about plugin development, see also: [`src/plugins/README.md`](https://github.com/g3w-suite/g3w-client/blob/dev/src/src/plugins/README.md)
@@ -171,7 +166,7 @@ For further information about plugin development, see also: [`src/plugins/README
 ## 
 
 - [ ] Ensure all [milestones](https://github.com/g3w-suite/g3w-client/milestones) issues and pull requests are resolved.
-- [ ] Create or checkeout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
+- [ ] Create or checkout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
 - [ ] Compile local code: `npm run build`
 - [ ] New tag: `git tag v3.5.1`
 - [ ] Push local code to remote: `git push`

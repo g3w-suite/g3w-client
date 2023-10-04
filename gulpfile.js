@@ -445,26 +445,13 @@ gulp.task('select-plugins', function() {
   return gulp
     .src('./package.json')
     .pipe(
-      prompt.prompt(
-        {
-          type: 'list',
-          name: 'env',
-          message: 'Environment',
-          choices: ['development', 'production'],
-        },
-        (response) => {
-          production = response.env == 'production';
-          setNODE_ENV();
-        }
-      )
-    )
-    .pipe(
       prompt.prompt({
         type: 'checkbox',
         name: 'plugins',
         message: 'Plugins',
+        default: ['client'],
         // exclude from plugin list "client" and all "template_" plugins
-        choices: fs.readdirSync(g3w.pluginsFolder).filter(file => {
+        choices: ['client'].concat(fs.readdirSync(g3w.pluginsFolder).filter(file => {
           try {
             return file !== 'client'
               && file.indexOf('template_') === -1
@@ -474,7 +461,7 @@ gulp.task('select-plugins', function() {
             console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
             return false;
           }
-        })
+        }))
       },
       response => process.env.G3W_PLUGINS = response.plugins
     )
@@ -484,21 +471,23 @@ gulp.task('select-plugins', function() {
 /**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('deploy-plugins', function() {
+gulp.task('build:plugins', function(done) {
+  if (undefined === process.env.G3W_PLUGINS) {
+    console.warn('\n' + YELLOW__ + 'no plugins selected'+ __RESET + '\n');
+  }
   return process.env.G3W_PLUGINS
-    ? es.merge.apply(null, process.env.G3W_PLUGINS.split(',').map(p => browserify_plugin(p, false)))
-    : console.log('\n' + YELLOW__ + '[WARN] skipping deploy, no plugins selected' + __RESET + '\n');
+    ? es.merge.apply(null, process.env.G3W_PLUGINS.split(',').filter(p => p != 'client').map(p => browserify_plugin(p, false)))
+    : done;
 });
-
-/**
- * Deploy local developed plugins (src/plugins)
- */
-gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-plugins', done));
 
 /**
  * Compile and deploy local developed client file assets (static and templates)
  */
-gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'html']);
+gulp.task('build:client', function(done) {
+  return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
+   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'html'], done)
+   : done;
+});
 
 /**
  * [PROD] Compile and deploy client application
@@ -511,6 +500,8 @@ gulp.task('build', done => runSequence(
   'check:node_modules',
   // 'clean:admin',
   'clone:default_plugins',
+  'select-plugins',
+  'build:plugins',
   'build:client',
   'clean:overrides',
   done
