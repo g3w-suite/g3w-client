@@ -108,12 +108,11 @@ setNODE_ENV();
  * 
  * @since 3.9.0
  */
-const browserify_plugin = (pluginName) => {
+const browserify_plugin = (pluginName, watch = true) => {
   const src             = `${g3w.pluginsFolder}/${pluginName}`;                     // plugin folder (git source)
   const overridesFolder = `${g3w.admin_overrides_folder}/static/${pluginName}/js/`; // plugin folder (dev environment)
 
   console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + overridesFolder);
-
 
   let bundler = browserify(`./${pluginName}/index.js`, {
     basedir: `${g3w.pluginsFolder}`,
@@ -121,12 +120,19 @@ const browserify_plugin = (pluginName) => {
     debug: !production,
     cache: {},
     packageCache: {},
+    plugin: [
+      watch && !production ? watchify : undefined,
+      /* Uncomment the following in next ESM release (v4.x) */
+      // esmify
+    ],
     transform: [
       vueify,
       [ babelify, { babelrc: true } ],
       [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
     ],
-  });
+  })
+  .on('update', ()  => watch && !production && rebundle())
+  .on('log', (info) => watch && !production && gutil.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' →', info));
 
   // remove source map file
   del([`${src}/plugin.js.map`]);
@@ -149,14 +155,8 @@ const browserify_plugin = (pluginName) => {
       .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
       .pipe(replace('process.env.g3w_plugin_version', `"${loaded_plugins[pluginName]}"`))
       .pipe(gulp.dest(src))                                   // put plugin.js to plugin folder (git source)
-      .pipe(gulpif(!production, gulp.dest(overridesFolder))); // put plugin.js to static folder (dev environment)
+      .pipe(gulpif(!production, gulp.dest(overridesFolder))); // put plugin.js to static folder (dev environment);
   };
-  if (!production) {
-    bundler = watchify(bundler);
-    bundler
-      .on('update', rebundle)
-      .on('log', (info) => gutil.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' →', info));
-  }
 
   return rebundle();
 };
@@ -289,34 +289,35 @@ gulp.task('browserify:app', function() {
    * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
    */
   if (!production) {
-    console.log();                          // print an empty line
-    dev_plugins.forEach(browserify_plugin); // build all plugins (async)
+    console.log();                                  // print an empty line
+    dev_plugins.forEach(p => browserify_plugin(p)); // build all plugins (async)
   }
 
   const src = `./src/index.${production ? 'prod' : 'dev'}.js`
 
   console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + src + '\n');
 
-  let bundler = browserify(
-    src,
-    {
+  let bundler = browserify(src, {
     basedir: './',
     paths: ['./src/', './src/app/', './src/plugins/'],
     debug: !production,
     cache: {},
     packageCache: {},
-    /* Uncomment the following in next ESM release (v4.x) */
-    // plugin: [
-    //   esmify
-    // ],
+    plugin: [
+      production ? undefined : watchify,
+      /* Uncomment the following in next ESM release (v4.x) */
+      // esmify
+    ],
     transform: [
       vueify,
       [ babelify, { babelrc: true } ],
       [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
-      imgurify
+      imgurify,
     ],
     ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
-  });
+  })
+  .on('update', ()  => !production && rebundle())
+  .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
 
   bundler.external(dependencies);                               // exclude external npm dependencies
 
@@ -338,13 +339,6 @@ gulp.task('browserify:app', function() {
     .pipe(gulpif(production, sourcemaps.write('.')))
     .pipe(gulp.dest(outputFolder + '/static/client/js/'))
     .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
-
-  if (!production) {
-    bundler = watchify(bundler);
-    bundler
-      .on('update', rebundle)
-      .on('log', (info) => gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
-  }
 
   return rebundle();
 });
@@ -462,11 +456,7 @@ gulp.task('browser-sync', function() {
   gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
-  gulp.watch(g3w.pluginsFolder + '/*/plugin.js',      (file) => {
-    const plugins = process.env.G3W_PLUGINS;
-    process.env.G3W_PLUGINS = path.basename(path.dirname(file.path));
-    runSequence('deploy-plugins', 'browser:reload', () => process.env.G3W_PLUGINS = plugins)
-  });
+  gulp.watch(g3w.pluginsFolder + '/_version.js',      () => dev_plugins.forEach(p => browserify_plugin(p, false)));
 });
 
 /**
@@ -531,14 +521,14 @@ gulp.task('deploy-plugins', function() {
   const outputFolder = production ? g3w.admin_plugins_folder : `${g3w.admin_overrides_folder}/static`;
   // Minify `plugin.js` in production mode
   if (production) {
-    pluginNames.forEach(browserify_plugin);
+    pluginNames.forEach(p => browserify_plugin(p));
   }
   return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
     .pipe(rename((path, file) => {
       const pluginName   = nodePath.basename(file.base);
       const staticFolder = production ? `${pluginName}/static/${pluginName}/js/` : `${pluginName}/js/`;
       path.dirname = `${outputFolder}/${staticFolder}`;
-      console.log(`[G3W-CLIENT] file updated: ${path.dirname}${path.basename}${path.extname}`);
+      gutil.log(GREEN__ + `[${pluginName}]`+ __RESET + ` → ${path.dirname}${path.basename}${path.extname}`);
     }))
     .pipe(gulp.dest('.'));
 });
