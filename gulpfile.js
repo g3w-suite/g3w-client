@@ -464,18 +464,17 @@ gulp.task('select-plugins', function() {
         name: 'plugins',
         message: 'Plugins',
         // exclude from plugin list "client" and all "_templates" plugins
-        choices: fs.readdirSync(g3w.pluginsFolder)
-          .filter(file => {
-            try {
-              return file !== 'client'
-                && file.indexOf('_templates') === -1
-                && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
-                && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
-            } catch (e) {
-              console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
-              return false;
-            }
-          })
+        choices: fs.readdirSync(g3w.pluginsFolder).filter(file => {
+          try {
+            return file !== 'client'
+              && file.indexOf('_templates') === -1
+              && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
+              && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
+          } catch (e) {
+            console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
+            return false;
+          }
+        })
       },
       response => {
         response.plugins.forEach(plugin => dev_plugins.push(plugin)); // update dev plugins
