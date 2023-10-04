@@ -253,7 +253,7 @@ const Providers = {
         this.setProjections();
       }
 
-      const layers = opts.layers ? opts.layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+      const layers = opts.layers ? opts.layers.map(layer => encodeURIComponent(layer.getWMSLayerName())).join(',') : encodeURIComponent(this._layer.getWMSLayerName());
 
       let { filter = null} = opts;
       filter = filter && Array.isArray(filter) ? filter : [filter];
@@ -480,8 +480,8 @@ const Providers = {
     }) {
 
       const layerNames = layers
-        ? layers.map(layer => layer.getWMSInfoLayerName()).join(',')
-        : this._layer.getWMSInfoLayerName();
+        ? layers.map(layer => encodeURIComponent(layer.getWMSInfoLayerName())).join(',')
+        : encodeURIComponent(this._layer.getWMSInfoLayerName());
 
       const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
 
@@ -706,7 +706,7 @@ const Providers = {
         SERVICE:      'WFS',
         VERSION:      '1.1.0',
         REQUEST:      'GetFeature',
-        TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
+        TYPENAME:     (layers ? layers.map(layer => encodeURIComponent(layer.getWFSLayerName())).join(',') : encodeURIComponent(layer.getWFSLayerName())),
         OUTPUTFORMAT: layer.getInfoFormat(),
         SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
       });
