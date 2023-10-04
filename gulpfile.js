@@ -463,11 +463,11 @@ gulp.task('select-plugins', function() {
         type: 'checkbox',
         name: 'plugins',
         message: 'Plugins',
-        // exclude from plugin list "client" and all "_template" plugins
+        // exclude from plugin list "client" and all "template_" plugins
         choices: fs.readdirSync(g3w.pluginsFolder).filter(file => {
           try {
             return file !== 'client'
-              && file.indexOf('_template') === -1
+              && file.indexOf('template_') === -1
               && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
               && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
           } catch (e) {
@@ -476,9 +476,7 @@ gulp.task('select-plugins', function() {
           }
         })
       },
-      response => {
-        process.env.G3W_PLUGINS = response.plugins;
-      }
+      response => process.env.G3W_PLUGINS = response.plugins
     )
   );
 });
