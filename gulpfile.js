@@ -79,16 +79,9 @@ const default_plugins = [
 ];
 
 // Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
-const dev_plugins = new Proxy(
-  Array.from(new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))), {
-  set(target, prop, pluginName) {
-    if ('length' !== prop) {            // live reload --> rebuild `dev_plugins` after changing local config (ref: `G3W_PLUGINS`)
-      Reflect.set(target, prop, pluginName);
-      browserify_plugin(pluginName);
-    }
-    return true;
-  }
-});
+const dev_plugins = Array.from(
+  new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))
+);
 
 // Helper info about locally developed client plugins (Object<pluginName, pluginVersion>)
 const loaded_plugins = Object.fromEntries(dev_plugins.map(pluginName => {
@@ -109,10 +102,10 @@ setNODE_ENV();
  * @since 3.9.0
  */
 const browserify_plugin = (pluginName, watch = true) => {
-  const src          = `${g3w.pluginsFolder}/${pluginName}`;             // plugin folder (git source)
+  const src          = `${g3w.pluginsFolder}/${pluginName}`;              // plugin folder (git source)
   const outputFolder = production
     ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
-    : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;          // plugin folder (DEV env)
+    : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;           // plugin folder (DEV env)
 
   console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + outputFolder);
 
@@ -161,38 +154,6 @@ const browserify_plugin = (pluginName, watch = true) => {
   };
 
   return rebundle();
-};
-
-/**
- * @param { string[] } exclude array of plugins to be excluded (eg. ['editing', 'qtimeseries'])
- * 
- * @since 3.9.0
- */
-const select_plugins = (exclude = []) => {
-  return prompt.prompt({
-      type: 'checkbox',
-      name: 'plugins',
-      message: 'Plugins',
-      // exclude from plugin list "client" and all "_templates" plugins
-      choices: fs.readdirSync(g3w.pluginsFolder)
-        .filter(file => {
-          try {
-            return file !== 'client'
-              && exclude.indexOf(file) === -1
-              && file.indexOf('_templates') === -1
-              && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
-              && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
-          } catch (e) {
-            console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
-            return false;
-          }
-        })
-    },
-    response => {
-      response.plugins.forEach(plugin => dev_plugins.push(plugin)); // update dev plugins
-      process.env.G3W_PLUGINS = response.plugins;
-    }
-  )
 };
 
 // gulp.task('clean:dist',   () => del([`${g3w.distFolder}/**/*`], { force: true }));
@@ -478,19 +439,6 @@ gulp.task('clone:default_plugins', function() {
 });
 
 /**
- * @TODO deprecate this ? (real world use case.. )
- * 
- * Ask the developer which plugins wants to add to current developing session (without rebuild client)
- * 
- * @since 3.9.0
- */
-gulp.task('add:dev_plugins', function() {
-  return gulp
-    .src('./package.json')
-    .pipe(select_plugins(dev_plugins));
-})
-
-/**
  * Ask the developer which plugins wants to deploy
  */
 gulp.task('select-plugins', function() {
@@ -510,7 +458,31 @@ gulp.task('select-plugins', function() {
         }
       )
     )
-    .pipe(select_plugins())
+    .pipe(
+      prompt.prompt({
+        type: 'checkbox',
+        name: 'plugins',
+        message: 'Plugins',
+        // exclude from plugin list "client" and all "_templates" plugins
+        choices: fs.readdirSync(g3w.pluginsFolder)
+          .filter(file => {
+            try {
+              return file !== 'client'
+                && file.indexOf('_templates') === -1
+                && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
+                && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
+            } catch (e) {
+              console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
+              return false;
+            }
+          })
+      },
+      response => {
+        response.plugins.forEach(plugin => dev_plugins.push(plugin)); // update dev plugins
+        process.env.G3W_PLUGINS = response.plugins;
+      }
+    )
+  );
 });
 
 /**
