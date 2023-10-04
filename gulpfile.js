@@ -485,7 +485,9 @@ gulp.task('select-plugins', function() {
  * Deploy local developed plugins (src/plugins)
  */
 gulp.task('deploy-plugins', function() {
-  return es.merge.apply(null, process.env.G3W_PLUGINS.split(',').map(p => browserify_plugin(p, false)));
+  return process.env.G3W_PLUGINS
+    ? es.merge.apply(null, process.env.G3W_PLUGINS.split(',').map(p => browserify_plugin(p, false)))
+    : console.log('\n' + YELLOW__ + '[WARN] skipping deploy, no plugins selected' + __RESET + '\n');
 });
 
 /**
