@@ -16,7 +16,7 @@ const gutil       = require('gulp-util');
 // Gulp vinyl (virtual memory filesystem stuff)
 const buffer      = require('vinyl-buffer');
 const source      = require('vinyl-source-stream');
-// const es          = require('event-stream');
+const es          = require('event-stream');
 
 // Node.js
 const exec        = require('child_process').exec;
@@ -109,10 +109,12 @@ setNODE_ENV();
  * @since 3.9.0
  */
 const browserify_plugin = (pluginName, watch = true) => {
-  const src             = `${g3w.pluginsFolder}/${pluginName}`;                     // plugin folder (git source)
-  const overridesFolder = `${g3w.admin_overrides_folder}/static/${pluginName}/js/`; // plugin folder (dev environment)
+  const src          = `${g3w.pluginsFolder}/${pluginName}`;             // plugin folder (git source)
+  const outputFolder = production
+    ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
+    : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;          // plugin folder (DEV env)
 
-  console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + overridesFolder);
+  console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + outputFolder);
 
   let bundler = browserify(`./${pluginName}/index.js`, {
     basedir: `${g3w.pluginsFolder}`,
@@ -154,8 +156,8 @@ const browserify_plugin = (pluginName, watch = true) => {
       .pipe(concat('plugin.js'))
       .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
       .pipe(replace('process.env.g3w_plugin_version', `"${loaded_plugins[pluginName]}"`))
-      .pipe(gulp.dest(src))                                   // put plugin.js to plugin folder (git source)
-      .pipe(gulpif(!production, gulp.dest(overridesFolder))); // put plugin.js to static folder (dev environment);
+      .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
+      .pipe(gulp.dest(outputFolder)); // put plugin.js to static folder (PROD | DEV env)
   };
 
   return rebundle();
@@ -276,7 +278,7 @@ gulp.task('concatenate:vendor_js', function() {
  */
 gulp.task('browserify:app', function() {
   /**
-   * Make sure that all g3w.plugins bundles are there (NB: without watching them)
+   * Make sure that all g3w.plugins bundles are there
    * 
    * CORE PLUGINS:
    * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
@@ -316,10 +318,9 @@ gulp.task('browserify:app', function() {
     ],
     ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
   })
+  .external(dependencies)                                       // exclude external npm dependencies
   .on('update', ()  => !production && rebundle())
   .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
-
-  bundler.external(dependencies);                               // exclude external npm dependencies
 
   const rebundle = () => bundler.bundle()
     .on('error', err => {
@@ -516,21 +517,7 @@ gulp.task('select-plugins', function() {
  * Deploy local developed plugins (src/plugins)
  */
 gulp.task('deploy-plugins', function() {
-  const pluginNames  = process.env.G3W_PLUGINS.split(',');
-  const nodePath     = path;
-  const outputFolder = production ? g3w.admin_plugins_folder : `${g3w.admin_overrides_folder}/static`;
-  // Minify `plugin.js` in production mode
-  if (production) {
-    pluginNames.forEach(p => browserify_plugin(p));
-  }
-  return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
-    .pipe(rename((path, file) => {
-      const pluginName   = nodePath.basename(file.base);
-      const staticFolder = production ? `${pluginName}/static/${pluginName}/js/` : `${pluginName}/js/`;
-      path.dirname = `${outputFolder}/${staticFolder}`;
-      gutil.log(GREEN__ + `[${pluginName}]`+ __RESET + ` → ${path.dirname}${path.basename}${path.extname}`);
-    }))
-    .pipe(gulp.dest('.'));
+  return es.merge.apply(null, process.env.G3W_PLUGINS.split(',').map(p => browserify_plugin(p, false)));
 });
 
 /**
