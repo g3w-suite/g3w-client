@@ -98,6 +98,7 @@ setNODE_ENV();
 
 /**
  * @param { string } pluginName name of plugin to build (eg. 'editing')
+ * @param { boolean } watch     whether to watchify source files
  * 
  * @since 3.9.0
  */
@@ -604,3 +605,4 @@ gulp.task('g3w-admin-client',                    ['g3w-admin']);
 gulp.task('g3w-admin:plugins',                   ['build:plugins']);
 gulp.task('serve',                               ['dev']);
 gulp.task('default',                             ['dev']);
+gulp.task('watch:plugins',                       ['dev']);
