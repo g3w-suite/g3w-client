@@ -297,7 +297,7 @@ proto.applyCommitResponse = function(response = {}, relations = []) {
           const is_pk = options.fatherField.find(d => this._layer.isPkField(d)); // check if parent field is a Primary Key
           if (is_pk) {
             this.setFieldValueToRelationField({                                  // for each field
-              relationId,                                                        // relation layer id
+              layerId: relationId,                                                        // relation layer id
               ids: options.ids,                                                  // ids of features of relation layers to check
               field: options.childField[options.fatherField.indexOf(is_pk)],     // relation field to overwrite
               values: [clientid, id]                                             // [<old temporary id value>, <new id value>]
