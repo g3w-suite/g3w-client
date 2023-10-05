@@ -96,9 +96,11 @@ export default {
      */
     async onDatePickerShow(evt) {
       await this.$nextTick();
-      const { top, left, width } = this.$refs.datetimepicker_body.getBoundingClientRect();
-      this.widget_container.top = top;
-      this.widget_container.left = left - width;
+
+      const DOMContentPosition = document.getElementById('contents').getBoundingClientRect();
+      const { top, left, width, height } = this.$refs.datetimepicker_body.getBoundingClientRect();
+      this.widget_container.top = top  > 350 ? top : 350 ;
+      this.widget_container.left = left - (width > 220 ? width - 15 : 220);
       this.$emit('datetimepickershow');
     },
 
@@ -144,7 +146,8 @@ export default {
     } = formats[0];
 
     await this.$nextTick();
-    // set has widget input property instance
+
+      // set has widget input property instance
 
     this.datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(displayformat);
     this.datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(fieldformat);
