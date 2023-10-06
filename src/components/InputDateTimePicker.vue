@@ -102,8 +102,8 @@ export default {
       setTimeout(() => {
         const container            = this.$refs.datetimepicker_body.getBoundingClientRect();
         const modal                = this.$refs.datimewidget_container.querySelector('.bootstrap-datetimepicker-widget').getBoundingClientRect();
-        this.widget_container.top  = container.top  + (container.top   < modal.height ? container.height + Math.abs(container.top - modal.height) + 20 : 0); // 20 = padding
-        this.widget_container.left = container.left - (container.width < modal.width  ? modal.width : container.width);
+        this.widget_container.top  = container.top  + (container.top < modal.height ? container.height + Math.abs(container.top - modal.height) + 20 : 0); // 20 = padding
+        this.widget_container.left = container.left - Math.max(container.width, modal.width);
         this.$emit('datetimepickershow');
       });
     },
