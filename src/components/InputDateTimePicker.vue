@@ -95,14 +95,31 @@ export default {
      * @since 3.8.0
      */
     async onDatePickerShow(evt) {
-      await this.$nextTick();
-      const { top, left, width } = this.$refs.datetimepicker_body.getBoundingClientRect();
+      //reset start position
+      this.widget_container = {
+        top: 0,
+        left: 0
+      };
+      let datetimeWidgetPosition;
+      //need to wait that dom widget is show
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          datetimeWidgetPosition = document.getElementsByClassName('bootstrap-datetimepicker-widget')[0].getBoundingClientRect();
+          resolve()
+        })
+      });
+      //calculate
+      const { top, left, width, height } = this.$refs.datetimepicker_body.getBoundingClientRect();
       //set widget top style position
-      //350 are pixels height of datimepicker widget
-      this.widget_container.top = top  > 350 ? top : 350;
+      this.widget_container.top = (top - datetimeWidgetPosition.height) < 0
+        ? Math.abs((top - datetimeWidgetPosition.height)) + top + height + 20 //padding
+        : top;
+
       //set widget left style position
-      //220 are pixels width of datimepicker widget
-      this.widget_container.left = left - (width > 220 ? width : 220);
+      this.widget_container.left = left - ((width - datetimeWidgetPosition.width  < 0)
+        ? datetimeWidgetPosition.width
+        : width
+      );
       this.$emit('datetimepickershow');
     },
 
