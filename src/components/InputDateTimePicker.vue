@@ -94,33 +94,19 @@ export default {
      * 
      * @since 3.8.0
      */
-    async onDatePickerShow(evt) {
-      //reset start position
-      this.widget_container = {
-        top: 0,
-        left: 0
-      };
-      let datetimeWidgetPosition;
-      //need to wait that dom widget is show
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          datetimeWidgetPosition = document.getElementsByClassName('bootstrap-datetimepicker-widget')[0].getBoundingClientRect();
-          resolve()
-        })
+    onDatePickerShow(evt) {
+      // reset positions
+      this.widget_container.top  = 0;
+      this.widget_container.left = 0;
+      // wait until widget is present in DOM  
+      setTimeout(() => {
+        const container            = this.$refs.datetimepicker_body.getBoundingClientRect();
+        const modal                = document.querySelector('.bootstrap-datetimepicker-widget').getBoundingClientRect();
+        this.widget_container.top  = container.top  + (container.top   < modal.height ? container.height + Math.abs(container.top - modal.height) + 20 : 0); // 20 = padding
+        this.widget_container.left = container.left - (container.width < modal.width  ? modal.width : container.width);
+        console.log(widget, container);
+        this.$emit('datetimepickershow');
       });
-      //calculate
-      const { top, left, width, height } = this.$refs.datetimepicker_body.getBoundingClientRect();
-      //set widget top style position
-      this.widget_container.top = (top - datetimeWidgetPosition.height) < 0
-        ? Math.abs((top - datetimeWidgetPosition.height)) + top + height + 20 //padding
-        : top;
-
-      //set widget left style position
-      this.widget_container.left = left - ((width - datetimeWidgetPosition.width  < 0)
-        ? datetimeWidgetPosition.width
-        : width
-      );
-      this.$emit('datetimepickershow');
     },
 
     /**
