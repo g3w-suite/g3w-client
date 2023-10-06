@@ -104,7 +104,6 @@ export default {
         const modal                = document.querySelector('.bootstrap-datetimepicker-widget').getBoundingClientRect();
         this.widget_container.top  = container.top  + (container.top   < modal.height ? container.height + Math.abs(container.top - modal.height) + 20 : 0); // 20 = padding
         this.widget_container.left = container.left - (container.width < modal.width  ? modal.width : container.width);
-        console.log(widget, container);
         this.$emit('datetimepickershow');
       });
     },
