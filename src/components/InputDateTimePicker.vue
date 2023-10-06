@@ -7,16 +7,6 @@
   <baseinput :state="state">
     <div slot="body" ref="datetimepicker_body">
 
-      <div
-        ref="datimewidget_container"
-        :style="{
-          top: widget_container.top + 'px',
-          left: widget_container.left + 'px',
-          position: 'fixed',
-          zIndex: 10000
-        }"
-      ></div>
-
       <div class='input-group date' :id='iddatetimepicker' v-disabled="!editable">
         <input
           type='text'
@@ -96,13 +86,6 @@ export default {
      */
     async onDatePickerShow(evt) {
       await this.$nextTick();
-      const { top, left, width } = this.$refs.datetimepicker_body.getBoundingClientRect();
-      //set widget top style position
-      //350 are pixels height of datimepicker widget
-      this.widget_container.top = top  > 350 ? top : 350;
-      //set widget left style position
-      //220 are pixels width of datimepicker widget
-      this.widget_container.left = left - (width > 220 ? width : 220);
       this.$emit('datetimepickershow');
     },
 
@@ -131,10 +114,10 @@ export default {
   async mounted() {
     const {
       formats = [],
-      layout = {
-        vertical: "top",
-        horizontal: "left"
-      }
+      // layout = {
+      //   vertical: "top",
+      //   horizontal: "left"
+      // }
     } = this.state.input.options;
 
     const {
@@ -162,6 +145,14 @@ export default {
         ? moment(this.state.value, this.datetimefieldformat).toDate()
         : null;
 
+    // since 3.9.0 (shared container)
+    let container = document.querySelector('.datimewidget_container');
+    if (!container) {
+      container    = document.createElement('div');
+      container.classList.add('datimewidget_container');
+      container.style.position = 'relative';
+      document.body.appendChild(container);
+    }
 
     $(`#${this.iddatetimepicker}`).datetimepicker({
       defaultDate: date,
@@ -174,11 +165,11 @@ export default {
       toolbarPlacement: 'top',
       minDate,
       maxDate,
-      widgetParent: $(this.$refs.datimewidget_container),
-      widgetPositioning: {
-        vertical: layout.vertical || 'top',
-        horizontal: layout.horizontal || 'left'
-      },
+      widgetParent: '.datimewidget_container',
+      // widgetPositioning: {
+      //   vertical: layout.vertical || 'top',
+      //   horizontal: layout.horizontal || 'left'
+      // },
       showClose: true,
       locale: this.service.getLocale()
     });
