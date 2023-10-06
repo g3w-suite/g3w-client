@@ -96,11 +96,13 @@ export default {
      */
     async onDatePickerShow(evt) {
       await this.$nextTick();
-
-      const DOMContentPosition = document.getElementById('contents').getBoundingClientRect();
-      const { top, left, width, height } = this.$refs.datetimepicker_body.getBoundingClientRect();
-      this.widget_container.top = top  > 350 ? top : 350 ;
-      this.widget_container.left = left - (width > 220 ? width - 15 : 220);
+      const { top, left, width } = this.$refs.datetimepicker_body.getBoundingClientRect();
+      //set widget top style position
+      //350 are pixels height of datimepicker widget
+      this.widget_container.top = top  > 350 ? top : 350;
+      //set widget left style position
+      //220 are pixels width of datimepicker widget
+      this.widget_container.left = left - (width > 220 ? width : 220);
       this.$emit('datetimepickershow');
     },
 
