@@ -13,7 +13,7 @@
           top: widget_container.top + 'px',
           left: widget_container.left + 'px',
           position: 'fixed',
-          zIndex: 10000
+          zIndex: 10000,
         }"
       ></div>
 
@@ -101,7 +101,7 @@ export default {
       // wait until widget is present in DOM  
       setTimeout(() => {
         const container            = this.$refs.datetimepicker_body.getBoundingClientRect();
-        const modal                = document.querySelector('.bootstrap-datetimepicker-widget').getBoundingClientRect();
+        const modal                = this.$refs.datimewidget_container.querySelector('.bootstrap-datetimepicker-widget').getBoundingClientRect();
         this.widget_container.top  = container.top  + (container.top   < modal.height ? container.height + Math.abs(container.top - modal.height) + 20 : 0); // 20 = padding
         this.widget_container.left = container.left - (container.width < modal.width  ? modal.width : container.width);
         this.$emit('datetimepickershow');
