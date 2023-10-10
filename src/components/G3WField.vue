@@ -305,7 +305,8 @@ const vm = {
        * @see https://v3-migration.vuejs.org/breaking-changes/props-default-this.html
        */
       default() {
-        this.state = _defaultState(this.state);
+        this.state        = _defaultState(this.state);
+        this.state.__mode = this.mode || 'read';
         return this.state;
       },
     },
@@ -1094,8 +1095,13 @@ const vm = {
   created() {
     this.state = _defaultState(this.state);
 
+    // TODO: avoid mutating prop
+    this.mode         = this.state.__mode ? this.state.__mode : this.mode;
+    this.state.__mode = this.mode || 'read';
+
     console.log(
       '[ ' + this.state.name + ' ]',
+      this.mode,
       this.state.input.type,
       this.type,
       'legacy' === this._type,
