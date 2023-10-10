@@ -582,7 +582,7 @@ const vm = {
        * 
        * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
        */
-      const vOptions = (options.validatorOptions || options.state.input.options || {});
+      const vOptions = (options.validatorOptions || (options.state && options.state.input && options.state.input.options) || {});
       this.setValidator({
         options: vOptions,
         validate: ({
@@ -592,7 +592,7 @@ const vm = {
           'checkbox':       _isCheckBox.bind(vOptions.values),
           'integer':        _isInteger,
           'float':          _isFloat,
-        })[options.state.type] || truefnc,
+        })[options.state && options.state.type] || truefnc,
       });
 
       /**
@@ -1011,7 +1011,7 @@ const vm = {
      * 
      * @since 3.9.0
      */
-    setErrorMessage(input) {
+    setErrorMessage(input = {}) {
       const {
         mutually,
         mutually_valid,
@@ -1020,7 +1020,7 @@ const vm = {
         unique,
         exclude_values,
         required,
-      } = input.validate;
+      } = input.validate || {};
 
       let message = this.state.info;
 
@@ -1303,7 +1303,7 @@ vm.methods.getKeyByValue = deprecate('[G3W-FIELD] select service is deprecated',
       const [_value] = arrayValues;
       this.addValue({ key: _value.$value, value: _value.text })
     })
-    .catch(err => console.log(err));
+    .catch(console.warn);
 });
 
 /**

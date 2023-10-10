@@ -236,45 +236,39 @@ export default {
 
     this.open = false;
 
-    try {
-
-      if ('select_autocomplete' === this.state.input.type) {
-        const { value, layer_id } = this.state.input.options;
-        const layer = ( 
-          MapLayersStoresRegistry.getLayerById(layer_id).getEditingLayer() ||
-          CatalogLayersStoresRegistry.getLayerById(layer_id)
-        );
-        this.showPickLayer = layer
-          ? layer.getType() !== Layer.LayerTypes.TABLE
-          : false;
-        this.pickLayerInputService = this.showPickLayer && this.$parent.createInputService('picklayer', {
-          layer_id,
-          fields: [value],
-          pick_type: (layer.isStarted && layer.isStarted() && 'map' || null)
-        });
-      }
-
-      // ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8::getKeyByValue()
-      if (this.autocomplete && this.state.value) {
-        const service = this.$parent.getInputService();
-        const options = service.getState().input.options;
-        const { value, key } = options;
-
-        this
-          ._getData({
-              key:    value,
-              value:  key,
-              search: service.getValue()
-          })
-          .then(d => {
-            options.values.push({ key: d[0].$value, value: d[0].text }); // add value
-          })
-          .catch(err => console.log(err));
-      }
-
-    } catch(e) {
-        console.warn(e);
+    if ('select_autocomplete' === this.state.input.type) {
+      const { value, layer_id } = this.state.input.options;
+      const layer = ( 
+        MapLayersStoresRegistry.getLayerById(layer_id).getEditingLayer() ||
+        CatalogLayersStoresRegistry.getLayerById(layer_id)
+      );
+      this.showPickLayer = layer
+        ? layer.getType() !== Layer.LayerTypes.TABLE
+        : false;
+      this.pickLayerInputService = this.showPickLayer && this.$parent.createInputService('picklayer', {
+        layer_id,
+        fields: [value],
+        pick_type: (layer.isStarted && layer.isStarted() && 'map' || null)
+      });
     }
+
+    // ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@3.8::getKeyByValue()
+    if (this.autocomplete && this.state.value) {
+      const service = this.$parent.getInputService();
+      const options = service.getState().input.options;
+
+      this
+        ._getData({
+            key:    options.value,
+            value:  options.key,
+            search: service.getValue()
+        })
+        .then(d => {
+          options.values.push({ key: d[0].$value, value: d[0].text }); // add value
+        })
+        .catch(console.warn);
+    }
+
   },
 
   async mounted() {
