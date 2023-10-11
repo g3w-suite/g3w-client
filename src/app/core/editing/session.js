@@ -454,14 +454,16 @@ proto._canStop = function() {
 //stop session
 proto._stop = function() {
   const d = $.Deferred();
-  if (this._canStop())
+  if (this._canStop()) {
     this._editor.stop()
       .then(() => {
         this.clear();
         d.resolve();
       })
       .fail(err =>  d.reject(err));
-  else d.resolve();
+  } else {
+    d.resolve();
+  }
   return d.promise();
 };
 
