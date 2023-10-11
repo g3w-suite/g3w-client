@@ -1343,7 +1343,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           const mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
           const mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
-          this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
+          //this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
           changedAndMoreSpace.changed = false;
           changedAndMoreSpace.space && setTimeout(()=> handleVerticalMapControlDOMElements());
         }
