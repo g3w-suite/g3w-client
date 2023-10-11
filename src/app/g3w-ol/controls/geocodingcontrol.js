@@ -268,13 +268,13 @@ function GeocodingControl(options = {}) {
   this.providers = [
     new Google(providerOpts),
     new Nominatim(providerOpts),
-    // new Bing(providerOpts),
+    new Bing(providerOpts),
   ];
 
   /**
    * Search results layer (marker)
    * 
-   * @TODO IN FUTURE SET AS CONTROL UTILITY (at moment duplicate also in GEOLOCATION CONTROL)
+   * @TODO move to parent `Control` class (duplicated also in GEOLOCATION CONTROL)
    */
   this.layer = new ol.layer.Vector({
     source: new ol.source.Vector(),
@@ -466,9 +466,8 @@ proto.query = function(q) {
         promises.push(XHR.get(request))
       });
 
-      await Promise.allSettled(promises);
-      
-      providers.forEach((response, i) => {
+      (await Promise.allSettled(promises))
+        .forEach((response, i) => {
           if ('fulfilled' === response.status) {
             const results = providers[i].handleResponse(response.value);
             if (providers[i].active) {
@@ -492,20 +491,20 @@ proto.createList = function({
 } = {}) {
   const ul = this.result;
 
-  const heading = _createElement('li', `<div style="display: flex; justify-content: space-between; padding: 5px"><span style="color: #FFFFFF; font-weight: bold">${title}</span></div>`);
+  const heading = _createElement('li', `<div style="display: flex; justify-content: space-between; padding: 5px"><span style="color: #FFFFFF; font-weight: bold">${label}</span></div>`);
   heading.classList.add("skin-background-color");
   
   ul.appendChild(heading);
 
   if (results.length) {
-    results.forEach(result => {
+    results.forEach(({address, lon, lat }) => {
       const html = [];
 
       // build template string
-      if (result.address.name)                                                           html.push(`<div class="${ cssClasses.road }">{name}</div>`);
-      if (result.address.road || result.address.building || result.address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
-      if (result.address.city || result.address.town || result.address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
-      if (result.address.state || result.address.country)                                html.push(`<div class="${ cssClasses.country }">{state} {country}</div>`);
+      if (address.name)                                             html.push(`<div class="${ cssClasses.road }">{name}</div>`);
+      if (address.road || address.building || address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
+      if (address.city || address.town || address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
+      if (address.state || address.country)                         html.push(`<div class="${ cssClasses.country }">{state} {country}</div>`);
     
       // parse template string 
       const addressHtml = html.join('<br>').replace(
@@ -526,7 +525,7 @@ proto.createList = function({
         if (false === this.options.keepOpen) {
           this.clearResults(true);
         } 
-        this.showMarker([ parseFloat(result.lon), parseFloat(result.lat) ]);
+        this.showMarker([ parseFloat(lon), parseFloat(lat) ]);
       }, false);
 
       ul.appendChild(li);
