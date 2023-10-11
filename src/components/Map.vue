@@ -104,6 +104,5 @@ export default {
     bottom: 75px;
     left: 10px;
     z-index: 1;
-    width: 100%;
   }
 </style>
