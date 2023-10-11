@@ -55,10 +55,6 @@ function Editor(options = {}) {
    */
   this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
 
-  if (this._layer.getType() === Layer.LayerTypes.TABLE) {
-    PIPPO = this._featuresstore;
-  }
-
   /**
    * Whether editor is active or not
    *
