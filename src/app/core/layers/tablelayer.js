@@ -288,7 +288,7 @@ proto.getEditingLayer = function() {
  * @returns whether editingLayer is useful to get editingstyle
  */
 proto.isEditingLayer = function() {
-  return !!this.config.editing
+  return !!this.config.editing;
 };
 
 proto.getEditingStyle = function() {
