@@ -55,6 +55,10 @@ function Editor(options = {}) {
    */
   this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
 
+  if (this._layer.getType() === Layer.LayerTypes.TABLE) {
+    PIPPO = this._featuresstore;
+  }
+
   /**
    * Whether editor is active or not
    *
@@ -175,7 +179,7 @@ proto._getFeatures = function(options={}) {
   const doRequest = this._doGetFeaturesRequest(options);
   if (!doRequest) {
     d.resolve();
-  } else{
+  } else {
     /** @TODO simplfy nested promises */
     this._layer
       .getFeatures(options)
@@ -312,7 +316,8 @@ proto.applyCommitResponse = function(response = {}, relations = []) {
 
   features.forEach(f => f.clearState());       // reset state of the editing features (update, new etc..)
 
-  this._layer.setFeatures(features);           // substitute layer features with actual editing features
+  //need to pass a "clone" of features otherwise every action on layer features and editor feature are duplicate (example addFeatures)
+  this._layer.setFeatures([...features]);     // substitute layer features with actual editing features
 
   this.addLockIds(lockids);                    // add lockIds
 };
@@ -346,7 +351,7 @@ proto.commit = function(commit) {
 
   let relations = [];
 
-  // check if there are commit relations binded to new feature
+  // check if there are commit relations bind to new feature
   if (commit.add.length) {
     relations =
       Object
@@ -441,7 +446,7 @@ proto.readFeatures = function() {
  * @returns features stored in editor featurestore
  */
 proto.readEditingFeatures = function() {
-  return this._featuresstore.readFeatures()
+  return this._featuresstore.readFeatures();
 };
 
 /**
