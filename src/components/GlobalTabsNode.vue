@@ -99,9 +99,11 @@
       }
     },
     methods: {
-      loadingRelation(relation){
+      loadingRelation(relation) {
         const layer = ProjectsRegistry.getCurrentProject().getLayerById(this.layerid);
-        const relation_project = layer.getRelationById(relation.name);
+        //@since v3.9.0 to prevent console error when in QGIS is create a tab with relation but project
+        //haven't relations
+        const relation_project = layer.getRelationById(relation.name) || {state: {loading: false}};
         return relation_project.state;
       },
       isRelationDisabled(relation){
