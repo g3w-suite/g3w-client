@@ -1080,6 +1080,9 @@ proto._setupControls = function() {
 
       }
     });
+
+    this._setMapControlsInsideContainerLength();
+
     return this.getMapControls()
   }
 };
@@ -1238,15 +1241,15 @@ proto._setMapControlsGrid = function(length) {
       })
     } else {
       grid.push({
-        rows: grid.length + 1 + (Number.isInteger(length) ? 0 : 1),
+        rows: grid.length ? grid.length * 2 : 1,
         columns: Number.isInteger(length) ? length: parseInt(length) + 1
       });
       const _length = Number.isInteger(length) ? length: parseInt(length);
-      this._setMapControlsGrid(_length/2);
+      this._setMapControlsGrid(Math.round(_length/2));
     }
 };
 
-proto._setMapControlsInsideContainerLenght = function() {
+proto._setMapControlsInsideContainerLength = function() {
   this.state.mapControl.length = 1;
   // count the mapcontrol inside g3w-map-control container
   this._mapControls.forEach(control => {
@@ -1342,11 +1345,8 @@ proto._updateMapControlsLayout = function({width, height}={}) {
         if (changedAndMoreSpace.changed) {
           const mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
-          /**
-           *  @deprecate since v3.9.0.
-           */
-          //const mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
-          //this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
+          const mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
+          this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
           changedAndMoreSpace.changed = false;
           changedAndMoreSpace.space && setTimeout(()=> handleVerticalMapControlDOMElements());
         }
@@ -1427,8 +1427,6 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
   }
 
   ControlsRegistry.registerControl(type, control);
-
-  this._setMapControlsInsideContainerLenght();
 
   this.state.mapcontrolready = true;
 };
