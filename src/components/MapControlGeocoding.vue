@@ -11,7 +11,7 @@
         :id           = "cssClasses.inputQueryId"
         autocomplete  = "off"
         :class        = "cssClasses.inputTextInput"
-        v-placeholder = "placeholder"
+        v-t-placeholder = "placeholder"
       />
       <button
         type   = "button"
