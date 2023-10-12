@@ -170,8 +170,5 @@
 </script>
 
 <style scoped>
- .sidebar-aside-toggle {
-    z-index: 100;
- }
 
 </style>
