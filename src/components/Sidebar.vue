@@ -98,7 +98,7 @@
   import ApplicationState          from 'store/application-state';
   import { SidebarEventBus as VM } from 'app/eventbus';
   import sidebarService            from 'services/sidebar';
-  import { ZINDEXES } from 'app/constant';
+  import { ZINDEXES }              from 'app/constant';
 
 
   const { t } = require('core/i18n/i18n.service');
@@ -115,7 +115,7 @@
         bPageMode:  false,
         header:     t('main navigation'),
         state:      sidebarService.state,
-        //@since v3.9.0
+        /** @since v3.9.0 */
         zIndex:     ZINDEXES.usermessage.tool + 2,
 
       }
