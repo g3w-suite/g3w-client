@@ -320,6 +320,9 @@ function GeocodingControl(options = {}) {
   this.result  = this.container.getElementsByClassName(cssClasses.inputTextResult)[0];
 
   //add event listener to DOM control elements
+  /**
+   * @TODO move events directly to MapControlGeocoding
+   */
 
   this.input.addEventListener('keyup', _onQuery.bind(this), false);
   this.input.addEventListener('input', _onValue.bind(this), false);
@@ -409,7 +412,7 @@ proto.query = function(q) {
 
     /** Check if  */
     if (q) {
-      //check if q string request query) is in this format X,Y,4326 --> <X> X coordinate, <Y> Y coordinate, 4326 EPSG of the coordinates
+      //check if q string request query is in this format X,Y,4326 --> <X> X coordinate, <Y> Y coordinate, 4326 EPSG of the coordinates
       const [x, y, epsg] = q.split(',');
       coordinates        = isNumber(1*x) && isNumber(1*y)
         ? [1*x, 1*y]
