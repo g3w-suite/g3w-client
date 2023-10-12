@@ -235,7 +235,7 @@ class Bing {
 function GeocodingControl(options = {}) {
 
   /**
-   * @FIXME add description
+   * Geocoding options provide from mapservice
    */
   this.options = {
     provider:              'osm',
@@ -290,14 +290,14 @@ function GeocodingControl(options = {}) {
   });
 
   /**
-   * @FIXME add a default value + description
+   * Store last query string to avoid duplicate request
    */
-  this.projection = undefined;
+  this.lastQuery = '';
 
   const GeocoderVueContainer = Vue.extend(MapControlGeocoding);
 
   /**
-   * @FIXME add description
+   * DOM control element
    */
   this.container = new GeocoderVueContainer({
     propsData: {
@@ -309,20 +309,21 @@ function GeocodingControl(options = {}) {
     }
   }).$mount().$el;
 
-  /**
-   * @FIXME add description
-   */
-  this.lastQuery = '';
 
   /**
-   * @FIXME add description
+   * Create DOM control elements
    */
-  this.registeredListeners = { mapClick: false };
 
-  /**
-   * @FIXME add description
-   */
-  this.createControl();
+  this.control = this.container.getElementsByClassName(cssClasses.inputTextControl)[0];
+  this.input   = this.container.getElementsByClassName(cssClasses.inputTextInput)[0];
+  this.reset   = this.container.getElementsByClassName(cssClasses.inputTextReset)[0];
+  this.result  = this.container.getElementsByClassName(cssClasses.inputTextResult)[0];
+
+  //add event listener to DOM control elements
+
+  this.input.addEventListener('keyup', _onQuery.bind(this), false);
+  this.input.addEventListener('input', _onValue.bind(this), false);
+  this.reset.addEventListener('click', _onReset.bind(this), false);
 
   // parent constructor
   Control.call(this, {
@@ -337,7 +338,7 @@ ol.inherits(GeocodingControl, Control);
 const proto = GeocodingControl.prototype;
 
 /**
- * @FIXME add description
+ * Method to show current location/place on map as marker icon
  */
 proto.showMarker = function(coordinates, options = { transform: true }) {
   this.hideMarker();
@@ -351,7 +352,7 @@ proto.showMarker = function(coordinates, options = { transform: true }) {
 };
 
 /**
- * @FIXME add description
+ * Remove marker from map
  */
 proto.hideMarker = function(){
   this.layer.getSource().clear();
@@ -392,22 +393,9 @@ function _onValue(evt) {
   }
 }
 
-/**
- * @FIXME add description
- */
-proto.createControl = function() {
-  this.control = this.container.getElementsByClassName(cssClasses.inputTextControl)[0];
-  this.input   = this.container.getElementsByClassName(cssClasses.inputTextInput)[0];
-  this.reset   = this.container.getElementsByClassName(cssClasses.inputTextReset)[0];
-  this.result  = this.container.getElementsByClassName(cssClasses.inputTextResult)[0];
-
-  this.input.addEventListener('keyup', _onQuery.bind(this), false);
-  this.input.addEventListener('input', _onValue.bind(this), false);
-  this.reset.addEventListener('click', _onReset.bind(this), false);
-};
 
 /**
- * @FIXME add description
+ * Method that is call when run a request of result
  */
 proto.query = function(q) {
 
@@ -419,8 +407,9 @@ proto.query = function(q) {
     let coordinates = null;
     let transform   = false;
 
-    /** @FIXME add description */
+    /** Check if  */
     if (q) {
+      //check if q string request query) is in this format X,Y,4326 --> <X> X coordinate, <Y> Y coordinate, 4326 EPSG of the coordinates
       const [x, y, epsg] = q.split(',');
       coordinates        = isNumber(1*x) && isNumber(1*y)
         ? [1*x, 1*y]
@@ -436,18 +425,20 @@ proto.query = function(q) {
       }
     }
 
-    /** @FIXME add description */
+    /**Check if request is referred to coordinate (search a single point X,Y)*/
     if (coordinates) {
       this.showMarker(coordinates, { transform });
       resolve(coordinates);
     }
 
-    /** @FIXME add description */
+    /** Check id is not coordinate request and the current q is equal to last request.
+     * This check is done to avoid to duplicate request
+     * */
     if (!coordinates && this.lastQuery === q && this.result.firstChild) {
       return;
     }
 
-    /** @FIXME add description */
+    /** If is a place request (Address, Place, etc..) */
     if (!coordinates) {
       const promises = [];
       // loop active Providers
@@ -460,9 +451,15 @@ proto.query = function(q) {
           countrycodes: this.options.countrycodes,
           limit: this.options.limit
         });
+
+        //set as last query
         this.lastQuery = q;
+
+        //clear previous result
         this.clearResults();
+
         this.reset.classList.add(cssClasses.spin);
+
         promises.push(XHR.get(request))
       });
 
@@ -483,7 +480,7 @@ proto.query = function(q) {
 };
 
 /**
- * @FIXME add description
+ * Create a DOM list of results
  */
 proto.createList = function({
   label,
@@ -491,7 +488,12 @@ proto.createList = function({
 } = {}) {
   const ul = this.result;
 
-  const heading = _createElement('li', `<div style="display: flex; justify-content: space-between; padding: 5px"><span style="color: #FFFFFF; font-weight: bold">${label}</span></div>`);
+  const heading = _createElement('li',
+    `<div style="display: flex; justify-content: space-between; padding: 5px">
+      <span style="color: #FFFFFF; font-weight: bold">${label}</span>
+    </div>`
+  );
+
   heading.classList.add("skin-background-color");
   
   ul.appendChild(heading);
@@ -537,47 +539,12 @@ proto.createList = function({
 };
 
 /**
- * @FIXME add description
- */
-proto.expand = function() {
-  this.input.classList.remove(cssClasses.spin);
-  this.control.classList.add(cssClasses.glass.expanded);
-  setTimeout(() => this.input.focus(), 100);
-};
-
-/**
- * @FIXME add description
- */
-proto.collapse = function() {
-  this.input.value = '';
-  this.input.blur();
-  this.reset.classList.add(cssClasses.hidden);
-  this.clearResults();
-};
-
-/**
- * @FIXME add description
+ * Clear list of results
  */
 proto.clearResults = function() {
   this.result.replaceChildren();
   this.hideMarker();
 };
 
-/**
- * @FIXME add description
- */
-proto.getSource = function() {
-  return this.layer.getSource();
-};
-
-/**
- * @FIXME add description
- */
-proto.addLayer = function() {
-  const map = this.getMap();
-  if(!map.getLayers().find(l =>  l === this.layer)) {
-    map.addLayer(this.layer);
-  }
-};
 
 module.exports = GeocodingControl;
