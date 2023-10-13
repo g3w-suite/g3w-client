@@ -1081,7 +1081,7 @@ proto._setupControls = function() {
       }
     });
 
-    this._setMapControlsInsideContainerLength();
+    this._setMapControlsGrid();
 
     return this.getMapControls()
   }
@@ -1210,7 +1210,34 @@ proto.createCopyMapExtentUrl = function() {
   copyUrl(url);
 };
 
+/**
+ * Recursively compute map controls grid layout (like css grids) 
+ * 
+ * @param { Array } [length] holds current length after each iteration 
+ */
 proto._setMapControlsGrid = function(length) {
+
+  // initial iteration step
+  if (undefined === length) {
+    // update map controls length
+    const state = this.state.mapControl;
+    state.length = 1;
+    // count mapcontrols inside g3w-map-control container
+    this._mapControls.forEach(ctrl => {
+      if (ctrl.mapcontrol) {
+        state.length += 'zoom' === ctrl.id ? 2 : 1;
+      }
+      if (ctrl.control.changelayout) {
+        ctrl.control.changelayout(this.getMap());
+      }
+    });
+
+    // add 1 id odd number
+    state.length += state.length % 2;
+    state.grid = [];
+    length = state.length;
+  }
+
   // ensure length is a multiple of 2
   length += length % 2;
 
@@ -1235,24 +1262,10 @@ proto._setMapControlsGrid = function(length) {
   
     default:
       grid.push({ rows: grid.length ? grid.length * 2 : 1, columns: _length + 1 });
-      this._setMapControlsGrid(Math.round(_length/2));
+      this._setMapControlsGrid(Math.round(_length/2), true);
       break;
 
   }
-};
-
-proto._setMapControlsInsideContainerLength = function() {
-  this.state.mapControl.length = 1;
-  // count the mapcontrol inside g3w-map-control container
-  this._mapControls.forEach(control => {
-    const map = this.getMap();
-    this.state.mapControl.length+=control.mapcontrol ? control.id === 'zoom' ? 2 : 1: 0;
-    control.control.changelayout ? control.control.changelayout(map) : null;
-  });
-  // add 1 id odd number
-  this.state.mapControl.length += this.state.mapControl.length% 2;
-  this.state.mapControl.grid = [];
-  this._setMapControlsGrid(this.state.mapControl.length);
 };
 
 /**
