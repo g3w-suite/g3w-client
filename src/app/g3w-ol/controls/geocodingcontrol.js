@@ -425,12 +425,6 @@ proto.query = function(q) {
       console.warn(err);
     }
 
-    // request is for a single point (XCoord,YCoord)
-    if (coordinates) {
-      this.showMarker(coordinates, { transform });
-      resolve(coordinates);
-    }
-
     // skip when no coordinates are provided (or on duplicate request)
     if (!coordinates && this.lastQuery === q && this.result.firstChild) {
       return;
@@ -472,6 +466,13 @@ proto.query = function(q) {
         });
 
       this.reset.classList.remove(cssClasses.spin);
+    }
+
+    // request is for a single point (XCoord,YCoord)
+    if (coordinates) {
+      this.showMarker(coordinates, { transform });
+      resolve(coordinates);
+      return;
     }
 
   });
