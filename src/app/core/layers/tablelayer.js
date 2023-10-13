@@ -8,6 +8,9 @@ const Editor = require('core/editing/editor');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const Feature = require('core/layers/features/feature');
 
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
+
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
   // setters
@@ -154,7 +157,7 @@ proto.getFormPercentage = function(){
 };
 
 proto.clone = function() {
-  return _.cloneDeep(this);
+  return _cloneDeep(this);
 };
 
 proto.cloneFeatures = function() {
@@ -251,15 +254,26 @@ proto._setOtherConfigParameters = function(config) {
   // overwrite by vector layer
 };
 
-// return layer fields
-proto.getEditingFields = function(editable=false) {
-  let fields = this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
-  if (editable) fields = fields.filter(field => field.editable);
+/**
+ * @returns layer fields 
+ */
+proto.getEditingFields = function(editable = false) {
+  let fields = this.config.editing.fields.length
+    ? this.config.editing.fields
+    : this.config.fields;
+  if (editable) {
+    fields = fields.filter(field => field.editable);
+  }
   return fields;
 };
 
-proto.isPkField = function(field){
-  const find_field = this.getEditingFields().find(_field => _field.name === field);
+/**
+ * @param field
+ * 
+ * @returns {boolean} whether field is a Primary Key
+ */
+proto.isPkField = function(field) {
+  const find_field = this.getEditingFields().find(f => f.name === field);
   return find_field && find_field.pk;
 };
 
@@ -450,7 +464,7 @@ proto.getFieldsWithValues = function(obj, options = {}) {
     get_default_value = true
   }  = options;
 
-  let fields = JSON.parse(JSON.stringify(this.getEditingFields()));
+  let fields = _cloneDeep(this.getEditingFields());
   let feature;
 
   if (obj instanceof Feature) {

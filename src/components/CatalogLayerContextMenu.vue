@@ -237,7 +237,7 @@
 
   import LayerOpacityPicker from "components/LayerOpacityPicker.vue";
 
-  import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import { CatalogEventBus as VM } from 'app/eventbus';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ApplicationService from 'services/application';
   import GUI from 'services/gui';
@@ -685,7 +685,7 @@
           const layerId = this.layerMenu.layer.id;
           const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
           if (layer) {
-            CatalogEventHub.$emit('layer-change-style', {
+            VM.$emit('layer-change-style', {
               layerId,
               style: this.layerMenu.stylesMenu.style
             });
@@ -796,7 +796,7 @@
     },
 
     created() {
-      CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
+      VM.$on('showmenulayer', async (layerstree, evt) => {
         this._hideMenu();
         await this.$nextTick();
         this.layerMenu.left = evt.x;

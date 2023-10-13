@@ -5,7 +5,7 @@
 
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
-import { VM } from 'g3w-ol/constants';
+import { VM } from 'app/eventbus';
 
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');

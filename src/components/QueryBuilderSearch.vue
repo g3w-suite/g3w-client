@@ -6,7 +6,7 @@
 <template>
   <li>
     <div style="position:relative">
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
       <div class="querybuliserch-tools" style="display:flex; align-items: baseline">
         <i :class="g3wtemplate.getFontClass('filter')" style="margin-right: 14px; margin-left: 1px;"></i>
         <span style="white-space: pre-wrap">{{querybuildersearch.name}}</span>
