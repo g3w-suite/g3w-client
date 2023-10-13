@@ -290,6 +290,12 @@
     opacity: 0;
     visibility: hidden;
   }
+
+  /* Hide line breaks after any hidden search result element */
+  ul.gcd-txt-result > li > a > [hidden] + br {
+    display: none;
+  }
+
   ul.gcd-txt-result {
     > li {
       &:hover {

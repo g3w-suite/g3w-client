@@ -74,6 +74,8 @@ class Nominatim {
         .map(result => ({
             lon: result.lon,
             lat: result.lat,
+            name: result.name,
+            type: result.type,
             address: {
               name:      result.address.neighbourhood || '',
               road:      result.address.road          || '',
@@ -502,10 +504,12 @@ proto.createList = function({
   ul.appendChild(heading);
 
   if (results.length) {
-    results.forEach(({address, lon, lat }) => {
+    results.forEach(({ name, type, address, lon, lat }) => {
       const html = [];
 
       // build template string
+      if (type)                                                     html.push(`<div hidden>${type}</div>`);
+      if (name)                                                     html.push(`<div hidden>${name}</div>`);
       if (address.name)                                             html.push(`<div class="${ cssClasses.road }">{name}</div>`);
       if (address.road || address.building || address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
       if (address.city || address.town || address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
