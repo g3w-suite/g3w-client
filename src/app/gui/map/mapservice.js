@@ -1211,46 +1211,34 @@ proto.createCopyMapExtentUrl = function() {
 };
 
 proto._setMapControlsGrid = function(length) {
-  //need to set multiple of 2
-  length+=length%2;
+  // ensure length is a multiple of 2
+  length += length % 2;
 
-  const grid = this.state.mapControl.grid;
-    if (length < 2) {
-      const rC = grid[grid.length - 1];
-      grid.push({
-        rows: rC.rows * 2 ,
-        columns: 2
-      });
-      return;
-    }
-    if (length === 2) {
-      if (grid.length) {
-        const rC = grid[grid.length - 1];
-        grid.push({
-          rows: rC.columns * 2,
-          columns: rC.rows / 2
-        })
-      } else {
-        grid.push({
-          rows: 1,
-          columns: 2
-        })
-      }
-    } else if (length === 3) {
-      const rC = grid[grid.length - 1];
-      grid.push({
-        rows: 2 * rC.rows,
-        columns: length
-      })
-    } else {
-      grid.push({
-        rows: grid.length ? grid.length * 2 : 1,
-        columns: Number.isInteger(length) ? length: parseInt(length) + 1
-      });
-      const _length = Number.isInteger(length) ? length: parseInt(length);
+  const grid    = this.state.mapControl.grid;
+  let rC        = grid.length ? grid[grid.length - 1] : { rows: 1, columns: 2 };
+  const _length = Number.isInteger(length) ? length : parseInt(length);
 
+  switch (length) {
+
+    case 0:
+    case 1:
+      grid.push({ rows: rC.rows * 2 , columns: 2 });
+      break;
+
+    case 2:
+      grid.push({ rows: (grid.length ? rC.columns * 2 : 1), columns: (grid.length ? rC.rows / 2 : 2) });
+      break;
+
+    case 3:
+      grid.push({ rows: 2 * rC.rows, columns: length });
+      break;
+  
+    default:
+      grid.push({ rows: grid.length ? grid.length * 2 : 1, columns: _length + 1 });
       this._setMapControlsGrid(Math.round(_length/2));
-    }
+      break;
+
+  }
 };
 
 proto._setMapControlsInsideContainerLength = function() {
