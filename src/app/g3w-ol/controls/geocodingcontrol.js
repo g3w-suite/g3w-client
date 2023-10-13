@@ -44,10 +44,11 @@ class Nominatim {
 
   constructor(options = {}) {
     this.active = true; // whether to activate Nominatim Geocoding Provider
-    this.extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
+    this.extent = options.extent;
   }
 
   getParameters(options) {
+    if (options.extent) this.extent = options.extent;
     return {
       url:              'https://nominatim.openstreetmap.org/search',
       params: {
@@ -94,10 +95,11 @@ class Google {
 
   constructor(options = {}) {
     this.active = ApplicationState.keys.vendorkeys.google !== undefined; // whether to activate Google Geocoding Provider
-    this.extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
+    this.extent = options.extent;
   }
 
   getParameters(options = {}) {
+    if (options.extent) this.extent = options.extent;
     return {
       url:        'https://maps.googleapis.com/maps/api/geocode/json',
       params: {
@@ -158,10 +160,11 @@ class Bing {
 
   constructor(options = {}) {
     this.active = undefined !== ApplicationState.keys.vendorkeys.bing; // whether to activate Bing Geocoding Provider
-    this.extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
+    this.extent = options.extent;
   }
 
   getParameters(options = {}) {
+    if (options.extent) this.extent = options.extent;
     return {
       url:           'https://dev.virtualearth.net/REST/v1/LocalSearch/',
       params: {
@@ -250,15 +253,17 @@ function GeocodingControl(options = {}) {
     autoComplete:          false,
     autoCompleteMinLength: 4,
     debug:                 false,
-    viewbox:               undefined !== options.bbox              ? options.bbox              : project.state.extent,
+    viewbox:               undefined !== options.bbox              ? options.bbox              : project.state.initextent || project.state.extent,
     bounded:               1,
-    mapCrs:                undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg.mapCrs,
+    mapCrs:                undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg,
     fontIcon:              GUI.getFontClass('search')
   };
 
+  const extent = ol.proj.transformExtent(this.options.viewbox, this.options.mapCrs, 'EPSG:4326');
+
   const providerOpts = {
     mapCrs:  this.options.mapCrs,
-    viewbox: this.options.viewbox
+    extent,
   };
 
   /**
@@ -439,12 +444,15 @@ proto.query = function(q) {
       // loop active Providers
       const providers = this.providers.filter(p => p.active);
 
+      const extent = ol.proj.transformExtent(GUI.getService('map').getMapExtent(), this.options.mapCrs, 'EPSG:4326');
+
       providers.forEach(provider => {
         const request = provider.getParameters({
           query: q,
           lang: this.options.lang,
           countrycodes: this.options.countrycodes,
-          limit: this.options.limit
+          limit: this.options.limit,
+          extent,
         });
 
         // set as last query
