@@ -233,22 +233,16 @@ function GeocodingControl(options = {}) {
 
   const project = GUI.getService('map').getProject();
 
-  /** @TODO use a single Object.assing() for setting default options */
-  options.isMobile           = undefined !== options.isMobile          ? options.isMobile          : isMobile.any;
-  options.bbox               = undefined !== options.bbox              ? options.bbox              : project.state.extent;
-  options.mapCrs             = undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg.mapCrs;
-  options.placeholder        = undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder";
-  options.noresults          = undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults";
-  options.notresponseserver  = undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver";
-
   /**
-   * Geocoding options provide from mapservice
+   * @TODO use a single Object.assing() for setting default options
+   * 
+   * Geocoding options
    */
   this.options = {
     provider:              'osm',
-    placeholder:           options.placeholder       || 'Città, indirizzo ... ',
-    noresults:             options.noresults         || 'Nessun risultato ',
-    notresponseserver:     options.notresponseserver || 'Il server non risponde',
+    placeholder:           (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder")        || 'Città, indirizzo ... ',
+    noresults:             (undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults")          || 'Nessun risultato ',
+    notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver")  || 'Il server non risponde',
     lang:                  ApplicationState.language || 'it-IT',
     limit:                 options.limit             || 5,
     keepOpen:              true,
@@ -256,9 +250,9 @@ function GeocodingControl(options = {}) {
     autoComplete:          false,
     autoCompleteMinLength: 4,
     debug:                 false,
-    viewbox:               options.bbox,
+    viewbox:               undefined !== options.bbox              ? options.bbox              : project.state.extent,
     bounded:               1,
-    mapCrs:                options.mapCrs,
+    mapCrs:                undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg.mapCrs,
     fontIcon:              GUI.getFontClass('search')
   };
 
