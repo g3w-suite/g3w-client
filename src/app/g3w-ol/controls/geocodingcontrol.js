@@ -36,15 +36,6 @@ const cssClasses = {
   inputTextResult:     "gcd-txt-result"
 };
 
-function _createElement(node, html) {
-  let elem       = document.createElement(node);
-  elem.innerHTML = html;
-  const frag     = document.createDocumentFragment();
-  while (elem.childNodes[0]) frag.appendChild(elem.childNodes[0]);
-  elem.appendChild(frag);
-  return elem;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Geocoding Providers
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -497,12 +488,10 @@ proto.createList = function({
 } = {}) {
   const ul = this.result;
 
-  const heading = _createElement('li',
-    `<div style="display: flex; justify-content: space-between; padding: 5px">
-      <span style="color: #FFFFFF; font-weight: bold">${label}</span>
-    </div>`
-  );
-
+  const heading = document.createElement('li');
+  heading.innerHTML = `<div style="display: flex; justify-content: space-between; padding: 5px">`
+                    + `<span style="color: #FFFFFF; font-weight: bold">${label}</span>`
+                    + `</div>`;
   heading.classList.add("skin-background-color");
   
   ul.appendChild(heading);
@@ -530,7 +519,13 @@ proto.createList = function({
           .replace(/'/g, '&#039;')
       );
 
-      const li = _createElement('li', ['<a href="#">', addressHtml, '</a>'].join(''));
+      let li         = document.createElement('li');
+      li.innerHTML   = `<a href="#">${addressHtml}</a>`;
+
+      // append childs (in memory)
+      const frag     = document.createDocumentFragment();
+      while (li.childNodes[0]) frag.appendChild(li.childNodes[0]);
+      li.appendChild(frag);
 
       // click to select
       li.addEventListener('click', evt => {
