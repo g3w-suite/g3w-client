@@ -1211,6 +1211,9 @@ proto.createCopyMapExtentUrl = function() {
 };
 
 proto._setMapControlsGrid = function(length) {
+  //need to set multiple of 2
+  length+=length%2;
+
   const grid = this.state.mapControl.grid;
     if (length < 2) {
       const rC = grid[grid.length - 1];
@@ -1224,8 +1227,8 @@ proto._setMapControlsGrid = function(length) {
       if (grid.length) {
         const rC = grid[grid.length - 1];
         grid.push({
-          rows: rC.columns ,
-          columns: rC.rows
+          rows: rC.columns * 2,
+          columns: rC.rows / 2
         })
       } else {
         grid.push({
@@ -1245,6 +1248,7 @@ proto._setMapControlsGrid = function(length) {
         columns: Number.isInteger(length) ? length: parseInt(length) + 1
       });
       const _length = Number.isInteger(length) ? length: parseInt(length);
+
       this._setMapControlsGrid(Math.round(_length/2));
     }
 };
