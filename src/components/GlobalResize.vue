@@ -42,6 +42,7 @@
         default: evt=> console.log(evt)
       },
     },
+
     computed: {
       style() {
         return {
@@ -53,12 +54,12 @@
     },
     methods: {
       wrapMoveFnc(evt) {
-        this.domElementMoveListen.addEventListener('mouseup', this.stop, { once: true });
         this.moveFnc(evt);
       },
 
       start() {
         this.domElementMoveListen.addEventListener('mousemove', this.wrapMoveFnc);
+        this.domElementMoveListen.addEventListener('mouseup', this.stop, { once: true });
       },
 
       async stop() {
