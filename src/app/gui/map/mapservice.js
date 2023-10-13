@@ -805,11 +805,17 @@ proto.activeMapControl = function(controlName) {
   !control.isToggled() ? control.toggle() : null;
 };
 
-proto.createMapControl = function(type, { id, add = true, toggled = false, visible, options = {} } = {}) {
+proto.createMapControl = function(type, {
+  id,
+  visible,
+  add     = true,
+  toggled = false,
+  options = {},
+} = {}) {
   const control = ControlsFactory.create({ type, toggled, ...options });
-  visible = visible === undefined
-    ? (control.isVisible ? control.isVisible() : true)
-    : visible;
+  if (undefined === visible) {
+    visible = (control.isVisible ? control.isVisible() : true)
+  }
   if (control) {
     this.addControl(id || type, type, control, add, visible);
   }
@@ -1014,17 +1020,7 @@ proto._setupControls = function() {
           break;
         case 'geocoding':
         case 'nominatim':
-          control = this.createMapControl(controlType, {
-            add: false,
-            options: {
-              isMobile:          isMobile.any,
-              bbox:              this.project.state.extent,
-              mapCrs:            this.project.state.crs.epsg.mapCrs,
-              placeholder:       "mapcontrols.nominatim.placeholder",
-              noresults:         "mapcontrols.nominatim.noresults",
-              notresponseserver: "mapcontrols.nominatim.notresponseserver",
-            }
-          });
+          control = this.createMapControl(controlType, { add: false });
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);

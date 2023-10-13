@@ -231,6 +231,16 @@ class Bing {
  */
 function GeocodingControl(options = {}) {
 
+  const project = GUI.getService('map').getProject();
+
+  /** @TODO use a single Object.assing() for setting default options */
+  options.isMobile           = undefined !== options.isMobile          ? options.isMobile          : isMobile.any;
+  options.bbox               = undefined !== options.bbox              ? options.bbox              : project.state.extent;
+  options.mapCrs             = undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg.mapCrs;
+  options.placeholder        = undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder";
+  options.noresults          = undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults";
+  options.notresponseserver  = undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver";
+
   /**
    * Geocoding options provide from mapservice
    */
@@ -392,7 +402,6 @@ function _onValue(evt) {
     timeout = setTimeout(() => (value.length >= this.options.autoCompleteMinLength) && this.query(value), 200);
   }
 }
-
 
 /**
  * Run geocoding request
