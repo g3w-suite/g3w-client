@@ -356,8 +356,15 @@ proto.deleteFilterToken = async function() {
     if (!this.providers['filtertoken']) {
       return;
     }
-    await this.providers['filtertoken'].deleteFilterToken();
-    ApplicationService.setFilterToken(null);
+    const filtertoken = await this.providers['filtertoken'].deleteFilterToken();
+  /**
+   * @since v3.9.0
+   * In case of response of server no filtertoken is returned set application filtertoken to null
+   */
+    if (undefined === filtertoken) {
+        ApplicationService.setFilterToken(null);
+    }
+
     this.emit('filtertokenchange', { layerId: this.getId() });
   } catch(err) {
     console.log('Error deleteing filtertoken')

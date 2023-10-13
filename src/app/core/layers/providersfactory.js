@@ -177,7 +177,16 @@ const Providers = {
     * action: create, update, delete
     */
     async deleteFilterToken() {
-      await XHR.get({ url: this._filtertokenUrl, params: { mode: 'delete' } });
+      try {
+        const response = await XHR.get({ url: this._filtertokenUrl, params: { mode: 'delete' } });
+        //server can return filter token or not. Depend on if layer is filtered or not
+        if (response && response.result && response.data) {
+          return response.data.filtertoken;
+        }
+      } catch(err) {
+        console.warn(err)
+      }
+
     }
 
     async getFilterToken(params = {}) {
