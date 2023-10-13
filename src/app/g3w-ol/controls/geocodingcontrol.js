@@ -395,50 +395,48 @@ function _onValue(evt) {
 
 
 /**
- * Method that is call when run a request of result
+ * Run geocoding request
+ * 
+ * @param { string } q query string in this format: "XCoord,YCoord,EPSGCode"
  */
 proto.query = function(q) {
 
-  // Clear source
   this.hideMarker();
 
   return new Promise(async (resolve, reject) => {
-    const isNumber  = value => 'Number' === toRawType(value) && !Number.isNaN(value);
-    let coordinates = null;
-    let transform   = false;
+    const isNumber     = value => 'Number' === toRawType(value) && !Number.isNaN(value);
+    let coordinates    = null;
+    let transform      = false;
+    const [x, y, epsg] = (q || '').split(',');
+    const code         =  epsg && Projections.get(`EPSG:${epsg.trim()}`);
 
-    /** Check if  */
-    if (q) {
-      //check if q string request query is in this format X,Y,4326 --> <X> X coordinate, <Y> Y coordinate, 4326 EPSG of the coordinates
-      const [x, y, epsg] = q.split(',');
-      coordinates        = isNumber(1*x) && isNumber(1*y)
-        ? [1*x, 1*y]
-        : null;
-      try {
-        // check if is sett epsg code and if is register on project
-        if (epsg && Projections.get(`EPSG:${epsg.trim()}`)) {
-          coordinates = ol.proj.transform(coordinates, Projections.get(`EPSG:${epsg.trim()}`), 'EPSG:4326');
-          transform = true;
-        }
-      } catch(err) {
-        console.warn(err);
-      }
+    // extract xCoord and yCoord
+    if (isNumber(1*x) && isNumber(1*y)) {
+      coordinates = [1*x, 1*y];
     }
 
-    /**Check if request is referred to coordinate (search a single point X,Y)*/
+    // whether EPSGCode is allowed on this project
+    try {
+      if (code) {
+        coordinates = ol.proj.transform(coordinates, Projections.get(`EPSG:${epsg.trim()}`), 'EPSG:4326');
+        transform = true;
+      }
+    } catch(err) {
+      console.warn(err);
+    }
+
+    // request is for a single point (XCoord,YCoord)
     if (coordinates) {
       this.showMarker(coordinates, { transform });
       resolve(coordinates);
     }
 
-    /** Check id is not coordinate request and the current q is equal to last request.
-     * This check is done to avoid to duplicate request
-     * */
+    // skip when no coordinates are provided (or on duplicate request)
     if (!coordinates && this.lastQuery === q && this.result.firstChild) {
       return;
     }
 
-    /** If is a place request (Address, Place, etc..) */
+    // request is for a place (Address, Place, etc..)
     if (!coordinates) {
       const promises = [];
       // loop active Providers
@@ -452,10 +450,10 @@ proto.query = function(q) {
           limit: this.options.limit
         });
 
-        //set as last query
+        // set as last query
         this.lastQuery = q;
 
-        //clear previous result
+        // clear previous result
         this.clearResults();
 
         this.reset.classList.add(cssClasses.spin);
