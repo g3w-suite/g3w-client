@@ -11,6 +11,9 @@ const G3WObject = require('core/g3wobject');
 function Relation(config = {}) {
   const suffix = Date.now();
 
+  /** BACKCOMP (g3w-admin < v.3.7.0) */
+  const multi_fields = [].concat(config.fieldRef.referencedField);
+
   this.state = {
     loading:     false,
     id:          config.id       || `id_${suffix}`,
