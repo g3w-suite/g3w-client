@@ -1,3 +1,7 @@
+/**
+ * @file need some inspiration for other geocoding providers? 👉 https://github.com/Dominique92/ol-geocoder
+ */
+
 import ApplicationState           from 'store/application-state';
 import GUI                        from 'services/gui';
 import MapControlGeocoding        from 'components/MapControlGeocoding.vue';
@@ -533,7 +537,7 @@ proto.createList = function({
         evt.preventDefault();
         if (false === this.options.keepOpen) {
           this.clearResults(true);
-        } 
+        }
         this.showMarker([ parseFloat(lon), parseFloat(lat) ]);
       }, false);
 
