@@ -1014,15 +1014,14 @@ proto._setupControls = function() {
           break;
         case 'geocoding':
         case 'nominatim':
-          const {extent:bbox, crs:{epsg:mapCrs}} = this.project.state;
           control = this.createMapControl(controlType, {
             add: false,
             options: {
-              isMobile: isMobile.any,
-              bbox,
-              mapCrs,
-              placeholder: "mapcontrols.nominatim.placeholder",
-              noresults: "mapcontrols.nominatim.noresults",
+              isMobile:          isMobile.any,
+              bbox:              this.project.state.extent,
+              mapCrs:            this.project.state.crs.epsg.mapCrs,
+              placeholder:       "mapcontrols.nominatim.placeholder",
+              noresults:         "mapcontrols.nominatim.noresults",
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
             }
           });
