@@ -22,10 +22,13 @@ const G3WObject = require('core/g3wobject');
 const _cloneDeep = require('lodash.clonedeep');
 
 /**
- * Manage Application 
+ * Manage Application
+ * 
+ * @class
  */
 const ApplicationService = function() {
 
+  /** @deprecated */
   this.version = APP_VERSION;
 
   ApplicationState.iframe = window.top !== window.self;
@@ -34,13 +37,19 @@ const ApplicationService = function() {
 
   ApplicationState.ismobile= isMobile.any;
 
+  /**
+   * @FIXME add description
+   */
   this.complete = false;
 
   /**
    * set base url
    */
-  this.baseurl = '/'; 
+  this.baseurl = '/';
 
+  /**
+   * @FIXME add description
+   */
   this.download_caller_id = null;
 
   /**
@@ -48,18 +57,39 @@ const ApplicationService = function() {
    */
   this._applicationServices = {};
 
+  /**
+   * @FIXME add description
+   */
   this.config = {};
 
+  /**
+   * @FIXME add description
+   */
   this._initConfigUrl = null;
 
+  /**
+   * @FIXME add description
+   */
   this._initConfig = null;
 
+  /**
+   * @FIXME add description
+   */
   this._groupId = null;
 
+  /**
+   * @FIXME add description
+   */
   this._gid = null;
 
+  /**
+   * @FIXME add description
+   */
   this.setters = {
 
+    /**
+     * @FIXME add description
+     */
     changeProject({gid, host}={}) {
       return this._changeProject({gid, host})
     },
@@ -73,17 +103,25 @@ const ApplicationService = function() {
       location.replace(url);
     },
 
+    /**
+     * @FIXME add description
+     */
     online() {
       this.setOnline();
     },
 
+    /**
+     * @FIXME add description
+     */
     offline() {
       this.setOffline();
     },
 
+    /**
+     * @FIXME add description
+     */
     setFilterToken(filtertoken) {
       this._setFilterToken(filtertoken)
-
     },
 
   };
@@ -227,9 +265,7 @@ const ApplicationService = function() {
    */
   this.registerLeavePage = function({bool=false, message=''}={}) {
     const _return = !bool ? undefined : bool;
-    window.onbeforeunload = function(event) {
-      return _return;
-    };
+    window.onbeforeunload = function(event) { return _return; };
   };
 
   this.unregisterOnlineOfflineEvent = function() {
@@ -375,11 +411,11 @@ const ApplicationService = function() {
     const config = { ...appConfig };
     try {
 
-      initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
-        initConfigUrl:  `${appConfig.server.urls.initconfig}`
-      });
+      initConfig = initConfig || await this.obtainInitConfig({ initConfigUrl: `${appConfig.server.urls.initconfig}` });
 
-      // write urls of static files and media url (base url and vector url)
+      /**
+       * write urls of static files and media url (base url and vector url)
+       */
       this.baseurl = initConfig.baseurl;
 
       /** 
@@ -396,33 +432,29 @@ const ApplicationService = function() {
       config.server.urls.baseurl         = initConfig.baseurl;
       config.server.urls.frontendurl     = initConfig.frontendurl;
       config.server.urls.staticurl       = initConfig.staticurl;
-      config.server.urls.clienturl       = initConfig.staticurl+initConfig.client;
+      config.server.urls.clienturl       = initConfig.staticurl + initConfig.client;
       config.server.urls.mediaurl        = initConfig.mediaurl;
       config.server.urls.vectorurl       = initConfig.vectorurl;
       config.server.urls.proxyurl        = initConfig.proxyurl;
       config.server.urls.rasterurl       = initConfig.rasterurl;
       config.server.urls.interfaceowsurl = initConfig.interfaceowsurl;
-      
+
       config.main_map_title = initConfig.main_map_title;
-      
-      config.group = initConfig.group;
-      
-      config.user = initConfig.user;
-      
-      config.credits = initConfig.credits;
-      
-      config.i18n = initConfig.i18n;
-      
+      config.group          = initConfig.group;
+      config.user           = initConfig.user;
+      config.credits        = initConfig.credits;
+      config.i18n           = initConfig.i18n;
+
       /**
        * get language from server
        */
       config._i18n.language = config.user.i18n;
-      
+
       /**
        * check if is inside a iframe
        */
       config.group.layout.iframe = window.top !== window.self;
-      
+
       /**
        * create application configuration
        */
@@ -502,38 +534,28 @@ const ApplicationService = function() {
     }
   };
 
-  this.obtainInitConfig = async function({initConfigUrl, url, host}={}) {
-    if (!this._initConfigUrl) this._initConfigUrl = initConfigUrl;
-    else this.clearInitConfig();
+  /**
+   * @FIXME `url` param appears to be unused
+   */
+  this.obtainInitConfig = async function({initConfigUrl, url, host=''}={}) {
+    if (!this.getInitConfigUrl()) {
+      this.setInitConfigUrl(initConfigUrl);
+    } else {
+      this.clearInitConfig();
+    }
 
     // if exist a global initConfig
     this._initConfig = window.initConfig;
 
-    let projectPath;
-
-    // DEPRECATED: will be removed after v4.0
-    const locationsearch = url ? url.split('?')[1] : location.search.substring(1);
-
-    if (locationsearch) {
-      //check if exist project in url
-      /**
-       * The way to extract project group,type and id
-       * Example http:localhost:3000/?project=3003/qdjango/1
-       * is deprecate
-       */
-      locationsearch.split('&').forEach(queryTuple => {
-        projectPath = queryTuple.indexOf("project") > -1 ? queryTuple.split("=")[1] : projectPath;
-      });
-
-    ///////////////////////////////////////////////////////////////////
-    } else if (this._gid) {
-      projectPath = `${this._groupId}/${this._gid.split(':').join('/')}`;
-    }
+    const projectConfigUrl =
+      this._gid
+        ? `${host}${this.baseurl}${this.getInitConfigUrl()}/${this._groupId}/${this._gid.split(':').join('/')}`
+        : '';
 
     try {
-      if (projectPath) {
+      if (projectConfigUrl) {
         // get configuration from server
-        this._initConfig = await this.getInitConfig(`${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`);
+        this._initConfig = await this.getInitConfig(projectConfigUrl);
       }
     } catch(error) {
       return Promise.reject(error);
@@ -545,7 +567,9 @@ const ApplicationService = function() {
     }
   };
 
-  // method to get initial application configuration
+  /**
+   * Fetch configuration from server
+   */
   this.getInitConfig = function(url) {
     return new Promise((resolve, reject) => {
       if (this._initConfig) resolve(this._initConfig);
@@ -686,6 +710,9 @@ const ApplicationService = function() {
     return this._applicationServices[element];
   };
 
+  /**
+   * @FIXME add description
+   */
   this.errorHandler = function(error) {};
 
   /**
@@ -706,11 +733,11 @@ const ApplicationService = function() {
   };
 
   this.setVendorKeys = function(keys={}) {
-    Object.keys(keys).forEach(key =>ApplicationState.keys.vendorkeys[key] = keys[key])
+    Object.keys(keys).forEach(key => ApplicationState.keys.vendorkeys[key] = keys[key])
   };
 
   /**
-   * change View 
+   * change View
    */
   this.changeProjectView = function(change) {
     ApplicationState.changeProjectview = change;
@@ -731,11 +758,10 @@ const ApplicationService = function() {
    * @TODO check if deprecated
    * 
    * Perfom again all requests and rebuild interface on change project
-   *  
+   * 
    * @param project.gid
    * @param project.host
    * @param project.crs
-   * 
    * @returns {JQuery.Promise<any, any, any>}
    */
   this._changeProject = function({gid, host, crs}={}) {
@@ -786,7 +812,9 @@ const ApplicationService = function() {
   };
 
   this.removeLayout = function(who) {
-    who && delete ApplicationState.gui.layout[who];
+    if (who) {
+      delete ApplicationState.gui.layout[who];
+    }
   };
 
   this.setCurrentLayout = function(who='app') {
