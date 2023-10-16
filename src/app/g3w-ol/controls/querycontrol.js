@@ -2,8 +2,8 @@ import GUI from 'services/gui';
 import ProjectsRegistry from 'store/projects';
 import DataRouterService from 'services/data';
 
-const { throttle }               = require('core/utils/utils');
-const utils                      = require('core/utils/ol');
+const { throttle }               = require('utils');
+const utils                      = require('utils/ol');
 const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 

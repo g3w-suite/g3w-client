@@ -1,6 +1,6 @@
 import GUI from 'services/gui';
 
-const { sameOrigin } = require('core/utils/utils');
+const { sameOrigin } = require('utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
 /**

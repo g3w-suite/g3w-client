@@ -14,7 +14,7 @@ const {
   throttle,
   toRawType,
   createFilterFromString,
-}                              = require('core/utils/utils');
+}                              = require('utils');
 const G3WObject                = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
@@ -22,12 +22,12 @@ const {
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer,
-}                              = require('core/utils/geo');
+}                              = require('utils/geo');
 const BaseLayers               = require('g3w-ol/layers/bases');
 const {
   getScaleFromResolution,
   getResolutionFromScale
-}                              = require('core/utils/ol');
+}                              = require('utils/ol');
 const ControlsFactory          = require('gui/map/control/factory');
 const VectorLayer              = require('core/layers/vectorlayer');
 

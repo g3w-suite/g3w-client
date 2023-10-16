@@ -14,7 +14,7 @@ const {
   isEmptyObject,
   sortAlphabeticallyArray,
   sortNumericArray
-} = require('core/utils/utils');
+} = require('utils');
 
 const G3WObject = require('core/g3wobject');
 

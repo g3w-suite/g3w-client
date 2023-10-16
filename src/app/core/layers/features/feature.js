@@ -1,6 +1,6 @@
 import CONSTANT from 'app/constant';
 
-const { uniqueId } = require('core/utils/utils');
+const { uniqueId } = require('utils');
 
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
 

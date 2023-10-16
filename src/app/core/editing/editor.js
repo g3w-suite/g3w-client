@@ -2,7 +2,7 @@ import Applicationstate from 'store/application-state';
 import ChangesManager   from 'services/editing';
 import SessionsRegistry from 'store/sessions';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const G3WObject         = require('core/g3wobject');
 const FeaturesStore     = require('core/layers/features/featuresstore');
 const OlFeaturesStore   = require('core/layers/features/olfeaturesstore');

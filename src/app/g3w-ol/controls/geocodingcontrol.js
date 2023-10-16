@@ -6,12 +6,15 @@ import ApplicationState           from 'store/application-state';
 import GUI                        from 'services/gui';
 import MapControlGeocoding        from 'components/MapControlGeocoding.vue';
 import MapControlNominatimResults from 'components/MapControlNominatimResults.vue';
+import nominatim                  from 'utils/search_from_nominatim';
+import bing                       from 'utils/search_from_bing';
+import google                     from 'utils/search_from_google';
 
 console.assert(undefined !== MapControlGeocoding);
 console.assert(undefined !== MapControlNominatimResults);
 
 const Control                     = require('./control');
-const { toRawType, XHR }          = require('core/utils/utils');
+const { toRawType }               = require('utils');
 const Projections                 = require('g3w-ol/projection/projections');
 
 /**
@@ -85,173 +88,7 @@ function GeocodingControl(options = {}) {
    * 
    * @type { Object }
    */
-  GeocodingControl.providers = {
-
-    
-    nominatim: {
-
-      active: true, // whether to activate Nominatim Geocoding Provider
-    
-      async fetch(opts) {
-        return {
-          label: 'Nominatim (OSM)',
-          results:
-            (
-              await XHR.get({
-                url:              'https://nominatim.openstreetmap.org/search',
-                params: {
-                  q:              opts.query, // textual search
-                  format:         'json',
-                  addressdetails: 1,
-                  limit:          opts.limit || 10,
-                  viewbox:        opts.extent.join(','),
-                  bounded:        1,
-                }
-              })
-            )
-            .filter(place => ol.extent.containsXY(opts.extent, place.lon, place.lat))
-            .map(result => ({
-                lon: result.lon,
-                lat: result.lat,
-                name: result.name,
-                type: result.type,
-                address: {
-                  name:      result.address.neighbourhood || '',
-                  road:      result.address.road          || '',
-                  city:      result.address.city          || result.address.town,
-                  postcode:  result.address.postcode,
-                  state:     result.address.state,
-                  country:   result.address.country
-                },
-                original: {
-                  formatted: result.display_name,
-                  details:   result.address
-                }
-              })
-            ),
-        };
-
-      },
-    
-    },
-
-    /**
-     * @example https://dev.virtualearth.net/REST/v1/LocalSearch/?query={query}&userMapView={lat,lon,lat,lon}&key={BingMapsKey}
-     * 
-     * @see https://learn.microsoft.com/en-us/bingmaps/rest-services/locations/local-search
-     */
-    bing: {
-
-      // whether to activate Bing Geocoding Provider
-      active: undefined !== ApplicationState.keys.vendorkeys.bing,
-      
-      async fetch(opts) {
-        const response = await XHR.get({
-          url:           'https://dev.virtualearth.net/REST/v1/LocalSearch/',
-          params: {
-            query:       opts.query,  // textual search
-            userMapView: [opts.extent[1], opts.extent[0], opts.extent[3], opts.extent[2]].join(','),
-            key:         ApplicationState.keys.vendorkeys.bing,
-          },
-        });
-
-        if (!GeocodingControl.providers.bing.active) {
-          return;
-        }
-
-        // disable bing provider on invalid API key
-        // if (response.status === 'REQUEST_DENIED') { 
-        //   GeocodingControl.providers.bing.active = false;
-        // }
-
-        return {
-          label: 'Bing Places',
-          results: 200 === response.statusCode
-            ? response.resourceSets[0].resources
-              .filter(({ point: { coordinates } })=> ol.extent.containsXY(opts.extent, coordinates[1], coordinates[0]))
-              .map(result => {
-                return {
-                  lon:         result.point.coordinates[1],
-                  lat:         result.point.coordinates[0],
-                  type:        result.entityType,
-                  name:        result.name,
-                  address: {
-                    road:      result.Address.addressLine,
-                    postcode:  result.Address.postalCode,
-                    city:      result.Address.locality,
-                    state:     result.Address.adminDistrict,
-                    country:   result.Address.countryRegion,
-                  },
-                  original: {
-                    formatted: result.display_name,
-                    details:   result.address
-                  }
-                };
-              })
-            : [],
-        };
-      },
-    
-    },
-
-    google: {
-
-      // whether to activate Google Geocoding Provider
-      active: undefined !== ApplicationState.keys.vendorkeys.google,
-
-      async fetch(opts) {
-        const response = await XHR.get({
-          url:        'https://maps.googleapis.com/maps/api/geocode/json',
-          params: {
-            address:  opts.query, // textual search
-            bounds:   [opts.extent[1], opts.extent[0], opts.extent[3], opts.extent[2]].join(','),
-            language: opts.lang,
-            key:      ApplicationState.keys.vendorkeys.google,
-          },
-        });
-
-        // disable google provider on invalid API key
-        if (response.status === 'REQUEST_DENIED') { 
-          GeocodingControl.providers.google.active = false;
-        }
-
-        return {
-          label: 'Google',
-          results: 'OK' === response.status
-            ? response.results
-              .filter(({ geometry: { location } })=> ol.extent.containsXY(opts.extent, location.lng, location.lat))
-              .map(result => {
-                let name, city, country;
-                result.address_components.forEach(({ types, long_name }) => {
-                  if (types.find(t => 'route' === t))          name    = long_name;
-                  else if (types.find( t => 'locality' === t)) city    = long_name;
-                  else if (types.find( t => 'country' === t))  country = long_name
-                });
-                return {
-                  lon: result.geometry.location.lng,
-                  lat: result.geometry.location.lat,
-                  address: {
-                    name,
-                    road: undefined,
-                    postcode: '',
-                    city,
-                    state: undefined,
-                    country
-                  },
-                  original: {
-                    formatted: result.display_name,
-                    details:   result.address
-                  }
-                };
-              })
-            : [],
-        };
-
-      },
-    
-    },
-
-  };
+  this.providers = [ nominatim, bing, google ];
 
   /**
    * Search results layer (marker)
@@ -391,10 +228,6 @@ proto.query = function(q) {
 
     // request is for a place (Address, Place, etc..)
     if (!coordinates) {
-
-      // loop active Providers
-      const providers = Object.values(GeocodingControl.providers).filter(p => p.active);
-
       // const extent = ol.proj.transformExtent(this.options.viewbox, this.options.mapCrs, 'EPSG:4326');
       const extent    = ol.proj.transformExtent(GUI.getService('map').getMapExtent(), this.options.mapCrs, 'EPSG:4326');
 
@@ -402,20 +235,83 @@ proto.query = function(q) {
       this.clearResults();
       this.reset.classList.add(cssClasses.spin);
 
+      // request data
       const results = await Promise.allSettled(
-        providers.map(p => p.fetch({
-          query:        q,
-          lang:         this.options.lang,
-          countrycodes: this.options.countrycodes,
-          limit:        this.options.limit,
-          extent,
-        }))
+        this.providers
+          .map(p => p && p({
+            query:        q,
+            lang:         this.options.lang,
+            countrycodes: this.options.countrycodes,
+            limit:        this.options.limit,
+            extent,
+          }))
       );
 
+      // update search results
       results.forEach((p) => {
-        if ('fulfilled' === p.status) {
-          this.createList(p.value);
+
+        // skip invalid requests
+        if ('fulfilled' !== p.status) {
+          return;
         }
+
+        const ul = this.result;
+
+        const heading = document.createElement('li');
+        heading.innerHTML = `<div style="display: flex; justify-content: space-between; padding: 5px">`
+                          + `<span style="color: #FFFFFF; font-weight: bold">${p.value.label}</span>`
+                          + `</div>`;
+        heading.classList.add("skin-background-color");
+        
+        ul.appendChild(heading);
+      
+        if (p.value.results && p.value.results.length) {
+          p.value.results.forEach(({ name, type, address, lon, lat }) => {
+            const html = [];
+      
+            // build template string
+            if (type)                                                     html.push(`<div>${type}</div>`);
+            if (name)                                                     html.push(`<div>${name}</div>`);
+            if (address.name)                                             html.push(`<div class="${ cssClasses.road }">{name}</div>`);
+            if (address.road || address.building || address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
+            if (address.city || address.town || address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
+            if (address.state || address.country)                         html.push(`<div class="${ cssClasses.country }">{state} {country}</div>`);
+          
+            // parse template string 
+            const addressHtml = html.join('<br>').replace(
+              /\{ *([\w_-]+) *\}/g,
+              (_, key) => String((address[key] === undefined) ? '' : address[key])
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+            );
+      
+            let li         = document.createElement('li');
+            li.innerHTML   = `<a href="#">${addressHtml}</a>`;
+      
+            // append childs (in memory)
+            const frag     = document.createDocumentFragment();
+            while (li.childNodes[0]) frag.appendChild(li.childNodes[0]);
+            li.appendChild(frag);
+      
+            // click to select
+            li.addEventListener('click', evt => {
+              evt.preventDefault();
+              if (false === this.options.keepOpen) {
+                this.clearResults(true);
+              }
+              this.showMarker([ parseFloat(lon), parseFloat(lat) ]);
+            }, false);
+      
+            ul.appendChild(li);
+          });
+        } else {
+          const li = Vue.extend(MapControlNominatimResults);
+          ul.appendChild(new li({ propsData: { noresults: this.options.noresults } }).$mount().$el);
+        }
+
       });
 
       this.reset.classList.remove(cssClasses.spin);
@@ -429,71 +325,6 @@ proto.query = function(q) {
     }
 
   });
-};
-
-/**
- * Create a DOM list of results
- */
-proto.createList = function({
-  label,
-  results = {},
-} = {}) {
-  const ul = this.result;
-
-  const heading = document.createElement('li');
-  heading.innerHTML = `<div style="display: flex; justify-content: space-between; padding: 5px">`
-                    + `<span style="color: #FFFFFF; font-weight: bold">${label}</span>`
-                    + `</div>`;
-  heading.classList.add("skin-background-color");
-  
-  ul.appendChild(heading);
-
-  if (results.length) {
-    results.forEach(({ name, type, address, lon, lat }) => {
-      const html = [];
-
-      // build template string
-      if (type)                                                     html.push(`<div>${type}</div>`);
-      if (name)                                                     html.push(`<div>${name}</div>`);
-      if (address.name)                                             html.push(`<div class="${ cssClasses.road }">{name}</div>`);
-      if (address.road || address.building || address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
-      if (address.city || address.town || address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
-      if (address.state || address.country)                         html.push(`<div class="${ cssClasses.country }">{state} {country}</div>`);
-    
-      // parse template string 
-      const addressHtml = html.join('<br>').replace(
-        /\{ *([\w_-]+) *\}/g,
-        (_, key) => String((address[key] === undefined) ? '' : address[key])
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;')
-      );
-
-      let li         = document.createElement('li');
-      li.innerHTML   = `<a href="#">${addressHtml}</a>`;
-
-      // append childs (in memory)
-      const frag     = document.createDocumentFragment();
-      while (li.childNodes[0]) frag.appendChild(li.childNodes[0]);
-      li.appendChild(frag);
-
-      // click to select
-      li.addEventListener('click', evt => {
-        evt.preventDefault();
-        if (false === this.options.keepOpen) {
-          this.clearResults(true);
-        }
-        this.showMarker([ parseFloat(lon), parseFloat(lat) ]);
-      }, false);
-
-      ul.appendChild(li);
-    });
-  } else {
-    const li = Vue.extend(MapControlNominatimResults);
-    ul.appendChild(new li({ propsData: { noresults: this.options.noresults } }).$mount().$el);
-  }
 };
 
 /**

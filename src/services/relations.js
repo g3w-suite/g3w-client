@@ -7,8 +7,8 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry from 'store/projects';
 import DataRouterService from 'services/data';
 
-const { inherit, XHR, base, createSingleFieldParameter } = require('core/utils/utils');
-const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
+const { inherit, XHR, base, createSingleFieldParameter } = require('utils');
+const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('utils/geo');
 const G3WObject = require('core/g3wobject');
 
 function RelationsService(options={}) {

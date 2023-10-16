@@ -2,10 +2,10 @@ import CONSTANT from 'app/constant';
 import MapLayersStoresRegistry from 'store/map-layers';
 import GUI from 'services/gui';
 
-const { toRawType, uniqueId } = require('core/utils/utils');
+const { toRawType, uniqueId } = require('utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
-const { response: responseParser } = require('core/utils/parsers');
+const { response: responseParser } = require('utils/parsers');
 
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
 const { QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes } = CONSTANT;

@@ -17,7 +17,7 @@
 </template>
 
 <script>
-const Validators = require('core/utils/validators');
+const Validators = require('utils/validators');
 
 export default {
 

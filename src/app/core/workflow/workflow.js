@@ -3,7 +3,7 @@ import GUI from 'services/gui';
 
 import UserMessageSteps from 'components/UserMessageSteps';
 
-const { base, inherit, resolve } = require('core/utils/utils');
+const { base, inherit, resolve } = require('utils');
 const G3WObject = require('core/g3wobject');
 const Flow = require('core/workflow/flow');
 const { MESSAGES } = require('core/workflow/step');

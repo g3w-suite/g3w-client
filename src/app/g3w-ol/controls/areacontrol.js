@@ -1,4 +1,4 @@
-const utils = require('core/utils/ol');
+const utils = require('utils/ol');
 const AreaIteraction = require('g3w-ol/interactions/areainteraction');
 const MeasureControl = require('g3w-ol/controls/measurecontrol');
 

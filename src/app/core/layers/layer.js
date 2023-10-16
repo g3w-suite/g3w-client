@@ -5,9 +5,9 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 
 const { t } = require('core/i18n/i18n.service');
-const { inherit, base, XHR } = require('core/utils/utils');
+const { inherit, base, XHR } = require('utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields, parseAttributes } =  require('core/utils/geo');
+const { geometryFields, parseAttributes } =  require('utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providersfactory');
 
