@@ -1,15 +1,15 @@
 import { G3W_FID } from 'app/constant';
 
-const { toRawType } = require('core/utils/utils');
+const { toRawType } = require('utils');
 const Feature = require('core/layers/features/feature');
 const { t } = require('core/i18n/i18n.service');
-const olutils = require('core/utils/ol');
+const olutils = require('utils/ol');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 /**
  * @FIXME circular dependency (ie. empty object when importing at top level)
  */
-// const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
+// const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('utils/geo');
 
 /**
  * Response parser (internal utilities)
@@ -108,7 +108,7 @@ const utils = {
     /**
      * @FIXME circular dependency (ie. empty object when importing at top level)
      */
-    const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
+    const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('utils/geo');
 
     const x2js = new X2JS();
     const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
@@ -212,7 +212,7 @@ const utils = {
  */
 const contenttypes = {
   'application/json'({layers=[], response, projections, wms=true}={}) {
-    const {sanitizeFidFeature} = require('core/utils/geo');
+    const {sanitizeFidFeature} = require('utils/geo');
     const layersFeatures = [];
     const layersId = layers.map(layer => {
       layersFeatures.push({

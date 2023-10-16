@@ -1,4 +1,4 @@
-const { truefnc } = require('core/utils/utils');
+const { truefnc } = require('utils');
 
 const InputValidators = {
   validators: {

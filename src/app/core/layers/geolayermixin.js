@@ -2,9 +2,9 @@ import GUI from 'services/gui';
 import ApplicationService from 'services/application';
 
 const Projections = require('g3w-ol/projection/projections');
-const { getScaleFromResolution } = require('core/utils/ol');
-const { createFeatureFromFeatureObject } = require('core/utils/geo');
-const { XHR, sanitizeUrl } = require('core/utils/utils');
+const { getScaleFromResolution } = require('utils/ol');
+const { createFeatureFromFeatureObject } = require('utils/geo');
+const { XHR, sanitizeUrl } = require('utils');
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
 };

@@ -38,14 +38,14 @@ import GUI from 'services/gui';
 import Mixins from 'mixins';
 
 const G3WObject = require('core/g3wobject');
-const utils = require('core/utils/utils');
-const geoutils = require('core/utils/geo');
+const utils = require('utils');
+const geoutils = require('utils/geo');
 const i18n = require('core/i18n/i18n.service');
 const Server = require('core/errors/parser/servererrorparser');
 const Session = require('core/editing/session');
 const Editor = require('core/editing/editor');
-const Geom = require('core/utils/geo');
-const { Geometry } = require('core/utils/geo');
+const Geom = require('utils/geo');
+const { Geometry } = require('utils/geo');
 const Project = require('core/project/project');
 const LayersStoreRegistry = require('core/layers/layersstoresregistry');
 const LayersStore = require('core/layers/layersstore');
@@ -100,7 +100,7 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
-const g3wolutils = require('core/utils/ol');
+const g3wolutils = require('utils/ol');
 
 module.exports = {
 

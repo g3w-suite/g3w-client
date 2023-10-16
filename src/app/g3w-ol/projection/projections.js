@@ -1,8 +1,8 @@
 import { API_BASE_URLS } from 'constant';
 
 const Projection       = require('g3w-ol/projection/projection');
-const { XHR }          = require('core/utils/utils');
-const {normalizeEpsg } = require('core/utils/geo');
+const { XHR }          = require('utils');
+const {normalizeEpsg } = require('utils/geo');
 
 const Projections = {
 

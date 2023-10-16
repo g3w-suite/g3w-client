@@ -6,7 +6,7 @@
  */
 
 const G3WObject = require('core/g3wobject');
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 
 //class Componet Registry (singleton)
 // store all components added

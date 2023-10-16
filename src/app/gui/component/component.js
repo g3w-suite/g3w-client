@@ -1,4 +1,4 @@
-const { base, inherit, merge, noop, capitalize_first_letter, resolve } = require('core/utils/utils');
+const { base, inherit, merge, noop, capitalize_first_letter, resolve } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 /** @deprecated */

@@ -2,7 +2,7 @@ import { DEFAULT_EDITING_CAPABILITIES } from 'app/constant';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import ProjectsRegistry                 from 'store/projects';
 
-const { base, inherit }                 = require('core/utils/utils');
+const { base, inherit }                 = require('utils');
 const Layer                             = require('core/layers/layer');
 const Editor                            = require('core/editing/editor');
 const FeaturesStore                     = require('core/layers/features/featuresstore');

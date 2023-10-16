@@ -7,11 +7,11 @@ import {
 } from 'app/constant';
 import GUI from 'services/gui';
 
-const { base, inherit, downloadFile } = require('core/utils/utils');
+const { base, inherit, downloadFile } = require('utils');
 const { t } = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
 const PrintService = require('core/print/printservice');
-const { getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees } = require('core/utils/ol');
+const { getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees } = require('utils/ol');
 const PrintPage = require('gui/print/vue/printpage');
 
 function PrintComponentService() {
