@@ -511,6 +511,9 @@ proto.getFilterToken = function () {
  */
 proto.getDownloadFilefromDownloadDataType = function(type, {data={}, options}) {
   data.filtertoken = this.getFilterToken();
+  /**
+   * @TODO add UX fields choose
+   */
   switch (type) {
     case 'shapefile': return this.getShp({data, options});
     case 'xls':       return this.getXls({data, options});
