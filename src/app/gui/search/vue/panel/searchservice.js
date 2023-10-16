@@ -137,27 +137,31 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       // to be sure set values options to empty array if undefined
       forminput.loading = forminput.type !== 'autocompletefield';
       const promise = new Promise((resolve, reject) =>{
-        if (forminput.options.values === undefined) forminput.options.values = [];
-        else if (dependance) { // in case of dependence load right now
-          if (!dependance_strict) this.getValuesFromField(forminput).then(values => { // return array of values
-            values = this.valuesToKeysValues(values); // set values for select
-            forminput.options.values = values;
-          })
-            .catch(()=> forminput.options.values = [])// in case of error
-            .finally(()=> {
-              forminput.loading = false;
-              resolve();
-            });
-          else {
+        if (forminput.options.values === undefined) {
+          forminput.options.values = [];
+        } else if (dependance) { // in case of dependence load right now
+          if (!dependance_strict) {
+            this.getValuesFromField(forminput)
+              .then(values => { // return array of values
+                values = this.valuesToKeysValues(values); // set values for select
+                forminput.options.values = values;
+              })
+              .catch(()=> forminput.options.values = [])// in case of error
+              .finally(()=> {
+                forminput.loading = false;
+                resolve();
+              });
+          } else {
             forminput.loading = false;
             resolve();
           }
         } else {
           // no dependance
-          this.getValuesFromField(forminput).then(values => { // return array of values
-            values = this.valuesToKeysValues(values); // set values for select
-            forminput.options.values = values;
-          })
+          this.getValuesFromField(forminput)
+            .then(values => { // return array of values
+              values = this.valuesToKeysValues(values); // set values for select
+              forminput.options.values = values;
+            })
             .catch(()=> forminput.options.values = [])// in case of error
             .finally(()=> {
               forminput.loading = false;
@@ -166,13 +170,13 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
         }
       });
       if (dependance) {
-        //set dependance of input
+        //set dependence of input
         this.inputdependance[forminput.attribute] = dependance;
         this.state.loading[dependance] = false;
         // set disabled false for back compatibility
         forminput.options.disabled = dependance_strict;
         /**
-         * Set dependance between input
+         * Set dependence between input
          */
         this.setInputDependencies({
           master: dependance,
@@ -188,10 +192,14 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
           forminput.widget = 'valuerelation';
         }
       }
-      promise.then(()=>{
-        if (forminput.type !== 'autocompletefield') {
-          if (forminput.options.values.length) forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
-          else forminput.options.values.push({value:ALLVALUE});
+      promise
+        .then(() => {
+          if (forminput.type !== 'autocompletefield') {
+            if (forminput.options.values.length) {
+              forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
+            } else {
+              forminput.options.values.push({value:ALLVALUE});
+            }
           forminput.value = ALLVALUE;
         }
       });
