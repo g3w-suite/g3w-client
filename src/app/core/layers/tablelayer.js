@@ -1,4 +1,7 @@
-import { DEFAULT_EDITING_CAPABILITIES } from 'app/constant';
+import {
+  DEFAULT_EDITING_CAPABILITIES,
+  EDITING_FORMATTER_INPUT_FIELD_TYPES
+} from 'app/constant';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import ProjectsRegistry                 from 'store/projects';
 
@@ -10,11 +13,6 @@ const Feature                           = require('core/layers/features/feature'
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
-
-const EDITING_KEY_VALUE_INPUT_FIELD_TYPES = [
-  'select_autocomplete',
-  'select'
-];
 
 function _createAttributesFromFields(fields) {
   const attributes = {};
@@ -650,7 +648,7 @@ proto.getEditingKeyValuesFields = function() {
   return this.config
     .editing
     .fields
-    .filter(field => EDITING_KEY_VALUE_INPUT_FIELD_TYPES.includes(field.input.type))
+    .filter(field => EDITING_FORMATTER_INPUT_FIELD_TYPES.includes(field.input.type))
 }
 
 module.exports = TableLayer;

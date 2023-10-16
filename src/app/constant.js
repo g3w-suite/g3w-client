@@ -619,6 +619,16 @@ export const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
  */
 export const SPATIAL_METHODS = ['intersects', 'within'];
 
+/**
+ * @since v3.9.0
+ *
+ * @type Array of editing input type to handle for formatter
+ */
+export const EDITING_FORMATTER_INPUT_FIELD_TYPES = [
+  'select_autocomplete',
+  'select'
+];
+
 export default {
   APP_VERSION,
   API_BASE_URLS,
@@ -648,4 +658,5 @@ export default {
   TOC_THEMES_INIT_STATUS,
   VIEWPORT,
   ZINDEXES,
+  EDITING_FORMATTER_INPUT_FIELD_TYPES,
 };
