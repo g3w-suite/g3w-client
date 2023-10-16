@@ -590,11 +590,13 @@ const utils = {
                   operator: input.operator,
                   logicop: null
                 })
-                accumulator = `${accumulator}${filterparam}${index < attributesLength - 1 
-                  ? '|AND,'
-                  : inputIndex < inputsLength - 1 
-                    ? `|${input.logicop}`
-                    : ''}`
+                accumulator = `${accumulator}${filterparam}${
+                  (index < attributesLength - 1) 
+                    ? '|AND,'
+                    : inputIndex < inputsLength - 1 
+                      ? `|${input.logicop}`
+                      : ''
+                }`
                 return accumulator;
               }, '');
             } else {
@@ -607,7 +609,6 @@ const utils = {
               })
             }
           });
-        console.log(fields)
         filter = fields.length ? fields.join() : undefined;
         if (isLayerArray) {
           layer.forEach(() => filters.push(filter));
