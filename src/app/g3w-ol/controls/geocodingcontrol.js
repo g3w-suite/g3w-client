@@ -37,185 +37,6 @@ const cssClasses = {
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Geocoding Providers
-/////////////////////////////////////////////////////////////////////////////////////////
-
-class Nominatim {
-
-  constructor(options = {}) {
-    this.active = true; // whether to activate Nominatim Geocoding Provider
-    this.extent = options.extent;
-  }
-
-  getParameters(options) {
-    if (options.extent) this.extent = options.extent;
-    return {
-      url:              'https://nominatim.openstreetmap.org/search',
-      params: {
-        q:              options.query, // textual search
-        format:         'json',
-        addressdetails: 1,
-        limit:          options.limit || 10,
-        viewbox:        this.extent.join(','),
-        bounded:        1,
-      }
-    };
-  }
-
-  handleResponse(response = []) {
-    return {
-      label: 'Nominatim (OSM)',
-      results: response
-        .filter(place => ol.extent.containsXY(this.extent, place.lon, place.lat))
-        .map(result => ({
-            lon: result.lon,
-            lat: result.lat,
-            name: result.name,
-            type: result.type,
-            address: {
-              name:      result.address.neighbourhood || '',
-              road:      result.address.road          || '',
-              city:      result.address.city          || result.address.town,
-              postcode:  result.address.postcode,
-              state:     result.address.state,
-              country:   result.address.country
-            },
-            original: {
-              formatted: result.display_name,
-              details:   result.address
-            }
-          })
-        ),
-    };
-  }
-
-}
-
-class Google {
-
-  constructor(options = {}) {
-    this.active = ApplicationState.keys.vendorkeys.google !== undefined; // whether to activate Google Geocoding Provider
-    this.extent = options.extent;
-  }
-
-  getParameters(options = {}) {
-    if (options.extent) this.extent = options.extent;
-    return {
-      url:        'https://maps.googleapis.com/maps/api/geocode/json',
-      params: {
-        address:  options.query, // textual search
-        bounds:   [this.extent[1], this.extent[0], this.extent[3], this.extent[2]].join(','),
-        language: options.lang,
-        key:      ApplicationState.keys.vendorkeys.google,
-      },
-    };
-  }
-
-  handleResponse(response = {}) {
-    // disable google provider on invalid API key
-    if (response.status === 'REQUEST_DENIED') { 
-      this.active = false;
-    }
-    return {
-      label: 'Google',
-      results: 'OK' === response.status
-        ? response.results
-          .filter(({ geometry: { location } })=> ol.extent.containsXY(this.extent, location.lng, location.lat))
-          .map(result => {
-            let name, city, country;
-            result.address_components.forEach(({ types, long_name }) => {
-              if (types.find(t => 'route' === t))          name    = long_name;
-              else if (types.find( t => 'locality' === t)) city    = long_name;
-              else if (types.find( t => 'country' === t))  country = long_name
-            });
-            return {
-              lon: result.geometry.location.lng,
-              lat: result.geometry.location.lat,
-              address: {
-                name,
-                road: undefined,
-                postcode: '',
-                city,
-                state: undefined,
-                country
-              },
-              original: {
-                formatted: result.display_name,
-                details:   result.address
-              }
-            };
-          })
-        : [],
-    }
-  }
-
-}
-
-/**
- * @example https://dev.virtualearth.net/REST/v1/LocalSearch/?query={query}&userMapView={lat,lon,lat,lon}&key={BingMapsKey}
- * 
- * @see https://learn.microsoft.com/en-us/bingmaps/rest-services/locations/local-search
- */
-class Bing {
-
-  constructor(options = {}) {
-    this.active = undefined !== ApplicationState.keys.vendorkeys.bing; // whether to activate Bing Geocoding Provider
-    this.extent = options.extent;
-  }
-
-  getParameters(options = {}) {
-    if (options.extent) this.extent = options.extent;
-    return {
-      url:           'https://dev.virtualearth.net/REST/v1/LocalSearch/',
-      params: {
-        query:       options.query,  // textual search
-        userMapView: [this.extent[1], this.extent[0], this.extent[3], this.extent[2]].join(','),
-        key:         ApplicationState.keys.vendorkeys.bing,
-      },
-    };
-  }
-
-  handleResponse(response = {}) {
-    // disable google provider on invalid API key
-    if (response.status === 'REQUEST_DENIED') { 
-      this.active = false;
-    }
-    return {
-      label: 'Bing Places',
-      results: 'OK' === response.status
-        ? response.results
-          .filter(({ geometry: { location } })=> ol.extent.containsXY(this.extent, location.lng, location.lat))
-          .map(result => {
-            let name, city, country;
-            result.address_components.forEach(({ types, long_name }) => {
-              if (types.find(t => 'route' === t))          name    = long_name;
-              else if (types.find( t => 'locality' === t)) city    = long_name;
-              else if (types.find( t => 'country' === t))  country = long_name
-            });
-            return {
-              lon: result.geometry.location.lng,
-              lat: result.geometry.location.lat,
-              address: {
-                name,
-                road: undefined,
-                postcode: '',
-                city,
-                state: undefined,
-                country
-              },
-              original: {
-                formatted: result.display_name,
-                details:   result.address
-              }
-            };
-          })
-        : [],
-    }
-  }
-
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // Geocoding Control
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -259,23 +80,178 @@ function GeocodingControl(options = {}) {
     fontIcon:              GUI.getFontClass('search')
   };
 
-  const extent = ol.proj.transformExtent(this.options.viewbox, this.options.mapCrs, 'EPSG:4326');
-
-  const providerOpts = {
-    mapCrs:  this.options.mapCrs,
-    extent,
-  };
-
   /**
    * Geocoding Providers
    * 
-   * @type { Array }
+   * @type { Object }
    */
-  this.providers = [
-    new Google(providerOpts),
-    new Nominatim(providerOpts),
-    new Bing(providerOpts),
-  ];
+  GeocodingControl.providers = {
+
+    
+    nominatim: {
+
+      active: true, // whether to activate Nominatim Geocoding Provider
+    
+      async fetch(opts) {
+        return {
+          label: 'Nominatim (OSM)',
+          results:
+            (
+              await XHR.get({
+                url:              'https://nominatim.openstreetmap.org/search',
+                params: {
+                  q:              opts.query, // textual search
+                  format:         'json',
+                  addressdetails: 1,
+                  limit:          opts.limit || 10,
+                  viewbox:        opts.extent.join(','),
+                  bounded:        1,
+                }
+              })
+            )
+            .filter(place => ol.extent.containsXY(opts.extent, place.lon, place.lat))
+            .map(result => ({
+                lon: result.lon,
+                lat: result.lat,
+                name: result.name,
+                type: result.type,
+                address: {
+                  name:      result.address.neighbourhood || '',
+                  road:      result.address.road          || '',
+                  city:      result.address.city          || result.address.town,
+                  postcode:  result.address.postcode,
+                  state:     result.address.state,
+                  country:   result.address.country
+                },
+                original: {
+                  formatted: result.display_name,
+                  details:   result.address
+                }
+              })
+            ),
+        };
+
+      },
+    
+    },
+
+    /**
+     * @example https://dev.virtualearth.net/REST/v1/LocalSearch/?query={query}&userMapView={lat,lon,lat,lon}&key={BingMapsKey}
+     * 
+     * @see https://learn.microsoft.com/en-us/bingmaps/rest-services/locations/local-search
+     */
+    bing: {
+
+      // whether to activate Bing Geocoding Provider
+      active: undefined !== ApplicationState.keys.vendorkeys.bing,
+      
+      async fetch(opts) {
+        const response = await XHR.get({
+          url:           'https://dev.virtualearth.net/REST/v1/LocalSearch/',
+          params: {
+            query:       opts.query,  // textual search
+            userMapView: [opts.extent[1], opts.extent[0], opts.extent[3], opts.extent[2]].join(','),
+            key:         ApplicationState.keys.vendorkeys.bing,
+          },
+        });
+
+        if (!GeocodingControl.providers.bing.active) {
+          return;
+        }
+
+        // disable bing provider on invalid API key
+        // if (response.status === 'REQUEST_DENIED') { 
+        //   GeocodingControl.providers.bing.active = false;
+        // }
+
+        return {
+          label: 'Bing Places',
+          results: 200 === response.statusCode
+            ? response.resourceSets[0].resources
+              .filter(({ point: { coordinates } })=> ol.extent.containsXY(opts.extent, coordinates[1], coordinates[0]))
+              .map(result => {
+                return {
+                  lon:         result.point.coordinates[1],
+                  lat:         result.point.coordinates[0],
+                  type:        result.entityType,
+                  name:        result.name,
+                  address: {
+                    road:      result.Address.addressLine,
+                    postcode:  result.Address.postalCode,
+                    city:      result.Address.locality,
+                    state:     result.Address.adminDistrict,
+                    country:   result.Address.countryRegion,
+                  },
+                  original: {
+                    formatted: result.display_name,
+                    details:   result.address
+                  }
+                };
+              })
+            : [],
+        };
+      },
+    
+    },
+
+    google: {
+
+      // whether to activate Google Geocoding Provider
+      active: undefined !== ApplicationState.keys.vendorkeys.google,
+
+      async fetch(opts) {
+        const response = await XHR.get({
+          url:        'https://maps.googleapis.com/maps/api/geocode/json',
+          params: {
+            address:  opts.query, // textual search
+            bounds:   [opts.extent[1], opts.extent[0], opts.extent[3], opts.extent[2]].join(','),
+            language: opts.lang,
+            key:      ApplicationState.keys.vendorkeys.google,
+          },
+        });
+
+        // disable google provider on invalid API key
+        if (response.status === 'REQUEST_DENIED') { 
+          GeocodingControl.providers.google.active = false;
+        }
+
+        return {
+          label: 'Google',
+          results: 'OK' === response.status
+            ? response.results
+              .filter(({ geometry: { location } })=> ol.extent.containsXY(opts.extent, location.lng, location.lat))
+              .map(result => {
+                let name, city, country;
+                result.address_components.forEach(({ types, long_name }) => {
+                  if (types.find(t => 'route' === t))          name    = long_name;
+                  else if (types.find( t => 'locality' === t)) city    = long_name;
+                  else if (types.find( t => 'country' === t))  country = long_name
+                });
+                return {
+                  lon: result.geometry.location.lng,
+                  lat: result.geometry.location.lat,
+                  address: {
+                    name,
+                    road: undefined,
+                    postcode: '',
+                    city,
+                    state: undefined,
+                    country
+                  },
+                  original: {
+                    formatted: result.display_name,
+                    details:   result.address
+                  }
+                };
+              })
+            : [],
+        };
+
+      },
+    
+    },
+
+  };
 
   /**
    * Search results layer (marker)
@@ -295,11 +271,6 @@ function GeocodingControl(options = {}) {
     })
   });
 
-  /**
-   * Store last query string to avoid duplicate request
-   */
-  this.lastQuery = '';
-
   const GeocoderVueContainer = Vue.extend(MapControlGeocoding);
 
   /**
@@ -316,20 +287,15 @@ function GeocodingControl(options = {}) {
   }).$mount().$el;
 
 
-  /**
-   * Create DOM control elements
-   */
-
+  // create DOM control elements
   this.control = this.container.getElementsByClassName(cssClasses.inputTextControl)[0];
   this.input   = this.container.getElementsByClassName(cssClasses.inputTextInput)[0];
   this.reset   = this.container.getElementsByClassName(cssClasses.inputTextReset)[0];
   this.result  = this.container.getElementsByClassName(cssClasses.inputTextResult)[0];
 
-  //add event listener to DOM control elements
-  /**
-   * @TODO move events directly to MapControlGeocoding
-   */
+  /** @TODO move DOM event listener directly to MapControlGeocoding */
 
+  // add event listener to DOM control elements
   this.input.addEventListener('keyup', _onQuery.bind(this), false);
   this.input.addEventListener('input', _onValue.bind(this), false);
   this.reset.addEventListener('click', _onReset.bind(this), false);
@@ -369,34 +335,24 @@ proto.hideMarker = function(){
 };
 
 function _onQuery(evt) {
-  const value = evt.target.value.trim();
-  const hit   = evt.key
-    ? evt.key === 'Enter'
-    : evt.which
-      ? evt.which === 13
-      : evt.keyCode
-        ? evt.keyCode === 13
-        : false;
-  if (hit) {
+  if ('Enter' === evt.key || 13 === evt.which || 13 === evt.keyCode) {
     evt.preventDefault();
-    this.query(value);
+    this.query(evt.target.value.trim());
   }
 }
 
 function _onReset() {
   this.input.focus();
   this.input.value = '';
-  this.lastQuery   = '';
   this.reset.classList.add(cssClasses.hidden);
   this.clearResults();
 }
 
-let timeout, lastQuery;
+let timeout;
 function _onValue(evt) {
   const value = evt.target.value.trim();
   this.reset.classList.toggle(cssClasses.hidden, !value.length);
-  if (this.options.autoComplete && value !== lastQuery) {
-    lastQuery = value;
+  if (this.options.autoComplete) {
     timeout && clearTimeout(timeout);
     timeout = setTimeout(() => (value.length >= this.options.autoCompleteMinLength) && this.query(value), 200);
   }
@@ -433,48 +389,34 @@ proto.query = function(q) {
       console.warn(err);
     }
 
-    // skip when no coordinates are provided (or on duplicate request)
-    if (!coordinates && this.lastQuery === q && this.result.firstChild) {
-      return;
-    }
-
     // request is for a place (Address, Place, etc..)
     if (!coordinates) {
-      const promises = [];
+
       // loop active Providers
-      const providers = this.providers.filter(p => p.active);
+      const providers = Object.values(GeocodingControl.providers).filter(p => p.active);
 
-      const extent = ol.proj.transformExtent(GUI.getService('map').getMapExtent(), this.options.mapCrs, 'EPSG:4326');
+      // const extent = ol.proj.transformExtent(this.options.viewbox, this.options.mapCrs, 'EPSG:4326');
+      const extent    = ol.proj.transformExtent(GUI.getService('map').getMapExtent(), this.options.mapCrs, 'EPSG:4326');
 
-      providers.forEach(provider => {
-        const request = provider.getParameters({
-          query: q,
-          lang: this.options.lang,
+      // clear previous result
+      this.clearResults();
+      this.reset.classList.add(cssClasses.spin);
+
+      const results = await Promise.allSettled(
+        providers.map(p => p.fetch({
+          query:        q,
+          lang:         this.options.lang,
           countrycodes: this.options.countrycodes,
-          limit: this.options.limit,
+          limit:        this.options.limit,
           extent,
-        });
+        }))
+      );
 
-        // set as last query
-        this.lastQuery = q;
-
-        // clear previous result
-        this.clearResults();
-
-        this.reset.classList.add(cssClasses.spin);
-
-        promises.push(XHR.get(request))
+      results.forEach((p) => {
+        if ('fulfilled' === p.status) {
+          this.createList(p.value);
+        }
       });
-
-      (await Promise.allSettled(promises))
-        .forEach((response, i) => {
-          if ('fulfilled' === response.status) {
-            const results = providers[i].handleResponse(response.value);
-            if (providers[i].active) {
-              this.createList(results);
-            }
-          }
-        });
 
       this.reset.classList.remove(cssClasses.spin);
     }
@@ -511,8 +453,8 @@ proto.createList = function({
       const html = [];
 
       // build template string
-      if (type)                                                     html.push(`<div hidden>${type}</div>`);
-      if (name)                                                     html.push(`<div hidden>${name}</div>`);
+      if (type)                                                     html.push(`<div>${type}</div>`);
+      if (name)                                                     html.push(`<div>${name}</div>`);
       if (address.name)                                             html.push(`<div class="${ cssClasses.road }">{name}</div>`);
       if (address.road || address.building || address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
       if (address.city || address.town || address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
