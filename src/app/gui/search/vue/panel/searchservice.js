@@ -156,19 +156,23 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
             resolve();
           }
         } else {
-          // no dependance
+
+          // no dependence
           this.getValuesFromField(forminput)
             .then(values => { // return array of values
               values = this.valuesToKeysValues(values); // set values for select
               forminput.options.values = values;
             })
-            .catch(()=> forminput.options.values = [])// in case of error
-            .finally(()=> {
+            .catch((err) => {
+              forminput.options.values = [];
+            })// in case of error
+            .finally(() => {
               forminput.loading = false;
               resolve();
             })
         }
       });
+
       if (dependance) {
         //set dependence of input
         this.inputdependance[forminput.attribute] = dependance;
@@ -259,6 +263,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({ fields = [], fi
  */
 proto.getValuesFromField = async function(field) {
   if (field.options.layer_id) {
+    //array of unique values
     const uniqueValues = await this.getUniqueValuesFromField({ field: field.attribute });
     return this.getValueRelationValues(
       field,
@@ -266,10 +271,11 @@ proto.getValuesFromField = async function(field) {
       createFilterFormInputs({
         layer: CatalogLayersStoresRegistry.getLayerById(field.options.layer_id),
         search_endpoint: this.getSearchEndPoint(),
-        inputs: uniqueValues.map( value => ({ value, attribute: field.options.value, logicop: "OR", operator: "eq" }))
+        inputs: [{value: uniqueValues, attribute: field.options.value, logicop: "OR", operator: "eq" }]
       })
     );
   }
+
   if (field.options.values.length) {
     return this.getValueMapValues(field);
   }
@@ -288,8 +294,9 @@ proto.getValueRelationValues = async function(field, filter) {
       outputs: false
     });
     const values = [];
-    (data && data[0] && data[0].features || []).forEach(feature => {
-      values.push({ key: feature.get(field.options.key), value: feature.get(field.options.value) })
+    (data && data[0] && data[0].features || [])
+      .forEach(feature => {
+        values.push({ key: feature.get(field.options.key), value: feature.get(field.options.value) })
     });
     return values;
   } catch(err) {
@@ -384,8 +391,10 @@ proto.doSearch = async function({
   show            = this.show
 } = {}) {
 
+  //get or create request filter
   filter = filter || this.createFilter();
 
+  //set searching to true
   this.state.searching = true;
 
   let data;
@@ -403,6 +412,7 @@ proto.doSearch = async function({
       },
       outputs: show && { title: this.state.title }
     });
+    // not show (request internal. No output data are show)
     if (!show) {
       const parsed = ('search_1n' === this.type)
         ? await parse_search_1n(data, {
@@ -414,17 +424,22 @@ proto.doSearch = async function({
         : parse_search_by_returnType(data, this.return);
       data = parsed ? parsed : data;
     } else if (this.project.state.autozoom_query && data && 1 === data.data.length) {
-      this.mapService.zoomToFeatures(data.data[0].features); // autozoom_query
+      this.mapService.zoomToFeatures(data.data[0].features); // auto zoom_query
     }
   } catch(e) {
     console.warn(e);
   }
 
+  //set searchin false
   this.state.searching = false;
 
   return data;
 };
 
+/**
+ * Method that filter input base on NONVALIDVALUES
+ * @returns {*[]}
+ */
 proto.filterValidFormInputs = function() {
   return this.state.forminputs.filter(input => -1 === NONVALIDVALUES.indexOf(input.value) && '' !== input.value.toString().trim());
 };
@@ -711,6 +726,7 @@ function create_boolean_filter(operator, inputs = []) {
 }
 
 /**
+ * Search father layer id based on result of child layer
  * @private 
  */
 async function parse_search_1n(data, options) {
@@ -720,25 +736,57 @@ async function parse_search_1n(data, options) {
 
   const project = ProjectsRegistry.getCurrentProject();
 
-  // check if has features on result
+  // check if it has features on result
   if (!features.length) {
+    //show empty result output
     DataRouterService.showEmptyOutputs();
   }
 
+  //get relation
   const relation = project.getRelationById(relation_id);
+
+  //if exist relation
   if (relation) {
-    const inputs = [];
 
-    const uniqueValues = new Set();
-    features.forEach(feature => {
-      const value = feature.getProperties()[relation.fieldRef.referencingField];
-      if (!uniqueValues.has(value)) {
-        uniqueValues.add(value);
-        inputs.push({ attribute:relation.fieldRef.referencedField, logicop: "OR", operator: "eq", value });
-      }
-    });
+    const inputs = []; //store inputs
 
-    const layer = project.getLayerById(relation.referencedLayer);
+    //extract properties from relation object
+    const {
+      referencedLayer, //father layer id
+      fieldRef: {referencingField, referencedField}} = relation; // child and father relation fields
+
+    //Number of relation fields
+    const rFLength = referencingField.length;
+
+    //Just one field
+    if (1 === rFLength) {
+      const uniqueValues = new Set();
+      //loop trough feature child layer
+      features.forEach(feature => {
+        const value = feature.get(referencingField[0]);
+        if (!uniqueValues.has(value)) {
+          uniqueValues.add(value);
+        }
+      })
+      inputs.push({ attribute: referencedField[0], logicop: "OR", operator: "eq", value: Array.from(uniqueValues) })
+    } else {
+      const uniqueValues = [];
+      features.forEach(feature => {
+        const values = referencingField.map(rF => feature.get(rF));
+        if (!uniqueValues.find((v) => {
+          return v.reduce((accumulator, value, index) => {
+            return accumulator && values[index] === value;
+          }, true);
+        })) {
+          uniqueValues.push(values);
+          inputs.push({ attribute: referencedField, logicop: "OR", operator: "eq", value: values })
+        }
+      })
+    }
+
+    const layer = project.getLayerById(referencedLayer);
+
+
     data = await DataRouterService.getData('search:features', {
       inputs: {
         layer,
@@ -751,7 +799,9 @@ async function parse_search_1n(data, options) {
         title: output_title
       }
     });
+
   }
+
   return data;
 }
 
@@ -759,7 +809,7 @@ async function parse_search_1n(data, options) {
  * @private 
  */
 function parse_search_by_returnType(data, returnType) {
-  if ('search' === returnType) { 
+  if ('search' === returnType) {
     GUI.closeContent();
     // in case of api get first response on array
     data = data.data[0].data;
