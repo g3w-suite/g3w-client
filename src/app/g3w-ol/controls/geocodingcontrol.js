@@ -18,6 +18,14 @@ const { toRawType }               = require('utils');
 const Projections                 = require('g3w-ol/projection/projections');
 
 /**
+ * @TODO add a server option to let user choose geocoding extent, eg:
+ * 
+ * - "dynamic": filter search results based on current map extent
+ * - "initial": filter search results based on on initial map extent
+ */
+const DYNAMIC_MAP_EXTENT = false;
+
+/**
  * Helper CSS classes for control elements 
  * 
  * @type { Object<string, string> }
@@ -228,8 +236,12 @@ proto.query = function(q) {
 
     // request is for a place (Address, Place, etc..)
     if (!coordinates) {
-      // const extent = ol.proj.transformExtent(this.options.viewbox, this.options.mapCrs, 'EPSG:4326');
-      const extent    = ol.proj.transformExtent(GUI.getService('map').getMapExtent(), this.options.mapCrs, 'EPSG:4326');
+
+      const extent    = ol.proj.transformExtent(
+        DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.options.viewbox,
+        this.options.mapCrs,
+        'EPSG:4326'
+      );
 
       // clear previous result
       this.clearResults();
@@ -238,7 +250,7 @@ proto.query = function(q) {
       // request data
       const results = await Promise.allSettled(
         this.providers
-          .map(p => p && p({
+          .map(p => p({
             query:        q,
             lang:         this.options.lang,
             countrycodes: this.options.countrycodes,
