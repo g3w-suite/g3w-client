@@ -1071,22 +1071,48 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     /**
+     * Method to show and choose al layer fields
      * @since v3.9.0
      */
     GUI.chooseLayerFields = function(fields=[]) {
-      if (fields.length > 0) {
+      return new Promise((resolve, reject) => {
+        if (fields.length > 0) {
 
-        const DownloadFieldsLayerClass = Vue.extend(DownloadFieldsLayer);
-        const DownloadFieldsLayerInstance = new DownloadFieldsLayerClass({
-          propsData: {
-            fields
-          }
-        });
-        return GUI.showModalDialog({
-          message: DownloadFieldsLayerInstance.$mount().$el
-        })
-      }
+          const DownloadFieldsLayerClass    = Vue.extend(DownloadFieldsLayer);
+          const DownloadFieldsLayerInstance = new DownloadFieldsLayerClass({
+            propsData: {
+              fields
+            }
+          });
+          const message                     = DownloadFieldsLayerInstance.$mount().$el;
+
+          const dialog = GUI.showModalDialog({
+            message,
+            closeButton: false,
+            buttons: {
+              ok: {
+                label: 'Ok',
+                className: 'btn-success',
+                callback() {
+                  resolve(fields.filter(field => field.selected));
+                }
+              }
+            }
+          });
+
+          /**
+           * @TODO
+           */
+          dialog.on("shown.bs.modal", evt => evt.target.click());
+
+          DownloadFieldsLayerInstance.$on('selected-fields', bool => dialog.find('button.btn-success').prop('disabled', !bool));
+
+        } else {
+          resolve(fields);
+        }
+      })
     }
+
   };
 
   base(this);

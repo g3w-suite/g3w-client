@@ -506,14 +506,10 @@ proto.getFilterToken = function () {
  * @since v3.9.0
  */
 proto.chooseFieldsToDownload = function() {
-  return new Promise((resolve, reject) => {
-
-    GUI.chooseLayerFields(this.getTableFields().map(({name, label}) => ({
-      name,
-      label,
-      selected: true
-    })))
-  })
+  return GUI.chooseLayerFields(
+    this.getTableFields()
+      .map(({name, label}) => ({name, label, selected: true}))
+  )
 }
 
 /**
@@ -521,27 +517,37 @@ proto.chooseFieldsToDownload = function() {
  * DOWNLOAD METHODS
  */
 
-/** 
+
+/**
+ * Method to handle download layer in different format
  * @returns promise
  */
-proto.getDownloadFilefromDownloadDataType = function(type, {data={}, options}) {
-  data.filtertoken = this.getFilterToken();
-  /**
-   * @TODO add UX fields choose
-   */
-  switch (type) {
-    case 'shapefile': return this.getShp({data, options});
-    case 'xls':       return this.getXls({data, options});
-    case 'csv':       return this.getCsv({data, options});
-    case 'gpx':       return this.getGpx({data, options});
-    case 'gpkg':      return this.getGpkg({data, options});
-    case 'geotiff':   return this.getGeoTIFF({ data, options });
+proto.getDownloadFilefromDownloadDataType = async function(type, {data={}, options}={}) {
+  try {
+    const fields = await this.chooseFieldsToDownload();
+    data.ftod = fields.map(field => field.name).join();
+    data.filtertoken = this.getFilterToken();
+    switch (type) {
+      case 'shapefile': return this._getShp({data, options});
+      case 'xls':       return this._getXls({data, options});
+      case 'csv':       return this._getCsv({data, options});
+      case 'gpx':       return this._getGpx({data, options});
+      case 'gpkg':      return this._getGpkg({data, options});
+      case 'geotiff':   return this._getGeoTIFF({ data, options });
+    }
+  } catch(err) {
+    console.log(err)
   }
+
 };
 
-proto.getGeoTIFF = function({data={}}={}) {
-  this.chooseFieldsToDownload();
-  data.filtertoken = this.getFilterToken();
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ * @private
+ */
+proto._getGeoTIFF = async function({data={}}={}) {
   return XHR.fileDownload({
     url: this.getUrl('geotiff'),
     data,
@@ -549,9 +555,13 @@ proto.getGeoTIFF = function({data={}}={}) {
   })
 };
 
-proto.getXls = function({data={}}={}) {
-  this.chooseFieldsToDownload();
-  data.filtertoken = this.getFilterToken();
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ * @private
+ */
+proto._getXls = async function({data={}}={}) {
   return XHR.fileDownload({
     url: this.getUrl('xls'),
     data,
@@ -559,9 +569,13 @@ proto.getXls = function({data={}}={}) {
   })
 };
 
-proto.getShp = function({data={}}={}) {
-  this.chooseFieldsToDownload();
-  data.filtertoken = this.getFilterToken();
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ * @private
+ */
+proto._getShp = async function({data={}}={}) {
   return XHR.fileDownload({
     url: this.getUrl('shp'),
     data,
@@ -569,9 +583,13 @@ proto.getShp = function({data={}}={}) {
   })
 };
 
-proto.getGpx = function({data={}}={}) {
-  this.chooseFieldsToDownload();
-  data.filtertoken = this.getFilterToken();
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ * @private
+ */
+proto._getGpx = async function({data={}}={}) {
   return XHR.fileDownload({
     url: this.getUrl('gpx'),
     data,
@@ -579,9 +597,13 @@ proto.getGpx = function({data={}}={}) {
   })
 };
 
-proto.getGpkg = function({data={}}={}) {
-  this.chooseFieldsToDownload();
-  data.filtertoken = this.getFilterToken();
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ * @private
+ */
+proto._getGpkg = async function({data={}}={}) {
   return XHR.fileDownload({
     url: this.getUrl('gpkg'),
     data,
@@ -589,9 +611,13 @@ proto.getGpkg = function({data={}}={}) {
   })
 };
 
-proto.getCsv = function({data={}}={}) {
-  this.chooseFieldsToDownload();
-  data.filtertoken = this.getFilterToken();
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ * @private
+ */
+proto._getCsv = async function({data={}}={}) {
   return XHR.fileDownload({
     url: this.getUrl('csv'),
     data,

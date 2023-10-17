@@ -430,8 +430,8 @@
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.geotiff = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getGeoTIFF({
-          data:  map_extent ? {
+        layer.getDownloadFilefromDownloadDataType('geotiff',{
+          data: map_extent ? {
             map_extent: GUI.getService('map').getMapExtent().toString()
           } : undefined
         })
@@ -447,7 +447,7 @@
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.shp = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getShp()
+        layer.getDownloadFilefromDownloadDataType('shapefile')
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.shp = false;
@@ -460,8 +460,11 @@
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.csv = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getCsv()
-          .catch(err => GUI.notify.error(t("info.server_error")))
+
+        layer.getDownloadFilefromDownloadDataType('csv')
+          .catch(err => {
+            GUI.notify.error(t("info.server_error"))
+          })
           .finally(() => {
             this.layerMenu.loading.csv = false;
             ApplicationService.setDownload(false, caller_download_id);
@@ -473,7 +476,7 @@
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.xls = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getXls()
+        layer.getDownloadFilefromDownloadDataType('xls')
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.xls = false;
@@ -486,7 +489,7 @@
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.gpx = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getGpx()
+        layer.getDownloadFilefromDownloadDataType('gpx')
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.gpx = false;
@@ -499,7 +502,7 @@
         const caller_download_id = ApplicationService.setDownload(true);
         this.layerMenu.loading.gpkg = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getGpkg()
+        layer.getDownloadFilefromDownloadDataType('gpkg')
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.gpkg = false;
