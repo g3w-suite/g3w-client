@@ -1104,7 +1104,7 @@ const ApplicationTemplate = function({ApplicationService}) {
            */
           dialog.on("shown.bs.modal", evt => evt.target.click());
 
-          DownloadFieldsLayerInstance.$on('selected-fields', bool => dialog.find('button.btn-success').prop('disabled', !bool));
+          ChooseLayerFieldsInstance.$on('selected-fields', bool => dialog.find('button.btn-success').prop('disabled', !bool));
 
         } else {
           resolve(fields);
