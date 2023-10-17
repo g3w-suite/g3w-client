@@ -25,12 +25,18 @@ const Projections                 = require('g3w-ol/projection/projections');
  */
 const DYNAMIC_MAP_EXTENT = false;
 
+const pushpin_icon = new ol.style.Icon({
+  opacity: 1,
+  src: '/static/client/images/pushpin.svg',
+  scale: 0.8
+});
+
 /**
  * Helper CSS classes for control elements 
  * 
  * @type { Object<string, string> }
  */
-const cssClasses = {
+const css = {
   namespace:           "ol-geocoder",
   spin:                "gcd-pseudo-rotate",
   hidden:              "gcd-hidden",
@@ -46,6 +52,18 @@ const cssClasses = {
   inputTextReset:      "gcd-txt-reset",
   inputTextResult:     "gcd-txt-result"
 };
+
+/**
+ * HTML ENCODER (but why, is there any potential dangerous HTML ?)
+ */
+function h(text) {
+  return String(undefined === text ? '' : text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Geocoding Control
@@ -105,26 +123,18 @@ function GeocodingControl(options = {}) {
    */
   this.layer = new ol.layer.Vector({
     source: new ol.source.Vector(),
-    style: new ol.style.Style({
-      text: new ol.style.Text({
-        offsetY: -15, // move marker icon on base point coordinate and not center
-        text: '\uf3c5',
-        font: '900 3em "Font Awesome 5 Free"',
-        stroke: new ol.style.Stroke({ color: 'red', width: 3 }),
-        fill: new ol.style.Fill({ color: 'rgba(255, 0,0, 0.7)' })
-      })
-    })
+    style: new ol.style.Style({ image: pushpin_icon }),
   });
 
-  const GeocoderVueContainer = Vue.extend(MapControlGeocoding);
+    const GeocoderVueContainer = Vue.extend(MapControlGeocoding);
 
   /**
    * DOM control element
    */
   this.container = new GeocoderVueContainer({
     propsData: {
-      cssClasses,
-      containerClass: `${cssClasses.namespace} ${cssClasses.inputTextContainer}`,
+      cssClasses:     css,
+      containerClass: `${css.namespace} ${css.inputTextContainer}`,
       fontIcon:       this.options.fontIcon,
       placeholder:    this.options.placeholder,
       ctx:            this,
@@ -133,10 +143,10 @@ function GeocodingControl(options = {}) {
 
 
   // create DOM control elements
-  this.control = this.container.getElementsByClassName(cssClasses.inputTextControl)[0];
-  this.input   = this.container.getElementsByClassName(cssClasses.inputTextInput)[0];
-  this.reset   = this.container.getElementsByClassName(cssClasses.inputTextReset)[0];
-  this.result  = this.container.getElementsByClassName(cssClasses.inputTextResult)[0];
+  this.control = this.container.getElementsByClassName(css.inputTextControl)[0];
+  this.input   = this.container.getElementsByClassName(css.inputTextInput)[0];
+  this.reset   = this.container.getElementsByClassName(css.inputTextReset)[0];
+  this.result  = this.container.getElementsByClassName(css.inputTextResult)[0];
 
   /** @TODO move DOM event listener directly to MapControlGeocoding */
 
@@ -189,14 +199,14 @@ function _onQuery(evt) {
 function _onReset() {
   this.input.focus();
   this.input.value = '';
-  this.reset.classList.add(cssClasses.hidden);
+  this.reset.classList.add(css.hidden);
   this.clearResults();
 }
 
 let timeout;
 function _onValue(evt) {
   const value = evt.target.value.trim();
-  this.reset.classList.toggle(cssClasses.hidden, !value.length);
+  this.reset.classList.toggle(css.hidden, !value.length);
   if (this.options.autoComplete) {
     timeout && clearTimeout(timeout);
     timeout = setTimeout(() => (value.length >= this.options.autoCompleteMinLength) && this.query(value), 200);
@@ -237,15 +247,15 @@ proto.query = function(q) {
     // request is for a place (Address, Place, etc..)
     if (!coordinates) {
 
-      const extent    = ol.proj.transformExtent(
-        DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.options.viewbox,
-        this.options.mapCrs,
-        'EPSG:4326'
-      );
+      // const extent    = ol.proj.transformExtent(
+      //   DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.options.viewbox,
+      //   this.options.mapCrs,
+      //   'EPSG:4326'
+      // );
 
       // clear previous result
       this.clearResults();
-      this.reset.classList.add(cssClasses.spin);
+      this.reset.classList.add(css.spin);
 
       // request data
       const results = await Promise.allSettled(
@@ -255,7 +265,11 @@ proto.query = function(q) {
             lang:         this.options.lang,
             countrycodes: this.options.countrycodes,
             limit:        this.options.limit,
-            extent,
+            extent: ol.proj.transformExtent(
+              p === bing ? GUI.getService('map').getMapExtent() : this.options.viewbox,
+              this.options.mapCrs,
+              'EPSG:4326'
+            ),
           }))
       );
 
@@ -267,6 +281,8 @@ proto.query = function(q) {
           return;
         }
 
+        console.log(p);
+
         const ul = this.result;
 
         const heading = document.createElement('li');
@@ -274,35 +290,30 @@ proto.query = function(q) {
                           + `<span style="color: #FFFFFF; font-weight: bold">${p.value.label}</span>`
                           + `</div>`;
         heading.classList.add("skin-background-color");
-        
+
         ul.appendChild(heading);
       
         if (p.value.results && p.value.results.length) {
           p.value.results.forEach(({ name, type, address, lon, lat }) => {
             const html = [];
-      
+            
             // build template string
-            if (type)                                                     html.push(`<div>${type}</div>`);
-            if (name)                                                     html.push(`<div>${name}</div>`);
-            if (address.name)                                             html.push(`<div class="${ cssClasses.road }">{name}</div>`);
-            if (address.road || address.building || address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
-            if (address.city || address.town || address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
-            if (address.state || address.country)                         html.push(`<div class="${ cssClasses.country }">{state} {country}</div>`);
-          
-            // parse template string 
-            const addressHtml = html.join('<br>').replace(
-              /\{ *([\w_-]+) *\}/g,
-              (_, key) => String((address[key] === undefined) ? '' : address[key])
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;')
-            );
-      
-            let li         = document.createElement('li');
-            li.innerHTML   = `<a href="#">${addressHtml}</a>`;
-      
+            if ('nominatim' !== p.value.provider)                         html.push(`<img style="float: right;" src="/static/client/images/pushpin.svg" width="24" height="24"></img>`);
+            if (type && 'nominatim' !== p.value.provider)                 html.push(`<div>${type}</div>`);
+            if (name && 'nominatim' !== p.value.provider)                 html.push(`<div>${name}</div>`);
+            if (address.name)                                             html.push(`<div class="${ css.road }">${h(name)}</div>`);
+            if (address.road || address.building || address.house_number) html.push(`<div class="${ css.road }">${h(building)} ${h(road)} ${h(house_number)}</div>`);
+            if (address.city || address.town || address.village)          html.push(`<div class="${ css.city }">${h(postcode)} ${h(city)} ${h(town)} ${h(village)}</div>`);
+            if (address.state || address.country)                         html.push(`<div class="${ css.country }">${h(state)} ${h(country)}</div>`);
+
+            let li = document.createElement('li');
+
+            if (p.value.provider) {
+              li.classList.add(p.value.provider);
+            }
+
+            li.innerHTML   = `<a href="#">${html.join('<br>')}</a>`;
+
             // append childs (in memory)
             const frag     = document.createDocumentFragment();
             while (li.childNodes[0]) frag.appendChild(li.childNodes[0]);
@@ -326,7 +337,7 @@ proto.query = function(q) {
 
       });
 
-      this.reset.classList.remove(cssClasses.spin);
+      this.reset.classList.remove(css.spin);
     }
 
     // request is for a single point (XCoord,YCoord)
