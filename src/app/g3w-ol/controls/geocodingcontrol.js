@@ -96,6 +96,8 @@ function GeocodingControl(options = {}) {
     placeholder:           (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder")        || 'Città, indirizzo ... ',
     noresults:             (undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults")          || 'Nessun risultato ',
     notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver")  || 'Il server non risponde',
+    viewbox:               (undefined !== options.bbox              ? options.bbox              : project.state.initextent || project.state.extent),
+    mapCrs:                (undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg),
     lang:                  ApplicationState.language || 'it-IT',
     limit:                 options.limit             || 5,
     keepOpen:              true,
@@ -103,10 +105,8 @@ function GeocodingControl(options = {}) {
     autoComplete:          false,
     autoCompleteMinLength: 4,
     debug:                 false,
-    viewbox:               undefined !== options.bbox              ? options.bbox              : project.state.initextent || project.state.extent,
     bounded:               1,
-    mapCrs:                undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg,
-    fontIcon:              GUI.getFontClass('search')
+    fontIcon:              GUI.getFontClass('search'),
   };
 
   /**
@@ -302,9 +302,9 @@ proto.query = function(q) {
             if (type && 'nominatim' !== p.value.provider)                 html.push(`<div>${type}</div>`);
             if (name && 'nominatim' !== p.value.provider)                 html.push(`<div>${name}</div>`);
             if (address.name)                                             html.push(`<div class="${ css.road }">${h(name)}</div>`);
-            if (address.road || address.building || address.house_number) html.push(`<div class="${ css.road }">${h(building)} ${h(road)} ${h(house_number)}</div>`);
-            if (address.city || address.town || address.village)          html.push(`<div class="${ css.city }">${h(postcode)} ${h(city)} ${h(town)} ${h(village)}</div>`);
-            if (address.state || address.country)                         html.push(`<div class="${ css.country }">${h(state)} ${h(country)}</div>`);
+            if (address.road || address.building || address.house_number) html.push(`<div class="${ css.road }">${h(address.building)} ${h(address.road)} ${h(address.house_number)}</div>`);
+            if (address.city || address.town || address.village)          html.push(`<div class="${ css.city }">${h(address.postcode)} ${h(address.city)} ${h(address.town)} ${h(address.village)}</div>`);
+            if (address.state || address.country)                         html.push(`<div class="${ css.country }">${h(address.state)} ${h(address.country)}</div>`);
 
             let li = document.createElement('li');
 
@@ -318,15 +318,35 @@ proto.query = function(q) {
             const frag     = document.createDocumentFragment();
             while (li.childNodes[0]) frag.appendChild(li.childNodes[0]);
             li.appendChild(frag);
-      
-            // click to select
-            li.addEventListener('click', evt => {
-              evt.preventDefault();
-              if (false === this.options.keepOpen) {
-                this.clearResults(true);
+
+            if ('nominatim' === p.value.provider) {
+              // click to select
+              li.addEventListener('click', evt => {
+                evt.preventDefault();
+                if('nominatim' !== p.value.provider) {
+                  if (false === this.options.keepOpen) {
+                    this.clearResults(true);
+                  }
+                  this.showMarker([ parseFloat(lon), parseFloat(lat) ]);
+                } else {
+                  try {
+                    const coords = ol.proj.transform([ parseFloat(lon), parseFloat(lat) ], 'EPSG:4326', this.getMap().getView().getProjection())
+                    this.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+                    this.getMap().addLayer(this.layer);  
+                  } catch(e) {
+                    console.log(e);
+                  }
+                }
+              }, false);
+            } else {
+              try {
+                const coords = ol.proj.transform([ parseFloat(lon), parseFloat(lat) ], 'EPSG:4326', this.getMap().getView().getProjection())
+                this.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+                this.getMap().addLayer(this.layer);  
+              } catch(e) {
+                console.log(e);
               }
-              this.showMarker([ parseFloat(lon), parseFloat(lat) ]);
-            }, false);
+            }
       
             ul.appendChild(li);
           });
