@@ -99,10 +99,10 @@
       }
     },
     methods: {
-      loadingRelation(relation){
+      loadingRelation(relation) {
         const layer = ProjectsRegistry.getCurrentProject().getLayerById(this.layerid);
-        const relation_project = layer.getRelationById(relation.name);
-        return relation_project.state;
+        // FIXME: prevent a fatal error when creating a relation Tab (even if the project has no relations)
+        return layer.getRelationById(relation.name) || ({ state: {loading: false} }).state;
       },
       isRelationDisabled(relation){
         return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));

@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="query-relations-content" style="display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px; grid-row-gap: 5px;">
-      <div @click="showRelation(relation)" v-for="relation in relations" class="skin-border-color relation-grid-item">
+      <div @click.stop="showRelation(relation)" v-for="relation in relations" class="skin-border-color relation-grid-item">
         <span style="font-weight: bold; padding: 5px;" class="skin-color g3w-long-text">{{ relation.name }}</span>
       </div>
     </div>
