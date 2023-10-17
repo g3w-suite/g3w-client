@@ -126,7 +126,7 @@ function GeocodingControl(options = {}) {
     style: new ol.style.Style({ image: pushpin_icon }),
   });
 
-    const GeocoderVueContainer = Vue.extend(MapControlGeocoding);
+  const GeocoderVueContainer = Vue.extend(MapControlGeocoding);
 
   /**
    * DOM control element
