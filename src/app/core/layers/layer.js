@@ -536,6 +536,9 @@ proto.getDownloadFilefromDownloadDataType = async function(type, {data={}, optio
       case 'geotiff':   return this._getGeoTIFF({ data, options });
     }
   } catch(err) {
+    /**
+     * @TODO handle error
+     */
     console.log(err)
   }
 
@@ -628,6 +631,7 @@ proto._getCsv = async function({data={}}={}) {
 proto.getSourceType = function() {
   return this.config.source ? this.config.source.type : null;
 };
+
 
 proto.isGeoLayer = function() {
   return this.state.geolayer;
