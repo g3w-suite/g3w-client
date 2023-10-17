@@ -33,6 +33,7 @@ export default async function(opts) {
   }
 
   return {
+    provider: 'google',
     label: 'Google',
     results: 'OK' === response.status
       ? response.results

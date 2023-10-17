@@ -12,6 +12,7 @@ export default async function(opts) {
   }
 
   return {
+    provider: 'nominatim',
     label: 'Nominatim (OSM)',
     results:
       (

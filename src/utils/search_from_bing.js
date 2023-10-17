@@ -37,6 +37,7 @@ export default async function(opts) {
   // }
 
   return {
+    provider: 'bing',
     label: 'Bing Places',
     results: 200 === response.statusCode
       ? response.resourceSets[0].resources
