@@ -44,7 +44,7 @@ import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent from 'components/Sidebar.vue';
 import ViewportComponent from 'components/Viewport.vue';
-import DownloadFieldsLayer from "components/DownloadFieldsLayer.vue";
+import ChooseLayerFields from "./components/ChooseLayerFields.vue";
 
 //directives
 import vDisabled from 'directives/v-disabled';
@@ -1078,16 +1078,15 @@ const ApplicationTemplate = function({ApplicationService}) {
       return new Promise((resolve, reject) => {
         if (fields.length > 0) {
 
-          const DownloadFieldsLayerClass    = Vue.extend(DownloadFieldsLayer);
-          const DownloadFieldsLayerInstance = new DownloadFieldsLayerClass({
+          const ChooseLayerFieldsClass    = Vue.extend(ChooseLayerFields);
+          const ChooseLayerFieldsInstance = new ChooseLayerFieldsClass({
             propsData: {
               fields
             }
           });
-          const message                     = DownloadFieldsLayerInstance.$mount().$el;
 
           const dialog = GUI.showModalDialog({
-            message,
+            message: ChooseLayerFieldsInstance.$mount().$el,
             closeButton: false,
             buttons: {
               ok: {

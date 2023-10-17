@@ -1,7 +1,7 @@
 <template>
-  <div id="g3w-fields-to-downloads">
+  <div id="g3w-fields-to-choose">
     <h4 style="font-weight: bold" v-t="'download.fields.title'"></h4>
-    <section class="g3w-fields-to-downloads-inputs">
+    <section class="g3w-fields-to-choose-inputs">
       <input
         @click.stop = "selectAll"
         :id         = "`select_all_fields_to_download`"
@@ -10,23 +10,26 @@
         :checked    = "all"
       >
       <label
-        :for  = "`select_all_fields_to_download`"
+        :for  = "`select_all_fields_to_choose`"
         style = "color: #FFF" v-t="'download.fields.all'">
       </label>
       <divider/>
-      <div v-for="field in fields" :key="field.name">
-        <input
-          @click.stop = "selectField(field)"
-          :id         = "`${field.name}_${index}_select_field_to_download`"
-          type        = "checkbox"
-          class       = "magic-checkbox"
-          :checked    = "field.selected"
-        >
-        <label
-          :for  = "`${field.name}_${index}_select_field_to_download`"
-          style = "color: #FFF"> {{ field.label }}
-        </label>
-      </div>
+      <section class="inputs-body" :class="{grid: gridClass}">
+        <template v-for="field in fields" >
+          <input
+            @click.stop = "selectField(field)"
+            :id         = "`${field.name}_${index}_select_field_to_choose`"
+            type        = "checkbox"
+            class       = "magic-checkbox"
+            :checked    = "field.selected"
+          >
+          <label
+            :for  = "`${field.name}_${index}_select_field_to_choose`"
+            style = "color: #FFF"> {{ field.label }}
+          </label>
+        </template>
+
+      </section>
     </section>
   </div>
 
@@ -44,7 +47,12 @@ export default {
   },
   data() {
     return {
-      all: true
+      all: true,
+    }
+  },
+  computed: {
+    gridClass() {
+      return this.fields.length > 6
     }
   },
   methods: {
@@ -71,7 +79,11 @@ export default {
 };
 </script>
 <style scoped>
-  #g3w-fields-to-downloads label{
+  #g3w-fields-to-choose label{
     color: #000000 !important;
+  }
+  #g3w-fields-to-choose .inputs-body.grid {
+    display: grid;
+    grid-template-columns: 50% 50%
   }
 </style>
