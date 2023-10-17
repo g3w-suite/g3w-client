@@ -1100,7 +1100,9 @@ const ApplicationTemplate = function({ApplicationService}) {
           });
 
           /**
-           * @TODO
+           * @TODO find a better way to focus
+           * Once is show, need to bee clicked otherwise we need do
+           * click twice time ok button if no start selection is changed
            */
           dialog.on("shown.bs.modal", evt => evt.target.click());
 
