@@ -44,6 +44,7 @@ import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent from 'components/Sidebar.vue';
 import ViewportComponent from 'components/Viewport.vue';
+import DownloadFieldsLayer from "components/DownloadFieldsLayer.vue";
 
 //directives
 import vDisabled from 'directives/v-disabled';
@@ -1069,6 +1070,23 @@ const ApplicationTemplate = function({ApplicationService}) {
       });
     };
 
+    /**
+     * @since v3.9.0
+     */
+    GUI.chooseLayerFields = function(fields=[]) {
+      if (fields.length > 0) {
+
+        const DownloadFieldsLayerClass = Vue.extend(DownloadFieldsLayer);
+        const DownloadFieldsLayerInstance = new DownloadFieldsLayerClass({
+          propsData: {
+            fields
+          }
+        });
+        return GUI.showModalDialog({
+          message: DownloadFieldsLayerInstance.$mount().$el
+        })
+      }
+    }
   };
 
   base(this);

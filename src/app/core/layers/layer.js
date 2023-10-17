@@ -3,6 +3,7 @@ import { DOWNLOAD_FORMATS } from 'app/constant';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
+import GUI from 'services/gui';
 
 const { t } = require('core/i18n/i18n.service');
 const { inherit, base, XHR } = require('core/utils/utils');
@@ -502,6 +503,20 @@ proto.getFilterToken = function () {
 };
 
 /**
+ * @since v3.9.0
+ */
+proto.chooseFieldsToDownload = function() {
+  return new Promise((resolve, reject) => {
+
+    GUI.chooseLayerFields(this.getTableFields().map(({name, label}) => ({
+      name,
+      label,
+      selected: true
+    })))
+  })
+}
+
+/**
  *
  * DOWNLOAD METHODS
  */
@@ -525,6 +540,7 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data={}, options}) {
 };
 
 proto.getGeoTIFF = function({data={}}={}) {
+  this.chooseFieldsToDownload();
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
     url: this.getUrl('geotiff'),
@@ -534,6 +550,7 @@ proto.getGeoTIFF = function({data={}}={}) {
 };
 
 proto.getXls = function({data={}}={}) {
+  this.chooseFieldsToDownload();
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
     url: this.getUrl('xls'),
@@ -543,6 +560,7 @@ proto.getXls = function({data={}}={}) {
 };
 
 proto.getShp = function({data={}}={}) {
+  this.chooseFieldsToDownload();
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
     url: this.getUrl('shp'),
@@ -552,6 +570,7 @@ proto.getShp = function({data={}}={}) {
 };
 
 proto.getGpx = function({data={}}={}) {
+  this.chooseFieldsToDownload();
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
     url: this.getUrl('gpx'),
@@ -561,6 +580,7 @@ proto.getGpx = function({data={}}={}) {
 };
 
 proto.getGpkg = function({data={}}={}) {
+  this.chooseFieldsToDownload();
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
     url: this.getUrl('gpkg'),
@@ -570,6 +590,7 @@ proto.getGpkg = function({data={}}={}) {
 };
 
 proto.getCsv = function({data={}}={}) {
+  this.chooseFieldsToDownload();
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
     url: this.getUrl('csv'),
