@@ -1,6 +1,6 @@
 <template>
   <div id="g3w-fields-to-downloads">
-    <h4 style="font-weight: bold">Seleziona campi</h4>
+    <h4 style="font-weight: bold" v-t="'download.fields.title'"></h4>
     <section class="g3w-fields-to-downloads-inputs">
       <input
         @click.stop = "selectAll"
@@ -11,7 +11,7 @@
       >
       <label
         :for  = "`select_all_fields_to_download`"
-        style = "color: #FFF"> All
+        style = "color: #FFF" v-t="'download.fields.all'">
       </label>
       <divider/>
       <div v-for="field in fields" :key="field.name">

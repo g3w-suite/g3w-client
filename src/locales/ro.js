@@ -542,6 +542,12 @@ export default {
       no_data: "Fără date",
       nodatafilterd: "Niciun rezultat",
       infoFiltered: "(filtrat din _MAX_ de rezultate totale)"
+    },
+    download: {
+      fields: {
+        all: 'All',
+        title: 'Select fields to download'
+      }
     }
   },
 };

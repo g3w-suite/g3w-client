@@ -542,6 +542,12 @@ export default {
       no_data: "No data",
       nodatafilterd: "No matching records found",
       infoFiltered: "(filtered from _MAX_ total records)"
-    }
+    },
+    download: {
+      fields: {
+        all: 'All',
+        title: 'Select fields to download'
+      }
+    },
   },
 };

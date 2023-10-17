@@ -543,6 +543,12 @@ export default {
       info: "Afficher _START_ à _END_ sur _TOTAL_ lignes",
       nodatafilterd: "Aucun résultat trouvé",
       infoFiltered: "(Filtré par _MAX_ rangs totaux)"
+    },
+    download: {
+      fields: {
+        all: 'All',
+        title: 'Select fields to download'
+      }
     }
   },
 };
