@@ -1109,7 +1109,7 @@ const ApplicationTemplate = function({ApplicationService}) {
           ChooseLayerFieldsInstance.$on('selected-fields', bool => dialog.find('button.btn-success').prop('disabled', !bool));
 
         } else {
-          resolve(fields);
+          reject(fields);
         }
       })
     }
