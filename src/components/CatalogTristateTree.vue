@@ -138,16 +138,28 @@
           @click.caputure.prevent.stop="clearSelection"
           v-t-tooltip.create="'layer_selection_filter.tools.clear'"
         ></span>
+        <!-- Filter and save filter inside template because is relate to same show condition -->
+        <template v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)">
+          <span
+            class="action-button skin-tooltip-left selection-filter-icon"
+            data-placement="left"
+            data-toggle="tooltip"
+            :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']"
+            @click.caputure.prevent.stop="toggleFilterLayer"
+            v-t-tooltip.create="'layer_selection_filter.tools.filter'"
+          ></span>
+          <!--  @since v3.9.0      -->
+          <span
+            v-if="layerstree.filter.active"
+            class="action-button skin-tooltip-left selection-filter-icon"
+            data-placement="left"
+            data-toggle="tooltip"
+            :class="g3wtemplate.getFontClass('save')"
+            @click.caputure.prevent.stop="saveFilter(layerstree)"
+            v-t-tooltip.create="'layer_selection_filter.tools.savefilter'"
+          ></span>
+        </template>
 
-        <span
-          v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
-          class="action-button skin-tooltip-left selection-filter-icon"
-          data-placement="left"
-          data-toggle="tooltip"
-          :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']"
-          @click.caputure.prevent.stop="toggleFilterLayer"
-          v-t-tooltip.create="'layer_selection_filter.tools.filter'"
-        ></span>
 
       </div>
 
@@ -549,6 +561,14 @@ export default {
       ) {
         VM.$emit('showmenulayer', layerstree, evt);
       }
+    },
+
+    /**
+     * Save layer filter
+     * @since v3.9.0
+      */
+    saveFilter(layerstree) {
+      //@TODO
     }
 
   },
