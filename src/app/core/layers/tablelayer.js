@@ -25,7 +25,7 @@ function _createAttributesFromFields(fields) {
 }
 
 /**
- * Base Layer that support editing 
+ * Base Layer that support editing
  */
 function TableLayer(config = {}, options = {}) {
 
@@ -43,8 +43,8 @@ function TableLayer(config = {}, options = {}) {
     /**
      * get data from every sources (server, wms, etc..)
      * through provider related to featuresstore
-     * 
-     * @param {*} options 
+     *
+     * @param {*} options
      */
     getFeatures(options = {}) {
       const d = $.Deferred();
@@ -85,7 +85,7 @@ function TableLayer(config = {}, options = {}) {
 
   /**
    * EDITING API URL: /api/vector/<type of request: data/editing/config>/<project_type>/<project_id>/<layer_id>
-   * 
+   *
    * @example /api/vector/config/qdjango/10/points273849503023
    */
   this.type = Layer.LayerTypes.TABLE;
@@ -114,20 +114,20 @@ function TableLayer(config = {}, options = {}) {
     fields: [] // editing fields
   };
 
-  
+
   // call base layer
   base(this, config, options);
 
   /**
    * @FIXME set a default value
-   *  
+   *
    * get configuration from server if is editable
    */
   this._editatbleLayer;
 
   const is_editable = this.isEditable();
 
-  // editable layer -- > update layer config info 
+  // editable layer -- > update layer config info
   if (is_editable) {
     this.layerForEditing = new Promise((resolve, reject) => {
       this
@@ -142,12 +142,18 @@ function TableLayer(config = {}, options = {}) {
           this.config.editing.constraints  = constraints;
           this.config.editing.capabilities = capabilities; // set default editing capabilities
           this.config.editing.form = { perc: null };       // set editing form `perc` to null at beginning
-          this._setOtherConfigParameters(vector);
-          this.config.editing.style = vector.style;        // get vector layer style
-          if (vector.style) {                              // set vector layer color 
+          this.config.editing.style = vector.style;
+          // get vector layer style
+          if (vector.style) {                              // set vector layer color
             this.setColor(vector.style.color);
           }
-          this._editor = new Editor({ layer: this });      // create an instance of editor
+
+          this._setOtherConfigParameters(vector);
+
+          // create an instance of editor
+          this._editor = new Editor({
+            layer: this
+          });      // create an instance of editor
           resolve(this);
           this.setReady(true);                             // set ready
         })
@@ -171,7 +177,7 @@ function TableLayer(config = {}, options = {}) {
   }
 
   /**
-   * Feature wrapper (to store feature) 
+   * Feature wrapper (to store feature)
    */
   this._featuresstore = new FeaturesStore({ provider: this.providers.data });
 
@@ -183,8 +189,8 @@ const proto = TableLayer.prototype;
 
 /**
  * sync selection
- *  
- * @param {*} commitItems 
+ *
+ * @param {*} commitItems
  */
 proto.syncSelectionFilterFeatures = function(commitItems) {
   try {
@@ -243,10 +249,10 @@ proto.readFeatures = function() {
 
 /**
  * Get editing layer
- * 
+ *
  * @param vectorurl
  * @param project_type
- * 
+ *
  * @returns { Promise }
  */
 proto.getLayerForEditing = async function({
@@ -272,10 +278,18 @@ proto.getLayerForEditing = async function({
 
 };
 
+/**
+ *
+ * @returns return ol source of features
+ */
 proto.getEditingSource = function() {
   return this._editor.getEditingSource();
 };
 
+/**
+ *
+ * @returns Array of features
+ */
 proto.readEditingFeatures = function() {
   return this._editor.readEditingFeatures();
 };
@@ -320,7 +334,7 @@ proto.isFieldRequired = function(fieldName) {
 
 /**
  * Unlock editing features
- * 
+ *
  * @returns jQuery Promise
  */
 proto.unlock = function() {
@@ -337,7 +351,7 @@ proto._setOtherConfigParameters = function(config) {
 };
 
 /**
- * @returns layer fields 
+ * @returns layer fields
  */
 proto.getEditingFields = function(editable = false) {
   let fields = this.config.editing.fields.length
@@ -350,8 +364,16 @@ proto.getEditingFields = function(editable = false) {
 };
 
 /**
+ * Return pk field
+ * @since v3.9.0
+ */
+proto.getPkField = function() {
+  return this.getEditingFields().find(f => f.pk);
+}
+
+/**
  * @param field
- * 
+ *
  * @returns {boolean} whether field is a Primary Key
  */
 proto.isPkField = function(field) {
@@ -399,10 +421,10 @@ proto.setReady = function(bool=false) {
 
 /**
  * Get configuration from server
- * 
+ *
  * @param {*} options
- *  
- * @returns jQuery Promise 
+ *
+ * @returns jQuery Promise
  */
 proto.getEditingConfig = function(options={}) {
   const d = $.Deferred();
@@ -469,7 +491,7 @@ proto.getDataUrl = function() {
 };
 
 /**
- * @returns url to get config layer 
+ * @returns url to get config layer
  */
 proto.getConfigUrl = function() {
   return this.config.urls.config;
@@ -614,6 +636,5 @@ proto.createNewFeature = function() {
   feature.setNew();
   return feature;
 };
-
 
 module.exports = TableLayer;

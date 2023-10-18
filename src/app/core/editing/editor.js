@@ -86,7 +86,7 @@ proto._canDoGetFeaturesRequest = function(options = {}) {
   const { bbox } = options.filter || {};
   const is_vector = bbox && Layer.LayerTypes.VECTOR === this._layer.getType();
 
-  // first request --> need to peform request
+  // first request --> need to perform request
   if (is_vector && null === this._filter.bbox) {
     this._filter.bbox = bbox;                                                      // store bbox
     return true;
@@ -94,13 +94,19 @@ proto._canDoGetFeaturesRequest = function(options = {}) {
 
   // subsequent requests --> check if bbox is contained into an already requested bbox
   if (is_vector) {
+    //check if current bbox is contained on cached bbox extent
     const is_cached = ol.extent.containsExtent(this._filter.bbox, bbox);
-    if (!is_cached) this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox); // extend bbox
-    return is_cached;
+    if (!is_cached) {
+      // extend bbox
+      this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
+    }
+    //need to return true if no cached
+    return !is_cached;
   }
 
   // default --> perform request
   return true;
+
 };
 
 /**
