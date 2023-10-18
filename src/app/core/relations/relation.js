@@ -11,6 +11,9 @@ const G3WObject = require('core/g3wobject');
 function Relation(config = {}) {
   const suffix = Date.now();
 
+  /** BACKCOMP (g3w-admin < v.3.7.0) */
+  const multi_fields = [].concat(config.fieldRef.referencedField);
+
   this.state = {
     loading:     false,
     id:          config.id       || `id_${suffix}`,
@@ -79,7 +82,7 @@ proto.setName = function(name) {
  * Get Relation title
  * 
  * @returns { undefined }
- * 
+ *
  * @returns {*}
  */
 proto.getTitle = function() {
@@ -176,7 +179,7 @@ proto.isLoading = function(){
 
 /**
  * Get editable property
- * 
+ *
  * @since 3.9.0
  */
 proto.isEditable = function(){
@@ -189,9 +192,9 @@ proto.isEditable = function(){
 
 /**
  * Get Prefix (for Relation 1:1)
- * 
+ *
  * @returns String
- * 
+ *
  * @since 3.9.0
  */
 proto.getPrefix = function(){
