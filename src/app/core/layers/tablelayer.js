@@ -1,7 +1,4 @@
-import {
-  DEFAULT_EDITING_CAPABILITIES,
-  EDITING_FORMATTER_INPUT_FIELD_TYPES
-} from 'app/constant';
+import { DEFAULT_EDITING_CAPABILITIES } from 'app/constant';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import ProjectsRegistry                 from 'store/projects';
 
@@ -639,16 +636,5 @@ proto.createNewFeature = function() {
   feature.setNew();
   return feature;
 };
-
-/**
- * @since 3.9.0
- * @returns Array o null
- */
-proto.getEditingKeyValuesFields = function() {
-  return this.config
-    .editing
-    .fields
-    .filter(field => EDITING_FORMATTER_INPUT_FIELD_TYPES.includes(field.input.type))
-}
 
 module.exports = TableLayer;
