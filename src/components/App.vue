@@ -268,12 +268,12 @@
 </template>
 
 <script>
-import CookieLaw from 'vue-cookie-law';
-import HeaderItem from 'components/HeaderItem.vue';
-import ProjectsRegistry from 'store/projects';
+import CookieLaw          from 'vue-cookie-law';
+import HeaderItem         from 'components/HeaderItem.vue';
+import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
-import GUI from 'services/gui';
-import { resizeMixin } from 'mixins';
+import GUI                from 'services/gui';
+import { resizeMixin }    from 'mixins';
 import { LOCAL_ITEM_IDS } from "constant";
 
 const { uniqueId } = require('core/utils/utils');

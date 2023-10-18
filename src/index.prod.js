@@ -44,7 +44,6 @@ import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent from 'components/Sidebar.vue';
 import ViewportComponent from 'components/Viewport.vue';
-import ChooseLayerFields from "./components/ChooseLayerFields.vue";
 
 //directives
 import vDisabled from 'directives/v-disabled';
@@ -1069,50 +1068,6 @@ const ApplicationTemplate = function({ApplicationService}) {
         perc: 100
       });
     };
-
-    /**
-     * Method to show and choose al layer fields
-     * @since v3.9.0
-     */
-    GUI.chooseLayerFields = function(fields=[]) {
-      return new Promise((resolve, reject) => {
-        if (fields.length > 0) {
-
-          const ChooseLayerFieldsClass    = Vue.extend(ChooseLayerFields);
-          const ChooseLayerFieldsInstance = new ChooseLayerFieldsClass({
-            propsData: {
-              fields
-            }
-          });
-
-          const dialog = GUI.showModalDialog({
-            message: ChooseLayerFieldsInstance.$mount().$el,
-            closeButton: false,
-            buttons: {
-              ok: {
-                label: 'Ok',
-                className: 'btn-success',
-                callback() {
-                  resolve(fields.filter(field => field.selected));
-                }
-              }
-            }
-          });
-
-          /**
-           * @TODO find a better way to focus
-           * Once is show, need to bee clicked otherwise we need do
-           * click twice time ok button if no start selection is changed
-           */
-          dialog.on("shown.bs.modal", evt => evt.target.click());
-
-          ChooseLayerFieldsInstance.$on('selected-fields', bool => dialog.find('button.btn-success').prop('disabled', !bool));
-
-        } else {
-          reject(fields);
-        }
-      })
-    }
 
   };
 
