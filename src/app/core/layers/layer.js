@@ -3,6 +3,7 @@ import { DOWNLOAD_FORMATS } from 'app/constant';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
+import GUI from 'services/gui';
 
 const { t } = require('core/i18n/i18n.service');
 const { inherit, base, XHR } = require('core/utils/utils');
@@ -336,6 +337,73 @@ proto.setFilter = function(bool=false) {
 proto.getFilterActive = function() {
   return this.state.filter.active;
 };
+
+/**
+ * @since v3.9
+ * @param name <String> Unique string name
+ */
+proto.saveFilter = async function(name) {
+  if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
+    return;
+  }
+
+  //Need to be an object so can be reactive with vue input instance
+  let reactName = {name: ''}
+  let inputVueInstance = new Vue({
+    template:`<input v-model="name" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text">`,
+    data() {
+      return reactName
+    },
+  });
+
+  let dialog; // store dialog modal window
+  const promise = new Promise((resolve, reject) => {
+    //build a modal window with input name
+    dialog = GUI.showModalDialog({
+      message: inputVueInstance.$mount().$el,
+      closeButton: false,
+      buttons: {
+        cancel: {
+          label: 'Cancel',
+          className: 'btn-danger',
+          callback() {
+            reject()
+          }
+        },
+        ok: {
+          label: 'Ok',
+          className: 'btn-success',
+          callback() {
+            resolve()
+          }
+        }
+      }
+    });
+    //get ok button of modal dialog
+    const OkButton = dialog.find('button.btn-success');
+    //set initial value to disabled true
+    OkButton.prop('disabled', true);
+    //listen name value text input change
+    inputVueInstance.$watch('name', name => {
+      //set disabled property base of vale of name
+      OkButton.prop('disabled', name.trim().length === 0)
+    });
+  })
+
+  promise
+    .then(async () => {
+      const response = await this
+        .providers['filtertoken']
+        .saveFilterToken(reactName.name);
+    })
+    .finally(() => {
+      //clean oll variable
+      inputVueInstance.$destroy();
+      inputVueInstance = null;
+      reactName = null;
+      dialog = null;
+    })
+}
 
 proto.toggleFilterToken = async function() {
   this.state.filter.active = !this.state.filter.active;

@@ -173,6 +173,37 @@ const Providers = {
     }
 
     /*
+      @TODO remove it. Temporary admin api explanation
+
+      /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved>
+      Recurpera e applica il filtro salvato per quel layer: aggiunge/aggiorna al il layer del filtertoken attuale (se il filtertoken non esiste lo crea)
+      /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete_saved&fid=<fid_filter_saved>|name=<name_filter_saved>
+      Elimina dalla lista dei filtri slavati per il layer il filtro indicato. Nel caso sia l'ultimo applicato alla sessione corrente elimina anche il filtertoken. (modificato)
+
+
+    */
+
+    /**
+     * Method to save filtertoken
+     * @since v3.9.0
+     * @param name <String>
+     * @returns {Promise<void>}
+     */
+    async saveFilterToken(name) {
+      // /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<nome_idetificativo>
+
+      const response = await XHR.get({ url: this._filtertokenUrl, params: { mode: 'save', name } });
+      /*{
+        layer: <qgs_layer_id>,
+        qgs_expression: <expression>,
+        name: <name>,
+        fid: <fitler id>,
+        state: <created>/<updated>
+      }*/
+
+    }
+
+    /*
     * token: current token if provide
     * action: create, update, delete
     */
