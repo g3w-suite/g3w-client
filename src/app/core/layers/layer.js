@@ -6,7 +6,12 @@ import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 
 const { t } = require('core/i18n/i18n.service');
-const { inherit, base, XHR } = require('core/utils/utils');
+const {
+  inherit,
+  base,
+  XHR,
+  getUniqueDomId
+} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const { geometryFields, parseAttributes } =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
@@ -348,9 +353,13 @@ proto.saveFilter = async function(name) {
   }
 
   //Need to be an object so can be reactive with vue input instance
-  let reactName = {name: ''}
+  let reactName = {name: '', id: getUniqueDomId()}
   let inputVueInstance = new Vue({
-    template:`<input v-model="name" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text">`,
+    template:`
+      <div>
+      <label :for="id">Filter Name</label>
+      <input v-model="name" :id="id" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text">
+      </div>`,
     data() {
       return reactName
     },
