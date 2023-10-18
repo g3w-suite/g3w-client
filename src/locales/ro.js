@@ -17,7 +17,8 @@ export default {
         nofilter: "Eliminare Filtrare",
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
-        show_features_on_map: "Arată entitățile vizibile în cadrul hărții"
+        show_features_on_map: "Arată entitățile vizibile în cadrul hărții",
+        savefilter: "Save Filter",
       }
     },
     warning: {

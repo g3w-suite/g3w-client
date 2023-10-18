@@ -17,7 +17,8 @@ export default {
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
-        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet"
+        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
+        savefilter: "Save Filter",
       }
     },
     warning: {

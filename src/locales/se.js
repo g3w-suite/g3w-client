@@ -17,7 +17,8 @@ export default {
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan"
+        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        savefilter: "Save Filter",
       }
     },
     warning: {

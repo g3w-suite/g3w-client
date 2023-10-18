@@ -17,7 +17,8 @@ export default {
         nofilter: "Rimuovi filtro",
         invert: "Inverti Selezione",
         clear: "Annulla selezione",
-        show_features_on_map: "Mostra features visibili su mappa"
+        show_features_on_map: "Mostra features visibili su mappa",
+        savefilter: "Salva Filtro",
       }
     },
     warning: {
