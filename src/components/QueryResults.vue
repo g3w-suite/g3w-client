@@ -45,17 +45,27 @@
                     <!--        DOWNLOAD        -->
                   </template>
                   <span v-if="layer.external || (layer.source && layer.source.type !== 'wms')" @click.stop="addLayerFeaturesToResults(layer)" class="action-button" :class="{'toggled': layer.addfeaturesresults.active}"
-                        v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
+                    v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
                   </span>
                   <span v-if="layer.features.length > 1 && (layer.external || (layer.source && layer.source.type !== 'wms'))" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
-                        v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
+                    v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                   </span>
-                  <span v-show="layer.selection.active && !layer.external" @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-left" :class="{'toggled': layer.filter.active}"
+                  <!-- Filter template tools -->
+                  <template v-show="layer.selection.active && !layer.external">
+                    <span @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-left" :class="{'toggled': layer.filter.active}"
                         v-t-tooltip:left.create="'layer_selection_filter.tools.filter'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
                 </span>
+                    <!-- @since 3.9 add save -->
+                    <span v-if="layer.filter.active" @click.stop="saveFilter(layer)" class="action-button skin-tooltip-left"
+                      v-t-tooltip:left.create="'layer_selection_filter.tools.savefilter'">
+                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('save')"></span>
+                    </span>
+
+                  </template>
+
                 </div>
                 <button class="btn btn-box-tool" data-widget="collapse">
                   <i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i>
@@ -324,6 +334,13 @@
       },
       hasLayerOneFeature(layer) {
         return layer.features.length === 1;
+      },
+      /**
+       * @since 3.9
+        * @param layer
+       */
+      saveFilter(layer) {
+        this.$options.queryResultsService.saveFilter(layer);
       },
       addRemoveFilter(layer){
         this.$options.queryResultsService.addRemoveFilter(layer);

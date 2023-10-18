@@ -466,6 +466,14 @@ export default {
 
     },
 
+    /**
+     * Save layer filter
+     * @since v3.9.0
+     */
+    saveFilter(layerstree) {
+      CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();
+    },
+
     toggleFilterLayer() {
       VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
@@ -562,14 +570,6 @@ export default {
         VM.$emit('showmenulayer', layerstree, evt);
       }
     },
-
-    /**
-     * Save layer filter
-     * @since v3.9.0
-      */
-    saveFilter(layerstree) {
-      //@TODO
-    }
 
   },
 

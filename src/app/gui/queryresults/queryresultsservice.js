@@ -1717,6 +1717,13 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
+   * @since v3.9
+   */
+  saveFilter(layer) {
+    CatalogLayersStoresRegistry.getLayerById(layer.id).saveFilter();
+  }
+
+  /**
    * @FIXME add description
    *
    * @param layer
