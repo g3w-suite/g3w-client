@@ -53,11 +53,11 @@
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-show="layer.selection.active && !layer.external">
+                  <template v-if="layer.selection.active && !layer.external">
                     <span @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-left" :class="{'toggled': layer.filter.active}"
-                        v-t-tooltip:left.create="'layer_selection_filter.tools.filter'">
-                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
-                </span>
+                      v-t-tooltip:left.create="'layer_selection_filter.tools.filter'">
+                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
+                    </span>
                     <!-- @since 3.9 add save -->
                     <span v-if="layer.filter.active" @click.stop="saveFilter(layer)" class="action-button skin-tooltip-left"
                       v-t-tooltip:left.create="'layer_selection_filter.tools.savefilter'">
