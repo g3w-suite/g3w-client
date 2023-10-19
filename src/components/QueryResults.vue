@@ -5,8 +5,15 @@
 
 <template>
   <div id="search-results" class="queryresults-wrapper">
-    <div class="skin-color" style="font-weight: bold; margin-bottom: 3px; font-size: 1.1em;" v-if="info.message">
-      <span v-if="info.icon" class="action-button skin-tooltip-bottom" :class="g3wtemplate.getFontClass(info.icon)"></span>
+    <div v-if="info.message"
+      class="skin-color"
+      style="font-weight: bold; margin-bottom: 3px; font-size: 1.1em;"
+    >
+      <span
+        v-if="info.icon"
+        class="action-button skin-tooltip-bottom"
+        :class="g3wtemplate.getFontClass(info.icon)">
+      </span>
       <span>{{info.message}}</span>
     </div>
     <div class="queryresults-container">
@@ -15,53 +22,106 @@
           <li v-show="(layerHasFeatures(layer) || layer.rawdata) && layer.show" v-for="layer in state.layers">
             <bar-loader :loading="layer.loading"/>
             <div class="box box-primary">
-              <div class="box-header with-border"  :class="{'mobile': isMobile()}" data-widget="collapse">
+              <div class="box-header with-border" :class="{'mobile': isMobile()}" data-widget="collapse">
                 <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
-                  <span class="query-layer-feature-count" v-show="!layer.rawdata">({{layer.features.length}})</span>
+                  <span v-show="!layer.rawdata" class="query-layer-feature-count">({{layer.features.length}})</span>
                 </div>
                 <div class="box-features-action" @click.stop="">
                   <!-- info format layer component -->
                   <infoformats :layer="layer"/>
                   <template v-if="layer.features.length > 1">
-                    <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button"
+                    <span
+                      v-if="layer.hasgeometry"
+                      @click.stop="zoomToLayerFeaturesExtent(layer)"
+                       class="action-button"
                       v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
                       <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
                     </span>
-                    <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button"
+                    <span
+                      v-if="layer.atlas.length"
+                      v-download @click.stop="printAtlas(layer)"
+                      class="action-button"
                       v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.atlas.hint'">
                       <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                     </span>
                     <!--        DOWNLOAD        -->
                     <template v-if="layer.downloads.length === 1">
-                      <span v-download class="action-button" :class="{'toggled': layer[layer.downloads[0]].active}" v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`">
-                        <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, layer.downloads[0])"></span>
+                      <span
+                        v-download
+                        class="action-button"
+                        :class="{'toggled': layer[layer.downloads[0]].active}"
+                        v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`"
+                      >
+                        <span
+                          class="action-button-icon"
+                          :class="g3wtemplate.getFontClass('download')"
+                          @click.stop="saveLayerResult(layer, layer.downloads[0])"
+                        ></span>
                       </span>
                     </template>
                     <template v-else-if="layer.downloads.length > 1">
-                    <span v-download class="action-button" :class="{'toggled': layer.downloadformats.active}" v-t-tooltip:left.create="'Downloads'">
-                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="showLayerDownloadFormats(layer)"></span>
+                    <span
+                      v-download class="action-button"
+                      :class="{'toggled': layer.downloadformats.active}"
+                      v-t-tooltip:left.create="'Downloads'"
+                    >
+                      <span
+                        class="action-button-icon"
+                        :class="g3wtemplate.getFontClass('download')"
+                        @click.stop="showLayerDownloadFormats(layer)"
+                      ></span>
                     </span>
                     </template>
                     <!--        DOWNLOAD        -->
                   </template>
-                  <span v-if="layer.external || (layer.source && layer.source.type !== 'wms')" @click.stop="addLayerFeaturesToResults(layer)" class="action-button" :class="{'toggled': layer.addfeaturesresults.active}"
-                    v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
-                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
+                  <span
+                    v-if="layer.external || (layer.source && layer.source.type !== 'wms')"
+                    @click.stop="addLayerFeaturesToResults(layer)"
+                    class="action-button"
+                    :class="{'toggled': layer.addfeaturesresults.active}"
+                    v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_features_to_results.hint'"
+                  >
+                    <span
+                      class="action-button-icon"
+                      :class="g3wtemplate.getFontClass('plus-square')"
+                    ></span>
                   </span>
-                  <span v-if="layer.features.length > 1 && (layer.external || (layer.source && layer.source.type !== 'wms'))" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
-                    v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
-                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
+                  <span
+                    v-if="layer.features.length > 1 && (layer.external || (layer.source && layer.source.type !== 'wms'))"
+                    @click.stop="selectionFeaturesLayer(layer)"
+                    class="action-button skin-tooltip-left"
+                    v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"
+                    :class="{'toggled': layer.selection.active}"
+                  >
+                    <span
+                      class="action-button-icon"
+                      :class="g3wtemplate.getFontClass('success')"
+                    ></span>
                   </span>
                   <!-- Filter template tools -->
                   <template v-if="!layer.external && (layer.selection.active || null !== layer.filter.fid)">
-                    <span @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-left" :class="{'toggled': layer.filter.active}"
-                      v-t-tooltip:left.create="'layer_selection_filter.tools.filter'">
-                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
+                    <span
+                      @click.stop="addRemoveFilter(layer)"
+                      class="action-button skin-tooltip-left"
+                      :class="{'toggled': layer.filter.active}"
+                      v-t-tooltip:left.create="'layer_selection_filter.tools.filter'"
+                    >
+                      <span
+                        class="action-button-icon"
+                        :class="g3wtemplate.getFontClass('filter')"
+                      ></span>
                     </span>
                     <!-- @since 3.9 add save -->
-                    <span v-if="layer.filter.active && (null === layer.filter.fid  || layer.selection.active)" @click.stop="saveFilter(layer)" class="action-button skin-tooltip-left"
-                      v-t-tooltip:left.create="'layer_selection_filter.tools.savefilter'">
-                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('save')"></span>
+                    <span
+                      v-if="layer.filter.active && (null === layer.filter.fid  || layer.selection.active)"
+                      @click.stop="saveFilter(layer)"
+                      class="action-button skin-tooltip-left"
+                      v-t-tooltip:left.create="'layer_selection_filter.tools.savefilter'"
+                    >
+                      <span
+                        class="action-button-icon"
+                        :class="g3wtemplate.getFontClass('save')"
+                      ></span>
                     </span>
 
                   </template>
@@ -72,12 +132,21 @@
                 </button>
               </div>
               <template v-if="state.layeractiontool[layer.id].component">
-                <div class="g3w-layer-action-tools with-border" style="padding: 5px" :class="{'mobile': isMobile()}">
-                  <component :is="state.layeractiontool[layer.id].component" :layer="layer" :config="state.layeractiontool[layer.id].config"/>
+                <div
+                  class="g3w-layer-action-tools with-border"
+                  style="padding: 5px"
+                  :class="{'mobile': isMobile()}">
+                  <component
+                    :is="state.layeractiontool[layer.id].component"
+                    :layer="layer"
+                    :config="state.layeractiontool[layer.id].config"/>
                 </div>
               </template>
               <!--     Add Custom layer components      -->
-              <component v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')" :is="component" :layer="layer"/>
+              <component
+                v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
+                :is="component"
+                :layer="layer"/>
               <!--   End custom layer component         -->
               <div class="box-body" :class="{'mobile': isMobile()}">
                 <template v-if="layer.rawdata">
