@@ -138,6 +138,8 @@ function Layer(config={}, options={}) {
 
     /**
      * @since v3.9 Store reactive saved filters
+     * if undefined, set to []
+     * Each filters item is an object {id.<Uninqueid>, name: <String>>}
      */
     filters: config.filters || [],
 
@@ -349,11 +351,16 @@ proto.setFilter = function(bool=false) {
   this.state.filter.active = bool;
 };
 
+/**
+ * get current filter fid set on layer
+ */
+proto.getCurrentFilter = function() {
+  return this.state.filter.fid;
+};
+
 proto.getFilterActive = function() {
   return this.state.filter.active;
 };
-
-
 
 /**
  * Return saved filters Array
@@ -376,7 +383,7 @@ proto.addFilter = function(filter={}) {
  * @param fid unique filter id
  */
 proto.removefilter = function(fid) {
-  this.state.filters = this.state.filters.filter(f => fid == f.fid);
+  this.state.filters = this.state.filters.filter(f => fid === f.fid);
 }
 
 /**
@@ -385,6 +392,32 @@ proto.removefilter = function(fid) {
  */
 proto.setCurrentFilter = function(fid) {
   this.state.filter.fid = fid;
+}
+
+/**
+ * Apply layer filter by fid
+ * @param fid
+ */
+proto.applyFilter = async function(fid) {
+  if (!this.providers['filtertoken']) {
+    return;
+  }
+  await this.clearSelectionFids();
+  GUI.closeContent();
+  await this._applyFilterToken(fid)
+}
+
+/**
+ *
+ * @returns {Promise<void>}
+ * @private
+ */
+proto._applyFilterToken = async function(fid) {
+  const {filtertoken} = await this.providers['filtertoken'].applyFilterToken(fid);
+  if (filtertoken) {
+    this.state.filter.active = true;
+    this.setFilterToken(filtertoken);
+  }
 }
 
 /**
@@ -397,7 +430,11 @@ proto.saveFilter = async function(name) {
   }
 
   //Need to be an object so can be reactive with vue input instance
-  let reactName = {name: '', id: getUniqueDomId()}
+  let reactName = {
+    name: this.state.filter.fid
+      ? this.state.filters.find(f => this.state.filter.fid === f.fid).name
+      : '',
+    id: getUniqueDomId()}
   let inputVueInstance = new Vue({
     template:`
       <div>
@@ -448,8 +485,26 @@ proto.saveFilter = async function(name) {
       const data = await this
         .providers['filtertoken']
         .saveFilterToken(reactName.name);
+      //id data return from provider
       if (data) {
-        console.log(data)
+        //add filter saved to filters array
+        this.state.filters.push({
+          fid: data.fid, //get fid
+          name: data.name //get name
+        })
+        //set current filter
+        this.state.filter.fid = data.fid;
+        //reset selection to false
+        this.state.selection.active = false;
+        //clear current fids
+        this.selectionFids.clear();
+        //in case of geolayer
+        if (this.isGeoLayer()) {
+          //remove selection feature from map
+          this.setOlSelectionFeatures();
+        }
+        //emit unselectionall
+        this.emit('unselectionall', this.getId());
       }
     })
     .finally(() => {
@@ -464,6 +519,10 @@ proto.saveFilter = async function(name) {
 proto.toggleFilterToken = async function() {
   this.state.filter.active = !this.state.filter.active;
   await this.activeFilterToken(this.state.filter.active);
+  //if untoggled need to set current filter to null
+  if (false === this.state.filter.active) {
+    this.state.filter.fid = null;
+  }
   return this.state.filter.active;
 };
 
@@ -472,28 +531,56 @@ proto.activeFilterToken = async function(bool) {
 };
 
 /**
- * @fires filtertokenchange
+ * Delete filtertoken
+ * @param fid  unique id of filter saved to delete
  */
-proto.deleteFilterToken = async function() {
+proto.deleteFilterToken = async function(fid) {
   try {
     // skip when ..
     if (!this.providers['filtertoken']) {
       return;
     }
-    const filtertoken = await this.providers['filtertoken'].deleteFilterToken();
-  /**
-   * @since v3.9.0
-   * In case of response of server no filtertoken is returned set application filtertoken to null
-   */
-    if (undefined === filtertoken) {
-        ApplicationService.setFilterToken(null);
+    const filtertoken = await this.providers['filtertoken'].deleteFilterToken(fid);
+
+    /**
+     * @since v3.9.0
+     * In case of delete a saved filter and current filter apply to layer is
+     * filter deleted
+     */
+    if (undefined !== fid) {
+      //remove filter from filters list
+      this.state.filters = this.state.filters.filter(f => fid !== f.fid);
+      if (fid === this.state.filter.fid) {
+        this.state.filter.fid = null;
+      } else {
+        return;
+      }
     }
 
-    this.emit('filtertokenchange', { layerId: this.getId() });
+    /**
+     * @since v3.9.0
+     * In case of response of server no filtertoken is returned set application filtertoken to null
+     */
+    if (undefined === filtertoken) {
+       this.setFilterToken(null);
+    }
   } catch(err) {
     console.log('Error deleteing filtertoken')
   }
 };
+
+/**
+ * Common method to set filter token
+ * @since v3.9.0
+ * @param filtertoken
+ *
+ * @fires filtertokenchange
+ *
+ */
+proto.setFilterToken = function(filtertoken) {
+  ApplicationService.setFilterToken(filtertoken);
+  this.emit('filtertokenchange', { layerId: this.getId() });
+}
 
 /**
  * @fires filtertokenchange
@@ -517,8 +604,7 @@ proto.createFilterToken = async function() {
       }
       filtertoken = await this.providers['filtertoken'].getFilterToken(params);
     }
-    ApplicationService.setFilterToken(filtertoken);
-    this.emit('filtertokenchange', { layerId: this.getId() });
+    this.setFilterToken(filtertoken);
   } catch(err) {
     console.log('Error create update token');
   }
@@ -527,7 +613,6 @@ proto.createFilterToken = async function() {
 
 
 //selection Ids layer methods
-
 proto.setSelectionFidsAll = function() {
   this.selectionFids.clear();
   this.selectionFids.add(Layer.SELECTION_STATE.ALL);
@@ -546,36 +631,65 @@ proto.getSelectionFids = function() {
 };
 
 proto.invertSelectionFids = function() {
-  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE);
-  else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) this.selectionFids.delete(Layer.SELECTION_STATE.ALL);
-  else if (this.selectionFids.size > 0) this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
-  if (this.isGeoLayer()) this.setInversionOlSelectionFeatures();
-  if (this.state.filter.active) this.createFilterToken();
+
+  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
+
+    this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE);
+
+  } else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
+
+    this.selectionFids.delete(Layer.SELECTION_STATE.ALL);
+
+  } else if (this.selectionFids.size > 0) {
+
+    this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
+
+  }
+
+  if (this.isGeoLayer()) {
+    this.setInversionOlSelectionFeatures();
+  }
+
+  if (this.state.filter.active) {
+    this.createFilterToken();
+  }
   this.setSelection(this.selectionFids.size > 0);
 };
 
 proto.hasSelectionFid = function(fid) {
-  if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) return true;
-  else if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) return !this.selectionFids.has(fid);
-  else return this.selectionFids.has(fid) ;
+  if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
+    return true;
+  } else if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
+    return !this.selectionFids.has(fid);
+  } else {
+    return this.selectionFids.has(fid);
+  }
 };
 
 proto.includeSelectionFid = async function(fid, createToken=true) {
-  const GIVE_ME_A_NAME = this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) && this.selectionFids.has(fid)
+  //set create filter token
+  //check if fid is excluded from selection
+  const excludeFidFromSelection = (
+    this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) &&
+    this.selectionFids.has(fid)
+  )
 
-  if (GIVE_ME_A_NAME) {
+  //remove fid
+  if (excludeFidFromSelection) {
     this.selectionFids.delete(fid);
   }
 
-  if (GIVE_ME_A_NAME && 1 === this.selectionFids.size) {
+  //if the only one exclude set all selected
+  if (excludeFidFromSelection && 1 === this.selectionFids.size) {
     this.setSelectionFidsAll();
   }
 
-  if (!GIVE_ME_A_NAME) {
+  //add to selction fid
+  if (!excludeFidFromSelection) {
     this.selectionFids.add(fid);
   }
 
-  if (!GIVE_ME_A_NAME && !this.isSelectionActive()) {
+  if (!excludeFidFromSelection && !this.isSelectionActive()) {
     this.setSelection(true);
   }
   
@@ -623,13 +737,14 @@ proto.excludeSelectionFids = function(fids=[]) {
 /**
  * Clear selection
  */
-proto.clearSelectionFids = function() {
+proto.clearSelectionFids = async function() {
   this.selectionFids.clear();
   if (this.isGeoLayer()) {
     this.setOlSelectionFeatures();
   }
-  this.setSelection(false);
+  await this.setSelection(false);
 };
+
 // end selection ids methods
 
 proto.getWMSLayerName = function() {
@@ -1112,8 +1227,15 @@ proto.setSelected = function(bool) {
 proto.setSelection = async function(bool=false) {
   this.state.selection.active = bool;
   if (!bool) {
-    this.state.filter.active && await this.deleteFilterToken();
-    this.state.filter.active = bool;
+    //in case of not current selected filter is set active
+    if (this.state.filter.active) {
+      if (null === this.state.filter.fid) {
+        await this.deleteFilterToken();
+      } else {
+        await this._applyFilterToken(this.state.filter.fid)
+      }
+    }
+    this.state.filter.active = null !== this.state.filter.fid;
     this.emit('unselectionall', this.getId());
   }
 };
