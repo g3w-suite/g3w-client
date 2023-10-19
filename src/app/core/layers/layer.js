@@ -472,7 +472,7 @@ proto.saveFilter = async function(name) {
     //get ok button of modal dialog
     const OkButton = dialog.find('button.btn-success');
     //set initial value to disabled true
-    OkButton.prop('disabled', true);
+    OkButton.prop('disabled', reactName.name.trim().length === 0);
     //listen name value text input change
     inputVueInstance.$watch('name', name => {
       //set disabled property base of vale of name
@@ -552,6 +552,7 @@ proto.deleteFilterToken = async function(fid) {
       this.state.filters = this.state.filters.filter(f => fid !== f.fid);
       if (fid === this.state.filter.fid) {
         this.state.filter.fid = null;
+        this.state.filter.active = false;
       } else {
         return;
       }
