@@ -1708,7 +1708,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @FIXME add description
+   * Method to toggle filter token on a layer
    *
    * @param layer
    */
@@ -1717,6 +1717,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
+   * Method to dave current filter for a layer
    * @since v3.9
    */
   saveFilter(layer) {
@@ -1798,41 +1799,46 @@ class QueryResultsService extends G3WObject {
 
   /**
    * Project layer (on TOC)
-   * 
+   * Handle selection feature
    * @since 3.9.0
    */
   async _handleProjectLayerSelection(fid, layer, feature, index, force) {
-    const is_selected = layer.getFilterActive() || layer.hasSelectionFid(fid);
+    // check if already selected
+    const is_selected = layer.hasSelectionFid(fid);
 
+    //if not selected and feature si not added to OL selection layer on map
     if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
+      //add as feature of selected layer
       layer.addOlSelectionFeature({ id: fid, feature })
     }
 
-    /** @FIXME add description */
+    /** If not set force action */
     if (undefined === force) {
       layer[is_selected ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
     }
 
-    /** @FIXME add description */
+    /** force to add */
     if ('add' === force && !is_selected) {
       await layer.includeSelectionFid(fid);
     }
 
-    /** @FIXME add description */
+    /** force to remove from  */
     if ('remove' === force) {
       await layer.excludeSelectionFid(fid);
     }
 
-    /** @FIXME add description */
+    /** if not active filter: No filter is set to layer */
     if (!layer.getFilterActive()) {
       return;
     }
 
-    const currentLayer = this.state.layers.find(l => l.id === layer.getId());
 
     /** @FIXME add description */
-    if (currentLayer && layer.getSelectionFids().size > 0) {
-      currentLayer.features.splice(index, 1);
+    if (is_selected && layer.getFilterActive() && layer.getSelectionFids().size > 0) {
+      const currentLayer = this.state.layers.find(l => l.id === layer.getId());
+      if (currentLayer) {
+        currentLayer.features.splice(index, 1);
+      }
     }
 
     this.mapService.clearHighlightGeometry();
@@ -1859,13 +1865,13 @@ class QueryResultsService extends G3WObject {
     if (layer.external) {
       action.state.toggled[index] = feature.selection.selected;
     } else if (feature) {
+      // project layer
+      const pLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
       action.state.toggled[index] = (
-        CatalogLayersStoresRegistry
-            .getLayerById(layer.id)
-            .getFilterActive() ||
-        CatalogLayersStoresRegistry
-            .getLayerById(layer.id)
-            .hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
+          //need to check if set active filter and no saved filter is set
+          (pLayer.getFilterActive() && null == pLayer.getCurrentFilter()) ||
+          //or if feature fid is in selected array
+          pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
       );
     }
   }
@@ -2314,7 +2320,7 @@ class QueryResultsService extends G3WObject {
         hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
         state: this.createActionState({ layer }),
         init: ({feature, index, action}={}) => {
-          if("undefined" !== typeof layer.selection.active) {
+          if (undefined !== layer.selection.active) {
             this.checkFeatureSelection({ layer, index, feature, action })
           }
         },
@@ -2322,7 +2328,7 @@ class QueryResultsService extends G3WObject {
         //when add new feature need to create reactive toggled
         // it is call on query result context so this is referred to service
         // and not action
-        change({features}){
+        change({features}) {
           features
             .forEach((feature, index) => {
               //exclude existing feature
