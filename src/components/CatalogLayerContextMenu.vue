@@ -105,7 +105,7 @@
     <!-- Download an external layer file from a proxy server url -->
     <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && layerMenu.layer.downloadUrl" v-download>
       <div @click.prevent.stop="downloadExternal(layerMenu.layer.downloadUrl)">
-        <bar-loader :loading="layerMenu.loading.unknow" />
+        <bar-loader :loading="layerMenu.loading.unknow"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('download')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.unknow'"></span>
       </div>
@@ -114,7 +114,7 @@
     <!-- Download an external layer file as shapefile -->
     <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer) && !layerMenu.layer.downloadUrl" v-download>
       <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)">
-        <bar-loader :loading="layerMenu.loading.shp" />
+        <bar-loader :loading="layerMenu.loading.shp"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
@@ -132,7 +132,7 @@
     <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id)" >
-        <bar-loader :loading="layerMenu.loading.geotiff" />
+        <bar-loader :loading="layerMenu.loading.geotiff"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('geotiff')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff'"></span>
       </div>
@@ -141,7 +141,7 @@
     <!-- Download as GeoTIFF -->
     <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id, true)" style="position: relative">
-        <bar-loader :loading="layerMenu.loading.geotiff" />
+        <bar-loader :loading="layerMenu.loading.geotiff"/>
         <span class="menu-icon skin-color-dark" style="color:#777" :class="g3wtemplate.getFontClass('geotiff')"></span>
         <span style="position: absolute; left: -7px; bottom: 8px; font-size: 1.2em" class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('crop')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff_map_extent'"></span>
@@ -151,7 +151,7 @@
     <!-- Download as SHP -->
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
-        <bar-loader :loading="layerMenu.loading.shp" />
+        <bar-loader :loading="layerMenu.loading.shp"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('shapefile')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
@@ -160,7 +160,7 @@
     <!-- Download as GPX -->
     <li v-if="canDownloadGpx(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpx(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.gpx" />
+        <bar-loader :loading="layerMenu.loading.gpx"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('gpx')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpx'"></span>
       </div>
@@ -169,7 +169,7 @@
     <!-- Download as Gpkg -->
     <li v-if="canDownloadGpkg(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpkg(layerMenu.layer.id)" v-download>
-        <bar-loader :loading="layerMenu.loading.gpkg" />
+        <bar-loader :loading="layerMenu.loading.gpkg"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('gpkg')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpkg'"></span>
       </div>
@@ -187,7 +187,7 @@
     <!-- Download as XLS -->
     <li v-if="canDownloadXls(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadXls(layerMenu.layer.id)">
-        <bar-loader :loading="layerMenu.loading.xls" />
+        <bar-loader :loading="layerMenu.loading.xls"/>
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('xls')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.xls'"></span>
       </div>
@@ -213,14 +213,25 @@
           maxHeight: layerMenu.filtersMenu.maxHeight + 'px',
           overflowY: layerMenu.filtersMenu.overflowY }"
       >
-        <li v-for="(filter, index) in layerMenu.layer.filters"
+        <li v-for="filter in layerMenu.layer.filters"
           :key="filter.fid"
-          @click.stop="setCurrentLayerStyle(filter.fid)">
+          @click.stop="setCurrentLayerFilter(filter.fid)">
           <span v-if="layerMenu.layer.filter.fid === filter.fid"
             style="font-size: 0.8em;"
             :class="g3wtemplate.getFontClass('circle')">
           </span>
           <span>{{ filter.name }}</span>
+          <span
+            @click.stop="deleteFilter(filter.fid)"
+            class="skin-border-color"
+            style="
+              color: red;
+              margin-left: 5px;
+              padding-left: 5px;
+              border-left: 2px solid"
+            :class="g3wtemplate.getFontClass('trash')">
+          </span>
+
         </li>
       </ul>
     </li>
@@ -232,9 +243,9 @@
         <div style="display: inline-flex; justify-content: space-between; width: 100%; align-items: baseline">
           <span class="item-text catalog-menu-wms skin-tooltip-top" data-toggle="tooltip" v-t-tooltip="'sdk.catalog.menu.wms.copy'">WMS URL</span>
           <span class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
-                :class="g3wtemplate.getFontClass('eye')"
-                data-placement="top" data-toggle="tooltip" :title="getWmsUrl(layerMenu.layer.id)">
-            </span>
+            :class="g3wtemplate.getFontClass('eye')"
+            data-placement="top" data-toggle="tooltip" :title="getWmsUrl(layerMenu.layer.id)">
+          </span>
         </div>
       </div>
     </li>
@@ -246,9 +257,9 @@
         <div style="display: inline-flex; justify-content: space-between; width: 100%; align-items: baseline">
           <span class="item-text catalog-menu-wms skin-tooltip-top" data-toggle="tooltip" v-t-tooltip="'sdk.catalog.menu.wms.copy'">WFS URL</span>
           <span class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
-                :class="g3wtemplate.getFontClass('eye')"
-                data-placement="top" data-toggle="tooltip" :title="getWfsUrl(layerMenu.layer.id)">
-            </span>
+            :class="g3wtemplate.getFontClass('eye')"
+            data-placement="top" data-toggle="tooltip" :title="getWfsUrl(layerMenu.layer.id)">
+          </span>
         </div>
       </div>
     </li>
@@ -724,6 +735,41 @@
           }
         }
         this.closeLayerMenu(this.layerMenu.stylesMenu);
+      },
+
+      /**
+       *
+        * @param fid
+       */
+      async setCurrentLayerFilter(fid) {
+        const changed = this.layerMenu.layer.filter.fid !== fid;
+        if (changed) {
+          this.layerMenu.layer.filter.fid = fid;
+          const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+          if (layer) {
+            await layer.applyFilter(fid);
+            layer.change();
+          }
+        }
+        this.closeLayerMenu(this.layerMenu.filtersMenu);
+      },
+
+      /**
+       * Delete filter from saved filters
+       * @param fid
+       * @returns {Promise<void>}
+       */
+      async deleteFilter(fid) {
+        const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+        if (layer) {
+          const change = fid === this.layerMenu.layer.fid;
+          await layer.deleteFilterToken(fid);
+          if (change) {
+            layer.change();
+          }
+        }
+
+        this.closeLayerMenu(this.layerMenu.filtersMenu);
       },
 
       /**
