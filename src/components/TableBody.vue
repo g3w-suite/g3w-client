@@ -6,15 +6,15 @@
 <template>
   <tbody id="table_body_attributes" >
     <tr role="row" class="feature_attribute"
-        style="cursor: pointer"
-        v-for="(feature, index) in features" :key="feature.id"
-        @mouseover="zoomAndHighLightFeature(feature, false)"
-        @click="zoomAndHighLightFeature(feature, true)"
-        :selected="selectedRow === index"
-        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}, {'selected': feature.selected}]">
+      style="cursor: pointer"
+      v-for="(feature, index) in features" :key="feature.id"
+      @mouseover="zoomAndHighLightFeature(feature, false)"
+      @click="zoomAndHighLightFeature(feature, true)"
+      :selected="selectedRow === index"
+      :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}, {'selected': feature.selected}]">
       <td v-for="(header, hindex) in headers" :tab-index="1">
-        <select-row @selected="addRemoveSelectedFeature" :feature="feature" v-if="hindex===0"></select-row>
-        <field v-else :feature="feature" :state="getField(feature, header)"></field>
+        <select-row @selected="addRemoveSelectedFeature" :feature="feature" v-if="hindex===0"/>
+        <field v-else :feature="feature" :state="getField(feature, header)"/>
       </td>
     </tr>
   </tbody>
@@ -67,7 +67,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-
-</style>
