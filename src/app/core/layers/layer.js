@@ -129,12 +129,22 @@ function Layer(config={}, options={}) {
      * Reactive filter attribute 
      */
     filter: {
-      active: false
+      active: false,
+      /**
+       * @since v3.9 Specify if filter is set from saved filter or current
+       */
+      fid: null,
     },
+
+    /**
+     * @since v3.9 Store reactive saved filters
+     */
+    filters: config.filters || [],
 
     attributetable: {
       pageLength: null
     },
+
 
     visible: config.visible || false,
 
@@ -342,6 +352,40 @@ proto.setFilter = function(bool=false) {
 proto.getFilterActive = function() {
   return this.state.filter.active;
 };
+
+
+
+/**
+ * Return saved filters Array
+ * @returns <Array> filters saved
+ */
+proto.getFilters = function() {
+  return this.state.filters;
+}
+
+/**
+ * Add new filter
+ * @param filter Object filter
+ */
+proto.addFilter = function(filter={}) {
+  this.state.filters.push(filter);
+}
+
+/**
+ * Remove saved filter from filters Array
+ * @param fid unique filter id
+ */
+proto.removefilter = function(fid) {
+  this.state.filters = this.state.filters.filter(f => fid == f.fid);
+}
+
+/**
+ * Set Current filter
+ * @param fid Uniqeu filter id
+ */
+proto.setCurrentFilter = function(fid) {
+  this.state.filter.fid = fid;
+}
 
 /**
  * @since v3.9
