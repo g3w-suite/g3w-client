@@ -186,22 +186,26 @@ proto.addOlSelectionFeature = function({id, feature}={}) {
 
 proto.showAllOlSelectionFeatures = function(){
   const mapService = GUI.getService('map');
-  Object.values(this.olSelectionFeatures).forEach(featureObject =>{
-    !featureObject.added && mapService.setSelectionFeatures('add', {
-      feature: featureObject.feature
-    });
+  Object.values(this.olSelectionFeatures).forEach(featureObject => {
+    if (!featureObject.added) {
+      mapService.setSelectionFeatures('add', {
+        feature: featureObject.feature
+      });
+    }
     featureObject.added = true;
   })
 };
 
 proto.setInversionOlSelectionFeatures = function(){
   const mapService = GUI.getComponent('map').getService();
-  Object.values(this.olSelectionFeatures).forEach(featureObject => {
-    mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
-      feature: featureObject.feature
+  Object
+    .values(this.olSelectionFeatures)
+    .forEach(featureObject => {
+      mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
+        feature: featureObject.feature
+      });
+      featureObject.added = !featureObject.added
     });
-    featureObject.added = !featureObject.added
-  });
 };
 
 proto.setOlSelectionFeatureByFid = function(fid, action){
