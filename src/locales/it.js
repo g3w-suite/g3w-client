@@ -538,7 +538,8 @@ export default {
         show_metadata: "Metadati",
         styles: "Stili",
         vector_color_menu:"Setta/Cambia Colore",
-        layer_opacity: "Trasparenza"
+        layer_opacity: "Trasparenza",
+        filters: "Filtri",
       }
     },
     dataTable: {

@@ -534,7 +534,8 @@ export default {
         show_metadata: "Métadonnées",
         styles: "Styles",
         vector_color_menu:"Définir/changer la couleur",
-        layer_opacity: "Opacité"
+        layer_opacity: "Opacité",
+        filters: "Filters",
       }
     },
     dataTable: {

@@ -533,7 +533,8 @@ export default {
         show_metadata: "Metadata",
         styles: "Stilar",
         vector_color_menu: "Ställ in/ändra färg",
-        layer_opacity: "Opacitet"
+        layer_opacity: "Opacitet",
+        filters: "Filters",
       }
     },
     dataTable: {

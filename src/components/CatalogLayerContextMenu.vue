@@ -193,6 +193,38 @@
       </div>
     </li>
 
+
+    <!-- Filters menu -->
+    <li
+      v-if="canShowFiltersMenu(layerMenu.layer)"
+      @mouseleave.self="showFiltersMenu(false,$event)"
+      @mouseover.self="showFiltersMenu(true,$event)"
+      class="menu-icon"
+    >
+      <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('filter')"></span>
+      <span class="item-text" v-t="'catalog_items.contextmenu.filters'"></span>
+      <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
+      <ul
+        v-show="layerMenu.filtersMenu.show"
+        style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
+        :style="{
+          top: layerMenu.filtersMenu.top + 'px',
+          left: `${layerMenu.filtersMenu.left}px`,
+          maxHeight: layerMenu.filtersMenu.maxHeight + 'px',
+          overflowY: layerMenu.filtersMenu.overflowY }"
+      >
+        <li v-for="(filter, index) in layerMenu.layer.filters"
+          :key="filter.fid"
+          @click.stop="setCurrentLayerStyle(filter.fid)">
+          <span v-if="layerMenu.layer.filter.fid === filter.fid"
+            style="font-size: 0.8em;"
+            :class="g3wtemplate.getFontClass('circle')">
+          </span>
+          <span>{{ filter.name }}</span>
+        </li>
+      </ul>
+    </li>
+
     <!-- Click to Copy WMS URL -->
     <li v-if="canShowWmsUrl(layerMenu.layer.id)">
       <div @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wms'})" style="display: flex; max-width:300px; align-items: center;">
@@ -277,8 +309,15 @@
             color: null
           },
           //styleMenu
-          //colorMenu
           stylesMenu: {
+            show: false,
+            top:0,
+            left:0,
+            style: null,
+            default: null
+          },
+          //filtersMenu
+          filtersMenu: {
             show: false,
             top:0,
             left:0,
@@ -720,6 +759,17 @@
         });
       },
 
+        /**
+         * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
+         */
+        async showFiltersMenu(bool, evt) {
+          this.showSubMenuContext({
+            menu: this.layerMenu.filtersMenu,
+            bool,
+            evt
+          });
+        },
+
       //showmetadatainfo
       async showMetadataInfo(bool, evt){
         if (bool) {
@@ -770,6 +820,16 @@
       canShowStylesMenu(layer) {
         return layer.geolayer && layer.styles && layer.styles.length > 1;
       },
+
+      /**
+       * Check if it can show filters menù
+       * @since 3.9.0
+       * @return Boolean
+       */
+      canShowFiltersMenu(layer) {
+        return layer.filters && layer.filters.length > 0;
+      },
+
 
       /**
        * @since 3.8.3
