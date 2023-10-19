@@ -148,13 +148,6 @@ function GeocodingControl(options = {}) {
   this.reset   = this.container.getElementsByClassName(css.inputTextReset)[0];
   this.result  = this.container.getElementsByClassName(css.inputTextResult)[0];
 
-  /** @TODO move DOM event listener directly to MapControlGeocoding */
-
-  // add event listener to DOM control elements
-  this.input.addEventListener('keyup', _onQuery.bind(this), false);
-  this.input.addEventListener('input', _onValue.bind(this), false);
-  this.reset.addEventListener('click', _onReset.bind(this), false);
-
   // parent constructor
   Control.call(this, {
     element: this.container,
@@ -188,30 +181,6 @@ proto.hideMarker = function(){
   this.layer.getSource().clear();
   this.getMap().removeLayer(this.layer);
 };
-
-function _onQuery(evt) {
-  if ('Enter' === evt.key || 13 === evt.which || 13 === evt.keyCode) {
-    evt.preventDefault();
-    this.query(evt.target.value.trim());
-  }
-}
-
-function _onReset() {
-  this.input.focus();
-  this.input.value = '';
-  this.reset.classList.add(css.hidden);
-  this.clearResults();
-}
-
-let timeout;
-function _onValue(evt) {
-  const value = evt.target.value.trim();
-  this.reset.classList.toggle(css.hidden, !value.length);
-  if (this.options.autoComplete) {
-    timeout && clearTimeout(timeout);
-    timeout = setTimeout(() => (value.length >= this.options.autoCompleteMinLength) && this.query(value), 200);
-  }
-}
 
 /**
  * Run geocoding request
