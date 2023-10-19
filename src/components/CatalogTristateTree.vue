@@ -144,13 +144,13 @@
             class="action-button skin-tooltip-left selection-filter-icon"
             data-placement="left"
             data-toggle="tooltip"
-            :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']"
+            :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active  ? 'active' : '']"
             @click.caputure.prevent.stop="toggleFilterLayer"
             v-t-tooltip.create="'layer_selection_filter.tools.filter'"
           ></span>
           <!--  @since v3.9.0      -->
           <span
-            v-if="layerstree.filter.active"
+            v-if="layerstree.filter.active && layerstree.selection.active"
             class="action-button skin-tooltip-left selection-filter-icon"
             data-placement="left"
             data-toggle="tooltip"
