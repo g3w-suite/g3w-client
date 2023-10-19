@@ -175,9 +175,7 @@ const Providers = {
     /*
       @TODO remove it. Temporary admin api explanation
 
-      /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved>
-      Recurpera e applica il filtro salvato per quel layer: aggiunge/aggiorna al il layer del filtertoken attuale (se il filtertoken non esiste lo crea)
-      /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete_saved&fid=<fid_filter_saved>|name=<name_filter_saved>
+
       Elimina dalla lista dei filtri slavati per il layer il filtro indicato. Nel caso sia l'ultimo applicato alla sessione corrente elimina anche il filtertoken. (modificato)
 
 
@@ -192,15 +190,53 @@ const Providers = {
     async saveFilterToken(name) {
       // /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<nome_idetificativo>
       const response = await XHR.get({ url: this._filtertokenUrl, params: { mode: 'save', name } });
+      if (response && response.result && response.data) {
+        return response.data;
+      }
+    }
+
+    /**
+     * Apply filtertoken
+     * @param fid
+     * @returns {Promise<void>}
+     */
+    async applyFilterToken(fid) {
+      // /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved>
+      try {
+        const response = await XHR.get({ url: this._filtertokenUrl, params: { mode: 'apply', fid } });
+        if (response && response.result && response.data) {
+          return response.data;
+        }
+      } catch(err) {
+        console.warn(err);
+      }
     }
 
     /*
     * token: current token if provide
     * action: create, update, delete
     */
-    async deleteFilterToken() {
+    async deleteFilterToken(fid) {
+
+
+     /*  Delete saved filter from server
+
+        /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete_saved&fid=<fid_filter_saved>|name=<name_filter_saved>
+
+        Delete current filter
+
+        /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete
+      */
+
       try {
-        const response = await XHR.get({ url: this._filtertokenUrl, params: { mode: 'delete' } });
+        const response = await XHR
+          .get({
+            url: this._filtertokenUrl,
+            params: {
+              mode: undefined === fid ? 'delete': 'delete_saved',
+              fid
+            }
+          });
         //server can return filter token or not. Depend on if layer is filtered or not
         if (response && response.result && response.data) {
           return response.data.filtertoken;
@@ -208,7 +244,6 @@ const Providers = {
       } catch(err) {
         console.warn(err)
       }
-
     }
 
     async getFilterToken(params = {}) {
