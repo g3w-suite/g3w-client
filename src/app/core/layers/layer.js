@@ -511,11 +511,14 @@ proto.saveFilter = async function(name) {
       //clean oll variable
       inputVueInstance.$destroy();
       inputVueInstance = null;
-      reactName = null;
-      dialog = null;
+      reactName        = null;
+      dialog           = null;
     })
 }
 
+/*
+Method to set unset filter token on layer
+ */
 proto.toggleFilterToken = async function() {
   this.state.filter.active = !this.state.filter.active;
   await this.activeFilterToken(this.state.filter.active);
