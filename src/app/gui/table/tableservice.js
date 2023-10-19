@@ -627,7 +627,7 @@ proto.getDataFromBBOX = async function() {
 proto.addFeature = function(feature) {
   const tableFeature = {
     id:         feature.id,
-    selected:   this.state.tools.filter.active    || this.layer.hasSelectionFid(feature.id),
+    selected:   this.layer.hasSelectionFid(feature.id),
     attributes: feature.attributes                || feature.properties,
     geometry:   this.geolayer && feature.geometry || undefined
   };
