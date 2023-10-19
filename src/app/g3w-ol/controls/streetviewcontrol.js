@@ -39,18 +39,30 @@ const StreetViewControl = function(options={}) {
   this._panorama = null;
   this._map = null;
   this._projection = null;
-  this._lastposition = null;
+  /**
+   * Object contain previuos data referred to :
+   * - rotation: for array rotation
+   * - resolution: map view resolution
+   * - position: lat lng of streetview
+   * @type {{rotation: null, position: null, resolution: null}}
+   */
+  this.cached = {
+    position: [0, 0],
+    resolution: null,
+    rotation: null
+  };
   this._streetViewFeature = new ol.Feature();
   const streetVectorSource = new ol.source.Vector({features: []});
   this.active = false;
   this._layer = new ol.layer.Vector({
     source: streetVectorSource,
-    style(feature) {
+    style: (feature, resolution) => {
       const coordinates = feature.getGeometry().getCoordinates();
-      this._lastposition = this._lastposition ? this._lastposition : coordinates;
-      const dx = coordinates[0] - this._lastposition[0];
-      const dy = coordinates[1] - this._lastposition[1];
-      const rotation = -Math.atan2(dy, dx);
+      if (null === this.cached.resolution || this.cached.resolution === resolution) {
+        const dx = coordinates[0] - this.cached.position[0];
+        const dy = coordinates[1] - this.cached.position[1];
+        this.cached.rotation = -Math.atan2(dy, dx);
+      }
       const styles = [
         new ol.style.Style({
           text: new ol.style.Text({
@@ -64,11 +76,12 @@ const StreetViewControl = function(options={}) {
         new ol.style.Style({
           image: new ol.style.Icon({
             src: '/static/client/images/streetviewarrow.png',
-            rotation
+            rotation: this.cached.rotation
           })
         })
       ];
-      this._lastposition = coordinates;
+      this.cached.position = coordinates;
+      this.cached.resolution = resolution;
       return styles
     }
   });
@@ -116,7 +129,6 @@ proto.setPosition = function(position) {
         pitch: 0,
         heading: 0
       });
-
       self._panorama.setPosition(data.location.latLng);
     }
   }).then(response => {
