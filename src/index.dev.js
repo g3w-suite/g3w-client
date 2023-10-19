@@ -17,6 +17,3 @@ window.g3wsdk.info();
 
 // run app (index.prod.js)
 require('./index.prod');
-
-// testing stuff
-require('./app/g3w-ol/controls/geocodingcontrol.spec');

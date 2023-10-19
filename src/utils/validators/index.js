@@ -1,3 +1,9 @@
+/**
+ * @file ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
+ * 
+ * @since 3.9.0
+ */
+
 const { truefnc } = require('utils');
 
 const InputValidators = {

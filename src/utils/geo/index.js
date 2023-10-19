@@ -1,3 +1,9 @@
+/**
+ * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
+ * 
+ * @since 3.9.0
+ */
+
 import CONSTANT from 'app/constant';
 import MapLayersStoresRegistry from 'store/map-layers';
 import GUI from 'services/gui';

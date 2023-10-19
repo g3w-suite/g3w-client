@@ -1,6 +1,9 @@
 import MapControlButton from 'components/MapControlButton';
 
-const { layout } = require('g3w-ol/controls/utils');
+/**
+ * @FIXME add description
+ */
+const layout = function ({ map, position, element }) {};
 
 const Control = function(options={}) {
   const {name="", visible=true, enabled=false} = options;

@@ -1,4 +1,10 @@
 /**
+ * @file ORIGINAL SOURCE: src/app/core/utils/ol.js@3.8
+ * 
+ * @since 3.9.0
+ */
+
+/**
  * @FIXME remove weird import (utility functions should be stateles)
  */
 import ApplicationState from 'store/application-state';
