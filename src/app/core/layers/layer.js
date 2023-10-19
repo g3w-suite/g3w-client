@@ -401,9 +401,12 @@ proto.saveFilter = async function(name) {
 
   promise
     .then(async () => {
-      const response = await this
+      const data = await this
         .providers['filtertoken']
         .saveFilterToken(reactName.name);
+      if (data) {
+        console.log(data)
+      }
     })
     .finally(() => {
       //clean oll variable
@@ -477,14 +480,21 @@ proto.createFilterToken = async function() {
   }
 };
 // end filter token
+
+
 //selection Ids layer methods
 
 proto.setSelectionFidsAll = function() {
   this.selectionFids.clear();
   this.selectionFids.add(Layer.SELECTION_STATE.ALL);
-  this.isGeoLayer() && this.showAllOlSelectionFeatures();
+  if (this.isGeoLayer()) {
+    this.showAllOlSelectionFeatures();
+  }
   this.setSelection(true);
-  this.state.filter.active && this.createFilterToken();
+
+  if (this.state.filter.active) {
+    this.createFilterToken();
+  }
 };
 
 proto.getSelectionFids = function() {
@@ -566,9 +576,14 @@ proto.excludeSelectionFids = function(fids=[]) {
   fids.forEach(fid => this.excludeSelectionFid(fid));
 };
 
+/**
+ * Clear selection
+ */
 proto.clearSelectionFids = function() {
   this.selectionFids.clear();
-  this.isGeoLayer() && this.setOlSelectionFeatures();
+  if (this.isGeoLayer()) {
+    this.setOlSelectionFeatures();
+  }
   this.setSelection(false);
 };
 // end selection ids methods

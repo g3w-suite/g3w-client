@@ -357,7 +357,7 @@ function MapService(options={}) {
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
           geometryType,
-          color:this.defaultsLayers._style.selectionLayer.color,
+          color: this.defaultsLayers._style.selectionLayer.color,
           fill: false
         });
         styles.push(style);
@@ -1989,8 +1989,8 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   //listen change filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
-      layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
-      layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
+      layer.onbefore('change', () => this.updateMapLayer(mapLayer, {force: true}));
+      layer.on('filtertokenchange', () => this.updateMapLayer(mapLayer, {force: true}))
     });
   ///
 };

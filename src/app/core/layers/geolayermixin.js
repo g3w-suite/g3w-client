@@ -176,7 +176,7 @@ proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };
 
-proto.addOlSelectionFeature = function({id, feature}={}){
+proto.addOlSelectionFeature = function({id, feature}={}) {
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
     feature: createFeatureFromFeatureObject({id, feature}),
     added: false
