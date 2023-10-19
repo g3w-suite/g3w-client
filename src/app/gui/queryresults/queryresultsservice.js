@@ -2209,7 +2209,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: `download_${format}_feature`,
         download: true,
-        state,
+        state: this.createActionState({layer}),
         class: GUI.getFontClass('download'),
         hint: `sdk.tooltips.download_${format}`,
         cbk: (layer, feature, action, index) => {
