@@ -2256,9 +2256,11 @@ let animatingHighlight = false;
 * */
 proto.setSelectionFeatures = function(action='add', options={}) {
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {
-    color
-  });
+  if (color) {
+    this.setDefaultLayerStyle('selectionLayer', {
+      color
+    });
+  }
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':
