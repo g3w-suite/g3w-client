@@ -40,7 +40,12 @@
     </li>
 
     <!-- Styles menu -->
-    <li v-if="canShowStylesMenu(layerMenu.layer)" @mouseleave.self="showStylesMenu(false,$event)" @mouseover.self="showStylesMenu(true,$event)" class="menu-icon">
+    <li
+      v-if="canShowStylesMenu(layerMenu.layer)"
+      @mouseleave.self="showStylesMenu(false,$event)"
+      @mouseover.self="showStylesMenu(true,$event)"
+      class="menu-icon"
+    >
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('palette')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
       <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
@@ -74,8 +79,13 @@
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
     </li>
 
-    <!-- TODO add item description -->
-    <li @click.prevent.stop="" v-if="isExternalVectorLayer(layerMenu.layer)" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
+    <!-- Show change color picker for change external vector layer color -->
+    <li
+      v-if="isExternalVectorLayer(layerMenu.layer)"
+      @click.prevent.stop=""
+      @mouseleave.self="showColorMenu(false,$event)"
+      @mouseover.self="showColorMenu(true,$event)"
+    >
       <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
       <span class="menu-icon skin-color-dark" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left + 'px' }">
@@ -110,7 +120,7 @@
       </div>
     </li>
 
-    <!-- TODO add item description -->
+    <!-- Change opacity to external wms layer -->
     <li @click.prevent.stop="" v-if="isExternalWMSLayer(layerMenu.layer)">
       <div style="display: flex; justify-content: space-between">
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
