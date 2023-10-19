@@ -215,23 +215,24 @@
       >
         <li v-for="filter in layerMenu.layer.filters"
           :key="filter.fid"
+          style="display: flex; justify-content: space-between; align-items: baseline"
           @click.stop="setCurrentLayerFilter(filter.fid)">
           <span v-if="layerMenu.layer.filter.fid === filter.fid"
-            style="font-size: 0.8em;"
+            style="font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
             :class="g3wtemplate.getFontClass('circle')">
           </span>
-          <span>{{ filter.name }}</span>
-          <span
-            @click.stop="deleteFilter(filter.fid)"
-            class="skin-border-color"
-            style="
-              color: red;
+
+            <span>{{ filter.name }}</span>
+            <span
+              @click.stop="deleteFilter(filter.fid)"
+              class="skin-border-color"
+              style="color: red;
+              right: 0;
               margin-left: 5px;
               padding-left: 5px;
               border-left: 2px solid"
-            :class="g3wtemplate.getFontClass('trash')">
+              :class="g3wtemplate.getFontClass('trash')">
           </span>
-
         </li>
       </ul>
     </li>
