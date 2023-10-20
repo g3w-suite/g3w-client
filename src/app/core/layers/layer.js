@@ -709,6 +709,14 @@ proto.toggleFilterToken = async function() {
     await this.activeFilterToken(this.state.filter.active);
   }
 
+  /**
+   * hide/show selection feature (red one) on map
+   */
+  if (this.state.selection.active && this.isGeoLayer()) {
+    this[this.state.filter.active ? 'setOlSelectionFeatures': 'showAllOlSelectionFeatures']();
+  }
+
+
   return this.state.filter.active;
 };
 
