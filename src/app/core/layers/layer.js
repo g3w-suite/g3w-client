@@ -465,7 +465,7 @@ proto.setSelection = async function(bool=false) {
   if (!bool) {
     //in case of not current selected filter is set active
     if (this.state.filter.active) {
-      if (null === this.state.filter.current.fid) {
+      if (null === this.state.filter.current) {
         await this.deleteFilterToken();
       } else {
         await this._applyFilterToken(this.state.filter.current.fid)
