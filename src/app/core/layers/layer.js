@@ -534,10 +534,18 @@ proto.toggleFilterToken = async function() {
   //toggle boolean value of filter active
   this.state.filter.active = !this.state.filter.active;
 
-  //if untoggled need to set current filter to null
-  if (!this.state.filter.active && this.state.filter.current) {
-    await this.applyFilter(this.state.filter.current);
+  //check id a current save filter is set
+  if (this.state.filter.current) {
+    if (this.state.filter.active) {
+      //need to create a new filter base on selected features
+      await this.activeFilterToken(true);
+    } else {
+      //apply current filter saved
+      await this.applyFilter(this.state.filter.current);
+    }
   } else {
+    //no current filter is set need to create or delete token on layer
+    //based on this.state.filter.active bool value
     await this.activeFilterToken(this.state.filter.active);
   }
 
