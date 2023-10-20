@@ -186,14 +186,16 @@ proto.addOlSelectionFeature = function({id, feature}={}) {
 
 proto.showAllOlSelectionFeatures = function(){
   const mapService = GUI.getService('map');
-  Object.values(this.olSelectionFeatures).forEach(featureObject => {
-    if (!featureObject.added) {
-      mapService.setSelectionFeatures('add', {
-        feature: featureObject.feature
-      });
-    }
-    featureObject.added = true;
-  })
+  Object
+    .values(this.olSelectionFeatures)
+    .forEach(featureObject => {
+      if (!featureObject.added) {
+        mapService.setSelectionFeatures('add', {
+          feature: featureObject.feature
+        });
+      }
+      featureObject.added = true;
+    })
 };
 
 proto.setInversionOlSelectionFeatures = function(){
@@ -204,7 +206,7 @@ proto.setInversionOlSelectionFeatures = function(){
       mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
         feature: featureObject.feature
       });
-      featureObject.added = !featureObject.added
+      featureObject.added = !featureObject.added;
     });
 };
 
@@ -216,12 +218,14 @@ proto.setOlSelectionFeatureByFid = function(fid, action){
 proto.setOlSelectionFeatures = function(feature, action='add'){
   const mapService = GUI.getComponent('map').getService();
   if (!feature) {
-    Object.values(this.olSelectionFeatures).forEach(featureObject => {
-      featureObject.added && mapService.setSelectionFeatures('remove', {
-        feature: featureObject.feature
+    Object
+      .values(this.olSelectionFeatures)
+      .forEach(featureObject => {
+        featureObject.added && mapService.setSelectionFeatures('remove', {
+          feature: featureObject.feature
+        });
+        featureObject.added = false
       });
-      featureObject.added = false
-    });
   } else {
     const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
     if (action === 'add') {
@@ -262,7 +266,7 @@ proto.isLayerCheckedAndAllParents = function(){
   let checked = this.isChecked();
   if (checked) {
     let parentGroup = this.state.parentGroup;
-    while(checked && parentGroup){
+    while(checked && parentGroup) {
       checked = checked && parentGroup.checked;
       parentGroup = parentGroup.parentGroup;
     }
@@ -270,10 +274,18 @@ proto.isLayerCheckedAndAllParents = function(){
   return checked;
 };
 
+/**
+ * Set checked for TOC purpose
+ * @param bool
+ */
 proto.setChecked = function(bool) {
   this.state.checked = bool;
 };
 
+/**
+ * Return if checked
+ * @returns {*}
+ */
 proto.isChecked = function() {
   return this.state.checked;
 };
