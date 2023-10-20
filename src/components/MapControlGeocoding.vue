@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file need some inspiration for other geocoding providers? 👉 https://github.com/Dominique92/ol-geocoder
   @since 3.9.0
 -->
 <template>
@@ -111,10 +111,80 @@
 </template>
 
 <script>
+import GUI               from 'services/gui';
 import ApplicationState  from 'store/application-state';
+import nominatim         from 'utils/search_from_nominatim';
+import bing              from 'utils/search_from_bing';
+import google            from 'utils/search_from_google';
 
 const { toRawType }      = require('utils');
 const Projections        = require('g3w-ol/projection/projections');
+
+const providers = [ nominatim, bing, google ];
+
+const pushpin_icon = new ol.style.Icon({
+  opacity: 1,
+  src: '/static/client/images/pushpin.svg',
+  scale: 0.8
+});
+
+/**
+ * Search results layer (marker)
+ * 
+ * @TODO move to parent `Control` class (duplicated also in GEOLOCATION CONTROL)
+ */
+const layer = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: new ol.style.Style({ image: pushpin_icon }),
+  });
+
+/**
+ * @TODO add a server option to let user choose geocoding extent, eg:
+ * 
+ * - "dynamic": filter search results based on current map extent
+ * - "initial": filter search results based on on initial map extent
+ */
+const DYNAMIC_MAP_EXTENT = false;
+
+/**
+ * Show current location/place on map as marker icon
+ */
+function _showMarker(coordinates, options = { transform: true }) {
+  const map = GUI.getService('map').getMap();
+  _hideMarker();
+  coordinates = options.transform
+    ? ol.proj.transform(coordinates, 'EPSG:4326', map.getView().getProjection())
+    : coordinates;
+  const geometry =  new ol.geom.Point(coordinates);
+  layer.getSource().addFeature(new ol.Feature(geometry));
+  map.addLayer(layer);
+  map.zoomToGeometry(geometry)
+};
+
+/**
+ * Remove marker from map
+ */
+function _hideMarker() {
+  layer.getSource().clear();
+  GUI.getService('map').getMap().removeLayer(layer);
+};
+
+/**
+ * @since 3.9.0
+ */
+function _getExtentForProvider(provider, { viewbox, mapCrs }) {
+  // const extent = ol.proj.transformExtent(
+  //   DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.options.viewbox,
+  //   this.options.mapCrs,
+  //   'EPSG:4326'
+  // );
+
+  return ol.proj.transformExtent(
+    provider === bing ? GUI.getService('map').getMapExtent() : viewbox,
+    mapCrs,
+    'EPSG:4326'
+  )
+};
 
 export default {
 
@@ -129,11 +199,6 @@ export default {
 
     placeholder: {
       type: String,
-      required: true,
-    },
-
-    ctx: {
-      type: Object,
       required: true,
     },
 
@@ -156,10 +221,16 @@ export default {
     /**
      * @since 3.9.0
      */
-    providers: {
-      type: Object,
+    viewbox: {
       required: true,
-    }
+    },
+
+    /**
+     * @since 3.9.0
+     */
+    mapCrs: {
+      required: true,
+    },
 
   },
 
@@ -172,7 +243,7 @@ export default {
      */
     clear() {
       this.$data._results.splice(0);
-      this.ctx.hideMarker();
+      _hideMarker();
     },
     
     /**
@@ -183,7 +254,7 @@ export default {
      * @since 3.9.0
      */
     query(q) {
-      this.ctx.hideMarker();
+      _hideMarker();
 
       return new Promise(async (resolve, reject) => {
         const isNumber     = value => 'Number' === toRawType(value) && !Number.isNaN(value);
@@ -216,13 +287,13 @@ export default {
 
           // request data
           const results = await Promise.allSettled(
-            this.providers
+            providers
               .map(p => p({
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?
                 limit:        this.limit,
-                extent:       this.ctx.getExtentForProvider(p),
+                extent:       _getExtentForProvider(p, { mapCrs: this.mapCrs, viewbox: this.viewbox }),
               }))
           );
 
@@ -233,7 +304,7 @@ export default {
 
         // request is for a single point (XCoord,YCoord)
         if (coordinates) {
-          this.ctx.showMarker(coordinates, { transform });
+          _showMarker(coordinates, { transform });
           resolve(coordinates);
         }
 
@@ -272,9 +343,10 @@ export default {
           });
           if ('nominatim' !== p.value.provider) {
             try {
-              const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', this.ctx.getMap().getView().getProjection())
-              this.ctx.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
-              this.ctx.getMap().addLayer(this.ctx.layer);
+              const map = GUI.getService('map').getMap();
+              const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection())
+              layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+              map.addLayer(layer);
             } catch (e) {
               console.log(e);
             }
@@ -319,12 +391,13 @@ export default {
       return (evt) => {
         evt.preventDefault();
         if ('nominatim' !== item.provider) {
-          this.ctx.showMarker([parseFloat(item.lon), parseFloat(item.lat)]);
+          _showMarker([parseFloat(item.lon), parseFloat(item.lat)]);
         } else {
           try {
-            const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', this.ctx.getMap().getView().getProjection())
-            this.ctx.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
-            this.ctx.getMap().addLayer(this.ctx.layer);
+            const map = GUI.getService('map').getMap();
+            const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection())
+            layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+            map.addLayer(layer);
           } catch (e) {
             console.log(e);
           }
@@ -332,6 +405,16 @@ export default {
       };
     },
 
+  },
+
+  /**
+   * @DEBUG
+   */
+  async mounted() {
+    await this.$nextTick();
+    const q = document.querySelector.bind(document);
+    q('#gcd-input-query').value = 'cafe';
+    q('#search_nominatim').click();
   },
 
 };

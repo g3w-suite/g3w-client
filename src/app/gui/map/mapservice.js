@@ -1,10 +1,12 @@
-import { MAP_SETTINGS }        from 'app/constant';
-import DataRouterService       from 'services/data';
-import MapLayersStoresRegistry from 'store/map-layers';
-import ProjectsRegistry        from 'store/projects';
-import ApplicationService      from 'services/application';
-import ControlsRegistry        from 'store/map-controls';
-import GUI                     from 'services/gui';
+import { MAP_SETTINGS }         from 'app/constant';
+import DataRouterService        from 'services/data';
+import MapLayersStoresRegistry  from 'store/map-layers';
+import ProjectsRegistry         from 'store/projects';
+import ApplicationService       from 'services/application';
+import ControlsRegistry         from 'store/map-controls';
+import GUI                      from 'services/gui';
+import MapControlZoomHistory    from "components/MapControlZoomHistory.vue";
+import MapControlGeocoding      from 'components/MapControlGeocoding.vue';
 
 const {
   inherit,
@@ -14,22 +16,48 @@ const {
   throttle,
   toRawType,
   createFilterFromString,
-}                              = require('utils');
-const G3WObject                = require('core/g3wobject');
+}                               = require('utils');
+const G3WObject                 = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
   createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer,
-}                              = require('utils/geo');
-const BaseLayers               = require('g3w-ol/layers/bases');
+}                               = require('utils/geo');
+const BaseLayers                = require('g3w-ol/layers/bases');
 const {
   getScaleFromResolution,
   getResolutionFromScale
-}                              = require('utils/ol');
-const ControlsFactory          = require('gui/map/control/factory');
-const VectorLayer              = require('core/layers/vectorlayer');
+}                               = require('utils/ol');
+const VectorLayer               = require('core/layers/vectorlayer');
+
+const Control                   = require('g3w-ol/controls/control');
+const ResetControl              = require('g3w-ol/controls/resetcontrol');
+const QueryControl              = require('g3w-ol/controls/querycontrol');
+const ZoomBoxControl            = require('g3w-ol/controls/zoomboxcontrol');
+const QueryBBoxControl          = require('g3w-ol/controls/querybboxcontrol');
+const QueryByPolygonControl     = require('g3w-ol/controls/querybypolygoncontrol');
+const GeolocationControl        = require('g3w-ol/controls/geolocationcontrol');
+const StreetViewControl         = require('g3w-ol/controls/streetviewcontrol');
+const AddLayersControl          = require('g3w-ol/controls/addlayers');
+const LengthControl             = require('g3w-ol/controls/lengthcontrol');
+const AreaControl               = require('g3w-ol/controls/areacontrol');
+const MousePositionControl      = require('g3w-ol/controls/mousepositioncontrol');
+const ScaleControl              = require('g3w-ol/controls/scalecontrol');
+const OnClikControl             = require('g3w-ol/controls/onclickcontrol');
+const ScreenshotControl         = require('g3w-ol/controls/screenshotcontrol');
+const geoScreenshotControl      = require('g3w-ol/controls/geoscreenshotcontrol');
+const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
+const InteractionControl        = require('g3w-ol/controls/interactioncontrol');
+
+/** ORIGINAL SOURCE: src/app/gui/map/control/factory.js@v3.8.0 */
+const ControlsFactory = {
+  create(options={}) {
+    const ControlClass = ControlsFactory.CONTROLS[options.type];
+    if (ControlClass) return new ControlClass(options);
+  }
+};
 
 /**
  * @FIXME add description
@@ -821,7 +849,6 @@ proto.createMapControl = function(type, {
   }
   return control;
 };
-
 
 proto.addScaleLineUnits = function(units=[]) {
   units.forEach(unit => this.state.mapunits.push(unit));
@@ -2891,4 +2918,153 @@ proto._handlePrint = async function(controlType) {
   return true;
 };
 
-module.exports = MapService;
+/**
+ * Wrapper for native Open Layers controls 
+ */
+const OLControl = function(options={}) {
+
+  this._control     = null;
+  this.positionCode = options.position || 'tl';
+
+  switch (options.type) {
+    case 'zoom':         this._control = new ol.control.Zoom(options); break;
+    case 'zoomtoextent': this._control = new ol.control.ZoomToExtent(options); break;
+    case 'scaleline':    this._control = new ol.control.ScaleLine(options); break;
+    case 'overview':     this._control = new ol.control.OverviewMap(options); break;
+  }
+
+  $(this._control.element).addClass("ol-control-"+this.positionCode);
+
+  this.offline = true;
+
+  /**
+   * @returns { ol.control }
+   */
+  this.getOlControl = function() {
+    return this._control;
+  };
+
+  this.getPosition = function(pos) {
+    pos = pos || this.positionCode;
+    return {
+      top:  (pos.indexOf('t') > -1) ? true : false,
+      left: (pos.indexOf('l') > -1) ? true : false,
+    };
+  };
+
+  this.layout = function(map) {
+    // skip when ..
+    if (!map) {
+      return;
+    }
+    const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
+    if (previusControls.length) {
+      const position        =  this.getPosition();
+      let previusControl = previusControls.last();
+      const offset = position.left ? previusControl.position().left : previusControl.position().right;
+      const hWhere = position.left ? 'left' : 'right';
+      const hOffset = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+      $(this.element).css(hWhere, hOffset+'px');
+    }
+  };
+
+  this.changelayout = function() {};
+
+  this.showHide = function() {
+    $(this.element).toggle();
+  };
+
+  this.setMap = function(map) {
+    this.layout(map);
+    this._control.setMap(map);
+  };
+
+  ol.control.Control.call(this, {
+    element: this._control.element
+  });
+
+};
+
+ol.inherits(OLControl, ol.control.Control);
+
+/**
+ * Wrapper for custom Vue's SFC controls
+ * 
+ * @since 3.9.0
+ */
+function VueControl(type) {
+  function _ctor(options = {}) {
+    const opts    = { name: type };
+    const project = GUI.getService('map').getProject();
+    let component;
+
+    switch(type) {
+
+      /** ORIGINAL SOURCE: src/app/g3w-ol/controls/zoomhistorycontrol.js@v3.8.0 */
+      case 'zoomhistory':
+        component     = Vue.extend(MapControlZoomHistory);
+        opts.element  = new component();
+        opts.tipLabel = "sdk.mapcontrols.addlayer.tooltip";
+      break;
+
+      /** ORIGINAL SOURCE: src/app/g3w-ol/controls/geocodingcontrol.js@v3.8.0 */
+      case 'nominatim':
+        component = Vue.extend(MapControlGeocoding);
+        opts.element = new component({
+          propsData: {
+            placeholder:    (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder")        || 'Città, indirizzo ... ',
+            noresults:      (undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults")          || 'Nessun risultato ',
+            // notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver")  || 'Il server non risponde', // <-- TODO ?
+            limit:          options.limit || 5,
+            viewbox:        (undefined !== options.bbox              ? options.bbox              : project.state.initextent || project.state.extent),
+            mapCrs:         (undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg),
+          }
+        });
+        opts.offline = false;
+
+      break;
+    }
+    opts.element = opts.element.$mount().$el
+    Control.call(this, opts);
+  }
+  ol.inherits(_ctor, Control);
+  return _ctor;
+}
+
+ControlsFactory.CONTROLS = {
+  'zoomtoextent':       OLControl,
+  'zoom':               OLControl,
+  'scaleline':          OLControl,
+  'overview':           OLControl,
+  'reset':              ResetControl,
+  'zoombox':            ZoomBoxControl,
+  'query':              QueryControl,
+  'querybbox':          QueryBBoxControl,
+  'querybypolygon':     QueryByPolygonControl,
+  'geolocation':        GeolocationControl,
+  'streetview':         StreetViewControl,
+  'geocoding':          VueControl('nominatim'),
+  'addlayers':          AddLayersControl,
+  'length':             LengthControl,
+  'area':               AreaControl,
+  'mouseposition':      MousePositionControl,
+  'scale':              ScaleControl,
+  'onclick':            OnClikControl,
+  /** @since 3.8.3 */
+  'ontoggle':           InteractionControl,
+  'screenshot':         ScreenshotControl,
+  'geoscreenshot':      geoScreenshotControl,
+  'querybydrawpolygon': QueryByDrawPolygonControl,
+  /** @since 3.8.0 */
+  'zoomhistory':        VueControl('zoomhistory'),
+};
+
+/**
+ * BACKCOMP v3.x
+ */
+ControlsFactory.CONTROLS['nominatim'] = ControlsFactory.CONTROLS['geocoding'];
+
+module.exports = {
+  MapService,
+  ControlsFactory,
+};

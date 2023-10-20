@@ -73,7 +73,7 @@ const Workflow = require('core/workflow/workflow');
  * GUI modules
  */
 const Panel = require('gui/panel');
-const ControlFactory = require('gui/map/control/factory');
+const { ControlFactory } = require('gui/map/mapservice');
 const ComponentsFactory = require('gui/component/componentsfactory');
 const FieldsService = require('gui/fields/fieldsservice');
 const Component = require('gui/component/component');
