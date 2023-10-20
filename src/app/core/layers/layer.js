@@ -713,9 +713,16 @@ proto.toggleFilterToken = async function() {
    * hide/show selection feature (red one) on map
    */
   if (this.state.selection.active && this.isGeoLayer()) {
-    this[this.state.filter.active ? 'setOlSelectionFeatures': 'showAllOlSelectionFeatures']();
+    //if filter is active
+    if (this.state.filter.active) {
+      // remove all section feature from map
+      this.setOlSelectionFeatures();
+    } else {
+      //only current map selected feature
+      this.selectionFids
+        .forEach(fid => this.setOlSelectionFeatureByFid(fid, 'add'))
+    }
   }
-
   return this.state.filter.active;
 };
 
@@ -803,7 +810,7 @@ proto.createFilterToken = async function() {
       if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
         params.fidsout = Array.from(this.selectionFids).filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',');
       } else {
-        //Need to be consider inside filter (part of layer features)
+        //Need to be considered inside filter (part of layer features)
         params.fidsin = Array.from(this.selectionFids).join(',');
       }
       //get filter token
@@ -863,7 +870,6 @@ proto.invertSelectionFids = function() {
   } else if (this.selectionFids.size > 0) {
 
     this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
-
   }
 
   if (this.isGeoLayer()) {
@@ -879,7 +885,7 @@ proto.invertSelectionFids = function() {
 
 
 /**
- * Check if feature id is prensent
+ * Check if feature id is present
  * @param fid feature id
  * @returns {boolean}
  */
@@ -892,6 +898,7 @@ proto.hasSelectionFid = function(fid) {
     return this.selectionFids.has(fid);
   }
 };
+
 
 /**
  * Include fid feature id to selection
