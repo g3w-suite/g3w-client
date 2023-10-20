@@ -440,6 +440,65 @@ proto.getAttributeTablePageLength = function() {
 // end global state
 
 /**
+ * Check if is selected
+ * @returns {boolean}
+ */
+proto.isSelected = function() {
+  return this.state.selected;
+};
+
+/**
+ * Set Selected
+ * @param bool
+ */
+proto.setSelected = function(bool) {
+  this.state.selected = bool;
+};
+
+/**
+ * Set Selection
+ * @param bool
+ * @returns {Promise<void>}
+ */
+proto.setSelection = async function(bool=false) {
+  this.state.selection.active = bool;
+  if (!bool) {
+    //in case of not current selected filter is set active
+    if (this.state.filter.active) {
+      if (null === this.state.filter.current.fid) {
+        await this.deleteFilterToken();
+      } else {
+        await this._applyFilterToken(this.state.filter.current.fid)
+      }
+    }
+    this.emit('unselectionall', this.getId());
+  }
+};
+
+/**
+ * Check if selection si active
+ * @returns {boolean}
+ */
+proto.isSelectionActive = function() {
+  return this.state.selection.active;
+};
+
+/**
+ * Get selection
+ * @returns {{active: boolean}}
+ */
+proto.getSelection = function() {
+  return this.state.selection;
+};
+
+/*
+* Return filter
+ */
+proto.getFilter = function() {
+  return this.state.filter;
+};
+
+/**
  * Set filter Ative to layer
  * @param bool
  */
@@ -540,6 +599,7 @@ proto.saveFilter = async function(name) {
       ? this.state.filter.current.name
       : '',
     id: getUniqueDomId()}
+
   let inputVueInstance = new Vue({
     template:`
       <div>
@@ -627,7 +687,7 @@ proto.saveFilter = async function(name) {
 }
 
 /*
-Method to set unset filter token on layer
+* Method to set unset filter token on layer
  */
 proto.toggleFilterToken = async function() {
 
@@ -652,12 +712,18 @@ proto.toggleFilterToken = async function() {
   return this.state.filter.active;
 };
 
+/**
+ * Base on boolean value create a filter token from server
+ * based on selection or delete current filtertoken
+ * @param bool
+ * @returns {Promise<void>}
+ */
 proto.activeFilterToken = async function(bool) {
-  await bool ? this.createFilterToken() : this.deleteFilterToken();
+  await this[bool ? 'createFilterToken' : 'deleteFilterToken']();
 };
 
 /**
- * Delete filtertoken
+ * Delete filtertoken frrom server
  * @param fid  unique id of filter saved to delete
  */
 proto.deleteFilterToken = async function(fid) {
@@ -709,6 +775,7 @@ proto.setFilterToken = function(filtertoken=null) {
 }
 
 /**
+ * Create filter token
  * @fires filtertokenchange
  */
 proto.createFilterToken = async function() {
@@ -718,26 +785,38 @@ proto.createFilterToken = async function() {
     if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
       return;
     }
-    // Check if is set all featutes
+    // Check if is set all features are selected
     if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
       // if set, filter token is removed
       await this.providers['filtertoken'].deleteFilterToken();
     } else {
       const params = {};
+      //Check if selectionFids has Layer.SELECTION_STATE.EXCLUDE, meaning that ids of features store need to be excluded from filter
+      //NOT IN
       if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
         params.fidsout = Array.from(this.selectionFids).filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',');
       } else {
+        //Need to be consider inside filter (part of layer features)
         params.fidsin = Array.from(this.selectionFids).join(',');
       }
+      //get filter token
       filtertoken = await this.providers['filtertoken'].getFilterToken(params);
     }
+    //set filter token
     this.setFilterToken(filtertoken);
   } catch(err) {
     console.log('Error create update token');
   }
 };
-// end filter token
 
+/**
+ * Get Application filter token
+ * @returns {*}
+ */
+proto.getFilterToken = function () {
+  return ApplicationService.getFilterToken();
+};
+// end filter token
 
 //selection Ids layer methods
 proto.setSelectionFidsAll = function() {
@@ -753,10 +832,17 @@ proto.setSelectionFidsAll = function() {
   }
 };
 
+/**
+ * Return selection FIds stored
+ * @returns {Set<any>}
+ */
 proto.getSelectionFids = function() {
   return this.selectionFids;
 };
 
+/**
+ * Invert current selection fids
+ */
 proto.invertSelectionFids = function() {
 
   if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
@@ -785,6 +871,11 @@ proto.invertSelectionFids = function() {
 };
 
 
+/**
+ * Check if feature id is prensent
+ * @param fid feature id
+ * @returns {boolean}
+ */
 proto.hasSelectionFid = function(fid) {
   if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
     return true;
@@ -795,6 +886,12 @@ proto.hasSelectionFid = function(fid) {
   }
 };
 
+/**
+ * Include fid feature id to selection
+ * @param fid
+ * @param createToken
+ * @returns {Promise<void>}
+ */
 proto.includeSelectionFid = async function(fid, createToken=true) {
   //set create filter token
   //check if fid is excluded from selection
@@ -832,6 +929,12 @@ proto.includeSelectionFid = async function(fid, createToken=true) {
 
 };
 
+/**
+ * Exclude fid to selection
+ * @param fid
+ * @param createToken
+ * @returns {Promise<void>}
+ */
 proto.excludeSelectionFid = async function(fid, createToken=true) {
 
   if (this.selectionFids.has(Layer.SELECTION_STATE.ALL) || this.selectionFids.size === 0) {
@@ -864,6 +967,7 @@ proto.excludeSelectionFid = async function(fid, createToken=true) {
  * @since v3.9
  */
 proto.includeExcludeSelectionFids = async function({includeSelectionFids=[], excludeSelectionFids=[]}={}) {
+  //pass false because eventually token filter creation need to be called after
   includeSelectionFids.forEach(fid => this.includeSelectionFid(fid, false));
   excludeSelectionFids.forEach(fid => this.excludeSelectionFid(fid, false));
   if (this.state.filter.active) {
@@ -871,7 +975,13 @@ proto.includeExcludeSelectionFids = async function({includeSelectionFids=[], exc
   }
 }
 
+/**
+ *
+ * @param fids Array of fids
+ * @returns {Promise<void>}
+ */
 proto.includeSelectionFids = async function(fids=[]) {
+  //pass false because eventually token filter creation need to be called after
   fids.forEach(fid => this.includeSelectionFid(fid, false));
   if (this.state.filter.active) {
     await this.createFilterToken();
@@ -883,6 +993,7 @@ proto.includeSelectionFids = async function(fids=[]) {
  * @param fids
  */
 proto.excludeSelectionFids = async function(fids=[]) {
+  //pass false because eventually token filter creation need to be called after
   fids.forEach(fid => this.excludeSelectionFid(fid, false));
   if (this.state.filter.active) {
     await this.createFilterToken();
@@ -893,26 +1004,35 @@ proto.excludeSelectionFids = async function(fids=[]) {
  * Clear selection
  */
 proto.clearSelectionFids = async function() {
+  //cLear set selection fids
   this.selectionFids.clear();
+  //if ia a layer with geometry
   if (this.isGeoLayer()) {
+    //remove feature selected on map
     this.setOlSelectionFeatures();
   }
+  //set selection false
   await this.setSelection(false);
 };
 
 // end selection ids methods
 
+/**
+ * Return wms layer name for wms request
+ * @returns {*}
+ */
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()
 };
 
+/**
+ * Check if request need to use layer id or layer.name
+ * @returns {boolean|*}
+ */
 proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
 };
 
-proto.getFilterToken = function () {
-  return ApplicationService.getFilterToken();
-};
 
 /**
  *
@@ -934,6 +1054,11 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data={}, options}) {
   }
 };
 
+/**
+ * Get Getotiff layer format
+ * @param data
+ * @returns {Promise | Promise<unknown>}
+ */
 proto.getGeoTIFF = function({data={}}={}) {
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
@@ -943,6 +1068,11 @@ proto.getGeoTIFF = function({data={}}={}) {
   })
 };
 
+/**
+ * Get Xls layer format
+ * @param data
+ * @returns {Promise | Promise<unknown>}
+ */
 proto.getXls = function({data={}}={}) {
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
@@ -952,6 +1082,11 @@ proto.getXls = function({data={}}={}) {
   })
 };
 
+/**
+ * Get shapefile layer format
+ * @param data
+ * @returns {Promise | Promise<unknown>}
+ */
 proto.getShp = function({data={}}={}) {
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
@@ -961,6 +1096,11 @@ proto.getShp = function({data={}}={}) {
   })
 };
 
+/**
+ * Get gpx layer format
+ * @param data
+ * @returns {Promise | Promise<unknown>}
+ */
 proto.getGpx = function({data={}}={}) {
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
@@ -970,6 +1110,11 @@ proto.getGpx = function({data={}}={}) {
   })
 };
 
+/**
+ * get gpkg layer format
+ * @param data
+ * @returns {Promise | Promise<unknown>}
+ */
 proto.getGpkg = function({data={}}={}) {
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
@@ -979,6 +1124,11 @@ proto.getGpkg = function({data={}}={}) {
   })
 };
 
+/**
+ * Get csv layer format
+ * @param data
+ * @returns {Promise | Promise<unknown>}
+ */
 proto.getCsv = function({data={}}={}) {
   data.filtertoken = this.getFilterToken();
   return XHR.fileDownload({
@@ -988,14 +1138,35 @@ proto.getCsv = function({data={}}={}) {
   })
 };
 
+/**
+ * Get source type of layer
+ * @returns {*|null}
+ */
 proto.getSourceType = function() {
   return this.config.source ? this.config.source.type : null;
 };
 
+/**
+ * Check if it is a layer with geometry
+ * @returns {boolean}
+ */
 proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
+/**
+ * @TODO Add description
+ * @param page
+ * @param page_size
+ * @param ordering
+ * @param search
+ * @param field
+ * @param suggest
+ * @param formatter
+ * @param in_bbox
+ * @param custom_params
+ * @returns {*}
+ */
 proto.getDataTable = function({
   page = null,
   page_size=null,
@@ -1046,7 +1217,6 @@ proto.getDataTable = function({
  */
 proto.getFeatureByFids = async function({fids=[], formatter=0}={}) {
   const url = this.getUrl('data');
-  let features;
   try {
     const response = await XHR.get({
       url,
@@ -1055,9 +1225,10 @@ proto.getFeatureByFids = async function({fids=[], formatter=0}={}) {
         formatter
       }
     });
-    features = response && response.result && response.vector && response.vector.data && response.vector.data.features;
+    if (response && response.result && response.vector && response.vector.data) {
+      return response.vector.data.features;
+    }
   } catch(err) {}
-  return features
 };
 
 /**
@@ -1191,6 +1362,10 @@ proto.get = function(property) {
   return this.config[property] ? this.config[property] : this.state[property];
 };
 
+/**
+ * Return layer fields
+ * @returns {*|{}}
+ */
 proto.getFields = function() {
   return this.config.fields
 };
@@ -1205,6 +1380,10 @@ proto.getFieldByName = function(fieldName) {
   return this.getFields().find(field => field.name === fieldName)
 };
 
+/**
+ * Return editing fields
+ * @returns {[]}
+ */
 proto.getEditingFields = function() {
   return this.config.editing.fields;
 };
@@ -1218,14 +1397,26 @@ proto.getTableFields = function() {
   return (this.config.fields || []).filter(field => field.show);
 };
 
+/**
+ * Return table fields exclude geometry field
+ * @returns {T[]}
+ */
 proto.getTableHeaders = function() {
   return this.getTableFields().filter(field => -1 === geometryFields.indexOf(field.name));
 };
 
+/**
+ * Get current project
+ * @returns {*}
+ */
 proto.getProject = function() {
   return this.config.project;
 };
 
+/**
+ * Get layer config
+ * @returns {{}}
+ */
 proto.getConfig = function() {
   return this.config;
 };
@@ -1249,10 +1440,18 @@ proto.getEditorFormStructure = function() {
   return this.getLayerEditingFormStructure();
 };
 
+/**
+ * @TODO Add description
+ * @returns {*|*[]}
+ */
 proto.getFieldsOutOfFormStructure = function() {
   return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => structure.field_name) : []
 };
 
+/**
+ * Check if it has form structure
+ * @returns {boolean}
+ */
 proto.hasFormStructure = function() {
   return !!this.config.editor_form_structure;
 };
@@ -1264,14 +1463,26 @@ proto.getCustomStyle = function() {
   return this.config.customstyle;
 };
 
+/**
+ * Get state layer
+ * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), tochighlightable: boolean, featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), metadata_querable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
+ */
 proto.getState = function() {
   return this.state;
 };
 
+/**
+ * Get layer source (ex. ogr, spatialite, etc..)
+ * @returns {*}
+ */
 proto.getSource = function() {
   return this.state.source;
 };
 
+/**
+ * Check if it has a format to download
+ * @returns {*}
+ */
 proto.isDownloadable = function() {
   return (
     this.isShpDownlodable()  ||
@@ -1282,142 +1493,218 @@ proto.isDownloadable = function() {
   );
 };
 
+/**
+ * Get downlaod formats
+ * @returns {string[]}
+ */
 proto.getDownloadableFormats = function() {
-  return Object.keys(DOWNLOAD_FORMATS).filter(download_format => this.config[download_format]).map(format => DOWNLOAD_FORMATS[format].format);
+  return Object
+    .keys(DOWNLOAD_FORMATS)
+    .filter(download_format => this.config[download_format])
+    .map(format => DOWNLOAD_FORMATS[format].format);
 };
 
+/**
+ *
+ * @param download url
+ * @returns {string}
+ */
 proto.getDownloadUrl = function(format) {
-  const find = Object.values(DOWNLOAD_FORMATS).find(download_format => download_format.format === format);
+  const find = Object
+    .values(DOWNLOAD_FORMATS)
+    .find(download_format => download_format.format === format);
   return find && find.url;
 };
 
+/**
+ *
+ * @returns {false|*|boolean}
+ */
 proto.isGeoTIFFDownlodable = function() {
   return !this.isBaseLayer() && this.config.download && 'gdal' === this.config.source.type ;
 };
 
+/**
+ *
+ * @returns {false|*|boolean}
+ */
 proto.isShpDownlodable = function() {
   return !this.isBaseLayer() && this.config.download && 'gdal' !== this.config.source.type;
 };
-
+/**
+ *
+ * @returns {false|string|*}
+ */
 proto.isXlsDownlodable = function() {
   return !this.isBaseLayer() && this.config.download_xls;
 };
-
+/**
+ *
+ * @returns {false|string|*}
+ */
 proto.isGpxDownlodable = function() {
   return !this.isBaseLayer() && this.config.download_gpx;
 };
 
+/**
+ *
+ * @returns {false|string|*}
+ */
 proto.isGpkgDownlodable = function() {
   return !this.isBaseLayer() && this.config.download_gpkg;
 };
 
+/**
+ *
+ * @returns {false|string|*}
+ */
 proto.isCsvDownlodable = function() {
   return !this.isBaseLayer() && this.config.download_csv;
 };
 
+/**
+ * return editing version of layer
+ * @returns {*}
+ */
 proto.getEditingLayer = function() {
   return this._editingLayer;
 };
 
+/**
+ * Set editing layer
+ * @param editingLayer
+ */
 proto.setEditingLayer = function(editingLayer) {
   this._editingLayer = editingLayer;
 };
 
+/**
+ * Check if is hidden
+ * @returns {string|string[]|boolean|string|*}
+ */
 proto.isHidden = function() {
   return this.state.hidden;
 };
 
+/**
+ * Set hidden
+ * @param bool
+ */
 proto.setHidden = function(bool=true) {
   this.state.hidden = bool;
 };
 
+/**
+ * Check if it was modified (by editing9
+ * @returns {boolean}
+ */
 proto.isModified = function() {
   return this.state.modified;
 };
 
+/**
+ * Get id
+ * @returns {*|string}
+ */
 proto.getId = function() {
   return this.config.id;
 };
 
+/**
+ * Get Metadata
+ * @returns {*}
+ */
 proto.getMetadata = function() {
   return this.state.metadata
 };
 
+/**
+ * Get Title
+ * @returns {*}
+ */
 proto.getTitle = function() {
   return this.config.title;
 };
 
+/**
+ * Get Name
+ * @returns {*}
+ */
 proto.getName = function() {
   return this.config.name;
 };
 
+/**
+ * Get origin name
+ * @returns {*}
+ */
 proto.getOrigName = function() {
   return this.config.origname;
 };
 
+/**
+ * Get Server type
+ * @returns {*|string|{wmst: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, virtual: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, oracle: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, delimitedtext: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wfs: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider}, wcs: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, arcgismapserver: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, mdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, vectortile: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, "vector-tile": {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, gdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, ogr: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wms: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, postgres: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, mssql: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, spatialite: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}}}
+ */
 proto.getServerType = function() {
-  return (this.config.servertype && this.config.servertype !== '') ? this.config.servertype : ServerTypes.QGIS;
+  return (this.config.servertype && this.config.servertype !== '') ?
+    this.config.servertype :
+    ServerTypes.QGIS;
 };
 
+/**
+ * Get type
+ * @returns {*}
+ */
 proto.getType = function() {
   return this.type;
 };
 
-proto.isType = function(type) {
-  return this.getType() === type;
-};
-
+/**
+ * Set Type
+ * @param type
+ */
 proto.setType = function(type) {
   this.type = type;
 };
 
-proto.isSelected = function() {
-  return this.state.selected;
+/**
+ * Check if layer is a type passed
+ * @param type
+ * @returns {boolean}
+ */
+proto.isType = function(type) {
+  return this.getType() === type;
 };
 
-proto.setSelected = function(bool) {
-  this.state.selected = bool;
-};
-
-proto.setSelection = async function(bool=false) {
-  this.state.selection.active = bool;
-  if (!bool) {
-    //in case of not current selected filter is set active
-    if (this.state.filter.active) {
-      if (null === this.state.filter.current.fid) {
-        await this.deleteFilterToken();
-      } else {
-        await this._applyFilterToken(this.state.filter.current.fid)
-      }
-    }
-    this.emit('unselectionall', this.getId());
-  }
-};
-
-proto.isSelectionActive = function() {
-  return this.state.selection.active;
-};
-
-proto.getSelection = function() {
-  return this.state.selection;
-};
-
-proto.getFilter = function() {
-  return this.state.filter;
-};
-
+/**
+ * Set disabled
+ * @param bool
+ */
 proto.setDisabled = function(bool) {
   this.state.disabled = bool;
 };
 
+/**
+ * Check if it is disabled
+ * @returns {boolean}
+ */
 proto.isDisabled = function() {
   return this.state.disabled;
 };
 
+/**
+ * Check if is visible
+ * @returns {boolean}
+ */
 proto.isVisible = function() {
   return this.state.visible;
 };
 
+/**
+ * Set visibility
+ * @param bool
+ */
 proto.setVisible = function(bool) {
   this.state.visible = bool;
 };
@@ -1438,14 +1725,26 @@ proto.isQueryable = function({onMap} = {onMap:false}) {
   return queryEnabled;
 };
 
+/**
+ * @TODO Add description
+ * @returns {string|string|*}
+ */
 proto.getOws = function() {
   return this.config.ows;
 };
 
+/**
+ * @TODO Description
+ * @returns {boolean}
+ */
 proto.getTocHighlightable = function() {
-  return this.state.tochighlightable
+  return this.state.tochighlightable;
 };
 
+/**
+ * @TODO Description
+ * @param bool
+ */
 proto.setTocHighlightable = function(bool=false) {
   this.state.tochighlightable = bool;
 };
@@ -1469,16 +1768,24 @@ proto.isFilterable = function(conditions=null) {
 };
 
 /**
- * Check if layer is setup as time series
+ * Check if layer is set up as time series
  */
 proto.isQtimeseries = function() {
   return this.config.qtimeseries;
 };
 
+/**
+ * Check if is editbale
+ * @returns {boolean}
+ */
 proto.isEditable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };
 
+/**
+ * Is a base layer
+ * @returns {*|boolean}
+ */
 proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
@@ -1507,26 +1814,50 @@ proto.getUrls = function() {
   return this.config.urls;
 };
 
+/**
+ * Set editing url
+ */
 proto.setEditingUrl = function(url) {
   this.config.urls.editing = url || this.config.urls.editing;
 };
 
+/**
+ * Get query url
+ * @returns {*}
+ */
 proto.getQueryUrl = function() {
   return this.config.urls.query;
 };
 
+/**
+ * Set query url
+ * @param queryUrl
+ */
 proto.setQueryUrl = function(queryUrl) {
   this.config.urls.query = queryUrl;
 };
 
+/**
+ *
+ * @returns {*}
+ */
 proto.getQueryLayerName = function() {
   return (this.config.infolayer && this.config.infolayer !== '') ? this.config.infolayer : this.getName();
 };
 
+/**
+ * @TODO Description
+ * @returns {*}
+ */
 proto.getQueryLayerOrigName = function() {
   return this.state.infolayer && this.config.infolayer !== '' ? this.config.infolayer :  this.config.origname;
 };
 
+/**
+ * @TODO Description
+ * @param ogcService
+ * @returns {default.watch.infoformat|*|string}
+ */
 proto.getInfoFormat = function(ogcService) {
   // In case of NETCDF (qtime series)
   if (this.config.qtimeseries === true || this.getSourceType() === 'gdal') {
@@ -1538,22 +1869,44 @@ proto.getInfoFormat = function(ogcService) {
   return 'application/vnd.ogc.gml';
 };
 
+/**
+ * @TODO Description
+ * @returns {(function(): *)|*|*[]}
+ */
 proto.getInfoFormats = function() {
   return this.state.infoformats;
 };
 
+/**
+ * @TODO Description
+ * @returns {*}
+ */
 proto.getInfoUrl = function() {
   return this.config.infourl;
 };
 
+/**
+ * @TODO Description
+ * @param infoFormat
+ */
 proto.setInfoFormat = function(infoFormat) {
   this.config.infoformat = infoFormat;
 };
 
+/**
+ * @TODO Description
+ * @returns {*|{}}
+ */
 proto.getAttributes = function() {
   return this.config.fields;
 };
 
+/**
+ * @TODO Description
+ * @param attribute
+ * @param type
+ * @param options
+ */
 proto.changeAttribute = function(attribute, type, options) {
   for (const field of this.config.fields) {
     if (field.name === attribute) {
@@ -1564,27 +1917,53 @@ proto.changeAttribute = function(attribute, type, options) {
   }
 };
 
+/**
+ * @TODO Description
+ * @param name
+ * @returns {*}
+ */
 proto.getAttributeLabel = function(name) {
   const field = this.getAttributes().find(field=> field.name === name);
   return field && field.label;
 };
 
+/**
+ * Return provider by type
+ * @param type
+ * @returns {*}
+ */
 proto.getProvider = function(type) {
   return this.providers[type];
 };
 
+/**
+ * Return all providers
+ * @returns {*|{filter: null, search: null, data: null, query: null, filtertoken: null}}
+ */
 proto.getProviders = function() {
   return this.providers;
 };
 
+/**
+ * @TODO Description
+ * @returns {*}
+ */
 proto.getLayersStore = function() {
   return this._layersstore;
 };
 
+/**
+ * @TODO Description
+ * @param layerstore
+ */
 proto.setLayersStore = function(layerstore) {
   this._layersstore = layerstore;
 };
 
+/**
+ * Return if it is possible to show table of attribute
+ * @returns {boolean}
+ */
 proto.canShowTable = function() {
   if (this.config.not_show_attributes_table) {
     return false;
@@ -1612,6 +1991,14 @@ proto.canShowTable = function() {
   return false;
 };
 
+/**
+ * @TODO Description
+ * @param name
+ * @param type
+ * @param options
+ * @param reset
+ * @returns {*}
+ */
 proto.changeFieldType = function({name, type, options={}, reset=false}={}) {
   const field = this.getFields().find(field => field.name === name);
   
@@ -1631,10 +2018,22 @@ proto.changeFieldType = function({name, type, options={}, reset=false}={}) {
 
 };
 
+/**
+ * @TODO Description
+ * @param name
+ * @param type
+ * @param options
+ * @param reset
+ * @returns {*}
+ */
 proto.changeConfigFieldType = function({name, type, options={},reset=false}) {
   return this.changeFieldType({name, type, options, reset});
 };
 
+/**
+ * @TODO Description
+ * @param name
+ */
 proto.resetConfigField = function({name}) {
   this.changeConfigFieldType({ name, reset: true });
 };
@@ -1644,10 +2043,18 @@ proto.resetConfigField = function({name}) {
  */
 proto.clear = function() {};
 
+/**
+ * Check if is a vector layer
+ * @returns {boolean}
+ */
 proto.isVector = function() {
   return this.getType() === Layer.LayerTypes.VECTOR;
 };
 
+/**
+ * Check if is a tabel layer
+ * @returns {boolean}
+ */
 proto.isTable = function() {
   return this.getType() === Layer.LayerTypes.TABLE;
 };
