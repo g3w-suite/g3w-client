@@ -46,7 +46,8 @@
       <li
         v-for   = "(item, i) in $data._results"
         :class  = "[
-          item.__heading ? item.provider + ' skin-background-color' : '',
+          item.provider,
+          item.__heading ? 'skin-background-color' : '',
           item.__no_results ? 'nominatim-noresult' : '',
         ]"
         :key    = "item.__uid"
@@ -66,17 +67,23 @@
         ></span>
         <!-- NO RESULTS -->
         <template v-else>
+          <i
+            v-if        = "'nominatim' === item.provider"
+            class       = "fa fa-road"
+            style       = "color:black"
+            aria-hidden = "true"
+          ></i>
+          <img
+            v-else
+            class  = "gcd-icon"
+            src    = "/static/client/images/pushpin.svg"
+            width  = "24"
+            height = "24"
+          />
           <!-- TODO: remove outer link (which is used only for styling purposes..) -->
           <a href="" draggable="false">
-            <img
-              v-if="'nominatim' !== item.provider"
-              style="float: right;"
-              src="/static/client/images/pushpin.svg"
-              width="24"
-              height="24"
-            />
-            <div v-if="item.type && 'nominatim' !== item.provider">{{ item.type }}</div>
-            <div v-if="item.name && 'nominatim' !== item.provider">{{ item.name }}</div>
+            <div v-if="item.type" class="gcd-type">{{ item.type }}</div>
+            <div v-if="item.name" class="gcd-name">{{ item.name }}</div>
             <template v-if="item.address">
               <div
                 v-if   = "item.address.name"
@@ -321,6 +328,21 @@ export default {
 };
 </script>
 
-<style>.ol-geocoder ul.gcd-txt-result>li>a>*:not(:last-of-type) {
-  margin-bottom: 10px;
-}</style>
+<style scoped>
+  .ol-geocoder ul.gcd-txt-result>li>a>*:not(:last-of-type) {
+    margin-bottom: 10px;
+  }
+  li.nominatim .gcd-name,
+  li.nominatim .gcd-type,
+  li.nominatim .gcd-icon,
+  li.bing .gcd-road,
+  li.bing .gcd-city,
+  li.bing .gcd-country {
+    display: none;
+  }
+  li:not(.skin-background-color) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+</style>
