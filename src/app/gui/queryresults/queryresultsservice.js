@@ -1725,22 +1725,55 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @FIXME add description
+   * Set selection features
    *
    * @param layer
    */
   selectionFeaturesLayer(layer) {
-    const action = this.state.layersactions[layer.id].find(action => action.id === 'selection');
-    const bool   = Object.values(action.state.toggled).reduce((acculmulator, value) => acculmulator && value, true);
-    const _layer = layer.external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id);
-    layer.features.forEach((feature, index) => {
-      action.state.toggled[index] = !bool;
-      this._addRemoveSelectionFeature(_layer, feature, index, bool ? 'remove' : 'add');
-    })
+    const action = this.state.layersactions[layer.id]
+                    .find(action => action.id === 'selection');
+
+    const bool   = Object
+                    .values(action.state.toggled)
+                    .reduce((acculmulator, value) => acculmulator && value, true);
+
+    const _layer = layer.external
+                    ? layer
+                    : CatalogLayersStoresRegistry.getLayerById(layer.id);
+
+    this._addRemoveSelectionFeatures(_layer, layer.features, bool ? 'remove' : 'add');
+
+    layer
+      .features
+      .forEach((feature, index) => {
+        action.state.toggled[index] = !bool;
+      })
   }
 
   /**
-   * @FIXME add description
+   * Add/Remove feature from layer selection
+   *
+   * @param layer
+   * @param features
+   * @param force
+   */
+  async _addRemoveSelectionFeatures(layer, features=[], force) {
+    const fids = features.length > 0 ? features.map(f => this._getFeatureId(f, layer.external)) : null;
+    if (layer.external) {
+      /**
+       * TODO change parameter with object
+       */
+      this._handleExternalVectorLayerSelection({fids, layer, features, force});
+    } else {
+      /**
+       * TODO change parameter with object
+       */
+      await this._handleProjectLayerSelection({fids, layer, features, force});
+    }
+  }
+
+  /**
+   * Add/Remove feature from layer selection
    *
    * @param layer
    * @param feature
@@ -1750,9 +1783,20 @@ class QueryResultsService extends G3WObject {
   async _addRemoveSelectionFeature(layer, feature, index, force) {
     const fid = feature ? this._getFeatureId(feature, layer.external) : null;
     if (layer.external) {
-      this._handleExternalVectorLayerSelection(fid, layer, feature, index, force);
+      this._handleExternalVectorLayerSelection({
+        fids: [fid],
+        layer,
+        features: [feature],
+        index, force
+      });
     } else { 
-      this._handleProjectLayerSelection(fid, layer, feature, index, force);
+      await this._handleProjectLayerSelection({
+        fids: [fid],
+        layer,
+        features: [feature],
+        index,
+        force
+      });
     }
   }
 
@@ -1761,37 +1805,52 @@ class QueryResultsService extends G3WObject {
    * 
    * @since 3.9.0
    */
-  _handleExternalVectorLayerSelection(fid, layer, feature, index, force) {
-    /** @FIXME add description */
+  _handleExternalVectorLayerSelection({fids, layer, features, index, force}={}) {
+    if (null === fids || undefined === fids) {
+      return;
+    }
+    //Take in account array or single fid
+    fids = Array.iArray(fids) ? fids : [fid];
+    features = Array.isArray(features) ? features : [features];
+    //check if layer.selection.features is undefined
     if (undefined === layer.selection.features) {
+      //set array
       layer.selection.features = [];
     }
 
-    // Set feature used in selection tool action
-    if (undefined === layer.selection.features.find(f => f.getId() === fid)) {
-      const feat = createFeatureFromFeatureObject({ feature, id: fid });
-      feat.__layerId = layer.id;
-      feat.selection = feature.selection;
-      layer.selection.features.push(feat);
-    }
+    fids.forEach((fid, index) => {
+      const feature = features[index];
+      // Set feature used in selection tool action
+      if (undefined === layer.selection.features.find(f => f.getId() === fid)) {
+        const feat = createFeatureFromFeatureObject({ feature, id: fid });
+        feat.__layerId = layer.id;
+        feat.selection = feature.selection;
+        layer.selection.features.push(feat);
+      }
 
-    const GIVE_ME_A_NAME = ('add' === force && feature.selection.selected) || ('remove' === force && !feature.selection.selected);
-
-    /** @FIXME add description */
-    if (GIVE_ME_A_NAME) {
+      //check if feature is already select or feature is already removed (no selected)
+      const noChangeSelection =
+        ('add' === force && feature.selection.selected) ||
+        ('remove' === force && !feature.selection.selected);
+      /** If not changes to apply return */
+      if (noChangeSelection) {
         return;
-    }
+      }
 
-    /** @FIXME add description */
-    feature.selection.selected = !feature.selection.selected;
+      /**Switch selected boolean value */
+      feature.selection.selected = !feature.selection.selected;
 
-    /** @FIXME add description */
-    this
-      .mapService
-      .setSelectionFeatures(
-        (feature.selection.selected ? 'add' : 'remove'),
-        { feature: layer.selection.features.find(selectionFeature => fid === selectionFeature.getId()) }
-      );
+      /** Need to add selection on map */
+      this
+        .mapService
+        .setSelectionFeatures(
+          (feature.selection.selected ? 'add' : 'remove'),
+          {
+            feature: layer.selection.features.find(selectionFeature => fid === selectionFeature.getId())
+          }
+        );
+    })
+
 
     // Set selection layer active based on features selection selected properties.
     layer.selection.active = layer.selection.features.reduce((acc, feature) => acc || feature.selection.selected, false)
@@ -1802,44 +1861,61 @@ class QueryResultsService extends G3WObject {
    * Handle selection feature
    * @since 3.9.0
    */
-  async _handleProjectLayerSelection(fid, layer, feature, index, force) {
-    // check if already selected
-    const is_selected = layer.hasSelectionFid(fid);
-
-    //if not selected and feature si not added to OL selection layer on map
-    if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
-      //add as feature of selected layer
-      layer.addOlSelectionFeature({ id: fid, feature })
-    }
-
-    /** If not set force action */
-    if (undefined === force) {
-      layer[is_selected ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
-    }
-
-    /** force to add */
-    if ('add' === force && !is_selected) {
-      await layer.includeSelectionFid(fid);
-    }
-
-    /** force to remove from  */
-    if ('remove' === force) {
-      await layer.excludeSelectionFid(fid);
-    }
-
-    /** if not active filter: No filter is set to layer */
-    if (!layer.getFilterActive()) {
+  async _handleProjectLayerSelection({fids, layer, features, index, force}={}) {
+    //check fid
+    if (null === fids || undefined === fids) {
       return;
     }
+    fids = Array.isArray(fids) ? fids : [fids];
+    features = Array.isArray(features) ? features : [features];
 
-
-    /** @FIXME add description */
-    if (is_selected && layer.getFilterActive() && layer.getSelectionFids().size > 0) {
-      const currentLayer = this.state.layers.find(l => l.id === layer.getId());
-      if (currentLayer) {
-        currentLayer.features.splice(index, 1);
-      }
+    //Need to do a one shot fids call otherwise is called fid one by one and filter it not working properly
+    const layerSelectionAction = {
+      includeSelectionFids: [], //store fid features to include
+      excludeSelectionFids:  []  //store fid feature to exclud
     }
+
+    //Loop
+    for (let idx=0; idx < fids.length; idx++) {
+      const fid = fids[idx];
+      const feature = features[idx];
+      // check if already selected
+      const is_selected = layer.getFilterActive() || layer.hasSelectionFid(fid);
+
+      //if not selected and feature si not added to OL selection layer on map
+      if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
+        //add as feature of selected layer
+        layer.addOlSelectionFeature({ id: fid, feature })
+      }
+
+      /** If not set force action */
+      if (undefined === force) {
+        layer[is_selected ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
+      }
+
+      /** force to add */
+      if ('add' === force && !is_selected) {
+        layerSelectionAction.includeSelectionFids.push(fid);
+      }
+
+      /** force to remove from  */
+      if ('remove' === force) {
+        layerSelectionAction.excludeSelectionFids.push(fid);
+      }
+
+    }
+
+    await layer.includeExcludeSelectionFids(layerSelectionAction);
+
+    fids.forEach((fid, idx) => {
+      const is_selected = layer.hasSelectionFid(fid);
+      if (!is_selected && layer.getFilterActive() && layer.getSelectionFids().size > 0) {
+        const currentLayer = this.state.layers.find(l => l.id === layer.getId());
+        if (currentLayer) {
+          currentLayer.features.splice(undefined === index ? idx : index, 1);
+        }
+      }
+    })
 
     this.mapService.clearHighlightGeometry();
 
