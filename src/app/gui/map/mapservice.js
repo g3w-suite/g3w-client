@@ -51,13 +51,38 @@ const geoScreenshotControl      = require('g3w-ol/controls/geoscreenshotcontrol'
 const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
 const InteractionControl        = require('g3w-ol/controls/interactioncontrol');
 
-/** ORIGINAL SOURCE: src/app/gui/map/control/factory.js@v3.8.0 */
-const ControlsFactory = {
-  create(options={}) {
-    const ControlClass = ControlsFactory.CONTROLS[options.type];
-    if (ControlClass) return new ControlClass(options);
-  }
+const CONTROLS = {
+  'zoomtoextent':       OLControl('zoomtoextent'),
+  'zoom':               OLControl('zoom'),
+  'scaleline':          OLControl('scaleline'),
+  'overview':           OLControl('overview'),
+  /** @since 3.8.0 */
+  'zoomhistory':        VueControl('zoomhistory'),
+  'geocoding':          VueControl('nominatim'),
+  'reset':              ResetControl,
+  'zoombox':            ZoomBoxControl,
+  'query':              QueryControl,
+  'querybbox':          QueryBBoxControl,
+  'querybypolygon':     QueryByPolygonControl,
+  'geolocation':        GeolocationControl,
+  'streetview':         StreetViewControl,
+  'addlayers':          AddLayersControl,
+  'length':             LengthControl,
+  'area':               AreaControl,
+  'mouseposition':      MousePositionControl,
+  'scale':              ScaleControl,
+  'onclick':            OnClikControl,
+  /** @since 3.8.3 */
+  'ontoggle':           InteractionControl,
+  'screenshot':         ScreenshotControl,
+  'geoscreenshot':      geoScreenshotControl,
+  'querybydrawpolygon': QueryByDrawPolygonControl,
 };
+
+/**
+ * BACKCOMP v3.x
+ */
+CONTROLS['nominatim'] = CONTROLS['geocoding'];
 
 /**
  * @FIXME add description
@@ -840,7 +865,7 @@ proto.createMapControl = function(type, {
   toggled = false,
   options = {},
 } = {}) {
-  const control = ControlsFactory.create({ type, toggled, ...options });
+  const control = CONTROLS[type] ? new CONTROLS[type]({ type, toggled, ...options }) : undefined;
   if (undefined === visible) {
     visible = (control.isVisible ? control.isVisible() : true)
   }
@@ -892,9 +917,7 @@ proto._setupControls = function() {
       switch (controlType) {
         case 'reset':
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
+            control = new ResetControl({ type: 'reset' });
           }
           this.addControl(controlType, control, false);
           break;
@@ -2921,71 +2944,73 @@ proto._handlePrint = async function(controlType) {
 /**
  * Wrapper for native Open Layers controls 
  */
-const OLControl = function(options={}) {
+function OLControl(type) {
+    function _ctor(options={}) {
 
-  this._control     = null;
-  this.positionCode = options.position || 'tl';
+    this._control     = null;
+    this.positionCode = options.position || 'tl';
 
-  switch (options.type) {
-    case 'zoom':         this._control = new ol.control.Zoom(options); break;
-    case 'zoomtoextent': this._control = new ol.control.ZoomToExtent(options); break;
-    case 'scaleline':    this._control = new ol.control.ScaleLine(options); break;
-    case 'overview':     this._control = new ol.control.OverviewMap(options); break;
-  }
+    switch (options.type) {
+      case 'zoom':         this._control = new ol.control.Zoom(options); break;
+      case 'zoomtoextent': this._control = new ol.control.ZoomToExtent(options); break;
+      case 'scaleline':    this._control = new ol.control.ScaleLine(options); break;
+      case 'overview':     this._control = new ol.control.OverviewMap(options); break;
+    }
 
-  $(this._control.element).addClass("ol-control-"+this.positionCode);
+    $(this._control.element).addClass("ol-control-"+this.positionCode);
 
-  this.offline = true;
+    this.offline = true;
 
-  /**
-   * @returns { ol.control }
-   */
-  this.getOlControl = function() {
-    return this._control;
-  };
-
-  this.getPosition = function(pos) {
-    pos = pos || this.positionCode;
-    return {
-      top:  (pos.indexOf('t') > -1) ? true : false,
-      left: (pos.indexOf('l') > -1) ? true : false,
+    /**
+     * @returns { ol.control }
+     */
+    this.getOlControl = function() {
+      return this._control;
     };
+
+    this.getPosition = function(pos) {
+      pos = pos || this.positionCode;
+      return {
+        top:  (pos.indexOf('t') > -1) ? true : false,
+        left: (pos.indexOf('l') > -1) ? true : false,
+      };
+    };
+
+    this.layout = function(map) {
+      // skip when ..
+      if (!map) {
+        return;
+      }
+      const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
+      if (previusControls.length) {
+        const position        =  this.getPosition();
+        let previusControl = previusControls.last();
+        const offset = position.left ? previusControl.position().left : previusControl.position().right;
+        const hWhere = position.left ? 'left' : 'right';
+        const hOffset = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+        $(this.element).css(hWhere, hOffset+'px');
+      }
+    };
+
+    this.changelayout = function() {};
+
+    this.showHide = function() {
+      $(this.element).toggle();
+    };
+
+    this.setMap = function(map) {
+      this.layout(map);
+      this._control.setMap(map);
+    };
+
+    ol.control.Control.call(this, {
+      element: this._control.element
+    });
+
   };
-
-  this.layout = function(map) {
-    // skip when ..
-    if (!map) {
-      return;
-    }
-    const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
-    if (previusControls.length) {
-      const position        =  this.getPosition();
-      let previusControl = previusControls.last();
-      const offset = position.left ? previusControl.position().left : previusControl.position().right;
-      const hWhere = position.left ? 'left' : 'right';
-      const hOffset = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
-      $(this.element).css(hWhere, hOffset+'px');
-    }
-  };
-
-  this.changelayout = function() {};
-
-  this.showHide = function() {
-    $(this.element).toggle();
-  };
-
-  this.setMap = function(map) {
-    this.layout(map);
-    this._control.setMap(map);
-  };
-
-  ol.control.Control.call(this, {
-    element: this._control.element
-  });
-
-};
-
-ol.inherits(OLControl, ol.control.Control);
+  ol.inherits(_ctor, ol.control.Control);
+  return _ctor;
+}
 
 /**
  * Wrapper for custom Vue's SFC controls
@@ -3031,40 +3056,14 @@ function VueControl(type) {
   return _ctor;
 }
 
-ControlsFactory.CONTROLS = {
-  'zoomtoextent':       OLControl,
-  'zoom':               OLControl,
-  'scaleline':          OLControl,
-  'overview':           OLControl,
-  'reset':              ResetControl,
-  'zoombox':            ZoomBoxControl,
-  'query':              QueryControl,
-  'querybbox':          QueryBBoxControl,
-  'querybypolygon':     QueryByPolygonControl,
-  'geolocation':        GeolocationControl,
-  'streetview':         StreetViewControl,
-  'geocoding':          VueControl('nominatim'),
-  'addlayers':          AddLayersControl,
-  'length':             LengthControl,
-  'area':               AreaControl,
-  'mouseposition':      MousePositionControl,
-  'scale':              ScaleControl,
-  'onclick':            OnClikControl,
-  /** @since 3.8.3 */
-  'ontoggle':           InteractionControl,
-  'screenshot':         ScreenshotControl,
-  'geoscreenshot':      geoScreenshotControl,
-  'querybydrawpolygon': QueryByDrawPolygonControl,
-  /** @since 3.8.0 */
-  'zoomhistory':        VueControl('zoomhistory'),
-};
-
-/**
- * BACKCOMP v3.x
- */
-ControlsFactory.CONTROLS['nominatim'] = ControlsFactory.CONTROLS['geocoding'];
-
 module.exports = {
+
   MapService,
-  ControlsFactory,
+
+  /** ORIGINAL SOURCE: src/app/gui/map/control/factory.js@v3.8.0 */
+  ControlsFactory: {
+    create(options={}) {
+      return CONTROLS[options.type] ? new CONTROLS[options.type](options) : undefined;
+    }
+  },
 };
