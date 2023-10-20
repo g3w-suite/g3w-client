@@ -133,7 +133,7 @@ function Layer(config={}, options={}) {
       /**
        * @since v3.9 Specify if filter is set from saved filter or current
        */
-      fid: null,
+      current: null,
     },
 
     /**
@@ -355,7 +355,7 @@ proto.setFilter = function(bool=false) {
  * get current filter fid set on layer
  */
 proto.getCurrentFilter = function() {
-  return this.state.filter.fid;
+  return this.state.filter.current;
 };
 
 proto.getFilterActive = function() {
@@ -388,23 +388,23 @@ proto.removefilter = function(fid) {
 
 /**
  * Set Current filter
- * @param fid Uniqeu filter id
+ * @param filter Object {fid, name}
  */
-proto.setCurrentFilter = function(fid) {
-  this.state.filter.fid = fid;
+proto.setCurrentFilter = function(filter) {
+  this.state.filter.current = filter;
 }
 
 /**
  * Apply layer filter by fid
- * @param fid
+ * @param filter
  */
-proto.applyFilter = async function(fid) {
+proto.applyFilter = async function(filter) {
   if (!this.providers['filtertoken']) {
     return;
   }
   await this.clearSelectionFids();
   GUI.closeContent();
-  await this._applyFilterToken(fid)
+  await this._applyFilterToken(filter)
 }
 
 /**
@@ -412,10 +412,11 @@ proto.applyFilter = async function(fid) {
  * @returns {Promise<void>}
  * @private
  */
-proto._applyFilterToken = async function(fid) {
-  const {filtertoken} = await this.providers['filtertoken'].applyFilterToken(fid);
+proto._applyFilterToken = async function(filter) {
+  const {filtertoken} = await this.providers['filtertoken'].applyFilterToken(filter.fid);
   if (filtertoken) {
-    this.state.filter.active = true;
+    this.state.filter.active = false;
+    this.state.filter.current = filter;
     this.setFilterToken(filtertoken);
   }
 }
@@ -431,8 +432,8 @@ proto.saveFilter = async function(name) {
 
   //Need to be an object so can be reactive with vue input instance
   let reactName = {
-    name: this.state.filter.fid
-      ? this.state.filters.find(f => this.state.filter.fid === f.fid).name
+    name: this.state.filter.current
+      ? this.state.filter.current.name
       : '',
     id: getUniqueDomId()}
   let inputVueInstance = new Vue({
@@ -487,13 +488,18 @@ proto.saveFilter = async function(name) {
         .saveFilterToken(reactName.name);
       //id data return from provider
       if (data) {
-        //add filter saved to filters array
-        this.state.filters.push({
+        const filter = {
           fid: data.fid, //get fid
           name: data.name //get name
-        })
+        }
+        if (undefined === this.state.filters.find(f => filter.fid === f.fid)) {
+          //add filter saved to filters array
+          this.state.filters.push(filter)
+        }
         //set current filter
-        this.state.filter.fid = data.fid;
+        this.state.filter.current = filter;
+        //set to false
+        this.state.filter.active = false;
         //reset selection to false
         this.state.selection.active = false;
         //clear current fids
@@ -520,12 +526,19 @@ proto.saveFilter = async function(name) {
 Method to set unset filter token on layer
  */
 proto.toggleFilterToken = async function() {
+
+  //toggle boolean value of filter active
   this.state.filter.active = !this.state.filter.active;
-  await this.activeFilterToken(this.state.filter.active);
-  //if untoggled need to set current filter to null
-  if (false === this.state.filter.active) {
-    this.state.filter.fid = null;
+
+  if (this.state.filter.active) {
+    await this.activeFilterToken(this.state.filter.active);
+  } else {
+    //if untoggled need to set current filter to null
+    if (this.state.filter.current) {
+      await this.applyFilter(this.state.filter.current);
+    }
   }
+
   return this.state.filter.active;
 };
 
@@ -553,20 +566,17 @@ proto.deleteFilterToken = async function(fid) {
     if (undefined !== fid) {
       //remove filter from filters list
       this.state.filters = this.state.filters.filter(f => fid !== f.fid);
-      if (fid === this.state.filter.fid) {
-        this.state.filter.fid = null;
-        this.state.filter.active = false;
-      } else {
-        return;
-      }
     }
+
+    this.state.filter.current = null;
+    this.state.filter.active = false;
 
     /**
      * @since v3.9.0
      * In case of response of server no filtertoken is returned set application filtertoken to null
      */
     if (undefined === filtertoken) {
-       this.setFilterToken(null);
+      this.setFilterToken(null);
     }
   } catch(err) {
     console.log('Error deleteing filtertoken')
@@ -657,6 +667,7 @@ proto.invertSelectionFids = function() {
   if (this.state.filter.active) {
     this.createFilterToken();
   }
+
   this.setSelection(this.selectionFids.size > 0);
 };
 
@@ -707,11 +718,7 @@ proto.includeSelectionFid = async function(fid, createToken=true) {
 
 };
 
-proto.includeSelectionFids = function(fids=[]) {
-  fids.forEach(fid => this.includeSelectionFid(fid));
-};
-
-proto.excludeSelectionFid = async function(fid) {
+proto.excludeSelectionFid = async function(fid, createToken=true) {
 
   if (this.selectionFids.has(Layer.SELECTION_STATE.ALL) || this.selectionFids.size === 0) {
     this.selectionFids.clear();
@@ -725,7 +732,10 @@ proto.excludeSelectionFid = async function(fid) {
   }
 
   const isLastFeatureSelected  = this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'remove');
-  this.state.filter.active && await this.createFilterToken();
+
+  if (createToken && this.state.filter.active) {
+    await this.createFilterToken();
+  }
 
   if (0 === this.selectionFids.size || isLastFeatureSelected) {
     this.selectionFids.clear();
@@ -734,8 +744,35 @@ proto.excludeSelectionFid = async function(fid) {
 
 };
 
-proto.excludeSelectionFids = function(fids=[]) {
-  fids.forEach(fid => this.excludeSelectionFid(fid));
+/**
+ * Used to call just one time if we createFilterToken
+ * we need to set include and exclude selection fids in the same time
+ * @since v3.9
+ */
+proto.includeExcludeSelectionFids = async function({includeSelectionFids=[], excludeSelectionFids=[]}={}) {
+  includeSelectionFids.forEach(fid => this.includeSelectionFid(fid, false));
+  excludeSelectionFids.forEach(fid => this.excludeSelectionFid(fid, false));
+  if (this.state.filter.active) {
+    await this.createFilterToken();
+  }
+}
+
+proto.includeSelectionFids = async function(fids=[]) {
+  fids.forEach(fid => this.includeSelectionFid(fid, false));
+  if (this.state.filter.active) {
+    await this.createFilterToken();
+  }
+};
+
+/**
+ * Exclude fids from selection
+ * @param fids
+ */
+proto.excludeSelectionFids = async function(fids=[]) {
+  fids.forEach(fid => this.excludeSelectionFid(fid, false));
+  if (this.state.filter.active) {
+    await this.createFilterToken();
+  }
 };
 
 /**
@@ -1233,13 +1270,12 @@ proto.setSelection = async function(bool=false) {
   if (!bool) {
     //in case of not current selected filter is set active
     if (this.state.filter.active) {
-      if (null === this.state.filter.fid) {
+      if (null === this.state.filter.current.fid) {
         await this.deleteFilterToken();
       } else {
-        await this._applyFilterToken(this.state.filter.fid)
+        await this._applyFilterToken(this.state.filter.current.fid)
       }
     }
-    this.state.filter.active = null !== this.state.filter.fid;
     this.emit('unselectionall', this.getId());
   }
 };

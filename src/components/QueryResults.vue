@@ -99,7 +99,7 @@
                     ></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-if="!layer.external && (layer.selection.active || null !== layer.filter.fid)">
+                  <template v-if="!layer.external && layer.selection.active">
                     <span
                       @click.stop="addRemoveFilter(layer)"
                       class="action-button skin-tooltip-left"
@@ -113,7 +113,7 @@
                     </span>
                     <!-- @since 3.9 add save -->
                     <span
-                      v-if="layer.filter.active && (null === layer.filter.fid  || layer.selection.active)"
+                      v-if="layer.filter.active && (null === layer.filter.current || layer.selection.active)"
                       @click.stop="saveFilter(layer)"
                       class="action-button skin-tooltip-left"
                       v-t-tooltip:left.create="'layer_selection_filter.tools.savefilter'"

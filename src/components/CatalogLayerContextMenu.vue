@@ -216,8 +216,8 @@
         <li v-for="filter in layerMenu.layer.filters"
           :key="filter.fid"
           style="display: flex; justify-content: space-between; align-items: baseline"
-          @click.stop="setCurrentLayerFilter(filter.fid)">
-          <span v-if="layerMenu.layer.filter.fid === filter.fid"
+          @click.stop="setCurrentLayerFilter(filter)">
+          <span v-if="layerMenu.layer.filter.current && layerMenu.layer.filter.current.fid === filter.fid"
             style="font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
             :class="g3wtemplate.getFontClass('circle')">
           </span>
@@ -717,7 +717,7 @@
 
       setCurrentLayerStyle(index){
         let changed = false;
-        this.layerMenu.layer.styles.forEach((style, idx) =>{
+        this.layerMenu.layer.styles.forEach((style, idx) => {
           if (idx === index) {
             this.layerMenu.stylesMenu.style = style.name;
             changed = !style.current;
@@ -739,19 +739,21 @@
       },
 
       /**
-       *
-        * @param fid
+       * Set current filter
+        * @param filter
        */
-      async setCurrentLayerFilter(fid) {
-        const changed = this.layerMenu.layer.filter.fid !== fid;
+      async setCurrentLayerFilter(filter) {
+        const changed = (
+          null === this.layerMenu.layer.filter.current ||
+          this.layerMenu.layer.filter.current.fid !== filter.fid
+        );
+        const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
         if (changed) {
-          this.layerMenu.layer.filter.fid = fid;
-          const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
-          if (layer) {
-            await layer.applyFilter(fid);
-            layer.change();
-          }
+          await layer.applyFilter(filter);
+        } else {
+          await layer.deleteFilterToken();
         }
+        layer.change();
         this.closeLayerMenu(this.layerMenu.filtersMenu);
       },
 
