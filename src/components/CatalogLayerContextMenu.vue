@@ -222,14 +222,13 @@
             :class="g3wtemplate.getFontClass('circle')">
           </span>
 
-            <span>{{ filter.name }}</span>
+            <span style="margin-right: 5px;">{{ filter.name }}</span>
             <span
               @click.stop="deleteFilter(filter.fid)"
               class="skin-border-color"
               style="color: red;
               right: 0;
-              margin-left: 5px;
-              padding-left: 5px;
+              padding-left: 10px;
               border-left: 2px solid"
               :class="g3wtemplate.getFontClass('trash')">
           </span>
