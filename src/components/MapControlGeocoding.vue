@@ -112,14 +112,9 @@
 
 <script>
 import ApplicationState  from 'store/application-state';
-import GUI               from 'services/gui';
-
 
 const { toRawType }      = require('utils');
 const Projections        = require('g3w-ol/projection/projections');
-
-let timeout;
-
 
 export default {
 
