@@ -34,10 +34,12 @@ function Layer(config={}, options={}) {
     ...(config.urls || {})
   };
 
+  //get current project object
   const {
     project = ProjectsRegistry.getCurrentProject()
   } = options;
 
+  //get search_end point value (api, ows)
   this.config.search_endpoint = project.getSearchEndPoint();
 
   // create relations
@@ -45,8 +47,11 @@ function Layer(config={}, options={}) {
 
   // set URLs to get varios type of data
   if (!this.isBaseLayer()) {
+    //suffix url
     const suffixUrl = `${project.getType()}/${project.getId()}/${config.id}/`;
+    //get vector url
     const vectorUrl = project.getVectorUrl();
+    //get raster url
     const rasterUrl = project.getRasterUrl();
 
     this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
@@ -67,6 +72,7 @@ function Layer(config={}, options={}) {
 
     /**
      * @since 3.8.0
+     * store feature count url to get features count of a layer
      */
     this.config.urls.featurecount = project.getUrl('featurecount');
     
@@ -170,7 +176,7 @@ function Layer(config={}, options={}) {
 
   };
 
-  // add selectionFids
+  // add selectionFids that will sore alle information fids about features selection
   this.selectionFids = new Set();
 
   // referred to (layersstore);
@@ -188,6 +194,7 @@ function Layer(config={}, options={}) {
   const sourceType = this.config.source ? this.config.source.type : null; // NB: sourceType = source of layer
 
   if (serverType && sourceType) {
+    //set providers that will take in account to get data from server
     this.providers = {
       query:       ProviderFactory.build('query', serverType, sourceType, { layer: this }),
       filter:      ProviderFactory.build('filter', serverType, sourceType, { layer: this }),
@@ -213,20 +220,35 @@ inherit(Layer, G3WObject);
 const proto = Layer.prototype;
 
 /**
- * Proxyparams
+ * Proxy params data
  */
 proto.getProxyData = function(type) {
   return type ? this.proxyData[type] : this.proxyData;
 };
 
+/**
+ *Set proxy data
+ * @param type
+ * @param data
+ */
 proto.setProxyData= function(type, data={}) {
   this.proxyData[type] = data;
 };
 
+/**
+ * Clear proxy data
+ * @param type
+ */
 proto.clearProxyData = function(type) {
   this.proxyData[type] = null;
 };
 
+/**
+ * get a proxy request
+ * @param type
+ * @param proxyParams
+ * @returns {Promise<*>}
+ */
 proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}) {
   try {
     const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
@@ -240,6 +262,12 @@ proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}) {
   }
 };
 
+/**
+ * @TODO Add description
+ * @param type
+ * @param changes
+ * @returns {Promise<*>}
+ */
 proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
   Object.keys(changes).forEach(changeParam => {
     Object.keys(changes[changeParam]).forEach(param => {
@@ -250,34 +278,51 @@ proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
 };
 
 /**
- * editing method used by plugin
+ * Editing method used by plugin
  */
 
+/**
+ * Check if layer is in editing
+ * @returns {boolean}
+ */
 proto.isInEditing = function() {
   return this.state.inediting;
 };
 
+/**
+ * Set editing state
+ * @param bool <Boolean>
+ */
 proto.setInEditing = function(bool=false) {
   this.state.inediting = bool;
 };
 
 /**
- * end proxy params
+ * end editing
  */
 
+/**
+ * @TODO Add description here
+ * @returns {*}
+ */
 proto.getSearchParams = function() {
   return this.config.searchParams;
 };
 
 /**
- *
+ * Return search_endpoint
  * @returns {*}
  */
 proto.getSearchEndPoint = function() {
   return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
 };
 
-//relations
+/**
+ * Create Relation
+ * @param projectRelations
+ * @returns {Relations}
+ * @private
+ */
 proto._createRelations = function(projectRelations) {
   const layerId = this.getId();
   return new Relations({
@@ -285,46 +330,87 @@ proto._createRelations = function(projectRelations) {
   });
 };
 
-// return relations of layer
+/**
+ * Get Relations
+ * @returns {*}
+ */
 proto.getRelations = function() {
   return this._relations
 };
 
+/**
+ * Get Relation by id
+ * @param id
+ * @returns {*}
+ */
 proto.getRelationById = function(id) {
   return this._relations.getArray().find(relation => relation.getId() === id);
 };
 
+/**
+ * Get Relation fields
+ * @param relationName
+ * @returns {*|*[]}
+ */
 proto.getRelationAttributes = function(relationName) {
   const relation = this._relations.find(relation => relation.name === relationName);
   return relation ? relation.fields : [];
 };
 
+/**
+ * @TOD Add description
+ * @returns {{}}
+ */
 proto.getRelationsAttributes = function() {
   const fields = {};
   this.state.relations.forEach(relation => fields[relation.name] = relation.fields);
   return fields;
 };
 
+/**
+ * Check if layer is a Child of a relation
+ * @returns {*|boolean}
+ */
 proto.isChild = function() {
   return this.getRelations() ? this._relations.isChild(this.getId()) : false;
 };
 
+/**
+ * Check if layer is a Father of a relation
+ * @returns {*|boolean}
+ */
 proto.isFather = function() {
   return this.getRelations() ? this._relations.isFather(this.getId()) : false;
 };
 
+/**
+ * Get children relations
+ * @returns {any|*[]}
+ */
 proto.getChildren = function() {
   return this.isFather() ? this._relations.getChildren(this.getId()) : [];
 };
 
+/**
+ * Get parents relations
+ * @returns {*|*[]}
+ */
 proto.getFathers = function() {
   return this.isChild() ? this._relations.getFathers(this.getId()) : [];
 };
 
+/**
+ * Check if it has children
+ * @returns {*|boolean}
+ */
 proto.hasChildren = function() {
   return this.hasRelations() ? this._relations.hasChildren(this.getId()) : false;
 };
 
+/**
+ * Check if it has fathers
+ * @returns {*|boolean}
+ */
 proto.hasFathers = function() {
   return this.hasRelations() ? this._relations.hasFathers(this.getId()) : false;
 };
@@ -335,29 +421,43 @@ proto.hasRelations = function() {
 //end relations
 
 
-// global state
+/**
+ * @TODO Add description
+ * @param pageLength
+ */
 proto.setAttributeTablePageLength = function(pageLength) {
   this.state.attributetable.pageLength = pageLength
 };
 
+/**
+ * @TODO add description
+ * @returns {null}
+ */
 proto.getAttributeTablePageLength = function() {
   return this.state.attributetable.pageLength;
 };
 
 // end global state
 
-//filter token
+/**
+ * Set filter Ative to layer
+ * @param bool
+ */
 proto.setFilter = function(bool=false) {
   this.state.filter.active = bool;
 };
 
 /**
- * get current filter fid set on layer
+ * get current filter
  */
 proto.getCurrentFilter = function() {
   return this.state.filter.current;
 };
 
+/**
+ * @TODO Add description here
+ * @returns {boolean}
+ */
 proto.getFilterActive = function() {
   return this.state.filter.active;
 };
@@ -419,8 +519,8 @@ proto.applyFilter = async function(filter) {
 proto._applyFilterToken = async function(filter) {
   const {filtertoken} = await this.providers['filtertoken'].applyFilterToken(filter.fid);
   if (filtertoken) {
-    this.state.filter.active = false;
-    this.state.filter.current = filter;
+    this.setFilter(false);
+    this.setCurrentFilter(filter);
     this.setFilterToken(filtertoken);
   }
 }
@@ -501,9 +601,9 @@ proto.saveFilter = async function(name) {
           this.state.filters.push(filter)
         }
         //set current filter
-        this.state.filter.current = filter;
+        this.setCurrentFilter(filter);
         //set to false
-        this.state.filter.active = false;
+        this.setFilter(false);
         //reset selection to false
         this.state.selection.active = false;
         //clear current fids
@@ -532,7 +632,7 @@ Method to set unset filter token on layer
 proto.toggleFilterToken = async function() {
 
   //toggle boolean value of filter active
-  this.state.filter.active = !this.state.filter.active;
+  this.setFilter(!this.state.filter.active);
 
   //check id a current save filter is set
   if (this.state.filter.current) {
@@ -581,9 +681,9 @@ proto.deleteFilterToken = async function(fid) {
     }
 
     //in any case set current filter set to null
-    this.state.filter.current = null;
+    this.setCurrentFilter(null);
     //set active filter to false
-    this.state.filter.active = false;
+    this.setFilter(false);
 
     //set filtertoken to application
     this.setFilterToken(filtertoken);
@@ -683,6 +783,7 @@ proto.invertSelectionFids = function() {
 
   this.setSelection(this.selectionFids.size > 0);
 };
+
 
 proto.hasSelectionFid = function(fid) {
   if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
