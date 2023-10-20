@@ -594,7 +594,9 @@ proto.deleteFilterToken = async function(fid) {
  *
  */
 proto.setFilterToken = function(filtertoken=null) {
+  //set applicaton filter token
   ApplicationService.setFilterToken(filtertoken);
+  //emit "filtertokenchange" event that for this layer filtertoken is changed
   this.emit('filtertokenchange', { layerId: this.getId() });
 }
 
@@ -604,12 +606,13 @@ proto.setFilterToken = function(filtertoken=null) {
 proto.createFilterToken = async function() {
   let filtertoken = null;
   try {
-    // skip when ..
+    // skip when no filter token provider is set or this.selectionFids is empty
     if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
       return;
     }
-    // create filter token
+    // Check if is set all featutes
     if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
+      // if set, filter token is removed
       await this.providers['filtertoken'].deleteFilterToken();
     } else {
       const params = {};
