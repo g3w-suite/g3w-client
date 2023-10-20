@@ -128,6 +128,7 @@
           v-t-tooltip:top.create.text="layerstree.filter.current.name"
         >
           <span
+            style="color: green"
             :class="g3wtemplate.getFontClass('filter')">
           </span>
         </span>
