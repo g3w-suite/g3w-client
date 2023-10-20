@@ -402,8 +402,12 @@ proto.applyFilter = async function(filter) {
   if (!this.providers['filtertoken']) {
     return;
   }
-  await this.clearSelectionFids();
-  GUI.closeContent();
+  //need to check if current filter is set and is different from current
+  if (null === this.state.filter.current || filter.fid !== this.state.filter.current.fid ) {
+    await this.clearSelectionFids();
+    GUI.closeContent();
+  }
+
   await this._applyFilterToken(filter)
 }
 
@@ -530,13 +534,11 @@ proto.toggleFilterToken = async function() {
   //toggle boolean value of filter active
   this.state.filter.active = !this.state.filter.active;
 
-  if (this.state.filter.active) {
-    await this.activeFilterToken(this.state.filter.active);
+  //if untoggled need to set current filter to null
+  if (!this.state.filter.active && this.state.filter.current) {
+    await this.applyFilter(this.state.filter.current);
   } else {
-    //if untoggled need to set current filter to null
-    if (this.state.filter.current) {
-      await this.applyFilter(this.state.filter.current);
-    }
+    await this.activeFilterToken(this.state.filter.active);
   }
 
   return this.state.filter.active;
@@ -557,6 +559,7 @@ proto.deleteFilterToken = async function(fid) {
       return;
     }
     const filtertoken = await this.providers['filtertoken'].deleteFilterToken(fid);
+    console.log(filtertoken)
 
     /**
      * @since v3.9.0
@@ -575,9 +578,8 @@ proto.deleteFilterToken = async function(fid) {
      * @since v3.9.0
      * In case of response of server no filtertoken is returned set application filtertoken to null
      */
-    if (undefined === filtertoken) {
-      this.setFilterToken(null);
-    }
+    this.setFilterToken(filtertoken);
+
   } catch(err) {
     console.log('Error deleteing filtertoken')
   }
@@ -591,7 +593,7 @@ proto.deleteFilterToken = async function(fid) {
  * @fires filtertokenchange
  *
  */
-proto.setFilterToken = function(filtertoken) {
+proto.setFilterToken = function(filtertoken=null) {
   ApplicationService.setFilterToken(filtertoken);
   this.emit('filtertokenchange', { layerId: this.getId() });
 }
