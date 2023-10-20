@@ -716,7 +716,6 @@ proto.toggleFilterToken = async function() {
     this[this.state.filter.active ? 'setOlSelectionFeatures': 'showAllOlSelectionFeatures']();
   }
 
-
   return this.state.filter.active;
 };
 
