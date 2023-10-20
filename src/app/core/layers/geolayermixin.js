@@ -55,7 +55,7 @@ proto.setup = function(config={}, options={}) {
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
 
     /**
-     * Has more than one categories legend
+     * Has more than one category's legend
      * 
      * @type {boolean}
      */
