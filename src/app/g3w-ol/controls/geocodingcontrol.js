@@ -2,7 +2,6 @@
  * @file need some inspiration for other geocoding providers? 👉 https://github.com/Dominique92/ol-geocoder
  */
 
-import ApplicationState           from 'store/application-state';
 import GUI                        from 'services/gui';
 import MapControlGeocoding        from 'components/MapControlGeocoding.vue';
 import nominatim                  from 'utils/search_from_nominatim';
@@ -54,29 +53,9 @@ function GeocodingControl(options = {}) {
    * Geocoding options
    */
   this.options = {
-    provider:              'osm',
-    placeholder:           (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder")        || 'Città, indirizzo ... ',
-    noresults:             (undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults")          || 'Nessun risultato ',
-    notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver")  || 'Il server non risponde',
     viewbox:               (undefined !== options.bbox              ? options.bbox              : project.state.initextent || project.state.extent),
     mapCrs:                (undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg),
-    lang:                  ApplicationState.language || 'it-IT',
-    limit:                 options.limit             || 5,
-    keepOpen:              true,
-    preventDefault:        false,
-    autoComplete:          false,
-    autoCompleteMinLength: 4,
-    debug:                 false,
-    bounded:               1,
-    fontIcon:              GUI.getFontClass('search'),
   };
-
-  /**
-   * Geocoding Providers
-   * 
-   * @type { Object }
-   */
-  this.providers = [ nominatim, bing, google ];
 
   /**
    * Search results layer (marker)
@@ -95,24 +74,18 @@ function GeocodingControl(options = {}) {
    */
   this._geocoder = new GeocoderVueContainer({
     propsData: {
-      fontIcon:       this.options.fontIcon,
-      placeholder:    this.options.placeholder,
-      noresults:      this.options.noresults,
+      providers:      [ nominatim, bing, google ],
+      placeholder:    (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder")        || 'Città, indirizzo ... ',
+      noresults:      (undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults")          || 'Nessun risultato ',
+      // notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver")  || 'Il server non risponde', // <-- TODO ?
+      limit:          options.limit || 5,
       ctx:            this,
     }
   });
 
-  /**
-   * DOM control element
-   */
-  this.container = this._geocoder.$mount().$el;
-
-  // create DOM control elements
-  // this.control = this.container.getElementsByClassName(css.inputTextControl)[0];
-
   // parent constructor
   Control.call(this, {
-    element: this.container,
+    element: this._geocoder.$mount().$el,
     name: "nominatim",
     offline: false,
   });
@@ -145,29 +118,12 @@ proto.hideMarker = function(){
 };
 
 /**
- * Run geocoding request
- * 
- * @param { string } q query string in this format: "XCoord,YCoord,EPSGCode"
- */
-proto.query = function(q) {
-  return this._geocoder.query(q);
-};
-
-/**
- * Clear list of results
- */
-proto.clearResults = function() {
-  this._geocoder.clear();
-  this.hideMarker();
-};
-
-/**
  * @since 3.9.0
  */
 proto.getExtentForProvider = function (provider) {
   // const extent = ol.proj.transformExtent(
-  //   DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.ctx.options.viewbox,
-  //   this.ctx.options.mapCrs,
+  //   DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.options.viewbox,
+  //   this.options.mapCrs,
   //   'EPSG:4326'
   // );
 

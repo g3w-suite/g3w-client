@@ -21,10 +21,10 @@
         type            = "button"
         id              = "search_nominatim"
         class           = "btn"
-        @click          = "() => ctx.query($refs.input.value)"
+        @click          = "() => query($refs.input.value)"
       >
         <i
-          :class      = "fontIcon"
+          :class      = "g3wtemplate.getFontClass('search')"
           style       = "color: #ffffff"
           aria-hidden = "true"
         ></i>
@@ -111,18 +111,20 @@
 </template>
 
 <script>
-const { toRawType } = require('utils');
-const Projections = require('g3w-ol/projection/projections');
+import ApplicationState  from 'store/application-state';
+import GUI               from 'services/gui';
+
+
+const { toRawType }      = require('utils');
+const Projections        = require('g3w-ol/projection/projections');
 
 let timeout;
 
-export default {
 
-  // functional: true,
+export default {
 
   data() {
     return {
-      document,
       /** @since 3.9.0 */
       _results: [],
     };
@@ -130,19 +132,14 @@ export default {
 
   props: {
 
-    fontIcon: {
-      type: String,
-      required: true
-    },
-
     placeholder: {
       type: String,
-      required: true
+      required: true,
     },
 
     ctx: {
       type: Object,
-      required: true
+      required: true,
     },
 
     /**
@@ -150,18 +147,44 @@ export default {
      */
     noresults: {
       type: String,
-      required: true
+      required: true,
     },
+
+    /**
+     * @since 3.9.0
+     */
+     limit: {
+      type: Number,
+      required: true,
+    },
+
+    /**
+     * @since 3.9.0
+     */
+    providers: {
+      type: Object,
+      required: true,
+    }
 
   },
 
   methods: {
 
+    /**
+     * Clear list of results
+     * 
+     * @since 3.9.0
+     */
     clear() {
       this.$data._results.splice(0);
+      this.ctx.hideMarker();
     },
-
+    
     /**
+     * Run geocoding request
+     * 
+     * @param { string } q query string in this format: "XCoord,YCoord,EPSGCode"
+     * 
      * @since 3.9.0
      */
     query(q) {
@@ -193,17 +216,17 @@ export default {
         if (!coordinates) {
 
           // clear previous result
-          this.ctx.clearResults();
+          this.clear();
           this.$refs.reset.classList.add("gcd-pseudo-rotate");
 
           // request data
           const results = await Promise.allSettled(
-            this.ctx.providers
+            this.providers
               .map(p => p({
                 query:        q,
-                lang:         this.ctx.options.lang,
-                countrycodes: this.ctx.options.countrycodes,
-                limit:        this.ctx.options.limit,
+                lang:         ApplicationState.language || 'it-IT',
+                // countrycodes: _options.countrycodes,             // <-- TODO ?
+                limit:        this.limit,
                 extent:       this.ctx.getExtentForProvider(p),
               }))
           );
@@ -226,7 +249,7 @@ export default {
      * @since 3.9.0 
      */
     _showResults(results) {
-    results.forEach((p) => {
+      results.forEach((p) => {
 
         // heading
         this.$data._results.push({
@@ -272,19 +295,13 @@ export default {
     _onQuery(evt) {
       if ('Enter' === evt.key || 13 === evt.which || 13 === evt.keyCode) {
         evt.preventDefault();
-        this.ctx.query(evt.target.value.trim());
+        this.query(evt.target.value.trim());
       }
     },
 
     _onValue(evt) {
       const value = evt.target.value.trim();
       this.$refs.reset.classList.toggle("gcd-hidden", !value.length);
-      if (this.ctx.options.autoComplete && timeout) {
-        clearTimeout(timeout)
-      }
-      if (this.ctx.options.autoComplete) {
-        timeout = setTimeout(() => (value.length >= this.ctx.options.autoCompleteMinLength) && this.ctx.query(value), 200);
-      }
     },
 
     /**
@@ -294,7 +311,7 @@ export default {
       this.$refs.input.focus();
       this.$refs.input.value = '';
       this.$refs.reset.classList.add("gcd-hidden");
-      this.ctx.clearResults();
+      this.clear();
     },
 
     /**
@@ -307,9 +324,6 @@ export default {
       return (evt) => {
         evt.preventDefault();
         if ('nominatim' !== item.provider) {
-          if (false === this.ctx.options.keepOpen) {
-            this.ctx.clearResults(true);
-          }
           this.ctx.showMarker([parseFloat(item.lon), parseFloat(item.lat)]);
         } else {
           try {
