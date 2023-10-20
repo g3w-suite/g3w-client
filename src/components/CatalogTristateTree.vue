@@ -126,9 +126,11 @@
           v-if="!isGroup && !layerstree.external && null !== layerstree.filter.current"
           :current-tooltip="layerstree.filter.current.name"
           v-t-tooltip:top.create.text="layerstree.filter.current.name"
+          style="cursor: pointer"
+          @click.stop="removeCurrentFilter"
         >
           <span
-            style="color: green"
+            style="color: #FFFFFF"
             :class="g3wtemplate.getFontClass('filter')">
           </span>
         </span>
@@ -365,6 +367,15 @@ export default {
   },
 
   methods: {
+    /**
+     * @since v3.9
+     * Remove current active filter
+     */
+    async removeCurrentFilter() {
+      await CatalogLayersStoresRegistry
+        .getLayerById(this.layerstree.id)
+        .deleteFilterToken();
+    },
 
     /**
      * Inizialize layer (disable, visible etc..)
