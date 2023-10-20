@@ -341,6 +341,11 @@ export default {
   .ol-geocoder ul.gcd-txt-result>li>a>*:not(:last-of-type) {
     margin-bottom: 10px;
   }
+  li:not(.skin-background-color) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
   li.nominatim .gcd-name,
   li.nominatim .gcd-type,
   li.nominatim .gcd-icon,
@@ -348,10 +353,5 @@ export default {
   li.bing .gcd-city,
   li.bing .gcd-country {
     display: none;
-  }
-  li:not(.skin-background-color) {
-    display: flex;
-    align-items: center;
-    gap: 10px;
   }
 </style>
