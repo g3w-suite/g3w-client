@@ -3,16 +3,16 @@
   @since 3.9.0
 -->
 <template>
-  <div :class="`${cssClasses.namespace} ${cssClasses.inputTextContainer}`">
+  <div class="ol-geocoder gcd-txt-container">
 
     <!-- SEARCH INPUT -->
-    <div :class="cssClasses.inputTextControl">
+    <div class="gcd-txt-control">
       <input
         ref             = "input"
         type            = "text"
-        :id             = "cssClasses.inputQueryId"
+        id              = "gcd-input-query"
         autocomplete    = "off"
-        :class          = "cssClasses.inputTextInput"
+        class           = "gcd-txt-input"
         v-t-placeholder = "placeholder"
         @keyup          = "_onQuery"
         @input          = "_onValue"
@@ -21,7 +21,7 @@
         type            = "button"
         id              = "search_nominatim"
         class           = "btn"
-        @click          = "() => ctx.query(document.querySelector(`input.${this.cssClasses.inputTextInput}`).value)"
+        @click          = "() => ctx.query($refs.input.value)"
       >
         <i
           :class      = "fontIcon"
@@ -32,16 +32,16 @@
       <button
         ref    = "reset"
         type   = "button"
-        :id    = "cssClasses.inputResetId"
-        :class = "[cssClasses.inputTextReset, cssClassesHidden]"
+        id     = "gcd-input-reset"
+        class  = "gcd-txt-reset gcd-hidden"
         @click = "_onReset"
       ></button>
     </div>
 
     <!-- SEARCH RESULTS -->
     <ul
-      ref    = "result"
-      :class = "cssClasses.inputTextResult"
+      ref   = "result"
+      class = "gcd-txt-result"
     >
       <li
         v-for   = "(item, i) in $data._results"
@@ -66,7 +66,8 @@
         ></span>
         <!-- NO RESULTS -->
         <template v-else>
-          <a href="">
+          <!-- TODO: remove outer link (which is used only for styling purposes..) -->
+          <a href="" draggable="false">
             <img
               v-if="'nominatim' !== item.provider"
               style="float: right;"
@@ -79,19 +80,19 @@
             <template v-if="item.address">
               <div
                 v-if   = "item.address.name"
-                :class = "cssClasses.road"
+                class = "gcd-road"
               >{{ item.address.name }}</div>
               <div
-                v-if   = "item.address.road || item.address.building || item.address.house_number"
-                :class = "cssClasses.road"
+                v-if  = "item.address.road || item.address.building || item.address.house_number"
+                class = "gcd-road"
               >{{ item.address.building }} {{ item.address.road }} {{ item.address.house_number }}</div>
               <div
-                v-if   = "item.address.city || item.address.town || item.address.village"
-                :class = "cssClasses.city"
+                v-if  = "item.address.city || item.address.town || item.address.village"
+                class = "gcd-city"
               >{{ item.address.postcode }} {{ item.address.city }} {{ item.address.town }} {{ item.address.village }}</div>
               <div
-                v-if   = "item.address.state || item.address.country"
-                :class = "cssClasses.country"
+                v-if  = "item.address.state || item.address.country"
+                class = "gcd-country"
               >{{ item.address.state }} {{ item.address.country }}</div>
             </template>
           </a>
@@ -115,23 +116,6 @@ export default {
   data() {
     return {
       document,
-      /** @since 3.9.0 */
-      cssClasses: {
-        namespace: "ol-geocoder",
-        spin: "gcd-pseudo-rotate",
-        hidden: "gcd-hidden",
-        inputQueryId: "gcd-input-query",
-        inputResetId: "gcd-input-reset",
-        country: "gcd-country",
-        city: "gcd-city",
-        road: "gcd-road",
-        olControl: "ol-control",
-        inputTextContainer: "gcd-txt-container",
-        inputTextControl: "gcd-txt-control",
-        inputTextInput: "gcd-txt-input",
-        inputTextReset: "gcd-txt-reset",
-        inputTextResult: "gcd-txt-result"
-      },
       /** @since 3.9.0 */
       _results: [],
     };
@@ -203,7 +187,7 @@ export default {
 
           // clear previous result
           this.ctx.clearResults();
-          this.$refs.reset.classList.add(this.cssClasses.spin);
+          this.$refs.reset.classList.add("gcd-pseudo-rotate");
 
           // request data
           const results = await Promise.allSettled(
@@ -218,48 +202,8 @@ export default {
           );
 
           // update search results
-          results
-            .filter(p => 'fulfilled' === p.status)
-            .forEach((p) => {
-
-              // heading
-              this.$data._results.push({
-                __uid: Date.now(),
-                __heading: true,
-                provider: p.value.provider,
-                label: p.value.label,
-              });
-
-              // no results
-              if (!(p.value.results && p.value.results.length)) {
-                this.$data._results.push({
-                  __uid: Date.now(),
-                  __no_results: !(p.value.results && p.value.results.length),
-                });
-                return;
-              }
-
-              // results
-              p.value.results.forEach(item => {
-                this.$data._results.push({
-                  __uid: Date.now(),
-                  provider: p.value.provider,
-                  ...item,
-                });
-                if ('nominatim' !== p.value.provider) {
-                  try {
-                    const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', this.ctx.getMap().getView().getProjection())
-                    this.ctx.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
-                    this.ctx.getMap().addLayer(this.ctx.layer);
-                  } catch (e) {
-                    console.log(e);
-                  }
-                }
-              });
-
-            });
-
-          this.$refs.reset.classList.remove(this.cssClasses.spin);
+          this._showResults(results.filter(p => 'fulfilled' === p.status));
+          this.$refs.reset.classList.remove("gcd-pseudo-rotate");
         }
 
         // request is for a single point (XCoord,YCoord)
@@ -267,6 +211,50 @@ export default {
           this.ctx.showMarker(coordinates, { transform });
           resolve(coordinates);
         }
+
+      });
+    },
+
+    /**
+     * @since 3.9.0 
+     */
+    _showResults(results) {
+    results.forEach((p) => {
+
+        // heading
+        this.$data._results.push({
+          __uid: Date.now(),
+          __heading: true,
+          provider: p.value.provider,
+          label: p.value.label,
+        });
+
+        // no results
+        if (!(p.value.results && p.value.results.length)) {
+          this.$data._results.push({
+            __uid: Date.now(),
+            __no_results: !(p.value.results && p.value.results.length),
+          });
+          return;
+        }
+
+        // results
+        p.value.results.forEach(item => {
+          this.$data._results.push({
+            __uid: Date.now(),
+            provider: p.value.provider,
+            ...item,
+          });
+          if ('nominatim' !== p.value.provider) {
+            try {
+              const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', this.ctx.getMap().getView().getProjection())
+              this.ctx.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+              this.ctx.getMap().addLayer(this.ctx.layer);
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        });
 
       });
     },
@@ -283,7 +271,7 @@ export default {
 
     _onValue(evt) {
       const value = evt.target.value.trim();
-      this.$refs.reset.classList.toggle(this.cssClasses.hidden, !value.length);
+      this.$refs.reset.classList.toggle("gcd-hidden", !value.length);
       if (this.ctx.options.autoComplete && timeout) {
         clearTimeout(timeout)
       }
@@ -298,7 +286,7 @@ export default {
     _onReset() {
       this.$refs.input.focus();
       this.$refs.input.value = '';
-      this.$refs.reset.classList.add(this.cssClasses.hidden);
+      this.$refs.reset.classList.add("gcd-hidden");
       this.ctx.clearResults();
     },
 
