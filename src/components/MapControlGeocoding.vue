@@ -45,21 +45,26 @@
     >
       <li
         v-for   = "(item, i) in $data._results"
-        :class  = "item.__heading ? item.provider + ' skin-background-color' : ''"
+        :class  = "[
+          item.__heading ? item.provider + ' skin-background-color' : '',
+          item.__no_results ? 'nominatim-noresult' : '',
+        ]"
         :key    = "item.__uid"
         @click  = "_onItemClick(item)"
       >
+        <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
         <div
           v-if  = "item.__heading"
           style = "display: flex; justify-content: space-between; padding: 5px"
         >
           <span style="color: #FFFFFF; font-weight: bold">{{ item.label }}</span>
         </div>
+        <!-- NO RESULTS -->
         <span
           v-else-if = "item.__no_results"
-          class     = "nominatim-noresult"
           v-t       = "noresults"
         ></span>
+        <!-- NO RESULTS -->
         <template v-else>
           <a href="">
             <img
@@ -98,23 +103,8 @@
 </template>
 
 <script>
-
-import GUI from 'services/gui';
-
-// import nominatim                  from 'utils/search_from_nominatim';
-import bing from 'utils/search_from_bing';
-// import google                     from 'utils/search_from_google';
-
 const { toRawType } = require('utils');
 const Projections = require('g3w-ol/projection/projections');
-
-/**
- * @TODO add a server option to let user choose geocoding extent, eg:
- * 
- * - "dynamic": filter search results based on current map extent
- * - "initial": filter search results based on on initial map extent
- */
-const DYNAMIC_MAP_EXTENT = false;
 
 let timeout;
 
@@ -142,6 +132,7 @@ export default {
         inputTextReset: "gcd-txt-reset",
         inputTextResult: "gcd-txt-result"
       },
+      /** @since 3.9.0 */
       _results: [],
     };
   },
@@ -186,11 +177,11 @@ export default {
       this.ctx.hideMarker();
 
       return new Promise(async (resolve, reject) => {
-        const isNumber = value => 'Number' === toRawType(value) && !Number.isNaN(value);
-        let coordinates = null;
-        let transform = false;
+        const isNumber     = value => 'Number' === toRawType(value) && !Number.isNaN(value);
+        let coordinates    = null;
+        let transform      = false;
         const [x, y, epsg] = (q || '').split(',');
-        const code = epsg && Projections.get(`EPSG:${epsg.trim()}`);
+        const code         = epsg && Projections.get(`EPSG:${epsg.trim()}`);
 
         // extract xCoord and yCoord
         if (isNumber(1 * x) && isNumber(1 * y)) {
@@ -210,12 +201,6 @@ export default {
         // request is for a place (Address, Place, etc..)
         if (!coordinates) {
 
-          // const extent    = ol.proj.transformExtent(
-          //   DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.ctx.options.viewbox,
-          //   this.ctx.options.mapCrs,
-          //   'EPSG:4326'
-          // );
-
           // clear previous result
           this.ctx.clearResults();
           this.$refs.reset.classList.add(this.cssClasses.spin);
@@ -224,65 +209,55 @@ export default {
           const results = await Promise.allSettled(
             this.ctx.providers
               .map(p => p({
-                query: q,
-                lang: this.ctx.options.lang,
+                query:        q,
+                lang:         this.ctx.options.lang,
                 countrycodes: this.ctx.options.countrycodes,
-                limit: this.ctx.options.limit,
-                extent: ol.proj.transformExtent(
-                  p === bing ? GUI.getService('map').getMapExtent() : this.ctx.options.viewbox,
-                  this.ctx.options.mapCrs,
-                  'EPSG:4326'
-                ),
+                limit:        this.ctx.options.limit,
+                extent:       this.ctx.getExtentForProvider(p),
               }))
           );
 
           // update search results
-          results.forEach((p) => {
+          results
+            .filter(p => 'fulfilled' === p.status)
+            .forEach((p) => {
 
-            // skip invalid requests
-            if ('fulfilled' !== p.status) {
-              return;
-            }
-
-            // heading
-            this.$data._results.push({
-              __uid: Date.now(),
-              __heading: true,
-              __no_results: !(p.value.results && p.value.results.length),
-              provider: p.value.provider,
-              label: p.value.label,
-            });
-
-            // no results
-            if (!(p.value.results && p.value.results.length)) {
+              // heading
               this.$data._results.push({
                 __uid: Date.now(),
-                __no_results: !(p.value.results && p.value.results.length),
-              });
-              return;
-            }
-
-            // results
-            p.value.results.forEach(item => {
-              this.$data._results.push({
-                __uid: Date.now(),
+                __heading: true,
                 provider: p.value.provider,
-                ...item,
+                label: p.value.label,
               });
-              if ('nominatim' !== p.value.provider) {
-                try {
-                  const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', this.ctx.getMap().getView().getProjection())
-                  this.ctx.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
-                  this.ctx.getMap().addLayer(this.ctx.layer);
-                } catch (e) {
-                  console.log(e);
-                }
+
+              // no results
+              if (!(p.value.results && p.value.results.length)) {
+                this.$data._results.push({
+                  __uid: Date.now(),
+                  __no_results: !(p.value.results && p.value.results.length),
+                });
+                return;
               }
+
+              // results
+              p.value.results.forEach(item => {
+                this.$data._results.push({
+                  __uid: Date.now(),
+                  provider: p.value.provider,
+                  ...item,
+                });
+                if ('nominatim' !== p.value.provider) {
+                  try {
+                    const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', this.ctx.getMap().getView().getProjection())
+                    this.ctx.layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+                    this.ctx.getMap().addLayer(this.ctx.layer);
+                  } catch (e) {
+                    console.log(e);
+                  }
+                }
+              });
+
             });
-
-            console.log(this);
-
-          });
 
           this.$refs.reset.classList.remove(this.cssClasses.spin);
         }
@@ -291,7 +266,6 @@ export default {
         if (coordinates) {
           this.ctx.showMarker(coordinates, { transform });
           resolve(coordinates);
-          return;
         }
 
       });

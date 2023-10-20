@@ -19,6 +19,14 @@ const pushpin_icon = new ol.style.Icon({
   scale: 0.8
 });
 
+/**
+ * @TODO add a server option to let user choose geocoding extent, eg:
+ * 
+ * - "dynamic": filter search results based on current map extent
+ * - "initial": filter search results based on on initial map extent
+ */
+const DYNAMIC_MAP_EXTENT = false;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Geocoding Control
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -151,6 +159,23 @@ proto.query = function(q) {
 proto.clearResults = function() {
   this._geocoder.clear();
   this.hideMarker();
+};
+
+/**
+ * @since 3.9.0
+ */
+proto.getExtentForProvider = function (provider) {
+  // const extent = ol.proj.transformExtent(
+  //   DYNAMIC_MAP_EXTENT ? GUI.getService('map').getMapExtent() : this.ctx.options.viewbox,
+  //   this.ctx.options.mapCrs,
+  //   'EPSG:4326'
+  // );
+
+  return ol.proj.transformExtent(
+    provider === bing ? GUI.getService('map').getMapExtent() : this.options.viewbox,
+    this.options.mapCrs,
+    'EPSG:4326'
+  )
 };
 
 
