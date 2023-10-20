@@ -554,10 +554,12 @@ proto.activeFilterToken = async function(bool) {
  */
 proto.deleteFilterToken = async function(fid) {
   try {
-    // skip when ..
+    // skip when no filtertoken provider is set
     if (!this.providers['filtertoken']) {
       return;
     }
+    //call deleteFilterToken rpovider method to delete filtertoken related to layer.
+    // Return filter token if another layer is filtered otherwise filtertoken is undefined
     const filtertoken = await this.providers['filtertoken'].deleteFilterToken(fid);
 
     /**
@@ -570,13 +572,12 @@ proto.deleteFilterToken = async function(fid) {
       this.state.filters = this.state.filters.filter(f => fid !== f.fid);
     }
 
+    //in any case set current filter set to null
     this.state.filter.current = null;
+    //set active filter to false
     this.state.filter.active = false;
 
-    /**
-     * @since v3.9.0
-     * In case of response of server no filtertoken is returned set application filtertoken to null
-     */
+    //set filtertoken to application
     this.setFilterToken(filtertoken);
 
   } catch(err) {
