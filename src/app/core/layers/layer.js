@@ -559,7 +559,6 @@ proto.deleteFilterToken = async function(fid) {
       return;
     }
     const filtertoken = await this.providers['filtertoken'].deleteFilterToken(fid);
-    console.log(filtertoken)
 
     /**
      * @since v3.9.0
