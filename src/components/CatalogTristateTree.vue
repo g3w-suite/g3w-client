@@ -122,6 +122,15 @@
         :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
+        <span
+          v-if="!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :current-tooltip="layerstree.filter.current.name"
+          v-t-tooltip:top.create.text="layerstree.filter.current.name"
+        >
+          <span
+            :class="g3wtemplate.getFontClass('filter')">
+          </span>
+        </span>
         <span>{{ layerstree.title }}</span>
         <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">[{{getFeatureCount}}]</span>
       </span>
