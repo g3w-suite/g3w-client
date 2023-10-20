@@ -5,8 +5,14 @@
 
 <template>
   <span>
-    <input type="checkbox" :id="id" :checked="feature.selected" class="magic-checkbox">
-    <label @click.capture.stop.prevent="select" :for="id">
+    <input
+      type="checkbox"
+      :id="id"
+      :checked="feature.selected"
+      class="magic-checkbox">
+    <label
+      :for="id"
+      @click.capture.stop.prevent="select">
       <span></span>
     </label>
   </span>
@@ -28,16 +34,12 @@ export default {
     }
   },
   methods: {
-    select(){
+    select() {
       this.$emit('selected', this.feature);
     }
   },
-  destroyed(){
+  destroyed() {
     this.$off('selected')
   }
 }
 </script>
-
-<style scoped>
-
-</style>
