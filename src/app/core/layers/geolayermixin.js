@@ -156,11 +156,11 @@ proto.getOlSelectionFeature = function(id){
  * @param id
  * @param feature
  */
-proto.updateOlSelectionFeature = function({id, feature}={}){
+proto.updateOlSelectionFeature = function({id, feature}={}) {
+  const mapService = GUI.getService('map');
   const featureObject = this.getOlSelectionFeature(id);
   if (featureObject) {
     featureObject.feature = feature;
-    const mapService = GUI.getService('map');
     mapService.setSelectionFeatures('update', {
       feature
     })
@@ -203,22 +203,32 @@ proto.addOlSelectionFeature = function({id, feature}={}) {
   return this.olSelectionFeatures[id];
 };
 
+/**
+ * Set selection layer on map not visible
+ */
+proto.hideOlSelectionFeatures = function() {
+  const mapService = GUI.getService('map');
+  mapService.setSelectionLayerVisible(false);
+}
 
 /**
  * Show all selection feature
  */
 proto.showAllOlSelectionFeatures = function() {
   const mapService = GUI.getService('map');
+  //Loop on added (selected) features only
   Object
     .values(this.olSelectionFeatures)
     .forEach(featureObject => {
-      if (!featureObject.added) {
+      //check only featureObject.added true
+      if (featureObject.added) {
         mapService.setSelectionFeatures('add', {
           feature: featureObject.feature
         });
       }
-      featureObject.added = true;
-    })
+    });
+  //Be sure that selection layer on map will be visible
+  mapService.setSelectionLayerVisible(true);
 };
 
 /**
