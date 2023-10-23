@@ -25,7 +25,7 @@
         type            = "button"
         id              = "search_nominatim"
         class           = "btn"
-        @click          = "() => query($refs.input.value)"
+        @click.stop     = "() => query($refs.input.value)"
       >
         <i
           :class      = "g3wtemplate.getFontClass('search')"
@@ -34,11 +34,11 @@
         ></i>
       </button>
       <button
-        ref    = "reset"
-        type   = "button"
-        id     = "gcd-input-reset"
-        class  = "gcd-txt-reset gcd-hidden"
-        @click = "_onReset"
+        ref         = "reset"
+        type        = "button"
+        id          = "gcd-input-reset"
+        class       = "gcd-txt-reset gcd-hidden"
+        @click.stop = "_onReset"
       ></button>
     </div>
 
@@ -54,8 +54,8 @@
           item.__heading ? 'skin-background-color' : '',
           item.__no_results ? 'nominatim-noresult' : '',
         ]"
-        :key    = "item.__uid"
-        @click  = "_onItemClick($event, item)"
+        :key         = "item.__uid"
+        @click.stop  = "_onItemClick($event, item)"
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
         <div
@@ -154,7 +154,8 @@ const DYNAMIC_MAP_EXTENT = false;
  * Show current location/place on map as marker icon
  */
 function _showMarker(coordinates, options = { transform: true }) {
-  const map = GUI.getService('map').getMap();
+  const mapService = GUI.getService('map');
+  const map = mapService.getMap();
   _hideMarker();
   coordinates = options.transform
     ? ol.proj.transform(coordinates, 'EPSG:4326', map.getView().getProjection())
@@ -162,7 +163,7 @@ function _showMarker(coordinates, options = { transform: true }) {
   const geometry =  new ol.geom.Point(coordinates);
   layer.getSource().addFeature(new ol.Feature(geometry));
   map.addLayer(layer);
-  GUI.getService('map').zoomToGeometry(geometry);
+  mapService.zoomToGeometry(geometry);
 };
 
 /**
@@ -265,7 +266,10 @@ export default {
         let coordinates    = null;
         let transform      = false;
         const [x, y, epsg] = (q || '').split(',');
-        const code         = epsg && Projections.get(`EPSG:${epsg.trim()}`);
+        //get projection of coordinates is pass as third value
+        const projection         = epsg && Projections.get({
+          epsg: `EPSG:${epsg.trim()}`
+        });
 
         // extract xCoord and yCoord
         if (isNumber(1 * x) && isNumber(1 * y)) {
@@ -274,12 +278,18 @@ export default {
 
         // whether EPSGCode is allowed on this project
         try {
-          if (code) {
-            coordinates = ol.proj.transform(coordinates, Projections.get(`EPSG:${epsg.trim()}`), 'EPSG:4326');
+          if (projection) {
+            coordinates = ol.proj.transform(coordinates, projection.getCode(), 'EPSG:4326');
             transform = true;
           }
         } catch (err) {
           console.warn(err);
+        }
+
+        // request is for a single point (XCoord,YCoord)
+        if (coordinates) {
+          _showMarker(coordinates, { transform });
+          resolve(coordinates);
         }
 
         // request is for a place (Address, Place, etc..)
@@ -304,12 +314,6 @@ export default {
           // update search results
           this._showResults(results.filter(p => 'fulfilled' === p.status));
           this.$refs.reset.classList.remove("gcd-pseudo-rotate");
-        }
-
-        // request is for a single point (XCoord,YCoord)
-        if (coordinates) {
-          _showMarker(coordinates, { transform });
-          resolve(coordinates);
         }
 
       });
