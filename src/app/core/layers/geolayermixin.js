@@ -118,6 +118,9 @@ proto.getCategories = function(){
   return this.legendCategories[this.getCurrentStyle().name];
 };
 
+/**
+ * Clear alla categories
+ */
 proto.clearCategories = function(){
   this.legendCategories = {};
   this.state.categories = false;
@@ -127,8 +130,13 @@ proto.clearCategories = function(){
  * End Legend Graphic section
  */
 
+
 /**
- * Clear all selection openlayer features
+ * SELECTION SECTION
+ */
+
+/**
+ * Clear all selection Openlayers features
  */
 proto.clearOlSelectionFeatures = function(){
   this.olSelectionFeatures = null;
@@ -143,6 +151,11 @@ proto.getOlSelectionFeature = function(id){
   return this.olSelectionFeatures[id];
 };
 
+/**
+ * Update selected feature (Case change geometry)
+ * @param id
+ * @param feature
+ */
 proto.updateOlSelectionFeature = function({id, feature}={}){
   const featureObject = this.getOlSelectionFeature(id);
   if (featureObject) {
@@ -169,13 +182,19 @@ proto.deleteOlSelectionFeature = function(id){
 };
 
 /**
- * Get all openlyare feature selection
+ * Get all OpenLayers feature selection
  * @returns {{}|null}
  */
 proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };
 
+/**
+ *
+ * @param id
+ * @param feature
+ * @returns {*}
+ */
 proto.addOlSelectionFeature = function({id, feature}={}) {
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
     feature: createFeatureFromFeatureObject({id, feature}),
@@ -184,7 +203,11 @@ proto.addOlSelectionFeature = function({id, feature}={}) {
   return this.olSelectionFeatures[id];
 };
 
-proto.showAllOlSelectionFeatures = function(){
+
+/**
+ * Show all selection feature
+ */
+proto.showAllOlSelectionFeatures = function() {
   const mapService = GUI.getService('map');
   Object
     .values(this.olSelectionFeatures)
@@ -198,35 +221,46 @@ proto.showAllOlSelectionFeatures = function(){
     })
 };
 
+/**
+ * Set all added features false
+ */
 proto.setInversionOlSelectionFeatures = function(){
-  const mapService = GUI.getComponent('map').getService();
+  const mapService = GUI.getService('map');
   Object
     .values(this.olSelectionFeatures)
     .forEach(featureObject => {
-      mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
+      //invert added boolean value
+      featureObject.added = !featureObject.added;
+      mapService.setSelectionFeatures(featureObject.added ? 'add' : 'remove', {
         feature: featureObject.feature
       });
-      featureObject.added = !featureObject.added;
     });
 };
 
-proto.setOlSelectionFeatureByFid = function(fid, action){
+/**
+ *
+ * @param fid
+ * @param action
+ * @returns {*}
+ */
+proto.setOlSelectionFeatureByFid = function(fid, action) {
   const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
-  return feature && this.setOlSelectionFeatures({id:fid, feature}, action);
+  if (feature) {
+    return this.setOlSelectionFeatures({id:fid, feature}, action);
+  }
 };
 
+
+/**
+ *
+ * @param feature
+ * @param action
+ * @returns {boolean}
+ */
 proto.setOlSelectionFeatures = function(feature, action='add'){
-  const mapService = GUI.getComponent('map').getService();
-  if (!feature) {
-    Object
-      .values(this.olSelectionFeatures)
-      .forEach(featureObject => {
-        featureObject.added && mapService.setSelectionFeatures('remove', {
-          feature: featureObject.feature
-        });
-        featureObject.added = false
-      });
-  } else {
+  const mapService = GUI.getService('map');
+  //in case of feature parameter
+  if (feature) {
     const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
     if (action === 'add') {
       if (!featureObject.added) {
@@ -245,9 +279,28 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
       });
       featureObject.added = false;
     }
+  } else {
+    //mean all features
+    Object
+      .values(this.olSelectionFeatures)
+      .forEach(featureObject => {
+        //remove selection feature
+        if (featureObject.added) {
+          mapService.setSelectionFeatures('remove', {
+            feature: featureObject.feature
+          });
+        }
+        featureObject.added = false
+      });
   }
-  return !Object.values(this.olSelectionFeatures).find(featureObject=> featureObject.added);
+  return undefined === Object
+    .values(this.olSelectionFeatures)
+    .find(featureObject=> featureObject.added);
 };
+
+/**
+ * END SELECTION SECTION
+ */
 
 /**
  * Create a get parameter url right
@@ -255,11 +308,10 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
  * @private
  */
 proto._sanitizeSourceUrl = function(type='wms'){
-  const sanitizedUrl = sanitizeUrl({
+  this.config.source.url = sanitizeUrl({
     url: this.config.source.url,
     reserverParameters: RESERVERDPARAMETRS[type]
   });
-  this.config.source.url = sanitizedUrl;
 };
 
 proto.isLayerCheckedAndAllParents = function(){
