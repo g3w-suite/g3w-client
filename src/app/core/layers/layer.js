@@ -715,12 +715,11 @@ proto.toggleFilterToken = async function() {
   if (this.state.selection.active && this.isGeoLayer()) {
     //if filter is active
     if (this.state.filter.active) {
-      // remove all section feature from map
-      this.setOlSelectionFeatures();
+      // hide all section feature from map
+      this.hideOlSelectionFeatures();
     } else {
       //only current map selected feature
-      this.selectionFids
-        .forEach(fid => this.setOlSelectionFeatureByFid(fid, 'add'))
+      this.showAllOlSelectionFeatures();
     }
   }
   return this.state.filter.active;
