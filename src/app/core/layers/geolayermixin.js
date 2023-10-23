@@ -231,35 +231,31 @@ proto.hideOlSelectionFeatures = function() {
  * Show all selection feature
  */
 proto.showAllOlSelectionFeatures = function() {
-  const mapService = GUI.getService('map');
-  //Loop on added (selected) features only
+  const map = GUI.getService('map');
+  // Loop `added` features (selected)
   Object
     .values(this.olSelectionFeatures)
-    .forEach(featureObject => {
-      //check only featureObject.added true
-      if (featureObject.added) {
-        mapService.setSelectionFeatures('add', { feature: featureObject.feature });
+    .forEach(feat => {
+      if (feat.added) {
+        map.setSelectionFeatures('add', { feature: feat.feature });
       }
     });
-  //Be sure that selection layer on map will be visible
-  mapService.setSelectionLayerVisible(true);
+  // Ensures visibilty of selection layer on map 
+  map.setSelectionLayerVisible(true);
 };
 
 /**
  * [LAYER SELECTION]
  * 
- * Set all added features false
+ * Toggle `added` property on all features
  */
 proto.setInversionOlSelectionFeatures = function() {
-  const mapService = GUI.getService('map');
+  const map = GUI.getService('map');
   Object
     .values(this.olSelectionFeatures)
-    .forEach(featureObject => {
-      //invert added boolean value
-      featureObject.added = !featureObject.added;
-      mapService.setSelectionFeatures(featureObject.added ? 'add' : 'remove', {
-        feature: featureObject.feature
-      });
+    .forEach(feat => {
+      feat.added = !feat.added;
+      map.setSelectionFeatures(feat.added ? 'add' : 'remove', { feature: feat.feature });
     });
 };
 
@@ -272,12 +268,14 @@ proto.setInversionOlSelectionFeatures = function() {
  * @returns {*}
  */
 proto.setOlSelectionFeatureByFid = function(fid, action) {
-  const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
-  if (feature) {
-    return this.setOlSelectionFeatures({ id: fid, feature }, action);
+  const selected = this.getOlSelectionFeature(fid);
+  if (selected && selected.feature) {
+    return this.setOlSelectionFeatures({
+      id:      fid,
+      feature: selected.feature,
+    }, action);
   }
 };
-
 
 /**
  * [LAYER SELECTION]
@@ -287,45 +285,31 @@ proto.setOlSelectionFeatureByFid = function(fid, action) {
  * 
  * @returns { boolean }
  */
-proto.setOlSelectionFeatures = function(feature, action='add') {
-  const mapService = GUI.getService('map');
-  //in case of feature parameter
+proto.setOlSelectionFeatures = function(feature, action = 'add') {
+  const map = GUI.getService('map');
+
+  // select a single feature
   if (feature) {
-    const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
-    if (action === 'add') {
-      if (!featureObject.added) {
-        /**
-         * add a property of feature __layerId used whe we work with selected Layer features
-         */
-        featureObject.feature.__layerId = this.getId();
-        mapService.setSelectionFeatures(action, {
-          feature: featureObject.feature,
-        });
-        featureObject.added = true;
-      }
-    } else {
-      mapService.setSelectionFeatures(action, {
-        feature: featureObject.feature
-      });
-      featureObject.added = false;
-    }
-  } else {
-    //mean all features
+    const feat             = this.getOlSelectionFeature(feature.id) || this.addOlSelectionFeature(feature);
+    feat.feature.__layerId = ('add' === action && !feat.added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+    map.setSelectionFeatures(action, { feature: feat.feature });
+    feat.added             = ('add' === action && !feat.added);
+  }
+
+  // select all features
+  if (!feature) {
     Object
       .values(this.olSelectionFeatures)
-      .forEach(featureObject => {
+      .forEach(feat => {
         //remove selection feature
-        if (featureObject.added) {
-          mapService.setSelectionFeatures('remove', {
-            feature: featureObject.feature
-          });
+        if (feat.added) {
+          map.setSelectionFeatures('remove', { feature: feat.feature });
         }
-        featureObject.added = false
+        feat.added = false
       });
   }
-  return undefined === Object
-    .values(this.olSelectionFeatures)
-    .find(featureObject=> featureObject.added);
+
+  return undefined === Object.values(this.olSelectionFeatures).find(feat=> feat.added);
 };
 
 /**
