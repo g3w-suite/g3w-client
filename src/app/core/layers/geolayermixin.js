@@ -313,14 +313,15 @@ proto.setOlSelectionFeatures = function(feature, action = 'add') {
 };
 
 /**
- * Create a get parameter url right
+ * Create a valid GET url parameter
+ * 
  * @param type
  * @private
  */
-proto._sanitizeSourceUrl = function(type='wms') {
+proto._sanitizeSourceUrl = function(type = 'wms') {
   this.config.source.url = sanitizeUrl({
-    url: this.config.source.url,
-    reserverParameters: RESERVERDPARAMETRS[type]
+    url:                this.config.source.url,
+    reserverParameters: RESERVERDPARAMETRS[type],
   });
 };
 
@@ -337,16 +338,16 @@ proto.isLayerCheckedAndAllParents = function() {
 };
 
 /**
- * Set checked for TOC purpose
- * @param bool
+ * Set layer legend item `checked` state (TOC)
+ * 
+ * @param { boolean } bool
  */
 proto.setChecked = function(bool) {
   this.state.checked = bool;
 };
 
 /**
- * Return if checked
- * @returns {*}
+ * @returns { boolean } whether layer legend item is checked (TOC)
  */
 proto.isChecked = function() {
   return this.state.checked;
