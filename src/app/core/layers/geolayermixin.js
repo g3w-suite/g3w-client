@@ -88,7 +88,7 @@ proto.setup = function(config={}, options={}) {
 /**
  * Legend Graphic section
  */
-proto.getLegendGraphic = function({all=true}={}){
+proto.getLegendGraphic = function({all=true}={}) {
   const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
   const legendurl = this.getLegendUrl(legendParams, {
     categories: true,
@@ -114,14 +114,14 @@ proto.setCategories = function(categories=[]) {
  * Return eventually categories of layers legend
  * @returns {string[] | string | [] | *[] | boolean | {default: {level: *, appenders: string[]}}}
  */
-proto.getCategories = function(){
+proto.getCategories = function() {
   return this.legendCategories[this.getCurrentStyle().name];
 };
 
 /**
- * Clear alla categories
+ * Clear all categories
  */
-proto.clearCategories = function(){
+proto.clearCategories = function() {
   this.legendCategories = {};
   this.state.categories = false;
 };
@@ -130,88 +130,104 @@ proto.clearCategories = function(){
  * End Legend Graphic section
  */
 
-
 /**
- * SELECTION SECTION
- */
-
-/**
+ * [LAYER SELECTION]
+ * 
  * Clear all selection Openlayers features
  */
-proto.clearOlSelectionFeatures = function(){
+proto.clearOlSelectionFeatures = function() {
   this.olSelectionFeatures = null;
 };
 
 /**
- * Get openlayer selection feature by feature id
+ * [LAYER SELECTION]
+ * 
+ * Get OpenLayer selection feature by feature id
+ * 
  * @param id
  * @returns {*}
  */
-proto.getOlSelectionFeature = function(id){
+proto.getOlSelectionFeature = function(id) {
   return this.olSelectionFeatures[id];
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Update selected feature (Case change geometry)
+ * 
  * @param id
  * @param feature
  */
-proto.updateOlSelectionFeature = function({id, feature}={}) {
-  const mapService = GUI.getService('map');
-  const featureObject = this.getOlSelectionFeature(id);
-  if (featureObject) {
-    featureObject.feature = feature;
-    mapService.setSelectionFeatures('update', {
-      feature
-    })
+proto.updateOlSelectionFeature = function({
+  id,
+  feature,
+} = {}) {
+  const selected = this.getOlSelectionFeature(id);
+  if (selected) {
+    selected.feature = feature;
+    GUI.getService('map').setSelectionFeatures('update', { feature });
   }
 };
 
 /**
- * Delete openlayer feature selection by feature id
+ * [LAYER SELECTION]
+ * 
+ * Delete OpenLayer feature selection by feature id
+ * 
  * @param id
  */
-proto.deleteOlSelectionFeature = function(id){
-  const featureObject = this.olSelectionFeatures[id];
-  if (featureObject) {
-    mapService.setSelectionFeatures('remove', {
-      feature: featureObject.feature
-    });
+proto.deleteOlSelectionFeature = function(id) {
+  const selected = this.getOlSelectionFeature(id);
+  if (selected) {
+    /** @FIXME undefined variable */
+    mapService.setSelectionFeatures('remove', { feature: selected.feature });
     delete this.olSelectionFeatures[id];
   }
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Get all OpenLayers feature selection
- * @returns {{}|null}
+ * 
+ * @returns { {} | null }
  */
-proto.getOlSelectionFeatures = function(){
+proto.getOlSelectionFeatures = function() {
   return this.olSelectionFeatures;
 };
 
 /**
- *
+* [LAYER SELECTION]
+
  * @param id
  * @param feature
+ * 
  * @returns {*}
  */
-proto.addOlSelectionFeature = function({id, feature}={}) {
+proto.addOlSelectionFeature = function({
+  id,
+  feature,
+} = {}) {
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-    feature: createFeatureFromFeatureObject({id, feature}),
-    added: false
+    feature: createFeatureFromFeatureObject({ id, feature }),
+    added: false,
   };
   return this.olSelectionFeatures[id];
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Set selection layer on map not visible
  */
 proto.hideOlSelectionFeatures = function() {
-  const mapService = GUI.getService('map');
-  mapService.setSelectionLayerVisible(false);
+  GUI.getService('map').setSelectionLayerVisible(false);
 }
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Show all selection feature
  */
 proto.showAllOlSelectionFeatures = function() {
@@ -222,9 +238,7 @@ proto.showAllOlSelectionFeatures = function() {
     .forEach(featureObject => {
       //check only featureObject.added true
       if (featureObject.added) {
-        mapService.setSelectionFeatures('add', {
-          feature: featureObject.feature
-        });
+        mapService.setSelectionFeatures('add', { feature: featureObject.feature });
       }
     });
   //Be sure that selection layer on map will be visible
@@ -232,9 +246,11 @@ proto.showAllOlSelectionFeatures = function() {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Set all added features false
  */
-proto.setInversionOlSelectionFeatures = function(){
+proto.setInversionOlSelectionFeatures = function() {
   const mapService = GUI.getService('map');
   Object
     .values(this.olSelectionFeatures)
@@ -248,26 +264,30 @@ proto.setInversionOlSelectionFeatures = function(){
 };
 
 /**
- *
+ * [LAYER SELECTION]
+ * 
  * @param fid
  * @param action
+ * 
  * @returns {*}
  */
 proto.setOlSelectionFeatureByFid = function(fid, action) {
   const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
   if (feature) {
-    return this.setOlSelectionFeatures({id:fid, feature}, action);
+    return this.setOlSelectionFeatures({ id: fid, feature }, action);
   }
 };
 
 
 /**
- *
+ * [LAYER SELECTION]
+ * 
  * @param feature
  * @param action
- * @returns {boolean}
+ * 
+ * @returns { boolean }
  */
-proto.setOlSelectionFeatures = function(feature, action='add'){
+proto.setOlSelectionFeatures = function(feature, action='add') {
   const mapService = GUI.getService('map');
   //in case of feature parameter
   if (feature) {
@@ -309,22 +329,18 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
 };
 
 /**
- * END SELECTION SECTION
- */
-
-/**
  * Create a get parameter url right
  * @param type
  * @private
  */
-proto._sanitizeSourceUrl = function(type='wms'){
+proto._sanitizeSourceUrl = function(type='wms') {
   this.config.source.url = sanitizeUrl({
     url: this.config.source.url,
     reserverParameters: RESERVERDPARAMETRS[type]
   });
 };
 
-proto.isLayerCheckedAndAllParents = function(){
+proto.isLayerCheckedAndAllParents = function() {
   let checked = this.isChecked();
   if (checked) {
     let parentGroup = this.state.parentGroup;
@@ -380,11 +396,11 @@ proto.isPrintable = function({scale}={}) {
 };
 
 //get style form layer
-proto.getStyles = function(){
+proto.getStyles = function() {
   return this.config.source.external ? this.config.source.styles : this.config.styles;
 };
 
-proto.getStyle = function(){
+proto.getStyle = function() {
   return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
 };
 
@@ -405,7 +421,7 @@ proto.getOpacity = function() {
  * @param currentStyleName
  * @returns {boolean}
  */
-proto.setCurrentStyle = function(currentStyleName){
+proto.setCurrentStyle = function(currentStyleName) {
   let changed = false;
   this.config.styles.forEach(style => {
     if (style.name === currentStyleName)
@@ -415,7 +431,7 @@ proto.setCurrentStyle = function(currentStyleName){
   return changed;
 };
 
-proto.getCurrentStyle = function(){
+proto.getCurrentStyle = function() {
   return this.config.styles.find(style => style.current);
 };
 
@@ -433,7 +449,7 @@ proto.setDisabled = function(resolution, mapUnits='m') {
     // looping through parentfolter checked
     let setVisible = true;
     let parentGroup = this.state.parentGroup;
-    while (parentGroup){
+    while (parentGroup) {
       setVisible = setVisible && parentGroup.checked;
       parentGroup = parentGroup.parentGroup;
     }
@@ -463,7 +479,7 @@ proto.getProjection = function() {
   return this.config.projection;
 };
 
-proto.getEpsg = function(){
+proto.getEpsg = function() {
   return this.config.crs.epsg;
 };
 
@@ -471,7 +487,7 @@ proto.getCrs = function() {
   return this.config.projection && this.config.projection.getCode() || null;
 };
 
-proto.getMapCrs = function(){
+proto.getMapCrs = function() {
   return this.config.map_crs;
 };
 
