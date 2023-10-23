@@ -50,20 +50,18 @@ function Layer(config={}, options={}) {
     const rasterUrl = project.getRasterUrl();
 
     this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
-    this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
-    this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
-    this.config.urls.csv = `${vectorUrl}csv/${suffixUrl}`;
-    this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
-    this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
-    this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
-    this.config.urls.geotiff = `${rasterUrl}geotiff/${suffixUrl}`;
-    this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
-    this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
-    this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
-    this.config.urls.unlock = `${vectorUrl}unlock/${suffixUrl}`;
-    this.config.urls.widget = {
-      unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
-    };
+    this.config.urls.data        = `${vectorUrl}data/${suffixUrl}`;
+    this.config.urls.shp         = `${vectorUrl}shp/${suffixUrl}`;
+    this.config.urls.csv         = `${vectorUrl}csv/${suffixUrl}`;
+    this.config.urls.xls         = `${vectorUrl}xls/${suffixUrl}`;
+    this.config.urls.gpx         = `${vectorUrl}gpx/${suffixUrl}`;
+    this.config.urls.gpkg        = `${vectorUrl}gpkg/${suffixUrl}`;
+    this.config.urls.geotiff     = `${rasterUrl}geotiff/${suffixUrl}`;
+    this.config.urls.editing     = `${vectorUrl}editing/${suffixUrl}`;
+    this.config.urls.commit      = `${vectorUrl}commit/${suffixUrl}`;
+    this.config.urls.config      = `${vectorUrl}config/${suffixUrl}`;
+    this.config.urls.unlock      = `${vectorUrl}unlock/${suffixUrl}`;
+    this.config.urls.widget      = { unique: `${vectorUrl}widget/unique/data/${suffixUrl}` };
 
     /**
      * @since 3.8.0
