@@ -332,7 +332,7 @@ gulp.task('browser-sync', function() {
   //
 
   gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
-  gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
+  gulp.watch('./src/**/*.{png,jpg,gif,svg}',          () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
   gulp.watch(g3w.pluginsFolder + '/*/plugin.js',      (file) => {
     const plugins = process.env.G3W_PLUGINS;

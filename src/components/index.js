@@ -64,7 +64,6 @@ import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
 import MapControlButton from './MapControlButton.js';
 import MapControlGeocoding from './MapControlGeocoding.vue';
-import MapControlNominatimResults from './MapControlNominatimResults.vue';
 import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
@@ -187,7 +186,6 @@ export {
   MapAddLayer,
   MapControlButton,
   MapControlGeocoding,
-  MapControlNominatimResults,
   MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,
