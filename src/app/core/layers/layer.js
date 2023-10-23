@@ -55,24 +55,25 @@ function Layer(config={}, options={}) {
     const rasterUrl = project.getRasterUrl();
 
     this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
-    this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
-    this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
-    this.config.urls.csv = `${vectorUrl}csv/${suffixUrl}`;
-    this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
-    this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
-    this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
-    this.config.urls.geotiff = `${rasterUrl}geotiff/${suffixUrl}`;
-    this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
-    this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
-    this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
-    this.config.urls.unlock = `${vectorUrl}unlock/${suffixUrl}`;
-    this.config.urls.widget = {
+    this.config.urls.data        = `${vectorUrl}data/${suffixUrl}`;
+    this.config.urls.shp         = `${vectorUrl}shp/${suffixUrl}`;
+    this.config.urls.csv         = `${vectorUrl}csv/${suffixUrl}`;
+    this.config.urls.xls         = `${vectorUrl}xls/${suffixUrl}`;
+    this.config.urls.gpx         = `${vectorUrl}gpx/${suffixUrl}`;
+    this.config.urls.gpkg        = `${vectorUrl}gpkg/${suffixUrl}`;
+    this.config.urls.geotiff     = `${rasterUrl}geotiff/${suffixUrl}`;
+    this.config.urls.editing     = `${vectorUrl}editing/${suffixUrl}`;
+    this.config.urls.commit      = `${vectorUrl}commit/${suffixUrl}`;
+    this.config.urls.config      = `${vectorUrl}config/${suffixUrl}`;
+    this.config.urls.unlock      = `${vectorUrl}unlock/${suffixUrl}`;
+    this.config.urls.widget      = {
       unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
     };
 
     /**
+     * Store feature count url to get features count of a layer
+     * 
      * @since 3.8.0
-     * store feature count url to get features count of a layer
      */
     this.config.urls.featurecount = project.getUrl('featurecount');
     
@@ -136,16 +137,17 @@ function Layer(config={}, options={}) {
      */
     filter: {
       active: false,
+
       /**
-       * @since v3.9 Specify if filter is set from saved filter or current
+       * @since 3.9.0 whether filter is set from a previously saved filter
        */
       current: null,
     },
 
     /**
-     * @since v3.9 Store reactive saved filters
-     * if undefined, set to []
-     * Each filters item is an object {id.<Uninqueid>, name: <String>>}
+     * @type { Array<{{ id: string, name: string }}> } array of saved filters
+     * 
+     * @since 3.9.0
      */
     filters: config.filters || [],
 
@@ -166,7 +168,7 @@ function Layer(config={}, options={}) {
     featurecount: config.featurecount,
 
     /**
-     * @FIXME add type tag
+     * @type { boolean | Object<number, number> }
      * 
      * @since 3.8.0
      */
