@@ -1,4 +1,4 @@
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const WMSLAYER = require('core/layers/map/wmslayer');
 const RasterLayers = require('g3w-ol/layers/rasters');
 

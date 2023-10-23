@@ -64,7 +64,7 @@ import vDownload from 'directives/v-download';
 // constants
 import { FONT_AWESOME_ICONS } from 'app/constant';
 
-const { base, inherit, toRawType } = require('core/utils/utils');
+const { base, inherit, toRawType } = require('utils');
 const { t, tPlugin }               = require('core/i18n/i18n.service');
 const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');

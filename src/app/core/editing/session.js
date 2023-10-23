@@ -1,11 +1,11 @@
 import SessionsRegistry from 'store/sessions';
 import MapLayersStoresRegistry from 'store/map-layers';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 const History = require('core/editing/history');
 const Layer = require('core/layers/layer');
-const { is3DGeometry } = require('core/utils/geo').Geometry;
+const { is3DGeometry } = require('utils/geo').Geometry;
 
 function Session(options={}) {
   this.setters = {
@@ -32,6 +32,7 @@ function Session(options={}) {
   this._history = new History({
     id: this.state.id
   });
+  //store temporary change not save on history
   this._temporarychanges = [];
   this.register();
 }
@@ -136,14 +137,23 @@ proto.updateTemporaryChanges = function(feature) {
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
   /**
+   * @TODO check if it need to deprecate it. All properties are need
    * Please take care of this to understand
+   * In case of removeNotEditableProperties true, remove not editable field
+   * from feature properties
    */
-  removeNotEditableProperties && this._editor.removeNotEditablePropriertiesFromFeature(feature);
+  const editor = layerId === this.getId() ? this._editor : SessionsRegistry.getSession(layerId).getEditor();
+
+  if (removeNotEditableProperties) {
+    editor.removeNotEditablePropriertiesFromFeature(feature);
+  }
   const newFeature = feature.clone();
+
   this.push({
     layerId,
     feature: newFeature.add()
   });
+
   return newFeature;
 };
 

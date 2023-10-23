@@ -227,7 +227,7 @@
   const { t } = require('core/i18n/i18n.service');
   const shpwrite = require('shp-write');
   const TableComponent = require('gui/table/vue/table');
-  const { downloadFile } = require('core/utils/utils');
+  const { downloadFile } = require('utils');
 
 
   const OFFSETMENU = {

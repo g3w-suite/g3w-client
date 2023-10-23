@@ -1,6 +1,6 @@
 import * as vueComponentOptions from 'components/WMSLayersPanel.vue';
 
-const { base, inherit, uniqueId } = require('core/utils/utils');
+const { base, inherit, uniqueId } = require('utils');
 const Panel = require('gui/panel');
 
 const WMSLayersPanelComponent = Vue.extend(vueComponentOptions);

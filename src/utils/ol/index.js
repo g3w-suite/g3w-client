@@ -1,4 +1,10 @@
 /**
+ * @file ORIGINAL SOURCE: src/app/core/utils/ol.js@3.8
+ * 
+ * @since 3.9.0
+ */
+
+/**
  * @FIXME remove weird import (utility functions should be stateles)
  */
 import ApplicationState from 'store/application-state';
@@ -6,7 +12,7 @@ import ApplicationState from 'store/application-state';
 /**
  * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
  */
-// const { Geometry } = require('core/utils/geo');
+// const { Geometry } = require('utils/geo');
 
 const INCHES_PER_UNIT = {
   m: 39.37, //
@@ -97,7 +103,7 @@ const utils = {
       /**
        * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
        */
-      const { Geometry } = require('core/utils/geo');
+      const { Geometry } = require('utils/geo');
       //
       const geometryType = geometry.getType();
       const useSphereMethods = this.needUseSphereMethods(projection);
@@ -148,7 +154,7 @@ const utils = {
       /**
        * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
        */
-      const { Geometry, multiGeometryToSingleGeometries } = require('core/utils/geo');
+      const { Geometry, multiGeometryToSingleGeometries } = require('utils/geo');
       //
       const geometryType = geometry.getType();
       const unit = this.getCurrentMapUnit();

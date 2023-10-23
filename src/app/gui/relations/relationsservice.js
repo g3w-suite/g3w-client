@@ -3,7 +3,7 @@ import RelationsService from 'services/relations';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 function RelationsComponentService(options={}) {

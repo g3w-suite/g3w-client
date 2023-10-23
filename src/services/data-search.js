@@ -3,8 +3,8 @@
  * @since v3.6
  */
 
-const { base, inherit }                         = require('core/utils/utils');
-const { createOlFeatureFromApiResponseFeature } = require('core/utils/geo');
+const { base, inherit }                         = require('utils');
+const { createOlFeatureFromApiResponseFeature } = require('utils/geo');
 const BaseService                               = require('core/data/service');
 
 function SearchService() {
