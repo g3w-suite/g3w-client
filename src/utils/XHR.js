@@ -1,3 +1,5 @@
+import { TIMEOUT } from 'app/constant';
+
 export const XHR = {
 
   get({url, params={}}={}) {
@@ -95,5 +97,4 @@ export const XHR = {
         });
     })
   },
-
 };
