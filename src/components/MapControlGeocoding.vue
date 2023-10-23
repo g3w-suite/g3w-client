@@ -121,8 +121,32 @@ import nominatim         from 'utils/search_from_nominatim';
 import bing              from 'utils/search_from_bing';
 import google            from 'utils/search_from_google';
 
-const { toRawType }      = require('utils');
+import * as vueComponentOptions from 'components/MarkersPanel.vue';
+
+const Panel = require('gui/panel');
+const {
+  base,
+  inherit,
+  uniqueId,
+  toRawType
+}                        = require('utils');
+
 const Projections        = require('g3w-ol/projection/projections');
+
+
+/**
+ * Create Marker Sidebar Panel
+ */
+const MarkersPanelComponent = Vue.extend(vueComponentOptions);
+
+function MarkersPanel() {
+  this.id = uniqueId();
+  this.title = 'Markers';
+  const internalPanel = new MarkersPanelComponent();
+  this.setInternalPanel(internalPanel);
+}
+
+inherit(MarkersPanel, Panel);
 
 const providers = [ nominatim, bing, google ];
 
@@ -190,6 +214,8 @@ function _getExtentForProvider(provider, { viewbox, mapCrs }) {
     'EPSG:4326'
   )
 };
+
+
 
 export default {
 
@@ -322,7 +348,21 @@ export default {
     /**
      * @since 3.9.0 
      */
-    _showResults(results) {
+    _showResults(results=[]) {
+      /**
+       * @ŢODO TEST
+       *
+       *
+       */
+      const panel = new MarkersPanel();
+      panel.show();
+
+      setTimeout(()=> panel.close(), 2000);
+
+      /**
+       * END TEST
+       */
+
       results.forEach((p) => {
 
         // heading
