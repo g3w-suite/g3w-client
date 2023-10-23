@@ -1,5 +1,9 @@
 <!--
-  @file need some inspiration for other geocoding providers? 👉 https://github.com/Dominique92/ol-geocoder
+  @file need some inspiration for other geocoding providers?
+
+  👉 https://github.com/Dominique92/ol-geocoder
+  👉 https://github.com/perliedman/leaflet-control-geocoder
+
   @since 3.9.0
 -->
 <template>
@@ -366,6 +370,9 @@ export default {
       }
     },
 
+    /**
+     * @since 3.9.0 
+     */
     _onValue(evt) {
       const value = evt.target.value.trim();
       this.$refs.reset.classList.toggle("gcd-hidden", !value.length);
