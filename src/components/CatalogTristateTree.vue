@@ -196,7 +196,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ClickMixin from 'mixins/click';
 import GUI from 'services/gui';
 
-const { downloadFile } = require('core/utils/utils');
+const { downloadFile } = require('utils');
 
 export default {
 

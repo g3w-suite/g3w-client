@@ -17,7 +17,7 @@ const {
   throttle,
   getUniqueDomId,
   copyUrl,
-}                                = require('core/utils/utils');
+}                                = require('utils');
 
 const {
   getAlphanumericPropertiesFromFeature,
@@ -27,7 +27,7 @@ const {
   createFeatureFromCoordinates,
   intersects,
   within,
-}                                = require('core/utils/geo');
+}                                = require('utils/geo');
 
 const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');

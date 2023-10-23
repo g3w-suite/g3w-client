@@ -1,7 +1,7 @@
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const MenuComponent = require('gui/projectsmenu/menu');
 
 function ProjectsMenuComponent(options={}) {

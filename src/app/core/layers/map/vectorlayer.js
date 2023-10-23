@@ -1,7 +1,7 @@
 import GUI from 'services/gui';
 
-const { inherit } = require('core/utils/utils');
-const { createOlLayer, createLayerStyle } = require('core/utils/geo');
+const { inherit } = require('utils');
+const { createOlLayer, createLayerStyle } = require('utils/geo');
 const G3WObject = require('core/g3wobject');
 
 function VectorLayer(options = {}) {

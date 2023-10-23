@@ -1,4 +1,4 @@
-const DPI = require('core/utils/ol').getDPI();
+const DPI = require('utils/ol').getDPI();
 
 const RasterLayers = {};
 

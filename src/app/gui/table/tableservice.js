@@ -2,10 +2,10 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 
-const { inherit, noop }         = require('core/utils/utils');
+const { inherit, noop }         = require('utils');
 const G3WObject                 = require('core/g3wobject');
 const { t }                     = require('core/i18n/i18n.service');
-const { coordinatesToGeometry } = require('core/utils/geo');
+const { coordinatesToGeometry } = require('utils/geo');
 const { SELECTION_STATE }       = require('core/layers/layer');
 
 const PAGELENGTHS = [10, 25, 50];

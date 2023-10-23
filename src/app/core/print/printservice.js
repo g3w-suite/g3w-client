@@ -1,7 +1,7 @@
 import ApplicationState from 'store/application-state';
 import ProjectsRegistry from 'store/projects';
 
-const { base, inherit, convertObjectToUrlParams } = require('core/utils/utils');
+const { base, inherit, convertObjectToUrlParams } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 /*
