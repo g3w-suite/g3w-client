@@ -33,6 +33,8 @@ import { downloadCSVLayerFeatures }          from './downloadCSVLayerFeatures';
 import { downloadCSV }                       from './downloadCSV';
 import { getTimeoutPromise }                 from './getTimeoutPromise';
 import { XHR }                               from './XHR';
+import { htmlescape }                        from "./htmlescape";
+import { fileDownload }                      from "./fileDownload";
 import { createSingleFieldParameter }        from './createSingleFieldParameter';
 import { createFilterFormInputs }            from './createFilterFormInputs';
 import { createFilterFromString }            from './createFilterFromString';
@@ -141,6 +143,8 @@ const utils = {
   downloadCSV,
   getTimeoutPromise,
   XHR,
+  htmlescape,
+  fileDownload,
   /** @since 3.8.7 */
   createSingleFieldParameter,
   createFilterFromString,
