@@ -481,7 +481,8 @@ export default {
       if (undefined === this.layerstree.selected) {
         return;
       }
-      if (this.layerstree.external) {
+      // check if is external and not a project Layer
+      if (this.layerstree.external && false === this.layerstree.projectLayer) {
         CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected', this.storeid, this.layerstree);
