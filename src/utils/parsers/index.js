@@ -1,3 +1,9 @@
+/**
+ * @file ORIGINAL SOURCE: src/app/core/utils/parsers.js@3.8
+ * 
+ * @since 3.9.0
+ */
+
 import { G3W_FID } from 'app/constant';
 
 const { toRawType } = require('utils');

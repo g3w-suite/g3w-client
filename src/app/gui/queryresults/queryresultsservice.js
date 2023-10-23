@@ -1315,7 +1315,6 @@ class QueryResultsService extends G3WObject {
 
     const has_coords = coordinates && Array.isArray(coordinates);
     const has_bbox   = bbox && Array.isArray(bbox);
-    const is_poly    = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
 
     // case query coordinates
     if (has_coords) {
@@ -1331,6 +1330,8 @@ class QueryResultsService extends G3WObject {
       //set geometry has Polygon
       geometry = ol.geom.Polygon.fromExtent(bbox);
     }
+
+    const is_poly    = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
 
     // check query geometry (Polygon or MultiPolygon)
     if (is_poly && !has_coords) {
@@ -2209,7 +2210,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: `download_${format}_feature`,
         download: true,
-        state,
+        state: this.createActionState({layer}),
         class: GUI.getFontClass('download'),
         hint: `sdk.tooltips.download_${format}`,
         cbk: (layer, feature, action, index) => {

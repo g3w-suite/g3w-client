@@ -9,22 +9,28 @@ const G3WObject = require('core/g3wobject');
  * @constructor
  */
 function Relation(config = {}) {
-
   const suffix = Date.now();
 
   /** BACKCOMP (g3w-admin < v.3.7.0) */
   const multi_fields = [].concat(config.fieldRef.referencedField);
 
   this.state = {
+    loading:     false,
     id:          config.id       || `id_${suffix}`,
     name:        config.name     || `name_${suffix}`,
     origname:    config.origname || `origname_${suffix}`,
     father:      config.referencedLayer,
     child:       config.referencingLayer,
-    fatherField: multi_fields,
-    childField:  multi_fields,
     type:        config.type,
-    loading:     false
+    /** @since 3.9.0 */
+    editable:    config.editable || false,
+    /** @since 3.9.0 */
+    prefix:      config.prefix,
+    /** BACKCOMP (g3w-admin < v.3.7.0) */
+    fatherField: [].concat(config.fieldRef.referencedField),
+    /** BACKCOMP (g3w-admin < v.3.7.0) */
+    childField:  [].concat(config.fieldRef.referencingField),
+
   };
 
   base(this);
@@ -36,7 +42,7 @@ const proto = Relation.prototype;
 
 /**
  * Get relation id
- * 
+ *
  * @returns {string}
  */
 proto.getId = function() {
@@ -45,7 +51,7 @@ proto.getId = function() {
 
 /**
  * Set Relation id
- * 
+ *
  * @param id
  */
 proto.setId = function(id) {
@@ -54,7 +60,7 @@ proto.setId = function(id) {
 
 /**
  * Get Relation name
- * 
+ *
  * @returns {string}
  */
 proto.getName = function() {
@@ -63,7 +69,7 @@ proto.getName = function() {
 
 /**
  * Set Relation name
- * 
+ *
  * @param name
  */
 proto.setName = function(name) {
@@ -71,24 +77,27 @@ proto.setName = function(name) {
 };
 
 /**
- * @TODO check if deprecated (ie. `this.state.title` is not defined in class constructor)
+ * @FIXME `this.state.title` is not defined in class constructor
  * 
  * Get Relation title
  * 
  * @returns { undefined }
+ *
+ * @returns {*}
  */
 proto.getTitle = function() {
   return this.state.title;
 };
 
 /**
- * @TODO check if deprecated (ie. `this.state.title` is not defined in class constructor)
+ * @FIXME `this.state.title` is not defined in class constructor)
  * 
  * Set Relation title
  * 
  * @param title
  * 
  * @returns { undefined }
+ * @returns {*}
  */
 proto.setTitle = function(title) {
   return this.state.title = title;
@@ -128,13 +137,13 @@ proto.getType = function() {
 proto.getFields = function() {
   return {
     father: this.state.fatherField,
-    child: this.state.childField
+    child:  this.state.childField,
   };
 };
 
 /**
  * Return father relation field name
- * 
+ *
  * @returns {*}
  */
 proto.getFatherField = function() {
@@ -143,7 +152,7 @@ proto.getFatherField = function() {
 
 /**
  * Return relation child layer field name
- * 
+ *
  * @returns {*}
  */
 proto.getChildField = function() {
@@ -152,7 +161,7 @@ proto.getChildField = function() {
 
 /**
  * Set Loading state relation (for editing purpose)
- * 
+ *
  * @param bool
  */
 proto.setLoading = function(bool=false){
@@ -161,11 +170,35 @@ proto.setLoading = function(bool=false){
 
 /**
  * Check Loading state Relation (for editing purpose)
- * 
+ *
  * @returns { boolean }
  */
 proto.isLoading = function(){
   return this.state.loading;
 };
+
+/**
+ * Get editable property
+ *
+ * @since 3.9.0
+ */
+proto.isEditable = function(){
+  return this.state.editable;
+};
+
+/**
+ * End editing loading purpose
+ */
+
+/**
+ * Get Prefix (for Relation 1:1)
+ *
+ * @returns String
+ *
+ * @since 3.9.0
+ */
+proto.getPrefix = function(){
+  return this.state.prefix;
+}
 
 module.exports = Relation;

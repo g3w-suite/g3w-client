@@ -529,8 +529,8 @@ proto.getData = function({
 
     const ordering = ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name;
 
-    this.currentPage = 1 + ((0 === start || (this.state.pagination && this.state.tools.filter.active)) ? (start/length) : 0);
-  
+    this.currentPage = (start === 0 || (this.state.pagination && this.state.tools.filter.active)) ? 1 : (start/length) + 1;
+
     const in_bbox = this.state.tools.geolayer.in_bbox;
 
     const field =  this.state.pagination

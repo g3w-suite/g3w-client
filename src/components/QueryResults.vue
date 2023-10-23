@@ -102,7 +102,7 @@
                         </tr>
                         <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                           <td :colspan="getColSpan(layer)">
-                            <tabs :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="getLayerFormStructure(layer)"></tabs>
+                            <tabs :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="getLayerFormStructure(layer)"/>
                           </td>
                         </tr>
                         <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
