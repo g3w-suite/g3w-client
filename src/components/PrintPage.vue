@@ -29,7 +29,7 @@
 import { TIMEOUT } from 'app/constant';
 import GUI from 'services/gui';
 
-const { imageToDataURL } = require('core/utils/utils');
+const { imageToDataURL } = require('utils');
 
 export default {
 

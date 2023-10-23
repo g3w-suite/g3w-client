@@ -2,7 +2,7 @@ import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 import GUI from 'services/gui';
 
-const { base, inherit, createFilterFormField } = require('core/utils/utils');
+const { base, inherit, createFilterFormField } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 function BaseIframeService(options={}){

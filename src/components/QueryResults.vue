@@ -347,7 +347,7 @@
   import InfoFormats from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody from 'components/QueryResultsHeaderFeatureBody.vue';
 
-  const { throttle } = require('core/utils/utils');
+  const { throttle } = require('utils');
 
   const maxSubsetLength = 3;
   const headerExpandActionCellWidth = 10;

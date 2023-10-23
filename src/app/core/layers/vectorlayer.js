@@ -1,4 +1,4 @@
-const { base, inherit, mixin } = require('core/utils/utils');
+const { base, inherit, mixin } = require('utils');
 const Layer = require('core/layers/layer');
 const TableLayer = require('core/layers/tablelayer');
 const GeoLayerMixin = require('core/layers/geolayermixin');

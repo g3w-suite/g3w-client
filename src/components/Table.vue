@@ -65,7 +65,7 @@ import Field from 'components/FieldG3W.vue';
 import GUI from 'services/gui';
 import { resizeMixin } from 'mixins';
 
-const { debounce } = require('core/utils/utils');
+const { debounce } = require('utils');
 
 let dataTable;
 let fieldsComponents = [];

@@ -2,7 +2,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 function CatalogService() {

@@ -220,7 +220,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ClickMixin from 'mixins/click';
 import GUI from 'services/gui';
 
-const { downloadFile } = require('core/utils/utils');
+const { downloadFile } = require('utils');
 
 export default {
 
@@ -518,11 +518,12 @@ export default {
      * @fires CatalogEventBus~treenodeselected
      */
     select() {
-      // skip when `selected === undefined` (unselectable layer, eg. an external WMS layer) 
+      // skip when `selected === undefined` (unselectable layer, eg. an external WMS  added  (no project layer))
       if (undefined === this.layerstree.selected) {
         return;
       }
-      if (this.layerstree.external) {
+      // check if is external and not a project Layer
+      if (this.layerstree.external && false === this.layerstree.projectLayer) {
         VM.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
         VM.$emit('treenodeselected', this.storeid, this.layerstree);

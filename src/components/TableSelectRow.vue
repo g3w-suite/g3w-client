@@ -19,7 +19,7 @@
 </template>
 
 <script>
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
   name: "select-row",

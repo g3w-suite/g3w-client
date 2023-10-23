@@ -5,7 +5,7 @@
 
 import DataRouterService from 'services/data';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const BaseService = require('core/iframe/services/baseservice');
 
 function AppService(){

@@ -11,9 +11,9 @@ const {
   base,
   XHR,
   getUniqueDomId
-} = require('core/utils/utils');
+} = require('utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields, parseAttributes } =  require('core/utils/geo');
+const { geometryFields, parseAttributes } =  require('utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providersfactory');
 

@@ -8,15 +8,15 @@ const {
   appendParams,
   toRawType,
   getTimeoutPromise,
-}                                  = require('core/utils/utils');
+}                                  = require('utils');
 const {
   handleQueryResponse,
   get_LEGEND_ON_LEGEND_OFF_Params, 
-}                                  = require('core/utils/geo');
-const Parsers                      = require('core/utils/parsers');
+}                                  = require('utils/geo');
+const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
-const geoutils                     = require('core/utils/ol');
+const geoutils                     = require('utils/ol');
 const Filter                       = require('core/layers/filter/filter');
 
 

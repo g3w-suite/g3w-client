@@ -58,12 +58,12 @@
   const {
     getUniqueDomId,
     noop
-  }                        = require ('core/utils/utils');
+  }                        = require ('utils');
 
   const {
     getFormDataExpressionRequestFromFeature,
     convertFeatureToGEOJSON,
-  }                        = require('core/utils/geo');
+  }                        = require('utils/geo');
 
   export default {
     name: "tabs",

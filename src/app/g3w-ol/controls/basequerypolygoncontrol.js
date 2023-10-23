@@ -5,8 +5,8 @@
 import { SPATIAL_METHODS } from 'app/constant';
 
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
-const { merge }          = require('core/utils/ol');
-const { Geometry }       = require('core/utils/geo');
+const { merge }          = require('utils/ol');
+const { Geometry }       = require('utils/geo');
 
 const VALIDGEOMETRIES    = Geometry.getAllPolygonGeometryTypes();
 
