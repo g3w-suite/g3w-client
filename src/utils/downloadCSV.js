@@ -3,7 +3,7 @@ import { getUniqueDomId } from './getUniqueDomId';
 export function downloadCSV({
   filename = getUniqueDomId(),
   items = [],
-}={}){
+}={}) {
   function convertToCSV(items) {
     let str = '';
     for (let i = 0; i < items.length; i++) {

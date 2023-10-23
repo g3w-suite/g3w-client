@@ -12,6 +12,5 @@ export function getTimeoutPromise({
   resolve,
   data,
 }) {
- const timeoutKey = setTimeout(() => { resolve(data) }, timeout);
- return timeoutKey;
+ return setTimeout(() => { resolve(data) }, timeout);
 };

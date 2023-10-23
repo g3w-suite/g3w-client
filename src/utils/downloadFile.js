@@ -3,7 +3,7 @@ export function downloadFile({
   content,
   url,
   mime_type = 'text/plain',
-} = {}){
+} = {}) {
   const download = blob =>{
     let temapAncor = document.createElement('a');
     temapAncor.setAttribute('href', window.URL.createObjectURL(blob));
@@ -30,10 +30,10 @@ export function downloadFile({
            return Promise.reject(message)
          }
        })
-       .then(blob =>{
+       .then(blob => {
          download(blob);
          resolve();
-       }).catch(error =>{
+       }).catch(error => {
         reject(error)
       })
     }
