@@ -1,16 +1,21 @@
-import ApplicationState from 'store/application-state';
-import { DOWNLOAD_FORMATS } from 'app/constant';
-import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-import GUI from 'services/gui';
+import ApplicationState      from 'store/application-state';
+import { DOWNLOAD_FORMATS }  from 'app/constant';
+import DataRouterService     from 'services/data';
+import ProjectsRegistry      from 'store/projects';
+import ApplicationService    from 'services/application';
+import GUI                   from 'services/gui';
 
-const { t } = require('core/i18n/i18n.service');
+const { t }                  = require('core/i18n/i18n.service');
 const { inherit, base, XHR } = require('utils');
-const G3WObject = require('core/g3wobject');
-const { geometryFields, parseAttributes } =  require('utils/geo');
-const Relations = require('core/relations/relations');
-const ProviderFactory = require('core/layers/providersfactory');
+const G3WObject              = require('core/g3wobject');
+const {
+  geometryFields,
+  parseAttributes,
+}                            = require('core/utils/geo');
+const Relations              = require('core/relations/relations');
+const ProviderFactory        = require('core/layers/providersfactory');
+
+const deprecate              = require('util-deprecate');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
@@ -503,129 +508,52 @@ proto.getFilterToken = function () {
 };
 
 /**
- * @since v3.9.0
- */
-proto.chooseFieldsToDownload = function() {
-  return GUI.chooseLayerFields(
-    this.getTableFields()
-      .map(({name, label}) => ({name, label, selected: true}))
-  )
-}
-
-/**
+ * @TODO error handling
  *
- * DOWNLOAD METHODS
- */
-
-
-/**
- * Method to handle download layer in different format
- * @returns promise
- */
-proto.getDownloadFilefromDownloadDataType = async function(type, {data={}, options}={}) {
-  try {
-    const fields = await this.chooseFieldsToDownload();
-    data.ftod = fields.map(field => field.name).join();
-    data.filtertoken = this.getFilterToken();
-    switch (type) {
-      case 'shapefile': return this._getShp({data, options});
-      case 'xls':       return this._getXls({data, options});
-      case 'csv':       return this._getCsv({data, options});
-      case 'gpx':       return this._getGpx({data, options});
-      case 'gpkg':      return this._getGpkg({data, options});
-      case 'geotiff':   return this._getGeoTIFF({ data, options });
-    }
-  } catch(err) {
-    /**
-     * @TODO handle error
-     */
-    console.log(err)
-  }
-
-};
-
-/**
+ * [FILE DOWNLOAD] Export layer in different formats
  *
- * @param data
- * @returns {Promise<unknown>}
- * @private
+ * @param { 'shp' | 'shapefile' | 'xls' | 'csv' | 'gpx' | 'gpkg' | 'geotiff' } type
+ * @param { Object } opts
+ * @param opts.data
+ * @param opts.options
+ *
+ * @returns { Promise }
+ *
+ * @listens GUI~before_download_layer           since 3.9.0
+ * @fires   GUI~choose_layer_fields_to_download since 3.9.0
  */
-proto._getGeoTIFF = async function({data={}}={}) {
-  return XHR.fileDownload({
-    url: this.getUrl('geotiff'),
-    data,
-    httpMethod: "POST"
+proto.downloadAsFile = function(type, {
+  data = {},
+  options,
+} = {}) {
+  return new Promise((resolve, reject) => {
+    GUI.once(
+      'before_download_layer',
+      async (fields) => {
+        data.ftod        = fields.map(field => field.name).join();
+        data.filtertoken = this.getFilterToken();
+        // alias
+        if ('shapefile' === type) {
+          type = 'shp';
+        }
+        // allowed download types
+        if (['shp', 'xls', 'csv', 'gpx', 'gpkg', 'geotiff'].includes(type)) {
+          resolve(
+            XHR.fileDownload({
+              url: this.getUrl(type),
+              data,
+              httpMethod: "POST",
+            })
+          );
+        }
+      }
+    );
+    GUI.emit(
+      'choose_layer_fields_to_download',
+      this.getTableFields().map(({ name, label }) => ({ name, label, selected: true }))
+    );
   })
-};
-
-/**
- *
- * @param data
- * @returns {Promise<unknown>}
- * @private
- */
-proto._getXls = async function({data={}}={}) {
-  return XHR.fileDownload({
-    url: this.getUrl('xls'),
-    data,
-    httpMethod: "POST"
-  })
-};
-
-/**
- *
- * @param data
- * @returns {Promise<unknown>}
- * @private
- */
-proto._getShp = async function({data={}}={}) {
-  return XHR.fileDownload({
-    url: this.getUrl('shp'),
-    data,
-    httpMethod: "POST"
-  })
-};
-
-/**
- *
- * @param data
- * @returns {Promise<unknown>}
- * @private
- */
-proto._getGpx = async function({data={}}={}) {
-  return XHR.fileDownload({
-    url: this.getUrl('gpx'),
-    data,
-    httpMethod: "POST"
-  })
-};
-
-/**
- *
- * @param data
- * @returns {Promise<unknown>}
- * @private
- */
-proto._getGpkg = async function({data={}}={}) {
-  return XHR.fileDownload({
-    url: this.getUrl('gpkg'),
-    data,
-    httpMethod: "POST"
-  })
-};
-
-/**
- *
- * @param data
- * @returns {Promise<unknown>}
- * @private
- */
-proto._getCsv = async function({data={}}={}) {
-  return XHR.fileDownload({
-    url: this.getUrl('csv'),
-    data,
-    httpMethod: "POST"
-  })
+  .catch(console.warn);
 };
 
 proto.getSourceType = function() {
@@ -1400,5 +1328,10 @@ Layer.SELECTION_STATE = {
   ALL: '__ALL__',
   EXCLUDE: '__EXCLUDE__'
 };
+
+/**
+ * @deprecated since 3.9.0. Will be deleted in 4.x. Use Layer.downloadAsFile(type, options) instead
+ */
+Layer.prototype.getDownloadFilefromDownloadDataType = deprecate(Layer.prototype.downloadAsFile, '[G3W-CLIENT] Layer::getDownloadFilefromDownloadDataType(type, options) is deprecated');
 
 module.exports = Layer;
