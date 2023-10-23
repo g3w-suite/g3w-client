@@ -11,7 +11,7 @@ const G3WObject              = require('core/g3wobject');
 const {
   geometryFields,
   parseAttributes,
-}                            = require('core/utils/geo');
+}                            = require('utils/geo');
 const Relations              = require('core/relations/relations');
 const ProviderFactory        = require('core/layers/providersfactory');
 
