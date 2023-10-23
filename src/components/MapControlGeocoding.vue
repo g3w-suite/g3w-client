@@ -55,7 +55,7 @@
           item.__no_results ? 'nominatim-noresult' : '',
         ]"
         :key    = "item.__uid"
-        @click  = "_onItemClick(item)"
+        @click  = "_onItemClick($event, item)"
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
         <div
@@ -162,7 +162,7 @@ function _showMarker(coordinates, options = { transform: true }) {
   const geometry =  new ol.geom.Point(coordinates);
   layer.getSource().addFeature(new ol.Feature(geometry));
   map.addLayer(layer);
-  map.zoomToGeometry(geometry)
+  GUI.getService('map').zoomToGeometry(geometry);
 };
 
 /**
@@ -350,6 +350,7 @@ export default {
               const map = GUI.getService('map').getMap();
               const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection())
               layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+              map.removeLayer(layer);
               map.addLayer(layer);
             } catch (e) {
               console.log(e);
@@ -391,25 +392,27 @@ export default {
     /**
      * @since 3.9.0
      */
-    _onItemClick(item) {
+    _onItemClick(evt, item) {
       if (!item.lat || !item.lon) {
-        return () => { };
+        return;
       }
-      return (evt) => {
-        evt.preventDefault();
-        if ('nominatim' !== item.provider) {
-          _showMarker([parseFloat(item.lon), parseFloat(item.lat)]);
-        } else {
-          try {
-            const map = GUI.getService('map').getMap();
-            const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection())
-            layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
-            map.addLayer(layer);
-          } catch (e) {
-            console.log(e);
-          }
+      evt.preventDefault();
+      if ('nominatim' !== item.provider) {
+        _showMarker([parseFloat(item.lon), parseFloat(item.lat)]);
+      } else {
+        try {
+          const map    = GUI.getService('map').getMap();
+          const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection());
+          const geom   = new ol.geom.Point(coords);
+          console.log(geom, map);
+          layer.getSource().addFeature(new ol.Feature(geom));
+          map.removeLayer(layer);
+          map.addLayer(layer);
+          GUI.getService('map').zoomToGeometry(geom);
+        } catch (e) {
+          console.log(e);
         }
-      };
+      }
     },
 
   },
