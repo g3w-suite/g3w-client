@@ -2250,9 +2250,9 @@ let animatingHighlight = false;
 /*
 * geometries = array of geometries
 * action: add, clear, remove :
-*                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
-*                             clear: remove selectionLayer
-*                             remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
+*   - add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
+*   - clear: remove selectionLayer
+*   - remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
 * */
 proto.setSelectionFeatures = function(action='add', options={}) {
   const {feature, color} = options;
@@ -2270,8 +2270,7 @@ proto.setSelectionFeatures = function(action='add', options={}) {
       source.removeFeature(feature);
       break;
     case 'update':
-      const id = feature.getId();
-      const addedFeature = source.getFeatureById(id);
+      const addedFeature = source.getFeatureById(feature.getId());
       addedFeature.setGeometry(feature.getGeometry());
       break;
     case 'clear':
@@ -2284,7 +2283,7 @@ proto.clearSelectionFeatures = function() {
   this.defaultsLayers.selectionLayer.getSource().clear();
 };
 
-proto.seSelectionLayerVisible = function(visible=true) {
+proto.setSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 
