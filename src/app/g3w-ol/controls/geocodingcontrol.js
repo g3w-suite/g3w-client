@@ -7,12 +7,11 @@ console.assert(undefined !== MapControlGeocoding);
 console.assert(undefined !== MapControlNominatimResults);
 
 const Control                     = require('./control');
-const { toRawType, XHR }          = require('core/utils/utils');
+const { toRawType, XHR }          = require('utils');
 const Projections                 = require('g3w-ol/projection/projections');
-
 /**
- * Helper CSS classes for control elements 
- * 
+ * Helper CSS classes for control elements
+ *
  * @type { Object<string, string> }
  */
 const cssClasses = {
@@ -114,7 +113,7 @@ class Google {
 
   handleResponse(response = {}) {
     // disable google provider on invalid API key
-    if (response.status === 'REQUEST_DENIED') { 
+    if (response.status === 'REQUEST_DENIED') {
       this.active = false;
     }
     return {
@@ -154,7 +153,7 @@ class Google {
 
 /**
  * @example https://dev.virtualearth.net/REST/v1/LocalSearch/?query={query}&userMapView={lat,lon,lat,lon}&key={BingMapsKey}
- * 
+ *
  * @see https://learn.microsoft.com/en-us/bingmaps/rest-services/locations/local-search
  */
 class Bing {
@@ -177,7 +176,7 @@ class Bing {
 
   handleResponse(response = {}) {
     // disable google provider on invalid API key
-    if (response.status === 'REQUEST_DENIED') { 
+    if (response.status === 'REQUEST_DENIED') {
       this.active = false;
     }
     return {
@@ -221,7 +220,7 @@ class Bing {
 
 /**
  * Geocoding class
- * 
+ *
  * @param { Object } options
  * @param options.placeholder
  * @param options.noresults
@@ -229,7 +228,7 @@ class Bing {
  * @param options.limit
  * @param options.bbox
  * @param options.mapCrs
- * 
+ *
  * @constructor
  */
 function GeocodingControl(options = {}) {
@@ -262,7 +261,7 @@ function GeocodingControl(options = {}) {
 
   /**
    * Geocoding Providers
-   * 
+   *
    * @type { Array }
    */
   this.providers = [
@@ -273,7 +272,7 @@ function GeocodingControl(options = {}) {
 
   /**
    * Search results layer (marker)
-   * 
+   *
    * @TODO move to parent `Control` class (duplicated also in GEOLOCATION CONTROL)
    */
   this.layer = new ol.layer.Vector({
@@ -498,7 +497,7 @@ proto.createList = function({
   );
 
   heading.classList.add("skin-background-color");
-  
+
   ul.appendChild(heading);
 
   if (results.length) {
@@ -510,8 +509,8 @@ proto.createList = function({
       if (address.road || address.building || address.house_number) html.push(`<div class="${ cssClasses.road }">{building} {road} {house_number}</div>`);
       if (address.city || address.town || address.village)          html.push(`<div class="${ cssClasses.city }">{postcode} {city} {town} {village}</div>`);
       if (address.state || address.country)                         html.push(`<div class="${ cssClasses.country }">{state} {country}</div>`);
-    
-      // parse template string 
+
+      // parse template string
       const addressHtml = html.join('<br>').replace(
         /\{ *([\w_-]+) *\}/g,
         (_, key) => String((address[key] === undefined) ? '' : address[key])
@@ -529,7 +528,7 @@ proto.createList = function({
         evt.preventDefault();
         if (false === this.options.keepOpen) {
           this.clearResults(true);
-        } 
+        }
         this.showMarker([ parseFloat(lon), parseFloat(lat) ]);
       }, false);
 

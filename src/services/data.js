@@ -11,7 +11,7 @@ import SearchService from 'services/data-search';
 import IFrameRouterService from 'services/iframe-plugin';
 import GUI from 'services/gui';
 
-const { splitContextAndMethod } = require('core/utils/utils');
+const { splitContextAndMethod } = require('utils');
 
 function DataService() {
   //set deafult outputplace

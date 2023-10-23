@@ -72,7 +72,7 @@ import GUI from 'services/gui';
 import { fieldsMixin, resizeMixin } from 'mixins';
 import { RelationEventBus as VM } from 'app/eventbus';
 
-const { throttle } = require('core/utils/utils');
+const { throttle } = require('utils');
 
 let SIDEBARWIDTH;
 

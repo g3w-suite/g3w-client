@@ -4,8 +4,8 @@
  */
 
 const BaseService = require('core/data/service');
-const { base, inherit, XHR } = require('core/utils/utils');
-const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
+const { base, inherit, XHR } = require('utils');
+const { getFeaturesFromResponseVectorApi } = require('utils/geo');
 
 function ExpressionService() {
  
