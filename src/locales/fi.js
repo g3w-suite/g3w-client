@@ -18,7 +18,8 @@ export default {
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
         show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
-        savefilter: "Save Filter",
+        savefilter: "Tallenna suodatin",
+        filterName: "Suodattimen Nimi",
       }
     },
     warning: {

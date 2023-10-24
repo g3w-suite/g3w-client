@@ -18,7 +18,8 @@ export default {
         invert: "Invertera Urval",
         clear: "Annullera Urval",
         show_features_on_map: "Visa funktioner som är synliga på kartan",
-        savefilter: "Save Filter",
+        savefilter: "Spara Filter",
+        filterName: "Filternamn",
       }
     },
     warning: {

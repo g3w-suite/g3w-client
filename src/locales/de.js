@@ -18,7 +18,8 @@ export default {
         invert: "Auswahl umkehren",
         clear: "Auswahl löschen",
         show_features_on_map: "Auf der Karte sichtbare Features anzeigen",
-        savefilter: "Save Filter",
+        savefilter: "Filter speichern",
+        filterName: "Filtername",
       }
     },
     warning: {

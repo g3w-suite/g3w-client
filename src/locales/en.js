@@ -19,6 +19,7 @@ export default {
         clear: "Clear Selection",
         show_features_on_map: "Show features visible on map",
         savefilter: "Save Filter",
+        filterName: "Filter Name",
       }
     },
     warning: {

@@ -18,7 +18,8 @@ export default {
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
         show_features_on_map: "Arată entitățile vizibile în cadrul hărții",
-        savefilter: "Save Filter",
+        savefilter: "Salvează Filtrul",
+        filterName: "Nume Filtru",
       }
     },
     warning: {
