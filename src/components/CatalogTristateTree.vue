@@ -130,7 +130,7 @@
           @click.stop="removeCurrentFilter"
         >
           <span
-            style="color: #FFFFFF"
+            style="color: red" /> <!-- set color red to distinguish from dynamic filter -->
             :class="g3wtemplate.getFontClass('filter')">
           </span>
         </span>
