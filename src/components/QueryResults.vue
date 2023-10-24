@@ -48,7 +48,7 @@
                         v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
                   </span>
-                  <span v-if="layer.features.length > 1 && (layer.external || (layer.source && layer.source.type !== 'wms'))" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
+                  <span v-if="layer.features.length > 1 && ((layer.external && '__g3w_marker' !== layer.id) || (layer.source && layer.source.type !== 'wms'))" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
                         v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                   </span>
@@ -534,6 +534,7 @@
           highlight: true
         });
       })
+      console.log(this.state.layers)
     },
     beforeDestroy() {
       this.state.zoomToResult = true;

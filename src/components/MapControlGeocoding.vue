@@ -50,6 +50,7 @@
       <li
         v-for   = "(item, i) in $data._results"
         :class  = "[
+          item.add ? 'add' : '',
           item.provider,
           item.__heading ? 'skin-background-color' : '',
           item.__no_results ? 'nominatim-noresult' : '',
@@ -121,8 +122,11 @@ import nominatim         from 'utils/search_from_nominatim';
 import bing              from 'utils/search_from_bing';
 import google            from 'utils/search_from_google';
 
+import MapControlGeocodingMarkerItems from "./MapControlGeocodingMarkerItems.vue";
 
-const Panel = require('gui/panel');
+
+const ComponentsFactory = require('gui/component/componentsfactory');
+
 const {
   uniqueId,
   toRawType
@@ -146,7 +150,8 @@ const pushpin_icon = new ol.style.Icon({
  * @TODO move to parent `Control` class (duplicated also in GEOLOCATION CONTROL)
  */
 const layer = new ol.layer.Vector({
-    id: 'marker',
+    id: '__g3w_marker',
+    name: 'Geocoding Marker',
     source: new ol.source.Vector(),
     style: new ol.style.Style({ image: pushpin_icon }),
   });
@@ -206,6 +211,7 @@ export default {
     return {
       /** @since 3.9.0 */
       _results: [],
+      _markers: []
     };
   },
 
@@ -249,7 +255,6 @@ export default {
   },
 
   methods: {
-
     /**
      * Clear list of results
      * 
@@ -257,7 +262,8 @@ export default {
      */
     clear() {
       this.$data._results.splice(0);
-      _hideMarker();
+      // this.$data._markers.splice(0);
+      // _hideMarker();
     },
     
     /**
@@ -334,10 +340,7 @@ export default {
      */
     _showResults(results=[]) {
 
-      /**
-       * END TEST
-       */
-
+      // Loop through providers results
       results.forEach((p) => {
 
         // heading
@@ -357,21 +360,20 @@ export default {
 
         // results
         p.value.results.forEach(item => {
-          console.log(item)
           this.$data._results.push({
-            __uid: Date.now(),
             provider: p.value.provider,
             ...item,
+            add: false,
           });
-          if ('nominatim' !== p.value.provider) {
-            try {
-              const map = GUI.getService('map').getMap();
-              const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection())
-              layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
-            } catch (e) {
-              console.log(e);
-            }
-          }
+          // if ('nominatim' !== p.value.provider) {
+          //   try {
+          //     const map = GUI.getService('map').getMap();
+          //     const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection())
+          //     layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
+          //   } catch (e) {
+          //     console.log(e);
+          //   }
+          // }
         });
 
       });
@@ -413,7 +415,7 @@ export default {
         return;
       }
       evt.preventDefault();
-      if ('nominatim' !== item.provider) {
+      if (false && 'nominatim' !== item.provider) {
         _showMarker([parseFloat(item.lon), parseFloat(item.lat)]);
       } else {
         try {
@@ -421,6 +423,8 @@ export default {
           if (layer.getSource().getFeatureById(item.__uid)) {
             //remove feature marker
             layer.getSource().removeFeature(layer.getSource().getFeatureById(item.__uid));
+            this.$data._markers.splice(this.$data._markers.findIndex(i => item.__uid === i.__uid), 1);
+            item.add = false;
           } else {
             //add feature marker and zoom on it
             const map    = GUI.getService('map').getMap();
@@ -433,11 +437,14 @@ export default {
             feature.setId(item.__uid);
             layer.getSource().addFeature(feature);
             GUI.getService('map').zoomToGeometry(geom);
+            this.$data._markers.push(item);
+            item.add = true;
           }
 
         } catch (e) {
           console.log(e);
         }
+
       }
     },
 
@@ -449,22 +456,46 @@ export default {
     const map        = mapService.getMap();
     //add layer
     map.addLayer(layer);
+    //register vector layer for query results
+    GUI.getService('queryresults')
+      .registerVectorLayer(layer);
     /**
      * @TODO take in account to change zIndex in case of add layer (wms external, vector layer)
      */
   },
 
-  /**
-   * @DEBUG
-   */
+  watch: {
+    '$data._markers'(items, olditems) {
+      if (items.length === 0) {
+        GUI.closeContent();
+        return;
+      }
+      if (
+        (null === GUI.getCurrentContent()) || //no content is show /right panel is hide
+        (items.length === 1 && olditems.length === 1)
+      ) {
+        GUI.showContent({
+          content: ComponentsFactory.build({
+            vueComponentObject: MapControlGeocodingMarkerItems,
+            propsData: {
+              markers: this.$data._markers,
+            },
+          }),
+          title: 'Markers'
+        })
+      }
+    }
+  },
+
+
   async mounted() {
     await this.$nextTick();
-    const q = document.querySelector.bind(document);
-    q('#gcd-input-query').value = 'cafe';
-    q('#search_nominatim').click();
-
-
   },
+
+  destroyed() {
+    GUI.getService('queryresults')
+      .unregisterVectorLayer(layer);
+  }
 
 };
 </script>
@@ -485,5 +516,8 @@ export default {
   li.bing .gcd-city,
   li.bing .gcd-country {
     display: none;
+  }
+  li.add, li.add:hover {
+    background-color: #ffe500 !important;
   }
 </style>

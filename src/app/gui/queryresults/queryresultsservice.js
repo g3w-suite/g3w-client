@@ -2423,7 +2423,7 @@ QueryResultsService.prototype.setters = {
           const is_selected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
           if (
             layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
-                                    (true === is_selected  && true === FILTER_SELECTED) ||
+                                    (true === is_selected  && true === FILTER_SELECTED)  ||
                                     (false === is_selected && false === FILTER_SELECTED) ||
                                     (undefined === FILTER_SELECTED)
                                   )
@@ -2431,6 +2431,11 @@ QueryResultsService.prototype.setters = {
             queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
           }
         });
+      //Handle marker layer (geocoding control layer)
+      const markerLayer = this._vectorLayers.find(layer => '__g3w_marker' === layer.get('id'));
+      if (markerLayer) {
+        queryResponse.data.unshift(this.getVectorLayerFeaturesFromQueryRequest(markerLayer, queryResponse.query));
+      }
     }
 
     if (false === options.add) {
