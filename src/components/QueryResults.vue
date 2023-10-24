@@ -534,7 +534,6 @@
           highlight: true
         });
       })
-      console.log(this.state.layers)
     },
     beforeDestroy() {
       this.state.zoomToResult = true;
