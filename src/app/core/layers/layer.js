@@ -1,16 +1,16 @@
-import ApplicationState from 'store/application-state';
+import ApplicationState     from 'store/application-state';
 import { DOWNLOAD_FORMATS } from 'app/constant';
-import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-import GUI from 'services/gui';
+import DataRouterService    from 'services/data';
+import ProjectsRegistry     from 'store/projects';
+import ApplicationService   from 'services/application';
+import GUI                  from 'services/gui';
+import { prompt }           from 'utils/prompt';
 
 const { t } = require('core/i18n/i18n.service');
 const {
   inherit,
   base,
   XHR,
-  getUniqueDomId
 } = require('utils');
 const G3WObject = require('core/g3wobject');
 const { geometryFields, parseAttributes } =  require('utils/geo');
@@ -672,106 +672,56 @@ proto._applyFilterToken = async function(filter) {
 /**
  * [LAYER SELECTION]
  * 
- * @param {string} name Unique string name
- * 
  * @since 3.9.0
  */
-proto.saveFilter = async function(name) {
+proto.saveFilter = function() {
+
+  // skip when ..
   if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
     return;
   }
 
-  //Need to be an object so can be reactive with vue input instance
-  let reactName = {
-    name: this.state.filter.current
-      ? this.state.filter.current.name
-      : '',
-    id: getUniqueDomId()}
+  const layer = this;
 
-  let inputVueInstance = new Vue({
-    template:`
-      <div>
-      <label :for="id">Filter Name</label>
-      <input v-model="name" :id="id" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text">
-      </div>`,
-    data() {
-      return reactName
-    },
-  });
+  prompt({
+    label: t('layer_selection_filter.tools.savefilter'),
+    value: layer.getCurrentFilter() ? layer.getCurrentFilter().name : '' ,
+    callback: async(name) => {
+      const data = await layer.providers['filtertoken'].saveFilterToken(name);
 
-  let dialog; // store dialog modal window
-  const promise = new Promise((resolve, reject) => {
-    //build a modal window with input name
-    dialog = GUI.showModalDialog({
-      message: inputVueInstance.$mount().$el,
-      closeButton: false,
-      buttons: {
-        cancel: {
-          label: 'Cancel',
-          className: 'btn-danger',
-          callback() {
-            reject()
-          }
-        },
-        ok: {
-          label: 'Ok',
-          className: 'btn-success',
-          callback() {
-            resolve()
-          }
-        }
+      // skip when no data return from provider
+      if (!data) {
+        return;
       }
-    });
-    //get ok button of modal dialog
-    const OkButton = dialog.find('button.btn-success');
-    //set initial value to disabled true
-    OkButton.prop('disabled', reactName.name.trim().length === 0);
-    //listen name value text input change
-    inputVueInstance.$watch('name', name => {
-      //set disabled property base of vale of name
-      OkButton.prop('disabled', name.trim().length === 0)
-    });
-  })
-
-  promise
-    .then(async () => {
-      const data = await this
-        .providers['filtertoken']
-        .saveFilterToken(reactName.name);
-      //id data return from provider
-      if (data) {
-        const filter = {
+    
+      let filter = layer.state.filters.find(f => f.fid === data.fid);
+    
+      // add saved filter to filters array
+      if (undefined === filter) {
+        filter = {
           fid: data.fid, //get fid
           name: data.name //get name
         }
-        if (undefined === this.state.filters.find(f => filter.fid === f.fid)) {
-          //add filter saved to filters array
-          this.state.filters.push(filter)
-        }
-        //set current filter
-        this.setCurrentFilter(filter);
-        //set to false
-        this.setFilter(false);
-        //reset selection to false
-        this.state.selection.active = false;
-        //clear current fids
-        this.selectionFids.clear();
-        //in case of geolayer
-        if (this.isGeoLayer()) {
-          //remove selection feature from map
-          this.setOlSelectionFeatures();
-        }
-        //emit unselectionall
-        this.emit('unselectionall', this.getId());
+        layer.state.filters.push(filter);
       }
-    })
-    .finally(() => {
-      //clean oll variable
-      inputVueInstance.$destroy();
-      inputVueInstance = null;
-      reactName        = null;
-      dialog           = null;
-    })
+
+      layer.setCurrentFilter(filter);      // set current filter
+      layer.setFilter(false);              // set to false
+      layer.getSelection().active = false; // reset selection to false
+      layer.selectionFids.clear();         // clear current fids
+    
+      //in case of geolayer
+      if (layer.isGeoLayer()) {
+        //remove selection feature from map
+        layer.setOlSelectionFeatures();
+      }
+    
+      //emit unselectionall
+      layer.emit('unselectionall', layer.getId());
+    
+    },
+  });
+
 };
 
 /**
