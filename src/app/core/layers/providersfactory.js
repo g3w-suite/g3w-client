@@ -172,14 +172,6 @@ const Providers = {
       this._infoFormat     = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
     }
 
-    /*
-      @TODO remove it. Temporary admin api explanation
-
-
-      Elimina dalla lista dei filtri slavati per il layer il filtro indicato. Nel caso sia l'ultimo applicato alla sessione corrente elimina anche il filtertoken. (modificato)
-
-
-    */
 
     /**
      * Save filtertoken
