@@ -178,7 +178,9 @@ function Layer(config={}, options={}) {
 
   };
 
-  // add selectionFids that will sore alle information fids about features selection
+  /**
+   * Store all selection features `fids`
+   */
   this.selectionFids = new Set();
 
   // referred to (layersstore);
@@ -229,16 +231,18 @@ proto.getProxyData = function(type) {
 };
 
 /**
- *Set proxy data
+ * Set proxy data
+ * 
  * @param type
  * @param data
  */
-proto.setProxyData= function(type, data={}) {
+proto.setProxyData= function(type, data = {}) {
   this.proxyData[type] = data;
 };
 
 /**
  * Clear proxy data
+ * 
  * @param type
  */
 proto.clearProxyData = function(type) {
@@ -246,31 +250,35 @@ proto.clearProxyData = function(type) {
 };
 
 /**
- * get a proxy request
+ * Get a proxy request
+ * 
  * @param type
  * @param proxyParams
+ * 
  * @returns {Promise<*>}
  */
-proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}) {
+proto.getDataProxyFromServer = async function(type = 'wms', proxyParams = {}) {
   try {
-    const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
+    const { response, data } = await DataRouterService.getData(`proxy:${type}`, {
       inputs: proxyParams,
-      outputs: false
+      outputs: false,
     });
     this.setProxyData(type, JSON.parse(data));
     return response;
   } catch(err) {
-    return;
+    console.warn(err);
   }
 };
 
 /**
  * @TODO Add description
+ * 
  * @param type
  * @param changes
+ * 
  * @returns {Promise<*>}
  */
-proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
+proto.changeProxyDataAndReloadFromServer = function(type = 'wms', changes = {}) {
   Object.keys(changes).forEach(changeParam => {
     Object.keys(changes[changeParam]).forEach(param => {
       this.proxyData[type][changeParam][param] = changes[changeParam][param];
@@ -280,31 +288,26 @@ proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
 };
 
 /**
- * Editing method used by plugin
- */
-
-/**
- * Check if layer is in editing
- * @returns {boolean}
+ * [EDITING PLUGIN] Check if layer is in editing
+ * 
+ * @returns { boolean }
  */
 proto.isInEditing = function() {
   return this.state.inediting;
 };
 
 /**
- * Set editing state
- * @param bool <Boolean>
+ * [EDITING PLUGIN] Set editing state
+ * 
+ * @param {boolean} bool
  */
 proto.setInEditing = function(bool=false) {
   this.state.inediting = bool;
 };
 
 /**
- * end editing
- */
-
-/**
  * @TODO Add description here
+ * 
  * @returns {*}
  */
 proto.getSearchParams = function() {
@@ -313,16 +316,22 @@ proto.getSearchParams = function() {
 
 /**
  * Return search_endpoint
+ * 
  * @returns {*}
  */
 proto.getSearchEndPoint = function() {
-  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
+  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : 'api';
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Create Relation
+ * 
  * @param projectRelations
+ * 
  * @returns {Relations}
+ * 
  * @private
  */
 proto._createRelations = function(projectRelations) {
@@ -333,7 +342,10 @@ proto._createRelations = function(projectRelations) {
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Get Relations
+ * 
  * @returns {*}
  */
 proto.getRelations = function() {
@@ -341,8 +353,12 @@ proto.getRelations = function() {
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Get Relation by id
+ * 
  * @param id
+ * 
  * @returns {*}
  */
 proto.getRelationById = function(id) {
@@ -350,9 +366,13 @@ proto.getRelationById = function(id) {
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Get Relation fields
+ * 
  * @param relationName
- * @returns {*|*[]}
+ * 
+ * @returns { * | Array }
  */
 proto.getRelationAttributes = function(relationName) {
   const relation = this._relations.find(relation => relation.name === relationName);
@@ -360,8 +380,11 @@ proto.getRelationAttributes = function(relationName) {
 };
 
 /**
- * @TOD Add description
- * @returns {{}}
+ * [LAYER RELATIONS]
+ * 
+ * @TODO Add description
+ * 
+ * @returns { Object }
  */
 proto.getRelationsAttributes = function() {
   const fields = {};
@@ -370,61 +393,81 @@ proto.getRelationsAttributes = function() {
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Check if layer is a Child of a relation
- * @returns {*|boolean}
+ * 
+ * @returns { * | boolean }
  */
 proto.isChild = function() {
   return this.getRelations() ? this._relations.isChild(this.getId()) : false;
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Check if layer is a Father of a relation
- * @returns {*|boolean}
+ * 
+ * @returns { * | boolean }
  */
 proto.isFather = function() {
   return this.getRelations() ? this._relations.isFather(this.getId()) : false;
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Get children relations
- * @returns {any|*[]}
+ * 
+ * @returns { * |Array }
  */
 proto.getChildren = function() {
   return this.isFather() ? this._relations.getChildren(this.getId()) : [];
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Get parents relations
- * @returns {*|*[]}
+ * 
+ * @returns { * | Array }
  */
 proto.getFathers = function() {
   return this.isChild() ? this._relations.getFathers(this.getId()) : [];
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Check if it has children
- * @returns {*|boolean}
+ * 
+ * @returns { * | boolean }
  */
 proto.hasChildren = function() {
   return this.hasRelations() ? this._relations.hasChildren(this.getId()) : false;
 };
 
 /**
+ * [LAYER RELATIONS]
+ * 
  * Check if it has fathers
- * @returns {*|boolean}
+ * 
+ * @returns { * | boolean }
  */
 proto.hasFathers = function() {
   return this.hasRelations() ? this._relations.hasFathers(this.getId()) : false;
 };
 
+/**
+ * [LAYER RELATIONS]
+ */
 proto.hasRelations = function() {
   return !!this._relations;
 };
-//end relations
-
 
 /**
  * @TODO Add description
+ * 
  * @param pageLength
  */
 proto.setAttributeTablePageLength = function(pageLength) {
@@ -433,6 +476,7 @@ proto.setAttributeTablePageLength = function(pageLength) {
 
 /**
  * @TODO add description
+ * 
  * @returns {null}
  */
 proto.getAttributeTablePageLength = function() {
@@ -442,7 +486,10 @@ proto.getAttributeTablePageLength = function() {
 // end global state
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Check if is selected
+ * 
  * @returns {boolean}
  */
 proto.isSelected = function() {
@@ -450,16 +497,23 @@ proto.isSelected = function() {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Set Selected
- * @param bool
+ * 
+ * @param {boolean} bool
  */
 proto.setSelected = function(bool) {
   this.state.selected = bool;
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Set Selection
+ * 
  * @param bool
+ * 
  * @returns {Promise<void>}
  */
 proto.setSelection = async function(bool=false) {
@@ -478,37 +532,48 @@ proto.setSelection = async function(bool=false) {
 };
 
 /**
- * Check if selection si active
- * @returns {boolean}
+ * [LAYER SELECTION]
+ * 
+ * @returns {boolean} whether selection si active
  */
 proto.isSelectionActive = function() {
   return this.state.selection.active;
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Get selection
- * @returns {{active: boolean}}
+ * 
+ * @returns {{ active: boolean }}
  */
 proto.getSelection = function() {
   return this.state.selection;
 };
 
-/*
-* Return filter
+/**
+ * [LAYER SELECTION]
+ * 
+ * @returns filter
  */
 proto.getFilter = function() {
   return this.state.filter;
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Set filter Ative to layer
- * @param bool
+ * 
+ * @param {boolean} bool
  */
-proto.setFilter = function(bool=false) {
+proto.setFilter = function(bool = false) {
   this.state.filter.active = bool;
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * get current filter
  */
 proto.getCurrentFilter = function() {
@@ -516,7 +581,10 @@ proto.getCurrentFilter = function() {
 };
 
 /**
- * @TODO Add description here
+ * [LAYER SELECTION]
+ * 
+ * @TODO Add description
+ * 
  * @returns {boolean}
  */
 proto.getFilterActive = function() {
@@ -524,23 +592,30 @@ proto.getFilterActive = function() {
 };
 
 /**
- * Return saved filters Array
- * @returns <Array> filters saved
+ * [LAYER SELECTION]
+ * 
+ * @returns { Array } saved filters
  */
 proto.getFilters = function() {
   return this.state.filters;
 }
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Add new filter
+ * 
  * @param filter Object filter
  */
-proto.addFilter = function(filter={}) {
+proto.addFilter = function(filter = {}) {
   this.state.filters.push(filter);
 }
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Remove saved filter from filters Array
+ * 
  * @param fid unique filter id
  */
 proto.removefilter = function(fid) {
@@ -548,15 +623,21 @@ proto.removefilter = function(fid) {
 }
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Set Current filter
- * @param filter Object {fid, name}
+ * 
+ * @param {{ fid, name }} filter 
  */
 proto.setCurrentFilter = function(filter) {
   this.state.filter.current = filter;
 }
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Apply layer filter by fid
+ * 
  * @param filter
  */
 proto.applyFilter = async function(filter) {
@@ -573,8 +654,10 @@ proto.applyFilter = async function(filter) {
 }
 
 /**
- *
+ * [LAYER SELECTION]
+ * 
  * @returns {Promise<void>}
+ * 
  * @private
  */
 proto._applyFilterToken = async function(filter) {
@@ -587,8 +670,11 @@ proto._applyFilterToken = async function(filter) {
 }
 
 /**
- * @since v3.9
- * @param name <String> Unique string name
+ * [LAYER SELECTION]
+ * 
+ * @param {string} name Unique string name
+ * 
+ * @since 3.9.0
  */
 proto.saveFilter = async function(name) {
   if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
@@ -686,10 +772,12 @@ proto.saveFilter = async function(name) {
       reactName        = null;
       dialog           = null;
     })
-}
+};
 
-/*
-* Method to set unset filter token on layer
+/**
+ * [LAYER SELECTION]
+ * 
+ * Method to set unset filter token on layer
  */
 proto.toggleFilterToken = async function() {
 
@@ -728,9 +816,13 @@ proto.toggleFilterToken = async function() {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Base on boolean value create a filter token from server
  * based on selection or delete current filtertoken
+ * 
  * @param bool
+ * 
  * @returns {Promise<void>}
  */
 proto.activeFilterToken = async function(bool) {
@@ -738,7 +830,10 @@ proto.activeFilterToken = async function(bool) {
 };
 
 /**
- * Delete filtertoken frrom server
+ * [LAYER SELECTION]
+ * 
+ * Delete filtertoken from server
+ * 
  * @param fid  unique id of filter saved to delete
  */
 proto.deleteFilterToken = async function(fid) {
@@ -775,14 +870,17 @@ proto.deleteFilterToken = async function(fid) {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Common method to set filter token
- * @since v3.9.0
+ * 
  * @param filtertoken
  *
  * @fires filtertokenchange
- *
+ * 
+ * @since 3.9.0
  */
-proto.setFilterToken = function(filtertoken=null) {
+proto.setFilterToken = function(filtertoken = null) {
   //set applicaton filter token
   ApplicationService.setFilterToken(filtertoken);
   //emit "filtertokenchange" event that for this layer filtertoken is changed
@@ -790,7 +888,10 @@ proto.setFilterToken = function(filtertoken=null) {
 }
 
 /**
+ * [LAYER SELECTION]
+ *  
  * Create filter token
+ * 
  * @fires filtertokenchange
  */
 proto.createFilterToken = async function() {
@@ -825,7 +926,10 @@ proto.createFilterToken = async function() {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Get Application filter token
+ * 
  * @returns {*}
  */
 proto.getFilterToken = function () {
@@ -848,30 +952,24 @@ proto.setSelectionFidsAll = function() {
 };
 
 /**
- * Return selection FIds stored
- * @returns {Set<any>}
+ * [LAYER SELECTION]
+ * 
+ * @returns {Set<any>} stored selection `fids` 
  */
 proto.getSelectionFids = function() {
   return this.selectionFids;
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Invert current selection fids
  */
 proto.invertSelectionFids = function() {
 
-  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
-
-    this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE);
-
-  } else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
-
-    this.selectionFids.delete(Layer.SELECTION_STATE.ALL);
-
-  } else if (this.selectionFids.size > 0) {
-
-    this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
-  }
+  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE))  { this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE); }
+  else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) { this.selectionFids.delete(Layer.SELECTION_STATE.ALL); }
+  else if (this.selectionFids.size > 0)                       { this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE); }
 
   if (this.isGeoLayer()) {
     this.setInversionOlSelectionFeatures();
@@ -886,25 +984,33 @@ proto.invertSelectionFids = function() {
 
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Check if feature id is present
+ * 
  * @param fid feature id
+ * 
  * @returns {boolean}
  */
 proto.hasSelectionFid = function(fid) {
   if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
     return true;
-  } else if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
-    return !this.selectionFids.has(fid);
-  } else {
-    return this.selectionFids.has(fid);
   }
+  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
+    return !this.selectionFids.has(fid);
+  }
+  return this.selectionFids.has(fid);
 };
 
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Include fid feature id to selection
+ * 
  * @param fid
  * @param createToken
+ * 
  * @returns {Promise<void>}
  */
 proto.includeSelectionFid = async function(fid, createToken=true) {
@@ -945,9 +1051,13 @@ proto.includeSelectionFid = async function(fid, createToken=true) {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Exclude fid to selection
+ * 
  * @param fid
  * @param createToken
+ * 
  * @returns {Promise<void>}
  */
 proto.excludeSelectionFid = async function(fid, createToken=true) {
@@ -977,11 +1087,16 @@ proto.excludeSelectionFid = async function(fid, createToken=true) {
 };
 
 /**
- * Used to call just one time if we createFilterToken
- * we need to set include and exclude selection fids in the same time
- * @since v3.9
+ * [LAYER SELECTION]
+ * 
+ * Called just one time when `createFilterToken` set include / exclude selection `fids` at the same time
+ * 
+ * @since 3.9.0
  */
-proto.includeExcludeSelectionFids = async function({includeSelectionFids=[], excludeSelectionFids=[]}={}) {
+proto.includeExcludeSelectionFids = async function({
+  includeSelectionFids = [],
+  excludeSelectionFids = [],
+} = {}) {
   //pass false because eventually token filter creation need to be called after
   includeSelectionFids.forEach(fid => this.includeSelectionFid(fid, false));
   excludeSelectionFids.forEach(fid => this.excludeSelectionFid(fid, false));
@@ -991,11 +1106,13 @@ proto.includeExcludeSelectionFids = async function({includeSelectionFids=[], exc
 }
 
 /**
- *
+ * [LAYER SELECTION]
+ * 
  * @param fids Array of fids
+ * 
  * @returns {Promise<void>}
  */
-proto.includeSelectionFids = async function(fids=[]) {
+proto.includeSelectionFids = async function(fids = []) {
   //pass false because eventually token filter creation need to be called after
   fids.forEach(fid => this.includeSelectionFid(fid, false));
   if (this.state.filter.active) {
@@ -1004,10 +1121,13 @@ proto.includeSelectionFids = async function(fids=[]) {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Exclude fids from selection
+ * 
  * @param fids
  */
-proto.excludeSelectionFids = async function(fids=[]) {
+proto.excludeSelectionFids = async function(fids = []) {
   //pass false because eventually token filter creation need to be called after
   fids.forEach(fid => this.excludeSelectionFid(fid, false));
   if (this.state.filter.active) {
@@ -1016,6 +1136,8 @@ proto.excludeSelectionFids = async function(fids=[]) {
 };
 
 /**
+ * [LAYER SELECTION]
+ * 
  * Clear selection
  */
 proto.clearSelectionFids = async function() {
@@ -1029,8 +1151,6 @@ proto.clearSelectionFids = async function() {
   //set selection false
   await this.setSelection(false);
 };
-
-// end selection ids methods
 
 /**
  * Return wms layer name for wms request
