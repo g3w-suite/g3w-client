@@ -527,7 +527,7 @@
         bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
       }
     },
-    created(){
+    created() {
       //PUT HERE THROTTLED FUNCTION
       this.zoomToLayerFeaturesExtent = throttle(layer => {
         this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
