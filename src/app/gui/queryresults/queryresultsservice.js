@@ -27,6 +27,7 @@ const {
   createFeatureFromCoordinates,
   intersects,
   within,
+  Geometry
 }                                = require('utils/geo');
 
 const { t }                      = require('core/i18n/i18n.service');
@@ -543,6 +544,13 @@ class QueryResultsService extends G3WObject {
       // Lookup for editable layer.
       if (layer.editable && false === layer.inediting) {
         this._setActionEditing(layer);
+      }
+
+      /**
+       * @since v3.9
+       */
+      if ('__g3w_marker' === layer.id) {
+        this._setAddMarkerToEditingLayers(layer);
       }
 
     });
@@ -2362,6 +2370,28 @@ class QueryResultsService extends G3WObject {
         hint: 'Editing',
         cbk: (layer, feature) => { this.editFeature({ layer, feature }) }
       });
+  }
+
+  /**
+   * @since v3.8
+   * @param layer
+   * @private
+   */
+  _setAddMarkerToEditingLayers(layer) {
+    const pointLayer = CatalogLayersStoresRegistry.getLayers({
+      EDITABLE: true,
+      GEOLAYER: true,
+    }).filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+
+    if (pointLayer) {
+      this.state.layersactions[layer.id]
+        .push({
+          id: 'editing',
+          class: GUI.getFontClass('pencil'),
+          hint: 'Editing',
+          cbk: () => {}//@TODO
+        });
+    }
   }
 
 }
