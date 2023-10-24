@@ -200,11 +200,11 @@ function Layer(config={}, options={}) {
   if (serverType && sourceType) {
     //set providers that will take in account to get data from server
     this.providers = {
-      query:       ProviderFactory.build('query', serverType, sourceType, { layer: this }),
-      filter:      ProviderFactory.build('filter', serverType, sourceType, { layer: this }),
+      query:       ProviderFactory.build('query',       serverType, sourceType, { layer: this }),
+      filter:      ProviderFactory.build('filter',      serverType, sourceType, { layer: this }),
       filtertoken: ProviderFactory.build('filtertoken', serverType, sourceType, { layer: this }),
-      search:      ProviderFactory.build('search', serverType, sourceType, { layer: this }),
-      data:        ProviderFactory.build('data', serverType, sourceType, { layer: this })
+      search:      ProviderFactory.build('search',      serverType, sourceType, { layer: this }),
+      data:        ProviderFactory.build('data',        serverType, sourceType, { layer: this })
     };
   }
 
@@ -826,14 +826,13 @@ proto.deleteFilterToken = async function(fid) {
  * 
  * @param filtertoken
  *
- * @fires filtertokenchange
+ * @fires filtertokenchange when filtertoken is changed
  * 
  * @since 3.9.0
  */
 proto.setFilterToken = function(filtertoken = null) {
   //set applicaton filter token
   ApplicationService.setFilterToken(filtertoken);
-  //emit "filtertokenchange" event that for this layer filtertoken is changed
   this.emit('filtertokenchange', { layerId: this.getId() });
 }
 
@@ -845,33 +844,36 @@ proto.setFilterToken = function(filtertoken = null) {
  * @fires filtertokenchange
  */
 proto.createFilterToken = async function() {
-  let filtertoken = null;
   try {
-    // skip when no filter token provider is set or this.selectionFids is empty
-    if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
+
+    const provider  = this.providers['filtertoken'];
+    const selection = this.selectionFids;
+
+    // skip when no filter token provider is set or selectionFids is empty
+    if (!provider || !selection.size > 0) {
       return;
     }
-    // Check if is set all features are selected
-    if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
-      // if set, filter token is removed
-      await this.providers['filtertoken'].deleteFilterToken();
-    } else {
-      const params = {};
-      //Check if selectionFids has Layer.SELECTION_STATE.EXCLUDE, meaning that ids of features store need to be excluded from filter
-      //NOT IN
-      if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
-        params.fidsout = Array.from(this.selectionFids).filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',');
-      } else {
-        //Need to be considered inside filter (part of layer features)
-        params.fidsin = Array.from(this.selectionFids).join(',');
-      }
-      //get filter token
-      filtertoken = await this.providers['filtertoken'].getFilterToken(params);
+
+    // select all features
+    if (selection.has(Layer.SELECTION_STATE.ALL)) {
+      await provider.deleteFilterToken();
+      this.setFilterToken(null);
+      return;
     }
-    //set filter token
-    this.setFilterToken(filtertoken);
+
+    const fids = Array.from(selection);
+
+    // exclude some features from selection
+    if (selection.has(Layer.SELECTION_STATE.EXCLUDE)) {
+      this.setFilterToken( await provider.getFilterToken({ fidsout: fids.filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',') }) );
+      return;
+    }
+
+    // include some features in selection
+    this.setFilterToken( await provider.getFilterToken({ fidsin: fids.join(',') }) );
+
   } catch(err) {
-    console.log('Error create update token');
+    console.log('Error create update token', err);
   }
 };
 

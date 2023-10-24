@@ -182,10 +182,12 @@ const Providers = {
     */
 
     /**
-     * Method to save filtertoken
-     * @since v3.9.0
-     * @param name <String>
+     * Save filtertoken
+     * 
+     * @param {string} name
      * @returns {Promise<void>}
+     * 
+     * @since v3.9.0
      */
     async saveFilterToken(name) {
       // /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<nome_idetificativo>
@@ -197,7 +199,9 @@ const Providers = {
 
     /**
      * Apply filtertoken
+     * 
      * @param fid
+     * 
      * @returns {Promise<void>}
      */
     async applyFilterToken(fid) {
