@@ -5,7 +5,7 @@
 
 import ApplicationState from 'store/application-state';
 
-const { XHR } = require('utils');
+const { XHR, uniqueId } = require('utils');
 
 let active = true;
 
@@ -46,8 +46,9 @@ export default async function(opts) {
             else if (types.find( t => 'country' === t))  country = long_name
           });
           return {
-            lon: result.geometry.location.lng,
-            lat: result.geometry.location.lat,
+            __uid: result.place_id || uniqueId(),
+            lon  : result.geometry.location.lng,
+            lat  : result.geometry.location.lat,
             address: {
               name,
               road: undefined,

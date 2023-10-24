@@ -121,12 +121,9 @@ import nominatim         from 'utils/search_from_nominatim';
 import bing              from 'utils/search_from_bing';
 import google            from 'utils/search_from_google';
 
-import * as vueComponentOptions from 'components/MarkersPanel.vue';
 
 const Panel = require('gui/panel');
 const {
-  base,
-  inherit,
   uniqueId,
   toRawType
 }                        = require('utils');
@@ -134,19 +131,6 @@ const {
 const Projections        = require('g3w-ol/projection/projections');
 
 
-/**
- * Create Marker Sidebar Panel
- */
-const MarkersPanelComponent = Vue.extend(vueComponentOptions);
-
-function MarkersPanel() {
-  this.id = uniqueId();
-  this.title = 'Markers';
-  const internalPanel = new MarkersPanelComponent();
-  this.setInternalPanel(internalPanel);
-}
-
-inherit(MarkersPanel, Panel);
 
 const providers = [ nominatim, bing, google ];
 
@@ -162,15 +146,17 @@ const pushpin_icon = new ol.style.Icon({
  * @TODO move to parent `Control` class (duplicated also in GEOLOCATION CONTROL)
  */
 const layer = new ol.layer.Vector({
+    id: 'marker',
     source: new ol.source.Vector(),
     style: new ol.style.Style({ image: pushpin_icon }),
   });
+
 
 /**
  * @TODO add a server option to let user choose geocoding extent, eg:
  * 
  * - "dynamic": filter search results based on current map extent
- * - "initial": filter search results based on on initial map extent
+ * - "initial": filter search results based on initial map extent
  */
 const DYNAMIC_MAP_EXTENT = false;
 
@@ -180,13 +166,10 @@ const DYNAMIC_MAP_EXTENT = false;
 function _showMarker(coordinates, options = { transform: true }) {
   const mapService = GUI.getService('map');
   const map = mapService.getMap();
-  _hideMarker();
   coordinates = options.transform
     ? ol.proj.transform(coordinates, 'EPSG:4326', map.getView().getProjection())
     : coordinates;
   const geometry =  new ol.geom.Point(coordinates);
-  layer.getSource().addFeature(new ol.Feature(geometry));
-  map.addLayer(layer);
   mapService.zoomToGeometry(geometry);
 };
 
@@ -194,8 +177,8 @@ function _showMarker(coordinates, options = { transform: true }) {
  * Remove marker from map
  */
 function _hideMarker() {
+  //clear layer features marker
   layer.getSource().clear();
-  GUI.getService('map').getMap().removeLayer(layer);
 };
 
 /**
@@ -285,6 +268,7 @@ export default {
      * @since 3.9.0
      */
     query(q) {
+      //remove markers
       _hideMarker();
 
       return new Promise(async (resolve, reject) => {
@@ -349,15 +333,6 @@ export default {
      * @since 3.9.0 
      */
     _showResults(results=[]) {
-      /**
-       * @ŢODO TEST
-       *
-       *
-       */
-      const panel = new MarkersPanel();
-      panel.show();
-
-      setTimeout(()=> panel.close(), 2000);
 
       /**
        * END TEST
@@ -367,7 +342,6 @@ export default {
 
         // heading
         this.$data._results.push({
-          __uid: Date.now(),
           __heading: true,
           provider: p.value.provider,
           label: p.value.label,
@@ -376,7 +350,6 @@ export default {
         // no results
         if (!(p.value.results && p.value.results.length)) {
           this.$data._results.push({
-            __uid: Date.now(),
             __no_results: !(p.value.results && p.value.results.length),
           });
           return;
@@ -384,6 +357,7 @@ export default {
 
         // results
         p.value.results.forEach(item => {
+          console.log(item)
           this.$data._results.push({
             __uid: Date.now(),
             provider: p.value.provider,
@@ -394,8 +368,6 @@ export default {
               const map = GUI.getService('map').getMap();
               const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection())
               layer.getSource().addFeature(new ol.Feature(new ol.geom.Point(coords)));
-              map.removeLayer(layer);
-              map.addLayer(layer);
             } catch (e) {
               console.log(e);
             }
@@ -445,20 +417,41 @@ export default {
         _showMarker([parseFloat(item.lon), parseFloat(item.lat)]);
       } else {
         try {
-          const map    = GUI.getService('map').getMap();
-          const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection());
-          const geom   = new ol.geom.Point(coords);
-          console.log(geom, map);
-          layer.getSource().addFeature(new ol.Feature(geom));
-          map.removeLayer(layer);
-          map.addLayer(layer);
-          GUI.getService('map').zoomToGeometry(geom);
+          //in case of already add marker
+          if (layer.getSource().getFeatureById(item.__uid)) {
+            //remove feature marker
+            layer.getSource().removeFeature(layer.getSource().getFeatureById(item.__uid));
+          } else {
+            //add feature marker and zoom on it
+            const map    = GUI.getService('map').getMap();
+            const coords = ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', map.getView().getProjection());
+            const geom   = new ol.geom.Point(coords);
+            const feature = new ol.Feature(geom, {
+              //Put here property
+            });
+            //set id of the feature
+            feature.setId(item.__uid);
+            layer.getSource().addFeature(feature);
+            GUI.getService('map').zoomToGeometry(geom);
+          }
+
         } catch (e) {
           console.log(e);
         }
       }
     },
 
+  },
+
+  created() {
+    //Add marker layer on
+    const mapService = GUI.getService('map');
+    const map        = mapService.getMap();
+    //add layer
+    map.addLayer(layer);
+    /**
+     * @TODO take in account to change zIndex in case of add layer (wms external, vector layer)
+     */
   },
 
   /**
@@ -469,6 +462,8 @@ export default {
     const q = document.querySelector.bind(document);
     q('#gcd-input-query').value = 'cafe';
     q('#search_nominatim').click();
+
+
   },
 
 };

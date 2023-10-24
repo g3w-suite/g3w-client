@@ -5,7 +5,7 @@
 
 import ApplicationState from 'store/application-state';
 
-const { XHR } = require('utils');
+const { XHR, uniqueId } = require('utils');
 
 let active = true;
 
@@ -44,6 +44,7 @@ export default async function(opts) {
         .filter(({ point: { coordinates } })=> ol.extent.containsXY(opts.extent, coordinates[1], coordinates[0]))
         .map(result => {
           return {
+            __uid:       uniqueId(), //set unique id //@TODO check if has a unique idendifier
             lon:         result.point.coordinates[1],
             lat:         result.point.coordinates[0],
             type:        result.entityType,

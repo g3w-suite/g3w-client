@@ -30,10 +30,11 @@ export default async function(opts) {
       )
       .filter(place => ol.extent.containsXY(opts.extent, place.lon, place.lat))
       .map(result => ({
-          lon:  result.lon,
-          lat:  result.lat,
-          name: result.name,
-          type: result.type,
+          __uid: result.place_id, //set unique id
+          lon:   result.lon,
+          lat:   result.lat,
+          name:  result.name,
+          type:  result.type,
           address: {
             name:      result.address.neighbourhood || '',
             road:      result.address.road          || '',
