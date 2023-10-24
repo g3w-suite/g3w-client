@@ -5,7 +5,7 @@
 
 import GUI from 'services/gui';
 
-const { splitContextAndMethod, uniqueId } = require('core/utils/utils');
+const { splitContextAndMethod, uniqueId } = require('utils');
 
 function IframePluginService(options={}) {
   //project is current project send by application service

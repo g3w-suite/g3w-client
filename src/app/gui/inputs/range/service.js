@@ -1,6 +1,6 @@
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Service = require('gui/inputs/service');
-const Validators = require('core/utils/validators');
+const Validators = require('utils/validators');
 
 function RangeService(options={}) {
   const {min, max} = options.state.input.options.values[0];

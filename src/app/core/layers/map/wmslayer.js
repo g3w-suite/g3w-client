@@ -1,7 +1,7 @@
 import ApplicationState from 'store/application-state';
 import ProjectsRegistry from 'store/projects';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const MapLayer = require('core/layers/map/maplayer');
 const RasterLayers = require('g3w-ol/layers/rasters');
 
@@ -105,7 +105,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   //check disabled layers
   !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
-  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
+  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('utils/geo');
   if (visibleLayers.length > 0) {
     const CATEGORIES_LAYERS = {};
     const STYLES = [];

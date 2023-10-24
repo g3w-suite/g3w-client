@@ -2,8 +2,8 @@ import { QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS }
 import ApplicationState from 'store/application-state';
 import ApplicationService from 'services/application';
 
-const { base, inherit, XHR } = require('core/utils/utils');
-const { crsToCrsObject } = require('core/utils/geo');
+const { base, inherit, XHR } = require('utils');
+const { crsToCrsObject } = require('utils/geo');
 const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');

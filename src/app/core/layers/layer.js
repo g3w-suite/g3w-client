@@ -5,9 +5,9 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 
 const { t } = require('core/i18n/i18n.service');
-const { inherit, base, XHR } = require('core/utils/utils');
+const { inherit, base, XHR } = require('utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields, parseAttributes } =  require('core/utils/geo');
+const { geometryFields, parseAttributes } =  require('utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providersfactory');
 
@@ -647,28 +647,50 @@ proto.getFeatureByFids = async function({fids=[], formatter=0}={}) {
   return features
 };
 
-//search Features methods
-proto.searchFeatures = function(options={}, params={}) {
-  const {search_endpoint = this.config.search_endpoint} = options;
+/**
+ * Search Features
+ * 
+ * @param { 'ows' | 'api' } options.search_endpoint
+ * @param { boolean }       options.raw
+ * @param { 0 | 1 }         options.formatter
+ * @param options.filter
+ * @param options.suggest
+ * @param options.unique
+ * @param options.queryUrl
+ * @param options.ordering
+ * @param params           - OWS search params
+ * 
+ * @returns { Promise }
+ */
+proto.searchFeatures = function(options = {}, params = {}) {
+  const {
+    search_endpoint = this.config.search_endpoint,
+  } = options;
+
   return new Promise(async (resolve, reject) => {
     switch (search_endpoint) {
+
       case 'ows':
         this
           .search(options, params)
           .then(results => { resolve(({ data: results })); })
-          .fail(error => reject(error));
+          .fail(reject);
         break;
+
       case 'api':
-        const {
-          raw=false,
-          filter:field,
-          suggest={},
-          unique,
-          queryUrl,
-          ordering
-        } = options;
         try {
-          resolve(await this.getFilterData({ queryUrl, raw, field, ordering, suggest, unique }));
+          resolve(
+            await this.getFilterData({
+              queryUrl:  options.queryUrl,
+              field:     options.filter,
+              ordering:  options.ordering,
+              unique:    options.unique,
+              raw:       undefined !== options.raw       ? options.raw       : false,
+              suggest:   undefined !== options.suggest   ? options.suggest   : {},
+              /** @since 3.9.0 */
+              formatter: undefined !== options.formatter ? options.formatter : 1,
+            })
+          );
         } catch(err) {
           reject(err);
         }
@@ -677,30 +699,37 @@ proto.searchFeatures = function(options={}, params={}) {
   })
 };
 
-/*
-* getFilterData is a function to get data feature based on fields and suggets
-* params:
-* - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
-* - fields: Array of object with type of suggest (see above)
-* */
+/**
+ * Get feature data based on `field` and `suggests`
+ * 
+ * @param opts.suggest (mandatory): object with key is a field of layer and value is value of the field to filter
+ * @param opts.field   Array of object with type of suggest (see above)
+ * @param opts.unique
+ * @param opts.queryUrl
+ * @param opts.ordering
+ * @param { boolean } opts.raw
+ * @param { 0 | 1 }   opts.formatter
+ */
 proto.getFilterData = async function({
   field,
-  raw=false,
-  suggest={},
+  raw = false,
+  suggest = {},
   unique,
-  formatter=1,
+  formatter = 1,
   queryUrl,
   ordering
-}={}) {
-  return await this.getProvider('data').getFilterData({
-    queryUrl,
-    field,
-    raw,
-    ordering,
-    suggest,
-    formatter,
-    unique
-  });
+} = {}) {
+  return await this
+    .getProvider('data')
+    .getFilterData({
+      queryUrl,
+      field,
+      raw,
+      ordering,
+      suggest,
+      formatter,
+      unique,
+    });
 };
 
 /**

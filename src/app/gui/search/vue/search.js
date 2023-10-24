@@ -1,6 +1,6 @@
 import * as vueComponentOptions from 'components/Search.vue';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Component = require('gui/component/component');
 const Service = require('gui/search/service');
 

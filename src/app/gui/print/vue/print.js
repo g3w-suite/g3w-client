@@ -1,6 +1,6 @@
 import * as vueComponentOptions from 'components/Print.vue';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Component = require('gui/component/component');
 const PrintService = require('gui/print/printservice');
 

@@ -1,11 +1,11 @@
 import SessionsRegistry from 'store/sessions';
 import MapLayersStoresRegistry from 'store/map-layers';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 const History = require('core/editing/history');
 const Layer = require('core/layers/layer');
-const { is3DGeometry } = require('core/utils/geo').Geometry;
+const { is3DGeometry } = require('utils/geo').Geometry;
 
 function Session(options={}) {
   this.setters = {
@@ -32,6 +32,7 @@ function Session(options={}) {
   this._history = new History({
     id: this.state.id
   });
+  //store temporary change not save on history
   this._temporarychanges = [];
   this.register();
 }
@@ -136,14 +137,23 @@ proto.updateTemporaryChanges = function(feature) {
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
   /**
+   * @TODO check if it need to deprecate it. All properties are need
    * Please take care of this to understand
+   * In case of removeNotEditableProperties true, remove not editable field
+   * from feature properties
    */
-  removeNotEditableProperties && this._editor.removeNotEditablePropriertiesFromFeature(feature);
+  const editor = layerId === this.getId() ? this._editor : SessionsRegistry.getSession(layerId).getEditor();
+
+  if (removeNotEditableProperties) {
+    editor.removeNotEditablePropriertiesFromFeature(feature);
+  }
   const newFeature = feature.clone();
+
   this.push({
     layerId,
     feature: newFeature.add()
   });
+
   return newFeature;
 };
 
@@ -379,38 +389,70 @@ proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
   }));
 };
 
-proto.commit = function({ids=null, items, relations=true}={}) {
+/**
+ * Commit changes on server (save)
+ * 
+ * @param opts.ids
+ * @param opts.items
+ * @param opts.relations
+ * 
+ * @returns {*}
+ */
+proto.commit = function({
+  ids = null,
+  items,
+  relations = true
+} = {}) {
+
   const d = $.Deferred();
-  let commitItems;
+
+  let commit; // committed items
+
+  // skip when ..
   if (ids) {
-    commitItems = this._history.commit(ids);
+    commit = this._history.commit(ids);
     this._history.clear(ids);
-  } else {
-    if (items) commitItems = items;
-    else {
-      commitItems = this._history.commit();
-      commitItems = this._serializeCommit(commitItems);
-    }
-    if (!relations) commitItems.relations = {};
-    this._editor.commit(commitItems)
-      .then(response => {
-        if (response && response.result) {
-          const {response:data} = response;
-          const {new_relations={}} = data;
-          for (const id in new_relations) {
-            const session = SessionsRegistry.getSession(id);
-            session.getEditor().applyCommitResponse({
-              response: new_relations[id],
-              result: true
-            })
-          }
-          this._history.clear();
-          this.saveChangesOnServer(commitItems);
-          d.resolve(commitItems, response)
-        } else d.reject(response);
-      })
-      .fail(err => d.reject(err));
+    return d.promise();
   }
+
+  commit = items || this._serializeCommit(this._history.commit());
+
+  if (!relations) {
+    commit.relations = {};
+  }
+
+  this._editor
+    .commit(commit)
+    .then(response => {
+
+      // skip when response is null or undefined and response.result is false
+      if (!(response && response.result)) {
+        d.reject(response);
+        return;
+      }
+      
+      const { new_relations = {} } = response.response; // check if new relations are saved on server
+
+      // sync server data with local data
+      for (const id in new_relations) {
+        SessionsRegistry
+          .getSession(id)               // get session of relation by id
+          .getEditor()
+          .applyCommitResponse({        // apply commit response to current editing relation layer
+            response: new_relations[id],
+            result: true
+          });
+      }
+
+      this._history.clear();            // clear history
+
+      this.saveChangesOnServer(commit); // dispatch setter event.
+
+      d.resolve(commit, response);
+
+    })
+    .fail(err => d.reject(err));
+
   return d.promise();
 
 };
@@ -422,14 +464,16 @@ proto._canStop = function() {
 //stop session
 proto._stop = function() {
   const d = $.Deferred();
-  if (this._canStop())
+  if (this._canStop()) {
     this._editor.stop()
       .then(() => {
         this.clear();
         d.resolve();
       })
       .fail(err =>  d.reject(err));
-  else d.resolve();
+  } else {
+    d.resolve();
+  }
   return d.promise();
 };
 
@@ -439,10 +483,9 @@ proto.clear = function() {
   this.state.started = false;
   this.state.getfeatures = false;
   this.clearHistory();
-  this._editor.clear();
 };
 
-//return l'history
+//return history
 proto.getHistory = function() {
   return this._history;
 };

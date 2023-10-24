@@ -15,7 +15,7 @@ import RouterService from 'services/router';
 import GUI from 'services/gui';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
-const { base, inherit, XHR, uniqueId } = require('core/utils/utils');
+const { base, inherit, XHR, uniqueId } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 /** @deprecated */

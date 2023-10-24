@@ -1,4 +1,4 @@
-const { resolve, inherit } = require('core/utils/utils');
+const { resolve, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 const Component = require('gui/component/component');
 const Panel = require('gui/panel');
