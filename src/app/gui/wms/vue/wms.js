@@ -21,7 +21,9 @@ function WmsComponent(options={}) {
 
   this._setOpen = function(bool=false) {
     this.internalComponent.state.open = bool;
-    bool && GUI.closeContent();
+    if (bool) {
+      GUI.closeContent();
+    }
   }
 }
 

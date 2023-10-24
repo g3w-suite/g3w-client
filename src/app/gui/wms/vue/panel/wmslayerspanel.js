@@ -10,8 +10,7 @@ function WmsLayersPanel(options = {}) {
   this.setService(service);
   this.id = uniqueId();
   this.title = 'sidebar.wms.panel.title';
-  const panel = WMSLayersPanelComponent;
-  const internalPanel = new panel({
+  const internalPanel = new WMSLayersPanelComponent({
     service,
     config
   });

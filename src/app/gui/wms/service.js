@@ -33,7 +33,7 @@ const proto = Service.prototype;
 /**
  * Getting Wms Urls from local browser storage
  */
-proto.loadClientWmsUrls = async function(){
+proto.loadClientWmsUrls = async function() {
   let data = this.getLocalWMSData();
   if (data === undefined){
     data = {
@@ -43,7 +43,7 @@ proto.loadClientWmsUrls = async function(){
     this.updateLocalWMSData(data);
   }
   await GUI.isReady();
-  setTimeout(()=>{
+  setTimeout(() => {
     const mapService = GUI.getService('map');
     mapService.on('remove-external-layer', name => this.deleteWms(name));
     mapService.on('change-layer-position-map', ({id:name, position}={}) => this.changeLayerData(name, {
@@ -77,7 +77,7 @@ proto.loadClientWmsUrls = async function(){
  * @param name
  * @param config
  */
-proto.changeLayerData = function(name, attribute={}){
+proto.changeLayerData = function(name, attribute={}) {
   const data = this.getLocalWMSData();
   Object.keys(data.wms).find(wmsurl =>{
     const wmsConfigLayers = data.wms[wmsurl];
@@ -96,7 +96,10 @@ proto.changeLayerData = function(name, attribute={}){
  * @param added
  * @returns {{error, status: string}}
  */
-proto.getRequestStatusObject = function({error=false, added=false}={}){
+proto.getRequestStatusObject = function({
+  error=false,
+  added=false}={}
+) {
   return {
     error,
     added
@@ -108,7 +111,10 @@ proto.getRequestStatusObject = function({error=false, added=false}={}){
  * @param wmsurl
  * @returns {*}
  */
-proto.addNewUrl = async function({id, url} = {}){
+proto.addNewUrl = async function({
+  id,
+  url
+} = {}) {
   const find = this.state.localwmsurls.find(({id:localid, url:localurl}) => localurl == url || localid == id);
   const status = this.getRequestStatusObject({
     added: !!find
@@ -140,7 +146,7 @@ proto.addNewUrl = async function({id, url} = {}){
  * Delete WMS
  * @param name
  */
-proto.deleteWms = function(name){
+proto.deleteWms = function(name) {
   const data = this.getLocalWMSData();
   Object.keys(data.wms).find(wmsurl =>{
     const wmsConfigLayers = data.wms[wmsurl];
@@ -158,7 +164,10 @@ proto.deleteWms = function(name){
  * @param name
  * @param layers
  */
-proto.checkIfWMSAlreadyAdded = function({url, layers=[]}={}){
+proto.checkIfWMSAlreadyAdded = function({
+  url,
+  layers=[]
+}={}) {
   let added = false;
   const data = this.getLocalWMSData();
   if (data.wms[url]){
@@ -176,9 +185,9 @@ proto.checkIfWMSAlreadyAdded = function({url, layers=[]}={}){
 
 /**
  * Delete url from local storage
- * @param wmsurl
+ * @param id
  */
-proto.deleteWmsUrl = function(id){
+proto.deleteWmsUrl = function(id) {
   this.state.localwmsurls = this.state.localwmsurls.filter(({id:localid}) => id !== localid );
   const data = this.getLocalWMSData();
   data.urls = this.state.localwmsurls;
@@ -187,10 +196,10 @@ proto.deleteWmsUrl = function(id){
 
 /**
  * Method to lad data from server and show wms layer panel
- * @param wmsurl
+ * @param url
  * @returns {Promise<{added: boolean, error: boolean}>}
  */
-proto.loadWMSDataAndShowWmsLayersPanel = async function(url){
+proto.loadWMSDataAndShowWmsLayersPanel = async function(url) {
   const status = this.getRequestStatusObject();
   try {
     const response = await this.getWMSLayers(url);
@@ -207,10 +216,10 @@ proto.loadWMSDataAndShowWmsLayersPanel = async function(url){
 
 /**
  * show addding wma layers wms panel
- * @param wmsurl
+ * @param config
  * @returns {WmsLayersPanel}
  */
-proto.showWmsLayersPanel = function(config={}){
+proto.showWmsLayersPanel = function(config={}) {
   this.panel = new WMSLayersPanel({
     service: this,
     config
@@ -224,7 +233,7 @@ proto.showWmsLayersPanel = function(config={}){
  * @param url
  * @returns {Promise<{result: boolean, info_formats: [], layers: [], map_formats: [], abstract: null, title: null}>}
  */
-proto.getWMSLayers = async function(url){
+proto.getWMSLayers = async function(url) {
   let response = {
     result: false,
     layers: [],
@@ -247,7 +256,15 @@ proto.getWMSLayers = async function(url){
   return response;
 };
 
-proto.loadWMSLayerToMap = function({url, name, epsg, position, opacity, visible=true, layers=[]}={}){
+proto.loadWMSLayerToMap = function({
+  url,
+  name,
+  epsg,
+  position,
+  opacity,
+  visible=true,
+  layers=[]}={}
+) {
   const mapService = GUI.getService('map');
   return mapService.addExternalWMSLayer({
     url,
@@ -269,7 +286,14 @@ proto.loadWMSLayerToMap = function({url, name, epsg, position, opacity, visible=
  * @param layers
  * @returns {Promise<void>}
  */
-proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, position, layers=[], opacity=1, visible=true}={}){
+proto.addWMSlayer = async function({
+  url, name=`wms_${uniqueId()}`,
+  epsg,
+  position,
+  layers=[],
+  opacity=1,
+  visible=true
+}={}) {
   const data = this.getLocalWMSData();
   const wmsLayerConfig = {
     url,
@@ -303,15 +327,18 @@ proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, positio
  * Method to get local storage wms  data based on current projectId
  * @returns {*}
  */
-proto.getLocalWMSData = function(){
-  return ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) && ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM)[this.projectId];
+proto.getLocalWMSData = function() {
+  return ApplicationService
+    .getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) &&
+    ApplicationService
+      .getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM)[this.projectId];
 };
 
 /**
  * Method to update local storage data based on changes
  * @param data
  */
-proto.updateLocalWMSData = function(data){
+proto.updateLocalWMSData = function(data) {
   // in case for the firs time is no present set empty object
   const alldata = ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {};
   alldata[this.projectId] = data;
