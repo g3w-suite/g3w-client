@@ -100,6 +100,10 @@ function SearchService(config = {}) {
    * Create the form search structure
    */
   this.createInputsFormFromFilter({ filter: (options.filter || []) });
+
+  /**
+   * @TODO Handle https://github.com/g3w-suite/g3w-admin/pull/631
+   */
 }
 
 inherit(SearchService, G3WObject);
