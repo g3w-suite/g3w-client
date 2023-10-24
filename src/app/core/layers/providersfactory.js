@@ -182,7 +182,7 @@ const Providers = {
      * @since v3.9.0
      */
     async saveFilterToken(name) {
-      // /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<nome_idetificativo>
+      // /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved>
       const response = await XHR.get({ url: this._filtertokenUrl, params: { mode: 'save', name } });
       if (response && response.result && response.data) {
         return response.data;
