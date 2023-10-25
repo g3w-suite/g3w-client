@@ -456,7 +456,7 @@ export default {
       try {
         //in case of already add marker
         if (layer.getSource().getFeatureById(item.__uid)) {
-          this._removeItem(item._uid);
+          this._removeItem(item.__uid);
         } else {
           //add feature marker and zoom on it
           const mapService = GUI.getService('map');
