@@ -129,8 +129,9 @@
           style="cursor: pointer"
           @click.stop="removeCurrentFilter"
         >
+          <!-- set color red to distinguish from dynamic filter -->
           <span
-            style="color: red" /> <!-- set color red to distinguish from dynamic filter -->
+            style="color: red"
             :class="g3wtemplate.getFontClass('filter')">
           </span>
         </span>
@@ -146,7 +147,7 @@
           class="action-button skin-tooltip-left selection-filter-icon"
           data-placement="left"
           data-toggle="tooltip"
-          :class="g3wtemplate.getFontClass('success')"
+          :class="g3wtemplate.getFontClass('clear')"
           @click.caputure.prevent.stop="clearSelection"
           v-t-tooltip.create="'layer_selection_filter.tools.clear'"
         ></span>
