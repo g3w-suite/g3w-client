@@ -61,7 +61,7 @@ export default {
 
     /** @TODO add description */
     if (has_current && is_active) {
-      await this._applyFilterToken(this.state.filter.current.fid)
+      await this._applyFilterToken(this.state.filter.current)
     }
 
     /** @TODO add description */
