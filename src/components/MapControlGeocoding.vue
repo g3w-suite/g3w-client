@@ -48,7 +48,7 @@
         type            = "button"
         id              = "trash_nominatim"
         class           = "btn skin-background-color"
-        @click.stop     = "clear"
+        @click.stop     = "clearMarkers"
       >
         <i
           :class      = "g3wtemplate.getFontClass('trash')"
@@ -80,13 +80,12 @@
       <li
         v-for   = "(item, i) in $data._results"
         :class  = "[
-          item.add ? 'add' : '',
           item.provider,
           item.__heading ? 'skin-background-color' : '',
           item.__no_results ? 'nominatim-noresult' : '',
         ]"
         :key         = "item.__uid"
-        @click.stop  = "_onItemClick($event, item)"
+        @click.stop = "_onItemClick($event, item)"
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
         <div
@@ -102,6 +101,10 @@
         ></span>
         <!-- NO RESULTS -->
         <template v-else>
+          <span
+            style       = "color: #000000; padding: 5px;"
+            :class      = "g3wtemplate.getFontClass(item.add ? 'check' : 'uncheck')">
+          </span>
           <i
             v-if        = "'nominatim' === item.provider"
             class       = "fa fa-road"
@@ -152,7 +155,7 @@ import nominatim         from 'utils/search_from_nominatim';
 import bing              from 'utils/search_from_bing';
 import google            from 'utils/search_from_google';
 import MarkersResult     from "./MarkersResult.vue";
-import {MarkersEventBus} from "eventbus";
+import { MarkersEventBus } from "eventbus";
 
 const ComponentsFactory = require('gui/component/componentsfactory');
 
@@ -209,6 +212,7 @@ function _showMarker(coordinates, options = { transform: true }) {
  * Remove marker from map
  */
 function _hideMarker() {
+  //clear layer features marker
   //clear layer features marker
   layer.getSource().clear();
 }
@@ -290,6 +294,12 @@ export default {
     clearResults() {
       this.$data._results.splice(0);
     },
+    clearMarkers() {
+      this.$data._markers.splice(0);
+      _hideMarker();
+      //set false to add
+      this.$data._results.forEach(i => i.add = false);
+    },
     /**
      * Clear all
      * 
@@ -297,8 +307,7 @@ export default {
      */
     clear() {
       this.clearResults();
-      this.$data._markers.splice(0);
-      _hideMarker();
+      this.clearMarkers();
     },
     
     /**
@@ -345,7 +354,7 @@ export default {
         if (!coordinates) {
 
           // clear previous result
-          this.clear();
+          this.clearResults();
           this.$refs.reset.classList.add("gcd-pseudo-rotate");
 
           // request data
@@ -446,6 +455,35 @@ export default {
     },
 
     /**
+     *  Create an OL ffeature from item result
+      * @param item
+     * @returns {*}
+     * @private
+     */
+    _createOlMarker(item) {
+      const coords = ol.proj.transform([
+        parseFloat(item.lon),
+        parseFloat(item.lat)],
+        'EPSG:4326',
+        GUI.getService('map').getEpsg()
+      );
+      //create Point geometry
+      const geometry   = new ol.geom.Point(coords);
+      //create OL Feture
+      const feature = new ol.Feature({
+          geometry,
+          ...item //set properties
+      });
+      //set id of the feature
+      feature.setId(item.__uid);
+      return feature;
+    },
+
+    zoomToMarker(item) {
+
+    },
+
+    /**
      * @since 3.9.0
      */
     _onItemClick(evt, item) {
@@ -459,24 +497,9 @@ export default {
           this._removeItem(item.__uid);
         } else {
           //add feature marker and zoom on it
-          const mapService = GUI.getService('map');
-          const coords = ol.proj.transform([
-            parseFloat(item.lon),
-            parseFloat(item.lat)],
-            'EPSG:4326',
-            mapService.getEpsg()
-          );
-          //create Point geometry
-          const geometry   = new ol.geom.Point(coords);
-          //create OL Feture
-          const feature = new ol.Feature({
-            geometry,
-            ...item //set properties
-          });
-          //set id of the feature
-          feature.setId(item.__uid);
+          const feature = this._createOlMarker(item);
           layer.getSource().addFeature(feature);
-          mapService.zoomToGeometry(geometry);
+          GUI.getService('map').zoomToFeatures([feature])
           this.$data._markers.push(item);
           item.add = true;
         }
@@ -530,6 +553,7 @@ export default {
     });
 
     MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
+    MarkersEventBus.$on('remove-all-markers', () => this.clearMarkers());
 
   },
 
