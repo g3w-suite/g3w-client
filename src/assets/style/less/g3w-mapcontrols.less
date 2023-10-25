@@ -241,7 +241,7 @@
     outline: none;
   }
   .gcd-gl-reset {
-    position: absolute;
+    //position: absolute;
     z-index: 1;
     top: 0;
     right: 0;
@@ -356,13 +356,20 @@
     }
   }
   #search_nominatim {
-    position: absolute;
-    right: 0;
+    //position: absolute;
+    //right: 0;
     z-index: 1;
     width: 2.5em;
     height: 100%;
     border-radius: 0;
+
   }
+
+  #trash_nominatim {
+    border-left: 1px solid #FFFFFF;
+    z-index: 1;
+  }
+
   #gcd-input-query {
     font-weight: bold;
   }
@@ -375,10 +382,10 @@
     cursor: pointer;
   }
   .gcd-txt-reset {
-    position: absolute;
+    //position: absolute;
     z-index: 1;
-    top: 0;
-    right: 30px;
+    //top: 0;
+    //right: 30px;
     width: 2.5em;
     height: 100%;
     line-height: 100%;
@@ -414,6 +421,8 @@
   }
   .gcd-txt-control {
     position: relative;
+    display: flex;
+    justify-content: flex-end;
     height: 40px;
     background-color: #fff;
     overflow: hidden;

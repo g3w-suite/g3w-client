@@ -21,6 +21,15 @@
         @keyup          = "_onQuery"
         @input          = "_onValue"
       />
+      <!-- RESET RESULTS -->
+      <button
+        ref         = "reset"
+        type        = "button"
+        id          = "gcd-input-reset"
+        class       = "gcd-txt-reset gcd-hidden"
+        @click.stop = "_onReset"
+      ></button>
+      <!-- search query button -->
       <button
         type            = "button"
         id              = "search_nominatim"
@@ -33,13 +42,20 @@
           aria-hidden = "true"
         ></i>
       </button>
+      <!-- DELETE ALL RESULTS AND MARKERS ADDED --->
       <button
-        ref         = "reset"
-        type        = "button"
-        id          = "gcd-input-reset"
-        class       = "gcd-txt-reset gcd-hidden"
-        @click.stop = "_onReset"
-      ></button>
+        v-if="$data._markers.length > 0"
+        type            = "button"
+        id              = "trash_nominatim"
+        class           = "btn skin-background-color"
+        @click.stop     = "clear"
+      >
+        <i
+          :class      = "g3wtemplate.getFontClass('trash')"
+          style       = "color:red"
+          aria-hidden = "true"
+        ></i>
+      </button>
     </div>
 
     <!-- SEARCH RESULTS -->
@@ -256,14 +272,21 @@ export default {
 
   methods: {
     /**
-     * Clear list of results
+     * Clear Result list only
+    * @since v3.9
+    */
+    clearResults() {
+      this.$data._results.splice(0);
+    },
+    /**
+     * Clear all
      * 
      * @since 3.9.0
      */
     clear() {
-      this.$data._results.splice(0);
-      // this.$data._markers.splice(0);
-      // _hideMarker();
+      this.clearResults();
+      this.$data._markers.splice(0);
+      _hideMarker();
     },
     
     /**
@@ -404,7 +427,7 @@ export default {
       this.$refs.input.focus();
       this.$refs.input.value = '';
       this.$refs.reset.classList.add("gcd-hidden");
-      this.clear();
+      this.clearResults();
     },
 
     /**
