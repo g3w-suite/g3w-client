@@ -161,7 +161,7 @@
             @click.caputure.prevent.stop="toggleFilterLayer"
             v-t-tooltip.create="'layer_selection_filter.tools.filter'"
           ></span>
-          <!--  @since v3.9.0      -->
+          <!--  @since 3.9.0 -->
           <span
             v-if="layerstree.filter.active && layerstree.selection.active"
             class="action-button skin-tooltip-left selection-filter-icon"
@@ -368,9 +368,11 @@ export default {
   },
 
   methods: {
+
     /**
-     * @since v3.9
      * Remove current active filter
+     * 
+     * @since 3.9.0
      */
     async removeCurrentFilter() {
       await CatalogLayersStoresRegistry
@@ -490,7 +492,8 @@ export default {
 
     /**
      * Save layer filter
-     * @since v3.9.0
+     * 
+     * @since 3.9.0
      */
     saveFilter(layerstree) {
       CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();

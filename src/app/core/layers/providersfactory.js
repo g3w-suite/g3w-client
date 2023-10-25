@@ -179,7 +179,7 @@ const Providers = {
      * @param {string} name
      * @returns {Promise<void>}
      * 
-     * @since v3.9.0
+     * @since 3.9.0
      */
     async saveFilterToken(name) {
       // /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved>
@@ -208,10 +208,12 @@ const Providers = {
       }
     }
 
-    /*
-    * token: current token if provide
-    * action: create, update, delete
-    */
+    /**
+     * token: current token if provide
+     * action: create, update, delete
+     * 
+     * @returns filter token if another layer is filtered otherwise filtertoken is undefined
+     */
     async deleteFilterToken(fid) {
 
 
