@@ -917,10 +917,12 @@ proto.getSelectionFids = function() {
  */
 proto.invertSelectionFids = function() {
 
+  const selection = this.selectionFids;
+
   /** @TODO add description */
-  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE))  { this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE); }
-  else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) { this.selectionFids.delete(Layer.SELECTION_STATE.ALL); }
-  else if (this.selectionFids.size > 0)                       { this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE); }
+  if (selection.has(Layer.SELECTION_STATE.EXCLUDE))  { selection.delete(Layer.SELECTION_STATE.EXCLUDE); }
+  else if (selection.has(Layer.SELECTION_STATE.ALL)) { selection.delete(Layer.SELECTION_STATE.ALL); }
+  else if (selection.size > 0)                       { selection.add(Layer.SELECTION_STATE.EXCLUDE); }
 
   /** @TODO add description */
   if (this.isGeoLayer()) {
@@ -932,7 +934,7 @@ proto.invertSelectionFids = function() {
     this.createFilterToken();
   }
 
-  this.setSelection(this.selectionFids.size > 0);
+  this.setSelection(selection.size > 0);
 };
 
 
