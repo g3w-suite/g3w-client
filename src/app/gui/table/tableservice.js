@@ -188,14 +188,17 @@ proto.clearAllSelection = function() {
 
 /**
  * @since 3.9.0
+ * 
+ * @param { Object } opts
+ * @param { string } opts.type
+ * 
+ * @fires redraw when `opts.type` in_bbox filter (or not select all)
  */
-proto.filterChangeHandler = async function ({type}={}) {
+proto.filterChangeHandler = async function ({ type } = {}) {
   this.allfeaturesnumber = undefined;
-  let data = [];
-  // emit redraw if in_bbox filter or not select all
-  const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
-  if (!this.state.pagination) data = emitRedraw ? await this.reloadData() : [];
-  emitRedraw && this.emit('redraw', data);
+  if (type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL)) {
+    this.emit('redraw', this.state.pagination ? [] : await this.reloadData());
+  }
 };
 
 /**
