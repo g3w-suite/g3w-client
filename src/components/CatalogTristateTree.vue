@@ -142,37 +142,41 @@
       <!-- VISIBLE NODE SELECTED (LAYER) -->
       <div v-if="(!isGroup && layerstree.selection)">
 
+        <!-- CLEAR SELECTION -->
         <span
-          v-if="layerstree.selection.active"
-          class="action-button skin-tooltip-left selection-filter-icon"
-          data-placement="left"
-          data-toggle="tooltip"
-          :class="g3wtemplate.getFontClass('clear')"
-          @click.caputure.prevent.stop="clearSelection"
-          v-t-tooltip.create="'layer_selection_filter.tools.clear'"
+          v-if                         = "layerstree.selection.active"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          :class                       = "g3wtemplate.getFontClass('clear')"
+          @click.caputure.prevent.stop = "clearSelection"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.clear'"
         ></span>
-        <!-- Filter and save filter inside template because is relate to same show condition -->
-        <template v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)">
-          <span
-            class="action-button skin-tooltip-left selection-filter-icon"
-            data-placement="left"
-            data-toggle="tooltip"
-            :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active  ? 'active' : '']"
-            @click.caputure.prevent.stop="toggleFilterLayer"
-            v-t-tooltip.create="'layer_selection_filter.tools.filter'"
-          ></span>
-          <!--  @since 3.9.0 -->
-          <span
-            v-if="layerstree.filter.active && layerstree.selection.active"
-            class="action-button skin-tooltip-left selection-filter-icon"
-            data-placement="left"
-            data-toggle="tooltip"
-            :class="g3wtemplate.getFontClass('save')"
-            @click.caputure.prevent.stop="saveFilter(layerstree)"
-            v-t-tooltip.create="'layer_selection_filter.tools.savefilter'"
-          ></span>
-        </template>
 
+        <!-- TOGGLE FILTER  -->
+        <span
+          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          :class                       = "[
+            g3wtemplate.getFontClass('filter'),
+            layerstree.filter.active  ? 'active' : '',
+          ]"
+          @click.caputure.prevent.stop = "toggleFilterLayer"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.filter'"
+        ></span>
+
+        <!-- SAVE FILTER  -->
+        <span
+          v-if                         = "!layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          :class                       = "g3wtemplate.getFontClass('save')"
+          @click.caputure.prevent.stop = "saveFilter(layerstree)"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.savefilter'"
+        ></span>
 
       </div>
 
@@ -346,6 +350,7 @@ export default {
         true === this.layerstree.tochighlightable
       )
     },
+
   },
 
   watch:{
