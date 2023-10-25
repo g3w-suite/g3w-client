@@ -1,12 +1,30 @@
+/**
+ * @TODO convert it to ES6 class (or external utils)
+ * 
+ * @file
+ * @since 3.9.0
+ */
+
 import GUI from 'services/gui';
 import ApplicationService from 'services/application';
 
-const Projections = require('g3w-ol/projection/projections');
-const { getScaleFromResolution } = require('utils/ol');
+const Projections                        = require('g3w-ol/projection/projections');
+const { getScaleFromResolution }         = require('utils/ol');
 const { createFeatureFromFeatureObject } = require('utils/geo');
-const { XHR, sanitizeUrl } = require('utils');
+const { XHR, sanitizeUrl }               = require('utils');
+
 const RESERVERDPARAMETRS = {
-  wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
+  wms: [
+    'VERSION',
+    'REQUEST',
+    'BBOX',
+    'LAYERS',
+    'WIDTH',
+    'HEIGHT',
+    'DPI',
+    'FORMAT',
+    'CRS'
+  ],
 };
 
 function GeoLayerMixin(config={}) {}

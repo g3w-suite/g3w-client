@@ -1,7 +1,7 @@
 const { base, inherit, mixin } = require('utils');
 const Layer = require('core/layers/layer');
 const TableLayer = require('core/layers/tablelayer');
-const GeoLayerMixin = require('core/layers/geolayermixin');
+const GeoLayerMixin = require('app/core/layers/mixins/geo');
 const VectorMapLayer = require('core/layers/map/vectorlayer');
 
 function VectorLayer(config={}, options) {
