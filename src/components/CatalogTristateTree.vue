@@ -113,26 +113,26 @@
 
       <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
       <span
-        :class="{
+        :class           = "{
           highlightlayer: isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
-        class="skin-tooltip-top g3w-long-text"
-        data-placement="top"
-        :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        class            = "skin-tooltip-top g3w-long-text"
+        data-placement   = "top"
+        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
+        <!-- DISABLE FILTER -->
         <span
-          v-if="!isGroup && !layerstree.external && null !== layerstree.filter.current"
-          :current-tooltip="layerstree.filter.current.name"
-          v-t-tooltip:top.create.text="layerstree.filter.current.name"
-          style="cursor: pointer"
-          @click.stop="removeCurrentFilter"
+          v-if                        = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :current-tooltip            = "layerstree.filter.current.name"
+          v-t-tooltip:top.create.text = "layerstree.filter.current.name"
+          style                       = "cursor: pointer"
+          @click.stop                 = "removeCurrentFilter"
         >
-          <!-- set color red to distinguish from dynamic filter -->
           <span
-            style="color: red"
-            :class="g3wtemplate.getFontClass('filter')">
+            style  = "color: red"
+            :class = "g3wtemplate.getFontClass('filter')">
           </span>
         </span>
         <span>{{ layerstree.title }}</span>
