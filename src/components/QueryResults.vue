@@ -73,6 +73,11 @@
                 <template v-if="layer.rawdata">
                   <div class="queryresults-text-html" :class="{text: layer.infoformat === 'text/plain'}" v-html="layer.rawdata"></div>
                 </template>
+                <!-- CASE MARKER LAYER -->
+                <template v-else-if="'__g3w_marker' === layer.id">
+                  <marker-result-feature :marker="feature.attributes" v-for="feature in layer.features" :key="feature.id"/>
+                </template>
+                <!-- CASE FORM STRUCTURE LAYER-->
                 <template v-else-if="hasFormStructure(layer)">
                   <table class="table" :class="{'mobile': isMobile()}">
                     <thead>
@@ -114,6 +119,7 @@
                     </tbody>
                   </table>
                 </template>
+                <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                 <table v-else class="table" :class="{'mobile': isMobile()}">
                   <thead>
                     <tr>
@@ -184,6 +190,7 @@
   import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody from 'components/QueryResultsHeaderFeatureBody.vue';
+  import MarkerResultFeature from "components/MarkerResultFeature.vue";
 
   const { throttle } = require('utils');
 
@@ -201,11 +208,13 @@
       return {
         state: this.$options.queryResultsService.state,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
-        headerActionsCellWidth: headerActionsCellWidth
+        headerActionsCellWidth: headerActionsCellWidth,
+        MarkerResultFeature
       }
     },
     mixins: [fieldsMixin],
     components: {
+        MarkerResultFeature,
       TableAttributeFieldValue,
       'infoformats': InfoFormats,
       'header-feature-body': HeaderFeatureBody
