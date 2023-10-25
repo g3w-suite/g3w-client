@@ -14,7 +14,7 @@ const { t }                 = require('core/i18n/i18n.service');
 /**
  * Selection state 
  */
-const SELECTION = {
+export const SELECTION = {
   ALL:     '__ALL__',
   EXCLUDE: '__EXCLUDE__'
 };

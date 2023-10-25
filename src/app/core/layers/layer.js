@@ -1,9 +1,10 @@
-import ApplicationState     from 'store/application-state';
-import DataRouterService    from 'services/data';
-import ProjectsRegistry     from 'store/projects';
-import DownloadMixin        from 'core/layers/mixins/download';
-import SelectionMixin       from 'core/layers/mixins/selection';
-import RelationsMixin       from 'core/layers/mixins/relations';
+import ApplicationState                 from 'store/application-state';
+import DataRouterService                from 'services/data';
+import ProjectsRegistry                 from 'store/projects';
+import DownloadMixin                    from 'core/layers/mixins/download';
+import SelectionMixin                   from 'core/layers/mixins/selection';
+import { SELECTION as SELECTION_STATE } from 'core/layers/mixins/selection';
+import RelationsMixin                   from 'core/layers/mixins/relations';
 
 const { t }                 = require('core/i18n/i18n.service');
 const {
@@ -1328,5 +1329,10 @@ Layer.EDITOPS = {
   UPDATE: 2,
   DELETE: 4
 };
+
+/**
+ * BACKOMP v3.x
+ */
+Layer.SELECTION_STATE = SELECTION_STATE;
 
 module.exports = Layer;
