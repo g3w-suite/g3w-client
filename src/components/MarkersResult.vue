@@ -1,19 +1,21 @@
 <template>
-  <div class="marker-items">
-    <template v-for="provider in Object.keys(providers)">
-      <h4 class="skin-color" style="font-weight: bold">{{provider}}</h4>
-      <map-control-geocoding-marker-item :marker="marker" v-for="marker in providers[provider]"/>
+  <div class="marker-results">
+    <template v-for="(markers, provider) in providers">
+      <h4 class="skin-color" style="font-weight: bold; font-size: 1.2em">{{provider}}</h4>
+      <divider/>
+      <marker-result-feature :marker="marker" v-for="marker in markers"/>
     </template>
   </div>
 </template>
 
 <script>
 
-import MapControlGeocodingMarkerItem from "./MapControlGeocodingMarkerItem.vue";
+import MarkerResultFeature from "./MarkerResultFeature.vue";
+
 export default {
-  name: 'MapControlGeocodingMarkerItems',
+  name: 'MarkerResults',
   components: {
-    MapControlGeocodingMarkerItem
+      MarkerResultFeature
   },
   props: {
     markers: {
@@ -36,8 +38,9 @@ export default {
 </script>
 
 <style scoped>
- .marker-items {
+ .marker-results {
    background-color: #FFFFFF;
    overflow: auto;
+   padding: 5px;
  }
 </style>
