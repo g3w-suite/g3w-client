@@ -46,27 +46,48 @@
         </span>
       </span>
 
+      <span
+
+        @contextmenu.prevent.stop=""
+        @click.stop="toggle"
+        :class="{'toggled': false }"
+        style="margin-left: auto"
+        class="action-button skin-tooltip-right"
+      >
+        <span
+          style="padding: 2px;"
+          class="action-button-icon"
+          :class="g3wtemplate.getFontClass(open ? 'minus' : 'plus')">
+        </span>
+      </span>
+
     </section>
     <section class="marker-tooloftools">
-      <div class="g3w-point-editable-layers" style="width: 100%; display: flex" @click.prevent.stop="">
-          <select  style="flex-grow: 1" v-select2="'layerid'" :search="false" class="form-control">
-            <option v-for="pointlayer in poinEditableLayers" :key="pointlayer.id" v-download :value="pointlayer.id">
-              <span style="font-weight: bold">{{pointlayer.getName()}}</span>
-            </option>
-          </select>
-          <button
-            style="border-radius: 0 3px 3px 0;"
-            class="btn skin-button" @click.stop=edit
-          >
-            <span :class="g3wtemplate.getFontClass('pencil')"></span>
-          </button>
+      <div
+        v-if="poinEditableLayers.length > 0"
+        class="g3w-point-editable-layers"
+        style="width: 100%; display: flex"
+        @click.prevent.stop="">
+        <select  style="flex-grow: 1" v-select2="'layerid'" :search="false" class="form-control">
+          <option v-for="pointlayer in poinEditableLayers" :key="pointlayer.id" v-download :value="pointlayer.id">
+            <span style="font-weight: bold">{{pointlayer.getName()}}</span>
+          </option>
+        </select>
+        <button
+          style="border-radius: 0 3px 3px 0;"
+          class="btn skin-button" @click.stop=edit
+        >
+          <span :class="g3wtemplate.getFontClass('pencil')"></span>
+        </button>
       </div>
     </section>
+    <section class="marker-info" v-show="open">
+      <div v-for="([key, value]) in Object.entries(marker) ">
+          {{key }}
+      </div>
+      <divider/>
+    </section>
 
-    <div v-for="([key, value]) in Object.entries(marker) ">
-      {{key }}
-    </div>
-    <divider/>
   </div>
 
 </template>
@@ -90,7 +111,8 @@ export default {
   },
   data() {
     return {
-      layerid: null
+      layerid: null,
+      open: true
     }
   },
   methods: {
@@ -113,7 +135,13 @@ export default {
     */
     remove() {
       MarkersEventBus.$emit('remove-marker', this.marker.__uid);
-    }
+    },
+    /**
+    * Toggle body
+    */
+    toggle() {
+      this.open = !this.open;
+    },
   },
 
   created() {
@@ -125,3 +153,11 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.marker-tools {
+  display: flex;
+  align-items: baseline;
+}
+
+</style>
