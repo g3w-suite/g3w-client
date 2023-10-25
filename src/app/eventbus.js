@@ -26,9 +26,16 @@ export const RelationEventBus = new Vue();
  */
 export const SidebarEventBus = new Vue();
 
+/**
+ * @since v3.9
+ * @type {Vue}
+ */
+export const MarkersEventBus = new Vue();
+
 export default {
   VM,
   CatalogEventBus,
   RelationEventBus,
   SidebarEventBus,
+  MarkersEventBus,
 };
