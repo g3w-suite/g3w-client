@@ -1719,7 +1719,8 @@ class QueryResultsService extends G3WObject {
 
   /**
    * Method to dave current filter for a layer
-   * @since v3.9
+   * 
+   * @since 3.9.0
    */
   saveFilter(layer) {
     CatalogLayersStoresRegistry.getLayerById(layer.id).saveFilter();
@@ -1764,12 +1765,12 @@ class QueryResultsService extends G3WObject {
       /**
        * TODO change parameter with object
        */
-      this._handleExternalVectorLayerSelection({fids, layer, features, force});
+      this._handleExternalVectorLayerSelection({ fids, layer, features, force });
     } else {
       /**
        * TODO change parameter with object
        */
-      await this._handleProjectLayerSelection({fids, layer, features, force});
+      await this._handleProjectLayerSelection({ fids, layer, features, force });
     }
   }
 
@@ -1858,68 +1859,78 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Project layer (on TOC)
-   * Handle selection feature
+   * Handle features selection of Project Layers (on TOC)
+   * 
    * @since 3.9.0
    */
-  async _handleProjectLayerSelection({fids, layer, features, index, force}={}) {
-    //check fid
+  async _handleProjectLayerSelection({
+    fids,
+    layer,
+    features,
+    index,
+    force,
+  } = {}) {
+
+    // skip invalid fids
     if (null === fids || undefined === fids) {
       return;
     }
-    fids = Array.isArray(fids) ? fids : [fids];
+
+    fids     = Array.isArray(fids) ? fids : [fids];
     features = Array.isArray(features) ? features : [features];
 
-    //Need to do a one shot fids call otherwise is called fid one by one and filter it not working properly
-    const layerSelectionAction = {
-      includeSelectionFids: [], //store fid features to include
-      excludeSelectionFids:  []  //store fid feature to exclud
-    }
-
-    //Loop
-    for (let idx=0; idx < fids.length; idx++) {
-      const fid = fids[idx];
-      const feature = features[idx];
-      // check if already selected
-      const is_selected = layer.getFilterActive() || layer.hasSelectionFid(fid);
-
-      //if not selected and feature si not added to OL selection layer on map
-      if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
-        //add as feature of selected layer
-        layer.addOlSelectionFeature({ id: fid, feature })
-      }
-
-      /** If not set force action */
-      if (undefined === force) {
-        layer[is_selected ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
-      }
-
-      /** force to add */
-      if ('add' === force && !is_selected) {
-        layerSelectionAction.includeSelectionFids.push(fid);
-      }
-
-      /** force to remove from  */
-      if ('remove' === force) {
-        layerSelectionAction.excludeSelectionFids.push(fid);
-      }
-
-    }
-
-    await layer.includeExcludeSelectionFids(layerSelectionAction);
+    const include = []; // fid of features to include
+    const exclude = []; // fid of features to exclude
 
     fids.forEach((fid, idx) => {
-      const is_selected = layer.hasSelectionFid(fid);
-      if (!is_selected && layer.getFilterActive() && layer.getSelectionFids().size > 0) {
-        const currentLayer = this.state.layers.find(l => l.id === layer.getId());
-        if (currentLayer) {
-          currentLayer.features.splice(undefined === index ? idx : index, 1);
-        }
+      const feature     = features[idx];
+      const is_selected = layer.getFilterActive() || layer.hasSelectionFid(fid);
+    
+      // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
+      if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
+        layer.addOlSelectionFeature({ id: fid, feature });
+      }
+    
+      // force action
+      if (undefined === force) {
+        layer[is_selected ? 'excludeSelectionFid' : 'includeSelectionFid'](fid);
+      }
+
+      // force add
+      if ('add' === force && !is_selected) {
+        include.push(fid);
+      }
+
+      // force remove
+      if ('remove' === force) {
+        exclude.push(fid);
+      }
+    });
+
+    layer.includeSelectionFids(include, false);
+    layer.excludeSelectionFids(exclude, false);
+
+    /** @TODO add description */
+    if (layer.getFilterActive()) {
+      await layer.createFilterToken();
+    }
+
+    /** @TODO add description */
+    fids.forEach((fid, idx) => {
+      const currentLayer = (
+        !layer.hasSelectionFid(fid) &&
+        layer.getFilterActive() &&
+        layer.getSelectionFids().size > 0 &&
+        this.state.layers.find(l => l.id === layer.getId())
+      );
+      if (currentLayer) {
+        currentLayer.features.splice(undefined === index ? idx : index, 1);
       }
     })
 
     this.mapService.clearHighlightGeometry();
 
+    /** @TODO add description */
     if (1 === this.state.layers.length && !this.state.layers[0].features.length) {
       this.state.layers.splice(0);
     }

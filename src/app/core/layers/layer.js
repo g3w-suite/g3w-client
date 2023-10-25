@@ -6,16 +6,21 @@ import ApplicationService   from 'services/application';
 import GUI                  from 'services/gui';
 import { prompt }           from 'utils/prompt';
 
-const { t } = require('core/i18n/i18n.service');
+const { t }                 = require('core/i18n/i18n.service');
 const {
   inherit,
   base,
   XHR,
-} = require('utils');
-const G3WObject = require('core/g3wobject');
-const { geometryFields, parseAttributes } =  require('utils/geo');
-const Relations = require('core/relations/relations');
-const ProviderFactory = require('core/layers/providersfactory');
+}                           = require('utils');
+const G3WObject             = require('core/g3wobject');
+const {
+  geometryFields,
+  parseAttributes,
+}                           =  require('utils/geo');
+const Relations             = require('core/relations/relations');
+const ProviderFactory       = require('core/layers/providersfactory');
+
+const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
@@ -515,20 +520,31 @@ proto.setSelected = function(bool) {
  * @param bool
  * 
  * @returns {Promise<void>}
+ * 
+ * @fires unselectionall
  */
 proto.setSelection = async function(bool=false) {
   this.state.selection.active = bool;
-  if (!bool) {
-    //in case of not current selected filter is set active
-    if (this.state.filter.active) {
-      if (null === this.state.filter.current) {
-        await this.deleteFilterToken();
-      } else {
-        await this._applyFilterToken(this.state.filter.current.fid)
-      }
-    }
-    this.emit('unselectionall', this.getId());
+
+  // skip when ..
+  if (bool) {
+    return;
   }
+
+  const is_active   = this.state.filter.active;
+  const has_current = null !== this.state.filter.current;
+
+  /** @TODO add description */
+  if (has_current && is_active) {
+    await this._applyFilterToken(this.state.filter.current.fid)
+  }
+
+  /** @TODO add description */
+  if (!has_current && is_active) {
+    await this.deleteFilterToken();
+  }
+
+  this.emit('unselectionall', this.getId());
 };
 
 /**
@@ -644,13 +660,14 @@ proto.applyFilter = async function(filter) {
   if (!this.providers['filtertoken']) {
     return;
   }
-  //need to check if current filter is set and is different from current
+
+  // current filter is set and is different from current
   if (null === this.state.filter.current || filter.fid !== this.state.filter.current.fid ) {
     await this.clearSelectionFids();
     GUI.closeContent();
   }
 
-  await this._applyFilterToken(filter)
+  await this._applyFilterToken(filter);
 }
 
 /**
@@ -661,13 +678,13 @@ proto.applyFilter = async function(filter) {
  * @private
  */
 proto._applyFilterToken = async function(filter) {
-  const {filtertoken} = await this.providers['filtertoken'].applyFilterToken(filter.fid);
+  const { filtertoken } = await this.providers['filtertoken'].applyFilterToken(filter.fid);
   if (filtertoken) {
     this.setFilter(false);
     this.setCurrentFilter(filter);
     this.setFilterToken(filtertoken);
   }
-}
+};
 
 /**
  * [LAYER SELECTION]
@@ -731,52 +748,40 @@ proto.saveFilter = function() {
  */
 proto.toggleFilterToken = async function() {
 
-  //toggle boolean value of filter active
+  // toggle boolean value of filter active
   this.setFilter(!this.state.filter.active);
 
-  //check id a current save filter is set
-  if (this.state.filter.current) {
-    if (this.state.filter.active) {
-      //need to create a new filter base on selected features
-      await this.activeFilterToken(true);
-    } else {
-      //apply current filter saved
-      await this.applyFilter(this.state.filter.current);
-    }
-  } else {
-    //no current filter is set need to create or delete token on layer
-    //based on this.state.filter.active bool value
-    await this.activeFilterToken(this.state.filter.active);
+  const has_current = this.state.filter.current;
+  const is_active   = this.state.filter.active;
+
+  // there is an active filter --> create a new filter
+  if (is_active) {
+    await this.createFilterToken();
   }
 
-  /**
-   * hide/show selection feature (red one) on map
-   */
-  if (this.state.selection.active && this.isGeoLayer()) {
-    //if filter is active
-    if (this.state.filter.active) {
-      // hide all section feature from map
-      this.hideOlSelectionFeatures();
-    } else {
-      //only current map selected feature
-      this.showAllOlSelectionFeatures();
-    }
+  // there is a current saved filter --> apply filter
+  if (has_current && !is_active) {
+    await this.applyFilter(this.state.filter.current);
   }
+
+  // there is no current saved filter --> delete it
+  if (!has_current && !is_active) {
+    await this.deleteFilterToken();
+  }
+
+  const has_selection = this.state.selection.active && this.isGeoLayer();
+
+  // active filter --> hide all selected feature from map (red ones)
+  if (has_selection && this.state.filter.active) {
+    this.hideOlSelectionFeatures();
+  }
+
+  // active filter --> show only current selected feature on map (red ones)
+  if (has_selection && !this.state.filter.active){
+    this.showAllOlSelectionFeatures();
+  }
+
   return this.state.filter.active;
-};
-
-/**
- * [LAYER SELECTION]
- * 
- * Base on boolean value create a filter token from server
- * based on selection or delete current filtertoken
- * 
- * @param bool
- * 
- * @returns {Promise<void>}
- */
-proto.activeFilterToken = async function(bool) {
-  await this[bool ? 'createFilterToken' : 'deleteFilterToken']();
 };
 
 /**
@@ -792,37 +797,28 @@ proto.deleteFilterToken = async function(fid) {
     if (!this.providers['filtertoken']) {
       return;
     }
-    //call deleteFilterToken rpovider method to delete filtertoken related to layer.
-    // Return filter token if another layer is filtered otherwise filtertoken is undefined
+
+    // delete filtertoken related to layer provider
     const filtertoken = await this.providers['filtertoken'].deleteFilterToken(fid);
 
-    /**
-     * @since v3.9.0
-     * In case of delete a saved filter and current filter apply to layer is
-     * filter deleted
-     */
+    // remove it from filters list when deleting a saved filter (since v3.9.0)
     if (undefined !== fid) {
-      //remove filter from filters list
       this.state.filters = this.state.filters.filter(f => fid !== f.fid);
     }
 
-    //in any case set current filter set to null
-    this.setCurrentFilter(null);
-    //set active filter to false
-    this.setFilter(false);
-
-    //set filtertoken to application
-    this.setFilterToken(filtertoken);
+    this.setCurrentFilter(null);      // set current filter set to null
+    this.setFilter(false);            // set active filter to false
+    this.setFilterToken(filtertoken); // pass `filtertoken` to application
 
   } catch(err) {
-    console.log('Error deleteing filtertoken')
+    console.log('Error deleteing filtertoken', err);
   }
 };
 
 /**
  * [LAYER SELECTION]
  * 
- * Common method to set filter token
+ * Set applicaton filter token
  * 
  * @param filtertoken
  *
@@ -831,7 +827,6 @@ proto.deleteFilterToken = async function(fid) {
  * @since 3.9.0
  */
 proto.setFilterToken = function(filtertoken = null) {
-  //set applicaton filter token
   ApplicationService.setFilterToken(filtertoken);
   this.emit('filtertokenchange', { layerId: this.getId() });
 }
@@ -840,8 +835,6 @@ proto.setFilterToken = function(filtertoken = null) {
  * [LAYER SELECTION]
  *  
  * Create filter token
- * 
- * @fires filtertokenchange
  */
 proto.createFilterToken = async function() {
   try {
@@ -889,15 +882,20 @@ proto.getFilterToken = function () {
 };
 // end filter token
 
-//selection Ids layer methods
+/**
+ * [LAYER SELECTION]
+ */
 proto.setSelectionFidsAll = function() {
   this.selectionFids.clear();
   this.selectionFids.add(Layer.SELECTION_STATE.ALL);
+
+  /** @TODO add description */
   if (this.isGeoLayer()) {
     this.showAllOlSelectionFeatures();
   }
-  this.setSelection(true);
 
+  /** @TODO add description */
+  this.setSelection(true);
   if (this.state.filter.active) {
     this.createFilterToken();
   }
@@ -919,14 +917,17 @@ proto.getSelectionFids = function() {
  */
 proto.invertSelectionFids = function() {
 
+  /** @TODO add description */
   if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE))  { this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE); }
   else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) { this.selectionFids.delete(Layer.SELECTION_STATE.ALL); }
   else if (this.selectionFids.size > 0)                       { this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE); }
 
+  /** @TODO add description */
   if (this.isGeoLayer()) {
     this.setInversionOlSelectionFeatures();
   }
 
+  /** @TODO add description */
   if (this.state.filter.active) {
     this.createFilterToken();
   }
@@ -945,12 +946,15 @@ proto.invertSelectionFids = function() {
  * @returns {boolean}
  */
 proto.hasSelectionFid = function(fid) {
+  /** @TODO add description */
   if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
     return true;
   }
+  /** @TODO add description */
   if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
     return !this.selectionFids.has(fid);
   }
+  /** @TODO add description */
   return this.selectionFids.has(fid);
 };
 
@@ -973,29 +977,32 @@ proto.includeSelectionFid = async function(fid, createToken=true) {
     this.selectionFids.has(fid)
   )
 
-  //remove fid
+  // remove fid
   if (excludeFidFromSelection) {
     this.selectionFids.delete(fid);
   }
 
-  //if the only one exclude set all selected
+  // if the only one exclude set all selected
   if (excludeFidFromSelection && 1 === this.selectionFids.size) {
     this.setSelectionFidsAll();
   }
 
-  //add to selction fid
+  // add to selction fid
   if (!excludeFidFromSelection) {
     this.selectionFids.add(fid);
   }
 
+  /** @TODO add description */
   if (!excludeFidFromSelection && !this.isSelectionActive()) {
     this.setSelection(true);
   }
   
+  /** @TODO add description */
   if (this.isGeoLayer()) {
    this.setOlSelectionFeatureByFid(fid, 'add');
   }
   
+  /** @TODO add description */
   if (createToken && this.state.filter.active) {
     await this.createFilterToken();
   }
@@ -1012,27 +1019,38 @@ proto.includeSelectionFid = async function(fid, createToken=true) {
  * 
  * @returns {Promise<void>}
  */
-proto.excludeSelectionFid = async function(fid, createToken=true) {
+proto.excludeSelectionFid = async function(fid, createToken = true) {
 
-  if (this.selectionFids.has(Layer.SELECTION_STATE.ALL) || this.selectionFids.size === 0) {
-    this.selectionFids.clear();
-    this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
+  const selection = this.selectionFids;
+
+  /** @TODO add description */
+  if (selection.has(Layer.SELECTION_STATE.ALL) || 0 === selection.size) {
+    selection.clear();
+    selection.add(Layer.SELECTION_STATE.EXCLUDE);
   }
 
-  this.selectionFids[this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](fid);
+  /** @TODO add description */
+  if (selection.has(Layer.SELECTION_STATE.EXCLUDE)) {
+    selection.add(fid);
+  } else {
+    selection.delete(fid);
+  }
 
-  if (1 === this.selectionFids.size && this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) {
+  /** @TODO add description */
+  if (1 === selection.size && selection.has(Layer.SELECTION_STATE.EXCLUDE)) {
     this.setselectionFidsAll();
   }
 
   const isLastFeatureSelected  = this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'remove');
 
+  /** @TODO add description */
   if (createToken && this.state.filter.active) {
     await this.createFilterToken();
   }
 
-  if (0 === this.selectionFids.size || isLastFeatureSelected) {
-    this.selectionFids.clear();
+  /** @TODO add description */
+  if (0 === selection.size || isLastFeatureSelected) {
+    selection.clear();
     this.setSelection(false);
   }
 
@@ -1041,33 +1059,17 @@ proto.excludeSelectionFid = async function(fid, createToken=true) {
 /**
  * [LAYER SELECTION]
  * 
- * Called just one time when `createFilterToken` set include / exclude selection `fids` at the same time
+ * @param { Array }   fids
+ * @param { boolean } createToken since 3.9.0
  * 
- * @since 3.9.0
+ * @returns { Promise<void> }
  */
-proto.includeExcludeSelectionFids = async function({
-  includeSelectionFids = [],
-  excludeSelectionFids = [],
-} = {}) {
-  //pass false because eventually token filter creation need to be called after
-  includeSelectionFids.forEach(fid => this.includeSelectionFid(fid, false));
-  excludeSelectionFids.forEach(fid => this.excludeSelectionFid(fid, false));
-  if (this.state.filter.active) {
-    await this.createFilterToken();
-  }
-}
-
-/**
- * [LAYER SELECTION]
- * 
- * @param fids Array of fids
- * 
- * @returns {Promise<void>}
- */
-proto.includeSelectionFids = async function(fids = []) {
-  //pass false because eventually token filter creation need to be called after
+proto.includeSelectionFids = async function(fids = [], createToken = true) {
+  // pass false because eventually token filter creation need to be called after
   fids.forEach(fid => this.includeSelectionFid(fid, false));
-  if (this.state.filter.active) {
+
+  /** @TODO add description */
+  if (createToken && this.state.filter.active) {
     await this.createFilterToken();
   }
 };
@@ -1077,12 +1079,17 @@ proto.includeSelectionFids = async function(fids = []) {
  * 
  * Exclude fids from selection
  * 
- * @param fids
+ * @param { Array }   fids
+ * @param { boolean } createToken since 3.9.0
+ * 
+ * @returns { Promise<void> }
  */
-proto.excludeSelectionFids = async function(fids = []) {
+proto.excludeSelectionFids = async function(fids = [], createToken = true) {
   //pass false because eventually token filter creation need to be called after
   fids.forEach(fid => this.excludeSelectionFid(fid, false));
-  if (this.state.filter.active) {
+
+  /** @TODO add description */
+  if (createToken && this.state.filter.active) {
     await this.createFilterToken();
   }
 };
@@ -2175,6 +2182,20 @@ proto.getStyleFeatureCount = async function(style) {
   }
   return this.state.stylesfeaturecount[style];
 };
+
+/**
+ * [LAYER SELECTION]
+ * 
+ * Base on boolean value create a filter token from server
+ * based on selection or delete current filtertoken
+ * 
+ * @param bool
+ * 
+ * @returns {Promise<void>}
+ * 
+ * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::createFilterToken() and deleteFilterToken(fid) instead
+ */
+proto.activeFilterToken = deprecate(async function(bool) { await this[bool ? 'createFilterToken' : 'deleteFilterToken'](); }, '[G3W-CLIENT] Layer::activeFilterToken(bool) is deprecated');
 
 /// LAYER PROPERTIES
 
