@@ -1,7 +1,7 @@
 import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'constant';
-import { QgsFilterToken }             from 'app/core/layers/utils/QgsFilterToken';
+import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
 
 const G3WObject                    = require('core/g3wobject');
 const {

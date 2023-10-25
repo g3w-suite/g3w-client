@@ -1,9 +1,9 @@
 import ApplicationState     from 'store/application-state';
 import DataRouterService    from 'services/data';
 import ProjectsRegistry     from 'store/projects';
-import DownloadMixin   from 'app/core/layers/mixins/download';
-import SelectionMixin  from 'app/core/layers/mixins/selection';
-import RelationsMixin  from 'app/core/layers/mixins/relations';
+import DownloadMixin        from 'core/layers/mixins/download';
+import SelectionMixin       from 'core/layers/mixins/selection';
+import RelationsMixin       from 'core/layers/mixins/relations';
 
 const { t }                 = require('core/i18n/i18n.service');
 const {
