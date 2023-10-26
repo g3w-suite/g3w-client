@@ -1737,9 +1737,8 @@ class QueryResultsService extends G3WObject {
     const _layer   = layer.external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id);
     const features = _layer.features && _layer.features.length ? _layer.features : []; 
     const fids     = features.length > 0 ? features.map(f => this._getFeatureId(f, _layer.external)) : null;
-    addToSelection(this.mapService, {
+    addToSelection(this.mapService, _layer, {
       fids,
-      layer: _layer,
       features,
       force: toggled
     });
@@ -1791,9 +1790,8 @@ class QueryResultsService extends G3WObject {
     action.state.toggled[index] = !action.state.toggled[index];
     const _layer                = (external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id));
     const fid                   = feature ? this._getFeatureId(feature, _layer.external) : null;
-    addToSelection(this.mapService, {
+    addToSelection(this.mapService, _layer, {
       fids: [fid],
-      layer: _layer,
       features: [feature],
       index,
       force: undefined
@@ -2220,12 +2218,12 @@ class QueryResultsService extends G3WObject {
   _setActionSelection(layer) {
     this.state.layersactions[layer.id]
       .push({
-        id: 'selection',
+        id:       'selection',
         download: false,
-        class: GUI.getFontClass('success'),
-        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-        state: this.createActionState({ layer }),
-        init: ({feature, index, action}={}) => {
+        class:    GUI.getFontClass('success'),
+        hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
+        state:    this.createActionState({ layer }),
+        init: ({ feature, index, action } = {}) => {
           if (undefined !== layer.selection.active) {
             this.checkFeatureSelection({ layer, index, feature, action })
           }

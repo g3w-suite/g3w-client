@@ -12,11 +12,12 @@ const { createFeatureFromFeatureObject } = require('utils/geo');
 /**
  * External layer (vector) added by add external layer tool
  * 
+ * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12
+ * 
  * @since 3.9.0
  */
-function _handleExternalVectorLayerSelection(map, {
+function _handleExternalVectorLayerSelection(map, layer, {
   fids,
-  layer,
   features,
   index,
   force
@@ -73,11 +74,12 @@ function _handleExternalVectorLayerSelection(map, {
 /**
  * Handle features selection of Project Layers (on TOC)
  * 
+ * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12
+ * 
  * @since 3.9.0
  */
-async function _handleProjectLayerSelection(map, {
+async function _handleProjectLayerSelection(map, layer, {
   fids,
-  layer,
   features,
   index,
   force,
@@ -155,10 +157,10 @@ async function _handleProjectLayerSelection(map, {
  * 
  * @since 3.9.0
  */
-export async function addToSelection(map, params) {
-  if (params.layer.external) {
-    _handleExternalVectorLayerSelection(map, params);
+export async function addToSelection(map, layer, params) {
+  if (layer.external) {
+    _handleExternalVectorLayerSelection(map, layer, params);
   } else {
-    await _handleProjectLayerSelection(map, params);
+    await _handleProjectLayerSelection(map, layer, params);
   }
 }
