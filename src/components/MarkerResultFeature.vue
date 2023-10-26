@@ -102,12 +102,14 @@
 
 <script>
 import { MarkersEventBus }         from 'app/eventbus';
-import {PluginsRegistry}           from "store";
+import { PluginsRegistry }           from "store";
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI                         from 'services/gui';
 
 
-const { Geometry } = require('utils/geo');
+const { Geometry,
+  singleGeometriesToMultiGeometry
+} = require('utils/geo');
 
 export default {
   name: 'MarkerResultFeature',
@@ -144,14 +146,26 @@ export default {
      */
     edit() {
       if (PluginsRegistry.getPlugin('editing')) {
-        const geometry = new ol.geom.Point(
+        let geometry = new ol.geom.Point(
           ol.proj.transform([
-            parseFloat(this.marker.lon),
-            parseFloat(this.marker.lat)
-          ],
-          'EPSG:4326',
-          GUI.getService('map').getEpsg())
+              parseFloat(this.marker.lon),
+              parseFloat(this.marker.lat)
+            ],
+            'EPSG:4326',
+            GUI.getService('map').getEpsg())
         );
+        //check if is Multi Geometry (MultiPoint)
+        if (
+          Geometry.isMultiGeometry(
+            CatalogLayersStoresRegistry
+              .getLayerById(this.layerId)
+              .getGeometryType()
+          )
+        ) {
+          //convert Point to MultiPoint Geometry
+          geometry = singleGeometriesToMultiGeometry([geometry])
+        }
+
         const feature = new ol.Feature({
           geometry,
           ...this.marker
