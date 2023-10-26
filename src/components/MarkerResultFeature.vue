@@ -89,7 +89,7 @@
         </button>
       </div>
     </section>
-    <section class="marker-info" v-show="open">
+    <section v-if="showData" class="marker-info" v-show="open">
       <div v-for="([key, value]) in Object.entries(marker) ">
           {{key }}
       </div>
@@ -115,6 +115,11 @@ export default {
     marker: {
       type: Object,
       default: {}
+    },
+    // TODO: make use only of `QueryResults.vue` to dump data
+    showData: {
+      type: Boolean,
+      default: true,
     }
   },
   data() {

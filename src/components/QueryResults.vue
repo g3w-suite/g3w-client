@@ -118,7 +118,7 @@
                 <template v-else>
                   <!-- CASE MARKER LAYER -->
                   <template v-if="'__g3w_marker' === layer.id">
-                    <marker-result-feature :marker="feature.attributes" v-for="feature in layer.features" :key="feature.id"/>
+                    <marker-result-feature :marker="feature.attributes" v-for="feature in layer.features" :key="feature.id" :showData="false" />
                   </template>
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class="table" :class="{'mobile': isMobile()}">
@@ -196,7 +196,7 @@
 
   const { throttle } = require('utils');
 
-  const maxSubsetLength = 3;
+  let maxSubsetLength = 3;
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth = 10;
   const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
@@ -385,6 +385,9 @@
       attributesSubset(layer) {
         const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
+        // TODO: find a clever way to handle geocoding results..
+        maxSubsetLength =  '__g3w_marker' === layer.id ? 0 : 1;
+        //
         const end = Math.min(maxSubsetLength, attributes.length);
         return _attributes.slice(0, end);
       },
