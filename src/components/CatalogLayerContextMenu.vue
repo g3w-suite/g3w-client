@@ -193,44 +193,43 @@
       </div>
     </li>
 
-
     <!-- Filters menu -->
     <li
-      v-if="canShowFiltersMenu(layerMenu.layer)"
-      @mouseleave.self="showFiltersMenu(false,$event)"
-      @mouseover.self="showFiltersMenu(true,$event)"
-      class="menu-icon"
+      v-if             = "canShowFiltersMenu(layerMenu.layer)"
+      @mouseleave.self = "showFiltersMenu(false,$event)"
+      @mouseover.self  = "showFiltersMenu(true,$event)"
+      class            = "menu-icon"
     >
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('filter')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.filters'"></span>
       <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul
-        v-show="layerMenu.filtersMenu.show"
-        style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
-        :style="{
-          top: layerMenu.filtersMenu.top + 'px',
-          left: `${layerMenu.filtersMenu.left}px`,
+        v-show = "layerMenu.filtersMenu.show"
+        style  = "position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
+        :style = "{
+          top:       layerMenu.filtersMenu.top       + 'px',
+          left:      layerMenu.filtersMenu.left      + 'px',
           maxHeight: layerMenu.filtersMenu.maxHeight + 'px',
-          overflowY: layerMenu.filtersMenu.overflowY }"
+          overflowY: layerMenu.filtersMenu.overflowY
+        }"
       >
-        <li v-for="filter in layerMenu.layer.filters"
-          :key="filter.fid"
-          style="display: flex; justify-content: space-between; align-items: baseline"
-          @click.stop="setCurrentLayerFilter(filter)">
-          <span v-if="layerMenu.layer.filter.current && layerMenu.layer.filter.current.fid === filter.fid"
-            style="font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
-            :class="g3wtemplate.getFontClass('circle')">
-          </span>
-
+        <li
+          v-for       = "filter in layerMenu.layer.filters"
+          :key        = "filter.fid"
+          style       = "display: flex; justify-content: space-between; align-items: baseline"
+          @click.stop = "setCurrentLayerFilter(filter)"
+        >
+          <span
+            v-if   = "layerMenu.layer.filter.current && layerMenu.layer.filter.current.fid === filter.fid"
+            style  = "font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
+            :class = "g3wtemplate.getFontClass('circle')"
+          ></span>
             <span style="margin-right: 5px;">{{ filter.name }}</span>
             <span
-              @click.stop="deleteFilter(filter.fid)"
-              class="skin-border-color"
-              style="color: red;
-              right: 0;
-              padding-left: 10px;
-              border-left: 2px solid"
-              :class="g3wtemplate.getFontClass('trash')">
+              @click.stop = "deleteFilter(filter.fid)"
+              class       = "skin-border-color"
+              style       = "color: red; right: 0; padding-left: 10px; border-left: 2px solid;"
+              :class      = "g3wtemplate.getFontClass('trash')">
           </span>
         </li>
       </ul>
