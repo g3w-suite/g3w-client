@@ -11,6 +11,7 @@ import DownloadFormats                    from 'components/QueryResultsActionDow
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 import ApplicationService                 from 'services/application';
 import { addToSelection }                 from 'core/layers/utils/addToSelection';
+import { removeFromSelection }            from 'core/layers/utils/removeFromSelection';
 
 const {
   noop,
@@ -572,12 +573,16 @@ class QueryResultsService extends G3WObject {
    *
    * @param opts.layer layer linked to action
    * @param opts.id    action id
+   * 
+   * @returns undefined when no action is found
    */
   getActionLayerById({
     layer,
     id,
   } = {}) {
-    return this.state.layersactions[layer.id].find(action => action.id === id);
+    if (this.state.layersactions[layer.id]) {
+      return this.state.layersactions[layer.id].find(action => action.id === id);
+    }
   };
 
   /**
@@ -1679,29 +1684,6 @@ class QueryResultsService extends G3WObject {
 
   /**
    * @FIXME add description
-   *
-   * @param layer
-   */
-  clearSelectionExtenalLayer(layer) {
-    layer.selection.active = false;
-    const action = (
-      this.state.layersactions[layer.id] &&
-      this.state.layersactions[layer.id].find(action => 'selection' === action.id)
-    );
-    layer.selection.features
-      .forEach((feature, index) => {
-        if (feature.selection.selected) {
-          feature.selection.selected = false;
-          if (action) {
-            action.state.toggled[index] = false;
-          }
-          this.mapService.setSelectionFeatures('remove', { feature });
-        }
-      });
-  }
-
-  /**
-   * @FIXME add description
    */
   unlistenerEventsActions() {
     this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
@@ -2245,16 +2227,23 @@ QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.downloa
 /**
  * @deprecated since 3.9.0 Will be deleted in 4.x. Use QueryResultsService::addToSelection(layer) instead
  */
-QueryResultsService.prototype.selectionFeaturesLayer = deprecate(addToSelection, '[G3W-CLIENT] QueryResultsService::selectionFeaturesLayer(downloadFnc, options) is deprecated');
+QueryResultsService.prototype.selectionFeaturesLayer = deprecate(addToSelection, '[G3W-CLIENT] QueryResultsService::selectionFeaturesLayer(layer) is deprecated');
+
+/**
+ * @deprecated since 3.9.0 Will be deleted in 4.x. Use QueryResultsService::removeFromSelection(layer) instead
+ */
+QueryResultsService.prototype.clearSelectionExtenalLayer = deprecate(addToSelection, '[G3W-CLIENT] QueryResultsService::clearSelectionExtenalLayer(layer) is deprecated');
 
 /**
  * Alias functions
  * 
  * @TODO choose which ones deprecate
  */
-QueryResultsService.prototype.init               = QueryResultsService.prototype.clearState;
-QueryResultsService.prototype.reset              = QueryResultsService.prototype.clearState;
-QueryResultsService.prototype.addToSelection     = addToSelection;
+QueryResultsService.prototype.init                       = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.reset                      = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.addToSelection             = addToSelection;
+QueryResultsService.prototype.removeFromSelection        = removeFromSelection;
+
 
 /**
  * Core methods used from other classes to react before or after its call

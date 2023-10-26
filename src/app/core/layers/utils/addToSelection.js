@@ -179,9 +179,9 @@ async function _addToSelection(map, layer, params) {
  */
 export function addToSelection(layer, feature, action, index) {
   const service          = GUI.getService('queryresults');
+  const map              = service.mapService;  // TODO: same as? --> GUI.getService('map')
 
   // TODO: avoid referencing this private stuff
-  const map                = service.mapService;
   const getFeaturesIds     = service._getFeaturesIds.bind(service);
   const getFeatureId       = service._getFeatureId.bind(service);
   const getExternalLayer   = service._getExternalLayer.bind(service);
@@ -189,7 +189,7 @@ export function addToSelection(layer, feature, action, index) {
   const getLayerById       = CatalogLayersStoresRegistry.getLayerById.bind(CatalogLayersStoresRegistry);
 
   if (undefined === feature && undefined === action && undefined === index) {
-    const action   = getActionLayerById({ layer, id:'selection' });
+    const action   = getActionLayerById({ layer, id: 'selection' });
     const toggled  = Object.values(action.state.toggled).reduce((prev, curr) => prev && curr, true);
     const _layer   = layer.external ? layer : getLayerById(layer.id);
     const features = layer.features && layer.features.length ? layer.features : []; 
