@@ -55,6 +55,7 @@
         class="action-button skin-tooltip-right"
       >
         <span
+          v-if="showData"
           style="padding: 2px;"
           class="action-button-icon"
           :class="g3wtemplate.getFontClass(open ? 'minus' : 'plus')">
