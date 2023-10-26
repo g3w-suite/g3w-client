@@ -73,10 +73,6 @@
                 <template v-if="layer.rawdata">
                   <div class="queryresults-text-html" :class="{text: layer.infoformat === 'text/plain'}" v-html="layer.rawdata"></div>
                 </template>
-                <!-- CASE MARKER LAYER -->
-                <template v-else-if="'__g3w_marker' === layer.id">
-                  <marker-result-feature :marker="feature.attributes" v-for="feature in layer.features" :key="feature.id"/>
-                </template>
                 <!-- CASE FORM STRUCTURE LAYER-->
                 <template v-else-if="hasFormStructure(layer)">
                   <table class="table" :class="{'mobile': isMobile()}">
@@ -119,52 +115,58 @@
                     </tbody>
                   </table>
                 </template>
-                <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
-                <table v-else class="table" :class="{'mobile': isMobile()}">
-                  <thead>
-                    <tr>
-                      <th v-if="state.layersactions[layer.id].length" :style="{width: `${state.layersactions[layer.id].length *26}px`, maxWidth:`${state.layersactions[layer.id].length * 26}px`}"></th>
-                      <th class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</th>
-                      <th class="collapsed" v-if="!hasLayerOneFeature(layer)"></th>
-                    </tr>
-                  </thead>
-                  <tbody v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
-                    <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
-                    :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
-                    :boxLayerFeature="getLayerFeatureBox(layer, feature)"
-                    :attributesSubset="attributesSubset" :getLayerField="getLayerField"/>
-                    <tr class="g3w-feature-result-action-tools">
-                      <template v-if="state.currentactiontools[layer.id][index]">
-                        <td :colspan="getColSpan(layer)">
-                          <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
+                <template v-else>
+                  <!-- CASE MARKER LAYER -->
+                  <template v-if="'__g3w_marker' === layer.id">
+                    <marker-result-feature :marker="feature.attributes" v-for="feature in layer.features" :key="feature.id"/>
+                  </template>
+                  <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
+                  <table class="table" :class="{'mobile': isMobile()}">
+                    <thead>
+                      <tr>
+                        <th v-if="state.layersactions[layer.id].length" :style="{width: `${state.layersactions[layer.id].length *26}px`, maxWidth:`${state.layersactions[layer.id].length * 26}px`}"></th>
+                        <th class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</th>
+                        <th class="collapsed" v-if="!hasLayerOneFeature(layer)"></th>
+                      </tr>
+                    </thead>
+                    <tbody v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
+                      <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
+                      :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
+                      :boxLayerFeature="getLayerFeatureBox(layer, feature)"
+                      :attributesSubset="attributesSubset" :getLayerField="getLayerField"/>
+                      <tr class="g3w-feature-result-action-tools">
+                        <template v-if="state.currentactiontools[layer.id][index]">
+                          <td :colspan="getColSpan(layer)">
+                            <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
+                          </td>
+                        </template>
+                      </tr>
+                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
+                        <td colspan="getColSpan(layer)">
+                          <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
                         </td>
-                      </template>
-                    </tr>
-                    <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
-                      <td colspan="getColSpan(layer)">
-                        <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
-                      </td>
-                    </tr>
-                    <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
-                      <td :colspan="getColSpan(layer)">
-                        <table class="feature_attributes">
-                            <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
-                              <td class="attr-label">{{ attribute.label }}</td>
-                              <td class="attr-value" :attribute="attribute.name">
-                                <table-attribute-field-value :feature="feature" :field="getLayerField({layer, feature, fieldName: attribute.name})"/>
-                              </td>
-                            </tr>
-                          </table>
-                      </td>
-                    </tr>
-                    <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
-                      <td colspan="getColSpan(layer)">
-                        <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
-                      </td>
-                    </tr>
-                  </tbody>
-                  <tbody v-else></tbody>
-                </table>
+                      </tr>
+                      <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
+                        <td :colspan="getColSpan(layer)">
+                          <table class="feature_attributes">
+                              <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
+                                <td class="attr-label">{{ attribute.label }}</td>
+                                <td class="attr-value" :attribute="attribute.name">
+                                  <table-attribute-field-value :feature="feature" :field="getLayerField({layer, feature, fieldName: attribute.name})"/>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                      </tr>
+                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
+                        <td colspan="getColSpan(layer)">
+                          <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tbody v-else></tbody>
+                  </table>
+                </template>
               </div>
               <div class="box-body"  :class="{'mobile': isMobile()}" v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')">
                 <component :is="component" :layer="layer"/>
