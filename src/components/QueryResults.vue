@@ -487,13 +487,16 @@
       hasLayerOneFeature(layer) {
         return layer.features.length === 1;
       },
+
       /**
-       * @since 3.9
-        * @param layer
+       * @param layer
+       * 
+       * @since 3.9.0
        */
       saveFilter(layer) {
         this.$options.queryResultsService.saveFilter(layer);
       },
+
       addRemoveFilter(layer){
         this.$options.queryResultsService.addRemoveFilter(layer);
       },

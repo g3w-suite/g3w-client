@@ -17,25 +17,25 @@
           <th></th>
           <th v-if="index > 0" v-for="(header, index) in state.headers">
             <input
-              type="text"
-              style="height: 25px; min-width: 40px; padding: 2px;"
-              class="form-control column-search"
-              @keyup="changeColumn($event, index)"
-              :placeholder="header.name"/>
+              type         = "text"
+              style        = "height: 25px; min-width: 40px; padding: 2px;"
+              class        = "form-control column-search"
+              @keyup       = "changeColumn($event, index)"
+              :placeholder = "header.name"/>
           </th>
         </tr>
         <tr>
           <th v-for="(header, index) in state.headers">
             <span v-if="index === 0">
               <input
-                type="checkbox"
-                id="attribute_table_select_all_rows"
-                :checked="state.selectAll"
-                class="magic-checkbox"
-                :disabled="state.nofilteredrow || state.features.length === 0">
+                type      = "checkbox"
+                id        = "attribute_table_select_all_rows"
+                :checked  = "state.selectAll"
+                class     = "magic-checkbox"
+                :disabled = "state.nofilteredrow || state.features.length === 0">
               <label
-                for="attribute_table_select_all_rows"
-                style="margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
+                for   = "attribute_table_select_all_rows"
+                style = "margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
               >
                 <span style="padding:5px"></span>
               </label>
@@ -46,11 +46,12 @@
       </thead>
 
       <table-body
-        :headers="state.headers"
-        :filter=state.tools.filter
-        :features="state.features"
-        :addRemoveSelectedFeature="addRemoveSelectedFeature"
-        :zoomAndHighLightFeature="zoomAndHighLightFeature"/>
+        :headers                  = "state.headers"
+        :filter                   = state.tools.filter
+        :features                 = "state.features"
+        :addRemoveSelectedFeature = "addRemoveSelectedFeature"
+        :zoomAndHighLightFeature  = "zoomAndHighLightFeature"
+      />
 
     </table>
     <div v-else id="noheaders" v-t="'dataTable.no_data'" ></div>
