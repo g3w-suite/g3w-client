@@ -331,8 +331,6 @@ proto.getSearchEndPoint = function() {
   return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : 'api';
 };
 
-
-
 /**
  * @TODO Add description
  * 
@@ -351,38 +349,29 @@ proto.getAttributeTablePageLength = function() {
   return this.state.attributetable.pageLength;
 };
 
-// end global state
-
-
-
 /**
- * Return wms layer name for wms request
- * @returns {*}
+ * @returns { string } wms layer name for wms request
  */
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()
 };
 
 /**
- * Check if request need to use layer id or layer.name
- * @returns {boolean|*}
+ * @returns { boolean | *} whether request need to use `layer.id` or `layer.name`
  */
 proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
 };
 
-
 /**
- * Get source type of layer
- * @returns {*|null}
+ * @returns {*|null} source type of layer
  */
 proto.getSourceType = function() {
   return this.config.source ? this.config.source.type : null;
 };
 
 /**
- * Check if it is a layer with geometry
- * @returns {boolean}
+ * @returns {boolean} whether it is a layer with geometry
  */
 proto.isGeoLayer = function() {
   return this.state.geolayer;
@@ -390,27 +379,30 @@ proto.isGeoLayer = function() {
 
 /**
  * @TODO Add description
- * @param page
- * @param page_size
- * @param ordering
- * @param search
- * @param field
- * @param suggest
- * @param formatter
- * @param in_bbox
- * @param custom_params
+ * 
+ * @param { Object } opts
+ * @param opts.page
+ * @param opts.page_size
+ * @param opts.ordering
+ * @param opts.search
+ * @param opts.suggest
+ * @param opts.formatter
+ * @param opts.custom_params
+ * @param opts.field
+ * @param opts.in_bbox
+ * 
  * @returns {*}
  */
 proto.getDataTable = function({
-  page = null,
-  page_size=null,
-  ordering=null,
-  search=null,
+  page          = null,
+  page_size     = null,
+  ordering      = null,
+  search        = null,
+  suggest       = null,
+  formatter     = 0,
+  custom_params = {},
   field,
-  suggest=null,
-  formatter=0,
   in_bbox,
-  custom_params={}
 } = {}) {
   const d = $.Deferred();
   let provider;
@@ -447,15 +439,19 @@ proto.getDataTable = function({
 
 /**
  * Search layer feature by fids
+ * 
  * @param fids formatter
  */
-proto.getFeatureByFids = async function({fids=[], formatter=0}={}) {
+proto.getFeatureByFids = async function({
+  fids      = [],
+  formatter = 0,
+} = {}) {
   const url = this.getUrl('data');
   try {
     const response = await XHR.get({
       url,
       params: {
-        fids:fids.toString(),
+        fids: fids.toString(),
         formatter
       }
     });
@@ -468,6 +464,7 @@ proto.getFeatureByFids = async function({fids=[], formatter=0}={}) {
 /**
  * Search Features
  * 
+ * @param { Object }        opts
  * @param { 'ows' | 'api' } options.search_endpoint
  * @param { boolean }       options.raw
  * @param { 0 | 1 }         options.formatter
@@ -476,7 +473,7 @@ proto.getFeatureByFids = async function({fids=[], formatter=0}={}) {
  * @param options.unique
  * @param options.queryUrl
  * @param options.ordering
- * @param params           - OWS search params
+ * @param { Object }        params - OWS search params
  * 
  * @returns { Promise }
  */
@@ -520,20 +517,22 @@ proto.searchFeatures = function(options = {}, params = {}) {
 /**
  * Get feature data based on `field` and `suggests`
  * 
- * @param opts.suggest (mandatory): object with key is a field of layer and value is value of the field to filter
- * @param opts.field   Array of object with type of suggest (see above)
+ * @param { Object }    opts
+ * @param { boolean }   opts.raw
+ * @param { Object }    opts.suggest   - (mandatory): object with key is a field of layer and value is value of the field to filter
+ * @param { 0 | 1 }     opts.formatter
+ * @param { Array }     opts.field     - Array of object with type of suggest (see above)
  * @param opts.unique
  * @param opts.queryUrl
  * @param opts.ordering
- * @param { boolean } opts.raw
- * @param { 0 | 1 }   opts.formatter
+
  */
 proto.getFilterData = async function({
-  field,
-  raw = false,
-  suggest = {},
-  unique,
+  raw       = false,
+  suggest   = {},
   formatter = 1,
+  field,
+  unique,
   queryUrl,
   ordering
 } = {}) {
@@ -597,8 +596,7 @@ proto.get = function(property) {
 };
 
 /**
- * Return layer fields
- * @returns {*|{}}
+ * @returns { * | {} } layer fields
  */
 proto.getFields = function() {
   return this.config.fields
@@ -608,6 +606,7 @@ proto.getFields = function() {
  * Get field by name
  * 
  * @param fieldName
+ * 
  * @returns {*}
  */
 proto.getFieldByName = function(fieldName) {
@@ -615,67 +614,52 @@ proto.getFieldByName = function(fieldName) {
 };
 
 /**
- * Return editing fields
- * @returns {[]}
+ * @returns { Array } editing fields
  */
 proto.getEditingFields = function() {
   return this.config.editing.fields;
 };
 
 /**
- * Return only show fields
- * 
- * @returns {T[]}
+ * @returns { Array } only show fields
  */
 proto.getTableFields = function() {
   return (this.config.fields || []).filter(field => field.show);
 };
 
 /**
- * Return table fields exclude geometry field
- * @returns {T[]}
+ * @returns { Array } table fields exclude geometry field
  */
 proto.getTableHeaders = function() {
   return this.getTableFields().filter(field => -1 === geometryFields.indexOf(field.name));
 };
 
 /**
- * Get current project
- * @returns {*}
+ * @returns {*} current project
  */
 proto.getProject = function() {
   return this.config.project;
 };
 
 /**
- * Get layer config
- * @returns {{}}
+ * @returns { Object } layer config
  */
 proto.getConfig = function() {
   return this.config;
 };
 
 /**
- * Get form structure to show on form editing
- * 
  * @param fields
- * @returns {[]}
+ * 
+ * @returns { Array } form structure to show on form editing
  */
 proto.getLayerEditingFormStructure = function(fields) {
   return this.config.editor_form_structure;
 };
 
 /**
- * Duplicated because we had to check if it
- * is used by some plugins to avoid to break
- * backward compatibility
- */
-proto.getEditorFormStructure = function() {
-  return this.getLayerEditingFormStructure();
-};
-
-/**
  * @TODO Add description
+ * 
  * @returns {*|*[]}
  */
 proto.getFieldsOutOfFormStructure = function() {
@@ -683,15 +667,14 @@ proto.getFieldsOutOfFormStructure = function() {
 };
 
 /**
- * Check if it has form structure
- * @returns {boolean}
+ * @returns { boolean } whether it has form structure
  */
 proto.hasFormStructure = function() {
   return !!this.config.editor_form_structure;
 };
 
 /**
- * Get custom style (for future implementation) 
+ * @returns custom style (for future implementation) 
  */
 proto.getCustomStyle = function() {
   return this.config.customstyle;
@@ -699,6 +682,7 @@ proto.getCustomStyle = function() {
 
 /**
  * Get state layer
+ * 
  * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), tochighlightable: boolean, featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), metadata_querable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
  */
 proto.getState = function() {
@@ -706,16 +690,14 @@ proto.getState = function() {
 };
 
 /**
- * Get layer source (ex. ogr, spatialite, etc..)
- * @returns {*}
+ * @returns {*} layer source (ex. ogr, spatialite, etc..)
  */
 proto.getSource = function() {
   return this.state.source;
 };
 
 /**
- * return editing version of layer
- * @returns {*}
+ * @returns {*} editing version of layer
  */
 proto.getEditingLayer = function() {
   return this._editingLayer;
@@ -723,6 +705,7 @@ proto.getEditingLayer = function() {
 
 /**
  * Set editing layer
+ * 
  * @param editingLayer
  */
 proto.setEditingLayer = function(editingLayer) {
@@ -730,8 +713,7 @@ proto.setEditingLayer = function(editingLayer) {
 };
 
 /**
- * Check if is hidden
- * @returns {string|string[]|boolean|string|*}
+ * @returns {string|string[]|boolean|string|*} whether is hidden
  */
 proto.isHidden = function() {
   return this.state.hidden;
@@ -739,6 +721,7 @@ proto.isHidden = function() {
 
 /**
  * Set hidden
+ * 
  * @param bool
  */
 proto.setHidden = function(bool=true) {
@@ -746,48 +729,42 @@ proto.setHidden = function(bool=true) {
 };
 
 /**
- * Check if it was modified (by editing9
- * @returns {boolean}
+ * @returns {boolean} whether it was modified (by editing)
  */
 proto.isModified = function() {
   return this.state.modified;
 };
 
 /**
- * Get id
- * @returns {*|string}
+ * @returns {*|string} id
  */
 proto.getId = function() {
   return this.config.id;
 };
 
 /**
- * Get Metadata
- * @returns {*}
+ * @returns {*} metadata
  */
 proto.getMetadata = function() {
   return this.state.metadata
 };
 
 /**
- * Get Title
- * @returns {*}
+ * @returns {*} title
  */
 proto.getTitle = function() {
   return this.config.title;
 };
 
 /**
- * Get Name
- * @returns {*}
+ * @returns {*} name
  */
 proto.getName = function() {
   return this.config.name;
 };
 
 /**
- * Get origin name
- * @returns {*}
+ * @returns {*} origin name
  */
 proto.getOrigName = function() {
   return this.config.origname;
@@ -795,6 +772,7 @@ proto.getOrigName = function() {
 
 /**
  * Get Server type
+ * 
  * @returns {*|string|{wmst: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, virtual: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, oracle: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, delimitedtext: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wfs: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider}, wcs: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, arcgismapserver: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, mdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, vectortile: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, "vector-tile": {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, gdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, ogr: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wms: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, postgres: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, mssql: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, spatialite: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}}}
  */
 proto.getServerType = function() {
@@ -804,8 +782,7 @@ proto.getServerType = function() {
 };
 
 /**
- * Get type
- * @returns {*}
+ * @returns {*} type
  */
 proto.getType = function() {
   return this.type;
@@ -813,6 +790,7 @@ proto.getType = function() {
 
 /**
  * Set Type
+ * 
  * @param type
  */
 proto.setType = function(type) {
@@ -821,7 +799,9 @@ proto.setType = function(type) {
 
 /**
  * Check if layer is a type passed
+ * 
  * @param type
+ * 
  * @returns {boolean}
  */
 proto.isType = function(type) {
@@ -830,6 +810,7 @@ proto.isType = function(type) {
 
 /**
  * Set disabled
+ * 
  * @param bool
  */
 proto.setDisabled = function(bool) {
@@ -837,16 +818,14 @@ proto.setDisabled = function(bool) {
 };
 
 /**
- * Check if it is disabled
- * @returns {boolean}
+ * @returns {boolean} whether it is disabled
  */
 proto.isDisabled = function() {
   return this.state.disabled;
 };
 
 /**
- * Check if is visible
- * @returns {boolean}
+ * @returns {boolean} whether is visible
  */
 proto.isVisible = function() {
   return this.state.visible;
@@ -854,6 +833,7 @@ proto.isVisible = function() {
 
 /**
  * Set visibility
+ * 
  * @param bool
  */
 proto.setVisible = function(bool) {
@@ -861,10 +841,10 @@ proto.setVisible = function(bool) {
 };
 
 /**
- * Set a parameter map to check if request from map point of
- * view or just a capabilities info layer
+ * @param { Object } param
+ * @param param.map check if request from map point of view or just a capabilities info layer
  */
-proto.isQueryable = function({onMap} = {onMap:false}) {
+proto.isQueryable = function({ onMap } = { onMap: false }) {
   let queryEnabled = false;
   const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
   if (!onMap) return queryableForCababilities;
@@ -878,6 +858,7 @@ proto.isQueryable = function({onMap} = {onMap:false}) {
 
 /**
  * @TODO Add description
+ * 
  * @returns {string|string|*}
  */
 proto.getOws = function() {
@@ -886,6 +867,7 @@ proto.getOws = function() {
 
 /**
  * @TODO Description
+ * 
  * @returns {boolean}
  */
 proto.getTocHighlightable = function() {
@@ -894,6 +876,7 @@ proto.getTocHighlightable = function() {
 
 /**
  * @TODO Description
+ * 
  * @param bool
  */
 proto.setTocHighlightable = function(bool=false) {
@@ -919,30 +902,28 @@ proto.isFilterable = function(conditions=null) {
 };
 
 /**
- * Check if layer is set up as time series
+ * @returns { boolean } whether layer is set up as time series
  */
 proto.isQtimeseries = function() {
   return this.config.qtimeseries;
 };
 
 /**
- * Check if is editbale
- * @returns {boolean}
+ * @returns { boolean } whether is editable
  */
 proto.isEditable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };
 
 /**
- * Is a base layer
- * @returns {*|boolean}
+ * @returns {*|boolean} whether is a base layer
  */
 proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
 
 /**
- * @param type get url by type (data, shp, csv, xls,  editing, ...) 
+ * @param type get url by type (data, shp, csv, xls, editing, ...) 
  */
 proto.getUrl = function(type) {
   return this.config.urls[type];
@@ -951,6 +932,7 @@ proto.getUrl = function(type) {
 /**
  * Set config url
  * 
+ * @param { Object } url
  * @param url.type
  * @param url.url
  */
@@ -973,8 +955,7 @@ proto.setEditingUrl = function(url) {
 };
 
 /**
- * Get query url
- * @returns {*}
+ * @returns {*} query url
  */
 proto.getQueryUrl = function() {
   return this.config.urls.query;
@@ -982,6 +963,7 @@ proto.getQueryUrl = function() {
 
 /**
  * Set query url
+ * 
  * @param queryUrl
  */
 proto.setQueryUrl = function(queryUrl) {
@@ -989,7 +971,6 @@ proto.setQueryUrl = function(queryUrl) {
 };
 
 /**
- *
  * @returns {*}
  */
 proto.getQueryLayerName = function() {
@@ -998,6 +979,7 @@ proto.getQueryLayerName = function() {
 
 /**
  * @TODO Description
+ * 
  * @returns {*}
  */
 proto.getQueryLayerOrigName = function() {
@@ -1006,8 +988,10 @@ proto.getQueryLayerOrigName = function() {
 
 /**
  * @TODO Description
+ * 
  * @param ogcService
- * @returns {default.watch.infoformat|*|string}
+ * 
+ * @returns { default.watch.infoformat | * | string }
  */
 proto.getInfoFormat = function(ogcService) {
   // In case of NETCDF (qtime series)
@@ -1022,6 +1006,7 @@ proto.getInfoFormat = function(ogcService) {
 
 /**
  * @TODO Description
+ * 
  * @returns {(function(): *)|*|*[]}
  */
 proto.getInfoFormats = function() {
@@ -1030,6 +1015,7 @@ proto.getInfoFormats = function() {
 
 /**
  * @TODO Description
+ * 
  * @returns {*}
  */
 proto.getInfoUrl = function() {
@@ -1038,6 +1024,7 @@ proto.getInfoUrl = function() {
 
 /**
  * @TODO Description
+ * 
  * @param infoFormat
  */
 proto.setInfoFormat = function(infoFormat) {
@@ -1046,6 +1033,7 @@ proto.setInfoFormat = function(infoFormat) {
 
 /**
  * @TODO Description
+ * 
  * @returns {*|{}}
  */
 proto.getAttributes = function() {
@@ -1054,6 +1042,7 @@ proto.getAttributes = function() {
 
 /**
  * @TODO Description
+ * 
  * @param attribute
  * @param type
  * @param options
@@ -1070,7 +1059,9 @@ proto.changeAttribute = function(attribute, type, options) {
 
 /**
  * @TODO Description
+ * 
  * @param name
+ * 
  * @returns {*}
  */
 proto.getAttributeLabel = function(name) {
@@ -1080,7 +1071,9 @@ proto.getAttributeLabel = function(name) {
 
 /**
  * Return provider by type
+ * 
  * @param type
+ * 
  * @returns {*}
  */
 proto.getProvider = function(type) {
@@ -1089,6 +1082,7 @@ proto.getProvider = function(type) {
 
 /**
  * Return all providers
+ * 
  * @returns {*|{filter: null, search: null, data: null, query: null, filtertoken: null}}
  */
 proto.getProviders = function() {
@@ -1097,6 +1091,7 @@ proto.getProviders = function() {
 
 /**
  * @TODO Description
+ * 
  * @returns {*}
  */
 proto.getLayersStore = function() {
@@ -1105,6 +1100,7 @@ proto.getLayersStore = function() {
 
 /**
  * @TODO Description
+ * 
  * @param layerstore
  */
 proto.setLayersStore = function(layerstore) {
@@ -1113,6 +1109,7 @@ proto.setLayersStore = function(layerstore) {
 
 /**
  * Return if it is possible to show table of attribute
+ * 
  * @returns {boolean}
  */
 proto.canShowTable = function() {
@@ -1144,13 +1141,21 @@ proto.canShowTable = function() {
 
 /**
  * @TODO Description
- * @param name
- * @param type
- * @param options
- * @param reset
+ * 
+ * @param { Object } field
+ * @param field.name
+ * @param field.type
+ * @param field.options
+ * @param field.reset
+ * 
  * @returns {*}
  */
-proto.changeFieldType = function({name, type, options={}, reset=false}={}) {
+proto.changeFieldType = function({
+  name,
+  type,
+  options = {},
+  reset   = false,
+} = {}) {
   const field = this.getFields().find(field => field.name === name);
   
   if (field && reset) {
@@ -1171,18 +1176,27 @@ proto.changeFieldType = function({name, type, options={}, reset=false}={}) {
 
 /**
  * @TODO Description
- * @param name
- * @param type
- * @param options
- * @param reset
+ * 
+ * @param { Object } config
+ * @param config.name
+ * @param config.type
+ * @param config.options
+ * @param config.reset
+ * 
  * @returns {*}
  */
-proto.changeConfigFieldType = function({name, type, options={},reset=false}) {
-  return this.changeFieldType({name, type, options, reset});
+proto.changeConfigFieldType = function({
+  name,
+  type,
+  options = {},
+  reset   = false,
+}) {
+  return this.changeFieldType({ name, type, options, reset });
 };
 
 /**
  * @TODO Description
+ * 
  * @param name
  */
 proto.resetConfigField = function({name}) {
@@ -1195,16 +1209,14 @@ proto.resetConfigField = function({name}) {
 proto.clear = function() {};
 
 /**
- * Check if is a vector layer
- * @returns {boolean}
+ * @returns {boolean} whether is a vector layer
  */
 proto.isVector = function() {
   return this.getType() === Layer.LayerTypes.VECTOR;
 };
 
 /**
- * Check if is a tabel layer
- * @returns {boolean}
+ * @returns {boolean} whether is a table layer
  */
 proto.isTable = function() {
   return this.getType() === Layer.LayerTypes.TABLE;
@@ -1253,6 +1265,11 @@ proto.getStyleFeatureCount = async function(style) {
  * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::createFilterToken() and deleteFilterToken(fid) instead
  */
 proto.activeFilterToken = deprecate(async function(bool) { await this[bool ? 'createFilterToken' : 'deleteFilterToken'](); }, '[G3W-CLIENT] Layer::activeFilterToken(bool) is deprecated');
+
+/**
+ * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::getLayerEditingFormStructure() instead
+ */
+proto.getEditorFormStructure = deprecate(proto.getLayerEditingFormStructure, '[G3W-CLIENT] Layer::getEditorFormStructure() is deprecated');
 
 /// LAYER PROPERTIES
 
