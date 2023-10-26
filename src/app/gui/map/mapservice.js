@@ -2283,6 +2283,9 @@ proto.clearSelectionFeatures = function() {
   this.defaultsLayers.selectionLayer.getSource().clear();
 };
 
+/**
+ * @since 3.9.0
+ */
 proto.setSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
