@@ -1727,29 +1727,6 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Set selection features
-   *
-   * @param layer
-   */
-  selectionFeaturesLayer(layer) {
-    const action   = this.state.layersactions[layer.id].find(action => 'selection' === action.id);
-    const toggled  = Object.values(action.state.toggled).reduce((prev, curr) => prev && curr, true);
-    const _layer   = layer.external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id);
-    const features = layer.features && layer.features.length ? layer.features : []; 
-    const fids     = features.length > 0 ? features.map(f => this._getFeatureId(f, _layer.external)) : null;
-    addToSelection(this.mapService, _layer, {
-      fids,
-      features,
-      force: toggled ? 'remove' : 'add'
-    });
-    layer
-      .features
-      .forEach((feature, index) => {
-        action.state.toggled[index] = !toggled;
-      })
-  }
-
-  /**
    * Initial check of selection active on layer
    *
    * @param opts.layer
@@ -1775,27 +1752,6 @@ class QueryResultsService extends G3WObject {
           pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
       );
     }
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param layer
-   * @param feature
-   * @param action
-   * @param index
-   */
-  addToSelection(layer, feature, action, index) {
-    const external              = this._getExternalLayer(layer.id) || false;
-    action.state.toggled[index] = !action.state.toggled[index];
-    const _layer                = (external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id));
-    const fid                   = feature ? this._getFeatureId(feature, _layer.external) : null;
-    addToSelection(this.mapService, _layer, {
-      fids: [fid],
-      features: [feature],
-      index,
-      force: undefined
-    });
   }
 
   /**
@@ -2287,12 +2243,18 @@ QueryResultsService.prototype.addRemoveFeaturesToLayerResult = deprecate(QueryRe
 QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.downloadWrapper, '[G3W-CLIENT] QueryResultsService::downloadApplicationWrapper(downloadFnc, options) is deprecated');
 
 /**
+ * @deprecated since 3.9.0 Will be deleted in 4.x. Use QueryResultsService::addToSelection(layer) instead
+ */
+QueryResultsService.prototype.selectionFeaturesLayer = deprecate(addToSelection, '[G3W-CLIENT] QueryResultsService::selectionFeaturesLayer(downloadFnc, options) is deprecated');
+
+/**
  * Alias functions
  * 
  * @TODO choose which ones deprecate
  */
 QueryResultsService.prototype.init               = QueryResultsService.prototype.clearState;
 QueryResultsService.prototype.reset              = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.addToSelection     = addToSelection;
 
 /**
  * Core methods used from other classes to react before or after its call

@@ -5,14 +5,15 @@
  * @since 3.9.0
  */
 
-import GUI from 'services/gui';
+import GUI                          from 'services/gui';
+import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 
 const { createFeatureFromFeatureObject } = require('utils/geo');
 
 /**
  * External layer (vector) added by add external layer tool
  * 
- * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12
+ * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::_handleExternalVectorLayerSelection
  * 
  * @since 3.9.0
  */
@@ -74,7 +75,7 @@ function _handleExternalVectorLayerSelection(map, layer, {
 /**
  * Handle features selection of Project Layers (on TOC)
  * 
- * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12
+ * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::_handleProjectLayerSelection
  * 
  * @since 3.9.0
  */
@@ -129,7 +130,7 @@ async function _handleProjectLayerSelection(map, layer, {
     await layer.createFilterToken();
   }
 
-  const layers = GUI.getService('queryresults').getState().layers;
+  const { layers } = GUI.getService('queryresults').getState();
 
   /** @TODO add description */
   fids.forEach((fid, idx) => {
@@ -155,12 +156,62 @@ async function _handleProjectLayerSelection(map, layer, {
 /**
  * Add / Remove features from selection
  * 
+ * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::_addRemoveSelectionFeature
+ * 
  * @since 3.9.0
  */
-export async function addToSelection(map, layer, params) {
+async function _addToSelection(map, layer, params) {
   if (layer.external) {
     _handleExternalVectorLayerSelection(map, layer, params);
   } else {
     await _handleProjectLayerSelection(map, layer, params);
+  }
+}
+
+/**
+ * @TODO make it simpler..
+ * 
+ * Add / Remove features from selection
+ * 
+ * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::addToSelection
+ * 
+ * @since 3.9.0
+ */
+export function addToSelection(layer, feature, action, index) {
+  const service          = GUI.getService('queryresults');
+
+  // TODO: avoid referencing this private stuff
+  const map                = service.mapService;
+  const getFeaturesIds     = service._getFeaturesIds.bind(service);
+  const getFeatureId       = service._getFeatureId.bind(service);
+  const getExternalLayer   = service._getExternalLayer.bind(service);
+  const getActionLayerById = service.getActionLayerById.bind(service);
+  const getLayerById       = CatalogLayersStoresRegistry.getLayerById.bind(CatalogLayersStoresRegistry);
+
+  if (undefined === feature && undefined === action && undefined === index) {
+    const action   = getActionLayerById({ layer, id:'selection' });
+    const toggled  = Object.values(action.state.toggled).reduce((prev, curr) => prev && curr, true);
+    const _layer   = layer.external ? layer : getLayerById(layer.id);
+    const features = layer.features && layer.features.length ? layer.features : []; 
+    _addToSelection(map, _layer, {
+      fids: features.length > 0 ? getFeaturesIds(features, _layer.external) : null,
+      features,
+      force: toggled ? 'remove' : 'add'
+    });
+    layer
+      .features
+      .forEach((feature, index) => {
+        action.state.toggled[index] = !toggled;
+      });
+  } else {
+    action.state.toggled[index] = !action.state.toggled[index];
+    const _layer                = ((getExternalLayer(layer.id) || false) ? layer : getLayerById(layer.id));
+    const fid                   = feature ? getFeatureId(feature, _layer.external) : null;
+    _addToSelection(map, _layer, {
+      fids: [fid],
+      features: [feature],
+      index,
+      force: undefined
+    });
   }
 }
