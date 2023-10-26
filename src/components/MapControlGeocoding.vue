@@ -212,24 +212,6 @@ const DYNAMIC_MAP_EXTENT = false;
 /**
  * Show current location/place on map as marker icon
  */
-function _showMarker(coordinates, options = { transform: true }) {
-  const mapService = GUI.getService('map');
-  const map = mapService.getMap();
-  coordinates = options.transform
-    ? ol.proj.transform(coordinates, 'EPSG:4326', mapService.getEpsg())
-    : coordinates;
-  const geometry =  new ol.geom.Point(coordinates);
-  mapService.zoomToGeometry(geometry);
-}
-
-/**
- * Remove marker from map
- */
-function _hideMarker() {
-  //clear layer features marker
-  //clear layer features marker
-  layer.getSource().clear();
-}
 
 /**
  * @since 3.9.0
@@ -303,6 +285,39 @@ export default {
 
   methods: {
     /**
+     *
+     * @param coordinates
+     * @param options
+     * @private
+     */
+    _showMarker(coordinates, options = { transform: true }) {
+      const mapService = GUI.getService('map');
+      coordinates = options.transform
+        ? ol.proj.transform(
+          coordinates,
+          'EPSG:4326',
+          mapService.getEpsg()
+        )
+        : coordinates;
+      const geometry =  new ol.geom.Point(coordinates);
+      mapService.zoomToGeometry(geometry);
+    },
+
+    /**
+     * Remove marker from map
+     */
+    _hideMarker() {
+      //clear layer features marker
+      layer.getSource().clear();
+      //need to force to set visible tru otherwise
+      // when add new marker need to click on visibility button
+      // if last state are not visible
+      if (false === this.$data._visible) {
+        this._toggleLayerVisibility();
+      }
+    },
+
+      /**
      * Toggle marker layer visibility
      * @since v3.9
      * @private
@@ -320,7 +335,7 @@ export default {
     },
     clearMarkers() {
       this.$data._markers.splice(0);
-      _hideMarker();
+      this._hideMarker();
       //set false to add
       this.$data._results.forEach(i => i.add = false);
     },
@@ -370,7 +385,7 @@ export default {
 
         // request is for a single point (XCoord,YCoord)
         if (coordinates) {
-          _showMarker(coordinates, { transform });
+          this._showMarker(coordinates, { transform });
           resolve(coordinates);
         }
 
@@ -475,6 +490,10 @@ export default {
       //check if is open result list
       if (this.$data._results.length > 0) {
         this.$data._results.find(r => uid === r.__uid).add = false
+      }
+      //if no markers are on map
+      if (this.$data._markers.length === 0){
+        this._hideMarker();
       }
     },
 
