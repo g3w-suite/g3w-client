@@ -116,10 +116,6 @@
                   </table>
                 </template>
                 <template v-else>
-                  <!-- CASE MARKER LAYER -->
-                  <template v-if="'__g3w_marker' === layer.id">
-                    <marker-result-feature :marker="feature.attributes" v-for="feature in layer.features" :key="feature.id" :showData="false" />
-                  </template>
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class="table" :class="{'mobile': isMobile()}">
                     <thead>
@@ -130,10 +126,18 @@
                       </tr>
                     </thead>
                     <tbody v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
-                      <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
-                      :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
-                      :boxLayerFeature="getLayerFeatureBox(layer, feature)"
-                      :attributesSubset="attributesSubset" :getLayerField="getLayerField"/>
+                      <header-feature-body
+                        :actions="state.layersactions[layer.id]"
+                        :layer="layer"
+                        :feature="feature"
+                        :index="index"
+                        :onelayerresult="onelayerresult"
+                        :trigger="trigger"
+                        :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom"
+                        :hasLayerOneFeature="hasLayerOneFeature"
+                        :boxLayerFeature="getLayerFeatureBox(layer, feature)"
+                        :attributesSubset="attributesSubset"
+                        :getLayerField="getLayerField"/>
                       <tr class="g3w-feature-result-action-tools">
                         <template v-if="state.currentactiontools[layer.id][index]">
                           <td :colspan="getColSpan(layer)">
@@ -142,20 +146,30 @@
                         </template>
                       </tr>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
-                        <td colspan="getColSpan(layer)">
+                        <td :colspan="getColSpan(layer)">
                           <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
                         </td>
                       </tr>
                       <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                         <td :colspan="getColSpan(layer)">
                           <table class="feature_attributes">
-                              <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
-                                <td class="attr-label">{{ attribute.label }}</td>
-                                <td class="attr-value" :attribute="attribute.name">
-                                  <table-attribute-field-value :feature="feature" :field="getLayerField({layer, feature, fieldName: attribute.name})"/>
-                                </td>
-                              </tr>
-                            </table>
+                            <tr v-if="'__g3w_marker' === layer.id">
+                              <td :colspan="2">
+                                <!-- CASE MARKER LAYER -->
+                                <marker-result-feature
+                                  :marker="feature.attributes"
+                                  :showData="false" />
+                              </td>
+                            </tr>
+                            <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
+                              <td class="attr-label">{{ attribute.label }}</td>
+                              <td class="attr-value" :attribute="attribute.name">
+                                <table-attribute-field-value
+                                  :feature="feature"
+                                  :field="getLayerField({layer, feature, fieldName: attribute.name})"/>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
@@ -211,18 +225,17 @@
         state: this.$options.queryResultsService.state,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
         headerActionsCellWidth: headerActionsCellWidth,
-        MarkerResultFeature
       }
     },
     mixins: [fieldsMixin],
     components: {
-        MarkerResultFeature,
+      MarkerResultFeature,
       TableAttributeFieldValue,
       'infoformats': InfoFormats,
       'header-feature-body': HeaderFeatureBody
     },
     computed: {
-      onelayerresult(){
+      onelayerresult() {
         return this.state.layers.length  === 1;
       },
       hasLayers() {
