@@ -6,15 +6,15 @@
 <template>
   <span>
     <input
-      type="checkbox"
-      :id="id"
-      :checked="feature.selected"
-      class="magic-checkbox">
+      type     = "checkbox"
+      :id      = "id"
+      :checked = "feature.selected"
+      class    = "magic-checkbox"
+    >
     <label
-      :for="id"
-      @click.capture.stop.prevent="select">
-      <span></span>
-    </label>
+      :for                        = "id"
+      @click.capture.stop.prevent = "select"
+    ><span></span></label>
   </span>
 </template>
 
