@@ -13,7 +13,7 @@ export default {
     sign_in:"Kirjaudu sisään",
     layer_selection_filter: {
       tools: {
-        filter: "Lisätä/Poista Suodattaa",
+        filter: "Ota suodatin käyttöön/poista käytöstä",
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",

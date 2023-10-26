@@ -13,7 +13,7 @@ export default {
     sign_in: "Sign in",
     layer_selection_filter: {
       tools: {
-        filter: "Add/Remove Filter",
+        filter: "Enable/Disable filter",
         nofilter: "Remove Filter",
         invert: "Invert Selection",
         clear: "Clear Selection",

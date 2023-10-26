@@ -13,7 +13,7 @@ export default {
     sign_in: "Se connecter ",
     layer_selection_filter: {
       tools: {
-        filter: "Ajout/Suppression de filtre ",
+        filter: "Activer/Désactiver le filtre",
         nofilter: "Supprimer le filtre ",
         invert: "Sélection inversée ",
         clear: "Effacer la sélection ",

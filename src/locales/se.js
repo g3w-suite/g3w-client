@@ -13,7 +13,7 @@ export default {
     sign_in:"Logga in",
     layer_selection_filter: {
       tools: {
-        filter: "Lägg till/Avlägsna Filtrera",
+        filter: "Aktivera/inaktivera filter",
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",

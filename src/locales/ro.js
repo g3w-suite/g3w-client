@@ -13,7 +13,7 @@ export default {
     sign_in: "Logare",
     layer_selection_filter: {
       tools: {
-        filter: "Adăugare/Eliminare Filtrare",
+        filter: "Activați/Dezactivați filtrul",
         nofilter: "Eliminare Filtrare",
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
