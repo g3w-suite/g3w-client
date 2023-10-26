@@ -1732,15 +1732,15 @@ class QueryResultsService extends G3WObject {
    * @param layer
    */
   selectionFeaturesLayer(layer) {
-    const action   = this.state.layersactions[layer.id].find(action => action.id === 'selection');
-    const toggled  = Object.values(action.state.toggled).reduce((toggled, value) => toggled && value, true);
+    const action   = this.state.layersactions[layer.id].find(action => 'selection' === action.id);
+    const toggled  = Object.values(action.state.toggled).reduce((prev, curr) => prev && curr, true);
     const _layer   = layer.external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id);
-    const features = _layer.features && _layer.features.length ? _layer.features : []; 
+    const features = layer.features && layer.features.length ? layer.features : []; 
     const fids     = features.length > 0 ? features.map(f => this._getFeatureId(f, _layer.external)) : null;
     addToSelection(this.mapService, _layer, {
       fids,
       features,
-      force: toggled
+      force: toggled ? 'remove' : 'add'
     });
     layer
       .features
