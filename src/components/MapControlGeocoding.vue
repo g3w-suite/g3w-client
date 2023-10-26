@@ -57,19 +57,33 @@
         ></i>
       </button>
 
-        <!-- show markers button -->
-        <button
-          v-if          = "showMarkerResultsButton"
-          type          = "button"
-          id            = "show-markers-results"
-          class         = "btn skin-background-color"
-          @click.stop   = "_showMarkerResults"
-        >
-          <i
-            :class      = "g3wtemplate.getFontClass('list')"
-            aria-hidden = "true"
-          ></i>
-        </button>
+      <!-- SHOW MARKERS ON RESULT CONTENT -->
+      <button
+        v-if          = "showMarkerResultsButton"
+        type          = "button"
+        id            = "show-markers-results"
+        class         = "btn skin-background-color"
+        @click.stop   = "_showMarkerResults"
+      >
+        <i
+          :class      = "g3wtemplate.getFontClass('list')"
+          aria-hidden = "true"
+        ></i>
+      </button>
+      <!-- SHOW/HIDE MARKER LAYER ON MAP -->
+      <button
+        v-if          = "$data._markers.length > 0"
+        type          = "button"
+        id            = "markers-visibility-layer"
+        class         = "btn skin-background-color"
+        @click.stop   = "_toggleLayerVisibility"
+      >
+        <i
+        :class      = "g3wtemplate.getFontClass($data._visible ? 'eye-close': 'eye')"
+        aria-hidden = "true"
+        ></i>
+      </button>
+
     </div>
 
     <!-- SEARCH RESULTS -->
@@ -238,6 +252,7 @@ export default {
       _results                 : [],
       _markers                 : [],
       _show_marker_info_content: false,  //Boolean if marker info are show on right content
+      _visible                 : true,   //set visibility of layer
     };
   },
 
@@ -287,6 +302,15 @@ export default {
   },
 
   methods: {
+    /**
+     * Toggle marker layer visibility
+     * @since v3.9
+     * @private
+     */
+    _toggleLayerVisibility() {
+      this.$data._visible = !this.$data._visible;
+      layer.setVisible(this.$data._visible);
+    },
     /**
      * Clear Result list only
     * @since v3.9
