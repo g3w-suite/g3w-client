@@ -41,10 +41,10 @@
 
     <!-- Styles menu -->
     <li
-      v-if="canShowStylesMenu(layerMenu.layer)"
-      @mouseleave.self="showStylesMenu(false,$event)"
-      @mouseover.self="showStylesMenu(true,$event)"
-      class="menu-icon"
+      v-if             = "canShowStylesMenu(layerMenu.layer)"
+      @mouseleave.self = "showSubMenuContext({ menu: 'stylesMenu', evt: $event, bool: false })"
+      @mouseover.self  = "showSubMenuContext({ menu: 'stylesMenu', evt: $event, bool: true })"
+      class            = "menu-icon"
     >
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('palette')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
@@ -60,9 +60,9 @@
     <!-- Opacity menu -->
     <li v-if="canShowOpacityPicker(layerMenu.layer)" class="menu-icon" style="padding-right: 0">
       <layer-opacity-picker
-        @init-menu-item="addLayerMenuItem"
-        @show-menu-item="showSubMenuContext"
-        :layer="layerMenu.layer"
+        @init-menu-item = "addLayerMenuItem"
+        @show-menu-item = "showSubMenuContext"
+        :layer          = "layerMenu.layer"
       />
     </li>
 
@@ -79,12 +79,12 @@
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
     </li>
 
-    <!-- Show change color picker for change external vector layer color -->
+    <!-- Color picker (external vector layer) -->
     <li
-      v-if="isExternalVectorLayer(layerMenu.layer)"
-      @click.prevent.stop=""
-      @mouseleave.self="showColorMenu(false,$event)"
-      @mouseover.self="showColorMenu(true,$event)"
+      v-if                = "isExternalVectorLayer(layerMenu.layer)"
+      @click.prevent.stop = ""
+      @mouseleave.self    = "showColorMenu(false,$event)"
+      @mouseover.self     = "showColorMenu(true,$event)"
     >
       <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
       <span class="menu-icon skin-color-dark" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
@@ -120,7 +120,7 @@
       </div>
     </li>
 
-    <!-- Change opacity to external wms layer -->
+    <!-- Change opacity (external wms layer) -->
     <li @click.prevent.stop="" v-if="isExternalWMSLayer(layerMenu.layer)">
       <div style="display: flex; justify-content: space-between">
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
@@ -196,8 +196,8 @@
     <!-- Filters menu -->
     <li
       v-if             = "canShowFiltersMenu(layerMenu.layer)"
-      @mouseleave.self = "showFiltersMenu(false,$event)"
-      @mouseover.self  = "showFiltersMenu(true,$event)"
+      @mouseleave.self = "showSubMenuContext({ menu: 'filtersMenu', bool: false, evt: $event })"
+      @mouseover.self  = "showSubMenuContext({ menu: 'filtersMenu', bool: true, evt: $event })"
       class            = "menu-icon"
     >
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('filter')"></span>
@@ -738,7 +738,10 @@
 
       /**
        * Set current filter
-        * @param filter
+       *
+       * @param filter
+       * 
+       * @since 3.9.0
        */
       async setCurrentLayerFilter(filter) {
         const changed = (
@@ -776,7 +779,11 @@
       /**
        * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
        */
-      async showSubMenuContext({menu, bool, evt}) {
+      async showSubMenuContext({ menu, bool, evt }) {
+        if ('string' === typeof menu) {
+          menu = this.layerMenu[menu];
+        }
+        /** @TODO rename parameter: `bool` --> `show` */
         if (bool) {
           const elem = $(evt.target);
           menu.top = elem.offset().top;
@@ -794,28 +801,6 @@
         }
         menu.show = bool;
       },
-
-      /**
-       * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
-       */
-      async showStylesMenu(bool, evt) {
-        this.showSubMenuContext({
-          menu: this.layerMenu.stylesMenu,
-          bool,
-          evt
-        });
-      },
-
-        /**
-         * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
-         */
-        async showFiltersMenu(bool, evt) {
-          this.showSubMenuContext({
-            menu: this.layerMenu.filtersMenu,
-            bool,
-            evt
-          });
-        },
 
       //showmetadatainfo
       async showMetadataInfo(bool, evt){
@@ -869,14 +854,13 @@
       },
 
       /**
-       * Check if it can show filters menù
+       * @returns { boolean } whether it can show filters menu
+       * 
        * @since 3.9.0
-       * @return Boolean
        */
       canShowFiltersMenu(layer) {
         return layer.filters && layer.filters.length > 0;
       },
-
 
       /**
        * @since 3.8.3
