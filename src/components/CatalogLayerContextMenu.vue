@@ -760,19 +760,24 @@
 
       /**
        * Delete filter from saved filters
+       * 
        * @param fid
-       * @returns {Promise<void>}
+       * 
+       * @returns { Promise<void> }
+       * 
+       * @since 3.9.0
        */
       async deleteFilter(fid) {
-        const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
-        if (layer) {
-          const change = fid === this.layerMenu.layer.fid;
-          await layer.deleteFilterToken(fid);
-          if (change) {
-            layer.change();
-          }
+        const layer  = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+        const change = fid === this.layerMenu.layer.fid;
+        // skip when ..
+        if (!layer) {
+          return;
         }
-
+        await layer.deleteFilterToken(fid);
+        if (change) {
+          layer.change();
+        }
         this.closeLayerMenu(this.layerMenu.filtersMenu);
       },
 
