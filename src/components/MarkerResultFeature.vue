@@ -68,14 +68,22 @@
         class="g3w-point-editable-layers"
         style="width: 100%; display: flex"
         @click.prevent.stop="">
-        <select  style="flex-grow: 1" v-select2="'layerid'" :search="false" class="form-control">
-          <option v-for="pointlayer in poinEditableLayers" :key="pointlayer.id" v-download :value="pointlayer.id">
-            <span style="font-weight: bold">{{pointlayer.getName()}}</span>
+        <select
+          v-select2="'layerId'"
+          :search="false"
+          style="flex-grow: 1"
+          class="form-control">
+          <option
+            v-for="pointlayer in poinEditableLayers"
+            :key="pointlayer.id"
+            :value="pointlayer.id">
+            <span style="font-weight: bold">{{pointlayer.name}}</span>
           </option>
         </select>
         <button
           style="border-radius: 0 3px 3px 0;"
-          class="btn skin-button" @click.stop=edit
+          class="btn skin-button"
+          @click.stop="edit"
         >
           <span :class="g3wtemplate.getFontClass('pencil')"></span>
         </button>
@@ -93,8 +101,8 @@
 </template>
 
 <script>
-import { MarkersEventBus }   from 'app/eventbus';
-
+import { MarkersEventBus }         from 'app/eventbus';
+import {PluginsRegistry}           from "store";
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI                         from 'services/gui';
 
@@ -111,7 +119,7 @@ export default {
   },
   data() {
     return {
-      layerid: null,
+      layerId: null,
       open: true
     }
   },
@@ -121,14 +129,41 @@ export default {
      */
     zoom() {
       let {geometry, lon, lat}  = this.marker;
-      geometry = geometry || new ol.geom.Point(ol.proj.transform([parseFloat(lon), parseFloat(lat)], 'EPSG:4326', GUI.getService('map').getEpsg()));
+      //geometry coming from query result, lon lat from marker list info
+      // TODO aligned all to feature (ol.Feature or Feature) is better
+      geometry = geometry ||
+        new ol.geom.Point(
+          ol.proj.transform([parseFloat(lon), parseFloat(lat)],
+          'EPSG:4326',
+          GUI.getService('map').getEpsg())
+        );
       GUI.getService('map').zoomToGeometry(geometry);
     },
     /**
      * Create new feature on layer point geometry
      */
     edit() {
-      //@ŢODO
+      if (PluginsRegistry.getPlugin('editing')) {
+        const geometry = new ol.geom.Point(
+          ol.proj.transform([
+            parseFloat(this.marker.lon),
+            parseFloat(this.marker.lat)
+          ],
+          'EPSG:4326',
+          GUI.getService('map').getEpsg())
+        );
+        const feature = new ol.Feature({
+          geometry,
+          ...this.marker
+        });
+        PluginsRegistry
+          .getPlugin('editing')
+          .getApi()
+          .addLayerFeature({
+            layerId: this.layerId,
+            feature
+          })
+      }
     },
     /**
     * Remove from marker results info
@@ -149,7 +184,15 @@ export default {
     this.poinEditableLayers = CatalogLayersStoresRegistry.getLayers({
       EDITABLE: true,
       GEOLAYER: true
-    }).filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+    })
+    .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+    .map((l)=>({
+      id:   l.getId(),
+      name: l.getName(),
+    }))
+    if (this.poinEditableLayers.length > 0) {
+      this.layerId = this.poinEditableLayers[0].id;
+    }
   }
 };
 </script>
