@@ -600,24 +600,27 @@ export default {
 
   },
 
-  watch: {
-    '$data._markers'(items, olditems) {
-      if (items.length === 0) {
-        GUI.closeContent();
-        return;
-      }
-      if (
-        (null === GUI.getCurrentContent()) || //no content is show /right panel is hide
-        (items.length === 1 && olditems.length === 1)
-      ) {
-        this._showMarkerResults();
-      }
-    }
-  },
+  // watch: {
+  //   '$data._markers'(items, olditems) {
+  //     if (items.length === 0) {
+  //       GUI.closeContent();
+  //       return;
+  //     }
+  //     if (
+  //       (null === GUI.getCurrentContent()) || //no content is show /right panel is hide
+  //       (items.length === 1 && olditems.length === 1)
+  //     ) {
+  //       this._showMarkerResults();
+  //     }
+  //   }
+  // },
 
 
   async mounted() {
     await this.$nextTick();
+    const q = document.querySelector.bind(document);
+    q('#gcd-input-query').value = 'cafe';
+    q('#search_nominatim').click();
   },
 
   destroyed() {
