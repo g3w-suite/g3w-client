@@ -161,14 +161,26 @@
                                   :showData="false" />
                               </td>
                             </tr>
-                            <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
-                              <td class="attr-label">{{ attribute.label }}</td>
-                              <td class="attr-value" :attribute="attribute.name">
-                                <table-attribute-field-value
-                                  :feature="feature"
-                                  :field="getLayerField({layer, feature, fieldName: attribute.name})"/>
-                              </td>
-                            </tr>
+                            <template v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
+                              <template v-if="isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
+                                <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
+                                <template v-for="(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
+                                  <tr v-for="(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style="padding-top:10px; padding-bottom:10px;">
+                                    <td class="attr-label">{{ attribute.label }}.<template v-if="('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
+                                    <td class="attr-value">{{ v2 }}</td>
+                                  </tr>
+                                </template>
+                              </template>
+                              <tr v-else>
+                                <td class="attr-label">{{ attribute.label }}</td>
+                                <td class="attr-value" :attribute="attribute.name">
+                                  <table-attribute-field-value
+                                    :feature = "feature"
+                                    :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
+                                  />
+                                </td>
+                              </tr>
+                            </template>
                           </table>
                         </td>
                       </tr>
@@ -202,13 +214,12 @@
 </template>
 
 <script>
-  import { fieldsMixin } from 'mixins';
+  import { fieldsMixin }          from 'mixins';
   import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import InfoFormats from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody from 'components/QueryResultsHeaderFeatureBody.vue';
-  import MarkerResultFeature from "components/MarkerResultFeature.vue";
-
-  const { throttle } = require('utils');
+  import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
+  import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
+  import MarkerResultFeature      from "components/MarkerResultFeature.vue";
+  import { toRawType, throttle }  from 'utils';
 
   let maxSubsetLength = 3;
   const headerExpandActionCellWidth = 10;
@@ -514,8 +525,17 @@
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
-      }
+      },
+
+      /**
+       * @since 3.9.0 
+       */
+       isJSON(field) {
+        return !this.isVue(field) && this.isSimple(field) && 'Object' === toRawType(field.value);
+      },
+
     },
+
     watch: {
       async 'state.layers'(layers) {
         layers.forEach(layer => {
@@ -569,3 +589,9 @@
     }
   };
 </script>
+
+<style scoped>
+.feature_attributes tr {
+  line-height: 1.8em;
+}
+</style>
