@@ -2400,15 +2400,22 @@ QueryResultsService.prototype.setters = {
   /**
    * Hook method called when response is handled by Data Provider
    *
-   * @param queryResponse
-   * @param {{ add: boolean }} options `add` is used to know if is a new query request or add/remove query request
+   * @param { Object }                             queryResponse
+   * @param { Array }                              queryResponse.data
+   * @param { 'coordinates' | 'bbox' | 'polygon' } queryResponse.type
+   * @param { Object }                             queryResponse.query
+   * @param { Object }                             queryResponse.query.external
+   * @param { boolean }                            queryResponse.query.external.add
+   * @param { Object }                             queryResponse.query.external.filter
+   * @param { boolean }                            queryResponse.query.external.SELECTED
+   * @param {{ add: boolean }}                     options `add` is used to know if is a new query request or add/remove query request
    */
   setQueryResponse(queryResponse, options = { add: false }) {
 
     // set mandatory queryResponse fields
     if (!queryResponse.data)           queryResponse.data           = [];
     if (!queryResponse.query)          queryResponse.query          = { external: { add: false, filter: { SELECTED: false } } };
-    if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: {SELECTED: false }};
+    if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: { SELECTED: false }};
 
     // whether add response to current results using addLayerFeaturesToResultsAction
     if (false === options.add) {
