@@ -221,7 +221,7 @@
   import MarkerResultFeature      from "components/MarkerResultFeature.vue";
   import { toRawType, throttle }  from 'utils';
 
-  let maxSubsetLength = 3;
+  const MAX_SUBSET_LENGTH = 3;
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth = 10;
   const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
@@ -411,7 +411,7 @@
         const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
         // TODO: find a clever way to handle geocoding results..
-        const end = Math.min('__g3w_marker' === layer.id ? 0 : maxSubsetLength, attributes.length);
+        const end = Math.min('__g3w_marker' === layer.id ? 0 : MAX_SUBSET_LENGTH, attributes.length);
         return _attributes.slice(0, end);
       },
       relationsAttributesSubset(relationAttributes) {
@@ -420,7 +420,7 @@
           if (Array.isArray(value)) return;
           attributes.push({label: attribute, value: value})
         });
-        const end = Math.min(maxSubsetLength, attributes.length);
+        const end = Math.min(MAX_SUBSET_LENGTH, attributes.length);
         return attributes.slice(0, end);
       },
       relationsAttributes(relationAttributes) {
@@ -434,12 +434,12 @@
         return this.attributesSubset(layer).length;
       },
       cellWidth(index,layer) {
-        const headerLength = maxSubsetLength + this.state.layersactions[layer.id].length;
+        const headerLength = MAX_SUBSET_LENGTH + this.state.layersactions[layer.id].length;
         const subsetLength = this.attributesSubsetLength(layer);
         const diff = headerLength - subsetLength;
         const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
         const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
-        const baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
+        const baseCellWidth = headerAttributeCellTotalWidth / MAX_SUBSET_LENGTH;
         if ((index === subsetLength-1) && diff>0) return baseCellWidth * (diff+1);
         else return baseCellWidth;
       },
@@ -539,7 +539,7 @@
     watch: {
       async 'state.layers'(layers) {
         layers.forEach(layer => {
-          if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) layer.expandable = false;
+          if (layer.attributes.length <= MAX_SUBSET_LENGTH && !layer.hasImageField) layer.expandable = false;
           layer.features.forEach(feature => {
             this.getLayerFeatureBox(layer, feature);
            if (feature.attributes.relations) {
