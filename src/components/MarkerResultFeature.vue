@@ -31,21 +31,6 @@
         </span>
       </span>
 
-      <!-- Edit from markers -->
-      <span
-        v-if="poinEditableLayers.length > 0"
-        @contextmenu.prevent.stop=""
-        @click.stop="remove"
-        :class="{'toggled': false }"
-        class="action-button skin-tooltip-right"
-      >
-        <span
-          style="padding: 2px;"
-          class="action-button-icon"
-          :class="g3wtemplate.getFontClass('pencil')">
-        </span>
-      </span>
-
       <span
 
         @contextmenu.prevent.stop=""
@@ -63,7 +48,7 @@
       </span>
 
     </section>
-    <section class="marker-tooloftools">
+    <section class="marker-editing">
       <div
         v-if="poinEditableLayers.length > 0"
         class="g3w-point-editable-layers"
