@@ -111,7 +111,7 @@
       }"
     >
 
-      <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
+
       <span
         :class           = "{
           highlightlayer: isHighLight,
@@ -122,7 +122,7 @@
         :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
-        <!-- DISABLE FILTER -->
+        <!-- SHOW CURRENT FILTER  -->
         <span
           v-if                        = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
           :current-tooltip            = "layerstree.filter.current.name"
@@ -135,8 +135,13 @@
             :class = "g3wtemplate.getFontClass('filter')">
           </span>
         </span>
+        <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
-        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">[{{getFeatureCount}}]</span>
+        <!-- LAYER FEATURES COUNT-->
+        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">
+          [{{getFeatureCount}}]
+        </span>
+
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
