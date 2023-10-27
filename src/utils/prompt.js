@@ -46,8 +46,8 @@ export async function prompt({
         message:     vueInput.$mount().$el,
         closeButton: false,
         buttons: {
-          ok:     { label: 'Ok',     className: 'btn-success', callback: resolve },
-          cancel: { label: 'Cancel', className: 'btn-danger',  callback: reject  },
+          ok:     { label: 'Ok',     className: 'btn-success', callback: () => resolve(data.value) },
+          cancel: { label: 'Cancel', className: 'btn-danger',  callback: () => reject()  },
         },
       });
       // conditionally disable confirm button (based on input value)
