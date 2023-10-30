@@ -2465,11 +2465,9 @@ QueryResultsService.prototype.setters = {
     // Convert response from DataProvider into a QueryResult component data structure
     const layers = [];
     queryResponse.data.forEach(featuresForLayer => {
-      (
-        Array.isArray(featuresForLayer)
-        ? featuresForLayer
-        : [featuresForLayer]
-      ).forEach(featuresForLayer => {
+      []
+        .concat(featuresForLayer)
+        .forEach(featuresForLayer => {
         const layer = this._responseToLayer(featuresForLayer);
         if (layer) {
           layers.push(layer)
