@@ -2405,10 +2405,11 @@ QueryResultsService.prototype.setters = {
    * @param { 'coordinates' | 'bbox' | 'polygon' } queryResponse.type
    * @param { Object }                             queryResponse.query
    * @param { Object }                             queryResponse.query.external
-   * @param { boolean }                            queryResponse.query.external.add
+   * @param { boolean }                            queryResponse.query.external.add       - whether add external layers to response
    * @param { Object }                             queryResponse.query.external.filter
    * @param { boolean }                            queryResponse.query.external.SELECTED
-   * @param {{ add: boolean }}                     options `add` is used to know if is a new query request or add/remove query request
+   * @param { Object }                             options
+   * @param { boolean }                            options.add                            - whether is a new query request (add/remove query request)
    */
   setQueryResponse(queryResponse, options = { add: false }) {
 
