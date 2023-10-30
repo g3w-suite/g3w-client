@@ -195,7 +195,7 @@ const pushpin_icon = new ol.style.Icon({
  */
 const layer = new ol.layer.Vector({
   id: '__g3w_marker',
-  name: 'Geocoding Marker',
+  name: 'Geocoding',
   source: new ol.source.Vector(),
   style: new ol.style.Style({ image: pushpin_icon }),
 });
@@ -556,16 +556,27 @@ export default {
        * @private
        */
     _showMarkerResults() {
-      GUI.showContent({
-        content: ComponentsFactory.build({
-          vueComponentObject: MarkersResult,
-          propsData: {
-            markers: this.$data._markers,
-          },
-        }),
-        title: 'Markers',
-        id: '__g3w_marker_component'
-      });
+      // if (!this.$data._show_marker_info_content) {
+      //   GUI.closeContent();
+      // } else {
+        GUI.showQueryResults('Geocoding', {
+          data: [{
+            features: layer.getSource().getFeatures(),
+            layer,
+          }]
+        });
+      // }
+
+      // GUI.showContent({
+      //   content: ComponentsFactory.build({
+      //     vueComponentObject: MarkersResult,
+      //     propsData: {
+      //       markers: this.$data._markers,
+      //     },
+      //   }),
+      //   title: 'Markers',
+      //   id: '__g3w_marker_component'
+      // });
     },
   },
 
@@ -573,6 +584,7 @@ export default {
     //Add marker layer on
     const mapService = GUI.getService('map');
     const map        = mapService.getMap();
+
     //add layer
     /**
      * @TODO take in account to change zIndex in case of add layer (wms external, vector layer)
@@ -592,6 +604,7 @@ export default {
 
     //Open
     GUI.onafter('setContent', content => {
+      console.log(content);
       this.$data._show_marker_info_content = '__g3w_marker_component' === content.id;
     });
 
@@ -619,7 +632,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     const q = document.querySelector.bind(document);
-    q('#gcd-input-query').value = 'cafe';
+    q('#gcd-input-query').value = /*'via sallustio 10'*/ 'cafe';
     q('#search_nominatim').click();
   },
 

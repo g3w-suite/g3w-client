@@ -504,9 +504,10 @@ class QueryResultsService extends G3WObject {
       /**
        * @since v3.9 In case of marker layers skip
        */
-      if ('__g3w_marker' === layer.id) {
-        return;
-      }
+      const is_geocoding = '__g3w_marker' === layer.id;
+      // if ('__g3w_marker' === layer.id) {
+      //   return;
+      // }
 
       // Lookup for layer geometry.
       if (layer.hasgeometry) {
@@ -534,7 +535,7 @@ class QueryResultsService extends G3WObject {
       }
 
       // Lookup for not external layer or WMS.
-      if (false === is_external_layer_or_wms) {
+      if (false === is_external_layer_or_wms || is_geocoding) {
         this._setActionRemoveFeatureFromResult(layer);
       }
 
@@ -2436,22 +2437,18 @@ QueryResultsService.prototype.setters = {
       // add visible layers to query response (vector layers)
       this._vectorLayers
         .forEach(layer => {
-          const is_selected  = catalogService.isExternalLayerSelected({ id: layer.get('id'), type: 'vector' });
-          if (
-            layer.getVisible() && ( // TODO: extract this into `layer.isSomething()` ?
-                                    (true === is_selected  && true === FILTER_SELECTED)  ||
-                                    (false === is_selected && false === FILTER_SELECTED) ||
-                                    (undefined === FILTER_SELECTED)
-                                  )
-          ) {
-            queryResponse.data.push(this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+          const id = layer.get('id');
+          const is_selected  = catalogService.isExternalLayerSelected({ id, type: 'vector' });
+          const is_visible = layer.getVisible(); 
+          // TODO: extract this into `layer.isSomething()` ?
+          if (is_visible && ((is_selected === FILTER_SELECTED) || (undefined === FILTER_SELECTED))) {
+            queryResponse.data[
+              '__g3w_marker' === id // keep geocoding control "marker" layer at top
+              ? 'unshift'
+              : 'push'
+            ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
           }
         });
-      //Handle marker layer (geocoding control layer)
-      const markerLayer = this._vectorLayers.find(layer => '__g3w_marker' === layer.get('id'));
-      if (markerLayer) {
-        queryResponse.data.unshift(this.getVectorLayerFeaturesFromQueryRequest(markerLayer, queryResponse.query));
-      }
     }
 
     if (false === options.add) {
