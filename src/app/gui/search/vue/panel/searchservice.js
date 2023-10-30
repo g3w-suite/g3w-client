@@ -39,61 +39,59 @@ function SearchService(config = {}) {
   base(this);
 
   // reactivity data
-  this.state = {
-    title: null,
-    forminputs: [],
-    loading: {},
-    searching: false
-  };
+  this.state             = {
+                            title: null,
+                            forminputs: [],
+                            loading: {},
+                            searching: false,
+                           };
 
-  this.config = config;
+  this.config            = config;
 
   const { options = {} } = this.config;
   const layerid          = options.querylayerid || options.layerid || null;
 
-  this.inputdependance = {};
+  this.inputdependance   = {};
 
   this.inputdependencies = {};
 
   this.cachedependencies = {};
 
-  this.project = ProjectsRegistry.getCurrentProject();
+  this.project           = ProjectsRegistry.getCurrentProject();
 
-  this.mapService = GUI.getService('map');
+  this.mapService        = GUI.getService('map');
 
-  this.searchLayer = null;
+  this.searchLayer       = null;
 
-  this.filter = null;
+  this.filter            = null;
 
-  this.inputs = [];
+  this.inputs            = [];
 
-  this.state.title = config.name;
+  this.state.title       = config.name;
 
-  this.search_endpoint = config.search_endpoint;
+  this.search_endpoint   = config.search_endpoint;
 
-  this.url = options.queryurl;
+  this.url               = options.queryurl;
 
-  this.filter = options.filter;
+  this.filter            = options.filter;
 
   /**
    * @type { 'search' | 'search_1n' }
    */
-  this.type = this.config.type || 'search';
+  this.type              = this.config.type || 'search';
 
-  this.return = options.return || 'data';
+  this.return            = options.return || 'data';
 
-  this.show = this.return === 'data' && this.type === 'search';
+  this.show              = this.return === 'data' && this.type === 'search';
 
-  this.searchLayer = CatalogLayersStoresRegistry.getLayerById(layerid);
+  this.searchLayer       = CatalogLayersStoresRegistry.getLayerById(layerid);
 
   /**
    * Store layers that will be searchable for that search form.
    * First one is layer owner of the search setted on admin.
    */
-  this.searchLayers = [
-    layerid,
-    ...(options.otherquerylayerids || [])
-  ].map(layerid => CatalogLayersStoresRegistry.getLayerById(layerid));
+  this.searchLayers      = [ layerid, ...(options.otherquerylayerids || []) ]
+                            .map(layerid => CatalogLayersStoresRegistry.getLayerById(layerid));
 
 
   /**
@@ -135,7 +133,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       loading: false,
       widget: null
     };
-    //check if has a dependance
+    //check if it has a dependance
     const {options:{ dependance, dependance_strict } } = forminput;
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       // to be sure set values options to empty array if undefined
@@ -160,7 +158,6 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
             resolve();
           }
         } else {
-
           // no dependence
           this.getValuesFromField(forminput)
             .then(values => { // return array of values
@@ -232,6 +229,11 @@ proto.setReturnType = function(returnType='data') {
   this.show   = ('data' === returnType);
 };
 
+/**
+ *
+ * @param field
+ * @returns {*}
+ */
 proto.getAutoFieldDependeciesParamField = function(field) {
   const fieldDependency = this.getCurrentFieldDependance(field);
   if (fieldDependency) {
@@ -240,8 +242,20 @@ proto.getAutoFieldDependeciesParamField = function(field) {
   }
 };
 
-proto.createFieldsDependenciesAutocompleteParameter = function({ fields = [], field, value }={}) {
+/**
+ *
+ * @param opts.fields
+ * @param opts.field
+ * @param opts.value
+ * @returns {string|undefined|*}
+ */
+proto.createFieldsDependenciesAutocompleteParameter = function({
+  fields = [],
+  field,
+  value
+} = {}) {
   const dependendency = this.getCurrentFieldDependance(field);
+
   if (undefined !== value) {
     fields.push(createSingleFieldParameter({ field, value, operator: this.getFilterInputFromField(field).op }));
   }
@@ -283,9 +297,16 @@ proto.getValuesFromField = async function(field) {
   if (field.options.values.length) {
     return this.getValueMapValues(field);
   }
+
   return this.getUniqueValuesFromField({ field:field.attribute })
 };
 
+/**
+ *
+ * @param field
+ * @param filter
+ * @returns {Promise<*[]>}
+ */
 proto.getValueRelationValues = async function(field, filter) {
   try {
     const { data = [] } = await DataRouterService.getData('search:features', {
@@ -301,7 +322,7 @@ proto.getValueRelationValues = async function(field, filter) {
     (data && data[0] && data[0].features || [])
       .forEach(feature => {
         values.push({ key: feature.get(field.options.key), value: feature.get(field.options.value) })
-    });
+      });
     return values;
   } catch(err) {
     return [];
@@ -333,7 +354,8 @@ proto.getValueMapValues = async function(field) {
 proto.getLayersFilterData = async function(layers, options = {}) {
   const { field, suggest, unique, ordering } = options;
   // get unique value from each layers
-  const promisesData = await Promise.allSettled(layers.map(layer => layer.getFilterData({ field, suggest, unique, ordering })));
+  const promisesData = await Promise
+    .allSettled(layers.map(layer => layer.getFilterData({ field, suggest, unique, ordering })));
 
   const data = Array.from(
     promisesData
@@ -445,7 +467,9 @@ proto.doSearch = async function({
  * @returns {*[]}
  */
 proto.filterValidFormInputs = function() {
-  return this.state.forminputs.filter(input => -1 === NONVALIDVALUES.indexOf(input.value) && '' !== input.value.toString().trim());
+  return this.state
+    .forminputs
+    .filter(input => -1 === NONVALIDVALUES.indexOf(input.value) && '' !== input.value.toString().trim());
 };
 
 /**
@@ -463,6 +487,10 @@ proto.createFilter = function(search_endpoint = this.getSearchEndPoint()) {
   return createFilterFormInputs({ layer: this.searchLayers, inputs: this.filterValidFormInputs(), search_endpoint });
 };
 
+/**
+ *
+ * @private
+ */
 proto._run = function() {
   this.doSearch();
 };
@@ -476,6 +504,11 @@ proto.changeInput = function({id, value} = {}) {
   this.state.forminputs.find(input => id == input.id).value = value;
 };
 
+/**
+ *
+ * @param filter
+ * @returns {{}}
+ */
 proto.createQueryFilterFromConfig = function({filter}) {
   let queryFilter;
   for (const operator in filter) {
@@ -484,10 +517,21 @@ proto.createQueryFilterFromConfig = function({filter}) {
   return queryFilter;
 };
 
+/**
+ *
+ * @param field
+ * @returns {*}
+ */
 proto.getFilterInputFromField = function(field) {
   return this.filter.find(input =>  input.attribute === field);
 };
 
+/**
+ *
+ * @param field
+ * @returns {*|null}
+ * @private
+ */
 proto._getExpressionOperatorFromInput = function(field) {
   const dependanceCascadeField = this.getFilterInputFromField(field);
   return dependanceCascadeField ? dependanceCascadeField.op : null;
@@ -521,7 +565,9 @@ proto.getCurrentFieldDependance = function(field) {
  * Check the current value of dependance
  */
 proto.getDependanceCurrentValue = function(field) {
-  return this.inputdependance[field] ? this.cachedependencies[this.inputdependance[field]]._currentValue : this.state.forminputs.find(forminput => forminput.attribute === field).value;
+  return this.inputdependance[field] ?
+    this.cachedependencies[this.inputdependance[field]]._currentValue :
+    this.state.forminputs.find(forminput => forminput.attribute === field).value;
 };
 
 /**
@@ -537,20 +583,25 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
     //loop over dependencies fields inputs
     subscribers.forEach(subscribe => {
       // in case of autocomplete reset values to empty array
-      if (subscribe.type === 'autocompletefield') subscribe.options.values.splice(0);
-      else {
+      if (subscribe.type === 'autocompletefield') {
+        subscribe.options.values.splice(0);
+      } else {
         //set starting all values
-        if (subscribe.options._allvalues === undefined) subscribe.options._allvalues = [...subscribe.options.values];
+        if (subscribe.options._allvalues === undefined) {
+          subscribe.options._allvalues = [...subscribe.options.values];
+        }
         //case of father is set an empty invalid value (all value example)
         if (invalidValue) {
           //subscribe has to set all valaues
           subscribe.options.values.splice(0);
           setTimeout(()=>subscribe.options.values = [...subscribe.options._allvalues]);
-        } else subscribe.options.values.splice(1); //otherwise has to get first __ALL_VALUE
+        } else {
+          subscribe.options.values.splice(1);
+        } //otherwise has to get first __ALL_VALUE
       }
       subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
     });
-    // check i cache field values are set
+    // check if cache field values are set
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
     const notAutocompleteSubscribers = subscribers.filter(subscribe => subscribe.type !== 'autocompletefield');
@@ -584,8 +635,9 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
         }
       } else {
         this.state.loading[field] = true;
-        if (isRoot) this.cachedependencies[field][value] = this.cachedependencies[field][value] || {};
-        else {
+        if (isRoot) {
+          this.cachedependencies[field][value] = this.cachedependencies[field][value] || {};
+        } else {
           const dependenceValue =  this.getDependanceCurrentValue(field);
           this.cachedependencies[field][dependenceValue] = this.cachedependencies[field][dependenceValue] || {};
           this.cachedependencies[field][dependenceValue][value] = this.cachedependencies[field][dependenceValue][value] || {}
@@ -600,54 +652,57 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           // filter data from relation layer
           this.searchLayer.getFilterData({
             field: fieldParams
-          }).then(async data => {
-            const parentData = data.data[0].features || [];
-            for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
-              const subscribe = notAutocompleteSubscribers[i];
-              const { attribute, widget } = subscribe;
-              const uniqueValues = new Set();
-              // case value map
-              if (widget === 'valuemap') {
-                let values = [...subscribe.options._values];
-                parentData.forEach(feature => {
-                  const value = feature.get(attribute);
-                  value && uniqueValues.add(value);
-                });
-                const data = [...uniqueValues];
-                values = values.filter(({key}) => data.indexOf(key) !== -1);
-                values.forEach(value => subscribe.options.values.push(value));
-              }
-              else if (widget === 'valuerelation') {
-                parentData.forEach(feature =>{
+          })
+            .then(async data => {
+              const parentData = data.data[0].features || [];
+              for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
+                const subscribe = notAutocompleteSubscribers[i];
+                const { attribute, widget } = subscribe;
+                const uniqueValues = new Set();
+                // case value map
+                if (widget === 'valuemap') {
+                  let values = [...subscribe.options._values];
+                  parentData.forEach(feature => {
                     const value = feature.get(attribute);
                     value && uniqueValues.add(value);
                   });
-                  if (uniqueValues.size > 0) {
-                    const filter = createSingleFieldParameter({
-                      field: subscribe.options.key,
-                      value: [...uniqueValues]
-                    });
-                    try {
-                      const values = await this.getValueRelationValues(subscribe, filter);
-                      values.forEach(value =>  subscribe.options.values.push(value));
-                    } catch(err) {console.log(err)}
-                  }
+                  const data = [...uniqueValues];
+                  values = values.filter(({key}) => data.indexOf(key) !== -1);
+                  values.forEach(value => subscribe.options.values.push(value));
                 }
-              else {
-                parentData.forEach(feature => {
-                  const value = feature.get(attribute);
-                  value && uniqueValues.add(value);
-                });
-                this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
+                else if (widget === 'valuerelation') {
+                  parentData.forEach(feature => {
+                      const value = feature.get(attribute);
+                      value && uniqueValues.add(value);
+                    });
+                    if (uniqueValues.size > 0) {
+                      const filter = createSingleFieldParameter({
+                        field: subscribe.options.key,
+                        value: [...uniqueValues]
+                      });
+                      try {
+                        const values = await this.getValueRelationValues(subscribe, filter);
+                        values.forEach(value =>  subscribe.options.values.push(value));
+                      } catch(err) {console.log(err)}
+                    }
+                  }
+                else {
+                  parentData.forEach(feature => {
+                    const value = feature.get(attribute);
+                    value && uniqueValues.add(value);
+                  });
+                  this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
+                }
+                if (isRoot) {
+                  this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+                } else {
+                  const dependenceValue = this.getDependanceCurrentValue(field);
+                  this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
+                }
+                subscribe.options.disabled = false;
               }
-              if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
-              else {
-                const dependenceValue = this.getDependanceCurrentValue(field);
-                this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
-              }
-              subscribe.options.disabled = false;
-            }
-          }).catch(error => reject(error))
+            })
+            .catch(error => reject(error))
             .finally(() => {
             this.state.loading[field] = false;
             resolve();
@@ -655,23 +710,36 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
         } else {
           //set disable
           subscribers.forEach(subscribe => {
-            if (subscribe.options.dependance_strict) subscribe.options.disabled = false;
+            if (subscribe.options.dependance_strict) {
+              subscribe.options.disabled = false;
+            }
           });
           this.state.loading[field] = false;
           resolve();
         }
       }
     } else {
-      subscribers.forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
+      subscribers
+        .forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
       resolve();
     }
   })
 };
 
+/**
+ *
+ * @param field
+ * @returns {*|*[]}
+ */
 proto.getDependencies = function(field) {
   return this.inputdependencies[field] || [];
 };
 
+/**
+ *
+ * @param master
+ * @param slave
+ */
 proto.setInputDependencies = function({ master, slave }={}) {
   this.inputdependencies[master] = (undefined !== this.inputdependencies[master] ? this.inputdependencies[master] : []);
   this.inputdependencies[master].push(slave);
@@ -679,13 +747,26 @@ proto.setInputDependencies = function({ master, slave }={}) {
 
 //set key value for select
 proto.valuesToKeysValues = function(values) {
-  return values.length ? ('Object' !== toRawType(values[0]) ? values.map(value => ({ key: value, value })) : values) : values;
+  return values.length ?
+    ('Object' !== toRawType(values[0]) ? values.map(value => ({ key: value, value })) : values) :
+    values;
 };
 
+/**
+ *
+ * @param ogcService
+ * @param filter
+ * @returns {{infoFormat: *, crs: *, serverType, layers: *[], url: *} & {filter: {}, ogcService: string}}
+ */
 proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
   return Object.assign(this.getInfoFromLayer(ogcService), { ogcService, filter });
 };
 
+/**
+ *
+ * @param ogcService
+ * @returns {{infoFormat: *, crs: *, serverType, layers: *[], url: *}}
+ */
 proto.getInfoFromLayer = function(ogcService) {
   return {
     url: ('wfs' === ogcService ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl()),
@@ -696,14 +777,25 @@ proto.getInfoFromLayer = function(ogcService) {
   };
 };
 
+/**
+ *
+ * @param layer
+ */
 proto.setSearchLayer = function(layer) {
   this.searchLayer = layer;
 };
 
+/**
+ *
+ * @returns {null|*}
+ */
 proto.getSearchLayer = function() {
   return this.searchLayer
 };
 
+/**
+ *
+ */
 proto.clear = function() {
   this.state = null;
 };
@@ -713,18 +805,18 @@ proto.clear = function() {
  */
 function create_boolean_filter(operator, inputs = []) {
   const boolean = { [operator]: [] };
-  inputs.forEach((input) => {
-    for (const operator in input) {
-      if (Array.isArray(input[operator])) {
-        create_boolean_filter(operator, input[operator]); // recursion step.
-        break;
+  inputs
+    .forEach((input) => {
+      for (const operator in input) {
+        if (Array.isArray(input[operator])) {
+          create_boolean_filter(operator, input[operator]); // recursion step.
+          break;
+        }
       }
-    }
-    boolean[operator].push({
-      [input.op] : {
+      boolean[operator].push({
+        [input.op] : {
         [input.attribute]: null
-      }
-    });
+      }});
   });
   return boolean;
 }
