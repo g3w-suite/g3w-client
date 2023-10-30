@@ -705,6 +705,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
  * @param opts.suggest (mandatory): object with key is a field of layer and value is value of the field to filter
  * @param opts.field   Array of object with type of suggest (see above)
  * @param opts.unique
+ * @param opts.fformatter
  * @param opts.queryUrl
  * @param opts.ordering
  * @param { boolean } opts.raw
@@ -715,9 +716,10 @@ proto.getFilterData = async function({
   raw = false,
   suggest = {},
   unique,
+  fformatter, //@since v3.9
   formatter = 1,
   queryUrl,
-  ordering
+  ordering,
 } = {}) {
   return await this
     .getProvider('data')
@@ -729,6 +731,7 @@ proto.getFilterData = async function({
       suggest,
       formatter,
       unique,
+      fformatter,
     });
 };
 

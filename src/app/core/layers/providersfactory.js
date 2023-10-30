@@ -189,6 +189,18 @@ const Providers = {
       }
     }
 
+    /**
+     *
+     * @param field
+     * @param raw
+     * @param suggest
+     * @param unique
+     * @param formatter
+     * @param queryUrl
+     * @param ordering
+     * @param fformatter
+     * @returns {Promise<unknown>}
+     */
     async getFilterData({
       field,
       raw = false,
@@ -197,6 +209,7 @@ const Providers = {
       formatter = 1,
       queryUrl,
       ordering,
+      fformatter, //@since v3.9
     } = {}) {
       try {
         let response = await XHR.get({
@@ -207,6 +220,7 @@ const Providers = {
             ordering,
             formatter,
             unique,
+            fformatter,
             filtertoken: ApplicationState.tokens.filtertoken
           },
         });
@@ -218,7 +232,18 @@ const Providers = {
 
         if (raw)                       return response;
         if (unique && response.result) return response.data;
-        if (response.result)           return { data: Parsers.response.get('application/json')({ layers: [this._layer], response: response.vector.data, projections: this._projections }) };
+        if (response.result) {
+          if (fformatter) {
+            return response;
+          } else {
+            return {
+              data: Parsers.response.get('application/json')({
+                layers: [this._layer],
+                response: response.vector.data,
+                projections: this._projections
+              }) };
+          }
+        }
 
         return Promise.reject();
 
