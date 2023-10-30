@@ -170,6 +170,7 @@ import bing              from 'utils/search_from_bing';
 import google            from 'utils/search_from_google';
 import MarkersResult     from "./MarkersResult.vue";
 import { MarkersEventBus } from "eventbus";
+import DownloadFormats from "./QueryResultsActionDownloadFormats.vue";
 
 const ComponentsFactory = require('gui/component/componentsfactory');
 
@@ -556,16 +557,16 @@ export default {
        * @private
        */
     _showMarkerResults() {
-      // if (!this.$data._show_marker_info_content) {
-      //   GUI.closeContent();
-      // } else {
+      if (!this.$data._show_marker_info_content) {
+        GUI.closeContent();
+      } else {
         GUI.showQueryResults('Geocoding', {
           data: [{
             features: layer.getSource().getFeatures(),
             layer,
           }]
         });
-      // }
+      }
 
       // GUI.showContent({
       //   content: ComponentsFactory.build({
@@ -610,6 +611,31 @@ export default {
 
     MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
     MarkersEventBus.$on('remove-all-markers', () => this.clearMarkers());
+
+    this.queryResultsService = GUI.getService('queryresults');
+    this.addActionKey = this.queryResultsService.onafter('addActionsForLayers', (actions, layers) => {
+      const layer = layers.find(layer => layer.id === '__g3w_marker' );
+      if (layer) {
+        if (actions[layer.id] === undefined) actions[layer.id] = [];
+        actions[layer.id].push({
+          id: 'arpal_charts',
+          class: GUI.getFontClass('pencil'),
+          state: this.queryResultsService.createActionState({layer}),
+          hint: 'Grafici',
+          cbk: (layer, feature, action, index) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+            /**
+             * Every click, set empty array charts
+             * @type {*[]}
+             */
+            GUI.setLoadingContent(action.state.toggled[index]);
+            //this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
+
+          }
+        });
+      }
+
+    })
 
   },
 
