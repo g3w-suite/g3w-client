@@ -2686,7 +2686,14 @@ proto.addExternalMapLayer = function(layer, projectLayer=false) {
  * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
  * 
  * @param { ol.layer.Vector | ol.layer.Image | unknown } externalLayer
- * @param {{ position: unknown, opacity: number, visible: boolean, crs: unknown, type: unknown, download: unknown }} options
+ * @param { Object }  options
+ * @param { unknown } options.position
+ * @param { number }  options.opacity
+ * @param { boolean } options.visible
+ * @param { unknown } options.crs
+ * @param { unknown } options.type
+ * @param { unknown } options.download
+ * @param { string }  options.downloadUrl (since 3.8.3) an alternate external server url where to perfom download.
  * 
  * @returns { Promise<unknown> }
  */
