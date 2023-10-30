@@ -134,15 +134,22 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       widget: null
     };
     //check if it has a dependance
-    const {options:{ dependance, dependance_strict } } = forminput;
+    const {options:{ dependance=false, dependance_strict=false } } = forminput;
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       // to be sure set values options to empty array if undefined
       forminput.loading = forminput.type !== 'autocompletefield';
       const promise = new Promise((resolve, reject) =>{
+        //set values to empty array
         if (forminput.options.values === undefined) {
           forminput.options.values = [];
-        } else if (dependance) { // in case of dependence load right now
-          if (!dependance_strict) {
+        }
+        // in case of dependence load right now
+        if (dependance) {
+          //mean that field need to wait changes of dependence field
+          if (dependance_strict) {
+            forminput.loading = false;
+            resolve();
+          } else {
             this.getValuesFromField(forminput)
               .then(values => { // return array of values
                 values = this.valuesToKeysValues(values); // set values for select
@@ -153,9 +160,6 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
                 forminput.loading = false;
                 resolve();
               });
-          } else {
-            forminput.loading = false;
-            resolve();
           }
         } else {
           // no dependence
@@ -165,6 +169,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
               forminput.options.values = values;
             })
             .catch((err) => {
+              console.wanr(err);
               forminput.options.values = [];
             })// in case of error
             .finally(() => {
@@ -174,6 +179,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
         }
       });
 
+      //If there is a dependence
       if (dependance) {
         //set dependence of input
         this.inputdependance[forminput.attribute] = dependance;
@@ -280,6 +286,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({
  * @returns {Promise<[]>}
  */
 proto.getValuesFromField = async function(field) {
+  //if defined layer_id dependence
   if (field.options.layer_id) {
     //array of unique values
     const uniqueValues = await this.getUniqueValuesFromField({ field: field.attribute });
@@ -294,11 +301,31 @@ proto.getValuesFromField = async function(field) {
     );
   }
 
-  if (field.options.values.length) {
+  //Relation  reference
+  if (field.options.relation_reference) {
+     try {
+       //call filter data with fformatter
+       const response = await this.searchLayer.getFilterData({
+         fformatter: field.attribute
+       })
+       //check response
+       if (response && response.result && response.data) {
+         field.options.values = response.data
+           .map(([value, key]) => ({
+            key,
+            value
+           }));
+       }
+     } catch(err) {
+       throw Error(err);
+     }
+  }
+
+  if (field.options.values.length > 0) {
     return this.getValueMapValues(field);
   }
 
-  return this.getUniqueValuesFromField({ field:field.attribute })
+  return this.getUniqueValuesFromField({ field: field.attribute })
 };
 
 /**
@@ -340,11 +367,13 @@ proto.getValueMapValues = async function(field) {
   return field.options.values.filter(value => ALLVALUE !== value);
 };
 
+
 /**
  * @param layers
  * @param options.field
  * @param options.suggest
  * @param options.unique
+ * @param options.fformatter //@since v3.9
  * @param options.ordering
  * 
  * @returns {Promise<*>}
@@ -352,10 +381,22 @@ proto.getValueMapValues = async function(field) {
  * @since 3.8.0
  */
 proto.getLayersFilterData = async function(layers, options = {}) {
-  const { field, suggest, unique, ordering } = options;
+  const {
+    field,
+    suggest,
+    unique,
+    ordering,
+    fformatter,
+  } = options;
   // get unique value from each layers
   const promisesData = await Promise
-    .allSettled(layers.map(layer => layer.getFilterData({ field, suggest, unique, ordering })));
+    .allSettled(layers.map(layer => layer.getFilterData({
+      field,
+      suggest,
+      unique,
+      ordering,
+      fformatter,
+    })));
 
   const data = Array.from(
     promisesData
