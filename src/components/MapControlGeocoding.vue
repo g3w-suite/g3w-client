@@ -633,40 +633,40 @@ export default {
       //set configuration of component
       queryresults.state.actiontools[QueryResultsActionChooseLayer.name] =  {
         [layer.id]: {
-              // editable point layers for the project
-              layers: CatalogLayersStoresRegistry
-                  .getLayers({ EDITABLE: true, GEOLAYER: true })
-                  .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
-                  .map((l)=>({ id: l.getId(), name: l.getName() })),
-              icon: 'pencil',
-              // create new feature on layer point geometry
-              cbk: (layerId, feature) => {
-                  if (PluginsRegistry.getPlugin('editing')) {
-                      this.$data._disabled = true; //set disabled
-                      //clear eventually results to have more map visibility
-                      //this.clearResults();
-                      PluginsRegistry
-                          .getPlugin('editing')
-                          .getApi()
-                          .addLayerFeature({
-                              layerId,
-                              feature: new ol.Feature({
-                                  //check if is Multi Geometry (MultiPoint)
-                                  geometry:  Geometry.isMultiGeometry(
-                                      CatalogLayersStoresRegistry
-                                          .getLayerById(layerId)
-                                          .getGeometryType()) ?
-                                      singleGeometriesToMultiGeometry([feature.geometry]) :
-                                      feature.geometry,
-                                  ...feature.attributes
-                              })
-                          })
-                          .finally(()=> {
-                              this.$data._disabled = false;//reset disbaled
-                          })
-                  }
-              }
+          // editable point layers for the project
+          layers: CatalogLayersStoresRegistry
+            .getLayers({ EDITABLE: true, GEOLAYER: true })
+            .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+            .map((l)=>({ id: l.getId(), name: l.getName() })),
+          icon: 'pencil',
+          // create new feature on layer point geometry
+          cbk: (layerId, feature) => {
+            if (PluginsRegistry.getPlugin('editing')) {
+              this.$data._disabled = true; //set disabled
+              //clear eventually results to have more map visibility
+              //this.clearResults();
+              PluginsRegistry
+                .getPlugin('editing')
+                .getApi()
+                .addLayerFeature({
+                  layerId,
+                  feature: new ol.Feature({
+                    //check if is Multi Geometry (MultiPoint)
+                    geometry:  Geometry.isMultiGeometry(
+                      CatalogLayersStoresRegistry
+                        .getLayerById(layerId)
+                        .getGeometryType()) ?
+                      singleGeometriesToMultiGeometry([feature.geometry]) :
+                      feature.geometry,
+                    ...feature.attributes
+                  })
+                })
+                .finally(()=> {
+                  this.$data._disabled = false; //reset disbaled
+                })
+            }
           }
+        }
       };
 
 
