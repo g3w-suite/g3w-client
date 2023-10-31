@@ -84,26 +84,60 @@
                 <!-- CASE FORM STRUCTURE LAYER-->
                 <template v-else-if="hasFormStructure(layer)">
                   <table class="table" :class="{'mobile': isMobile()}">
-                    <thead>
-                      <tr>
-                        <th v-if="state.layersactions[layer.id].length" :style="{width: `${state.layersactions[layer.id].length *26}px`, maxWidth:`${state.layersactions[layer.id].length * 26}px`}"></th>
-                        <th class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</th>
-                        <th class="collapsed" v-if="!hasLayerOneFeature(layer)"></th>
-                      </tr>
-                    </thead>
                     <tbody>
                       <template v-if="feature.show" v-for="(feature, index) in layer.features">
-                        <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
-                          :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
+                        <header-feature-actions-body
+                          :colspan="getColSpan(layer)"
+                          :actions="state.layersactions[layer.id]"
+                          :layer="layer"
+                          :feature="feature"
+                          :index="index"
+                          :onelayerresult="onelayerresult"
+                          :trigger="trigger"
+                          :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom"
+                          :hasLayerOneFeature="hasLayerOneFeature"
                           :boxLayerFeature="getLayerFeatureBox(layer, feature)"
-                          :attributesSubset="attributesSubset" :getLayerField="getLayerField"/>
-                        <tr class="g3w-feature-result-action-tools">
-                          <template v-if="state.currentactiontools[layer.id][index]">
-                            <td :colspan="getColSpan(layer)">
-                              <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
+                          :attributesSubset="attributesSubset"
+                          :getLayerField="getLayerField"/>
+                          <tr class="g3w-feature-result-action-tools">
+                            <template v-if="state.currentactiontools[layer.id][index]">
+                              <td :colspan="getColSpan(layer)">
+                                <component
+                                  :is="state.currentactiontools[layer.id][index]"
+                                  :colspan="getColSpan(layer)"
+                                  :layer="layer"
+                                  :feature="feature"
+                                  :featureIndex="index"
+                                  :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
+                              </td>
+                            </template>
+                          </tr>
+                          <tr style="font-weight: bold">
+                            <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</td>
+                            <td
+                              v-if="!hasLayerOneFeature(layer)"
+                              @click.stop="toggleFeatureBoxAndZoom(layer,feature)"
+                              class="collapsed"
+                              style="text-align: end"
+                              :class="{noAttributes: attributesSubset(layer).length === 0}">
+                              <span
+                                class="fa link morelink skin-color"
+                                :class="[getLayerFeatureBox(layer, feature).collapsed ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]">
+                              </span>
                             </td>
-                          </template>
-                        </tr>
+                          </tr>
+                        <header-feature-body
+                          :actions="state.layersactions[layer.id]"
+                          :layer="layer"
+                          :feature="feature"
+                          :index="index"
+                          :onelayerresult="onelayerresult"
+                          :trigger="trigger"
+                          :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom"
+                          :hasLayerOneFeature="hasLayerOneFeature"
+                          :boxLayerFeature="getLayerFeatureBox(layer, feature)"
+                          :attributesSubset="attributesSubset"
+                          :getLayerField="getLayerField"/>
                         <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                           <td :colspan="getColSpan(layer)">
                             <component :is="component" :layer="layer" :feature="feature"/>
@@ -126,15 +160,9 @@
                 <template v-else>
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class="table" :class="{'mobile': isMobile()}">
-                    <thead>
-                      <tr>
-                        <th v-if="state.layersactions[layer.id].length" :style="{width: `${state.layersactions[layer.id].length *26}px`, maxWidth:`${state.layersactions[layer.id].length * 26}px`}"></th>
-                        <th class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</th>
-                        <th class="collapsed" v-if="!hasLayerOneFeature(layer)"></th>
-                      </tr>
-                    </thead>
                     <tbody v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
-                      <header-feature-body
+                      <header-feature-actions-body
+                        :colspan="getColSpan(layer)"
                         :actions="state.layersactions[layer.id]"
                         :layer="layer"
                         :feature="feature"
@@ -149,10 +177,42 @@
                       <tr class="g3w-feature-result-action-tools">
                         <template v-if="state.currentactiontools[layer.id][index]">
                           <td :colspan="getColSpan(layer)">
-                            <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
-                          </td>
+                            <component
+                              :is="state.currentactiontools[layer.id][index]"
+                              :colspan="getColSpan(layer)"
+                              :layer="layer"
+                              :feature="feature"
+                              :featureIndex="index"
+                              :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
+                            </td>
                         </template>
                       </tr>
+                      <tr style="font-weight: bold">
+                        <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</td>
+                        <td
+                          v-if="!hasLayerOneFeature(layer)"
+                          @click.stop="toggleFeatureBoxAndZoom(layer,feature)"
+                          class="collapsed"
+                          style="text-align: end"
+                          :class="{noAttributes: attributesSubset(layer).length === 0}">
+                            <span
+                              class="fa link morelink skin-color"
+                              :class="[getLayerFeatureBox(layer, feature).collapsed ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]">
+                            </span>
+                        </td>
+                      </tr>
+                      <header-feature-body
+                        :actions="state.layersactions[layer.id]"
+                        :layer="layer"
+                        :feature="feature"
+                        :index="index"
+                        :onelayerresult="onelayerresult"
+                        :trigger="trigger"
+                        :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom"
+                        :hasLayerOneFeature="hasLayerOneFeature"
+                        :boxLayerFeature="getLayerFeatureBox(layer, feature)"
+                        :attributesSubset="attributesSubset"
+                        :getLayerField="getLayerField"/>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                         <td :colspan="getColSpan(layer)">
                           <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
@@ -273,6 +333,7 @@
   import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
+  import HeaderFeatureActionsBody from "components/QueryResultsHeaderFeatureActionsBody.vue";
   import MarkerResultFeature      from "components/MarkerResultFeature.vue";
   import { toRawType, throttle }  from 'utils';
 
@@ -308,7 +369,8 @@
       MarkerResultFeature,
       TableAttributeFieldValue,
       'infoformats': InfoFormats,
-      'header-feature-body': HeaderFeatureBody
+      'header-feature-body': HeaderFeatureBody,
+      HeaderFeatureActionsBody
     },
     computed: {
       onelayerresult() {
@@ -400,8 +462,8 @@
         }
         return fields;
       },
-      getColSpan(layer){
-        return this.attributesSubsetLength(layer)+(this.state.layersactions[layer.id].length ? 1 : 0)+(!this.hasLayerOneFeature(layer)*1)
+      getColSpan(layer) {
+        return this.attributesSubsetLength(layer)+(!this.hasLayerOneFeature(layer)*1);
       },
       getDownloadActions(layer){
         return this.state.layersactions[layer.id].find(action => action.formats);
