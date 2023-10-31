@@ -173,7 +173,6 @@ import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLa
 import { MarkersEventBus }           from 'eventbus';
 import CatalogLayersStoresRegistry   from 'store/catalog-layers';
 import PluginsRegistry               from 'store/plugins';
-import DownloadFormats from "./QueryResultsActionDownloadFormats.vue";
 
 const ComponentsFactory = require('gui/component/componentsfactory');
 
@@ -676,7 +675,13 @@ export default {
       this.$data._show_marker_info_content = '__g3w_marker_component' === content.id;
     });
 
-    MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
+    // MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
+    queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
+      if('__g3w_marker' === layer.id) {
+        this._removeItem(feature.attributes.__uid);
+      }
+    });
+
     MarkersEventBus.$on('remove-all-markers', () => this.clearMarkers());
 
     queryresults.onafter('addActionsForLayers', (actions, layers) => {
