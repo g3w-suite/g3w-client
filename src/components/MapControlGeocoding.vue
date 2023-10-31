@@ -634,9 +634,9 @@ export default {
       queryresults.state.actiontools[QueryResultsActionChooseLayer.name][layer.id] = {
       // editable point layers for the project
       layers: CatalogLayersStoresRegistry
-      .getLayers({ EDITABLE: true, GEOLAYER: true })
-      .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
-      .map((l)=>({ id: l.getId(), name: l.getName() })),
+        .getLayers({ EDITABLE: true, GEOLAYER: true })
+        .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+        .map((l)=>({ id: l.getId(), name: l.getName() })),
       icon: 'pencil',
       // create new feature on layer point geometry
       cbk: (layerId, feature) => {
