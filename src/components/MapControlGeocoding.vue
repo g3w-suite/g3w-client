@@ -570,9 +570,8 @@ export default {
             layer,
           }]
         });
+        is_results_panel_open = true;
       }
-
-      is_results_panel_open = !is_results_panel_open;
     },
 
   },
