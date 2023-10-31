@@ -751,6 +751,14 @@ export default {
 </script>
 
 <style scoped>
+  .ol-geocoder ul.gcd-txt-result>li>a>*:not(:last-of-type) {
+    margin-bottom: 10px;
+  }
+  li:not(.skin-background-color) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
   li.nominatim .gcd-name,
   li.nominatim .gcd-type,
   li.nominatim .gcd-icon,
@@ -1002,15 +1010,6 @@ export default {
     margin-left: 2px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     width: 100%;
-  }
-
-  .ol-geocoder ul.gcd-txt-result>li>a>*:not(:last-of-type) {
-    margin-bottom: 10px;
-  }
-  li:not(.skin-background-color) {
-    display: flex;
-    align-items: center;
-    gap: 10px;
   }
 
   @-webkit-keyframes spin {
