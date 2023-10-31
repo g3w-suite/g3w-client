@@ -1,3 +1,7 @@
+<!--
+  @file
+  @since 3.9.0
+-->
 <template>
   <section class="marker-editing">
     <div
@@ -32,11 +36,11 @@
 <script>
 import { PluginsRegistry }         from "store";
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import GUI                         from 'services/gui';
 
-const { Geometry,
-  singleGeometriesToMultiGeometry
-} = require('utils/geo');
+const {
+  Geometry,
+  singleGeometriesToMultiGeometry,
+}                                   = require('utils/geo');
 
 
 export default {

@@ -7,10 +7,11 @@
   @since 3.9.0
 -->
 <template>
-  <div class="ol-geocoder gcd-txt-container">
+  <div class="ol-geocoder">
 
-    <!-- SEARCH INPUT -->
     <div class="gcd-txt-control">
+      
+      <!-- INPUT SEARCH -->
       <input
         ref             = "input"
         type            = "text"
@@ -21,7 +22,8 @@
         @keyup          = "_onQuery"
         @input          = "_onValue"
       />
-      <!-- RESET RESULTS -->
+
+      <!-- RESET SEARCH -->
       <button
         ref         = "reset"
         type        = "button"
@@ -29,24 +31,26 @@
         class       = "gcd-txt-reset gcd-hidden"
         @click.stop = "_onReset"
       ></button>
-      <!-- search query button -->
+
+      <!-- SUBMIT SEARCH -->
       <button
         type            = "button"
-        id              = "search_nominatim"
+        id              = "gcd-search"
         class           = "btn"
         @click.stop     = "() => query($refs.input.value)"
       >
         <i
           :class      = "g3wtemplate.getFontClass('search')"
-          style       = "color: #ffffff"
+          style       = "color: #fff"
           aria-hidden = "true"
         ></i>
       </button>
-      <!-- DELETE ALL RESULTS AND MARKERS ADDED --->
+
+      <!-- CLEAR MARKERS SELECTION --->
       <button
         v-if="$data._markers.length > 0"
         type            = "button"
-        id              = "trash_nominatim"
+        id              = "gcd-trash"
         class           = "btn skin-background-color"
         @click.stop     = "clearMarkers"
       >
@@ -57,7 +61,21 @@
         ></i>
       </button>
 
-      <!-- SHOW MARKERS ON RESULT CONTENT -->
+      <!-- TOGGLE MARKERS VISIBLITY -->
+      <button
+        v-if          = "$data._markers.length > 0"
+        type          = "button"
+        id            = "markers-visibility-layer"
+        class         = "btn skin-background-color"
+        @click.stop   = "_toggleLayerVisibility"
+      >
+        <i
+        :class      = "g3wtemplate.getFontClass($data._visible ? 'eye-close': 'eye')"
+        aria-hidden = "true"
+        ></i>
+      </button>
+
+      <!-- TOGGLE SIDEBAR PANEL -->
       <button
         v-if          = "showMarkerResultsButton"
         type          = "button"
@@ -68,19 +86,6 @@
         <i
           :class      = "g3wtemplate.getFontClass('list')"
           aria-hidden = "true"
-        ></i>
-      </button>
-      <!-- SHOW/HIDE MARKER LAYER ON MAP -->
-       <button
-        v-if          = "$data._markers.length > 0"
-        type          = "button"
-        id            = "markers-visibility-layer"
-        class         = "btn skin-background-color"
-        @click.stop   = "_toggleLayerVisibility"
-      >
-        <i
-        :class      = "g3wtemplate.getFontClass($data._visible ? 'eye-close': 'eye')"
-        aria-hidden = "true"
         ></i>
       </button>
 
@@ -96,7 +101,7 @@
         :class  = "[
           item.provider,
           item.__heading ? 'skin-background-color' : '',
-          item.__no_results ? 'nominatim-noresult' : '',
+          item.__no_results ? 'gcd-noresult' : '',
         ]"
         :key         = "item.__uid"
         @click.stop = "_onItemClick($event, item)"
@@ -106,7 +111,7 @@
           v-if  = "item.__heading"
           style = "display: flex; justify-content: space-between; padding: 5px"
         >
-          <span style="color: #FFFFFF; font-weight: bold">{{ item.label }}</span>
+          <span style="color: #FFF; font-weight: bold">{{ item.label }}</span>
         </div>
         <!-- NO RESULTS -->
         <span
@@ -116,7 +121,7 @@
         <!-- NO RESULTS -->
         <template v-else>
           <span
-            style       = "color: #000000; padding: 5px;"
+            style       = "color: #000; padding: 5px;"
             :class      = "g3wtemplate.getFontClass(item.add ? 'check' : 'uncheck')">
           </span>
           <i
@@ -169,16 +174,9 @@ import nominatim                     from 'utils/search_from_nominatim';
 import bing                          from 'utils/search_from_bing';
 import google                        from 'utils/search_from_google';
 import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
-import { MarkersEventBus }           from 'eventbus';
+import { toRawType }                 from 'utils';
 
-const ComponentsFactory = require('gui/component/componentsfactory');
-
-const {
-  uniqueId,
-  toRawType
-}                        = require('utils');
-
-const Projections        = require('g3w-ol/projection/projections');
+const Projections                    = require('g3w-ol/projection/projections');
 
 const providers = [ nominatim, bing, google ];
 
@@ -320,10 +318,10 @@ export default {
       }
     },
 
-      /**
+    /**
      * Toggle marker layer visibility
-     * @since v3.9
-     * @private
+     * 
+     * @since 3.9.0
      */
     _toggleLayerVisibility() {
       this.$data._visible = !this.$data._visible;
@@ -332,9 +330,9 @@ export default {
   
     /**
      * Clear Result list only
-     * 
-    * @since v3.9
-    */
+     *
+     * @since 3.9.0
+     */
     clearResults() {
       this.$data._results.splice(0);
     },
@@ -401,7 +399,7 @@ export default {
 
           // clear previous result
           this.clearResults();
-          this.$refs.reset.classList.add("gcd-pseudo-rotate");
+          this.$refs.reset.classList.add("gcd-spin");
 
           // request data
           const results = await Promise.allSettled(
@@ -417,7 +415,7 @@ export default {
 
           // update search results
           this._showResults(results.filter(p => 'fulfilled' === p.status));
-          this.$refs.reset.classList.remove("gcd-pseudo-rotate");
+          this.$refs.reset.classList.remove("gcd-spin");
         }
 
       });
@@ -621,18 +619,16 @@ export default {
       }
     });
 
-    // MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
-      if('__g3w_marker' === layer.id) {
+      if ('__g3w_marker' === layer.id) {
         this._removeItem(feature.attributes.__uid);
       }
     });
 
-    MarkersEventBus.$on('remove-all-markers', () => this.clearMarkers());
-
     queryresults.onafter('addActionsForLayers', (actions, layers) => {
 
       const layer = layers.find(layer => '__g3w_marker' === layer.id);
+
       if (!layer) {
         return;
       }
@@ -644,8 +640,7 @@ export default {
         actions[layer.id] = [];
       }
 
-
-        actions[layer.id].push({
+      actions[layer.id].push({
         id:    'choose_layer',
         class: GUI.getFontClass('pencil'),
         state: queryresults.createActionState({layer}),
@@ -685,7 +680,7 @@ export default {
     await this.$nextTick();
     const q = document.querySelector.bind(document);
     q('#gcd-input-query').value = /*'via sallustio 10'*/ 'cafe';
-    q('#search_nominatim').click();
+    q('#gcd-search').click();
   },
 
   destroyed() {
@@ -697,9 +692,10 @@ export default {
 </script>
 
 <style scoped>
-  .ol-geocoder ul.gcd-txt-result>li>a>*:not(:last-of-type) {
+  .ol-geocoder > ul > li > a > *:not(:last-of-type) {
     margin-bottom: 10px;
   }
+
   li:not(.skin-background-color) {
     display: flex;
     align-items: center;
@@ -716,167 +712,8 @@ export default {
   li.add, li.add:hover {
     background-color: #ffe500 !important;
   }
-</style>
 
-<style>
-  /* Geocoder */
-  .ol-geocoder.gcd-txt-container,
-  .ol-geocoder.gcd-gl-container {
-    box-sizing: border-box;
-  }
-
-  .ol-geocoder.gcd-txt-container {
-    position: absolute;
-    max-width: 300px;
-    height: 4.375em;
-    top: 7px;
-    left: 45px;
-    width: 50%;
-    height: 6px;
-  }
-
-  .ol-geocoder.gcd-gl-container {
-    position: absolute;
-    top: 4.875em;
-    left: .5em;
-  }
-
-  .ol-geocoder .gcd-gl-expanded {
-    width: 15.625em;
-    height: 2.1875em;
-  }
-
-  .ol-geocoder .gcd-gl-input {
-    position: absolute;
-    z-index: 1;
-    top: 0.25em;
-    left: 2.5em;
-    width: 14.84375em;
-    padding: 5px;
-    font-family: inherit;
-    font-size: 0.875em;
-  }
-
-  .ol-geocoder .gcd-gl-input:focus {
-    border: none;
-    outline: none;
-  }
-
-  .ol-geocoder .gcd-gl-reset {
-    z-index: 1;
-    top: 0;
-    right: 0;
-    width: 1.5625em;
-    height: 100%;
-    line-height: 1.4;
-    border: none;
-    background-color: transparent;
-    display: inline-block;
-    outline: 0;
-    cursor: pointer;
-  }
-
-  .ol-geocoder .gcd-gl-btn {
-    position: absolute;
-    width: 1.5625em;
-    height: 1.5625em;
-    top: 0.125em;
-    left: 0.125em;
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAABPUlEQVQoU41SwXHCQAzUHh58eoUOIBWEDkI6oAToIKkg7iAuwakgpAIowXRACcnrzp6BzchjMx4wE/S6kW5XK60gvQghzJIkmVoqSZI9gJ9+/fINS5Cc1HX9QXIlIr/tpwcRyb33b7cIGnAIYQdg4pxbjcfj0nJ1Xc+Px+PGObdN03Q9RIAQwgpAnqbp7FKmjQGgJLlU1d2V7BjjRkQO3vvXIXarkyxVNbsCm2QR2Q0V7XOMMReRmfd+OQQubN6hYgs22ZtbnRcAtiRfLueqqmpJ8ovko6oeBq0KIWQA3gFkzrlmMafTaUEyI/mpqmbhVTRWWbRdbClPbeobQNES5KPRqOxs7DBn8K1DsAOKMZYApiTXqlrcDe4d0XN7jWeCfzt351tVle2iGalTcBd4gGDvvZ/fDe4RmCOFLe8Pr7mvEP2N9PQAAAAASUVORK5CYII=");
-    background-repeat: no-repeat;
-    background-position: center center;
-  }
-
-  .ol-geocoder .gcd-gl-result {
-    position: absolute;
-    top: 2.1875em;
-    left: 2em;
-    width: 16.25em;
-    max-height: 18.75em;
-    white-space: normal;
-    list-style: none;
-    padding: 0;
-    margin-top: 2px;
-    background-color: white;
-    border-radius: 4px;
-    border-top: none;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
-  .ol-geocoder .gcd-pseudo-rotate::after {
-    -webkit-animation: spin .7s linear infinite;
-    animation: spin .7s linear infinite;
-  }
-
-  .ol-geocoder .gcd-hidden {
-    display: none !important;
-  }
-
-  .ol-geocoder ul.gcd-txt-result > li:hover {
-    background-color: #EEEEEE;
-  }
-
-  .ol-geocoder ul.gcd-txt-result > li > a {
-    display: block;
-    text-decoration: none;
-    padding: 3px 5px;
-  }
-
-  .ol-geocoder ul.gcd-txt-result > li {
-    width: 100%;
-    overflow: hidden;
-    padding: 0;
-    line-height: 1rem;
-    color: #ffffff;
-    min-height: 30px;
-    padding-left: 3px;
-    border-bottom: 2px solid var(--skin-color);
-  }
-
-  .ol-geocoder ul.gcd-txt-result > li.nominatim-noresult:hover {
-    background-color: transparent !important;
-  }
-
-  .ol-geocoder ul.gcd-txt-result > li.nominatim-noresult {
-    font-weight: bold;
-    color: #384247;
-    margin: 10px;
-    border-bottom: 0 !important;
-  }
-
-  .ol-geocoder ul.gcd-txt-result li {
-    min-height: 20px;
-    padding: 10px;
-    font-size: 1.1em;
-  }
-
-  .ol-geocoder ul.gcd-txt-result li:last-child {
-    border-bottom: 0 !important;
-  }
-
-  .ol-geocoder ul.gcd-txt-result {
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
-    border-radius: 3px !important;
-    position: absolute;
-    left: 3px;
-    width: 100%;
-    max-height: 200px;
-    white-space: normal;
-    list-style: none;
-    padding: 0;
-    margin-top: 3px;
-    background-color: white;
-    border-top: none;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-transition: max-height 300ms ease-in;
-    transition: max-height 300ms ease-in;
-  }
-
-  .ol-geocoder #search_nominatim {
+  #gcd-search {
     z-index: 1;
     width: 2.5em;
     height: 100%;
@@ -884,25 +721,25 @@ export default {
     background-color: var(--skin-color, #fff);
   }
 
-  .ol-geocoder #show-markers-results,
-  .ol-geocoder #markers-visibility-layer {
+  #show-markers-results,
+  #markers-visibility-layer {
     z-index: 1;
     border-radius: 0 !important;
-    color: #FFFFFF;
+    color: #FFF;
     margin-left: 2px;
   }
 
-  .ol-geocoder #trash_nominatim {
+  #gcd-trash {
     margin-left: 2px;
     z-index: 1;
     border-radius: 0;
   }
 
-  .ol-geocoder #gcd-input-query {
+  #gcd-input-query {
     font-weight: bold;
   }
 
-  .ol-geocoder .gcd-txt-reset::after {
+  .gcd-txt-reset::after {
     content: "\d7";
     display: inline-block;
     font-weight: bold;
@@ -911,7 +748,7 @@ export default {
     color: var(--skin-color);
   }
 
-  .ol-geocoder .gcd-txt-reset {
+  .gcd-txt-reset {
     z-index: 1;
     width: 2.5em;
     height: 100%;
@@ -924,11 +761,11 @@ export default {
     cursor: pointer;
   }
 
-  .ol-geocoder .gcd-txt-input:focus {
+  .gcd-txt-input:focus {
     outline: none;
   }
 
-  .ol-geocoder .gcd-txt-input {
+  .gcd-txt-input {
     z-index: 1;
     border: 0;
     width: 100%;
@@ -940,15 +777,7 @@ export default {
     font-size: 1em;
   }
 
-  .ol-geocoder .gcd-gl-control {
-    width: 2.1875em;
-    height: 2.1875em;
-    overflow: hidden;
-    -webkit-transition: width 200ms, height 200ms;
-    transition: width 200ms, height 200ms;
-  }
-
-  .ol-geocoder .gcd-txt-control {
+  .gcd-txt-control {
     position: relative;
     display: flex;
     justify-content: flex-end;
@@ -962,24 +791,11 @@ export default {
     border: 2px solid var(--skin-color)
   }
 
-  @-webkit-keyframes spin {
-    from {
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
-    }
-    to {
-      -webkit-transform: rotate(360deg);
-      transform: rotate(360deg);
-    }
-  }
-
   @keyframes spin {
     from {
-      -webkit-transform: rotate(0deg);
       transform: rotate(0deg);
     }
     to {
-      -webkit-transform: rotate(360deg);
       transform: rotate(360deg);
     }
   }
@@ -997,4 +813,92 @@ export default {
   .gcd-country {
     font-size: 0.75em;
   }
+
+  .gcd-spin::after {
+    animation: spin .7s linear infinite;
+  }
+
+  .gcd-hidden {
+    display: none !important;
+  }
+
+</style>
+
+<style>
+  /* Geocoder */
+  .ol-geocoder {
+    box-sizing: border-box;
+    position: absolute;
+    max-width: 300px;
+    height: 4.375em;
+    top: 7px;
+    left: 45px;
+    width: 50%;
+    height: 6px;
+  }
+
+  @media (max-width: 767px) {
+    .ol-geocoder {
+      left: 10px;
+    }
+  }
+
+  .ol-geocoder > ul > li:hover {
+    background-color: #eee;
+  }
+
+  .ol-geocoder > ul > li {
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+    line-height: 1rem;
+    color: #fff;
+    min-height: 30px;
+    padding-left: 3px;
+    border-bottom: 2px solid var(--skin-color);
+    min-height: 20px;
+    padding: 10px;
+    font-size: 1.1em;
+  }
+
+  .ol-geocoder > ul {
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    border-radius: 3px !important;
+    position: absolute;
+    left: 3px;
+    width: 100%;
+    max-height: 200px;
+    white-space: normal;
+    list-style: none;
+    padding: 0;
+    margin-top: 3px;
+    background-color: white;
+    border-top: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: max-height 300ms ease-in;
+  }
+
+  .ol-geocoder > ul > li > a {
+    display: block;
+    text-decoration: none;
+    padding: 3px 5px;
+    color: #000;
+  }
+
+  .ol-geocoder > ul li:last-child {
+    border-bottom: 0 !important;
+  }
+
+  li.gcd-noresult:hover {
+    background-color: transparent !important;
+  }
+
+  li.gcd-noresult {
+    font-weight: bold;
+    color: #384247;
+    margin: 10px;
+    border-bottom: 0 !important;
+  }
+
 </style>

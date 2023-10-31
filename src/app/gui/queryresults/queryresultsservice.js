@@ -492,12 +492,11 @@ class QueryResultsService extends G3WObject {
       }
 
       /**
-       * @since v3.9 In case of marker layers skip
+       * @TODO find out a wy to handle this within MapControlGeocoding.vue 
+       * 
+       * @since 3.9.0 In case of marker layers
        */
       const is_geocoding = '__g3w_marker' === layer.id;
-      // if ('__g3w_marker' === layer.id) {
-      //   return;
-      // }
 
       // Lookup for layer geometry.
       if (layer.hasgeometry) {
