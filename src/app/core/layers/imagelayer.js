@@ -9,7 +9,7 @@ const WMSTLayer                           = require('core/layers/map/wmstlayer')
 const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                            = require('core/layers/map/xyzlayer');
 const { get_LEGEND_ON_LEGEND_OFF_Params } = require('utils/geo');
-const GeoLayerMixin                       = require('core/layers/geolayermixin');
+const GeoLayerMixin                       = require('core/layers/mixins/geo');
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
