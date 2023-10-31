@@ -25,7 +25,7 @@
       <button
         style       = "border-radius: 0 3px 3px 0;"
         class       = "btn skin-button"
-        @click.stop = "() => config.cbk('layer-choosen', layerId, feature)"
+        @click.stop = "() => config.cbk(layerId, feature)"
       >
         <span :class="g3wtemplate.getFontClass(config.icon)"></span>
       </button>

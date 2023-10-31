@@ -10,7 +10,7 @@
   <div class="ol-geocoder">
 
     <div class="gcd-txt-control">
-      
+
       <!-- INPUT SEARCH -->
       <input
         ref             = "input"
@@ -196,7 +196,7 @@ const pushpin_icon = new ol.style.Icon({
 
 /**
  * Search results layer (marker)
- * 
+ *
  * @TODO move to parent `Control` class (duplicated also in GEOLOCATION CONTROL)
  */
 const layer = new ol.layer.Vector({
@@ -209,7 +209,7 @@ const layer = new ol.layer.Vector({
 
 /**
  * @TODO add a server option to let user choose geocoding extent, eg:
- * 
+ *
  * - "dynamic": filter search results based on current map extent
  * - "initial": filter search results based on initial map extent
  */
@@ -328,14 +328,14 @@ export default {
 
     /**
      * Toggle marker layer visibility
-     * 
+     *
      * @since 3.9.0
      */
     _toggleLayerVisibility() {
       this.$data._visible = !this.$data._visible;
       layer.setVisible(this.$data._visible);
     },
-  
+
     /**
      * Clear Result list only
      *
@@ -344,29 +344,29 @@ export default {
     clearResults() {
       this.$data._results.splice(0);
     },
-  
+
     clearMarkers() {
       this.$data._markers.splice(0);
       this._hideMarker();
       //set false to add
       this.$data._results.forEach(i => i.add = false);
     },
-  
+
     /**
      * Clear all
-     * 
+     *
      * @since 3.9.0
      */
     clear() {
       this.clearResults();
       this.clearMarkers();
     },
-    
+
     /**
      * Run geocoding request
-     * 
+     *
      * @param { string } q query string in this format: "XCoord,YCoord,EPSGCode"
-     * 
+     *
      * @since 3.9.0
      */
     query(q) {
@@ -430,7 +430,7 @@ export default {
     },
 
     /**
-     * @since 3.9.0 
+     * @since 3.9.0
      */
     _showResults(results=[]) {
 
@@ -474,7 +474,7 @@ export default {
     },
 
     /**
-     * @since 3.9.0 
+     * @since 3.9.0
      */
     _onValue(evt) {
       const value = evt.target.value.trim();
@@ -585,7 +585,7 @@ export default {
   },
 
   created() {
-    const queryresults = GUI.getService('queryresults'); 
+    const queryresults = GUI.getService('queryresults');
 
     //Add marker layer on
     const mapService = GUI.getService('map');
@@ -629,73 +629,62 @@ export default {
         return;
       }
 
-      // Add
-      queryresults.addCurrentActionToolsLayer({
-        id: QueryResultsActionChooseLayer.name,
-        layer,
-        config: {
-          // editable point layers for the project
-          layers: CatalogLayersStoresRegistry
-            .getLayers({ EDITABLE: true, GEOLAYER: true })
-            .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
-            .map((l)=>({ id: l.getId(), name: l.getName() })),
-          // create new feature on layer point geometry
-          cbk: (layerId, feature) => {
-            if (PluginsRegistry.getPlugin('editing')) {
-              PluginsRegistry
-                .getPlugin('editing')
-                .getApi()
-                .addLayerFeature({
-                  layerId: layerId,
-                  feature: new ol.Feature({
-                    //check if is Multi Geometry (MultiPoint)
-                    geometry:  Geometry.isMultiGeometry(
-                      CatalogLayersStoresRegistry
-                        .getLayerById(layerId)
-                        .getGeometryType()) ?
-                        singleGeometriesToMultiGeometry([feature.geometry]) :
-                        feature.geometry,
-                    ...feature.attributes
-                  })
-                })
-            }
-          }
-        },
-        action: {
-          id:    'choose_layer',
-          class: GUI.getFontClass('pencil'),
-          state: queryresults.createActionState({layer}),
-          toggleable: true,
-          hint:  'Choose layer',
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-              queryresults.setCurrentActionLayerFeatureTool({
-              layer,
-              index,
-              action,
-              component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
-            });
-          }
-        },
-      });
+      queryresults.state.actiontools[QueryResultsActionChooseLayer.name] = queryresults.state.actiontools[QueryResultsActionChooseLayer.name] || {};
+      queryresults.state.actiontools[QueryResultsActionChooseLayer.name][layer.id] = {
+      // editable point layers for the project
+      layers: CatalogLayersStoresRegistry
+      .getLayers({ EDITABLE: true, GEOLAYER: true })
+      .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+      .map((l)=>({ id: l.getId(), name: l.getName() })),
+      icon: 'pencil',
+      // create new feature on layer point geometry
+      cbk: (layerId, feature) => {
+        if (PluginsRegistry.getPlugin('editing')) {
+          PluginsRegistry
+            .getPlugin('editing')
+            .getApi()
+            .addLayerFeature({
+              layerId,
+              feature: new ol.Feature({
+                //check if is Multi Geometry (MultiPoint)
+                geometry:  Geometry.isMultiGeometry(
+                  CatalogLayersStoresRegistry
+                    .getLayerById(layerId)
+                    .getGeometryType()) ?
+                  singleGeometriesToMultiGeometry([feature.geometry]) :
+                  feature.geometry,
+                ...feature.attributes
+              })
+            })
+        }
+      }
+    }
+
+
+      if (undefined === actions[layer.id]) {
+       actions[layer.id] = [];
+      }
+
+      actions[layer.id].push({
+      id:    'choose_layer',
+      class: GUI.getFontClass('pencil'),
+      state: queryresults.createActionState({layer}),
+      toggleable: true,
+      hint:  'Choose layer',
+      cbk: (layer, feature, action, index) => {
+        action.state.toggled[index] = !action.state.toggled[index];
+        queryresults.setCurrentActionLayerFeatureTool({
+          layer,
+          index,
+          action,
+          component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
+        });
+      }
+    });
+
     });
 
   },
-
-  // watch: {
-  //   '$data._markers'(items, olditems) {
-  //     if (items.length === 0) {
-  //       GUI.closeContent();
-  //       return;
-  //     }
-  //     if (
-  //       (null === GUI.getCurrentContent()) || //no content is show /right panel is hide
-  //       (items.length === 1 && olditems.length === 1)
-  //     ) {
-  //       this._showMarkerResults();
-  //     }
-  //   }
-  // },
 
 
   async mounted() {
