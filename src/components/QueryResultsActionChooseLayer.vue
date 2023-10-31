@@ -70,7 +70,6 @@ export default {
      * Create new feature on layer point geometry
      */
      edit() {
-      console.log(this.feature)
       if (PluginsRegistry.getPlugin('editing')) {
         PluginsRegistry
           .getPlugin('editing')
