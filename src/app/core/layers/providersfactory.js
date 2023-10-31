@@ -1,6 +1,7 @@
 import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'constant';
+import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
 
 const G3WObject                    = require('core/g3wobject');
 const {
@@ -170,23 +171,15 @@ const Providers = {
       this._filtertokenUrl = this._layer.getUrl('filtertoken'); // filtertokenurl
       this._layerName      = this._layer.getName() || null;     // get layer name from QGIS layer, because the query is proxied from g3w-server
       this._infoFormat     = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
-    }
 
-    /*
-    * token: current token if provide
-    * action: create, update, delete
-    */
-    async deleteFilterToken() {
-      await XHR.get({ url: this._filtertokenUrl, params: { mode: 'delete' } });
-    }
-
-    async getFilterToken(params = {}) {
-      try {
-        const {data={}} = await XHR.get({url: this._filtertokenUrl, params});
-        return data.filtertoken;
-      } catch(e) {
-        return Promise.reject(e);
-      }
+      /** @since 3.9.0 */
+      this.saveFilterToken   = QgsFilterToken.save.bind(null, this._filtertokenUrl);
+      /** @since 3.9.0 */
+      this.applyFilterToken  = QgsFilterToken.apply.bind(null, this._filtertokenUrl);
+      /** @since 3.9.0 */
+      this.deleteFilterToken = QgsFilterToken.delete.bind(null, this._filtertokenUrl);
+      /** @since 3.9.0 */
+      this.getFilterToken    = QgsFilterToken.getToken.bind(null, this._filtertokenUrl);
     }
 
     /**
@@ -245,11 +238,10 @@ const Providers = {
           }
         }
 
-        return Promise.reject();
-
       } catch(e) {
         return Promise.reject(e);
       }
+      return Promise.reject();
     }
 
     setProjections() {
@@ -493,7 +485,10 @@ const Providers = {
       this._name        = 'wms';
       this._projections = { map: null, layer: null };
     }
-  
+
+    /**
+     * @TODO move into WMSDataProvider::query
+     */
     _getRequestParameters({
       layers,
       feature_count,
@@ -616,14 +611,20 @@ const Providers = {
 
       return d.promise();
     }
-  
+
+    /**
+     * @TODO deprecate in favour of a global XHR
+     */
     GET({ url, params } = {}) {
       const source = url.split('SOURCE');
       return XHR.get({
         url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : ''))
       });
     }
-  
+
+    /**
+     * @TODO deprecate in favour of a global XHR
+     */
     POST({ url, params } = {}) {
       return XHR.post({ url, data: params });
     }
@@ -639,7 +640,10 @@ const Providers = {
       super(options);
       this._name = 'wfs';
     }
-  
+
+    /**
+     * @TODO check if deprecated
+     */
     getData() {
       return $.Deferred().promise();
     }
@@ -695,7 +699,10 @@ const Providers = {
 
       return d.promise();
     };
-  
+
+    /**
+     * @TODO deprecate in favour of a global XHR
+     */
     _post(url, params) {
       const d = $.Deferred();
       $.post(url.match(/\/$/) ? url : `${url}/`, params)
@@ -703,8 +710,12 @@ const Providers = {
         .fail(error => d.reject(error));
       return d.promise();
     };
-  
-    // get request
+
+    /**
+     * @TODO deprecate in favour of a global XHR
+     * 
+     * get request
+     */
     _get(url, params) {
       const d = $.Deferred();
       $.get((url.match(/\/$/) ? url : `${url}/`) + '?' + $.param(params)) // transform parameters
@@ -712,8 +723,12 @@ const Providers = {
         .fail(error => d.reject(error));
       return d.promise();
     };
-  
-    // request to server
+
+    /**
+     * @TODO move into WFSDataProvider::query
+     * 
+     * Request to server
+     */
     _doRequest(filter, params = {}, layers, reproject = true) {
       const d = $.Deferred();
 

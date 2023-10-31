@@ -115,7 +115,7 @@
         bPageMode:  false,
         header:     t('main navigation'),
         state:      sidebarService.state,
-        /** @since v3.9.0 */
+        /** @since 3.9.0 */
         zIndex:     ZINDEXES.usermessage.tool + 2,
 
       }

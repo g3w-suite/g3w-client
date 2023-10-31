@@ -10,6 +10,8 @@ import CatalogLayersStoresRegistry        from 'store/catalog-layers';
 import DownloadFormats                    from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 import ApplicationService                 from 'services/application';
+import { addToSelection }                 from 'core/layers/utils/addToSelection';
+import { removeFromSelection }            from 'core/layers/utils/removeFromSelection';
 
 const {
   noop,
@@ -21,7 +23,6 @@ const {
 
 const {
   getAlphanumericPropertiesFromFeature,
-  createFeatureFromFeatureObject,
   createFeatureFromGeometry,
   createFeatureFromBBOX,
   createFeatureFromCoordinates,
@@ -572,12 +573,16 @@ class QueryResultsService extends G3WObject {
    *
    * @param opts.layer layer linked to action
    * @param opts.id    action id
+   * 
+   * @returns undefined when no action is found
    */
   getActionLayerById({
     layer,
     id,
   } = {}) {
-    return this.state.layersactions[layer.id].find(action => action.id === id);
+    if (this.state.layersactions[layer.id]) {
+      return this.state.layersactions[layer.id].find(action => action.id === id);
+    }
   };
 
   /**
@@ -1679,29 +1684,6 @@ class QueryResultsService extends G3WObject {
 
   /**
    * @FIXME add description
-   *
-   * @param layer
-   */
-  clearSelectionExtenalLayer(layer) {
-    layer.selection.active = false;
-    const action = (
-      this.state.layersactions[layer.id] &&
-      this.state.layersactions[layer.id].find(action => 'selection' === action.id)
-    );
-    layer.selection.features
-      .forEach((feature, index) => {
-        if (feature.selection.selected) {
-          feature.selection.selected = false;
-          if (action) {
-            action.state.toggled[index] = false;
-          }
-          this.mapService.setSelectionFeatures('remove', { feature });
-        }
-      });
-  }
-
-  /**
-   * @FIXME add description
    */
   unlistenerEventsActions() {
     this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
@@ -1709,7 +1691,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @FIXME add description
+   * Toggle filter token on a layer
    *
    * @param layer
    */
@@ -1718,122 +1700,12 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @FIXME add description
-   *
-   * @param layer
-   */
-  selectionFeaturesLayer(layer) {
-    const action = this.state.layersactions[layer.id].find(action => action.id === 'selection');
-    const bool   = Object.values(action.state.toggled).reduce((acculmulator, value) => acculmulator && value, true);
-    const _layer = layer.external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id);
-    layer.features.forEach((feature, index) => {
-      action.state.toggled[index] = !bool;
-      this._addRemoveSelectionFeature(_layer, feature, index, bool ? 'remove' : 'add');
-    })
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param layer
-   * @param feature
-   * @param index
-   * @param force
-   */
-  async _addRemoveSelectionFeature(layer, feature, index, force) {
-    const fid = feature ? this._getFeatureId(feature, layer.external) : null;
-    if (layer.external) {
-      this._handleExternalVectorLayerSelection(fid, layer, feature, index, force);
-    } else { 
-      this._handleProjectLayerSelection(fid, layer, feature, index, force);
-    }
-  }
-
-  /**
-   * External layer (vector) added by add external layer tool
+   * Save current filter for a layer
    * 
    * @since 3.9.0
    */
-  _handleExternalVectorLayerSelection(fid, layer, feature, index, force) {
-    /** @FIXME add description */
-    if (undefined === layer.selection.features) {
-      layer.selection.features = [];
-    }
-
-    // Set feature used in selection tool action
-    if (undefined === layer.selection.features.find(f => f.getId() === fid)) {
-      const feat = createFeatureFromFeatureObject({ feature, id: fid });
-      feat.__layerId = layer.id;
-      feat.selection = feature.selection;
-      layer.selection.features.push(feat);
-    }
-
-    const GIVE_ME_A_NAME = ('add' === force && feature.selection.selected) || ('remove' === force && !feature.selection.selected);
-
-    /** @FIXME add description */
-    if (GIVE_ME_A_NAME) {
-        return;
-    }
-
-    /** @FIXME add description */
-    feature.selection.selected = !feature.selection.selected;
-
-    /** @FIXME add description */
-    this
-      .mapService
-      .setSelectionFeatures(
-        (feature.selection.selected ? 'add' : 'remove'),
-        { feature: layer.selection.features.find(selectionFeature => fid === selectionFeature.getId()) }
-      );
-
-    // Set selection layer active based on features selection selected properties.
-    layer.selection.active = layer.selection.features.reduce((acc, feature) => acc || feature.selection.selected, false)
-  }
-
-  /**
-   * Project layer (on TOC)
-   * 
-   * @since 3.9.0
-   */
-  async _handleProjectLayerSelection(fid, layer, feature, index, force) {
-    const is_selected = layer.getFilterActive() || layer.hasSelectionFid(fid);
-
-    if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
-      layer.addOlSelectionFeature({ id: fid, feature })
-    }
-
-    /** @FIXME add description */
-    if (undefined === force) {
-      layer[is_selected ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
-    }
-
-    /** @FIXME add description */
-    if ('add' === force && !is_selected) {
-      await layer.includeSelectionFid(fid);
-    }
-
-    /** @FIXME add description */
-    if ('remove' === force) {
-      await layer.excludeSelectionFid(fid);
-    }
-
-    /** @FIXME add description */
-    if (!layer.getFilterActive()) {
-      return;
-    }
-
-    const currentLayer = this.state.layers.find(l => l.id === layer.getId());
-
-    /** @FIXME add description */
-    if (currentLayer && layer.getSelectionFids().size > 0) {
-      currentLayer.features.splice(index, 1);
-    }
-
-    this.mapService.clearHighlightGeometry();
-
-    if (1 === this.state.layers.length && !this.state.layers[0].features.length) {
-      this.state.layers.splice(0);
-    }
+  saveFilter(layer) {
+    CatalogLayersStoresRegistry.getLayerById(layer.id).saveFilter();
   }
 
   /**
@@ -1853,33 +1725,15 @@ class QueryResultsService extends G3WObject {
     if (layer.external) {
       action.state.toggled[index] = feature.selection.selected;
     } else if (feature) {
+      // project layer
+      const pLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
       action.state.toggled[index] = (
-        CatalogLayersStoresRegistry
-            .getLayerById(layer.id)
-            .getFilterActive() ||
-        CatalogLayersStoresRegistry
-            .getLayerById(layer.id)
-            .hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
+          //need to check if set active filter and no saved filter is set
+          (pLayer.getFilterActive() && null == pLayer.getCurrentFilter()) ||
+          //or if feature fid is in selected array
+          pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
       );
     }
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param layer
-   * @param feature
-   * @param action
-   * @param index
-   */
-  addToSelection(layer, feature, action, index) {
-    const external = this._getExternalLayer(layer.id) || false;
-    action.state.toggled[index] = !action.state.toggled[index];
-    this._addRemoveSelectionFeature(
-      (external ? layer : CatalogLayersStoresRegistry.getLayerById(layer.id)),
-      feature,
-      index
-    );
   }
 
   /**
@@ -2302,24 +2156,18 @@ class QueryResultsService extends G3WObject {
   _setActionSelection(layer) {
     this.state.layersactions[layer.id]
       .push({
-        id: 'selection',
+        id:       'selection',
         download: false,
-        class: GUI.getFontClass('success'),
-        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-        state: this.createActionState({ layer }),
-        init: ({feature, index, action}={}) => {
-          if("undefined" !== typeof layer.selection.active) {
-            this.checkFeatureSelection({ layer, index, feature, action })
-          }
+        class:    GUI.getFontClass('success'),
+        hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
+        state:    this.createActionState({ layer }),
+        init:     ({ feature, index, action } = {}) => { if (undefined !== layer.selection.active) { this.checkFeatureSelection({ layer, index, feature, action }) }
         },
-        /**@since 3.9.0**/
-        //when add new feature need to create reactive toggled
-        // it is call on query result context so this is referred to service
-        // and not action
-        change({features}){
+        /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context */
+        change({features}) {
           features
             .forEach((feature, index) => {
-              //exclude existing feature
+              // exclude existing feature
               if (undefined === this.state.toggled[index]) {
                 //add reactive property of array
                 VM.$set(this.state.toggled, index, false);
@@ -2377,12 +2225,25 @@ QueryResultsService.prototype.addRemoveFeaturesToLayerResult = deprecate(QueryRe
 QueryResultsService.prototype.downloadApplicationWrapper = deprecate(GUI.downloadWrapper, '[G3W-CLIENT] QueryResultsService::downloadApplicationWrapper(downloadFnc, options) is deprecated');
 
 /**
+ * @deprecated since 3.9.0 Will be deleted in 4.x. Use QueryResultsService::addToSelection(layer) instead
+ */
+QueryResultsService.prototype.selectionFeaturesLayer = deprecate(addToSelection, '[G3W-CLIENT] QueryResultsService::selectionFeaturesLayer(layer) is deprecated');
+
+/**
+ * @deprecated since 3.9.0 Will be deleted in 4.x. Use QueryResultsService::removeFromSelection(layer) instead
+ */
+QueryResultsService.prototype.clearSelectionExtenalLayer = deprecate(addToSelection, '[G3W-CLIENT] QueryResultsService::clearSelectionExtenalLayer(layer) is deprecated');
+
+/**
  * Alias functions
  * 
  * @TODO choose which ones deprecate
  */
-QueryResultsService.prototype.init               = QueryResultsService.prototype.clearState;
-QueryResultsService.prototype.reset              = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.init                       = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.reset                      = QueryResultsService.prototype.clearState;
+QueryResultsService.prototype.addToSelection             = addToSelection;
+QueryResultsService.prototype.removeFromSelection        = removeFromSelection;
+
 
 /**
  * Core methods used from other classes to react before or after its call

@@ -1,12 +1,30 @@
+/**
+ * @TODO convert it to ES6 class (or external utils)
+ * 
+ * @file
+ * @since 3.9.0
+ */
+
 import GUI from 'services/gui';
 import ApplicationService from 'services/application';
 
-const Projections = require('g3w-ol/projection/projections');
-const { getScaleFromResolution } = require('utils/ol');
+const Projections                        = require('g3w-ol/projection/projections');
+const { getScaleFromResolution }         = require('utils/ol');
 const { createFeatureFromFeatureObject } = require('utils/geo');
-const { XHR, sanitizeUrl } = require('utils');
+const { XHR, sanitizeUrl }               = require('utils');
+
 const RESERVERDPARAMETRS = {
-  wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
+  wms: [
+    'VERSION',
+    'REQUEST',
+    'BBOX',
+    'LAYERS',
+    'WIDTH',
+    'HEIGHT',
+    'DPI',
+    'FORMAT',
+    'CRS'
+  ],
 };
 
 function GeoLayerMixin(config={}) {}
@@ -55,7 +73,7 @@ proto.setup = function(config={}, options={}) {
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
 
     /**
-     * Has more than one categories legend
+     * Has more than one category's legend
      * 
      * @type {boolean}
      */
@@ -88,7 +106,7 @@ proto.setup = function(config={}, options={}) {
 /**
  * Legend Graphic section
  */
-proto.getLegendGraphic = function({all=true}={}){
+proto.getLegendGraphic = function({all=true}={}) {
   const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
   const legendurl = this.getLegendUrl(legendParams, {
     categories: true,
@@ -114,11 +132,14 @@ proto.setCategories = function(categories=[]) {
  * Return eventually categories of layers legend
  * @returns {string[] | string | [] | *[] | boolean | {default: {level: *, appenders: string[]}}}
  */
-proto.getCategories = function(){
+proto.getCategories = function() {
   return this.legendCategories[this.getCurrentStyle().name];
 };
 
-proto.clearCategories = function(){
+/**
+ * Clear all categories
+ */
+proto.clearCategories = function() {
   this.legendCategories = {};
   this.state.categories = false;
 };
@@ -128,137 +149,205 @@ proto.clearCategories = function(){
  */
 
 /**
- * Clear all selection openlayer features
+ * [LAYER SELECTION]
+ * 
+ * Clear all selection Openlayers features
  */
-proto.clearOlSelectionFeatures = function(){
+proto.clearOlSelectionFeatures = function() {
   this.olSelectionFeatures = null;
 };
 
 /**
- * Get openlayer selection feature by feature id
+ * [LAYER SELECTION]
+ * 
+ * Get OpenLayer selection feature by feature id
+ * 
  * @param id
  * @returns {*}
  */
-proto.getOlSelectionFeature = function(id){
+proto.getOlSelectionFeature = function(id) {
   return this.olSelectionFeatures[id];
 };
 
-proto.updateOlSelectionFeature = function({id, feature}={}){
-  const featureObject = this.getOlSelectionFeature(id);
-  if (featureObject) {
-    featureObject.feature = feature;
-    const mapService = GUI.getService('map');
-    mapService.setSelectionFeatures('update', {
-      feature
-    })
+/**
+ * [LAYER SELECTION]
+ * 
+ * Update selected feature (Case change geometry)
+ * 
+ * @param id
+ * @param feature
+ */
+proto.updateOlSelectionFeature = function({
+  id,
+  feature,
+} = {}) {
+  const selected = this.getOlSelectionFeature(id);
+  if (selected) {
+    selected.feature = feature;
+    GUI.getService('map').setSelectionFeatures('update', { feature });
   }
 };
 
 /**
- * Delete openlayer feature selection by feature id
+ * [LAYER SELECTION]
+ * 
+ * Delete OpenLayer feature selection by feature id
+ * 
  * @param id
  */
-proto.deleteOlSelectionFeature = function(id){
-  const featureObject = this.olSelectionFeatures[id];
-  if (featureObject) {
-    mapService.setSelectionFeatures('remove', {
-      feature: featureObject.feature
-    });
+proto.deleteOlSelectionFeature = function(id) {
+  const selected = this.getOlSelectionFeature(id);
+  if (selected) {
+    /** @FIXME undefined variable */
+    mapService.setSelectionFeatures('remove', { feature: selected.feature });
     delete this.olSelectionFeatures[id];
   }
 };
 
 /**
- * Get all openlyare feature selection
- * @returns {{}|null}
+ * [LAYER SELECTION]
+ * 
+ * Get all OpenLayers feature selection
+ * 
+ * @returns { {} | null }
  */
-proto.getOlSelectionFeatures = function(){
+proto.getOlSelectionFeatures = function() {
   return this.olSelectionFeatures;
 };
 
-proto.addOlSelectionFeature = function({id, feature}={}){
+/**
+* [LAYER SELECTION]
+
+ * @param id
+ * @param feature
+ * 
+ * @returns {*}
+ */
+proto.addOlSelectionFeature = function({
+  id,
+  feature,
+} = {}) {
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-    feature: createFeatureFromFeatureObject({id, feature}),
-    added: false
+    feature: createFeatureFromFeatureObject({ id, feature }),
+    added: false,
   };
   return this.olSelectionFeatures[id];
 };
 
-proto.showAllOlSelectionFeatures = function(){
-  const mapService = GUI.getService('map');
-  Object.values(this.olSelectionFeatures).forEach(featureObject =>{
-    !featureObject.added && mapService.setSelectionFeatures('add', {
-      feature: featureObject.feature
-    });
-    featureObject.added = true;
-  })
-};
+/**
+ * [LAYER SELECTION]
+ * 
+ * Set selection layer on map not visible
+ */
+proto.hideOlSelectionFeatures = function() {
+  GUI.getService('map').setSelectionLayerVisible(false);
+}
 
-proto.setInversionOlSelectionFeatures = function(){
-  const mapService = GUI.getComponent('map').getService();
-  Object.values(this.olSelectionFeatures).forEach(featureObject => {
-    mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
-      feature: featureObject.feature
-    });
-    featureObject.added = !featureObject.added
-  });
-};
-
-proto.setOlSelectionFeatureByFid = function(fid, action){
-  const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
-  return feature && this.setOlSelectionFeatures({id:fid, feature}, action);
-};
-
-proto.setOlSelectionFeatures = function(feature, action='add'){
-  const mapService = GUI.getComponent('map').getService();
-  if (!feature) {
-    Object.values(this.olSelectionFeatures).forEach(featureObject => {
-      featureObject.added && mapService.setSelectionFeatures('remove', {
-        feature: featureObject.feature
-      });
-      featureObject.added = false
-    });
-  } else {
-    const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
-    if (action === 'add') {
-      if (!featureObject.added) {
-        /**
-         * add a property of feature __layerId used whe we work with selected Layer features
-         */
-        featureObject.feature.__layerId = this.getId();
-        mapService.setSelectionFeatures(action, {
-          feature: featureObject.feature,
-        });
-        featureObject.added = true;
+/**
+ * [LAYER SELECTION]
+ * 
+ * Show all selection feature
+ */
+proto.showAllOlSelectionFeatures = function() {
+  const map = GUI.getService('map');
+  // Loop `added` features (selected)
+  Object
+    .values(this.olSelectionFeatures)
+    .forEach(feat => {
+      if (feat.added) {
+        map.setSelectionFeatures('add', { feature: feat.feature });
       }
-    } else {
-      mapService.setSelectionFeatures(action, {
-        feature: featureObject.feature
-      });
-      featureObject.added = false;
-    }
-  }
-  return !Object.values(this.olSelectionFeatures).find(featureObject=> featureObject.added);
+    });
+  // Ensures visibilty of selection layer on map 
+  map.setSelectionLayerVisible(true);
 };
 
 /**
- * Create a get parameter url right
+ * [LAYER SELECTION]
+ * 
+ * Toggle `added` property on all features
+ */
+proto.setInversionOlSelectionFeatures = function() {
+  const map = GUI.getService('map');
+  Object
+    .values(this.olSelectionFeatures)
+    .forEach(feat => {
+      feat.added = !feat.added;
+      map.setSelectionFeatures(feat.added ? 'add' : 'remove', { feature: feat.feature });
+    });
+};
+
+/**
+ * [LAYER SELECTION]
+ * 
+ * @param fid
+ * @param action
+ * 
+ * @returns {*}
+ */
+proto.setOlSelectionFeatureByFid = function(fid, action) {
+  const selected = this.getOlSelectionFeature(fid);
+  if (selected && selected.feature) {
+    return this.setOlSelectionFeatures({
+      id:      fid,
+      feature: selected.feature,
+    }, action);
+  }
+};
+
+/**
+ * [LAYER SELECTION]
+ * 
+ * @param feature
+ * @param action
+ * 
+ * @returns { boolean }
+ */
+proto.setOlSelectionFeatures = function(feature, action = 'add') {
+  const map = GUI.getService('map');
+
+  // select a single feature
+  if (feature) {
+    const feat             = this.getOlSelectionFeature(feature.id) || this.addOlSelectionFeature(feature);
+    feat.feature.__layerId = ('add' === action && !feat.added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+    map.setSelectionFeatures(action, { feature: feat.feature });
+    feat.added             = ('add' === action && !feat.added);
+  }
+
+  // select all features
+  if (!feature) {
+    Object
+      .values(this.olSelectionFeatures)
+      .forEach(feat => {
+        //remove selection feature
+        if (feat.added) {
+          map.setSelectionFeatures('remove', { feature: feat.feature });
+        }
+        feat.added = false
+      });
+  }
+
+  return undefined === Object.values(this.olSelectionFeatures).find(feat=> feat.added);
+};
+
+/**
+ * Create a valid GET url parameter
+ * 
  * @param type
  * @private
  */
-proto._sanitizeSourceUrl = function(type='wms'){
-  const sanitizedUrl = sanitizeUrl({
-    url: this.config.source.url,
-    reserverParameters: RESERVERDPARAMETRS[type]
+proto._sanitizeSourceUrl = function(type = 'wms') {
+  this.config.source.url = sanitizeUrl({
+    url:                this.config.source.url,
+    reserverParameters: RESERVERDPARAMETRS[type],
   });
-  this.config.source.url = sanitizedUrl;
 };
 
-proto.isLayerCheckedAndAllParents = function(){
+proto.isLayerCheckedAndAllParents = function() {
   let checked = this.isChecked();
   if (checked) {
     let parentGroup = this.state.parentGroup;
-    while(checked && parentGroup){
+    while(checked && parentGroup) {
       checked = checked && parentGroup.checked;
       parentGroup = parentGroup.parentGroup;
     }
@@ -266,10 +355,18 @@ proto.isLayerCheckedAndAllParents = function(){
   return checked;
 };
 
+/**
+ * Set layer legend item `checked` state (TOC)
+ * 
+ * @param { boolean } bool
+ */
 proto.setChecked = function(bool) {
   this.state.checked = bool;
 };
 
+/**
+ * @returns { boolean } whether layer legend item is checked (TOC)
+ */
 proto.isChecked = function() {
   return this.state.checked;
 };
@@ -302,11 +399,11 @@ proto.isPrintable = function({scale}={}) {
 };
 
 //get style form layer
-proto.getStyles = function(){
+proto.getStyles = function() {
   return this.config.source.external ? this.config.source.styles : this.config.styles;
 };
 
-proto.getStyle = function(){
+proto.getStyle = function() {
   return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
 };
 
@@ -327,7 +424,7 @@ proto.getOpacity = function() {
  * @param currentStyleName
  * @returns {boolean}
  */
-proto.setCurrentStyle = function(currentStyleName){
+proto.setCurrentStyle = function(currentStyleName) {
   let changed = false;
   this.config.styles.forEach(style => {
     if (style.name === currentStyleName)
@@ -337,7 +434,7 @@ proto.setCurrentStyle = function(currentStyleName){
   return changed;
 };
 
-proto.getCurrentStyle = function(){
+proto.getCurrentStyle = function() {
   return this.config.styles.find(style => style.current);
 };
 
@@ -355,7 +452,7 @@ proto.setDisabled = function(resolution, mapUnits='m') {
     // looping through parentfolter checked
     let setVisible = true;
     let parentGroup = this.state.parentGroup;
-    while (parentGroup){
+    while (parentGroup) {
       setVisible = setVisible && parentGroup.checked;
       parentGroup = parentGroup.parentGroup;
     }
@@ -385,7 +482,7 @@ proto.getProjection = function() {
   return this.config.projection;
 };
 
-proto.getEpsg = function(){
+proto.getEpsg = function() {
   return this.config.crs.epsg;
 };
 
@@ -393,7 +490,7 @@ proto.getCrs = function() {
   return this.config.projection && this.config.projection.getCode() || null;
 };
 
-proto.getMapCrs = function(){
+proto.getMapCrs = function() {
   return this.config.map_crs;
 };
 
