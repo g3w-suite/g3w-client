@@ -71,36 +71,21 @@ export default {
      */
      edit() {
       if (PluginsRegistry.getPlugin('editing')) {
-        let geometry = new ol.geom.Point(
-          ol.proj.transform([
-              parseFloat(this.marker.lon),
-              parseFloat(this.marker.lat)
-            ],
-            'EPSG:4326',
-            GUI.getService('map').getEpsg())
-        );
-        //check if is Multi Geometry (MultiPoint)
-        if (
-          Geometry.isMultiGeometry(
-            CatalogLayersStoresRegistry
-              .getLayerById(this.layerId)
-              .getGeometryType()
-          )
-        ) {
-          //convert Point to MultiPoint Geometry
-          geometry = singleGeometriesToMultiGeometry([geometry])
-        }
-
-        const feature = new ol.Feature({
-          geometry,
-          ...this.marker
-        });
         PluginsRegistry
           .getPlugin('editing')
           .getApi()
           .addLayerFeature({
             layerId: this.layerId,
-            feature
+            feature: new ol.Feature({
+              //check if is Multi Geometry (MultiPoint)
+              geometry:  Geometry.isMultiGeometry(
+                CatalogLayersStoresRegistry
+                  .getLayerById(this.layerId)
+                  .getGeometryType()) ?
+                  singleGeometriesToMultiGeometry([this.feature.geometry]) :
+                  this.feature.geometry,
+              ...this.feature.attributes
+            })
           })
       }
     },
