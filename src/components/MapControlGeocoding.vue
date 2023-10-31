@@ -163,13 +163,16 @@
 </template>
 
 <script>
-import GUI               from 'services/gui';
-import ApplicationState  from 'store/application-state';
-import nominatim         from 'utils/search_from_nominatim';
-import bing              from 'utils/search_from_bing';
-import google            from 'utils/search_from_google';
-import MarkersResult     from "./MarkersResult.vue";
-import { MarkersEventBus } from "eventbus";
+import GUI                           from 'services/gui';
+import ApplicationState              from 'store/application-state';
+import nominatim                     from 'utils/search_from_nominatim';
+import bing                          from 'utils/search_from_bing';
+import google                        from 'utils/search_from_google';
+import MarkersResult                 from './MarkersResult.vue';
+import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
+import { MarkersEventBus }           from 'eventbus';
+import CatalogLayersStoresRegistry   from 'store/catalog-layers';
+import PluginsRegistry               from 'store/plugins';
 
 const ComponentsFactory = require('gui/component/componentsfactory');
 
@@ -330,19 +333,23 @@ export default {
       this.$data._visible = !this.$data._visible;
       layer.setVisible(this.$data._visible);
     },
+  
     /**
      * Clear Result list only
+     * 
     * @since v3.9
     */
     clearResults() {
       this.$data._results.splice(0);
     },
+  
     clearMarkers() {
       this.$data._markers.splice(0);
       this._hideMarker();
       //set false to add
       this.$data._results.forEach(i => i.add = false);
     },
+  
     /**
      * Clear all
      * 
@@ -585,9 +592,51 @@ export default {
       //   id: '__g3w_marker_component'
       // });
     },
+
+    // /**
+    //  * Create new feature on layer point geometry
+    //  */
+    // edit() {
+    //   if (PluginsRegistry.getPlugin('editing')) {
+    //     let geometry = new ol.geom.Point(
+    //       ol.proj.transform([
+    //           parseFloat(this.marker.lon),
+    //           parseFloat(this.marker.lat)
+    //         ],
+    //         'EPSG:4326',
+    //         GUI.getService('map').getEpsg())
+    //     );
+    //     //check if is Multi Geometry (MultiPoint)
+    //     if (
+    //       Geometry.isMultiGeometry(
+    //         CatalogLayersStoresRegistry
+    //           .getLayerById(this.layerId)
+    //           .getGeometryType()
+    //       )
+    //     ) {
+    //       //convert Point to MultiPoint Geometry
+    //       geometry = singleGeometriesToMultiGeometry([geometry])
+    //     }
+
+    //     const feature = new ol.Feature({
+    //       geometry,
+    //       ...this.marker
+    //     });
+    //     PluginsRegistry
+    //       .getPlugin('editing')
+    //       .getApi()
+    //       .addLayerFeature({
+    //         layerId: this.layerId,
+    //         feature
+    //       })
+    //   }
+    // },
+
   },
 
   created() {
+    const queryresults = GUI.getService('queryresults'); 
+
     //Add marker layer on
     const mapService = GUI.getService('map');
     const map        = mapService.getMap();
@@ -598,8 +647,20 @@ export default {
      */
     map.addLayer(layer);
     //register vector layer for query results
-    GUI.getService('queryresults')
-      .registerVectorLayer(layer);
+    queryresults.registerVectorLayer(layer);
+
+    // //store point layer editable of the project
+    // this.poinEditableLayers = CatalogLayersStoresRegistry
+    //   .getLayers({ EDITABLE: true, GEOLAYER: true })
+    //   .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+    //   .map(l => ({
+    //     id:   l.getId(),
+    //     name: l.getName(),
+    //   }));
+
+    // if (this.poinEditableLayers.length > 0) {
+    //   this.layerId = this.poinEditableLayers[0].id;
+    // }
 
     /**
      * Register events on right content panel
@@ -616,6 +677,32 @@ export default {
 
     MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
     MarkersEventBus.$on('remove-all-markers', () => this.clearMarkers());
+
+    queryresults.onafter('addActionsForLayers', (actions, layers) => {
+      const layer = layers.find(layer => '__g3w_marker' === layer.id);
+      if (!layer) {
+        return;
+      }
+      if (undefined === actions[layer.id]) {
+        actions[layer.id] = [];
+      }
+      actions[layer.id].push({
+        id:    'choose_layer',
+        class: GUI.getFontClass('pencil'),
+        state: queryresults.createActionState({layer}),
+        hint:  'Choose layer',
+        cbk: (layer, feature, action, index) => {
+          action.state.toggled[index] = !action.state.toggled[index];
+          GUI.setLoadingContent(action.state.toggled[index]);
+          queryresults.setCurrentActionLayerFeatureTool({
+            layer,
+            index,
+            action,
+            component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
+          });
+        }
+      });
+    });
 
   },
 
