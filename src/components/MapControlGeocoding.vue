@@ -833,6 +833,7 @@ export default {
     color: #ffffff;
     min-height: 30px;
     padding-left: 3px;
+    border-bottom: 2px solid var(--skin-color);
   }
 
   .ol-geocoder ul.gcd-txt-result > li.nominatim-noresult:hover {
@@ -880,6 +881,7 @@ export default {
     width: 2.5em;
     height: 100%;
     border-radius: 0;
+    background-color: var(--skin-color, #fff);
   }
 
   .ol-geocoder #show-markers-results,
@@ -906,6 +908,7 @@ export default {
     font-weight: bold;
     font-size: 2em;
     cursor: pointer;
+    color: var(--skin-color);
   }
 
   .ol-geocoder .gcd-txt-reset {
@@ -956,6 +959,7 @@ export default {
     margin-left: 2px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     width: 100%;
+    border: 2px solid var(--skin-color)
   }
 
   @-webkit-keyframes spin {
@@ -993,5 +997,4 @@ export default {
   .gcd-country {
     font-size: 0.75em;
   }
-
 </style>
