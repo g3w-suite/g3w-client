@@ -173,6 +173,7 @@ import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLa
 import { MarkersEventBus }           from 'eventbus';
 import CatalogLayersStoresRegistry   from 'store/catalog-layers';
 import PluginsRegistry               from 'store/plugins';
+import DownloadFormats from "./QueryResultsActionDownloadFormats.vue";
 
 const ComponentsFactory = require('gui/component/componentsfactory');
 
@@ -679,22 +680,29 @@ export default {
     MarkersEventBus.$on('remove-all-markers', () => this.clearMarkers());
 
     queryresults.onafter('addActionsForLayers', (actions, layers) => {
+
       const layer = layers.find(layer => '__g3w_marker' === layer.id);
       if (!layer) {
         return;
       }
+
+      ///Addd
+      queryresults.state.actiontools[QueryResultsActionChooseLayer.name] = queryresults.state.actiontools[QueryResultsActionChooseLayer.name] || {};
+
       if (undefined === actions[layer.id]) {
         actions[layer.id] = [];
       }
-      actions[layer.id].push({
+
+
+        actions[layer.id].push({
         id:    'choose_layer',
         class: GUI.getFontClass('pencil'),
         state: queryresults.createActionState({layer}),
+        toggleable: true,
         hint:  'Choose layer',
         cbk: (layer, feature, action, index) => {
           action.state.toggled[index] = !action.state.toggled[index];
-          GUI.setLoadingContent(action.state.toggled[index]);
-          queryresults.setCurrentActionLayerFeatureTool({
+            queryresults.setCurrentActionLayerFeatureTool({
             layer,
             index,
             action,
