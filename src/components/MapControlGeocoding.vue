@@ -100,8 +100,9 @@
         v-for   = "(item, i) in $data._results"
         :class  = "[
           item.provider,
-          item.__heading ? 'skin-background-color' : '',
+          item.__heading    ? 'skin-background-color' : '',
           item.__no_results ? 'gcd-noresult' : '',
+          item.add          ? 'selected' : '',
         ]"
         :key         = "item.__uid"
         @click.stop = "_onItemClick($event, item)"
@@ -174,7 +175,14 @@ import nominatim                     from 'utils/search_from_nominatim';
 import bing                          from 'utils/search_from_bing';
 import google                        from 'utils/search_from_google';
 import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
+import { PluginsRegistry }           from "store";
+import CatalogLayersStoresRegistry   from 'store/catalog-layers';
 import { toRawType }                 from 'utils';
+
+const {
+  Geometry,
+  singleGeometriesToMultiGeometry,
+}                                   = require('utils/geo');
 
 const Projections                    = require('g3w-ol/projection/projections');
 
@@ -588,21 +596,9 @@ export default {
      * @TODO take in account to change zIndex in case of add layer (wms external, vector layer)
      */
     map.addLayer(layer);
+
     //register vector layer for query results
     queryresults.registerVectorLayer(layer);
-
-    // //store point layer editable of the project
-    // this.poinEditableLayers = CatalogLayersStoresRegistry
-    //   .getLayers({ EDITABLE: true, GEOLAYER: true })
-    //   .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
-    //   .map(l => ({
-    //     id:   l.getId(),
-    //     name: l.getName(),
-    //   }));
-
-    // if (this.poinEditableLayers.length > 0) {
-    //   this.layerId = this.poinEditableLayers[0].id;
-    // }
 
     /**
      * Register events on right content panel
@@ -632,8 +628,40 @@ export default {
         return;
       }
 
-      ///Addd
-      queryresults.state.actiontools[QueryResultsActionChooseLayer.name] = queryresults.state.actiontools[QueryResultsActionChooseLayer.name] || {};
+      // Add
+      queryresults.addCurrentActionToolsLayer({
+        id: QueryResultsActionChooseLayer.name,
+        layer,
+        config: {
+          // editable point layers for the project
+          layers: CatalogLayersStoresRegistry
+            .getLayers({ EDITABLE: true, GEOLAYER: true })
+            .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+            .map((l)=>({ id: l.getId(), name: l.getName() })),
+          // create new feature on layer point geometry
+          cbk: (layerId, feature) => {
+            if (PluginsRegistry.getPlugin('editing')) {
+              PluginsRegistry
+                .getPlugin('editing')
+                .getApi()
+                .addLayerFeature({
+                  layerId: layerId,
+                  feature: new ol.Feature({
+                    //check if is Multi Geometry (MultiPoint)
+                    geometry:  Geometry.isMultiGeometry(
+                      CatalogLayersStoresRegistry
+                        .getLayerById(layerId)
+                        .getGeometryType()) ?
+                        singleGeometriesToMultiGeometry([feature.geometry]) :
+                        feature.geometry,
+                    ...feature.attributes
+                  })
+                })
+            }
+          }
+          
+        },
+      });
 
       if (undefined === actions[layer.id]) {
         actions[layer.id] = [];
@@ -824,6 +852,9 @@ export default {
     position: sticky;
     top: 0;
   }
+  li.selected {
+  background-color: #f7fabf !important;
+}
 </style>
 
 <style>
