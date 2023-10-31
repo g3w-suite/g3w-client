@@ -71,7 +71,7 @@
         ></i>
       </button>
       <!-- SHOW/HIDE MARKER LAYER ON MAP -->
-      <!-- <button
+       <button
         v-if          = "$data._markers.length > 0"
         type          = "button"
         id            = "markers-visibility-layer"
@@ -82,7 +82,7 @@
         :class      = "g3wtemplate.getFontClass($data._visible ? 'eye-close': 'eye')"
         aria-hidden = "true"
         ></i>
-      </button> -->
+      </button>
 
     </div>
 
@@ -168,11 +168,8 @@ import ApplicationState              from 'store/application-state';
 import nominatim                     from 'utils/search_from_nominatim';
 import bing                          from 'utils/search_from_bing';
 import google                        from 'utils/search_from_google';
-import MarkersResult                 from './MarkersResult.vue';
 import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
 import { MarkersEventBus }           from 'eventbus';
-import CatalogLayersStoresRegistry   from 'store/catalog-layers';
-import PluginsRegistry               from 'store/plugins';
 
 const ComponentsFactory = require('gui/component/componentsfactory');
 
@@ -240,7 +237,6 @@ export default {
       /** @since 3.9.0 */
       _results                 : [],
       _markers                 : [],
-      _show_marker_info_content: false,  //Boolean if marker info are show on right content
       _visible                 : true,   //set visibility of layer
     };
   },
@@ -286,7 +282,7 @@ export default {
 
   computed: {
     showMarkerResultsButton() {
-      return this.$data._markers.length > 0 && !this.$data._show_marker_info_content;
+      return this.$data._markers.length > 0;
     }
   },
 
@@ -533,10 +529,6 @@ export default {
       return feature;
     },
 
-    zoomToMarker(item) {
-
-    },
-
     /**
      * @since 3.9.0
      */
@@ -563,14 +555,17 @@ export default {
       }
     },
       /**
-       *
+       * Show only markers on
        * @private
        */
     _showMarkerResults() {
-
       if (is_results_panel_open) {
         GUI.closeContent();
       } else {
+        //check if is already open right panel
+        if (GUI.getCurrentContent()) {
+          GUI.closeContent();
+        }
         GUI.showQueryResults('Geocoding', {
           data: [{
             features: layer.getSource().getFeatures(),
@@ -580,57 +575,7 @@ export default {
       }
 
       is_results_panel_open = !is_results_panel_open;
-
-      // GUI.showContent({
-      //   content: ComponentsFactory.build({
-      //     vueComponentObject: MarkersResult,
-      //     propsData: {
-      //       markers: this.$data._markers,
-      //     },
-      //   }),
-      //   title: 'Markers',
-      //   id: '__g3w_marker_component'
-      // });
     },
-
-    // /**
-    //  * Create new feature on layer point geometry
-    //  */
-    // edit() {
-    //   if (PluginsRegistry.getPlugin('editing')) {
-    //     let geometry = new ol.geom.Point(
-    //       ol.proj.transform([
-    //           parseFloat(this.marker.lon),
-    //           parseFloat(this.marker.lat)
-    //         ],
-    //         'EPSG:4326',
-    //         GUI.getService('map').getEpsg())
-    //     );
-    //     //check if is Multi Geometry (MultiPoint)
-    //     if (
-    //       Geometry.isMultiGeometry(
-    //         CatalogLayersStoresRegistry
-    //           .getLayerById(this.layerId)
-    //           .getGeometryType()
-    //       )
-    //     ) {
-    //       //convert Point to MultiPoint Geometry
-    //       geometry = singleGeometriesToMultiGeometry([geometry])
-    //     }
-
-    //     const feature = new ol.Feature({
-    //       geometry,
-    //       ...this.marker
-    //     });
-    //     PluginsRegistry
-    //       .getPlugin('editing')
-    //       .getApi()
-    //       .addLayerFeature({
-    //         layerId: this.layerId,
-    //         feature
-    //       })
-    //   }
-    // },
 
   },
 
@@ -667,12 +612,13 @@ export default {
      */
     //Close content
     GUI.on('closecontent', () => {
-      this.$data._show_marker_info_content = false;
-    });
+      is_results_panel_open = false;
+    })
 
-    //Open
-    GUI.onafter('setContent', content => {
-      this.$data._show_marker_info_content = '__g3w_marker_component' === content.id;
+    GUI.onafter('setContent', () => {
+      if (is_results_panel_open) {
+        is_results_panel_open = false;
+      }
     });
 
     // MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
