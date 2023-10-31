@@ -5,7 +5,7 @@
 <template>
   <section class="marker-editing">
     <div
-      v-if                = "layers.length > 0"
+      v-if                = "config.layers.length > 0"
       class               = "g3w-point-editable-layers"
       style               = "width: 100%; display: flex"
       @click.prevent.stop = ""
