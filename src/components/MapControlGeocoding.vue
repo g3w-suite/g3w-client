@@ -32,13 +32,13 @@
       <!-- search query button -->
       <button
         type            = "button"
-        id              = "search_nominatim"
+        id              = "gcd-search"
         class           = "btn"
         @click.stop     = "() => query($refs.input.value)"
       >
         <i
           :class      = "g3wtemplate.getFontClass('search')"
-          style       = "color: #ffffff"
+          style       = "color: #fff"
           aria-hidden = "true"
         ></i>
       </button>
@@ -46,7 +46,7 @@
       <button
         v-if="$data._markers.length > 0"
         type            = "button"
-        id              = "trash_nominatim"
+        id              = "gcd-trash"
         class           = "btn skin-background-color"
         @click.stop     = "clearMarkers"
       >
@@ -106,7 +106,7 @@
           v-if  = "item.__heading"
           style = "display: flex; justify-content: space-between; padding: 5px"
         >
-          <span style="color: #FFFFFF; font-weight: bold">{{ item.label }}</span>
+          <span style="color: #FFF; font-weight: bold">{{ item.label }}</span>
         </div>
         <!-- NO RESULTS -->
         <span
@@ -116,7 +116,7 @@
         <!-- NO RESULTS -->
         <template v-else>
           <span
-            style       = "color: #000000; padding: 5px;"
+            style       = "color: #000; padding: 5px;"
             :class      = "g3wtemplate.getFontClass(item.add ? 'check' : 'uncheck')">
           </span>
           <i
@@ -685,7 +685,7 @@ export default {
     await this.$nextTick();
     const q = document.querySelector.bind(document);
     q('#gcd-input-query').value = /*'via sallustio 10'*/ 'cafe';
-    q('#search_nominatim').click();
+    q('#gcd-search').click();
   },
 
   destroyed() {
@@ -697,7 +697,7 @@ export default {
 </script>
 
 <style scoped>
-  .ol-geocoder ul.gcd-txt-result>li>a>*:not(:last-of-type) {
+  .ol-geocoder > ul > li > a > *:not(:last-of-type) {
     margin-bottom: 10px;
   }
   li:not(.skin-background-color) {
@@ -720,12 +720,8 @@ export default {
 
 <style>
   /* Geocoder */
-  .ol-geocoder.gcd-txt-container,
-  .ol-geocoder.gcd-gl-container {
+  .ol-geocoder {
     box-sizing: border-box;
-  }
-
-  .ol-geocoder.gcd-txt-container {
     position: absolute;
     max-width: 300px;
     height: 4.375em;
@@ -735,79 +731,7 @@ export default {
     height: 6px;
   }
 
-  .ol-geocoder.gcd-gl-container {
-    position: absolute;
-    top: 4.875em;
-    left: .5em;
-  }
-
-  .ol-geocoder .gcd-gl-expanded {
-    width: 15.625em;
-    height: 2.1875em;
-  }
-
-  .ol-geocoder .gcd-gl-input {
-    position: absolute;
-    z-index: 1;
-    top: 0.25em;
-    left: 2.5em;
-    width: 14.84375em;
-    padding: 5px;
-    font-family: inherit;
-    font-size: 0.875em;
-  }
-
-  .ol-geocoder .gcd-gl-input:focus {
-    border: none;
-    outline: none;
-  }
-
-  .ol-geocoder .gcd-gl-reset {
-    z-index: 1;
-    top: 0;
-    right: 0;
-    width: 1.5625em;
-    height: 100%;
-    line-height: 1.4;
-    border: none;
-    background-color: transparent;
-    display: inline-block;
-    outline: 0;
-    cursor: pointer;
-  }
-
-  .ol-geocoder .gcd-gl-btn {
-    position: absolute;
-    width: 1.5625em;
-    height: 1.5625em;
-    top: 0.125em;
-    left: 0.125em;
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAABPUlEQVQoU41SwXHCQAzUHh58eoUOIBWEDkI6oAToIKkg7iAuwakgpAIowXRACcnrzp6BzchjMx4wE/S6kW5XK60gvQghzJIkmVoqSZI9gJ9+/fINS5Cc1HX9QXIlIr/tpwcRyb33b7cIGnAIYQdg4pxbjcfj0nJ1Xc+Px+PGObdN03Q9RIAQwgpAnqbp7FKmjQGgJLlU1d2V7BjjRkQO3vvXIXarkyxVNbsCm2QR2Q0V7XOMMReRmfd+OQQubN6hYgs22ZtbnRcAtiRfLueqqmpJ8ovko6oeBq0KIWQA3gFkzrlmMafTaUEyI/mpqmbhVTRWWbRdbClPbeobQNES5KPRqOxs7DBn8K1DsAOKMZYApiTXqlrcDe4d0XN7jWeCfzt351tVle2iGalTcBd4gGDvvZ/fDe4RmCOFLe8Pr7mvEP2N9PQAAAAASUVORK5CYII=");
-    background-repeat: no-repeat;
-    background-position: center center;
-  }
-
-  .ol-geocoder .gcd-gl-result {
-    position: absolute;
-    top: 2.1875em;
-    left: 2em;
-    width: 16.25em;
-    max-height: 18.75em;
-    white-space: normal;
-    list-style: none;
-    padding: 0;
-    margin-top: 2px;
-    background-color: white;
-    border-radius: 4px;
-    border-top: none;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
   .ol-geocoder .gcd-pseudo-rotate::after {
-    -webkit-animation: spin .7s linear infinite;
     animation: spin .7s linear infinite;
   }
 
@@ -815,49 +739,50 @@ export default {
     display: none !important;
   }
 
-  .ol-geocoder ul.gcd-txt-result > li:hover {
-    background-color: #EEEEEE;
+  .ol-geocoder > ul > li:hover {
+    background-color: #eee;
   }
 
-  .ol-geocoder ul.gcd-txt-result > li > a {
+  .ol-geocoder > ul > li > a {
     display: block;
     text-decoration: none;
     padding: 3px 5px;
+    color: #000;
   }
 
-  .ol-geocoder ul.gcd-txt-result > li {
+  .ol-geocoder > ul > li {
     width: 100%;
     overflow: hidden;
     padding: 0;
     line-height: 1rem;
-    color: #ffffff;
+    color: #fff;
     min-height: 30px;
     padding-left: 3px;
     border-bottom: 2px solid var(--skin-color);
   }
 
-  .ol-geocoder ul.gcd-txt-result > li.nominatim-noresult:hover {
+  .ol-geocoder > ul > li.nominatim-noresult:hover {
     background-color: transparent !important;
   }
 
-  .ol-geocoder ul.gcd-txt-result > li.nominatim-noresult {
+  .ol-geocoder > ul > li.nominatim-noresult {
     font-weight: bold;
     color: #384247;
     margin: 10px;
     border-bottom: 0 !important;
   }
 
-  .ol-geocoder ul.gcd-txt-result li {
+  .ol-geocoder > ul li {
     min-height: 20px;
     padding: 10px;
     font-size: 1.1em;
   }
 
-  .ol-geocoder ul.gcd-txt-result li:last-child {
+  .ol-geocoder > ul li:last-child {
     border-bottom: 0 !important;
   }
 
-  .ol-geocoder ul.gcd-txt-result {
+  .ol-geocoder > ul {
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     border-radius: 3px !important;
     position: absolute;
@@ -872,11 +797,10 @@ export default {
     border-top: none;
     overflow-x: hidden;
     overflow-y: auto;
-    -webkit-transition: max-height 300ms ease-in;
     transition: max-height 300ms ease-in;
   }
 
-  .ol-geocoder #search_nominatim {
+  .ol-geocoder #gcd-search {
     z-index: 1;
     width: 2.5em;
     height: 100%;
@@ -888,11 +812,11 @@ export default {
   .ol-geocoder #markers-visibility-layer {
     z-index: 1;
     border-radius: 0 !important;
-    color: #FFFFFF;
+    color: #FFF;
     margin-left: 2px;
   }
 
-  .ol-geocoder #trash_nominatim {
+  .ol-geocoder #gcd-trash {
     margin-left: 2px;
     z-index: 1;
     border-radius: 0;
@@ -940,14 +864,6 @@ export default {
     font-size: 1em;
   }
 
-  .ol-geocoder .gcd-gl-control {
-    width: 2.1875em;
-    height: 2.1875em;
-    overflow: hidden;
-    -webkit-transition: width 200ms, height 200ms;
-    transition: width 200ms, height 200ms;
-  }
-
   .ol-geocoder .gcd-txt-control {
     position: relative;
     display: flex;
@@ -962,24 +878,11 @@ export default {
     border: 2px solid var(--skin-color)
   }
 
-  @-webkit-keyframes spin {
-    from {
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
-    }
-    to {
-      -webkit-transform: rotate(360deg);
-      transform: rotate(360deg);
-    }
-  }
-
   @keyframes spin {
     from {
-      -webkit-transform: rotate(0deg);
       transform: rotate(0deg);
     }
     to {
-      -webkit-transform: rotate(360deg);
       transform: rotate(360deg);
     }
   }
@@ -996,5 +899,11 @@ export default {
 
   .gcd-country {
     font-size: 0.75em;
+  }
+
+  @media (max-width: 767px) {
+    .ol-geocoder.gcd-txt-container {
+      left:0
+    }
   }
 </style>
