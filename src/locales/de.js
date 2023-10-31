@@ -13,11 +13,13 @@ export default {
     sign_in: "Anmelden",
     layer_selection_filter: {
       tools: {
-        filter: "Filter hinzufügen/entfernen",
+        filter: "Filter aktivieren/deaktivieren",
         nofilter: "Filter entfernen",
         invert: "Auswahl umkehren",
         clear: "Auswahl löschen",
-        show_features_on_map: "Auf der Karte sichtbare Features anzeigen"
+        show_features_on_map: "Auf der Karte sichtbare Features anzeigen",
+        savefilter: "Filter speichern",
+        filterName: "Filtername",
       }
     },
     warning: {
@@ -531,7 +533,8 @@ export default {
         show_metadata: "Metadaten",
         styles: 'Stile',
         vector_color_menu:"Farbe einstellen/ändern",
-        layer_opacity: "Opazität"
+        layer_opacity: "Opazität",
+        filters: "Filters",
       }
     },
     dataTable: {

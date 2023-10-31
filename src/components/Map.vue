@@ -40,12 +40,6 @@
 
   </div>
 
-  <context-menu @select="onContextMenu" :divided="true">
-    <context-menu-item :select="{ key:1,value:'Download' }">Download</context-menu-item>
-    <context-menu-item :select="{ key:2,value:'Rename' }" :disabled="true">Rename</context-menu-item>
-    <context-menu-item :select="{ key:3,value:'More Info' }">More Info</context-menu-item>
-  </context-menu>
-
   <!-- FIXME: add description -->
   <map-footer :service="service"/>
 
@@ -55,8 +49,6 @@
 <script>
 import AddLayerComponent from 'components/MapAddLayer.vue';
 import MapFooter from 'components/MapFooter.vue';
-import ContextMenu from 'components/ContextMenu.vue';
-import ContextMenuItem from 'components/ContextMenuItem.vue';
 
 export default {
 
@@ -75,9 +67,7 @@ export default {
   },
   components: {
     'addlayer': AddLayerComponent,
-    MapFooter,
-    ContextMenu,
-    ContextMenuItem,
+    MapFooter
   },
   computed: {
     mapcontrolsalignement() {
@@ -88,9 +78,6 @@ export default {
     }
   },
   methods: {
-    onContextMenu(item) {
-      console.log(item);
-    },
     showHideControls() {
       const mapControls = this.service.getMapControls();
       mapControls.forEach(control => control.type !== "scaleline" && control.control.showHide());
