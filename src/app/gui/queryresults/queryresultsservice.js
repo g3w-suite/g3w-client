@@ -616,13 +616,19 @@ class QueryResultsService extends G3WObject {
    * @param opts.id     action layer id
    * @param opts.layer  layer
    * @param opts.config configuration object
+   * @param opts.action (since 3.9.0) configuration object
    */
   addCurrentActionToolsLayer({
     id,
     layer,
-    config = {}
+    config = {},
+    action
   }) {
     this.state.actiontools[id] = { [layer.id]: config };
+    if (action) {
+      this.state.layersactions[layer.id] = this.state.layersactions[layer.id] || [];
+      this.state.layersactions[layer.id].push(action);
+    }
   }
 
   /**

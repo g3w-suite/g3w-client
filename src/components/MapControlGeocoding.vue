@@ -620,6 +620,7 @@ export default {
       }
     });
 
+    // TODO: delegate attaching listener to addCurrentActionToolsLayer
     queryresults.onafter('addActionsForLayers', (actions, layers) => {
 
       const layer = layers.find(layer => '__g3w_marker' === layer.id);
@@ -659,29 +660,23 @@ export default {
                 })
             }
           }
-          
         },
-      });
-
-      if (undefined === actions[layer.id]) {
-        actions[layer.id] = [];
-      }
-
-      actions[layer.id].push({
-        id:    'choose_layer',
-        class: GUI.getFontClass('pencil'),
-        state: queryresults.createActionState({layer}),
-        toggleable: true,
-        hint:  'Choose layer',
-        cbk: (layer, feature, action, index) => {
-          action.state.toggled[index] = !action.state.toggled[index];
-            queryresults.setCurrentActionLayerFeatureTool({
-            layer,
-            index,
-            action,
-            component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
-          });
-        }
+        action: {
+          id:    'choose_layer',
+          class: GUI.getFontClass('pencil'),
+          state: queryresults.createActionState({layer}),
+          toggleable: true,
+          hint:  'Choose layer',
+          cbk: (layer, feature, action, index) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+              queryresults.setCurrentActionLayerFeatureTool({
+              layer,
+              index,
+              action,
+              component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
+            });
+          }
+        },
       });
     });
 
