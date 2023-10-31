@@ -187,7 +187,7 @@
                               </td>
                             </template>
                           </tr>
-                          <tr style="font-weight: bold">
+                          <tr style="font-weight: bold; text-align: center">
                             <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</td>
                             <td
                               v-if="!hasLayerOneFeature(layer)"
@@ -276,7 +276,7 @@
                             </td>
                         </template>
                       </tr>
-                      <tr style="font-weight: bold">
+                      <tr style="font-weight: bold; text-align: center">
                         <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</td>
                         <td
                           v-if="!hasLayerOneFeature(layer)"
