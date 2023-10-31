@@ -310,61 +310,6 @@
                       <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                         <td :colspan="getColSpan(layer)">
                           <table class="feature_attributes">
-                            <tr v-if="'__g3w_marker' === layer.id">
-                              <td :colspan="2">
-                                <!-- CASE MARKER LAYER -->
-                                <!-- <marker-result-feature :marker="feature.attributes" :showData="false" /> -->
-                                <!-- <div class="marker-item">
-                                  <section
-                                    class = "marker-tools skin-background-color lighten"
-                                    style = "width: 100%; padding: 3px;"
-                                  >
-                                    <span
-                                      @contextmenu.prevent.stop = ""
-                                      @click.stop               = "zoom"
-                                      :class                    = "{'toggled': false }"
-                                      class                     = "action-button skin-tooltip-right"
-                                    ><span :class="g3wtemplate.getFontClass('marker')" style="padding: 2px;" class="action-button-icon"></span></span>
-                                    <span
-                                      @contextmenu.prevent.stop = ""
-                                      @click.stop               = "remove"
-                                      :class                    = "{'toggled': false }"
-                                      class                     = "action-button skin-tooltip-right"
-                                    ><span :class="g3wtemplate.getFontClass('trash')" style="padding: 2px;" class="action-button-icon"></span></span>
-                                  </section>
-                                  <section class="marker-editing">
-                                    <div
-                                      v-if                = "poinEditableLayers.length > 0"
-                                      class               = "g3w-point-editable-layers"
-                                      style               = "width: 100%; display: flex"
-                                      @click.prevent.stop = ""
-                                    >
-                                      <select
-                                        v-select2 = "'layerId'"
-                                        :search   = "false"
-                                        style     = "flex-grow: 1;"
-                                        class     = "form-control"
-                                      >
-                                        <option
-                                          v-for      = "pointlayer in poinEditableLayers"
-                                          :key       = "pointlayer.id"
-                                          :value     = "pointlayer.id"
-                                        >
-                                          <span style="font-weight: bold">{{pointlayer.name}}</span>
-                                        </option>
-                                      </select>
-                                      <button
-                                        style       = "border-radius: 0 3px 3px 0;"
-                                        class       = "btn skin-button"
-                                        @click.stop = "edit"
-                                      >
-                                        <span :class="g3wtemplate.getFontClass('pencil')"></span>
-                                      </button>
-                                    </div>
-                                  </section>
-                                </div> -->
-                              </td>
-                            </tr>
                             <template v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <template v-if="isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
                                 <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
@@ -434,18 +379,7 @@
   import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
   import HeaderFeatureActionsBody from "components/QueryResultsHeaderFeatureActionsBody.vue";
-  import MarkerResultFeature      from "components/MarkerResultFeature.vue";
   import { toRawType, throttle }  from 'utils';
-
-  import { MarkersEventBus }         from 'app/eventbus';
-  import { PluginsRegistry }         from "store/plugins";
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import GUI                         from 'services/gui';
-
-  const {
-    Geometry,
-    singleGeometriesToMultiGeometry
-  } = require('utils/geo');
 
   const MAX_SUBSET_LENGTH = 3;
   const headerExpandActionCellWidth = 10;
@@ -466,7 +400,6 @@
     },
     mixins: [fieldsMixin],
     components: {
-      MarkerResultFeature,
       TableAttributeFieldValue,
       'infoformats': InfoFormats,
       'header-feature-body': HeaderFeatureBody,
