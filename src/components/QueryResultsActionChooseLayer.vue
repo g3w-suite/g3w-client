@@ -57,12 +57,14 @@ export default {
       default: null
     },
   },
+
   data() {
     return {
       layerId: null,
       open: true
     }
   },
+
   methods: {
     /**
      * Create new feature on layer point geometry
@@ -118,6 +120,7 @@ export default {
     if (this.layers.length > 0) {
       this.layerId = this.layers[0].id;
     }
-  }
+  },
+
 };
 </script>

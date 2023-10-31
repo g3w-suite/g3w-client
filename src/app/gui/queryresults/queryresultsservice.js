@@ -380,17 +380,6 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Remove a feature from current layer result
-   *
-   * @param layer
-   * @param feature
-   */
-  removeFeatureLayerFromResult(layer, feature) {
-    this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
-  }
-
-
-  /**
    * Loop over response features based on layer response and
    * check if features layer need to be added or removed to
    * current `state.layers` results.
@@ -2552,7 +2541,19 @@ QueryResultsService.prototype.setters = {
    * @param opts.feature
    * @param opts.container
    */
-  openCloseFeatureResult({open, layer, feature, container}={}) {}
+  openCloseFeatureResult({open, layer, feature, container}={}) {},
+
+  /**
+   * Remove a feature from current layer result
+   *
+   * @param layer
+   * @param feature
+   * 
+   * @since 3.9.0
+   */
+  removeFeatureLayerFromResult(layer, feature) {
+    this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
+  }
 
 };
 
