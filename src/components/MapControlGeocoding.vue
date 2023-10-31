@@ -7,10 +7,11 @@
   @since 3.9.0
 -->
 <template>
-  <div class="ol-geocoder gcd-txt-container">
+  <div class="ol-geocoder">
 
-    <!-- SEARCH INPUT -->
     <div class="gcd-txt-control">
+      
+      <!-- INPUT SEARCH -->
       <input
         ref             = "input"
         type            = "text"
@@ -21,7 +22,8 @@
         @keyup          = "_onQuery"
         @input          = "_onValue"
       />
-      <!-- RESET RESULTS -->
+
+      <!-- RESET SEARCH -->
       <button
         ref         = "reset"
         type        = "button"
@@ -29,7 +31,8 @@
         class       = "gcd-txt-reset gcd-hidden"
         @click.stop = "_onReset"
       ></button>
-      <!-- search query button -->
+
+      <!-- SUBMIT SEARCH -->
       <button
         type            = "button"
         id              = "gcd-search"
@@ -42,7 +45,8 @@
           aria-hidden = "true"
         ></i>
       </button>
-      <!-- DELETE ALL RESULTS AND MARKERS ADDED --->
+
+      <!-- CLEAR MARKERS SELECTION --->
       <button
         v-if="$data._markers.length > 0"
         type            = "button"
@@ -57,7 +61,21 @@
         ></i>
       </button>
 
-      <!-- SHOW MARKERS ON RESULT CONTENT -->
+      <!-- TOGGLE MARKERS VISIBLITY -->
+      <button
+        v-if          = "$data._markers.length > 0"
+        type          = "button"
+        id            = "markers-visibility-layer"
+        class         = "btn skin-background-color"
+        @click.stop   = "_toggleLayerVisibility"
+      >
+        <i
+        :class      = "g3wtemplate.getFontClass($data._visible ? 'eye-close': 'eye')"
+        aria-hidden = "true"
+        ></i>
+      </button>
+
+      <!-- TOGGLE SIDEBAR PANEL -->
       <button
         v-if          = "showMarkerResultsButton"
         type          = "button"
@@ -68,19 +86,6 @@
         <i
           :class      = "g3wtemplate.getFontClass('list')"
           aria-hidden = "true"
-        ></i>
-      </button>
-      <!-- SHOW/HIDE MARKER LAYER ON MAP -->
-       <button
-        v-if          = "$data._markers.length > 0"
-        type          = "button"
-        id            = "markers-visibility-layer"
-        class         = "btn skin-background-color"
-        @click.stop   = "_toggleLayerVisibility"
-      >
-        <i
-        :class      = "g3wtemplate.getFontClass($data._visible ? 'eye-close': 'eye')"
-        aria-hidden = "true"
         ></i>
       </button>
 
@@ -96,7 +101,7 @@
         :class  = "[
           item.provider,
           item.__heading ? 'skin-background-color' : '',
-          item.__no_results ? 'nominatim-noresult' : '',
+          item.__no_results ? 'gcd-noresult' : '',
         ]"
         :key         = "item.__uid"
         @click.stop = "_onItemClick($event, item)"
@@ -169,16 +174,9 @@ import nominatim                     from 'utils/search_from_nominatim';
 import bing                          from 'utils/search_from_bing';
 import google                        from 'utils/search_from_google';
 import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
-import { MarkersEventBus }           from 'eventbus';
+import { toRawType }                 from 'utils';
 
-const ComponentsFactory = require('gui/component/componentsfactory');
-
-const {
-  uniqueId,
-  toRawType
-}                        = require('utils');
-
-const Projections        = require('g3w-ol/projection/projections');
+const Projections                    = require('g3w-ol/projection/projections');
 
 const providers = [ nominatim, bing, google ];
 
@@ -320,10 +318,10 @@ export default {
       }
     },
 
-      /**
+    /**
      * Toggle marker layer visibility
-     * @since v3.9
-     * @private
+     * 
+     * @since 3.9.0
      */
     _toggleLayerVisibility() {
       this.$data._visible = !this.$data._visible;
@@ -332,9 +330,9 @@ export default {
   
     /**
      * Clear Result list only
-     * 
-    * @since v3.9
-    */
+     *
+     * @since 3.9.0
+     */
     clearResults() {
       this.$data._results.splice(0);
     },
@@ -401,7 +399,7 @@ export default {
 
           // clear previous result
           this.clearResults();
-          this.$refs.reset.classList.add("gcd-pseudo-rotate");
+          this.$refs.reset.classList.add("gcd-spin");
 
           // request data
           const results = await Promise.allSettled(
@@ -417,7 +415,7 @@ export default {
 
           // update search results
           this._showResults(results.filter(p => 'fulfilled' === p.status));
-          this.$refs.reset.classList.remove("gcd-pseudo-rotate");
+          this.$refs.reset.classList.remove("gcd-spin");
         }
 
       });
@@ -621,18 +619,16 @@ export default {
       }
     });
 
-    // MarkersEventBus.$on('remove-marker', (uid) => this._removeItem(uid));
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
-      if('__g3w_marker' === layer.id) {
+      if ('__g3w_marker' === layer.id) {
         this._removeItem(feature.attributes.__uid);
       }
     });
 
-    MarkersEventBus.$on('remove-all-markers', () => this.clearMarkers());
-
     queryresults.onafter('addActionsForLayers', (actions, layers) => {
 
       const layer = layers.find(layer => '__g3w_marker' === layer.id);
+
       if (!layer) {
         return;
       }
@@ -644,8 +640,7 @@ export default {
         actions[layer.id] = [];
       }
 
-
-        actions[layer.id].push({
+      actions[layer.id].push({
         id:    'choose_layer',
         class: GUI.getFontClass('pencil'),
         state: queryresults.createActionState({layer}),
@@ -700,6 +695,7 @@ export default {
   .ol-geocoder > ul > li > a > *:not(:last-of-type) {
     margin-bottom: 10px;
   }
+
   li:not(.skin-background-color) {
     display: flex;
     align-items: center;
@@ -716,91 +712,8 @@ export default {
   li.add, li.add:hover {
     background-color: #ffe500 !important;
   }
-</style>
 
-<style>
-  /* Geocoder */
-  .ol-geocoder {
-    box-sizing: border-box;
-    position: absolute;
-    max-width: 300px;
-    height: 4.375em;
-    top: 7px;
-    left: 45px;
-    width: 50%;
-    height: 6px;
-  }
-
-  .ol-geocoder .gcd-pseudo-rotate::after {
-    animation: spin .7s linear infinite;
-  }
-
-  .ol-geocoder .gcd-hidden {
-    display: none !important;
-  }
-
-  .ol-geocoder > ul > li:hover {
-    background-color: #eee;
-  }
-
-  .ol-geocoder > ul > li > a {
-    display: block;
-    text-decoration: none;
-    padding: 3px 5px;
-    color: #000;
-  }
-
-  .ol-geocoder > ul > li {
-    width: 100%;
-    overflow: hidden;
-    padding: 0;
-    line-height: 1rem;
-    color: #fff;
-    min-height: 30px;
-    padding-left: 3px;
-    border-bottom: 2px solid var(--skin-color);
-  }
-
-  .ol-geocoder > ul > li.nominatim-noresult:hover {
-    background-color: transparent !important;
-  }
-
-  .ol-geocoder > ul > li.nominatim-noresult {
-    font-weight: bold;
-    color: #384247;
-    margin: 10px;
-    border-bottom: 0 !important;
-  }
-
-  .ol-geocoder > ul li {
-    min-height: 20px;
-    padding: 10px;
-    font-size: 1.1em;
-  }
-
-  .ol-geocoder > ul li:last-child {
-    border-bottom: 0 !important;
-  }
-
-  .ol-geocoder > ul {
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
-    border-radius: 3px !important;
-    position: absolute;
-    left: 3px;
-    width: 100%;
-    max-height: 200px;
-    white-space: normal;
-    list-style: none;
-    padding: 0;
-    margin-top: 3px;
-    background-color: white;
-    border-top: none;
-    overflow-x: hidden;
-    overflow-y: auto;
-    transition: max-height 300ms ease-in;
-  }
-
-  .ol-geocoder #gcd-search {
+  #gcd-search {
     z-index: 1;
     width: 2.5em;
     height: 100%;
@@ -808,25 +721,25 @@ export default {
     background-color: var(--skin-color, #fff);
   }
 
-  .ol-geocoder #show-markers-results,
-  .ol-geocoder #markers-visibility-layer {
+  #show-markers-results,
+  #markers-visibility-layer {
     z-index: 1;
     border-radius: 0 !important;
     color: #FFF;
     margin-left: 2px;
   }
 
-  .ol-geocoder #gcd-trash {
+  #gcd-trash {
     margin-left: 2px;
     z-index: 1;
     border-radius: 0;
   }
 
-  .ol-geocoder #gcd-input-query {
+  #gcd-input-query {
     font-weight: bold;
   }
 
-  .ol-geocoder .gcd-txt-reset::after {
+  .gcd-txt-reset::after {
     content: "\d7";
     display: inline-block;
     font-weight: bold;
@@ -835,7 +748,7 @@ export default {
     color: var(--skin-color);
   }
 
-  .ol-geocoder .gcd-txt-reset {
+  .gcd-txt-reset {
     z-index: 1;
     width: 2.5em;
     height: 100%;
@@ -848,11 +761,11 @@ export default {
     cursor: pointer;
   }
 
-  .ol-geocoder .gcd-txt-input:focus {
+  .gcd-txt-input:focus {
     outline: none;
   }
 
-  .ol-geocoder .gcd-txt-input {
+  .gcd-txt-input {
     z-index: 1;
     border: 0;
     width: 100%;
@@ -864,7 +777,7 @@ export default {
     font-size: 1em;
   }
 
-  .ol-geocoder .gcd-txt-control {
+  .gcd-txt-control {
     position: relative;
     display: flex;
     justify-content: flex-end;
@@ -901,9 +814,91 @@ export default {
     font-size: 0.75em;
   }
 
+  .gcd-spin::after {
+    animation: spin .7s linear infinite;
+  }
+
+  .gcd-hidden {
+    display: none !important;
+  }
+
+</style>
+
+<style>
+  /* Geocoder */
+  .ol-geocoder {
+    box-sizing: border-box;
+    position: absolute;
+    max-width: 300px;
+    height: 4.375em;
+    top: 7px;
+    left: 45px;
+    width: 50%;
+    height: 6px;
+  }
+
   @media (max-width: 767px) {
-    .ol-geocoder.gcd-txt-container {
-      left:0
+    .ol-geocoder {
+      left: 10px;
     }
   }
+
+  .ol-geocoder > ul > li:hover {
+    background-color: #eee;
+  }
+
+  .ol-geocoder > ul > li {
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+    line-height: 1rem;
+    color: #fff;
+    min-height: 30px;
+    padding-left: 3px;
+    border-bottom: 2px solid var(--skin-color);
+    min-height: 20px;
+    padding: 10px;
+    font-size: 1.1em;
+  }
+
+  .ol-geocoder > ul {
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    border-radius: 3px !important;
+    position: absolute;
+    left: 3px;
+    width: 100%;
+    max-height: 200px;
+    white-space: normal;
+    list-style: none;
+    padding: 0;
+    margin-top: 3px;
+    background-color: white;
+    border-top: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: max-height 300ms ease-in;
+  }
+
+  .ol-geocoder > ul > li > a {
+    display: block;
+    text-decoration: none;
+    padding: 3px 5px;
+    color: #000;
+  }
+
+  .ol-geocoder > ul li:last-child {
+    border-bottom: 0 !important;
+  }
+
+  li.gcd-noresult:hover {
+    background-color: transparent !important;
+  }
+
+  li.gcd-noresult {
+    font-weight: bold;
+    color: #384247;
+    margin: 10px;
+    border-bottom: 0 !important;
+  }
+
 </style>
