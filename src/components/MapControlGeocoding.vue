@@ -821,7 +821,10 @@ export default {
   .gcd-hidden {
     display: none !important;
   }
-
+  li.skin-background-color {
+    position: sticky;
+    top: 0;
+  }
 </style>
 
 <style>
@@ -864,8 +867,7 @@ export default {
   .ol-geocoder > ul {
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     border-radius: 3px !important;
-    position: absolute;
-    left: 3px;
+    margin-left: 3px;
     width: 100%;
     max-height: 200px;
     white-space: normal;
@@ -886,7 +888,7 @@ export default {
     color: #000;
   }
 
-  .ol-geocoder > ul li:last-child {
+  .ol-geocoder > ul > li:last-child {
     border-bottom: 0 !important;
   }
 
