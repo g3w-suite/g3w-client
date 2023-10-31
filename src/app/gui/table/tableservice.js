@@ -710,7 +710,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
       features
     }) => {
       const values = fields.map(f => feature.attributes[f]);
-      const k      = _createFeatureKey(values);
 
       field_values.push(values);
       
@@ -733,14 +732,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
              },
             outputs: false, // just a request not show on result
           });
-      }
-
-      if (zoom && undefined === features[k]) {
-        promise = Promise.reject();
-      }
-
-      if (undefined !== features[k]) {
-        promise = Promise.resolve({ data: [{ features: features[k] }] });
       }
 
       promises.push(promise);
