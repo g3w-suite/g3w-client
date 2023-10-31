@@ -7,7 +7,7 @@
   @since 3.9.0
 -->
 <template>
-  <div class="ol-geocoder">
+  <div class="ol-geocoder" v-disabled="$data._disabled">
 
     <div class="gcd-txt-control">
 
@@ -244,6 +244,7 @@ export default {
       _results                 : [],
       _markers                 : [],
       _visible                 : true,   //set visibility of layer
+      _disabled                : false, //disabled boolean control
     };
   },
 
@@ -640,6 +641,9 @@ export default {
       // create new feature on layer point geometry
       cbk: (layerId, feature) => {
         if (PluginsRegistry.getPlugin('editing')) {
+          this.$data._disabled = true; //set disabled
+          //clear eventually results to have more map visibility
+          //this.clearResults();
           PluginsRegistry
             .getPlugin('editing')
             .getApi()
@@ -656,6 +660,9 @@ export default {
                 ...feature.attributes
               })
             })
+              .finally(()=> {
+                this.$data._disabled = false;//reset disbaled
+              })
         }
       }
     }
