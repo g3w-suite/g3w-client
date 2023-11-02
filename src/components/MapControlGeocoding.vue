@@ -56,7 +56,6 @@
       >
         <i
           :class      = "g3wtemplate.getFontClass('trash')"
-          style       = "color:red"
           aria-hidden = "true"
         ></i>
       </button>
@@ -722,18 +721,17 @@ export default {
     background-color: var(--skin-color, #fff);
   }
 
+  #gcd-trash,
   #show-markers-results,
   #markers-visibility-layer {
     z-index: 1;
     border-radius: 0 !important;
     color: #FFF;
-    margin-left: 2px;
+    border-left: 1px solid #fff;
   }
 
   #gcd-trash {
-    margin-left: 2px;
-    z-index: 1;
-    border-radius: 0;
+    color: #f00;
   }
 
   #gcd-input-query {
