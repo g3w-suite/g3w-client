@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-const { XHR } = require('core/utils/utils');
+const { XHR } = require('utils');
 
 /**
  * Singletone service to run async task

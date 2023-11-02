@@ -14,7 +14,7 @@ const {
   throttle,
   toRawType,
   createFilterFromString,
-}                              = require('core/utils/utils');
+}                              = require('utils');
 const G3WObject                = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
@@ -22,12 +22,12 @@ const {
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer,
-}                              = require('core/utils/geo');
+}                              = require('utils/geo');
 const BaseLayers               = require('g3w-ol/layers/bases');
 const {
   getScaleFromResolution,
   getResolutionFromScale
-}                              = require('core/utils/ol');
+}                              = require('utils/ol');
 const ControlsFactory          = require('gui/map/control/factory');
 const VectorLayer              = require('core/layers/vectorlayer');
 
@@ -357,7 +357,7 @@ function MapService(options={}) {
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
           geometryType,
-          color:this.defaultsLayers._style.selectionLayer.color,
+          color: this.defaultsLayers._style.selectionLayer.color,
           fill: false
         });
         styles.push(style);
@@ -1080,6 +1080,9 @@ proto._setupControls = function() {
 
       }
     });
+
+    this._setMapControlsGrid();
+
     return this.getMapControls()
   }
 };
@@ -1207,57 +1210,62 @@ proto.createCopyMapExtentUrl = function() {
   copyUrl(url);
 };
 
+/**
+ * Recursively compute map controls grid layout (like css grids) 
+ * 
+ * @param { Array } [length] holds current length after each iteration 
+ */
 proto._setMapControlsGrid = function(length) {
-  const grid = this.state.mapControl.grid;
-    if (length < 2) {
-      const rC = grid[grid.length - 1];
-      grid.push({
-        rows: rC.rows * 2 ,
-        columns: 2
-      });
-      return;
-    }
-    if (length === 2) {
-      if (grid.length) {
-        const rC = grid[grid.length - 1];
-        grid.push({
-          rows: rC.columns ,
-          columns: rC.rows
-        })
-      } else {
-        grid.push({
-          rows: 1,
-          columns: 2
-        })
-      }
-    } else if (length === 3) {
-      const rC = grid[grid.length - 1];
-      grid.push({
-        rows: 2 * rC.rows,
-        columns: length
-      })
-    } else {
-      grid.push({
-        rows: grid.length + 1 + (Number.isInteger(length) ? 0 : 1),
-        columns: Number.isInteger(length) ? length: parseInt(length) + 1
-      });
-      const _length = Number.isInteger(length) ? length: parseInt(length);
-      this._setMapControlsGrid(_length/2);
-    }
-};
 
-proto._setMapControlsInsideContainerLenght = function() {
-  this.state.mapControl.length = 1;
-  // count the mapcontrol inside g3w-map-control container
-  this._mapControls.forEach(control => {
-    const map = this.getMap();
-    this.state.mapControl.length+=control.mapcontrol ? control.id === 'zoom' ? 2 : 1: 0;
-    control.control.changelayout ? control.control.changelayout(map) : null;
-  });
-  // add 1 id odd number
-  this.state.mapControl.length += this.state.mapControl.length% 2;
-  this.state.mapControl.grid = [];
-  this._setMapControlsGrid(this.state.mapControl.length);
+  // initial iteration step
+  if (undefined === length) {
+    // update map controls length
+    const state = this.state.mapControl;
+    state.length = 1;
+    // count mapcontrols inside g3w-map-control container
+    this._mapControls.forEach(ctrl => {
+      if (ctrl.mapcontrol) {
+        state.length += 'zoom' === ctrl.id ? 2 : 1;
+      }
+      if (ctrl.control.changelayout) {
+        ctrl.control.changelayout(this.getMap());
+      }
+    });
+
+    // add 1 id odd number
+    state.length += state.length % 2;
+    state.grid = [];
+    length = state.length;
+  }
+
+  // ensure length is a multiple of 2
+  length += length % 2;
+
+  const grid    = this.state.mapControl.grid;
+  let rC        = grid.length ? grid[grid.length - 1] : { rows: 1, columns: 2 };
+  const _length = Number.isInteger(length) ? length : parseInt(length);
+
+  switch (length) {
+
+    case 0:
+    case 1:
+      grid.push({ rows: rC.rows * 2 , columns: 2 });
+      break;
+
+    case 2:
+      grid.push({ rows: (grid.length ? rC.columns * 2 : 1), columns: (grid.length ? rC.rows / 2 : 2) });
+      break;
+
+    case 3:
+      grid.push({ rows: 2 * rC.rows, columns: length });
+      break;
+  
+    default:
+      grid.push({ rows: grid.length ? grid.length * 2 : 1, columns: _length + 1 });
+      this._setMapControlsGrid(Math.round(_length/2), true);
+      break;
+
+  }
 };
 
 /**
@@ -1341,8 +1349,8 @@ proto._updateMapControlsLayout = function({width, height}={}) {
         }
         if (changedAndMoreSpace.changed) {
           const mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
-          const mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
+          const mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
           this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
           changedAndMoreSpace.changed = false;
           changedAndMoreSpace.space && setTimeout(()=> handleVerticalMapControlDOMElements());
@@ -1424,8 +1432,6 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
   }
 
   ControlsRegistry.registerControl(type, control);
-
-  this._setMapControlsInsideContainerLenght();
 
   this.state.mapcontrolready = true;
 };
@@ -1983,8 +1989,8 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   //listen change filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
-      layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
-      layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
+      layer.onbefore('change', () => this.updateMapLayer(mapLayer, {force: true}));
+      layer.on('filtertokenchange', () => this.updateMapLayer(mapLayer, {force: true}))
     });
   ///
 };
@@ -2244,15 +2250,17 @@ let animatingHighlight = false;
 /*
 * geometries = array of geometries
 * action: add, clear, remove :
-*                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
-*                             clear: remove selectionLayer
-*                             remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
+*   - add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
+*   - clear: remove selectionLayer
+*   - remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
 * */
 proto.setSelectionFeatures = function(action='add', options={}) {
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {
-    color
-  });
+  if (color) {
+    this.setDefaultLayerStyle('selectionLayer', {
+      color
+    });
+  }
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':
@@ -2262,8 +2270,7 @@ proto.setSelectionFeatures = function(action='add', options={}) {
       source.removeFeature(feature);
       break;
     case 'update':
-      const id = feature.getId();
-      const addedFeature = source.getFeatureById(id);
+      const addedFeature = source.getFeatureById(feature.getId());
       addedFeature.setGeometry(feature.getGeometry());
       break;
     case 'clear':
@@ -2276,7 +2283,10 @@ proto.clearSelectionFeatures = function() {
   this.defaultsLayers.selectionLayer.getSource().clear();
 };
 
-proto.seSelectionLayerVisible = function(visible=true) {
+/**
+ * @since 3.9.0
+ */
+proto.setSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 

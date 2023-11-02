@@ -13,11 +13,13 @@ export default {
     sign_in:"Kirjaudu sisään",
     layer_selection_filter: {
       tools: {
-        filter: "Lisätä/Poista Suodattaa",
+        filter: "Ota suodatin käyttöön/poista käytöstä",
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
-        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet"
+        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
+        savefilter: "Tallenna suodatin",
+        filterName: "Suodattimen Nimi",
       }
     },
     warning: {
@@ -531,7 +533,8 @@ export default {
         show_metadata: "Metatiedot",
         styles: "Tyylejä",
         vector_color_menu: "Aseta/muuta väriä",
-        layer_opacity: "Peittävyys"
+        layer_opacity: "Peittävyys",
+        filters: "Filters",
       }
     },
     dataTable: {

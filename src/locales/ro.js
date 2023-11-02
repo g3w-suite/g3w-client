@@ -13,11 +13,13 @@ export default {
     sign_in: "Logare",
     layer_selection_filter: {
       tools: {
-        filter: "Adăugare/Eliminare Filtrare",
+        filter: "Activați/Dezactivați filtrul",
         nofilter: "Eliminare Filtrare",
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
-        show_features_on_map: "Arată entitățile vizibile în cadrul hărții"
+        show_features_on_map: "Arată entitățile vizibile în cadrul hărții",
+        savefilter: "Salvează Filtrul",
+        filterName: "Nume Filtru",
       }
     },
     warning: {
@@ -531,7 +533,8 @@ export default {
         show_metadata: "Metadate",
         styles: 'Stiluri',
         vector_color_menu:"Setează/Schimbă Culoare",
-        layer_opacity: "Opacitate"
+        layer_opacity: "Opacitate",
+        filters: "Filters",
       }
     },
     dataTable: {

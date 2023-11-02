@@ -1,6 +1,6 @@
 import GUI from 'services/gui';
 
-const { inherit, resolve: resolvedValue } = require('core/utils/utils');
+const { inherit, resolve: resolvedValue } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 const Panel = function(options={}) {

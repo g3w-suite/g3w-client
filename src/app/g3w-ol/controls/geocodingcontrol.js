@@ -5,7 +5,7 @@ import MapControlGeocoding from 'components/MapControlGeocoding';
 import MapControlNominatimResults from 'components/MapControlNominatimResults';
 
 const Control = require('./control');
-const { toRawType, XHR } = require('core/utils/utils');
+const { toRawType, XHR } = require('utils');
 const Projections = require('g3w-ol/projection/projections');
 /**
  * Classes for all element of dom control
