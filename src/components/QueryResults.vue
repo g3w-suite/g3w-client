@@ -87,7 +87,11 @@
                     ></span>
                   </span>
                   <span
-                    v-if="layer.features.length > 1 && (layer.external || (layer.source && layer.source.type !== 'wms'))"
+                    v-if="
+                      layer.id !== '__g3w_marker' &&
+                      layer.features.length > 1 &&
+                      (layer.external || (layer.source && layer.source.type !== 'wms'))
+                    "
                     @click.stop="selectionFeaturesLayer(layer)"
                     class="action-button skin-tooltip-left"
                     v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"
