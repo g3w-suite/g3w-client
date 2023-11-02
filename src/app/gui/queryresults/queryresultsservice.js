@@ -613,6 +613,8 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
+   * @TODO rename misleading method name: `addActionToolsLayer`
+   * 
    * @param opts.id     action layer id
    * @param opts.layer  layer
    * @param opts.config configuration object
