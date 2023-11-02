@@ -563,7 +563,7 @@ class QueryResultsService extends G3WObject {
     const properties = dynamicProperties.reduce((obj, prop) => { obj[prop] = {}; return obj; }, {});
     layer.features.map((_, idx) => { Object.keys(properties).forEach(prop => { properties[prop][idx] = null; }); });
     return Vue.observable(properties);
-  };
+  }
 
   /**
    * Get action referred to layer getting the action id
@@ -580,7 +580,7 @@ class QueryResultsService extends G3WObject {
     if (this.state.layersactions[layer.id]) {
       return this.state.layersactions[layer.id].find(action => action.id === id);
     }
-  };
+  }
 
   /**
    * Set current layer action tool in feature
@@ -624,6 +624,9 @@ class QueryResultsService extends G3WObject {
     config = {},
     action
   }) {
+    if (!layer) {
+      return;
+    }
     this.state.actiontools[id] = { [layer.id]: config };
     if (action) {
       this.state.layersactions[layer.id] = this.state.layersactions[layer.id] || [];
