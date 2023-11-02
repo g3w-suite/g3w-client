@@ -629,12 +629,12 @@ export default {
 
       //Get editing layers that has Point/MultiPoint Geometry type
       const pointEditingLayers =  CatalogLayersStoresRegistry
-          .getLayers({ EDITABLE: true, GEOLAYER: true })
-          .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
-          .map((l)=>({ id: l.getId(), name: l.getName() }));
+        .getLayers({ EDITABLE: true, GEOLAYER: true })
+        .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+        .map((l)=>({ id: l.getId(), name: l.getName() }));
 
       if (pointEditingLayers.length === 0) {
-          return;
+        return;
       }
       // Add
       queryresults.addCurrentActionToolsLayer({
