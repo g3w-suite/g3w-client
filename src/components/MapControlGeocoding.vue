@@ -645,6 +645,7 @@ export default {
           layers: pointEditingLayers,
           // create new feature on layer point geometry
           icon: 'pencil',
+          // @TODO add translation
           label: 'Choose a layer where to add this feature',
           cbk: (layerId, feature) => {
             const editing = PluginsRegistry.getPlugin('editing');
