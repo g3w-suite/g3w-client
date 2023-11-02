@@ -42,7 +42,7 @@
                       @click             = "closePanel"
                       data-placement     = "left"
                       data-toggle        = "tooltip"
-                      data-container     ="body"
+                      data-container     = "body"
                       v-t-tooltip.create = "'back'"
                       class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                     >
@@ -53,7 +53,7 @@
                       @click             = "closeAllPanels"
                       data-placement     = "left"
                       data-toggle        = "tooltip"
-                      data-container     ="body"
+                      data-container     = "body"
                       v-t-tooltip.create = "'close'"
                       class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                     >
