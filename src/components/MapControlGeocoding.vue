@@ -493,9 +493,9 @@ export default {
     },
 
     /**
-     *
-      * @param uid
-     * @private
+     * @param uid
+     * 
+     * @since 3.9.0
      */
     _removeItem(uid) {
       //remove feature marker
@@ -512,10 +512,13 @@ export default {
     },
 
     /**
-     *  Create an OL ffeature from item result
-      * @param item
+     * Create an OL ffeature from item result
+     *
+     * @param item
+     * 
      * @returns {*}
-     * @private
+     *
+     * @since 3.9.0
      */
     _createOlMarker(item) {
       const coords = ol.proj.transform([
@@ -573,12 +576,7 @@ export default {
         if (GUI.getCurrentContent()) {
           GUI.closeContent();
         }
-        GUI.showQueryResults('Geocoding', {
-          data: [{
-            features: layer.getSource().getFeatures(),
-            layer,
-          }]
-        });
+        GUI.showQueryResults('Geocoding', { data: [{ layer, features: layer.getSource().getFeatures() }] });
         is_results_panel_open = true;
       }
     },
@@ -630,66 +628,55 @@ export default {
         return;
       }
 
-      //set configuration of component
-      queryresults.state.actiontools[QueryResultsActionChooseLayer.name] =  {
-        [layer.id]: {
+      // Add
+      queryresults.addCurrentActionToolsLayer({
+        id: QueryResultsActionChooseLayer.name,
+        layer,
+        config: {
           // editable point layers for the project
           layers: CatalogLayersStoresRegistry
             .getLayers({ EDITABLE: true, GEOLAYER: true })
             .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
             .map((l)=>({ id: l.getId(), name: l.getName() })),
-          icon: 'pencil',
           // create new feature on layer point geometry
+          icon: 'pencil',
           cbk: (layerId, feature) => {
-            if (PluginsRegistry.getPlugin('editing')) {
-              this.$data._disabled = true; //set disabled
-              //clear eventually results to have more map visibility
-              //this.clearResults();
-              PluginsRegistry
-                .getPlugin('editing')
-                .getApi()
-                .addLayerFeature({
-                  layerId,
-                  feature: new ol.Feature({
-                    //check if is Multi Geometry (MultiPoint)
-                    geometry:  Geometry.isMultiGeometry(
-                      CatalogLayersStoresRegistry
-                        .getLayerById(layerId)
-                        .getGeometryType()) ?
-                      singleGeometriesToMultiGeometry([feature.geometry]) :
-                      feature.geometry,
-                    ...feature.attributes
-                  })
-                })
-                .finally(()=> {
-                  this.$data._disabled = false; //reset disbaled
-                })
+            const editing = PluginsRegistry.getPlugin('editing');
+            // skip on missing plugin dependency
+            if (!editing) {
+              return;
             }
+            editing
+              .getApi()
+              .addLayerFeature({
+                layerId: layerId,
+                feature: new ol.Feature({
+                  //check if is Multi Geometry (MultiPoint)
+                  geometry:  Geometry.isMultiGeometry(CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType())
+                    ? singleGeometriesToMultiGeometry([feature.geometry])
+                    : feature.geometry,
+                  ...feature.attributes
+                })
+              });
           }
-        }
-      };
-
-
-      if (undefined === actions[layer.id]) {
-       actions[layer.id] = [];
-      }
-
-      actions[layer.id].push({
-      id:    'choose_layer',
-      class: GUI.getFontClass('pencil'),
-      state: queryresults.createActionState({layer}),
-      toggleable: true,
-      hint:  'Choose layer',
-      cbk: (layer, feature, action, index) => {
-        action.state.toggled[index] = !action.state.toggled[index];
-        queryresults.setCurrentActionLayerFeatureTool({
-          layer,
-          index,
-          action,
-          component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
-        });
-      }
-    });
+        },
+        action: {
+          id:    'choose_layer',
+          class: GUI.getFontClass('pencil'),
+          state: queryresults.createActionState({ layer }),
+          toggleable: true,
+          hint:  'Choose layer',
+          cbk: (layer, feature, action, index) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+              queryresults.setCurrentActionLayerFeatureTool({
+              layer,
+              index,
+              action,
+              component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
+            });
+          }
+        },
+      });
 
     });
 
@@ -712,10 +699,6 @@ export default {
 </script>
 
 <style scoped>
-  .ol-geocoder > ul > li > a > *:not(:last-of-type) {
-    margin-bottom: 10px;
-  }
-
   li:not(.skin-background-color) {
     display: flex;
     align-items: center;
@@ -728,9 +711,6 @@ export default {
   li.bing .gcd-city,
   li.bing .gcd-country {
     display: none;
-  }
-  li.add, li.add:hover {
-    background-color: #ffe500 !important;
   }
 
   #gcd-search {
@@ -841,13 +821,26 @@ export default {
   .gcd-hidden {
     display: none !important;
   }
+
   li.skin-background-color {
     position: sticky;
     top: 0;
   }
+
   li.selected {
-  background-color: #f7fabf !important;
-}
+    background-color: #f7fabf !important;
+  }
+
+  li.gcd-noresult:hover {
+    background-color: transparent !important;
+  }
+
+  li.gcd-noresult {
+    font-weight: bold;
+    color: #384247;
+    margin: 10px;
+    border-bottom: 0 !important;
+  }
 </style>
 
 <style>
@@ -911,19 +904,11 @@ export default {
     color: #000;
   }
 
+  .ol-geocoder > ul > li > a > *:not(:last-of-type) {
+    margin-bottom: 10px;
+  }
+
   .ol-geocoder > ul > li:last-child {
     border-bottom: 0 !important;
   }
-
-  li.gcd-noresult:hover {
-    background-color: transparent !important;
-  }
-
-  li.gcd-noresult {
-    font-weight: bold;
-    color: #384247;
-    margin: 10px;
-    border-bottom: 0 !important;
-  }
-
 </style>
