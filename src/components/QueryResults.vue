@@ -183,7 +183,8 @@
                                   :layer="layer"
                                   :feature="feature"
                                   :featureIndex="index"
-                                  :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
+                                  :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
+                                />
                               </td>
                             </template>
                           </tr>
