@@ -627,16 +627,22 @@ export default {
         return;
       }
 
+      //Get editing layers that has Point/MultiPoint Geometry type
+      const pointEditingLayers =  CatalogLayersStoresRegistry
+          .getLayers({ EDITABLE: true, GEOLAYER: true })
+          .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+          .map((l)=>({ id: l.getId(), name: l.getName() }));
+
+      if (pointEditingLayers.length === 0) {
+          return;
+      }
       // Add
       queryresults.addCurrentActionToolsLayer({
         id: QueryResultsActionChooseLayer.name,
         layer,
         config: {
           // editable point layers for the project
-          layers: CatalogLayersStoresRegistry
-            .getLayers({ EDITABLE: true, GEOLAYER: true })
-            .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
-            .map((l)=>({ id: l.getId(), name: l.getName() })),
+          layers: pointEditingLayers,
           // create new feature on layer point geometry
           icon: 'pencil',
           label: 'Choose a layer where to add this feature',
