@@ -712,9 +712,10 @@ async function parse_search_1n(data, options) {
 
   const project = ProjectsRegistry.getCurrentProject();
 
-  // check if has features on result
+  // check if it has features on result
   if (!features.length) {
     DataRouterService.showEmptyOutputs();
+    return [];
   }
 
   const relation = project.getRelationById(relation_id);
