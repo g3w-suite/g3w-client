@@ -57,8 +57,8 @@ export default async function(opts) {
               country:   result.Address.countryRegion,
             },
             original: {
-              formatted: result.display_name,
-              details:   result.address
+              formatted: result.Address.formattedAddress,
+              details:   result.Address,
             }
           };
         })
