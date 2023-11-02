@@ -3,10 +3,12 @@
   @since 3.9.0
 -->
 <template>
-  <section class="marker-editing">
+  <section
+    v-if  = "config.layers.length > 0"
+    class = "action-choose-layer"
+  >
+    <label v-html="config.label"></label>
     <div
-      v-if                = "config.layers.length > 0"
-      class               = "g3w-point-editable-layers"
       style               = "width: 100%; display: flex"
       @click.prevent.stop = ""
     >
@@ -51,6 +53,7 @@ export default {
       type: Object,
       default: {
         icon: 'pencil',
+        label: 'Choose a Layer',
         layers: [],
         cbk: () => {},
       }
@@ -64,7 +67,6 @@ export default {
   },
 
   created() {
-    console.log(this);
     if (this.config.layers.length > 0) {
       this.layerId = this.config.layers[0].id;
     }

@@ -640,6 +640,7 @@ export default {
             .map((l)=>({ id: l.getId(), name: l.getName() })),
           // create new feature on layer point geometry
           icon: 'pencil',
+          label: 'Choose a layer where to add this feature',
           cbk: (layerId, feature) => {
             const editing = PluginsRegistry.getPlugin('editing');
             // skip on missing plugin dependency
@@ -658,14 +659,14 @@ export default {
                   ...feature.attributes
                 })
               });
-          }
+          },
         },
         action: {
-          id:    'choose_layer',
+          id: 'choose_layer',
           class: GUI.getFontClass('pencil'),
           state: queryresults.createActionState({ layer }),
           toggleable: true,
-          hint:  'Choose layer',
+          hint: 'Choose a layer',
           cbk: (layer, feature, action, index) => {
             action.state.toggled[index] = !action.state.toggled[index];
               queryresults.setCurrentActionLayerFeatureTool({
@@ -674,7 +675,7 @@ export default {
               action,
               component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
             });
-          }
+          },
         },
       });
 
