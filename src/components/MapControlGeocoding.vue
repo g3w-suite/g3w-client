@@ -76,7 +76,7 @@
 
       <!-- TOGGLE SIDEBAR PANEL -->
       <button
-        v-if          = "showMarkerResultsButton"
+        v-if          = "$data._markers.length > 0"
         type          = "button"
         id            = "show-markers-results"
         class         = "btn skin-background-color"
@@ -196,7 +196,7 @@ const pushpin_icon = new ol.style.Icon({
 /**
  * Search results layer (marker)
  *
- * @TODO move to parent `Control` class (duplicated also in GEOLOCATION CONTROL)
+ * @TODO move to parent `Control` class? (duplicated also in GEOLOCATION CONTROL)
  */
 const layer = new ol.layer.Vector({
   id: '__g3w_marker',
@@ -284,12 +284,6 @@ export default {
       required: true,
     },
 
-  },
-
-  computed: {
-    showMarkerResultsButton() {
-      return this.$data._markers.length > 0;
-    }
   },
 
   methods: {
@@ -477,8 +471,7 @@ export default {
      * @since 3.9.0
      */
     _onValue(evt) {
-      const value = evt.target.value.trim();
-      this.$refs.reset.classList.toggle("gcd-hidden", value.length === 0);
+      this.$refs.reset.classList.toggle("gcd-hidden", evt.target.value.trim().length === 0);
     },
 
     /**
@@ -508,6 +501,9 @@ export default {
       if (this.$data._markers.length === 0){
         this._hideMarker();
       }
+      if (is_results_panel_open) {
+        GUI.closeContent();
+      }
     },
 
     /**
@@ -520,18 +516,11 @@ export default {
      * @since 3.9.0
      */
     _createOlMarker(item) {
-      const coords = ol.proj.transform([
-        parseFloat(item.lon),
-        parseFloat(item.lat)],
-        'EPSG:4326',
-        GUI.getService('map').getEpsg()
-      );
-      //create Point geometry
-      const geometry   = new ol.geom.Point(coords);
-      //create OL Feture
       const feature = new ol.Feature({
-          geometry,
-          ...item //set properties
+        geometry: new ol.geom.Point(
+          ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
+        ),
+        ...item //set properties
       });
       //set id of the feature
       feature.setId(item.__uid);
@@ -557,6 +546,7 @@ export default {
           GUI.getService('map').zoomToFeatures([feature])
           this.$data._markers.push(item);
           item.add = true;
+          this._showMarkerResults([feature], true);
         }
 
       } catch (e) {
@@ -567,17 +557,17 @@ export default {
        * Show only markers on
        * @private
        */
-    _showMarkerResults() {
-      if (is_results_panel_open) {
+    _showMarkerResults(features, skipChek = false) {
+      if (is_results_panel_open && !skipChek) {
         GUI.closeContent();
-      } else {
-        //check if is already open right panel
-        if (GUI.getCurrentContent()) {
-          GUI.closeContent();
-        }
-        GUI.showQueryResults('Geocoding', { data: [{ layer, features: layer.getSource().getFeatures() }] });
-        is_results_panel_open = true;
+        return;
       }
+      //check if is already open right panel
+      if (GUI.getCurrentContent()) {
+        GUI.closeContent();
+      }
+      GUI.showQueryResults('Geocoding', { data: [{ layer, features: features || layer.getSource().getFeatures() }] });
+      is_results_panel_open = true;
     },
 
   },
@@ -640,6 +630,22 @@ export default {
       queryresults.addCurrentActionToolsLayer({
         id: QueryResultsActionChooseLayer.name,
         layer,
+        action: {
+          id: 'choose_layer',
+          class: GUI.getFontClass('pencil'),
+          state: queryresults.createActionState({ layer }),
+          toggleable: true,
+          hint: 'Choose a layer',
+          cbk: (layer, feature, action, index) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+              queryresults.setCurrentActionLayerFeatureTool({
+              layer,
+              index,
+              action,
+              component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
+            });
+          },
+        },
         config: {
           // editable point layers for the project
           layers: pointEditingLayers,
@@ -667,33 +673,16 @@ export default {
               });
           },
         },
-        action: {
-          id: 'choose_layer',
-          class: GUI.getFontClass('pencil'),
-          state: queryresults.createActionState({ layer }),
-          toggleable: true,
-          hint: 'Choose a layer',
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-              queryresults.setCurrentActionLayerFeatureTool({
-              layer,
-              index,
-              action,
-              component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
-            });
-          },
-        },
       });
 
     });
 
   },
 
-
   async mounted() {
     await this.$nextTick();
     const q = document.querySelector.bind(document);
-    q('#gcd-input-query').value = /*'via sallustio 10'*/ 'cafe';
+    q('#gcd-input-query').value = 'becca' /*'via sallustio 10'*/ /*'cafe'*/;
     q('#gcd-search').click();
   },
 
