@@ -740,6 +740,7 @@ async function parse_search_1n(data, options) {
   if (!features.length) {
     //show empty result output
     DataRouterService.showEmptyOutputs();
+    return [];
   }
 
   //get relation

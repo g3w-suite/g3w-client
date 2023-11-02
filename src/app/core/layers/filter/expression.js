@@ -88,8 +88,12 @@ proto.createSingleExpressionElement = function({value, attribute, operator, logi
     const _value = Array.isArray(value) ? value : [value];
     const filterValue = `( ${_value.map(value => `'${value}'`).join(',').replace(/,/g, ' , ')} )`;
     filterElement = `"${attribute}" ${filterOp} ${filterValue}${filterLogicOperator}`;
-  } else if ((value !== null && value !== undefined) && !(Number.isNaN(value) || !value.toString().trim())) {
-    const singolequote = typeof value !== 'number' ? value.split("'") : [];
+  } else if (
+      (value !== null && value !== undefined)
+      && !(Number.isNaN(value) || !value.toString().trim()) //check if a valid number (not a NaN and not an empty string)
+    ) {
+    const singolequote = Array.isArray(value) ? value :
+      typeof value !== 'number' ? value.split("'") : [];
     if (singolequote.length > 1) {
       const _filterElements = [];
       for (let i = 0; i < singolequote.length; i++) {
