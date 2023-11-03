@@ -450,8 +450,8 @@ export default {
         p.value.results.forEach(item => {
           item.__uid = uniqueId();
           this.$data._results.push({
-            provider: p.value.provider,
             ...item,
+            provider: p.value.provider,
             __add: false,
           });
         });

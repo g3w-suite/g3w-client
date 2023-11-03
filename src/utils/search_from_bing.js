@@ -45,10 +45,10 @@ export default async function(opts) {
         .map(result => {
           return {
             // __uid:       uniqueId(), //set unique id //@TODO check if has a unique idendifier
+            name:        result.name,
             lon:         result.point.coordinates[1],
             lat:         result.point.coordinates[0],
             type:        result.entityType,
-            name:        result.name,
             address: {
               road:      result.Address.addressLine,
               postcode:  result.Address.postalCode,
