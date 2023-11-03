@@ -140,24 +140,24 @@
           <a href="" draggable="false">
             <div v-if="item.type" class="gcd-type">{{ item.type }}</div>
             <div v-if="item.name" class="gcd-name">{{ item.name }}</div>
-            <template v-if="item.address">
-              <div
-                v-if   = "item.address.name"
-                class = "gcd-road"
-              >{{ item.address.name }}</div>
-              <div
-                v-if  = "item.address.road || item.address.building || item.address.house_number"
-                class = "gcd-road"
-              >{{ item.address.building }} {{ item.address.road }} {{ item.address.house_number }}</div>
-              <div
-                v-if  = "item.address.city || item.address.town || item.address.village"
-                class = "gcd-city"
-              >{{ item.address.postcode }} {{ item.address.city }} {{ item.address.town }} {{ item.address.village }}</div>
-              <div
-                v-if  = "item.address.state || item.address.country"
-                class = "gcd-country"
-              >{{ item.address.state }} {{ item.address.country }}</div>
-            </template>
+            <!-- <template v-if="item.address"> -->
+            <div
+              v-if   = "item.address_name"
+              class = "gcd-road"
+            >{{ item.address_name }}</div>
+            <div
+              v-if  = "item.address_road || item.address_building || item.address_house_number"
+              class = "gcd-road"
+            >{{ item.address_building }} {{ item.address_road }} {{ item.address_house_number }}</div>
+            <div
+              v-if  = "item.address_city || item.address_town || item.address_village"
+              class = "gcd-city"
+            >{{ item.address_postcode }} {{ item.address_city }} {{ item.address_town }} {{ item.address_village }}</div>
+            <div
+              v-if  = "item.address_state || item.address_country"
+              class = "gcd-country"
+            >{{ item.address_state }} {{ item.address_country }}</div>
+            <!-- </template> -->
           </a>
         </template>
       </li>
@@ -176,6 +176,7 @@ import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLa
 import { PluginsRegistry }           from "store";
 import CatalogLayersStoresRegistry   from 'store/catalog-layers';
 import { toRawType, uniqueId }       from 'utils';
+import { flattenObject }             from 'utils/flattenObject';
 
 const {
   Geometry,
@@ -443,11 +444,11 @@ export default {
         // results
         p.value.results.forEach(item => {
           item.__uid = uniqueId();
-          this.$data._results.push({
+          this.$data._results.push(flattenObject({
             ...item,
             provider: p.value.provider,
             __add: false,
-          });
+          }));
         });
       });
     },
@@ -683,7 +684,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     const q = document.querySelector.bind(document);
-    q('#gcd-input-query').value = 'becca' /*'via sallustio 10'*/ /*'cafe'*/;
+    q('#gcd-input-query').value = /*'becca'*/ /*'via sallustio 10'*/ 'cafe';
     q('#gcd-search').click();
   },
 
