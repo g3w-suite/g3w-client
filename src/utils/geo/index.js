@@ -324,7 +324,7 @@ const Geometry = {
    isPolygonGeometryType(geometryType) {
      return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
    },
- 
+
    /**
     * core/geometry/geometry::is3DGeometry@v3.4
     */
@@ -334,6 +334,10 @@ const Geometry = {
        GeometryTypes.POINTM,
        GeometryTypes.POINTZM,
        GeometryTypes.POINT25D,
+       GeometryTypes.MULTIPOINTZ,
+       GeometryTypes.MULTIPOINTM,
+       GeometryTypes.MULTIPOINTZM,
+       GeometryTypes.MULTIPOINT25D,
        GeometryTypes.LINESTRINGZ,
        GeometryTypes.LINESTRINGM,
        GeometryTypes.LINESTRINGZM,
