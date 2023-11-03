@@ -82,10 +82,9 @@
         class         = "btn skin-background-color"
         @click.stop   = "() => _showMarkerResults()"
       >
-        <i
-          :class      = "g3wtemplate.getFontClass('list')"
-          aria-hidden = "true"
-        ></i>
+      <code :style="{ opacity: $data._results_panel_open ? 0.5 : undefined }">
+        {{ $data._markers.length > 99 ? '99+' : $data._markers.length }}
+      </code>
       </button>
 
     </div>
@@ -229,21 +228,16 @@ function _getExtentForProvider(provider, { viewbox, mapCrs }) {
   )
 }
 
-/**
- * @TODO make use of `GUI.isSomething()` ?
- */
-let is_results_panel_open = false;
-
-
 export default {
 
   data() {
     return {
       /** @since 3.9.0 */
-      _results                 : [],
-      _markers                 : [],
-      _visible                 : true,   //set visibility of layer
-      _disabled                : false, //disabled boolean control
+      _results              : [],
+      _markers              : [],
+      _visible              : true,  // set visibility of layer
+      _disabled             : false, // disabled boolean control
+      _results_panel_open   : false, // @TODO make use of `GUI.isSomething()`
     };
   },
 
@@ -502,7 +496,7 @@ export default {
       if (this.$data._markers.length === 0){
         this._hideMarker();
       }
-      if (is_results_panel_open) {
+      if (this.$data._results_panel_open) {
         GUI.closeContent();
       }
     },
@@ -562,7 +556,7 @@ export default {
      * @since 3.9.0
      */
     _showMarkerResults(features, skipChek = false) {
-      if (is_results_panel_open && !skipChek) {
+      if (this.$data._results_panel_open && !skipChek) {
         GUI.closeContent();
         return;
       }
@@ -571,7 +565,7 @@ export default {
         GUI.closeContent();
       }
       GUI.showQueryResults('Geocoding', { data: [{ layer, features: features || layer.getSource().getFeatures() }] });
-      is_results_panel_open = true;
+      this.$data._results_panel_open = true;
     },
 
     /**
@@ -616,8 +610,8 @@ export default {
     queryresults.registerVectorLayer(layer);
 
     // TODO: delegate check for `is_results_panel_open` to an external queryresults or gui method
-    GUI.on('closecontent',    () => { is_results_panel_open = false; })
-    GUI.onafter('setContent', () => { if (is_results_panel_open) is_results_panel_open = false; });
+    GUI.on('closecontent',    () => { this.$data._results_panel_open = false; })
+    GUI.onafter('setContent', () => { if (this.$data._results_panel_open) this.$data._results_panel_open = false; });
 
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
       if ('__g3w_marker' === layer.id) {
