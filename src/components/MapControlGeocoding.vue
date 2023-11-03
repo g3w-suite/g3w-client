@@ -578,17 +578,33 @@ export default {
       if (!editing) {
         return;
       }
+
+      //Get geometry type from layer
+      const geometryType = CatalogLayersStoresRegistry
+        .getLayerById(layerId)
+        .getGeometryType();
+
+      //set editing feature geometry
+      const geometry =  Geometry.isMultiGeometry(geometryType)
+        ? singleGeometriesToMultiGeometry([feature.geometry])
+        : feature.geometry;
+
+      const editingFeature = new ol.Feature({
+        //check if is Multi Geometry (MultiPoint)
+        ...feature.attributes,
+        geometry
+      });
+      console.log(Geometry.is3DGeometry(geometryType))
       editing
         .getApi()
         .addLayerFeature({
           layerId: layerId,
-          feature: new ol.Feature({
-            //check if is Multi Geometry (MultiPoint)
-            geometry:  Geometry.isMultiGeometry(CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType())
-              ? singleGeometriesToMultiGeometry([feature.geometry])
-              : feature.geometry,
-            ...feature.attributes
-          })
+          feature: Geometry.is3DGeometry(geometryType) ?
+            Geometry.addZValueToOLFeatureGeometry({
+              feature: editingFeature,
+              geometryType
+            }) :
+            editingFeature
         });
     },
 
