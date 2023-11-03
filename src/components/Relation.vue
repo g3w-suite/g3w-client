@@ -4,21 +4,73 @@
 -->
 
 <template>
-  <div class="query-relation" ref="query_relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;" v-if="table">
-    <div class="header skin-background-color lighten" ref="relation-header" style="padding: 3px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
-      <div style="border-radius: 3px;" :style="{fontSize: isMobile() ? '1em' : '1.3em'}" class="g3w-long-text">
-        <span v-if="showrelationslist" style="font-size: 0.8em;" v-t-tooltip:right.create="'sdk.relations.back_to_relations'" class="action-button-icon action-button" :class="g3wtemplate.getFontClass('exit')" @click.stop="back"></span>
-        <span style="font-weight: bold" class="relation-tile skin-color"> {{ relation.name }}</span>
+  <div
+    v-if="table"
+    class="query-relation"
+    ref="query_relation"
+    :class="isMobile() ? 'mobile' : null"
+    style="margin-top: 3px;" >
+
+    <div
+      class="header skin-background-color lighten"
+      ref="relation-header"
+      style="padding: 3px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+
+      <div
+        style="border-radius: 3px;"
+        :style="{fontSize: isMobile() ? '1em' : '1.3em'}"
+        class="g3w-long-text"
+      >
+        <span
+          v-if="showrelationslist"
+          style="font-size: 0.8em;"
+          v-t-tooltip:right.create="'sdk.relations.back_to_relations'"
+          class="action-button-icon action-button"
+          :class="g3wtemplate.getFontClass('exit')"
+          @click.stop="back">
+        </span>
+
+        <span
+          style="font-weight: bold"
+          class="relation-tile skin-color"> {{ relation.name }}
+        </span>
+
       </div>
-      <div class="relations-table-tools" v-if="table.rows.length" style="font-size: 1.1em; margin-bottom: 3px">
-          <span v-if="downloadButton" style="padding: 5px;" v-download class="action-button-icon action-button"
-            :class="[g3wtemplate.getFontClass('download'), {'toggled-white': downloadButton.toggled}]" @click="downloadButton.handler" v-t-tooltip:left.create="downloadButton.tooltip"></span>
-          <span v-if="showChartButton" style="padding: 5px;" class="action-button-icon action-button"
-            :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']" @click.stop="showChart" v-t-tooltip:bottom.create="'sdk.tooltips.show_chart'"></span>
-        </div>
+
+      <div
+        v-if="table.rows.length"
+        class="relations-table-tools"
+        style="font-size: 1.1em; margin-bottom: 3px"
+      >
+        <span
+          v-if="downloadButton"
+          style="padding: 5px;" v-download
+          class="action-button-icon action-button"
+          :class="[g3wtemplate.getFontClass('download'), {'toggled-white': downloadButton.toggled}]"
+          @click.stop="downloadButton.handler"
+          v-t-tooltip:left.create="downloadButton.tooltip">
+        </span>
+        <span
+          v-if="showChartButton"
+          style="padding: 5px;"
+          class="action-button-icon action-button"
+          :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']"
+          @click.stop="showChart"
+          v-t-tooltip:bottom.create="'sdk.tooltips.show_chart'">
+        </span>
+      </div>
     </div>
-    <div v-if="table.rows.length" style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 3px; height: 95%;"  ref="relationwrapper">
-      <div id="table_content" :style="{width: chart ? '70%' : '100%', marginRight: chart ? '8px' : '3px', position: 'relative' }" ref="tablecontent">
+
+    <div
+      v-if="table.rows.length"
+      style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 3px; height: 95%;"
+      ref="relationwrapper"
+    >
+      <div
+        id="table_content"
+        :style="{width: chart ? '70%' : '100%', marginRight: chart ? '8px' : '3px', position: 'relative' }"
+        ref="tablecontent"
+      >
         <template v-if="headercomponent">
           <div style="width: 100%; display: flex; margin-left: auto; margin-bottom: 5px; margin-right: 4px;">
             <component :is="headercomponent" :layer="downloadLayer.state" :config="downloadLayer.config"/>
@@ -27,22 +79,54 @@
         <table ref="relationtable" class="hover relationtable table table-striped row-border" style="width:100%">
           <thead>
             <tr style="height: 0! important">
-              <th v-if="table.formStructure || isEditable" :style="{minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`, padding: '0 !important' }"></th>
+              <th
+                v-if="table.formStructure || isEditable"
+                :style="{minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`, padding: '0 !important' }">
+              </th>
               <th v-for="column in table.columns">{{ column }}</th>
             </tr>
           </thead>
           <tbody>
-          <tr v-for="(row, index) in table.rows" :key="table.rows_fid[index]" :class="{'selected': table.rowFormStructure === row}">
-            <td v-if="table.formStructure || isEditable">
-              <span v-if="table.formStructure" @click.stop="showFormStructureRow($event, row)" style="cursor: pointer" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                class="action-button row-form skin-color" v-t-tooltip:right.create="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
-              <span v-if="isEditable" @click.stop="editFeature(index)" class="action-button row-form skin-color" v-t-tooltip:right.create="'Edit'"
-                :class="g3wtemplate.getFontClass('pencil')"></span>
+          <tr
+            v-for="(row, index) in table.rows" :key="table.rows_fid[index]"
+            :class="{'selected': table.rowFormStructure === row}"
+          >
+            <td v-if="showTools">
+              <span
+                v-if="table.features[index].geometry"
+                @click.stop="zoomToGeometry(table.features[index].geometry)"
+                style="cursor: pointer"
+                class="action-button row-form skin-color"
+                v-t-tooltip:right.create=""
+                :class="g3wtemplate.getFontClass('marker')">
+              </span>
+              <span
+                v-if="table.formStructure"
+                @click.stop="showFormStructureRow($event, row)"
+                style="cursor: pointer"
+                :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                class="action-button row-form skin-color"
+                v-t-tooltip:right.create="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]">
+              </span>
+              <span
+                v-if="isEditable"
+                @click.stop="editFeature(index)"
+                class="action-button row-form skin-color"
+                v-t-tooltip:right.create="'Edit'"
+                :class="g3wtemplate.getFontClass('pencil')">
+              </span>
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
-              <td :colspan="table.columns.length" class="row-wrap-tabs">
-                <tabs :layerid="table.layerId" :feature="table.features[index]" :fields="fields" :tabs="table.formStructure"/>
+              <td
+                :colspan="table.columns.length"
+                class="row-wrap-tabs"
+              >
+                <tabs
+                  :layerid="table.layerId"
+                  :feature="table.features[index]"
+                  :fields="fields"
+                  :tabs="table.formStructure"/>
               </td>
             </template>
             <template v-else>
@@ -54,10 +138,22 @@
           </tbody>
         </table>
       </div>
-      <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'" class="skin-border-color lighten" style="border-style: solid; border-width: 0 1px 0 1px"/>
-      <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0', paddingBottom: '5px', marginBottom: '5px', marginLeft: '8px' }" ref="chartcontent"></div>
+      <g3w-resize
+        :show="chart"
+        :moveFnc="moveFnc"
+        :where="'content'"
+        class="skin-border-color lighten"
+        style="border-style: solid; border-width: 0 1px 0 1px"/>
+      <div
+        v-show="chart"
+        id="chart_content"
+        :style="{width: chart ? '30%' : '0', paddingBottom: '5px', marginBottom: '5px', marginLeft: '8px' }"
+        ref="chartcontent">
+      </div>
     </div>
-    <div v-else class="dataTables_scrollBody" style="font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;">
+    <div v-else
+      class="dataTables_scrollBody"
+      style="font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;">
       <span v-t="'sdk.relations.no_relations_found'"></span>
     </div>
   </div>
@@ -96,7 +192,7 @@ export default {
   components: {
     Field
   },
-  data(){
+  data() {
     return {
       fields: null,
       chart: false,
@@ -111,6 +207,9 @@ export default {
     }
   },
   computed: {
+    showTools() {
+      return this.isEditable || this.table.formStructure || this.isGeoLayer;
+    },
     showrelationslist() {
       return this.previousview === 'relations' && !this.relationnoback;
     },
@@ -119,9 +218,25 @@ export default {
     }
   },
   methods: {
-    async createTable(){
+   /**
+    * @since v3.9
+    * @param geometry object contain coordinates and type Point, MultiPoint, etc ...
+    */
+    zoomToGeometry(geometry) {
+      if (geometry) {
+        GUI
+          .getService('map')
+          .zoomToGeometry(new ol.geom[geometry.type](geometry.coordinates), {
+            highlight: true
+          });
+      }
+    },
+    async createTable() {
       const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
-      this.isEditable =  layer.isEditable() && !layer.isInEditing();
+      this.isEditable = layer.isEditable() && !layer.isInEditing();
+      // need to check if feature has geometry.
+      // layer.isGeolayer() maybe return true but  QGIS project is not set to return geometry on response
+      this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry);
       const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
       const downloadformatsLength = downloadformats.length;
       if (downloadformatsLength > 0) {
@@ -131,25 +246,28 @@ export default {
           handler: downloadformatsLength > 1 ? async ()=> {
             this.downloadButton.toggled = !this.downloadButton.toggled;
             this.downloadLayer.state = this.downloadLayer.state || layer.state;
-            this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ? this.downloadLayer.config.downloads : downloadformats.map(format =>(
-              {
-                id: format,
-                format,
-                cbk: () => {
-                  this.saveRelation(layer.getDownloadUrl(format));
-                  this.headercomponent = null;
-                },
-                download: true
-              })
+            this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ?
+                this.downloadLayer.config.downloads :
+                downloadformats.map(format => ({
+                  id: format,
+                  format,
+                  cbk: () => {
+                    this.saveRelation(layer.getDownloadUrl(format));
+                    this.headercomponent = null;
+                  },
+                  download: true
+                })
             );
             this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
           } : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
         }
       }
+
       VM.$on('reload', () => {
         this.reloadLayout();
       });
-      this.showChart = throttle(async ()=> {
+
+      this.showChart = throttle(async () => {
         this.chart = !this.chart;
         await this.$nextTick();
         this.chartContainer = this.chartContainer ||  $('#chart_content');
@@ -164,15 +282,15 @@ export default {
       this.relation.title = this.relation.name;
 
       if (!this.one) {
-        this.relationDataTable = $(this.$refs.relationtable).DataTable( {
+        this.relationDataTable = $(this.$refs.relationtable).DataTable({
           "pageLength": 10,
           "bLengthChange": true,
           "scrollResize": true,
           "scrollCollapse": true,
           "scrollX": true,
           "responsive": true,
-          "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
-          "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
+          "order": [ this.showTools ? 1 : 0, 'asc' ],
+          "columnDefs": [{"orderable":  this.showTools, "targets": 0}]
         });
         this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
         //this.resize();
@@ -180,12 +298,12 @@ export default {
       //In case of pop child relation need to resize
       GUI.on('pop-content', this.resize);
     },
-    async resize(){
+    async resize() {
       // in case of waiting table
       if (this.$refs.query_relation && this.$refs.query_relation.parentNode.style.display !== 'none') {
-        const tableHeight = $(".content").height();
-        const datatableBody = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
-        const breadcrumbHeight = $('.content_breadcrumb').outerHeight();
+        const tableHeight        = $(".content").height();
+        const datatableBody      = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
+        const breadcrumbHeight   = $('.content_breadcrumb').outerHeight();
         const OtherElementHeight = breadcrumbHeight +
           $('.navbar-header').outerHeight() +
           $('.close-panel-block').outerHeight() +
@@ -194,6 +312,7 @@ export default {
           $('.dataTables_paginate.paging_simple_numbers').outerHeight() +
           $('.dataTables_scrollHead').last().outerHeight();
         datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
+
         if (this.table.rowFormStructure) {
           const width = datatableBody.width() - $(this.$refs.relationtable).find('tr.selected > td').outerWidth() - 20;
           $('.row-wrap-tabs > .tabs-wrapper').width(width);
@@ -201,18 +320,18 @@ export default {
         this.reloadLayout();
       }
     },
-    saveRelation(type){
+    saveRelation(type) {
       this.$emit('save-relation', type);
       this.downloadButton.toggled = false;
     },
-    async showFormStructureRow(event, row){
+    async showFormStructureRow(event, row) {
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
       this.fields = this.getRowFields(row);
       await this.$nextTick();
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
     },
-    editFeature(index){
+    editFeature(index) {
       const queryResultsService = GUI.getService('queryresults');
       queryResultsService.editFeature({
         layer: {
@@ -222,8 +341,8 @@ export default {
         feature: this.table.features[index]
       });
     },
-    getRowFields(row){
-      return this.table.fields.map((field, index)=> {
+    getRowFields(row) {
+      return this.table.fields.map((field, index) => {
         field.value = row[index];
         field.query = true;
         field.input = {
@@ -245,7 +364,7 @@ export default {
     is(type,value) {
       return this.fieldIs(type, value);
     },
-    moveFnc(evt){
+    moveFnc(evt) {
       const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
       const size = evt.pageX+2 - sidebarHeaderSize;
       this.$refs.tablecontent.style.width = `${size}px`;
@@ -260,11 +379,11 @@ export default {
         table && table.rows.length && this.createTable();
       }
     },
-    async chart(){
+    async chart() {
       await this.$nextTick();
       this.resize();
     },
-    async headercomponent(){
+    async headercomponent() {
       await this.$nextTick();
       this.resize();
     }
@@ -272,8 +391,8 @@ export default {
   beforeCreate() {
     this.delayType = 'debounce';
   },
-  async beforeDestroy(){
-    if (this.relationDataTable){
+  async beforeDestroy() {
+    if (this.relationDataTable) {
       this.relationDataTable.destroy();
       this.relationDataTable = null;
       this.chartContainer && this.$emit('hide-chart', this.chartContainer);
