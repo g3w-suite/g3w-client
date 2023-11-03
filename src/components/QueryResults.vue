@@ -586,7 +586,7 @@
         const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
         // TODO: find a clever way to handle geocoding results..
-        const end = Math.min('__g3w_marker' === layer.id ? 0 : MAX_SUBSET_LENGTH, attributes.length);
+        const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ MAX_SUBSET_LENGTH, attributes.length);
         return _attributes.slice(0, end);
       },
       relationsAttributesSubset(relationAttributes) {
