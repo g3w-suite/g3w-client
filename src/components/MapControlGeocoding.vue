@@ -80,7 +80,7 @@
         type          = "button"
         id            = "show-markers-results"
         class         = "btn skin-background-color"
-        @click.stop   = "_showMarkerResults"
+        @click.stop   = "() => _showMarkerResults()"
       >
         <i
           :class      = "g3wtemplate.getFontClass('list')"
