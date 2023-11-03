@@ -46,7 +46,7 @@ export default async function(opts) {
             else if (types.find( t => 'country' === t))  country = long_name
           });
           return {
-            __uid: result.place_id || uniqueId(),
+            // __uid: result.place_id || uniqueId(),
             lon  : result.geometry.location.lng,
             lat  : result.geometry.location.lat,
             address: {
@@ -55,12 +55,10 @@ export default async function(opts) {
               postcode: '',
               city,
               state: undefined,
-              country
-            },
-            original: {
+              country,
               formatted: result.display_name,
-              details:   result.address
-            }
+            },
+            raw: result,
           };
         })
       : [],

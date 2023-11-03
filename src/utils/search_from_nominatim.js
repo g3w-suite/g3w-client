@@ -30,7 +30,7 @@ export default async function(opts) {
       )
       .filter(place => ol.extent.containsXY(opts.extent, place.lon, place.lat))
       .map(result => ({
-          __uid: result.place_id, //set unique id
+          // __uid: result.place_id, //set unique id
           lon:   result.lon,
           lat:   result.lat,
           name:  result.name,
@@ -41,12 +41,10 @@ export default async function(opts) {
             city:      result.address.city          || result.address.town,
             postcode:  result.address.postcode,
             state:     result.address.state,
-            country:   result.address.country
-          },
-          original: {
+            country:   result.address.country,
             formatted: result.display_name,
-            details:   result.address
-          }
+          },
+          raw:         result,
         })
       ),
   };

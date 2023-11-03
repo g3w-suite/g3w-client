@@ -101,7 +101,7 @@
           item.provider,
           item.__heading    ? 'skin-background-color' : '',
           item.__no_results ? 'gcd-noresult' : '',
-          item.add          ? 'selected' : '',
+          item.__add        ? 'selected' : '',
         ]"
         :key         = "item.__uid"
         @click.stop = "_onItemClick($event, item)"
@@ -122,7 +122,7 @@
         <template v-else>
           <span
             style       = "color: #000; padding: 5px;"
-            :class      = "g3wtemplate.getFontClass(item.add ? 'check' : 'uncheck')">
+            :class      = "g3wtemplate.getFontClass(item.__add ? 'check' : 'uncheck')">
           </span>
           <i
             v-if        = "'nominatim' === item.provider"
@@ -176,7 +176,7 @@ import google                        from 'utils/search_from_google';
 import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
 import { PluginsRegistry }           from "store";
 import CatalogLayersStoresRegistry   from 'store/catalog-layers';
-import { toRawType }                 from 'utils';
+import { toRawType, uniqueId }       from 'utils';
 
 const {
   Geometry,
@@ -343,7 +343,7 @@ export default {
       this.$data._markers.splice(0);
       this._hideMarker();
       //set false to add
-      this.$data._results.forEach(i => i.add = false);
+      this.$data._results.forEach(i => i.__add = false);
     },
 
     /**
@@ -448,10 +448,11 @@ export default {
 
         // results
         p.value.results.forEach(item => {
+          item.__uid = uniqueId();
           this.$data._results.push({
             provider: p.value.provider,
             ...item,
-            add: false,
+            __add: false,
           });
         });
       });
@@ -495,7 +496,7 @@ export default {
       this.$data._markers.splice(this.$data._markers.findIndex(i => uid === i.__uid), 1);
       //check if is open result list
       if (this.$data._results.length > 0) {
-        this.$data._results.find(r => uid === r.__uid).add = false
+        this.$data._results.find(r => uid === r.__uid).__add = false
       }
       //if no markers are on map
       if (this.$data._markers.length === 0){
@@ -516,11 +517,13 @@ export default {
      * @since 3.9.0
      */
     _createOlMarker(item) {
+      console.log(item);
+      const { __uid, __add, ..._item } = item; 
       const feature = new ol.Feature({
         geometry: new ol.geom.Point(
           ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
         ),
-        ...item //set properties
+        ..._item, //set properties
       });
       //set id of the feature
       feature.setId(item.__uid);
@@ -545,18 +548,19 @@ export default {
           layer.getSource().addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           this.$data._markers.push(item);
-          item.add = true;
+          item.__add = true;
           this._showMarkerResults([feature], true);
         }
-
       } catch (e) {
-        console.log(e);
+        console.warn(e);
       }
     },
-      /**
-       * Show only markers on
-       * @private
-       */
+
+    /**
+     * Show markers on query results panel
+     * 
+     * @since 3.9.0
+     */
     _showMarkerResults(features, skipChek = false) {
       if (is_results_panel_open && !skipChek) {
         GUI.closeContent();

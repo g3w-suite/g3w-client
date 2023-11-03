@@ -44,7 +44,7 @@ export default async function(opts) {
         .filter(({ point: { coordinates } })=> ol.extent.containsXY(opts.extent, coordinates[1], coordinates[0]))
         .map(result => {
           return {
-            __uid:       uniqueId(), //set unique id //@TODO check if has a unique idendifier
+            // __uid:       uniqueId(), //set unique id //@TODO check if has a unique idendifier
             lon:         result.point.coordinates[1],
             lat:         result.point.coordinates[0],
             type:        result.entityType,
@@ -55,11 +55,9 @@ export default async function(opts) {
               city:      result.Address.locality,
               state:     result.Address.adminDistrict,
               country:   result.Address.countryRegion,
-            },
-            original: {
               formatted: result.Address.formattedAddress,
-              details:   result.Address,
-            }
+            },
+            raw:         result,
           };
         })
       : [],
