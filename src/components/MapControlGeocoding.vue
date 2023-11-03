@@ -787,7 +787,6 @@ export default {
     background-color: #fff;
     overflow: hidden;
     border-radius: 2px;
-    margin-left: 2px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     width: 100%;
     border: 2px solid var(--skin-color)
@@ -885,7 +884,6 @@ export default {
   .ol-geocoder > ul {
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     border-radius: 3px !important;
-    margin-left: 3px;
     width: 100%;
     max-height: 200px;
     white-space: normal;
@@ -897,6 +895,7 @@ export default {
     overflow-x: hidden;
     overflow-y: auto;
     transition: max-height 300ms ease-in;
+    margin-bottom: 0;
   }
 
   .ol-geocoder > ul > li > a {
