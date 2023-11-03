@@ -574,6 +574,29 @@ export default {
       is_results_panel_open = true;
     },
 
+    /**
+     * @since 3.9.0 
+     */
+    _editItem(layerId, feature) {
+      const editing = PluginsRegistry.getPlugin('editing');
+      // skip on missing plugin dependency
+      if (!editing) {
+        return;
+      }
+      editing
+        .getApi()
+        .addLayerFeature({
+          layerId: layerId,
+          feature: new ol.Feature({
+            //check if is Multi Geometry (MultiPoint)
+            geometry:  Geometry.isMultiGeometry(CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType())
+              ? singleGeometriesToMultiGeometry([feature.geometry])
+              : feature.geometry,
+            ...feature.attributes
+          })
+        });
+    },
+
   },
 
   created() {
@@ -589,22 +612,12 @@ export default {
      */
     map.addLayer(layer);
 
-    //register vector layer for query results
+    // register vector layer for query results
     queryresults.registerVectorLayer(layer);
 
-    /**
-     * Register events on right content panel
-     */
-    //Close content
-    GUI.on('closecontent', () => {
-      is_results_panel_open = false;
-    })
-
-    GUI.onafter('setContent', () => {
-      if (is_results_panel_open) {
-        is_results_panel_open = false;
-      }
-    });
+    // TODO: delegate check for `is_results_panel_open` to an external queryresults or gui method
+    GUI.on('closecontent',    () => { is_results_panel_open = false; })
+    GUI.onafter('setContent', () => { if (is_results_panel_open) is_results_panel_open = false; });
 
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
       if ('__g3w_marker' === layer.id) {
@@ -621,15 +634,17 @@ export default {
         return;
       }
 
-      //Get editing layers that has Point/MultiPoint Geometry type
-      const pointEditingLayers =  CatalogLayersStoresRegistry
+      // Get editing layers that has Point/MultiPoint Geometry type
+      const editablePointLayers =  CatalogLayersStoresRegistry
         .getLayers({ EDITABLE: true, GEOLAYER: true })
         .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
         .map((l)=>({ id: l.getId(), name: l.getName() }));
 
-      if (pointEditingLayers.length === 0) {
+      // skip adding action icon when there is no editable layer
+      if (0 === editablePointLayers.length) {
         return;
       }
+
       // Add
       queryresults.addCurrentActionToolsLayer({
         id: QueryResultsActionChooseLayer.name,
@@ -641,8 +656,14 @@ export default {
           toggleable: true,
           hint: 'Choose a layer',
           cbk: (layer, feature, action, index) => {
+            // skipe layer choose when there is only a single editable layer
+            if (1 === editablePointLayers.length) {
+              this._editItem(editablePointLayers[0].id, feature);
+              return;
+            }
+            // let user choose an editable layer
             action.state.toggled[index] = !action.state.toggled[index];
-              queryresults.setCurrentActionLayerFeatureTool({
+            queryresults.setCurrentActionLayerFeatureTool({
               layer,
               index,
               action,
@@ -652,30 +673,12 @@ export default {
         },
         config: {
           // editable point layers for the project
-          layers: pointEditingLayers,
+          layers: editablePointLayers,
           // create new feature on layer point geometry
           icon: 'pencil',
           // @TODO add translation
           label: 'Choose a layer where to add this feature',
-          cbk: (layerId, feature) => {
-            const editing = PluginsRegistry.getPlugin('editing');
-            // skip on missing plugin dependency
-            if (!editing) {
-              return;
-            }
-            editing
-              .getApi()
-              .addLayerFeature({
-                layerId: layerId,
-                feature: new ol.Feature({
-                  //check if is Multi Geometry (MultiPoint)
-                  geometry:  Geometry.isMultiGeometry(CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType())
-                    ? singleGeometriesToMultiGeometry([feature.geometry])
-                    : feature.geometry,
-                  ...feature.attributes
-                })
-              });
-          },
+          cbk: this._editItem,
         },
       });
 
