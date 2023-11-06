@@ -340,6 +340,7 @@ export default {
       this._hideMarker();
       //set false to add
       this.$data._results.forEach(i => i.__add = false);
+      //GUI.getService('queryresults').removeFeatureLayerFromResult()
     },
 
     /**

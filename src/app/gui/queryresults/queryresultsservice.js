@@ -390,7 +390,7 @@ class QueryResultsService extends G3WObject {
    * @since 3.8.0
    */
   updateLayerResultFeatures(responseLayer) {
-    const layer            = this._getLayer(responseLayer.id),                  // get layer from current `state.layers` showed on result
+    const layer        = this._getLayer(responseLayer.id),                  // get layer from current `state.layers` showed on result
       responseFeatures = this._getLayerFeatures(responseLayer),             // extract features from responseLayer object
       external         = this._getExternalLayer(responseLayer.id),          // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
       has_features     = layer && this._getLayerFeatures(layer).length > 0; // check if current layer has features on response
