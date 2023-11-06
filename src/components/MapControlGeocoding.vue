@@ -7,7 +7,8 @@
   @since 3.9.0
 -->
 <template>
-  <div class="ol-geocoder">
+  <div :class="[ 'ol-geocoder', { 'g3w-disabled': $data._disabled }]"
+  >
 
     <div class="gcd-txt-control">
 
@@ -38,7 +39,6 @@
         id              = "gcd-search"
         class           = "btn"
         @click.stop     = "() => query($refs.input.value)"
-        v-disabled      = "$data._disabled"
       >
         <i
           :class      = "g3wtemplate.getFontClass('search')"
@@ -54,7 +54,6 @@
         id              = "gcd-trash"
         class           = "btn skin-background-color"
         @click.stop     = "clearMarkers"
-        v-disabled      = "$data._disabled"
       >
         <i
           :class      = "g3wtemplate.getFontClass('trash')"
@@ -83,7 +82,6 @@
         id            = "show-markers-results"
         class         = "btn skin-background-color"
         @click.stop   = "() => _showMarkerResults()"
-        v-disabled    = "$data._disabled"
       >
       <code :style="{ opacity: $data._results_panel_open ? 0.5 : undefined }">
         {{ $data._markers.length > 99 ? '99+' : $data._markers.length }}
@@ -597,7 +595,7 @@ export default {
       });
       //set disabled buttons on editing
       this.$data._disabled = true;
-      this.clearResults();
+      // this.clearResults();
       try {
         await editing
           .getApi()
