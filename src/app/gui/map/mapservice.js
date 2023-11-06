@@ -896,7 +896,9 @@ proto._checkMapControls = function() {
 
 proto._setupControls = function() {
   const baseLayers = getMapLayersByFilter({ BASELAYER: true });
+
   this.getMapLayers().forEach(mapLayer => mapLayer.getSource().setAttributions(this.getApplicationAttribution()));
+
   // check if base layer is set. If true add attribution control
   if (this.getApplicationAttribution() || baseLayers.length) {
     const attributionControl = new ol.control.Attribution({
@@ -916,19 +918,21 @@ proto._setupControls = function() {
     ? this.config.mapcontrols.reduce((a, v) => { a[v] = {}; return a; }, {}) // convert `initConfig.group.mapcontrols` from an array of strings to a key-value config Object (eg. ["geocoding"] --> "geocoding" = {})
     : this.config.mapcontrols;
 
-    //common spatial methods for map controls
+  // common spatial methods for map controls
   const spatialMethod = 'intersects';
   Object
     .entries(mapcontrols)
     .forEach(([controlType, config={}]) => {
       let control;
       switch (controlType) {
+
         case 'reset':
           if (!isMobile.any) {
             control = new ResetControl({ type: 'reset' });
           }
           this.addControl(controlType, control, false);
           break;
+
         case 'zoom':
           control = this.createMapControl(controlType, {
             options: {
@@ -937,6 +941,7 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'zoombox':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {});
@@ -945,6 +950,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         case 'zoomtoextent':
           control = this.createMapControl(controlType, {
             options: {
@@ -953,6 +959,7 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'mouseposition':
           if (!isMobile.any) {
             const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
@@ -986,6 +993,7 @@ proto._setupControls = function() {
             }
           }
           break;
+
         case 'screenshot':
         case 'geoscreenshot':
           if (!isMobile.any ) {
@@ -997,6 +1005,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         case 'scale':
           control = this.createMapControl(controlType, {
             add: false,
@@ -1007,31 +1016,37 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'query':
           control = this.createMapControl(controlType, {
             add: true,
             toggled: true
           });
           break;
+
         case 'querybypolygon':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {options: {spatialMethod}});
           }
           break;
+
         case 'querybbox':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {options: {spatialMethod}});
           }
           break;
+
         case 'querybydrawpolygon':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {options: {spatialMethod}});
           }
           break;
+
         case 'streetview':
           // streetview
           control = this.createMapControl(controlType, {});
           break;
+
         case 'scaleline':
           control = this.createMapControl(controlType, {
             add: false,
@@ -1040,6 +1055,7 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'overview':
           if (!isMobile.any) {
             if (!this.config.overviewproject) return;
@@ -1076,6 +1092,7 @@ proto._setupControls = function() {
             }
           }
           break;
+
         case 'geocoding':
         case 'nominatim':
           control = this.createMapControl(controlType, {
@@ -1085,6 +1102,7 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'geolocation':
           control = this.createMapControl(controlType);
           control.on('click', throttle(evt => this.showMarker(evt.coordinates)));
@@ -1096,12 +1114,14 @@ proto._setupControls = function() {
             })
           });
           break;
+
         case 'addlayers':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {});
             control.on('addlayer', () => this.emit('addexternallayer'));
           }
           break;
+
         case 'length':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
@@ -1115,6 +1135,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         case 'area':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
@@ -1128,6 +1149,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         /**
          * @since 3.8.0
          */
