@@ -512,8 +512,7 @@ export default {
      * @since 3.9.0
      */
     _createOlMarker(item) {
-      console.log(item);
-      const { __uid, __add, ..._item } = item; 
+      const { __uid, __add, ..._item } = item;
       const feature = new ol.Feature({
         geometry: new ol.geom.Point(
           ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
@@ -594,7 +593,7 @@ export default {
         ...feature.attributes,
         geometry
       });
-      console.log(Geometry.is3DGeometry(geometryType))
+
       editing
         .getApi()
         .addLayerFeature({
@@ -649,10 +648,11 @@ export default {
       const editablePointLayers =  CatalogLayersStoresRegistry
         .getLayers({ EDITABLE: true, GEOLAYER: true })
         .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
-        .map((l)=>({ id: l.getId(), name: l.getName() }));
+        .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
 
       // skip adding action icon when there is no editable layer
-      if (0 === editablePointLayers.length) {
+      //or editing panel is open (layer is in editing)
+      if (0 === editablePointLayers.length || editablePointLayers.find(l => l.inediting)) {
         return;
       }
 
