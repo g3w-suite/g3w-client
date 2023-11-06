@@ -918,8 +918,6 @@ proto._setupControls = function() {
     ? this.config.mapcontrols.reduce((a, v) => { a[v] = {}; return a; }, {}) // convert `initConfig.group.mapcontrols` from an array of strings to a key-value config Object (eg. ["geocoding"] --> "geocoding" = {})
     : this.config.mapcontrols;
 
-  // common spatial methods for map controls
-  const spatialMethod = 'intersects';
   Object
     .entries(mapcontrols)
     .forEach(([controlType, config={}]) => {
@@ -1025,20 +1023,14 @@ proto._setupControls = function() {
           break;
 
         case 'querybypolygon':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
-          }
-          break;
-
         case 'querybbox':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
-          }
-          break;
-
         case 'querybydrawpolygon':
           if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
+            control = this.createMapControl(controlType, {
+              options: {
+                spatialMethod: 'intersects'
+              }
+            });
           }
           break;
 
