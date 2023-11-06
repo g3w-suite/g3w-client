@@ -909,7 +909,7 @@ proto._setupControls = function() {
   }
 
   // skip when no controls
-  if (this.config && this.config.mapcontrols) {
+  if (!this.config || !this.config.mapcontrols) {
     return;
   }
 
