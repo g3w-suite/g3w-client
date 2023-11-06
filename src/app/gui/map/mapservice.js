@@ -907,223 +907,234 @@ proto._setupControls = function() {
   }
 
   if (this.config && this.config.mapcontrols) {
-    const mapcontrols = this.config.mapcontrols;
+    //check if Array (configuration < v3.7 g3w-admin)
+    const mapcontrols = Array.isArray(this.config.mapcontrols) ?
+      this.config.mapcontrols.reduce((a, v) => {
+        a[v] = {};
+        return a;
+      }, {}) :
+      this.config.mapcontrols;
     //common spatial methods for map controls
     const spatialMethod = 'intersects';
-    mapcontrols.forEach(mapcontrol => {
-      let control;
-      // mapcontrol can be a String or object with options
-      const controlType = toRawType(mapcontrol) === 'String' ? mapcontrol : mapcontrol.name;
-      switch (controlType) {
-        case 'reset':
-          if (!isMobile.any) {
-            control = new ResetControl({ type: 'reset' });
-          }
-          this.addControl(controlType, control, false);
-          break;
-        case 'zoom':
-          control = this.createMapControl(controlType, {
-            options: {
-              zoomInLabel: "\ue98a",
-              zoomOutLabel: "\ue98b"
+    Object
+      .entries(mapcontrols)
+      .forEach(([controlType, config={}]) => {
+        let control;
+        switch (controlType) {
+          case 'reset':
+            if (!isMobile.any) {
+              control = new ResetControl({ type: 'reset' });
             }
-          });
-          break;
-        case 'zoombox':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {});
-            control.on('zoomend', (e) => {
-              this.viewer.fit(e.extent);
-            });
-          }
-          break;
-        case 'zoomtoextent':
-          control = this.createMapControl(controlType, {
-            options: {
-              label: "\ue98c",
-              extent: this.project.state.initextent
-            }
-          });
-          break;
-        case 'mouseposition':
-          if (!isMobile.any) {
-            const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
-            const crs = this.getCrs();
+            this.addControl(controlType, control, false);
+            break;
+          case 'zoom':
             control = this.createMapControl(controlType, {
-              add: false,
               options: {
-                coordinateFormat(coordinate) {
-                  return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
-                },
-                undefinedHTML: false,
-                projection: this.getCrs()
+                zoomInLabel: "\ue98a",
+                zoomOutLabel: "\ue98b"
               }
             });
-            if (this.getEpsg() !== 'EPSG:4326') {
-              const mapEspg = this.getEpsg();
-              const coordinateLabels = ['Lng', 'Lat'];
+            break;
+          case 'zoombox':
+            if (!isMobile.any) {
+              control = this.createMapControl(controlType, {});
+              control.on('zoomend', (e) => {
+                this.viewer.fit(e.extent);
+              });
+            }
+            break;
+          case 'zoomtoextent':
+            control = this.createMapControl(controlType, {
+              options: {
+                label: "\ue98c",
+                extent: this.project.state.initextent
+              }
+            });
+            break;
+          case 'mouseposition':
+            if (!isMobile.any) {
+              const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
               const crs = this.getCrs();
               control = this.createMapControl(controlType, {
                 add: false,
                 options: {
-                  target: 'mouse-position-control-epsg-4326',
                   coordinateFormat(coordinate) {
-                    coordinate = ol.proj.transform(coordinate, mapEspg, 'EPSG:4326');
                     return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
                   },
                   undefinedHTML: false,
                   projection: this.getCrs()
                 }
-              })
-            }
-          }
-          break;
-        case 'screenshot':
-        case 'geoscreenshot':
-          if (!isMobile.any ) {
-            control = this.createMapControl(controlType, {
-              options: {
-                layers: [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
-                onclick: this._handlePrint.bind(this, controlType)
-              }
-            });
-          }
-          break;
-        case 'scale':
-          control = this.createMapControl(controlType, {
-            add: false,
-            options: {
-              coordinateFormat: ol.coordinate.createStringXY(4),
-              projection: this.getCrs(),
-              isMobile: isMobile.any
-            }
-          });
-          break;
-        case 'query':
-          control = this.createMapControl(controlType, {
-            add: true,
-            toggled: true
-          });
-          break;
-        case 'querybypolygon':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
-          }
-          break;
-        case 'querybbox':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
-          }
-          break;
-        case 'querybydrawpolygon':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
-          }
-          break;
-        case 'streetview':
-          // streetview
-          control = this.createMapControl(controlType, {});
-          break;
-        case 'scaleline':
-          control = this.createMapControl(controlType, {
-            add: false,
-            options: {
-              position: 'br'
-            }
-          });
-          break;
-        case 'overview':
-          if (!isMobile.any) {
-            if (!this.config.overviewproject) return;
-            const overviewProjectGid = this.config.overviewproject.gid;
-            if (overviewProjectGid) {
-              ProjectsRegistry.getProject(overviewProjectGid)
-              .then(project => {
-                const overViewMapLayers = this.getOverviewMapLayers(project);
-                const viewOptions = this._calculateViewOptions({
-                  width: 200, // at moment hardcoded
-                  height: 150,
-                  project
-                });
-                const view = new ol.View(viewOptions);
-                const mainView = this.getMap().getView();
-                view.on('change:center', function() {
-                  const currentCenter = this.getCenter();
-                  const center = mainView.constrainCenter(currentCenter);
-                  center[0] !== currentCenter[0] || center[1] !== currentCenter[1] && view.setCenter(center);
-                });
+              });
+              if (this.getEpsg() !== 'EPSG:4326') {
+                const mapEspg = this.getEpsg();
+                const coordinateLabels = ['Lng', 'Lat'];
+                const crs = this.getCrs();
                 control = this.createMapControl(controlType, {
                   add: false,
                   options: {
-                    position: 'bl',
-                    className: 'ol-overviewmap ol-custom-overviewmap',
-                    collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
-                    label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                    collapsed: false,
-                    layers: overViewMapLayers,
-                    view
+                    target: 'mouse-position-control-epsg-4326',
+                    coordinateFormat(coordinate) {
+                      coordinate = ol.proj.transform(coordinate, mapEspg, 'EPSG:4326');
+                      return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
+                    },
+                    undefinedHTML: false,
+                    projection: this.getCrs()
                   }
-                });
+                })
+              }
+            }
+            break;
+          case 'screenshot':
+          case 'geoscreenshot':
+            if (!isMobile.any ) {
+              control = this.createMapControl(controlType, {
+                options: {
+                  layers: [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
+                  onclick: this._handlePrint.bind(this, controlType)
+                }
               });
             }
-          }
-          break;
-        case 'geocoding':
-        case 'nominatim':
-          control = this.createMapControl(controlType, { add: false });
-          break;
-        case 'geolocation':
-          control = this.createMapControl(controlType);
-          control.on('click', throttle(evt => this.showMarker(evt.coordinates)));
-          control.on('error', evt => {
-            GUI.showUserMessage({
-              type: 'warning',
-              message: "mapcontrols.geolocations.error",
-              autoclose: true
-            })
-          });
-          break;
-        case 'addlayers':
-          if (!isMobile.any) {
+            break;
+          case 'scale':
+            control = this.createMapControl(controlType, {
+              add: false,
+              options: {
+                coordinateFormat: ol.coordinate.createStringXY(4),
+                projection: this.getCrs(),
+                isMobile: isMobile.any
+              }
+            });
+            break;
+          case 'query':
+            control = this.createMapControl(controlType, {
+              add: true,
+              toggled: true
+            });
+            break;
+          case 'querybypolygon':
+            if (!isMobile.any) {
+              control = this.createMapControl(controlType, {options: {spatialMethod}});
+            }
+            break;
+          case 'querybbox':
+            if (!isMobile.any) {
+              control = this.createMapControl(controlType, {options: {spatialMethod}});
+            }
+            break;
+          case 'querybydrawpolygon':
+            if (!isMobile.any) {
+              control = this.createMapControl(controlType, {options: {spatialMethod}});
+            }
+            break;
+          case 'streetview':
+            // streetview
             control = this.createMapControl(controlType, {});
-            control.on('addlayer', () => this.emit('addexternallayer'));
-          }
-          break;
-        case 'length':
-          if (!isMobile.any) {
+            break;
+          case 'scaleline':
             control = this.createMapControl(controlType, {
+              add: false,
               options: {
-                tipLabel: 'sdk.mapcontrols.measures.length.tooltip',
-                interactionClassOptions: {
-                  projection: this.getProjection(),
-                  help: 'sdk.mapcontrols.measures.length.help'
-                }
+                position: 'br'
               }
             });
-          }
-          break;
-        case 'area':
-          if (!isMobile.any) {
+            break;
+          case 'overview':
+            if (!isMobile.any) {
+              if (!this.config.overviewproject) return;
+              const overviewProjectGid = this.config.overviewproject.gid;
+              if (overviewProjectGid) {
+                ProjectsRegistry.getProject(overviewProjectGid)
+                .then(project => {
+                  const overViewMapLayers = this.getOverviewMapLayers(project);
+                  const viewOptions = this._calculateViewOptions({
+                    width: 200, // at moment hardcoded
+                    height: 150,
+                    project
+                  });
+                  const view = new ol.View(viewOptions);
+                  const mainView = this.getMap().getView();
+                  view.on('change:center', function() {
+                    const currentCenter = this.getCenter();
+                    const center = mainView.constrainCenter(currentCenter);
+                    center[0] !== currentCenter[0] || center[1] !== currentCenter[1] && view.setCenter(center);
+                  });
+                  control = this.createMapControl(controlType, {
+                    add: false,
+                    options: {
+                      position: 'bl',
+                      className: 'ol-overviewmap ol-custom-overviewmap',
+                      collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                      label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
+                      collapsed: false,
+                      layers: overViewMapLayers,
+                      view
+                    }
+                  });
+                });
+              }
+            }
+            break;
+          case 'geocoding':
+          case 'nominatim':
             control = this.createMapControl(controlType, {
+              add: false,
               options: {
-                tipLabel:'sdk.mapcontrols.measures.area.tooltip',
-                interactionClassOptions: {
-                  projection: this.getProjection(),
-                  help: 'sdk.mapcontrols.measures.area.help'
-                }
+                config
               }
             });
-          }
-          break;
-        /**
-         * @since 3.8.0
-         */
-        case 'zoomhistory':
-          control = this.createMapControl(controlType, { add: false });
-          this._addControlToMapControlsLeftBottom(control);
-          break;
+            break;
+          case 'geolocation':
+            control = this.createMapControl(controlType);
+            control.on('click', throttle(evt => this.showMarker(evt.coordinates)));
+            control.on('error', evt => {
+              GUI.showUserMessage({
+                type: 'warning',
+                message: "mapcontrols.geolocations.error",
+                autoclose: true
+              })
+            });
+            break;
+          case 'addlayers':
+            if (!isMobile.any) {
+              control = this.createMapControl(controlType, {});
+              control.on('addlayer', () => this.emit('addexternallayer'));
+            }
+            break;
+          case 'length':
+            if (!isMobile.any) {
+              control = this.createMapControl(controlType, {
+                options: {
+                  tipLabel: 'sdk.mapcontrols.measures.length.tooltip',
+                  interactionClassOptions: {
+                    projection: this.getProjection(),
+                    help: 'sdk.mapcontrols.measures.length.help'
+                  }
+                }
+              });
+            }
+            break;
+          case 'area':
+            if (!isMobile.any) {
+              control = this.createMapControl(controlType, {
+                options: {
+                  tipLabel:'sdk.mapcontrols.measures.area.tooltip',
+                  interactionClassOptions: {
+                    projection: this.getProjection(),
+                    help: 'sdk.mapcontrols.measures.area.help'
+                  }
+                }
+              });
+            }
+            break;
+          /**
+           * @since 3.8.0
+           */
+          case 'zoomhistory':
+            control = this.createMapControl(controlType, { add: false });
+            this._addControlToMapControlsLeftBottom(control);
+            break;
 
-      }
+        }
     });
     return this.getMapControls()
   }
