@@ -7,7 +7,7 @@
   @since 3.9.0
 -->
 <template>
-  <div class="ol-geocoder" v-disabled="$data._disabled">
+  <div class="ol-geocoder">
 
     <div class="gcd-txt-control">
 
@@ -38,6 +38,7 @@
         id              = "gcd-search"
         class           = "btn"
         @click.stop     = "() => query($refs.input.value)"
+        v-disabled      = "$data._disabled"
       >
         <i
           :class      = "g3wtemplate.getFontClass('search')"
@@ -53,6 +54,7 @@
         id              = "gcd-trash"
         class           = "btn skin-background-color"
         @click.stop     = "clearMarkers"
+        v-disabled      = "$data._disabled"
       >
         <i
           :class      = "g3wtemplate.getFontClass('trash')"
@@ -81,6 +83,7 @@
         id            = "show-markers-results"
         class         = "btn skin-background-color"
         @click.stop   = "() => _showMarkerResults()"
+        v-disabled    = "$data._disabled"
       >
       <code :style="{ opacity: $data._results_panel_open ? 0.5 : undefined }">
         {{ $data._markers.length > 99 ? '99+' : $data._markers.length }}
@@ -571,13 +574,12 @@ export default {
     /**
      * @since 3.9.0 
      */
-    _editItem(layerId, feature) {
+    async _editItem(layerId, feature) {
       const editing = PluginsRegistry.getPlugin('editing');
       // skip on missing plugin dependency
       if (!editing) {
         return;
       }
-
       //Get geometry type from layer
       const geometryType = CatalogLayersStoresRegistry
         .getLayerById(layerId)
@@ -593,18 +595,26 @@ export default {
         ...feature.attributes,
         geometry
       });
+      //set disabled buttons on editing
+      this.$data._disabled = true;
+      this.clearResults();
+      try {
+        await editing
+          .getApi()
+          .addLayerFeature({
+            layerId: layerId,
+            feature: Geometry.is3DGeometry(geometryType) ?
+              Geometry.addZValueToOLFeatureGeometry({
+                feature: editingFeature,
+                geometryType
+              }) :
+              editingFeature
+          })
+      } catch(err) {
+        console.warn(err);
+      }
+      this.$data._disabled = false;
 
-      editing
-        .getApi()
-        .addLayerFeature({
-          layerId: layerId,
-          feature: Geometry.is3DGeometry(geometryType) ?
-            Geometry.addZValueToOLFeatureGeometry({
-              feature: editingFeature,
-              geometryType
-            }) :
-            editingFeature
-        });
     },
 
   },
@@ -667,7 +677,7 @@ export default {
           toggleable: true,
           hint: 'Choose a layer',
           cbk: (layer, feature, action, index) => {
-            // skipe layer choose when there is only a single editable layer
+            // skip layer choose when there is only a single editable layer
             if (1 === editablePointLayers.length) {
               this._editItem(editablePointLayers[0].id, feature);
               return;
