@@ -64,7 +64,7 @@
           <span v-t="contentTitle.post_title"></span>
         </span>
         </div>
-        <div class="g3-content-header-action-tools" style="display: flex">
+        <div class="g3-content-header-action-tools" style="display: flex; align-items: center">
           <component v-for="tool in state.content.headertools" :is="tool"/>
           <resize-icon v-if="showresizeicon" :type="state.split" style="font-size: 1em; padding: 0; align-self: center; margin-left: auto" :style="{marginRight: state.content.closable ? '5px': '0px'}"/>
           <span v-if="state.content.closable && state.content.aside" @click="closeContent" :class="{'mobile': isMobile()}" class="action-button" style="display: flex; justify-content: center ">
