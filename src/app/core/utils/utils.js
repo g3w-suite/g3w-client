@@ -477,6 +477,7 @@ const utils = {
   },
   /**
    * @since 3.8.7
+   * @param layer
    * @param field
    * @param value
    * @param operator
@@ -485,6 +486,7 @@ const utils = {
    * @returns {string}
    */
   createSingleFieldParameter({
+    layer,
     field,
     value,
     operator        = 'eq',
@@ -514,7 +516,11 @@ const utils = {
       value.forEach((value, index) => {
         filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
       });
-      return filter
+      return utils.createFilterFromString({
+        layer,
+        search_endpoint,
+        filter
+      })
     }
 
     /** @TODO add description */
@@ -655,10 +661,10 @@ const utils = {
         break;
       case 'api':
         filter = utils.createSingleFieldParameter({
-            field,
-            value,
-            operator
-          });
+          field,
+          value,
+          operator
+        });
         break;
     }
     return filter;
