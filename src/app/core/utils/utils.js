@@ -509,22 +509,27 @@ const utils = {
       return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop ? `|${logicop}` : ''}`;
     }
 
-    /** @TODO add description */
+    //store string filter
+    let filter = '';
+
+    /**If value is array of values */
     if (Array.isArray(value)) {
-      let filter = '';
+
       const valueLenght = value.length;
       value.forEach((value, index) => {
-        filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
+        filter += `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
       });
-      return utils.createFilterFromString({
-        layer,
-        search_endpoint,
-        filter
-      })
+    } else {
+      //single value
+      filter = `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
     }
 
-    /** @TODO add description */
-    return `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
+    return utils.createFilterFromString({
+      layer,
+      search_endpoint,
+      filter
+    })
+
   },
 
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
