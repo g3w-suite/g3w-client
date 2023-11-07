@@ -504,9 +504,8 @@ export default {
       if (0 === this.features.length) {
         this._hideMarker();
       }
-      if (this.$data.results_panel_open) {
-        GUI.closeContent();
-      }
+      // show remaining results or close panel
+      this.showMarkerResults(undefined, this.features.length > 0);
     },
 
     /**
