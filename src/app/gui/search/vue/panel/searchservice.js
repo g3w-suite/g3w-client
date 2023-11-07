@@ -251,6 +251,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({ fields = [], fi
  */
 proto.getValuesFromField = async function(field) {
   if (field.options.layer_id) {
+    //array of unique values
     const uniqueValues = await this.getUniqueValuesFromField({ field: field.attribute });
     return this.getValueRelationValues(
       field,
@@ -258,10 +259,11 @@ proto.getValuesFromField = async function(field) {
       createFilterFormInputs({
         layer: CatalogLayersStoresRegistry.getLayerById(field.options.layer_id),
         search_endpoint: this.getSearchEndPoint(),
-        inputs: uniqueValues.map( value => ({ value, attribute: field.options.value, logicop: "OR", operator: "eq" }))
+        inputs: [{value: uniqueValues, attribute: field.options.value, logicop: "OR", operator: "eq" }]
       })
     );
   }
+
   if (field.options.values.length) {
     return this.getValueMapValues(field);
   }
