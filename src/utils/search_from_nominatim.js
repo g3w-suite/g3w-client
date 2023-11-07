@@ -44,7 +44,7 @@ export default async function(opts) {
             country:   result.address.country,
             formatted: result.display_name,
           },
-          raw:         result,
+          nominatim:   result,
         })
       ),
   };

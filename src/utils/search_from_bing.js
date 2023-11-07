@@ -57,7 +57,7 @@ export default async function(opts) {
               country:   result.Address.countryRegion,
               formatted: result.Address.formattedAddress,
             },
-            raw:         result,
+            bing:         result,
           };
         })
       : [],

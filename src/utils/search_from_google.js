@@ -58,7 +58,7 @@ export default async function(opts) {
               country,
               formatted: result.display_name,
             },
-            raw: result,
+            google: result,
           };
         })
       : [],

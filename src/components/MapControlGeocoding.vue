@@ -596,7 +596,7 @@ export default {
         const _feature = Geometry.addZValueToOLFeatureGeometry({
           geometryType: type,
           feature: new ol.Feature({
-            ...Object.entries(feature.attributes).reduce((acc, attr) => ({ ...acc, [attr[0].replace(/raw_/g, "").toLowerCase()]: attr[1] }), {}),
+            ...Object.entries(feature.attributes).reduce((acc, attr) => ({ ...acc, [attr[0].replace(feature.attributes.provider + '_', '').toLowerCase()]: attr[1] }), {}),
             ...feature.attributes,
             geometry: convertSingleMultiGeometry(feature.geometry, type),
           }),
