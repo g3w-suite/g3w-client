@@ -89,9 +89,9 @@ proto.createSingleExpressionElement = function({value, attribute, operator, logi
     const filterValue = `( ${_value.map(value => `'${value}'`).join(',').replace(/,/g, ' , ')} )`;
     filterElement = `"${attribute}" ${filterOp} ${filterValue}${filterLogicOperator}`;
   } else if (
-      (value !== null && value !== undefined)
-      && !(Number.isNaN(value) || !value.toString().trim()) //check if a valid number (not a NaN and not an empty string)
-    ) {
+    (value !== null && value !== undefined)
+    && !(Number.isNaN(value) || !value.toString().trim()) //check if a valid number (not a NaN and not an empty string)
+  ) {
     const singolequote = Array.isArray(value) ? value :
       typeof value !== 'number' ? value.split("'") : [];
     if (singolequote.length > 1) {
@@ -100,12 +100,11 @@ proto.createSingleExpressionElement = function({value, attribute, operator, logi
         const value = singolequote[i];
         if (!value)
           continue;
-        const filterOp = 'ILIKE';
         const filterValue = `%${value}%`.trim();
         const filterElement = `"${attribute}" ${filterOp} '${filterValue}'`;
         _filterElements.push(filterElement)
       }
-      filterElement =  `${_filterElements.join(' AND ')}${filterLogicOperator}`;
+      filterElement =  `${_filterElements.join(` ${logicop} `)}${filterLogicOperator}`;
     } else filterElement = `"${attribute}" ${filterOp} '${valueExtra}${value}${valueExtra}'${filterLogicOperator}`;
   }
   return filterElement;
