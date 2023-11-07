@@ -447,13 +447,14 @@ export default {
 
         // results
         p.value.results.forEach(item => {
-          item.__uid = uniqueId();
           this.$data.results.push(flattenObject({
             ...item,
             provider: p.value.provider,
+            __uid:   uniqueId(),
             __add: false,
           }));
         });
+
       });
     },
 
@@ -526,7 +527,7 @@ export default {
         ..._item, 
       });
       // set id of the feature
-      feature.setId(item.__uid);
+      feature.setId(__uid);
       return feature;
     },
 
@@ -629,7 +630,7 @@ export default {
 
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
       if (LAYER.get('id') === layer.id) {
-        this._removeItem(feature.attributes.__uid);
+        this._removeItem(feature.id);
       }
     });
 
