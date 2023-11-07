@@ -592,10 +592,11 @@ export default {
         // get geometry type of target layer
         const type = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
 
-        // create a new editing feature
+        // create a new editing feature (Point/MultiPoint + safe alias for keys without `raw_` prefix)
         const _feature = Geometry.addZValueToOLFeatureGeometry({
           geometryType: type,
           feature: new ol.Feature({
+            ...Object.entries(feature.attributes).reduce((acc, attr) => ({ ...acc, [attr[0].replace(/raw_/g, "").toLowerCase()]: attr[1] }), {}),
             ...feature.attributes,
             geometry: convertSingleMultiGeometry(feature.geometry, type),
           }),
