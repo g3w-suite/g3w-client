@@ -693,57 +693,56 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           // filter data from relation layer
           this.searchLayer.getFilterData({
             field: fieldParams
-          })
-            .then(async data => {
-              const parentData = data.data[0].features || [];
-              for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
-                const subscribe = notAutocompleteSubscribers[i];
-                const { attribute, widget } = subscribe;
-                const uniqueValues = new Set();
-                // case value map
-                if (widget === 'valuemap') {
-                  let values = [...subscribe.options._values];
-                  parentData.forEach(feature => {
-                    const value = feature.get(attribute);
-                    value && uniqueValues.add(value);
-                  });
-                  const data = [...uniqueValues];
-                  values = values.filter(({key}) => data.indexOf(key) !== -1);
-                  values.forEach(value => subscribe.options.values.push(value));
-                }
-                else if (widget === 'valuerelation') {
-                  parentData.forEach(feature => {
-                      const value = feature.get(attribute);
-                      value && uniqueValues.add(value);
-                    });
-                    if (uniqueValues.size > 0) {
-                      const filter = createSingleFieldParameter({
-                        field: subscribe.options.key,
-                        value: [...uniqueValues]
-                      });
-                      try {
-                        const values = await this.getValueRelationValues(subscribe, filter);
-                        values.forEach(value =>  subscribe.options.values.push(value));
-                      } catch(err) {console.log(err)}
-                    }
-                  }
-                else {
-                  parentData.forEach(feature => {
-                    const value = feature.get(attribute);
-                    value && uniqueValues.add(value);
-                  });
-                  this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
-                }
-                if (isRoot) {
-                  this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
-                } else {
-                  const dependenceValue = this.getDependanceCurrentValue(field);
-                  this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
-                }
-                subscribe.options.disabled = false;
+          }).then(async data => {
+            const parentData = data.data[0].features || [];
+            for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
+              const subscribe = notAutocompleteSubscribers[i];
+              const { attribute, widget } = subscribe;
+              const uniqueValues = new Set();
+              // case value map
+              if (widget === 'valuemap') {
+                let values = [...subscribe.options._values];
+                parentData.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
+                });
+                const data = [...uniqueValues];
+                values = values.filter(({key}) => data.indexOf(key) !== -1);
+                values.forEach(value => subscribe.options.values.push(value));
               }
-            })
-            .catch(error => reject(error))
+              else if (widget === 'valuerelation') {
+                parentData.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
+                });
+                if (uniqueValues.size > 0) {
+                  const filter = createSingleFieldParameter({
+                    layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
+                    search_endpoint: this.getSearchEndPoint(),
+                    field: subscribe.options.key,
+                    value: [...uniqueValues]
+                  });
+                  try {
+                    const values = await this.getValueRelationValues(subscribe, filter);
+                    values.forEach(value =>  subscribe.options.values.push(value));
+                  } catch(err) {console.log(err)}
+                }
+                }
+              else {
+                parentData.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
+                });
+                this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
+              }
+              if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              else {
+                const dependenceValue = this.getDependanceCurrentValue(field);
+                this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              }
+              subscribe.options.disabled = false;
+            }
+          }).catch(error => reject(error))
             .finally(() => {
             this.state.loading[field] = false;
             resolve();

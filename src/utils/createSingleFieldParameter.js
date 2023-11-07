@@ -1,6 +1,10 @@
 import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
+import {
+  createFilterFromString
+} from "./createFilterFromString";
 
 /**
+ * @param layer
  * @param field
  * @param value
  * @param operator
@@ -12,6 +16,7 @@ import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
  * @since 3.8.7
  */
 export function createSingleFieldParameter({
+  layer,
   field,
   value,
   operator        = 'eq',
@@ -34,16 +39,25 @@ export function createSingleFieldParameter({
     return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop ? `|${logicop}` : ''}`;
   }
 
-  /** @TODO add description */
+  //store string filter
+  let filter = '';
+
+  /**If value is array of values */
   if (Array.isArray(value)) {
-    let filter = '';
+
     const valueLenght = value.length;
     value.forEach((value, index) => {
-      filter+=`"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
+      filter += `"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
     });
-    return filter
+  } else {
+    //single value
+    filter = `"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
   }
 
-  /** @TODO add description */
-  return `"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
+  return createFilterFromString({
+    layer,
+    search_endpoint,
+    filter
+  })
+
 };
