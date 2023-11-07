@@ -181,7 +181,7 @@ import { flattenObject }             from 'utils/flattenObject';
 
 const {
   Geometry,
-  singleGeometriesToMultiGeometry,
+  convertSingleMultiGeometry,
 }                                   = require('utils/geo');
 
 const Projections                   = require('g3w-ol/projection/projections');
@@ -579,34 +579,31 @@ export default {
      */
     async _editItem(layerId, feature) {
       const editing = PluginsRegistry.getPlugin('editing');
+
       // skip on missing plugin dependency
       if (!editing) {
         return;
       }
-      // get geometry type from layer
-      const geometryType = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
 
-      // set editing feature geometry
-      const geometry =  Geometry.isMultiGeometry(geometryType)
-        ? singleGeometriesToMultiGeometry([feature.geometry])
-        : feature.geometry;
-
-      const editingFeature = new ol.Feature({
-        //check if is Multi Geometry (MultiPoint)
-        ...feature.attributes,
-        geometry
-      });
-      //set disabled buttons on editing
+      // disable ol-gecoder while editing
       this.$data.disabled = true;
       try {
-        await editing
-          .getApi()
-          .addLayerFeature({
-            layerId: layerId,
-            feature: Geometry.is3DGeometry(geometryType)
-              ? Geometry.addZValueToOLFeatureGeometry({ geometryType, feature: editingFeature })
-              : editingFeature
-          })
+
+        // get geometry type of target layer
+        const type = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
+
+        // create a new editing feature
+        const _feature = Geometry.addZValueToOLFeatureGeometry({
+          geometryType: type,
+          feature: new ol.Feature({
+            ...feature.attributes,
+            geometry: convertSingleMultiGeometry(feature.geometry, type),
+          }),
+        });
+
+        // start editing session
+        await editing.getApi().addLayerFeature({ layerId: layerId, feature: _feature });
+
       } catch(err) {
         console.warn(err);
       }
