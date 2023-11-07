@@ -593,22 +593,22 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                 values.forEach(value => subscribe.options.values.push(value));
               }
               else if (widget === 'valuerelation') {
-                parentData.forEach(feature =>{
-                    const value = feature.get(attribute);
-                    value && uniqueValues.add(value);
+                parentData.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
+                });
+                if (uniqueValues.size > 0) {
+                  const filter = createSingleFieldParameter({
+                    layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
+                    search_endpoint: this.getSearchEndPoint(),
+                    field: subscribe.options.key,
+                    value: [...uniqueValues]
                   });
-                  if (uniqueValues.size > 0) {
-                    const filter = createSingleFieldParameter({
-                      layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
-                      search_endpoint: this.getSearchEndPoint(),
-                      field: subscribe.options.key,
-                      value: [...uniqueValues]
-                    });
-                    try {
-                      const values = await this.getValueRelationValues(subscribe, filter);
-                      values.forEach(value =>  subscribe.options.values.push(value));
-                    } catch(err) {console.log(err)}
-                  }
+                  try {
+                    const values = await this.getValueRelationValues(subscribe, filter);
+                    values.forEach(value =>  subscribe.options.values.push(value));
+                  } catch(err) {console.log(err)}
+                }
                 }
               else {
                 parentData.forEach(feature => {
