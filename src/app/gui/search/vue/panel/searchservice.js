@@ -599,6 +599,8 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                   });
                   if (uniqueValues.size > 0) {
                     const filter = createSingleFieldParameter({
+                      layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
+                      search_endpoint: this.getSearchEndPoint(),
                       field: subscribe.options.key,
                       value: [...uniqueValues]
                     });
