@@ -179,6 +179,8 @@ import CatalogLayersStoresRegistry   from 'store/catalog-layers';
 import { toRawType, uniqueId }       from 'utils';
 import { flattenObject }             from 'utils/flattenObject';
 
+const LAYERID = '__g3w_marker';
+
 const {
   Geometry,
   singleGeometriesToMultiGeometry,
@@ -200,7 +202,7 @@ const pushpin_icon = new ol.style.Icon({
  * @TODO move to parent `Control` class? (duplicated also in GEOLOCATION CONTROL)
  */
 const layer = new ol.layer.Vector({
-  id: '__g3w_marker',
+  id: LAYERID,
   name: 'Geocoding',
   source: new ol.source.Vector(),
   style: new ol.style.Style({ image: pushpin_icon }),
@@ -340,7 +342,18 @@ export default {
       this._hideMarker();
       //set false to add
       this.$data._results.forEach(i => i.__add = false);
-      //GUI.getService('queryresults').removeFeatureLayerFromResult()
+      //check if in query results layer of marker is present
+      const markerLayerQueryResult = GUI.getService('queryresults')
+        .getState()
+        .layers
+        .find(l => l.id === LAYERID);
+      //If present
+      if (markerLayerQueryResult) {
+        markerLayerQueryResult.features.forEach(f => {
+          GUI.getService('queryresults')
+            .removeFeatureLayerFromResult(markerLayerQueryResult, f)
+        })
+      }
     },
 
     /**
@@ -488,8 +501,11 @@ export default {
      * @since 3.9.0
      */
     _removeItem(uid) {
-      //remove feature marker
-      layer.getSource().removeFeature(layer.getSource().getFeatureById(uid));
+      //check if clear markers is run
+      if (layer.getSource().getFeatures().length) {
+        //remove feature marker
+        layer.getSource().removeFeature(layer.getSource().getFeatureById(uid));
+      }
       this.$data._markers.splice(this.$data._markers.findIndex(i => uid === i.__uid), 1);
       //check if is open result list
       if (this.$data._results.length > 0) {
