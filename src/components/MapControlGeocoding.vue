@@ -7,7 +7,7 @@
   @since 3.9.0
 -->
 <template>
-  <div :class="[ 'ol-geocoder', { 'g3w-disabled': $data._disabled }]"
+  <div :class="[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
   >
 
     <div class="gcd-txt-control">
@@ -20,8 +20,8 @@
         autocomplete    = "off"
         class           = "gcd-txt-input"
         v-t-placeholder = "placeholder"
-        @keyup          = "_onQuery"
-        @input          = "_onValue"
+        @keyup          = "onQuery"
+        @input          = "onValue"
       />
 
       <!-- RESET SEARCH -->
@@ -30,7 +30,7 @@
         type        = "button"
         id          = "gcd-input-reset"
         class       = "gcd-txt-reset gcd-hidden"
-        @click.stop = "_onReset"
+        @click.stop = "onReset"
       ></button>
 
       <!-- SUBMIT SEARCH -->
@@ -49,7 +49,7 @@
 
       <!-- CLEAR MARKERS SELECTION --->
       <button
-        v-if="$data._markers.length > 0"
+        v-if="features.length > 0"
         type            = "button"
         id              = "gcd-trash"
         class           = "btn skin-background-color"
@@ -63,28 +63,28 @@
 
       <!-- TOGGLE MARKERS VISIBLITY -->
       <button
-        v-if          = "$data._markers.length > 0"
+        v-if          = "features.length > 0"
         type          = "button"
         id            = "markers-visibility-layer"
         class         = "btn skin-background-color"
-        @click.stop   = "_toggleLayerVisibility"
+        @click.stop   = "toggleLayerVisibility"
       >
         <i
-        :class      = "g3wtemplate.getFontClass($data._visible ? 'eye-close': 'eye')"
+        :class      = "g3wtemplate.getFontClass(is_layer_visible ? 'eye-close': 'eye')"
         aria-hidden = "true"
         ></i>
       </button>
 
       <!-- TOGGLE SIDEBAR PANEL -->
       <button
-        v-if          = "$data._markers.length > 0"
+        v-if          = "features.length > 0"
         type          = "button"
         id            = "show-markers-results"
         class         = "btn skin-background-color"
-        @click.stop   = "() => _showMarkerResults()"
+        @click.stop   = "() => showMarkerResults()"
       >
-      <code :style="{ opacity: $data._results_panel_open ? 0.5 : undefined }">
-        {{ $data._markers.length > 99 ? '99+' : $data._markers.length }}
+      <code :style="{ opacity: $data.results_panel_open ? 0.5 : undefined }">
+        {{ features.length > 99 ? '99+' : features.length }}
       </code>
       </button>
 
@@ -96,7 +96,7 @@
       class = "gcd-txt-result"
     >
       <li
-        v-for   = "(item, i) in $data._results"
+        v-for   = "(item, i) in $data.results"
         :class  = "[
           item.provider,
           item.__heading    ? 'skin-background-color' : '',
@@ -104,7 +104,7 @@
           item.__add        ? 'selected' : '',
         ]"
         :key         = "item.__uid"
-        @click.stop = "_onItemClick($event, item)"
+        @click.stop = "onItemClick($event, item)"
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
         <div
@@ -179,33 +179,31 @@ import CatalogLayersStoresRegistry   from 'store/catalog-layers';
 import { toRawType, uniqueId }       from 'utils';
 import { flattenObject }             from 'utils/flattenObject';
 
-const LAYERID = '__g3w_marker';
-
 const {
   Geometry,
   singleGeometriesToMultiGeometry,
 }                                   = require('utils/geo');
 
-const Projections                    = require('g3w-ol/projection/projections');
+const Projections                   = require('g3w-ol/projection/projections');
 
-const providers = [ nominatim, bing, google ];
-
-const pushpin_icon = new ol.style.Icon({
-  opacity: 1,
-  src: '/static/client/images/pushpin.svg',
-  scale: 0.8
-});
+const PROVIDERS = [ nominatim, bing, google ];
 
 /**
- * Search results layer (marker)
+ * Search results layer (pushpin marker)
  *
  * @TODO move to parent `Control` class? (duplicated also in GEOLOCATION CONTROL)
  */
-const layer = new ol.layer.Vector({
-  id: LAYERID,
+const LAYER = new ol.layer.Vector({
+  id: '__g3w_marker',
   name: 'Geocoding',
   source: new ol.source.Vector(),
-  style: new ol.style.Style({ image: pushpin_icon }),
+  style: new ol.style.Style({
+    image: new ol.style.Icon({
+      opacity: 1,
+      src: '/static/client/images/pushpin.svg',
+      scale: 0.8
+    }),
+  }),
 });
 
 
@@ -217,31 +215,16 @@ const layer = new ol.layer.Vector({
  */
 const DYNAMIC_MAP_EXTENT = false;
 
-/**
- * Show current location/place on map as marker icon
- */
-
-/**
- * @since 3.9.0
- */
-function _getExtentForProvider(provider, { viewbox, mapCrs }) {
-  return ol.proj.transformExtent(
-    provider === bing ? GUI.getService('map').getMapExtent() : viewbox,
-    mapCrs,
-    'EPSG:4326'
-  )
-}
-
 export default {
 
   data() {
     return {
       /** @since 3.9.0 */
-      _results              : [],
-      _markers              : [],
-      _visible              : true,  // set visibility of layer
-      _disabled             : false, // disabled boolean control
-      _results_panel_open   : false, // @TODO make use of `GUI.isSomething()`
+      results              : [],
+      /** @since 3.9.0 */
+      disabled             : false, // disabled boolean control
+      /** @since 3.9.0 */
+      results_panel_open   : false, // @TODO make use of `GUI.isSomething()`
     };
   },
 
@@ -263,7 +246,7 @@ export default {
     /**
      * @since 3.9.0
      */
-     limit: {
+    limit: {
       type: Number,
       required: true,
     },
@@ -284,37 +267,53 @@ export default {
 
   },
 
-  methods: {
+  computed: {
+
     /**
-     *
-     * @param coordinates
-     * @param options
-     * @private
+     * @returns { boolean } layer visible (property)
+     * 
+     * @since 3.9.0
      */
-    _showMarker(coordinates, options = { transform: true }) {
-      const mapService = GUI.getService('map');
-      coordinates = options.transform
-        ? ol.proj.transform(
-          coordinates,
-          'EPSG:4326',
-          mapService.getEpsg()
-        )
-        : coordinates;
-      const geometry =  new ol.geom.Point(coordinates);
-      mapService.zoomToGeometry(geometry);
+    is_layer_visible() {
+      return LAYER.getVisible();
+    },
+
+    /**
+     * @returns { array } layer markers (features)
+     * 
+     * @since 3.9.0
+     */
+    features() {
+      return LAYER.getSource().getFeatures();
+    },
+
+  },
+
+  methods: {
+
+    /**
+     * @param coordinates
+     * @param transform
+     * 
+     * @since 3.9.0
+     */
+    _showMarker(coords, transform = true) {
+      const map = GUI.getService('map');
+      coords = transform ? ol.proj.transform(coords, 'EPSG:4326', map.getEpsg()) : coords;
+      map.zoomToGeometry(new ol.geom.Point(coords));
     },
 
     /**
      * Remove marker from map
+     * 
+     * @since 3.9.0
      */
     _hideMarker() {
-      //clear layer features marker
-      layer.getSource().clear();
-      //need to force to set visible tru otherwise
-      // when add new marker need to click on visibility button
-      // if last state are not visible
-      if (false === this.$data._visible) {
-        this._toggleLayerVisibility();
+      // clear layer features marker
+      LAYER.getSource().clear();
+      // force layer visibilty to true
+      if (false === this.is_layer_visible) {
+        this.toggleLayerVisibility();
       }
     },
 
@@ -323,9 +322,8 @@ export default {
      *
      * @since 3.9.0
      */
-    _toggleLayerVisibility() {
-      this.$data._visible = !this.$data._visible;
-      layer.setVisible(this.$data._visible);
+    toggleLayerVisibility() {
+      LAYER.setVisible(!this.is_layer_visible);
     },
 
     /**
@@ -334,25 +332,17 @@ export default {
      * @since 3.9.0
      */
     clearResults() {
-      this.$data._results.splice(0);
+      this.$data.results.splice(0);
     },
 
     clearMarkers() {
-      this.$data._markers.splice(0);
       this._hideMarker();
-      //set false to add
-      this.$data._results.forEach(i => i.__add = false);
-      //check if in query results layer of marker is present
-      const markerLayerQueryResult = GUI.getService('queryresults')
-        .getState()
-        .layers
-        .find(l => l.id === LAYERID);
-      //If present
-      if (markerLayerQueryResult) {
-        markerLayerQueryResult.features.forEach(f => {
-          GUI.getService('queryresults')
-            .removeFeatureLayerFromResult(markerLayerQueryResult, f)
-        })
+      // set false to add
+      this.$data.results.forEach(i => i.__add = false);
+      const layer = GUI.getService('queryresults').getState().layers.find(l => l.id === LAYER.get('id'));
+      // check if marker is in query results
+      if (layer) {
+        layer.features.forEach(f => { GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f) });
       }
     },
 
@@ -380,10 +370,8 @@ export default {
         let coordinates    = null;
         let transform      = false;
         const [x, y, epsg] = (q || '').split(',');
-        //get projection of coordinates is pass as third value
-        const projection         = epsg && Projections.get({
-          epsg: `EPSG:${epsg.trim()}`
-        });
+        // get projection of coordinates is pass as third value
+        const projection         = epsg && Projections.get({ epsg: `EPSG:${epsg.trim()}` });
 
         // extract xCoord and yCoord
         if (isNumber(1 * x) && isNumber(1 * y)) {
@@ -402,7 +390,7 @@ export default {
 
         // request is for a single point (XCoord,YCoord)
         if (coordinates) {
-          this._showMarker(coordinates, { transform });
+          this._showMarker(coordinates, transform);
           resolve(coordinates);
         }
 
@@ -415,13 +403,14 @@ export default {
 
           // request data
           const results = await Promise.allSettled(
-            providers
+            PROVIDERS
               .map(p => p({
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?
                 limit:        this.limit,
-                extent:       _getExtentForProvider(p, { mapCrs: this.mapCrs, viewbox: this.viewbox }),
+                // get dynamic extent (Bing Provider)
+                extent:       ol.proj.transformExtent(p === bing ? GUI.getService('map').getMapExtent() : this.viewbox, this.mapCrs, 'EPSG:4326')
               }))
           );
 
@@ -442,7 +431,7 @@ export default {
       results.forEach((p) => {
 
         // heading
-        this.$data._results.push({
+        this.$data.results.push({
           __heading: true,
           provider: p.value.provider,
           label: p.value.label,
@@ -450,7 +439,7 @@ export default {
 
         // no results
         if (!(p.value.results && p.value.results.length)) {
-          this.$data._results.push({
+          this.$data.results.push({
             __no_results: !(p.value.results && p.value.results.length),
           });
           return;
@@ -459,7 +448,7 @@ export default {
         // results
         p.value.results.forEach(item => {
           item.__uid = uniqueId();
-          this.$data._results.push(flattenObject({
+          this.$data.results.push(flattenObject({
             ...item,
             provider: p.value.provider,
             __add: false,
@@ -471,7 +460,7 @@ export default {
     /**
      * @since 3.9.0
      */
-    _onQuery(evt) {
+    onQuery(evt) {
       if ('Enter' === evt.key || 13 === evt.which || 13 === evt.keyCode) {
         evt.preventDefault();
         this.query(evt.target.value.trim());
@@ -481,14 +470,14 @@ export default {
     /**
      * @since 3.9.0
      */
-    _onValue(evt) {
+    onValue(evt) {
       this.$refs.reset.classList.toggle("gcd-hidden", evt.target.value.trim().length === 0);
     },
 
     /**
      * @since 3.9.0
      */
-    _onReset() {
+    onReset() {
       this.$refs.input.focus();
       this.$refs.input.value = '';
       this.$refs.reset.classList.add("gcd-hidden");
@@ -501,21 +490,20 @@ export default {
      * @since 3.9.0
      */
     _removeItem(uid) {
-      //check if clear markers is run
-      if (layer.getSource().getFeatures().length) {
-        //remove feature marker
-        layer.getSource().removeFeature(layer.getSource().getFeatureById(uid));
+      // check if clear markers is running
+      if (this.features.length) {
+        const source = LAYER.getSource();
+        source.removeFeature(source.getFeatureById(uid));
       }
-      this.$data._markers.splice(this.$data._markers.findIndex(i => uid === i.__uid), 1);
-      //check if is open result list
-      if (this.$data._results.length > 0) {
-        this.$data._results.find(r => uid === r.__uid).__add = false
+      // check if is open result list
+      if (this.$data.results.length > 0) {
+        this.$data.results.find(r => uid === r.__uid).__add = false
       }
-      //if no markers are on map
-      if (this.$data._markers.length === 0){
+      // no markers are on map
+      if (0 === this.features.length) {
         this._hideMarker();
       }
-      if (this.$data._results_panel_open) {
+      if (this.$data.results_panel_open) {
         GUI.closeContent();
       }
     },
@@ -530,14 +518,14 @@ export default {
      * @since 3.9.0
      */
     _createOlMarker(item) {
-      const { __uid, __add, ..._item } = item;
+      const { __uid, __add, ..._item } = item; // exclude internal properties
       const feature = new ol.Feature({
         geometry: new ol.geom.Point(
           ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
         ),
-        ..._item, //set properties
+        ..._item, 
       });
-      //set id of the feature
+      // set id of the feature
       feature.setId(item.__uid);
       return feature;
     },
@@ -545,23 +533,23 @@ export default {
     /**
      * @since 3.9.0
      */
-    _onItemClick(evt, item) {
+    onItemClick(evt, item) {
       if (!item.lat || !item.lon) {
         return;
       }
       evt.preventDefault();
       try {
-        //in case of already add marker
-        if (layer.getSource().getFeatureById(item.__uid)) {
+        const source = LAYER.getSource();
+        // in case of already add marker
+        if (source.getFeatureById(item.__uid)) {
           this._removeItem(item.__uid);
         } else {
           //add feature marker and zoom on it
           const feature = this._createOlMarker(item);
-          layer.getSource().addFeature(feature);
+          source.addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
-          this.$data._markers.push(item);
           item.__add = true;
-          this._showMarkerResults([feature], true);
+          this.showMarkerResults([feature], true);
         }
       } catch (e) {
         console.warn(e);
@@ -573,17 +561,17 @@ export default {
      * 
      * @since 3.9.0
      */
-    _showMarkerResults(features, skipChek = false) {
-      if (this.$data._results_panel_open && !skipChek) {
+    showMarkerResults(features, skipChek = false) {
+      if (this.$data.results_panel_open && !skipChek) {
         GUI.closeContent();
         return;
       }
-      //check if is already open right panel
+      // check if is already open right panel
       if (GUI.getCurrentContent()) {
         GUI.closeContent();
       }
-      GUI.showQueryResults('Geocoding', { data: [{ layer, features: features || layer.getSource().getFeatures() }] });
-      this.$data._results_panel_open = true;
+      GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: features || LAYER.getSource().getFeatures() }] });
+      this.$data.results_panel_open = true;
     },
 
     /**
@@ -595,12 +583,10 @@ export default {
       if (!editing) {
         return;
       }
-      //Get geometry type from layer
-      const geometryType = CatalogLayersStoresRegistry
-        .getLayerById(layerId)
-        .getGeometryType();
+      // get geometry type from layer
+      const geometryType = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
 
-      //set editing feature geometry
+      // set editing feature geometry
       const geometry =  Geometry.isMultiGeometry(geometryType)
         ? singleGeometriesToMultiGeometry([feature.geometry])
         : feature.geometry;
@@ -611,59 +597,49 @@ export default {
         geometry
       });
       //set disabled buttons on editing
-      this.$data._disabled = true;
-      // this.clearResults();
+      this.$data.disabled = true;
       try {
         await editing
           .getApi()
           .addLayerFeature({
             layerId: layerId,
-            feature: Geometry.is3DGeometry(geometryType) ?
-              Geometry.addZValueToOLFeatureGeometry({
-                feature: editingFeature,
-                geometryType
-              }) :
-              editingFeature
+            feature: Geometry.is3DGeometry(geometryType)
+              ? Geometry.addZValueToOLFeatureGeometry({ geometryType, feature: editingFeature })
+              : editingFeature
           })
       } catch(err) {
         console.warn(err);
       }
-      this.$data._disabled = false;
-
+      this.$data.disabled = false;
     },
 
   },
 
   created() {
     const queryresults = GUI.getService('queryresults');
+    const mapService   = GUI.getService('map');
+    const map          = mapService.getMap();
 
-    //Add marker layer on
-    const mapService = GUI.getService('map');
-    const map        = mapService.getMap();
-
-    //add layer
-    /**
-     * @TODO take in account to change zIndex in case of add layer (wms external, vector layer)
-     */
-    map.addLayer(layer);
+    /** @TODO keep layer on top when adding an external layer ? (wms, vector, ...) */
+    map.addLayer(LAYER);
 
     // register vector layer for query results
-    queryresults.registerVectorLayer(layer);
+    queryresults.registerVectorLayer(LAYER);
 
-    // TODO: delegate check for `is_results_panel_open` to an external queryresults or gui method
-    GUI.on('closecontent',    () => { this.$data._results_panel_open = false; })
-    GUI.onafter('setContent', () => { if (this.$data._results_panel_open) this.$data._results_panel_open = false; });
+    /** @TODO delegate check for `is_results_panel_open` to an external queryresults or gui method */
+    GUI.on('closecontent',    () => { this.$data.results_panel_open = false; })
+    GUI.onafter('setContent', () => { if (this.$data.results_panel_open) this.$data.results_panel_open = false; });
 
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
-      if ('__g3w_marker' === layer.id) {
+      if (LAYER.get('id') === layer.id) {
         this._removeItem(feature.attributes.__uid);
       }
     });
 
-    // TODO: delegate attaching listener to addCurrentActionToolsLayer
+    /** @TODO delegate attaching listener to addCurrentActionToolsLayer */
     queryresults.onafter('addActionsForLayers', (actions, layers) => {
 
-      const layer = layers.find(layer => '__g3w_marker' === layer.id);
+      const layer = layers.find(l => LAYER.get('id') === l.id);
 
       if (!layer) {
         return;
@@ -676,7 +652,7 @@ export default {
         .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
 
       // skip adding action icon when there is no editable layer
-      //or editing panel is open (layer is in editing)
+      // or editing panel is open (layer is in editing)
       if (0 === editablePointLayers.length || editablePointLayers.find(l => l.inediting)) {
         return;
       }
@@ -730,8 +706,7 @@ export default {
   },
 
   destroyed() {
-    GUI.getService('queryresults')
-      .unregisterVectorLayer(layer);
+    GUI.getService('queryresults').unregisterVectorLayer(LAYER);
   }
 
 };
