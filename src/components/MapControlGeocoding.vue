@@ -101,7 +101,7 @@
           item.provider,
           item.__heading    ? 'skin-background-color' : '',
           item.__no_results ? 'gcd-noresult' : '',
-          item.__add        ? 'selected' : '',
+          item.__selected   ? 'selected' : '',
         ]"
         :key         = "item.__uid"
         @click.stop = "onItemClick($event, item)"
@@ -122,7 +122,7 @@
         <template v-else>
           <span
             style       = "color: #000; padding: 5px;"
-            :class      = "g3wtemplate.getFontClass(item.__add ? 'check' : 'uncheck')">
+            :class      = "g3wtemplate.getFontClass(item.__selected ? 'check' : 'uncheck')">
           </span>
           <i
             v-if        = "'nominatim' === item.provider"
@@ -139,13 +139,9 @@
           />
           <!-- TODO: remove outer link (which is used only for styling purposes..) -->
           <a href="" draggable="false">
-            <div v-if="item.type" class="gcd-type">{{ item.type }}</div>
-            <div v-if="item.name" class="gcd-name">{{ item.name }}</div>
-            <!-- <template v-if="item.address"> -->
-            <div
-              v-if   = "item.address_name"
-              class = "gcd-road"
-            >{{ item.address_name }}</div>
+            <div v-if="item.type"         class="gcd-type">{{ item.type }}</div>
+            <div v-if="item.name"         class="gcd-name">{{ item.name }}</div>
+            <div v-if="item.address_name" class="gcd-road">{{ item.address_name }}</div>
             <div
               v-if  = "item.address_road || item.address_building || item.address_house_number"
               class = "gcd-road"
@@ -158,7 +154,6 @@
               v-if  = "item.address_state || item.address_country"
               class = "gcd-country"
             >{{ item.address_state }} {{ item.address_country }}</div>
-            <!-- </template> -->
           </a>
         </template>
       </li>
@@ -338,7 +333,7 @@ export default {
     clearMarkers() {
       this._hideMarker();
       // set false to add
-      this.$data.results.forEach(i => i.__add = false);
+      this.$data.results.forEach(i => i.__selected = false);
       const layer = GUI.getService('queryresults').getState().layers.find(l => l.id === LAYER.get('id'));
       // check if marker is in query results
       if (layer) {
@@ -449,9 +444,9 @@ export default {
         p.value.results.forEach(item => {
           this.$data.results.push(flattenObject({
             ...item,
-            provider: p.value.provider,
-            __uid:   uniqueId(),
-            __add: false,
+            provider:   p.value.provider,
+            __uid:      uniqueId(),
+            __selected: false,
           }));
         });
 
@@ -491,19 +486,24 @@ export default {
      * @since 3.9.0
      */
     _removeItem(uid) {
+      const item = (this.$data.results || []).find(r => uid === r.__uid);
+
       // check if clear markers is running
       if (this.features.length) {
         const source = LAYER.getSource();
         source.removeFeature(source.getFeatureById(uid));
       }
+
       // check if is open result list
-      if (this.$data.results.length > 0) {
-        this.$data.results.find(r => uid === r.__uid).__add = false
+      if (item) {
+        item.__selected = false;
       }
+
       // no markers are on map
       if (0 === this.features.length) {
         this._hideMarker();
       }
+
       // show remaining results or close panel
       this.showMarkerResults(undefined, this.features.length > 0);
     },
@@ -518,7 +518,7 @@ export default {
      * @since 3.9.0
      */
     _createOlMarker(item) {
-      const { __uid, __add, ..._item } = item; // exclude internal properties
+      const { __uid, __selected, ..._item } = item; // exclude internal properties
       const feature = new ol.Feature({
         geometry: new ol.geom.Point(
           ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
@@ -548,7 +548,7 @@ export default {
           const feature = this._createOlMarker(item);
           source.addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
-          item.__add = true;
+          item.__selected = true;
           this.showMarkerResults([feature], true);
         }
       } catch (e) {
@@ -699,7 +699,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     const q = document.querySelector.bind(document);
-    q('#gcd-input-query').value = /*'becca'*/ /*'via sallustio 10'*/ 'cafe';
+    q('#gcd-input-query').value = 'via sallustio 10' /*'becca'*/ /*'cafe'*/;
     q('#gcd-search').click();
   },
 
