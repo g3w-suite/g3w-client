@@ -484,31 +484,43 @@ const utils = {
    * @param search_endpoint
    * @returns {string}
    */
-  createSingleFieldParameter({field, value, operator='eq', logicop='OR', search_endpoint="api"}){
-    if (search_endpoint === 'api') {
-      if (Array.isArray(value)){
-        let filter = '';
-        const valueLenght = value.length;
-        value.forEach((value, index) =>{
-          filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `|${logicop},` : ''}`;
-        });
-        return filter
-      } else {
-        return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}`;
-      }
-    } else {
-      if (Array.isArray(value)){
-        let filter = '';
-        const valueLenght = value.length;
-        value.forEach((value, index) => {
-          filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
-        });
-        return filter
-      } else {
-        return `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
-      }
+  createSingleFieldParameter({
+    field,
+    value,
+    operator        = 'eq',
+    logicop         = 'OR',
+    search_endpoint = 'api',
+  }) {
+
+    /** @TODO add description */
+    if ('api' === search_endpoint && Array.isArray(value)) {
+      let filter = '';
+      const valueLenght = value.length;
+      value.forEach((value, index) => {
+        filter += `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `|${logicop},` : ''}`;
+      });
+      return filter
     }
+
+    /** @TODO add description */
+    if('api' === search_endpoint ) {
+      return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop ? `|${logicop}` : ''}`;
+    }
+
+    /** @TODO add description */
+    if (Array.isArray(value)) {
+      let filter = '';
+      const valueLenght = value.length;
+      value.forEach((value, index) => {
+        filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
+      });
+      return filter
+    }
+
+    /** @TODO add description */
+    return `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
   },
+
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
     let stringFilter = filter;
     switch (search_endpoint) {
@@ -551,42 +563,78 @@ const utils = {
    * @param inputs
    * @returns {*}
    */
-  createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}){
+  createFilterFormInputs({
+    layer,
+    search_endpoint = 'ows',
+    inputs          = [],
+  }) {
+
+    //check if is a single layer of array of layers
     const isLayerArray = Array.isArray(layer);
+
     let filter;
     let filters = []; // in case of layer is an array
+
     switch (search_endpoint) {
+
       case 'ows':
-        if (isLayerArray){
+        if (isLayerArray) {
           layer.forEach(layer =>{
             const expression = new Expression();
-            const layerName = layer.getWMSLayerName();
-            expression.createExpressionFromFilter(inputs, layerName);
+            expression.createExpressionFromFilter(inputs, layer.getWMSLayerName());
             filter = new Filter();
             filter.setExpression(expression.get());
             filters.push(filter);
           })
         } else {
           const expression = new Expression();
-          const layerName = layer.getWMSLayerName();
-          expression.createExpressionFromFilter(inputs, layerName);
+          expression.createExpressionFromFilter(inputs, layer.getWMSLayerName());
           filter = new Filter();
           filter.setExpression(expression.get());
         }
         break;
+
       case 'api':
-        const inputsLength = inputs.length -1;
-        const fields = inputs.map((input, index) => utils.createSingleFieldParameter({
-            field: input.attribute,
-            value: input.value,
-            operator: input.operator,
-            logicop: index < inputsLength ?  input.logicop: null
-          })
-        );
+        //get inputs length
+        const inputsLength = inputs.length;
+        const fields = inputs
+          .map((input, inputIndex) => {
+            //take in account multi key relation fields
+            if (Array.isArray(input.attribute)) {
+              const attributesLength = input.attribute.length;
+              return input.attribute
+                .reduce(
+                  (accumulator, attribute, index) => {
+                    return accumulator + utils.createSingleFieldParameter({
+                      field: attribute,
+                      value: input.value[index],
+                      operator: input.operator,
+                      logicop: null
+                    }) + (
+                      (index < attributesLength - 1)
+                        ? '|AND,'
+                        : inputIndex < inputsLength - 1
+                          ? `|${input.logicop}`
+                          : ''
+                    );
+                  }, '');
+            } else {
+              return utils.createSingleFieldParameter({
+                field: input.attribute,
+                value: input.value,
+                operator: input.operator,
+                logicop: input.logicop,
+              })
+            }
+          });
         filter = fields.length ? fields.join() : undefined;
-        isLayerArray && layer.forEach(()=>filters.push(filter));
+        if (isLayerArray) {
+          layer.forEach(() => filters.push(filter));
+        }
         break;
+
     }
+
     return isLayerArray ? filters  : filter;
   },
   //method to create filter from field based on search_endpoint
