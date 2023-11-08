@@ -7,7 +7,7 @@
     v-if  = "config.layers.length > 0"
     class = "action-choose-layer"
   >
-    <label v-html="config.label"></label>
+    <label v-t="config.label"></label>
     <div
       style               = "width: 100%; display: flex"
       @click.prevent.stop = ""
