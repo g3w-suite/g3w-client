@@ -38,70 +38,115 @@ function SearchService(config = {}) {
 
   base(this);
 
-  // reactivity data
-  this.state             = {
-                            title: null,
-                            forminputs: [],
-                            loading: {},
-                            searching: false,
-                           };
+  /**
+   * reactivity data
+   */
+  this.state = {
+    title: null,
+    forminputs: [],
+    loading: {},
+    searching: false,
+  };
 
+  /**
+   * @FIXME add description
+   */
   this.config            = config;
 
   const { options = {} } = this.config;
   const layerid          = options.querylayerid || options.layerid || null;
 
-  this.inputdependance   = {};
+  /**
+   * @FIXME add description
+   */
+  this.inputdependance = {};
 
+  /**
+   * @FIXME add description
+   */
   this.inputdependencies = {};
 
+  /**
+   * @FIXME add description
+   */
   this.cachedependencies = {};
 
-  this.project           = ProjectsRegistry.getCurrentProject();
+  /**
+   * @FIXME add description
+   */
+  this.project = ProjectsRegistry.getCurrentProject();
 
-  this.mapService        = GUI.getService('map');
+  /**
+   * @FIXME add description
+   */
+  this.mapService = GUI.getService('map');
 
-  this.searchLayer       = null;
+  /**
+   * @FIXME add description
+   */
+  this.searchLayer = null;
 
-  this.filter            = null;
+  /**
+   * @FIXME add description
+   */
+  this.filter = null;
 
-  this.inputs            = [];
+  /**
+   * @FIXME add description
+   */
+  this.inputs = [];
 
-  this.state.title       = config.name;
+  /**
+   * @FIXME add description
+   */
+  this.state.title = config.name;
 
-  this.search_endpoint   = config.search_endpoint;
+  /**
+   * @FIXME add description
+   */
+  this.search_endpoint = config.search_endpoint;
 
-  this.url               = options.queryurl;
+  /**
+   * @FIXME add description
+   */
+  this.url = options.queryurl;
 
-  this.filter            = options.filter;
+  /**
+   * @FIXME add description
+   */
+  this.filter = options.filter;
 
   /**
    * @type { 'search' | 'search_1n' }
    */
-  this.type              = this.config.type || 'search';
+  this.type = this.config.type || 'search';
 
-  this.return            = options.return || 'data';
+  /**
+   * @FIXME add description
+   */
+  this.return = options.return || 'data';
 
-  this.show              = this.return === 'data' && this.type === 'search';
+  /**
+   * @FIXME add description
+   */
+  this.show = 'data' === this.return && 'search' === this.type;
 
-  this.searchLayer       = CatalogLayersStoresRegistry.getLayerById(layerid);
+  /**
+   * @FIXME add description
+   */
+  this.searchLayer = CatalogLayersStoresRegistry.getLayerById(layerid);
 
   /**
    * Store layers that will be searchable for that search form.
    * First one is layer owner of the search setted on admin.
    */
-  this.searchLayers      = [ layerid, ...(options.otherquerylayerids || []) ]
-                            .map(layerid => CatalogLayersStoresRegistry.getLayerById(layerid));
-
+  this.searchLayers = [ layerid, ...(options.otherquerylayerids || []) ].map(id => CatalogLayersStoresRegistry.getLayerById(id));
 
   /**
    * Create the form search structure
    */
   this.createInputsFormFromFilter({ filter: (options.filter || []) });
 
-  /**
-   * @TODO Handle https://github.com/g3w-suite/g3w-admin/pull/631
-   */
 }
 
 inherit(SearchService, G3WObject);
