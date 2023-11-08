@@ -488,7 +488,8 @@ export default {
       geolocations: {
         error: "Can't get your position"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Choose a layer where to add this feature",
         placeholder: "Address ...",
         noresults: "No results",
         notresponseserver: "No response from server"

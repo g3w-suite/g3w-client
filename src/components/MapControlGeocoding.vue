@@ -178,8 +178,8 @@ const {
   Geometry,
   convertSingleMultiGeometry,
 }                                   = require('utils/geo');
-
 const Projections                   = require('g3w-ol/projection/projections');
+const { t }                         = require('core/i18n/i18n.service');
 
 const PROVIDERS = [ nominatim, bing, google ];
 
@@ -699,7 +699,7 @@ export default {
           // create new feature on layer point geometry
           icon: 'pencil',
           // @TODO add translation
-          label: 'Choose a layer where to add this feature',
+          label: t('mapcontrols.geocoding.choose_layer'),
           cbk: this._editItem,
         },
       });

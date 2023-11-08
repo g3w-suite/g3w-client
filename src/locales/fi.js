@@ -488,7 +488,8 @@ export default {
       geolocations: {
         error: "Sijaintiasi ei saada"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Valitse kerros, johon tämä ominaisuus lisätään",
         placeholder: "Osoite ...",
         noresults: "Ei tuloksia",
         notresponseserver: "Ei vastausta palvelimelta"

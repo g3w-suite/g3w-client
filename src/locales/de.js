@@ -488,7 +488,8 @@ export default {
       geolocations: {
         error: "Position kann nicht bestimmt werden"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Wählen Sie eine Ebene aus, auf der Sie diese Funktion hinzufügen möchten",
         placeholder: "Addresse ...",
         noresults: "Keine Ergebnisse",
         notresponseserver: "Keine Antwort vom Server"

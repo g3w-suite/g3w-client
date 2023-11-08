@@ -3074,9 +3074,9 @@ function VueControl(type) {
         component = Vue.extend(MapControlGeocoding);
         opts.element = new component({
           propsData: {
-            placeholder:    (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.nominatim.placeholder")        || 'Città, indirizzo ... ',
-            noresults:      (undefined !== options.noresults         ? options.noresults         : "mapcontrols.nominatim.noresults")          || 'Nessun risultato ',
-            // notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.nominatim.notresponseserver")  || 'Il server non risponde', // <-- TODO ?
+            placeholder:    (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.geocoding.placeholder")        || 'Città, indirizzo ... ',
+            noresults:      (undefined !== options.noresults         ? options.noresults         : "mapcontrols.geocoding.noresults")          || 'Nessun risultato ',
+            // notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.geocoding.notresponseserver")  || 'Il server non risponde', // <-- TODO ?
             limit:          options.limit || 5,
             viewbox:        (undefined !== options.bbox              ? options.bbox              : project.state.initextent || project.state.extent),
             mapCrs:         (undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg),

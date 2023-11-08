@@ -488,7 +488,8 @@ export default {
       geolocations: {
         error: "Nu te-am putut localiza"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Alegeți un strat unde să adăugați această caracteristică",
         placeholder: "Adresa ...",
         noresults: "Niciun rezultat",
         notresponseserver: "Niciun răspuns de la server"
