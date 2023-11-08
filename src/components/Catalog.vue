@@ -289,12 +289,8 @@ export default {
     /**
      * @TODO add description
      */
-     VM.$on('unselectionlayer', (storeid, layerstree) => {
-      if (layerstree.external) {
-        GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
-      } else {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).clearSelectionFids();
-      }
+    VM.$on('unselectionlayer', (storeid, layerstree) => {
+      GUI.getService('queryresults').removeFromSelection(layerstree, storeid);
     });
 
     /**

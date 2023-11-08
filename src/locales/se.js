@@ -13,11 +13,13 @@ export default {
     sign_in:"Logga in",
     layer_selection_filter: {
       tools: {
-        filter: "Lägg till/Avlägsna Filtrera",
+        filter: "Aktivera/inaktivera filter",
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan"
+        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        savefilter: "Spara Filter",
+        filterName: "Filternamn",
       }
     },
     warning: {
@@ -532,7 +534,8 @@ export default {
         show_metadata: "Metadata",
         styles: "Stilar",
         vector_color_menu: "Ställ in/ändra färg",
-        layer_opacity: "Opacitet"
+        layer_opacity: "Opacitet",
+        filters: "Filters",
       }
     },
     dataTable: {
