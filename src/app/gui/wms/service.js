@@ -166,7 +166,9 @@ proto.deleteWms = function(name) {
     .keys(data.wms)
     .find(wmsurl => {
       const wmsConfigLayers = data.wms[wmsurl];
+
       const index = wmsConfigLayers.findIndex(config => config.name == name);
+
       if (index !== -1) {
         wmsConfigLayers.splice(index, 1);
         if (wmsConfigLayers.length == 0) {
