@@ -81,7 +81,7 @@
         type          = "button"
         id            = "show-markers-results"
         class         = "btn skin-background-color"
-        @click.stop   = "() => showMarkerResults()"
+        @click.stop   = "() => showMarkerResults(undefined, true)"
       >
       <code :style="{ opacity: $data.results_panel_open ? 0.5 : undefined }">
         {{ features.length > 99 ? '99+' : features.length }}
@@ -210,6 +210,11 @@ const LAYER = new ol.layer.Vector({
  */
 const DYNAMIC_MAP_EXTENT = false;
 
+/**
+ * Setted to true while running `clearMarkers()`
+ */
+let is_clearing = false;
+
 export default {
 
   data() {
@@ -331,6 +336,7 @@ export default {
     },
 
     clearMarkers() {
+      is_clearing = true;
       this._hideMarker();
       // set false to add
       this.$data.results.forEach(i => i.__selected = false);
@@ -339,6 +345,7 @@ export default {
       if (layer) {
         layer.features.forEach(f => { GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f) });
       }
+      is_clearing = false;
     },
 
     /**
@@ -415,6 +422,7 @@ export default {
         }
 
       });
+
     },
 
     /**
@@ -451,6 +459,7 @@ export default {
         });
 
       });
+
     },
 
     /**
@@ -505,7 +514,10 @@ export default {
       }
 
       // show remaining results or close panel
-      this.showMarkerResults(undefined, this.features.length > 0);
+      if (!is_clearing) {
+        this.showMarkerResults(undefined, 0 === this.features.length);
+      }
+
     },
 
     /**
@@ -549,7 +561,7 @@ export default {
           source.addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
-          this.showMarkerResults([feature], true);
+          this.showMarkerResults([feature]);
         }
       } catch (e) {
         console.warn(e);
@@ -561,8 +573,8 @@ export default {
      * 
      * @since 3.9.0
      */
-    showMarkerResults(features, skipChek = false) {
-      if (this.$data.results_panel_open && !skipChek) {
+    showMarkerResults(features, toggle = false) {
+      if (this.$data.results_panel_open && toggle) {
         GUI.closeContent();
         return;
       }
@@ -699,7 +711,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     const q = document.querySelector.bind(document);
-    q('#gcd-input-query').value = 'via sallustio 10' /*'becca'*/ /*'cafe'*/;
+    q('#gcd-input-query').value = /*'via sallustio 10'*/ /*'becca'*/ 'cafe';
     q('#gcd-search').click();
   },
 
