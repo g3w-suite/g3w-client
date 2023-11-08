@@ -586,6 +586,8 @@ export default {
     },
 
     /**
+     * Create new feature on selected Point/Multipoint layer
+     * 
      * @since 3.9.0 
      */
     async _editItem(layerId, feature) {
@@ -662,7 +664,7 @@ export default {
 
       // skip adding action icon when there is no editable layer
       // or editing panel is open (layer is in editing)
-      if (0 === editablePointLayers.length || editablePointLayers.find(l => l.inediting)) {
+      if (editablePointLayers.find(l => l.inediting)) {
         return;
       }
 
@@ -693,13 +695,11 @@ export default {
           },
         },
         config: {
-          // editable point layers for the project
-          layers: editablePointLayers,
-          // create new feature on layer point geometry
-          icon: 'pencil',
-          // @TODO add translation
-          label: 'mapcontrols.geocoding.choose_layer',
-          cbk: this._editItem,
+          layers:   editablePointLayers,
+          icon:     'pencil',
+          label:    'mapcontrols.geocoding.choose_layer',
+          nolayers: 'mapcontrols.geocoding.nolayers',
+          cbk:      this._editItem,
         },
       });
 

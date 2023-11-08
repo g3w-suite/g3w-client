@@ -491,6 +491,7 @@ export default {
       geocoding: {
         choose_layer: "Choose a layer where to add this feature",
         placeholder: "Address ...",
+        nolayers: "No editable point layers found on this project",
         noresults: "No results",
         notresponseserver: "No response from server"
       },

@@ -491,6 +491,7 @@ export default {
       geocoding: {
         choose_layer: "Wählen Sie eine Ebene aus, auf der Sie diese Funktion hinzufügen möchten",
         placeholder: "Addresse ...",
+        nolayers: "Für dieses Projekt wurden keine bearbeitbaren Punktebenen gefunden",
         noresults: "Keine Ergebnisse",
         notresponseserver: "Keine Antwort vom Server"
       },

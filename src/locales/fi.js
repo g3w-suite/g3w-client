@@ -491,6 +491,7 @@ export default {
       geocoding: {
         choose_layer: "Valitse kerros, johon tämä ominaisuus lisätään",
         placeholder: "Osoite ...",
+        nolayers: "Tästä projektista ei löytynyt muokattavia pistetasoja",
         noresults: "Ei tuloksia",
         notresponseserver: "Ei vastausta palvelimelta"
       },
