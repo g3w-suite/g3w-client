@@ -201,7 +201,7 @@
           this.status.error = error;
           this.status.added = added;
           this.loading = false;
-        } catch(err){
+        } catch(err) {
           console.log(err)
         }
       }
