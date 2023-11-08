@@ -30,5 +30,5 @@ export default {
   VM,
   CatalogEventBus,
   RelationEventBus,
-  SidebarEventBus
+  SidebarEventBus,
 };
