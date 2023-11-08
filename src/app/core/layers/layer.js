@@ -662,7 +662,7 @@ proto.searchFeatures = function(options={}, params={}) {
         const {
           raw=false,
           filter:field,
-          suggest={},
+          suggest,
           unique,
           queryUrl,
           ordering
@@ -686,7 +686,7 @@ proto.searchFeatures = function(options={}, params={}) {
 proto.getFilterData = async function({
   field,
   raw=false,
-  suggest={},
+  suggest,
   unique,
   formatter=1,
   queryUrl,

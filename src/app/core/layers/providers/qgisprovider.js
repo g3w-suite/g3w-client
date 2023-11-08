@@ -67,9 +67,10 @@ proto.getFilterData = async function({field, raw=false, suggest={}, unique, form
     filtertoken: ApplicationState.tokens.filtertoken
   };
   try {
-    let response = await XHR.get({
+    let response = await XHR.post({
       url: `${queryUrl ?  queryUrl : dataUrl}`,
-      params
+      data: JSON.stringify(params),
+      contentType: 'application/json',
     });
     const isVector = this._layer.getType() !== "table";
     isVector && this.setProjections();
