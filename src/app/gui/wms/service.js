@@ -189,15 +189,18 @@ proto.checkIfWMSAlreadyAdded = function({
   layers=[]
 }={}) {
   let added = false;
+  //get data stored on local storage
   const data = this.getLocalWMSData();
+  //check if url id find
   if (data.wms[url]) {
+    //check if url and layers area aready added
     added = undefined !== data.wms[url]
       .find(({layers:addedLayers}) => {
         const layersLength = layers.length;
         if (addedLayers.length === layersLength) {
           return layers.reduce((accumulator, layerName) => {
             return accumulator + addedLayers.indexOf(layerName) !== -1 ? 1 : 0;
-          },0) === layersLength;
+          }, 0) === layersLength;
       }
     })
   }
@@ -255,15 +258,25 @@ proto.showWmsLayersPanel = function(config={}) {
 /**
  * Get data of wms url from server
  * @param url
- * @returns {Promise<{result: boolean, info_formats: [], layers: [], map_formats: [], abstract: null, title: null}>}
+ * @returns {Promise<{
+ *  result: boolean,
+ *  info_formats: [],
+ *  layers: [],
+ *  map_formats: [],
+ *  methods: [],
+ *  abstract: null,
+ *  title: null
+ *  }>}
  */
 proto.getWMSLayers = async function(url) {
+  //set base schema of response
   let response = {
     result: false,
     layers: [],
-    info_formats:[],
+    info_formats:[], //@deprecate since v3.9 (inside methods)
     abstract: null,
-    map_formats: [],
+    methods: [], //@since v3.9
+    map_formats: [], //@deprecate since v3.9 (inside methods)
     title: null
   };
   try {
@@ -273,10 +286,9 @@ proto.getWMSLayers = async function(url) {
       },
       outputs: false
     });
-  } catch(err){
+  } catch(err) {
     console.log(err)
   }
-  if (response.result) return response;
   return response;
 };
 
@@ -318,6 +330,7 @@ proto.loadWMSLayerToMap = function({
  * @param name
  * @param epsg
  * @param position
+ * @param methods
  * @param layers
  * @returns {Promise<void>}
  */
@@ -339,8 +352,11 @@ proto.addWMSlayer = async function({
     visible,
     opacity
   };
-  if (data.wms[url] === undefined) data.wms[url] = [wmsLayerConfig];
-  else data.wms[url].push(wmsLayerConfig);
+  if (data.wms[url] === undefined) {
+    data.wms[url] = [wmsLayerConfig];
+  } else {
+    data.wms[url].push(wmsLayerConfig);
+  }
   this.updateLocalWMSData(data);
   try {
     await this.loadWMSLayerToMap(wmsLayerConfig);
@@ -348,7 +364,7 @@ proto.addWMSlayer = async function({
     const mapService = GUI.getService('map');
     mapService.removeExternalLayer(name);
     this.deleteWms(name);
-    setTimeout(()=>{
+    setTimeout(() => {
       GUI.showUserMessage({
         type: 'warning',
         message: 'sidebar.wms.layer_add_error'

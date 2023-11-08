@@ -14,6 +14,7 @@
       v-if="abstract"
       :message="abstract" />
 
+    <!-- LAYERS NAME   -->
     <label
       for="g3w-wms-layers"
       v-t="'sidebar.wms.panel.label.layers'">
@@ -33,6 +34,8 @@
       </option>
     </select>
 
+    <!-- EPSG PROJECTIONS   -->
+
     <label
       for="g3w-wms-projections"
       v-t="'sidebar.wms.panel.label.projections'">
@@ -49,6 +52,7 @@
       </option>
     </select>
 
+    <!-- NAME OF LAYER TO SAVE -->
     <label
       for="g3w-wms-layer-name"
       v-t="'sidebar.wms.panel.label.name'">
@@ -66,6 +70,7 @@
       v-t="'sidebar.wms.layer_id_already_added'">
     </div>
 
+    <!-- CHOOSE LAYER POSITION ON TOP ON BOTTOM-->
     <layerspositions
       @layer-position-change="position=$event"
       :position="position" />
@@ -91,18 +96,19 @@ export default {
   name: "wmpspanel",
   data() {
     return {
-      loading: false,
-      position: undefined,
-      name: undefined,
-      title: null,
-      abstract: null,
-      map_formats: [],
-      info_formats: [],
-      layers: [],
-      selectedlayers: [],
-      projections: [],
-      epsg: null,
-      added: false
+      loading:        false,      //loading reactive status
+      position:       undefined,  //layer position on map
+      name:           undefined,  //name of saved layer
+      title:          null,       //title of layer
+      abstract:       null,       //abstract
+      map_formats:    [],         //map formats
+      info_formats:   [],         // info formats
+      methods:        [],         //@since v3.9
+      layers:         [],         //Array of layers
+      selectedlayers: [],         //Selected layers
+      projections:    [],         //projections
+      epsg:           null,       //choose epsg project
+      added:          false,      //added layer (Boolean)
     }
   },
   methods: {
@@ -116,7 +122,7 @@ export default {
         name:     this.name && this.name.trim() || undefined,
         layers:   this.selectedlayers,
         epsg:     this.epsg,
-        position: this.position
+        position: this.position,
       };
       this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
       if (this.added) {
@@ -195,14 +201,18 @@ export default {
       layers,
       title,
       abstract,
+      methods, //@since v3.9
       wmsurl,
     } = this.$options.config;
-
     /**
      * URL of wms
      */
-    this.url = wmsurl;
-
+    try {
+      this.url = methods.GetMap.urls.find(u => 'Get' === u.type).url;
+    } catch(err) {
+      console.warn(err);
+      this.url = wmsurl;
+    }
     /**
      * Title of wms
      */
