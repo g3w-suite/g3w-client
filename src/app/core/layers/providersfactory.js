@@ -183,15 +183,16 @@ const Providers = {
     }
 
     /**
-     *
-     * @param field
-     * @param raw
-     * @param suggest
-     * @param unique
-     * @param formatter
-     * @param queryUrl
-     * @param ordering
-     * @param fformatter
+     * @param { Object } opts
+     * @param opts.field
+     * @param opts.raw
+     * @param opts.suggest
+     * @param opts.unique
+     * @param opts.formatter
+     * @param opts.queryUrl
+     * @param opts.ordering
+     * @param opts.fformatter since 3.9.0
+     * 
      * @returns {Promise<unknown>}
      */
     async getFilterData({
@@ -202,7 +203,7 @@ const Providers = {
       formatter = 1,
       queryUrl,
       ordering,
-      fformatter, //@since v3.9
+      fformatter,
     } = {}) {
       try {
         let response = await XHR.get({
@@ -223,19 +224,18 @@ const Providers = {
           this.setProjections();
         }
 
-        if (raw)                       return response;
-        if (unique && response.result) return response.data;
+        if (raw)                           return response;
+        if (unique && response.result)     return response.data;
+        if (fformatter && response.result) return response;
+
         if (response.result) {
-          if (fformatter) {
-            return response;
-          } else {
-            return {
-              data: Parsers.response.get('application/json')({
-                layers: [this._layer],
-                response: response.vector.data,
-                projections: this._projections
-              }) };
-          }
+          return {
+            data: Parsers.response.get('application/json')({
+              layers: [this._layer],
+              response: response.vector.data,
+              projections: this._projections,
+            })
+          };
         }
 
       } catch(e) {
