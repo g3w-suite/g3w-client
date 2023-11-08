@@ -16,9 +16,8 @@ function WmsLayersPanel(options = {}) {
   });
   this.setInternalPanel(internalPanel);
   this.unmount = function() {
-    return base(this, 'unmount').then(() => {
-      service.clear()
-    })
+    return base(this, 'unmount')
+      .then(() => service.clear())
   }
 }
 

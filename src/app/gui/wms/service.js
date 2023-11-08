@@ -16,11 +16,14 @@ function Service(options={}){
     localwmsurls: [] // contain array of object {id, url}
   };
 
-  GUI.isReady().then(()=> {
-    GUI.getService('map').isReady().then(async ()=>{
-      this.state.localwmsurls = await this.loadClientWmsUrls();
+  GUI.isReady()
+    .then(() => {
+      GUI.getService('map')
+        .isReady()
+        .then(async () => {
+          this.state.localwmsurls = await this.loadClientWmsUrls();
+        })
     })
-  })
 
   ProjectsRegistry.onafter('setCurrentProject', async project => {
     this.projectId = project.getId();
@@ -43,17 +46,22 @@ proto.loadClientWmsUrls = async function() {
     this.updateLocalWMSData(data);
   }
   await GUI.isReady();
+
   setTimeout(() => {
     const mapService = GUI.getService('map');
+
     mapService.on('remove-external-layer', name => this.deleteWms(name));
+
     mapService.on('change-layer-position-map', ({id:name, position}={}) => this.changeLayerData(name, {
       key: 'position',
       value: position
     }));
+
     mapService.on('change-layer-opacity', ({id:name, opacity}={}) => this.changeLayerData(name, {
       key: 'opacity',
       value: opacity
     }));
+
     mapService.on('change-layer-visibility', ({id:name, visible}={}) => this.changeLayerData(name, {
       key: 'visible',
       value: visible
@@ -79,14 +87,17 @@ proto.loadClientWmsUrls = async function() {
  */
 proto.changeLayerData = function(name, attribute={}) {
   const data = this.getLocalWMSData();
-  Object.keys(data.wms).find(wmsurl =>{
-    const wmsConfigLayers = data.wms[wmsurl];
-    const index = wmsConfigLayers.findIndex(config => config.name == name);
-    if (index !== -1) {
-      wmsConfigLayers[index][attribute.key] = attribute.value;
-      return true
-    }
-  });
+  Object
+    .keys(data.wms)
+    .find((wmsurl) => {
+      const wmsConfigLayers = data.wms[wmsurl];
+      const index = wmsConfigLayers.findIndex(config => config.name == name);
+      if (index !== -1) {
+        wmsConfigLayers[index][attribute.key] = attribute.value;
+        return true
+      }
+    });
+
   this.updateLocalWMSData(data);
 };
 
@@ -98,8 +109,8 @@ proto.changeLayerData = function(name, attribute={}) {
  */
 proto.getRequestStatusObject = function({
   error=false,
-  added=false}={}
-) {
+  added=false
+}={}) {
   return {
     error,
     added
@@ -115,10 +126,13 @@ proto.addNewUrl = async function({
   id,
   url
 } = {}) {
-  const find = this.state.localwmsurls.find(({id:localid, url:localurl}) => localurl == url || localid == id);
+  const find = this.state.localwmsurls
+    .find(({id:localid, url:localurl}) => localurl == url || localid == id);
+
   const status = this.getRequestStatusObject({
     added: !!find
   });
+
   if (!find) {
     try {
       const response = await this.getWMSLayers(url);
@@ -135,7 +149,7 @@ proto.addNewUrl = async function({
         this.showWmsLayersPanel(response);
       } else status.error = true;
     }
-    catch(err){
+    catch(err) {
       status.error = true;
     }
   }
@@ -148,15 +162,19 @@ proto.addNewUrl = async function({
  */
 proto.deleteWms = function(name) {
   const data = this.getLocalWMSData();
-  Object.keys(data.wms).find(wmsurl =>{
-    const wmsConfigLayers = data.wms[wmsurl];
-    const index = wmsConfigLayers.findIndex(config => config.name == name);
-    if (index !== -1) {
-      wmsConfigLayers.splice(index, 1);
-      if (wmsConfigLayers.length == 0) delete data.wms[wmsurl];
-      return true
-    }
-  });
+  Object
+    .keys(data.wms)
+    .find(wmsurl => {
+      const wmsConfigLayers = data.wms[wmsurl];
+      const index = wmsConfigLayers.findIndex(config => config.name == name);
+      if (index !== -1) {
+        wmsConfigLayers.splice(index, 1);
+        if (wmsConfigLayers.length == 0) {
+          delete data.wms[wmsurl];
+        }
+        return true
+      }
+    });
   this.updateLocalWMSData(data);
 };
 /**
@@ -170,13 +188,14 @@ proto.checkIfWMSAlreadyAdded = function({
 }={}) {
   let added = false;
   const data = this.getLocalWMSData();
-  if (data.wms[url]){
-    added = !!data.wms[url].find(({layers:addedLayers}) => {
-      const layersLength = layers.length;
-      if (addedLayers.length === layersLength){
-        return layers.reduce((accumulator, layerName) =>{
-          return accumulator + addedLayers.indexOf(layerName) !== -1 ? 1 : 0;
-        },0) === layersLength;
+  if (data.wms[url]) {
+    added = undefined !== data.wms[url]
+      .find(({layers:addedLayers}) => {
+        const layersLength = layers.length;
+        if (addedLayers.length === layersLength) {
+          return layers.reduce((accumulator, layerName) => {
+            return accumulator + addedLayers.indexOf(layerName) !== -1 ? 1 : 0;
+          },0) === layersLength;
       }
     })
   }
@@ -188,8 +207,11 @@ proto.checkIfWMSAlreadyAdded = function({
  * @param id
  */
 proto.deleteWmsUrl = function(id) {
-  this.state.localwmsurls = this.state.localwmsurls.filter(({id:localid}) => id !== localid );
+  this.state.localwmsurls = this.state.localwmsurls
+    .filter(({id:localid}) => id !== localid);
+
   const data = this.getLocalWMSData();
+
   data.urls = this.state.localwmsurls;
   this.updateLocalWMSData(data);
 };
@@ -204,18 +226,18 @@ proto.loadWMSDataAndShowWmsLayersPanel = async function(url) {
   try {
     const response = await this.getWMSLayers(url);
     status.error = !response.result;
-    if (response.result){
+    if (response.result) {
       response.wmsurl = url;
       this.showWmsLayersPanel(response);
     }
-  } catch(err){
+  } catch(err) {
     status.error = true;
   }
   return status;
 };
 
 /**
- * show addding wma layers wms panel
+ * show add wms layers to wms panel
  * @param config
  * @returns {WmsLayersPanel}
  */
@@ -229,7 +251,7 @@ proto.showWmsLayersPanel = function(config={}) {
 };
 
 /**
- * gettind data of wms url from server
+ * Get data of wms url from server
  * @param url
  * @returns {Promise<{result: boolean, info_formats: [], layers: [], map_formats: [], abstract: null, title: null}>}
  */
@@ -256,6 +278,17 @@ proto.getWMSLayers = async function(url) {
   return response;
 };
 
+/**
+ * Load wms to map
+ * @param url
+ * @param name
+ * @param epsg
+ * @param position
+ * @param opacity
+ * @param visible
+ * @param layers
+ * @returns {*}
+ */
 proto.loadWMSLayerToMap = function({
   url,
   name,
@@ -309,7 +342,7 @@ proto.addWMSlayer = async function({
   this.updateLocalWMSData(data);
   try {
     await this.loadWMSLayerToMap(wmsLayerConfig);
-  } catch(err){
+  } catch(err) {
     const mapService = GUI.getService('map');
     mapService.removeExternalLayer(name);
     this.deleteWms(name);
@@ -330,6 +363,7 @@ proto.addWMSlayer = async function({
 proto.getLocalWMSData = function() {
   return ApplicationService
     .getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) &&
+
     ApplicationService
       .getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM)[this.projectId];
 };
