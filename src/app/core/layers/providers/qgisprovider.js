@@ -67,10 +67,19 @@ proto.getFilterData = async function({field, raw=false, suggest, unique, formatt
     filtertoken: ApplicationState.tokens.filtertoken
   };
   try {
-    let response = await XHR.post({
+    /**
+     * @TODO
+     * Need to check only if field parameter is set because g3w-suite v3.6 doesn't handle
+     * POST request for unique, ordering parameter
+     * @type {*}
+     */
+    const response = field ? await XHR.post({
       url: `${queryUrl ?  queryUrl : dataUrl}`,
       data: JSON.stringify(params),
       contentType: 'application/json',
+    }) : await XHR.get({
+      url: `${queryUrl ?  queryUrl : dataUrl}`,
+      params
     });
     const isVector = this._layer.getType() !== "table";
     isVector && this.setProjections();
