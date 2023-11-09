@@ -215,20 +215,10 @@ const Providers = {
         filtertoken: ApplicationState.tokens.filtertoken
       };
       try {
-        /**
-         * @TODO
-         * Need to check only if field parameter is set because g3w-suite <= v3.7 doesn't handle
-         * POST request for unique, ordering parameter
-         * @type {*}
-         */
-        const response = field ? await XHR.post({
-          url: `${queryUrl ?  queryUrl : dataUrl}`,
-          data: JSON.stringify(params),
-          contentType: 'application/json',
-        }) : await XHR.get({
-          url: `${queryUrl ?  queryUrl : dataUrl}`,
-          params
-        });
+        const url = queryUrl ? queryUrl : this._layer.getUrl('data');
+        const response = field                                                                    // check `field` parameter
+          ? await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}) // since g3w-admin@v3.7
+          : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
 
         // vector layer
         if ('table' !== this._layer.getType()) {
