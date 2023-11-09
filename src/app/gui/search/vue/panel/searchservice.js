@@ -181,21 +181,19 @@ proto.createInputsFormFromFilter = async function({
       widget:    null,
     };
 
-    // check if it has a dependance
-    const dependance_strict = undefined !== input.options.dependance_strict ? input.options.dependance_strict : false; 
-    const dependance        = undefined !== input.options.dependance        ? input.options.dependance        : false;
-    const GIVE_ME_A_NAME_1  = ['selectfield', 'autocompletefield'].includes(input.type);
-    const GIVE_ME_A_NAME_2  = GIVE_ME_A_NAME_1 && dependance;
-
-    input.options.values    = undefined !== input.options.values            ? input.options.values            : [];
-    const { values }        = input.options;
+    // check if it has a dependence
+    const dependance_strict             = undefined !== input.options.dependance_strict ? input.options.dependance_strict : false;
+    const dependance                    = undefined !== input.options.dependance        ? input.options.dependance        : false;
+    const isInputSelectType             = ['selectfield', 'autocompletefield'].includes(input.type);
+    input.options.values                = undefined !== input.options.values            ? input.options.values            : [];
+    const { values }                    = input.options;
 
     let promise;
 
-    /** @FIXME add description */
-    if (GIVE_ME_A_NAME_1) {
-      // ensure seting values options to empty array when undefined
-      input.loading = input.type !== 'autocompletefield';
+    //In case of select input
+    if ('selectfield' ===  input.type) {
+      // ensure setting values options to empty array when undefined
+      input.loading = true;
 
       promise = new Promise((resolve, reject) => {
 
@@ -205,7 +203,7 @@ proto.createInputsFormFromFilter = async function({
           return resolve();
         }
 
-        // set array of values for select
+        // not strictly dependence
         if (!dependance_strict) {
           this
             .getValuesFromField(input)
@@ -214,10 +212,16 @@ proto.createInputsFormFromFilter = async function({
             .finally(()   => { input.loading = false; resolve(); })
         }
       });
+
+      promise.then(() => {
+        values[values.length && ALLVALUE !== values[0].value ? 'unshift' : 'push']({ value:ALLVALUE });
+        input.value = ALLVALUE;
+      });
+
     }
 
     // there is a dependence
-    if (GIVE_ME_A_NAME_2) {
+    if (isInputSelectType && dependance) {
       this.inputdependance[input.attribute] = dependance;              // set dependence of input
       this.state.loading[dependance]        = false;
       input.options.disabled                = dependance_strict;       // disabled for BACKCOMP
@@ -226,23 +230,14 @@ proto.createInputsFormFromFilter = async function({
     }
 
     // set widget type for fill dependency
-    if (GIVE_ME_A_NAME_2 && values.length) {
+    if (isInputSelectType && dependance && values.length > 0) {
       input.widget          = 'valuemap';
       input.options._values = [...values];
     }
 
-    /** @TODO add description */
-    if (GIVE_ME_A_NAME_2 && !values.length && input.options.layer_id) {
+    //Set input widget
+    if (isInputSelectType && dependance && !values.length && input.options.layer_id) {
       input.widget = 'valuerelation';
-    }
-
-    /** @TODO add description */
-    if (GIVE_ME_A_NAME_1 && 'autocompletefield' !== input.type) {
-      promise
-        .then(() => {
-          values[values.length && ALLVALUE !== values[0].value ? 'unshift' : 'push']({ value:ALLVALUE });
-          input.value = ALLVALUE;
-      });
     }
 
     // add form inputs to list of search input
