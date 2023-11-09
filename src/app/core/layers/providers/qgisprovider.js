@@ -56,7 +56,7 @@ proto.getFilterToken = async function(params={}){
   }
 };
 
-proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
+proto.getFilterData = async function({field, raw=false, suggest, unique, formatter=1, queryUrl, ordering}={}){
   const dataUrl = this._layer.getUrl('data');
   const params = {
     field,
