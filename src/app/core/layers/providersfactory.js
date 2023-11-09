@@ -198,25 +198,36 @@ const Providers = {
     async getFilterData({
       field,
       raw = false,
-      suggest = {},
+      suggest,
       unique,
       formatter = 1,
       queryUrl,
       ordering,
       fformatter,
     } = {}) {
+      const params =  {
+        field,
+        suggest,
+        ordering,
+        formatter,
+        unique,
+        fformatter,
+        filtertoken: ApplicationState.tokens.filtertoken
+      };
       try {
-        let response = await XHR.get({
-          url: `${queryUrl ? queryUrl : this._layer.getUrl('data')}`,
-          params: {
-            field,
-            suggest,
-            ordering,
-            formatter,
-            unique,
-            fformatter,
-            filtertoken: ApplicationState.tokens.filtertoken
-          },
+        /**
+         * @TODO
+         * Need to check only if field parameter is set because g3w-suite <= v3.7 doesn't handle
+         * POST request for unique, ordering parameter
+         * @type {*}
+         */
+        const response = field ? await XHR.post({
+          url: `${queryUrl ?  queryUrl : dataUrl}`,
+          data: JSON.stringify(params),
+          contentType: 'application/json',
+        }) : await XHR.get({
+          url: `${queryUrl ?  queryUrl : dataUrl}`,
+          params
         });
 
         // vector layer
