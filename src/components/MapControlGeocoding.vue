@@ -192,13 +192,30 @@ const LAYER = new ol.layer.Vector({
   name: 'Geocoding',
   source: new ol.source.Vector(),
   style(feature) { // set style function to check if a coordinate search or a search from provider
-    return new ol.style.Style({
-      image: new ol.style.Icon({
+    if ('__g3w_marker_coordinates' ===  feature.getId()) {
+      return new ol.style.Style({
+        text: new ol.style.Text({
+          offsetY: -15, //move marker icon on base point coordinate and not center
+          text: '\uf3c5',
+          font: '900 3em "Font Awesome 5 Free"',
+          stroke: new ol.style.Stroke({
+            color: 'red',
+            width: 3
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 0,0, 0.7)'
+          })
+        })
+      })
+    } else {
+      return new ol.style.Style({
+        image: new ol.style.Icon({
           opacity: 1,
           src: '/static/client/images/pushpin.svg',
           scale: 0.8
-      }),
-    })
+        }),
+      })
+    }
   }
 });
 
@@ -334,6 +351,10 @@ export default {
      */
     clearResults() {
       this.$data.results.splice(0);
+      //Remove eventually marker coordinates
+      if (LAYER.getSource().getFeatureById('__g3w_marker_coordinates')) {
+        LAYER.getSource().removeFeature(LAYER.getSource().getFeatureById('__g3w_marker_coordinates'));
+      }
     },
 
     clearMarkers() {
@@ -393,6 +414,26 @@ export default {
 
         // request is for a single point (XCoord,YCoord)
         if (coordinates) {
+          const source = LAYER.getSource();
+          //check if already added
+          if (source.getFeatureById('__g3w_marker_coordinates')) {
+            //remove
+            source.removeFeature(source.getFeatureById('__g3w_marker_coordinates'));
+          }
+          //create marker coordinate feature
+          const feature = new ol.Feature({
+            geometry: new ol.geom.Point(transform ?
+              ol.proj.transform(coordinates, 'EPSG:4326', GUI.getService('map').getEpsg()) :
+              coordinates
+            ),
+            //add info for eventually query result
+            lon: coordinates[0],
+            lat: coordinates[1],
+          });
+          //set id
+          feature.setId('__g3w_marker_coordinates');
+          //add to layer marker source
+          LAYER.getSource().addFeature(feature);
           this._showMarker(coordinates, transform);
           resolve(coordinates);
         }
