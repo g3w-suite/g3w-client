@@ -182,36 +182,62 @@ const Providers = {
       this.getFilterToken    = QgsFilterToken.getToken.bind(null, this._filtertokenUrl);
     }
 
+    /**
+     * @param { Object } opts
+     * @param opts.field
+     * @param opts.raw
+     * @param opts.suggest
+     * @param opts.unique
+     * @param opts.formatter
+     * @param opts.queryUrl
+     * @param opts.ordering
+     * @param opts.fformatter since 3.9.0
+     * 
+     * @returns {Promise<unknown>}
+     */
     async getFilterData({
       field,
       raw = false,
-      suggest = {},
+      suggest,
       unique,
       formatter = 1,
       queryUrl,
       ordering,
+      fformatter,
     } = {}) {
+      const params =  {
+        field,
+        suggest,
+        ordering,
+        formatter,
+        unique,
+        fformatter,
+        filtertoken: ApplicationState.tokens.filtertoken
+      };
       try {
-        let response = await XHR.get({
-          url: `${queryUrl ? queryUrl : this._layer.getUrl('data')}`,
-          params: {
-            field,
-            suggest,
-            ordering,
-            formatter,
-            unique,
-            filtertoken: ApplicationState.tokens.filtertoken
-          },
-        });
+        const url = queryUrl ? queryUrl : this._layer.getUrl('data');
+        const response = field                                                                    // check `field` parameter
+          ? await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}) // since g3w-admin@v3.7
+          : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
 
         // vector layer
         if ('table' !== this._layer.getType()) {
           this.setProjections();
         }
 
-        if (raw)                       return response;
-        if (unique && response.result) return response.data;
-        if (response.result)           return { data: Parsers.response.get('application/json')({ layers: [this._layer], response: response.vector.data, projections: this._projections }) };
+        if (raw)                           return response;
+        if (unique && response.result)     return response.data;
+        if (fformatter && response.result) return response;
+
+        if (response.result) {
+          return {
+            data: Parsers.response.get('application/json')({
+              layers: [this._layer],
+              response: response.vector.data,
+              projections: this._projections,
+            })
+          };
+        }
 
       } catch(e) {
         return Promise.reject(e);

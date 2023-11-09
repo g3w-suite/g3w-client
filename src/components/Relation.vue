@@ -4,75 +4,208 @@
 -->
 
 <template>
-  <div class="query-relation" ref="query_relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;" v-if="table">
-    <div class="header skin-background-color lighten" ref="relation-header" style="padding: 3px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
-      <div style="border-radius: 3px;" :style="{fontSize: isMobile() ? '1em' : '1.3em'}" class="g3w-long-text">
-        <span v-if="showrelationslist" style="font-size: 0.8em;" v-t-tooltip:right.create="'sdk.relations.back_to_relations'" class="action-button-icon action-button" :class="g3wtemplate.getFontClass('exit')" @click.stop="back"></span>
-        <span style="font-weight: bold" class="relation-tile skin-color"> {{ relation.name }}</span>
+  <div
+    v-if   = "table"
+    class  = "query-relation"
+    ref    = "query_relation"
+    :class = "isMobile() ? 'mobile' : null"
+    style  = "margin-top: 3px;"
+  >
+    <div
+      class = "header skin-background-color lighten"
+      ref   = "relation-header"
+      style = "padding: 3px; display: flex; justify-content: space-between; align-items: center; width: 100%;"
+    >
+      <div
+        style  = "border-radius: 3px;"
+        :style = "{fontSize: isMobile() ? '1em' : '1.3em'}"
+        class  = "g3w-long-text"
+      >
+        <span
+          v-if                     = "showrelationslist"
+          style                    = "font-size: 0.8em;"
+          v-t-tooltip:right.create = "'sdk.relations.back_to_relations'"
+          class                    = "action-button-icon action-button"
+          :class                   = "g3wtemplate.getFontClass('exit')"
+          @click.stop              = "back">
+        </span>
+
+        <span
+          style = "font-weight: bold"
+          class = "relation-tile skin-color"
+        > {{ relation.name }}</span>
+
       </div>
-      <div class="relations-table-tools" v-if="table.rows.length" style="font-size: 1.1em; margin-bottom: 3px">
-          <span v-if="downloadButton" style="padding: 5px;" v-download class="action-button-icon action-button"
-            :class="[g3wtemplate.getFontClass('download'), {'toggled-white': downloadButton.toggled}]" @click="downloadButton.handler" v-t-tooltip:left.create="downloadButton.tooltip"></span>
-          <span v-if="showChartButton" style="padding: 5px;" class="action-button-icon action-button"
-            :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']" @click.stop="showChart" v-t-tooltip:bottom.create="'sdk.tooltips.show_chart'"></span>
-        </div>
+
+      <div
+        v-if  = "table.rows.length"
+        class = "relations-table-tools"
+        style = "font-size: 1.1em; margin-bottom: 3px"
+      >
+        <span
+          v-if                    = "downloadButton"
+          style                   = "padding: 5px;"
+          v-download
+          :class                  = "[
+            'action-button-icon action-button',
+            g3wtemplate.getFontClass('download'),
+            { 'toggled-white': downloadButton.toggled },
+          ]"
+          @click.stop             = "downloadButton.handler"
+          v-t-tooltip:left.create = "downloadButton.tooltip">
+        </span>
+        <span
+          v-if                      = "showChartButton"
+          style                     = "padding: 5px;"
+          :class                    = "[
+            'action-button-icon action-button',
+            g3wtemplate.getFontClass('chart'),
+            { 'toggled-white': chart },
+           ]"
+          @click.stop               = "showChart"
+          v-t-tooltip:bottom.create = "'sdk.tooltips.show_chart'"
+        ></span>
+
+      </div>
+
     </div>
-    <div v-if="table.rows.length" style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 3px; height: 95%;"  ref="relationwrapper">
-      <div id="table_content" :style="{width: chart ? '70%' : '100%', marginRight: chart ? '8px' : '3px', position: 'relative' }" ref="tablecontent">
-        <template v-if="headercomponent">
-          <div style="width: 100%; display: flex; margin-left: auto; margin-bottom: 5px; margin-right: 4px;">
-            <component :is="headercomponent" :layer="downloadLayer.state" :config="downloadLayer.config"/>
-          </div>
-        </template>
-        <table ref="relationtable" class="hover relationtable table table-striped row-border" style="width:100%">
+
+    <div
+      v-if  = "table.rows.length"
+      style = "display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 3px; height: 95%;"
+      ref   = "relationwrapper"
+    >
+      <div
+        id     = "table_content"
+        :style = "{
+          width: chart ? '70%' : '100%',
+          marginRight: chart ? '8px' : '3px',
+          position: 'relative',
+        }"
+        ref    = "tablecontent"
+      >
+        <div
+          v-if  = "headercomponent"
+          style = "width: 100%; display: flex; margin-left: auto; margin-bottom: 5px; margin-right: 4px;"
+        >
+          <component
+            :is     = "headercomponent"
+            :layer  = "downloadLayer.state"
+            :config = "downloadLayer.config"
+          />
+        </div>
+        <table
+          ref   = "relationtable"
+          class = "hover relationtable table table-striped row-border"
+          style = "width:100%"
+        >
           <thead>
             <tr style="height: 0! important">
-              <th v-if="table.formStructure || isEditable" :style="{minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`, padding: '0 !important' }"></th>
+              <th
+                v-if   = "table.formStructure || isEditable"
+                :style = "{
+                  minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`,
+                  padding:  '0 !important',
+                }"
+              ></th>
               <th v-for="column in table.columns">{{ column }}</th>
             </tr>
           </thead>
+
           <tbody>
-          <tr v-for="(row, index) in table.rows" :key="table.rows_fid[index]" :class="{'selected': table.rowFormStructure === row}">
+
+          <tr
+            v-for  = "(row, index) in table.rows"
+            :key   = "table.rows_fid[index]"
+            :class = "{'selected': table.rowFormStructure === row}"
+          >
             <td v-if="table.formStructure || isEditable">
-              <span v-if="table.formStructure" @click.stop="showFormStructureRow($event, row)" style="cursor: pointer" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                class="action-button row-form skin-color" v-t-tooltip:right.create="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
-              <span v-if="isEditable" @click.stop="editFeature(index)" class="action-button row-form skin-color" v-t-tooltip:right.create="'Edit'"
-                :class="g3wtemplate.getFontClass('pencil')"></span>
+              <span
+                v-if                     = "table.formStructure"
+                @click.stop              = "showFormStructureRow($event, row)"
+                style                    = "cursor: pointer"
+                :current-tooltip         = "table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                v-t-tooltip:right.create = "table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                :class                   = "[
+                  'action-button row-form skin-color',
+                  g3wtemplate.getFontClass(table.rowFormStructure === row ? 'minus' : 'table')
+                  ]"
+                ></span>
+              <span
+                v-if                     = "isEditable"
+                @click.stop              = "editFeature(index)"
+                class                    = "action-button row-form skin-color"
+                v-t-tooltip:right.create = "'Edit'"
+                :class                   = "g3wtemplate.getFontClass('pencil')">
+              </span>
             </td>
-            <template v-if="table.formStructure && table.rowFormStructure === row">
-              <td :colspan="table.columns.length" class="row-wrap-tabs">
-                <tabs :layerid="table.layerId" :feature="table.features[index]" :fields="fields" :tabs="table.formStructure"/>
-              </td>
-            </template>
+
+            <td
+              v-if     = "table.formStructure && table.rowFormStructure === row"
+              :colspan = "table.columns.length"
+              class    = "row-wrap-tabs"
+            >
+              <tabs
+                :layerid = "table.layerId"
+                :feature = "table.features[index]"
+                :fields  = "fields"
+                :tabs    = "table.formStructure"
+              />
+            </td>
             <template v-else>
-              <td v-for="value in row">
-                <field :state="{value:value}"/>
-              </td>
+              <td v-for="value in row"><field :state="{value:value}"/></td>
             </template>
+
           </tr>
+
           </tbody>
+
         </table>
+
       </div>
-      <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'" class="skin-border-color lighten" style="border-style: solid; border-width: 0 1px 0 1px"/>
-      <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0', paddingBottom: '5px', marginBottom: '5px', marginLeft: '8px' }" ref="chartcontent"></div>
+
+      <g3w-resize
+        :show    = "chart"
+        :moveFnc = "moveFnc"
+        :where   = "'content'"
+        class    = "skin-border-color lighten"
+        style    = "border-style: solid; border-width: 0 1px 0 1px"
+      />
+
+      <div
+        v-show   = "chart"
+        id       = "chart_content"
+        :style   = "{
+          width: chart ? '30%' : '0',
+          paddingBottom: '5px',
+          marginBottom: '5px',
+          marginLeft: '8px',
+        }"
+        ref      = "chartcontent"
+      ></div>
+
     </div>
-    <div v-else class="dataTables_scrollBody" style="font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;">
+
+    <div v-else
+      class = "dataTables_scrollBody"
+      style = "font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;"
+    >
       <span v-t="'sdk.relations.no_relations_found'"></span>
     </div>
+
   </div>
+
 </template>
 
 <script>
-import { G3W_FID } from 'app/constant';
-import Field from 'components/FieldG3W.vue';
-import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import GUI from 'services/gui';
+import { G3W_FID }                  from 'app/constant';
+import Field                        from 'components/FieldG3W.vue';
+import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
+import CatalogLayersStoresRegistry  from 'store/catalog-layers';
+import GUI                          from 'services/gui';
 import { fieldsMixin, resizeMixin } from 'mixins';
-import { RelationEventBus as VM } from 'app/eventbus';
-
-const { throttle } = require('utils');
+import { RelationEventBus as VM }   from 'app/eventbus';
+import { throttle }                 from 'utils';
 
 let SIDEBARWIDTH;
 
@@ -82,21 +215,23 @@ export default {
   name: 'relation',
 
   props: {
-    table: {},
-    feature: {
-      default: null
-    },
-    relation: {},
-    previousview: {},
+    table:           {},
+    feature:         { default: null },
+    relation:        {},
+    previousview:    {},
     showChartButton: {},
-    cardinality:{},
+    cardinality:     {},
   },
+
   inject: ['relationnoback'],
+
   mixins: [fieldsMixin, resizeMixin],
+
   components: {
-    Field
+    Field,
   },
-  data(){
+
+  data() {
     return {
       fields: null,
       chart: false,
@@ -105,21 +240,30 @@ export default {
       downloadLayer: {
         state: null,
         config: {
-          downloads:[]
-        }
-      }
-    }
+          downloads: [],
+        },
+      },
+    };
   },
+
   computed: {
+
     showrelationslist() {
-      return this.previousview === 'relations' && !this.relationnoback;
+      return 'relations' === this.previousview  && !this.relationnoback;
     },
+
     one() {
-      return this.relation.type === 'ONE';
-    }
+      return 'ONE' === this.relation.type;
+    },
+
   },
+
   methods: {
-    async createTable(){
+
+    /**
+     * @returns { Promise<void> }
+     */
+    async createTable() {
       const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
       this.isEditable =  layer.isEditable() && !layer.isInEditing();
       const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
@@ -149,7 +293,7 @@ export default {
       VM.$on('reload', () => {
         this.reloadLayout();
       });
-      this.showChart = throttle(async ()=> {
+      this.showChart = throttle(async () => {
         this.chart = !this.chart;
         await this.$nextTick();
         this.chartContainer = this.chartContainer ||  $('#chart_content');
@@ -180,7 +324,11 @@ export default {
       //In case of pop child relation need to resize
       GUI.on('pop-content', this.resize);
     },
-    async resize(){
+
+    /**
+     * @returns { Promise<void> }
+     */
+    async resize() {
       // in case of waiting table
       if (this.$refs.query_relation && this.$refs.query_relation.parentNode.style.display !== 'none') {
         const tableHeight = $(".content").height();
@@ -201,18 +349,33 @@ export default {
         this.reloadLayout();
       }
     },
-    saveRelation(type){
+
+    /**
+     * @param type
+     */
+    saveRelation(type) {
       this.$emit('save-relation', type);
       this.downloadButton.toggled = false;
     },
-    async showFormStructureRow(event, row){
+
+    /**
+     * @param event
+     * @param row
+     * 
+     * @returns { Promise<void> }
+     */
+    async showFormStructureRow(event, row) {
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
       this.fields = this.getRowFields(row);
       await this.$nextTick();
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
     },
-    editFeature(index){
+
+    /**
+     * @param index
+     */
+    editFeature(index) {
       const queryResultsService = GUI.getService('queryresults');
       queryResultsService.editFeature({
         layer: {
@@ -222,7 +385,13 @@ export default {
         feature: this.table.features[index]
       });
     },
-    getRowFields(row){
+
+    /**
+     * @param row
+     * 
+     * @returns {*}
+     */
+    getRowFields(row) {
       return this.table.fields.map((field, index)=> {
         field.value = row[index];
         field.query = true;
@@ -232,55 +401,94 @@ export default {
         return field;
       });
     },
+
+    /**
+     * @FIXME add description
+     */
     reloadLayout() {
       this.relationDataTable && this.relationDataTable.columns.adjust();
     },
+
+    /**
+     * @FIXME add description
+     */
     back() {
       this.$parent.setRelationsList();
     },
+
+    /**
+     * @param type
+     * @param value
+     * 
+     * @returns { boolean }
+     */
     fieldIs(type, value) {
       const fieldType = this.getFieldType(value);
       return fieldType === type;
     },
-    is(type,value) {
+
+    /**
+     * @param type
+     * @param value
+     * 
+     * @returns { boolean }
+     */
+    is(type, value) {
       return this.fieldIs(type, value);
     },
-    moveFnc(evt){
-      const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
-      const size = evt.pageX+2 - sidebarHeaderSize;
+
+    /**
+     * @param evt
+     */
+    moveFnc(evt) {
+      const sidebarHeaderSize             =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
+      const size                          = evt.pageX+2 - sidebarHeaderSize;
       this.$refs.tablecontent.style.width = `${size}px`;
       this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
-    }
+    },
+
   },
+
   watch: {
-    // in case of show relation directly
+
+    /**
+     * in case of show relation directly
+     */
     table: {
       immediate: true,
       handler(table) {
         table && table.rows.length && this.createTable();
       }
     },
-    async chart(){
+
+    async chart() {
       await this.$nextTick();
       this.resize();
     },
-    async headercomponent(){
+
+    async headercomponent() {
       await this.$nextTick();
       this.resize();
-    }
+    },
+
   },
+
   beforeCreate() {
     this.delayType = 'debounce';
   },
-  async beforeDestroy(){
-    if (this.relationDataTable){
-      this.relationDataTable.destroy();
-      this.relationDataTable = null;
-      this.chartContainer && this.$emit('hide-chart', this.chartContainer);
-      this.chartContainer = null;
-      this.tableHeaderHeight = null;
-      GUI.off('pop-content', this.resize);
+
+  async beforeDestroy() {
+    // skip when ..
+    if (!this.relationDataTable) {
+      return;
     }
-  }
+    this.relationDataTable.destroy();
+    this.relationDataTable = null;
+    this.chartContainer && this.$emit('hide-chart', this.chartContainer);
+    this.chartContainer = null;
+    this.tableHeaderHeight = null;
+    GUI.off('pop-content', this.resize);
+  },
+
 };
 </script>
