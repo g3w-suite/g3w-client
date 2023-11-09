@@ -156,112 +156,97 @@ const proto = SearchService.prototype;
 /**
  * @TODO slim down and refactor
  * 
- * Start Method to create right search structure for search form
+ * Create right search structure for search form
  * 
- * @param filter
+ * @param { Object } opts
+ * @param { Array } opts.filter input
  * 
- * @returns {Promise<void>}
+ * @returns { Promise<void> } form input
  */
-proto.createInputsFormFromFilter = async function({filter=[]}={}) {
-  const filterLenght = filter.length - 1;
-  for (let index = 0; index <= filterLenght; index ++) {
-    const input = filter[index];
-    const forminput = {
-      label: input.label,
-      attribute: input.attribute,
-      type: input.input.type || 'textfield',
-      options: {...input.input.options},
-      value: null,
-      operator: input.op,
-      logicop: index === filterLenght ? null : input.logicop,
-      id: input.id || getUniqueDomId(),
-      loading: false,
-      widget: null
-    };
-    //check if it has a dependance
-    const {options:{ dependance=false, dependance_strict=false } } = forminput;
-    if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
-      // to be sure set values options to empty array if undefined
-      forminput.loading = forminput.type !== 'autocompletefield';
-      const promise = new Promise((resolve, reject) =>{
-        //set values to empty array
-        if (forminput.options.values === undefined) {
-          forminput.options.values = [];
-        }
-        // in case of dependence load right now
-        if (dependance) {
-          //mean that field need to wait changes of dependence field
-          if (dependance_strict) {
-            forminput.loading = false;
-            resolve();
-          } else {
-            this.getValuesFromField(forminput)
-              .then(values => { // return array of values
-                values = this.valuesToKeysValues(values); // set values for select
-                forminput.options.values = values;
-              })
-              .catch(()=> forminput.options.values = [])// in case of error
-              .finally(()=> {
-                forminput.loading = false;
-                resolve();
-              });
-          }
-        } else {
-          // no dependence
-          this.getValuesFromField(forminput)
-            .then(values => { // return array of values
-              values = this.valuesToKeysValues(values); // set values for select
-              forminput.options.values = values;
-            })
-            .catch((err) => {
-              console.wanr(err);
-              forminput.options.values = [];
-            })// in case of error
-            .finally(() => {
-              forminput.loading = false;
-              resolve();
-            })
-        }
-      });
+proto.createInputsFormFromFilter = async function({
+  filter = [],
+} = {}) {
+  for (let i = 0; i <= filter.length - 1; i++) {
 
-      //If there is a dependence
-      if (dependance) {
-        //set dependence of input
-        this.inputdependance[forminput.attribute] = dependance;
-        this.state.loading[dependance] = false;
-        // set disabled false for back compatibility
-        forminput.options.disabled = dependance_strict;
-        /**
-         * Set dependence between input
-         */
-        this.setInputDependencies({
-          master: dependance,
-          slave: forminput
-        });
-        /**
-         * Set widget type for fill dependency
-         */
-        if (forminput.options.values.length) {
-          forminput.widget = 'valuemap';
-          forminput.options._values = [...forminput.options.values];
-        } else if (forminput.options.layer_id) {
-          forminput.widget = 'valuerelation';
+    const input = {
+      label:     filter[i].label,
+      attribute: filter[i].attribute,
+      type:      filter[i].input.type || 'textfield',
+      options:   { ...filter[i].input.options },
+      value:     null,
+      operator:  filter[i].op,
+      logicop:   i === (filter.length - 1) ? null : filter[i].logicop,
+      id:        filter[i].id || getUniqueDomId(),
+      loading:   false,
+      widget:    null,
+    };
+
+    // check if it has a dependance
+    const dependance_strict = undefined !== input.options.dependance_strict ? input.options.dependance_strict : false; 
+    const dependance        = undefined !== input.options.dependance        ? input.options.dependance        : false;
+    const GIVE_ME_A_NAME_1  = ['selectfield', 'autocompletefield'].includes(input.type);
+    const GIVE_ME_A_NAME_2  = GIVE_ME_A_NAME_1 && dependance;
+
+    input.options.values    = undefined !== input.options.values            ? input.options.values            : [];
+    const { values }        = input.options;
+
+    let promise;
+
+    /** @FIXME add description */
+    if (GIVE_ME_A_NAME_1) {
+      // ensure seting values options to empty array when undefined
+      input.loading = input.type !== 'autocompletefield';
+
+      promise = new Promise((resolve, reject) => {
+
+        // in case of dependence load right now
+        if (dependance && dependance_strict) {
+          input.loading = false;
+          return resolve();
         }
-      }
-      promise
-        .then(() => {
-          if (forminput.type !== 'autocompletefield') {
-            if (forminput.options.values.length) {
-              forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
-            } else {
-              forminput.options.values.push({value:ALLVALUE});
-            }
-          forminput.value = ALLVALUE;
+
+        // set array of values for select
+        if (!dependance_strict) {
+          this
+            .getValuesFromField(input)
+            .then(_values => { values.splice(0, values.length).concat(this.valuesToKeysValues(_values)); })
+            .catch((err)  => { console.warn(err); values.length = 0 })
+            .finally(()   => { input.loading = false; resolve(); })
         }
       });
     }
-    // ad form inputs to list of search input
-    this.state.forminputs.push(forminput);
+
+    // there is a dependence
+    if (GIVE_ME_A_NAME_2) {
+      this.inputdependance[input.attribute] = dependance;              // set dependence of input
+      this.state.loading[dependance]        = false;
+      input.options.disabled                = dependance_strict;       // disabled for BACKCOMP
+      this.setInputDependencies({ master: dependance, slave: input }); // set dependence between input
+
+    }
+
+    // set widget type for fill dependency
+    if (GIVE_ME_A_NAME_2 && values.length) {
+      input.widget          = 'valuemap';
+      input.options._values = [...values];
+    }
+
+    /** @TODO add description */
+    if (GIVE_ME_A_NAME_2 && !values.length && input.options.layer_id) {
+      input.widget = 'valuerelation';
+    }
+
+    /** @TODO add description */
+    if (GIVE_ME_A_NAME_1 && 'autocompletefield' !== input.type) {
+      promise
+        .then(() => {
+          values[values.length && ALLVALUE !== values[0].value ? 'unshift' : 'push']({ value:ALLVALUE });
+          input.value = ALLVALUE;
+      });
+    }
+
+    // add form inputs to list of search input
+    this.state.forminputs.push(input);
   }
 };
 
@@ -281,8 +266,8 @@ proto.setReturnType = function(returnType='data') {
 };
 
 /**
- *
  * @param field
+ * 
  * @returns {*}
  */
 proto.getAutoFieldDependeciesParamField = function(field) {
@@ -294,16 +279,17 @@ proto.getAutoFieldDependeciesParamField = function(field) {
 };
 
 /**
- *
+ * @param { Object } opts
  * @param opts.fields
  * @param opts.field
  * @param opts.value
- * @returns {string|undefined|*}
+ * 
+ * @returns { string | undefined | * }
  */
 proto.createFieldsDependenciesAutocompleteParameter = function({
   fields = [],
   field,
-  value
+  value,
 } = {}) {
   const dependendency = this.getCurrentFieldDependance(field);
 
@@ -328,7 +314,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({
  * 
  * @param field form input
  * 
- * @returns {Promise<[]>}
+ * @returns { Promise<[]> }
  */
 proto.getValuesFromField = async function(field) {
   //if defined layer_id dependence
@@ -346,20 +332,14 @@ proto.getValuesFromField = async function(field) {
     );
   }
 
-  //Relation  reference
+  // Relation reference
   if (field.options.relation_reference) {
      try {
        //call filter data with fformatter
-       const response = await this.searchLayer.getFilterData({
-         fformatter: field.attribute
-       })
+       const response = await this.searchLayer.getFilterData({ fformatter: field.attribute });
        //check response
        if (response && response.result && response.data) {
-         field.options.values = response.data
-           .map(([value, key]) => ({
-            key,
-            value
-           }));
+         field.options.values = response.data.map(([value, key]) => ({ key, value }));
        }
      } catch(err) {
        throw Error(err);
@@ -374,10 +354,10 @@ proto.getValuesFromField = async function(field) {
 };
 
 /**
- *
  * @param field
  * @param filter
- * @returns {Promise<*[]>}
+ * 
+ * @returns { Promise<[]> }
  */
 proto.getValueRelationValues = async function(field, filter) {
   try {
@@ -406,7 +386,7 @@ proto.getValueRelationValues = async function(field, filter) {
  * 
  * @param field
  * 
- * @returns {Promise<*>}
+ * @returns { Promise<*> }
  */
 proto.getValueMapValues = async function(field) {
   return field.options.values.filter(value => ALLVALUE !== value);
@@ -418,10 +398,10 @@ proto.getValueMapValues = async function(field) {
  * @param options.field
  * @param options.suggest
  * @param options.unique
- * @param options.fformatter //@since v3.9
+ * @param options.fformatter since 3.9.0
  * @param options.ordering
  * 
- * @returns {Promise<*>}
+ * @returns { Promise<*> }
  * 
  * @since 3.8.0
  */
@@ -459,11 +439,12 @@ proto.getLayersFilterData = async function(layers, options = {}) {
 /**
  * Get unique values from field
  * 
+ * @param { Object } options
  * @param options.field
  * @param options.value
  * @param options.unique 
  * 
- * @returns {Promise<[]>}
+ * @returns { Promise<[]> }
  */
 proto.getUniqueValuesFromField = async function({field, value, output}) {
   let data = [];
@@ -487,20 +468,21 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
 /**
  * Perform search
  * 
- * @param filter
- * @param search_endpoint
- * @param queryUrl
- * @param feature_count
- * @param show
+ * @param { Object } opts
+ * @param opts.filter
+ * @param opts.search_endpoint
+ * @param opts.queryUrl
+ * @param opts.feature_count
+ * @param opts.show
  * 
- * @returns {Promise<void|unknown>}
+ * @returns { Promise<void|unknown> }
  */
 proto.doSearch = async function({
   filter,
   search_endpoint = this.getSearchEndPoint(),
   queryUrl        = this.url,
   feature_count   = 10000,
-  show            = this.show
+  show            = this.show,
 } = {}) {
 
   //get or create request filter
@@ -549,8 +531,9 @@ proto.doSearch = async function({
 };
 
 /**
- * Method that filter input base on NONVALIDVALUES
- * @returns {*[]}
+ * Filter input by NONVALIDVALUES
+ * 
+ * @returns { Array }
  */
 proto.filterValidFormInputs = function() {
   return this.state
@@ -559,22 +542,20 @@ proto.filterValidFormInputs = function() {
 };
 
 /**
- *
- * @returns {string|*|string}
+ * @returns { string | * }
  */
 proto.getSearchEndPoint = function() {
   return this.search_endpoint || this.searchLayer.getSearchEndPoint()
 };
 
-/*
-* type wms, vector (for vector api)
-* */
+/**
+ * type wms, vector (for vector api)
+ */
 proto.createFilter = function(search_endpoint = this.getSearchEndPoint()) {
   return createFilterFormInputs({ layer: this.searchLayers, inputs: this.filterValidFormInputs(), search_endpoint });
 };
 
 /**
- *
  * @private
  */
 proto._run = function() {
@@ -582,20 +563,23 @@ proto._run = function() {
 };
 
 /**
- * Method called when input search change
- * @param id
- * @param value
+ * Called on search input change
+ * 
+ * @param { Object } opts
+ * @param opts.id
+ * @param opts.value
  */
 proto.changeInput = function({id, value} = {}) {
   this.state.forminputs.find(input => id == input.id).value = value;
 };
 
 /**
- *
- * @param filter
- * @returns {{}}
+ * @param { Object } opts
+ * @param opts.filter
+ * 
+ * @returns { Object }
  */
-proto.createQueryFilterFromConfig = function({filter}) {
+proto.createQueryFilterFromConfig = function({ filter }) {
   let queryFilter;
   for (const operator in filter) {
     queryFilter = create_boolean_filter(operator, filter[operator]);
@@ -604,8 +588,8 @@ proto.createQueryFilterFromConfig = function({filter}) {
 };
 
 /**
- *
  * @param field
+ * 
  * @returns {*}
  */
 proto.getFilterInputFromField = function(field) {
@@ -613,9 +597,10 @@ proto.getFilterInputFromField = function(field) {
 };
 
 /**
- *
  * @param field
- * @returns {*|null}
+ * 
+ * @returns { * | null }
+ * 
  * @private
  */
 proto._getExpressionOperatorFromInput = function(field) {
@@ -634,8 +619,10 @@ proto._getCascadeDependanciesFilter = function(field, dependencies = []) {
 
 /**
  * Check if a field has a dependance
+ * 
  * @param field
- * @returns {{}}
+ * 
+ * @returns { Object }
  */
 proto.getCurrentFieldDependance = function(field) {
   const dependance = this.inputdependance[field];
@@ -812,25 +799,27 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
 };
 
 /**
- *
  * @param field
- * @returns {*|*[]}
+ * 
+ * @returns { Array | * }
  */
 proto.getDependencies = function(field) {
   return this.inputdependencies[field] || [];
 };
 
 /**
- *
- * @param master
- * @param slave
+ * @param { Object } opts
+ * @param opts.master
+ * @param opts.slave
  */
 proto.setInputDependencies = function({ master, slave }={}) {
   this.inputdependencies[master] = (undefined !== this.inputdependencies[master] ? this.inputdependencies[master] : []);
   this.inputdependencies[master].push(slave);
 };
 
-//set key value for select
+/**
+ * set key value for select
+ */
 proto.valuesToKeysValues = function(values) {
   return values.length ?
     ('Object' !== toRawType(values[0]) ? values.map(value => ({ key: value, value })) : values) :
@@ -838,19 +827,23 @@ proto.valuesToKeysValues = function(values) {
 };
 
 /**
- *
- * @param ogcService
- * @param filter
- * @returns {{infoFormat: *, crs: *, serverType, layers: *[], url: *} & {filter: {}, ogcService: string}}
+ * @param { Object } opts
+ * @param opts.ogcService
+ * @param opts.filter
+ * 
+ * @returns {{infoFormat: *, crs: *, serverType, layers: [], url: *} & {filter: {}, ogcService: string}}
  */
-proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
+proto.createQueryFilterObject = function({
+  ogcService = 'wms',
+  filter     = {},
+} = {}) {
   return Object.assign(this.getInfoFromLayer(ogcService), { ogcService, filter });
 };
 
 /**
- *
  * @param ogcService
- * @returns {{infoFormat: *, crs: *, serverType, layers: *[], url: *}}
+ * 
+ * @returns {{infoFormat: *, crs: *, serverType, layers: [], url: *}}
  */
 proto.getInfoFromLayer = function(ogcService) {
   return {
@@ -863,7 +856,6 @@ proto.getInfoFromLayer = function(ogcService) {
 };
 
 /**
- *
  * @param layer
  */
 proto.setSearchLayer = function(layer) {
@@ -871,11 +863,10 @@ proto.setSearchLayer = function(layer) {
 };
 
 /**
- *
- * @returns {null|*}
+ * @returns { null | * }
  */
 proto.getSearchLayer = function() {
-  return this.searchLayer
+  return this.searchLayer;
 };
 
 /**
@@ -885,9 +876,6 @@ proto.clear = function() {
   this.state = null;
 };
 
-/**
- * @private 
- */
 function create_boolean_filter(operator, inputs = []) {
   const boolean = { [operator]: [] };
   inputs
@@ -908,7 +896,6 @@ function create_boolean_filter(operator, inputs = []) {
 
 /**
  * Search father layer id based on result of child layer
- * @private 
  */
 async function parse_search_1n(data, options) {
   const { search_endpoint, feature_count, relation_id, output_title } = options;
@@ -987,9 +974,6 @@ async function parse_search_1n(data, options) {
   return data;
 }
 
-/**
- * @private 
- */
 function parse_search_by_returnType(data, returnType) {
   if ('search' === returnType) {
     GUI.closeContent();
