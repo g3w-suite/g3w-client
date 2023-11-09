@@ -22,7 +22,7 @@ export default async function(opts) {
   }
 
   const response = await XHR.get({
-    url:           'https://dev.virtualearth.net/REST/v1/LocalSearch/',
+    url:           opts.url || 'https://dev.virtualearth.net/REST/v1/LocalSearch/',
     params: {
       query:       opts.query,  // textual search
       userMapView: [opts.extent[1], opts.extent[0], opts.extent[3], opts.extent[2]].join(','),

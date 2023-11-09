@@ -17,7 +17,7 @@ export default async function(opts) {
     results:
       (
         await XHR.get({
-          url:              'https://nominatim.openstreetmap.org/search',
+          url:              opts.url || 'https://nominatim.openstreetmap.org/search',
           params: {
             q:              opts.query, // textual search
             format:         'json',

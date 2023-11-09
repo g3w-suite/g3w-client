@@ -180,7 +180,11 @@ const {
 }                                   = require('utils/geo');
 const Projections                   = require('g3w-ol/projection/projections');
 
-const PROVIDERS = [ nominatim, bing, google ];
+const PROVIDERS = {
+  nominatim,
+  bing,
+  google
+};
 
 /**
  * Search results layer (pushpin marker)
@@ -282,6 +286,11 @@ export default {
     mapCrs: {
       required: true,
     },
+
+    provider: {
+      type: Object, // {nominatim: {url:<url>, bing:{url:<url}}}
+      required: true
+    }
 
   },
 
@@ -447,8 +456,9 @@ export default {
 
           // request data
           const results = await Promise.allSettled(
-            PROVIDERS
-              .map(p => p({
+            Object.entries(this.provider)
+              .map(([p, config={}]) => PROVIDERS[p]({
+                url :         config.url, //add url
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?

@@ -1087,12 +1087,17 @@ proto._setupControls = function() {
 
         case 'geocoding':
         case 'nominatim':
-          control = this.createMapControl(controlType, {
-            add: false,
-            options: {
-              config
-            }
-          });
+          //Add in case of providers set
+          //TODO Check providers instead of provider check in g3w-admin
+          if (config.provider) {
+            control = this.createMapControl(controlType, {
+              add: false,
+              options: {
+                config
+              }
+            });
+          }
+
           break;
 
         case 'geolocation':
@@ -2616,7 +2621,6 @@ proto.changeLayerVisibility = function({id, external=false, visible}) {
     layer.setVisible(visible);
     this.emit('change-layer-visibility', {id, visible});
   }
-
 };
 
 proto.changeLayerOpacity = function({id, opacity=1}={}) {
@@ -3071,9 +3075,11 @@ function VueControl(type) {
 
       /** ORIGINAL SOURCE: src/app/g3w-ol/controls/geocodingcontrol.js@v3.8.0 */
       case 'nominatim':
+      case 'geocoding':
         component = Vue.extend(MapControlGeocoding);
         opts.element = new component({
           propsData: {
+            ...options.config, // pass configuration from server
             placeholder:    (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.geocoding.placeholder")        || 'Città, indirizzo ... ',
             noresults:      (undefined !== options.noresults         ? options.noresults         : "mapcontrols.geocoding.noresults")          || 'Nessun risultato ',
             // notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.geocoding.notresponseserver")  || 'Il server non risponde', // <-- TODO ?

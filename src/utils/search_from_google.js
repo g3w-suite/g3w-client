@@ -17,7 +17,7 @@ export default async function(opts) {
   }
 
   const response = await XHR.get({
-    url:        'https://maps.googleapis.com/maps/api/geocode/json',
+    url:        opts.url || 'https://maps.googleapis.com/maps/api/geocode/json',
     params: {
       address:  opts.query, // textual search
       bounds:   [opts.extent[1], opts.extent[0], opts.extent[3], opts.extent[2]].join(','),
