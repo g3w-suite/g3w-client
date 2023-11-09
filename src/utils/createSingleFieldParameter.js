@@ -1,15 +1,14 @@
 import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
-import {
-  createFilterFromString
-} from "./createFilterFromString";
+import { createFilterFromString } from './createFilterFromString';
 
 /**
- * @param layer
- * @param field
- * @param value
- * @param operator
- * @param logicop // set OR as default
- * @param search_endpoint
+ * @param { Object } opts
+ * @param opts.layer
+ * @param opts.field
+ * @param opts.value
+ * @param { string } [opts.operator='eq']         'eq' as default
+ * @param { string } [opts.logicop='OR']          'OR' as default
+ * @param { string } [opts.search_endpoint='api'] 'api' as default
  * 
  * @returns {string}
  * 
@@ -39,12 +38,11 @@ export function createSingleFieldParameter({
     return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop ? `|${logicop}` : ''}`;
   }
 
-  //store string filter
+  // store filter string 
   let filter = '';
 
-  /**If value is array of values */
+  // value is array of values
   if (Array.isArray(value)) {
-
     const valueLenght = value.length;
     value.forEach((value, index) => {
       filter += `"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
@@ -57,7 +55,7 @@ export function createSingleFieldParameter({
   return createFilterFromString({
     layer,
     search_endpoint,
-    filter
-  })
+    filter,
+  });
 
 };
