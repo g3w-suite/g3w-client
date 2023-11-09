@@ -501,7 +501,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
               ordering:  options.ordering,
               unique:    options.unique,
               raw:       undefined !== options.raw       ? options.raw       : false,
-              suggest:   undefined !== options.suggest   ? options.suggest   : {},
+              suggest:   options.suggest,
               /** @since 3.9.0 */
               formatter: undefined !== options.formatter ? options.formatter : 1,
             })
@@ -530,7 +530,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
  */
 proto.getFilterData = async function({
   raw       = false,
-  suggest   = {},
+  suggest,
   field,
   unique,
   fformatter, //@since v3.9
