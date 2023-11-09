@@ -191,13 +191,15 @@ const LAYER = new ol.layer.Vector({
   id: '__g3w_marker',
   name: 'Geocoding',
   source: new ol.source.Vector(),
-  style: new ol.style.Style({
-    image: new ol.style.Icon({
-      opacity: 1,
-      src: '/static/client/images/pushpin.svg',
-      scale: 0.8
-    }),
-  }),
+  style(feature) { // set style function to check if a coordinate search or a search from provider
+    return new ol.style.Style({
+      image: new ol.style.Icon({
+          opacity: 1,
+          src: '/static/client/images/pushpin.svg',
+          scale: 0.8
+      }),
+    })
+  }
 });
 
 
