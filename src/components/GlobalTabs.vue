@@ -286,7 +286,7 @@
 
   /** TODO remove #app reference  */
 
-  #app .tab-content .group-title {
+  /*#app .tab-content .group-title {
     background-color: rgb(34, 45, 50,0.75) !important;
   }
 
@@ -303,5 +303,5 @@
     border-radius: 2px;
     text-indent: 5px;
     cursor: pointer;
-  }
+  }*/
 </style>
