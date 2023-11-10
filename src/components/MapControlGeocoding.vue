@@ -33,6 +33,7 @@
         id          = "gcd-input-reset"
         class       = "gcd-txt-reset gcd-hidden"
         @click.stop = "onReset"
+        title       = "Reset search"
       ></button>
 
       <!-- SUBMIT SEARCH -->
@@ -41,6 +42,7 @@
         id              = "gcd-search"
         class           = "btn"
         @click.stop     = "() => query($refs.input.value)"
+        title           = "Submit search"
       >
         <i
           :class      = "g3wtemplate.getFontClass('search')"
@@ -56,6 +58,7 @@
         id              = "gcd-trash"
         class           = "btn skin-background-color"
         @click.stop     = "clearMarkers"
+        title           = "Clear markers selection"
       >
         <i
           :class      = "g3wtemplate.getFontClass('trash')"
@@ -70,6 +73,7 @@
         id            = "markers-visibility-layer"
         class         = "btn skin-background-color"
         @click.stop   = "toggleLayerVisibility"
+        title         = "Toggle markers visibility"
       >
         <i
         :class      = "g3wtemplate.getFontClass(is_layer_visible ? 'eye-close': 'eye')"
@@ -84,6 +88,7 @@
         id            = "show-markers-results"
         class         = "btn skin-background-color"
         @click.stop   = "() => showMarkerResults(undefined, true)"
+        title         = "Toggle sidebar panel"
       >
       <code :style="{ opacity: $data.results_panel_open ? 0.5 : undefined }">
         {{ features.length > 99 ? '99+' : features.length }}
@@ -774,12 +779,15 @@ export default {
 
   },
 
-  async mounted() {
-    await this.$nextTick();
-    const q = document.querySelector.bind(document);
-    q('#gcd-input-query').value = /*'via sallustio 10'*/ /*'becca'*/ 'cafe';
-    q('#gcd-search').click();
-  },
+  /**
+   * DEBUG 
+   */
+  // async mounted() {
+  //   await this.$nextTick();
+  //   const q = document.querySelector.bind(document);
+  //   q('#gcd-input-query').value = /*'via sallustio 10'*/ /*'becca'*/ 'cafe';
+  //   q('#gcd-search').click();
+  // },
 
   destroyed() {
     GUI.getService('queryresults').unregisterVectorLayer(LAYER);
