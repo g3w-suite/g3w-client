@@ -9,7 +9,7 @@
     class="tabs-wrapper">
     <template v-for="root_tab in root_tabs">
       <template v-if="Array.isArray(root_tab)">
-        <ul v-if="root_tab.length < 5" class="formquerytabs nav nav-tabs">
+        <ul class="formquerytabs nav nav-tabs">
           <template v-for="(tab, index) in root_tab">
             <li
               v-if="tab.visible === undefined || tab.visible"
@@ -27,20 +27,6 @@
             </li>
           </template>
         </ul>
-        <!-- FIXME: "href" is an invalid attribute for option element -->
-        <select v-else class="formquerytabs nav nav-tabs">
-          <template v-for="(tab, index) in root_tab">
-            <option v-if="tab.visible === undefined || tab.visible"
-              data-toggle="tab"
-              class="tab_a"
-              :href="`#${ids[index]}`"
-              :class="{ active: index === 0, 'mobile': isMobile(), 'group-title': group }"
-              :style="{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
-            >
-              {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span>
-            </option>
-          </template>
-        </select>
         <div
           class="tab-content"
           :class="{editing: contenttype === 'editing'}"
@@ -283,25 +269,4 @@
     margin-bottom: 3px;
     border-radius: 3px 3px 0 0;
   }
-
-  /** TODO remove #app reference  */
-
-  /*#app .tab-content .group-title {
-    background-color: rgb(34, 45, 50,0.75) !important;
-  }
-
-  #app select.formquerytabs {
-    width: 100%;
-    padding: 1.1em;
-    background-color: #e99611 !important;
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #fff;
-    border: none;
-    appearance: none;
-    background: transparent url("data:image/svg+xml;utf8,<svg fill='white' viewBox='0 0 24 24' width='30' xmlns='http://www.w3.org/2000/svg' transform='rotate(-90)'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") no-repeat 0 50%;
-    border-radius: 2px;
-    text-indent: 5px;
-    cursor: pointer;
-  }*/
 </style>
