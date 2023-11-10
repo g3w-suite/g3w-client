@@ -8,7 +8,7 @@
 -->
 <template>
   <div
-    v-show = "has_providers"
+    v-if = "has_providers"
     :class = "[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
   >
 
