@@ -219,13 +219,25 @@ const LAYER = new ol.layer.Vector({
         })
       })
     } else {
-      return new ol.style.Style({
-        image: new ol.style.Icon({
-          opacity: 1,
-          src: '/static/client/images/pushpin.svg',
-          scale: 0.8
+      return [
+        // pusphin icon
+        new ol.style.Style({
+          image: new ol.style.Icon({
+            opacity: 1,
+            src: '/static/client/images/pushpin.svg',
+            scale: 0.8
+          }),
         }),
-      })
+        // increase clickable icon area (invisible buffer)
+        new ol.style.Style({
+          image: new ol.style.RegularShape({
+            stroke: new ol.style.Stroke({ color: [0, 0, 0, 0] }),
+            points: 4,
+            radius: 50,
+            angle: Math.PI / 4
+          })
+        })
+      ];
     }
   }
 });
