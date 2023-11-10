@@ -357,7 +357,7 @@ function MapService(options={}) {
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
           geometryType,
-          color:this.defaultsLayers._style.selectionLayer.color,
+          color: this.defaultsLayers._style.selectionLayer.color,
           fill: false
         });
         styles.push(style);
@@ -1989,8 +1989,8 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   //listen change filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
-      layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
-      layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
+      layer.onbefore('change', () => this.updateMapLayer(mapLayer, {force: true}));
+      layer.on('filtertokenchange', () => this.updateMapLayer(mapLayer, {force: true}))
     });
   ///
 };
@@ -2250,15 +2250,17 @@ let animatingHighlight = false;
 /*
 * geometries = array of geometries
 * action: add, clear, remove :
-*                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
-*                             clear: remove selectionLayer
-*                             remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
+*   - add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
+*   - clear: remove selectionLayer
+*   - remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
 * */
 proto.setSelectionFeatures = function(action='add', options={}) {
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {
-    color
-  });
+  if (color) {
+    this.setDefaultLayerStyle('selectionLayer', {
+      color
+    });
+  }
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':
@@ -2268,8 +2270,7 @@ proto.setSelectionFeatures = function(action='add', options={}) {
       source.removeFeature(feature);
       break;
     case 'update':
-      const id = feature.getId();
-      const addedFeature = source.getFeatureById(id);
+      const addedFeature = source.getFeatureById(feature.getId());
       addedFeature.setGeometry(feature.getGeometry());
       break;
     case 'clear':
@@ -2282,7 +2283,10 @@ proto.clearSelectionFeatures = function() {
   this.defaultsLayers.selectionLayer.getSource().clear();
 };
 
-proto.seSelectionLayerVisible = function(visible=true) {
+/**
+ * @since 3.9.0
+ */
+proto.setSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 

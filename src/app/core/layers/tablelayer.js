@@ -365,7 +365,8 @@ proto.getEditingFields = function(editable = false) {
 
 /**
  * Return pk field
- * @since v3.9.0
+ * 
+ * @since 3.9.0
  */
 proto.getPkField = function() {
   return this.getEditingFields().find(f => f.pk);

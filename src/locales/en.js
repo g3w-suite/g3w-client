@@ -13,11 +13,13 @@ export default {
     sign_in: "Sign in",
     layer_selection_filter: {
       tools: {
-        filter: "Add/Remove Filter",
+        filter: "Enable/Disable filter",
         nofilter: "Remove Filter",
         invert: "Invert Selection",
         clear: "Clear Selection",
-        show_features_on_map: "Show features visible on map"
+        show_features_on_map: "Show features visible on map",
+        savefilter: "Save Filter",
+        filterName: "Filter Name",
       }
     },
     warning: {
@@ -531,7 +533,8 @@ export default {
         show_metadata: "Metadata",
         styles: 'Styles',
         vector_color_menu:"Set/Change Color",
-        layer_opacity: "Opacity"
+        layer_opacity: "Opacity",
+        filters: "Filters",
       }
     },
     dataTable: {
