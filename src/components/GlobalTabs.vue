@@ -269,4 +269,10 @@
     margin-bottom: 3px;
     border-radius: 3px 3px 0 0;
   }
+  .formquerytabs li a.tab_a.group-title {
+    color: inherit !important;
+    font-weight: 600;
+    font-size: 1em !important;
+    padding: 0.25em;
+  }
 </style>
