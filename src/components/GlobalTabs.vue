@@ -34,7 +34,7 @@
               data-toggle="tab"
               class="tab_a"
               :href="`#${ids[index]}`"
-              :class="{active: index === 0, 'mobile': isMobile(), 'group-title': group, 'child': !root_tab}"
+              :class="{ active: index === 0, 'mobile': isMobile(), 'group-title': group }"
               :style="{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
             >
               {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span>
