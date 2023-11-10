@@ -7,7 +7,9 @@
   @since 3.9.0
 -->
 <template>
-  <div :class="[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
+  <div
+    v-show = "has_providers"
+    :class = "[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
   >
 
     <div class="gcd-txt-control">
@@ -287,10 +289,13 @@ export default {
       required: true,
     },
 
-    provider: {
+    /**
+     * @since 3.9.0
+     */
+    providers: {
       type: Object, // {nominatim: {url:<url>, bing:{url:<url}}}
-      required: true
-    }
+      default:  {}
+    },
 
   },
 
@@ -312,6 +317,14 @@ export default {
      */
     features() {
       return LAYER.getSource().getFeatures();
+    },
+
+    /**
+     * @since 3.9.0
+     */
+    has_providers() {
+      console.log('has_providers', Object.keys(this.providers).length > 0);
+      return Object.keys(this.providers).length > 0;
     },
 
   },
@@ -456,9 +469,10 @@ export default {
 
           // request data
           const results = await Promise.allSettled(
-            Object.entries(this.provider)
-              .map(([p, config={}]) => PROVIDERS[p]({
-                url :         config.url, //add url
+            Object
+              .entries(this.providers)
+              .map(([ p, config = {} ]) => PROVIDERS[p]({
+                url:          config.url,
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?
@@ -489,7 +503,7 @@ export default {
         this.$data.results.push({
           __heading: true,
           provider: p.value.provider,
-          label: p.value.label,
+          label: this.providers[p.value.provider].label || p.value.label,
         });
 
         // no results

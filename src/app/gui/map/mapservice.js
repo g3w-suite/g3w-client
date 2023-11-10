@@ -1087,17 +1087,12 @@ proto._setupControls = function() {
 
         case 'geocoding':
         case 'nominatim':
-          //Add in case of providers set
-          //TODO Check providers instead of provider check in g3w-admin
-          if (config.provider) {
-            control = this.createMapControl(controlType, {
-              add: false,
-              options: {
-                config
-              }
-            });
-          }
-
+          control = this.createMapControl(controlType, {
+            add: false,
+            options: {
+              config
+            }
+          });
           break;
 
         case 'geolocation':
