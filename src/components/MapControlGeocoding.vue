@@ -340,7 +340,6 @@ export default {
      * @since 3.9.0
      */
     has_providers() {
-      console.log('has_providers', Object.keys(this.providers).length > 0);
       return Object.keys(this.providers).length > 0;
     },
 
