@@ -1,8 +1,4 @@
 .skin-yellow {
-  .group-title {
-    background-color: lighten(@yellow, 20%) !important;
-    color: darken(@yellow, 20%) !important;
-  }
   .formquerytabs.nav-tabs  {
     li:not(.active) {
       & > a {
@@ -19,6 +15,9 @@
     li.active > a,  li.active > a:focus, .nav-tabs > li.active > a:hover {
       background-color: @yellow !important;
       color: #ffffff;
+    }
+    li a.tab_a.group-title {
+      background-color: lighten(@yellow, 20%) !important;
     }
   }
 }

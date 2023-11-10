@@ -1,10 +1,6 @@
 @light-green-10: rgba(61, 166, 90, 0.85);
 
 .skin-green {
-  .group-title {
-    background-color: @light-green-10 !important;
-    color: darken(@green,20%) !important;
-  }
   .formquerytabs.nav-tabs  {
     li:not(.active) > a {
       color: @green;
@@ -17,6 +13,9 @@
     li.active > a,  li.active > a:focus, .nav-tabs > li.active > a:hover {
       background-color: @green !important;
       color: #ffffff;
+    }
+    li a.tab_a.group-title {
+      background-color: @light-green-10 !important;
     }
   }
 }
