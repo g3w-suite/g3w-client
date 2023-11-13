@@ -926,6 +926,13 @@ class ProviderFactory {
           data:        null,
           search:      null,
         },
+        //@since v3.9
+        'postgresraster': {
+          query:       Providers.wms,
+          filter:      null,
+          data:        null,
+          search:      null,
+        },
         'vector-tile': {
           query:       Providers.wms,
           filter:      null,
