@@ -30,6 +30,7 @@ const NO_GEOMETRY = [
   Layer.SourceTypes.MDAL,
   /** @since 3.8.7 */
   Layer.SourceTypes.ARCGISMAPSERVER,
+  Layer.SourceTypes.POSTGRESRASTER,
 ];
 
 const BASE_LAYERS   = {

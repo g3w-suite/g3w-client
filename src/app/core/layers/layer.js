@@ -1326,7 +1326,8 @@ Layer.SourceTypes = {
   "VECTOR-TILE": "vector-tile",
   VECTORTILE: "vectortile",
   ARCGISMAPSERVER: 'arcgismapserver',
-  GEOJSON: "geojson"
+  GEOJSON: "geojson",
+  POSTGRESRASTER: 'postgresraster', //@SINCE V3.9
   /**
    * ADD TO PROVIDER FACTORY (@TODO or already done?)
    */
