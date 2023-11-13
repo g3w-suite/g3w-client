@@ -159,7 +159,6 @@ class LayerFactory {
 
     // Get Source
     const source = config.source || {};
-    console.log(config)
 
     // Check Server Type
     const is_qgis     = Layer.ServerTypes.QGIS                       === config.servertype;
