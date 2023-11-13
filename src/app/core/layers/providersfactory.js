@@ -926,7 +926,7 @@ class ProviderFactory {
           data:        null,
           search:      null,
         },
-        //@since v3.9
+        /** @since 3.9.0 */
         'postgresraster': {
           query:       Providers.wms,
           filter:      null,
