@@ -4,16 +4,35 @@
 -->
 
 <template>
-  <div class="query-relations" style="overflow-y:auto">
-    <div class="header skin-background-color lighten"  style="margin-bottom: 10px; border-radius: 4px; padding: 5px;">
+  <div
+    class="query-relations"
+    style="overflow-y:auto"
+  >
+    <div
+      class="header skin-background-color lighten"
+      style="margin-bottom: 10px; border-radius: 4px; padding: 5px;"
+    >
       <div class="skin-color-dark">
-        <span style="font-size: 1.1em;" v-t:pre="'sdk.relations.list_of_relations_feature'"> </span>
-        <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span>
+        <span style="font-size: 1.1em;"
+          v-t:pre="'sdk.relations.list_of_relations_feature'"> </span>
+        <span
+          v-for="info in featureInfo()"
+        >
+          <b>{{ info.key }}</b>: {{ info.value }}
+        </span>
       </div>
     </div>
-    <div class="query-relations-content" style="display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px; grid-row-gap: 5px;">
-      <div @click.stop="showRelation(relation)" v-for="relation in relations" class="skin-border-color relation-grid-item">
-        <span style="font-weight: bold; padding: 5px;" class="skin-color g3w-long-text">{{ relation.name }}</span>
+    <div
+      class="query-relations-content"
+      style="display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px; grid-row-gap: 5px;"
+    >
+      <div
+        v-for="relation in relations"
+        @click.stop="showRelation(relation)"
+        class="skin-border-color relation-grid-item">
+        <span style="font-weight: bold; padding: 5px;"
+         class="skin-color g3w-long-text">{{ relation.name }}
+        </span>
       </div>
     </div>
   </div>
@@ -33,10 +52,14 @@ export default {
     featureInfo() {
       let infoFeatures = [];
       let index = 0;
-      Object.entries(this.feature.attributes).forEach(([key, value]) => {
-        if (index > 2) return false;
-        if (value && _.isString(value) && value.indexOf('/') === -1 ) {
-          infoFeatures.push({
+      Object
+        .entries(this.feature.attributes)
+        .forEach(([key, value]) => {
+          if (index > 2) {
+            return false;
+          }
+          if (value && _.isString(value) && value.indexOf('/') === -1 ) {
+            infoFeatures.push({
             key: key,
             value: value
           });
