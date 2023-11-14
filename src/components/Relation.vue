@@ -95,11 +95,11 @@
             v-for="(row, index) in table.rows" :key="table.rows_fid[index]"
             :class="{'selected': table.rowFormStructure === row}"
           >
-            <td v-if="showTools">
+            <td v-if="showTools" style="display: flex; justify-content: space-between">
               <span
                 v-if="table.features[index].geometry"
                 @click.stop="zoomToGeometry(table.features[index].geometry)"
-                style="cursor: pointer"
+                style="cursor: pointer; padding: 3px;"
                 class="action-button row-form skin-color"
                 v-t-tooltip:right.create=""
                 :class="g3wtemplate.getFontClass('marker')">
@@ -107,7 +107,7 @@
               <span
                 v-if="table.formStructure"
                 @click.stop="showFormStructureRow($event, row)"
-                style="cursor: pointer"
+                style="cursor: pointer; padding: 3px;"
                 :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
                 class="action-button row-form skin-color"
                 v-t-tooltip:right.create="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
@@ -116,6 +116,7 @@
               <span
                 v-if="isEditable"
                 @click.stop="editFeature(index)"
+                style="cursor: pointer; padding: 3px;"
                 class="action-button row-form skin-color"
                 v-t-tooltip:right.create="'Edit'"
                 :class="g3wtemplate.getFontClass('pencil')">
