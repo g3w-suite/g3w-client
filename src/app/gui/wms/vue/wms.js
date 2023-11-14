@@ -174,6 +174,7 @@ class Service {
       response.wmsurl = url;
       this.showWmsLayersPanel(response);
     } catch(err) {
+      console.warn(err);
       status.error = true;
     }
 
@@ -264,6 +265,7 @@ class Service {
         this.showWmsLayersPanel(response);
       }
     } catch(err) {
+      console.warn(err);
       status.error = true;
     }
     return status;
@@ -384,6 +386,7 @@ class Service {
     try {
       await this.loadWMSLayerToMap(config);
     } catch(err) {
+      console.warn(err);
       GUI.getService('map').removeExternalLayer(name);
       this.deleteWms(name);
       setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'sidebar.wms.layer_add_error' }) });
