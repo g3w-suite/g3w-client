@@ -207,7 +207,7 @@ proto.createInputsFormFromFilter = async function({
         if (!dependance_strict) {
           this
             .getValuesFromField(input)
-            .then(_values => { values.splice(0, values.length).concat(this.valuesToKeysValues(_values)); })
+            .then(_values => { values.splice(0, values.length, ...this.valuesToKeysValues(_values)); })
             .catch((err)  => { console.warn(err); values.length = 0 })
             .finally(()   => { input.loading = false; resolve(); })
         }
