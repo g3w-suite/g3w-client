@@ -105,11 +105,12 @@ inherit(Project, G3WObject);
 const proto = Project.prototype;
 
 /**
- * @since 3.8.6
- * Return wms_getmap_format attribute from project setting from server
+ * @returns `wms_getmap_format` attribute from server (project settings) 
+ *
+ * @since 3.9.0
  */
 
-proto.getWmsGetmapFormat = function(){
+proto.getWmsGetmapFormat = function() {
   return this.state.wms_getmap_format;
 }
 
