@@ -52,6 +52,7 @@
 
     <!-- IN CASE OF ALREADY ADDED -->
     <li v-else-if="status.added">
+      &#x2139;&#xFE0F;
       <div
         class="g3w-add-wms-url-message g3w-wmsurl-already-added"
         v-t="'sidebar.wms.url_already_added'">
@@ -148,6 +149,7 @@
         }
       }
     },
+
     computed: {
       /**
        *
@@ -167,6 +169,7 @@
         )
       }
     },
+
     methods: {
       /**
        *
@@ -174,10 +177,7 @@
        */
       async addwmsurl() {
         this.loading = true;
-        const {error, added} = await this.$options.service.addNewUrl({
-          url: this.url,
-          id: this.id
-        });
+        const { error, added } = await this.$options.service.addNewUrl({ url: this.url, id: this.id });
         this.status.error = error;
         this.status.added = added;
         this.loading = false;
@@ -205,7 +205,8 @@
           console.log(err)
         }
       }
-    }
+    },
+
   }
 </script>
 
@@ -214,11 +215,14 @@
     font-weight: bold;
     color: #000000;
   }
-  .g3w-wmsurl-error{
+  .g3w-wmsurl-error {
     background-color: red;
   }
   .g3w-wmsurl-already-added {
-    background-color: orange;
+    /* background-color: orange; */
+    color: inherit;
+    font-weight: normal;
+    display: inline-block;
   }
   .wms_url_input_content{
     margin-bottom: 5px;
