@@ -1234,6 +1234,8 @@ class QueryResultsService extends G3WObject {
       Layer.SourceTypes.WMS,
       Layer.SourceTypes.WCS,
       Layer.SourceTypes.WMST,
+      /** @since 3.9.0 */
+      Layer.SourceTypes.POSTGRESRASTER,
     ];
     return featureAttributesNames.map(featureAttr => ({
       name: featureAttr,
