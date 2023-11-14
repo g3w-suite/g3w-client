@@ -76,7 +76,7 @@ function Layer(config={}, options={}) {
 
     /**
      * Store feature count url to get features count of a layer
-     * 
+     *
      * @since 3.8.0
      */
     this.config.urls.featurecount = project.getUrl('featurecount');
@@ -150,7 +150,7 @@ function Layer(config={}, options={}) {
 
     /**
      * @type { Array<{{ id: string, name: string }}> } array of saved filters
-     * 
+     *
      * @since 3.9.0
      */
     filters: config.filters || [],
@@ -240,7 +240,7 @@ proto.getProxyData = function(type) {
 
 /**
  * Set proxy data
- * 
+ *
  * @param type
  * @param data
  */
@@ -250,7 +250,7 @@ proto.setProxyData= function(type, data = {}) {
 
 /**
  * Clear proxy data
- * 
+ *
  * @param type
  */
 proto.clearProxyData = function(type) {
@@ -259,10 +259,10 @@ proto.clearProxyData = function(type) {
 
 /**
  * Get a proxy request
- * 
+ *
  * @param type
  * @param proxyParams
- * 
+ *
  * @returns {Promise<*>}
  */
 proto.getDataProxyFromServer = async function(type = 'wms', proxyParams = {}) {
@@ -280,10 +280,10 @@ proto.getDataProxyFromServer = async function(type = 'wms', proxyParams = {}) {
 
 /**
  * @TODO Add description
- * 
+ *
  * @param type
  * @param changes
- * 
+ *
  * @returns {Promise<*>}
  */
 proto.changeProxyDataAndReloadFromServer = function(type = 'wms', changes = {}) {
@@ -297,7 +297,7 @@ proto.changeProxyDataAndReloadFromServer = function(type = 'wms', changes = {}) 
 
 /**
  * [EDITING PLUGIN] Check if layer is in editing
- * 
+ *
  * @returns { boolean }
  */
 proto.isInEditing = function() {
@@ -306,7 +306,7 @@ proto.isInEditing = function() {
 
 /**
  * [EDITING PLUGIN] Set editing state
- * 
+ *
  * @param {boolean} bool
  */
 proto.setInEditing = function(bool=false) {
@@ -315,7 +315,7 @@ proto.setInEditing = function(bool=false) {
 
 /**
  * @TODO Add description here
- * 
+ *
  * @returns {*}
  */
 proto.getSearchParams = function() {
@@ -324,7 +324,7 @@ proto.getSearchParams = function() {
 
 /**
  * Return search_endpoint
- * 
+ *
  * @returns {*}
  */
 proto.getSearchEndPoint = function() {
@@ -333,7 +333,7 @@ proto.getSearchEndPoint = function() {
 
 /**
  * @TODO Add description
- * 
+ *
  * @param pageLength
  */
 proto.setAttributeTablePageLength = function(pageLength) {
@@ -342,7 +342,7 @@ proto.setAttributeTablePageLength = function(pageLength) {
 
 /**
  * @TODO add description
- * 
+ *
  * @returns {null}
  */
 proto.getAttributeTablePageLength = function() {
@@ -379,7 +379,7 @@ proto.isGeoLayer = function() {
 
 /**
  * @TODO Add description
- * 
+ *
  * @param { Object } opts
  * @param opts.page
  * @param opts.page_size
@@ -390,7 +390,7 @@ proto.isGeoLayer = function() {
  * @param opts.custom_params
  * @param opts.field
  * @param opts.in_bbox
- * 
+ *
  * @returns {*}
  */
 proto.getDataTable = function({
@@ -439,7 +439,7 @@ proto.getDataTable = function({
 
 /**
  * Search layer feature by fids
- * 
+ *
  * @param fids formatter
  */
 proto.getFeatureByFids = async function({
@@ -501,7 +501,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
               ordering:  options.ordering,
               unique:    options.unique,
               raw:       undefined !== options.raw       ? options.raw       : false,
-              suggest:   undefined !== options.suggest   ? options.suggest   : {},
+              suggest:   options.suggest,
               /** @since 3.9.0 */
               formatter: undefined !== options.formatter ? options.formatter : 1,
             })
@@ -523,18 +523,20 @@ proto.searchFeatures = function(options = {}, params = {}) {
  * @param { 0 | 1 }     opts.formatter
  * @param { Array }     opts.field     - Array of object with type of suggest (see above)
  * @param opts.unique
+ * @param opts.fformatter
  * @param opts.queryUrl
  * @param opts.ordering
 
  */
 proto.getFilterData = async function({
   raw       = false,
-  suggest   = {},
-  formatter = 1,
+  suggest,
   field,
   unique,
+  fformatter, //@since v3.9
+  formatter = 1,
   queryUrl,
-  ordering
+  ordering,
 } = {}) {
   return await this
     .getProvider('data')
@@ -546,6 +548,7 @@ proto.getFilterData = async function({
       suggest,
       formatter,
       unique,
+      fformatter,
     });
 };
 
@@ -606,7 +609,7 @@ proto.getFields = function() {
  * Get field by name
  * 
  * @param fieldName
- * 
+ *
  * @returns {*}
  */
 proto.getFieldByName = function(fieldName) {
@@ -650,7 +653,7 @@ proto.getConfig = function() {
 
 /**
  * @param fields
- * 
+ *
  * @returns { Array } form structure to show on form editing
  */
 proto.getLayerEditingFormStructure = function(fields) {
@@ -659,7 +662,7 @@ proto.getLayerEditingFormStructure = function(fields) {
 
 /**
  * @TODO Add description
- * 
+ *
  * @returns {*|*[]}
  */
 proto.getFieldsOutOfFormStructure = function() {
@@ -674,7 +677,7 @@ proto.hasFormStructure = function() {
 };
 
 /**
- * @returns custom style (for future implementation) 
+ * @returns custom style (for future implementation)
  */
 proto.getCustomStyle = function() {
   return this.config.customstyle;
@@ -682,7 +685,7 @@ proto.getCustomStyle = function() {
 
 /**
  * Get state layer
- * 
+ *
  * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), tochighlightable: boolean, featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), metadata_querable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
  */
 proto.getState = function() {
@@ -705,7 +708,7 @@ proto.getEditingLayer = function() {
 
 /**
  * Set editing layer
- * 
+ *
  * @param editingLayer
  */
 proto.setEditingLayer = function(editingLayer) {
@@ -721,7 +724,7 @@ proto.isHidden = function() {
 
 /**
  * Set hidden
- * 
+ *
  * @param bool
  */
 proto.setHidden = function(bool=true) {
@@ -772,7 +775,7 @@ proto.getOrigName = function() {
 
 /**
  * Get Server type
- * 
+ *
  * @returns {*|string|{wmst: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, virtual: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, oracle: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, delimitedtext: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wfs: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider}, wcs: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, arcgismapserver: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, mdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, vectortile: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, "vector-tile": {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, gdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, ogr: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wms: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, postgres: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, mssql: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, spatialite: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}}}
  */
 proto.getServerType = function() {
@@ -790,7 +793,7 @@ proto.getType = function() {
 
 /**
  * Set Type
- * 
+ *
  * @param type
  */
 proto.setType = function(type) {
@@ -799,9 +802,9 @@ proto.setType = function(type) {
 
 /**
  * Check if layer is a type passed
- * 
+ *
  * @param type
- * 
+ *
  * @returns {boolean}
  */
 proto.isType = function(type) {
@@ -810,7 +813,7 @@ proto.isType = function(type) {
 
 /**
  * Set disabled
- * 
+ *
  * @param bool
  */
 proto.setDisabled = function(bool) {
@@ -833,7 +836,7 @@ proto.isVisible = function() {
 
 /**
  * Set visibility
- * 
+ *
  * @param bool
  */
 proto.setVisible = function(bool) {
@@ -858,7 +861,7 @@ proto.isQueryable = function({ onMap } = { onMap: false }) {
 
 /**
  * @TODO Add description
- * 
+ *
  * @returns {string|string|*}
  */
 proto.getOws = function() {
@@ -867,7 +870,7 @@ proto.getOws = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @returns {boolean}
  */
 proto.getTocHighlightable = function() {
@@ -876,7 +879,7 @@ proto.getTocHighlightable = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @param bool
  */
 proto.setTocHighlightable = function(bool=false) {
@@ -923,7 +926,7 @@ proto.isBaseLayer = function() {
 };
 
 /**
- * @param type get url by type (data, shp, csv, xls, editing, ...) 
+ * @param type get url by type (data, shp, csv, xls, editing, ...)
  */
 proto.getUrl = function(type) {
   return this.config.urls[type];
@@ -963,7 +966,7 @@ proto.getQueryUrl = function() {
 
 /**
  * Set query url
- * 
+ *
  * @param queryUrl
  */
 proto.setQueryUrl = function(queryUrl) {
@@ -979,7 +982,7 @@ proto.getQueryLayerName = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @returns {*}
  */
 proto.getQueryLayerOrigName = function() {
@@ -988,9 +991,9 @@ proto.getQueryLayerOrigName = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @param ogcService
- * 
+ *
  * @returns { default.watch.infoformat | * | string }
  */
 proto.getInfoFormat = function(ogcService) {
@@ -1006,7 +1009,7 @@ proto.getInfoFormat = function(ogcService) {
 
 /**
  * @TODO Description
- * 
+ *
  * @returns {(function(): *)|*|*[]}
  */
 proto.getInfoFormats = function() {
@@ -1015,7 +1018,7 @@ proto.getInfoFormats = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @returns {*}
  */
 proto.getInfoUrl = function() {
@@ -1024,7 +1027,7 @@ proto.getInfoUrl = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @param infoFormat
  */
 proto.setInfoFormat = function(infoFormat) {
@@ -1033,7 +1036,7 @@ proto.setInfoFormat = function(infoFormat) {
 
 /**
  * @TODO Description
- * 
+ *
  * @returns {*|{}}
  */
 proto.getAttributes = function() {
@@ -1042,7 +1045,7 @@ proto.getAttributes = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @param attribute
  * @param type
  * @param options
@@ -1059,9 +1062,9 @@ proto.changeAttribute = function(attribute, type, options) {
 
 /**
  * @TODO Description
- * 
+ *
  * @param name
- * 
+ *
  * @returns {*}
  */
 proto.getAttributeLabel = function(name) {
@@ -1071,9 +1074,9 @@ proto.getAttributeLabel = function(name) {
 
 /**
  * Return provider by type
- * 
+ *
  * @param type
- * 
+ *
  * @returns {*}
  */
 proto.getProvider = function(type) {
@@ -1082,7 +1085,7 @@ proto.getProvider = function(type) {
 
 /**
  * Return all providers
- * 
+ *
  * @returns {*|{filter: null, search: null, data: null, query: null, filtertoken: null}}
  */
 proto.getProviders = function() {
@@ -1091,7 +1094,7 @@ proto.getProviders = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @returns {*}
  */
 proto.getLayersStore = function() {
@@ -1100,7 +1103,7 @@ proto.getLayersStore = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @param layerstore
  */
 proto.setLayersStore = function(layerstore) {
@@ -1109,7 +1112,7 @@ proto.setLayersStore = function(layerstore) {
 
 /**
  * Return if it is possible to show table of attribute
- * 
+ *
  * @returns {boolean}
  */
 proto.canShowTable = function() {
@@ -1141,13 +1144,13 @@ proto.canShowTable = function() {
 
 /**
  * @TODO Description
- * 
+ *
  * @param { Object } field
  * @param field.name
  * @param field.type
  * @param field.options
  * @param field.reset
- * 
+ *
  * @returns {*}
  */
 proto.changeFieldType = function({
@@ -1176,13 +1179,13 @@ proto.changeFieldType = function({
 
 /**
  * @TODO Description
- * 
+ *
  * @param { Object } config
  * @param config.name
  * @param config.type
  * @param config.options
  * @param config.reset
- * 
+ *
  * @returns {*}
  */
 proto.changeConfigFieldType = function({
@@ -1196,7 +1199,7 @@ proto.changeConfigFieldType = function({
 
 /**
  * @TODO Description
- * 
+ *
  * @param name
  */
 proto.resetConfigField = function({name}) {
@@ -1254,14 +1257,14 @@ proto.getStyleFeatureCount = async function(style) {
 
 /**
  * [LAYER SELECTION]
- * 
+ *
  * Base on boolean value create a filter token from server
  * based on selection or delete current filtertoken
- * 
+ *
  * @param bool
- * 
+ *
  * @returns {Promise<void>}
- * 
+ *
  * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::createFilterToken() and deleteFilterToken(fid) instead
  */
 proto.activeFilterToken = deprecate(async function(bool) { await this[bool ? 'createFilterToken' : 'deleteFilterToken'](); }, '[G3W-CLIENT] Layer::activeFilterToken(bool) is deprecated');
@@ -1323,7 +1326,9 @@ Layer.SourceTypes = {
   "VECTOR-TILE": "vector-tile",
   VECTORTILE: "vectortile",
   ARCGISMAPSERVER: 'arcgismapserver',
-  GEOJSON: "geojson"
+  GEOJSON: "geojson",
+  /** @since 3.9.0 */
+  POSTGRESRASTER: 'postgresraster',
   /**
    * ADD TO PROVIDER FACTORY (@TODO or already done?)
    */
