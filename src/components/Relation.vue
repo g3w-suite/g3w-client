@@ -80,12 +80,16 @@
           <thead>
             <tr style="height: 0! important">
               <th
-                v-if="table.formStructure || isEditable"
-                :style="{minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`, padding: '0 !important' }">
-              </th>
+                v-if   = "table.formStructure || isEditable"
+                :style = "{
+                  minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`,
+                  padding:  '0 !important',
+                }"
+              ></th>
               <th v-for="column in table.columns">{{ column }}</th>
             </tr>
           </thead>
+
           <tbody>
           <tr
             v-for="(row, index) in table.rows" :key="table.rows_fid[index]"
@@ -117,26 +121,29 @@
                 :class="g3wtemplate.getFontClass('pencil')">
               </span>
             </td>
-            <template v-if="table.formStructure && table.rowFormStructure === row">
-              <td
-                :colspan="table.columns.length"
-                class="row-wrap-tabs"
-              >
-                <tabs
-                  :layerid="table.layerId"
-                  :feature="table.features[index]"
-                  :fields="fields"
-                  :tabs="table.formStructure"/>
-              </td>
-            </template>
+
+            <td
+              v-if     = "table.formStructure && table.rowFormStructure === row"
+              :colspan = "table.columns.length"
+              class    = "row-wrap-tabs"
+            >
+              <tabs
+                :layerid = "table.layerId"
+                :feature = "table.features[index]"
+                :fields  = "fields"
+                :tabs    = "table.formStructure"
+              />
+            </td>
             <template v-else>
-              <td v-for="value in row">
-                <field :state="{value:value}"/>
-              </td>
+              <td v-for="value in row"><field :state="{value:value}"/></td>
             </template>
+
           </tr>
+
           </tbody>
+
         </table>
+
       </div>
       <g3w-resize
         :show="chart"
@@ -151,24 +158,27 @@
         ref="chartcontent">
       </div>
     </div>
+
     <div v-else
-      class="dataTables_scrollBody"
-      style="font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;">
+      class = "dataTables_scrollBody"
+      style = "font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;"
+    >
       <span v-t="'sdk.relations.no_relations_found'"></span>
     </div>
+
   </div>
+
 </template>
 
 <script>
-import { G3W_FID } from 'app/constant';
-import Field from 'components/FieldG3W.vue';
-import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import GUI from 'services/gui';
+import { G3W_FID }                  from 'app/constant';
+import Field                        from 'components/FieldG3W.vue';
+import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
+import CatalogLayersStoresRegistry  from 'store/catalog-layers';
+import GUI                          from 'services/gui';
 import { fieldsMixin, resizeMixin } from 'mixins';
-import { RelationEventBus as VM } from 'app/eventbus';
-
-const { throttle } = require('utils');
+import { RelationEventBus as VM }   from 'app/eventbus';
+import { throttle }                 from 'utils';
 
 let SIDEBARWIDTH;
 
@@ -178,20 +188,22 @@ export default {
   name: 'relation',
 
   props: {
-    table: {},
-    feature: {
-      default: null
-    },
-    relation: {},
-    previousview: {},
+    table:           {},
+    feature:         { default: null },
+    relation:        {},
+    previousview:    {},
     showChartButton: {},
-    cardinality:{},
+    cardinality:     {},
   },
+
   inject: ['relationnoback'],
+
   mixins: [fieldsMixin, resizeMixin],
+
   components: {
-    Field
+    Field,
   },
+
   data() {
     return {
       fields: null,
@@ -201,22 +213,26 @@ export default {
       downloadLayer: {
         state: null,
         config: {
-          downloads:[]
-        }
-      }
-    }
+          downloads: [],
+        },
+      },
+    };
   },
+
   computed: {
     showTools() {
       return this.isEditable || this.table.formStructure || this.isGeoLayer;
     },
     showrelationslist() {
-      return this.previousview === 'relations' && !this.relationnoback;
+      return 'relations' === this.previousview  && !this.relationnoback;
     },
+
     one() {
-      return this.relation.type === 'ONE';
-    }
+      return 'ONE' === this.relation.type;
+    },
+
   },
+
   methods: {
    /**
     * @since v3.9
@@ -231,6 +247,9 @@ export default {
           });
       }
     },
+    /**
+    * @returns { Promise<void> }
+    */
     async createTable() {
       const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
       this.isEditable = layer.isEditable() && !layer.isInEditing();
@@ -266,7 +285,6 @@ export default {
       VM.$on('reload', () => {
         this.reloadLayout();
       });
-
       this.showChart = throttle(async () => {
         this.chart = !this.chart;
         await this.$nextTick();
@@ -298,6 +316,10 @@ export default {
       //In case of pop child relation need to resize
       GUI.on('pop-content', this.resize);
     },
+
+    /**
+     * @returns { Promise<void> }
+     */
     async resize() {
       // in case of waiting table
       if (this.$refs.query_relation && this.$refs.query_relation.parentNode.style.display !== 'none') {
@@ -320,10 +342,21 @@ export default {
         this.reloadLayout();
       }
     },
+
+    /**
+     * @param type
+     */
     saveRelation(type) {
       this.$emit('save-relation', type);
       this.downloadButton.toggled = false;
     },
+
+    /**
+     * @param event
+     * @param row
+     *
+     * @returns { Promise<void> }
+     */
     async showFormStructureRow(event, row) {
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
       this.fields = this.getRowFields(row);
@@ -331,6 +364,10 @@ export default {
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
     },
+
+    /**
+     * @param index
+     */
     editFeature(index) {
       const queryResultsService = GUI.getService('queryresults');
       queryResultsService.editFeature({
@@ -341,8 +378,14 @@ export default {
         feature: this.table.features[index]
       });
     },
+
+    /**
+     * @param row
+     *
+     * @returns {*}
+     */
     getRowFields(row) {
-      return this.table.fields.map((field, index) => {
+      return this.table.fields.map((field, index)=> {
         field.value = row[index];
         field.query = true;
         field.input = {
@@ -351,55 +394,94 @@ export default {
         return field;
       });
     },
+
+    /**
+     * @FIXME add description
+     */
     reloadLayout() {
       this.relationDataTable && this.relationDataTable.columns.adjust();
     },
+
+    /**
+     * @FIXME add description
+     */
     back() {
       this.$parent.setRelationsList();
     },
+
+    /**
+     * @param type
+     * @param value
+     *
+     * @returns { boolean }
+     */
     fieldIs(type, value) {
       const fieldType = this.getFieldType(value);
       return fieldType === type;
     },
-    is(type,value) {
+
+    /**
+     * @param type
+     * @param value
+     *
+     * @returns { boolean }
+     */
+    is(type, value) {
       return this.fieldIs(type, value);
     },
+
+    /**
+     * @param evt
+     */
     moveFnc(evt) {
-      const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
-      const size = evt.pageX+2 - sidebarHeaderSize;
+      const sidebarHeaderSize             =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
+      const size                          = evt.pageX+2 - sidebarHeaderSize;
       this.$refs.tablecontent.style.width = `${size}px`;
       this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
-    }
+    },
+
   },
+
   watch: {
-    // in case of show relation directly
+
+    /**
+     * in case of show relation directly
+     */
     table: {
       immediate: true,
       handler(table) {
         table && table.rows.length && this.createTable();
       }
     },
+
     async chart() {
       await this.$nextTick();
       this.resize();
     },
+
     async headercomponent() {
       await this.$nextTick();
       this.resize();
-    }
+    },
+
   },
+
   beforeCreate() {
     this.delayType = 'debounce';
   },
+
   async beforeDestroy() {
-    if (this.relationDataTable) {
-      this.relationDataTable.destroy();
-      this.relationDataTable = null;
-      this.chartContainer && this.$emit('hide-chart', this.chartContainer);
-      this.chartContainer = null;
-      this.tableHeaderHeight = null;
-      GUI.off('pop-content', this.resize);
+    // skip when ..
+    if (!this.relationDataTable) {
+      return;
     }
-  }
+    this.relationDataTable.destroy();
+    this.relationDataTable = null;
+    this.chartContainer && this.$emit('hide-chart', this.chartContainer);
+    this.chartContainer = null;
+    this.tableHeaderHeight = null;
+    GUI.off('pop-content', this.resize);
+  },
+
 };
 </script>
