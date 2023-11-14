@@ -87,7 +87,7 @@ proto._makeOlLayer = function(withLayers) {
       projection:      this.config.projection,
       iframe_internal: this.iframe_internal,
       layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
-      /** @since 3.7.1 */
+      /** @since 3.7.11 */
       format:          this.config.format || ProjectsRegistry.getCurrentProject().getWmsGetmapFormat(),
     },
     this.extraParams,
