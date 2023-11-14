@@ -145,8 +145,8 @@
           <!-- WMS URL -->
           <div
             style = "font-size: 0.7em; "
-            class = "g3w-long-text" :title="url">{{url}}
-          </div>
+            class = "g3w-long-text" :title="url"
+          >{{url}}</div>
 
         </div>
 
