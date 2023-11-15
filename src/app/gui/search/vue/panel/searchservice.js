@@ -736,8 +736,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                 const data = [...uniqueValues];
                 values = values.filter(({key}) => data.indexOf(key) !== -1);
                 values.forEach(value => subscribe.options.values.push(value));
-              }
-              else if (widget === 'valuerelation') {
+              } else if (widget === 'valuerelation') {
                 parentData.forEach(feature => {
                   const value = feature.get(attribute);
                   value && uniqueValues.add(value);
@@ -746,7 +745,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                   const filter = createSingleFieldParameter({
                     layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
                     search_endpoint: this.getSearchEndPoint(),
-                    field: subscribe.options.key,
+                    field: subscribe.options.value, //v3.8.x has subscribe.options.key
                     value: [...uniqueValues]
                   });
                   try {
@@ -754,16 +753,16 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                     values.forEach(value =>  subscribe.options.values.push(value));
                   } catch(err) {console.log(err)}
                 }
-                }
-              else {
+              } else {
                 parentData.forEach(feature => {
                   const value = feature.get(attribute);
                   value && uniqueValues.add(value);
                 });
                 this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
               }
-              if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
-              else {
+              if (isRoot) {
+                this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              } else {
                 const dependenceValue = this.getDependanceCurrentValue(field);
                 this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
               }
@@ -965,7 +964,7 @@ async function parse_search_1n(data, options) {
     });
 
   }
-
+  console.log(data)
   return data;
 }
 
