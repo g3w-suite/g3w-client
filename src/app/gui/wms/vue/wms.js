@@ -230,11 +230,11 @@ class Service {
     }
 
     // check if wms layer is already added (by name)
-    return undefined !== data.wms[url].find(({ layers: addedLayers }) => {
-      if (addedLayers.length === layers.length) {
-        return layers.reduce((totLen, name) => totLen + (-1 !== addedLayers.indexOf(name) ? 1 : 0), 0) === layers.length;
-      }
-    });
+    return data.wms[url].some(
+      ({ layers: addedLayers }) => addedLayers.length === layers.length
+        ? layers.every((name) => addedLayers.includes(name))
+        : undefined
+    );
   }
 
   /**
