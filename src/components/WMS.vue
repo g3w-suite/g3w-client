@@ -66,7 +66,7 @@
 
     <!-- ERROR NOTICE: "WMS LAYER ALREADY ADDED" -->
     <li v-else-if="status.added">
-      &#x2139;&#xFE0F;
+      &#x26A0;&#xFE0F;
       <div
         class = "g3w-add-wms-url-message g3w-wmsurl-already-added"
         v-t   = "'sidebar.wms.url_already_added'">
