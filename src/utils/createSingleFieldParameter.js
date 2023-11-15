@@ -22,8 +22,7 @@ export function createSingleFieldParameter({
   logicop         = 'OR',
   search_endpoint = 'api',
 }) {
-
-  /** @TODO add description */
+  /** Check if search_endpoint is api and value is an array */
   if ('api' === search_endpoint && Array.isArray(value)) {
     let filter = '';
     const valueLenght = value.length;
@@ -33,10 +32,12 @@ export function createSingleFieldParameter({
     return filter
   }
 
-  /** @TODO add description */
+  /** Case search_endpoint is api and value is single value*/
   if('api' === search_endpoint ) {
-    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop ? `|${logicop}` : ''}`;
+    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}`;
   }
+
+  //in case of search_endpoint equal to ows
 
   // store filter string 
   let filter = '';
