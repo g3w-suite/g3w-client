@@ -105,6 +105,16 @@ inherit(Project, G3WObject);
 const proto = Project.prototype;
 
 /**
+ * @returns `wms_getmap_format` attribute from server (project settings) 
+ *
+ * @since 3.9.0
+ */
+
+proto.getWmsGetmapFormat = function() {
+  return this.state.wms_getmap_format;
+}
+
+/**
  * Get search end point value (ows or api)
  */
 proto.getSearchEndPoint = function() {
