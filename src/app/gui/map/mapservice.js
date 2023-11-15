@@ -1480,7 +1480,11 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
 
   const buttonControl = $(control.element).find('button');
 
-  buttonControl.tooltip({ placement: 'bottom', trigger: GUI.isMobile() ? 'click': 'hover' });
+  buttonControl.tooltip({
+    placement: 'bottom',
+    container: 'body',
+    trigger: GUI.isMobile() ? 'click': 'hover'
+  });
 
   // in case of mobile hide tooltip after click
   if (GUI.isMobile()) {

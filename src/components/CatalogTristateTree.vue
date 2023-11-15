@@ -153,6 +153,7 @@
           class                        = "action-button skin-tooltip-left selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
+          data-container="body"
           :class                       = "g3wtemplate.getFontClass('clear')"
           @click.caputure.prevent.stop = "clearSelection"
           v-t-tooltip.create           = "'layer_selection_filter.tools.clear'"
@@ -164,6 +165,7 @@
           class                        = "action-button skin-tooltip-left selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
+          data-container="body"
           :class                       = "[
             g3wtemplate.getFontClass('filter'),
             layerstree.filter.active  ? 'active' : '',
@@ -381,7 +383,7 @@ export default {
 
     /**
      * Remove current active filter
-     * 
+     *
      * @since 3.9.0
      */
     async removeCurrentFilter() {
@@ -502,7 +504,7 @@ export default {
 
     /**
      * Save layer filter
-     * 
+     *
      * @since 3.9.0
      */
     saveFilter(layerstree) {
