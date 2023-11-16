@@ -568,13 +568,6 @@ export default {
   .query-relation.mobile > .header > .g3w-long-text {
     font-size: 1em;
   }
-  .query-relation.mobile #relationtable_filter.dataTables_filter {
-    display: flex !important;
-    justify-content: flex-end !important;
-  }
-  .query-relation.mobile .relations-download {
-    display: flex;
-  }
   .relations-table-tools {
     font-size: 1.1em;
     margin-bottom: 3px
