@@ -1937,7 +1937,7 @@ proto._setUpDefaultLayers = function() {
 proto.moveDefaultLayersOnTop = function(zindex) {
   this.setZIndexLayer({
     layer: this.defaultsLayers.highlightLayer,
-    zindex: zindex+1
+    zindex: zindex + 1
   });
   this.setZIndexLayer({
     layer: this.defaultsLayers.selectionLayer,
@@ -1976,6 +1976,10 @@ proto.removeAllLayers = function() {
 //set ad increase layerIndex
 proto.setLayerZIndex = function({layer, zindex=this.layersCount+=1}) {
   layer.setZIndex(zindex);
+  this.emit('set-layer-zindex', {
+    layer,
+    zindex
+  });
   return zindex;
 };
 
