@@ -717,6 +717,13 @@ export default {
     /** @TODO keep layer on top when adding an external layer ? (wms, vector, ...) */
     map.addLayer(LAYER);
 
+    //register change z-index layer position when new layer is added (ex wms or vector)
+    mapService.on('set-layer-zindex', ({layer, zindex}) => {
+      if (layer.get('id') !== LAYER.get('id')) {
+        LAYER.setZIndex(zindex+1);
+      }
+    })
+
     // register vector layer for query results
     queryresults.registerVectorLayer(LAYER);
 
