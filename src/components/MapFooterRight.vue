@@ -91,20 +91,20 @@
       }
     },
     computed: {
-      showmapunits(){
+      showmapunits() {
         return this.service.state.mapunits.length > 1;
       }
     },
     methods: {
-      createCopyMapExtentUrl(){
+      createCopyMapExtentUrl() {
         this.service.createCopyMapExtentUrl();
       },
-      switchMapsCoordinateTo4326(){
+      switchMapsCoordinateTo4326() {
         this.mouse.epsg_4326 = !this.mouse.epsg_4326;
       },
     },
     watch: {
-      'mapunit'(unit){
+      'mapunit'(unit) {
         ApplicationState.map.unit = unit;
         this.service.changeScaleLineUnit(unit);
       }
