@@ -6,114 +6,115 @@
 <template>
   <div v-disabled="loading">
 
+    <!-- LOADING INDICATOR -->
     <bar-loader :loading="loading" />
 
     <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
 
     <helpdiv
-      v-if="abstract"
-      :message="abstract" />
+      v-if     = "abstract"
+      :message = "abstract"
+    />
 
     <!-- LAYERS NAME   -->
     <label
-      for="g3w-wms-layers"
-      v-t="'sidebar.wms.panel.label.layers'">
+      for = "g3w-wms-layers"
+      v-t = "'sidebar.wms.panel.label.layers'">
     </label>
-
     <select
-      id="g3w-wms-layers"
-      multiple="multiple"
-      clear="true"
-      v-select2="'selectedlayers'"
+      id        = "g3w-wms-layers"
+      multiple  = "multiple"
+      clear     = "true"
+      v-select2 = "'selectedlayers'"
     >
       <option
-        v-for="layer in layers"
-        :key="layer.name"
-        :value="layer.name"
-        >{{layer.title}}
-      </option>
+        v-for   = "layer in layers"
+        :key    = "layer.name"
+        :value  = "layer.name"
+      >{{ layer.title }}</option>
     </select>
 
     <!-- EPSG PROJECTIONS   -->
-
     <label
-      for="g3w-wms-projections"
-      v-t="'sidebar.wms.panel.label.projections'">
+      for = "g3w-wms-projections"
+      v-t = "'sidebar.wms.panel.label.projections'">
     </label>
-
     <select
-      id="g3w-wms-projections"
-      v-select2="'epsg'"
+      id        = "g3w-wms-projections"
+      v-select2 = "'epsg'"
     >
       <option
-        v-for="projection in projections"
-        :key="projection"
-        :value="projection">{{projection}}
-      </option>
+        v-for   = "projection in projections"
+        :key    = "projection"
+        :value  = "projection"
+      >{{ projection }}</option>
     </select>
 
     <!-- NAME OF LAYER TO SAVE -->
     <label
-      for="g3w-wms-layer-name"
-      v-t="'sidebar.wms.panel.label.name'">
+      for = "g3w-wms-layer-name"
+      v-t = "'sidebar.wms.panel.label.name'">
     </label>
-
     <input
-      id="g3w-wms-layer-name"
-      class="form-control"
-      v-model="name"
+      id      = "g3w-wms-layer-name"
+      class   = "form-control"
+      v-model = "name"
     >
 
     <div
-      v-if="added"
-      class="g3w-wms-external-panel-layer-added-message"
-      v-t="'sidebar.wms.layer_id_already_added'">
+      v-if  = "added"
+      class = "g3w-wms-external-panel-layer-added-message"
+      v-t   = "'sidebar.wms.layer_id_already_added'">
     </div>
 
-    <!-- CHOOSE LAYER POSITION ON TOP ON BOTTOM-->
+    <!-- CHOOSE LAYER POSITION (TOP | BOTTOM) -->
     <layerspositions
-      @layer-position-change="position=$event"
-      :position="position" />
+      @layer-position-change = "position=$event"
+      :position              = "position"
+    />
 
     <button
-      @click.stop="addWMSlayer"
-      v-disabled="0 === selectedlayers.length"
-      class="btn wms-add-layer-button sidebar-button skin-button"
+      @click.stop = "addWMSlayer"
+      v-disabled  = "0 === selectedlayers.length"
+      class       = "btn wms-add-layer-button sidebar-button skin-button"
     >
       <i
-        style="font-weight: bold;"
-        :class="g3wtemplate.getFontClass('plus-square')" >
+        style  = "font-weight: bold;"
+        :class = "g3wtemplate.getFontClass('plus-square')" >
       </i>
     </button>
 
-</div>
+  </div>
 </template>
 
 <script>
 const Projections = require('g3w-ol/projection/projections');
 
 export default {
+
   name: "wmpspanel",
+
   data() {
     return {
-      loading:        false,      //loading reactive status
-      position:       undefined,  //layer position on map
-      name:           undefined,  //name of saved layer
-      title:          null,       //title of layer
-      abstract:       null,       //abstract
-      map_formats:    [],         //map formats
+      loading:        false,      // loading reactive status
+      position:       undefined,  // layer position on map
+      name:           undefined,  // name of saved layer
+      title:          null,       // title of layer
+      abstract:       null,       // abstract
+      map_formats:    [],         // map formats
       info_formats:   [],         // info formats
-      methods:        [],         //@since v3.9
-      layers:         [],         //Array of layers
-      selectedlayers: [],         //Selected layers
-      projections:    [],         //projections
-      epsg:           null,       //choose epsg project
-      added:          false,      //added layer (Boolean)
-    }
+      methods:        [],         // @since 3.9.0
+      layers:         [],         // Array of layers
+      selectedlayers: [],         // Selected layers
+      projections:    [],         // projections
+      epsg:           null,       // choose epsg project
+      added:          false,      // added layer (Boolean)
+    };
   },
+
   methods: {
+
     /**
-     *
      * @returns {Promise<void>}
      */
     async addWMSlayer() {
@@ -124,24 +125,29 @@ export default {
         epsg:     this.epsg,
         position: this.position,
       };
+
       this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
+
       if (this.added) {
         console.warn('WMS Layer already added');
         return;
       }
+
+      this.loading = true;
+
       try {
-        this.loading = true;
         await this.$options.service.addWMSlayer(config);
       } catch(err) {
         console.warn('unexpected error while adding WMS Layer');
-      } finally {
-        this.loading = false;
-      }      
+      }
+
+      this.loading = false;
+
       this.clear();
     },
 
     /**
-     *
+     * @FIXME add description
      */
     clear() {
       this.selectedlayers = [];
@@ -150,21 +156,20 @@ export default {
 
     /**
      * Get layers that has current selected epsg projection
+     * 
      * @since 3.8.1
      */
     getLayersByEpsg(epsg) {
       return (null === epsg)
         ? this.$options.config.layers
-        : this.layers
-          .filter(({name}) => this.layerProjections[name].crss.indexOf(epsg) !== -1);
+        : this.layers.filter(({ name }) => -1 !== this.layerProjections[name].crss.indexOf(epsg));
     },
 
     /**
      * @since 3.8.1
      */
     getProjectionsByName(name) {
-      return this.projections
-        .filter((projection) => -1 !== this.layerProjections[name].crss.indexOf(projection));
+      return this.projections.filter((projection) => -1 !== this.layerProjections[name].crss.indexOf(projection));
     },
 
   },
@@ -186,8 +191,7 @@ export default {
     },
 
     /**
-     *
-     * @returns {Promise<void>}
+     * @returns { Promise<void> }
      */
     async epsg() {
       await this.$nextTick();
@@ -201,9 +205,10 @@ export default {
       layers,
       title,
       abstract,
-      methods, //@since v3.9
+      methods, // @since 3.9.0
       wmsurl,
     } = this.$options.config;
+
     /**
      * URL of wms
      */
@@ -213,6 +218,7 @@ export default {
       console.warn(err);
       this.url = wmsurl;
     }
+
     /**
      * Title of wms
      */
@@ -229,14 +235,10 @@ export default {
     this.layerProjections = {};
 
     layers
-      .forEach(({name, crss, title }) => {
+      .forEach(({ name, crss, title }) => {
         this.layerProjections[name] = {
-          crss: crss.map(crs => {
-            /* try to check if projection */
-            Projections.get(crs);
-            return `EPSG:${crs.epsg}`;
-          }).sort(),
           title,
+          crss: crss.map(crs => { /* try to check if projection */ Projections.get(crs); return `EPSG:${crs.epsg}`; }).sort(),
         };
       });
 
@@ -244,6 +246,7 @@ export default {
      * Layers of wms
      */
     this.layers = layers;
+
   },
 
   beforeDestroy() {
