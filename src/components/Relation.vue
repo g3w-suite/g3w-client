@@ -122,16 +122,16 @@
               <span
                 v-if                     = "table.features[index].geometry"
                 @click.stop              = "zoomToGeometry(table.features[index].geometry)"
-                class                    ="action-button row-form skin-color"
+                class                    = "action-button row-form skin-color"
                 v-t-tooltip:right.create = "'Zoom to Geometry'"
                 :class                   = "g3wtemplate.getFontClass('marker')"
               ></span>
               <span
                 v-if                     = "table.formStructure"
                 @click.stop              = "showFormStructureRow($event, row)"
-                :current-tooltip         = "table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                :current-tooltip         = "`sdk.tooltips.relations.${table.rowFormStructure === row ? 'form_to_row' : 'row_to_form'}`"
                 class                    = "action-button row-form skin-color"
-                v-t-tooltip:right.create = "table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                v-t-tooltip:right.create = "`sdk.tooltips.relations.${table.rowFormStructure === row ? 'form_to_row' : 'row_to_form'}`"
                 :class                   = "g3wtemplate.getFontClass(table.rowFormStructure === row ? 'minus' : 'table')"
               ></span>
               <span
