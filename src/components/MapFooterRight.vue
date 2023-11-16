@@ -22,12 +22,12 @@
     </div>
 
     <div
-      v-if="!mouse.epsg_4326"
+      v-show="!mouse.epsg_4326"
       id="mouse-position-control">
     </div>
 
     <div
-      v-if="mouse.epsg_4326"
+      v-show="mouse.epsg_4326"
       id="mouse-position-control-epsg-4326">
     </div>
 
