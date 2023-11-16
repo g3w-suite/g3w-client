@@ -99,7 +99,7 @@
               <th
                 v-if   = "showTools"
                 :style = "{
-                  minWidth: `${((1*!!isGeolayer) + (1*!!table.formStructure) + (1*isEditable))*30}px`,
+                  minWidth: this.showTools * 30 + 'px',
                   padding:  '0 !important',
                 }"
               ></th>
@@ -247,11 +247,10 @@ export default {
   computed: {
 
     /**
-     *  Computed value to show zoom, edit or form struscture feature tool
-      * @returns {*|boolean}
+     * @returns { number } count of available tools (editing icon, form structure, zoom to feature, ...)
      */
     showTools() {
-      return this.isEditable || this.table.formStructure || this.isGeoLayer;
+      return [!!this.isEditable, !!this.table.formStructure, !!this.isGeoLayer].filter(Boolean).length;
     },
 
     showrelationslist() {
