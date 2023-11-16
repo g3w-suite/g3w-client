@@ -97,9 +97,9 @@
           <thead>
             <tr style="height: 0! important;">
               <th
-                v-if   = "table.formStructure || isEditable"
+                v-if   = "showTools"
                 :style = "{
-                  minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`,
+                  minWidth: `${((1*!!isGeolayer) + (1*!!table.formStructure) + (1*isEditable))*30}px`,
                   padding:  '0 !important',
                 }"
               ></th>
@@ -246,6 +246,10 @@ export default {
 
   computed: {
 
+    /**
+     *  Computed value to show zoom, edit or form struscture feature tool
+      * @returns {*|boolean}
+     */
     showTools() {
       return this.isEditable || this.table.formStructure || this.isGeoLayer;
     },
