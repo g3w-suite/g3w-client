@@ -19,7 +19,7 @@
 <script>
   import { MAP_SETTINGS } from 'app/constant';
 
-  const { getUniqueDomId } = require('core/utils/utils');
+  const { getUniqueDomId } = require('utils');
 
   export default {
     name: "layerspositions",

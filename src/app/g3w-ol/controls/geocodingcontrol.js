@@ -5,7 +5,7 @@ import MapControlGeocoding from 'components/MapControlGeocoding';
 import MapControlNominatimResults from 'components/MapControlNominatimResults';
 
 const Control = require('./control');
-const { toRawType, XHR } = require('core/utils/utils');
+const { toRawType, XHR } = require('utils');
 const Projections = require('g3w-ol/projection/projections');
 /**
  * Classes for all element of dom control
@@ -122,7 +122,7 @@ const utils = {
    * @return (find_all) {Element} : {Array}
    */
   find(selector, context, find_all) {
-    if(context === void 0) context = window.document;
+    if(context === undefined) context = window.document;
     let simpleRe = /^(#?[\w-]+|\.[\w-.]+)$/,
       periodRe = /\./g,
       slice = Array.prototype.slice,

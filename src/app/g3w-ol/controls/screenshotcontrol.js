@@ -1,6 +1,6 @@
 import GUI from 'services/gui';
 
-const { sameOrigin } = require('core/utils/utils');
+const { sameOrigin } = require('utils');
 const OnClickControl = require('g3w-ol/controls/onclickcontrol');
 
 /**
@@ -23,18 +23,24 @@ function ScreenshotControl(options = {}) {
     tipLabel: "Screenshot",
     label: "\ue90f",
     toggled: false,
-    visible: false,
+    visible: true, // set initial to true
     layers: [],
     ...options
   };
 
   this.layers     = options.layers;
-  options.visible = this.checkVisible(this.layers);
 
   OnClickControl.call(this, options);
 
-  GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
-  GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+  //set visibility based on layers
+  this.setVisible(this.checkVisible(this.layers));
+
+  //only if is visible (no CORS issue) need to listen add/remove layer
+  if (this.isVisible()) {
+    //listen add/remove External Layer event to check visibility of the control
+    GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+    GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+  }
 }
 
 ol.inherits(ScreenshotControl, OnClickControl);
@@ -42,7 +48,11 @@ ol.inherits(ScreenshotControl, OnClickControl);
 const proto = ScreenshotControl.prototype;
 
 /**
- * @since 3.8.3 
+ * Method call when new layer is add to Project
+ * Example wms or vector layer
+ * 
+ * @since 3.8.3
+ *
  */
 proto._addLayer = function(layer) {
   this.layers.push(layer);
@@ -51,6 +61,8 @@ proto._addLayer = function(layer) {
 };
 
 /**
+ * Method call when a layer is removed from Project
+ * 
  * @since 3.8.3 
  */
 proto._removeLayer = function(layer) {
@@ -58,6 +70,11 @@ proto._removeLayer = function(layer) {
   this.change(this.layers);
 };
 
+/**
+ * Method call when layer is add/removed to/from project
+ * 
+ * @param layers
+ */
 proto.change = function(layers = []) {
   this.setVisible(this.checkVisible(layers));
 };
@@ -76,15 +93,43 @@ proto.change = function(layers = []) {
  * @returns {boolean}
  */
 proto.checkVisible = function(layers = []) {
-  return !layers.some(isCrossOrigin);
+  //need to be visible. If it was not visible an CORS issue was raise.
+  // Need to reload and remove layer
+  return this.isVisible() && !layers.some(isCrossOrigin);
 };
 
+/**
+ * Check if a layer has a Cross Origin source URI
+ * 
+ * @param layer
+ * 
+ * @returns {boolean} `true` whether the given layer could cause CORS issues (eg. while printing raster layers). 
+ */
 function isCrossOrigin(layer) {
-  if (isVectorLayer(layer) || (layer.getVisible && !layer.getVisible())) return;
-  const source_url = isImageLayer(layer)
-    ? layer.getSource().getUrl()
-    : layer.getConfig().source && layer.getConfig().source.url;
-  return source_url && !sameOrigin(source_url, location);
+  let source_url;
+
+  // skip levels that can't cause CORS issues
+  if (isHiddenLayer(layer) || isVectorLayer(layer)) {
+    return false;
+  }
+  
+  // check raster layers (OpenLayers)
+  if (isImageLayer(layer)) { 
+    source_url = layer.getSource().getUrl();
+    return source_url && !sameOrigin(source_url, location);
+  }
+
+  // check if layer has external property to true (Ex. core/layers/imagelayer.js instance)
+  if (isExternalImageLayer(layer)) { 
+    source_url = layer.getConfig().source.url;
+    return source_url && !sameOrigin(source_url, location);
+  }
+
+  return false;
+}
+
+function isHiddenLayer(layer) {
+  return layer.getVisible && !layer.getVisible();
 }
 
 function isVectorLayer(layer) {
@@ -93,6 +138,13 @@ function isVectorLayer(layer) {
 
 function isImageLayer(layer) {
   return (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image);
+}
+
+/**
+ * @see https://github.com/g3w-suite/g3w-client/issues/475
+ */
+function isExternalImageLayer(layer) {
+  return layer.getConfig().source && layer.getConfig().source.external;
 }
 
 module.exports = ScreenshotControl;

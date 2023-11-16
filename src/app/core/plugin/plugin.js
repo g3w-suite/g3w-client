@@ -3,7 +3,7 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 
-const { base, inherit, toRawType } = require('core/utils/utils');
+const { base, inherit, toRawType } = require('utils');
 const G3WObject = require('core/g3wobject');
 const ComponentsFactory = require('gui/component/componentsfactory');
 const { addI18nPlugin } = require('core/i18n/i18n.service');

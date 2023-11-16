@@ -1,6 +1,6 @@
 import * as vueComponentOptions from 'components/ProjectsMenu.vue';
 
-const { base, inherit, merge } = require('core/utils/utils');
+const { base, inherit, merge } = require('utils');
 const Component = require('gui/component/component');
 
 const InternalComponent = Vue.extend(vueComponentOptions);

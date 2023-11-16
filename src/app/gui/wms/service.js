@@ -5,7 +5,7 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 
-const { uniqueId } = require('core/utils/utils');
+const { uniqueId } = require('utils');
 
 function Service(options={}){
   const {wmsurls=[]} = options;

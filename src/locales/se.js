@@ -2,31 +2,33 @@ export default {
   translation: {
     error_page: {
       error: "Anslutningsfel",
-      at_moment: "För närvarande är inte möjligt visa karta",
+      at_moment: "För närvarande är det inte möjligt att visa kartan",
       f5: "Tryck på Ctrl+F5"
     },
     cookie_law: {
-      message: "This website uses cookies to ensure you get the best experience on our website.",
-      buttonText: "Got It!"
+      message: "Denna applikation använder cookies för att den ska fungera så bra som möjligt för dig.",
+      buttonText: "Jag accepterar"
     },
     default: "standard",
     sign_in:"Logga in",
     layer_selection_filter: {
       tools: {
-        filter: "Lägg till/Avlägsna Filtrera",
+        filter: "Aktivera/inaktivera filter",
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan"
+        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        savefilter: "Spara Filter",
+        filterName: "Filternamn",
       }
     },
     warning: {
-      not_supported_format: "Not supported format"
+      not_supported_format: "Formatet stöds inte"
     },
     layer_position: {
-      top: 'TOP',
-      bottom: 'BOTTOM',
-      message: "Position relative to layers on TOC"
+      top: 'Överst',
+      bottom: 'Underst',
+      message: "Position relativt till lager i lagerlistan"
     },
     sdk: {
       atlas: {
@@ -179,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Radvy",
-          row_to_form: "Tabellvy"
+          row_to_form: "Tabellvy",
+          zoomtogeometry: "Zooma till geometri",
         },
         copy_map_extent_url: 'Kopiera länk till karta',
         download_shapefile: "Ladda SHP-fil",
@@ -532,7 +535,8 @@ export default {
         show_metadata: "Metadata",
         styles: "Stilar",
         vector_color_menu: "Ställ in/ändra färg",
-        layer_opacity: "Opacitet"
+        layer_opacity: "Opacitet",
+        filters: "Filters",
       }
     },
     dataTable: {
