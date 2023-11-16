@@ -1,4 +1,4 @@
-const { base, inherit, uniqueId } = require('core/utils/utils');
+const { base, inherit, uniqueId } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // Interface for Layers

@@ -7,7 +7,7 @@ import ApplicationState from 'store/application-state';
 import { VIEWPORT as viewportConstraints } from 'app/constant';
 import GUI from 'services/gui';
 
-const { base, inherit, uniqueId } = require('core/utils/utils');
+const { base, inherit, uniqueId } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 const ViewportService = function() {

@@ -2,7 +2,7 @@
  * @TODO refactor stateful directives (eg. "v-t") in order to delete this file: "src/directives/utils.js"
  */
 
-const { uniqueId } = require('core/utils/utils');
+const { uniqueId } = require('utils');
 
 /**
  * Internal state

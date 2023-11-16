@@ -1,4 +1,5 @@
-import { VM, SPATIALMETHODS } from 'g3w-ol/constants';
+import { SPATIAL_METHODS } from 'app/constant';
+import { VM } from 'app/eventbus';
 import GUI from 'services/gui';
 import ControlsRegistry from 'store/map-controls'
 

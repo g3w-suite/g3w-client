@@ -13,11 +13,13 @@ export default {
     sign_in: "Logare",
     layer_selection_filter: {
       tools: {
-        filter: "Adăugare/Eliminare Filtrare",
+        filter: "Activați/Dezactivați filtrul",
         nofilter: "Eliminare Filtrare",
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
-        show_features_on_map: "Arată entitățile vizibile în cadrul hărții"
+        show_features_on_map: "Arată entitățile vizibile în cadrul hărții",
+        savefilter: "Salvează Filtrul",
+        filterName: "Nume Filtru",
       }
     },
     warning: {
@@ -179,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Vizualizare pe rânduri",
-          row_to_form: "Vizualizare formular"
+          row_to_form: "Vizualizare formular",
+          zoomtogeometry: "Măriți la geometrie",
         },
         copy_map_extent_url: 'Copiază linkul de vizualizare hartă',
         download_shapefile: "Descarcă Shapefile",
@@ -531,7 +534,8 @@ export default {
         show_metadata: "Metadate",
         styles: 'Stiluri',
         vector_color_menu:"Setează/Schimbă Culoare",
-        layer_opacity: "Opacitate"
+        layer_opacity: "Opacitate",
+        filters: "Filters",
       }
     },
     dataTable: {

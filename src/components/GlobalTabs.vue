@@ -51,11 +51,19 @@
 
 <script>
 
-  import TabService from 'core/expression/tabservice';
-  import Node from 'components/GlobalTabsNode.vue';
-  import GUI from 'services/gui';
+  import DataRouterService from 'services/data';
+  import Node              from 'components/GlobalTabsNode.vue';
+  import GUI               from 'services/gui';
 
-  const { getUniqueDomId, noop } = require ('core/utils/utils');
+  const {
+    getUniqueDomId,
+    noop
+  }                        = require ('utils');
+
+  const {
+    getFormDataExpressionRequestFromFeature,
+    convertFeatureToGEOJSON,
+  }                        = require('utils/geo');
 
   export default {
     name: "tabs",
@@ -114,14 +122,23 @@
       }
     },
     methods: {
+      /**
+       * ORIGINAL SOURCE: src/app/core/expression/tabservice.js@3.8.6
+       */
       async setVisibility(tab){
-        const visible = await TabService.getVisibility({
-          qgs_layer_id: this.layerid,
-          expression: tab.visibility_expression.expression,
-          feature: this.feature,
-          contenttype: this.contenttype
-        });
-        tab.visible =  visible;
+        tab.visible = DataRouterService
+          .getData(
+            'expression:expression_eval',
+              {
+              inputs: {
+                qgs_layer_id: this.layerid,
+                form_data:    ('editing' === this.contenttype ? convertFeatureToGEOJSON : getFormDataExpressionRequestFromFeature)(this.feature || {}),
+                expression:   tab.visibility_expression.expression,
+                formatter:    ('query' === this.contenttype ? 1 : 0),
+              },
+              outputs: false,
+            }
+          );
       },
       // method to set required tab for editing
       setEditingRequireTab(obj){

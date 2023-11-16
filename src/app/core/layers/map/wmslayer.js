@@ -1,6 +1,7 @@
 import ApplicationState from 'store/application-state';
+import ProjectsRegistry from 'store/projects';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const MapLayer = require('core/layers/map/maplayer');
 const RasterLayers = require('g3w-ol/layers/rasters');
 
@@ -87,7 +88,7 @@ proto._makeOlLayer = function(withLayers) {
       iframe_internal: this.iframe_internal,
       layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
       /** @since 3.7.11 */
-      format:          this.config.format
+      format:          this.config.format || ProjectsRegistry.getCurrentProject().getWmsGetmapFormat(),
     },
     this.extraParams,
     this._method
@@ -104,7 +105,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   //check disabled layers
   !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
-  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
+  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('utils/geo');
   if (visibleLayers.length > 0) {
     const CATEGORIES_LAYERS = {};
     const STYLES = [];

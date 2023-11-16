@@ -16,7 +16,7 @@
       :active="active"
       :legend="legend"
       :layers="visiblelayers"
-    ></layerslegend-items>
+    />
 
   </div>
 
@@ -59,11 +59,11 @@ export default {
       deep: true
     },
     'visiblelayers'(visibleLayers) {
-      this.$emit('showlegend', !!visibleLayers.length);
+      this.$emit('showlegend', visibleLayers.length > 0);
     }
   },
   created() {
-    this.$emit('showlegend', !!this.visiblelayers.length);
+    this.$emit('showlegend', this.visiblelayers.length > 0);
   }
 };
 </script>
