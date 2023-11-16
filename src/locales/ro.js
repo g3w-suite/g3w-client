@@ -181,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Vizualizare pe rânduri",
-          row_to_form: "Vizualizare formular"
+          row_to_form: "Vizualizare formular",
+          zoomtogeometry: "Măriți la geometrie",
         },
         copy_map_extent_url: 'Copiază linkul de vizualizare hartă',
         download_shapefile: "Descarcă Shapefile",

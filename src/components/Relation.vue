@@ -123,7 +123,7 @@
                 v-if                     = "table.features[index].geometry"
                 @click.stop              = "zoomToGeometry(table.features[index].geometry)"
                 class                    = "action-button row-form skin-color"
-                v-t-tooltip:right.create = "'Zoom to Geometry'"
+                v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
                 :class                   = "g3wtemplate.getFontClass('marker')"
               ></span>
               <span
