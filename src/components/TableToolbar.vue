@@ -13,6 +13,7 @@
       data-placement     = "right"
       v-disabled         = "disableMapTool"
       data-toggle        = "tooltip"
+      data-container     = "body"
       :class             = "[
         g3wtemplate.getFontClass('map'),
         tools.geolayer.active ? 'toggled' : '',
@@ -27,6 +28,7 @@
       class              = "skin-color action-button skin-tooltip-right"
       data-placement     = "right"
       data-toggle        = "tooltip"
+      data-container     = "body"
       :class             = "g3wtemplate.getFontClass('clear')"
       v-t-tooltip.create = "'layer_selection_filter.tools.clear'"
       @click.stop        = "clearAllSelection"
@@ -38,6 +40,7 @@
       class              = "skin-color action-button skin-tooltip-right"
       data-placement     = "right"
       data-toggle        = "tooltip"
+      data-container     = "body"
       :class             = "[
         g3wtemplate.getFontClass('invert'),
         tools.filter.active ? 'g3w-disabled': ''
@@ -52,6 +55,7 @@
       class              = "skin-color action-button skin-tooltip-right"
       data-placement     = "right"
       data-toggle        = "tooltip"
+      data-container     = "body"
       @click.stop        = "toggleFilterToken"
       :class             = "[
         g3wtemplate.getFontClass('filter'),

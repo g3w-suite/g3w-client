@@ -181,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Visualizza formato Riga",
-          row_to_form: "Visualizza formato Form"
+          row_to_form: "Visualizza formato Form",
+          zoomtogeometry: "Zoom sulla geometria",
         },
         zoom_to_features_extent: "Zoom sulle features",
         copy_map_extent_url: 'Copia map view link',
