@@ -554,7 +554,7 @@ class QueryResultsService extends G3WObject {
 
   /**
    * @FIXME add description
-   * 
+   *
    * @param opts.layer
    * @param opts.dynamicProperties
    */
@@ -573,7 +573,7 @@ class QueryResultsService extends G3WObject {
    *
    * @param opts.layer layer linked to action
    * @param opts.id    action id
-   * 
+   *
    * @returns undefined when no action is found
    */
   getActionLayerById({
@@ -810,7 +810,7 @@ class QueryResultsService extends G3WObject {
       interaction.interaction
         .on('picked', async ({ coordinate: coordinates }) => {
           if (external_layer) {
-            // call setQueryResponse setters method directly in case of external layer 
+            // call setQueryResponse setters method directly in case of external layer
             this.setQueryResponse(
               {
                 data:  [ this.getVectorLayerFeaturesFromQueryRequest(this._vectorLayers.find(v => layer.id === v.get('id')), { coordinates }) ],
@@ -885,7 +885,7 @@ class QueryResultsService extends G3WObject {
 
   /**
    * Clear layer actions (if present)
-   * 
+   *
    * @since 3.9.0
    */
   _clearActions() {
@@ -990,7 +990,7 @@ class QueryResultsService extends G3WObject {
       Layer.SourceTypes.WCS,
       Layer.SourceTypes.WMST
     ].indexOf(sourceType);
-    
+
     const name = is_string && layer.split('_');
 
     const id = (is_layer ? layer.getId() : undefined) ||
@@ -1048,7 +1048,7 @@ class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @since 3.9.0 
+   * @since 3.9.0
    */
   _hasLayerObjImageField(features, rawdata, attributes) {
     /** @FIXME add description */
@@ -1122,10 +1122,10 @@ class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   _parseLayerObjAttributes(layer, features, sourceType) {
- 
+
     let layerAttrs;
 
-    if (layer instanceof Layer && 'ows' !== this.state.type) { 
+    if (layer instanceof Layer && 'ows' !== this.state.type) {
       layerAttrs = layer.getAttributes();
     }
 
@@ -1402,7 +1402,7 @@ class QueryResultsService extends G3WObject {
 
   /**
    * @FIXME add description
-   * 
+   *
    * @param container DOM element
    */
   hideChart(container) {
@@ -1703,7 +1703,7 @@ class QueryResultsService extends G3WObject {
 
   /**
    * Save current filter for a layer
-   * 
+   *
    * @since 3.9.0
    */
   saveFilter(layer) {
@@ -2238,7 +2238,7 @@ QueryResultsService.prototype.clearSelectionExtenalLayer = deprecate(addToSelect
 
 /**
  * Alias functions
- * 
+ *
  * @TODO choose which ones deprecate
  */
 QueryResultsService.prototype.init                       = QueryResultsService.prototype.clearState;
@@ -2279,7 +2279,7 @@ QueryResultsService.prototype.setters = {
 
       /** @type { boolean | undefined } */
       const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
-  
+
       // add visible layers to query response (vector layers)
       this._vectorLayers
         .forEach(layer => {

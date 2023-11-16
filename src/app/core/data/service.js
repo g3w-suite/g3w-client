@@ -4,7 +4,10 @@ import GUI from 'services/gui';
 const { resolve } = require('utils');
 
 function BaseService(){
+  
+  /** @deprecated since v3.5 */
   ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
+
   this.project = ProjectsRegistry.getCurrentProject();
 }
 

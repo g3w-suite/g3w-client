@@ -27,10 +27,18 @@ function ProjectsRegistry() {
 
   this.setters = {
 
-    createProject(projectConfig) {
-      //hook to get project config and modify it
-    },
+    /**
+     * Hook mainly used to override current project configuration while developing locally.
+     * 
+     * @deprecated since v3.5
+     */
+    createProject(projectConfig) { },
 
+    /**
+     * Prior to v3.4 a change map hook was always triggered, now the page is simply reloaded.
+     * 
+     * @deprecated since v3.5
+     */
     setCurrentProject(project) {
 
       if (this.state.currentProject !== project) {

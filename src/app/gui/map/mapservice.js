@@ -408,28 +408,29 @@ function MapService(options={}) {
   if (options.project) this.project = options.project;
   else {
     this.project = ProjectsRegistry.getCurrentProject();
-    //on after setting current project
-    const keysetCurrentProject = ProjectsRegistry.onafter('setCurrentProject', project => {
-      this.removeLayers();
-      this._removeListeners();
-      // check if reload same project
-      const isSameProject = this.project.getId() === project.getId();
-      this.project = project;
-      const changeProjectCallBack = () => {
-        this._resetView();
-        this._setupAllLayers();
-        this._checkMapControls();
-        this.setUpMapOlEvents();
-        this.setupCustomMapParamsToLegendUrl();
-      };
-      ApplicationService.isIframe() && changeProjectCallBack();
-      isSameProject ? changeProjectCallBack() : this.getMap().once('change:size', changeProjectCallBack);
-    });
+
+    /** @deprecated since v3.5 */
     this._keyEvents.g3wobject.push({
       who: ProjectsRegistry,
       setter : 'setCurrentProject',
-      key: keysetCurrentProject
+      key: ProjectsRegistry.onafter('setCurrentProject', project => { // on after setting current project
+          this.removeLayers();
+          this._removeListeners();
+          // check if reload same project
+          const isSameProject = this.project.getId() === project.getId();
+          this.project = project;
+          const changeProjectCallBack = () => {
+            this._resetView();
+            this._setupAllLayers();
+            this._checkMapControls();
+            this.setUpMapOlEvents();
+            this.setupCustomMapParamsToLegendUrl();
+          };
+          ApplicationService.isIframe() && changeProjectCallBack();
+          isSameProject ? changeProjectCallBack() : this.getMap().once('change:size', changeProjectCallBack);
+        })
     });
+
   }
   this._setupListeners();
   this._marker = null;

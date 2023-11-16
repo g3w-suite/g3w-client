@@ -16,16 +16,17 @@ function Service(options={}){
     localwmsurls: [] // contain array of object {id, url}
   };
 
-  GUI.isReady().then(()=> {
-    GUI.getService('map').isReady().then(async ()=>{
+  GUI.isReady().then(() => {
+    GUI.getService('map').isReady().then(async () => {
       this.state.localwmsurls = await this.loadClientWmsUrls();
     })
-  })
+  });
 
   ProjectsRegistry.onafter('setCurrentProject', async project => {
-    this.projectId = project.getId();
+    this.projectId          = project.getId();
     this.state.adminwmsurls = project.wmsurls || [];
-  })
+  });
+
 }
 
 const proto = Service.prototype;
