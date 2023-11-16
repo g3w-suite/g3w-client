@@ -3,7 +3,7 @@ import ScriptsRegister from 'store/scripts';
 import GUI from 'services/gui';
 
 const MapRouteComponent = require('gui/maproute/vue/maproute');
-const utils = require('core/utils/ol');
+const utils = require('utils/ol');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
