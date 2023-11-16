@@ -248,6 +248,8 @@ export default {
 
     /**
      * @returns { number } count of available tools (editing icon, form structure, zoom to feature, ...)
+     * 
+     * @since 3.9.0
      */
     showTools() {
       return [!!this.isEditable, !!this.table.formStructure, !!this.isGeoLayer].filter(Boolean).length;
@@ -547,22 +549,6 @@ export default {
 </script>
 
 <style scoped>
-  .query-relation.mobile #relationtable_filter.dataTables_filter {
-    display: flex !important;
-    justify-content: flex-end !important;
-  }
-  .query-relation.mobile .relations-download {
-    display: flex;
-  }
-  .relationtable.dataTable tbody td span.action-button:hover {
-    background-color: transparent;
-  }
-  .relationtable.dataTable tbody tr.selected {
-    background-color: #e4e4e4 !important;
-  }
-  .relationtable.dataTable tbody tr.selected .row-wrap-tabs .tabs-wrapper {
-    background-color: #FFF !important;
-  }
   .query-relation {
     margin-top: 3px;
   }
@@ -581,6 +567,13 @@ export default {
   }
   .query-relation.mobile > .header > .g3w-long-text {
     font-size: 1em;
+  }
+  .query-relation.mobile #relationtable_filter.dataTables_filter {
+    display: flex !important;
+    justify-content: flex-end !important;
+  }
+  .query-relation.mobile .relations-download {
+    display: flex;
   }
   .relations-table-tools {
     font-size: 1.1em;
@@ -610,9 +603,14 @@ export default {
     display: flex;
     justify-content: space-between;
   }
-  .table-tools .action-button {
-    cursor: pointer;
-    padding: 3px;
+  .relationtable .table-tools .action-button:hover {
+    background-color: transparent;
+  }
+  .relationtable.dataTable tbody tr.selected {
+    background-color: #e4e4e4 !important;
+  }
+  .relationtable.dataTable tbody tr.selected .row-wrap-tabs .tabs-wrapper {
+    background-color: #FFF !important;
   }
   #chart_content {
     padding-bottom: 5px;
