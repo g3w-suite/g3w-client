@@ -179,7 +179,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Afficher le format de la ligne",
-          row_to_form: "Format du formulaire d'affichage"
+          row_to_form: "Format du formulaire d'affichage",
+          zoomtogeometry: "Zoom sur la géométrie",
         },
         zoom_to_features_extent: "Zoom sur les fonctionnalités",
         copy_map_extent_url: 'Copier le lien de visualisation de la carte',

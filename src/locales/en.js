@@ -181,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Row View",
-          row_to_form: "Form View"
+          row_to_form: "Form View",
+          zoomtogeometry: "Zoom to Geometry",
         },
         copy_map_extent_url: 'Copy map view link',
         download_shapefile: "Download Shapefile",

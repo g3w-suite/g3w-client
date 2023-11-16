@@ -181,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Radvy",
-          row_to_form: "Tabellvy"
+          row_to_form: "Tabellvy",
+          zoomtogeometry: "Zooma till geometri",
         },
         copy_map_extent_url: 'Kopiera länk till karta',
         download_shapefile: "Ladda SHP-fil",

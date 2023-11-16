@@ -181,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Rivinäkymä",
-          row_to_form: "Taulukkonäkymä"
+          row_to_form: "Taulukkonäkymä",
+          zoomtogeometry: "Zoomaa geometriaan",
         },
         copy_map_extent_url: 'Kopioi kartan katselulinkki',
         download_shapefile: "Lataa SHP-tiedosto",
