@@ -731,10 +731,14 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                 let values = [...subscribe.options._values];
                 parentData.forEach(feature => {
                   const value = feature.get(attribute);
-                  value && uniqueValues.add(value);
+                  if (value) {
+                    // need to covert to string
+                    // because input values are string
+                    uniqueValues.add(`${value}`);
+                  }
                 });
                 const data = [...uniqueValues];
-                values = values.filter(({key}) => data.indexOf(key) !== -1);
+                values = values.filter(({key}) =>  data.indexOf(key) !== -1);
                 values.forEach(value => subscribe.options.values.push(value));
               } else if (widget === 'valuerelation') {
                 parentData.forEach(feature => {
