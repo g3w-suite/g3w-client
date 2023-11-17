@@ -55,7 +55,7 @@
 </template>
 
 <script>
-  const { isURL } = require('core/utils/utils');
+  const { isURL } = require('utils');
 
   export default {
 

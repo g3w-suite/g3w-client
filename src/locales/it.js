@@ -13,11 +13,13 @@ export default {
     sign_in: "Accedi",
     layer_selection_filter: {
       tools: {
-        filter: "Aggiungi/Rimuovi Filtro",
+        filter: "Attiva/Disattiva Filtro",
         nofilter: "Rimuovi filtro",
         invert: "Inverti Selezione",
         clear: "Annulla selezione",
-        show_features_on_map: "Mostra features visibili su mappa"
+        show_features_on_map: "Mostra features visibili su mappa",
+        savefilter: "Salva Filtro",
+        filterName: 'Nome Filtro',
       }
     },
     warning: {
@@ -179,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Visualizza formato Riga",
-          row_to_form: "Visualizza formato Form"
+          row_to_form: "Visualizza formato Form",
+          zoomtogeometry: "Zoom sulla geometria",
         },
         zoom_to_features_extent: "Zoom sulle features",
         copy_map_extent_url: 'Copia map view link',
@@ -412,8 +415,11 @@ export default {
     },
     toggle_color_scheme: "Cambia colore",
     logout: "Esci",
-    no_other_projects: "Nu există alte proiecte în acest grup de hărți",
-    no_other_groups: "Nu există alte grupuri în acest grup de macrocomenzi",
+    no_other_projects: "Non ci sono altri progetti in questo gruppo cartografico",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "Non ci sono altri gruppi in questo Macrogruppo",
     yes: "Si",
     no: "No",
     back:"Indietro",
@@ -534,7 +540,8 @@ export default {
         show_metadata: "Metadati",
         styles: "Stili",
         vector_color_menu:"Setta/Cambia Colore",
-        layer_opacity: "Trasparenza"
+        layer_opacity: "Trasparenza",
+        filters: "Filtri",
       }
     },
     dataTable: {

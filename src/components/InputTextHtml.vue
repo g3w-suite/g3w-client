@@ -7,7 +7,7 @@
 </template>
 
 <script>
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 const Input = require('gui/inputs/input');
 
 export default {

@@ -19,8 +19,8 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI from 'services/gui';
 
-const { response:responseParser } = require('core/utils/parsers');
-const { getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
+const { response:responseParser } = require('utils/parsers');
+const { getAlphanumericPropertiesFromFeature } = require('utils/geo');
 
 export default {
   name: 'Infoformats',

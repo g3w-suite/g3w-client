@@ -111,42 +111,78 @@
       }"
     >
 
-      <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
+
       <span
-        :class="{
+        :class           = "{
           highlightlayer: isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
-        class="skin-tooltip-top g3w-long-text"
-        data-placement="top"
-        :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        class            = "skin-tooltip-top g3w-long-text"
+        data-placement   = "top"
+        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
+        <!-- SHOW CURRENT FILTER  -->
+        <span
+          v-if                        = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :current-tooltip            = "layerstree.filter.current.name"
+          v-t-tooltip:top.create.text = "layerstree.filter.current.name"
+          style                       = "cursor: pointer"
+          @click.stop                 = "removeCurrentFilter"
+        >
+          <span
+            style  = "color: red"
+            :class = "g3wtemplate.getFontClass('filter')">
+          </span>
+        </span>
+        <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
-        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">[{{getFeatureCount}}]</span>
+        <!-- LAYER FEATURES COUNT-->
+        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">
+          [{{getFeatureCount}}]
+        </span>
+
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
       <div v-if="(!isGroup && layerstree.selection)">
 
+        <!-- CLEAR SELECTION -->
         <span
-          v-if="layerstree.selection.active"
-          class="action-button skin-tooltip-left selection-filter-icon"
-          data-placement="left"
-          data-toggle="tooltip"
-          :class="g3wtemplate.getFontClass('success')"
-          @click.caputure.prevent.stop="clearSelection"
-          v-t-tooltip.create="'layer_selection_filter.tools.clear'"
+          v-if                         = "layerstree.selection.active"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          data-container="body"
+          :class                       = "g3wtemplate.getFontClass('clear')"
+          @click.caputure.prevent.stop = "clearSelection"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.clear'"
         ></span>
 
+        <!-- TOGGLE FILTER  -->
         <span
-          v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
-          class="action-button skin-tooltip-left selection-filter-icon"
-          data-placement="left"
-          data-toggle="tooltip"
-          :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']"
-          @click.caputure.prevent.stop="toggleFilterLayer"
-          v-t-tooltip.create="'layer_selection_filter.tools.filter'"
+          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          data-container="body"
+          :class                       = "[
+            g3wtemplate.getFontClass('filter'),
+            layerstree.filter.active  ? 'active' : '',
+          ]"
+          @click.caputure.prevent.stop = "toggleFilterLayer"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.filter'"
+        ></span>
+
+        <!-- SAVE FILTER  -->
+        <span
+          v-if                         = "!layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          :class                       = "g3wtemplate.getFontClass('save')"
+          @click.caputure.prevent.stop = "saveFilter(layerstree)"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.savefilter'"
         ></span>
 
       </div>
@@ -196,7 +232,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ClickMixin from 'mixins/click';
 import GUI from 'services/gui';
 
-const { downloadFile } = require('core/utils/utils');
+const { downloadFile } = require('utils');
 
 export default {
 
@@ -321,6 +357,7 @@ export default {
         true === this.layerstree.tochighlightable
       )
     },
+
   },
 
   watch:{
@@ -343,6 +380,17 @@ export default {
   },
 
   methods: {
+
+    /**
+     * Remove current active filter
+     *
+     * @since 3.9.0
+     */
+    async removeCurrentFilter() {
+      await CatalogLayersStoresRegistry
+        .getLayerById(this.layerstree.id)
+        .deleteFilterToken();
+    },
 
     /**
      * Inizialize layer (disable, visible etc..)
@@ -454,6 +502,15 @@ export default {
 
     },
 
+    /**
+     * Save layer filter
+     *
+     * @since 3.9.0
+     */
+    saveFilter(layerstree) {
+      CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();
+    },
+
     toggleFilterLayer() {
       VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
@@ -477,11 +534,12 @@ export default {
      * @fires CatalogEventBus~treenodeselected
      */
     select() {
-      // skip when `selected === undefined` (unselectable layer, eg. an external WMS layer) 
+      // skip when `selected === undefined` (unselectable layer, eg. an external WMS  added  (no project layer))
       if (undefined === this.layerstree.selected) {
         return;
       }
-      if (this.layerstree.external) {
+      // check if is external and not a project Layer
+      if (this.layerstree.external && false === this.layerstree.projectLayer) {
         VM.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
         VM.$emit('treenodeselected', this.storeid, this.layerstree);
@@ -549,7 +607,7 @@ export default {
       ) {
         VM.$emit('showmenulayer', layerstree, evt);
       }
-    }
+    },
 
   },
 
