@@ -27,7 +27,7 @@ function _handleExternalVectorLayerSelection(map, layer, {
     return;
   }
   //Take in account array or single fid
-  fids = Array.iArray(fids) ? fids : [fid];
+  fids = Array.isArray(fids) ? fids : [fid];
   features = Array.isArray(features) ? features : [features];
   //check if layer.selection.features is undefined
   if (undefined === layer.selection.features) {
