@@ -389,7 +389,13 @@
   const MAX_SUBSET_LENGTH = 3;
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth = 10;
-  const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
+  const HEADERTYPESFIELD = [
+    'varchar',
+    'integer',
+    'float',
+    'bigint', //@since v3.9
+    'date',
+  ];
 
   export default {
 
