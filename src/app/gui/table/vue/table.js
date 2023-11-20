@@ -67,7 +67,6 @@ proto.unmount = function() {
   })
 };
 
-
 module.exports = TableComponent;
 
 

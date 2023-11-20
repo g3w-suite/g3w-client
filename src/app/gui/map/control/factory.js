@@ -18,6 +18,11 @@ const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
 const ZoomHistoryControl = require('g3w-ol/controls/zoomhistorycontrol');
 const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+/**
+ * @since 3.9.0
+ *
+ */
+const RouteControl = require('g3w-ol/controls/routecontrol');
 
 
 const ControlsFactory = {
@@ -63,6 +68,12 @@ ControlsFactory.CONTROLS = {
    * @deprecated since version ??. Will be removed in version ??. Use 'geocoding' control instead.
    */
   'nominatim': GeocodingControl,
+  /**
+   * @since 3.9.0
+   *
+   */
+  'route': RouteControl,
+
 };
 
 module.exports = ControlsFactory;

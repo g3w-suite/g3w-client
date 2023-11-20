@@ -4,14 +4,21 @@
 -->
 
 <template>
-  <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
+  <div class="usermessage-content"
+    :id="id"
+    :style="style"
+    :class="{'mobile': addClassMobile()}">
+
     <div v-if="showheader" class="usermessage-header-content">
-      <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
+      <i v-if="showIcon" class="usermessage-header-icontype" :class="iconClass || g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
         <slot name="header">
-          <h4  v-if="title" v-t="title"></h4>
-          <h4  v-else> {{ type.toUpperCase() }}</h4>
-          <h5 class="usermessage-header-subtitle" v-if="subtitle" v-t="subtitle"></h5>
+          <h4 v-if="title" v-t="title"></h4>
+          <h4 v-else> {{ type.toUpperCase() }}</h4>
+          <h5 v-if="subtitle"
+            class="usermessage-header-subtitle"
+            v-t="subtitle">
+          </h5>
         </slot>
       </div>
       <div class="usermessage-header-right">
@@ -122,7 +129,17 @@
       closable: {
         type: Boolean,
         default: true
-      }
+      },
+      /**
+       * @since 3.9.0
+       */
+      showIcon: {
+        type: Boolean,
+        default: true
+      },
+      iconClass: {
+        type: String
+      },
     },
     computed:{
       showheader(){

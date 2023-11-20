@@ -562,6 +562,12 @@ export const FONT_AWESOME_ICONS = {
   crop: "fas fa-crop-alt",
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
+  car: "fas fa-car",
+  walking: "fas fa-walking",
+  /**
+   * @since 3.9.0
+   */
+  route: "fas fa-route",
 
   /**
    * @since 3.8.0
@@ -577,7 +583,18 @@ export const FONT_AWESOME_ICONS = {
    * @since 3.8.0
    */
   share: "fas fa-share",
-
+  /**
+   * @since 3.9.0
+   */
+  'circle-close': "far fa-times-circle",
+  /**
+   * @since 3.9.0
+   */
+  'bicycle': "fas fa-bicycle",
+  /**
+   * @since 3.9.0
+   */
+  'bus': "fas fa-bus",
 };
 
 /**

@@ -18,7 +18,9 @@
         :autoclose="usermessage.autoclose"
         :textMessage="usermessage.textMessage"
         :size="usermessage.size"
-        :type="usermessage.type">
+        :type="usermessage.type"
+        :showIcon="usermessage.showIcon"
+        :iconClass="usermessage.iconClass">
         <template v-if="hooks.header" slot="header">
           <component :is="hooks.header"/>
         </template>

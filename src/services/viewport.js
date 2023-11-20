@@ -102,7 +102,39 @@ const ViewportService = function() {
     this.state.resized[type] = bool;
   };
 
-  this.showUserMessage = function({title, subtitle, message, type, position, size, draggable, duration, textMessage=false, closable, autoclose, hooks={}}={}) {
+  /**
+   * @TODO handle in clean way without specify each property
+   * @param title
+   * @param subtitle
+   * @param message
+   * @param type
+   * @param position
+   * @param size
+   * @param draggable
+   * @param duration
+   * @param textMessage
+   * @param closable
+   * @param autoclose
+   * @param hooks
+   * @param showIcon
+   * @param iconClass
+   * @returns {{textMessage: boolean, cloasable: null, autoclose: null, draggable: null, show: boolean, id: null, position: null, title: null, message: null, type: null, hooks: {footer: null, header: null, body: null}}}
+   */
+  this.showUserMessage = function({
+    title,
+    subtitle,
+    message,
+    type,
+    position,
+    size,
+    draggable,
+    duration,
+    textMessage=false,
+    closable,
+    autoclose,
+    hooks={},
+    showIcon=true,
+    iconClass,}={}) {
     this.closeUserMessage();
     setTimeout(() => {
       this.state.usermessage.id = uniqueId();
@@ -119,6 +151,14 @@ const ViewportService = function() {
       this.state.usermessage.autoclose = autoclose;
       this.state.usermessage.closable = closable;
       this.state.usermessage.draggable = draggable;
+      /**
+       * @since 3.9.0
+       */
+      this.state.usermessage.showIcon = showIcon; // show Icon
+      /*
+      * @since 3.9.0
+      * */
+      this.state.usermessage.iconClass = iconClass; // Icon
       this.state.usermessage.hooks.header = hooks.header; // has to be a vue component or vue object
       this.state.usermessage.hooks.body = hooks.body; // has to be a vue component or vue object
       this.state.usermessage.hooks.footer = hooks.footer; // has to be a vue component or vue object
