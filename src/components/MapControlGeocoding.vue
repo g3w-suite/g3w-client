@@ -172,9 +172,6 @@
 <script>
 import GUI                           from 'services/gui';
 import ApplicationState              from 'store/application-state';
-import nominatim                     from 'utils/search_from_nominatim';
-import bing                          from 'utils/search_from_bing';
-import google                        from 'utils/search_from_google';
 import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
 import { PluginsRegistry }           from "store";
 import CatalogLayersStoresRegistry   from 'store/catalog-layers';
@@ -187,11 +184,16 @@ const {
 }                                   = require('utils/geo');
 const Projections                   = require('g3w-ol/projection/projections');
 
-const PROVIDERS = {
-  nominatim,
-  bing,
-  google
-};
+const PROVIDERS = window.initConfig.group.mapcontrols.geocoding.providers;
+
+Object
+  .keys(PROVIDERS)
+  .forEach(function(p) {
+      const script = document.createElement('script');
+      script.src   = window.initConfig.staticurl + 'client/geocoding-providers/'+ p + '.js';
+      script.async = true;
+      document.head.appendChild(script);
+  });
 
 /**
  * Search results layer (pushpin marker)
@@ -241,15 +243,6 @@ const LAYER = new ol.layer.Vector({
     }
   }
 });
-
-
-/**
- * @TODO add a server option to let user choose geocoding extent, eg:
- *
- * - "dynamic": filter search results based on current map extent
- * - "initial": filter search results based on initial map extent
- */
-const DYNAMIC_MAP_EXTENT = false;
 
 /**
  * Setted to true while running `clearMarkers()`
@@ -343,6 +336,21 @@ export default {
       return Object.keys(this.providers).length > 0;
     },
 
+    /**
+     * Get dynamic extent (eg. Bing Places)
+     * 
+     * @TODO add a checkbox to let user choose whether include searches only from current map extent
+     * 
+     * - "dynamic": filter search results based on current map extent
+     * - "initial": filter search results based on initial map extent
+     * 
+     * @since 3.9.0
+     */
+    extent() {
+      const has_dynamic_extent = Object.keys(this.providers).filter(p => 'nominatim' != p).length > 0
+      return ol.proj.transformExtent(has_dynamic_extent ? GUI.getService('map').getMapExtent() : this.viewbox, this.mapCrs, 'EPSG:4326')
+    },
+
   },
 
   methods: {
@@ -433,7 +441,7 @@ export default {
         let transform      = false;
         const [x, y, epsg] = (q || '').split(',');
         // get projection of coordinates is pass as third value
-        const projection         = epsg && Projections.get({ epsg: `EPSG:${epsg.trim()}` });
+        const projection    = epsg && Projections.get({ epsg: `EPSG:${epsg.trim()}` });
 
         // extract xCoord and yCoord
         if (isNumber(1 * x) && isNumber(1 * y)) {
@@ -487,14 +495,13 @@ export default {
           const results = await Promise.allSettled(
             Object
               .entries(this.providers)
-              .map(([ p, config = {} ]) => PROVIDERS[p]({
+              .map(([ p, config = {} ]) => PROVIDERS[p].fetch({
                 url:          config.url,
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?
                 limit:        this.limit,
-                // get dynamic extent (Bing Provider)
-                extent:       ol.proj.transformExtent(p === bing ? GUI.getService('map').getMapExtent() : this.viewbox, this.mapCrs, 'EPSG:4326')
+                extent:       this.extent,
               }))
           );
 
