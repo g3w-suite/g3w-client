@@ -192,21 +192,29 @@
                               </td>
                             </template>
                           </tr>
-                          <tr style="font-weight: bold; text-align: center">
-                            <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</td>
+                          <tr
+                            v-if="!hasLayerOneFeature(layer)"
+                            style="font-weight: bold; text-align: center" >
+                            <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">
+                              {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
+                            </td>
                             <td
-                              v-if="!hasLayerOneFeature(layer)"
                               @click.stop="toggleFeatureBoxAndZoom(layer,feature)"
                               class="collapsed"
                               style="text-align: end"
                               :class="{noAttributes: attributesSubset(layer).length === 0}">
                               <span
                                 class="fa link morelink skin-color"
-                                :class="[getLayerFeatureBox(layer, feature).collapsed ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]">
+                                :class="[
+                                  getLayerFeatureBox(layer, feature).collapsed ?
+                                  g3wtemplate.font['plus'] :
+                                  g3wtemplate.font['minus']
+                                ]">
                               </span>
                             </td>
                           </tr>
                         <header-feature-body
+                          v-if="!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                           :actions="state.layersactions[layer.id]"
                           :layer="layer"
                           :feature="feature"
@@ -239,7 +247,9 @@
                               :tabs="getLayerFormStructure(layer)"/>
                           </td>
                         </tr>
-                        <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
+                        <tr
+                          v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')"
+                        >
                           <td :colspan="getColSpan(layer)">
                             <component
                               :is="component"
@@ -281,21 +291,29 @@
                             </td>
                         </template>
                       </tr>
-                      <tr style="font-weight: bold; text-align: center">
-                        <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">{{attribute.label}}</td>
+                      <tr
+                        v-if="!hasLayerOneFeature(layer)"
+                        style="font-weight: bold; text-align: center" >
+                        <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">
+                          {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
+                        </td>
                         <td
-                          v-if="!hasLayerOneFeature(layer)"
                           @click.stop="toggleFeatureBoxAndZoom(layer,feature)"
                           class="collapsed"
                           style="text-align: end"
                           :class="{noAttributes: attributesSubset(layer).length === 0}">
                             <span
                               class="fa link morelink skin-color"
-                              :class="[getLayerFeatureBox(layer, feature).collapsed ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]">
+                              :class="[
+                                getLayerFeatureBox(layer, feature).collapsed ?
+                                g3wtemplate.font['plus'] :
+                                g3wtemplate.font['minus']
+                              ]">
                             </span>
                         </td>
                       </tr>
                       <header-feature-body
+                        v-if="!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                         :actions="state.layersactions[layer.id]"
                         :layer="layer"
                         :feature="feature"
