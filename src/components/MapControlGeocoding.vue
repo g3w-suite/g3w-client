@@ -106,6 +106,7 @@
         v-for   = "(item, i) in $data.results"
         :class  = "[
           item.provider,
+          item.__icon       ? 'gcd-icon-' + item.__icon : '',
           item.__heading    ? 'skin-background-color' : '',
           item.__no_results ? 'gcd-noresult' : '',
           item.__selected   ? 'selected' : '',
@@ -132,17 +133,17 @@
             :class      = "g3wtemplate.getFontClass(item.__selected ? 'check' : 'uncheck')">
           </span>
           <i
-            v-if        = "'nominatim' === item.provider"
+            v-if        = "'road' === item.__icon"
             class       = "fa fa-road"
             style       = "color:black"
             aria-hidden = "true"
           ></i>
           <img
-            v-else
-            class  = "gcd-icon"
-            src    = "/static/client/images/pushpin.svg"
-            width  = "24"
-            height = "24"
+            v-else-if  = "'poi' === item.__icon"
+            class      = "gcd-icon"
+            src        = "/static/client/images/pushpin.svg"
+            width      = "24"
+            height     = "24"
           />
           <!-- TODO: remove outer link (which is used only for styling purposes..) -->
           <a href="" draggable="false">
@@ -522,6 +523,7 @@ export default {
               .entries(this.providers)
               .map(([ p, config = {} ]) => PROVIDERS[p].fetch({
                 url:          config.url,
+                icon:         config.icon,
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?
@@ -532,6 +534,7 @@ export default {
 
           // update search results
           this._showResults(results.filter(p => 'fulfilled' === p.status));
+          console.log(this);
           this.$refs.reset.classList.remove("gcd-spin");
         }
 
@@ -547,11 +550,15 @@ export default {
       // Loop through providers results
       results.forEach((p) => {
 
+        // FIXME: avoid setting an internal temporary variable
+        const __icon = this.providers[p.value.provider].icon || p.value.icon;
+
         // heading
         this.$data.results.push({
           __heading: true,
           provider: p.value.provider,
           label: this.providers[p.value.provider].label || p.value.label,
+          __icon,
         });
 
         // no results
@@ -567,6 +574,7 @@ export default {
           this.$data.results.push(flattenObject({
             ...item,
             provider:   p.value.provider,
+            __icon,
             __uid:      uniqueId(),
             __selected: false,
           }));
@@ -644,7 +652,7 @@ export default {
      * @since 3.9.0
      */
     _createOlMarker(item) {
-      const { __uid, __selected, ..._item } = item; // exclude internal properties
+      const { __uid, __icon, __selected, ..._item } = item; // exclude internal properties
       const feature = new ol.Feature({
         geometry: new ol.geom.Point(
           ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
@@ -852,12 +860,12 @@ export default {
     align-items: center;
     gap: 10px;
   }
-  li.nominatim .gcd-name,
-  li.nominatim .gcd-type,
-  li.nominatim .gcd-icon,
-  li.bing .gcd-road,
-  li.bing .gcd-city,
-  li.bing .gcd-country {
+  li.gcd-icon-road .gcd-name,
+  li.gcd-icon-road .gcd-type,
+  li.gcd-icon-road .gcd-icon,
+  li.gcd-icon-poi .gcd-road,
+  li.gcd-icon-poi .gcd-city,
+  li.gcd-icon-poi .gcd-country {
     display: none;
   }
 

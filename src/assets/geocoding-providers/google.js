@@ -53,6 +53,7 @@
     return {
       provider,
       label: 'Google',
+      icon:  undefined !== opts.icon ? opts.icon : 'poi',
       results: 'OK' === response.status
         ? response.results
           .filter(({ geometry: { location } })=> ol.extent.containsXY(opts.extent, location.lng, location.lat))

@@ -48,6 +48,7 @@
     return {
       provider,
       label: 'Bing Places',
+      icon:  undefined !== opts.icon ? opts.icon : 'poi',
       results: 200 === response.statusCode
         ? response.resourceSets[0].resources
           .filter(({ point: { coordinates } })=> ol.extent.containsXY(opts.extent, coordinates[1], coordinates[0]))

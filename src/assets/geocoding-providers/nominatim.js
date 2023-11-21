@@ -24,6 +24,7 @@
     return {
       provider,
       label: 'Nominatim (OSM)',
+      icon:  undefined !== opts.icon ? opts.icon : 'road',
       results:
         (
           await XHR.get({
