@@ -197,7 +197,7 @@ const Projections                   = require('g3w-ol/projection/projections');
  * ```py
  * # config/g3w-suite/settings_docker.py
  * 
- * GEOCONDING_PROVIDERS = {
+ * GEOCODING_PROVIDERS = {
  *   "bing_streets": { ... },
  *   "bing_places":  { ... },
  *   "nominatim":    { ... },
