@@ -184,18 +184,15 @@ const {
 }                                   = require('utils/geo');
 const Projections                   = require('g3w-ol/projection/projections');
 
-const PROVIDERS = window.initConfig.group.mapcontrols.geocoding.providers;
-
 /**
- * If you want to add new providers (or rename existing ones), use the file name as "provider" identifier:
+ * Provider definitions.
  * 
- * ```
+ * @example adding a new provider → `my_custom_provider.js`:
+ * 
  * http://localhost:8000/static/client/geocoding-providers/bing_streets.js
  * http://localhost:8000/static/client/geocoding-providers/bing_places.js
  * http://localhost:8000/static/client/geocoding-providers/nominatim.js
  * http://localhost:8000/static/client/geocoding-providers/my_custom_provider.js
- * ...
- * ```
  * 
  * ```py
  * # config/g3w-suite/settings_docker.py
@@ -213,6 +210,7 @@ const PROVIDERS = window.initConfig.group.mapcontrols.geocoding.providers;
  * VENDOR_KEYS['my_custom_provider'] = 'super.secret.key'
  * ```
  */
+const PROVIDERS = window.initConfig.group.mapcontrols.geocoding.providers;
 Object
   .keys(PROVIDERS)
   .forEach(function(p) {
