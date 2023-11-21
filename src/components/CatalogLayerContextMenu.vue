@@ -721,7 +721,11 @@
         $(evt.target).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
         document.body.removeChild(tempInput);
         ancorEement = null;
-        setTimeout(()=>this._hideMenu(), 600);
+        setTimeout(() => {
+          //remove tooltip
+          $('[data-toggle="tooltip"]').tooltip("destroy");
+          this._hideMenu()
+        }, 600);
       },
 
       downloadGeoTIFF(layerId, map_extent=false) {
