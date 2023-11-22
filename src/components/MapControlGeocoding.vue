@@ -204,7 +204,8 @@ const Projections                   = require('g3w-ol/projection/projections');
  *   "nominatim":    { ... },
  *   "my_custom_provider": {
  *     "label": "Custom Provider",
- *     "url": "https://example.com/search"
+ *     "url": "https://example.com/search",
+ *     "icon": "road",
  *   },
  * }
  * 
