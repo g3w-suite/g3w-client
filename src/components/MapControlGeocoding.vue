@@ -535,7 +535,6 @@ export default {
 
           // update search results
           this._showResults(results.filter(p => 'fulfilled' === p.status));
-          console.log(this);
           this.$refs.reset.classList.remove("gcd-spin");
         }
 
@@ -551,15 +550,11 @@ export default {
       // Loop through providers results
       results.forEach((p) => {
 
-        // FIXME: avoid setting an internal temporary variable
-        const __icon = this.providers[p.value.provider].icon || p.value.icon;
-
         // heading
         this.$data.results.push({
           __heading: true,
           provider: p.value.provider,
           label: this.providers[p.value.provider].label || p.value.label,
-          __icon,
         });
 
         // no results
@@ -575,7 +570,7 @@ export default {
           this.$data.results.push(flattenObject({
             ...item,
             provider:   p.value.provider,
-            __icon,
+            __icon:     this.providers[p.value.provider].icon || p.value.icon,
             __uid:      uniqueId(),
             __selected: false,
           }));
@@ -1009,6 +1004,7 @@ export default {
     left: 45px;
     width: 50%;
     height: 6px;
+    font-size: 1.1em;
   }
 
   @media (max-width: 767px) {
@@ -1025,14 +1021,11 @@ export default {
     width: 100%;
     overflow: hidden;
     padding: 0;
-    line-height: 1rem;
-    color: #fff;
     min-height: 30px;
     padding-left: 3px;
     border-bottom: 2px solid var(--skin-color);
     min-height: 20px;
     padding: 10px;
-    font-size: 1.1em;
   }
 
   .ol-geocoder > ul {
@@ -1057,10 +1050,6 @@ export default {
     text-decoration: none;
     padding: 3px 5px;
     color: #000;
-  }
-
-  .ol-geocoder > ul > li > a > *:not(:last-of-type) {
-    margin-bottom: 10px;
   }
 
   .ol-geocoder > ul > li:last-child {

@@ -66,7 +66,7 @@
                 country:   result.address.countryRegion,
                 formatted: result.address.formattedAddress,
               },
-              bing:         result,
+              bing:        result,
             };
           })
         : [],
