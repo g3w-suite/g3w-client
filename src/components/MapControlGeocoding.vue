@@ -570,8 +570,8 @@ export default {
           this.$data.results.push(flattenObject({
             ...item,
             provider:   p.value.provider,
-            __icon:     this.providers[p.value.provider].icon || p.value.icon,
             __uid:      uniqueId(),
+            __icon:     this.providers[p.value.provider].icon || p.value.icon,
             __selected: false,
           }));
         });
@@ -1033,8 +1033,6 @@ export default {
     border-radius: 3px !important;
     width: 100%;
     max-height: 200px;
-    white-space: normal;
-    list-style: none;
     padding: 0;
     margin-top: 3px;
     background-color: white;
