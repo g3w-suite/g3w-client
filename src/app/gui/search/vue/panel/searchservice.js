@@ -968,7 +968,6 @@ async function parse_search_1n(data, options) {
     });
 
   }
-  console.log(data)
   return data;
 }
 
