@@ -722,7 +722,8 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           this.searchLayer.getFilterData({
             field: fieldParams,
             formatter: 0 //v3.0 need to force to use raw value with formatter 0 parameter
-          }).then(async data => {
+          })
+          .then(async data => {
             const parentData = data.data[0].features || [];
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
               const subscribe = notAutocompleteSubscribers[i];
@@ -774,8 +775,9 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
               }
               subscribe.options.disabled = false;
             }
-          }).catch(error => reject(error))
-            .finally(() => {
+          })
+          .catch(error => reject(error))
+          .finally(() => {
             this.state.loading[field] = false;
             resolve();
           })
