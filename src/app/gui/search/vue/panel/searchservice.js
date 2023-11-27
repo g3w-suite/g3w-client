@@ -711,15 +711,17 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           this.cachedependencies[field][dependenceValue][value] = this.cachedependencies[field][dependenceValue][value] || {}
         }
         // exclude autocomplete subscribers
-        if (notAutocompleteSubscribers.length) {
+        if (notAutocompleteSubscribers.length > 0) {
           const fieldParams = this.createFieldsDependenciesAutocompleteParameter({
             field,
             value
           });
-          //need to set undefined because if we has a subscribe input with valuerelations widget i need to extract the value of the field to get
+          //need to set undefined because if
+          // it has a subscribe input with valuerelations widget needs to extract the value of the field to get
           // filter data from relation layer
           this.searchLayer.getFilterData({
-            field: fieldParams
+            field: fieldParams,
+            formatter: 0 //v3.0 need to force to use raw value with formatter 0 parameter
           }).then(async data => {
             const parentData = data.data[0].features || [];
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
