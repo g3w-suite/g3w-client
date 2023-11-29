@@ -743,7 +743,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       const queryResultsComponent = GUI.getComponent('queryresults');
       const queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
-      results && queryResultService.setQueryResponse(results);
+      if (results) {
+        queryResultService.setQueryResponse(results);
+      }
       GUI.showContextualContent({
         content: queryResultsComponent,
         title: "info.title",

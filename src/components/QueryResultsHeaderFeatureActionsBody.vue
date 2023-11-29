@@ -4,26 +4,17 @@
 -->
 
 <template>
-  <tr>
-    <td class="attribute" v-for="attribute in attributesSubset(layer)">
-      <span
-        v-if="isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class="skin-color"
-        :class="g3wtemplate.getFontClass('link')">
-      </span>
-
-      <span v-else-if="isPhoto(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class="skin-color"
-        :class="g3wtemplate.getFontClass('image')"></span>
-
-      <span v-else-if="isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class="skin-color"
-        :class="g3wtemplate.getFontClass('image')"></span>
-      <span v-else >{{feature.attributes[attribute.name]}}</span>
-
-    </td>
-    <td v-if="!hasLayerOneFeature(layer)">
-    </td>
+  <tr
+    @mouseover="trigger({id:'highlightgeometry'}, layer, feature, index)"
+    @mouseout="trigger({id:'clearHighlightGeometry'}, layer, feature, index)"
+    class="featurebox-header">
+    <actions
+      :colspan="colspan"
+      :layer="layer"
+      :featureIndex="index"
+      :trigger="trigger"
+      :feature="feature"
+      :actions="actions"/>
   </tr>
 </template>
 
@@ -59,8 +50,15 @@
       feature: {
         type: Object
       },
-
-
+      index:{
+        type: Number
+      },
+      actions:{
+        type: Array
+      },
+      colspan: {
+        type: Number
+      }
     },
     components: {
       actions:Actions

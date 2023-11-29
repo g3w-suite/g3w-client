@@ -491,8 +491,10 @@ export default {
         title: "",
         error: "Votre position ne peut être calculée."
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Choisissez un calque où ajouter cette fonctionnalité",
         placeholder: "Adresse ...",
+        nolayers: "Aucune couche de points modifiable trouvée sur ce projet",
         noresults: "Aucun résultat",
         notresponseserver: "Le serveur ne répond pas"
       },

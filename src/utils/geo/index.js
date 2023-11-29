@@ -84,7 +84,14 @@ const Geometry = {
    /**
     * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
     */
-   addZValueToOLFeatureGeometry({feature, geometryType}={}) {
+   addZValueToOLFeatureGeometry({
+    feature,
+    geometryType,
+  } = {}) {
+     if (!Geometry.is3DGeometry(geometryType)) {
+      console.warn('Invalid 3D Geometry Type:', geometryType);
+      return feature;
+     }
      const geometry = feature.getGeometry();
      geometryType = geometryType || geometry.getType();
      const originalFeatureCoordinates = geometry.getCoordinates();
@@ -324,7 +331,7 @@ const Geometry = {
    isPolygonGeometryType(geometryType) {
      return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
    },
- 
+
    /**
     * core/geometry/geometry::is3DGeometry@v3.4
     */
@@ -334,6 +341,10 @@ const Geometry = {
        GeometryTypes.POINTM,
        GeometryTypes.POINTZM,
        GeometryTypes.POINT25D,
+       GeometryTypes.MULTIPOINTZ,
+       GeometryTypes.MULTIPOINTM,
+       GeometryTypes.MULTIPOINTZM,
+       GeometryTypes.MULTIPOINT25D,
        GeometryTypes.LINESTRINGZ,
        GeometryTypes.LINESTRINGM,
        GeometryTypes.LINESTRINGZM,
@@ -1573,19 +1584,25 @@ const geoutils = {
     }
     return geometries;
   },
+
   /**
    * Convert geometry to geometryType (from Single to Multi or viceversa)
-   * @param geometry //from geometry
-   * @param toGeometryType
+   * 
+   * @param { ol.geom } geometry       current OL geometry
+   * @param { string }  toGeometryType 
+   * 
    * @returns {*}
    */
   convertSingleMultiGeometry(geometry, toGeometryType) {
-    const fromGeometryType = geometry.getType();
-    if (toGeometryType && (fromGeometryType !== toGeometryType)) {
-      const isFromGeometryMulti = Geometry.isMultiGeometry(fromGeometryType);
-      const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
-      if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
-      else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry([geometry]);
+    const from_type = geometry.getType();
+    if (toGeometryType && (from_type !== toGeometryType)) {
+      const from_multi = Geometry.isMultiGeometry(from_type);
+      const to_multi   = Geometry.isMultiGeometry(toGeometryType);
+      if (from_multi && !to_multi) {
+        return geoutils.multiGeometryToSingleGeometries(geometry);
+      } else if (!from_multi && to_multi) {
+        return geoutils.singleGeometriesToMultiGeometry([geometry]);
+      }
     }
     return geometry;
   },

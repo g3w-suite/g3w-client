@@ -176,7 +176,7 @@ proto.getExternalLayerById = function({id, type='vector'}) {
  */
 proto.isExternalLayerSelected = function({id, type}) {
   const externalLayer = this.getExternalLayerById({ id, type });
-  return externalLayer && externalLayer.selected;
+  return !!(externalLayer && externalLayer.selected);
 };
 
 module.exports = CatalogService;
