@@ -212,7 +212,7 @@ const Projections                   = require('g3w-ol/projection/projections');
  * VENDOR_KEYS['my_custom_provider'] = 'super.secret.key'
  * ```
  */
-const PROVIDERS = window.initConfig.group.mapcontrols.geocoding.providers;
+const PROVIDERS = window.initConfig.group.mapcontrols.geocoding ? window.initConfig.group.mapcontrols.geocoding.providers : {};
 Object
   .keys(PROVIDERS)
   .forEach(function(p) {
