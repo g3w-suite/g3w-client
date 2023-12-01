@@ -3,9 +3,9 @@ import DataRouterService                from 'services/data';
 import ProjectsRegistry                 from 'store/projects';
 import GUI                              from 'services/gui';
 import DownloadMixin                    from 'core/layers/mixins/download';
+import RelationsMixin                   from 'core/layers/mixins/relations';
 import SelectionMixin                   from 'core/layers/mixins/selection';
 import { SELECTION as SELECTION_STATE } from 'core/layers/mixins/selection';
-import RelationsMixin                   from 'core/layers/mixins/relations';
 
 const { t }                 = require('core/i18n/i18n.service');
 const {
@@ -378,7 +378,6 @@ proto.isWmsUseLayerIds = function() {
  *
  * @listens GUI~before_download_layer           since 3.9.0
  * @fires   GUI~choose_layer_fields_to_download since 3.9.0
- * @returns {*|null} source type of layer
  */
 proto.downloadAsFile = function(type, {
   data = {},
@@ -389,7 +388,7 @@ proto.downloadAsFile = function(type, {
       'before_download_layer',
       async (fields) => {
         data.ftod        = fields.map(field => field.name).join();
-        data.filtertoken = this.getFilterToken();
+        data.filtertoken = this.getFilterToken(); //from SelectionMixin
         // alias
         if ('shapefile' === type) {
           type = 'shp';
@@ -414,6 +413,9 @@ proto.downloadAsFile = function(type, {
   .catch(console.warn);
 };
 
+/**
+ * @returns {*|null} source type of layer
+ */
 proto.getSourceType = function() {
   return this.config.source ? this.config.source.type : null;
 };
