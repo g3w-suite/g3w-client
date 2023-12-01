@@ -42,6 +42,7 @@
                       @click             = "closePanel"
                       data-placement     = "left"
                       data-toggle        = "tooltip"
+                      data-container     = "body"
                       v-t-tooltip.create = "'back'"
                       class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                     >
@@ -52,6 +53,7 @@
                       @click             = "closeAllPanels"
                       data-placement     = "left"
                       data-toggle        = "tooltip"
+                      data-container     = "body"
                       v-t-tooltip.create = "'close'"
                       class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                     >
@@ -85,7 +87,7 @@
       <a
         href        = "#"
         class       = "sidebar-aside-toggle"
-        :class      = "{ 'g3w-disabled': disabled }"
+        :class      = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
         :style      = "{zIndex: zIndex}"
         data-toggle = "offcanvas" role="button">
           <i :class="g3wtemplate.getFontClass('bars')"></i>
@@ -115,7 +117,7 @@
         bPageMode:  false,
         header:     t('main navigation'),
         state:      sidebarService.state,
-        /** @since v3.9.0 */
+        /** @since 3.9.0 */
         zIndex:     ZINDEXES.usermessage.tool + 2,
 
       }

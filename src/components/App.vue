@@ -1396,6 +1396,8 @@ export default {
       $('#g3w-modal-overlay').css('height',$(window).height());
     });
 
+    document.body.classList.toggle('is-mobile', this.isMobile());
+
   },
 
 };

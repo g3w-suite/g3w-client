@@ -188,14 +188,17 @@ proto.clearAllSelection = function() {
 
 /**
  * @since 3.9.0
+ * 
+ * @param { Object } opts
+ * @param { string } opts.type
+ * 
+ * @fires redraw when `opts.type` in_bbox filter (or not select all)
  */
-proto.filterChangeHandler = async function ({type}={}) {
+proto.filterChangeHandler = async function ({ type } = {}) {
   this.allfeaturesnumber = undefined;
-  let data = [];
-  // emit redraw if in_bbox filter or not select all
-  const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
-  if (!this.state.pagination) data = emitRedraw ? await this.reloadData() : [];
-  emitRedraw && this.emit('redraw', data);
+  if (type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL)) {
+    this.emit('redraw', this.state.pagination ? [] : await this.reloadData());
+  }
 };
 
 /**
@@ -627,7 +630,7 @@ proto.getDataFromBBOX = async function() {
 proto.addFeature = function(feature) {
   const tableFeature = {
     id:         feature.id,
-    selected:   this.state.tools.filter.active    || this.layer.hasSelectionFid(feature.id),
+    selected:   this.layer.hasSelectionFid(feature.id),
     attributes: feature.attributes                || feature.properties,
     geometry:   this.geolayer && feature.geometry || undefined
   };
@@ -707,7 +710,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
       features
     }) => {
       const values = fields.map(f => feature.attributes[f]);
-      const k      = _createFeatureKey(values);
 
       field_values.push(values);
       
@@ -730,14 +732,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
              },
             outputs: false, // just a request not show on result
           });
-      }
-
-      if (zoom && undefined === features[k]) {
-        promise = Promise.reject();
-      }
-
-      if (undefined !== features[k]) {
-        promise = Promise.resolve({ data: [{ features: features[k] }] });
       }
 
       promises.push(promise);
