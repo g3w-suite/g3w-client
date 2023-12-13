@@ -9,16 +9,34 @@ const { is3DGeometry } = require('utils/geo').Geometry;
 
 function Session(options={}) {
   this.setters = {
+    /**
+     *
+     * @param options
+     * @returns {*}
+     */
     start(options={}) {
       return this._start(options);
     },
+    /**
+     *
+     * @param options
+     * @returns {*}
+     */
     getFeatures(options={}) {
       return this._getFeatures(options);
     },
+    /**
+     *
+     * @returns {void|*}
+     */
     stop() {
       return this._stop();
     },
-    saveChangesOnServer(commitItems){} // hook to get informed that are saved on server
+    /**
+     * Hook to get informed that are saved on server
+     * @param commitItems
+     */
+    saveChangesOnServer(commitItems){},
   };
   base(this, options);
 
@@ -41,30 +59,58 @@ inherit(Session, G3WObject);
 
 const proto = Session.prototype;
 
+/**
+ *
+ * @returns {*}
+ */
 proto.getId = function() {
   return this.state.id;
 };
 
+/**
+ *
+ * @returns {*|null}
+ */
 proto.getLastHistoryState = function(){
   return this._history.getLastState();
 };
 
+/**
+ *
+ * @returns {*}
+ */
 proto.getLastStateId = function() {
   return this._history.getLastState().id;
 };
 
+/**
+ *
+ * @param stateId
+ */
 proto.deleteState = function(stateId) {
   this._history.removeState(stateId);
 };
 
+/**
+ *
+ */
 proto.register = function() {
   SessionsRegistry.register(this);
 };
 
+/**
+ *
+ */
 proto.unregister = function(){
   SessionsRegistry.unregister(this.getId());
 };
 
+/**
+ *
+ * @param options
+ * @returns {*}
+ * @private
+ */
 proto._start = function(options={}) {
   const d = $.Deferred();
   this._editor.start(options)
@@ -95,14 +141,26 @@ proto._getFeatures = function(options={}) {
   return d.promise();
 };
 
+/**
+ *
+ * @returns {boolean}
+ */
 proto.isStarted = function() {
   return this.state.started;
 };
 
+/**
+ *
+ * @returns {*}
+ */
 proto.getEditor = function() {
   return this._editor;
 };
 
+/**
+ *
+ * @param editor
+ */
 proto.setEditor = function(editor) {
   this._editor = editor;
 };
@@ -128,6 +186,10 @@ proto.save = function(options={}) {
   return d.promise();
 };
 
+/**
+ *
+ * @param feature
+ */
 proto.updateTemporaryChanges = function(feature) {
   this._temporarychanges.forEach((change) => {
     change.feature.setProperties(feature.getProperties());
@@ -190,10 +252,18 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
     })
 };
 
+/**
+ *
+ * @param changeIds
+ */
 proto.removeChangesFromHistory = function(changeIds = []) {
   this._history.removeStates(changeIds);
 };
 
+/**
+ *
+ * @returns {{}}
+ */
 proto.moveRelationStatesOwnSession = function() {
   const statesIds = {};
   const {relations:relationItems } = this.getCommitItems();
@@ -251,6 +321,11 @@ proto._filterChanges = function() {
   return changes;
 };
 
+/**
+ *
+ * @param changes
+ * @returns {*}
+ */
 proto.rollback = function(changes) {
   if (changes) return this._editor.rollback(changes);
   else {
@@ -301,6 +376,12 @@ proto.redo = function(items) {
   return items.dependencies;
 };
 
+/**
+ *
+ * @param itemsToCommit
+ * @returns {{add: *[], update: *[], relations: {}, delete: *[]}}
+ * @private
+ */
 proto._serializeCommit = function(itemsToCommit) {
   const id = this.getId();
   let state;
@@ -400,9 +481,12 @@ proto._serializeCommit = function(itemsToCommit) {
 
 };
 
+/**
+ *
+ * @returns {{add: *[], update: *[], relations: {}, delete: *[]}}
+ */
 proto.getCommitItems = function() {
-  const commitItems = this._history.commit();
-  return this._serializeCommit(commitItems);
+  return this._serializeCommit(this._history.commit());
 };
 
 /**
@@ -414,7 +498,7 @@ proto.getCommitItems = function() {
 proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
   const {relations} = commitItems;
   const editingLayer = MapLayersStoresRegistry.getLayerById(layerId).getEditingLayer();
-  // check id there is a editing layer and if is a vector layer
+  // check id there is editing layer and if is a vector layer
   if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR){
     // get Geometry type layer
     const geometryType = editingLayer.getGeometryType();
@@ -502,6 +586,11 @@ proto.commit = function({
 
 };
 
+/**
+ *
+ * @returns {boolean}
+ * @private
+ */
 proto._canStop = function() {
   return this.state.started || this.state.getfeatures;
 };
