@@ -476,7 +476,8 @@ proto._serializeCommit = function(itemsToCommit) {
       }
     })
 
-    //delete deep relations from current layer session
+    //delete deep relations from current layer relation object
+    //because are not relative of this layer
     deleteRelationIds.forEach(rId => delete commitObj.relations[rId]);
   }
 
