@@ -322,7 +322,8 @@ proto._serializeCommit = function(itemsToCommit) {
         lockids,
         add: [],
         update: [],
-        delete: []
+        delete: [],
+        relations: {} //@since v3.7.1
       };
       layer = commitObj.relations[key];
     } else {
@@ -348,7 +349,7 @@ proto._serializeCommit = function(itemsToCommit) {
                value.properties[key] = childs_properties[key]
             }
             const action = item.isNew() ? 'add' : item.getState();
-            // in case of add i have to remove non editable properties
+            // in case of add it have to remove not editable properties
             layer[action].push(value);
             break;
         }
@@ -358,7 +359,45 @@ proto._serializeCommit = function(itemsToCommit) {
       delete commitObj.relations[key];
     }
   }
+
+  //get relation key (layerId) values
+  let relations = Object.keys(commitObj.relations);
+  // if not relations
+  if (relations.length > 0) {
+    //store relation layer id that belong to deep relations
+    const deleteRelationIds = [];
+    //Loop through relation layer id to commit
+    relations.forEach(rlId => {
+      //check if rlId (relation layer id) ia a child of current commit layer
+      if (
+        undefined === this._editor
+          .getLayer()
+          .getRelations()
+          .getArray()
+          .find(r => rlId === r.getChild())
+      ) {
+        //if not belong as child relation layer, check
+        const relationId = SessionsRegistry
+          .getSession(rlId)
+          .getEditor()
+          .getLayer()
+          .getRelations()
+          .getArray()
+          .find(r => relations.indexOf(r.getFather()) !== -1)
+          .getFather();
+
+        commitObj.relations[relationId].relations[rlId] = commitObj.relations[rlId];
+        //add to deleteRelationIds
+        deleteRelationIds.push(rlId);
+      }
+    })
+
+    //delete deep relations from current layer session
+    deleteRelationIds.forEach(rId => delete commitObj.relations[rId]);
+  }
+
   return commitObj;
+
 };
 
 proto.getCommitItems = function() {
