@@ -325,30 +325,34 @@ proto._serializeCommit = function(itemsToCommit) {
         delete: []
       };
       layer = commitObj.relations[key];
-    } else layer = commitObj;
-    items.forEach((item) => {
-      state = item.getState();
-      const GeoJSONFormat = new ol.format.GeoJSON();
-      switch (state) {
-        case 'delete':
-          if (!item.isNew())
-            layer.delete.push(item.getId());
-          break;
-        default:
-          const value = GeoJSONFormat.writeFeatureObject(item);
-          const childs_properties = item.getProperties();
-          for (const key in value.properties) {
-           if (value.properties[key] && typeof value.properties[key] === 'object' && value.properties[key].constructor === Object)
-             value.properties[key] = value.properties[key].value;
-           if (value.properties[key] === undefined && childs_properties[key])
-             value.properties[key] = childs_properties[key]
-          }
-          const action = item.isNew() ? 'add' : item.getState();
-          // in case of add i have to remove non editable properties
-          layer[action].push(value);
-          break;
-      }
-    });
+    } else {
+      layer = commitObj;
+    }
+
+    items
+      .forEach((item) => {
+        state = item.getState();
+        const GeoJSONFormat = new ol.format.GeoJSON();
+        switch (state) {
+          case 'delete':
+            if (!item.isNew())
+              layer.delete.push(item.getId());
+            break;
+          default:
+            const value = GeoJSONFormat.writeFeatureObject(item);
+            const childs_properties = item.getProperties();
+            for (const key in value.properties) {
+             if (value.properties[key] && typeof value.properties[key] === 'object' && value.properties[key].constructor === Object)
+               value.properties[key] = value.properties[key].value;
+             if (value.properties[key] === undefined && childs_properties[key])
+               value.properties[key] = childs_properties[key]
+            }
+            const action = item.isNew() ? 'add' : item.getState();
+            // in case of add i have to remove non editable properties
+            layer[action].push(value);
+            break;
+        }
+      });
     // check in case of no edit remove relation key
     if (isRelation && !layer.add.length && !layer.update.length && !layer.delete.length) {
       delete commitObj.relations[key];
@@ -383,10 +387,12 @@ proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
     }
   }
   // the same control of relations layers
-  Object.keys(relations).forEach(layerId => this.set3DGeometryType({
-    layerId,
-    commitItems: relations[layerId]
-  }));
+  Object
+    .keys(relations)
+    .forEach(layerId => this.set3DGeometryType({
+      layerId,
+      commitItems: relations[layerId]
+    }));
 };
 
 /**
@@ -470,7 +476,7 @@ proto._stop = function() {
         this.clear();
         d.resolve();
       })
-      .fail(err =>  d.reject(err));
+      .fail(err => d.reject(err));
   } else {
     d.resolve();
   }
