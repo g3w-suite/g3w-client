@@ -180,7 +180,7 @@ proto.save = function(options={}) {
       .then(() => {
         // clear to temporary changes
         this._temporarychanges = [];
-        // resolve if uniqeu id
+        // resolve if unique id
         d.resolve(uniqueId);
       });
   } else {
