@@ -15,7 +15,9 @@ const Projections = {
 
   get(crs={}) {
     const cachedProjection = this.isRegistered(crs.epsg);
-    if (cachedProjection) return cachedProjection;
+    if (cachedProjection) {
+      return cachedProjection;
+    }
     const projection = new Projection({
       crs
     });
@@ -33,10 +35,12 @@ const Projections = {
    */
   registerProjection(epsg) {
     return new Promise((resolve, reject) => {
+      console.log(epsg)
       let projection = this.isRegistered(epsg);
       // check if already register
-      if (projection) resolve(projection);
-      else {
+      if (projection) {
+        resolve(projection);
+      } else {
         XHR.get({url: `${API_BASE_URLS.CRS}${epsg.split(':')[1]}`})
           .then(({result, data}) => {
             if (result)  {
