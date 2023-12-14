@@ -115,9 +115,16 @@ function AppService(){
    * @returns {Promise<[]>}
    */
   this.zoomtocoordinates = async function(params={}) {
-    const {coordinates=[], highlight=false} = params;
+    let {coordinates=[], highlight=false, epsg} = params;
     if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
-      this.mapService.zoomTo(coordinates);
+      if (undefined === epsg) {
+        this.mapService.zoomTo(coordinates);
+      } else {
+        //normalizated psg code
+        epsg = await this._getEpsgFromParam(epsg);
+        coordinates = ol.proj.transform(coordinates, epsg, this.mapService.getEpsg());
+        this.mapService.zoomTo(coordinates);
+      }
       return coordinates;
     } else {
       return Promise.reject(coordinates);
@@ -145,9 +152,14 @@ function AppService(){
    * @returns {Promise<[]>}
    */
   this.zoomtoextent = async function(params={}) {
-    const {extent=[]} = params;
-    if (extent && Array.isArray(extent) && extent.length === 4){
-      this.mapService.goToBBox(extent);
+    let {extent=[], epsg} = params;
+    if (extent && Array.isArray(extent) && extent.length === 4) {
+      if (undefined === epsg) {
+        this.mapService.goToBBox(extent);
+      } else {
+        epsg = this._getEpsgFromParam(epsg);
+        extent = ol.proj.transformExtent(extent, epsg, this.mapService.getEpsg());
+      }
       return extent;
     } else {
       return Promise.reject(extent);
