@@ -35,7 +35,6 @@ const Projections = {
    */
   registerProjection(epsg) {
     return new Promise((resolve, reject) => {
-      console.log(epsg)
       let projection = this.isRegistered(epsg);
       // check if already register
       if (projection) {
