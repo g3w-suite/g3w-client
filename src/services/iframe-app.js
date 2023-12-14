@@ -5,8 +5,11 @@
 
 import DataRouterService from 'services/data';
 
-const { base, inherit } = require('utils');
-const BaseService       = require('core/iframe/services/baseservice');
+const { base, inherit }  = require('utils');
+const { normalizeEpsg }  = require('utils/geo');
+const BaseService        = require('core/iframe/services/baseservice');
+const Projections        = require('g3w-ol/projection/projections');
+
 
 function AppService(){
   base(this);
@@ -25,7 +28,7 @@ function AppService(){
    */
   this.init = function() {
     return new Promise((resolve, reject) => {
-      this.mapService.once('ready', ()=> {
+      this.mapService.once('ready', () => {
         this._map = this.mapService.getMap();
         this._mapCrs = this.mapService.getCrs();
         this.mapControls.screenshot.control = this.mapService.getMapControlByType({
@@ -79,6 +82,17 @@ function AppService(){
       this.mapControls.screenshot.control.resetOriginalOnClickEvent();
   };
 
+  /**
+   * @since v3.7.1
+   * @param epsg: Number Code of epsg Ex.4326
+   * @returns String Normalize epsg: From number ex: 4326 to 'EPSG:4326'
+   * @private
+   */
+  this._getEpsgFromParam = async function(epsg) {
+    epsg = normalizeEpsg(epsg)
+    await Projections.registerProjection(epsg);
+    return epsg;
+  }
 
   /**
    * Eventually send as param the projection in which we would like get center of map
@@ -86,7 +100,13 @@ function AppService(){
    * @returns {Promise<void>}
    */
   this.getcenter = async function(params={}) {
-    return this.mapService.getCenter();
+    const center = this.mapService.getCenter();
+    if (undefined === params.epsg) {
+      return center;
+    } else {
+      const epsg = await this._getEpsgFromParam(params.epsg);
+      return ol.proj.transform(center, this.mapService.getEpsg(), epsg);
+    }
   };
 
   /**
@@ -98,8 +118,10 @@ function AppService(){
     const {coordinates=[], highlight=false} = params;
     if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
       this.mapService.zoomTo(coordinates);
-      return coordinates
-    } else return Promise.reject(coordinates)
+      return coordinates;
+    } else {
+      return Promise.reject(coordinates);
+    }
   };
 
   /**
@@ -108,7 +130,13 @@ function AppService(){
    * @returns {Promise<void>}
    */
   this.getextent = async function(params={}) {
-    return this.mapService.getMapExtent();
+    const extent = this.mapService.getMapExtent();
+    if (undefined === params.epsg) {
+      return extent;
+    } else {
+      const epsg = await this._getEpsgFromParam(params.epsg);
+      return ol.proj.transformExtent(extent, this.mapService.getEpsg(), epsg);
+    }
   };
 
   /**
@@ -121,7 +149,9 @@ function AppService(){
     if (extent && Array.isArray(extent) && extent.length === 4){
       this.mapService.goToBBox(extent);
       return extent;
-    } else return Promise.reject(extent);
+    } else {
+      return Promise.reject(extent);
+    }
   };
 
 
