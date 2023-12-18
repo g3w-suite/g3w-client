@@ -6,8 +6,7 @@
 import GUI from 'services/gui';
 
 const BasePluginService = require('core/iframe/services/plugins/service');
-
-const { base, inherit } = g3wsdk.core.utils;
+const { base, inherit } = require('utils');
 
 function EditingService() {
   base(this);

@@ -12,7 +12,10 @@ function IframePluginService(options={}) {
   this.pendingactions = {};
   this.init = async function({project}={}) {
     await GUI.isReady();
-    this.services = require('core/iframe/services/index');
+    this.services = {
+      app: require('services/iframe-app').default,
+      editing: require('services/iframe-editing').default,
+    };
     //set eventResponse handler to alla services
     this.eventResponseServiceHandler = ({action, response}) => {
       this.postMessage({

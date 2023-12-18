@@ -5,32 +5,39 @@ import GUI from 'services/gui';
 const { base, inherit, createFilterFormField } = require('utils');
 const G3WObject = require('core/g3wobject');
 
-function BaseIframeService(options={}){
+function BaseIframeService(options={}) {
+
   base(this);
+
+  /**
+   * @type { boolean }
+   */
   this.ready = false;
+
+  /**
+   * Map service
+   */
+  this.mapService = GUI.getService('map');
+
+  /**
+   * Current project
+   */
+  this.project = ProjectsRegistry.getCurrentProject();
+
+  /**
+   * @type { Array | undefined }
+   */
+  this.layers = undefined;
+
   this.init = function() {
-    //overwrite each service
-  }
+    // overwrite each service
+  };
+
 }
 
 inherit(BaseIframeService, G3WObject);
 
 const proto = BaseIframeService.prototype;
-
-/**
- * mapService attribute
- */
-proto.mapService = GUI.getComponent('map').getService();
-
-/**
- * Current project attribute
- */
-proto.project = ProjectsRegistry.getCurrentProject();
-
-/**
- * @type { null }
- */
-proto.layers = undefined;
 
 /**
  * Return a qgs_layer_id array based on passed qgis_layer_id
@@ -46,7 +53,7 @@ proto.layers = undefined;
 proto.getQgsLayerId = function({
   qgs_layer_id,
   noValue = this.layers.map(layer => layer.id)
-}){
+}) {
   return qgs_layer_id ?
     (
       Array.isArray(qgs_layer_id) ?
@@ -61,7 +68,7 @@ proto.getQgsLayerId = function({
  * 
  * @private
  */
-proto.searchFeature = async function({layer, feature}){
+proto.searchFeature = async function({layer, feature}) {
   const search_endpoint  = this.project.getSearchEndPoint();
   const { field, value } = feature;
   const { data = [] }    = await DataRouterService.getData('search:features', {
@@ -102,10 +109,7 @@ proto.findFeaturesWithGeometry = async function({
   while (!response.found && i < layersCount) {
     const layer = this.project.getLayerById(qgs_layer_id[i]);
     try {
-      const data = layer && await this.searchFeature({
-        layer,
-        feature
-      });
+      const data = layer && await this.searchFeature({ layer, feature });
       if (data.length) {
         const features = data[0].features;
         response.found = features.length > 0 && !!features.find(feature => feature.getGeometry());
@@ -115,10 +119,15 @@ proto.findFeaturesWithGeometry = async function({
           zoom && this.mapService.zoomToFeatures(features, {
             highlight
           });
+        } else {
+          i++;
         }
-        else i++;
-      } else i++;
-    } catch(err){i++}
+      } else {
+        i++;
+      }
+    } catch(err) {
+      i++;
+    }
   }
   // in case of no response zoom too initial extent
   if (!response.found) {

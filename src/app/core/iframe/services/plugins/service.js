@@ -3,12 +3,19 @@ import PluginsRegistry from 'store/plugins';
 const { base, inherit } = require('utils');
 const BaseService = require('core/iframe/services/baseservice');
 
-function BasePluginService(){
+function BasePluginService() {
+
   base(this);
+
   // common attributes between plugin service
+
   this.pluginName;
+
   this.dependencyApi ={};
-  this.init = async function({layers={}}={}){
+
+  this.init = async function({
+    layers = {}
+  } = {}) {
     this.layers = layers;
     // check if the plugin in in configuration
     if (PluginsRegistry.isPluginInConfiguration(this.pluginName)) {
@@ -28,7 +35,7 @@ function BasePluginService(){
     }
   };
 
-  this.clear = function(){
+  this.clear = function() {
     //TO OVERWRITE
   };
 }
@@ -37,11 +44,11 @@ inherit(BasePluginService, BaseService);
 
 const proto = BasePluginService.prototype;
 
-proto.setDependencyApi = function(api={}){
+proto.setDependencyApi = function(api={}) {
   this.dependencyApi = api;
 };
 
-proto.getDependecyApi = function(){
+proto.getDependecyApi = function() {
   return this.dependencyApi;
 };
 
