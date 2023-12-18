@@ -8,7 +8,7 @@ const G3WObject = require('core/g3wobject');
 function BaseIframeService(options={}){
   base(this);
   this.ready = false;
-  this.init = function(){
+  this.init = function() {
     //overwrite each service
   }
 }
@@ -18,48 +18,57 @@ inherit(BaseIframeService, G3WObject);
 const proto = BaseIframeService.prototype;
 
 /**
- * Common mapService attribute
+ * mapService attribute
  */
 proto.mapService = GUI.getComponent('map').getService();
 
 /**
- * Common current project attribute
+ * Current project attribute
  */
 proto.project = ProjectsRegistry.getCurrentProject();
 
 /**
- *
- * @type {null}
+ * @type { null }
  */
 proto.layers = undefined;
 
 /**
  * Return a qgs_layer_id array based on passed qgis_layer_id
- * @param qgs_layer_id : String , Array of Strings or null/undefined)
- * @returns Array oa qgs_layer_id strings
+ * 
+ * @param { Object } opts
+ * @param { string | string[] | null | undefined } opts.qgs_layer_id
+ * @param { Array } noValue
+ * 
+ * @returns { string[] } qgs_layer_id
+ * 
  * @private
  */
-proto.getQgsLayerId = function({qgs_layer_id, noValue=this.layers.map(layer => layer.id)}){
-  return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id: [qgs_layer_id] : noValue;
+proto.getQgsLayerId = function({
+  qgs_layer_id,
+  noValue = this.layers.map(layer => layer.id)
+}){
+  return qgs_layer_id ?
+    (
+      Array.isArray(qgs_layer_id) ?
+      qgs_layer_id :
+      [qgs_layer_id]
+    ) :
+    noValue;
 };
 
 /**
- * Method to getFeature from DataProvider
+ * getFeature from DataProvider
+ * 
  * @private
  */
 proto.searchFeature = async function({layer, feature}){
-  const search_endpoint = this.project.getSearchEndPoint();
-  const {field, value} = feature;
-  const { data=[] } = await DataRouterService.getData('search:features', {
+  const search_endpoint  = this.project.getSearchEndPoint();
+  const { field, value } = feature;
+  const { data = [] }    = await DataRouterService.getData('search:features', {
     inputs: {
       layer,
       search_endpoint,
-      filter: createFilterFormField({
-        layer,
-        search_endpoint,
-        field,
-        value
-      })
+      filter: createFilterFormField({ layer, search_endpoint, field, value })
     },
     outputs: false
   });
@@ -67,14 +76,22 @@ proto.searchFeature = async function({layer, feature}){
 };
 
 /**
- * Comme method to search feature/s by field and value
- * @param qgs_layer_id
- * @param feature
- * @param zoom
- * @param highlight
- * @returns {Promise<{qgs_layer_id: null, features: [], found: boolean}>}
+ * Search feature(s) by field and value
+ * 
+ * @param { Object } opts
+ * @param opts.qgs_layer_id
+ * @param opts.feature
+ * @param opts.zoom
+ * @param opts.highlight
+ * 
+ * @returns { Promise<{ qgs_layer_id: null, features: [], found: boolean }>}
  */
-proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=false, highlight=false}={}){
+proto.findFeaturesWithGeometry = async function({
+  feature,
+  qgs_layer_id = [],
+  zoom         = false,
+  highlight    = false,
+}={}) {
   const response = {
     found: false,
     features: [],
@@ -104,13 +121,15 @@ proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=
     } catch(err){i++}
   }
   // in case of no response zoom too initial extent
-  !response.found && this.mapService.zoomToProjectInitExtent();
-
+  if (!response.found) {
+    this.mapService.zoomToProjectInitExtent();
+  }
   return response;
 };
 
 /**
  * Set layer function
+ * 
  * @param layers
  */
 proto.setLayers = function(layers=[]){
@@ -122,7 +141,8 @@ proto.getLayers = function(){
 };
 
 /**
- * Method to set ready the service
+ * Set ready service
+ * 
  * @param bool
  */
 proto.setReady = function(bool=false){
@@ -134,16 +154,19 @@ proto.getReady = function(){
 };
 
 /**
- * Method overwrite single service: Usefult to sto eventually running action
- * * @returns {Promise<void>}
+ * Overwrite single service: Usefult to stop eventually running action
+ * 
+ * @virtual method need to be implemented by subclasses
+ * 
+ * @returns { Promise<void> }
  */
-proto.stop = async function(){};
+proto.stop = async function() {};
 
 /**
  * Overwrite each single service
+ * 
+ * @virtual method need to be implemented by subclasses
  */
-proto.clear = function(){
-  //overwrite single service
-};
+proto.clear = function() {};
 
 module.exports = BaseIframeService;
