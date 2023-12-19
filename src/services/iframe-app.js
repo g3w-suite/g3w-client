@@ -6,7 +6,7 @@
 import DataRouterService from 'services/data';
 
 const { base, inherit } = require('utils');
-const BaseService = require('core/iframe/services/baseservice');
+const BaseService       = require('core/iframe/services/baseservice');
 
 function AppService(){
   base(this);
@@ -23,9 +23,9 @@ function AppService(){
    * Init service
    * @returns {Promise<unknown>}
    */
-  this.init = function(){
-    return new Promise((resolve, reject) =>{
-      this.mapService.once('ready', ()=>{
+  this.init = function() {
+    return new Promise((resolve, reject) => {
+      this.mapService.once('ready', ()=> {
         this._map = this.mapService.getMap();
         this._mapCrs = this.mapService.getCrs();
         this.mapControls.screenshot.control = this.mapService.getMapControlByType({
@@ -42,32 +42,41 @@ function AppService(){
    * @returns {Promise<void>}
    */
   this.results = async function({capture=true}){
-    capture ? DataRouterService.setOutputPlaces(['iframe']) : DataRouterService.resetDefaultOutput();
+    capture ?
+      DataRouterService.setOutputPlaces(['iframe']) :
+      DataRouterService.resetDefaultOutput();
     return [];
   };
 
-  this.screenshot = async function({capture=true}){
+  /**
+   *
+   * @param capture
+   * @returns {Promise<void>}
+   */
+  this.screenshot = async function({capture=true}) {
     const action = 'app:screenshot';
-    capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
-      try {
-        const blob = await this.mapService.createMapImage();
-        this.emit('response', {
-          action,
-          response: {
-            result: true,
-            data: blob
-          }
-        })
-      } catch(err){
-        this.emit('response', {
-          action,
-          response: {
-            result: false,
-            data: err
-          }
-        })
-      }
-    }) : this.mapControls.screenshot.control.resetOriginalOnClickEvent();
+    capture ?
+      this.mapControls.screenshot.control.overwriteOnClickEvent(async() => {
+        try {
+          const blob = await this.mapService.createMapImage();
+          this.emit('response', {
+            action,
+            response: {
+              result: true,
+              data: blob
+            }
+          })
+        } catch(err) {
+          this.emit('response', {
+            action,
+            response: {
+              result: false,
+              data: err
+            }
+          })
+        }
+      }) :
+      this.mapControls.screenshot.control.resetOriginalOnClickEvent();
   };
 
 
@@ -76,7 +85,7 @@ function AppService(){
    * @param params
    * @returns {Promise<void>}
    */
-  this.getcenter = async function(params={}){
+  this.getcenter = async function(params={}) {
     return this.mapService.getCenter();
   };
 
@@ -85,7 +94,7 @@ function AppService(){
    * @param params
    * @returns {Promise<[]>}
    */
-  this.zoomtocoordinates = async function(params={}){
+  this.zoomtocoordinates = async function(params={}) {
     const {coordinates=[], highlight=false} = params;
     if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
       this.mapService.zoomTo(coordinates);
@@ -98,7 +107,7 @@ function AppService(){
    * @param params
    * @returns {Promise<void>}
    */
-  this.getextent = async function(params={}){
+  this.getextent = async function(params={}) {
     return this.mapService.getMapExtent();
   };
 
@@ -107,7 +116,7 @@ function AppService(){
    * @param params
    * @returns {Promise<[]>}
    */
-  this.zoomtoextent = async function(params={}){
+  this.zoomtoextent = async function(params={}) {
     const {extent=[]} = params;
     if (extent && Array.isArray(extent) && extent.length === 4){
       this.mapService.goToBBox(extent);
@@ -117,7 +126,7 @@ function AppService(){
 
 
   //method to zoom to features
-  this.zoomtofeature = async function(params={}){
+  this.zoomtofeature = async function(params={}) {
     return new Promise(async (resolve, reject) => {
       let {qgs_layer_id, feature, highlight=false} = params;
       qgs_layer_id = this.getQgsLayerId({
