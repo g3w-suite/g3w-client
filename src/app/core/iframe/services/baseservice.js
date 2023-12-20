@@ -1,9 +1,13 @@
 import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import GUI from 'services/gui';
+import ProjectsRegistry  from 'store/projects';
+import GUI               from 'services/gui';
 
-const { base, inherit, createFilterFormField } = require('utils');
-const G3WObject = require('core/g3wobject');
+const {
+  base,
+  inherit,
+  createFilterFormField
+}                        = require('utils');
+const G3WObject          = require('core/g3wobject');
 
 function BaseIframeService(options={}) {
 
@@ -141,11 +145,11 @@ proto.findFeaturesWithGeometry = async function({
  * 
  * @param layers
  */
-proto.setLayers = function(layers=[]){
+proto.setLayers = function(layers=[]) {
   proto.layers = layers;
 };
 
-proto.getLayers = function(){
+proto.getLayers = function() {
   return proto.layers;
 };
 
@@ -154,11 +158,11 @@ proto.getLayers = function(){
  * 
  * @param bool
  */
-proto.setReady = function(bool=false){
+proto.setReady = function(bool=false) {
   this.ready = bool;
 };
 
-proto.getReady = function(){
+proto.getReady = function() {
   return this.ready;
 };
 
