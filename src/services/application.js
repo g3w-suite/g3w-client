@@ -658,7 +658,7 @@ const ApplicationService = function() {
    * iframeservice 
    */
   this.startIFrameService = function({project}={}) {
-    const iframeService = require('services/iframe-plugin').default;
+    const iframeService = require('services/iframe').default;
     iframeService.init({project});
   };
 
