@@ -23,7 +23,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService from 'services/data';
 import ChangesManager from 'services/editing';
 import SessionsRegistry from 'store/sessions';
-import IFrameRouterService from 'services/iframe-plugin';
+import IFrameRouterService from 'services/iframe';
 import MapLayersStoresRegistry from 'store/map-layers';
 import PluginsRegistry from 'store/plugins';
 import ProjectsRegistry from 'store/projects';
