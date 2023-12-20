@@ -1860,61 +1860,42 @@ proto._setupBaseLayers = function() {
   });
 };
 
-//SETUP MAPLAYERS
+// SETUP MAPLAYERS
 proto._setupMapLayers = function() {
   // get all geolayers exclude baselayers and eventually vector layers
-  const layers = getMapLayersByFilter({
-    BASELAYER: false,
-    VECTORLAYER: false
-  });
+  const layers = getMapLayersByFilter({ BASELAYER: false, VECTORLAYER: false });
+
   this._setMapProjectionToLayers(layers);
-  //group layer by mutilayer (multilayer property of layer on project configuration)
-  // need to split time series to group to speed up eventual time seriesries loading of single layer
-  let qtimeseries_multilayerid_split_values = {};
+
+  // Group layers by mutilayer property (from project config) in order to speed up "qtimeseriesries" loading of single layers
+  let cache = {}; // 
   const multiLayers = _.groupBy(layers, layer => {
-    let multiLayerId = layer.getMultiLayerId();
+    let id = layer.getMultiLayerId();
     if (layer.isQtimeseries()) {
-      qtimeseries_multilayerid_split_values[multiLayerId] = undefined === qtimeseries_multilayerid_split_values[multiLayerId] ?
-        0 :
-        qtimeseries_multilayerid_split_values[multiLayerId] + 1;
-      multiLayerId = `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId]}`;
-    } else {
-      multiLayerId = undefined === qtimeseries_multilayerid_split_values[multiLayerId]  ?
-        multiLayerId : `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId] + 1}`;
+      cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
+      return `${id}_${cache[id]}`;
     }
-    return multiLayerId;
+    return id = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
   });
-  qtimeseries_multilayerid_split_values = null; // delete to garbage collector
+  cache = null; // delete to garbage collector
+
   let mapLayers = [];
 
   Object
     .entries(multiLayers)
     .forEach(([id, layers]) => {
-      const multilayerId = `layer_${id}`;
-      let mapLayer;
-      const layer = layers[0] || [];
-      if (layers.length === 1) {
-        mapLayer = layer.getMapLayer({
-          id: multilayerId,
+      const layer    = layers[0] || [];
+      const mapLayer = layer.getMapLayer(
+        {
+          id: `layer_${id}`,
           projection: this.getProjection(),
-          /**
-           * @since 3.7.11
-           */
-          format: layer.isExternalWMS() ? //@since 3.9.1
-            layer.getSource() && layer.getSource().format :
-            null
-        }, {})
-
-        mapLayer.addLayer(layer);
-        mapLayers.push(mapLayer)
-      } else {
-        mapLayer = layer.getMapLayer({
-          id: multilayerId,
-          projection: this.getProjection()
-        }, this.layersExtraParams);
-        layers.reverse().forEach(sub_layer => mapLayer.addLayer(sub_layer));
-        mapLayers.push(mapLayer);
-      }
+          /** @since 3.7.11 */
+          format: (1 === layers.length && layer.isExternalWMS()) ? layer.getSource() && layer.getSource().format : null
+        },
+        1 === layers.length ? {} : this.layersExtraParams
+      );
+      layers.reverse().forEach(l => mapLayer.addLayer(l));
+      mapLayers.push(mapLayer);
       this.registerMapLayerListeners(mapLayer);
     });
 

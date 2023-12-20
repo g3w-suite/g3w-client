@@ -91,7 +91,7 @@ proto._makeOlLayer = function(withLayers) {
       format:
         this.config.format
         || ProjectsRegistry.getCurrentProject().getWmsGetmapFormat()
-        || 'image/png', //@since 3.9.1
+        || 'image/png',
     },
     this.extraParams,
     this._method
