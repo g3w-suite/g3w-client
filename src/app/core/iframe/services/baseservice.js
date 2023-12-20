@@ -1,11 +1,15 @@
 import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import GUI from 'services/gui';
+import ProjectsRegistry  from 'store/projects';
+import GUI               from 'services/gui';
 
-const { base, inherit, createFilterFormField } = require('utils');
-const G3WObject = require('core/g3wobject');
+const {
+  base,
+  inherit,
+  createFilterFormField
+}                        = require('utils');
+const G3WObject          = require('core/g3wobject');
 
-function BaseIframeService(options={}){
+function BaseIframeService(options={}) {
   base(this);
   this.ready = false;
   this.init = function(){
@@ -20,7 +24,7 @@ const proto = BaseIframeService.prototype;
 /**
  * Common mapService attribute
  */
-proto.mapService = GUI.getComponent('map').getService();
+proto.mapService = GUI.getService('map');
 
 /**
  * Common current project attribute
@@ -36,11 +40,21 @@ proto.layers = undefined;
 /**
  * Return a qgs_layer_id array based on passed qgis_layer_id
  * @param qgs_layer_id : String , Array of Strings or null/undefined)
+ * @param noValue: Array
  * @returns Array oa qgs_layer_id strings
  * @private
  */
-proto.getQgsLayerId = function({qgs_layer_id, noValue=this.layers.map(layer => layer.id)}){
-  return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id: [qgs_layer_id] : noValue;
+proto.getQgsLayerId = function({
+  qgs_layer_id,
+  noValue=this.layers.map(layer => layer.id)
+}){
+  return qgs_layer_id ?
+    (
+      Array.isArray(qgs_layer_id) ?
+      qgs_layer_id :
+      [qgs_layer_id]
+    ) :
+    noValue;
 };
 
 /**
@@ -74,7 +88,11 @@ proto.searchFeature = async function({layer, feature}){
  * @param highlight
  * @returns {Promise<{qgs_layer_id: null, features: [], found: boolean}>}
  */
-proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=false, highlight=false}={}){
+proto.findFeaturesWithGeometry = async function({
+  qgs_layer_id=[],
+  feature, zoom=false,
+  highlight=false
+}={}) {
   const response = {
     found: false,
     features: [],
@@ -104,7 +122,9 @@ proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=
     } catch(err){i++}
   }
   // in case of no response zoom too initial extent
-  !response.found && this.mapService.zoomToProjectInitExtent();
+  if (!response.found) {
+    this.mapService.zoomToProjectInitExtent();
+  }
 
   return response;
 };
@@ -113,11 +133,11 @@ proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=
  * Set layer function
  * @param layers
  */
-proto.setLayers = function(layers=[]){
+proto.setLayers = function(layers=[]) {
   proto.layers = layers;
 };
 
-proto.getLayers = function(){
+proto.getLayers = function() {
   return proto.layers;
 };
 
@@ -125,11 +145,11 @@ proto.getLayers = function(){
  * Method to set ready the service
  * @param bool
  */
-proto.setReady = function(bool=false){
+proto.setReady = function(bool=false) {
   this.ready = bool;
 };
 
-proto.getReady = function(){
+proto.getReady = function() {
   return this.ready;
 };
 
@@ -142,7 +162,7 @@ proto.stop = async function(){};
 /**
  * Overwrite each single service
  */
-proto.clear = function(){
+proto.clear = function() {
   //overwrite single service
 };
 
