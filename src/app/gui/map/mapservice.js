@@ -1869,44 +1869,55 @@ proto._setupMapLayers = function() {
   });
   this._setMapProjectionToLayers(layers);
   //group layer by mutilayer (multilayer property of layer on project configuration)
-  // nee to split time series to group to speed up eventualli time seriesries loading of single layer
+  // need to split time series to group to speed up eventual time seriesries loading of single layer
   let qtimeseries_multilayerid_split_values = {};
   const multiLayers = _.groupBy(layers, layer => {
     let multiLayerId = layer.getMultiLayerId();
     if (layer.isQtimeseries()) {
-      qtimeseries_multilayerid_split_values[multiLayerId] = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ? 0 : qtimeseries_multilayerid_split_values[multiLayerId] + 1;
+      qtimeseries_multilayerid_split_values[multiLayerId] = undefined === qtimeseries_multilayerid_split_values[multiLayerId] ?
+        0 :
+        qtimeseries_multilayerid_split_values[multiLayerId] + 1;
       multiLayerId = `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId]}`;
-    } else multiLayerId = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ?
-      multiLayerId : `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId] + 1}`;
+    } else {
+      multiLayerId = undefined === qtimeseries_multilayerid_split_values[multiLayerId]  ?
+        multiLayerId : `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId] + 1}`;
+    }
     return multiLayerId;
   });
   qtimeseries_multilayerid_split_values = null; // delete to garbage collector
   let mapLayers = [];
-  Object.entries(multiLayers).forEach(([id, layers]) => {
-    const multilayerId = `layer_${id}`;
-    let mapLayer;
-    const layer = layers[0] || [];
-    if (layers.length === 1) {
-      mapLayer = layer.getMapLayer({
-        id: multilayerId,
-        projection: this.getProjection(),
-        /**
-         * @since 3.7.11
-         */
-        format: layer.getSource() && layer.getSource().format
-      }, {});
-      mapLayer.addLayer(layer);
-      mapLayers.push(mapLayer)
-    } else {
-      mapLayer = layer.getMapLayer({
-        id: multilayerId,
-        projection: this.getProjection()
-      }, this.layersExtraParams);
-      layers.reverse().forEach(sub_layer => mapLayer.addLayer(sub_layer));
-      mapLayers.push(mapLayer);
-    }
-    this.registerMapLayerListeners(mapLayer);
-  });
+
+  Object
+    .entries(multiLayers)
+    .forEach(([id, layers]) => {
+      const multilayerId = `layer_${id}`;
+      let mapLayer;
+      const layer = layers[0] || [];
+      if (layers.length === 1) {
+        mapLayer = layer.getMapLayer({
+          id: multilayerId,
+          projection: this.getProjection(),
+          /**
+           * @since 3.7.11
+           */
+          format: layer.isExternalWMS() ? //@since 3.9.1
+            layer.getSource() && layer.getSource().format :
+            null
+        }, {})
+
+        mapLayer.addLayer(layer);
+        mapLayers.push(mapLayer)
+      } else {
+        mapLayer = layer.getMapLayer({
+          id: multilayerId,
+          projection: this.getProjection()
+        }, this.layersExtraParams);
+        layers.reverse().forEach(sub_layer => mapLayer.addLayer(sub_layer));
+        mapLayers.push(mapLayer);
+      }
+      this.registerMapLayerListeners(mapLayer);
+    });
+
   this.addMapLayers(mapLayers);
   this.updateMapLayers();
   return mapLayers;
