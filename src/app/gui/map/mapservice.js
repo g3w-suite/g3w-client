@@ -1844,19 +1844,19 @@ proto._setupAllLayers = function() {
 
 //SETUP BASELAYERS
 proto._setupBaseLayers = function() {
-  const baseLayers = getMapLayersByFilter({
-    BASELAYER: true
-  });
-  if (!baseLayers.length) return;
-  baseLayers.forEach(layer => {
-    const baseMapLayer = layer.getMapLayer();
-    this.registerMapLayerListeners(baseMapLayer);
-    this.mapBaseLayers[layer.getId()] = baseMapLayer;
-  });
-  const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
-  reverseBaseLayers.forEach(baseMapLayer => {
-    baseMapLayer.update(this.state, this.layersExtraParams);
-    this.addLayerToMap(baseMapLayer)
+  const layers = getMapLayersByFilter({ BASELAYER: true });
+  layers
+    .forEach(layer => {
+      const base = layer.getMapLayer();
+      this.registerMapLayerListeners(base);
+      this.mapBaseLayers[layer.getId()] = base;
+    });
+  Object
+    .values(layers.length ? this.mapBaseLayers : {})
+    .reverse()
+    .forEach(layer => {
+      layer.update(this.state, this.layersExtraParams);
+      this.addLayerToMap(layer);
   });
 };
 
@@ -1867,22 +1867,22 @@ proto._setupMapLayers = function() {
 
   this._setMapProjectionToLayers(layers);
 
-  // Group layers by mutilayer property (from project config) in order to speed up "qtimeseriesries" loading of single layers
-  let cache = {}; // 
-  const multiLayers = _.groupBy(layers, layer => {
-    let id = layer.getMultiLayerId();
-    if (layer.isQtimeseries()) {
-      cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
-      return `${id}_${cache[id]}`;
-    }
-    return id = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
-  });
-  cache = null; // delete to garbage collector
-
+  let cache     = {};
   let mapLayers = [];
 
   Object
-    .entries(multiLayers)
+    .entries(
+      // Group layers by multilayer property (from project config)
+      // to speed up "qtimeseriesries" loading for single layers
+      _.groupBy(layers, layer => {
+        let id = layer.getMultiLayerId();
+        if (layer.isQtimeseries()) {
+          cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
+          return `${id}_${cache[id]}`;
+        }
+        return id = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
+      })
+    )
     .forEach(([id, layers]) => {
       const layer    = layers[0] || [];
       const mapLayer = layer.getMapLayer(
@@ -1901,19 +1901,13 @@ proto._setupMapLayers = function() {
 
   this.addMapLayers(mapLayers);
   this.updateMapLayers();
-  return mapLayers;
 };
 
 //SETUP VECTORLAYERS
 proto._setupVectorLayers = function() {
-  const layers = getMapLayersByFilter({
-    VECTORLAYER: true
-  });
+  const layers = getMapLayersByFilter({ VECTORLAYER: true });
   this._setMapProjectionToLayers(layers);
-  layers.forEach(layer => {
-    const mapVectorLayer = layer.getMapLayer();
-    this.addLayerToMap(mapVectorLayer)
-  })
+  layers.forEach(layer => { this.addLayerToMap(layer.getMapLayer()) })
 };
 
 proto._setUpDefaultLayers = function() {
@@ -1984,8 +1978,12 @@ proto.addLayerToMap = function(layer) {
   olLayer && this.getMap().addLayer(olLayer);
 };
 
+/**
+ * Setup mapProjection on each layer
+ * 
+ * @param { Array } layers
+ */
 proto._setMapProjectionToLayers = function(layers) {
-  // setup mapProjection on ech layers
   layers.forEach(layer => layer.setMapProjection(this.getProjection()));
 };
 
