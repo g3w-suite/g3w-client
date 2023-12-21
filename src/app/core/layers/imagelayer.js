@@ -426,8 +426,9 @@ proto.getMapLayer = function(options = {}, extraParams) {
 };
 
 /**
- * Overwrite base layer class method
- * @since v3.9.1
+ * @override Layer~getFormat
+ * 
+ * @since 3.9.1
  */
 proto.getFormat = function() {
   if (this.isExternalWMS() && this.getSource()) {

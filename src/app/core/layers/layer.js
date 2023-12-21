@@ -1256,9 +1256,9 @@ proto.getStyleFeatureCount = async function(style) {
 };
 
 /**
- * Return format of layer
- * Can be overwritten by subclass of layer
- * @since v3.9.1
+ * @returns { string } layer format (eg. 'image/png') 
+ * 
+ * @since 3.9.1
  */
 proto.getFormat = function() {
   return this.config.format ||
