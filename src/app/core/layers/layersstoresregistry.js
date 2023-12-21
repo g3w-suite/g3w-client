@@ -30,11 +30,7 @@ proto.getLayerById = function(layerId) {
 };
 
 proto.getLayers = function(filter) {
-  let layers = [];
-  Object.entries(this.stores).forEach(([storeId, layersStore]) => {
-    layers = layers.concat(layersStore.getLayers(filter))
-  });
-  return layers;
+  return Object.values(this.stores).flatMap(store => store.getLayers(filter));
 };
 
 proto.getQuerableLayersStores = function() {
