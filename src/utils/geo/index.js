@@ -4,17 +4,23 @@
  * @since 3.9.0
  */
 
-import CONSTANT from 'app/constant';
-import MapLayersStoresRegistry from 'store/map-layers';
-import GUI from 'services/gui';
+import CONSTANT                    from 'app/constant';
+import { getMapLayerById }         from 'utils/getMapLayerById';
+import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
+import { toRawType }               from 'utils/toRawType';
+import { uniqueId }                from 'utils/getUniqueDomId';
+import GUI                         from 'services/gui';
 
-const { toRawType, uniqueId } = require('utils');
-const WMSLayer = require('core/layers/map/wmslayer');
-const Filter = require('core/layers/filter/filter');
+const WMSLayer                     = require('core/layers/map/wmslayer');
+const Filter                       = require('core/layers/filter/filter');
 const { response: responseParser } = require('utils/parsers');
 
-const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const { QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes } = CONSTANT;
+const geometryFields               = CONSTANT.GEOMETRY_FIELDS;
+const {
+  QUERY_POINT_TOLERANCE,
+  G3W_FID,
+  GEOMETRY_TYPES: GeometryTypes
+}                                  = CONSTANT;
 
 const Geometry = {
 
@@ -1209,23 +1215,8 @@ const geoutils = {
     return results;
   },
 
-  getMapLayerById(layerId) {
-    return MapLayersStoresRegistry.getLayerById(layerId);
-  },
-
-  //return mapLayer based on filter (properties of layer. Es GEOLAYER etc..)
-  //Default values geolayer
-  getMapLayersByFilter(filter={}, options={}) {
-    filter = {
-      GEOLAYER: true,
-      ...filter
-    };
-    let layers = [];
-    MapLayersStoresRegistry.getQuerableLayersStores().forEach(layerStore => {
-      layers = layerStore.getLayers(filter, options);
-    });
-    return layers || [];
-  },
+  getMapLayerById,
+  getMapLayersByFilter,
 
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
