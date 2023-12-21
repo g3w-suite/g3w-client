@@ -82,16 +82,17 @@ proto._makeOlLayer = function(withLayers) {
   const olLayer = new RasterLayers.WMSLayer(
     // wmsConfig
     {
-      url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
+      url:             (this.layers[0] && this.layers[0].getWmsUrl) ?
+                        this.layers[0].getWmsUrl() :
+                        this.config.url,
       id:              this.config.id,
       projection:      this.config.projection,
       iframe_internal: this.iframe_internal,
-      layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
-      /** @since 3.7.11 */
-      format:
-        this.config.format
-        || ProjectsRegistry.getCurrentProject().getWmsGetmapFormat()
-        || 'image/png',
+      layers:          (withLayers) ?
+                        this.layers.map(layer => layer.getWMSLayerName()) :
+                        this.layers,
+      /** @since 3.9.1 */
+      format: this.config.format,
     },
     this.extraParams,
     this._method

@@ -425,6 +425,16 @@ proto.getMapLayer = function(options = {}, extraParams) {
   return new WMSLayer({ ...options, url }, extraParams, method);
 };
 
+/**
+ * Overwrite base layer class method
+ * @since v3.9.1
+ */
+proto.getFormat = function() {
+  if (this.isExternalWMS() && this.getSource()) {
+    return this.getSource().format;
+  }
+  return base(this, 'getFormat');
+};
 
 ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.QGIS,

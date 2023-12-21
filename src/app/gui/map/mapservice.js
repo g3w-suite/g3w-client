@@ -1885,12 +1885,13 @@ proto._setupMapLayers = function() {
     )
     .forEach(([id, layers]) => {
       const layer    = layers[0] || [];
+      console.log(layer)
       const mapLayer = layer.getMapLayer(
         {
           id: `layer_${id}`,
           projection: this.getProjection(),
-          /** @since 3.7.11 */
-          format: (1 === layers.length && layer.isExternalWMS()) ? layer.getSource() && layer.getSource().format : null
+          /** @since 3.9.1 */
+          format: 1 === layers.length ? layer.getFormat() : null
         },
         1 === layers.length ? {} : this.layersExtraParams
       );

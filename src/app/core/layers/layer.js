@@ -1256,6 +1256,17 @@ proto.getStyleFeatureCount = async function(style) {
 };
 
 /**
+ * Return format of layer
+ * Can be overwritten by subclass of layer
+ * @since v3.9.1
+ */
+proto.getFormat = function() {
+  return this.config.format ||
+    ProjectsRegistry.getCurrentProject().getWmsGetmapFormat() ||
+    'image/png'
+};
+
+/**
  * [LAYER SELECTION]
  *
  * Base on boolean value create a filter token from server
