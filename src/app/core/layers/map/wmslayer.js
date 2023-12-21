@@ -1,9 +1,8 @@
 import ApplicationState from 'store/application-state';
-import ProjectsRegistry from 'store/projects';
 
 const { base, inherit } = require('utils');
-const MapLayer = require('core/layers/map/maplayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
+const MapLayer          = require('core/layers/map/maplayer');
+const RasterLayers      = require('g3w-ol/layers/rasters');
 
 function WMSLayer(options={}, extraParams={}, method='GET') {
   this.LAYERTYPE = {
@@ -82,15 +81,11 @@ proto._makeOlLayer = function(withLayers) {
   const olLayer = new RasterLayers.WMSLayer(
     // wmsConfig
     {
-      url:             (this.layers[0] && this.layers[0].getWmsUrl) ?
-                        this.layers[0].getWmsUrl() :
-                        this.config.url,
+      url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
       id:              this.config.id,
       projection:      this.config.projection,
       iframe_internal: this.iframe_internal,
-      layers:          (withLayers) ?
-                        this.layers.map(layer => layer.getWMSLayerName()) :
-                        this.layers,
+      layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
       /** @since 3.9.1 */
       format: this.config.format,
     },

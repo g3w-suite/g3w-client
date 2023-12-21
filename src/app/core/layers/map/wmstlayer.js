@@ -1,8 +1,6 @@
-import ApplicationState from 'store/application-state';
-
 const { base, inherit } = require('utils');
-const WMSLayer = require('core/layers/map/wmslayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
+const WMSLayer          = require('core/layers/map/wmslayer');
+const RasterLayers      = require('g3w-ol/layers/rasters');
 
 function WMSTLayer(options={}, extraParams={}, method='GET') {
   this.LAYERTYPE = {

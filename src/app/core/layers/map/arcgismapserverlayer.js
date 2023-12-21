@@ -1,6 +1,6 @@
 const { inherit, base } = require('utils');
-const WMSLAYER = require('core/layers/map/wmslayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
+const WMSLAYER          = require('core/layers/map/wmslayer');
+const RasterLayers      = require('g3w-ol/layers/rasters');
 
 function ARCGISMAPSERVERLayer(options={}, extraParams={}) {
   base(this, options, extraParams);

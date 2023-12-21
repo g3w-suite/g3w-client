@@ -1,6 +1,6 @@
 const { inherit, base } = require('utils');
-const MapLayer = require('core/layers/map/maplayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
+const MapLayer          = require('core/layers/map/maplayer');
+const RasterLayers      = require('g3w-ol/layers/rasters');
 
 function WMSTLayer(options={}, extraParams={}, method='GET') {
   this.LAYERTYPE = {

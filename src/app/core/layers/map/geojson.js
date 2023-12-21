@@ -1,5 +1,5 @@
 const { inherit, base } = require('utils');
-const VectorLayer = require('core/layers/map/vectorlayer');
+const VectorLayer       = require('core/layers/map/vectorlayer');
 
 function GeojsonLayer(options = {}) {
   const provider = options.provider;
