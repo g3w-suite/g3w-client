@@ -1885,7 +1885,6 @@ proto._setupMapLayers = function() {
     )
     .forEach(([id, layers]) => {
       const layer    = layers[0] || [];
-      console.log(layer)
       const mapLayer = layer.getMapLayer(
         {
           id: `layer_${id}`,
