@@ -9,6 +9,7 @@ import { getMapLayerById }         from 'utils/getMapLayerById';
 import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
 import { toRawType }               from 'utils/toRawType';
 import { uniqueId }                from 'utils/getUniqueDomId';
+import { get_legend_params }       from 'utils/get_legend_params';
 import GUI                         from 'services/gui';
 
 const WMSLayer                     = require('core/layers/map/wmslayer');
@@ -1934,29 +1935,8 @@ const geoutils = {
     }
     return [x, y];
   },
-  get_LEGEND_ON_LEGEND_OFF_Params(layer) {
-    let LEGEND_ON, LEGEND_OFF;
-    (layer.getCategories() || [])
-      .forEach(({
-        checked,  // new Value
-        _checked, // old Value
-        ruleKey
-      }) => {
-        // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)
-        if (checked === _checked) {
-          return;
-        }
-        if (checked) {
-          LEGEND_ON  = (undefined === LEGEND_ON ? `${layer.getWMSLayerName()}:` : `${LEGEND_ON},`) + ruleKey;
-        } else {
-          LEGEND_OFF = (undefined === LEGEND_OFF ? `${layer.getWMSLayerName()}:` : `${LEGEND_OFF},`) + ruleKey;
-        }
-      });
-    return {
-      LEGEND_ON,
-      LEGEND_OFF,
-    }
-  },
+
+  get_LEGEND_ON_LEGEND_OFF_Params: get_legend_params,
 
   /**
    * @TODO remove "Geometry" sub-property (ie. find out how to merge the following functions)

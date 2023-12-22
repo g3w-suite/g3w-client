@@ -1,4 +1,5 @@
-import ApplicationState from 'store/application-state';
+import ApplicationState      from 'store/application-state';
+import { get_legend_params } from 'utils/get_legend_params';
 
 const { base, inherit } = require('utils');
 const MapLayer          = require('core/layers/map/maplayer');
@@ -111,7 +112,6 @@ proto._updateLayers = function(mapState = {}, extraParams = {}) {
   }
    
   const layers = this._getVisibleLayers(mapState) || [];
-  const { get_LEGEND_ON_LEGEND_OFF_Params } = require('utils/geo');
 
   // skip when ..
   if (layers.length <= 0) {
@@ -125,7 +125,7 @@ proto._updateLayers = function(mapState = {}, extraParams = {}) {
   let LEGEND_OFF   = undefined;
 
   layers.forEach(layer => {
-    const { LEGEND_ON: on, LEGEND_OFF: off } = get_LEGEND_ON_LEGEND_OFF_Params(layer);
+    const { LEGEND_ON: on, LEGEND_OFF: off } = get_legend_params(layer);
     STYLES.push(layer.getStyle());
     OPACITIES.push(parseInt((layer.getOpacity() / 100) * 255));
     if (on)  LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}`;
@@ -135,15 +135,13 @@ proto._updateLayers = function(mapState = {}, extraParams = {}) {
   this._olLayer.setVisible(true);
   this._olLayer.getSource().updateParams({
     ...params,
-    filtertoken: ApplicationState.tokens.filtertoken,
-    STYLES: STYLES.join(','),
-    /** @since 3.8 */
-    OPACITIES: OPACITIES.join(','),
     LEGEND_ON,
     LEGEND_OFF,
-    LAYERS: `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map((layer) => {
-      return layer.getWMSLayerName();
-    }).join(',')}`
+    filtertoken: ApplicationState.tokens.filtertoken,
+    LAYERS:      `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`,
+    STYLES:      STYLES.join(','),
+    /** @since 3.8 */
+    OPACITIES:   OPACITIES.join(','),
   });
 
 };
