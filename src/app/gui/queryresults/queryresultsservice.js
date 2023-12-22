@@ -34,11 +34,13 @@ const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const G3WObject                  = require('core/g3wobject');
 const VectorLayer                = require('core/layers/vectorlayer');
-const PrintService               = require('core/print/printservice');
+const { PRINT_UTILS }            = require('gui/print/printservice');
 const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const deprecate                  = require('util-deprecate');
+
+const { printAtlas } = PRINT_UTILS;
 
 /**
  * Get and set vue reactivity to QueryResultsService
@@ -59,11 +61,8 @@ class QueryResultsService extends G3WObject {
     this._changeLayerResult = this.setters.changeLayerResult;
     this._addComponent      = this.setters.addComponent;
 
-
-    /**
-     * Service used to work with atlas (print functionality) action tool
-     */
-    this.printService = new PrintService();
+    /** @deprecated since 3.9.1 will be removed in 4.x */
+    this.printService = PRINT_UTILS;
 
     /**
      * @FIXME add description
@@ -1385,8 +1384,7 @@ class QueryResultsService extends G3WObject {
     features = [],
   } = {}) {
     let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
-    return this.printService
-      .printAtlas({
+    return printAtlas({
         field,
         values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
         template: atlas.name,
