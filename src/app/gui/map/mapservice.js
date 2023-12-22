@@ -2000,26 +2000,24 @@ proto.createMapLayer = function(layer) {
 
 proto.getOverviewMapLayers = function(project) {
   const WMSLayer = require('core/layers/map/wmslayer');
-  const projectLayers = project.getLayersStore().getLayers({
-    GEOLAYER: true,
-    BASELAYER: false,
-  });
-  const multiLayers = _.groupBy(projectLayers,layer => layer.getMultiLayerId());
-  let overviewMapLayers = [];
+  let layers = [];
 
-  Object.entries(multiLayers).forEach(([id, layers]) => {
-    const multilayerId = 'overview_layer_'+id;
-    const tiled = layers[0].state.tiled;
-    const config = {
-      url: project.getWmsUrl(),
-      id: multilayerId,
-      tiled: tiled
-    };
-    const mapLayer = new WMSLayer(config);
-    layers.reverse().forEach(layer => mapLayer.addLayer(layer));
-    overviewMapLayers.push(mapLayer.getOLLayer(true));
-  });
-  return overviewMapLayers.reverse();
+  Object
+    .entries(
+      _.groupBy(
+        project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false }),
+        layer => layer.getMultiLayerId()
+      )
+    ).forEach(([id, layers]) => {
+      const mapLayer = new WMSLayer({
+        url:   project.getWmsUrl(),
+        id:    'overview_layer_' + id,
+        tiled: layers[0].state.tiled,
+      });
+      layers.reverse().forEach(layer => mapLayer.addLayer(layer));
+      layers.push(mapLayer.getOLLayer(true));
+    });
+  return layers.reverse();
 };
 
 /**
