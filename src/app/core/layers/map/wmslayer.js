@@ -119,27 +119,18 @@ proto._updateLayers = function(mapState = {}, extraParams = {}) {
     return;
   }
 
-  const CATEGORIES_LAYERS = {};
-  const STYLES            = [];
-  const OPACITIES         = [];
+  const STYLES     = [];
+  const OPACITIES  = [];
+  let LEGEND_ON    = undefined;
+  let LEGEND_OFF   = undefined;
 
-  layers.map(layer => {
-    CATEGORIES_LAYERS[layer.getWMSLayerName()] = { ...get_LEGEND_ON_LEGEND_OFF_Params(layer) };
+  layers.forEach(layer => {
+    const { LEGEND_ON: on, LEGEND_OFF: off } = get_LEGEND_ON_LEGEND_OFF_Params(layer);
     STYLES.push(layer.getStyle());
-    OPACITIES.push(parseInt((layer.getOpacity()/100) * 255))
+    OPACITIES.push(parseInt((layer.getOpacity() / 100) * 255));
+    if (on)  LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}`;
+    if (off) LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}`;
   });
-
-  let LEGEND_ON;
-  let LEGEND_OFF;
-
-  Object
-    .keys(CATEGORIES_LAYERS)
-    .forEach(layerId => {
-      const on  = CATEGORIES_LAYERS[layerId].LEGEND_ON;
-      const off = CATEGORIES_LAYERS[layerId].LEGEND_OFF;
-      if (on)  LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}`;
-      if (off) LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}`;
-    });
 
   this._olLayer.setVisible(true);
   this._olLayer.getSource().updateParams({
