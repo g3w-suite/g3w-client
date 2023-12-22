@@ -2682,7 +2682,7 @@ proto.addExternalWMSLayer = function({
   return new Promise((resolve, reject) => {
     const { wmslayer, olLayer } = createWMSLayer({ name, url, layers, projection });
 
-    wmslayer.once('loadend', () => { resolve(wmslayer) });
+    wmslayer.once('loadend',   ()  => { resolve(wmslayer) });
     wmslayer.once('loaderror', err => { reject(err); });
 
     // add to map
