@@ -40,14 +40,12 @@ proto.getLayerConfigs = function(){
 };
 
 proto.addLayer = function(layer) {
-  if (!this.allLayers.find(_layer => layer === _layer)) this.allLayers.push(layer);
-  if (!this.layers.find(_layer =>  layer === _layer)) this.layers.push(layer);
+  if (!this.allLayers.find(l => l === layer)) this.allLayers.push(layer);
+  if (!this.layers.find(l => l === layer))    this.layers.push(layer);
 };
 
 proto.removeLayer = function(layer) {
-  this.layers = this.layers.filter((_layer) => {
-    return layer !== _layer;
-  })
+  this.layers = this.layers.filter(l => l !== layer);
 };
 
 proto.isVisible = function(){
@@ -55,17 +53,18 @@ proto.isVisible = function(){
 };
 
 proto.getQueryUrl = function() {
-  const layer = this.layers[0];
-  if (layer.infourl && layer.infourl !== '') return layer.infourl;
+  if (this.layers[0].infourl && '' !== this.layers[0].infourl) {
+    return this.layers[0].infourl;
+  }
   return this.config.url;
 };
 
 proto.getQueryableLayers = function() {
-  return this.layers.filter(layer => layer.isQueryable());
+  return this.layers.filter(l => l.isQueryable());
 };
 
 proto._getVisibleLayers = function() {
-  return this.layers.filter(layer => layer.isVisible());
+  return this.layers.filter(l => l.isVisible());
 };
 
 /**
@@ -79,7 +78,6 @@ proto._getVisibleLayers = function() {
  */
 proto._makeOlLayer = function(withLayers) {
   const olLayer = new RasterLayers.WMSLayer(
-    // wmsConfig
     {
       url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
       id:              this.config.id,
@@ -87,68 +85,80 @@ proto._makeOlLayer = function(withLayers) {
       iframe_internal: this.iframe_internal,
       layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
       /** @since 3.9.1 */
-      format: this.config.format,
+      format:          this.config.format,
     },
     this.extraParams,
     this._method
   );
-  olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
-  olLayer.getSource().on('imageloadend',   () => this.emit("loadend"));
-  olLayer.getSource().on('imageloaderror', () => this.emit("loaderror"));
+
+  olLayer.getSource().on('imageloadstart', () => this.emit('loadstart'));
+  olLayer.getSource().on('imageloadend',   () => this.emit('loadend'));
+  olLayer.getSource().on('imageloaderror', () => this.emit('loaderror'));
+
   return olLayer
 };
 
 //update Layers
-proto._updateLayers = function(mapState={}, extraParams={}) {
-  let {force=false, ...params} = extraParams;
+proto._updateLayers = function(mapState = {}, extraParams = {}) {
+  let {
+    force=false,
+    ...params
+  } = extraParams;
+
   //check disabled layers
-  !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
-  const visibleLayers = this._getVisibleLayers(mapState) || [];
-  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('utils/geo');
-  if (visibleLayers.length > 0) {
-    const CATEGORIES_LAYERS = {};
-    const STYLES = [];
-    const OPACITIES = [];
-    visibleLayers.map(layer => {
-      const layerId = layer.getWMSLayerName();
-      CATEGORIES_LAYERS[layerId] = { ...get_LEGEND_ON_LEGEND_OFF_Params(layer) };
-      STYLES.push(layer.getStyle());
-      OPACITIES.push(parseInt((layer.getOpacity()/100) * 255))
+  if (!force) {
+    this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
+  }
+   
+  const layers = this._getVisibleLayers(mapState) || [];
+  const { get_LEGEND_ON_LEGEND_OFF_Params } = require('utils/geo');
+
+  // skip when ..
+  if (layers.length <= 0) {
+    this._olLayer.setVisible(false);
+    return;
+  }
+
+  const CATEGORIES_LAYERS = {};
+  const STYLES            = [];
+  const OPACITIES         = [];
+
+  layers.map(layer => {
+    CATEGORIES_LAYERS[layer.getWMSLayerName()] = { ...get_LEGEND_ON_LEGEND_OFF_Params(layer) };
+    STYLES.push(layer.getStyle());
+    OPACITIES.push(parseInt((layer.getOpacity()/100) * 255))
+  });
+
+  let LEGEND_ON;
+  let LEGEND_OFF;
+
+  Object
+    .keys(CATEGORIES_LAYERS)
+    .forEach(layerId => {
+      const on  = CATEGORIES_LAYERS[layerId].LEGEND_ON;
+      const off = CATEGORIES_LAYERS[layerId].LEGEND_OFF;
+      if (on)  LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}`;
+      if (off) LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}`;
     });
 
-    let LEGEND_ON;
-    let LEGEND_OFF;
-    Object.keys(CATEGORIES_LAYERS).forEach(layerId => {
-      if (CATEGORIES_LAYERS[layerId].LEGEND_OFF) {
-        if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = CATEGORIES_LAYERS[layerId].LEGEND_OFF;
-        else LEGEND_OFF = `${LEGEND_OFF};${CATEGORIES_LAYERS[layerId].LEGEND_OFF}`;
-      }
-      if (CATEGORIES_LAYERS[layerId].LEGEND_ON) {
-        if (typeof LEGEND_ON === 'undefined') LEGEND_ON = CATEGORIES_LAYERS[layerId].LEGEND_ON;
-        else LEGEND_ON = `${LEGEND_ON};${CATEGORIES_LAYERS[layerId].LEGEND_ON}`;
-      }
-    });
-    const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
-     params = {
-      ...params,
-      filtertoken: ApplicationState.tokens.filtertoken,
-      STYLES: STYLES.join(','),
-      /** @since v3.8 */
-      OPACITIES: OPACITIES.join(','),
-      LEGEND_ON,
-      LEGEND_OFF,
-      LAYERS: `${prefix}${visibleLayers.map((layer) => {
-        return layer.getWMSLayerName();
-      }).join(',')}`
-    };
-    this._olLayer.setVisible(true);
-    this._olLayer.getSource().updateParams(params);
-  } else this._olLayer.setVisible(false);
+  this._olLayer.setVisible(true);
+  this._olLayer.getSource().updateParams({
+    ...params,
+    filtertoken: ApplicationState.tokens.filtertoken,
+    STYLES: STYLES.join(','),
+    /** @since 3.8 */
+    OPACITIES: OPACITIES.join(','),
+    LEGEND_ON,
+    LEGEND_OFF,
+    LAYERS: `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map((layer) => {
+      return layer.getWMSLayerName();
+    }).join(',')}`
+  });
+
 };
 
-proto.setupCustomMapParamsToLegendUrl = function(params={}){
-  if (this.layer) this.layer.setMapParamstoLegendUrl(params);
-  else this.layers.forEach(layer => layer.setMapParamstoLegendUrl(params));
+proto.setupCustomMapParamsToLegendUrl = function(params = {}){
+  [].concat(this.layer || this.layers).forEach(l => l.setMapParamstoLegendUrl(params));
 };
 
 module.exports = WMSLayer;
