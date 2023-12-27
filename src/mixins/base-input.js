@@ -25,6 +25,13 @@ export default {
     }
   },
   methods: {
+    /**
+     * @since v3.9.1
+     * @param bool
+     */
+    setLoading(bool) {
+      this.state.input.options.loading.state = bool ? 'loading' : 'ready';
+    },
     showHideHelp(){
       this.state.help.visible = !this.state.help.visible
     },
