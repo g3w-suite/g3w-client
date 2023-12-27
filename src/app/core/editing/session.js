@@ -444,42 +444,24 @@ proto._serializeCommit = function(itemsToCommit) {
     }
   }
 
-  //get relation key (layerId) values
-  let relations = Object.keys(commitObj.relations);
-  // if not relations
-  if (relations.length > 0) {
-    //store relation layer id that belong to deep relations
-    const deleteRelationIds = [];
-    //Loop through relation layer id to commit
-    relations.forEach(rlId => {
-      //check if rlId (relation layer id) ia a child of current commit layer
-      if (
-        undefined === this._editor
-          .getLayer()
-          .getRelations()
-          .getArray()
-          .find(r => rlId === r.getChild())
-      ) {
-        //if not belong as child relation layer, check
-        const relationId = SessionsRegistry
-          .getSession(rlId)
+  // Remove deep relations from current layer (commitObj) that are not relative to that layer
+  let relations = Object.keys(commitObj.relations || []);
+  relations
+    .filter(id => undefined === this._editor.getLayer().getRelations().getArray().find(r => id === r.getChild())) // child relations
+    .map(id => {
+      commitObj.relations[
+        SessionsRegistry
+          .getSession(id)
           .getEditor()
           .getLayer()
           .getRelations()
           .getArray()
-          .find(r => relations.indexOf(r.getFather()) !== -1)
-          .getFather();
-
-        commitObj.relations[relationId].relations[rlId] = commitObj.relations[rlId];
-        //add to deleteRelationIds
-        deleteRelationIds.push(rlId);
-      }
+          .find(r => -1 !== relations.indexOf(r.getFather())) // parent relation layer
+          .getFather()
+        ].relations[id] = commitObj.relations[id];
+      return id;
     })
-
-    //delete deep relations from current layer relation object
-    //because are not relative of this layer
-    deleteRelationIds.forEach(rId => delete commitObj.relations[rId]);
-  }
+    .forEach(id => delete commitObj.relations[id]);
 
   return commitObj;
 
