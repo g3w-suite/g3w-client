@@ -69,6 +69,7 @@ const PRINT_UTILS = {
       body: convertObjectToUrlParams(params),
     });
     if (!response.ok) {
+      //@TODO Need to translate
       throw new Error(500 === response.status ? 'Internal Server Error' : 'Request Failed');
     }
     return {
