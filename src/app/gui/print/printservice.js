@@ -146,35 +146,41 @@ const proto = PrintComponentService.prototype;
 /**
  *
  */
-proto.setInitState = function(){
-  this.state.template = this.state.print[0].name;
-  this.state.atlas = this.state.print[0].atlas;
-  this.state.atlasValues = [];
-  this.state.rotation = 0;
-  this.state.inner = [0, 0, 0, 0];
-  this.state.center = null;
-  this.state.size = null;
-  this.state.scale = scale;
-  this.state.scala = null;
-  this.state.dpis = dpis;
-  this.state.dpi = dpis[0];
-  this.state.formats = formats;
+proto.setInitState = function() {
+  this.state.template      = this.state.print[0].name;
+  this.state.atlas         = this.state.print[0].atlas;
+  this.state.atlasValues   = [];
+  this.state.rotation      = 0;
+  this.state.inner         = [0, 0, 0, 0];
+  this.state.center        = null;
+  this.state.size          = null;
+  this.state.scale         = scale;
+  this.state.scala         = null;
+  this.state.dpis          = dpis;
+  this.state.dpi           = dpis[0];
+  this.state.formats       = formats;
   this.state.output.format = formats[0].value;
-  this.state.maps = this.state.print[0].maps;
+  this.state.maps          = this.state.print[0].maps;
   // label section
-  this.state.labels = this.state.print[0].labels;
+  this.state.labels        = this.state.print[0].labels;
 };
 
 /**
  *
  */
 proto.changeTemplate = function() {
-  if (!this.state.template) return;
-  const isPreviousAtlas = this.state.atlas;
-  const {atlas, maps, labels} = this.state.print.find(print => print.name === this.state.template);
-  this.state.maps = maps;
-  this.state.atlas = atlas;
-  this.state.labels = labels;
+  if (!this.state.template) {
+    return;
+  }
+  const isPreviousAtlas  = this.state.atlas;
+  const {
+    atlas,
+    maps,
+    labels
+  }                      = this.state.print.find(print => print.name === this.state.template);
+  this.state.maps        = maps;
+  this.state.atlas       = atlas;
+  this.state.labels      = labels;
   this.state.atlasValues = [];
   this.state.atlas ?
 
@@ -186,19 +192,20 @@ proto.changeTemplate = function() {
 };
 
 /**
- *
+ * On change scala set print area
  */
 proto.changeScale = function() {
   this.state.scala && this._setPrintArea();
 };
 
 /**
- *
+ * On change rotation, rotate print area
  */
 proto.changeRotation = function() {
-  this._mapService.setInnerGreyCoverBBox({
-    rotation: this.state.rotation
-  });
+  this._mapService
+    .setInnerGreyCoverBBox({
+      rotation: this.state.rotation
+    });
 };
 
 /**
@@ -207,7 +214,10 @@ proto.changeRotation = function() {
  * @private
  */
 proto._getPrintExtent = function() {
-  const [minx, miny, maxx, maxy] = [... this.state.printextent.lowerleft, ...this.state.printextent.upperright];
+  const [minx, miny, maxx, maxy] = [
+    ... this.state.printextent.lowerleft,
+    ...this.state.printextent.upperright
+  ];
   return (
     this._mapService.isAxisOrientationInverted() ?
       [miny, minx, maxy, maxx ] :
@@ -284,46 +294,49 @@ proto.print = function() {
         field: this.state.atlas.field_name || '$id',
         values: this.state.atlasValues,
         download: true
-      }).then(({url}) => {
-        downloadFile({
-          url,
-          filename: this.state.template,
-          mime_type: 'application/pdf'
-        }).then(()=>{
-          resolve();
-        }).catch( error => {
-          this.showError(error);
-          reject();
-        }).finally(()=> {
-          this.state.loading = false;
-          ApplicationService.setDownload(false, caller_download_id);
-          GUI.disableSideBar(false);
-        });
       })
+        .then(({url}) => {
+          downloadFile({
+            url,
+            filename: this.state.template,
+            mime_type: 'application/pdf'
+          })
+            .then(resolve)
+            .catch(error => {
+              this.showError(error);
+              reject();
+            })
+            .finally(() => {
+              this.state.loading = false;
+              ApplicationService.setDownload(false, caller_download_id);
+              GUI.disableSideBar(false);
+            });
+        })
     } else {
       this.state.output.url = null;
       this.state.output.layers = true;
       this._page = new PrintPage({
         service: this
       });
+
       GUI.setContent({
         content: this._page,
         title: 'print',
         perc: 100
       });
-      const options = this._getOptionsPrint();
-      print(options, this.state.output.method)
-        .then(data => {
+
+      print(this._getOptionsPrint(), this.state.output.method)
+        .then((data) => {
           this.state.output.url = data.url;
           this.state.output.layers = data.layers;
           this.state.output.mime_type = data.mime_type;
           resolve();
         })
-        .catch(err=> {
+        .catch(err => {
           this.showError();
           reject(err);
         })
-        .finally(()=> {
+        .finally(() => {
           // in case of no layers
           if (!this.state.output.layers) {
             GUI.disableSideBar(false);
@@ -399,6 +412,7 @@ proto._setPrintArea = function() {
   const resolution        = this._map.getView().getResolution();
   this.state.currentScala = getScaleFromResolution(resolution, this._mapUnits);
   this.state.center       = this._map.getView().getCenter();
+
   this._calculateInternalPrintExtent();
   this._mapService.setInnerGreyCoverBBox({
     type: 'pixel',
@@ -466,8 +480,8 @@ proto._setInitialScalaSelect = function() {
  */
 proto._setCurrentScala = function(resolution) {
   Object
-    .entries(this._scalesResolutions
-    ).find(([scala, res]) => {
+    .entries(this._scalesResolutions)
+    .find(([scala, res]) => {
       if (resolution <= res) {
         this.state.scala = scala;
         return true
