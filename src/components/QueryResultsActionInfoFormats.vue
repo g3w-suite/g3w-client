@@ -11,15 +11,20 @@
     :select2_value="infoformat"
     :search="false"
   >
-    <option v-for="infoformat in infoformats" :key="infoformat" :value="infoformat">{{infoformat}}</option>
+    <option
+      v-for="infoformat in infoformats"
+      :key="infoformat"
+      :value="infoformat">
+        {{infoformat}}
+    </option>
   </select>
 </template>
 
 <script>
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import GUI from 'services/gui';
+import CatalogLayersStoresRegistry             from 'store/catalog-layers';
+import GUI                                     from 'services/gui';
 
-const { response:responseParser } = require('utils/parsers');
+const { response:responseParser }              = require('utils/parsers');
 const { getAlphanumericPropertiesFromFeature } = require('utils/geo');
 
 export default {
