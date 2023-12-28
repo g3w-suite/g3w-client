@@ -971,8 +971,8 @@ class QueryResultsService extends G3WObject {
 
     const has_features = Array.isArray(features) && features.length > 0;
 
-    // Skip when layer has no features
-    if (false === has_features) {
+    // Skip when layer has no features or rawdata not undefined (wms external)
+    if (false === has_features && undefined === rawdata ) {
       return;
     }
 
@@ -1005,9 +1005,9 @@ class QueryResultsService extends G3WObject {
       (is_vector ? layer.get('id') : undefined) ||
       (is_string ? layer : undefined);
 
-    const attributes = this._parseLayerObjAttributes(layer, features, sourceType);
+    // In case of
+    const attributes = has_features ? this._parseLayerObjAttributes(layer, features, sourceType) : [];
     const external   = (is_vector || is_string);
-
     const layerObj = {
       id,
       attributes,
