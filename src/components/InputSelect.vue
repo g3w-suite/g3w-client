@@ -20,9 +20,32 @@
       v-disabled="disabled"
       :tabIndex="tabIndex"
     >
+      <div
+        v-if="relationReferenceFields.length > 0"
+        class="g3w-relation-reference-fields-content">
+        <template v-for="rf in relationReferenceFields">
+          <select
+            :id="rf.id"
+            style="width:100%"
+            class="form-control"
+          >
+            <option
+              :value="select2NullValue">
+            </option>
+            <option
+              v-for="value in rf.values"
+              :value="getValue(value[0])"
+            >
+              {{ value[1] }}
+            </option>
+          </select>
+        </template>
+        <divider/>
+      </div>
+
       <select
         ref="select"
-        style="width:100%;"
+        style="width:100%"
         class="form-control"
       >
         <option
@@ -62,6 +85,11 @@ const InputMixin             = require('gui/inputs/input');
 
 const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
 
+
+function pippo() {
+
+}
+
 export default {
 
   /** @since 3.8.6 */
@@ -71,10 +99,11 @@ export default {
   data() {
     return {
       showPickLayer: false,
-      picked: false
+      picked: false,
+      relationReferenceFields: [] // each item is
     }
   },
-  computed:{
+  computed: {
     /**
      *
      * @returns {boolean}
@@ -145,9 +174,6 @@ export default {
         this.picked = false;
       }
     },
-    /**
-     *
-     */
     setAndListenSelect2Change() {
       this.select2.on('select2:select', event => {
         let value = event.params.data.$value ?
@@ -165,8 +191,43 @@ export default {
       });
     }
   },
-  created() {
+
+  async created() {
     this.open = false;
+    //DEV
+    this.state.input.options.fields = ['short_ro', 'diameter'];
+    //
+    if (this.state.input.options.relation_reference && Array.isArray(this.state.input.options.fields)) {
+      this.setLoading(true);
+      const promises = [];
+      this.state.input.options.fields
+        .forEach((f) => {
+          this.relationReferenceFields.push({
+            id: f, //field name
+            values: [], //values
+            value: null //current value
+          })
+        promises.push(
+          CatalogLayersStoresRegistry
+            .getLayerById('lyr_pipe_mat_345') //DEV
+            .getFilterData({
+              fformatter: f
+            })
+          )
+      })
+      await Promise
+        .allSettled(promises)
+        .then(responses => {
+          responses
+            .forEach(({status, value}, i) =>{
+              if ('fulfilled' === status) {
+                this.relationReferenceFields[i].values = value.data || [];
+              }
+            })
+        })
+
+      this.setLoading(false);
+    }
     if (this.state.input.type === 'select_autocomplete') {
       const dependencyLayerId = this.state.input.options.layer_id;
       try {
@@ -176,15 +237,22 @@ export default {
         this.showPickLayer = dependencyLayer ?
           dependencyLayer.getType() !== Layer.LayerTypes.TABLE :
           false;
-        const {value:field, layer_id} = this.state.input.options;
+
+        const {
+          value:field,
+          layer_id
+        } = this.state.input.options;
+
         const options = {
           layer_id,
           fields: [field],
           pick_type: dependencyLayer.isStarted && dependencyLayer.isStarted() && 'map' || null
         };
+
         this.pickLayerInputService = this.showPickLayer && new PickLayerInputService(options);
       } catch(err) {}
     }
+
     if (this.autocomplete && this.state.value) {
       this.service.getKeyByValue({
         search: this.state.value
