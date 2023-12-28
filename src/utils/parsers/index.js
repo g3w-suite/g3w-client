@@ -5,11 +5,13 @@
  */
 
 import { G3W_FID } from 'app/constant';
+import GUI         from 'services/gui';
 
-const { toRawType } = require('utils');
-const Feature = require('core/layers/features/feature');
-const { t } = require('core/i18n/i18n.service');
-const olutils = require('utils/ol');
+const { toRawType }             = require('utils');
+const Feature                   = require('core/layers/features/feature');
+const { t }                     = require('core/i18n/i18n.service');
+const olutils                   = require('utils/ol');
+
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 /**
@@ -30,9 +32,10 @@ const utils = {
       layer: layers[0],
       features: []
     }];
-    const FeatureCollection = jsonresponse.FeatureCollection;
+    /** @since v3.9.1 ServiceExceptionReport is an attribute of json response from server in case of error */
+    const { FeatureCollection, ServiceExceptionReport } = jsonresponse;
     const handledResponses = [];
-    if (FeatureCollection.featureMember) {
+    if (FeatureCollection && FeatureCollection.featureMember) {
       const originalFeatureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
       for (let i = 0; i < layers.length; i++) {
         const layer = layers[i];
@@ -91,6 +94,14 @@ const utils = {
           handledResponse && handledResponses.unshift(handledResponse[0]);
         }
       }
+    }
+    //in case of ServiceExceptionReport
+    if (ServiceExceptionReport && ServiceExceptionReport.ServiceException) {
+       GUI.showUserMessage({
+         type: 'warning',
+         textMessage: true,
+         message: `${layers[0].getName()} - ${ServiceExceptionReport.ServiceException}`
+       })
     }
     return handledResponses;
   },
