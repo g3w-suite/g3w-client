@@ -256,7 +256,7 @@ proto._getOptionsPrint = function() {
     }
   });
 
-  const options = {
+  return {
     rotation: this.state.rotation,
     dpi: this.state.dpi,
     template: this.state.template,
@@ -266,8 +266,6 @@ proto._getOptionsPrint = function() {
     labels: this.state.labels,
     is_maps_preset_theme
   };
-
-  return options;
 };
 
 /**
@@ -348,14 +346,14 @@ proto.print = function() {
 };
 
 /**
- *
+ * Set loading
  */
 proto.startLoading = function() {
   this.state.output.loading = true;
 };
 
 /**
- *
+ *Stop Loading
  */
 proto.stopLoading = function() {
   this.state.output.loading = false;

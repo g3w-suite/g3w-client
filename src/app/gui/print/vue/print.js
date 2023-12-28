@@ -13,7 +13,7 @@ function PrintComponent(options={}) {
   this.setService(service);
   // init service
   this._service.init();
-  this.setInternalComponent = function () {
+  this.setInternalComponent = function() {
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
       service
