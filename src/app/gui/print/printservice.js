@@ -57,11 +57,92 @@ const PrintPage             = require('gui/print/vue/printpage');
  * ORIGINAL SOURCE: src\app\core\print\printservice.js@3.9.0
  */
 const PRINT_UTILS = {
+  /**
+   * @param { Object } opts
+   * @param opts.rotation,
+   * @param opts.dpi
+   * @param opts.format
+   * @param opts.template
+   * @param { Array } opts.maps
+   * @param { Array } opts.labels
+   * @param opts.is_maps_preset_theme
+   * @param { 'GET' | 'POST' } method
+   */
+  print(opts = {}, method = 'GET') {
+    const store  = ProjectsRegistry.getCurrentProject().getLayersStore();
+    const layers = store
+      .getLayers({ PRINTABLE: { scale: opts.scale }, SERVERTYPE: 'QGIS' })
+      .reverse(); // reverse order is important
 
-  print,
+    // skip when ..
+    if (!layers.length) {
+      return Promise.resolve({layers: false})
+    }
 
-  printAtlas,
+    const LAYERS = layers.map(l => l.getPrintLayerName()).join();
 
+    return PRINT_UTILS[method]({
+      url: store.getWmsUrl(),
+      mime_type: ({ pdf: 'application/pdf', jpg: 'image/jpeg' })[opts.format],
+      params: {
+        SERVICE:     'WMS',
+        VERSION:     '1.3.0',
+        REQUEST:     'GetPrint',
+        TEMPLATE:    opts.template,
+        DPI:         opts.dpi,
+        STYLES:      layers.map(l => l.getStyle()).join(','),
+        LAYERS:      opts.is_maps_preset_theme ? undefined : LAYERS,
+        FORMAT:      opts.format,
+        CRS:         store.getProjection().getCode(),
+        filtertoken: ApplicationState.tokens.filtertoken,
+        ...(opts.maps || []).reduce((params, map) => {
+          params[map.name + ':SCALE']    = map.scale;
+          params[map.name + ':EXTENT']   = map.extent;
+          params[map.name + ':ROTATION'] = opts.rotation;
+          params[map.name + ':LAYERS']   = opts.is_maps_preset_theme && undefined === map.preset_theme ? LAYERS : undefined;
+          return params;
+        }, {}),
+        ...(opts.labels || []).reduce((params, label) => {
+          params[label.id] = label.text;
+          return params;
+        }, {})
+      },
+    });
+  },
+  /**
+   * @param { Object } opts
+   * @param opts.field
+   * @param opts.values
+   * @param opts.template
+   * @param opts.download
+   * @param { 'GET' | 'POST' } method
+   */
+  printAtlas(opts = {}, method = 'GET') {
+    const store = ProjectsRegistry.getCurrentProject().getLayersStore();
+    const multi = opts.values.length > 1;
+    return PRINT_UTILS[method]({
+      url: store.getWmsUrl(),
+      mime_type: 'application/pdf',
+      params:    {
+        SERVICE:     'WMS',
+        VERSION:     '1.3.0',
+        REQUEST:     'GetPrintAtlas',
+        EXP_FILTER:  opts.field + (multi ? ' IN (' : '=') + (opts.values.map(v => `'${v}'`).join()) + (multi ? ')' : ''),
+        TEMPLATE:    opts.template,
+        filtertoken: ApplicationState.tokens.filtertoken,
+        DOWNLOAD:    opts.download ? 1 : undefined,
+      },
+    })
+  },
+
+  /**
+   * @param { Object } opts
+   * @param opts.url
+   * @param opts.params
+   * @param opts.mime_type
+   * @return {Promise<{mime_type, layers: boolean, url: string}>}
+   * @constructor
+   */
   async POST({ url, params, mime_type }) {
     const response = await fetch(url, {
       method: 'POST',
@@ -78,7 +159,14 @@ const PRINT_UTILS = {
       url: URL.createObjectURL(await response.blob()),
     };
   },
-
+  /**
+   * @param { Object } opts
+   * @param opts.url
+   * @param opts.params
+   * @param opts.mime_type
+   * @return {Promise<unknown>}
+   * @constructor
+   */
   GET({url, params, mime_type}) {
     return new Promise((resolve, reject) => {
       resolve({
@@ -569,84 +657,6 @@ proto.reload = function() {
     this._clearPrint();
   }
 };
-
-/**
- * @param { Object } opts
- * @param opts.rotation,
- * @param opts.dpi
- * @param opts.format
- * @param opts.template
- * @param { Array } opts.maps
- * @param { Array } opts.labels
- * @param opts.is_maps_preset_theme
- * @param { 'GET' | 'POST' } method
- */
-function print(opts = {}, method = 'GET') {
-  const store  = ProjectsRegistry.getCurrentProject().getLayersStore();
-  const layers = store
-    .getLayers({ PRINTABLE: { scale: opts.scale }, SERVERTYPE: 'QGIS' })
-    .reverse(); // reverse order is important
-
-  // skip when ..
-  if (!layers.length) {
-    return Promise.resolve({layers: false})
-  }
-
-  const LAYERS = layers.map(l => l.getPrintLayerName()).join();
-
-  return PRINT_UTILS[method]({
-    url: store.getWmsUrl(),
-    mime_type: ({ pdf: 'application/pdf', jpg: 'image/jpeg' })[opts.format],
-    params: {
-      SERVICE:     'WMS',
-      VERSION:     '1.3.0',
-      REQUEST:     'GetPrint',
-      TEMPLATE:    opts.template,
-      DPI:         opts.dpi,
-      STYLES:      layers.map(l => l.getStyle()).join(','),
-      LAYERS:      opts.is_maps_preset_theme ? undefined : LAYERS,
-      FORMAT:      opts.format,
-      CRS:         store.getProjection().getCode(),
-      filtertoken: ApplicationState.tokens.filtertoken,
-      ...(opts.maps || []).reduce((params, map) => {
-        params[map.name + ':SCALE']    = map.scale;
-        params[map.name + ':EXTENT']   = map.extent;
-        params[map.name + ':ROTATION'] = opts.rotation;
-        params[map.name + ':LAYERS']   = opts.is_maps_preset_theme && undefined === map.preset_theme ? LAYERS : undefined;
-        return params;
-      }, {}),
-      ...(opts.labels || []).reduce((params, label) => {
-        params[label.id] = label.text;
-        return params;
-      }, {})
-    },
-  }); 
-}
- /**
- * @param { Object } opts
- * @param opts.field
- * @param opts.values
- * @param opts.template
- * @param opts.download
- * @param { 'GET' | 'POST' } method
- */
-function printAtlas(opts = {}, method = 'GET') {
-  const store = ProjectsRegistry.getCurrentProject().getLayersStore();
-  const multi = opts.values.length > 1;
-  return PRINT_UTILS[method]({
-    url: store.getWmsUrl(),
-    mime_type: 'application/pdf',
-    params:    {
-      SERVICE:     'WMS',
-      VERSION:     '1.3.0',
-      REQUEST:     'GetPrintAtlas',
-      EXP_FILTER:  opts.field + (multi ? ' IN (' : '=') + (opts.values.map(v => `'${v}'`).join()) + (multi ? ')' : ''),
-      TEMPLATE:    opts.template,
-      filtertoken: ApplicationState.tokens.filtertoken,
-      DOWNLOAD:    opts.download ? 1 : undefined,
-    },
-  })
-}
 
 module.exports = {
   PrintComponentService,
