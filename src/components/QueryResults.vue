@@ -542,20 +542,20 @@
       getColSpan(layer) {
         return this.attributesSubsetLength(layer)+(!this.hasLayerOneFeature(layer)*1);
       },
-      getDownloadActions(layer){
+      getDownloadActions(layer) {
         return this.state.layersactions[layer.id].find(action => action.formats);
       },
-      addLayerFeaturesToResults(layer){
+      addLayerFeaturesToResults(layer) {
         this.$options.queryResultsService.addLayerFeaturesToResultsAction(layer);
       },
-      showDownloadAction(evt){
+      showDownloadAction(evt) {
         const display = evt.target.children[0].style.display;
         evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
       },
-      printAtlas(layer){
+      printAtlas(layer) {
         this.$options.queryResultsService.printAtlas(layer);
       },
-      showLayerDownloadFormats(layer){
+      showLayerDownloadFormats(layer) {
         this.$options.queryResultsService.showLayerDownloadFormats(layer)
       },
       saveLayerResult(layer, type="csv") {
@@ -573,11 +573,10 @@
       saveFilter(layer) {
         this.$options.queryResultsService.saveFilter(layer);
       },
-
       addRemoveFilter(layer){
         this.$options.queryResultsService.addRemoveFilter(layer);
       },
-      getContainerFromFeatureLayer({layer, index}={}){
+      getContainerFromFeatureLayer({layer, index}={}) {
         return $(`#${layer.id}_${index} > td`);
       },
       hasOneLayerAndOneFeature(layer) {
@@ -601,11 +600,12 @@
       geometryAvailable(feature) {
         return feature.geometry ? true : false;
       },
-      extractAttributesFromFirstTabOfFormStructureLayers(layer){
+      extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
         const traverseStructure = item => {
-          if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
-          else {
+          if (item.nodes) {
+            item.nodes.forEach(node => traverseStructure(node));
+          } else {
             let field = layer.formStructure.fields.find(field => field.name === item.field_name);
             if (field) {
               if (this.state.type === 'ows'){
@@ -617,12 +617,16 @@
             }
           }
         };
-        layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
+        if (layer.formStructure.structure.length) {
+          layer.formStructure.structure.forEach(structure => traverseStructure(structure));
+        }
         return Array.from(attributes);
       },
       attributesSubset(layer) {
 
-        const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
+        const attributes = this.hasFormStructure(layer) ?
+          this.extractAttributesFromFirstTabOfFormStructureLayers(layer) :
+          layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
         // TODO: find a clever way to handle geocoding results..
         const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ MAX_SUBSET_LENGTH, attributes.length);
@@ -654,13 +658,20 @@
         const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
         const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
         const baseCellWidth = headerAttributeCellTotalWidth / MAX_SUBSET_LENGTH;
-        if ((index === subsetLength-1) && diff>0) return baseCellWidth * (diff+1);
-        else return baseCellWidth;
+        if ((index === subsetLength-1) && diff>0) {
+          return baseCellWidth * (diff+1);
+        } else {
+          return baseCellWidth;
+        }
       },
       featureBoxColspan(layer) {
         let colspan = this.attributesSubsetLength(layer);
-        if (layer.expandable) colspan += 1;
-        if (layer.hasgeometry) colspan += 1;
+        if (layer.expandable) {
+          colspan += 1;
+        }
+        if (layer.hasgeometry) {
+          colspan += 1;
+        }
         return colspan;
       },
       relationsAttributesSubsetLength(elements) {
@@ -679,7 +690,7 @@
       getLayerAttributeFromStructureItem(layer, field_name) {
         return layer.attributes.find(attribute => attribute.name === field_name);
       },
-      getLayerFeatureBox(layer, feature, relation_index){
+      getLayerFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
         if (this.state.layersFeaturesBoxes[boxid] === undefined) {
           this.state.layersFeaturesBoxes[boxid] = Vue.observable({
@@ -705,13 +716,17 @@
       // to CHECK NOT GOOD
       collapsedFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
-        return this.state.layersFeaturesBoxes[boxid] ? this.state.layersFeaturesBoxes[boxid].collapsed : true;
+        return this.state.layersFeaturesBoxes[boxid] ?
+          this.state.layersFeaturesBoxes[boxid].collapsed :
+          true;
       },
       showFeatureInfo(layer, boxid) {
         this.$options.queryResultsService.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
-          show: this.state.layersFeaturesBoxes[boxid] ? !this.state.layersFeaturesBoxes[boxid].collapsed : false
+          show: this.state.layersFeaturesBoxes[boxid] ?
+            !this.state.layersFeaturesBoxes[boxid].collapsed :
+            false
         });
       },
       getBoxId(layer, feature, relation_index) {
@@ -761,7 +776,7 @@
               relations.forEach(relation => {
                 const boxid = `${layer.id}_${feature.id}_${relation.name}`;
                 const elements = relation.elements;
-                elements.forEach((element, index) =>{
+                elements.forEach((element, index) => {
                   this.state.layersFeaturesBoxes[boxid+index] = {
                     collapsed: true
                   };
@@ -771,7 +786,7 @@
           })
         });
 
-        // check if is a single result layer and if has one feature
+        // check if is a single result layer and if it has one feature
         if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
           const layer = layers[0];
           const feature = layer.features[0];
