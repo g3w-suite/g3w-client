@@ -19,7 +19,7 @@
     <div class="queryresults-container">
       <template v-if="state.layers.length">
         <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
-          <li v-show="(layerHasFeatures(layer) || layer.rawdata) && layer.show" v-for="layer in state.layers">
+          <li v-show="showLayer(layer)" v-for="layer in state.layers">
             <bar-loader :loading="layer.loading"/>
             <div class="box box-primary">
               <div class="box-header with-border" :class="{'mobile': isMobile()}" data-widget="collapse">
@@ -381,7 +381,6 @@
           </li>
         </ul>
       </template>
-
       <template v-else>
         <div v-if="state.changed" class="query-results-not-found" >
           <h4
@@ -397,17 +396,17 @@
 </template>
 
 <script>
-  import { fieldsMixin }          from 'mixins';
-  import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
-  import HeaderFeatureActionsBody from "components/QueryResultsHeaderFeatureActionsBody.vue";
-  import { toRawType, throttle }  from 'utils';
+  import { fieldsMixin }            from 'mixins';
+  import TableAttributeFieldValue   from 'components/QueryResultsTableAttributeFieldValue.vue';
+  import InfoFormats                from 'components/QueryResultsActionInfoFormats.vue';
+  import HeaderFeatureBody          from 'components/QueryResultsHeaderFeatureBody.vue';
+  import HeaderFeatureActionsBody   from "components/QueryResultsHeaderFeatureActionsBody.vue";
+  import { toRawType, throttle }    from 'utils';
 
-  const MAX_SUBSET_LENGTH = 3;
+  const MAX_SUBSET_LENGTH           = 3;
   const headerExpandActionCellWidth = 10;
-  const headerActionsCellWidth = 10;
-  const HEADERTYPESFIELD = [
+  const headerActionsCellWidth      = 10;
+  const HEADERTYPESFIELD            = [
     'varchar',
     'integer',
     'float',
@@ -491,6 +490,22 @@
     },
     methods: {
       /**
+       * return if layer need to be shows on query result list
+       * @since v3.9.1
+       * @param { Object }layer
+       * @return {boolean}
+       */
+      showLayer(layer){
+        return (
+          layer.show && //check if is set show
+          (
+            this.layerHasFeatures(layer) || //check if layer has at least one features
+            layer.rawdata || //check if layer has rawdata
+            Array.isArray(layer.infoformats) && layer.infoformats.length > 0 // check it has info formats (ex external wms layer)
+          )
+        )
+      },
+      /**
        *
        * @param layerId
        * @param type feature or layer
@@ -572,7 +587,7 @@
         return !!layer.formStructure;
       },
       layerHasFeatures(layer) {
-        return layer.features && layer.features.length > 0 ? true: false;
+        return Array.isArray(layer.features) && layer.features.length > 0;
       },
       selectionFeaturesLayer(layer) {
         this.$options.queryResultsService.selectionFeaturesLayer(layer);
