@@ -489,22 +489,25 @@
 
     },
     methods: {
+
       /**
-       * return if layer need to be shows on query result list
-       * @since v3.9.1
-       * @param { Object }layer
-       * @return {boolean}
+       * @param { Object } layer
+       * 
+       * @return { boolean } whether layer need to be show on query result list
+       * 
+       * @since 3.9.1
        */
       showLayer(layer){
         return (
-          layer.show && //check if is set show
+          layer.show &&                                                      // check if is set show
           (
-            this.layerHasFeatures(layer) || //check if layer has at least one features
-            layer.rawdata || //check if layer has rawdata
-            Array.isArray(layer.infoformats) && layer.infoformats.length > 0 // check it has info formats (ex external wms layer)
+            this.layerHasFeatures(layer) ||                                  // check if layer has at least one features
+            layer.rawdata ||                                                 // check if layer has rawdata
+            Array.isArray(layer.infoformats) && layer.infoformats.length > 0 // check if it has info formats (eg. external wms layer)
           )
         )
       },
+
       /**
        *
        * @param layerId
@@ -622,16 +625,17 @@
         }
         return Array.from(attributes);
       },
-      attributesSubset(layer) {
 
-        const attributes = this.hasFormStructure(layer) ?
-          this.extractAttributesFromFirstTabOfFormStructureLayers(layer) :
-          layer.attributes;
+      attributesSubset(layer) {
+        const attributes = this.hasFormStructure(layer)
+          ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer)
+          : layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
         // TODO: find a clever way to handle geocoding results..
         const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ MAX_SUBSET_LENGTH, attributes.length);
         return _attributes.slice(0, end);
       },
+
       relationsAttributesSubset(relationAttributes) {
         const attributes = [];
         _.forEach(relationAttributes, function (value, attribute) {
@@ -713,20 +717,19 @@
         }
         return this.state.layersFeaturesBoxes[boxid];
       },
+
       // to CHECK NOT GOOD
       collapsedFeatureBox(layer, feature, relation_index) {
-        const boxid = this.getBoxId(layer, feature, relation_index);
-        return this.state.layersFeaturesBoxes[boxid] ?
-          this.state.layersFeaturesBoxes[boxid].collapsed :
-          true;
+        const box = this.state.layersFeaturesBoxes[this.getBoxId(layer, feature, relation_index)];
+        return box ? box.collapsed : true;
       },
+
       showFeatureInfo(layer, boxid) {
+        const box = this.state.layersFeaturesBoxes[boxid];
         this.$options.queryResultsService.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
-          show: this.state.layersFeaturesBoxes[boxid] ?
-            !this.state.layersFeaturesBoxes[boxid].collapsed :
-            false
+          show: box ? !box.collapsed : false,
         });
       },
       getBoxId(layer, feature, relation_index) {
