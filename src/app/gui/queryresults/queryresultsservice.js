@@ -1007,6 +1007,7 @@ class QueryResultsService extends G3WObject {
 
     const attributes = this._parseLayerObjAttributes(layer, features, sourceType);
     const external   = (is_vector || is_string);
+
     const layerObj = {
       id,
       attributes,
