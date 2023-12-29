@@ -64,7 +64,7 @@ export default {
 
     async reloadLayerDataWithChangedContentType(contenttype) {
       this.layer.loading = true;
-      //disable select during get data from server
+      // disable select during get data from server
       $(this.$el).prop("disabled", true);
       try {
         const response = await this.projectLayer.changeProxyDataAndReloadFromServer('wms', {
@@ -83,7 +83,7 @@ export default {
         console.log(err);
       }
       this.layer.loading = false;
-      //enable select during get data from server
+      // enable select during get data from server
       $(this.$el).prop("disabled", false);
     },
 
