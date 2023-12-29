@@ -84,7 +84,7 @@ export default {
       }
       this.layer.loading = false;
       // enable select during get data from server
-      $(this.$el).prop("disabled", false);
+      this.$el.disabled = false;
     },
 
     /**
