@@ -95,7 +95,7 @@ const utils = {
         }
       }
     }
-    //in case of ServiceExceptionReport
+    // in case of ServiceExceptionReport
     if (ServiceExceptionReport && ServiceExceptionReport.ServiceException) {
        GUI.showUserMessage({
          type: 'warning',

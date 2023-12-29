@@ -12,10 +12,11 @@
     :search="false"
   >
     <option
-      v-for="infoformat in infoformats"
-      :key="infoformat"
-      :value="infoformat">
-        {{infoformat}}
+      v-for  = "infoformat in infoformats"
+      :key   = "infoformat"
+      :value = "infoformat"
+    >
+      {{infoformat}}
     </option>
   </select>
 </template>
