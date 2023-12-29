@@ -65,7 +65,7 @@ export default {
     async reloadLayerDataWithChangedContentType(contenttype) {
       this.layer.loading = true;
       // disable select during get data from server
-      $(this.$el).prop("disabled", true);
+      this.$el.disabled = true;
       try {
         const response = await this.projectLayer.changeProxyDataAndReloadFromServer('wms', {
           headers: { 'Content-Type': contenttype },
