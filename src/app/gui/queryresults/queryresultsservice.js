@@ -140,7 +140,7 @@ class QueryResultsService extends G3WObject {
        * ```
        * {
        *   "id":       (required) Unique action Id
-       *   "download": wether action is download or not
+       *   "download": whether action is download or not
        *   "class":    (required) fontawsome classname to show icon
        *   "state":    need to be reactive. Used for example to toggled state of action icon
        *   "hint":     Tooltip text
@@ -1005,8 +1005,7 @@ class QueryResultsService extends G3WObject {
       (is_vector ? layer.get('id') : undefined) ||
       (is_string ? layer : undefined);
 
-    // In case of
-    const attributes = has_features ? this._parseLayerObjAttributes(layer, features, sourceType) : [];
+    const attributes = this._parseLayerObjAttributes(layer, features, sourceType);
     const external   = (is_vector || is_string);
     const layerObj = {
       id,
@@ -1133,11 +1132,16 @@ class QueryResultsService extends G3WObject {
  
     let layerAttrs;
 
+    // sanity check (eg. external layers ?)
+    if (!features || !features.length) {
+      return [];
+    }
+
     if (layer instanceof Layer && 'ows' !== this.state.type) { 
       layerAttrs = layer.getAttributes();
     }
 
-    /* Sanitize OWS Layer attributes */
+    // Sanitize OWS Layer attributes
     if (layer instanceof Layer && 'ows' === this.state.type) {
       layerAttrs = layer
         .getAttributes()
