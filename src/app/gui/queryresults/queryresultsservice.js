@@ -34,11 +34,13 @@ const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const G3WObject                  = require('core/g3wobject');
 const VectorLayer                = require('core/layers/vectorlayer');
-const PrintService               = require('core/print/printservice');
+const { PRINT_UTILS }            = require('gui/print/printservice');
 const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const deprecate                  = require('util-deprecate');
+
+const { printAtlas } = PRINT_UTILS;
 
 /**
  * Get and set vue reactivity to QueryResultsService
@@ -59,11 +61,8 @@ class QueryResultsService extends G3WObject {
     this._changeLayerResult = this.setters.changeLayerResult;
     this._addComponent      = this.setters.addComponent;
 
-
-    /**
-     * Service used to work with atlas (print functionality) action tool
-     */
-    this.printService = new PrintService();
+    /** @deprecated since 3.9.1 will be removed in 4.x */
+    this.printService = PRINT_UTILS;
 
     /**
      * @FIXME add description
@@ -140,7 +139,7 @@ class QueryResultsService extends G3WObject {
        * ```
        * {
        *   "id":       (required) Unique action Id
-       *   "download": wether action is download or not
+       *   "download": whether action is download or not
        *   "class":    (required) fontawsome classname to show icon
        *   "state":    need to be reactive. Used for example to toggled state of action icon
        *   "hint":     Tooltip text
@@ -971,8 +970,8 @@ class QueryResultsService extends G3WObject {
 
     const has_features = Array.isArray(features) && features.length > 0;
 
-    // Skip when layer has no features
-    if (false === has_features) {
+    // Skip when layer has no features or rawdata not undefined (wms external)
+    if (false === has_features && undefined === rawdata ) {
       return;
     }
 
@@ -1133,11 +1132,16 @@ class QueryResultsService extends G3WObject {
  
     let layerAttrs;
 
+    // sanity check (eg. external layers ?)
+    if (!features || !features.length) {
+      return [];
+    }
+
     if (layer instanceof Layer && 'ows' !== this.state.type) { 
       layerAttrs = layer.getAttributes();
     }
 
-    /* Sanitize OWS Layer attributes */
+    // Sanitize OWS Layer attributes
     if (layer instanceof Layer && 'ows' === this.state.type) {
       layerAttrs = layer
         .getAttributes()
@@ -1385,8 +1389,7 @@ class QueryResultsService extends G3WObject {
     features = [],
   } = {}) {
     let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
-    return this.printService
-      .printAtlas({
+    return printAtlas({
         field,
         values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
         template: atlas.name,
