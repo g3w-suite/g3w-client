@@ -203,7 +203,8 @@ function PrintComponentService() {
   this._map = null;
   this._mapUnits;
   this._scalesResolutions = {};
-  this.init = function(){
+
+  this.init = function() {
     this._project = ProjectsRegistry.getCurrentProject();
     this.state.print = this._project.getPrint() || [];
     this.state.visible = this.state.print.length > 0;
@@ -335,7 +336,7 @@ proto.getOverviewExtent = function(extent={}) {
 proto._getOptionsPrint = function() {
   let is_maps_preset_theme = false;
   const maps = this.state.maps.map(map => {
-    is_maps_preset_theme = is_maps_preset_theme || map.preset_theme !== undefined;
+    is_maps_preset_theme = is_maps_preset_theme || undefined !== map.preset_theme;
     return {
       name: map.name,
       preset_theme: map.preset_theme,
@@ -375,12 +376,13 @@ proto.print = function() {
     if (this.state.atlas) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.state.loading = true;
-      printAtlas({
-        template: this.state.template,
-        field: this.state.atlas.field_name || '$id',
-        values: this.state.atlasValues,
-        download: true
-      })
+      this.printService
+        .printAtlas({
+          template: this.state.template,
+          field: this.state.atlas.field_name || '$id',
+          values: this.state.atlasValues,
+          download: true
+        })
         .then(({url}) => {
           downloadFile({
             url,
@@ -411,7 +413,8 @@ proto.print = function() {
         perc: 100
       });
 
-      print(this._getOptionsPrint(), this.state.output.method)
+      this.printService
+        .print(this._getOptionsPrint(), this.state.output.method)
         .then((data) => {
           this.state.output.url = data.url;
           this.state.output.layers = data.layers;
@@ -478,15 +481,15 @@ proto._calculateInternalPrintExtent = function() {
   const xmax                  = center[0] + (w / 2);
   const ymax                  = center[1] + (h / 2);
 
-  this.state.printextent.lowerleft = this._map.getCoordinateFromPixel([xmin, ymax]) ?
-    this._map.getCoordinateFromPixel([xmin, ymax]) :
-    this.state.printextent.lowerleft;
+  this.state.printextent.lowerleft = this._map.getCoordinateFromPixel([xmin, ymax])
+    ? this._map.getCoordinateFromPixel([xmin, ymax])
+    : this.state.printextent.lowerleft;
 
-  this.state.printextent.upperright = this._map.getCoordinateFromPixel([xmax, ymin]) ?
-    this._map.getCoordinateFromPixel([xmax, ymin]) :
-    this.state.printextent.upperright;
+  this.state.printextent.upperright = this._map.getCoordinateFromPixel([xmax, ymin])
+    ? this._map.getCoordinateFromPixel([xmax, ymin])
+    : this.state.printextent.upperright;
 
-  this.state.inner =  [xmin, ymax, xmax, ymin];
+  this.state.inner = [xmin, ymax, xmax, ymin];
 };
 
 /**
@@ -529,7 +532,7 @@ proto._setAllScalesBasedOnMaxResolution = function(maxResolution) {
   const orderScales          = _.orderBy(this.state.scale, ['value'], ['desc']);
   let scale                  = [];
   let addedFirstHighestScale = false;
-  const handleScala = scala => {
+  const handleScala = (scala) => {
     scale.push(scala);
     resolution = getResolutionFromScale(scala.value, this._mapUnits);
     this._scalesResolutions[scala.value] = resolution;
@@ -627,7 +630,9 @@ proto.showPrintArea = function(bool) {
             this._setMoveendMapEvent();
             this._initPrintConfig();
             this._showPrintArea();
-          } else this._clearPrint();
+          } else {
+            this._clearPrint();
+          }
         });
         this._mapService.getMap().renderSync();
       })
@@ -646,7 +651,9 @@ proto.reload = function() {
 
   if (this.state.visible) {
     this.state.template = this.state.print[0].name;
-    !this._initialized && this.init();
+    if (!this._initialized) {
+      this.init();
+    }
     this._initPrintConfig();
     this._mapService.on('changeviewaftercurrentproject', () => {
       const maxResolution = this._map.getView().getMaxResolution();
