@@ -158,7 +158,7 @@ export default {
   computed:{
 
     /**
-     * @returns {boolean} check wether current uploaded file has CSV extension
+     * @returns {boolean} check whether current uploaded file has CSV extension
      */
     csv_extension() {
       return this.layer.type === 'csv';
