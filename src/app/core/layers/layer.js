@@ -524,6 +524,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
  * @param { Array }     opts.field     - Array of object with type of suggest (see above)
  * @param opts.unique
  * @param opts.fformatter
+ * @param opts.ffield
  * @param opts.queryUrl
  * @param opts.ordering
 
