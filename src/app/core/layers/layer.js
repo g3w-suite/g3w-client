@@ -534,6 +534,7 @@ proto.getFilterData = async function({
   field,
   unique,
   fformatter, //@since v3.9
+  ffield,     //@since 3.9.1
   formatter = 1,
   queryUrl,
   ordering,
@@ -549,6 +550,7 @@ proto.getFilterData = async function({
       formatter,
       unique,
       fformatter,
+      ffield,
     });
 };
 

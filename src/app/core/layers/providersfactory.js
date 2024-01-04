@@ -204,6 +204,7 @@ const Providers = {
       queryUrl,
       ordering,
       fformatter,
+      ffield,
     } = {}) {
       const params =  {
         field,
@@ -212,6 +213,7 @@ const Providers = {
         formatter,
         unique,
         fformatter,
+        ffield,
         filtertoken: ApplicationState.tokens.filtertoken
       };
       try {
