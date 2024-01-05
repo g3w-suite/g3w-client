@@ -12,14 +12,15 @@
       v-t-tooltip="'sdk.form.inputs.tooltips.picklayer'"
       v-disabled="disabled"
       @click.stop="pickLayerValue"
-      style="cursor: pointer; position:relative; top: 2px; font-size: 1.2em"
-      :class="g3wtemplate.font['crosshairs']" class="skin-color">
+      :class="g3wtemplate.font['crosshairs']"
+      class="g3w-input-pick-layer skin-color">
     </span>
     <div
       slot="body"
       v-disabled="disabled"
       :tabIndex="tabIndex"
     >
+      <!-- RELATION REFERENCE FILTER FIELDS SECTION @since 3.9.1 -->
       <div
         v-if="filterFields.length > 0 && isFilterFieldsReady"
         class="g3w-relation-reference-fields-content">
@@ -44,7 +45,7 @@
         </template>
         <divider/>
       </div>
-
+      <!-- INPUT SELECT -->
       <select
         ref="select"
         style="width:100%"
@@ -72,7 +73,6 @@
 </template>
 
 <script>
-
 import CatalogLayersStoresRegistry    from 'store/catalog-layers';
 import MapLayersStoresRegistry        from 'store/map-layers';
 import GUI                            from 'services/gui';
@@ -100,7 +100,7 @@ export default {
       showPickLayer: false,
       picked: false,
       filterFields: [], // each item is
-      isFilterFieldsReady : false
+      isFilterFieldsReady : false /**{Boolean} @type it is used to show filter_fields select whe ready*/
     }
   },
   computed: {
@@ -170,6 +170,11 @@ export default {
   },
 
   watch: {
+    /**
+     *
+     * @param {Array} values Array of key value objects
+     * @return {Promise<void>}
+     */
     async 'state.input.options.values'(values) {
       await this.$nextTick();
       let changed = false;
@@ -193,6 +198,10 @@ export default {
   },
 
   async created() {
+    //unwatch attributes
+    this.unwatch;
+    this.filterFieldsUnwatches;
+
     const {
       filter_fields=[],
       relation_reference,
@@ -200,83 +209,79 @@ export default {
       chain_filters=false, /** @type Boolean if true filter_fields select are related ech other*/
     } = this.state.input.options;
     //In case of relation reference check if filter_fields is set
-    if (relation_reference && relation_id && filter_fields.length > 0) {
+    if (relation_reference && filter_fields.length > 0) {
       //set loading true
       this.setLoading(true);
 			/** {Boolean} @type it used to show component when all data are ready*/
       this.isFilterFieldsReady        = false;
-
+      //data from relation
       const {
         referencedLayer,
         referencingLayer,
-        fieldRef:{referencingField, referencedField}
+        fieldRef:{
+          referencingField,
+          referencedField
+        }
       }                               = ProjectsRegistry.getCurrentProject().getRelationById(relation_id);
-
+      //current layer in editing
       const layer                     = CatalogLayersStoresRegistry.getLayerById(referencingLayer)
+      //relation layer
       const relationLayer             = CatalogLayersStoresRegistry.getLayerById(referencedLayer);
+      //fields of relation layer
       const relationLayerFields       = relationLayer.getFields();
-      const relationLayerFieldsValues = filter_fields.reduce((a, f) => {
-        a[f] = `${G3W_SELECT2_NULL_VALUE}`;
-        return a;
-      }, {});
       //check if it has a value
       if (null !== this.state.value) {
-
         try {
-          //get single feature to set value of filter_fields
-          const {data:rdata=[]} = await relationLayer.getFilterData({
+          //get single feature used to set values of filter_fields
+          const {data=[]} = await relationLayer.getFilterData({
             formatter: 0,
             field: createSingleFieldParameter({
-              field: referencedField[0],
-              value: this.state.value
+              field: referencedField[0], // field related to relation (in case of relation_reference it is just one field)
+              value: this.state.value //current input value. Is value related to field of relation layer
             })
           })
-					
-		      //get all data referencing to al filter_fields values
-          const {data=[]} = await layer.getFilterData({
+		      //get all data referencing to al filter_fields values in fformatter
+          // ad set values for input
+          this.state.input.options.values = (
+            (await layer.getFilterData({
 		        fformatter: referencingField[0],
 		        order: referencingField[0],
-            ffield: Object
-              .keys(relationLayerFieldsValues)
-              .map(f => {
+            //create a filet with filter fields values (ex. field1|eq|1|AND,field2|eq|test)
+            ffield: filter_fields
+              .map((f, i) => {
+                const value = undefined === data[0].features[0].get(f)
+                  ? `${G3W_SELECT2_NULL_VALUE}`
+                  : data[0].features[0].get(f);
                 //get value of filter_field from feature response
-                relationLayerFieldsValues[f] = rdata[0].features[0].get(f);
+                //and set as value. Used after to set initial value of filter field of select
+                this.filterFields.push({
+                  id: f, //field name
+                  values: [
+                    {
+                      key: `[${relationLayerFields.find(_f => _f.name === f).label}]`,
+                      value:`${G3W_SELECT2_NULL_VALUE}` //null
+                    }
+                  ], //values
+                  value,
+                  disabled: chain_filters
+                    && i > 0
+                    && `${G3W_SELECT2_NULL_VALUE}` === this.filterFields[filter_fields[i-1]],
+                })
                 return createSingleFieldParameter({
                   field: f,
-                  value: relationLayerFieldsValues[f]
+                  value
                 })
               }).join('|AND,')
-          });
-					//set values of select
-          this.state.input.options.values = data.map(([value, key]) => ({key, value}));
-					
-          //set up filterFields
-          filter_fields
-		        .forEach((f, i) => {
-              this.filterFields.push({
-                id: f, //field name
-                values: [
-                  {
-                    key: `[${relationLayerFields.find(_f => _f.name === f).label}]`,
-                    value:`${G3W_SELECT2_NULL_VALUE}` //null
-                  }
-                ], //values
-                value: relationLayerFieldsValues[f], //current value
-                disabled: chain_filters && i > 0 && 'null' === relationLayerFieldsValues[filter_fields[i-1]],
-             })
-          });
+            })).data || []).map(([value, key]) => ({key, value}));
 
 					//in case of chain_filters
           if (chain_filters) {
             //first filter field need to get all value avery time
-            const filter_field_data = await relationLayer.getFilterData({
+            (await relationLayer.getFilterData({
 	            unique: filter_fields[0],
 		          ordering: filter_fields[0],
 	            formatter: 0,
-            });
-						
-            //set all values
-            filter_field_data.forEach(v => this.filterFields[0].values.push({key:v, value:v}));
+            })).forEach(v => this.filterFields[0].values.push({key:v, value:v}));
 
             (await Promise.allSettled(
               filter_fields.slice(1).map((f,i) => {
@@ -292,22 +297,20 @@ export default {
                     })).join('|AND,')
                 })
               })
-            ))
-		          .forEach(({status, value:data}, i) => {
-                if ('fulfilled' === status) {
-                  data.forEach(v => this.filterFields[i+1].values.push({key:v, value: v}));
-                }
-              })
+            )).forEach(({status, value:data}, i) => {
+              if ('fulfilled' === status) {
+                data.forEach(v => this.filterFields[i+1].values.push({key:v, value: v}));
+              }
+            })
           } else {
             //No chain filters
-            (
-              await Promise.allSettled(filter_fields.map(f => relationLayer.getFilterData({unique: f, ordering: f, formatter: 0,})))
-            )
-		          .forEach(({status, value:data}, index) => {
-                if ('fulfilled' === status) {
-                  //set values for all filer fields
-                  data.forEach(v => this.filterFields[index].values.push({key:v, value:v}));
-                }
+            (await Promise.allSettled(
+              filter_fields.map(f => relationLayer.getFilterData({unique: f, ordering: f, formatter: 0}))
+            )).forEach(({status, value:data}, index) => {
+              if ('fulfilled' === status) {
+                //set values for all filer fields
+                data.forEach(v => this.filterFields[index].values.push({key:v, value:v}));
+              }
             });
           }
         } catch(err) {
@@ -336,12 +339,11 @@ export default {
                 ordering: f
               });
             })
-        ))
-		      .forEach(({status, value:data}, i) => {
-            if ('fulfilled' === status) {
-              data.forEach(v => this.filterFields[i].values.push({key:v, value:v}))
-            }
-          });
+        )).forEach(({status, value:data}, i) => {
+          if ('fulfilled' === status) {
+            data.forEach(v => this.filterFields[i].values.push({key:v, value:v}))
+          }
+        });
       }
 
 			//watch change of value
@@ -355,14 +357,14 @@ export default {
             if (chain_filters) {
               //need to be disabled fields in chain after current index
               for (let i = index + 1; i < this.filterFields.length; i++) {
-                this.filterFields[i].value = 'null';
+                this.filterFields[i].value = `${G3W_SELECT2_NULL_VALUE}`;
                 this.filterFields[i].values = [this.filterFields[i].values[0]];
-                this.filterFields[i].disabled = 'null' === value;
+                this.filterFields[i].disabled = `${G3W_SELECT2_NULL_VALUE}` === value;
               }
               try {
                 const filter = this.filterFields
                   .slice(0, index + 1)
-                  .filter((f) => 'null' !== f.value)
+                  .filter((f) => `${G3W_SELECT2_NULL_VALUE}` !== f.value)
                   .map((f) => createSingleFieldParameter({
                     field: f.id,
                     value: f.value
@@ -387,27 +389,25 @@ export default {
                 console.warn(err);
               }
             }
-            
-            const {data = []} = await layer.getFilterData({
-              fformatter: referencingField[0],
-		          ordering: referencingField[0],
-              ffield:  this.filterFields
-                .filter((f) => 'null' !== f.value)
-                .map((f) => createSingleFieldParameter({
-                  field: f.id,
-                  value: f.value
-                })).join('|AND,')
-            })
-
-            this.state.input.options.values = data.map(([value, key]) => ({key, value}))
-
+            this.state.input.options.values = (
+              (await layer.getFilterData({
+                fformatter: referencingField[0],
+		            ordering: referencingField[0],
+                ffield:  this.filterFields
+                  .filter((f) => `${G3W_SELECT2_NULL_VALUE}` !== f.value)
+                  .map((f) => createSingleFieldParameter({
+                    field: f.id,
+                    value: f.value
+                  })).join('|AND,')
+              })).data ||[]
+            ).map(([value, key]) => ({key, value}));
+            //in case of values length
             if (this.state.input.options.values.length > 0) {
               this.state.value = this.state.input.options.values[0].value;
               this.select2.val(this.state.value).trigger('change');
               this.changeSelect(this.state.value);
             }
-            
-            //set loading false
+            //stop loading
             this.setLoading(false);
           })
       })
@@ -449,9 +449,9 @@ export default {
       });
     }
   },
+
   async mounted() {
     await this.$nextTick();
-    this.unwatch;
     const selectElement = $(this.$refs.select);
     const language =  this.getLanguage();
     const dropdownParent = this.state.dropdownParent === undefined && $('#g3w-view-content');
@@ -499,12 +499,24 @@ export default {
       this.pickLayerInputService.clear();
       this.pickLayerInputService = null;
     }
-    this.unwatch && this.unwatch();
-    this.unwatch = null;
+    if (this.unwatch) {
+      this.unwatch();
+      this.unwatch = null;
+    }
+    //in case of filter fields need to remove all watch handler
     if (this.filterFieldsUnwatches) {
       this.filterFieldsUnwatches.forEach(uw => uw());
+      this.filterFieldsUnwatches = null;
     }
-    this.filterFieldsUnwatches = null;
   }
 };
 </script>
+
+<style scoped>
+  .g3w-input-pick-layer {
+    cursor: pointer;
+    position:relative;
+    top: 2px;
+    font-size: 1.2em;
+  }
+</style>
