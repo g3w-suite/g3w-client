@@ -193,7 +193,6 @@ export default {
   },
 
   async created() {
-    this.open = false;
     const {
       filter_fields=[],
       relation_reference,
