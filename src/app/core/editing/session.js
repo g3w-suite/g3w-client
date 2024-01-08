@@ -4,11 +4,12 @@ import SessionsRegistry        from 'store/sessions';
 const {
   base,
   inherit
-}                      = require('utils');
-const G3WObject        = require('core/g3wobject');
-const History          = require('core/editing/history');
-const Layer            = require('core/layers/layer');
-const { is3DGeometry } = require('utils/geo').Geometry;
+}                                   = require('utils');
+const G3WObject                     = require('core/g3wobject');
+const History                       = require('core/editing/history');
+const Layer                         = require('core/layers/layer');
+const { Geometry: { is3DGeometry }} = require('utils/geo');
+
 
 function Session(options={}) {
   this.setters = {
@@ -55,6 +56,7 @@ function Session(options={}) {
   });
   //store temporary change not save on history
   this._temporarychanges = [];
+  //register this session on session registry
   this.register();
 }
 
@@ -104,7 +106,7 @@ proto.register = function() {
 /**
  *
  */
-proto.unregister = function(){
+proto.unregister = function() {
   SessionsRegistry.unregister(this.getId());
 };
 
@@ -134,10 +136,12 @@ proto._getFeatures = function(options={}) {
     this._allfeatures = !options.filter;
     this._editor.getFeatures(options)
       .then(promise => {
-        promise.then(features => {
-          this.state.getfeatures = true;
-          d.resolve(features);
-        }).fail(err => d.reject(err));
+        promise
+          .then(features => {
+            this.state.getfeatures = true;
+            d.resolve(features);
+          })
+          .fail(err => d.reject(err));
       });
   } else d.resolve([]);
 
@@ -194,9 +198,8 @@ proto.save = function(options={}) {
  * @param feature
  */
 proto.updateTemporaryChanges = function(feature) {
-  this._temporarychanges.forEach((change) => {
-    change.feature.setProperties(feature.getProperties());
-  })
+  this._temporarychanges
+    .forEach((change) => change.feature.setProperties(feature.getProperties()));
 };
 
 // method to add temporary feature
@@ -212,6 +215,7 @@ proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
   if (removeNotEditableProperties) {
     editor.removeNotEditablePropriertiesFromFeature(feature);
   }
+
   const newFeature = feature.clone();
 
   this.push({
@@ -233,15 +237,16 @@ proto.pushDelete = function(layerId, feature) {
 
 // add temporary feature changes
 proto.pushUpdate = function(layerId, newFeature, oldFeature) {
-  // in case of change attribute immediately after create feature
+  // in case of new feature
   if (newFeature.isNew()) {
-    const temporarynewfeatureIndex = this._temporarychanges.findIndex((change) => {
-      return change.layerId === layerId && change.feature.getId() === newFeature.getId();
-    });
-    if (temporarynewfeatureIndex !== -1) {
+    //get index of temporary changes
+    const tcIndex = this._temporarychanges
+      .findIndex((c) => layerId === c.layerId && c.feature.getId() === newFeature.getId());
+
+    if (tcIndex !== -1) {
       const feature = newFeature.clone();
       feature.add();
-      this._temporarychanges[temporarynewfeatureIndex].feature = feature;
+      this._temporarychanges[tcIndex].feature = feature;
       return;
     }
   }
@@ -283,7 +288,7 @@ proto.moveRelationStatesOwnSession = function() {
 // that will be added with save method
 proto.push = function(New, Old) {
   /*
-  New e Old saranno oggetti contenti {
+  New e Old are objects {
       layerId: xxxx,
       feature: feature
     }
@@ -297,10 +302,12 @@ proto.push = function(New, Old) {
 // method to revert (cancel) all changes in history and clean session
 proto.revert = function() {
   const d = $.Deferred();
-  this._editor.revert().then(()=>{
-    this._history.clear();
-    d.resolve();
-  });
+  this._editor
+    .revert()
+    .then(() => {
+      this._history.clear();
+      d.resolve();
+    });
   return d.promise();
 };
 
@@ -311,16 +318,19 @@ proto._filterChanges = function() {
     own:[],
     dependencies: {}
   };
-  this._temporarychanges.forEach((temporarychange) => {
-    const change = Array.isArray(temporarychange) ? temporarychange[0] : temporarychange;
-    if (change.layerId === id) changes.own.push(change);
-    else {
-      if (!changes.dependencies[change.layerId])
-        changes.dependencies[change.layerId] = [];
-      // FILO
-      changes.dependencies[change.layerId].unshift(change);
-    }
-  });
+  this._temporarychanges
+    .forEach((temporarychange) => {
+      const change = Array.isArray(temporarychange) ? temporarychange[0] : temporarychange;
+      if (change.layerId === id) {
+        changes.own.push(change);
+      } else {
+        if (!changes.dependencies[change.layerId]) {
+          changes.dependencies[change.layerId] = [];
+        }
+        // FILO
+        changes.dependencies[change.layerId].unshift(change);
+      }
+    });
   return changes;
 };
 
@@ -330,18 +340,23 @@ proto._filterChanges = function() {
  * @returns {*}
  */
 proto.rollback = function(changes) {
-  if (changes) return this._editor.rollback(changes);
-  else {
+  if (changes) {
+    return this._editor.rollback(changes);
+  } else {
     const d = $.Deferred();
     const changes = this._filterChanges();
-    this._editor.rollback(changes.own).then(()=>{
-      const {dependencies} = changes;
-      for (const id in dependencies) {
-        SessionsRegistry.getSession(id).rollback(dependencies[id]);
-      }
-      d.resolve(dependencies);
-    });
+    this._editor
+      .rollback(changes.own)
+      .then(() => {
+        const {dependencies} = changes;
+        for (const id in dependencies) {
+          SessionsRegistry.getSession(id).rollback(dependencies[id]);
+        }
+        d.resolve(dependencies);
+      });
+
     this._temporarychanges = [];
+
     return d.promise();
   }
 };
@@ -501,17 +516,20 @@ proto.getCommitItems = function() {
  * @param layerId
  * @param commitItems
  */
-proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
-  const {relations} = commitItems;
+proto.set3DGeometryType = function({
+  layerId=this.getId(),
+  commitItems}={}
+) {
+  const { relations } = commitItems;
   const editingLayer = MapLayersStoresRegistry.getLayerById(layerId).getEditingLayer();
   // check id there is editing layer and if is a vector layer
-  if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR){
+  if (editingLayer && Layer.LayerTypes.VECTOR === editingLayer.getType()) {
     // get Geometry type layer
     const geometryType = editingLayer.getGeometryType();
     // if is a 3D layer i set on geoJON before send it to server
     if (is3DGeometry(geometryType)){
       ['add', 'update']
-        .forEach(action =>commitItems[action].forEach(feature => feature.geometry.type = geometryType))
+        .forEach((action) => commitItems[action].forEach(feature => feature.geometry.type = geometryType))
     }
   }
   // the same control of relations layers
