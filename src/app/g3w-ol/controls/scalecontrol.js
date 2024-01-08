@@ -1,5 +1,5 @@
 const {t} = require('core/i18n/i18n.service');
-const { getResolutionFromScale, getScaleFromResolution } = require('core/utils/ol');
+const { getResolutionFromScale, getScaleFromResolution } = require('utils/ol');
 import { PRINT_SCALES } from 'app/constant';
 
 const ScaleControl = function(options= {}) {

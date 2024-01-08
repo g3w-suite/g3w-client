@@ -20,7 +20,7 @@
 <script>
   import ApplicationState from 'store/application-state';
 
-  const { getUniqueDomId } = require('core/utils/utils');
+  const { getUniqueDomId } = require('utils');
 
   export default {
     name: "datetime",

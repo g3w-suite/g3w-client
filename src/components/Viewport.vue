@@ -64,7 +64,7 @@
           <span v-t="contentTitle.post_title"></span>
         </span>
         </div>
-        <div class="g3-content-header-action-tools" style="display: flex">
+        <div class="g3-content-header-action-tools" style="display: flex; align-items: center">
           <component v-for="tool in state.content.headertools" :is="tool"/>
           <resize-icon v-if="showresizeicon" :type="state.split" style="font-size: 1em; padding: 0; align-self: center; margin-left: auto" :style="{marginRight: state.content.closable ? '5px': '0px'}"/>
           <span v-if="state.content.closable && state.content.aside" @click="closeContent" :class="{'mobile': isMobile()}" class="action-button" style="display: flex; justify-content: center ">
@@ -72,7 +72,7 @@
         </span>
         </div>
       </div>
-      <div v-show="state.content.loading" class="bar-loader"></div>
+      <bar-loader :loading="state.content.loading"/>
     </div>
   </div>
 </template>
@@ -142,14 +142,16 @@
       styles() {
         return {
           map: {
-            width: `${this.state.map.sizes.width}px`,
-            height: `${this.state.map.sizes.height}px`,
+            width:         `${this.state.map.sizes.width}px`,
+            height:        `${this.state.map.sizes.height}px`,
           },
           content: {
-            width: `${this.state.content.sizes.width}px`,
-            height: `${this.state.content.sizes.height}px`,
-            zIndex: ZINDEXES.usermessage.tool + 1,
-            minHeight: this.state.split === 'v' ? `${viewportConstraints.resize.content.min}px` : null
+            width:         `${this.state.content.sizes.width}px`,
+            height:        `${this.state.content.sizes.height}px`,
+            zIndex:        ZINDEXES.usermessage.tool + 1,
+            minHeight:     'v' === this.state.split ? `${viewportConstraints.resize.content.min}px` : null,
+            paddingTop:    '8px',
+            paddingBottom: '8px',
           }
         }
       },

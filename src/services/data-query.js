@@ -5,7 +5,7 @@
 
 import { G3W_FID, QUERY_POINT_TOLERANCE } from 'app/constant';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const { t } = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
 const {
@@ -13,7 +13,7 @@ const {
   getQueryLayersPromisesByGeometry,
   getQueryLayersPromisesByBBOX,
   getMapLayersByFilter
-} = require('core/utils/geo');
+} = require('utils/geo');
 
 function QueryService(){
   base(this);
@@ -48,7 +48,9 @@ function QueryService(){
       filter: {
         SELECTED : false
       }
-    }
+    },
+    /**@since 3.9.0**/
+    type = 'polygon'
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
@@ -92,7 +94,7 @@ function QueryService(){
         fid,
         geometry,
         layerName,
-        type: 'polygon',
+        type,
         filterConfig,
         external
       }

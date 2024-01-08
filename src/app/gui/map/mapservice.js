@@ -1,13 +1,13 @@
-import { MAP_SETTINGS } from 'app/constant';
-import wms from 'gui/wms/vue/wms';
-import DataRouterService from 'services/data';
-import MapLayersStoresRegistry from 'store/map-layers';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-import ControlsRegistry from 'store/map-controls';
-import GUI from 'services/gui';
+import { MAP_SETTINGS }         from 'app/constant';
+import DataRouterService        from 'services/data';
+import MapLayersStoresRegistry  from 'store/map-layers';
+import ProjectsRegistry         from 'store/projects';
+import ApplicationService       from 'services/application';
+import ControlsRegistry         from 'store/map-controls';
+import GUI                      from 'services/gui';
+import MapControlZoomHistory    from "components/MapControlZoomHistory.vue";
+import MapControlGeocoding      from 'components/MapControlGeocoding.vue';
 
-const { t } = require('core/i18n/i18n.service');
 const {
   inherit,
   base,
@@ -15,30 +15,299 @@ const {
   uniqueId,
   throttle,
   toRawType,
-  createFilterFromString
-} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+  createFilterFromString,
+}                               = require('utils');
+const G3WObject                 = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
   createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
-  getGeoTIFFfromServer
-} = require('core/utils/geo');
-const WFSProvider = require('core/layers/providers/wfsprovider');
-const olhelpers = require('g3w-ol/g3w.ol').helpers;
-const { getScaleFromResolution, getResolutionFromScale } = require('core/utils/ol');
-const ControlsFactory = require('gui/map/control/factory');
-const VectorLayer = require('core/layers/vectorlayer');
+  getGeoTIFFfromServer,
+}                               = require('utils/geo');
+const BaseLayers                = require('g3w-ol/layers/bases');
+const {
+  getScaleFromResolution,
+  getResolutionFromScale
+}                               = require('utils/ol');
+const VectorLayer               = require('core/layers/vectorlayer');
 
-const SETTINGS = {
-  zoom : {
-    maxScale: 1000,
-  },
-  animation: {
-    duration: 2000
-  }
+const Control                   = require('g3w-ol/controls/control');
+const ResetControl              = require('g3w-ol/controls/resetcontrol');
+const QueryControl              = require('g3w-ol/controls/querycontrol');
+const ZoomBoxControl            = require('g3w-ol/controls/zoomboxcontrol');
+const QueryBBoxControl          = require('g3w-ol/controls/querybboxcontrol');
+const QueryByPolygonControl     = require('g3w-ol/controls/querybypolygoncontrol');
+const GeolocationControl        = require('g3w-ol/controls/geolocationcontrol');
+const StreetViewControl         = require('g3w-ol/controls/streetviewcontrol');
+const AddLayersControl          = require('g3w-ol/controls/addlayers');
+const LengthControl             = require('g3w-ol/controls/lengthcontrol');
+const AreaControl               = require('g3w-ol/controls/areacontrol');
+const MousePositionControl      = require('g3w-ol/controls/mousepositioncontrol');
+const ScaleControl              = require('g3w-ol/controls/scalecontrol');
+const OnClikControl             = require('g3w-ol/controls/onclickcontrol');
+const ScreenshotControl         = require('g3w-ol/controls/screenshotcontrol');
+const geoScreenshotControl      = require('g3w-ol/controls/geoscreenshotcontrol');
+const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
+const InteractionControl        = require('g3w-ol/controls/interactioncontrol');
+
+const CONTROLS = {
+  'zoomtoextent':       OLControl('zoomtoextent'),
+  'zoom':               OLControl('zoom'),
+  'scaleline':          OLControl('scaleline'),
+  'overview':           OLControl('overview'),
+  /** @since 3.8.0 */
+  'zoomhistory':        VueControl('zoomhistory'),
+  'geocoding':          VueControl('nominatim'),
+  'reset':              ResetControl,
+  'zoombox':            ZoomBoxControl,
+  'query':              QueryControl,
+  'querybbox':          QueryBBoxControl,
+  'querybypolygon':     QueryByPolygonControl,
+  'geolocation':        GeolocationControl,
+  'streetview':         StreetViewControl,
+  'addlayers':          AddLayersControl,
+  'length':             LengthControl,
+  'area':               AreaControl,
+  'mouseposition':      MousePositionControl,
+  'scale':              ScaleControl,
+  'onclick':            OnClikControl,
+  /** @since 3.8.3 */
+  'ontoggle':           InteractionControl,
+  'screenshot':         ScreenshotControl,
+  'geoscreenshot':      geoScreenshotControl,
+  'querybydrawpolygon': QueryByDrawPolygonControl,
 };
+
+/**
+ * BACKCOMP v3.x
+ */
+CONTROLS['nominatim'] = CONTROLS['geocoding'];
+
+/**
+ * @FIXME add description
+ * 
+ * @since 3.9.0
+ */
+
+class OlMapViewer {
+
+  constructor(opts = {}) {
+    const controls     = ol.control.defaults({ attribution: false, zoom: false });
+    const interactions = ol.interaction.defaults().extend([ new ol.interaction.DragRotate() ]);
+
+    interactions.removeAt(1); // remove douclickzoom
+
+    this.map = new ol.Map({
+      controls,
+      interactions,
+      ol3Logo: false,
+      view: opts.view instanceof ol.View ? opts.view : new ol.View(opts.view),
+      keyboardEventTarget: document,
+      target: opts.id,
+    });
+  }
+
+  /**
+   * @FIXME add description
+   */
+  destroy() {
+    if (this.map) {
+      this.map.dispose();
+      this.map = null
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getView() {
+    return this.map.getView();
+  }
+  /**
+   * @FIXME add description
+   */
+  updateMap(mapObject) { }
+
+  /**
+   * @FIXME add description
+   */
+  updateView(){ }
+
+  /**
+   * @FIXME add description
+   */
+  getMap() {
+    return this.map;
+  }
+
+  /**
+   * @FIXME add description
+   */
+  setTarget(id) {
+    this.map.setTarget(id);
+  }
+
+  /**
+   * @FIXME add description
+   */
+  zoomTo(coordinate, zoom) {
+    const view = this.map.getView();
+    view.setCenter(coordinate);
+    view.setZoom(zoom);
+  };
+
+  /**
+   * @FIXME add description
+   */
+  goTo(coordinates, options = {}) {
+    const view    = this.map.getView();
+    const animate = options.animate || true;
+    const zoom    = options.zoom || false;
+    if (animate) {
+      view.animate(
+        { duration: 300, center: coordinates },
+        (zoom ? ({ zoom, duration: 300 }) : ({ duration: 300, resolution: view.getResolution() })
+      ));
+    } else {
+      view.setCenter(coordinates);
+      if (zoom) {
+        view.setZoom(zoom);
+      }
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  goToRes(coordinates, options = {}) {
+    const view       = this.map.getView();
+    const animate    = options.animate || true;
+    const resolution = options.resolution || view.getResolution();
+    if (animate) {
+      view.animate(
+        { duration: 200, center: coordinates },
+        { duration: 200, resolution }
+      );
+    } else {
+      view.setCenter(coordinates);
+      view.setResolution(resolution);
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  fit(geometry, options = {}) {
+    const view    = this.map.getView();
+    const animate = options.animate || true;
+    if (animate) {
+      view.animate({ duration: 200, center: view.getCenter() });
+      view.animate({ duration: 200, resolution: view.getResolution() });
+    }
+    if (options.animate) {
+      delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
+    }
+    view.fit(geometry, {
+      ...options,
+      constrainResolution: (undefined === options.constrainResolution && true || options.constrainResolution),
+      size:  this.map.getSize()
+    });
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getZoom() {
+    return this.map.getView().getZoom();
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getResolution() {
+    return this.map.getView().getResolution();
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getCenter() {
+    return this.map.getView().getCenter();
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getBBOX() {
+    return this.map.getView().calculateExtent(this.map.getSize());
+  };
+
+  /**
+   * @FIXME add description
+   */
+  getLayerByName(layerName) {
+    return this.map.getLayers().find(layer => layerName === layer.get('name'));
+  }
+
+  /**
+   * @FIXME add description
+   */
+  removeLayerByName(layerName) {
+    const layer = this.getLayerByName(layerName);
+    if (layer) {
+      this.map.removeLayer(layer);
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getActiveLayers() {
+    return this
+      .map
+      .getLayers()
+      .filter((layer) => {
+        const props = layer.getProperties();
+        return  (props.visible && true !== props.basemap);
+      });
+  };
+
+  /**
+   * @FIXME add description
+   */
+  removeLayers() {
+    this.map.getLayers().clear();
+  };
+
+  /**
+   * @FIXME add description
+   */
+  getLayersNoBase() {
+    return this
+      .map
+      .getLayers()
+      .filter((layer) => {
+        const props = layer.getProperties();
+        return (true !== props.basemap);
+      });
+  }
+
+  /**
+   * @FIXME add description
+   */
+  addBaseLayer(type) {
+    this.map.addLayer(type ? BaseLayers[type] : BaseLayers.BING.Aerial);
+  };
+
+  /**
+   * @TODO double check (unusued and broken code ?)
+   */
+  changeBaseLayer(layerName) {
+    this.map.getLayers().insertAt(0, this.getLayerByName(layername));
+  }
+
+}
 
 function MapService(options={}) {
   this.state = {
@@ -141,7 +410,7 @@ function MapService(options={}) {
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
           geometryType,
-          color:this.defaultsLayers._style.selectionLayer.color,
+          color: this.defaultsLayers._style.selectionLayer.color,
           fill: false
         });
         styles.push(style);
@@ -370,7 +639,7 @@ proto._addHideMap = function({ratio, layers=[], mainview=false} = {}) {
     center: view.getCenter(),
     resolution: this.getResolution()
   };
-  const viewer = olhelpers.createViewer({
+  const viewer = new OlMapViewer({
     id: idMap.id,
     view: mainview ? view: view_options
   });
@@ -589,17 +858,22 @@ proto.activeMapControl = function(controlName) {
   !control.isToggled() ? control.toggle() : null;
 };
 
-proto.createMapControl = function(type, { id, add = true, toggled = false, visible, options = {} } = {}) {
-  const control = ControlsFactory.create({ type, toggled, ...options });
-  visible = visible === undefined
-    ? (control.isVisible ? control.isVisible() : true)
-    : visible;
+proto.createMapControl = function(type, {
+  id,
+  visible,
+  add     = true,
+  toggled = false,
+  options = {},
+} = {}) {
+  const control = CONTROLS[type] ? new CONTROLS[type]({ type, toggled, ...options }) : undefined;
+  if (undefined === visible) {
+    visible = (control.isVisible ? control.isVisible() : true)
+  }
   if (control) {
     this.addControl(id || type, type, control, add, visible);
   }
   return control;
 };
-
 
 proto.addScaleLineUnits = function(units=[]) {
   units.forEach(unit => this.state.mapunits.push(unit));
@@ -622,7 +896,9 @@ proto._checkMapControls = function() {
 
 proto._setupControls = function() {
   const baseLayers = getMapLayersByFilter({ BASELAYER: true });
+
   this.getMapLayers().forEach(mapLayer => mapLayer.getSource().setAttributions(this.getApplicationAttribution()));
+
   // check if base layer is set. If true add attribution control
   if (this.getApplicationAttribution() || baseLayers.length) {
     const attributionControl = new ol.control.Attribution({
@@ -632,23 +908,29 @@ proto._setupControls = function() {
     this.getMap().addControl(attributionControl);
   }
 
-  if (this.config && this.config.mapcontrols) {
-    const mapcontrols = this.config.mapcontrols;
-    //common spatial methods for map controls
-    const spatialMethod = 'intersects';
-    mapcontrols.forEach(mapcontrol => {
+  // skip when no controls
+  if (!this.config || !this.config.mapcontrols) {
+    return;
+  }
+
+  // BACKCOMP (g3w-admin < v3.7.0)
+  const mapcontrols = Array.isArray(this.config.mapcontrols)
+    ? this.config.mapcontrols.reduce((a, v) => { a[v] = {}; return a; }, {}) // convert `initConfig.group.mapcontrols` from an array of strings to a key-value config Object (eg. ["geocoding"] --> "geocoding" = {})
+    : this.config.mapcontrols;
+
+  Object
+    .entries(mapcontrols)
+    .forEach(([controlType, config={}]) => {
       let control;
-      // mapcontrol can be a String or object with options
-      const controlType = toRawType(mapcontrol) === 'String' ? mapcontrol : mapcontrol.name;
       switch (controlType) {
+
         case 'reset':
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
+            control = new ResetControl({ type: 'reset' });
           }
           this.addControl(controlType, control, false);
           break;
+
         case 'zoom':
           control = this.createMapControl(controlType, {
             options: {
@@ -657,6 +939,7 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'zoombox':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {});
@@ -665,6 +948,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         case 'zoomtoextent':
           control = this.createMapControl(controlType, {
             options: {
@@ -673,6 +957,7 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'mouseposition':
           if (!isMobile.any) {
             const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
@@ -706,6 +991,7 @@ proto._setupControls = function() {
             }
           }
           break;
+
         case 'screenshot':
         case 'geoscreenshot':
           if (!isMobile.any ) {
@@ -717,6 +1003,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         case 'scale':
           control = this.createMapControl(controlType, {
             add: false,
@@ -727,31 +1014,31 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'query':
           control = this.createMapControl(controlType, {
             add: true,
             toggled: true
           });
           break;
+
         case 'querybypolygon':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
-          }
-          break;
         case 'querybbox':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
-          }
-          break;
         case 'querybydrawpolygon':
           if (!isMobile.any) {
-            control = this.createMapControl(controlType, {options: {spatialMethod}});
+            control = this.createMapControl(controlType, {
+              options: {
+                spatialMethod: 'intersects'
+              }
+            });
           }
           break;
+
         case 'streetview':
           // streetview
           control = this.createMapControl(controlType, {});
           break;
+
         case 'scaleline':
           control = this.createMapControl(controlType, {
             add: false,
@@ -760,6 +1047,7 @@ proto._setupControls = function() {
             }
           });
           break;
+
         case 'overview':
           if (!isMobile.any) {
             if (!this.config.overviewproject) return;
@@ -796,21 +1084,17 @@ proto._setupControls = function() {
             }
           }
           break;
+
         case 'geocoding':
         case 'nominatim':
-          const {extent:bbox, crs:{epsg:mapCrs}} = this.project.state;
           control = this.createMapControl(controlType, {
             add: false,
             options: {
-              isMobile: isMobile.any,
-              bbox,
-              mapCrs,
-              placeholder: "mapcontrols.nominatim.placeholder",
-              noresults: "mapcontrols.nominatim.noresults",
-              notresponseserver: "mapcontrols.nominatim.notresponseserver",
+              config
             }
           });
           break;
+
         case 'geolocation':
           control = this.createMapControl(controlType);
           control.on('click', throttle(evt => this.showMarker(evt.coordinates)));
@@ -822,12 +1106,14 @@ proto._setupControls = function() {
             })
           });
           break;
+
         case 'addlayers':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {});
             control.on('addlayer', () => this.emit('addexternallayer'));
           }
           break;
+
         case 'length':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
@@ -841,6 +1127,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         case 'area':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
@@ -854,6 +1141,7 @@ proto._setupControls = function() {
             });
           }
           break;
+
         /**
          * @since 3.8.0
          */
@@ -863,9 +1151,8 @@ proto._setupControls = function() {
           break;
 
       }
-    });
-    return this.getMapControls()
-  }
+  });
+  return this.getMapControls()
 };
 
 /**
@@ -1048,11 +1335,10 @@ proto._setMapControlsInsideContainerLenght = function() {
  * Get filtrable layer. Get parameter to custom filter Object
  */
 proto.filterableLayersAvailable = function(options={}) {
-  const layers = getMapLayersByFilter({
+  return getMapLayersByFilter({
     FILTERABLE: true,
     SELECTED_OR_ALL: true,
-  }, options);
-  return layers.filter(layer => layer.getProvider('filter') instanceof WFSProvider);
+  }, options).filter(layer => 'wfs' === layer.getProvider('filter').getName());
 };
 
 proto.setMapControlsAlignement = function(alignement='rv') {
@@ -1194,7 +1480,11 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
 
   const buttonControl = $(control.element).find('button');
 
-  buttonControl.tooltip({ placement: 'bottom', trigger: GUI.isMobile() ? 'click': 'hover' });
+  buttonControl.tooltip({
+    placement: 'bottom',
+    container: 'body',
+    trigger: GUI.isMobile() ? 'click': 'hover'
+  });
 
   // in case of mobile hide tooltip after click
   if (GUI.isMobile()) {
@@ -1447,7 +1737,7 @@ proto._calculateViewOptions = function({project, width, height}={}) {
 
 // set view based on project config
 proto._setupViewer = function(width, height) {
-  this.viewer = olhelpers.createViewer({
+  this.viewer = new OlMapViewer({
     id: this.target,
     view: this._calculateViewOptions({
       width,
@@ -1647,7 +1937,7 @@ proto._setUpDefaultLayers = function() {
 proto.moveDefaultLayersOnTop = function(zindex) {
   this.setZIndexLayer({
     layer: this.defaultsLayers.highlightLayer,
-    zindex: zindex+1
+    zindex: zindex + 1
   });
   this.setZIndexLayer({
     layer: this.defaultsLayers.selectionLayer,
@@ -1686,6 +1976,10 @@ proto.removeAllLayers = function() {
 //set ad increase layerIndex
 proto.setLayerZIndex = function({layer, zindex=this.layersCount+=1}) {
   layer.setZIndex(zindex);
+  this.emit('set-layer-zindex', {
+    layer,
+    zindex
+  });
   return zindex;
 };
 
@@ -1768,8 +2062,8 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   //listen change filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
-      layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
-      layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
+      layer.onbefore('change', () => this.updateMapLayer(mapLayer, {force: true}));
+      layer.on('filtertokenchange', () => this.updateMapLayer(mapLayer, {force: true}))
     });
   ///
 };
@@ -2029,15 +2323,17 @@ let animatingHighlight = false;
 /*
 * geometries = array of geometries
 * action: add, clear, remove :
-*                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
-*                             clear: remove selectionLayer
-*                             remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
+*   - add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
+*   - clear: remove selectionLayer
+*   - remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
 * */
 proto.setSelectionFeatures = function(action='add', options={}) {
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {
-    color
-  });
+  if (color) {
+    this.setDefaultLayerStyle('selectionLayer', {
+      color
+    });
+  }
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':
@@ -2047,8 +2343,7 @@ proto.setSelectionFeatures = function(action='add', options={}) {
       source.removeFeature(feature);
       break;
     case 'update':
-      const id = feature.getId();
-      const addedFeature = source.getFeatureById(id);
+      const addedFeature = source.getFeatureById(feature.getId());
       addedFeature.setGeometry(feature.getGeometry());
       break;
     case 'clear':
@@ -2061,7 +2356,10 @@ proto.clearSelectionFeatures = function() {
   this.defaultsLayers.selectionLayer.getSource().clear();
 };
 
-proto.seSelectionLayerVisible = function(visible=true) {
+/**
+ * @since 3.9.0
+ */
+proto.setSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 
@@ -2326,7 +2624,6 @@ proto.changeLayerVisibility = function({id, external=false, visible}) {
     layer.setVisible(visible);
     this.emit('change-layer-visibility', {id, visible});
   }
-
 };
 
 proto.changeLayerOpacity = function({id, opacity=1}={}) {
@@ -2426,7 +2723,14 @@ proto.addExternalMapLayer = function(layer, projectLayer=false) {
  * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
  * 
  * @param { ol.layer.Vector | ol.layer.Image | unknown } externalLayer
- * @param {{ position: unknown, opacity: number, visible: boolean, crs: unknown, type: unknown, download: unknown }} options
+ * @param { Object }  options
+ * @param { unknown } options.position
+ * @param { number }  options.opacity
+ * @param { boolean } options.visible
+ * @param { unknown } options.crs
+ * @param { unknown } options.type
+ * @param { unknown } options.download
+ * @param { string }  options.downloadUrl (since 3.8.3) an alternate external server url where to perfom download.
  * 
  * @returns { Promise<unknown> }
  */
@@ -2681,4 +2985,131 @@ proto._handlePrint = async function(controlType) {
   return true;
 };
 
-module.exports = MapService;
+/**
+ * Wrapper for native Open Layers controls 
+ */
+function OLControl(type) {
+    function _ctor(options={}) {
+
+    this._control     = null;
+    this.positionCode = options.position || 'tl';
+
+    switch (options.type) {
+      case 'zoom':         this._control = new ol.control.Zoom(options); break;
+      case 'zoomtoextent': this._control = new ol.control.ZoomToExtent(options); break;
+      case 'scaleline':    this._control = new ol.control.ScaleLine(options); break;
+      case 'overview':     this._control = new ol.control.OverviewMap(options); break;
+    }
+
+    $(this._control.element).addClass("ol-control-"+this.positionCode);
+
+    this.offline = true;
+
+    /**
+     * @returns { ol.control }
+     */
+    this.getOlControl = function() {
+      return this._control;
+    };
+
+    this.getPosition = function(pos) {
+      pos = pos || this.positionCode;
+      return {
+        top:  (pos.indexOf('t') > -1) ? true : false,
+        left: (pos.indexOf('l') > -1) ? true : false,
+      };
+    };
+
+    this.layout = function(map) {
+      // skip when ..
+      if (!map) {
+        return;
+      }
+      const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
+      if (previusControls.length) {
+        const position        =  this.getPosition();
+        let previusControl = previusControls.last();
+        const offset = position.left ? previusControl.position().left : previusControl.position().right;
+        const hWhere = position.left ? 'left' : 'right';
+        const hOffset = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+        $(this.element).css(hWhere, hOffset+'px');
+      }
+    };
+
+    this.changelayout = function() {};
+
+    this.showHide = function() {
+      $(this.element).toggle();
+    };
+
+    this.setMap = function(map) {
+      this.layout(map);
+      this._control.setMap(map);
+    };
+
+    ol.control.Control.call(this, {
+      element: this._control.element
+    });
+
+  };
+  ol.inherits(_ctor, ol.control.Control);
+  return _ctor;
+}
+
+/**
+ * Wrapper for custom Vue's SFC controls
+ * 
+ * @since 3.9.0
+ */
+function VueControl(type) {
+  function _ctor(options = {}) {
+    const opts    = { name: type };
+    const project = GUI.getService('map').getProject();
+    let component;
+
+    switch(type) {
+
+      /** ORIGINAL SOURCE: src/app/g3w-ol/controls/zoomhistorycontrol.js@v3.8.0 */
+      case 'zoomhistory':
+        component     = Vue.extend(MapControlZoomHistory);
+        opts.element  = new component();
+        opts.tipLabel = "sdk.mapcontrols.addlayer.tooltip";
+      break;
+
+      /** ORIGINAL SOURCE: src/app/g3w-ol/controls/geocodingcontrol.js@v3.8.0 */
+      case 'nominatim':
+      case 'geocoding':
+        component = Vue.extend(MapControlGeocoding);
+        opts.element = new component({
+          propsData: {
+            ...options.config, // pass configuration from server
+            placeholder:    (undefined !== options.placeholder       ? options.placeholder       : "mapcontrols.geocoding.placeholder")        || 'Città, indirizzo ... ',
+            noresults:      (undefined !== options.noresults         ? options.noresults         : "mapcontrols.geocoding.noresults")          || 'Nessun risultato ',
+            // notresponseserver:     (undefined !== options.notresponseserver ? options.notresponseserver : "mapcontrols.geocoding.notresponseserver")  || 'Il server non risponde', // <-- TODO ?
+            limit:          options.limit || 5,
+            viewbox:        (undefined !== options.bbox              ? options.bbox              : project.state.initextent || project.state.extent),
+            mapCrs:         (undefined !== options.mapCrs            ? options.mapCrs            : project.state.crs.epsg),
+          }
+        });
+        opts.offline = false;
+
+      break;
+    }
+    opts.element = opts.element.$mount().$el
+    Control.call(this, opts);
+  }
+  ol.inherits(_ctor, Control);
+  return _ctor;
+}
+
+module.exports = {
+
+  MapService,
+
+  /** ORIGINAL SOURCE: src/app/gui/map/control/factory.js@v3.8.0 */
+  ControlsFactory: {
+    create(options={}) {
+      return CONTROLS[options.type] ? new CONTROLS[options.type](options) : undefined;
+    }
+  },
+};

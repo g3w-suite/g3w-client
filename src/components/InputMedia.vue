@@ -18,7 +18,7 @@
             type="file">
         </i>
       </div>
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
       <g3w-media :state="data">
         <div class="clearmedia" @click="clearMedia()">
           <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
@@ -32,7 +32,7 @@
 import GUI from 'services/gui';
 
 const InputMixins = require('gui/inputs/input');
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 const { t } = require('core/i18n/i18n.service');
 const { media_field: MediaField } = require('gui/fields/fields');
 
