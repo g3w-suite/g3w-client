@@ -47,9 +47,9 @@ proto.add = function(uniqueId, items) {
   // check if are at last state step (no redo was done)
   // in this way avoid starge barch in the history
   //If we are in the middle of undo, delete all changes in the histroy from the current "state"
-  // so i can create a new history
+  // so ii can create a new history
 
-  if (this._current === null) {
+  if (null === this._current) {
     this._states = [{
       id: uniqueId,
       items
@@ -300,13 +300,14 @@ proto.canCommit = function() {
 //cauUdo method
 proto.canUndo = function() {
   const steps = (this._states.length - 1) - this.getCurrentStateIndex();
-  this.state.undo = !_.isNull(this._current) && (this._maxSteps > steps);
+  this.state.undo = (null !== this._current) && (this._maxSteps > steps);
   return this.state.undo;
 };
 
 // Caon Redo function
 proto.canRedo = function() {
-  this.state.redo = this.getLastState() && this.getLastState().id != this._current || _.isNull(this._current) && this._states.length > 0;
+  this.state.redo = (this.getLastState() && this.getLastState().id != this._current)
+    || (null === this._current && this._states.length > 0);
   return this.state.redo;
 };
 
