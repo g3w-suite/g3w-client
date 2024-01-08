@@ -55,10 +55,8 @@ proto.add = function(uniqueId, items) {
   const d = $.Deferred();
   // before insert an item into the history
   // check if are at last state step (no redo was done)
-  // in this way avoid stage barch in the history
   // If we are in the middle of undo, delete all changes in the history from the current "state"
   // so if it can create a new history
-
   if (this._current === null) {
     this._states = [{
       id: uniqueId,
@@ -92,10 +90,9 @@ proto.getRelationStates = function(layerId, {clear=false}={}) {
   const relationStates = [];
   for (let i=0; i < this._states.length; i++) {
     const state = this._states[i];
-    const relationItems = state.items.filter((item) => {
-      const _layerId = Array.isArray(item) ? item[0].layerId: item.layerId;
-      return _layerId === layerId
-    });
+    const relationItems = state
+      .items
+      .filter((item) => (Array.isArray(item) ? item[0].layerId : item.layerId) === layerId);
 
     if (relationItems.length > 0) {
       relationStates.push({
@@ -138,7 +135,7 @@ proto.insertState = function(state) {
  */
 proto.removeState = function(stateId) {
   let index;
-  for (i = 0; i < this._states.length; i++) {
+  for (let i = 0; i < this._states.length; i++) {
     const state = this._states[i];
     if (state.id === stateId) {
       index = i;
@@ -366,13 +363,16 @@ proto.getCurrentStateIndex = function() {
   return currentStateIndex;
 };
 
-// method that response true if we can commit
+/**
+ * method that response true if we can commit
+ * @return {boolean}
+ */
 proto.canCommit = function() {
   const checkCommitItems = this.commit();
   let canCommit = false;
   for (let layerId in checkCommitItems) {
     const commitItem = checkCommitItems[layerId];
-    canCommit = canCommit || !!commitItem.length
+    canCommit = canCommit || commitItem.length > 0;
   }
   this.state.commit = canCommit;
   return this.state.commit;
@@ -404,8 +404,9 @@ proto._getStatesToCommit = function() {
 proto.commit = function() {
   const commitItems = {};
   const statesToCommit = this._getStatesToCommit();
-  statesToCommit.forEach(state => {
-    state.items.forEach(item => {
+  statesToCommit
+    .forEach(state => {
+      state.items.forEach((item) => {
       let add = true;
       if (Array.isArray(item)) {
         item = item[1];
