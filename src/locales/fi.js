@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Yhteysvirhe",
+      at_moment: "Tällä hetkellä ei ole mahdollista näyttää karttaa",
+      f5: "Paina Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -8,11 +13,13 @@ export default {
     sign_in:"Kirjaudu sisään",
     layer_selection_filter: {
       tools: {
-        filter: "Lisätä/Poista Suodattaa",
+        filter: "Ota suodatin käyttöön/poista käytöstä",
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
-        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet"
+        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
+        savefilter: "Tallenna suodatin",
+        filterName: "Suodattimen Nimi",
       }
     },
     warning: {
@@ -24,6 +31,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Valitse Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Tilalliset kirjanmerkit",
+        helptext: "Siirry kartan laajuuteen, lisää nimi ja napsauta Lisää",
+        input: {
+          name: "Nimi"
+        },
+        sections: {
+          project:{
+            title: "Projektin kirjanmerkit"
+          },
+          user: {
+            title: "Käyttäjän kirjanmerkit"
+          }
+        }
+      },
       search: {
         all: 'KAIKKI',
         no_results: "Ei tuloksia",
@@ -154,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Rivinäkymä",
-          row_to_form: "Taulukkonäkymä"
+          row_to_form: "Taulukkonäkymä",
+          zoomtogeometry: "Zoomaa geometriaan",
         },
         copy_map_extent_url: 'Kopioi kartan katselulinkki',
         download_shapefile: "Lataa SHP-tiedosto",
@@ -253,6 +281,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Kysely piirtopolygonin mukaan"
+        },
         querybybbox: {
           tooltip: 'Tasoon kohdituva BBox-kysely',
           nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
@@ -293,6 +324,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Edellinen",
+          zoom_next: "Zoom Seurata"
         }
       },
       relations: {
@@ -332,6 +367,7 @@ export default {
           textarea: "teksti",
           string: "merkkijono",
           date: "päiväys",
+          datetime: "päiväys",
           float: "liukuluku",
           table: "taulukko"
         },
@@ -354,6 +390,7 @@ export default {
             copied: "Kopioitu."
           },
           download: {
+            unknow: "Lataa",
             shp: 'Lataa SHP-tiedosto',
             gpx: 'Lataa GPX-tiedosto',
             gpkg: 'Lataa GPKG-tiedosto',
@@ -377,11 +414,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Kirjaudu ulos",
     no_other_projects: "Ei projekteja tälle ryhmälle",
+    no_other_groups: "Ei enää ryhmiä tälle makroryhmälle",
     yes: "Kyllä",
     no: "Ei",
     back: "Palaa",
     backto: "Takaisin ",
     changemap: "Vaihda karttaa",
+    change_session: "Vaihda istuntoa",
     component: "Yleinen komponentti",
     search: "Hae",
     no_results: "Ei hakutuloksia",
@@ -410,8 +449,12 @@ export default {
     save: "Tallenna",
     cancel: "Peruuta",
     close: "Sulje",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Älä näytä viestiä uudelleen",
+    enlange_reduce: "Suurenna / Pienennä",
+    reset_default: "Oletuskoko",
     add: "Lisää",
     exitnosave: "Poistu tallentamatta",
     annul: "Peruuta",
@@ -430,7 +473,7 @@ export default {
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Taso on jo lisätty.",
-        url_already_added: "WMS URL  on jo lisätty.",
+        url_already_added: "WMS URL/Nimi on jo lisätty.",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
@@ -446,8 +489,10 @@ export default {
       geolocations: {
         error: "Sijaintiasi ei saada"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Valitse kerros, johon tämä ominaisuus lisätään",
         placeholder: "Osoite ...",
+        nolayers: "Tästä projektista ei löytynyt muokattavia pistetasoja",
         noresults: "Ei tuloksia",
         notresponseserver: "Ei vastausta palvelimelta"
       },
@@ -471,7 +516,16 @@ export default {
         tooltip: "Pinta-ala"
       },
       screenshot: {
-        error: "Screenshot error creation"
+        error: "Screenshot error creation",
+        securityError: `  
+        <p><b>Turvallisuusvirhe</b>: ulkoinen kerros estää karttaa tulostamasta. Tarkistaaksesi, toimi seuraavasti:</p>
+        <ol>
+          <li>poista manuaalisesti lisätyt ulkoiset tasot (esim. WMS-tasot)</li>
+          <li>Pakota sivun uudelleenlataus: <code>CTRL + F5</code></li>
+          <li>tulosta kartta uudelleen</li>
+        </ol>
+        <p>Saat lisätietoja palvelimen järjestelmänvalvojalta seuraavista aiheista: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -paino: lihavoitu;">&#x2139;&#xFE0F; turvallisuus ja likaiset kankaat</a></p>
+        `
       }
     },
     catalog_items: {
@@ -481,7 +535,9 @@ export default {
         open_attribute_table: "Avaa attribuuttitaulu",
         show_metadata: "Metatiedot",
         styles: "Tyylejä",
-        vector_color_menu: "Aseta/muuta väriä"
+        vector_color_menu: "Aseta/muuta väriä",
+        layer_opacity: "Peittävyys",
+        filters: "Filters",
       }
     },
     dataTable: {

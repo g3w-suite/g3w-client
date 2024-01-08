@@ -4,45 +4,127 @@
 -->
 
 <template>
-  <div style="display: flex; flex-direction: column">
-    <label :for="id" style="display: block" v-t="label"></label>
-    <input :id="id" ref="range-input" @change="change" v-model="value" type="range" :min="min" :max="max" :step="step">
+  <div>
+    <section style="display: flex; justify-content: space-between; font-weight: bold;">
+      <section style="align-self: flex-end">
+        <span class="min-max-label">{{min}}</span>
+        <span style="font-weight: bold;">{{unit}}</span>
+      </section>
+
+      <div style="display: flex; flex-direction: column; margin: 0 3px">
+        <label
+          :for="id"
+          style="display: block"
+          class="skin-color"
+          v-t="label"
+        ></label>
+        <input
+          type="range"
+          ref="range-input"
+          @change="change"
+          v-model="value"
+          :id="id"
+          :min="min"
+          :max="max"
+          :step="step"
+        >
+      </div>
+
+      <section style="align-self: flex-end">
+        <span class="min-max-label">{{max}}</span>
+        <span style="font-weight: bold;">{{unit}}</span>
+      </section>
+
+    </section>
+    <template v-if="showValue">
+      <span>{{value}}</span>
+      <span style="font-weight: bold;">{{unit}}</span>
+    </template>
   </div>
 </template>
 
 <script>
-  const { debounce } = require('core/utils/utils');
+  const { debounce } = require('utils');
 
   export default {
     name: "range",
     props:{
+
+      /**
+       * ID value for label.
+       */
       id: {
         required: true,
       },
+
+      /**
+       * @TODO find out what changes from the `unit` props
+       */
       label: {
         type:"String",
         default: ''
       },
+
+      /**
+       * Min range slider value.
+       */
       min: {
         type: Number,
         default: 0
       },
-      max:{
+
+      /**
+       * Max range slider value.
+       */
+      max: {
         type: Number,
         default: 10
       },
-      step:{
+
+      /**
+       * Range slider step.
+       */
+      step: {
         type: Number,
         default: 1
       },
+
+      /**
+       * @TODO appears to be unused, if so please remove.
+       */
       labelValue: {},
+
+      /**
+       * Current range value.
+       */
       value: {
         default: 0
       },
-      sync:{
+
+      /**
+       * Whether to emit the `changed` event.
+       */
+      sync: {
         type: Boolean,
         default: false
+      },
+
+      /**
+       * Whether display current range value.
+       */
+      showValue: {
+        type: Boolean,
+        default: false
+      },
+
+      /**
+       * Range unit.
+       */
+      unit: {
+        type: String,
+        default: ''
       }
+
     },
     data(){
       return {}
@@ -86,5 +168,8 @@
 </script>
 
 <style scoped>
-
+  .min-max-label {
+    align-self: end;
+    font-weight: bold;
+  }
 </style>

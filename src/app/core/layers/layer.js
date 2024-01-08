@@ -1,103 +1,195 @@
-import ApplicationState from 'store/application-state';
-import { DOWNLOAD_FORMATS } from 'app/constant';
-import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
+import ApplicationState                 from 'store/application-state';
+import DataRouterService                from 'services/data';
+import ProjectsRegistry                 from 'store/projects';
+import DownloadMixin                    from 'core/layers/mixins/download';
+import SelectionMixin                   from 'core/layers/mixins/selection';
+import { SELECTION as SELECTION_STATE } from 'core/layers/mixins/selection';
+import RelationsMixin                   from 'core/layers/mixins/relations';
 
-const { t } = require('core/i18n/i18n.service');
-const { inherit, base, XHR } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const { geometryFields, parseAttributes } =  require('core/utils/geo');
-const Relations = require('core/relations/relations');
-const ProviderFactory = require('core/layers/providers/providersfactory');
+const { t }                 = require('core/i18n/i18n.service');
+const {
+  inherit,
+  base,
+  XHR,
+}                           = require('utils');
+const G3WObject             = require('core/g3wobject');
+const {
+  geometryFields,
+  parseAttributes,
+}                           =  require('utils/geo');
+const ProviderFactory       = require('core/layers/providersfactory');
+
+const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
+
   this.config = config;
+
   // assign some attribute
-  config.id = config.id || 'Layer';
-  config.title = config.title || config.name;
-  config.download = !!config.download;
-  config.geolayer = false;
+  config.id        = config.id || 'Layer';
+  config.title     = config.title || config.name;
+  config.download  = !!config.download;
+  config.geolayer  = false;
   config.baselayer = !!config.baselayer;
-  config.fields = config.fields || {};
-  config.urls = {
-    query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,
+  config.fields    = config.fields || {};
+  config.urls      = {
+    query: (config.infourl && '' !== config.infourl ? config.infourl : config.wmsUrl),
     ...(config.urls || {})
   };
-  const {project=ProjectsRegistry.getCurrentProject()} = options;
+
+  //get current project object
+  const {
+    project = ProjectsRegistry.getCurrentProject()
+  } = options;
+
+  //get search_end point value (api, ows)
   this.config.search_endpoint = project.getSearchEndPoint();
-  const projectRelations = project.getRelations();
+
   // create relations
-  this._relations = this._createRelations(projectRelations);
+  this._relations = this._createRelations(project.getRelations());
+
+  // set URLs to get varios type of data
   if (!this.isBaseLayer()) {
-    //filtertoken
-    //set url to get varios type of data
-    const projectType = project.getType();
-    const projectId = project.getId();
-    const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
+    //suffix url
+    const suffixUrl = `${project.getType()}/${project.getId()}/${config.id}/`;
+    //get vector url
     const vectorUrl = project.getVectorUrl();
+    //get raster url
     const rasterUrl = project.getRasterUrl();
+
     this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
-    this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
-    this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
-    this.config.urls.csv = `${vectorUrl}csv/${suffixUrl}`;
-    this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
-    this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
-    this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
-    this.config.urls.geotiff = `${rasterUrl}geotiff/${suffixUrl}`;
-    this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
-    this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
-    this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
-    this.config.urls.unlock = `${vectorUrl}unlock/${suffixUrl}`;
-    this.config.urls.widget = {
+    this.config.urls.data        = `${vectorUrl}data/${suffixUrl}`;
+    this.config.urls.shp         = `${vectorUrl}shp/${suffixUrl}`;
+    this.config.urls.csv         = `${vectorUrl}csv/${suffixUrl}`;
+    this.config.urls.xls         = `${vectorUrl}xls/${suffixUrl}`;
+    this.config.urls.gpx         = `${vectorUrl}gpx/${suffixUrl}`;
+    this.config.urls.gpkg        = `${vectorUrl}gpkg/${suffixUrl}`;
+    this.config.urls.geotiff     = `${rasterUrl}geotiff/${suffixUrl}`;
+    this.config.urls.editing     = `${vectorUrl}editing/${suffixUrl}`;
+    this.config.urls.commit      = `${vectorUrl}commit/${suffixUrl}`;
+    this.config.urls.config      = `${vectorUrl}config/${suffixUrl}`;
+    this.config.urls.unlock      = `${vectorUrl}unlock/${suffixUrl}`;
+    this.config.urls.widget      = {
       unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
     };
-    //set custom parameters based on project qgis version
-    this.config.searchParams = {
-      I: 0,
-      J: 0
-    };
+
+    /**
+     * Store feature count url to get features count of a layer
+     *
+     * @since 3.8.0
+     */
+    this.config.urls.featurecount = project.getUrl('featurecount');
+    
+    /**
+     * Custom parameters based on project qgis version
+     */
+    this.config.searchParams = { I: 0, J: 0 };
   }
 
   // dinamic layer values useful for layerstree
   const defaultstyle = config.styles && config.styles.find(style => style.current).name;
+
   this.state = {
+
     id: config.id,
+
     title: config.title,
+
     selected: config.selected || false,
+
     disabled: config.disabled || false,
+
     metadata: config.metadata,
+
     metadata_querable: this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
+
     openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
+
     removable: config.removable || false,
+
     downloadable: this.isDownloadable(),
+
     source: config.source,
+
     styles: config.styles,
+
     defaultstyle,
-    inediting: false, // state of if is in editing (setted by editing plugin )
+
+    /**
+     * state of if is in editing (setted by editing plugin)
+     */
+    inediting: false,
+
     infoformat: this.getInfoFormat(),
+
     infoformats: this.config.infoformats || [],
+
     projectLayer: true,
+
     geolayer: false,
+
+    /**
+     * Reactive selection attribute 
+     */
     selection: {
       active: false
     },
+
+    /**
+     * Reactive filter attribute 
+     */
     filter: {
-      active: false
+      active: false,
+
+      /**
+       * @since 3.9.0 whether filter is set from a previously saved filter
+       */
+      current: null,
     },
+
+    /**
+     * @type { Array<{{ id: string, name: string }}> } array of saved filters
+     *
+     * @since 3.9.0
+     */
+    filters: config.filters || [],
+
     attributetable: {
       pageLength: null
     },
+
+
     visible: config.visible || false,
-    tochighlightable: false
+
+    tochighlightable: false,
+
+    /**
+     * @type {number}
+     * 
+     * @since 3.8.0
+     */
+    featurecount: config.featurecount,
+
+    /**
+     * @type { boolean | Object<number, number> }
+     * 
+     * @since 3.8.0
+     */
+    stylesfeaturecount: config.featurecount && defaultstyle && {
+      [defaultstyle]: config.featurecount
+    }
+
   };
 
-  // add selectionFids
+  /**
+   * Store all selection features `fids`
+   */
   this.selectionFids = new Set();
 
   // referred to (layersstore);
   this._layersstore = config.layersstore || null;
+
   /*
     Providers that layer can use
 
@@ -106,428 +198,212 @@ function Layer(config={}, options={}) {
       2 - filter
       3 - data -- raw data del layer (editing)
    */
-  // server type
   const serverType = this.config.servertype;
-  // source layer
-  const sourceType = this.config.source ? this.config.source.type : null;
+  const sourceType = this.config.source ? this.config.source.type : null; // NB: sourceType = source of layer
+
   if (serverType && sourceType) {
+    //set providers that will take in account to get data from server
     this.providers = {
-      query: ProviderFactory.build('query', serverType, sourceType, {
-        layer: this
-      }),
-      filter: ProviderFactory.build('filter', serverType, sourceType, {
-        layer: this
-      }),
-      filtertoken: ProviderFactory.build('filtertoken', serverType, sourceType, {
-        layer: this
-      }),
-      search: ProviderFactory.build('search', serverType, sourceType, {
-        layer: this
-      }),
-      data: ProviderFactory.build('data', serverType, sourceType, {
-        layer: this
-      })
+      query:       ProviderFactory.build('query',       serverType, sourceType, { layer: this }),
+      filter:      ProviderFactory.build('filter',      serverType, sourceType, { layer: this }),
+      filtertoken: ProviderFactory.build('filtertoken', serverType, sourceType, { layer: this }),
+      search:      ProviderFactory.build('search',      serverType, sourceType, { layer: this }),
+      data:        ProviderFactory.build('data',        serverType, sourceType, { layer: this })
     };
   }
-  // used to store last proxy params (useful for repeat request info formats for wms external layer)
+
+  /**
+   * Store last proxy params (useful for repeat request info formats for wms external layer)
+   */
   this.proxyData = {
     wms: null // at the moment only wms data from server
   };
+
   base(this);
+
 }
 
 inherit(Layer, G3WObject);
 
+Object.assign(Layer.prototype, DownloadMixin);
+Object.assign(Layer.prototype, RelationsMixin);
+Object.assign(Layer.prototype, SelectionMixin);
+
 const proto = Layer.prototype;
 
 /**
- * Proxyparams
+ * Proxy params data
  */
-
-proto.getProxyData = function(type){
+proto.getProxyData = function(type) {
   return type ? this.proxyData[type] : this.proxyData;
 };
 
-proto.setProxyData= function(type, data={}){
+/**
+ * Set proxy data
+ *
+ * @param type
+ * @param data
+ */
+proto.setProxyData= function(type, data = {}) {
   this.proxyData[type] = data;
 };
 
-proto.clearProxyData = function(type){
+/**
+ * Clear proxy data
+ *
+ * @param type
+ */
+proto.clearProxyData = function(type) {
   this.proxyData[type] = null;
 };
 
-proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}){
+/**
+ * Get a proxy request
+ *
+ * @param type
+ * @param proxyParams
+ *
+ * @returns {Promise<*>}
+ */
+proto.getDataProxyFromServer = async function(type = 'wms', proxyParams = {}) {
   try {
-    const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
+    const { response, data } = await DataRouterService.getData(`proxy:${type}`, {
       inputs: proxyParams,
-      outputs: false
+      outputs: false,
     });
     this.setProxyData(type, JSON.parse(data));
     return response;
-  } catch(err){
-    return;
+  } catch(err) {
+    console.warn(err);
   }
 };
 
-proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
-  Object.keys(changes).forEach(changeParam =>{
-    Object.keys(changes[changeParam]).forEach(param =>{
-      const value = changes[changeParam][param];
-      this.proxyData[type][changeParam][param] = value;
+/**
+ * @TODO Add description
+ *
+ * @param type
+ * @param changes
+ *
+ * @returns {Promise<*>}
+ */
+proto.changeProxyDataAndReloadFromServer = function(type = 'wms', changes = {}) {
+  Object.keys(changes).forEach(changeParam => {
+    Object.keys(changes[changeParam]).forEach(param => {
+      this.proxyData[type][changeParam][param] = changes[changeParam][param];
     })
   });
   return this.getDataProxyFromServer(type, this.proxyData[type]);
 };
 
 /**
- * editing method used by plugin
+ * [EDITING PLUGIN] Check if layer is in editing
+ *
+ * @returns { boolean }
  */
-
-proto.isInEditing = function(){
+proto.isInEditing = function() {
   return this.state.inediting;
 };
 
-proto.setInEditing = function(bool=false){
+/**
+ * [EDITING PLUGIN] Set editing state
+ *
+ * @param {boolean} bool
+ */
+proto.setInEditing = function(bool=false) {
   this.state.inediting = bool;
 };
 
 /**
- * end proxy params
+ * @TODO Add description here
+ *
+ * @returns {*}
  */
-
-proto.getSearchParams = function(){
+proto.getSearchParams = function() {
   return this.config.searchParams;
 };
 
 /**
+ * Return search_endpoint
  *
  * @returns {*}
  */
-proto.getSearchEndPoint = function(){
-  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
+proto.getSearchEndPoint = function() {
+  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : 'api';
 };
 
-//relations
-proto._createRelations = function(projectRelations) {
-  const layerId = this.getId();
-  const relations = projectRelations.filter(relation => [relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1);
-  return new Relations({
-    relations
-  });
-};
-
-// return relations of layer
-proto.getRelations = function() {
-  return this._relations
-};
-
-proto.getRelationById = function(id) {
-  return this._relations.getArray().find(relation => relation.getId() === id);
-};
-
-proto.getRelationAttributes = function(relationName) {
-  const relation = this._relations.find(relation => relation.name === relationName);
-  return relation ? relation.fields : [];
-};
-
-proto.getRelationsAttributes = function() {
-  const fields = {};
-  this.state.relations.forEach(relation => fields[relation.name] = relation.fields);
-  return fields;
-};
-
-proto.isChild = function() {
-  if (!this.getRelations()) return false;
-  return this._relations.isChild(this.getId());
-};
-
-proto.isFather = function() {
-  if (!this.getRelations()) return false;
-  return this._relations.isFather(this.getId());
-};
-
-proto.getChildren = function() {
-  if (!this.isFather()) return [];
-  return this._relations.getChildren(this.getId());
-};
-
-proto.getFathers = function() {
-  if (!this.isChild()) return [];
-  return this._relations.getFathers(this.getId());
-};
-
-proto.hasChildren = function() {
-  if (!this.hasRelations()) return false;
-  return this._relations.hasChildren(this.getId());
-};
-
-proto.hasFathers = function() {
-  if (!this.hasRelations()) return false;
-  return this._relations.hasFathers(this.getId());
-};
-
-proto.hasRelations = function() {
-  return !!this._relations;
-};
-//end relations
-
-
-// global state
-proto.setAttributeTablePageLength = function(pageLength){
+/**
+ * @TODO Add description
+ *
+ * @param pageLength
+ */
+proto.setAttributeTablePageLength = function(pageLength) {
   this.state.attributetable.pageLength = pageLength
 };
 
-proto.getAttributeTablePageLength = function(){
+/**
+ * @TODO add description
+ *
+ * @returns {null}
+ */
+proto.getAttributeTablePageLength = function() {
   return this.state.attributetable.pageLength;
 };
 
-// end global state
-
-//filter token
-proto.setFilter = function(bool=false){
-  this.state.filter.active = bool;
-};
-
-proto.getFilterActive = function(){
-  return this.state.filter.active;
-};
-
-proto.toggleFilterToken = async function(){
-  this.state.filter.active = !this.state.filter.active;
-  await this.activeFilterToken(this.state.filter.active);
-  return this.state.filter.active;
-};
-
-proto.activeFilterToken = async function(bool){
-  await bool ? this.createFilterToken() : this.deleteFilterToken();
-};
-
-proto.deleteFilterToken = async function(){
-  if (this.providers['filtertoken']){
-    try {
-      await this.providers['filtertoken'].deleteFilterToken();
-      ApplicationService.setFilterToken(null);
-      this.emit('filtertokenchange', {
-        layerId: this.getId()
-      });
-    } catch(err) {
-      console.log('Error deleteing filtertoken')
-    }
-  }
-};
-
-proto.createFilterToken = async function(){
-  if (this.providers['filtertoken']){
-    let filtertoken = null;
-    try {
-      if (this.selectionFids.size > 0) {
-        // create filter token
-        if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
-          await this.providers['filtertoken'].deleteFilterToken();
-        } else {
-          const params = {};
-          if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE))
-            params.fidsout = Array.from(this.selectionFids).filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',');
-          else params.fidsin = Array.from(this.selectionFids).join(',');
-          filtertoken = await this.providers['filtertoken'].getFilterToken(params);
-        }
-        ApplicationService.setFilterToken(filtertoken);
-        this.emit('filtertokenchange', {
-          layerId: this.getId()
-        });
-      }
-    } catch(err){
-      console.log('Error create update token');
-    }
-  }
-};
-// end filter token
-//selection Ids layer methods
-
-proto.setSelectionFidsAll = function(){
-  this.selectionFids.clear();
-  this.selectionFids.add(Layer.SELECTION_STATE.ALL);
-  this.isGeoLayer() && this.showAllOlSelectionFeatures();
-  this.setSelection(true);
-  this.state.filter.active && this.createFilterToken();
-};
-
-proto.getSelectionFids = function(){
-  return this.selectionFids;
-};
-
-proto.invertSelectionFids = function(){
-  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE);
-  else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) this.selectionFids.delete(Layer.SELECTION_STATE.ALL);
-  else if (this.selectionFids.size > 0) this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
-  this.isGeoLayer() && this.setInversionOlSelectionFeatures();
-  this.state.filter.active && this.createFilterToken();
-  this.setSelection(this.selectionFids.size > 0);
-};
-
-proto.hasSelectionFid = function(fid){
-  if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) return true;
-  else if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) return !this.selectionFids.has(fid);
-  else return this.selectionFids.has(fid) ;
-};
-
-proto.includeSelectionFid = async function(fid, createToken=true){
-  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) && this.selectionFids.has(fid)) {
-    this.selectionFids.delete(fid);
-    this.selectionFids.size === 1 && this.setSelectionFidsAll();
-  } else {
-    this.selectionFids.add(fid);
-    !this.isSelectionActive() && this.setSelection(true);
-  }
-  this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'add');
-  createToken && this.state.filter.active && await this.createFilterToken();
-};
-
-proto.includeSelectionFids = function(fids=[]){
-  fids.forEach(fid => this.includeSelectionFid(fid));
-};
-
-proto.excludeSelectionFid = async function(fid) {
-  if (this.selectionFids.has(Layer.SELECTION_STATE.ALL) || this.selectionFids.size === 0) {
-    this.selectionFids.clear();
-    this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
-  }
-  this.selectionFids[this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](fid);
-  if (this.selectionFids.size === 1 && this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) this.setselectionFidsAll();
-  const isLastFeatureSelected  = this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'remove');
-  this.state.filter.active && await this.createFilterToken();
-  if (this.selectionFids.size === 0 || isLastFeatureSelected) {
-    this.selectionFids.clear();
-    this.setSelection(false);
-  }
-};
-
-proto.excludeSelectionFids = function(fids=[]) {
-  fids.forEach(fid => this.excludeSelectionFid(fid));
-};
-
-proto.clearSelectionFids = function(){
-  this.selectionFids.clear();
-  this.isGeoLayer() && this.setOlSelectionFeatures();
-  this.setSelection(false);
-};
-// end selection ids methods
-
+/**
+ * @returns { string } wms layer name for wms request
+ */
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()
 };
 
+/**
+ * @returns { boolean | *} whether request need to use `layer.id` or `layer.name`
+ */
 proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
 };
 
-proto.getFilterToken = function (){
-  return ApplicationService.getFilterToken();
-};
-
 /**
- *
- * DOWNLOAD METHODS
+ * @returns {*|null} source type of layer
  */
-
-proto.getDownloadFilefromDownloadDataType = function(type, {data={}, options}){
-  let promise;
-  data.filtertoken = this.getFilterToken();
-  switch (type) {
-    case 'shapefile':
-      promise = this.getShp({data, options});
-      break;
-    case 'xls':
-      promise  = this.getXls({data, options});
-      break;
-    case 'csv':
-      promise  = this.getCsv({data, options});
-      break;
-    case 'gpx':
-      promise = this.getGpx({data, options});
-      break;
-    case 'gpkg':
-      promise = this.getGpkg({data, options});
-      break;
-    case 'geotiff':
-      promise: this.getGeoTIFF({
-        data,
-        options
-      });
-      break;
-  }
-  return promise;
-};
-
-proto.getGeoTIFF = function({data={}}={}){
-  data.filtertoken = this.getFilterToken();
-  const url = this.getUrl('geotiff');
-  return XHR.fileDownload({
-    url,
-    data,
-    httpMethod: "POST"
-  })
-};
-
-proto.getXls = function({data={}}={}){
-  data.filtertoken = this.getFilterToken();
-  const url = this.getUrl('xls');
-  return XHR.fileDownload({
-    url,
-    data,
-    httpMethod: "POST"
-  })
-};
-
-proto.getShp = function({data={}}={}) {
-  data.filtertoken = this.getFilterToken();
-  const url = this.getUrl('shp');
-  return XHR.fileDownload({
-    url,
-    data,
-    httpMethod: "POST"
-  })
-};
-
-proto.getGpx = function({data={}}={}){
-  data.filtertoken = this.getFilterToken();
-  const url = this.getUrl('gpx');
-  return XHR.fileDownload({
-    url,
-    data,
-    httpMethod: "POST"
-  })
-};
-
-proto.getGpkg = function({data={}}={}){
-  data.filtertoken = this.getFilterToken();
-  const url = this.getUrl('gpkg');
-  return XHR.fileDownload({
-    url,
-    data,
-    httpMethod: "POST"
-  })
-};
-
-proto.getCsv = function({data={}}={}){
-  data.filtertoken = this.getFilterToken();
-  const url = this.getUrl('csv');
-  return XHR.fileDownload({
-    url,
-    data,
-    httpMethod: "POST"
-  })
-};
-
 proto.getSourceType = function() {
   return this.config.source ? this.config.source.type : null;
 };
 
+/**
+ * @returns {boolean} whether it is a layer with geometry
+ */
 proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-proto.getDataTable = function({page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox, custom_params={}} = {}) {
+/**
+ * @TODO Add description
+ *
+ * @param { Object } opts
+ * @param opts.page
+ * @param opts.page_size
+ * @param opts.ordering
+ * @param opts.search
+ * @param opts.suggest
+ * @param opts.formatter
+ * @param opts.custom_params
+ * @param opts.field
+ * @param opts.in_bbox
+ *
+ * @returns {*}
+ */
+proto.getDataTable = function({
+  page          = null,
+  page_size     = null,
+  ordering      = null,
+  search        = null,
+  suggest       = null,
+  formatter     = 0,
+  custom_params = {},
+  field,
+  in_bbox,
+} = {}) {
   const d = $.Deferred();
   let provider;
   const params = {
@@ -548,19 +424,13 @@ proto.getDataTable = function({page = null, page_size=null, ordering=null, searc
     provider = this.getProvider('data');
     provider.getFeatures({editing: false}, params)
       .done(response => {
-        const data = response.data;
-        const count = response.count;
-        const title = this.getTitle();
-        const features = data.features && data.features || [];
-        let headers = features.length ? features[0].properties : [];
-        headers = parseAttributes(this.getAttributes(), headers);
-        const dataTableObject = {
-          headers,
+        const features = response.data.features && response.data.features || [];
+        d.resolve(({
+          headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
           features,
-          title,
-          count
-        };
-        d.resolve(dataTableObject)
+          title: this.getTitle(),
+          count: response.count
+        }));
       })
       .fail(err => d.reject(err))
   }
@@ -569,51 +439,74 @@ proto.getDataTable = function({page = null, page_size=null, ordering=null, searc
 
 /**
  * Search layer feature by fids
+ *
  * @param fids formatter
  */
-proto.getFeatureByFids = async function({fids=[], formatter=0}={}){
+proto.getFeatureByFids = async function({
+  fids      = [],
+  formatter = 0,
+} = {}) {
   const url = this.getUrl('data');
-  let features;
   try {
     const response = await XHR.get({
       url,
       params: {
-        fids:fids.toString(),
+        fids: fids.toString(),
         formatter
       }
     });
-    features = response && response.result && response.vector && response.vector.data && response.vector.data.features;
-  } catch(err){}
-  return features
+    if (response && response.result && response.vector && response.vector.data) {
+      return response.vector.data.features;
+    }
+  } catch(err) {}
 };
 
-//search Features methods
-proto.searchFeatures = function(options={}, params={}){
-  const {search_endpoint = this.config.search_endpoint} = options;
-  return new Promise(async (resolve, reject) =>{
+/**
+ * Search Features
+ * 
+ * @param { Object }        opts
+ * @param { 'ows' | 'api' } options.search_endpoint
+ * @param { boolean }       options.raw
+ * @param { 0 | 1 }         options.formatter
+ * @param options.filter
+ * @param options.suggest
+ * @param options.unique
+ * @param options.queryUrl
+ * @param options.ordering
+ * @param { Object }        params - OWS search params
+ * 
+ * @returns { Promise }
+ */
+proto.searchFeatures = function(options = {}, params = {}) {
+  const {
+    search_endpoint = this.config.search_endpoint,
+  } = options;
+
+  return new Promise(async (resolve, reject) => {
     switch (search_endpoint) {
+
       case 'ows':
-        this.search(options, params)
-          .then(results => {
-            results = {
-              data: results
-            };
-            resolve(results);
-          }).fail(error => reject(error));
+        this
+          .search(options, params)
+          .then(results => { resolve(({ data: results })); })
+          .fail(reject);
         break;
+
       case 'api':
-        const {raw=false, filter:field, suggest={}, unique, queryUrl, ordering} = options;
         try {
-          const response = await this.getFilterData({
-            queryUrl,
-            raw,
-            field,
-            ordering,
-            suggest,
-            unique
-          });
-          resolve(response);
-        } catch(err){
+          resolve(
+            await this.getFilterData({
+              queryUrl:  options.queryUrl,
+              field:     options.filter,
+              ordering:  options.ordering,
+              unique:    options.unique,
+              raw:       undefined !== options.raw       ? options.raw       : false,
+              suggest:   options.suggest,
+              /** @since 3.9.0 */
+              formatter: undefined !== options.formatter ? options.formatter : 1,
+            })
+          );
+        } catch(err) {
           reject(err);
         }
         break;
@@ -621,27 +514,47 @@ proto.searchFeatures = function(options={}, params={}){
   })
 };
 
-/*
-* getFilterData is a function to get data feature based on fields and suggets
-* params:
-* - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
-* - fields: Array of object with type of suggest (see above)
-* */
-proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
-  const provider =  this.getProvider('data');
-  const response = await provider.getFilterData({
-    queryUrl,
-    field,
-    raw,
-    ordering,
-    suggest,
-    formatter,
-    unique
-  });
-  return response;
+/**
+ * Get feature data based on `field` and `suggests`
+ * 
+ * @param { Object }    opts
+ * @param { boolean }   opts.raw
+ * @param { Object }    opts.suggest   - (mandatory): object with key is a field of layer and value is value of the field to filter
+ * @param { 0 | 1 }     opts.formatter
+ * @param { Array }     opts.field     - Array of object with type of suggest (see above)
+ * @param opts.unique
+ * @param opts.fformatter
+ * @param opts.queryUrl
+ * @param opts.ordering
+
+ */
+proto.getFilterData = async function({
+  raw       = false,
+  suggest,
+  field,
+  unique,
+  fformatter, //@since v3.9
+  formatter = 1,
+  queryUrl,
+  ordering,
+} = {}) {
+  return await this
+    .getProvider('data')
+    .getFilterData({
+      queryUrl,
+      field,
+      raw,
+      ordering,
+      suggest,
+      formatter,
+      unique,
+      fformatter,
+    });
 };
 
-// search method
+/**
+ * search method 
+ */
 proto.search = function(options={}, params={}) {
   // check option feature_count
   options.feature_count = options.feature_count || 10;
@@ -649,253 +562,292 @@ proto.search = function(options={}, params={}) {
     ...options,
     ...this.config.searchParams,
     ...params
-    };
+  };
   const d = $.Deferred();
   const provider = this.getProvider('search');
-  if (provider)
+  if (provider) {
     provider.query(options)
       .done(response => d.resolve(response))
       .fail(err => d.reject(err));
-  else d.reject(t('sdk.search.layer_not_searchable'));
+  } else {
+    d.reject(t('sdk.search.layer_not_searchable'));
+  }
   return d.promise();
 };
 
-//Info from layer (only for querable layers)
+/**
+ * Info from layer (only for querable layers) 
+ */
 proto.query = function(options={}) {
   const d = $.Deferred();
-  const {filter} = options;
-  const provider = this.getProvider(filter ? 'filter' : 'query');
-  if (provider)
+  const provider = this.getProvider(options.filter ? 'filter' : 'query');
+  if (provider) {
     provider.query(options)
       .done(response => d.resolve(response))
       .fail(err => d.reject(err));
-  else d.reject(t('sdk.search.layer_not_querable'));
+  } else {
+    d.reject(t('sdk.search.layer_not_querable'));
+  }
   return d.promise();
 };
 
-// generel way to get an attribute
+/**
+ * General way to get an attribute 
+ */
 proto.get = function(property) {
   return this.config[property] ? this.config[property] : this.state[property];
 };
 
+/**
+ * @returns { * | {} } layer fields
+ */
 proto.getFields = function() {
   return this.config.fields
 };
 
 /**
  * Get field by name
+ * 
  * @param fieldName
+ *
  * @returns {*}
  */
-proto.getFieldByName = function(fieldName){
+proto.getFieldByName = function(fieldName) {
   return this.getFields().find(field => field.name === fieldName)
 };
 
+/**
+ * @returns { Array } editing fields
+ */
 proto.getEditingFields = function() {
   return this.config.editing.fields;
 };
 
 /**
- * Return only show fields
- * @returns {T[]}
+ * @returns { Array } only show fields
  */
 proto.getTableFields = function() {
-  const fields = this.config.fields || [];
-  return fields.filter(field => field.show);
+  return (this.config.fields || []).filter(field => field.show);
 };
 
-proto.getTableHeaders = function(){
-  return this.getTableFields().filter(field => geometryFields.indexOf(field.name) === -1);
+/**
+ * @returns { Array } table fields exclude geometry field
+ */
+proto.getTableHeaders = function() {
+  return this.getTableFields().filter(field => -1 === geometryFields.indexOf(field.name));
 };
 
+/**
+ * @returns {*} current project
+ */
 proto.getProject = function() {
   return this.config.project;
 };
 
+/**
+ * @returns { Object } layer config
+ */
 proto.getConfig = function() {
   return this.config;
 };
 
 /**
- * get form structur to show on form editing
  * @param fields
- * @returns {[]}
+ *
+ * @returns { Array } form structure to show on form editing
  */
-proto.getLayerEditingFormStructure = function(fields){
+proto.getLayerEditingFormStructure = function(fields) {
   return this.config.editor_form_structure;
 };
 
-/*
-Duplicate beacause we had to check if it used by some plugins to avoid to break back compatibility
+/**
+ * @TODO Add description
+ *
+ * @returns {*|*[]}
  */
-proto.getEditorFormStructure = function() {
-  return this.getLayerEditingFormStructure();
-};
-
 proto.getFieldsOutOfFormStructure = function() {
-  return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => {
-    return structure.field_name;
-  }) : []
+  return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => structure.field_name) : []
 };
 
+/**
+ * @returns { boolean } whether it has form structure
+ */
 proto.hasFormStructure = function() {
   return !!this.config.editor_form_structure;
 };
 
-//get custom style for future implementation
-proto.getCustomStyle = function(){
+/**
+ * @returns custom style (for future implementation)
+ */
+proto.getCustomStyle = function() {
   return this.config.customstyle;
 };
 
+/**
+ * Get state layer
+ *
+ * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), tochighlightable: boolean, featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), metadata_querable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
+ */
 proto.getState = function() {
   return this.state;
 };
 
+/**
+ * @returns {*} layer source (ex. ogr, spatialite, etc..)
+ */
 proto.getSource = function() {
   return this.state.source;
 };
 
-proto.isDownloadable = function(){
-  return this.isShpDownlodable() || this.isXlsDownlodable() ||
-    this.isGpxDownlodable() || this.isGpkgDownlodable() || this.isCsvDownlodable();
-};
-
-proto.getDownloadableFormats = function(){
-  return Object.keys(DOWNLOAD_FORMATS).filter(download_format => this.config[download_format]).map(format => DOWNLOAD_FORMATS[format].format);
-};
-
-proto.getDownloadUrl = function(format){
-  const find = Object.values(DOWNLOAD_FORMATS).find(download_format => download_format.format === format);
-  return find && find.url;
-};
-
-proto.isGeoTIFFDownlodable = function() {
-  return !this.isBaseLayer() && this.config.download && this.config.source.type === 'gdal';
-};
-
-proto.isShpDownlodable = function() {
-  return !this.isBaseLayer() && this.config.download && this.config.source.type !== 'gdal';
-};
-
-proto.isXlsDownlodable = function(){
-  return !this.isBaseLayer() && this.config.download_xls;
-};
-
-proto.isGpxDownlodable = function(){
-  return !this.isBaseLayer() && this.config.download_gpx;
-};
-
-proto.isGpkgDownlodable = function(){
-  return !this.isBaseLayer() && this.config.download_gpkg;
-};
-
-proto.isCsvDownlodable = function(){
-  return !this.isBaseLayer() && this.config.download_csv;
-};
-
+/**
+ * @returns {*} editing version of layer
+ */
 proto.getEditingLayer = function() {
   return this._editingLayer;
 };
 
+/**
+ * Set editing layer
+ *
+ * @param editingLayer
+ */
 proto.setEditingLayer = function(editingLayer) {
   this._editingLayer = editingLayer;
 };
 
+/**
+ * @returns {string|string[]|boolean|string|*} whether is hidden
+ */
 proto.isHidden = function() {
   return this.state.hidden;
 };
 
+/**
+ * Set hidden
+ *
+ * @param bool
+ */
 proto.setHidden = function(bool=true) {
   this.state.hidden = bool;
 };
 
+/**
+ * @returns {boolean} whether it was modified (by editing)
+ */
 proto.isModified = function() {
   return this.state.modified;
 };
 
+/**
+ * @returns {*|string} id
+ */
 proto.getId = function() {
   return this.config.id;
 };
 
+/**
+ * @returns {*} metadata
+ */
 proto.getMetadata = function() {
   return this.state.metadata
 };
 
+/**
+ * @returns {*} title
+ */
 proto.getTitle = function() {
   return this.config.title;
 };
 
+/**
+ * @returns {*} name
+ */
 proto.getName = function() {
   return this.config.name;
 };
 
+/**
+ * @returns {*} origin name
+ */
 proto.getOrigName = function() {
   return this.config.origname;
 };
 
+/**
+ * Get Server type
+ *
+ * @returns {*|string|{wmst: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, virtual: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, oracle: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, delimitedtext: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wfs: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider}, wcs: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, arcgismapserver: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, mdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, vectortile: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, "vector-tile": {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, gdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, ogr: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wms: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, postgres: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, mssql: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, spatialite: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}}}
+ */
 proto.getServerType = function() {
-  return (this.config.servertype && this.config.servertype !== '') ? this.config.servertype : ServerTypes.QGIS;
+  return (this.config.servertype && this.config.servertype !== '') ?
+    this.config.servertype :
+    ServerTypes.QGIS;
 };
 
+/**
+ * @returns {*} type
+ */
 proto.getType = function() {
   return this.type;
 };
 
-proto.isType = function(type) {
-  return this.getType() === type;
-};
-
+/**
+ * Set Type
+ *
+ * @param type
+ */
 proto.setType = function(type) {
   this.type = type;
 };
 
-proto.isSelected = function() {
-  return this.state.selected;
+/**
+ * Check if layer is a type passed
+ *
+ * @param type
+ *
+ * @returns {boolean}
+ */
+proto.isType = function(type) {
+  return this.getType() === type;
 };
 
-proto.setSelected = function(bool) {
-  this.state.selected = bool;
-};
-
-proto.setSelection = async function(bool=false){
-  this.state.selection.active = bool;
-  if (!bool) {
-    this.state.filter.active && await this.deleteFilterToken();
-    this.state.filter.active = bool;
-    this.emit('unselectionall', this.getId());
-  }
-};
-
-proto.isSelectionActive = function(){
-  return this.state.selection.active;
-};
-
-proto.getSelection = function(){
-  return this.state.selection;
-};
-
-proto.getFilter = function(){
-  return this.state.filter;
-};
-
+/**
+ * Set disabled
+ *
+ * @param bool
+ */
 proto.setDisabled = function(bool) {
   this.state.disabled = bool;
 };
 
+/**
+ * @returns {boolean} whether it is disabled
+ */
 proto.isDisabled = function() {
   return this.state.disabled;
 };
 
+/**
+ * @returns {boolean} whether is visible
+ */
 proto.isVisible = function() {
   return this.state.visible;
 };
 
+/**
+ * Set visibility
+ *
+ * @param bool
+ */
 proto.setVisible = function(bool) {
   this.state.visible = bool;
 };
 
-// set a parametre map to check if request from map point of view or just a capabilities info layer
-proto.isQueryable = function({onMap} = {onMap:false}) {
+/**
+ * @param { Object } param
+ * @param param.map check if request from map point of view or just a capabilities info layer
+ */
+proto.isQueryable = function({ onMap } = { onMap: false }) {
   let queryEnabled = false;
   const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
   if (!onMap) return queryableForCababilities;
@@ -907,25 +859,40 @@ proto.isQueryable = function({onMap} = {onMap:false}) {
   return queryEnabled;
 };
 
-proto.getOws = function(){
+/**
+ * @TODO Add description
+ *
+ * @returns {string|string|*}
+ */
+proto.getOws = function() {
   return this.config.ows;
 };
 
-proto.getTocHighlightable = function(){
-  return this.state.tochighlightable
+/**
+ * @TODO Description
+ *
+ * @returns {boolean}
+ */
+proto.getTocHighlightable = function() {
+  return this.state.tochighlightable;
 };
 
+/**
+ * @TODO Description
+ *
+ * @param bool
+ */
 proto.setTocHighlightable = function(bool=false) {
   this.state.tochighlightable = bool;
 };
 
-/*
- condition: plain object with configuration layer attribute and value
-* */
+/**
+ * @param conditions plain object with configuration layer attribute and value
+ */
 proto.isFilterable = function(conditions=null) {
   let isFiltrable = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE));
   if (isFiltrable && conditions) {
-    const conditionalFiltrable = Object.keys(conditions).reduce((bool, attribute) =>{
+    const conditionalFiltrable = Object.keys(conditions).reduce((bool, attribute) => {
       const layer_config_value = this.get(attribute);
       const condition_attribute_values = conditions[attribute];
       return bool && Array.isArray(layer_config_value) ?
@@ -938,83 +905,151 @@ proto.isFilterable = function(conditions=null) {
 };
 
 /**
- * Check if layer is setup as time series
+ * @returns { boolean } whether layer is set up as time series
  */
-proto.isQtimeseries = function(){
+proto.isQtimeseries = function() {
   return this.config.qtimeseries;
 };
 
+/**
+ * @returns { boolean } whether is editable
+ */
 proto.isEditable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };
 
+/**
+ * @returns {*|boolean} whether is a base layer
+ */
 proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
 
-// get url by type ( data, shp, csv, xls,  editing..etc..)
+/**
+ * @param type get url by type (data, shp, csv, xls, editing, ...)
+ */
 proto.getUrl = function(type) {
   return this.config.urls[type];
 };
 
 /**
- * Method to set url
- * @param type
- * @param url
+ * Set config url
+ * 
+ * @param { Object } url
+ * @param url.type
+ * @param url.url
  */
-proto.setUrl = function({type, url}={}){
+proto.setUrl = function({type, url}={}) {
   this.config.urls[type] = url;
 };
 
-// return urls
+/**
+ * @returns config.urls
+ */
 proto.getUrls = function() {
   return this.config.urls;
 };
 
+/**
+ * Set editing url
+ */
 proto.setEditingUrl = function(url) {
   this.config.urls.editing = url || this.config.urls.editing;
 };
 
+/**
+ * @returns {*} query url
+ */
 proto.getQueryUrl = function() {
   return this.config.urls.query;
 };
 
+/**
+ * Set query url
+ *
+ * @param queryUrl
+ */
 proto.setQueryUrl = function(queryUrl) {
   this.config.urls.query = queryUrl;
 };
 
+/**
+ * @returns {*}
+ */
 proto.getQueryLayerName = function() {
   return (this.config.infolayer && this.config.infolayer !== '') ? this.config.infolayer : this.getName();
 };
 
+/**
+ * @TODO Description
+ *
+ * @returns {*}
+ */
 proto.getQueryLayerOrigName = function() {
   return this.state.infolayer && this.config.infolayer !== '' ? this.config.infolayer :  this.config.origname;
 };
 
+/**
+ * @TODO Description
+ *
+ * @param ogcService
+ *
+ * @returns { default.watch.infoformat | * | string }
+ */
 proto.getInfoFormat = function(ogcService) {
-  /**
-   * In case of qtime series (NETCDF)
-   */
-  if (this.config.qtimeseries === true || this.getSourceType() === 'gdal') return 'application/json';
-  else return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
+  // In case of NETCDF (qtime series)
+  if (this.config.qtimeseries === true || this.getSourceType() === 'gdal') {
+    return 'application/json';
+  }
+  if (this.config.infoformat && '' !== this.config.infoformat  && 'wfs' !== ogcService) {
+    return this.config.infoformat;
+  }
+  return 'application/vnd.ogc.gml';
 };
 
-proto.getInfoFormats = function(){
+/**
+ * @TODO Description
+ *
+ * @returns {(function(): *)|*|*[]}
+ */
+proto.getInfoFormats = function() {
   return this.state.infoformats;
 };
 
+/**
+ * @TODO Description
+ *
+ * @returns {*}
+ */
 proto.getInfoUrl = function() {
   return this.config.infourl;
 };
 
+/**
+ * @TODO Description
+ *
+ * @param infoFormat
+ */
 proto.setInfoFormat = function(infoFormat) {
   this.config.infoformat = infoFormat;
 };
 
+/**
+ * @TODO Description
+ *
+ * @returns {*|{}}
+ */
 proto.getAttributes = function() {
   return this.config.fields;
 };
 
+/**
+ * @TODO Description
+ *
+ * @param attribute
+ * @param type
+ * @param options
+ */
 proto.changeAttribute = function(attribute, type, options) {
   for (const field of this.config.fields) {
     if (field.name === attribute) {
@@ -1025,97 +1060,234 @@ proto.changeAttribute = function(attribute, type, options) {
   }
 };
 
+/**
+ * @TODO Description
+ *
+ * @param name
+ *
+ * @returns {*}
+ */
 proto.getAttributeLabel = function(name) {
   const field = this.getAttributes().find(field=> field.name === name);
   return field && field.label;
 };
 
+/**
+ * Return provider by type
+ *
+ * @param type
+ *
+ * @returns {*}
+ */
 proto.getProvider = function(type) {
   return this.providers[type];
 };
 
+/**
+ * Return all providers
+ *
+ * @returns {*|{filter: null, search: null, data: null, query: null, filtertoken: null}}
+ */
 proto.getProviders = function() {
   return this.providers;
 };
 
+/**
+ * @TODO Description
+ *
+ * @returns {*}
+ */
 proto.getLayersStore = function() {
   return this._layersstore;
 };
 
+/**
+ * @TODO Description
+ *
+ * @param layerstore
+ */
 proto.setLayersStore = function(layerstore) {
   this._layersstore = layerstore;
 };
 
+/**
+ * Return if it is possible to show table of attribute
+ *
+ * @returns {boolean}
+ */
 proto.canShowTable = function() {
-  if (!this.config.not_show_attributes_table){
-    if (this.getServerType() === Layer.ServerTypes.QGIS) {
-      if( ([
-        Layer.SourceTypes.POSTGIS,
-        Layer.SourceTypes.ORACLE,
-        Layer.SourceTypes.WFS,
-        Layer.SourceTypes.OGR,
-        Layer.SourceTypes.MSSQL,
-        Layer.SourceTypes.SPATIALITE
-      ].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
-        return this.getTableFields().length > 0;
-      }
-    } else if (this.getServerType() === Layer.ServerTypes.G3WSUITE) {
-      if (this.get('source').type === "geojson")
-        return true
-    } else if (this.isFilterable())
-      return true;
+  if (this.config.not_show_attributes_table) {
     return false;
-  } else return false
-};
-
-proto.changeFieldType = function({name, type, options={}, reset=false}={}){
-  const field = this.getFields().find(field => field.name === name);
-  if (field){
-    if (reset){
-      field.type = field._type;
-      delete field._type;
-      delete field[`${type}options`];
-      return field.type;
-    } else {
-      field._type = field.type;
-      field.type = type;
-      field[`${type}options`] = options;
-      return field._type;
-    }
   }
+
+  if (this.getServerType() === Layer.ServerTypes.QGIS && ([
+      Layer.SourceTypes.POSTGIS,
+      Layer.SourceTypes.ORACLE,
+      Layer.SourceTypes.WFS,
+      Layer.SourceTypes.OGR,
+      Layer.SourceTypes.MSSQL,
+      Layer.SourceTypes.SPATIALITE
+    ].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
+    return this.getTableFields().length > 0;
+  }
+  
+  if (this.getServerType() === Layer.ServerTypes.G3WSUITE && "geojson" === this.get('source').type) {
+    return true
+  }
+
+  if (this.getServerType() !== Layer.ServerTypes.G3WSUITE && this.isFilterable()) {
+    return true;
+  }
+
+  return false;
 };
 
-proto.changeConfigFieldType = function({name, type, options={},reset=false}){
-  return this.changeFieldType({name, type, options, reset});
+/**
+ * @TODO Description
+ *
+ * @param { Object } field
+ * @param field.name
+ * @param field.type
+ * @param field.options
+ * @param field.reset
+ *
+ * @returns {*}
+ */
+proto.changeFieldType = function({
+  name,
+  type,
+  options = {},
+  reset   = false,
+} = {}) {
+  const field = this.getFields().find(field => field.name === name);
+  
+  if (field && reset) {
+    field.type = field._type;
+    delete field._type;
+    delete field[`${type}options`];
+    return field.type;
+  }
+
+  if (field && !reset) {
+    field._type = field.type;
+    field.type = type;
+    field[`${type}options`] = options;
+    return field._type;
+  }
+
 };
 
-proto.resetConfigField = function({name}){
-  this.changeConfigFieldType({
-    name,
-    reset: true
-  })
+/**
+ * @TODO Description
+ *
+ * @param { Object } config
+ * @param config.name
+ * @param config.type
+ * @param config.options
+ * @param config.reset
+ *
+ * @returns {*}
+ */
+proto.changeConfigFieldType = function({
+  name,
+  type,
+  options = {},
+  reset   = false,
+}) {
+  return this.changeFieldType({ name, type, options, reset });
 };
 
-//function called in case of change project to remove all sored information
-proto.clear = function(){};
+/**
+ * @TODO Description
+ *
+ * @param name
+ */
+proto.resetConfigField = function({name}) {
+  this.changeConfigFieldType({ name, reset: true });
+};
 
+/**
+ * Function called in case of change project to remove all stored information 
+ */
+proto.clear = function() {};
+
+/**
+ * @returns {boolean} whether is a vector layer
+ */
 proto.isVector = function() {
   return this.getType() === Layer.LayerTypes.VECTOR;
 };
 
-proto.isTable = function(){
+/**
+ * @returns {boolean} whether is a table layer
+ */
+proto.isTable = function() {
   return this.getType() === Layer.LayerTypes.TABLE;
 };
 
+/**
+ * @since 3.8.0
+ */
+proto.getFeatureCount = function() {
+  return this.state.featurecount;
+};
+
+/**
+ * @param style
+ * 
+ * @returns {Promise<Object>}
+ * 
+ * @since 3.8.0
+ */
+proto.getStyleFeatureCount = async function(style) {
+  if ("undefined" === typeof this.state.stylesfeaturecount[style]) {
+    try {
+      const { result, data } = await XHR.post({
+        url: `${this.config.urls.featurecount}${this.getId()}/`,
+        data: JSON.stringify({ style }),
+        contentType: 'application/json'
+      });
+      this.state.stylesfeaturecount[style] = (true === result ? data : {});
+    } catch(err) {
+      this.state.stylesfeaturecount[style] = {};
+    }
+  }
+  return this.state.stylesfeaturecount[style];
+};
+
+/**
+ * [LAYER SELECTION]
+ *
+ * Base on boolean value create a filter token from server
+ * based on selection or delete current filtertoken
+ *
+ * @param bool
+ *
+ * @returns {Promise<void>}
+ *
+ * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::createFilterToken() and deleteFilterToken(fid) instead
+ */
+proto.activeFilterToken = deprecate(async function(bool) { await this[bool ? 'createFilterToken' : 'deleteFilterToken'](); }, '[G3W-CLIENT] Layer::activeFilterToken(bool) is deprecated');
+
+/**
+ * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::getLayerEditingFormStructure() instead
+ */
+proto.getEditorFormStructure = deprecate(proto.getLayerEditingFormStructure, '[G3W-CLIENT] Layer::getEditorFormStructure() is deprecated');
+
 /// LAYER PROPERTIES
-// Layer Types
+
+/**
+ * Layer Types
+ */
 Layer.LayerTypes = {
   TABLE: "table",
   IMAGE: "image",
   VECTOR: "vector"
 };
 
-// Server Types
+/**
+ * Server Types
+ */
 Layer.ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
@@ -1129,14 +1301,14 @@ Layer.ServerTypes = {
   WMS: "WMS",
   WMTS: "WMTS",
   G3WSUITE: "G3WSUITE"
-  /*
-
- ADD ALSO TO PROVIDER FACTORY
-
- */
+  /** 
+   * ADD ALSO TO PROVIDER FACTORY (@TODO or already done?) 
+   */
 };
 
-// Source Types
+/**
+ * Source Types
+ */
 Layer.SourceTypes = {
   VIRTUAL:'virtual',
   POSTGIS: 'postgres',
@@ -1154,32 +1326,35 @@ Layer.SourceTypes = {
   "VECTOR-TILE": "vector-tile",
   VECTORTILE: "vectortile",
   ARCGISMAPSERVER: 'arcgismapserver',
-  GEOJSON: "geojson"
-  /*
-
- ADD TO PROVIDER FACTORY
-
- */
+  GEOJSON: "geojson",
+  /** @since 3.9.0 */
+  POSTGRESRASTER: 'postgresraster',
+  /**
+   * ADD TO PROVIDER FACTORY (@TODO or already done?)
+   */
 };
 
-// Layer Capabilities
+/**
+ * Layer Capabilities
+ */
 Layer.CAPABILITIES = {
   QUERYABLE: 1,
   FILTERABLE: 2,
   EDITABLE: 4
 };
 
-//Editing types
+/**
+ * Editing types 
+ */
 Layer.EDITOPS = {
   INSERT: 1,
   UPDATE: 2,
   DELETE: 4
 };
 
-//selection state
-Layer.SELECTION_STATE = {
-  ALL: '__ALL__',
-  EXCLUDE: '__EXCLUDE__'
-};
+/**
+ * BACKOMP v3.x
+ */
+Layer.SELECTION_STATE = SELECTION_STATE;
 
 module.exports = Layer;

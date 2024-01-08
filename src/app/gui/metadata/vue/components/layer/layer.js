@@ -1,6 +1,6 @@
 import Layer from 'components/MetadataLayer.vue';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Component = require('gui/component/component');
 
 function LayerComponent({state = {}, service} = {}) {

@@ -5,13 +5,13 @@
 import G3W_CONSTANT from 'constant';
 
 import ApplicationState from 'store/application-state';
+import ApplicationService from 'services/application';
 
 /**
  * Single File Components
  */
 import G3WInput from 'components/InputG3W.vue';
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
-import inputService from 'core/expression/inputservice';
 import FormBody from 'components/FormBody.vue';
 import FormFooter from 'components/FormFooter.vue';
 import C3XYLine from 'components/C3XYLine.vue';
@@ -23,7 +23,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService from 'services/data';
 import ChangesManager from 'services/editing';
 import SessionsRegistry from 'store/sessions';
-import IFrameRouterService from 'services/iframe-plugin';
+import IFrameRouterService from 'services/iframe';
 import MapLayersStoresRegistry from 'store/map-layers';
 import PluginsRegistry from 'store/plugins';
 import ProjectsRegistry from 'store/projects';
@@ -31,7 +31,6 @@ import RelationsService from 'services/relations';
 import TaskService from 'services/tasks';
 import WorkflowsStack from 'services/workflows';
 import ApiService from 'services/api';
-import ApplicationService from 'services/application';
 import RouterService from 'services/router';
 
 import GUI from 'services/gui';
@@ -39,14 +38,14 @@ import GUI from 'services/gui';
 import Mixins from 'mixins';
 
 const G3WObject = require('core/g3wobject');
-const utils = require('core/utils/utils');
-const geoutils = require('core/utils/geo');
+const utils = require('utils');
+const geoutils = require('utils/geo');
 const i18n = require('core/i18n/i18n.service');
 const Server = require('core/errors/parser/servererrorparser');
 const Session = require('core/editing/session');
 const Editor = require('core/editing/editor');
-const Geom = require('core/utils/geo');
-const { Geometry } = require('core/utils/geo');
+const Geom = require('utils/geo');
+const { Geometry } = require('utils/geo');
 const Project = require('core/project/project');
 const LayersStoreRegistry = require('core/layers/layersstoresregistry');
 const LayersStore = require('core/layers/layersstore');
@@ -74,7 +73,7 @@ const Workflow = require('core/workflow/workflow');
  * GUI modules
  */
 const Panel = require('gui/panel');
-const ControlFactory = require('gui/map/control/factory');
+const { ControlFactory } = require('gui/map/mapservice');
 const ComponentsFactory = require('gui/component/componentsfactory');
 const FieldsService = require('gui/fields/fieldsservice');
 const Component = require('gui/component/component');
@@ -101,7 +100,7 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
-const g3wolutils = require('core/utils/ol');
+const g3wolutils = require('utils/ol');
 
 module.exports = {
 
@@ -197,7 +196,10 @@ module.exports = {
       WorkflowsStack
     },
     input: {
-      inputService
+      inputService: {
+        handleFilterExpressionFormInput: FormService._getFilterExpression,
+        handleDefaultExpressionFormInput: FormService._getDefaultExpression,
+      }
     }
   },
 
@@ -260,6 +262,22 @@ module.exports = {
     controls: {},
     utils: g3wolutils
   },
+
+  // G3W-SUITE debug info
+  info: () => {
+    $script(
+      'https://unpkg.com/platform@1.3.6/platform.js',
+      () => {
+        window.console.info(`
+[g3wsdk.info]\n
+- g3w-admin: __${initConfig.version}__
+- g3w-client: __${G3W_CONSTANT.APP_VERSION}__
+- browser: __${platform.name} ${platform.version}__
+- operating system: __${platform.os.toString()}__
+`.trim());
+      });
+  },
+
   // G3W-CLIENT version
   version: G3W_CONSTANT.APP_VERSION
 };

@@ -26,22 +26,37 @@
 const Input = require('gui/inputs/input');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'input-range',
+
   mixins: [Input],
   data() {
-    const options = this.state.input.options.values[0];
-    const min = 1*options.min;
-    const max = 1*options.max;
-    const step = 1*options.Step;
+    const {min, max, Step:step} = this.state.input.options.values[0];
     return {
-      max,
       min,
-      step: step
+      max,
+      step
     }
   },
   methods: {
     checkValue() {
-      const valid = this.state.validate.required || !_.isEmpty(_.trim(this.state.value)) ? this.service.getValidator().validate(this.state.value) : true;
-      this.state.validate.valid = valid;
+      // check if value of input is empty
+      const isEmpty = _.isEmpty(_.trim(this.state.value));
+
+      // in case not required check if value is empty and set default value
+      if (isEmpty && !this.state.validate.required) {
+        this.state.value = this.state.input.options.values[0].default;
+      }
+
+      // if state required initial value is false
+      this.state.validate.valid = !this.state.validate.required;
+
+      // if is not empty check validity from validator
+      if (!isEmpty) {
+        this.state.validate.valid = this.service.getValidator().validate(this.state.value);
+      }
+
       this.change();
     }
   }

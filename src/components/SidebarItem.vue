@@ -5,7 +5,7 @@
 
 <template>
   <li :id="component.id" v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}" v-disabled="state.disabled">
-    <bar-loader :loading="state.loading"></bar-loader>
+    <bar-loader :loading="state.loading"/>
     <a @click.prevent="onClickItem" ref="anchor_click" href="#" style="display: flex; justify-content: space-between; align-items: center">
       <div>
         <i :class="icon" :style="{color: iconColor}"></i>
@@ -13,7 +13,7 @@
       </div>
       <div>
         <span v-if="info.state" style="position: absolute; right: 5px; font-weight: bold" :class="info.class" :style="info.style" :title="info.tooltip">{{ info.state }}</span>
-        <sidebar-item-action v-for="action in actions" :key="action.id" :action="action"/>
+        <sidebar-item-action v-for="action in actions" :component="component.internalComponent" :key="action.id" :action="action"/>
       </div>
       <i v-if="collapsible" :class="g3wtemplate.getFontClass('angle-left')" class="pull-right"></i>
     </a>
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-  import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
+  import { SidebarEventBus as VM } from 'app/eventbus';
   import SidebarItemAction from 'components/SidebarItemAction.vue';
 
   export default {
@@ -62,7 +62,7 @@
               }
             }
           });
-          !this.component.collapsible && isMobile.any && SIDEBAREVENTBUS.$emit('sidebaritemclick');
+          !this.component.collapsible && isMobile.any && VM.$emit('sidebaritemclick');
         }
         this.component.setOpen(!this.component.state.open);
       }

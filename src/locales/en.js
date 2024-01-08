@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Connection error",
+      at_moment: "At the moment is not possible show map",
+      f5: "Press Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
@@ -8,11 +13,13 @@ export default {
     sign_in: "Sign in",
     layer_selection_filter: {
       tools: {
-        filter: "Add/Remove Filter",
+        filter: "Enable/Disable filter",
         nofilter: "Remove Filter",
         invert: "Invert Selection",
         clear: "Clear Selection",
-        show_features_on_map: "Show features visible on map"
+        show_features_on_map: "Show features visible on map",
+        savefilter: "Save Filter",
+        filterName: "Filter Name",
       }
     },
     warning: {
@@ -24,6 +31,26 @@ export default {
       message: "Position relative to layers on TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Select Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Spatial Bookmarks",
+        helptext: "Move on map extent, insert name and click Add",
+        input: {
+          name: "Name"
+        },
+        sections: {
+          project:{
+            title: "Project Bookmarks"
+          },
+          user: {
+            title: "User Bookmarks"
+          }
+        }
+      },
       search: {
         all: 'ALL',
         no_results: "No results",
@@ -105,7 +132,7 @@ export default {
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'Refereces',
+                  personprimary: 'References',
                   contactvoicetelephone: 'Phone',
                   contactorganization: 'Organization',
                   ContactOrganization: 'Organization',
@@ -154,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Row View",
-          row_to_form: "Form View"
+          row_to_form: "Form View",
+          zoomtogeometry: "Zoom to Geometry",
         },
         copy_map_extent_url: 'Copy map view link',
         download_shapefile: "Download Shapefile",
@@ -253,6 +281,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
+        },
         querybybbox: {
           tooltip: 'Query BBox layer',
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
@@ -293,6 +324,10 @@ export default {
             metric: 'Meters',
             nautical: 'Nautical Mile'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Last",
+          zoom_next: "Zoom Next"
         }
       },
       relations: {
@@ -332,6 +367,7 @@ export default {
           textarea: "text",
           string: "string",
           date: "date",
+          datetime: "date",
           float: "float",
           table: "table"
         },
@@ -354,6 +390,7 @@ export default {
             copied: "Copied"
           },
           download: {
+            unknow: 'Download',
             shp: 'Download Shapefile',
             gpx: 'Download GPX',
             gpkg: 'Download GPKG',
@@ -377,11 +414,13 @@ export default {
     toggle_color_scheme: "Toggle color scheme",
     logout: "Logout",
     no_other_projects: "No more project for this group",
+    no_other_groups: "No more groups for this Macrogroup",
     yes: "Yes",
     no: "No",
     back: "Back",
     backto: "Back to ",
     changemap: "Change Map",
+    change_session: "Change Session",
     component: "Generic Component",
     search: "Search",
     no_results: "No results found",
@@ -410,8 +449,12 @@ export default {
     save: "Save",
     cancel: "Cancel",
     close: "Close",
-    enlange_reduce:"Enlarge/Reduce",
-    reset_default:"Default size",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Don't show again",
+    enlange_reduce: "Enlarge / Reduce",
+    reset_default: "Default size",
     add: "Add",
     exitnosave: "Exit without save",
     annul: "Cancel",
@@ -430,7 +473,7 @@ export default {
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Delete WMS url",
         layer_id_already_added: "WMS Layer already added",
-        url_already_added: "WMS URL already added",
+        url_already_added: "WMS URL/Name already added",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
     },
@@ -446,8 +489,10 @@ export default {
       geolocations: {
         error: "Can't get your position"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Choose a layer where to add this feature",
         placeholder: "Address ...",
+        nolayers: "No editable point layers found on this project",
         noresults: "No results",
         notresponseserver: "No response from server"
       },
@@ -471,7 +516,16 @@ export default {
         tooltip: "Area"
       },
       screenshot: {
-        error: "Screenshot error creation"
+        error: "Screenshot error creation",
+        securityError: `  
+        <p><b>Security Error</b>: an external layer is preventing map from being printed. To check, proceed as follows:</p>
+        <ol>
+          <li>remove any manually added external layers (eg. WMS layers)</li>
+          <li>force page reload: <code>CTRL + F5</code></li>
+          <li>print again the map</li>
+        </ol>
+        <p>For more info please contact server administrator about: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        `
       }
     },
     catalog_items: {
@@ -481,7 +535,9 @@ export default {
         open_attribute_table: "Open Attribute Table",
         show_metadata: "Metadata",
         styles: 'Styles',
-        vector_color_menu:"Set/Change Color"
+        vector_color_menu:"Set/Change Color",
+        layer_opacity: "Opacity",
+        filters: "Filters",
       }
     },
     dataTable: {

@@ -1,15 +1,4 @@
 .skin-red {
-  .g3w-map-controls {
-    .tooltip-inner {
-      background-color:@red;
-    }
-    .tooltip.bottom .tooltip-arrow {
-      border-bottom-color: @red;
-    }
-    .tooltip.left .tooltip-arrow {
-      border-left-color: @red;
-    }
-  }
   .ol-control, .ol-custom-overviewmap {
     button {
       color: #fff;
@@ -29,7 +18,7 @@
   }
 
   .ol-mouse-position {
-    color: @red;
+    color: darken(@red, 20%);
   }
 
   .ol-mouse-position-default {
@@ -52,13 +41,13 @@
 
   #scale-control {
     .select2-selection__rendered{
-      color: @red !important;
+      color: darken(@red, 20%) !important;
     }
     .select2-selection__arrow b {
-      border-top-color: @red !important;
+      border-top-color: darken(@red, 20%) !important;
     }
     .select2-container--default.select2-container--open .select2-selection__arrow b{
-      border-bottom-color: @red !important;
+      border-bottom-color: darken(@red, 20%) !important;
     }
   }
 
@@ -74,28 +63,8 @@
     border: 3px solid @red;
   }
 
-  .ol-geocoder .gcd-txt-input {
-    border: 3px solid @red;
-  }
-
-  .ol-geocoder .gcd-txt-reset::after {
-    color: @red;
-  }
-
-  .ol-geocoder #search_nominatim {
-    background-color: @red;
-  }
-
-  .ol-geocoder ul.gcd-txt-result > li {
-    border-bottom: 2px solid @red;
-  }
-
-  .ol-geocoder .gcd-gl-input:focus, .ol-geocoder .gcd-txt-input:focus {
-    box-shadow: inset 0 0 0 1px flat(@red, 70%), inset 0 0 5px flat(@red, 70%);
-  }
-
   .ol-attribution li a {
-    color: @red;
+    color: darken(@red, 20%);
   }
   .mtooltip {
     background: rgba(0, 0, 0, 0.9);

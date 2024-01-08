@@ -2,7 +2,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 function CatalogService() {
@@ -16,7 +16,53 @@ function CatalogService() {
     layerstrees: [],
     layersgroups: []
   };
-  this.setters = {};
+
+  this.setters = {
+
+    /**
+     * @param {{ layer: unknown, type: 'vector' }}
+     * 
+     * @fires CatalogService~addExternalLayer
+     * 
+     * @since 3.8.0
+     */
+    addExternalLayer({layer, type='vector'} = {}) {
+      layer.removable = true;
+      this.state.external[type].push(layer);
+    },
+
+    /**
+     * @param {{ name: string, type: 'vector' }}
+     * 
+     * @fires CatalogService~removeExternalLayer
+     * 
+     * @since 3.8.0
+     */
+    removeExternalLayer({name, type='vector'} = {}) {
+      this.state.external[type].filter((layer, index) => {
+        if (layer.name === name) {
+          this.state.external[type].splice(index, 1);
+          return true
+        }
+      });
+    },
+
+    /**
+     * @param {{ layer: unknown, type: unknown, selected: unknown }}
+     * 
+     * @fires CatalogService~setSelectedExternalLayer
+     * 
+     * @since 3.8.0
+     */
+    setSelectedExternalLayer({layer, type, selected}) {
+      this.state.external[type].forEach(externalLayer => {
+        if (typeof externalLayer.selected != "undefined")
+          externalLayer.selected = (layer === externalLayer) ? selected : false;
+      })
+    },
+
+  };
+
   base(this);
   const layersStores = CatalogLayersStoresRegistry.getLayersStores();
 
@@ -65,20 +111,6 @@ proto.addLayersGroup = function(layersGroup) {
   this.state.layersgroups.push(layersGroup);
 };
 
-proto.addExternalLayer = function({layer, type='vector'}={}) {
-  layer.removable = true;
-  this.state.external[type].push(layer);
-};
-
-proto.removeExternalLayer = function({name, type='vector'}={}) {
-  this.state.external[type].find((layer, index) => {
-    if (layer.name === name) {
-      this.state.external[type].splice(index, 1);
-      return true
-    }
-  });
-};
-
 proto.addLayersStoreToLayersTrees = function(layersStore) {
   this.state.layerstrees.push({
     tree: layersStore.getLayersTree(),
@@ -86,7 +118,7 @@ proto.addLayersStoreToLayersTrees = function(layersStore) {
   });
 };
 
-proto.changeMapTheme = async function(map_theme){
+proto.changeMapTheme = async function(map_theme) {
   // set is changing project view
   ApplicationService.changeProjectView(true);
   const {currentProject} = this.state.prstate;
@@ -100,6 +132,51 @@ proto.changeMapTheme = async function(map_theme){
   });
   ApplicationService.changeProjectView(false);
   return changeMapThemeProjectObj;
+};
+
+/**
+ * @param {{ type: 'vector' }}
+ * 
+ * @returns {unknown}
+ * 
+ * @since 3.8.0
+ */
+proto.getExternalLayers = function({type='vector'}) {
+  return this.state.external[type];
+};
+
+/**
+ * @param {{ type: 'vector' }}
+ * 
+ * @returns {unknown}
+ * 
+ * @since 3.8.0
+ */
+proto.getExternalSelectedLayers = function({type='vector'}) {
+  return this.getExternalLayers({type}).filter(layer => layer.selected);
+};
+
+/**
+ * @param {{ id: string, type: 'vector' }}
+ * 
+ * @returns {unknown}
+ * 
+ * @since 3.8.0
+ */
+proto.getExternalLayerById = function({id, type='vector'}) {
+  return this.state.external[type].find(layer => layer.id === id);
+};
+
+/**
+ * @param {{ id: string, type: unknown }}
+ * 
+ * @returns {boolean}
+ * 
+ * @since 3.8.0
+ */
+proto.isExternalLayerSelected = function({id, type}) {
+  const externalLayer = this.getExternalLayerById({ id, type });
+  return !!(externalLayer && externalLayer.selected);
 };
 
 module.exports = CatalogService;

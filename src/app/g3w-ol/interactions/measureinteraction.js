@@ -4,7 +4,7 @@ const {
   setMeasureTooltipStatic,
   removeMeasureTooltip,
   needUseSphereMethods
-} = require('core/utils/ol');
+} = require('utils/ol');
 
 const MeasureIteraction = function(options={}) {
   this._helpTooltip;

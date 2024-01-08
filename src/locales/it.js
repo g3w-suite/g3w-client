@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Errore di connessione",
+      at_moment: "Al momento non è possibile caricare la mappa",
+      f5: "Premi Ctrl+F5"
+    },
     cookie_law: {
       message: "Questo sito utilizza i cookie per garantire una buona usabilità all'utilizzatore finale.",
       buttonText: "Ho capito!"
@@ -8,11 +13,13 @@ export default {
     sign_in: "Accedi",
     layer_selection_filter: {
       tools: {
-        filter: "Aggiungi/Rimuovi Filtro",
+        filter: "Attiva/Disattiva Filtro",
         nofilter: "Rimuovi filtro",
         invert: "Inverti Selezione",
         clear: "Annulla selezione",
-        show_features_on_map: "Mostra features visibili su mappa"
+        show_features_on_map: "Mostra features visibili su mappa",
+        savefilter: "Salva Filtro",
+        filterName: 'Nome Filtro',
       }
     },
     warning: {
@@ -24,6 +31,26 @@ export default {
       message: "Posizione rispetto ai layers della TOC"
     },
     sdk: {
+      atlas: {
+        template_dialog: {
+          title: "Seleziona Template"
+        }
+      },
+      spatialbookmarks: {
+        title: "Segnalibri Spaziali",
+        helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
+        input: {
+          name: "Nome"
+        },
+        sections: {
+          project:{
+            title: "Segnalibri Progetto"
+          },
+          user: {
+            title: "Segnalibri Utente"
+          }
+        }
+      },
       search: {
         all: 'TUTTE',
         no_results: "Nessun valore trovato",
@@ -154,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Visualizza formato Riga",
-          row_to_form: "Visualizza formato Form"
+          row_to_form: "Visualizza formato Form",
+          zoomtogeometry: "Zoom sulla geometria",
         },
         zoom_to_features_extent: "Zoom sulle features",
         copy_map_extent_url: 'Copia map view link',
@@ -248,11 +276,14 @@ export default {
             title: 'Guida - Interrogazione con Poligono',
             message:`
                 <ul>
-                  <li">Seleziona uno strato poligonale in legenda.</li>
+                  <li>Seleziona uno strato poligonale in legenda.</li>
                   <li>Assicurati che lo strato sia visibile in mappa.</li>
                   <li>Clicca su una geometria dello strato selezionato.</li>
                 </ul>`
           }
+        },
+        querybydrawpolygon: {
+          tooltip: "Disegna un poligono per interrogare"
         },
         querybybbox: {
           tooltip: 'Interroga per BBOX',
@@ -295,6 +326,10 @@ export default {
             metric: 'Metri',
             nautical: 'Miglio Nautico'
           }
+        },
+        zoomhistory: {
+          zoom_last: "Zoom Precedente",
+          zoom_next: "Zoom Successivo"
         }
       },
       relations: {
@@ -334,6 +369,7 @@ export default {
           textarea: "testuale",
           string: "stringa",
           date: "data",
+          datetime: "data",
           float: "float",
           table: "table"
         },
@@ -356,6 +392,7 @@ export default {
             copied: "Copiato"
           },
           download: {
+            unknow: "Scarica",
             shp: 'Scarica Shapefile',
             gpx: 'Scarica GPX',
             gpkg: 'Scarica GPKG',
@@ -379,11 +416,16 @@ export default {
     toggle_color_scheme: "Cambia colore",
     logout: "Esci",
     no_other_projects: "Non ci sono altri progetti in questo gruppo cartografico",
+    /**
+     * @since 3.8.0
+     */
+    no_other_groups: "Non ci sono altri gruppi in questo Macrogruppo",
     yes: "Si",
     no: "No",
     back:"Indietro",
     backto: "Torna a ",
     changemap: "Cambia Mappa",
+    change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",
     no_results: "Nessun risultato trovato",
@@ -412,8 +454,12 @@ export default {
     save: "Salva",
     cancel: "Cancella",
     close: "Chiudi",
-    enlange_reduce:"Allarga/Riduci",
-    reset_default:"Dimensione Partenza",
+    /**
+     * @since 3.8.0
+     */
+    dont_show_again: "Non mostrare più",
+    enlange_reduce: "Allarga / Riduci",
+    reset_default: "Dimensione predefinita",
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",
@@ -431,8 +477,8 @@ export default {
         },
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Elimina WMS url",
-        layer_id_already_added: "WMS Layer già aggiunto",
-        url_already_added: "WMS URL già aggiunto",
+        layer_id_already_added: "Questo Layer WMS è già stato aggiunto",
+        url_already_added: "URL/Nome WMS già aggiunto",
         layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
       }
     },
@@ -449,8 +495,10 @@ export default {
         title: "",
         error: "Non è possibile calcolare la tua posizione."
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Scegli un livello in cui aggiungere questa funzionalità",
         placeholder: "Indirizzo ...",
+        nolayers: "Nessun layer di punti modificabile trovato in questo progetto",
         noresults: "Nessun risultato",
         notresponseserver: "Il server non risponde"
       },
@@ -474,7 +522,16 @@ export default {
         tooltip: "Area"
       },
       screenshot: {
-        error: "Errore nella creazione dello screenshot"
+        error: "Errore nella creazione dello screenshot",
+        securityError: `  
+        <p><b>Errore di sicurezza</b>: uno strato esterno impedisce la stampa della mappa. Per verificare, procedere come segue:</p>
+        <ol>
+          <li>rimuovi eventuali layer esterni aggiunti manualmente (es. layer WMS)</li>
+          <li>forza il ricaricamento della pagina: <code>CTRL + F5</code></li>
+          <li>stampa nuovamente la mappa</li>
+        </ol>
+        <p>Per maggiori informazioni contattare l'amministratore del server in merito a: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        `
       }
     },
     catalog_items: {
@@ -484,7 +541,9 @@ export default {
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stili",
-        vector_color_menu:"Setta/Cambia Colore"
+        vector_color_menu:"Setta/Cambia Colore",
+        layer_opacity: "Trasparenza",
+        filters: "Filtri",
       }
     },
     dataTable: {
@@ -494,6 +553,6 @@ export default {
       info: "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
-    }
+    },
   },
 };

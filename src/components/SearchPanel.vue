@@ -73,7 +73,10 @@ export default {
       }
     },
     async autocompleteRequest(params={}){
-      return this.$options.service.autocompleteRequest(params);
+      return this.$options.service.getUniqueValuesFromField({
+        ...params,
+        output: 'autocomplete'
+      });
     },
     changeDependencyFields({attribute:field, value}) {
       const subscribers = this.$options.service.getDependencies(field);

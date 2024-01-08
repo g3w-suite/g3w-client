@@ -5,7 +5,7 @@
 
 <template>
   <div class="g3wform_content" style="position: relative">
-    <bar-loader :loading="state.loading"></bar-loader>
+    <bar-loader :loading="state.loading"/>
     <g3wformheader ref="g3wformheader"
       :currentid="state.currentheaderid"
       :headers="state.headers"
@@ -38,6 +38,10 @@ import HeaderFormComponent from 'components/FormHeader.vue';
 import G3wFormFooter from 'components/FormFooter.vue';
 
 export default {
+
+  /** @since 3.8.6 */
+  name: 'g3w-form',
+
   data() {
     return {
       state: {},

@@ -31,6 +31,14 @@ table.dataTable {
   border-bottom: 0;
 }
 
+/**
+* @since 3.9.0
+ */
+
+.dataTables_filter input.search, .dataTables_length select {
+  border-radius: 3px;
+}
+
 .bootbox.dialogFullScreen {
   .modal-dialog {
     width: 90% !important;
@@ -107,6 +115,12 @@ table.dataTable {
   font-weight: bold;
 }
 
+.select2-selection--single, .select2-selection__choice {
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 .bootstrap-datetimepicker-widget.dropdown-menu {
   color: #000000;
   white-space: normal !important;
@@ -117,4 +131,10 @@ table.dataTable {
 
 .ql-tooltip[data-mode="link"] {
   left: 0 !important;
+}
+
+body {
+  .tooltip .tooltip-inner {
+    max-width: 100% !important;
+  }
 }

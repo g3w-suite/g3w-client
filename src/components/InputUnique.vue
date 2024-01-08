@@ -21,9 +21,13 @@
 <script>
 import { selectMixin } from 'mixins';
 const Input = require('gui/inputs/input');
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
+
+  /** @since 3.8.6 */
+  name: "input-unique",
+
   mixins: [Input, selectMixin],
   data() {
     const id = `unique_${getUniqueDomId()}`;
