@@ -8,7 +8,7 @@ import OWSService from 'services/data-ows';
 import ProxyService from 'services/data-proxy';
 import QueryService from 'services/data-query';
 import SearchService from 'services/data-search';
-import IFrameRouterService from 'services/iframe-plugin';
+import IFrameRouterService from 'services/iframe';
 import GUI from 'services/gui';
 
 const { splitContextAndMethod } = require('utils');

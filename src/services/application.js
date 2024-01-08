@@ -659,7 +659,7 @@ const ApplicationService = function() {
    * iframeservice 
    */
   this.startIFrameService = function({project}={}) {
-    const iframeService = require('core/iframe/routerservice');
+    const iframeService = require('services/iframe').default;
     iframeService.init({project});
   };
 
@@ -722,7 +722,7 @@ const ApplicationService = function() {
   };
 
   /**
-   * @TODO check if deprecated
+   * It used by plugin https://github.com/g3w-suite/g3w-client-plugin-openrouteservice
    */
   this.reloadCurrentProject = function() {
     return this.changeProject({ gid: ProjectsRegistry.getCurrentProject().getGid() });

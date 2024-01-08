@@ -490,8 +490,10 @@ export default {
       geolocations: {
         error: "Du kan inte lokaliseras"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Välj ett lager där du vill lägga till denna funktion",
         placeholder: "Adress ...",
+        nolayers: "Inga redigerbara punktlager hittades i det här projektet",
         noresults: "Inga resultat",
         notresponseserver: "Inget svar från servern"
       },

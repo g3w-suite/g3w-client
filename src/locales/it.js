@@ -477,8 +477,8 @@ export default {
         },
         add_wms_layer: "Aggiungi WMS layer",
         delete_wms_url: "Elimina WMS url",
-        layer_id_already_added: "WMS Layer già aggiunto",
-        url_already_added: "WMS URL/Nome già aggiunto",
+        layer_id_already_added: "Questo Layer WMS è già stato aggiunto",
+        url_already_added: "URL/Nome WMS già aggiunto",
         layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
       }
     },
@@ -495,8 +495,10 @@ export default {
         title: "",
         error: "Non è possibile calcolare la tua posizione."
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Scegli un livello in cui aggiungere questa funzionalità",
         placeholder: "Indirizzo ...",
+        nolayers: "Nessun layer di punti modificabile trovato in questo progetto",
         noresults: "Nessun risultato",
         notresponseserver: "Il server non risponde"
       },

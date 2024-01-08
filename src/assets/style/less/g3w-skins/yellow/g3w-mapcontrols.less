@@ -19,7 +19,7 @@
   }
 
   .ol-mouse-position {
-    color: @yellow;
+    color: darken(@yellow, 20%);
   }
 
   .ol-mouse-position-default {
@@ -42,13 +42,13 @@
 
   #scale-control {
     .select2-selection__rendered{
-      color: @yellow !important;
+      color: darken(@yellow, 20%) !important;
     }
     .select2-selection__arrow b {
-      border-top-color: @yellow !important;
+      border-top-color: darken(@yellow, 20%) !important;
     }
     .select2-container--default.select2-container--open .select2-selection__arrow b{
-      border-bottom-color: @yellow !important;
+      border-bottom-color: darken(@yellow, 20%) !important;
     }
   }
 
@@ -64,28 +64,8 @@
     border: 3px solid @yellow;
   }
 
-  .ol-geocoder .gcd-txt-input {
-    border: 3px solid @yellow;
-  }
-
-  .ol-geocoder .gcd-txt-reset::after {
-    color: @yellow;
-  }
-
-  .ol-geocoder #search_nominatim {
-    background-color: @yellow;
-  }
-
-  .ol-geocoder ul.gcd-txt-result > li {
-    border-bottom: 2px solid @yellow;
-  }
-
-  .ol-geocoder .gcd-gl-input:focus, .ol-geocoder .gcd-txt-input:focus {
-    box-shadow: inset 0 0 0 1px flat(@yellow, 70%), inset 0 0 5px flat(@yellow, 70%);
-  }
-
   .ol-attribution li a {
-    color: @yellow;
+    color: darken(@yellow, 20%);
   }
 
   .mtooltip {
