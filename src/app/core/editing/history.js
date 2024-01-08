@@ -300,13 +300,15 @@ proto.canCommit = function() {
 //cauUdo method
 proto.canUndo = function() {
   const steps = (this._states.length - 1) - this.getCurrentStateIndex();
-  this.state.undo = !_.isNull(this._current) && (this._maxSteps > steps);
+  this.state.undo = (null !== this._current) && (this._maxSteps > steps);
   return this.state.undo;
 };
 
-// Caon Redo function
+// Can Redo function
 proto.canRedo = function() {
-  this.state.redo = this.getLastState() && this.getLastState().id != this._current || _.isNull(this._current) && this._states.length > 0;
+  this.state.redo = (
+    (this.getLastState() && this.getLastState().id != this._current))
+    || (null ===this._current && this._states.length > 0);
   return this.state.redo;
 };
 
