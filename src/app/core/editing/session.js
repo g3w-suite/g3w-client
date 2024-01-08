@@ -380,7 +380,7 @@ proto.redo = function(items) {
 };
 
 /**
- *
+ * Create Json Object for a commit body send to server
  * @param itemsToCommit
  * @returns {{add: *[], update: *[], relations: {}, delete: *[]}}
  * @private
@@ -390,18 +390,22 @@ proto._serializeCommit = function(itemsToCommit) {
   let state;
   let layer;
   const commitObj = {
-    add: [],
-    update: [],
-    delete: [],
-    relations: {}
+    add: [], //features to add
+    update: [], //features to update
+    delete: [], //features to delete
+    relations: {} // relation features
   };
+  //jey is a layer id that has changes to apply
   for (const key in itemsToCommit) {
-    let isRelation = false;
+    let isRelation = false; //set relation to false
     const items = itemsToCommit[key];
+    // case key (layer id) is not equal to id (current layer id on editing)
     if (key !== id) {
-      isRelation = true;
+      isRelation = true; //set true because these changes belong to features relation items
       const sessionRelation = SessionsRegistry.getSession(key);
+      //check lock ids of relation layer
       const lockids =  sessionRelation ? sessionRelation.getEditor().getLockIds(): [];
+      //create a relations object
       commitObj.relations[key] = {
         lockids,
         add: [],
@@ -416,36 +420,52 @@ proto._serializeCommit = function(itemsToCommit) {
 
     items
       .forEach((item) => {
+        //check state of feature item
         state = item.getState();
         const GeoJSONFormat = new ol.format.GeoJSON();
         switch (state) {
+          //item needs to be deleted
           case 'delete':
-            if (!item.isNew())
+            //check if is new. If is new mean is not present on server
+            //so no need to say to server to delete it
+            if (!item.isNew()) {
               layer.delete.push(item.getId());
+            }
             break;
           default:
-            const value = GeoJSONFormat.writeFeatureObject(item);
+            //convert feature to json ex. {geometry:{tye: 'Point'}, properties:{}.....}
+            const itemObj = GeoJSONFormat.writeFeatureObject(item);
+            //get properties
             const childs_properties = item.getProperties();
-            for (const key in value.properties) {
-             if (value.properties[key] && typeof value.properties[key] === 'object' && value.properties[key].constructor === Object)
-               value.properties[key] = value.properties[key].value;
-             if (value.properties[key] === undefined && childs_properties[key])
-               value.properties[key] = childs_properties[key]
+            for (const p in itemObj.properties) {
+             // in case the value of property is an object
+             if (itemObj.properties[p] && typeof itemObj.properties[p] === 'object' && itemObj.properties[p].constructor === Object) {
+               //need to get value from value attribute object
+               itemObj.properties[p] = itemObj.properties[p].value;
+             }
+             // @TODO explain when this condition happen
+             if (undefined === itemObj.properties[p] && childs_properties[p]) {
+               itemObj.properties[p] = childs_properties[p]
+             }
             }
-            const action = item.isNew() ? 'add' : item.getState();
             // in case of add it have to remove not editable properties
-            layer[action].push(value);
+            layer[item.isNew() ? 'add' : item.getState()].push(itemObj);
             break;
         }
       });
     // check in case of no edit remove relation key
-    if (isRelation && !layer.add.length && !layer.update.length && !layer.delete.length) {
+    if (
+      isRelation
+      && layer.add.length    === 0 //no relation features to add
+      && layer.update.length === 0 //no relation features to update
+      && layer.delete.length === 0 //no relation features to delete
+    ) {
       delete commitObj.relations[key];
     }
   }
 
   // Remove deep relations from current layer (commitObj) that are not relative to that layer
-  let relations = Object.keys(commitObj.relations || []);
+  const relations = Object.keys(commitObj.relations || {});
   relations
     .filter(id => undefined === this._editor.getLayer().getRelations().getArray().find(r => id === r.getChild())) // child relations
     .map(id => {
@@ -490,9 +510,8 @@ proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
     const geometryType = editingLayer.getGeometryType();
     // if is a 3D layer i set on geoJON before send it to server
     if (is3DGeometry(geometryType)){
-      ['add', 'update'].forEach(action =>{
-        commitItems[action].forEach(feature => feature.geometry.type = geometryType)
-      })
+      ['add', 'update']
+        .forEach(action =>commitItems[action].forEach(feature => feature.geometry.type = geometryType))
     }
   }
   // the same control of relations layers
