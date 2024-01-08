@@ -53,7 +53,7 @@ function Editor(options = {}) {
    * 
    * @type { FeaturesStore | OlFeaturesStore }
    */
-  this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
+  this._featuresstore = Layer.LayerTypes.TABLE === this._layer.getType() ? new FeaturesStore() : new OlFeaturesStore();
 
   /**
    * Whether editor is active or not
@@ -137,17 +137,30 @@ proto._applyChanges = function(items = [], reverse = true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
+/**
+ *
+ * @param items
+ * @param reverse
+ */
 proto.setChanges = function(items, reverse) {
   this._applyChanges(items, reverse)
 };
 
+/**
+ *
+ * @return {*}
+ */
 proto.getLayer = function() {
   return this._layer;
 };
 
+/**
+ *
+ * @param layer
+ * @return {*}
+ */
 proto.setLayer = function(layer) {
-  this._layer = layer;
-  return this._layer;
+  return this._layer = layer;
 };
 
 proto.removeNotEditablePropriertiesFromFeature = function(feature) {
@@ -161,11 +174,21 @@ proto._cloneFeatures = function(features = []) {
   return features.map(f => f.clone());
 };
 
+/**
+ *
+ * @param features
+ * @private
+ */
 proto._addFeaturesFromServer = function(features = []) {
-  features = this._cloneFeatures(features);
-  this._featuresstore.addFeatures(features);
+  this._featuresstore.addFeatures(this._cloneFeatures(features));
 };
 
+/**
+ *
+ * @param options
+ * @return {boolean}
+ * @private
+ */
 proto._doGetFeaturesRequest = function(options={}) {
   if  (Applicationstate.online && !this._allfeatures) {
     return this._canDoGetFeaturesRequest(options);
@@ -261,6 +284,7 @@ proto.setFieldValueToRelationField = function(
     .getSession(layerId)
     .getEditor()
     .getEditingSource();
+
   ids.forEach(id => {                          // loop relation ids
     const feature = source.getFeatureById(id);
     if (feature) {
