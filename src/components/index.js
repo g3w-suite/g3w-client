@@ -123,7 +123,7 @@ export {
   CatalogChangeMapThemes,
   CatalogLayerContextMenu,
   /**
-   * @since 3.8.0
+   * @since 3.10.0
    */
   CatalogProjectContextMenu,
   CatalogLayerLegend,

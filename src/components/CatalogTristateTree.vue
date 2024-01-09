@@ -520,7 +520,7 @@ export default {
      *
      * @since 3.9.0
      */
-     saveFilter(layerstree) {
+    saveFilter(layerstree) {
       CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();
     },
 
@@ -568,7 +568,7 @@ export default {
     /**
      * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
      *
-     * @since 3.8.0
+     * @since 3.10.0
      */
     maybeZoomToLayer(layer) {
       if (this.canZoom(this.layerstree)) {

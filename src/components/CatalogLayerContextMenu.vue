@@ -1084,14 +1084,14 @@
       },
 
       /**
-       * @since 3.8.0
+       * @since 3.10.0
        */
       canOpenAttributeTable(layer) {
         return layer.openattributetable;
       },
 
       /**
-       * @since 3.8.0
+       * @since 3.10.0
        */
       isExternalLayer(layer) {
         return !layer.projectLayer
