@@ -138,7 +138,6 @@ proto._applyChanges = function(items = [], reverse = true) {
 };
 
 /**
- *
  * @param items
  * @param reverse
  */
@@ -147,17 +146,16 @@ proto.setChanges = function(items, reverse) {
 };
 
 /**
- *
- * @return {*}
+ * @returns {*}
  */
 proto.getLayer = function() {
   return this._layer;
 };
 
 /**
- *
  * @param layer
- * @return {*}
+ * 
+ * @returns {*}
  */
 proto.setLayer = function(layer) {
   return this._layer = layer;
@@ -175,8 +173,8 @@ proto._cloneFeatures = function(features = []) {
 };
 
 /**
- *
  * @param features
+ * 
  * @private
  */
 proto._addFeaturesFromServer = function(features = []) {
@@ -184,9 +182,10 @@ proto._addFeaturesFromServer = function(features = []) {
 };
 
 /**
- *
  * @param options
- * @return {boolean}
+ * 
+ * @returns { boolean }
+ * 
  * @private
  */
 proto._doGetFeaturesRequest = function(options={}) {
