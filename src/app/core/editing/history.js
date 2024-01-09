@@ -45,10 +45,10 @@ inherit(History, G3WObject);
 const proto = History.prototype;
 
 /**
- *
  * @param uniqueId
  * @param items
- * @return {*}
+ * 
+ * @returns {*}
  */
 proto.add = function(uniqueId, items) {
   //state object is an array of feature/features changed in a transaction
@@ -81,10 +81,10 @@ proto.add = function(uniqueId, items) {
 };
 
 /**
- *
  * @param layerId
  * @param clear
- * @return {*[]}
+ * 
+ * @returns {*[]}
  */
 proto.getRelationStates = function(layerId, {clear=false}={}) {
   const relationStates = [];
@@ -105,7 +105,6 @@ proto.getRelationStates = function(layerId, {clear=false}={}) {
 };
 
 /**
- *
  * @param state
  */
 proto.insertState = function(state) {
@@ -130,7 +129,6 @@ proto.insertState = function(state) {
 };
 
 /**
- *
  * @param stateId
  */
 proto.removeState = function(stateId) {
@@ -149,7 +147,6 @@ proto.removeState = function(stateId) {
 };
 
 /**
- *
  * @param stateIds
  */
 proto.removeStates = function(stateIds = []) {
@@ -160,7 +157,6 @@ proto.removeStates = function(stateIds = []) {
 };
 
 /**
- *
  * @param states
  */
 proto.insertStates = function(states=[]) {
@@ -170,15 +166,19 @@ proto.insertStates = function(states=[]) {
   this.canCommit();
 };
 
-// internal method to change the state of the  history when we check
-// a call to a function that modify the hsitory state
+/**
+ * internal method to change the state of the  history when we check
+ * a call to a function that modify the hsitory state
+ */
 proto._setState = function() {
   this.canUndo();
   this.canCommit();
   this.canRedo();
 };
 
-//check if was done an update (update are array contains two items , old e new value)
+/**
+ * check if was done an update (update are array contains two items , old e new value)
+ */
 proto._checkItems = function(items, action) {
   /**
    * action: <reffererd to array index>
@@ -211,7 +211,9 @@ proto._checkItems = function(items, action) {
   return newItems;
 };
 
-// method undo
+/**
+ * undo method
+ */
 proto.undo = function() {
   let items;
   if (this._current === this.getFirstState().id) {
@@ -231,7 +233,9 @@ proto.undo = function() {
   return items;
 };
 
-//method redo
+/**
+ * redo method
+ */
 proto.redo = function() {
   let items;
   // if not set get first state
@@ -254,7 +258,6 @@ proto.redo = function() {
 };
 
 /**
- *
  * @param unsetnewids
  */
 proto.setItemsFeatureIds = function(unsetnewids=[]) {
@@ -276,7 +279,6 @@ proto.setItemsFeatureIds = function(unsetnewids=[]) {
 };
 
 /**
- *
  * @param ids
  */
 proto.clear = function(ids) {
@@ -295,7 +297,6 @@ proto.clear = function(ids) {
 };
 
 /**
- *
  * @private
  */
 proto._clearAll =  function() {
@@ -307,25 +308,23 @@ proto._clearAll =  function() {
 };
 
 /**
- *
  * @param id
- * @return {T}
+ * 
+ * @returns {T}
  */
 proto.getState = function(id) {
   return this._states.find(state => state.id === id);
 };
 
 /**
- *
- * @return {*|null}
+ * @returns {*|null}
  */
 proto.getFirstState = function() {
   return this._states.length ? this._states[0] : null;
 };
 
 /**
- *
- * @return {*|null}
+ * @returns {*|null}
  */
 proto.getLastState = function() {
   const length = this._states.length;
@@ -333,8 +332,7 @@ proto.getLastState = function() {
 };
 
 /**
- *
- * @return {null}
+ * @returns {null}
  */
 proto.getCurrentState = function() {
   let currentState = null;
@@ -348,7 +346,8 @@ proto.getCurrentState = function() {
 
 /**
  * Get index of current state
- * @return {null}
+ * 
+ * @returns {null}
  */
 proto.getCurrentStateIndex = function() {
   let currentStateIndex = null;
@@ -364,8 +363,7 @@ proto.getCurrentStateIndex = function() {
 };
 
 /**
- * method that response true if we can commit
- * @return {boolean}
+ * @returns { boolean } true if we can commit
  */
 proto.canCommit = function() {
   const checkCommitItems = this.commit();
@@ -378,14 +376,18 @@ proto.canCommit = function() {
   return this.state.commit;
 };
 
-//canUdo method
+/**
+ * canUdo method
+ */
 proto.canUndo = function() {
   const steps = (this._states.length - 1) - this.getCurrentStateIndex();
   this.state.undo = (null !== this._current) && (this._maxSteps > steps);
   return this.state.undo;
 };
 
-// CanRedo function
+/**
+ * CanRedo function
+ */ 
 proto.canRedo = function() {
   this.state.redo = (
     (this.getLastState() && this.getLastState().id != this._current))
@@ -394,15 +396,17 @@ proto.canRedo = function() {
 };
 
 /**
- *
- * @return {T[]}
+ * @returns {T[]}
+ * 
  * @private
  */
 proto._getStatesToCommit = function() {
   return this._states.filter(state => state.id <= this._current);
 };
 
-//get all changes to send to server (mandare al server)
+/**
+ * get all changes to send to server (mandare al server)
+ */
 proto.commit = function() {
   const commitItems = {};
   const statesToCommit = this._getStatesToCommit();
