@@ -425,11 +425,11 @@ gulp.task('browser-sync', function() {
   // gulp.watch(['./src/index.html', './src/**/*.html'], gulp.series('browser:reload'));
   //
 
-  gulp.watch([g3w.assetsFolder + '/style/**/*.less'],          () => runSequence('less','browser:reload'));
-  gulp.watch([g3w.assetsFolder + '/geocoding-providers/**/*'], () => runSequence('geocoding-providers', 'browser:reload'));
+  gulp.watch([`${g3w.assetsFolder}/style/**/*.less`],          () => runSequence('less','browser:reload'));
+  gulp.watch([`${g3w.assetsFolder}/geocoding-providers/**/*`], () => runSequence('geocoding-providers', 'browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                           () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                             () => runSequence('html', 'browser:reload'));
-  gulp.watch(g3w.pluginsFolder + '/_version.js',               () => dev_plugins.forEach(p => browserify_plugin(p, false)));
+  gulp.watch(`${g3w.pluginsFolder}/_version.js`,               () => dev_plugins.forEach(p => browserify_plugin(p, false)));
 });
 
 /**
