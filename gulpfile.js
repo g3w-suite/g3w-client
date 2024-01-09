@@ -300,7 +300,7 @@ gulp.task('browserify:app', function() {
     .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
     .pipe(rename('app.min.js'))
     .pipe(gulpif(production, sourcemaps.write('.')))
-    .pipe(gulp.dest(`{outputFolder}/static/client/js/`))
+    .pipe(gulp.dest(`${outputFolder}/static/client/js/`))
     .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
 
   return rebundle();
@@ -340,7 +340,7 @@ gulp.task('datatable-images', function () {
       '!./src/**/node_modules/**/'
     ])
     .pipe(flatten())
-    .pipe(gulp.dest(`{outputFolder}/static/client/fonts/`))
+    .pipe(gulp.dest(`${outputFolder}/static/client/fonts/`))
 });
 
 /**
