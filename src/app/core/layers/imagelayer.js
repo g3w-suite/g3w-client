@@ -1,15 +1,15 @@
 import ProjectsRegistry                   from 'store/projects';
 import ApplicationService                 from 'services/application';
 
-const { base, inherit, mixin }            = require('core/utils/utils');
+const { base, inherit, mixin }            = require('utils');
 const Layer                               = require('core/layers/layer');
 const VectorLayer                         = require('core/layers/vectorlayer');
 const WMSLayer                            = require('core/layers/map/wmslayer');
 const WMSTLayer                           = require('core/layers/map/wmstlayer');
 const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                            = require('core/layers/map/xyzlayer');
-const { get_LEGEND_ON_LEGEND_OFF_Params } = require('core/utils/geo');
-const GeoLayerMixin                       = require('core/layers/geolayermixin');
+const { get_LEGEND_ON_LEGEND_OFF_Params } = require('utils/geo');
+const GeoLayerMixin                       = require('core/layers/mixins/geo');
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)

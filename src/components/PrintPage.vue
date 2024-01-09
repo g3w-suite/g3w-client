@@ -13,7 +13,16 @@
       <div id="g3w-print-header" style="display: flex; justify-content: flex-end; align-items: flex-end; margin-top: 5px; margin-bottom: 5px;">
         <div :class="{'g3w-disabled': disableddownloadbutton}">
           <a :href="state.url" :download="downloadImageName">
-            <button @click="downloadImage" class="btn skin-button skin-tooltip-left" style="font-weight: bold;" data-placement="left" data-toggle="tooltip" v-t-tooltip.create="'sdk.print.download_image'" :class="g3wtemplate.getFontClass('download')" role="button"></button>
+            <button
+              @click="downloadImage"
+              class="btn skin-button skin-tooltip-left"
+              style="font-weight: bold;"
+              data-placement="left"
+              data-toggle="tooltip"
+              data-container="body"
+              v-t-tooltip.create="'sdk.print.download_image'"
+              :class="g3wtemplate.getFontClass('download')"
+              role="button"></button>
           </a>
         </div>
       </div>
@@ -29,7 +38,7 @@
 import { TIMEOUT } from 'app/constant';
 import GUI from 'services/gui';
 
-const { imageToDataURL } = require('core/utils/utils');
+const { imageToDataURL } = require('utils');
 
 export default {
 

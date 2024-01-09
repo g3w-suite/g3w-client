@@ -5,7 +5,7 @@
 
 import * as vueComponentOptions from 'components/ChangeMapMenu.vue';
 
-const { base, inherit, merge } = require('core/utils/utils');
+const { base, inherit, merge } = require('utils');
 const Component = require('gui/component/component');
 
 const InternalComponent = Vue.extend(vueComponentOptions);

@@ -2,7 +2,7 @@ import Applicationstate from 'store/application-state';
 import ChangesManager   from 'services/editing';
 import SessionsRegistry from 'store/sessions';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const G3WObject         = require('core/g3wobject');
 const FeaturesStore     = require('core/layers/features/featuresstore');
 const OlFeaturesStore   = require('core/layers/features/olfeaturesstore');
@@ -10,9 +10,9 @@ const Layer             = require('core/layers/layer');
 
 /**
  * Editor Class: bind editor to layer to do main actions
- * 
+ *
  * @param config
- * 
+ *
  * @constructor
  */
 function Editor(options = {}) {
@@ -50,12 +50,14 @@ function Editor(options = {}) {
 
   /**
    * Store editing features
+   * 
+   * @type { FeaturesStore | OlFeaturesStore }
    */
   this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
 
   /**
    * Whether editor is active or not
-   * 
+   *
    * @type { boolean }
    */
   this._started = false;
@@ -74,33 +76,44 @@ const proto = Editor.prototype;
 /**
  * Used when vector Layer's bbox is contained into an already requested bbox (so no a new request is done).
  *
- * @param { number[] } options.filter.bbox bounding box Array [xmin, ymin, xmax, ymax] 
- * 
+ * @param { number[] } options.filter.bbox bounding box Array [xmin, ymin, xmax, ymax]
+ *
  * @returns { boolean } whether can perform a server request
- * 
+ *
  * @private
  */
 proto._canDoGetFeaturesRequest = function(options = {}) {
   const { bbox } = options.filter || {};
   const is_vector = bbox && Layer.LayerTypes.VECTOR === this._layer.getType();
 
-  // first request --> need to peform request
+  // first request --> need to perform request
   if (is_vector && null === this._filter.bbox) {
     this._filter.bbox = bbox;                                                      // store bbox
     return true;
   }
 
-  // subsequent requests --> check if bbox is contained into an already requested bbox 
+  // subsequent requests --> check if bbox is contained into an already requested bbox
   if (is_vector) {
+    //check if current bbox is contained on cached bbox extent
     const is_cached = ol.extent.containsExtent(this._filter.bbox, bbox);
-    if (!is_cached) this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox); // extend bbox
-    return is_cached;
+    if (!is_cached) {
+      // extend bbox
+      this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
+    }
+    //need to return true if no cached
+    return !is_cached;
   }
 
-  // default --> perform request 
+  // default --> perform request
   return true;
+
 };
 
+/**
+ * Get editing source layer feature
+ * 
+ * @returns { FeaturesStore | OlFeaturesStore }
+ */
 proto.getEditingSource = function() {
   return this._featuresstore;
 };
@@ -112,7 +125,15 @@ proto.getSource = function() {
   this._layer.getSource();
 };
 
-proto._applyChanges = function(items = [], reverse=true) {
+/**
+ * Apply changes to source features
+ * 
+ * @param items
+ * @param reverse
+ * 
+ * @private
+ */
+proto._applyChanges = function(items = [], reverse = true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
@@ -160,7 +181,7 @@ proto._getFeatures = function(options={}) {
   const doRequest = this._doGetFeaturesRequest(options);
   if (!doRequest) {
     d.resolve();
-  } else{
+  } else {
     /** @TODO simplfy nested promises */
     this._layer
       .getFeatures(options)
@@ -188,7 +209,14 @@ proto.revert = function() {
   return d.promise();
 };
 
-proto.rollback = function(changes=[]) {
+/**
+ * Rollback changes
+ * 
+ * @param changes
+ * 
+ * @returns {*}
+ */
+proto.rollback = function(changes = []) {
   const d = $.Deferred();
   this._applyChanges(changes, true);
   d.resolve();
@@ -196,8 +224,7 @@ proto.rollback = function(changes=[]) {
 };
 
 /**
- * 
- * @param relations relations response 
+ * @param relations relations response
  */
 proto.applyChangesToNewRelationsAfterCommit = function(relations) {
   let layer, source, features;
@@ -216,34 +243,35 @@ proto.applyChangesToNewRelationsAfterCommit = function(relations) {
 };
 
 /**
- * @param opts.relationId
- * @param opts.ids
- * @param opts.field
- * @param opts.values
+ * Handle relation feature saved on server
+ * 
+ * @param opts.layerId     - id of relation layer
+ * @param opts.ids         - Array of changes (new feature id)
+ * @param opts.field.name  - field name
+ * @param opts.field.value - field value
  */
-proto.setFieldValueToRelationField = function({
-  relationId,
-  ids,
-  field,
-  values = []
-} = {}) {
-  const source = SessionsRegistry                     // get source of editing relation layer.
-    .getSession(relationId)
+proto.setFieldValueToRelationField = function(
+  {
+    layerId,
+    ids=[],
+    field,
+  } = {}
+) {
+  const source = SessionsRegistry              // get source of editing layer.
+    .getSession(layerId)
     .getEditor()
     .getEditingSource();
-
-  ids.forEach(id => {                                 // get relation feature by id.
+  ids.forEach(id => {                          // loop relation ids
     const feature = source.getFeatureById(id);
-    if (feature && feature.get(field) == values[0]) { // check field value.
-      feature.set(field, values[1]);
+    if (feature) {
+      feature.set(field.name, field.value);    // set father feature `value` and `name`
     }
-  });
+  })
 };
-
 
 /**
  * Apply response data from server in case of new inserted feature
- * 
+ *
  * @param response
  * @param relations
  */
@@ -273,9 +301,9 @@ proto.applyCommitResponse = function(response = {}, relations = []) {
         .entries(relation)
         .forEach(([ relationId, options = {}]) => {
           const is_pk = options.fatherField.find(d => this._layer.isPkField(d)); // check if parent field is a Primary Key
-          if (is_pk) {                                                       
+          if (is_pk) {
             this.setFieldValueToRelationField({                                  // for each field
-              relationId,                                                        // relation layer id
+              layerId: relationId,                                                        // relation layer id
               ids: options.ids,                                                  // ids of features of relation layers to check
               field: options.childField[options.fatherField.indexOf(is_pk)],     // relation field to overwrite
               values: [clientid, id]                                             // [<old temporary id value>, <new id value>]
@@ -290,14 +318,15 @@ proto.applyCommitResponse = function(response = {}, relations = []) {
 
   features.forEach(f => f.clearState());       // reset state of the editing features (update, new etc..)
 
-  this._layer.setFeatures(features);           // substitute layer features with actual editing features
+  //need to pass a "clone" of features otherwise every action on layer features and editor feature are duplicate (example addFeatures)
+  this._layer.setFeatures([...features]);     // substitute layer features with actual editing features
 
   this.addLockIds(lockids);                    // add lockIds
 };
 
 /**
  * @param lockids locks be added to current layer
- * 
+ *
  * @since 3.9.0
  */
 proto.addLockIds = function(lockids) {
@@ -313,9 +342,9 @@ proto.getLockIds = function() {
 
 /**
  * Run after server has applied changes to origin resource
- * 
- * @param commit commit items 
- * 
+ *
+ * @param commit commit items
+ *
  * @returns jQuery promise
  */
 proto.commit = function(commit) {
@@ -324,21 +353,21 @@ proto.commit = function(commit) {
 
   let relations = [];
 
-  // check if there are commit relations binded to new feature
+  // check if there are commit relations bind to new feature
   if (commit.add.length) {
-    relations = 
+    relations =
       Object
         .keys(commit.relations)
         .map(relationId => {
           const relation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
           return {
             [relationId]: {
-              ids: [                                                  // ids of "added" or "updated" relations 
+              ids: [                                                  // ids of "added" or "updated" relations
                 ...commit.relations[relationId].add.map(r => r.id),   // added
                 ...commit.relations[relationId].update.map(r => r.id) // updated
-              ],                                      
-              fatherField: relation.getFatherField(), //father Fields <Array>
-              childField: relation.getChildField() //child Fields <Array>
+              ],
+              fatherField: relation.getFatherField(), // father Fields <Array>
+              childField: relation.getChildField()    // child Fields <Array>
             }
           };
         });
@@ -352,7 +381,7 @@ proto.commit = function(commit) {
         .then(r => { this.applyCommitResponse(r, relations); d.resolve(r); })
         .fail(e => d.reject(e))
     })
-    .fail(e => d.reject(e));
+    .fail(err => d.reject(err));
 
   return d.promise();
 };
@@ -419,7 +448,7 @@ proto.readFeatures = function() {
  * @returns features stored in editor featurestore
  */
 proto.readEditingFeatures = function() {
-  return this._featuresstore.readFeatures()
+  return this._featuresstore.readFeatures();
 };
 
 /**
@@ -435,16 +464,22 @@ proto.stop = function() {
 };
 
 /**
- * run save layer 
+ * run save layer
  */
 proto._save = function() {
   this._layer.save();
 };
 
+/**
+ * @returns { boolean } whether has started editor 
+ */
 proto.isStarted = function() {
   return this._started;
 };
 
+/**
+ * Method to clear all filled variable
+ */
 proto.clear = function() {
   this._started     = false;
   this._filter.bbox = null;
@@ -453,7 +488,8 @@ proto.clear = function() {
   this._featuresstore.clear();
   this._layer.getFeaturesStore().clear();
 
-  if (Layer.LayerTypes.VECTOR === this._layer.getType()) {
+  // vector layer
+  if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
     this._layer.resetEditingSource(this._featuresstore.getFeaturesCollection());
   }
 };

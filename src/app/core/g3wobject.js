@@ -1,4 +1,4 @@
-const { inherit, noop, debounce, throttle } = require('core/utils/utils');
+const { inherit, noop, debounce, throttle } = require('utils');
 
 /**
  * Base object to handle a setter and its listeners.

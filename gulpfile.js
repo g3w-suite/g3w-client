@@ -99,7 +99,7 @@ setNODE_ENV();
 /**
  * @param { string } pluginName name of plugin to build (eg. 'editing')
  * @param { boolean } watch     whether to watchify source files
- * 
+ *
  * @since 3.9.0
  */
 const browserify_plugin = (pluginName, watch = true) => {
@@ -241,13 +241,13 @@ gulp.task('concatenate:vendor_js', function() {
 gulp.task('browserify:app', function() {
   /**
    * Make sure that all g3w.plugins bundles are there
-   * 
+   *
    * CORE PLUGINS:
    * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
    * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
    * - [submodule "src/plugins/qplotly"]     --> src/plugins/qplotly/plugin.js
    * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
-   * 
+   *
    * CUSTOM PLUGINS:
    * - [submodule "src/plugins/eleprofile"]  --> src/plugins/eleprofile/plugin.js
    * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
@@ -344,6 +344,15 @@ gulp.task('datatable-images', function () {
 });
 
 /**
+ * Deploy geocoding providers (src/assets/geocoding-providers)
+ */
+gulp.task('geocoding-providers', function () {
+  return gulp.src(`${g3w.assetsFolder}/geocoding-providers/*`)
+    .pipe(flatten())
+    .pipe(gulp.dest(outputFolder + '/static/client/geocoding-providers/'));
+});
+
+/**
  * Compile client styles (src/assets/style/less/app.less --> app.min.css)
  */
 gulp.task('less', ['fonts'], function() {
@@ -416,10 +425,11 @@ gulp.task('browser-sync', function() {
   // gulp.watch(['./src/index.html', './src/**/*.html'], gulp.series('browser:reload'));
   //
 
-  gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
-  gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
-  gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
-  gulp.watch(g3w.pluginsFolder + '/_version.js',      () => dev_plugins.forEach(p => browserify_plugin(p, false)));
+  gulp.watch([g3w.assetsFolder + '/style/**/*.less'],          () => runSequence('less','browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/geocoding-providers/**/*'], () => runSequence('geocoding-providers', 'browser:reload'));
+  gulp.watch('./src/**/*.{png,jpg}',                           () => runSequence('images','browser:reload'));
+  gulp.watch(['./src/index.html'],                             () => runSequence('html', 'browser:reload'));
+  gulp.watch(g3w.pluginsFolder + '/_version.js',               () => dev_plugins.forEach(p => browserify_plugin(p, false)));
 });
 
 /**
@@ -528,7 +538,7 @@ gulp.task('dev', done => runSequence(
 
 /**
  * Checks for npm inconsistencies between `package.json` and `package-json.lock` versions
- * 
+ *
  * @since 3.9.0
  */
 gulp.task('check:node_modules', function(){
