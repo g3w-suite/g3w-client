@@ -226,11 +226,11 @@
 </template>
 
 <script>
-import LayerLegend from 'components/CatalogLayerLegend.vue';
-import { CatalogEventBus as VM } from 'app/eventbus';
+import LayerLegend                 from 'components/CatalogLayerLegend.vue';
+import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ClickMixin from 'mixins/click';
-import GUI from 'services/gui';
+import ClickMixin                  from 'mixins/click';
+import GUI                         from 'services/gui';
 
 const { downloadFile } = require('utils');
 
@@ -525,14 +525,14 @@ export default {
     },
 
     /**
-     * @fires CatalogEventHub~activefiltertokenlayer
+     * @fires CatalogEventBus~activefiltertokenlayer
      */
     toggleFilterLayer() {
       VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
     /**
-     * @fires CatalogEventHub~unselectionlayer
+     * @fires CatalogEventBus~unselectionlayer
      */
     clearSelection() {
       VM.$emit('unselectionlayer', this.storeid, this.layerstree);
@@ -624,10 +624,10 @@ export default {
     /**
      * @param evt
      * 
-     * @fires CatalogEventHub~hide-layer-context-menu
-     * @fires CatalogEventHub~hide-project-context-menu
-     * @fires CatalogEventHub~show-layer-context-menu
-     * @fires CatalogEventHub~show-project-context-menu
+     * @fires CatalogEventBus~hide-layer-context-menu
+     * @fires CatalogEventBus~hide-project-context-menu
+     * @fires CatalogEventBus~show-layer-context-menu
+     * @fires CatalogEventBus~show-project-context-menu
      * 
      * @since 3.10.0
      */

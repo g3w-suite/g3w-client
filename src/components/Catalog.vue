@@ -391,21 +391,21 @@ export default {
   },
 
   /**
-   * @listens CatalogEventHub~unselectionlayer
-   * @listens CatalogEventHub~activefiltertokenlayer
-   * @listens CatalogEventHub~treenodevisible
-   * @listens CatalogEventHub~treenodeselected
-   * @listens CatalogEventHub~treenodeexternalselected
+   * @listens CatalogEventBus~unselectionlayer
+   * @listens CatalogEventBus~activefiltertokenlayer
+   * @listens CatalogEventBus~treenodevisible
+   * @listens CatalogEventBus~treenodeselected
+   * @listens CatalogEventBus~treenodeexternalselected
    * @listens ControlsRegistry~registerControl
    */
   created() {
     this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
 
-    CatalogEventHub.$on('unselectionlayer',         this.onUnSelectionLayer);
-    CatalogEventHub.$on('activefiltertokenlayer',   this.onActiveFilterTokenLayer);
-    CatalogEventHub.$on('treenodevisible',          this.onTreeNodeVisible);
-    CatalogEventHub.$on('treenodeselected',         this.onTreeNodeSelected);
-    CatalogEventHub.$on('treenodeexternalselected', this.onTreeNodeExternalSelected);
+    VM.$on('unselectionlayer',         this.onUnSelectionLayer);
+    VM.$on('activefiltertokenlayer',   this.onActiveFilterTokenLayer);
+    VM.$on('treenodevisible',          this.onTreeNodeVisible);
+    VM.$on('treenodeselected',         this.onTreeNodeSelected);
+    VM.$on('treenodeexternalselected', this.onTreeNodeExternalSelected);
     ControlsRegistry.onafter('registerControl',     this.onRegisterControl);
   },
 

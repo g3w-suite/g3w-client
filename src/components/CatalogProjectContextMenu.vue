@@ -41,8 +41,8 @@
 </template>
 
 <script>
-  import ProjectsRegistry from 'store/projects';
-  import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import ProjectsRegistry          from 'store/projects';
+  import { CatalogEventBus as VM } from 'app/eventbus';
 
   // const { t } = require('core/i18n/i18n.service');
 
@@ -103,12 +103,12 @@
     },
 
     /**
-     * @listens CatalogEventHub~show-project-context-menu
-     * @listens CatalogEventHub~hide-project-context-menu
+     * @listens CatalogEventBus~show-project-context-menu
+     * @listens CatalogEventBus~hide-project-context-menu
      */
     created() {
-      CatalogEventHub.$on('show-project-context-menu', this.onShowProjectContextMenu);
-      CatalogEventHub.$on('hide-project-context-menu', this._hideMenu);
+      VM.$on('show-project-context-menu', this.onShowProjectContextMenu);
+      VM.$on('hide-project-context-menu', this._hideMenu);
     }
   };
 </script>

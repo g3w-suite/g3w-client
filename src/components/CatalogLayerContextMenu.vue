@@ -1157,8 +1157,8 @@
     },
 
     /**
-     * @listens CatalogEventHub~show-layer-context-menu
-     * @listens CatalogEventHub~hide-layer-context-menu
+     * @listens CatalogEventBus~show-layer-context-menu
+     * @listens CatalogEventBus~hide-layer-context-menu
      */
     created() {
       VM.$on('show-layer-context-menu', this.onShowLayerContextMenu );
