@@ -1,19 +1,19 @@
 import * as vueComponentOptions from 'components/Print.vue';
 
-const { inherit, base } = require('core/utils/utils');
-const Component = require('gui/component/component');
-const PrintService = require('gui/print/printservice');
+const { inherit, base }         = require('utils');
+const Component                 = require('gui/component/component');
+const { PrintComponentService } = require('gui/print/printservice');
 
 function PrintComponent(options={}) {
   base(this, options);
   this.title = "print";
   this.vueComponent = vueComponentOptions;
   this.internalComponent = null;
-  const service = options.service || new PrintService;
+  const service = options.service || new PrintComponentService;
   this.setService(service);
   // init service
   this._service.init();
-  this.setInternalComponent = function () {
+  this.setInternalComponent = function() {
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
       service

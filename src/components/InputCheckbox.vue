@@ -24,7 +24,7 @@
 import { widgetMixins } from 'mixins';
 
 const Input = require('gui/inputs/input');
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
 

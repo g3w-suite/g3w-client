@@ -6,7 +6,7 @@
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 /**
@@ -169,7 +169,8 @@ function PluginsRegistry() {
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
-            .fail(()=>{
+            .fail((jqxhr, settings, exception)=>{
+              console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
               this.removeLoadingPlugin(name, false);
               reject();
             })

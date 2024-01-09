@@ -149,7 +149,7 @@
 
 <script>
 import { MAP_SETTINGS } from 'app/constant';
-import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+import { CatalogEventBus as VM } from 'app/eventbus';
 import ChangeMapThemesComponent from 'components/CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu from 'components/CatalogLayerContextMenu.vue';
 import CatalogProjectContextMenu from 'components/CatalogProjectContextMenu.vue';
@@ -236,10 +236,10 @@ export default {
         }
       });
       if ('tab' === this.legend.place) {
-        CatalogEventHub.$emit('layer-change-style');
+        VM.$emit('layer-change-style');
       } else {
         // get all layer tha changes style
-        changeStyleLayersId.forEach(layerId => { CatalogEventHub.$emit('layer-change-style', { layerId }); });
+        changeStyleLayersId.forEach(layerId => { VM.$emit('layer-change-style', { layerId }); });
       }
     },
 
@@ -281,23 +281,19 @@ export default {
       return customimage ? image : `${GUI.getResourcesUrl()}images/${image}`;
     },
 
-        /**
+    /**
      * @TODO add description
      * 
-     * @since 3.8.0
+     * @since 3.10.0
      */
-     onUnSelectionLayer(storeid, layerstree) {
-      if (layerstree.external) {
-        GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
-      } else {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).clearSelectionFids();
-      }
+    onUnSelectionLayer(storeid, layerstree) {
+      GUI.getService('queryresults').removeFromSelection(layerstree, storeid);
     },
 
     /**
      * @TODO add description
      * 
-     * @since 3.8.0
+     * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
       layerstree.filter.active = await CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).toggleFilterToken();
@@ -308,7 +304,7 @@ export default {
      * 
      * @fires MapService~cataloglayervisible
      * 
-     * @since 3.8.0
+     * @since 3.10.0
      */
     onTreeNodeVisible(layer) {
       GUI.getService('map').emit('cataloglayervisible', layer);
@@ -319,7 +315,7 @@ export default {
      * 
      * @fires MapService~cataloglayerselected
      * 
-     * @since 3.8.0
+     * @since 3.10.0
      */
     onTreeNodeSelected(storeid, node) {
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
@@ -337,7 +333,7 @@ export default {
     /**
      * Handle temporary external layer add
      * 
-     * @since 3.8.0
+     * @since 3.10.0
      */
     onTreeNodeExternalSelected(layer) {
       GUI
@@ -356,7 +352,7 @@ export default {
      * 
      * @listens ol.interaction~propertychange
      * 
-     * @since 3.8.0
+     * @since 3.10.0
      */
     onRegisterControl(id, control) {
       if ('querybbox' === id) {
@@ -405,13 +401,12 @@ export default {
   created() {
     this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
 
-    CatalogEventHub.$on('unselectionlayer', this.onUnSelectionLayer);
-    CatalogEventHub.$on('activefiltertokenlayer', this.onActiveFilterTokenLayer);
-    CatalogEventHub.$on('treenodevisible', this.onTreeNodeVisible);
-    CatalogEventHub.$on('treenodeselected', this.onTreeNodeSelected);
+    CatalogEventHub.$on('unselectionlayer',         this.onUnSelectionLayer);
+    CatalogEventHub.$on('activefiltertokenlayer',   this.onActiveFilterTokenLayer);
+    CatalogEventHub.$on('treenodevisible',          this.onTreeNodeVisible);
+    CatalogEventHub.$on('treenodeselected',         this.onTreeNodeSelected);
     CatalogEventHub.$on('treenodeexternalselected', this.onTreeNodeExternalSelected);
-    ControlsRegistry.onafter('registerControl', this.onRegisterControl);
-
+    ControlsRegistry.onafter('registerControl',     this.onRegisterControl);
   },
 
   beforeMount() {

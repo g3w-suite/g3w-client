@@ -1,6 +1,6 @@
 import ApplicationState from 'store/application-state';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const RasterLayers = require('g3w-ol/layers/rasters');
 

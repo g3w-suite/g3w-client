@@ -24,14 +24,14 @@ import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
-import GlobalBarLoader from './GlobalBarLoader.js';
+import GlobalBarLoader from './GlobalBarLoader.vue';
 import GlobalDateTime from './GlobalDateTime.vue';
 import GlobalDivider from './GlobalDivider.vue';
 import GlobalGallery from './GlobalGallery.vue';
 import GlobalGeo from './GlobalGeo.vue';
 import GlobalImage from './GlobalImage.vue';
 import GlobalLayerPositions from './GlobalLayerPositions.vue';
-import GlobalProgressBar from './GlobalProgressBar.js';
+import GlobalProgressBar from './GlobalProgressBar.vue';
 import GlobalRange from './GlobalRange.vue';
 import GlobalResize from './GlobalResize.vue';
 import GlobalResizeIcon from './GlobalResizeIcon.vue';
@@ -63,6 +63,8 @@ import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
+import MapControlButton from './MapControlButton.js';
+import MapControlGeocoding from './MapControlGeocoding.vue';
 import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
@@ -110,6 +112,7 @@ import Tool from './Tool.vue';
 import Tools from './Tools.vue';
 import UserMessage from './UserMessage.vue';
 import ViewportContentsViewer from './ViewportContentsViewer.vue';
+import UserMessageSteps from './UserMessageSteps.js';
 import WMS from './WMS.vue';
 import WMSLayersPanel from './WMSLayersPanel.vue';
 
@@ -186,6 +189,8 @@ export {
   LayerOpacityPicker,
   Map,
   MapAddLayer,
+  MapControlButton,
+  MapControlGeocoding,
   MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,
@@ -232,6 +237,7 @@ export {
   Tools,
   UserMessage,
   ViewportContentsViewer,
+  UserMessageSteps,
   WMS,
   WMSLayersPanel,
 };

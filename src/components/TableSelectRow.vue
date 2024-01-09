@@ -5,15 +5,21 @@
 
 <template>
   <span>
-    <input type="checkbox" :id="id" :checked="feature.selected" class="magic-checkbox">
-    <label @click.capture.stop.prevent="select" :for="id">
-      <span></span>
-    </label>
+    <input
+      type     = "checkbox"
+      :id      = "id"
+      :checked = "feature.selected"
+      class    = "magic-checkbox"
+    >
+    <label
+      :for                        = "id"
+      @click.capture.stop.prevent = "select"
+    ><span></span></label>
   </span>
 </template>
 
 <script>
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
   name: "select-row",
@@ -22,22 +28,18 @@ export default {
       required: true
     }
   },
-  data(){
+  data() {
     return {
       id: getUniqueDomId()
     }
   },
   methods: {
-    select(){
+    select() {
       this.$emit('selected', this.feature);
     }
   },
-  destroyed(){
+  destroyed() {
     this.$off('selected')
   }
 }
 </script>
-
-<style scoped>
-
-</style>

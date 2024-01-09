@@ -6,14 +6,23 @@
 <template>
   <div id="print-output" style="height:100%; position: relative;">
     <transition :duration="500" name="fade">
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
     </transition>
     <iframe  v-if="format === 'pdf'" :type="state.mime_type" ref="printoutput"  style="border:0;width:100%;height:100%;" :src="state.url"></iframe>
     <div v-else-if="format === 'png'" class="g3w-print-png-output" style="display: flex; flex-direction: column; position: relative; height: 100%">
       <div id="g3w-print-header" style="display: flex; justify-content: flex-end; align-items: flex-end; margin-top: 5px; margin-bottom: 5px;">
         <div :class="{'g3w-disabled': disableddownloadbutton}">
           <a :href="state.url" :download="downloadImageName">
-            <button @click="downloadImage" class="btn skin-button skin-tooltip-left" style="font-weight: bold;" data-placement="left" data-toggle="tooltip" v-t-tooltip.create="'sdk.print.download_image'" :class="g3wtemplate.getFontClass('download')" role="button"></button>
+            <button
+              @click="downloadImage"
+              class="btn skin-button skin-tooltip-left"
+              style="font-weight: bold;"
+              data-placement="left"
+              data-toggle="tooltip"
+              data-container="body"
+              v-t-tooltip.create="'sdk.print.download_image'"
+              :class="g3wtemplate.getFontClass('download')"
+              role="button"></button>
           </a>
         </div>
       </div>
@@ -29,7 +38,7 @@
 import { TIMEOUT } from 'app/constant';
 import GUI from 'services/gui';
 
-const { imageToDataURL } = require('core/utils/utils');
+const { imageToDataURL } = require('utils');
 
 export default {
 
