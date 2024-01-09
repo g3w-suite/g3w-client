@@ -162,7 +162,7 @@ gulp.task('clean:dist',      () => del([`${outputFolder}/static/*`, `${outputFol
 gulp.task('clean:admin',     () => del([`${g3w.admin_plugins_folder}/client/static/*`, `${g3w.admin_plugins_folder}/client/templates/*`], { force: true }));
 gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`, `${g3w.admin_overrides_folder}/templates/*`], { force: true }));
 
-gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(outputFolder + '/templates/client')));
+gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(`${outputFolder}/templates/client`)));
 gulp.task('browser:reload',  () => browserSync ? browserSync.reload() : null);
 
 /**
@@ -171,46 +171,46 @@ gulp.task('browser:reload',  () => browserSync ? browserSync.reload() : null);
 gulp.task('concatenate:vendor_js', function() {
   return merge(
     gulp.src([
-      g3w.assetsFolder + "/vendors/jquery/jquery-2.2.1.min.js",
-      g3w.assetsFolder + "/vendors/jquery-ui/jquery-ui.min.js",
-      g3w.assetsFolder + "/vendors/bootstrap/js/bootstrap.min.js",
-      g3w.assetsFolder + "/vendors/bootbox/bootbox.min.js",
-      g3w.assetsFolder + "/vendors/lodash/lodash.min.js",
-      g3w.assetsFolder + "/vendors/eventemitter/EventEmitter.min.js",
-      g3w.assetsFolder + "/vendors/history/jquery.history.js",
-      g3w.assetsFolder + "/vendors/signals/signals.min.js",
-      g3w.assetsFolder + "/vendors/crossroads/crossroads.min.js",
-      g3w.assetsFolder + "/vendors/moment/moment.js",
-      g3w.assetsFolder + "/vendors/moment/moment-with-locales.js",
-      g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js",
-      g3w.assetsFolder + "/vendors/icheck/icheck.min.js",
-      g3w.assetsFolder + "/vendors/bootstrap-treeview/js/bootstrap-treeview.js",
-      g3w.assetsFolder + "/vendors/slimScroll/jquery.slimscroll.min.js",
-      g3w.assetsFolder + "/vendors/fastclick/fastclick.js",
-      g3w.assetsFolder + "/vendors/vue/vue.min.js",
-      g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
-      g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
-      g3w.assetsFolder + "/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js",
-      g3w.assetsFolder + "/vendors/ismobile/ismobile.min.js",
-      g3w.assetsFolder + "/vendors/jquery-i18next/jquery-i18next.min.js",
-      g3w.assetsFolder + "/vendors/i18next/i18next.min.js",
-      g3w.assetsFolder + "/vendors/i18next/i18nextXHRBackend.min.js",
-      g3w.assetsFolder + "/vendors/script/script.min.js",
-      g3w.assetsFolder + "/vendors/x2js/xml2json.g3w.min.js",
-      g3w.assetsFolder + "/vendors/proj4js/proj4.js",
-      g3w.assetsFolder + "/vendors/ol/js/ol.js",
-      g3w.assetsFolder + "/vendors/ol-rotate-feature/bundle.min.js",
-      g3w.assetsFolder + "/vendors/jsts/jsts.min.js",
-      g3w.assetsFolder + "/vendors/datatables/datatables.min.js",
-      g3w.assetsFolder + "/vendors/shp2geojson/shp.min.js",
-      g3w.assetsFolder + "/vendors/jszip/jszip.min.js",
-      g3w.assetsFolder + "/vendors/filesaver/FileSaver.min.js",
-      g3w.assetsFolder + "/vendors/select2/js/select2.full.min.js",
-      g3w.assetsFolder + "/vendors/select2/js/i18n/it.js",
-      g3w.assetsFolder + "/vendors/d3/js/d3.min.js",
-      g3w.assetsFolder + "/vendors/c3/js/c3.min.js",
-      g3w.assetsFolder + "/vendors/wps/js/wps-js-all.min.js",
-      g3w.assetsFolder + "/vendors/quill/js/quill.min.js"
+      `${g3w.assetsFolder}/vendors/jquery/jquery-2.2.1.min.js`,
+      `${g3w.assetsFolder}/vendors/jquery-ui/jquery-ui.min.js`,
+      `${g3w.assetsFolder}/vendors/bootstrap/js/bootstrap.min.js`,
+      `${g3w.assetsFolder}/vendors/bootbox/bootbox.min.js`,
+      `${g3w.assetsFolder}/vendors/lodash/lodash.min.js`,
+      `${g3w.assetsFolder}/vendors/eventemitter/EventEmitter.min.js`,
+      `${g3w.assetsFolder}/vendors/history/jquery.history.js`,
+      `${g3w.assetsFolder}/vendors/signals/signals.min.js`,
+      `${g3w.assetsFolder}/vendors/crossroads/crossroads.min.js`,
+      `${g3w.assetsFolder}/vendors/moment/moment.js`,
+      `${g3w.assetsFolder}/vendors/moment/moment-with-locales.js`,
+      `${g3w.assetsFolder}/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js`,
+      `${g3w.assetsFolder}/vendors/icheck/icheck.min.js`,
+      `${g3w.assetsFolder}/vendors/bootstrap-treeview/js/bootstrap-treeview.js`,
+      `${g3w.assetsFolder}/vendors/slimScroll/jquery.slimscroll.min.js`,
+      `${g3w.assetsFolder}/vendors/fastclick/fastclick.js`,
+      `${g3w.assetsFolder}/vendors/vue/vue.min.js`,
+      `${g3w.assetsFolder}/vendors/jquery-file-upload/jquery.fileupload.js`,
+      `${g3w.assetsFolder}/vendors/jquery-fileDownload/jquery.fileDownload.js`,
+      `${g3w.assetsFolder}/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js`,
+      `${g3w.assetsFolder}/vendors/ismobile/ismobile.min.js`,
+      `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next.min.js`,
+      `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
+      `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
+      `${g3w.assetsFolder}/vendors/script/script.min.js`,
+      `${g3w.assetsFolder}/vendors/x2js/xml2json.g3w.min.js`,
+      `${g3w.assetsFolder}/vendors/proj4js/proj4.js`,
+      `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
+      `${g3w.assetsFolder}/vendors/ol-rotate-feature/bundle.min.js`,
+      `${g3w.assetsFolder}/vendors/jsts/jsts.min.js`,
+      `${g3w.assetsFolder}/vendors/datatables/datatables.min.js`,
+      `${g3w.assetsFolder}/vendors/shp2geojson/shp.min.js`,
+      `${g3w.assetsFolder}/vendors/jszip/jszip.min.js`,
+      `${g3w.assetsFolder}/vendors/filesaver/FileSaver.min.js`,
+      `${g3w.assetsFolder}/vendors/select2/js/select2.full.min.js`,
+      `${g3w.assetsFolder}/vendors/select2/js/i18n/it.js`,
+      `${g3w.assetsFolder}/vendors/d3/js/d3.min.js`,
+      `${g3w.assetsFolder}/vendors/c3/js/c3.min.js`,
+      `${g3w.assetsFolder}/vendors/wps/js/wps-js-all.min.js`,
+      `${g3w.assetsFolder}/vendors/quill/js/quill.min.js`
       ]),
       browserify(
         /* Uncomment the following in next ESM release (v4.x) */
@@ -232,7 +232,7 @@ gulp.task('concatenate:vendor_js', function() {
         .pipe(uglify())
     )
     .pipe(concat('vendor.min.js'))
-    .pipe(gulp.dest(outputFolder + '/static/client/js/'));
+    .pipe(gulp.dest(`${outputFolder}/static/client/js/`));
 });
 
 /**
@@ -300,7 +300,7 @@ gulp.task('browserify:app', function() {
     .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
     .pipe(rename('app.min.js'))
     .pipe(gulpif(production, sourcemaps.write('.')))
-    .pipe(gulp.dest(outputFolder + '/static/client/js/'))
+    .pipe(gulp.dest(`{outputFolder}/static/client/js/`))
     .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
 
   return rebundle();
@@ -316,7 +316,7 @@ gulp.task('images', function () {
       '!./src/**/node_modules/**/'
     ])
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/images/'))
+    .pipe(gulp.dest(`${outputFolder}/static/client/images/`))
 });
 
 /**
@@ -325,7 +325,7 @@ gulp.task('images', function () {
 gulp.task('datatable-images', function () {
   return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/images/'));
+    .pipe(gulp.dest(`${outputFolder}/static/client/images/`));
 });
 
 /**
@@ -340,7 +340,7 @@ gulp.task('datatable-images', function () {
       '!./src/**/node_modules/**/'
     ])
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/fonts/'))
+    .pipe(gulp.dest(`{outputFolder}/static/client/fonts/`))
 });
 
 /**
@@ -349,7 +349,7 @@ gulp.task('datatable-images', function () {
 gulp.task('geocoding-providers', function () {
   return gulp.src(`${g3w.assetsFolder}/geocoding-providers/*`)
     .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/geocoding-providers/'));
+    .pipe(gulp.dest(`${outputFolder}/static/client/geocoding-providers/`));
 });
 
 /**
@@ -365,7 +365,7 @@ gulp.task('less', ['fonts'], function() {
     .pipe(replace(/\w+fonts/g, 'fonts'))         // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
     .pipe(cleanCSS({ keepSpecialComments: 0 }))
     .pipe(rename('app.min.css'))
-    .pipe(gulp.dest(outputFolder + '/static/client/css/'))
+    .pipe(gulp.dest(`${outputFolder}/static/client/css/`))
 });
 
 /**
@@ -384,22 +384,22 @@ gulp.task('custom-less', function () {
  */
 gulp.task('concatenate:vendor_css', function() {
   return gulp.src([
-    g3w.assetsFolder + "/vendors/bootstrap/css/bootstrap.min.css",
-    g3w.assetsFolder + "/vendors/bootstrap-treeview/css/bootstrap-treeview.min.css",
-    g3w.assetsFolder + "/vendors/icheck/skins/all.css",
-    g3w.assetsFolder + "/vendors/magic-check/magic-check.min.css",
-    g3w.assetsFolder + "/vendors/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css",
-    g3w.assetsFolder + "/vendors/hint/hint.min.css",
-    g3w.assetsFolder + "/vendors/ol/css/ol.css",
-    g3w.assetsFolder + "/vendors/select2/css/select2.min.css",
-    g3w.assetsFolder + "/vendors/c3/css/c3.min.css",
-    g3w.assetsFolder + "/vendors/datatables/DataTables-1.10.16/css/jquery.dataTables.min.css",
-    g3w.assetsFolder + "/vendors/font-awesome-5.15.4/css/all.min.css",
-    g3w.assetsFolder + "/vendors/quill/css/quill.snow.min.css"
+    `${g3w.assetsFolder}/vendors/bootstrap/css/bootstrap.min.css`,
+    `${g3w.assetsFolder}/vendors/bootstrap-treeview/css/bootstrap-treeview.min.css`,
+    `${g3w.assetsFolder}/vendors/icheck/skins/all.css`,
+    `${g3w.assetsFolder}/vendors/magic-check/magic-check.min.css`,
+    `${g3w.assetsFolder}/vendors/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css`,
+    `${g3w.assetsFolder}/vendors/hint/hint.min.css`,
+    `${g3w.assetsFolder}/vendors/ol/css/ol.css`,
+    `${g3w.assetsFolder}/vendors/select2/css/select2.min.css`,
+    `${g3w.assetsFolder}/vendors/c3/css/c3.min.css`,
+    `${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/css/jquery.dataTables.min.css`,
+    `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/css/all.min.css`,
+    `${g3w.assetsFolder}/vendors/quill/css/quill.snow.min.css`
   ])
     .pipe(concat('vendor.min.css'))
     .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
-    .pipe(gulp.dest(outputFolder + '/static/client/css/'));
+    .pipe(gulp.dest(`${outputFolder}/static/client/css/`));
 });
 
 /**
@@ -487,7 +487,9 @@ gulp.task('build:plugins', function(done) {
     console.warn('\n' + YELLOW__ + 'no plugins selected'+ __RESET + '\n');
   }
   return process.env.G3W_PLUGINS
-    ? es.merge.apply(null, process.env.G3W_PLUGINS.split(',').filter(p => p != 'client').map(p => browserify_plugin(p, false)))
+    ? es.merge.apply(null, process.env.G3W_PLUGINS.split(',')
+      .filter(p => p !== 'client')
+      .map(p => browserify_plugin(p, false)))
     : done;
 });
 
@@ -496,7 +498,17 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'geocoding-providers', 'html'], done)
+   ? runSequence([
+     'browserify:app',
+     'concatenate:vendor_js',
+     'concatenate:vendor_css',
+     'fonts',
+     'images',
+     'less',
+     'datatable-images',
+     'geocoding-providers',
+     'html'
+    ], done)
    : done;
 });
 
@@ -558,7 +570,8 @@ gulp.task('check:node_modules', function(){
 gulp.task('test', function() {
   return new Promise(async done => {
     const testPath = `${__dirname}${g3w.test.path}`;
-    const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
+    const testGroupFolders = fs.readdirSync(testPath)
+      .filter(file => file !== 'group_template' && fs.statSync(`${testPath}/${file}`).isDirectory());
     for (let i = 0; i < testGroupFolders.length; i++) {
       await new Promise(resolve => {
         new karma.Server({
@@ -583,21 +596,23 @@ gulp.task('test', function() {
 gulp.task('version', function() {
   // client
   fs.writeFileSync('src/version.js', `/* Generated by gulpfile.js, do not edit manually */\n\nexport default '${packageJSON.version}';`);
-  fs.readFile('README.md', 'utf8', function (_, data) {
+  fs.readFile('README.md', 'utf8', (_, data) => {
     data = data.toString().split("\n");
     data.splice(0, 1, `# G3W-CLIENT v${packageJSON.version}`);
     fs.writeFile('README.md', data.join("\n"), 'utf8', (err) => { if (err) return console.log(err); });
   });
   // plugins
-  Object.entries(loaded_plugins).forEach(([pluginName, version]) => {
-    const src = `${g3w.pluginsFolder}/${pluginName}`;
-    fs.writeFileSync(`${src}/_version.js`, `/* Generated by gulpfile.js (g3w-client@v${packageJSON.version}), do not edit manually */\n\nexport default '${version}';`);
-    fs.readFile(`${src}/README.md`, 'utf8', function (_, data) {
-      data = (data || '').toString().split("\n");
-      data.splice(0, 1, `# g3w-client-plugin-${pluginName} v${version}`);
-      fs.writeFile(`${src}/README.md`, data.join("\n"), 'utf8', (err) => { if (err) return console.log(err); });
+  Object
+    .entries(loaded_plugins)
+    .forEach(([pluginName, version]) => {
+      const src = `${g3w.pluginsFolder}/${pluginName}`;
+      fs.writeFileSync(`${src}/_version.js`, `/* Generated by gulpfile.js (g3w-client@v${packageJSON.version}), do not edit manually */\n\nexport default '${version}';`);
+      fs.readFile(`${src}/README.md`, 'utf8', (_, data) => {
+        data = (data || '').toString().split("\n");
+        data.splice(0, 1, `# g3w-client-plugin-${pluginName} v${version}`);
+        fs.writeFile(`${src}/README.md`, data.join("\n"), 'utf8', (err) => { if (err) return console.log(err); });
+      });
     });
-  });
 });
 
 /**
