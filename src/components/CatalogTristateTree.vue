@@ -478,7 +478,7 @@ export default {
       let {
         checked,
         id,
-        disabled,
+        // disabled,
         projectLayer=false,
         parentGroup
       } = layer;
@@ -492,9 +492,9 @@ export default {
       }
 
       // case project layer (eg. qgis layer)
-      const layer = CatalogLayersStoresRegistry.getLayerById(id);
+      layer = CatalogLayersStoresRegistry.getLayerById(id);
       if (checked) {
-        const visible = layer.setVisible(!disabled);
+        // const visible = layer.setVisible(!disabled);
         /**
          * @TODO is it necessary to emit the `layer-change-style` event here?
          */
@@ -511,7 +511,6 @@ export default {
       } else {
         layer.setVisible(false);
       }
-
       VM.$emit('treenodevisible', layer);
 
     },
