@@ -502,7 +502,7 @@
 
     <!-- Click to open G3W-ADMIN's project layers page -->
     <li>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div>
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
         <span class="menu-icon skin-color-dark">
           <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
@@ -511,7 +511,7 @@
             <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
           </svg>
         </span>
-        <b>Layers settings (NOT YET IMPLEMENTED)</b>
+        <b><a :href="layers_url" target="_blank" style="color: initial">Layers settings</a></b>
       </div>
     </li>
 
@@ -596,6 +596,12 @@
           },
         },
       };
+    },
+
+    computed: {
+      layers_url() {
+        return ApplicationService.getCurrentProject().getState().layers_url;
+      },
     },
 
     components: {
