@@ -24,6 +24,7 @@ export default {
       case 'gpx':       return this.getGpx({data, options});
       case 'gpkg':      return this.getGpkg({data, options});
       case 'geotiff':   return this.getGeoTIFF({ data, options });
+      case 'pdf':       return this.getGeoTIFF({ data, options });
     }
   },
 
@@ -106,6 +107,20 @@ export default {
     data.filtertoken = this.getFilterToken();
     return XHR.fileDownload({
       url: this.getUrl('csv'),
+      data,
+      httpMethod: "POST"
+    })
+  },
+  /**
+   * @since 3.10.0
+   * Get csv layer format
+   * @param data
+   * @returns {Promise | Promise<unknown>}
+   */
+  getPdf({ data = {} } = {}) {
+    data.filtertoken = this.getFilterToken();
+    return XHR.fileDownload({
+      url: this.getUrl('pdf'),
       data,
       httpMethod: "POST"
     })
