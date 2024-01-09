@@ -574,7 +574,7 @@ gulp.task('test', function() {
 /**
  * Expose version of "package.json" without including whole file in published bundle,
  * this happens because each ESM `import` is actually transformed into a CJS `require()`
- * (NB: native ESM modules will not suffer of this security issue due to tree shaking)
+ * (NB: native ESM modules will not suffer from this security issue due to tree shaking)
  *
  * @see https://github.com/g3w-suite/g3w-client/issues/
  * @see src\app\constant::APP_VERSION
