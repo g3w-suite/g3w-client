@@ -62,14 +62,13 @@ function PluginsRegistry() {
   };
 
   /**
-   *
+   * @FIXME add description
    */
   this.addLoadingPlugins = function() {
     Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
   /**
-   *
    * @param plugin
    * @param ready
    */
@@ -78,8 +77,8 @@ function PluginsRegistry() {
   };
 
   /**
-   *
-   * @return {Promise<{-readonly [P in keyof Promise<unknown>[]]: PromiseSettledResult<Awaited<Promise<unknown>[][P]>>}>}
+   * @returns {Promise<{-readonly [P in keyof Promise<unknown>[]]: PromiseSettledResult<Awaited<Promise<unknown>[][P]>>}>}
+   * 
    * @private
    */
   this._loadPlugins = function() {
@@ -89,7 +88,7 @@ function PluginsRegistry() {
   };
 
   /**
-   *
+   * @FIXME add description
    */
   this.setDependencyPluginConfig = function() {
     for (const pluginName in this.pluginsConfigs){
@@ -103,7 +102,7 @@ function PluginsRegistry() {
   };
 
   /**
-   *
+   * @FIXME add description
    */
   this.setOtherPlugins = function() {
     const law = OTHERPLUGINS[0];
@@ -116,7 +115,9 @@ function PluginsRegistry() {
     }
   };
 
-  // reload plugin in case of change map
+  /**
+   * reload plugin in case of change map 
+   */
   this.reloadPlugins = function(initConfig, project) {
     return new Promise(async (resolve, reject) => {
       const scripts = $('script');
@@ -154,6 +155,7 @@ function PluginsRegistry() {
 
   /**
    * setup plugin config only filtered by gid configuration
+   * 
    * @param config
    */
   this.setPluginsConfig = function(config={}) {
@@ -166,15 +168,19 @@ function PluginsRegistry() {
 
   /**
    * Method to load external script
+   * 
    * @param url
    * @returns {*}
+   * 
    * @private
    */
   this._loadScript = function(url) {
     return $.getScript(url);
   };
 
-  //load plugin script
+  /**
+   * load plugin script
+   */
   this._setup = function(name, pluginConfig) {
     return new Promise(async (resolve, reject) => {
       if (!_.isNull(pluginConfig)) {
@@ -213,40 +219,41 @@ function PluginsRegistry() {
   };
 
   /**
-   *
    * @param pluginName
-   * @return {*}
+   * 
+   * @returns {*}
    */
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
 
   /**
-   *
-   * @return {*|{}}
+   * @returns {*|{}}
    */
   this.getPlugins = function() {
     return this._plugins;
   };
 
   /**
-   *
    * @param pluginName
-   * @return {*}
+   * 
+   * @returns {*}
    */
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
 
-  // method to check if a plugin is in configuration and will be added to application
+  /**
+   * Check if a plugin is in configuration and will be added to application
+   */
   this.isPluginInConfiguration = function(pluginName) {
     return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
   /**
-   *
    * @param pluginName
-   * @return {*}
+   * 
+   * @returns {*}
    */
   this.isTherePlugin = function(pluginName) {
     return this.pluginsConfigs[pluginName];
