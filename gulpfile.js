@@ -134,24 +134,22 @@ const browserify_plugin = (pluginName, watch = true) => {
   del([`${src}/plugin.js.map`]);
 
   const rebundle = () => {
-    return merge(
-        gulp
-          .src(`./src/plugins/_version.js`),                        // NB: hardcoded file, do not use `g3w.pluginsFolder`!
-        bundler
-          .bundle()
-          .on('error', (err) => { gutil.log(err); process.exit(); })
-          .pipe(source(`${src}/build.js`))
-          .pipe(buffer())
-          .pipe(gulpif(production, sourcemaps.init()))
-          .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-          .pipe(rename('plugin.js'))
-          .pipe(gulpif(production, sourcemaps.write(src)))
-      )
+    return bundler
+      .bundle()
+      .on('error', (err) => { gutil.log(err); process.exit(); })
+      .pipe(source(`${src}/build.js`))
+      .pipe(buffer())
+      .pipe(gulpif(production, sourcemaps.init()))
+      .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
+      .pipe(rename('plugin.js'))
+      .pipe(gulpif(production, sourcemaps.write(src)))
       .pipe(concat('plugin.js'))
       .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
       .pipe(replace('process.env.g3w_plugin_version', `"${loaded_plugins[pluginName]}"`))
       .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
-      .pipe(gulp.dest(outputFolder)); // put plugin.js to static folder (PROD | DEV env)
+      .pipe(gulp.dest(outputFolder)) // put plugin.js to static folder (PROD | DEV env)
+      .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing plugin files (dev mode)
+
   };
 
   return rebundle();
@@ -255,6 +253,7 @@ gulp.task('browserify:app', function() {
   if (!production) {
     console.log();                                  // print an empty line
     dev_plugins.forEach(p => browserify_plugin(p)); // build all plugins (async)
+
   }
 
   const src = `./src/index.${production ? 'prod' : 'dev'}.js`
@@ -263,10 +262,18 @@ gulp.task('browserify:app', function() {
 
   let bundler = browserify(src, {
     basedir: './',
-    paths: ['./src/', './src/app/', './src/plugins/'],
+    paths: ['./src/', './src/app/'],
     debug: !production,
     cache: {},
     packageCache: {},
+    insertGlobals: true, /** @since 3.9.1*/
+    insertGlobalVars: {  /** @since 3.9.1*/
+      __version__() {
+        return JSON.stringify({
+          plugins: loaded_plugins
+        })
+      }
+    },
     plugin: [
       production ? undefined : watchify,
       /* Uncomment the following in next ESM release (v4.x) */
@@ -425,11 +432,10 @@ gulp.task('browser-sync', function() {
   // gulp.watch(['./src/index.html', './src/**/*.html'], gulp.series('browser:reload'));
   //
 
-  gulp.watch([`${g3w.assetsFolder}/style/**/*.less`],          () => runSequence('less','browser:reload'));
-  gulp.watch([`${g3w.assetsFolder}/geocoding-providers/**/*`], () => runSequence('geocoding-providers', 'browser:reload'));
-  gulp.watch('./src/**/*.{png,jpg}',                           () => runSequence('images','browser:reload'));
-  gulp.watch(['./src/index.html'],                             () => runSequence('html', 'browser:reload'));
-  gulp.watch(`${g3w.pluginsFolder}/_version.js`,               () => dev_plugins.forEach(p => browserify_plugin(p, false)));
+  gulp.watch([`${g3w.assetsFolder}/style/**/*.less`],                   () => runSequence('less','browser:reload'));
+  gulp.watch([`${g3w.assetsFolder}/geocoding-providers/**/*`],          () => runSequence('geocoding-providers', 'browser:reload'));
+  gulp.watch('./src/**/*.{png,jpg}',                                    () => runSequence('images','browser:reload'));
+  gulp.watch(['./src/index.html'],                                      () => runSequence('html', 'browser:reload'));
 });
 
 /**
