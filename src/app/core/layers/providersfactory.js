@@ -192,6 +192,7 @@ const Providers = {
      * @param opts.queryUrl
      * @param opts.ordering
      * @param opts.fformatter since 3.9.0
+     * @param opts.ffield     since 3.9.1
      * 
      * @returns {Promise<unknown>}
      */
@@ -204,6 +205,7 @@ const Providers = {
       queryUrl,
       ordering,
       fformatter,
+      ffield,
     } = {}) {
       const params =  {
         field,
@@ -212,6 +214,7 @@ const Providers = {
         formatter,
         unique,
         fformatter,
+        ffield,
         filtertoken: ApplicationState.tokens.filtertoken
       };
       try {
