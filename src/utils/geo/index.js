@@ -4,14 +4,19 @@
  * @since 3.9.0
  */
 
-import CONSTANT from 'app/constant';
-import MapLayersStoresRegistry from 'store/map-layers';
-import GUI from 'services/gui';
+import CONSTANT                            from 'app/constant';
+import MapLayersStoresRegistry             from 'store/map-layers';
+import GUI                                 from 'services/gui';
+import { groupBy }                         from 'utils/groupBy';
+import { ResponseParser }                  from 'utils/parsers';
+import { addZValueToOLFeatureGeometry }    from 'utils/addZValueToOLFeatureGeometry';
+import { is3DGeometry }                    from 'utils/is3DGeometry';
+import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGeometry';
+import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature';
 
-const { toRawType, uniqueId } = require('utils');
-const WMSLayer = require('core/layers/map/wmslayer');
-const Filter = require('core/layers/filter/filter');
-const { response: responseParser } = require('utils/parsers');
+const { toRawType, uniqueId }           = require('utils');
+const WMSLayer                          = require('core/layers/map/wmslayer');
+const Filter                            = require('core/layers/filter/filter');
 
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
 const { QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes } = CONSTANT;
@@ -26,144 +31,12 @@ const Geometry = {
   /**
    * Remove Z values from geometry coordinates
    */
-   removeZValueToOLFeatureGeometry({feature}={}) {
-    const geometry = feature.getGeometry();
-    if (geometry) {
-      const geometryType = geometry.getType();
-      const originalFeatureCoordinates = geometry.getCoordinates();
-      switch (geometryType) {
-        // POINT: [x, y]
-        case GeometryTypes.POINT:
-          if (originalFeatureCoordinates.length === 3) {
-            originalFeatureCoordinates.splice(2);
-            feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-          }
-          break;
-        // MULTIPOINT: [ [x1, y1], [x2, y2] ]
-        case GeometryTypes.MULTIPOINT:
-        // LINE: [ [x1, y1], [x2, y2] ]
-        case GeometryTypes.LINESTRING:
-        case GeometryTypes.LINE:
-          originalFeatureCoordinates.forEach(coordinates => coordinates.splice(2));
-          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-          break;
-        // MULTILINE: [
-        //   [ [x1, y1], [x2, y2] ],
-        //   [ [x3, y3], [x4, y4] ]
-        // ]
-        case GeometryTypes.MULTILINESTRING:
-        case GeometryTypes.MULTILINE:
-          originalFeatureCoordinates.forEach(singleLine => {
-            singleLine.forEach(coordinates => coordinates.splice(2))
-          });
-          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-          break;
-        // POLYGON: [
-        //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ]
-        // ]
-        case GeometryTypes.POLYGON:
-          originalFeatureCoordinates[0].forEach(coordinates => coordinates.splice(2));
-          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-          break;
-        // MULTIPOLYGON:[
-        //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ],
-        //   [ [xa, ya], [xb, yb], [xc, yc], [xa, ya] ]
-        // ]
-        case GeometryTypes.MULTIPOLYGON:
-          originalFeatureCoordinates.forEach(singlePolygon => {
-            singlePolygon[0].forEach(coordinates => coordinates.splice(2))
-          });
-          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-          break;
-      }
-    }
-
-    return feature;
-  },
+   removeZValueToOLFeatureGeometry,
 
    /**
     * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
     */
-   addZValueToOLFeatureGeometry({
-    feature,
-    geometryType,
-  } = {}) {
-     if (!Geometry.is3DGeometry(geometryType)) {
-      console.warn('Invalid 3D Geometry Type:', geometryType);
-      return feature;
-     }
-     const geometry = feature.getGeometry();
-     geometryType = geometryType || geometry.getType();
-     const originalFeatureCoordinates = geometry.getCoordinates();
-     switch (geometryType) {
-       // POINT: [x, y]
-       case GeometryTypes.POINTZ:
-       case GeometryTypes.POINTM:
-       case GeometryTypes.POINTZM:
-       case GeometryTypes.POINT25D:
-         originalFeatureCoordinates.push(0);
-         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-         break;
-       // MULTIPOINT: [ [x1, y1], [x2, y2] ]
-       case GeometryTypes.MULTIPOINTZ:
-       case GeometryTypes.MULTIPOINTM:
-       case GeometryTypes.MULTIPOINTZM:
-       case GeometryTypes.MULTIPOINT25D:
-       // LINE: [ [x1, y1], [x2, y2] ]
-       case GeometryTypes.LINESTRINGZ:
-       case GeometryTypes.LINESTRINGM:
-       case GeometryTypes.LINESTRINGZM:
-       case GeometryTypes.LINESTRING25D:
-       case GeometryTypes.LINEZ:
-       case GeometryTypes.LINEM:
-       case GeometryTypes.LINEZM:
-       case GeometryTypes.LINE25D:
-         originalFeatureCoordinates.forEach(coordinates => coordinates.push(0));
-         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-         break;
-       // MULTILINE: [
-       //   [ [x1, y1], [x2, y2] ],
-       //   [ [x3, y3], [x4, y4] ]
-       // ]
-       case GeometryTypes.MULTILINESTRINGZ:
-       case GeometryTypes.MULTILINESTRINGM:
-       case GeometryTypes.MULTILINESTRINGZM:
-       case GeometryTypes.MULTILINESTRING25D:
-       case GeometryTypes.MULTILINEZ:
-       case GeometryTypes.MULTILINEM:
-       case GeometryTypes.MULTILINEZM:
-       case GeometryTypes.MULTILINE25D:
-         originalFeatureCoordinates.forEach(singleLine => {
-           singleLine.forEach(coordinates => coordinates.push(0))
-         });
-         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-         break;
-       // POLYGON: [
-       //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ]
-       // ]
-       case GeometryTypes.POLYGONZ:
-       case GeometryTypes.POLYGONM:
-       case GeometryTypes.POLYGONZM:
-       case GeometryTypes.POLYGON25D:
-         originalFeatureCoordinates[0].forEach(coordinates => coordinates.push(0));
-         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-         break;
-       // MULTIPOLYGON:[
-       //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ],
-       //   [ [xa, ya], [xb, yb], [xc, yc], [xa, ya] ]
-       // ]
-       case GeometryTypes.MULTIPOLYGONZ:
-       case GeometryTypes.MULTIPOLYGONM:
-       case GeometryTypes.MULTIPOLYGOZM:
-       case GeometryTypes.MULTIPOLYGON25D:
-         originalFeatureCoordinates.forEach(singlePolygon => {
-           singlePolygon[0].forEach(coordinates => coordinates.push(0))
-         });
-         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
-         break;
-     }
-     return feature;
-   },
+   addZValueToOLFeatureGeometry,
  
    /**
     * core/geometry/geometry::getOLGeometry@v3.4
@@ -335,42 +208,7 @@ const Geometry = {
    /**
     * core/geometry/geometry::is3DGeometry@v3.4
     */
-   is3DGeometry(geometryType) {
-     return [
-       GeometryTypes.POINTZ,
-       GeometryTypes.POINTM,
-       GeometryTypes.POINTZM,
-       GeometryTypes.POINT25D,
-       GeometryTypes.MULTIPOINTZ,
-       GeometryTypes.MULTIPOINTM,
-       GeometryTypes.MULTIPOINTZM,
-       GeometryTypes.MULTIPOINT25D,
-       GeometryTypes.LINESTRINGZ,
-       GeometryTypes.LINESTRINGM,
-       GeometryTypes.LINESTRINGZM,
-       GeometryTypes.LINESTRING25D,
-       GeometryTypes.MULTILINESTRINGZ,
-       GeometryTypes.MULTILINESTRINGM,
-       GeometryTypes.MULTILINESTRINGZM,
-       GeometryTypes.MULTILINESTRING25D,
-       GeometryTypes.LINEZ,
-       GeometryTypes.LINEM,
-       GeometryTypes.LINEZM,
-       GeometryTypes.LINE25D,
-       GeometryTypes.MULTILINEZ,
-       GeometryTypes.MULTILINEM,
-       GeometryTypes.MULTILINEZM,
-       GeometryTypes.MULTILINE25D,
-       GeometryTypes.POLYGONZ,
-       GeometryTypes.POLYGONM,
-       GeometryTypes.POLYGONZM,
-       GeometryTypes.POLYGON25D,
-       GeometryTypes.MULTIPOLYGONZ,
-       GeometryTypes.MULTIPOLYGONM,
-       GeometryTypes.MULTIPOLYGONZM,
-       GeometryTypes.MULTIPOLYGON25D
-     ].find( type3D => type3D === geometryType);
-   },
+   is3DGeometry,
 };
 
 const geoutils = {
@@ -1065,7 +903,7 @@ const geoutils = {
     const filter = new Filter(filterConfig);
     if (multilayers) {
       if (!layers.length) d.resolve([]);
-      const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
+      const multiLayers = groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
       const numberRequestd = Object.keys(multiLayers).length;
       let layersLength = numberRequestd;
       for (let key in multiLayers) {
@@ -1857,13 +1695,8 @@ const geoutils = {
     return Feature;
   },
 
-  sanitizeFidFeature(fid) {
-    if (toRawType(fid) === 'String' && Number.isNaN(1*fid))  {
-      fid = fid.split('.');
-      fid = fid.length === 2 ? fid[1] : fid[0];
-    }
-    return fid;
-  },
+  sanitizeFidFeature,
+
   parseAttributes(layerAttributes, featureAttributes) {
     let featureAttributesNames = Object.keys(featureAttributes).filter(featureAttributesName => geometryFields.indexOf(featureAttributesName) === -1);
     if (layerAttributes && layerAttributes.length) {
@@ -1884,7 +1717,7 @@ const geoutils = {
     layers = layers ? layers : [this._layer];
     const layer = layers[0];
     const infoFormat = layer.getInfoFormat();
-    response = responseParser.get(infoFormat)({
+    response = ResponseParser.get(infoFormat)({
       response,
       projections,
       layers,

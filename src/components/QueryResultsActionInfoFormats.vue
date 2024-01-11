@@ -24,8 +24,8 @@
 <script>
 import CatalogLayersStoresRegistry             from 'store/catalog-layers';
 import GUI                                     from 'services/gui';
+import { ResponseParser }                      from 'utils/parsers';
 
-const { response:responseParser }              = require('utils/parsers');
 const { getAlphanumericPropertiesFromFeature } = require('utils/geo');
 
 export default {
@@ -73,7 +73,7 @@ export default {
         });
         this.layer.infoformat = contenttype;
         this.projectLayer.setInfoFormat(this.layer.infoformat);
-        const [data] = responseParser.get(contenttype)({ layers: [this.projectLayer], response });
+        const [data] = ResponseParser.get(contenttype)({ layers: [this.projectLayer], response });
         if (data.features) {
           this.__parsedata(data);
         } else {

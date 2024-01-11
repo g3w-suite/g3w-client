@@ -7,7 +7,8 @@
 /**
  * @FIXME remove weird import (utility functions should be stateles)
  */
-import ApplicationState from 'store/application-state';
+import ApplicationState    from 'store/application-state';
+import { reverseGeometry } from 'utils/reverseGeometry';
 
 /**
  * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
@@ -64,24 +65,9 @@ const utils = {
       });
       return polygonLayer;
     },
-    reverseGeometry(geometry) {
-      const reverseCoordinates = (coordinates) => {
-        coordinates.find((coordinate) => {
-          if (Array.isArray(coordinate)) {
-            reverseCoordinates(coordinate)
-          } else {
-            const [y, x] = coordinates;
-            coordinates[0] = x;
-            coordinates[1] = y;
-            return true
-          }
-        })
-      };
-      let coordinates = geometry.getCoordinates();
-      reverseCoordinates(coordinates);
-      geometry.setCoordinates(coordinates);
-      return geometry
-    },
+
+    reverseGeometry,
+
     getScaleFromResolution(resolution, units="m") {
       return Math.round(resolution * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
     },

@@ -5,8 +5,9 @@ import ProjectsRegistry         from 'store/projects';
 import ApplicationService       from 'services/application';
 import ControlsRegistry         from 'store/map-controls';
 import GUI                      from 'services/gui';
-import MapControlZoomHistory    from "components/MapControlZoomHistory.vue";
+import MapControlZoomHistory    from 'components/MapControlZoomHistory.vue';
 import MapControlGeocoding      from 'components/MapControlGeocoding.vue';
+import { groupBy }              from 'utils/groupBy';
 
 const {
   inherit,
@@ -1871,7 +1872,7 @@ proto._setupMapLayers = function() {
   //group layer by mutilayer (multilayer property of layer on project configuration)
   // nee to split time series to group to speed up eventualli time seriesries loading of single layer
   let qtimeseries_multilayerid_split_values = {};
-  const multiLayers = _.groupBy(layers, layer => {
+  const multiLayers = groupBy(layers, layer => {
     let multiLayerId = layer.getMultiLayerId();
     if (layer.isQtimeseries()) {
       qtimeseries_multilayerid_split_values[multiLayerId] = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ? 0 : qtimeseries_multilayerid_split_values[multiLayerId] + 1;
@@ -2014,7 +2015,7 @@ proto.getOverviewMapLayers = function(project) {
     GEOLAYER: true,
     BASELAYER: false,
   });
-  const multiLayers = _.groupBy(projectLayers,layer => layer.getMultiLayerId());
+  const multiLayers = groupBy(projectLayers,layer => layer.getMultiLayerId());
   let overviewMapLayers = [];
 
   Object.entries(multiLayers).forEach(([id, layers]) => {
