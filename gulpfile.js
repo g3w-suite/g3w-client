@@ -80,8 +80,14 @@ const default_plugins = [
 
 /** @since 3.10.0 Create standard version format for app and plugins*/
 const create_version = async (path='.') => {
+
   const pkJSONPath = `${path}/package.json`;
+
+  //delete cache of require otherwise no package.json version rest the old (cache) one
+  delete require.cache[require.resolve(pkJSONPath)];
+
   const git_command = `git -C  ${path}`;
+
   let version;
 
   const branch = await new Promise((resolve, reject) => {
@@ -102,8 +108,6 @@ const create_version = async (path='.') => {
   } catch(err) {
     console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + path + __RESET + ')' );
   }
-  //delete cache of require otherwise no package.json version rest the old (cache) one
-  delete require.cache[require.resolve(pkJSONPath)];
 
   return version;
 }
@@ -346,9 +350,13 @@ gulp.task('browserify:app', function() {
     ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
   })
   .external(dependencies)
-  .on('update', (file)  => {
-    console.log(`[G3w-Client] Change file: ${file}`)
-    !production && -1 === file.indexOf('version.js') && rebundle()
+  .on('update', ([file])  => {
+
+    console.log(`${INFO__} [G3w-Client] Change file: ${file}`);
+
+    !production
+    && -1 === file.indexOf('version.js')
+    && rebundle()
   })
   .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
 
