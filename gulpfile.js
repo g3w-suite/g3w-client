@@ -92,7 +92,8 @@ const create_version = async (path='.') => {
 
   const commit = await new Promise((resolve, reject) => {
     exec(`${git_command} log -n 1 --pretty=format:"%H"`, (err, stdout, stderr) => {
-      resolve( stdout.trim());
+      //show only first seven characters as github
+      resolve( stdout.trim().substring(0,7));
     });
   })
 
