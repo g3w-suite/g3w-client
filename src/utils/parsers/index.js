@@ -177,10 +177,10 @@ export const ResponseParser = {
             response = new XMLSerializer().serializeToString(response);
           }
 
-          // sanitize layer name
+          // sanitize layer name (removes: whitespaces, quotes, parenthesis, slashes)
           if (response) {
             response = layers.reduce((acc, layer, i) => {
-              const id = (wms && layer.isWmsUseLayerIds() ? layer.getId() : layer.getName()).replace(/[/\s]/g, wms ? '' : '_').replace(/(\'+)|(\)+)|(\(+)/, ''); // removes: whitespaces --> quotes --> parenthesis
+              const id = (wms && layer.isWmsUseLayerIds() ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
               return acc.replace(new RegExp(`qgs:${id}`, 'g'), `qgs:layer${i}`);
             }, response);
           }
@@ -188,7 +188,6 @@ export const ResponseParser = {
           // fields starting with an invalid key
           const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)|qgs:(\w+):(\w+)/g)).filter((_, i) => 0 === i % 2);
 
-          /** @TODO merge multiples `matchAll()` calls into a single regex */
           // add match numeric value (integer or float)
           if (invalids) {
             response = invalids.reduce((acc, find) => {
@@ -240,9 +239,9 @@ export const ResponseParser = {
 
           /** @FIXME add description */
           if (olfeatures.length && invalids) {
-            const numericFields = Object.keys(olfeatures[0].getProperties()).filter(prop => -1 !== prop.indexOf(NUMERIC_FIELD));
+            const fields = Object.keys(olfeatures[0].getProperties()).filter(prop => -1 !== prop.indexOf(NUMERIC_FIELD));
             olfeatures.forEach(f => {
-              numericFields.forEach(_field => {
+              fields.forEach(_field => {
                 const invalid = invalids.find((find) => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
                 f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
                 f.unset(_field);
