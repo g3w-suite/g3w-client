@@ -271,7 +271,6 @@ module.exports = {
         new Promise((resolve) => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve))
       ])
       .finally(() => {
-
         /** @since 3.8.0 */
         const platform = window.platform || {};
 
@@ -279,7 +278,7 @@ module.exports = {
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
 - g3w-client: __${G3W_CONSTANT.APP_VERSION}__
-- plugins:\n${Object.keys(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p}: __${__version__.plugins[p]}__`)).join('\n')}
+- plugins:\n${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());

@@ -17,7 +17,8 @@ const Plugin = function({
     dependencies = [],
     i18n = null,
     fontClasses = [],
-    api = {}
+    api = {},
+    version, /** @since 3.10.0 */
   } = {}) {
   
   base(this);
@@ -29,6 +30,7 @@ const Plugin = function({
   this.setDependencies(dependencies);
   this.addFontClasses(fontClasses);
   this.setApi(api);
+  this.setVersion(version); /** @since 3.10.0 */
   this.setHookService(null);
 
   this._ready = false;
@@ -66,6 +68,22 @@ proto.setConfig = function(config) {
 proto.getConfig = function(name = this.name) {
   return this.config || PluginsRegistry.getPluginConfig(name);
 };
+
+/**
+ * @since 3.10.0
+ * @param version
+ */
+proto.setVersion = function(version) {
+  this.config.version = version;
+};
+
+/**
+ * @since 3.10.0
+ * @return {*}
+ */
+proto.getVersion = function() {
+  return this.config.version;
+}
 
 proto.setLocale = function(i18n) {
   if (i18n && this.name) addI18nPlugin({ name: this.name, config: i18n});
