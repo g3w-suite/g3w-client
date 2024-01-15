@@ -89,22 +89,28 @@ const create_version = async (path='.') => {
   const git_command = `git -C  ${path}`;
 
   let version;
-
-  const branch = await new Promise((resolve, reject) => {
-    exec(`${git_command} rev-parse --abbrev-ref HEAD`, (err, stdout, stderr) => {
-      resolve( 'HEAD'  === stdout.trim() ? '' :  stdout.trim());
-    });
-  });
-
-  const commit = await new Promise((resolve, reject) => {
-    exec(`${git_command} log -n 1 --pretty=format:"%H"`, (err, stdout, stderr) => {
-      //show only first seven characters as github
-      resolve( stdout.trim().substring(0,7));
-    });
-  })
+  let commit;
 
   try {
-    version = `${require(pkJSONPath).version}.${branch}:${commit}`;
+    //get branch. In case of new release (tag) no branch is added to version
+    const branch = await new Promise((resolve, reject) => {
+      exec(`${git_command} rev-parse --abbrev-ref HEAD`, (err, stdout, stderr) => {
+        resolve( 'HEAD'  === stdout.trim() ? '' :  stdout.trim());
+      });
+    });
+
+    // in case of branch, get commit and add it to version
+    if (branch) {
+      commit = await new Promise((resolve, reject) => {
+        exec(`${git_command} log -n 1 --pretty=format:"%H"`, (err, stdout, stderr) => {
+          //show only first seven characters as github
+          resolve( stdout.trim().substring(0,7));
+        });
+      })
+      version = `${require(pkJSONPath).version}.${branch}:${commit}`;
+    } else {
+      version = `${require(pkJSONPath).version}`;
+    }
   } catch(err) {
     console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + path + __RESET + ')' );
   }
@@ -169,7 +175,8 @@ const browserify_plugin = (pluginName, watch = true) => {
     ],
     transform: [
       vueify,
-      [ babelify, { babelrc: true } ],
+      [ babelify, { babelrc: true } ], //Babel first looks for .babelrc in the same directory as the input file,
+      // then in that directory’s parent directory, etc. The contents of .babelrc are interpreted as JSON and used as Babel options
       [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
     ],
   };
