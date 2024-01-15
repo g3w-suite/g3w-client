@@ -366,9 +366,9 @@ gulp.task('browserify:app', async function() {
 
   console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + src + '\n');
 
-  const gitInfo = await get_git_info();
+  const {branch, commit} = await get_git_info();
 
-  const bundler = browserify(src, {
+  const opts = {
     basedir: './',
     paths: ['./src/', './src/app/'],
     debug: !production,
@@ -377,7 +377,11 @@ gulp.task('browserify:app', async function() {
     insertGlobals: true, //se global variable to true
     insertGlobalVars: {
       __git__() { // pass it info
-        return JSON.stringify(gitInfo);
+        console.log('__git_________________________________',{branch, commit})
+        return JSON.stringify({
+          branch,
+          commit
+        });
       }
     },
     plugin: [
@@ -392,7 +396,9 @@ gulp.task('browserify:app', async function() {
       imgurify,
     ],
     ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
-  })
+  }
+
+  const bundler = browserify(src, opts)
     .external(dependencies)
     .on('update', async ([file])  => {
       console.log(`${INFO__} [G3w-Client] Change file: ${file}`);
@@ -402,7 +408,9 @@ gulp.task('browserify:app', async function() {
       })
     .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
   const rebundle = async () => {
+
     await set_app_version();
+
     return bundler.bundle()
       .on('error', err => {
         console.log('ERROR: running gulp task "browserify:app"', err);
@@ -418,6 +426,7 @@ gulp.task('browserify:app', async function() {
       .pipe(gulp.dest(`${outputFolder}/static/client/js/`))
       .pipe(gulpif(!production, browserSync.reload({ stream: true })));
   }; // refresh browser after changing local files (dev mode)
+
   return rebundle();
 });
 
