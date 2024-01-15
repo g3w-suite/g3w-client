@@ -85,11 +85,19 @@ const create_version = async (path='.') => {
 
   //delete cache of require otherwise no package.json version rest the old (cache) one
   delete require.cache[require.resolve(pkJSONPath)];
+  let version;
+  try {
+    version = `${require(pkJSONPath).version}`;
+  } catch(err) {
+    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + path + __RESET + ')' );
+  }
+  return version;
+}
+
+const get_git_info = async (path='.') => {
+  let info = null;
 
   const git_command = `git -C  ${path}`;
-
-  let version;
-  let commit;
 
   try {
     //get branch. In case of new release (tag) no branch is added to version
@@ -101,22 +109,24 @@ const create_version = async (path='.') => {
 
     // in case of branch, get commit and add it to version
     if (branch) {
-      commit = await new Promise((resolve, reject) => {
+      const commit = await new Promise((resolve, reject) => {
         exec(`${git_command} log -n 1 --pretty=format:"%H"`, (err, stdout, stderr) => {
           //show only first seven characters as github
           resolve( stdout.trim().substring(0,7));
         });
-      })
-      version = `${require(pkJSONPath).version}.${branch}:${commit}`;
-    } else {
-      version = `${require(pkJSONPath).version}`;
+      });
+      info = {
+        branch,
+        commit
+      }
     }
   } catch(err) {
-    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + path + __RESET + ')' );
+    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'git info not found (' + GREEN__ + path + __RESET + ')' );
   }
 
-  return version;
+  return info;
 }
+
 
 // Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
 const dev_plugins = Array.from(
@@ -153,6 +163,7 @@ const set_app_version = async () => {
     data.splice(0, 1, `# G3W-CLIENT v${version}`);
     fs.writeFile('README.md', data.join("\n"), 'utf8', (err) => { if (err) return console.log(err); });
   });
+
 }
 
 /**
@@ -170,6 +181,7 @@ const set_plugin_version = async (pluginName) => {
     data.splice(0, 1, `# g3w-client-plugin-${pluginName} v${version}`);
     fs.writeFile(`${g3w.pluginsFolder}/${pluginName}/README.md`, data.join("\n"), 'utf8', (err) => { if (err) return console.log(err); });
   });
+
 }
 
 /**
@@ -178,7 +190,7 @@ const set_plugin_version = async (pluginName) => {
  *
  * @since 3.9.0
  */
-const browserify_plugin = (pluginName, watch = true) => {
+const browserify_plugin = async (pluginName, watch = true) => {
   const src          = `${g3w.pluginsFolder}/${pluginName}`;              // plugin folder (git source)
   const outputFolder = production
     ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
@@ -186,12 +198,20 @@ const browserify_plugin = (pluginName, watch = true) => {
 
   console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + outputFolder);
 
-  const opts = {
+  const gitInfo = await get_git_info(`${g3w.pluginsFolder}/${pluginName}`);
+
+  const bundler = browserify(`./${pluginName}/index.js`, {
     basedir: `${g3w.pluginsFolder}`,
     paths: [`${g3w.pluginsFolder}`],
     debug: !production,
     cache: {},
     packageCache: {},
+    insertGlobals: true,
+    insertGlobalVars: {
+      __git__() {
+        return JSON.stringify(gitInfo);
+      }
+    },
     plugin: [
       watch && !production ? watchify : undefined,
       /* Uncomment the following in next ESM release (v4.x) */
@@ -203,9 +223,7 @@ const browserify_plugin = (pluginName, watch = true) => {
       // then in that directory’s parent directory, etc. The contents of .babelrc are interpreted as JSON and used as Babel options
       [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
     ],
-  };
-
-  const bundler = browserify(`./${pluginName}/index.js`, opts)
+  })
   .on('update', ([file])  => {
       watch
       && !production
@@ -216,6 +234,7 @@ const browserify_plugin = (pluginName, watch = true) => {
 
   // remove source map file
   del([`${src}/plugin.js.map`]);
+
 
   const rebundle = async () => {
 
@@ -319,10 +338,11 @@ gulp.task('concatenate:vendor_js', function() {
     .pipe(gulp.dest(`${outputFolder}/static/client/js/`));
 });
 
+
 /**
  * Compile client application (src/app/main.js --> app.min.js)
  */
-gulp.task('browserify:app', function() {
+gulp.task('browserify:app', async function() {
   /**
    * Make sure that all g3w.plugins bundles are there
    *
@@ -339,19 +359,26 @@ gulp.task('browserify:app', function() {
   if (!production) {
     console.log();                                  // print an empty line
     dev_plugins.forEach(p => browserify_plugin(p)); // build all plugins (async)
-
   }
 
-  const src = `./src/index.${production ? 'prod' : 'dev'}.js`
+  const src = `./src/index.${production ? 'prod' : 'dev'}.js`;
 
   console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + src + '\n');
 
-  let bundler = browserify(src, {
+  const gitInfo = await get_git_info();
+
+  const bundler = browserify(src, {
     basedir: './',
     paths: ['./src/', './src/app/'],
     debug: !production,
     cache: {},
     packageCache: {},
+    insertGlobals: true, //se global variable to true
+    insertGlobalVars: {
+      __git__() { // pass it info
+        return JSON.stringify(gitInfo);
+      }
+    },
     plugin: [
       production ? undefined : watchify,
       /* Uncomment the following in next ESM release (v4.x) */
@@ -365,30 +392,21 @@ gulp.task('browserify:app', function() {
     ],
     ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
   })
-  .external(dependencies)
-  .on('update', ([file])  => {
-
-    console.log(`${INFO__} [G3w-Client] Change file: ${file}`);
-
-    !production
-    && -1 === file.indexOf('version.js') // no need to rebundle id version change
-    && rebundle()
-  })
-  .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
-
+    .external(dependencies)
+    .on('update', async ([file])  => {
+      console.log(`${INFO__} [G3w-Client] Change file: ${file}`);
+      !production
+      && -1 === file.indexOf('version.js') // no need to rebundle id version change
+      && rebundle()
+      })
+    .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
   const rebundle = async () => {
-
     await set_app_version();
-
     return bundler.bundle()
       .on('error', err => {
         console.log('ERROR: running gulp task "browserify:app"', err);
         this.emit('end');
         process.exit()
-        // del([
-        //   `${outputFolder}/static/js/app.js`,
-        //   `${outputFolder}/static/css/app.css`
-        // ]).then(() => process.exit());
       })
       .pipe(source('build.js'))
       .pipe(buffer())
@@ -398,8 +416,7 @@ gulp.task('browserify:app', function() {
       .pipe(gulpif(production, sourcemaps.write('.')))
       .pipe(gulp.dest(`${outputFolder}/static/client/js/`))
       .pipe(gulpif(!production, browserSync.reload({ stream: true })));
-  } // refresh browser after changing local files (dev mode)
-
+  }; // refresh browser after changing local files (dev mode)
   return rebundle();
 });
 
@@ -649,7 +666,7 @@ gulp.task('dev', done => runSequence(
  *
  * @since 3.9.0
  */
-gulp.task('check:node_modules', function(){
+gulp.task('check:node_modules', function() {
   if (packageJSON.version !== packageLock.version) {
     execSync(`npm install`, { stdio: 'inherit' });
     console.log(H1__ + 'Process exited early due to missing packages being installed' + __H1);
