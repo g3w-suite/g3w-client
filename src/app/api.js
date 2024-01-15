@@ -33,6 +33,7 @@ import WorkflowsStack from 'services/workflows';
 import ApiService from 'services/api';
 import RouterService from 'services/router';
 
+//GUI
 import GUI from 'services/gui';
 //MIXINS
 import Mixins from 'mixins';
