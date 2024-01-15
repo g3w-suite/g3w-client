@@ -1,12 +1,14 @@
 import { MAP_SETTINGS }         from 'app/constant';
 import DataRouterService        from 'services/data';
 import MapLayersStoresRegistry  from 'store/map-layers';
-import ProjectsRegistry         from 'store/projects';
-import ApplicationService       from 'services/application';
-import ControlsRegistry         from 'store/map-controls';
-import GUI                      from 'services/gui';
-import MapControlZoomHistory    from "components/MapControlZoomHistory.vue";
-import MapControlGeocoding      from 'components/MapControlGeocoding.vue';
+import ProjectsRegistry           from 'store/projects';
+import ApplicationService         from 'services/application';
+import ControlsRegistry           from 'store/map-controls';
+import GUI                        from 'services/gui';
+import MapControlZoomHistory      from "components/MapControlZoomHistory.vue";
+import MapControlGeocoding        from 'components/MapControlGeocoding.vue';
+import { getScaleFromResolution } from 'utils/getScaleFromResolution';
+import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 
 const {
   inherit,
@@ -26,10 +28,6 @@ const {
   getGeoTIFFfromServer,
 }                               = require('utils/geo');
 const BaseLayers                = require('g3w-ol/layers/bases');
-const {
-  getScaleFromResolution,
-  getResolutionFromScale
-}                               = require('utils/ol');
 const VectorLayer               = require('core/layers/vectorlayer');
 
 const Control                   = require('g3w-ol/controls/control');

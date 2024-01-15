@@ -1,8 +1,8 @@
 import ApplicationState from 'store/application-state';
-import GUI from 'services/gui';
+import GUI              from 'services/gui';
+import { mergeOptions } from 'utils/mergeOptions';
 
 const { XHR } = require('utils');
-const utils = require('utils/ol');
 const StreetViewComponent = require('gui/streetview/vue/streetview');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
@@ -73,7 +73,7 @@ const StreetViewControl = function(options={}) {
     }
   });
 
-  options = utils.merge(options,_options);
+  options = mergeOptions(options, _options);
 
   InteractionControl.call(this,options);
 };

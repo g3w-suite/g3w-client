@@ -1,12 +1,16 @@
-import ProjectsRegistry     from 'store/projects';
-import ApplicationService   from 'services/application';
-import ApplicationState     from 'store/application-state';
+import ProjectsRegistry           from 'store/projects';
+import ApplicationService         from 'services/application';
+import ApplicationState           from 'store/application-state';
 import {
   PRINT_SCALES as scale,
   PRINT_RESOLUTIONS as dpis,
   PRINT_FORMATS as formats
-}                           from 'app/constant';
-import GUI                  from 'services/gui';
+}                                 from 'app/constant';
+import GUI                        from 'services/gui';
+import { getScaleFromResolution } from 'utils/getScaleFromResolution';
+import { getResolutionFromScale } from 'utils/getResolutionFromScale';
+import { getMetersFromDegrees }   from 'utils/getMetersFromDegrees';
+
 
 const {
   base,
@@ -16,11 +20,6 @@ const {
 }                           = require('utils');
 const { t }                 = require('core/i18n/i18n.service');
 const G3WObject             = require('core/g3wobject');
-const {
-    getScaleFromResolution,
-    getResolutionFromScale,
-    getMetersFromDegrees
-}                           = require('utils/ol');
 const PrintPage             = require('gui/print/vue/printpage');
 
 /*
