@@ -94,28 +94,19 @@ const create_version = async (path='.') => {
   return version;
 }
 
-const get_git_info = async (path='.') => {
+const get_git_info = (path='.') => {
   let info = null;
 
   const git_command = `git -C  ${path}`;
 
   try {
     //get branch. In case of new release (tag) no branch is added to version
-    const branch = await new Promise((resolve, reject) => {
-      exec(`${git_command} rev-parse --abbrev-ref HEAD`, (err, stdout, stderr) => {
-        resolve( 'HEAD'  === stdout.trim() ? '' :  stdout.trim());
-      });
-    });
+    let branch = execSync(`${git_command} rev-parse --abbrev-ref HEAD`, {encoding: 'utf8'});
+    branch =  'HEAD'  === branch.trim() ? '' :  branch.trim();
 
     // in case of branch, get commit and add it to version
     if (branch) {
-      const commit = await new Promise((resolve, reject) => {
-        exec(`${git_command} log -n 1 --pretty=format:"%H"`, (err, stdout, stderr) => {
-          //show only first seven characters as github
-          resolve( stdout.trim().substring(0,7));
-        });
-      });
-      console.log('DEV COMMIT MESSAGE TEST', commit)
+      const commit = execSync(`${git_command} log -n 1 --pretty=format:"%H"`, {encoding: 'utf8'}).trim().substring(0,7)
       info = {
         branch,
         commit
@@ -199,8 +190,6 @@ const browserify_plugin = async (pluginName, watch = true) => {
 
   console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + outputFolder);
 
-  const gitInfo = await get_git_info(`${g3w.pluginsFolder}/${pluginName}`);
-
   const bundler = browserify(`./${pluginName}/index.js`, {
     basedir: `${g3w.pluginsFolder}`,
     paths: [`${g3w.pluginsFolder}`],
@@ -210,7 +199,7 @@ const browserify_plugin = async (pluginName, watch = true) => {
     insertGlobals: true,
     insertGlobalVars: {
       __git__() {
-        return JSON.stringify(gitInfo);
+        return JSON.stringify(get_git_info(`${g3w.pluginsFolder}/${pluginName}`));
       }
     },
     plugin: [
@@ -366,8 +355,6 @@ gulp.task('browserify:app', async function() {
 
   console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + src + '\n');
 
-  const {branch, commit} = await get_git_info();
-
   const opts = {
     basedir: './',
     paths: ['./src/', './src/app/'],
@@ -377,11 +364,7 @@ gulp.task('browserify:app', async function() {
     insertGlobals: true, //se global variable to true
     insertGlobalVars: {
       __git__() { // pass it info
-        console.log('__git_________________________________',{branch, commit})
-        return JSON.stringify({
-          branch,
-          commit
-        });
+        return JSON.stringify(get_git_info());
       }
     },
     plugin: [
