@@ -329,10 +329,6 @@ gulp.task('concatenate:vendor_js', function() {
 });
 
 
-gulp.task('pre-commit', () => {
-  console.log('PRE COMMIT')
-});
-
 /**
  * Compile client application (src/app/main.js --> app.min.js)
  */
