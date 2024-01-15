@@ -115,6 +115,7 @@ const get_git_info = async (path='.') => {
           resolve( stdout.trim().substring(0,7));
         });
       });
+      console.log('DEV COMMIT MESSAGE TEST', commit)
       info = {
         branch,
         commit
