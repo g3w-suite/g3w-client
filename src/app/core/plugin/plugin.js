@@ -18,7 +18,8 @@ const Plugin = function({
     i18n = null,
     fontClasses = [],
     api = {},
-    version, /** @since 3.10.0 */
+    version, /** @since 3.10.0 version of plugin*/
+    git,     /** @since 3.10.0 git Object info {branch,commit}*/
   } = {}) {
   
   base(this);
@@ -31,6 +32,7 @@ const Plugin = function({
   this.addFontClasses(fontClasses);
   this.setApi(api);
   this.setVersion(version); /** @since 3.10.0 */
+  this.setGitInfo(git);     /** @since 3.10.0 */
   this.setHookService(null);
 
   this._ready = false;
@@ -70,19 +72,49 @@ proto.getConfig = function(name = this.name) {
 };
 
 /**
+ * Set plugin version
  * @since 3.10.0
  * @param version
  */
 proto.setVersion = function(version) {
-  this.config.version = version;
+  this._version = version;
 };
 
 /**
+ * Get plugin version
  * @since 3.10.0
- * @return {*}
+ * @return String
  */
 proto.getVersion = function() {
-  return this.config.version;
+  return this._version;
+}
+
+/**
+ * Set plugin git repository info
+ * @since 3.10.0
+ * @return undefined
+ */
+proto.setGitInfo = function(git) {
+  this._git = git;
+}
+
+/**
+ * Return plugin git repository info
+ * @since 3.10.0
+ * @return {Object|null} {branch, commit}
+ */
+proto.getGitInfo = function(git) {
+  this._git = git;
+}
+
+/**
+ *
+ * @return {string}
+ */
+proto.getInfo = function() {
+  // (`    - ${p[0]}: __${PluginsRegistry.getPlugin(p[0]).getInfo()}__`)
+  return `${this.getVersion()}${this._git 
+    ? `[${this._git.branch}][${this._git.commit}]`: ''}`;
 }
 
 proto.setLocale = function(i18n) {
