@@ -2,10 +2,10 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 
-const { inherit, noop }         = require('core/utils/utils');
+const { inherit, noop }         = require('utils');
 const G3WObject                 = require('core/g3wobject');
 const { t }                     = require('core/i18n/i18n.service');
-const { coordinatesToGeometry } = require('core/utils/geo');
+const { coordinatesToGeometry } = require('utils/geo');
 const { SELECTION_STATE }       = require('core/layers/layer');
 
 const PAGELENGTHS = [10, 25, 50];
@@ -188,14 +188,17 @@ proto.clearAllSelection = function() {
 
 /**
  * @since 3.9.0
+ * 
+ * @param { Object } opts
+ * @param { string } opts.type
+ * 
+ * @fires redraw when `opts.type` in_bbox filter (or not select all)
  */
-proto.filterChangeHandler = async function ({type}={}) {
+proto.filterChangeHandler = async function ({ type } = {}) {
   this.allfeaturesnumber = undefined;
-  let data = [];
-  // emit redraw if in_bbox filter or not select all
-  const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
-  if (!this.state.pagination) data = emitRedraw ? await this.reloadData() : [];
-  emitRedraw && this.emit('redraw', data);
+  if (type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL)) {
+    this.emit('redraw', this.state.pagination ? [] : await this.reloadData());
+  }
 };
 
 /**
@@ -529,8 +532,8 @@ proto.getData = function({
 
     const ordering = ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name;
 
-    this.currentPage = 1 + ((0 === start || (this.state.pagination && this.state.tools.filter.active)) ? (start/length) : 0);
-  
+    this.currentPage = (start === 0 || (this.state.pagination && this.state.tools.filter.active)) ? 1 : (start/length) + 1;
+
     const in_bbox = this.state.tools.geolayer.in_bbox;
 
     const field =  this.state.pagination
@@ -627,7 +630,7 @@ proto.getDataFromBBOX = async function() {
 proto.addFeature = function(feature) {
   const tableFeature = {
     id:         feature.id,
-    selected:   this.state.tools.filter.active    || this.layer.hasSelectionFid(feature.id),
+    selected:   this.layer.hasSelectionFid(feature.id),
     attributes: feature.attributes                || feature.properties,
     geometry:   this.geolayer && feature.geometry || undefined
   };
@@ -707,7 +710,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
       features
     }) => {
       const values = fields.map(f => feature.attributes[f]);
-      const k      = _createFeatureKey(values);
 
       field_values.push(values);
       
@@ -730,14 +732,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
              },
             outputs: false, // just a request not show on result
           });
-      }
-
-      if (zoom && undefined === features[k]) {
-        promise = Promise.reject();
-      }
-
-      if (undefined !== features[k]) {
-        promise = Promise.resolve({ data: [{ features: features[k] }] });
       }
 
       promises.push(promise);

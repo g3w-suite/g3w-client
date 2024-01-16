@@ -6,7 +6,7 @@ import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
-const { throttle }            = require('core/utils/utils');
+const { throttle }            = require('utils');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 
 const QueryByDrawPolygonControl = function(options={}) {

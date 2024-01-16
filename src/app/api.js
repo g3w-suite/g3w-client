@@ -21,7 +21,7 @@ import C3XYLine from 'components/C3XYLine.vue';
  */
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService from 'services/data';
-import IFrameRouterService from 'services/iframe-plugin';
+import IFrameRouterService from 'services/iframe';
 import MapLayersStoresRegistry from 'store/map-layers';
 import PluginsRegistry from 'store/plugins';
 import ProjectsRegistry from 'store/projects';
@@ -36,8 +36,8 @@ import GUI from 'services/gui';
 import Mixins from 'mixins';
 
 const G3WObject = require('core/g3wobject');
-const utils = require('core/utils/utils');
-const geoutils = require('core/utils/geo');
+const utils = require('utils');
+const geoutils = require('utils/geo');
 const i18n = require('core/i18n/i18n.service');
 const Server = require('core/errors/parser/servererrorparser');
 const Geom = require('core/utils/geo');
@@ -69,7 +69,7 @@ const Workflow = require('core/workflow/workflow');
  * GUI modules
  */
 const Panel = require('gui/panel');
-const ControlFactory = require('gui/map/control/factory');
+const { ControlFactory } = require('gui/map/mapservice');
 const ComponentsFactory = require('gui/component/componentsfactory');
 const FieldsService = require('gui/fields/fieldsservice');
 const Component = require('gui/component/component');
@@ -96,7 +96,7 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
-const g3wolutils = require('core/utils/ol');
+const g3wolutils = require('utils/ol');
 
 module.exports = {
 

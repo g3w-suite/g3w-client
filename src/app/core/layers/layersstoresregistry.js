@@ -1,4 +1,4 @@
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // Registy Layers
@@ -30,17 +30,11 @@ proto.getLayerById = function(layerId) {
 };
 
 proto.getLayers = function(filter) {
-  let layers = [];
-  Object.entries(this.stores).forEach(([storeId, layersStore]) => {
-    layers = layers.concat(layersStore.getLayers(filter))
-  });
-  return layers;
+  return Object.values(this.stores).flatMap(store => store.getLayers(filter));
 };
 
 proto.getQuerableLayersStores = function() {
-  return this.getLayersStores().filter((layersStore) => {
-    return layersStore.isQueryable();
-  })
+  return this.getLayersStores().filter(store => store.isQueryable());
 };
 
 proto.getLayersStore = function(id) {
@@ -48,11 +42,7 @@ proto.getLayersStore = function(id) {
 };
 
 proto.getLayersStores = function() {
-  const stores = [];
-  this.storesArray.forEach((storeId) => {
-    stores.push(this.stores[storeId]);
-  });
-  return stores;
+  return this.storesArray.map(storeId => this.stores[storeId]);
 };
 
 proto._addLayersStore = function(layersStore, idx) {

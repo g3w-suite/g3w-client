@@ -6,7 +6,7 @@
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 /**
@@ -24,7 +24,9 @@ function PluginsRegistry() {
   this.setters = {
     //setters to register plugin
     registerPlugin(plugin) {
-      if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
+      if (!this._plugins[plugin.name]) {
+        this._plugins[plugin.name] = plugin;
+      }
     }
   };
   /**
@@ -39,7 +41,7 @@ function PluginsRegistry() {
 
   // initialize plugin
   this.init = function(options={}) {
-    return new Promise(async (resolve, reject) =>{
+    return new Promise(async (resolve, reject) => {
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations
       this.setPluginsConfig(options.pluginsConfigs);
@@ -59,38 +61,63 @@ function PluginsRegistry() {
     })
   };
 
-  this.addLoadingPlugins = function(){
+  /**
+   * @FIXME add description
+   */
+  this.addLoadingPlugins = function() {
     Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
-  this.removeLoadingPlugin = function(plugin, ready){
+  /**
+   * @param plugin
+   * @param ready
+   */
+  this.removeLoadingPlugin = function(plugin, ready) {
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
+  /**
+   * @returns {Promise<{-readonly [P in keyof Promise<unknown>[]]: PromiseSettledResult<Awaited<Promise<unknown>[][P]>>}>}
+   * 
+   * @private
+   */
   this._loadPlugins = function() {
-    const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => this._setup(name, pluginConfig));
-    return Promise.allSettled(pluginLoadPromises)
+    return Promise.allSettled(Object
+      .entries(this.pluginsConfigs)
+      .map(([name, pluginConfig]) => this._setup(name, pluginConfig)));
   };
 
-  this.setDependencyPluginConfig = function(){
+  /**
+   * @FIXME add description
+   */
+  this.setDependencyPluginConfig = function() {
     for (const pluginName in this.pluginsConfigs){
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
-      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName => {
-        this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
-      })
+      if (dependecyPluginConfig) {
+        Object
+          .keys(dependecyPluginConfig)
+          .forEach(pluginName => {this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}})
+      }
     }
   };
 
+  /**
+   * @FIXME add description
+   */
   this.setOtherPlugins = function() {
     const law = OTHERPLUGINS[0];
     if (this.otherPluginsConfig && this.otherPluginsConfig[law] && this.otherPluginsConfig[law].length) {
       // law plugin
       this.pluginsConfigs[law] = this.otherPluginsConfig[law];
       this.pluginsConfigs[law].gid = this.otherPluginsConfig.gid;
-    } else delete this.pluginsConfigs[law];
+    } else {
+      delete this.pluginsConfigs[law];
+    }
   };
 
-  // reaload plugin in case of change map
+  /**
+   * reload plugin in case of change map 
+   */
   this.reloadPlugins = function(initConfig, project) {
     return new Promise(async (resolve, reject) => {
       const scripts = $('script');
@@ -101,12 +128,14 @@ function PluginsRegistry() {
         plugin.unload();
         delete this._plugins[pluginName];
         scripts.each((index, scr) => {
-          this._loadedPluginUrls.forEach((pluginUrl, idx) => {
-            if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
-              scr.parentNode.removeChild( scr );
-              this._loadedPluginUrls.splice(idx, 1);
-              return false;
-            }})
+          this._loadedPluginUrls
+            .forEach((pluginUrl, idx) => {
+              if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
+                scr.parentNode.removeChild( scr );
+                this._loadedPluginUrls.splice(idx, 1);
+                return false;
+              }
+            })
         });
       }
       this._loadedPluginUrls = [];
@@ -118,35 +147,40 @@ function PluginsRegistry() {
       try {
         const plugins = await this._loadPlugins();
         resolve(plugins);
-      } catch(error){
-        reject(error)
+      } catch(error) {
+        reject(error);
       }
     })
   };
 
   /**
    * setup plugin config only filtered by gid configuration
+   * 
    * @param config
    */
   this.setPluginsConfig = function(config={}) {
     const enabledPluginConfig = {};
     Object.entries(config)
       .filter(([,pluginConfig]) => pluginConfig.gid === this.gidProject)
-      .forEach(([pluginName, pluginConfig]) =>enabledPluginConfig[pluginName] = pluginConfig);
+      .forEach(([pluginName, pluginConfig]) => enabledPluginConfig[pluginName] = pluginConfig);
     this.pluginsConfigs = enabledPluginConfig;
   };
 
   /**
    * Method to load external script
+   * 
    * @param url
    * @returns {*}
+   * 
    * @private
    */
   this._loadScript = function(url) {
     return $.getScript(url);
   };
 
-  //load plugin script
+  /**
+   * load plugin script
+   */
   this._setup = function(name, pluginConfig) {
     return new Promise(async (resolve, reject) => {
       if (!_.isNull(pluginConfig)) {
@@ -169,37 +203,59 @@ function PluginsRegistry() {
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
-            .fail((jqxhr, settings, exception)=>{
+            .fail((jqxhr, settings, exception) => {
               console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
               this.removeLoadingPlugin(name, false);
               reject();
             })
-        } catch(err){
+        } catch(err) {
           this.removeLoadingPlugin(name, false);
           reject();
         }
-      } else resolve()
+      } else {
+        resolve();
+      }
     })
   };
 
+  /**
+   * @param pluginName
+   * 
+   * @returns {*}
+   */
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
 
+  /**
+   * @returns {*|{}}
+   */
   this.getPlugins = function() {
     return this._plugins;
   };
 
+  /**
+   * @param pluginName
+   * 
+   * @returns {*}
+   */
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
 
-  // method to check if a plugin is in configuration and will be added to application
-  this.isPluginInConfiguration = function(pluginName){
+  /**
+   * Check if a plugin is in configuration and will be added to application
+   */
+  this.isPluginInConfiguration = function(pluginName) {
     return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
-  this.isTherePlugin = function(pluginName){
+  /**
+   * @param pluginName
+   * 
+   * @returns {*}
+   */
+  this.isTherePlugin = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   }
 }

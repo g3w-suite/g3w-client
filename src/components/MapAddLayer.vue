@@ -83,7 +83,7 @@ import { EPSG } from 'app/constant';
 
 const Projections = require('g3w-ol/projection/projections');
 
-const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('core/utils/geo');
+const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('utils/geo');
 
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
@@ -158,7 +158,7 @@ export default {
   computed:{
 
     /**
-     * @returns {boolean} check wether current uploaded file has CSV extension
+     * @returns {boolean} check whether current uploaded file has CSV extension
      */
     csv_extension() {
       return this.layer.type === 'csv';

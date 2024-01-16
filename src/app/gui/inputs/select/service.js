@@ -1,6 +1,6 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Service = require('gui/inputs/service');
 
 function SelectService(options={}) {

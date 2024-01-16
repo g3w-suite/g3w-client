@@ -2,7 +2,7 @@ import ApplicationService from 'services/application';
 import RouterService      from 'services/router';
 import ComponentsRegistry from 'store/components';
 
-const { base, inherit, noop } = require('core/utils/utils');
+const { base, inherit, noop } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // API della GUI.
