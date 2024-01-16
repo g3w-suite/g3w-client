@@ -125,11 +125,26 @@ const dev_plugins = Array.from(
   new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))
 );
 
+//All plugins installed
+const get_all_plugins = () => {
+  return fs.readdirSync(g3w.pluginsFolder)
+    .filter(file => {
+      try {
+        return file !== 'client'
+          && file.indexOf('_templates') === -1
+          && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
+          && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
+      } catch (e) {}
+    })
+    .map(pluginName => pluginName)
+}
+
 // Helper info about locally developed client plugins (Object<pluginName, pluginVersion>)
-const loaded_plugins = Object.fromEntries(dev_plugins.map(pluginName => {
+const loaded_plugins = Object.fromEntries(get_all_plugins().map(pluginName => {
   let version;
   try {
     version = require(`${g3w.pluginsFolder}/${pluginName}/package.json`).version;
+    //set Plugin version
   } catch(e) {
     console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + pluginName + __RESET + ')' );
   }
@@ -220,7 +235,7 @@ const browserify_plugin = async (pluginName, watch = true) => {
       && -1 === file.indexOf('version.js') // no need to rebundle id version change
       && rebundle()
     })
-  .on('log', (info) => watch && !production && gutil.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' →', info));
+  .on('log', (info) => watch && !production && gutil.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' →', info))
 
   // remove source map file
   del([`${src}/plugin.js.map`]);
