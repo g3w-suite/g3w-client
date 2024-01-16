@@ -1,10 +1,10 @@
-import { downloadCSV } from './downloadCSV';
+import { downloadCSV }                          from 'utils/downloadCSV';
+import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 
 export function downloadCSVLayerFeatures({
   layer,
   alias = true,
 } = {}) {
-  const {getAlphanumericPropertiesFromFeature} = require('utils/geo');
   //get headers
   const attributes = Object.keys(layer.features[0].attributes);
   const properties = getAlphanumericPropertiesFromFeature(attributes);

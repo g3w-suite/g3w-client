@@ -5,12 +5,12 @@
  * @since 3.9.0
  */
 
-import GUI from 'services/gui';
-import ApplicationService from 'services/application';
+import GUI                                from 'services/gui';
+import ApplicationService                 from 'services/application';
+import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
 
 const Projections                        = require('g3w-ol/projection/projections');
 const { getScaleFromResolution }         = require('utils/ol');
-const { createFeatureFromFeatureObject } = require('utils/geo');
 const { XHR, sanitizeUrl }               = require('utils');
 
 const RESERVERDPARAMETRS = {

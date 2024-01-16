@@ -1,5 +1,6 @@
-import ApplicationState from 'store/application-state';
-import ProjectsRegistry from 'store/projects';
+import ApplicationState                    from 'store/application-state';
+import ProjectsRegistry                    from 'store/projects';
+import { get_LEGEND_ON_LEGEND_OFF_Params } from 'utils/get_LEGEND_ON_LEGEND_OFF_Params';
 
 const { base, inherit } = require('utils');
 const MapLayer = require('core/layers/map/maplayer');
@@ -105,7 +106,6 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   //check disabled layers
   !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
-  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('utils/geo');
   if (visibleLayers.length > 0) {
     const CATEGORIES_LAYERS = {};
     const STYLES = [];

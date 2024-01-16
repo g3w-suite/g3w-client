@@ -2,13 +2,13 @@
  * @file
  * @since v3.8
  */
-import { SPATIAL_METHODS } from 'app/constant';
+import { SPATIAL_METHODS }            from 'app/constant';
+import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
 
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 const { merge }          = require('utils/ol');
-const { Geometry }       = require('utils/geo');
 
-const VALIDGEOMETRIES    = Geometry.getAllPolygonGeometryTypes();
+const VALIDGEOMETRIES    = getAllPolygonGeometryTypes();
 
 const BaseQueryPolygonControl = function(options = {}) {
 

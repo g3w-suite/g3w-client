@@ -72,19 +72,16 @@
 
 <script>
 
-  import DataRouterService from 'services/data';
-  import Node              from 'components/GlobalTabsNode.vue';
-  import GUI               from 'services/gui';
+  import DataRouterService                           from 'services/data';
+  import Node                                        from 'components/GlobalTabsNode.vue';
+  import GUI                                         from 'services/gui';
+  import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
+  import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
 
   const {
     getUniqueDomId,
     noop
   }                        = require ('utils');
-
-  const {
-    getFormDataExpressionRequestFromFeature,
-    convertFeatureToGEOJSON,
-  }                        = require('utils/geo');
 
   export default {
     name: "tabs",

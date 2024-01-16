@@ -6,14 +6,13 @@
 import GUI               from 'services/gui';
 import ProjectsRegistry  from 'store/projects';
 import PluginsRegistry   from 'store/plugins';
-
+import { normalizeEpsg } from 'utils/normalizeEpsg';
 import {
   splitContextAndMethod,
   uniqueId,
   createFilterFormField,
 }                        from 'utils';
 
-const { normalizeEpsg }  = require('utils/geo');
 const Projections        = require('g3w-ol/projection/projections');
 const G3WObject          = require('core/g3wobject');
 

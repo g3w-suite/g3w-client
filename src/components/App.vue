@@ -274,7 +274,7 @@ import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 import { resizeMixin } from 'mixins';
-import { LOCAL_ITEM_IDS } from "constant";
+import { LOCAL_ITEM_IDS } from 'app/constant';
 
 const { uniqueId } = require('utils');
 const { t } = require('core/i18n/i18n.service');

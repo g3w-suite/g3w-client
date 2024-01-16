@@ -5,10 +5,9 @@
  * @since 3.9.0
  */
 
-import GUI                          from 'services/gui';
-import CatalogLayersStoresRegistry  from 'store/catalog-layers';
-
-const { createFeatureFromFeatureObject } = require('utils/geo');
+import GUI                                from 'services/gui';
+import CatalogLayersStoresRegistry        from 'store/catalog-layers';
+import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
 
 /**
  * External layer (vector) added by add external layer tool

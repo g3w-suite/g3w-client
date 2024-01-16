@@ -2,10 +2,10 @@
  * @file
  * @since v3.6
  */
+import { getFeaturesFromResponseVectorApi } from 'utils/getFeaturesFromResponseVectorApi';
 
 const BaseService = require('core/data/service');
 const { base, inherit, XHR } = require('utils');
-const { getFeaturesFromResponseVectorApi } = require('utils/geo');
 
 function ExpressionService() {
  

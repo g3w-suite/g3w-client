@@ -1,7 +1,9 @@
-import ApplicationState            from 'store/application-state';
-import RelationsService            from 'services/relations';
-import { QUERY_POINT_TOLERANCE }   from 'constant';
-import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
+import ApplicationState                    from 'store/application-state';
+import RelationsService                    from 'services/relations';
+import { QUERY_POINT_TOLERANCE }           from 'app/constant';
+import { QgsFilterToken }                  from 'core/layers/utils/QgsFilterToken';
+import { handleQueryResponse }             from 'utils/handleQueryResponse';
+import { get_LEGEND_ON_LEGEND_OFF_Params } from 'utils/get_LEGEND_ON_LEGEND_OFF_Params';
 
 const G3WObject                    = require('core/g3wobject');
 const {
@@ -10,10 +12,6 @@ const {
   toRawType,
   getTimeoutPromise,
 }                                  = require('utils');
-const {
-  handleQueryResponse,
-  get_LEGEND_ON_LEGEND_OFF_Params, 
-}                                  = require('utils/geo');
 const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');

@@ -22,11 +22,11 @@
 </template>
 
 <script>
-import CatalogLayersStoresRegistry             from 'store/catalog-layers';
-import GUI                                     from 'services/gui';
+import CatalogLayersStoresRegistry              from 'store/catalog-layers';
+import GUI                                      from 'services/gui';
+import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 
 const { response:responseParser }              = require('utils/parsers');
-const { getAlphanumericPropertiesFromFeature } = require('utils/geo');
 
 export default {
   name: 'Infoformats',

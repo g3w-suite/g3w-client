@@ -3,12 +3,13 @@
  * @since v3.6
  */
 
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry from 'store/projects';
-import DataRouterService from 'services/data';
+import CatalogLayersStoresRegistry              from 'store/catalog-layers';
+import ProjectsRegistry                         from 'store/projects';
+import DataRouterService                        from 'services/data';
+import { sanitizeFidFeature }                   from 'utils/sanitizeFidFeature';
+import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 
 const { inherit, XHR, base, createSingleFieldParameter } = require('utils');
-const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('utils/geo');
 const G3WObject = require('core/g3wobject');
 
 function RelationsService(options={}) {

@@ -1,5 +1,6 @@
-import ProjectsRegistry                   from 'store/projects';
-import ApplicationService                 from 'services/application';
+import ProjectsRegistry                    from 'store/projects';
+import ApplicationService                  from 'services/application';
+import { get_LEGEND_ON_LEGEND_OFF_Params } from 'utils/get_LEGEND_ON_LEGEND_OFF_Params';
 
 const { base, inherit, mixin }            = require('utils');
 const Layer                               = require('core/layers/layer');
@@ -8,7 +9,6 @@ const WMSLayer                            = require('core/layers/map/wmslayer');
 const WMSTLayer                           = require('core/layers/map/wmstlayer');
 const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                            = require('core/layers/map/xyzlayer');
-const { get_LEGEND_ON_LEGEND_OFF_Params } = require('utils/geo');
 const GeoLayerMixin                       = require('core/layers/mixins/geo');
 
 /**

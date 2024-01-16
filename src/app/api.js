@@ -2,10 +2,82 @@
  * @file api file interface for external plugins
  */
 
-import G3W_CONSTANT from 'constant';
+import G3W_CONSTANT from 'app/constant';
 
 import ApplicationState from 'store/application-state';
 import ApplicationService from 'services/application';
+
+/**
+ * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
+ */
+import { GEOMETRY_TYPES, GEOMETRY_FIELDS }         from 'app/constant';
+import { addZValueToOLFeatureGeometry }            from 'utils/addZValueToOLFeatureGeometry';
+import { is3DGeometry }                            from 'utils/is3DGeometry';
+import { removeZValueToOLFeatureGeometry }         from 'utils/removeZValueToOLFeatureGeometry';
+import { sanitizeFidFeature }                      from 'utils/sanitizeFidFeature';
+import { getOLGeometry }                           from 'utils/getOLGeometry';
+import { isMultiGeometry }                         from 'utils/isMultiGeometry';
+import { getAllPointGeometryTypes }                from 'utils/getAllPointGeometryTypes';
+import { isPointGeometryType }                     from 'utils/isPointGeometryType';
+import { getAllLineGeometryTypes }                 from 'utils/getAllLineGeometryTypes';
+import { isLineGeometryType }                      from 'utils/isLineGeometryType';
+import { getAllPolygonGeometryTypes }              from 'utils/getAllPolygonGeometryTypes';
+import { isPolygonGeometryType }                   from 'utils/isPolygonGeometryType';
+import { coordinatesToGeometry }                   from 'utils/coordinatesToGeometry';
+import { getDefaultLayerStyle }                    from 'utils/getDefaultLayerStyle';
+import { createLayerStyle }                        from 'utils/createLayerStyle';
+import { createFeatureFromCoordinates }            from 'utils/createFeatureFromCoordinates';
+import { createFeatureFromBBOX }                   from 'utils/createFeatureFromBBOX';
+import { createFeatureFromGeometry }               from 'utils/createFeatureFromGeometry';
+import { createFeatureFromFeatureObject }          from 'utils/createFeatureFromFeatureObject';
+import { createOlLayer }                           from 'utils/createOlLayer';
+import { createWMSLayer }                          from 'utils/createWMSLayer';
+import { createVectorLayerFromFeatures }           from 'utils/createVectorLayerFromFeatures';
+import { createVectorLayerFromGeometry }           from 'utils/createVectorLayerFromGeometry';
+import { createVectorLayerFromFile }               from 'utils/createVectorLayerFromFile';
+import { createStyleFunctionToVectorLayer }        from 'utils/createStyleFunctionToVectorLayer';
+import { createSelectedStyle }                     from 'utils/createSelectedStyle';
+import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
+import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
+import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
+import { getQueryLayersPromisesByBBOX }            from 'utils/getQueryLayersPromisesByBBOX';
+import { getQueryLayersPromisesByGeometry }        from 'utils/getQueryLayersPromisesByGeometry';
+import { getQueryLayersPromisesByCoordinates }     from 'utils/getQueryLayersPromisesByCoordinates';
+import { transformBBOX }                           from 'utils/transformBBOX';
+import { parseQueryLayersPromiseResponses }        from 'utils/parseQueryLayersPromiseResponses';
+import { getMapLayerById }                         from 'utils/getMapLayerById';
+import { getMapLayersByFilter }                    from 'utils/getMapLayersByFilter';
+import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
+import { getFeaturesFromResponseVectorApi }        from 'utils/getFeaturesFromResponseVectorApi';
+import { convertVectorFeaturesToResultFeatures }   from 'utils/convertVectorFeaturesToResultFeatures';
+import { splitGeometryLine }                       from 'utils/splitGeometryLine';
+import { splitFeatures }                           from 'utils/splitFeatures';
+import { splitFeature }                            from 'utils/splitFeature';
+import { getPointFeaturesfromGeometryVertex }      from 'utils/getPointFeaturesfromGeometryVertex';
+import { getVertexLength }                         from 'utils/getVertexLength';
+import { isSameBaseGeometryType }                  from 'utils/isSameBaseGeometryType';
+import { isSingleGeometry }                        from 'utils/isSingleGeometry';
+import { singleGeometriesToMultiGeometry }         from 'utils/singleGeometriesToMultiGeometry';
+import { multiGeometryToSingleGeometries }         from 'utils/multiGeometryToSingleGeometries';
+import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
+import { dissolve }                                from 'utils/dissolve';
+import { within }                                  from 'utils/within';
+import { intersects }                              from 'utils/intersects';
+import { findSelfIntersects }                      from 'utils/findSelfIntersects';
+import { normalizeEpsg }                           from 'utils/normalizeEpsg';
+import { crsToCrsObject }                          from 'utils/crsToCrsObject';
+import { convertDMToDEG }                          from 'utils/convertDMToDEG';
+import { convertDEGToDM }                          from 'utils/convertDEGToDM';
+import { convertDMSToDEG }                         from 'utils/convertDMSToDEG';
+import { convertDEGToDMS }                         from 'utils/convertDEGToDMS';
+import { getGeoTIFFfromServer }                    from 'utils/getGeoTIFFfromServer';
+import { createOlFeatureFromApiResponseFeature }   from 'utils/createOlFeatureFromApiResponseFeature';
+import { parseAttributes }                         from 'utils/parseAttributes';
+import { handleQueryResponse }                     from 'utils/handleQueryResponse';
+import { distance }                                from 'utils/distance';
+import { squaredDistance }                         from 'utils/squaredDistance';
+import { closestOnSegment }                        from 'utils/closestOnSegment';
+import { get_LEGEND_ON_LEGEND_OFF_Params }         from 'utils/get_LEGEND_ON_LEGEND_OFF_Params';
 
 /**
  * Single File Components
@@ -39,13 +111,10 @@ import Mixins from 'mixins';
 
 const G3WObject = require('core/g3wobject');
 const utils = require('utils');
-const geoutils = require('utils/geo');
 const i18n = require('core/i18n/i18n.service');
 const Server = require('core/errors/parser/servererrorparser');
 const Session = require('core/editing/session');
 const Editor = require('core/editing/editor');
-const Geom = require('utils/geo');
-const { Geometry } = require('utils/geo');
 const Project = require('core/project/project');
 const LayersStoreRegistry = require('core/layers/layersstoresregistry');
 const LayersStore = require('core/layers/layersstore');
@@ -102,7 +171,8 @@ const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
 const g3wolutils = require('utils/ol');
 
-module.exports = {
+
+const g3wsdk = {
 
   // APP CONSTANTS
   constant: G3W_CONSTANT, // TODO: rename to "constants" which is more appropriate (in version 4.0)
@@ -111,7 +181,79 @@ module.exports = {
   core: {
     G3WObject,
     utils,
-    geoutils,
+    geoutils: {
+      geometryFields: GEOMETRY_FIELDS,
+      coordinatesToGeometry,
+      getDefaultLayerStyle,
+      createLayerStyle,
+      createFeatureFromCoordinates,
+      createFeatureFromBBOX,
+      createFeatureFromGeometry,
+      createFeatureFromFeatureObject,
+      createOlLayer,
+      createWMSLayer,
+      createVectorLayerFromGeometry,
+      createVectorLayerFromFeatures,
+      createVectorLayerFromFile,
+      createStyleFunctionToVectorLayer,
+      createSelectedStyle,
+      getAlphanumericPropertiesFromFeature,
+      getFormDataExpressionRequestFromFeature,
+      convertFeatureToGEOJSON,
+      getQueryLayersPromisesByBBOX,
+      getQueryLayersPromisesByGeometry,
+      getQueryLayersPromisesByCoordinates,
+      transformBBOX,
+      parseQueryLayersPromiseResponses,
+      getMapLayerById,
+      getMapLayersByFilter,
+      areCoordinatesEqual,
+      getFeaturesFromResponseVectorApi,
+      covertVectorFeaturesToResultFeatures: convertVectorFeaturesToResultFeatures,
+      splitGeometryLine,
+      splitFeatures,
+      splitFeature,
+      getPointFeaturesfromGeometryVertex,
+      getVertexLength,
+      isSameBaseGeometryType,
+      isSingleGeometry,
+      singleGeometriesToMultiGeometry,
+      multiGeometryToSingleGeometries,
+      convertSingleMultiGeometry,
+      dissolve,
+      within,
+      intersects,
+      findSelfIntersects,
+      normalizeEpsg,
+      crsToCrsObject,
+      ConvertDMToDEG: convertDMToDEG,
+      ConvertDEGToDM: convertDEGToDM,
+      ConvertDMSToDEG: convertDMSToDEG,
+      ConvertDEGToDMS: convertDEGToDMS,
+      getGeoTIFFfromServer,
+      createOlFeatureFromApiResponseFeature,
+      sanitizeFidFeature,
+      parseAttributes,
+      handleQueryResponse,
+      distance,
+      squaredDistance,
+      closestOnSegment,
+      get_LEGEND_ON_LEGEND_OFF_Params,
+      Geometry: {
+        GeometryTypes: GEOMETRY_TYPES,
+        removeZValueToOLFeatureGeometry,
+        addZValueToOLFeatureGeometry,
+        getOLGeometry,
+        isMultiGeometry,
+        getAllPointGeometryTypes,
+        isPointGeometryType,
+        getAllLineGeometryTypes,
+        isLineGeometryType,
+        getAllPolygonGeometryTypes,
+        isPolygonGeometryType,
+        is3DGeometry,
+      },
+    },
     ApplicationService,
     ApplicationState,
     ApiService,
@@ -137,10 +279,6 @@ module.exports = {
       Editor,
       ChangesManager
     },
-    geometry: {
-      Geom,
-      Geometry
-    },
     project: {
       ProjectsRegistry,
       Project
@@ -163,8 +301,6 @@ module.exports = {
       XYZLayer,
       MapLayer,
       geometry: {
-        Geometry,
-        geom: Geom /** @FIXME capitalize first letter (ie. "Geom") */
       },
       features: {
         Feature,
@@ -281,3 +417,9 @@ module.exports = {
   // G3W-CLIENT version
   version: G3W_CONSTANT.APP_VERSION
 };
+
+// BACKOMP v3.x
+g3wsdk.core.geometry       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+g3wsdk.core.layer.geometry = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+
+module.exports = g3wsdk;

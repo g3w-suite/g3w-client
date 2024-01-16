@@ -7,12 +7,11 @@
 /**
  * @FIXME remove weird import (utility functions should be stateles)
  */
-import ApplicationState from 'store/application-state';
-
-/**
- * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
- */
-// const { Geometry } = require('utils/geo');
+import ApplicationState                    from 'store/application-state';
+import { isMultiGeometry }                 from 'utils/isMultiGeometry';
+import { isLineGeometryType }              from 'utils/isLineGeometryType';
+import { isPolygonGeometryType }           from 'utils/isPolygonGeometryType';
+import { multiGeometryToSingleGeometries } from 'utils/multiGeometryToSingleGeometries';
 
 const INCHES_PER_UNIT = {
   m: 39.37, //
@@ -100,16 +99,11 @@ const utils = {
       //return projection.getUnits() === 'degrees';
     },
     getLengthMessageText({unit, projection, geometry}={}){
-      /**
-       * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
-       */
-      const { Geometry } = require('utils/geo');
-      //
       const geometryType = geometry.getType();
       const useSphereMethods = this.needUseSphereMethods(projection);
       const length = useSphereMethods ? ol.sphere.getLength(geometry, {
         projection: projection.getCode()
-      }) : Geometry.isMultiGeometry(geometryType) ?
+      }) : isMultiGeometry(geometryType) ?
         geometry.getLineStrings().reduce((totalLength, lineGeometry) => totalLength+= lineGeometry.getLength(), 0)
         : geometry.getLength();
       let message;
@@ -151,22 +145,17 @@ const utils = {
       return message;
     },
     formatMeasure({geometry, projection}={}, options={}){
-      /**
-       * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
-       */
-      const { Geometry, multiGeometryToSingleGeometries } = require('utils/geo');
-      //
       const geometryType = geometry.getType();
       const unit = this.getCurrentMapUnit();
-      if (Geometry.isLineGeometryType(geometryType)) {
+      if (isLineGeometryType(geometryType)) {
         return this.getLengthMessageText({
           unit,
           projection,
           geometry
         });
-      } else if (Geometry.isPolygonGeometryType(geometryType)){
+      } else if (isPolygonGeometryType(geometryType)){
         let segments;
-        if (Geometry.isMultiGeometry(geometryType)) {
+        if (isMultiGeometry(geometryType)) {
           segments = [];
           multiGeometryToSingleGeometries(geometry).forEach(geometry => {
             geometry.getLinearRing().getCoordinates().forEach(coordinates => segments.push(coordinates))
