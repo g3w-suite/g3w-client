@@ -111,11 +111,6 @@ function PluginsRegistry() {
    * @param ready //TODO used ???
    */
   this.removeLoadingPlugin = function(plugin, ready) {
-  /**
-   * @param plugin
-   * @param ready
-   */
-  this.removeLoadingPlugin = function(plugin, ready) {
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
