@@ -112,9 +112,10 @@ proto.getGitInfo = function(git) {
  * @return {string}
  */
 proto.getInfo = function() {
-  // (`    - ${p[0]}: __${PluginsRegistry.getPlugin(p[0]).getInfo()}__`)
-  return `${this.getVersion()}${this._git 
-    ? `[${this._git.branch}][${this._git.commit}]`: ''}`;
+  return `${this._git 
+    ? `${this._git.branch}-${this._git.commit}`
+    : `${this.getVersion()}`
+  }`;
 }
 
 proto.setLocale = function(i18n) {

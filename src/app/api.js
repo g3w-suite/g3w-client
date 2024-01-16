@@ -291,9 +291,9 @@ module.exports = {
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
-- g3w-client: __${G3W_CONSTANT.APP_VERSION}${__git__ 
-   ? `[${__git__.branch}][${__git__.commit}]__` 
-   : '__'}
+- g3w-client: __${__git__ 
+   ? `${__git__.branch}-${__git__.commit}__` 
+   : `${G3W_CONSTANT.APP_VERSION}__`}
 - plugins:\n${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${PluginsRegistry.getPlugin(p[0]).getInfo()}__`)).join('\n')}
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
