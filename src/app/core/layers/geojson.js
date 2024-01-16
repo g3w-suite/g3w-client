@@ -13,21 +13,16 @@ inherit(GeojsonLayer, VectorLayer);
 const proto = GeojsonLayer.prototype;
 
 proto.getMapLayer = function() {
-  if (this._mapLayer) return this._mapLayer;
-  const url = this.get('source').url;
-  const name = this.getName();
-  const id = this.getId();
-  const style = this.get('style');
-  const provider = this.getProvider('data');
-  const options = {
-    url,
-    projection: this.getProjection().getCode(),
-    id,
-    name,
-    style,
-    provider
-  };
-  this._mapLayer = new GeojsonMapLayer(options);
+  if (!this._mapLayer) {
+    this._mapLayer = new GeojsonMapLayer({
+      url:        this.get('source').url,
+      projection: this.getProjection().getCode(),
+      id:         this.getId(),
+      name:       this.getName(),
+      style:      this.get('style'),
+      provider:   this.getProvider('data')
+    });
+  }
   return this._mapLayer;
 };
 
