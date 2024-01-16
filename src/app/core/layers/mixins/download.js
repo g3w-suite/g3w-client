@@ -112,10 +112,13 @@ export default {
     })
   },
   /**
-   * @since 3.10.0
    * Get csv layer format
+   * 
    * @param data
+   * 
    * @returns {Promise | Promise<unknown>}
+   * 
+   * @since 3.10.0
    */
   getPdf({ data = {} } = {}) {
     data.filtertoken = this.getFilterToken();
