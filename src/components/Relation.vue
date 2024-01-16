@@ -156,7 +156,9 @@
               />
             </td>
             <template v-else>
-              <td v-for="value in row"><field :state="{value:value}"/></td>
+              <td v-for="value in row">
+                <field :state="{value:value}"/>
+              </td>
             </template>
 
           </tr>
@@ -351,10 +353,11 @@ export default {
           autoWidth:      false,
         });
         this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
+
       }
 
       // resize after popping child relation 
-      GUI.on('pop-content', this.resize);
+      GUI.on('pop-content', setTimeout(() => this.resize()));
     },
 
     /**
@@ -380,7 +383,7 @@ export default {
         - $('.dataTables_scrollHead').last()             .outerHeight()
       );
 
-      /** @FIXME add description */
+      /** In case of layer that has form Structure s */
       if (this.table.rowFormStructure) {
         $('.row-wrap-tabs > .tabs-wrapper').width(
           table.width()

@@ -11,7 +11,7 @@ const G3WObject = require('core/g3wobject');
 
 /**
  * 'law' project configuration on project is handle as plugin
- * 
+ *
  * @type {string[]}
  */
 const OTHERPLUGINS = ['law'];
@@ -22,7 +22,7 @@ function PluginsRegistry() {
 
   /**
    * Object where store plugin
-   *   key   = plugin name 
+   *   key   = plugin name
    *   value = plugin instance
    */
   this._plugins = {};
@@ -38,14 +38,14 @@ function PluginsRegistry() {
   this.pluginsConfigs = {};
 
   /**
-   * Store array of plugin loaded url 
+   * Store array of plugin loaded url
    */
   this._loadedPluginUrls = [];
 
   this.setters = {
 
     /**
-     * Setter method to register plugin (called by every plugin when all is ready)  
+     * Setter method to register plugin (called by every plugin when all is ready)
      */
     registerPlugin(plugin) {
       // store plugin into registry (if not already registered )
@@ -68,7 +68,7 @@ function PluginsRegistry() {
   // initialize plugin
   //call by applications.js services folder
   this.init = function(options={}) {
-    return new Promise(async (resolve, reject) =>{
+    return new Promise(async (resolve, reject) => {
       //get plugin loading urls
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations
@@ -111,20 +111,23 @@ function PluginsRegistry() {
    * @param ready //TODO used ???
    */
   this.removeLoadingPlugin = function(plugin, ready) {
+  /**
+   * @param plugin
+   * @param ready
+   */
+  this.removeLoadingPlugin = function(plugin, ready) {
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
   /**
    * @returns {Promise<{-readonly [P in keyof Promise<unknown>[]]: PromiseSettledResult<Awaited<Promise<unknown>[][P]>>}>}
-   * 
+   *
    * @private
    */
   this._loadPlugins = function() {
-    const pluginLoadPromises = Object
+    return Promise.allSettled(Object
       .entries(this.pluginsConfigs)
-      .map(([name, pluginConfig]) => this._setup(name, pluginConfig));
-
-    return Promise.allSettled(pluginLoadPromises)
+      .map(([name, pluginConfig]) => this._setup(name, pluginConfig)));
   };
 
   /**
@@ -162,12 +165,12 @@ function PluginsRegistry() {
 
   /**
    * Reaload plugin in case of change map
-   * 
+   *
    * @deprecated since 3.7
-   * 
+   *
    * @param initConfig
    * @param project
-   * 
+   *
    * @returns { Promise<unknown> }
    */
   this.reloadPlugins = function(initConfig, project) {
@@ -200,32 +203,31 @@ function PluginsRegistry() {
         const plugins = await this._loadPlugins();
         resolve(plugins);
       } catch(error) {
-        reject(error)
+        reject(error);
       }
     })
   };
 
   /**
    * Set plugin config only filtered by gid configuration
-   * 
+   *
    * @param config
    */
   this.setPluginsConfig = function(config={}) {
     const enabledPluginConfig = {};
     Object.entries(config)
       .filter(([,pluginConfig]) => pluginConfig.gid === this.gidProject)
-      .forEach(([pluginName, pluginConfig]) =>enabledPluginConfig[pluginName] = pluginConfig);
-
+      .forEach(([pluginName, pluginConfig]) => enabledPluginConfig[pluginName] = pluginConfig);
     this.pluginsConfigs = enabledPluginConfig;
   };
 
   /**
-   * Load an external script
-   * 
+   * Method to load external script
+   *
    * @param url
-   * 
+   *
    * @returns {*}
-   * 
+   *
    * @private
    */
   this._loadScript = function(url) {
@@ -234,12 +236,12 @@ function PluginsRegistry() {
 
   /**
    * Load/Setup plugin script
-   * 
+   *
    * @param name
    * @param pluginConfig
-   * 
+   *
    * @returns {Promise<unknown>}
-   * 
+   *
    * @private
    */
   this._setup = function(name, pluginConfig) {
@@ -281,14 +283,14 @@ function PluginsRegistry() {
           reject();
         }
       } else {
-        resolve()
+        resolve();
       }
     })
   };
 
   /**
    * @param pluginName
-   * 
+   *
    * @returns <Object> Plugin configuration server object
    */
   this.getPluginConfig = function(pluginName) {
@@ -304,7 +306,7 @@ function PluginsRegistry() {
 
   /**
    * @param pluginName
-   * 
+   *
    * @returns Plugin instance
    */
   this.getPlugin = function(pluginName) {
@@ -313,9 +315,9 @@ function PluginsRegistry() {
 
   /**
    * Check if a plugin is in configuration and will be added to application
-   * 
+   *
    * @param pluginName
-   * 
+   *
    * @returns { boolean }
    */
   this.isPluginInConfiguration = function(pluginName) {
@@ -324,7 +326,7 @@ function PluginsRegistry() {
 
   /**
    * @param pluginName
-   * 
+   *
    * @returns plugin Configuration
    */
   this.isTherePlugin = function(pluginName) {
