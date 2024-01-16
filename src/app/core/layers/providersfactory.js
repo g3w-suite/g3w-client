@@ -2,6 +2,7 @@ import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'constant';
 import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
+import { get_legend_params }       from 'utils/get_legend_params';
 
 const G3WObject                    = require('core/g3wobject');
 const {
@@ -10,10 +11,7 @@ const {
   toRawType,
   getTimeoutPromise,
 }                                  = require('utils');
-const {
-  handleQueryResponse,
-  get_LEGEND_ON_LEGEND_OFF_Params, 
-}                                  = require('utils/geo');
+const { handleQueryResponse }      = require('utils/geo');
 const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
@@ -524,7 +522,7 @@ const Providers = {
       layers
         .forEach(layer => {
           if (layer.getCategories()) {
-            const { LEGEND_ON, LEGEND_OFF } = get_LEGEND_ON_LEGEND_OFF_Params(layer);
+            const { LEGEND_ON, LEGEND_OFF } = get_legend_params(layer);
             if (LEGEND_ON)  LEGEND_PARAMS.LEGEND_ON.push(LEGEND_ON);
             if (LEGEND_OFF) LEGEND_PARAMS.LEGEND_OFF.push(LEGEND_OFF);
           }
