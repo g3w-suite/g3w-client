@@ -509,6 +509,9 @@ proto.hasAxisInverted = function() {
   return axisOrientation.substr(0, 2) === 'ne';
 };
 
+/**
+ * @virtual method need to be implemented by subclasses
+ */
 proto.getMapLayer = function() {
   console.log('overwrite by single layer')
 };

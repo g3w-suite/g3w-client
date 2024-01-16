@@ -1842,84 +1842,70 @@ proto._setupAllLayers = function() {
 
 //SETUP BASELAYERS
 proto._setupBaseLayers = function() {
-  const baseLayers = getMapLayersByFilter({
-    BASELAYER: true
-  });
-  if (!baseLayers.length) return;
-  baseLayers.forEach(layer => {
-    const baseMapLayer = layer.getMapLayer();
-    this.registerMapLayerListeners(baseMapLayer);
-    this.mapBaseLayers[layer.getId()] = baseMapLayer;
-  });
-  const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
-  reverseBaseLayers.forEach(baseMapLayer => {
-    baseMapLayer.update(this.state, this.layersExtraParams);
-    this.addLayerToMap(baseMapLayer)
+  const layers = getMapLayersByFilter({ BASELAYER: true });
+  layers
+    .forEach(layer => {
+      const base = layer.getMapLayer();
+      this.registerMapLayerListeners(base);
+      this.mapBaseLayers[layer.getId()] = base;
+    });
+  Object
+    .values(layers.length ? this.mapBaseLayers : {})
+    .reverse()
+    .forEach(layer => {
+      layer.update(this.state, this.layersExtraParams);
+      this.addLayerToMap(layer);
   });
 };
 
-//SETUP MAPLAYERS
+// SETUP MAPLAYERS
 proto._setupMapLayers = function() {
   // get all geolayers exclude baselayers and eventually vector layers
-  const layers = getMapLayersByFilter({
-    BASELAYER: false,
-    VECTORLAYER: false
-  });
+  const layers = getMapLayersByFilter({ BASELAYER: false, VECTORLAYER: false });
+
   this._setMapProjectionToLayers(layers);
-  //group layer by mutilayer (multilayer property of layer on project configuration)
-  // nee to split time series to group to speed up eventualli time seriesries loading of single layer
-  let qtimeseries_multilayerid_split_values = {};
-  const multiLayers = _.groupBy(layers, layer => {
-    let multiLayerId = layer.getMultiLayerId();
-    if (layer.isQtimeseries()) {
-      qtimeseries_multilayerid_split_values[multiLayerId] = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ? 0 : qtimeseries_multilayerid_split_values[multiLayerId] + 1;
-      multiLayerId = `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId]}`;
-    } else multiLayerId = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ?
-      multiLayerId : `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId] + 1}`;
-    return multiLayerId;
-  });
-  qtimeseries_multilayerid_split_values = null; // delete to garbage collector
+
+  let cache     = {};
   let mapLayers = [];
-  Object.entries(multiLayers).forEach(([id, layers]) => {
-    const multilayerId = `layer_${id}`;
-    let mapLayer;
-    const layer = layers[0] || [];
-    if (layers.length === 1) {
-      mapLayer = layer.getMapLayer({
-        id: multilayerId,
-        projection: this.getProjection(),
-        /**
-         * @since 3.7.11
-         */
-        format: layer.getSource() && layer.getSource().format
-      }, {});
-      mapLayer.addLayer(layer);
-      mapLayers.push(mapLayer)
-    } else {
-      mapLayer = layer.getMapLayer({
-        id: multilayerId,
-        projection: this.getProjection()
-      }, this.layersExtraParams);
-      layers.reverse().forEach(sub_layer => mapLayer.addLayer(sub_layer));
+
+  Object
+    .entries(
+      // Group layers by multilayer property (from project config)
+      // to speed up "qtimeseriesries" loading for single layers
+      _.groupBy(layers, layer => {
+        let id = layer.getMultiLayerId();
+        if (layer.isQtimeseries()) {
+          cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
+          return `${id}_${cache[id]}`;
+        }
+        return id = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
+      })
+    )
+    .forEach(([id, layers]) => {
+      const layer    = layers[0] || [];
+      const mapLayer = layer.getMapLayer(
+        {
+          id: `layer_${id}`,
+          projection: this.getProjection(),
+          /** @since 3.9.1 */
+          format: 1 === layers.length ? layer.getFormat() : null
+        },
+        1 === layers.length ? {} : this.layersExtraParams
+      );
+      layers.reverse().forEach(l => mapLayer.addLayer(l));
       mapLayers.push(mapLayer);
-    }
-    this.registerMapLayerListeners(mapLayer);
-  });
+      this.registerMapLayerListeners(mapLayer);
+    });
+
   this.addMapLayers(mapLayers);
   this.updateMapLayers();
-  return mapLayers;
 };
 
 //SETUP VECTORLAYERS
 proto._setupVectorLayers = function() {
-  const layers = getMapLayersByFilter({
-    VECTORLAYER: true
-  });
+  const layers = getMapLayersByFilter({ VECTORLAYER: true });
   this._setMapProjectionToLayers(layers);
-  layers.forEach(layer => {
-    const mapVectorLayer = layer.getMapLayer();
-    this.addLayerToMap(mapVectorLayer)
-  })
+  layers.forEach(layer => { this.addLayerToMap(layer.getMapLayer()) })
 };
 
 proto._setUpDefaultLayers = function() {
@@ -1990,8 +1976,12 @@ proto.addLayerToMap = function(layer) {
   olLayer && this.getMap().addLayer(olLayer);
 };
 
+/**
+ * Setup mapProjection on each layer
+ * 
+ * @param { Array } layers
+ */
 proto._setMapProjectionToLayers = function(layers) {
-  // setup mapProjection on ech layers
   layers.forEach(layer => layer.setMapProjection(this.getProjection()));
 };
 
@@ -2008,26 +1998,24 @@ proto.createMapLayer = function(layer) {
 
 proto.getOverviewMapLayers = function(project) {
   const WMSLayer = require('core/layers/map/wmslayer');
-  const projectLayers = project.getLayersStore().getLayers({
-    GEOLAYER: true,
-    BASELAYER: false,
-  });
-  const multiLayers = _.groupBy(projectLayers,layer => layer.getMultiLayerId());
-  let overviewMapLayers = [];
+  let layers = [];
 
-  Object.entries(multiLayers).forEach(([id, layers]) => {
-    const multilayerId = 'overview_layer_'+id;
-    const tiled = layers[0].state.tiled;
-    const config = {
-      url: project.getWmsUrl(),
-      id: multilayerId,
-      tiled: tiled
-    };
-    const mapLayer = new WMSLayer(config);
-    layers.reverse().forEach(layer => mapLayer.addLayer(layer));
-    overviewMapLayers.push(mapLayer.getOLLayer(true));
-  });
-  return overviewMapLayers.reverse();
+  Object
+    .entries(
+      _.groupBy(
+        project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false }),
+        layer => layer.getMultiLayerId()
+      )
+    ).forEach(([id, layers]) => {
+      const mapLayer = new WMSLayer({
+        url:   project.getWmsUrl(),
+        id:    'overview_layer_' + id,
+        tiled: layers[0].state.tiled,
+      });
+      layers.reverse().forEach(layer => mapLayer.addLayer(layer));
+      layers.push(mapLayer.getOLLayer(true));
+    });
+  return layers.reverse();
 };
 
 /**
@@ -2692,7 +2680,7 @@ proto.addExternalWMSLayer = function({
   return new Promise((resolve, reject) => {
     const { wmslayer, olLayer } = createWMSLayer({ name, url, layers, projection });
 
-    wmslayer.once('loadend', () => { resolve(wmslayer) });
+    wmslayer.once('loadend',   ()  => { resolve(wmslayer) });
     wmslayer.once('loaderror', err => { reject(err); });
 
     // add to map

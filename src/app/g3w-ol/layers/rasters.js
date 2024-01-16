@@ -25,25 +25,22 @@ const loadImageTileFunction = function({method='GET', type='image', sourceOption
 };
 
 RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
-  const options = {
-    layerObj: layerObj,
+  return RasterLayers._WMSLayer({
+    layerObj,
     extraParams: extraParams || {},
     tiled: true
-  };
-  return RasterLayers._WMSLayer(options);
+  });
 };
 
 RasterLayers.WMSLayer = function(layerObj, extraParams={}, method='GET'){
-  const options = {
+  return RasterLayers._WMSLayer({
     layerObj,
     extraParams,
-    method
-  };
-  return RasterLayers._WMSLayer(options);
+    method,
+  });
 };
 
 RasterLayers.WMTSLayer = function(layerObj, extraParams){
-  const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
   return new ol.layer.Tile({
     opacity: 1,
     source: new ol.source.WMTS(options)
@@ -116,7 +113,7 @@ RasterLayers._WMSLayer = function(options={}) {
    * 
    * @since 3.7.11
    */
-  if ("undefined" !== typeof format) {
+  if (undefined !== format) {
     params.FORMAT = format
   }
 
