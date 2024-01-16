@@ -77,7 +77,7 @@ import { handleQueryResponse }                     from 'utils/handleQueryRespon
 import { distance }                                from 'utils/distance';
 import { squaredDistance }                         from 'utils/squaredDistance';
 import { closestOnSegment }                        from 'utils/closestOnSegment';
-import { get_LEGEND_ON_LEGEND_OFF_Params }         from 'utils/get_LEGEND_ON_LEGEND_OFF_Params';
+import { get_legend_params }                       from 'utils/get_legend_params';
 
 /**
  * Single File Components
@@ -238,7 +238,7 @@ const g3wsdk = {
       distance,
       squaredDistance,
       closestOnSegment,
-      get_LEGEND_ON_LEGEND_OFF_Params,
+      get_LEGEND_ON_LEGEND_OFF_Params: get_legend_params,
       Geometry: {
         GeometryTypes: GEOMETRY_TYPES,
         removeZValueToOLFeatureGeometry,
