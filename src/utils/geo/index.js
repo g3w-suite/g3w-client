@@ -4,21 +4,24 @@
  * @since 3.9.0
  */
 
-import CONSTANT                from 'app/constant';
-import MapLayersStoresRegistry from 'store/map-layers';
-import GUI                     from 'services/gui';
+import CONSTANT                    from 'app/constant';
+import { getMapLayerById }         from 'utils/getMapLayerById';
+import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
+import { toRawType }               from 'utils/toRawType';
+import { uniqueId }                from 'utils/getUniqueDomId';
+import { get_legend_params }       from 'utils/get_legend_params';
+import GUI                         from 'services/gui';
 
-const { toRawType, uniqueId }      = require('utils');
 const WMSLayer                     = require('core/layers/map/wmslayer');
 const Filter                       = require('core/layers/filter/filter');
 const { response: responseParser } = require('utils/parsers');
 
-const geometryFields = CONSTANT.GEOMETRY_FIELDS;
+const geometryFields               = CONSTANT.GEOMETRY_FIELDS;
 const {
   QUERY_POINT_TOLERANCE,
   G3W_FID,
   GEOMETRY_TYPES: GeometryTypes
-}                   = CONSTANT;
+}                                  = CONSTANT;
 
 const Geometry = {
 
@@ -1213,23 +1216,8 @@ const geoutils = {
     return results;
   },
 
-  getMapLayerById(layerId) {
-    return MapLayersStoresRegistry.getLayerById(layerId);
-  },
-
-  //return mapLayer based on filter (properties of layer. Es GEOLAYER etc..)
-  //Default values geolayer
-  getMapLayersByFilter(filter={}, options={}) {
-    filter = {
-      GEOLAYER: true,
-      ...filter
-    };
-    let layers = [];
-    MapLayersStoresRegistry.getQuerableLayersStores().forEach(layerStore => {
-      layers = layerStore.getLayers(filter, options);
-    });
-    return layers || [];
-  },
+  getMapLayerById,
+  getMapLayersByFilter,
 
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
@@ -1947,29 +1935,8 @@ const geoutils = {
     }
     return [x, y];
   },
-  get_LEGEND_ON_LEGEND_OFF_Params(layer) {
-    let LEGEND_ON, LEGEND_OFF;
-    (layer.getCategories() || [])
-      .forEach(({
-        checked,  // new Value
-        _checked, // old Value
-        ruleKey
-      }) => {
-        // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)
-        if (checked === _checked) {
-          return;
-        }
-        if (checked) {
-          LEGEND_ON  = (undefined === LEGEND_ON ? `${layer.getWMSLayerName()}:` : `${LEGEND_ON},`) + ruleKey;
-        } else {
-          LEGEND_OFF = (undefined === LEGEND_OFF ? `${layer.getWMSLayerName()}:` : `${LEGEND_OFF},`) + ruleKey;
-        }
-      });
-    return {
-      LEGEND_ON,
-      LEGEND_OFF,
-    }
-  },
+
+  get_LEGEND_ON_LEGEND_OFF_Params: get_legend_params,
 
   /**
    * @TODO remove "Geometry" sub-property (ie. find out how to merge the following functions)
