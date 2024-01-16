@@ -119,12 +119,16 @@ proto.getInfo = function() {
 }
 
 proto.setLocale = function(i18n) {
-  if (i18n && this.name) addI18nPlugin({ name: this.name, config: i18n});
+  if (i18n && this.name) {
+    addI18nPlugin({ name: this.name, config: i18n});
+  }
 };
 
 proto.setService = function(service) {
   this.service = service;
-  if (service) service.setPlugin(this);
+  if (service) {
+    service.setPlugin(this);
+  }
 };
 
 proto.getService = function() {
@@ -405,7 +409,7 @@ proto.createSideBarComponent = function(
 proto.unload  = function() {
   this.service && this.service.clearAllEvents();
   this.emit('unload');
-  //console.log('UNLOAD can be overwrite by plugin');
+  //console.log('UNLOAD can be overwritten by plugin');
 };
 
 /**
