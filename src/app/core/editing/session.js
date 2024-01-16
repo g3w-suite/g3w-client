@@ -1,15 +1,14 @@
 import MapLayersStoresRegistry from 'store/map-layers';
 import SessionsRegistry        from 'store/sessions';
-import { is3DGeometry } from 'utils/is3DGeometry';
+import { is3DGeometry }        from 'utils/is3DGeometry';
 
 const {
   base,
   inherit
-}                                   = require('utils');
-const G3WObject                     = require('core/g3wobject');
-const History                       = require('core/editing/history');
-const Layer                         = require('core/layers/layer');
-const { Geometry: { is3DGeometry }} = require('utils/geo');
+}                              = require('utils');
+const G3WObject                = require('core/g3wobject');
+const History                  = require('core/editing/history');
+const Layer                    = require('core/layers/layer');
 
 function Session(options={}) {
   this.setters = {
