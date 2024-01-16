@@ -24,7 +24,7 @@ export default {
       case 'gpx':       return this.getGpx({data, options});
       case 'gpkg':      return this.getGpkg({data, options});
       case 'geotiff':   return this.getGeoTIFF({ data, options });
-      case 'pdf':       return this.getGeoTIFF({ data, options });
+      case 'pdf':       return this.getPdf({ data, options });
     }
   },
 
