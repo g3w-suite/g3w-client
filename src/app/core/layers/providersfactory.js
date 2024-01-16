@@ -1,9 +1,9 @@
-import ApplicationState                    from 'store/application-state';
-import RelationsService                    from 'services/relations';
-import { QUERY_POINT_TOLERANCE }           from 'app/constant';
-import { QgsFilterToken }                  from 'core/layers/utils/QgsFilterToken';
-import { handleQueryResponse }             from 'utils/handleQueryResponse';
-import { get_LEGEND_ON_LEGEND_OFF_Params } from 'utils/get_LEGEND_ON_LEGEND_OFF_Params';
+import ApplicationState            from 'store/application-state';
+import RelationsService            from 'services/relations';
+import { QUERY_POINT_TOLERANCE }   from 'app/constant';
+import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
+import { handleQueryResponse }     from 'utils/handleQueryResponse';
+import { get_legend_params }       from 'utils/get_legend_params';
 
 const G3WObject                    = require('core/g3wobject');
 const {
@@ -522,7 +522,7 @@ const Providers = {
       layers
         .forEach(layer => {
           if (layer.getCategories()) {
-            const { LEGEND_ON, LEGEND_OFF } = get_LEGEND_ON_LEGEND_OFF_Params(layer);
+            const { LEGEND_ON, LEGEND_OFF } = get_legend_params(layer);
             if (LEGEND_ON)  LEGEND_PARAMS.LEGEND_ON.push(LEGEND_ON);
             if (LEGEND_OFF) LEGEND_PARAMS.LEGEND_OFF.push(LEGEND_OFF);
           }

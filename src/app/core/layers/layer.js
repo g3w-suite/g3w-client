@@ -1257,6 +1257,17 @@ proto.getStyleFeatureCount = async function(style) {
 };
 
 /**
+ * @returns { string } layer format (eg. 'image/png') 
+ * 
+ * @since 3.9.1
+ */
+proto.getFormat = function() {
+  return this.config.format ||
+    ProjectsRegistry.getCurrentProject().getWmsGetmapFormat() ||
+    'image/png'
+};
+
+/**
  * [LAYER SELECTION]
  *
  * Base on boolean value create a filter token from server

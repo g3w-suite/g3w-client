@@ -36,21 +36,16 @@ proto.getEditingGeometryType = function() {
 };
 
 proto.getMapLayer = function() {
-  if (this._mapLayer)
-    return this._mapLayer;
-  const id = this.getId();
-  const geometryType =  this.getGeometryType();
-  const color = this.getColor();
-  const style = this.isEditingLayer() ? this.getEditingStyle() : this.getCustomStyle();
-  const provider = this.getProvider('data');
-  this._mapLayer = new VectorMapLayer({
-    id,
-    geometryType,
-    color,
-    style,
-    provider,
-    features: this._editor && this._editor.getEditingSource().getFeaturesCollection()
-  });
+  if (!this._mapLayer) {
+      this._mapLayer = new VectorMapLayer({
+      id:           this.getId(),
+      geometryType: this.getGeometryType(),
+      color:        this.getColor(),
+      style:        this.isEditingLayer() ? this.getEditingStyle() : this.getCustomStyle(),
+      provider:     this.getProvider('data'),
+      features:     this._editor && this._editor.getEditingSource().getFeaturesCollection()
+    });
+  }
   return this._mapLayer;
 };
 
