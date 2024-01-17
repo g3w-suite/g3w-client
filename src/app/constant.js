@@ -18,7 +18,8 @@ import version from '../version';
 export const APP_VERSION = version;
 
 /**
- * Default editing capabilities 
+ * Default editing capabilities
+ * @deprecated  Will be removed in 4.x. Moved to g3w-client-plugin-editing
  * 
  * @type {string[]}
  */
