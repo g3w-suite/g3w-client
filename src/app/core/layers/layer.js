@@ -574,6 +574,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
  * @param { Array }     opts.field     - Array of object with type of suggest (see above)
  * @param opts.unique
  * @param opts.fformatter
+ * @param opts.ffield
  * @param opts.queryUrl
  * @param opts.ordering
 
@@ -584,6 +585,7 @@ proto.getFilterData = async function({
   field,
   unique,
   fformatter, //@since v3.9
+  ffield,     //@since 3.9.1
   formatter = 1,
   queryUrl,
   ordering,
@@ -599,6 +601,7 @@ proto.getFilterData = async function({
       formatter,
       unique,
       fformatter,
+      ffield,
     });
 };
 
@@ -1303,6 +1306,17 @@ proto.getStyleFeatureCount = async function(style) {
     }
   }
   return this.state.stylesfeaturecount[style];
+};
+
+/**
+ * @returns { string } layer format (eg. 'image/png') 
+ * 
+ * @since 3.9.1
+ */
+proto.getFormat = function() {
+  return this.config.format ||
+    ProjectsRegistry.getCurrentProject().getWmsGetmapFormat() ||
+    'image/png'
 };
 
 /**
