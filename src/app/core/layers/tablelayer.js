@@ -1,4 +1,3 @@
-import { DEFAULT_EDITING_CAPABILITIES } from 'app/constant';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import ProjectsRegistry                 from 'store/projects';
 
@@ -159,19 +158,19 @@ function TableLayer(config = {}, options = {}) {
         .then(async ({
           vector,
           constraints = {},
-          capabilities = DEFAULT_EDITING_CAPABILITIES,
+          capabilities,
         } = {}) => {
+          await _waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'));    // wait unitil "editing" plugin is loaded
           this.config.editing.fields       = vector.fields;
           this.config.editing.format       = vector.format;
           this.config.editing.constraints  = constraints;
-          this.config.editing.capabilities = capabilities; // set default editing capabilities
+          this.config.editing.capabilities = capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES; // set default editing capabilities
           this.config.editing.form = { perc: null };       // set editing form `perc` to null at beginning
           this.config.editing.style = vector.style;        // get vector layer style
           if (vector.style) {                              // set vector layer color 
             this.setColor(vector.style.color);
           }
           this._setOtherConfigParameters(vector);
-          await _waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'));    // wait unitil "editing" plugin is loaded
           this._editor = new window.g3wsdk.core.editing.Editor({ layer: this }); // create an instance of editor
           resolve(this);
           this.setReady(true);                             // set ready
