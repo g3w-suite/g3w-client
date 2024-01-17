@@ -21,9 +21,7 @@ const _cloneDeep = require('lodash.clonedeep');
 function _waitFor(predicate, timeout) {
   return new Promise((resolve, reject) => {
     const check = () => {
-      // console.log('checking', predicate());
       if (!predicate()) return;
-      console.log('predicate', predicate());
       clearInterval(interval);
       resolve();
     };
