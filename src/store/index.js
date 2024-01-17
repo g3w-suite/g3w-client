@@ -9,7 +9,6 @@ import ControlsRegistry from './map-controls';
 import LayersStoresRegistry from './map-layers';
 import PluginsRegistry from './plugins';
 import ProjectsRegistry from './projects';
-import SessionsRegistry from './sessions';
 
 /**
  * @FIXME importing directly from this file breaks application
@@ -22,5 +21,4 @@ export {
   LayersStoresRegistry,
   PluginsRegistry,
   ProjectsRegistry,
-  SessionsRegistry,
 };
