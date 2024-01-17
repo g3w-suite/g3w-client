@@ -1,3 +1,4 @@
+import { TIMEOUT }                        from "constant";
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import ProjectsRegistry                 from 'store/projects';
 
@@ -160,7 +161,7 @@ function TableLayer(config = {}, options = {}) {
           constraints = {},
           capabilities,
         } = {}) => {
-          await _waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'));    // wait unitil "editing" plugin is loaded
+          await _waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait unitil "editing" plugin is loaded
           this.config.editing.fields       = vector.fields;
           this.config.editing.format       = vector.format;
           this.config.editing.constraints  = constraints;
