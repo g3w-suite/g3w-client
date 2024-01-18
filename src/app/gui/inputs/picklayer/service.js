@@ -2,7 +2,7 @@ import MapLayersStoresRegistry                 from 'store/map-layers';
 import GUI                                     from 'services/gui';
 import { getQueryLayersPromisesByCoordinates } from 'utils/getQueryLayersPromisesByCoordinates';
 
-const PickFeatureInteraction = require('g3w-ol/interactions/pickfeatureinteraction');
+const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 function PickLayerService(options={}) {

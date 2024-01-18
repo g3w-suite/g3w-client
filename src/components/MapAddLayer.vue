@@ -86,7 +86,7 @@ import { createStyleFunctionToVectorLayer } from 'utils/createStyleFunctionToVec
 const Projections = require('g3w-ol/projection/projections');
 
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
-const CSV_SEPARATORS = [',', ';'];
+const CSV_SEPARATORS   = [',', ';'];
 
 //Vue color componet
 ChromeComponent.mounted = async function() {

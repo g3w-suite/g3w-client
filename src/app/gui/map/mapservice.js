@@ -24,7 +24,6 @@ const {
   createFilterFromString,
 }                               = require('utils');
 const G3WObject                 = require('core/g3wobject');
-
 const BaseLayers                = require('g3w-ol/layers/bases');
 const VectorLayer               = require('core/layers/vectorlayer');
 

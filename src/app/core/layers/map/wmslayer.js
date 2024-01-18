@@ -1,4 +1,4 @@
-import ApplicationState                    from 'store/application-state';
+import ApplicationState      from 'store/application-state';
 import { get_legend_params } from 'utils/get_legend_params';
 
 const { base, inherit } = require('utils');

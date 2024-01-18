@@ -1,5 +1,5 @@
-import ProjectsRegistry                    from 'store/projects';
-import ApplicationService                  from 'services/application';
+import ProjectsRegistry                   from 'store/projects';
+import ApplicationService                 from 'services/application';
 import { get_legend_params }              from 'utils/get_legend_params';
 
 const { base, inherit, mixin }            = require('utils');
