@@ -1,5 +1,5 @@
 /**
- * Transform length meter in a specific unti (ex.nautilcal mile)
+ * Transform length meter in a specific unit (ex.nautical mile)
  * 
  * @param length
  * @param tounit

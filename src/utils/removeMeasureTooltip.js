@@ -13,4 +13,4 @@ export function removeMeasureTooltip({
 }) {
   map.removeOverlay(tooltip);
   ol.Observable.unByKey(unbyKey);
-};
+}
