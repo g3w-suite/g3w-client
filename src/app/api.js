@@ -35,6 +35,25 @@ import GUI from 'services/gui';
 //MIXINS
 import Mixins from 'mixins';
 
+import { reverseGeometry }            from 'utils/reverseGeometry';
+import { getExtentForViewAndSize }    from 'utils/getExtentForViewAndSize';
+import { createPolygonLayerFromBBox } from 'utils/createPolygonLayerFromBBox';
+import { getLengthMessageText }       from 'utils/getLengthMessageText';
+import { needUseSphereMethods }       from 'utils/needUseSphereMethods';
+import { transformMeterLength }       from 'utils/transformMeterLength';
+import { createMeasureTooltip }       from 'utils/createMeasureTooltip';
+import { formatMeasure }              from 'utils/formatMeasure';
+import { getCurrentMapUnit }          from 'utils/getCurrentMapUnit';
+import { getAreaMessageText }         from 'utils/getAreaMessageText';
+import { transformMeterArea }         from 'utils/transformMeterArea';
+import { removeMeasureTooltip }       from 'utils/removeMeasureTooltip';
+import { setMeasureTooltipStatic }    from 'utils/setMeasureTooltipStatic';
+import { getMetersFromDegrees }       from 'utils/getMetersFromDegrees';
+import { getDPI }                     from 'utils/getDPI';
+import { getResolutionFromScale }     from 'utils/getResolutionFromScale';
+import { getScaleFromResolution }     from 'utils/getScaleFromResolution';
+import { mergeOptions }               from 'utils/mergeOptions';
+
 const G3WObject = require('core/g3wobject');
 const utils = require('utils');
 const geoutils = require('utils/geo');
@@ -96,7 +115,6 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
-const g3wolutils = require('utils/ol');
 
 module.exports = {
 
@@ -250,7 +268,26 @@ module.exports = {
       }
     },
     controls: {},
-    utils: g3wolutils
+    utils: {
+      merge: mergeOptions,
+      getExtentForViewAndSize,
+      createPolygonLayerFromBBox,
+      reverseGeometry,
+      getScaleFromResolution,
+      getResolutionFromScale,
+      getDPI,
+      getMetersFromDegrees,
+      needUseSphereMethods,
+      getLengthMessageText,
+      getAreaMessageText,
+      formatMeasure,
+      createMeasureTooltip,
+      getCurrentMapUnit,
+      transformMeterLength,
+      transformMeterArea,
+      removeMeasureTooltip,
+      setMeasureTooltipStatic,
+    },
   },
 
   // G3W-SUITE debug info
