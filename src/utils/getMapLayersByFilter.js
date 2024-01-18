@@ -15,5 +15,5 @@ export function getMapLayersByFilter(filter = {}, options = {}) {
   };
   return MapLayersStoresRegistry
     .getQuerableLayersStores()
-    .flatMap(store => store.isQueryable() ? store.getLayers(filter, options) : []);
+    .flatMap(store => store.getLayers(filter, options));
 }
