@@ -26,7 +26,6 @@ const {
   getUniqueDomId,
   copyUrl,
 }                                = require('utils');
-
 const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const G3WObject                  = require('core/g3wobject');

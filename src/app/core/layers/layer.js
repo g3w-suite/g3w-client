@@ -16,7 +16,6 @@ const {
 }                           = require('utils');
 const G3WObject             = require('core/g3wobject');
 const ProviderFactory       = require('core/layers/providersfactory');
-
 const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
