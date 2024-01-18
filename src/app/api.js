@@ -93,8 +93,6 @@ import C3XYLine from 'components/C3XYLine.vue';
  */
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService from 'services/data';
-import ChangesManager from 'services/editing';
-import SessionsRegistry from 'store/sessions';
 import IFrameRouterService from 'services/iframe';
 import MapLayersStoresRegistry from 'store/map-layers';
 import PluginsRegistry from 'store/plugins';
@@ -113,8 +111,6 @@ const G3WObject = require('core/g3wobject');
 const utils = require('utils');
 const i18n = require('core/i18n/i18n.service');
 const Server = require('core/errors/parser/servererrorparser');
-const Session = require('core/editing/session');
-const Editor = require('core/editing/editor');
 const Project = require('core/project/project');
 const LayersStoreRegistry = require('core/layers/layersstoresregistry');
 const LayersStore = require('core/layers/layersstore');
@@ -272,12 +268,6 @@ const g3wsdk = {
       parsers: {
         Server
       }
-    },
-    editing: {
-      Session,
-      SessionsRegistry,
-      Editor,
-      ChangesManager
     },
     project: {
       ProjectsRegistry,
