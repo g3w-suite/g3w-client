@@ -7,7 +7,7 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
 
   const geometry = feature.getGeometry();
 
-  // skip when ..
+  // skip when feature has no geometry (alphanumerical feature)
   if (!geometry) {
     return feature;
   }
