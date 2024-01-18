@@ -1,6 +1,6 @@
-import { MAP_SETTINGS }         from 'app/constant';
-import DataRouterService        from 'services/data';
-import MapLayersStoresRegistry  from 'store/map-layers';
+import { MAP_SETTINGS }           from 'app/constant';
+import DataRouterService          from 'services/data';
+import MapLayersStoresRegistry    from 'store/map-layers';
 import ProjectsRegistry           from 'store/projects';
 import ApplicationService         from 'services/application';
 import ControlsRegistry           from 'store/map-controls';

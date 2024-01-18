@@ -3,7 +3,7 @@
  * @since v3.8
  */
 import { SPATIAL_METHODS } from 'app/constant';
-import { mergeOptions } from 'utils/mergeOptions';
+import { mergeOptions }    from 'utils/mergeOptions';
 
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 const { Geometry }       = require('utils/geo');
