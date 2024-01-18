@@ -13,8 +13,8 @@ import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGe
 import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature'
 import { reverseGeometry }                 from 'utils/reverseGeometry';
 
-const Feature = require('core/layers/features/feature');
-const { t }   = require('core/i18n/i18n.service');
+const Feature                              = require('core/layers/features/feature');
+const { t }                                = require('core/i18n/i18n.service');
 
 Object
   .entries({

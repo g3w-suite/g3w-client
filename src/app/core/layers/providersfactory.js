@@ -3,6 +3,8 @@ import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'constant';
 import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
 import { ResponseParser }          from 'utils/parsers';
+import { getDPI }                  from 'utils/getDPI';
+import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
 
 const G3WObject                    = require('core/g3wobject');
@@ -15,12 +17,11 @@ const {
 const { handleQueryResponse }      = require('utils/geo');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
-const geoutils                     = require('utils/ol');
 const Filter                       = require('core/layers/filter/filter');
 
 
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
-const DPI = geoutils.getDPI();
+const DPI = getDPI();
 
 const is_defined = d => undefined !== d;
 
@@ -504,7 +505,7 @@ const Providers = {
         ? layers.map(layer => layer.getWMSInfoLayerName()).join(',')
         : this._layer.getWMSInfoLayerName();
 
-      const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
+      const extent = getExtentForViewAndSize(coordinates, resolution, 0, size);
 
       const is_map_tolerance = ('map' === query_point_tolerance.unit);  
 
