@@ -8,10 +8,10 @@
 import GUI                                from 'services/gui';
 import ApplicationService                 from 'services/application';
 import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
+import { getScaleFromResolution }         from 'utils/getScaleFromResolution';
 
-const Projections                        = require('g3w-ol/projection/projections');
-const { getScaleFromResolution }         = require('utils/ol');
-const { XHR, sanitizeUrl }               = require('utils');
+const Projections                         = require('g3w-ol/projection/projections');
+const { XHR, sanitizeUrl }                = require('utils');
 
 const RESERVERDPARAMETRS = {
   wms: [

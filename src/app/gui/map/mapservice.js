@@ -12,6 +12,8 @@ import { createWMSLayer }            from 'utils/createWMSLayer';
 import { createSelectedStyle }       from 'utils/createSelectedStyle';
 import { getMapLayersByFilter }      from 'utils/getMapLayersByFilter';
 import { getGeoTIFFfromServer }      from 'utils/getGeoTIFFfromServer';
+import { getScaleFromResolution }    from 'utils/getScaleFromResolution';
+import { getResolutionFromScale }    from 'utils/getResolutionFromScale';
 
 const {
   inherit,
@@ -19,16 +21,11 @@ const {
   copyUrl,
   uniqueId,
   throttle,
-  toRawType,
   createFilterFromString,
 }                               = require('utils');
 const G3WObject                 = require('core/g3wobject');
 
 const BaseLayers                = require('g3w-ol/layers/bases');
-const {
-  getScaleFromResolution,
-  getResolutionFromScale
-}                               = require('utils/ol');
 const VectorLayer               = require('core/layers/vectorlayer');
 
 const Control                   = require('g3w-ol/controls/control');

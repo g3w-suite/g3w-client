@@ -4,9 +4,9 @@
  */
 import { SPATIAL_METHODS }            from 'app/constant';
 import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
+import { mergeOptions }               from 'utils/mergeOptions';
 
-const InteractionControl = require('g3w-ol/controls/interactioncontrol');
-const { merge }          = require('utils/ol');
+const InteractionControl              = require('g3w-ol/controls/interactioncontrol');
 
 const VALIDGEOMETRIES    = getAllPolygonGeometryTypes();
 
@@ -32,7 +32,7 @@ const BaseQueryPolygonControl = function(options = {}) {
     onhover: true
   };
 
-  options = merge(options, default_options);
+  options = mergeOptions(options, default_options);
 
   options.geometryTypes = VALIDGEOMETRIES;
 
