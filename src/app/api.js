@@ -2,10 +2,9 @@
  * @file api file interface for external plugins
  */
 
-import G3W_CONSTANT from 'app/constant';
-
-import ApplicationState from 'store/application-state';
-import ApplicationService from 'services/application';
+import G3W_CONSTANT                                from 'app/constant';
+import ApplicationState                            from 'store/application-state';
+import ApplicationService                          from 'services/application';
 
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
@@ -82,108 +81,108 @@ import { get_legend_params }                       from 'utils/get_legend_params
 /**
  * Single File Components
  */
-import G3WInput from 'components/InputG3W.vue';
-import G3wFormInputs from 'components/InputG3WFormInputs.vue';
-import FormBody from 'components/FormBody.vue';
-import FormFooter from 'components/FormFooter.vue';
-import C3XYLine from 'components/C3XYLine.vue';
+import G3WInput                                    from 'components/InputG3W.vue';
+import G3wFormInputs                               from 'components/InputG3WFormInputs.vue';
+import FormBody                                    from 'components/FormBody.vue';
+import FormFooter                                  from 'components/FormFooter.vue';
+import C3XYLine                                    from 'components/C3XYLine.vue';
 
 /**
  * CORE modules
  */
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import DataRouterService from 'services/data';
-import IFrameRouterService from 'services/iframe';
-import MapLayersStoresRegistry from 'store/map-layers';
-import PluginsRegistry from 'store/plugins';
-import ProjectsRegistry from 'store/projects';
-import RelationsService from 'services/relations';
-import TaskService from 'services/tasks';
-import WorkflowsStack from 'services/workflows';
-import ApiService from 'services/api';
-import RouterService from 'services/router';
+import CatalogLayersStoresRegistry                 from 'store/catalog-layers';
+import DataRouterService                           from 'services/data';
+import IFrameRouterService                         from 'services/iframe';
+import MapLayersStoresRegistry                     from 'store/map-layers';
+import PluginsRegistry                             from 'store/plugins';
+import ProjectsRegistry                            from 'store/projects';
+import RelationsService                            from 'services/relations';
+import TaskService                                 from 'services/tasks';
+import WorkflowsStack                              from 'services/workflows';
+import ApiService                                  from 'services/api';
+import RouterService                               from 'services/router';
 
-import GUI from 'services/gui';
+import GUI                                         from 'services/gui';
 //MIXINS
-import Mixins from 'mixins';
+import Mixins                                      from 'mixins';
 
-import { reverseGeometry }            from 'utils/reverseGeometry';
-import { getExtentForViewAndSize }    from 'utils/getExtentForViewAndSize';
-import { createPolygonLayerFromBBox } from 'utils/createPolygonLayerFromBBox';
-import { getLengthMessageText }       from 'utils/getLengthMessageText';
-import { needUseSphereMethods }       from 'utils/needUseSphereMethods';
-import { transformMeterLength }       from 'utils/transformMeterLength';
-import { createMeasureTooltip }       from 'utils/createMeasureTooltip';
-import { formatMeasure }              from 'utils/formatMeasure';
-import { getCurrentMapUnit }          from 'utils/getCurrentMapUnit';
-import { getAreaMessageText }         from 'utils/getAreaMessageText';
-import { transformMeterArea }         from 'utils/transformMeterArea';
-import { removeMeasureTooltip }       from 'utils/removeMeasureTooltip';
-import { setMeasureTooltipStatic }    from 'utils/setMeasureTooltipStatic';
-import { getMetersFromDegrees }       from 'utils/getMetersFromDegrees';
-import { getDPI }                     from 'utils/getDPI';
-import { getResolutionFromScale }     from 'utils/getResolutionFromScale';
-import { getScaleFromResolution }     from 'utils/getScaleFromResolution';
-import { mergeOptions }               from 'utils/mergeOptions';
+import { reverseGeometry }                         from 'utils/reverseGeometry';
+import { getExtentForViewAndSize }                 from 'utils/getExtentForViewAndSize';
+import { createPolygonLayerFromBBox }              from 'utils/createPolygonLayerFromBBox';
+import { getLengthMessageText }                    from 'utils/getLengthMessageText';
+import { needUseSphereMethods }                    from 'utils/needUseSphereMethods';
+import { transformMeterLength }                    from 'utils/transformMeterLength';
+import { createMeasureTooltip }                    from 'utils/createMeasureTooltip';
+import { formatMeasure }                           from 'utils/formatMeasure';
+import { getCurrentMapUnit }                       from 'utils/getCurrentMapUnit';
+import { getAreaMessageText }                      from 'utils/getAreaMessageText';
+import { transformMeterArea }                      from 'utils/transformMeterArea';
+import { removeMeasureTooltip }                    from 'utils/removeMeasureTooltip';
+import { setMeasureTooltipStatic }                 from 'utils/setMeasureTooltipStatic';
+import { getMetersFromDegrees }                    from 'utils/getMetersFromDegrees';
+import { getDPI }                                  from 'utils/getDPI';
+import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
+import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
+import { mergeOptions }                            from 'utils/mergeOptions';
 
-const G3WObject = require('core/g3wobject');
-const utils = require('utils');
-const i18n = require('core/i18n/i18n.service');
-const Server = require('core/errors/parser/servererrorparser');
-const Project = require('core/project/project');
-const LayersStoreRegistry = require('core/layers/layersstoresregistry');
-const LayersStore = require('core/layers/layersstore');
-const Layer = require('core/layers/layer');
-const LayerFactory = require('core/layers/layerfactory');
-const TableLayer = require('core/layers/tablelayer');
-const VectorLayer = require('core/layers/vectorlayer');
-const ImageLayer = require('core/layers/imagelayer');
-const WmsLayer = require('core/layers/map/wmslayer');
-const XYZLayer = require('core/layers/map/xyzlayer');
-const MapLayer = require('core/layers/map/maplayer');
-const Feature = require('core/layers/features/feature');
-const FeaturesStore = require('core/layers/features/featuresstore');
-const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
-const Filter = require('core/layers/filter/filter');
-const Expression = require('core/layers/filter/expression');
-const Plugin = require('core/plugin/plugin');
-const PluginService = require('core/plugin/pluginservice');
-const Task = require('core/workflow/task');
-const Step = require('core/workflow/step');
-const Flow = require('core/workflow/flow');
-const Workflow = require('core/workflow/workflow');
+const G3WObject                  = require('core/g3wobject');
+const utils                      = require('utils');
+const i18n                       = require('core/i18n/i18n.service');
+const Server                     = require('core/errors/parser/servererrorparser');
+const Project                    = require('core/project/project');
+const LayersStoreRegistry        = require('core/layers/layersstoresregistry');
+const LayersStore                = require('core/layers/layersstore');
+const Layer                      = require('core/layers/layer');
+const LayerFactory               = require('core/layers/layerfactory');
+const TableLayer                 = require('core/layers/tablelayer');
+const VectorLayer                = require('core/layers/vectorlayer');
+const ImageLayer                 = require('core/layers/imagelayer');
+const WmsLayer                   = require('core/layers/map/wmslayer');
+const XYZLayer                   = require('core/layers/map/xyzlayer');
+const MapLayer                   = require('core/layers/map/maplayer');
+const Feature                    = require('core/layers/features/feature');
+const FeaturesStore              = require('core/layers/features/featuresstore');
+const OlFeaturesStore            = require('core/layers/features/olfeaturesstore');
+const Filter                     = require('core/layers/filter/filter');
+const Expression                 = require('core/layers/filter/expression');
+const Plugin                     = require('core/plugin/plugin');
+const PluginService              = require('core/plugin/pluginservice');
+const Task                       = require('core/workflow/task');
+const Step                       = require('core/workflow/step');
+const Flow                       = require('core/workflow/flow');
+const Workflow                   = require('core/workflow/workflow');
 
 /**
  * GUI modules
  */
-const Panel = require('gui/panel');
-const { ControlFactory } = require('gui/map/mapservice');
-const ComponentsFactory = require('gui/component/componentsfactory');
-const FieldsService = require('gui/fields/fieldsservice');
-const Component = require('gui/component/component');
-const MetadataComponent = require('gui/metadata/vue/metadata');
-const SearchComponent = require('gui/search/vue/search');
-const SearchPanel = require('gui/search/vue/panel/searchpanel');
-const PrintComponent = require('gui/print/vue/print');
-const CatalogComponent = require('gui/catalog/vue/catalog');
-const MapComponent = require('gui/map/vue/map');
-const ToolsComponent = require('gui/tools/vue/tools');
-const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
-const FormComponent = require('gui/form/vue/form');
-const FormService = require('gui/form/formservice');
-const InputsComponents = require('gui/inputs/inputs');
-const ChartsFactory = require('gui/charts/chartsfactory');
-const Fields = require('gui/fields/fields');
-const SearchPanelService = require('gui/search/vue/panel/searchservice');
+const Panel                      = require('gui/panel');
+const { ControlFactory }         = require('gui/map/mapservice');
+const ComponentsFactory          = require('gui/component/componentsfactory');
+const FieldsService              = require('gui/fields/fieldsservice');
+const Component                  = require('gui/component/component');
+const MetadataComponent          = require('gui/metadata/vue/metadata');
+const SearchComponent            = require('gui/search/vue/search');
+const SearchPanel                = require('gui/search/vue/panel/searchpanel');
+const PrintComponent             = require('gui/print/vue/print');
+const CatalogComponent           = require('gui/catalog/vue/catalog');
+const MapComponent               = require('gui/map/vue/map');
+const ToolsComponent             = require('gui/tools/vue/tools');
+const QueryResultsComponent      = require('gui/queryresults/vue/queryresults');
+const FormComponent              = require('gui/form/vue/form');
+const FormService                = require('gui/form/formservice');
+const InputsComponents           = require('gui/inputs/inputs');
+const ChartsFactory              = require('gui/charts/chartsfactory');
+const Fields                     = require('gui/fields/fields');
+const SearchPanelService         = require('gui/search/vue/panel/searchservice');
 
 /**
  * G3W-OL modules
  */
-const PickFeatureInteraction = require('g3w-ol/interactions/pickfeatureinteraction');
+const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
-const DeleteFeatureInteraction = require('g3w-ol/interactions/deletefeatureinteraction');
-const AreaInteraction = require('g3w-ol/interactions/areainteraction');
-const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
+const DeleteFeatureInteraction   = require('g3w-ol/interactions/deletefeatureinteraction');
+const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
+const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
 
 
 const g3wsdk = {
