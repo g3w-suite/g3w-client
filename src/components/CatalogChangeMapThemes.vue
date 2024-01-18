@@ -117,6 +117,17 @@
 <script>
   import ProjectsRegistry from 'store/projects';
 
+  /**
+   * Attributes to send to server of layerstrees object
+   *
+   * node (single layer): keys [id, name, showfeaturecount, visible]
+   * group (Group) : keys [checked, expanded, mutually-exclusive, name, nodes]
+   */
+  const LAYERSTREES_KEYS = {
+    node: ['id', 'name', 'showfeaturecount', 'visible'],
+    group: ['name', 'checked', 'expanded', 'mutually-exclusive', 'nodes']
+  }
+
   export default {
     name: "changemapthemes",
     props: {
@@ -145,10 +156,7 @@
        * @since 3.10.0
        */
       save() {
-        /**
-         * Node: keys [id, name, showfeaturecount, visible]
-         * Group: keys [checked, expanded, mutually-exclusive, name, nodes]
-        */
+
         console.log(this.layerstrees[0].tree)
         //@TODO
         this.$emit('save-map-theme');
