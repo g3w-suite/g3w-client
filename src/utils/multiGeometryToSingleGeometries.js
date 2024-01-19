@@ -1,4 +1,4 @@
-import { GEOMETRY_TYPES as GeometryTypes } from 'app/constant';
+import { GEOMETRY_TYPES } from 'app/constant';
 
 /**
  * @param geometry
@@ -7,10 +7,10 @@ import { GEOMETRY_TYPES as GeometryTypes } from 'app/constant';
  */
 export function multiGeometryToSingleGeometries(geometry) {
   switch (geometry.getType()) {
-    case GeometryTypes.MULTIPOLYGON:    return geometry.getPolygons();
-    case GeometryTypes.MULTILINE:       return geometry.getLineStrings();
-    case GeometryTypes.MULTILINESTRING: return geometry.getLineStrings();
-    case GeometryTypes.MULTIPOINT:      return geometry.getPoints();
+    case GEOMETRY_TYPES.MULTIPOLYGON:    return geometry.getPolygons();
+    case GEOMETRY_TYPES.MULTILINE:       return geometry.getLineStrings();
+    case GEOMETRY_TYPES.MULTILINESTRING: return geometry.getLineStrings();
+    case GEOMETRY_TYPES.MULTIPOINT:      return geometry.getPoints();
     default:                            console.warn('invalid geometry type', geometry.getType());
   }
   return [];

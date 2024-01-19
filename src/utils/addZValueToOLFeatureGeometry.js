@@ -1,5 +1,5 @@
 import { GEOMETRY_TYPES } from 'app/constant';
-import { is3DGeometry }                    from 'utils/is3DGeometry';
+import { is3DGeometry }   from 'utils/is3DGeometry';
 
 /**
  * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4

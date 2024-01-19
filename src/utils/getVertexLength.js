@@ -1,4 +1,4 @@
-import { GEOMETRY_TYPES as GeometryTypes } from 'app/constant';
+import { GEOMETRY_TYPES } from 'app/constant';
 
 /**
  * @param geometries
@@ -9,7 +9,7 @@ export function getVertexLength(geometry) {
 
   switch(geometry.getType()) {
 
-    case GeometryTypes.MULTIPOLYGON:
+    case GEOMETRY_TYPES.MULTIPOLYGON:
       geometry.getCoordinates()
         .forEach(c => {
           c.forEach(c => {
@@ -19,7 +19,7 @@ export function getVertexLength(geometry) {
         });
       break;
 
-    case GeometryTypes.POLYGON:
+    case GEOMETRY_TYPES.POLYGON:
       geometry.getCoordinates()
         .forEach(c => {
           c.pop();
@@ -30,4 +30,4 @@ export function getVertexLength(geometry) {
   }
 
   return vertexLength;
-};
+}

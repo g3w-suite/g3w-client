@@ -1,18 +1,18 @@
-import { GEOMETRY_TYPES as GeometryTypes } from "app/constant";
+import { GEOMETRY_TYPES } from "app/constant";
 /**
- * core/geometry/geometry::getAllPolygonGeometryTypes@v3.4
+ * core/geometry/geometry::getAllPolygonGEOMETRY_TYPES@v3.4
  */
-export function getAllPolygonGeometryTypes() {
+export function getAllPolygonGEOMETRY_TYPES() {
   return [
-    GeometryTypes.POLYGON,
-    GeometryTypes.POLYGONZ,
-    GeometryTypes.POLYGONM,
-    GeometryTypes.POLYGONZM,
-    GeometryTypes.POLYGON25D,
-    GeometryTypes.MULTIPOLYGON,
-    GeometryTypes.MULTIPOLYGONZ,
-    GeometryTypes.MULTIPOLYGONM,
-    GeometryTypes.MULTIPOLYGONZM,
-    GeometryTypes.MULTIPOLYGON25D,
+    GEOMETRY_TYPES.POLYGON,
+    GEOMETRY_TYPES.POLYGONZ,
+    GEOMETRY_TYPES.POLYGONM,
+    GEOMETRY_TYPES.POLYGONZM,
+    GEOMETRY_TYPES.POLYGON25D,
+    GEOMETRY_TYPES.MULTIPOLYGON,
+    GEOMETRY_TYPES.MULTIPOLYGONZ,
+    GEOMETRY_TYPES.MULTIPOLYGONM,
+    GEOMETRY_TYPES.MULTIPOLYGONZM,
+    GEOMETRY_TYPES.MULTIPOLYGON25D,
   ];
 };

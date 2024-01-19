@@ -1,29 +1,29 @@
-import { GEOMETRY_TYPES as GeometryTypes } from 'app/constant';
+import { GEOMETRY_TYPES } from 'app/constant';
 
 /**
- * core/geometry/geometry::getAllLineGeometryTypes@v3.4
+ * core/geometry/geometry::getAllLineGEOMETRY_TYPES@v3.4
  */
-export function getAllLineGeometryTypes() {
+export function getAllLineGEOMETRY_TYPES() {
   return [
-    GeometryTypes.LINESTRING,
-    GeometryTypes.LINESTRINGZ,
-    GeometryTypes.LINESTRINGM,
-    GeometryTypes.LINESTRINGZM,
-    GeometryTypes.LINESTRING25D,
-    GeometryTypes.MULTILINESTRING,
-    GeometryTypes.MULTILINESTRINGZ,
-    GeometryTypes.MULTILINESTRINGM,
-    GeometryTypes.MULTILINESTRINGZM,
-    GeometryTypes.MULTILINESTRING25D,
-    GeometryTypes.LINE,
-    GeometryTypes.LINEZ,
-    GeometryTypes.LINEM,
-    GeometryTypes.LINEZM,
-    GeometryTypes.LINE25D,
-    GeometryTypes.MULTILINE,
-    GeometryTypes.MULTILINEZ,
-    GeometryTypes.MULTILINEM,
-    GeometryTypes.MULTILINEZM,
-    GeometryTypes.MULTILINE25D,
+    GEOMETRY_TYPES.LINESTRING,
+    GEOMETRY_TYPES.LINESTRINGZ,
+    GEOMETRY_TYPES.LINESTRINGM,
+    GEOMETRY_TYPES.LINESTRINGZM,
+    GEOMETRY_TYPES.LINESTRING25D,
+    GEOMETRY_TYPES.MULTILINESTRING,
+    GEOMETRY_TYPES.MULTILINESTRINGZ,
+    GEOMETRY_TYPES.MULTILINESTRINGM,
+    GEOMETRY_TYPES.MULTILINESTRINGZM,
+    GEOMETRY_TYPES.MULTILINESTRING25D,
+    GEOMETRY_TYPES.LINE,
+    GEOMETRY_TYPES.LINEZ,
+    GEOMETRY_TYPES.LINEM,
+    GEOMETRY_TYPES.LINEZM,
+    GEOMETRY_TYPES.LINE25D,
+    GEOMETRY_TYPES.MULTILINE,
+    GEOMETRY_TYPES.MULTILINEZ,
+    GEOMETRY_TYPES.MULTILINEM,
+    GEOMETRY_TYPES.MULTILINEZM,
+    GEOMETRY_TYPES.MULTILINE25D,
   ];
-};
+}
