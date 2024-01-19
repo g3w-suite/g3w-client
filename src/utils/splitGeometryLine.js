@@ -40,9 +40,7 @@ export function splitGeometryLine(splitGeometry, lineGeometry) {
     const segment              = geometryFactory.createLineString([startPoint, endPoint]);
     const intersectCoordinates = segment.intersection(splitLine).getCoordinates();
 
-    if (intersectCoordinates.length) {
-      splitted = true;
-    }
+    splitted = splitted || intersectCoordinates.length > 0;
 
     intersectCoordinates
       .forEach(splitPoint => {
@@ -50,18 +48,24 @@ export function splitGeometryLine(splitGeometry, lineGeometry) {
           splitPoint.z = startPoint.z;
         }
 
-        const GIVE_ME_A_NAME = pointsNotSplitted.length;
-        const lineNewSegment = olFromJsts.write(geometryFactory.createLineString((GIVE_ME_A_NAME ? pointsNotSplitted : []).concat([startPoint, splitPoint])));
-        const coordinates    = isZType ? lineNewSegment.getCoordinates() : undefined;
+        const lineNewSegment = olFromJsts
+          .write(
+            geometryFactory.createLineString(
+              (pointsNotSplitted.length
+                ? pointsNotSplitted
+                : []
+              ).concat([startPoint, splitPoint]))
+          );
 
         if (isZType) {
+          const coordinates    = lineNewSegment.getCoordinates();
           lineNewSegment.setCoordinates([
             [...coordinates[0], startPoint.z],
             [...coordinates[1], splitPoint.z]
           ])
         }
 
-        if (GIVE_ME_A_NAME) {
+        if (pointsNotSplitted.length) {
           pointsNotSplitted = [];
         }
 
@@ -89,4 +93,4 @@ export function splitGeometryLine(splitGeometry, lineGeometry) {
   splittedSegments.push(restOfLine);
 
   return splitted ? splittedSegments : []
-};
+}
