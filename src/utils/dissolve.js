@@ -15,24 +15,24 @@ export function dissolve({
   const parser         = new jsts.io.OL3Parser();
   const featuresLength = features.length;
 
-  let dissolvedFeature;
-  let jstsdissolvedFeatureGeometry;
 
-  /** @FIXME add description  */
+  /** In case no features to dissolve  */
   if (0 === featuresLength) {
     return null;
   }
 
-  /** @FIXME add description  */
+  /** In case of single feature, return feature */
   if (1 === featuresLength) {
     return features[0];
   }
 
-  const baseFeature             = dissolvedFeature = clone ? features[index].clone() : features[index];
+  let jstsdissolvedFeatureGeometry;
+
+  const baseFeature             = clone ? features[index].clone() : features[index];
   const baseFeatureGeometry     = baseFeature.getGeometry();
   const baseFeatureGeometryType = baseFeatureGeometry.getType();
 
-  // check if can buil a LineString
+  // check if it can build a LineString
   if ('LineString' === baseFeatureGeometryType) {
     const lineMerger = new jsts.operation.linemerge.LineMerger();
     for (let i = 0; i < featuresLength; i++) {
@@ -53,25 +53,25 @@ export function dissolve({
     }
   }
 
-  /** @FIXME add description  */
+  /** In case of no dissolved geometry  */
   if (!jstsdissolvedFeatureGeometry) {
     return null;
   }
 
   const dissolvedFeatureGeometry            = parser.write(jstsdissolvedFeatureGeometry);
   const dissolvedFeatureGeometryType        = dissolvedFeatureGeometry.getType();
-  const dissolvedFeatuteGeometryCoordinates = dissolvedFeatureGeometryType === baseFeatureGeometryType
+  const dissolvedFeatureGeometryCoordinates = dissolvedFeatureGeometryType === baseFeatureGeometryType
     ? dissolvedFeatureGeometry.getCoordinates()
     : -1 !== baseFeatureGeometryType.indexOf('Multi') && dissolvedFeatureGeometryType === baseFeatureGeometryType.replace('Multi', '')
       ? [dissolvedFeatureGeometry.getCoordinates()]
       : null;
 
-  /** @FIXME add description  */
-  if (!dissolvedFeatuteGeometryCoordinates) {
+  /** In case of null feature dissolved coordinates  */
+  if (null === dissolvedFeatureGeometryCoordinates) {
     return null;
   }
 
-  baseFeature.getGeometry().setCoordinates(dissolvedFeatuteGeometryCoordinates);
+  baseFeature.getGeometry().setCoordinates(dissolvedFeatureGeometryCoordinates);
 
-  return dissolvedFeature;
-};
+  return baseFeature;
+}

@@ -14,4 +14,4 @@ export function multiGeometryToSingleGeometries(geometry) {
     default:                            console.warn('invalid geometry type', geometry.getType());
   }
   return [];
-};
+}

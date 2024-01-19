@@ -13,4 +13,4 @@
  */
 export function isSameBaseGeometryType(geometryType1, geometryType2) {
   return geometryType1.replace('Multi','') === geometryType2.replace('Multi','');
-};
+}
