@@ -4,13 +4,13 @@
  * @since 3.9.0
  */
 
-import { G3W_FID } from 'app/constant';
-import GUI         from 'services/gui';
+import { G3W_FID }         from 'app/constant';
+import GUI                 from 'services/gui';
+import { reverseGeometry } from 'utils/reverseGeometry';
 
 const { toRawType }             = require('utils');
 const Feature                   = require('core/layers/features/feature');
 const { t }                     = require('core/i18n/i18n.service');
-const olutils                   = require('utils/ol');
 
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
@@ -162,7 +162,7 @@ const utils = {
   reverseFeaturesCoordinates(features) {
     features.forEach(feature => {
       const geometry = feature.getGeometry();
-      feature.setGeometry(olutils.reverseGeometry(geometry))
+      feature.setGeometry(reverseGeometry(geometry))
     });
     return features
   },
