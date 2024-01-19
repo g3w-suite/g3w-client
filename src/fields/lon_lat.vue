@@ -21,6 +21,7 @@
             @click.prevent.stop = "toggleGetCoordinate"
             :style              = "{ border: (coordinatebutton.active ? '2px solid' : 0) }"
             data-placement      = "left"
+            data-container      = "body"
             data-toggle         = "tooltip"
             v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
             class               = "action skin-tooltip-left skin-color skin-border-color"

@@ -185,12 +185,12 @@ import ProjectsRegistry                       from 'store/projects';
 import MapLayersStoresRegistry                from 'store/map-layers';
 import ApplicationService                     from 'services/application';
 import GUI                                    from 'services/gui';
+import { getFieldType }                       from 'utils/getFieldType';
 
 const {
   truefnc,
   toRawType,
   convertQGISDateTimeFormatToMoment,
-  getFieldType,
   getMediaFieldType,
 }                                             = require('core/utils/utils');
 const { getQueryLayersPromisesByCoordinates } = require('core/utils/geo');
@@ -502,6 +502,15 @@ const vm = {
      * @TODO check if deperecated
      */
     isVisible() {},
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/base-input.js@3.9.1
+     * 
+     * @param bool
+     */
+     setLoading(bool) {
+      this.state.input.options.loading.state = bool ? 'loading' : 'ready';
+    },
 
     /**
      * Factory method
