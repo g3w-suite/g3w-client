@@ -1,9 +1,9 @@
 import { GEOMETRY_TYPES } from 'app/constant';
 
 /**
- * core/geometry/geometry::getAllPointGEOMETRY_TYPES@v3.4
+ * core/geometry/geometry::getAllPointGeometryTypes@v3.4
  */
-export function getAllPointGEOMETRY_TYPES() {
+export function getAllPointGeometryTypes() {
   return [
     GEOMETRY_TYPES.POINT,
     GEOMETRY_TYPES.POINTZ,
