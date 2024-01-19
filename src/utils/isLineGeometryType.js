@@ -5,4 +5,4 @@ import { getAllLineGeometryTypes } from 'utils/getAllLineGeometryTypes';
  */
 export function isLineGeometryType(geometryType) {
   return -1 !== getAllLineGeometryTypes().indexOf(geometryType);
-};
+}

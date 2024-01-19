@@ -1,4 +1,5 @@
-const { uniqueId } = require('utils');
+import { getUniqueDomId } from 'utils/getUniqueDomId';
+
 const WMSLayer     = require('core/layers/map/wmslayer');
 
 /**
@@ -16,7 +17,7 @@ export function createWMSLayer({
   projection,
   layers = [],
 } = {}) {
-  const id = name || uniqueId();
+  const id = name || getUniqueDomId();
   const wmslayer = new WMSLayer({ id, layers, projection, url });
   const olLayer =  wmslayer.getOLLayer();
   olLayer.set('id', id); // set unique id
@@ -25,4 +26,4 @@ export function createWMSLayer({
     wmslayer,
     olLayer,
   }
-};
+}

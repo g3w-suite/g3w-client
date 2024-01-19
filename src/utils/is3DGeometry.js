@@ -35,4 +35,4 @@ export function is3DGeometry(geometryType) {
     GEOMETRY_TYPES.MULTIPOLYGONZM,
     GEOMETRY_TYPES.MULTIPOLYGON25D
   ].find(type3D => type3D === geometryType);
-};
+}

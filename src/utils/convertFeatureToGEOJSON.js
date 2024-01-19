@@ -5,4 +5,4 @@
  */
 export function convertFeatureToGEOJSON(feature) {
   return (new ol.format.GeoJSON()).writeFeatureObject(feature);
-};
+}

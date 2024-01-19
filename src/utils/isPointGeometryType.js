@@ -5,4 +5,4 @@ import { getAllPointGeometryTypes } from 'utils/getAllPointGeometryTypes';
  */
 export function isPointGeometryType(geometryType) {
   return -1 !== getAllPointGeometryTypes().indexOf(geometryType);
-};
+}

@@ -42,4 +42,4 @@ export function createSelectedStyle({
       return null;
 
   }
-};
+}

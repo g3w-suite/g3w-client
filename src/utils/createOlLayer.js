@@ -1,6 +1,6 @@
-import { getAllPointGeometryTypes }   from "./getAllPointGeometryTypes";
-import { getAllLineGeometryTypes }    from "./getAllLineGeometryTypes";
-import { getAllPolygonGeometryTypes } from "./getAllPolygonGeometryTypes";
+import { getAllPointGeometryTypes }   from "utils/getAllPointGeometryTypes";
+import { getAllLineGeometryTypes }    from "utils/getAllLineGeometryTypes";
+import { getAllPolygonGeometryTypes } from "utils/getAllPolygonGeometryTypes";
 
 /**
  * @param { Object } layer options

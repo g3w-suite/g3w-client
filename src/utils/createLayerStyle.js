@@ -3,11 +3,13 @@
  * @returns { ol.style.Style | undefined } style
  */
 export function createLayerStyle(styleObj) {
-  // skip when ..
+  // skip when no style object is passed
   if (!styleObj) {
     return;
   }
-  const styles = Object
+
+  return new ol.style.Style(
+    Object
     .entries(styleObj)
     .reduce((styles, [type, config]) => {
       if ('point' === type && config.icon) {
@@ -20,6 +22,6 @@ export function createLayerStyle(styleObj) {
         styles.fill = new ol.style.Fill({ color: config.color });
       }
       return styles;
-    }, {});
-  return new ol.style.Style(styles);
-};
+    }, {})
+  );
+}

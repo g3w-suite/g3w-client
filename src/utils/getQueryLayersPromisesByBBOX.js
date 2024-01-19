@@ -16,7 +16,7 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
   const geometry      = ol.geom.Polygon.fromExtent(bbox);
   const mapProjection = GUI.getComponent('map').getService().getMap().getView().getProjection();
 
-  /** @FIXME add description */
+  /** Group query by layers */
   if (multilayers) {
     return getQueryLayersPromisesByGeometry(layers, {
       geometry,
@@ -29,28 +29,35 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
 
   const d              = $.Deferred();
   const mapCrs         = mapProjection.getCode();
-  const queriesPromise = d.promise();
+  const promise        = d.promise();
   const queryResponses = [];
   const queryErrors    = [];
   let layersLenght     = layers.length;
 
   /** @FIXME add description */
-  layers.forEach(layer => {
-    const filter   = new Filter(filterConfig);
-    const layerCrs = layer.getProjection().getCode();
-    // Convert filter geometry from `mapCRS` to `layerCrs`
-    filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
-    layer
-      .query({ filter, feature_count })
-      .then(response => queryResponses.push(response))
-      .fail(error => queryErrors.push(error))
-      .always(() => {
-        layersLenght -= 1;
-        if (0 === layersLenght) {
-          queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses);
-        }
-    })
-  });
+  layers
+    .forEach(layer => {
+      const filter   = new Filter(filterConfig);
+      const layerCrs = layer.getProjection().getCode();
+      // Convert filter geometry from `mapCRS` to `layerCrs`
+      filter.setGeometry(mapCrs === layerCrs
+        ? geometry
+        : geometry.clone().transform(mapCrs, layerCrs)
+      );
 
-  return queriesPromise
-};
+      layer
+        .query({ filter, feature_count })
+        .then(response => queryResponses.push(response))
+        .fail(error => queryErrors.push(error))
+        .always(() => {
+          layersLenght -= 1;
+          if (0 === layersLenght) {
+            queryErrors.length === layers.length
+              ? d.reject(queryErrors)
+              : d.resolve(queryResponses);
+          }
+      })
+    });
+
+  return promise;
+}

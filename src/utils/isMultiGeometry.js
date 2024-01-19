@@ -26,4 +26,4 @@ export function isMultiGeometry(geometryType) {
     GEOMETRY_TYPES.MULTIPOLYGONZM,
     GEOMETRY_TYPES.MULTIPOLYGON25D,
   ].indexOf(geometryType);
-};
+}

@@ -9,4 +9,4 @@ export function createVectorLayerFromFeatures(feature) {
       features: Array.isArray(feature) ? feature : [feature],
     }),
   });
-};
+}

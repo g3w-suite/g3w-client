@@ -17,7 +17,7 @@ export function getFormDataExpressionRequestFromFeature(feature) {
     .filter(prop => prop !== G3W_FID)
     .forEach(prop => properties[prop] = feature.attributes[prop]);
 
-    _feature.setProperties(properties);
+  _feature.setProperties(properties);
   _feature.setId(feature.attributes[G3W_FID]);
 
   return convertFeatureToGEOJSON(_feature);

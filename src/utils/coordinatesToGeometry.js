@@ -61,4 +61,4 @@ export function coordinatesToGeometry(geometryType, coordinates) {
       return new ol.geom.Point(coordinates);
 
   }
-};
+}

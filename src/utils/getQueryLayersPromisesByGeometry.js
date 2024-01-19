@@ -20,16 +20,16 @@ export function getQueryLayersPromisesByGeometry(layers, { multilayers = false, 
   const mapCrs         = projection.getCode();
   const filter         = new Filter(filterConfig);
 
-  /** @FIXME add description  */
-  if (!layers.length) {
+  /** In case of no features  */
+  if (0 === layers.length) {
     d.resolve([]);
   }
 
-  /** @FIXME add description  */
+  /** Group query by layers instead single layer request  */
   if (multilayers) {
-    const multiLayers    = groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
-    const numberRequestd = Object.keys(multiLayers).length;
-    let layersLength     = numberRequestd;
+    const multiLayers     = groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
+    const numberRequested = Object.keys(multiLayers).length;
+    let layersLength      = numberRequested;
 
     for (let key in multiLayers) {
       const _multilayer = multiLayers[key];
@@ -46,19 +46,23 @@ export function getQueryLayersPromisesByGeometry(layers, { multilayers = false, 
         .always(() => {
           layersLength -= 1;
           if (0 === layersLength) {
-            queryErrors.length === numberRequestd ? d.reject(queryErrors) : d.resolve(queryResponses)
+            queryErrors.length === numberRequested
+              ? d.reject(queryErrors)
+              : d.resolve(queryResponses)
           }
         });
     }
-  }
-  
-  /** @FIXME add description  */
-  if (!multilayers && layers.length) {
+  } else {
+
     let layersLenght = layers.length;
     layers.forEach(layer => {
       const layerCrs = layer.getProjection().getCode();
       // Convert filter geometry from `mapCRS` to `layerCrs`
-      filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs));
+      filter.setGeometry(
+        (mapCrs === layerCrs)
+          ? geometry
+          : geometry.clone().transform(mapCrs, layerCrs)
+      );
       layer
         .query({ filter, filterConfig, feature_count })
         .then(response => queryResponses.push(response))
@@ -66,11 +70,13 @@ export function getQueryLayersPromisesByGeometry(layers, { multilayers = false, 
         .always(() => {
           layersLenght -= 1;
           if (0 === layersLenght) {
-            queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
+            (queryErrors.length === layers.length)
+              ? d.reject(queryErrors)
+              : d.resolve(queryResponses)
           }
         })
     });
   }
 
   return d.promise();
-};
+}

@@ -5,4 +5,4 @@ import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
  */
 export function isPolygonGeometryType(geometryType) {
   return -1 !== getAllPolygonGeometryTypes().indexOf(geometryType);
-};
+}

@@ -1,4 +1,4 @@
-import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
+import { GEOMETRY_FIELDS } from 'app/constant';
 
 /**
  * @param { Array } properties
@@ -7,5 +7,5 @@ import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
  */
 export function getAlphanumericPropertiesFromFeature(properties = []) {
   properties = Array.isArray(properties) ? properties : Object.keys(properties);
-  return properties.filter(prop => -1 === geometryFields.indexOf(prop));
+  return properties.filter(prop => -1 === GEOMETRY_FIELDS.indexOf(prop));
 }

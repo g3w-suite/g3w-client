@@ -2,4 +2,4 @@ import { createVectorLayerFromFeatures } from 'utils/createVectorLayerFromFeatur
 
 export function createVectorLayerFromGeometry(geometry) {
   return createVectorLayerFromFeatures(new ol.Feature(geometry));
-};
+}

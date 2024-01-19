@@ -11,4 +11,4 @@ export function createFeatureFromGeometry({ id, geometry } = {}) {
     feature.setId(id);
     return feature;
   }
-};
+}

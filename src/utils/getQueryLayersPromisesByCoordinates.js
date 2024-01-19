@@ -15,12 +15,12 @@ import GUI                       from 'services/gui';
 export function getQueryLayersPromisesByCoordinates(layers, { coordinates, feature_count = 10, query_point_tolerance = QUERY_POINT_TOLERANCE, multilayers = false, reproject = true } = {}) {
   const d = $.Deferred();
 
-  /** @FIXME add description */
-  if (!layers.length) {
+  /** If no layers*/
+  if (0 === layers.length) {
     return d.resolve(layers);
   }
 
-  const map            = GUI.getComponent('map').getService().getMap();
+  const map            = GUI.getService('map').getMap();
   const size           = map.getSize();
   const queryResponses = [];
   const queryErrors    = [];
@@ -30,14 +30,15 @@ export function getQueryLayersPromisesByCoordinates(layers, { coordinates, featu
   // multilayers request
   if (multilayers) {
     const multiLayers = {};
-    layers.forEach(layer => {
-      const key = `${layer.getInfoFormat()}:${layer.getInfoUrl()}:${layer.getMultiLayerId()}`;
-      if (multiLayers[key]) {
-        multiLayers[key].push(layer);
-      } else {
-        multiLayers[key] = [layer];
-      }
-    });
+    layers
+      .forEach(layer => {
+        const key = `${layer.getInfoFormat()}:${layer.getInfoUrl()}:${layer.getMultiLayerId()}`;
+        if (multiLayers[key]) {
+          multiLayers[key].push(layer);
+        } else {
+          multiLayers[key] = [layer];
+       }
+      });
     const numberOfRequests = Object.keys(multiLayers).length;
     let layersLength = numberOfRequests;
     for (let key in multiLayers) {
@@ -61,36 +62,39 @@ export function getQueryLayersPromisesByCoordinates(layers, { coordinates, featu
         .always(() => {
           layersLength -= 1;
           if (0 === layersLength) {
-            queryErrors.length === numberOfRequests ? d.reject(queryErrors) : d.resolve(queryResponses);
+            (queryErrors.length === numberOfRequests)
+              ? d.reject(queryErrors)
+              : d.resolve(queryResponses);
           }
         })
     }
-    return d.promise();
+  } else {
+    // single layers request
+    let layersLength      = layers.length;
+    let rejectedResponses = 0;
+    layers
+      .forEach(layer => {
+        layer
+          .query({
+            feature_count,
+            coordinates,
+            query_point_tolerance,
+            mapProjection,
+            size,
+            resolution,
+          })
+          .then(response => queryResponses.push(response))
+          .fail(error => { queryErrors.push(error); rejectedResponses +=1; })
+          .always(() => {
+            layersLength -= 1;
+            if (0 === layersLength) {
+              (rejectedResponses < layers.length)
+                ? d.resolve(queryResponses)
+                : d.reject(queryErrors);
+            }
+          });
+      });
   }
-  
-  // single layers request
-  let layersLength      = layers.length;
-  let rejectedResponses = 0;
-  layers
-    .forEach(layer => {
-      layer
-        .query({
-          feature_count,
-          coordinates,
-          query_point_tolerance,
-          mapProjection,
-          size,
-          resolution,
-        })
-        .then(response => queryResponses.push(response))
-        .fail(error => { queryErrors.push(error); rejectedResponses +=1; })
-        .always(() => {
-          layersLength -= 1;
-          if (0 === layersLength) {
-            rejectedResponses < layers.length ? d.resolve(queryResponses) : d.reject(queryErrors)
-          }
-        });
-    });
 
   return d.promise();
-};
+}
