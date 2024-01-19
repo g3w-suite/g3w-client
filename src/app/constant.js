@@ -434,7 +434,6 @@ export const API_BASE_URLS = {
    * @since v3.8
    */
   CRS: '/crs/',
-
 };
 
 /**

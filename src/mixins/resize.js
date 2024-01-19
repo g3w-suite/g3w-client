@@ -5,7 +5,7 @@
 
 import GUI from 'services/gui';
 
-const { throttle, debounce } = require('core/utils/utils');
+const { throttle, debounce } = require('utils');
 
 const DELAY_TYPE = {
   throttle,

@@ -28,21 +28,22 @@
     &.map {
       #resize-map-and-content {
         position: absolute;
-        z-index:1;
+        z-index:4;
+        user-select: none;
         &:hover{
          background-color: #cccccc !important;
         }
         &.split-h {
-          width: 4px;
+          width: 8px;
           height: 100%;
           cursor: col-resize;
-          right:-2px;
+          right:-7px;
         }
         &.split-v{
-          height: 4px;
+          height: 8px;
           width: 100%;
           cursor: row-resize;
-          bottom:-2px;
+          bottom:-7px;
         }
       }
       line-height: normal;

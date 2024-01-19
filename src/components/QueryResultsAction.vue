@@ -10,10 +10,8 @@
     @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
     v-download                = "action.download"
     :class                    = "{'toggled': action.state && action.state.toggled[featureIndex] }"
-    class                     = "action-button skin-tooltip-right"
-    data-placement            = "right"
-    data-toggle               = "tooltip"
-    v-t-title                 = "action.hint"
+    class                     = "action-button"
+    v-t-tooltip:top.create="action.hint"
   >
     <span
       style  = "padding: 2px;"

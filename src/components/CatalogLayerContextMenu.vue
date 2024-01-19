@@ -20,7 +20,7 @@
       <div class="layer-menu-geomtype">{{ getGeometryType(layerMenu.layer.id, layerMenu.layer.external) }}</div>
     </li>
 
-    <!-- ITEM POSITION -->
+    <!-- ITEM POSITION (z-index) -->
     <li v-if="!layerMenu.layer.projectLayer">
       <div class="layer-menu-position">
         <layerspositions
@@ -42,7 +42,7 @@
       <div
         class="layer-menu-metadata-info-container"
         v-show="layerMenu.metadatainfoMenu.show"
-        :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: (layerMenu.metadatainfoMenu.left+1) + 'px' }"
+        :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: (layerMenu.metadatainfoMenu.left + 1) + 'px' }"
       >
         <div class="layer-menu-metadata-info" v-html="layerMenu.layer.metadata.abstract"></div>
       </div>
@@ -51,8 +51,8 @@
     <!-- STYLES MENU -->
     <li
       v-if             = "canShowStylesMenu(layerMenu.layer)"
-      @mouseleave.self = "showStylesMenu(false,$event)"
-      @mouseover.self  = "showStylesMenu(true,$event)"
+      @mouseleave.self = "showSubMenuContext({ menu: 'stylesMenu', evt: $event, bool: false })"
+      @mouseover.self  = "showSubMenuContext({ menu: 'stylesMenu', evt: $event, bool: true })"
       class            = "menu-icon"
     >
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('palette')"></span>
@@ -106,8 +106,13 @@
       @click.prevent.stop = "showAttributeTable(layerMenu.layer.id)"
     >
       <bar-loader :loading="layerMenu.loading.data_table" />
-      <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('list')"> </span>
-      <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
+      <span
+        class="menu-icon skin-color-dark"
+        :class="g3wtemplate.getFontClass('list')"> </span>
+      <span
+        class="item-text"
+        v-t="'catalog_items.contextmenu.open_attribute_table'">
+      </span>
     </li>
 
     <!-- COLOR PICKER (external layer) -->
@@ -248,8 +253,14 @@
     >
       <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.csv" />
-        <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('csv')"></span>
-        <span class="item-text" v-t="'sdk.catalog.menu.download.csv'"></span>
+        <span
+          class="menu-icon skin-color-dark"
+          :class="g3wtemplate.getFontClass('csv')">
+        </span>
+        <span
+          class="item-text"
+          v-t="'sdk.catalog.menu.download.csv'">
+        </span>
       </div>
     </li>
 
@@ -265,6 +276,48 @@
       </div>
     </li>
 
+    <!-- Filters menu -->
+    <li
+      v-if             = "canShowFiltersMenu(layerMenu.layer)"
+      @mouseleave.self = "showSubMenuContext({ menu: 'filtersMenu', bool: false, evt: $event })"
+      @mouseover.self  = "showSubMenuContext({ menu: 'filtersMenu', bool: true, evt: $event })"
+      class            = "menu-icon"
+    >
+      <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('filter')"></span>
+      <span class="item-text" v-t="'catalog_items.contextmenu.filters'"></span>
+      <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
+      <ul
+        v-show = "layerMenu.filtersMenu.show"
+        style  = "position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
+        :style = "{
+          top:       layerMenu.filtersMenu.top       + 'px',
+          left:      layerMenu.filtersMenu.left      + 'px',
+          maxHeight: layerMenu.filtersMenu.maxHeight + 'px',
+          overflowY: layerMenu.filtersMenu.overflowY
+        }"
+      >
+        <li
+          v-for       = "filter in layerMenu.layer.filters"
+          :key        = "filter.fid"
+          style       = "display: flex; justify-content: space-between; align-items: baseline"
+          @click.stop = "setCurrentLayerFilter(filter)"
+        >
+          <span
+            v-if   = "layerMenu.layer.filter.current && layerMenu.layer.filter.current.fid === filter.fid"
+            style  = "font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
+            :class = "g3wtemplate.getFontClass('circle')"
+          ></span>
+            <span style="margin-right: 5px;">{{ filter.name }}</span>
+            <span
+              @click.stop = "deleteFilter(filter.fid)"
+              class       = "skin-border-color"
+              style       = "color: red; right: 0; padding-left: 10px; border-left: 2px solid;"
+              :class      = "g3wtemplate.getFontClass('trash')">
+          </span>
+        </li>
+      </ul>
+    </li>
+
     <!-- Click to Copy WMS URL -->
     <li
       v-if = "canShowWmsUrl(layerMenu.layer.id)"
@@ -276,15 +329,17 @@
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
         <div class="layer-menu-click-to-copy">
           <span
-            class       = "item-text catalog-menu-wms skin-tooltip-top"
-            data-toggle = "tooltip"
-            v-t-tooltip = "'sdk.catalog.menu.wms.copy'"
+            class          = "item-text catalog-menu-wms skin-tooltip-top"
+            data-toggle    = "tooltip"
+            data-container = "body"
+            v-t-tooltip    = "'sdk.catalog.menu.wms.copy'"
           >WMS URL</span>
           <span
             class          = "bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
             :class         = "g3wtemplate.getFontClass('eye')"
             data-placement = "top"
             data-toggle    = "tooltip"
+            data-container = "body"
             :title         = "getWmsUrl(layerMenu.layer.id)"
           ></span>
         </div>
@@ -302,15 +357,17 @@
         <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('map')"></span>
         <div class="layer-menu-click-to-copy">
           <span
-            class       = "item-text catalog-menu-wms skin-tooltip-top"
-            data-toggle = "tooltip"
-            v-t-tooltip = "'sdk.catalog.menu.wms.copy'"
+            class          = "item-text catalog-menu-wms skin-tooltip-top"
+            data-toggle    = "tooltip"
+            data-container = "body"
+            v-t-tooltip    = "'sdk.catalog.menu.wms.copy'"
           >WFS URL</span>
           <span
             class          = "bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
             :class         = "g3wtemplate.getFontClass('eye')"
             data-placement = "top"
             data-toggle    = "tooltip"
+            data-container = "body"
             :title         = "getWfsUrl(layerMenu.layer.id)"
           ></span>
         </div>
@@ -322,6 +379,7 @@
 
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
+
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
   import { CatalogEventBus as VM }     from 'app/eventbus';
   import CatalogLayersStoresRegistry   from 'store/catalog-layers';
@@ -331,7 +389,7 @@
   const { t }                          = require('core/i18n/i18n.service');
   const shpwrite                       = require('shp-write');
   const TableComponent                 = require('gui/table/vue/table');
-  const { downloadFile }               = require('core/utils/utils');
+  const { downloadFile }               = require('utils');
 
   const OFFSETMENU = {
     top: 50,
@@ -373,13 +431,20 @@
             color: null,
           },
           //styleMenu
-          //colorMenu
           stylesMenu: {
             show: false,
             top: 0,
             left: 0,
             style: null,
             default: null,
+          },
+          //filtersMenu
+          filtersMenu: {
+            show: false,
+            top:0,
+            left:0,
+            style: null,
+            default: null
           },
           //metadataInfo
           metadatainfoMenu: {
@@ -422,7 +487,7 @@
     methods: {
 
       /**
-       * @TODO find out a  a better way to handle this, eg:
+       * @TODO find out a better way to handle this, eg:
        *       using only the `showSubMenuContext()` method
        */
       addLayerMenuItem(item={}) {
@@ -432,6 +497,10 @@
         });
       },
 
+      /**
+       *
+       * @private
+       */
       _hideMenu() {
         this.layerMenu.show               = false;
         this.layerMenu.styles             = false;
@@ -450,6 +519,10 @@
         this.layerMenu.loading.unknow     = false;
       },
 
+      /**
+       *
+        * @param menu
+       */
       closeLayerMenu(menu={}) {
         this._hideMenu();
         this.showColorMenu(false);
@@ -536,7 +609,10 @@
 
         a = null;
 
-        setTimeout(() => this._hideMenu(), 600);
+        setTimeout(() => {
+          $('[data-toggle="tooltip"]').tooltip("destroy"); // remove tooltip
+          this._hideMenu()
+        }, 600);
       },
 
       downloadGeoTIFF(layerId, map_extent=false) {
@@ -791,9 +867,58 @@
       },
 
       /**
+       * Set current filter
+       *
+       * @param filter
+       *
+       * @since 3.9.0
+       */
+      async setCurrentLayerFilter(filter) {
+        const changed = (
+          null === this.layerMenu.layer.filter.current ||
+          this.layerMenu.layer.filter.current.fid !== filter.fid
+        );
+        const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+        if (changed) {
+          await layer.applyFilter(filter);
+        } else {
+          await layer.deleteFilterToken();
+        }
+        layer.change();
+        this.closeLayerMenu(this.layerMenu.filtersMenu);
+      },
+
+      /**
+       * Delete filter from saved filters
+       *
+       * @param fid
+       *
+       * @returns { Promise<void> }
+       *
+       * @since 3.9.0
+       */
+      async deleteFilter(fid) {
+        const layer  = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+        const change = fid === this.layerMenu.layer.fid;
+        // skip when ..
+        if (!layer) {
+          return;
+        }
+        await layer.deleteFilterToken(fid);
+        if (change) {
+          layer.change();
+        }
+        this.closeLayerMenu(this.layerMenu.filtersMenu);
+      },
+
+      /**
        * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
        */
       async showSubMenuContext({ menu, bool, evt }) {
+        if ('string' === typeof menu) {
+          menu = this.layerMenu[menu];
+        }
+        /** @TODO rename parameter: `bool` --> `show` */
         if (bool) {
           const elem        = $(evt.target);
           menu.top          = elem.offset().top;
@@ -810,13 +935,6 @@
           await this.$nextTick();
         }
         menu.show = bool;
-      },
-
-      /**
-       * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
-       */
-      async showStylesMenu(bool, evt) {
-        this.showSubMenuContext({ bool, evt, menu: this.layerMenu.stylesMenu });
       },
 
       //showmetadatainfo
@@ -868,6 +986,15 @@
        */
       canShowStylesMenu(layer) {
         return layer.geolayer && layer.styles && layer.styles.length > 1;
+      },
+
+      /**
+       * @returns { boolean } whether it can show filters menu
+       *
+       * @since 3.9.0
+       */
+      canShowFiltersMenu(layer) {
+        return layer.filters && layer.filters.length > 0;
       },
 
       /**

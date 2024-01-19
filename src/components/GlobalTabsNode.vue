@@ -82,10 +82,6 @@
 
     name: "node",
 
-    components: {
-      'g3w-field': G3WField,
-    },
-
     props: [
       'contenttype',
       'node',
@@ -100,6 +96,10 @@
       'handleRelation'
     ],
 
+    components: {
+      'g3w-field': G3WField,
+    },
+
     data() {
       return {
         context:          this.contenttype,
@@ -109,6 +109,9 @@
 
     computed: {
 
+      /**
+       * @returns { Array }
+       */
       filterNodes() {
         return (this.node.nodes || []).filter(node => {
 
@@ -130,10 +133,16 @@
         });
       },
 
+      /**
+       * @returns { number }
+       */
       nodesLength() {
         return this.filterNodes.length;
       },
 
+      /**
+       * @returns { number }
+       */
       rows() {
         // rows = 0
         if (this.nodesLength === 0) {
@@ -147,11 +156,17 @@
         return 1;
       },
 
+      /**
+       * @returns { number }
+       */
       columnNumber() {
         const columnCount = parseInt(this.node.columncount) || 1;
         return columnCount > this.nodesLength ? this.nodesLength : columnCount;
       },
 
+      /**
+       * @returns { boolean }
+       */
       showGroupTile() {
         return this.showTitle && this.node.showlabel && this.node.groupbox;
       },
@@ -159,14 +174,27 @@
     },
     methods: {
   
+      /**
+       * @param relation
+       * 
+       * @returns {{ loading: boolean }}
+       */
       loadingRelation(relation) {
-        return ProjectsRegistry
-          .getCurrentProject()
-          .getLayerById(this.layerid)
-          .getRelationById(relation.name)
+        return (
+            ProjectsRegistry
+            .getCurrentProject()
+            .getLayerById(this.layerid)
+            .getRelationById(relation.name)
+            || ({ state: { loading: false } }) // FIXME: prevent a fatal error when creating a relation Tab (even if the project has no relations)
+          )
           .state;
       },
 
+      /**
+       * @param relation
+       * 
+       * @returns { boolean }
+       */
       isRelationDisabled(relation) {
         return (
           undefined === this.getRelationName(relation.name) ||
@@ -210,12 +238,18 @@
         const relation = ProjectsRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
-  
+
+      /**
+       * @param relation
+       * 
+       * @returns { boolean }
+       */
       isRelationChildLayerNotEditable(relation) {
         const {/*nmRelationId,*/ name} = relation;
 
         // TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
         const currentProject  = ProjectsRegistry.getCurrentProject();
+
         const projectRelation = currentProject.getRelationById(name);
         const relationLayerId = projectRelation.referencingLayer;
         const relationLayer   = currentProject.getLayerById(relationLayerId);
@@ -241,22 +275,39 @@
         // return !relationLayer.isEditable() || (nmRelationId ? relationLayer.isVector() : false);
       },
 
+      /**
+       * @param row
+       * 
+       * @returns { Array }
+       */
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
         return this.filterNodes.slice(startIndex, this.columnNumber + startIndex);
       },
 
+      /**
+       * @param row
+       * @param column
+       */
       getNode(row, column) {
         return this.getNodes(row)[column - 1];
       },
 
+      /**
+       * @param node 
+       */
       getField(node) {
         if (node.relation) {
           return node;
         }
-        return this.fields.find((field) => field.name === (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name));
+        return this.fields.find((field) => field.name === (node.field_name ? node.field_name.replace(/ /g, '_') : node.field_name));
       },
 
+      /**
+       * @param node
+       * 
+       * @returns { string }
+       */
       getNodeType(node) {
         let type;
         

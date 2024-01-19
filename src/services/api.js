@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-const { base, inherit, reject } = require('core/utils/utils');
+const { base, inherit, reject } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // Class Api Service
