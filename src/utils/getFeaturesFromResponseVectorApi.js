@@ -9,7 +9,7 @@ import { convertVectorFeaturesToResultFeatures } from 'utils/convertVectorFeatur
  */
 export function getFeaturesFromResponseVectorApi(response = {}, { type = 'vector' } = {}) {
 
-  /** @FIXME add description */
+  /** In case of result missing or false (error) */
   if (!response.result) {
     return null;
   }

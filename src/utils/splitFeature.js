@@ -18,17 +18,18 @@ export function splitFeature({
   };
   const splitType                 = geometries.split.getType();   // check geometry type of split
   const featureGeometryType       = geometries.feature.getType(); // check geometry type of feature
-  const splittedFeatureGeometries = [];                           // array of splitted geometries
   const parser                    = new jsts.io.OL3Parser();
 
-  /** @FIXME add description */
+  /** In case of split geometry feature type is non a LineString */
   if ('LineString' !== splitType) {
     return [];
   }
 
-  const is_poly  = 1 !== featureGeometryType.indexOf('Polygon');
-  const is_multi = 1 !== featureGeometryType.indexOf('Multi');
-  const is_line  = 1 !== featureGeometryType.indexOf('LineString');
+  const splittedFeatureGeometries = []; // array of split geometries
+
+  const is_poly                   = 1 !== featureGeometryType.indexOf('Polygon');
+  const is_multi                  = 1 !== featureGeometryType.indexOf('Multi');
+  const is_line                   = 1 !== featureGeometryType.indexOf('LineString');
 
   const polygonFeature      = is_multi && is_poly             ? geometries.feature.getPolygons()    : geometries.feature;
   const lineFeatureGeometry = is_multi && !is_poly && is_line ? geometries.feature.getLineStrings() : geometries.feature;

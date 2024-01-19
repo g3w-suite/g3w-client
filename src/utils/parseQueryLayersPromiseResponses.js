@@ -8,4 +8,4 @@ export function parseQueryLayersPromiseResponses(responses) {
     query: responses[0] ? responses[0].query: null,
     data: responses.flatMap(r => r.data || []),
   };
-};
+}

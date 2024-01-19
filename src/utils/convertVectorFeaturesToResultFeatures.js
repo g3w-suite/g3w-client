@@ -14,4 +14,4 @@ export function convertVectorFeaturesToResultFeatures(features = []) {
       id:         feature.id,
     };
   });
-};
+}
