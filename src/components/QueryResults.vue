@@ -418,11 +418,7 @@
   import G3WField                from 'components/G3WField.vue';
   import InfoFormats             from 'components/QueryResultsActionInfoFormats.vue';
   import QueryResultsAction      from 'components/QueryResultsAction.vue';
-  import { throttle }            from 'utils/throttle';
   import { getFieldType }        from 'utils/getFieldType';
-
-
-  const { throttle } = require('core/utils/utils');
 
   const MAX_SUBSET_LENGTH           = 3;
   const headerExpandActionCellWidth = 10;
@@ -945,7 +941,6 @@
   margin-bottom: 3px;
   font-size: 1.1em;
 }
-
 .queryresults-container > .query-results-not-found > h4 {
   font-weight: bold;
   text-align: center;
@@ -962,7 +957,7 @@
 .noAttributes {
   display: flex;
   justify-content: flex-end;
-
+}
 .feature_attributes tr {
   line-height: 1.8em;
 }

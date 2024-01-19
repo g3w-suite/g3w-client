@@ -28,10 +28,9 @@
 </template>
 
 <script>
-import G3WField        from 'components/G3WField.vue';
-import { selectMixin } from 'mixins';
-
-const { getUniqueDomId } = require('core/utils/utils');
+import G3WField           from 'components/G3WField.vue';
+import { selectMixin }    from 'mixins';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 Object
     .entries({

@@ -50,11 +50,11 @@
 </template>
 
 <script>
-import ApplicationState  from 'store/application-state';
-import G3WField          from 'components/G3WField.vue';
-import { resizeMixin }   from 'mixins';
-
-const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
+import ApplicationState                      from 'store/application-state';
+import G3WField                              from 'components/G3WField.vue';
+import { resizeMixin }                       from 'mixins';
+import { getUniqueDomId }                    from 'utils/getUniqueDomId';
+import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 
 Object
     .entries({

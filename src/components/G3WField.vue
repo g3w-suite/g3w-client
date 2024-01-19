@@ -186,14 +186,13 @@ import MapLayersStoresRegistry                from 'store/map-layers';
 import ApplicationService                     from 'services/application';
 import GUI                                    from 'services/gui';
 import { getFieldType }                       from 'utils/getFieldType';
-
-const {
+import { getMediaFieldType }                  from 'utils/getMediaFieldType';
+import {
   truefnc,
   toRawType,
   convertQGISDateTimeFormatToMoment,
-  getMediaFieldType,
-}                                             = require('core/utils/utils');
-const { getQueryLayersPromisesByCoordinates } = require('core/utils/geo');
+}                                             from 'utils';
+const { getQueryLayersPromisesByCoordinates } = require('utils/geo');
 const PickFeatureInteraction                  = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction              = require('g3w-ol/interactions/pickcoordinatesinteraction');
 const { t }                                   = require('core/i18n/i18n.service');

@@ -104,8 +104,8 @@
 </template>
 
 <script>
-import G3WField    from 'components/G3WField.vue';
-const { debounce } = require('core/utils/utils');
+import G3WField     from 'components/G3WField.vue';
+import { debounce } from 'utils/debounce';
 
 Object
     .entries({

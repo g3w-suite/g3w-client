@@ -171,12 +171,13 @@
 </template>
 
 <script>
-import GUI                          from 'services/gui';
-import ProjectsRegistry             from 'store/projects';
-import G3WField                     from 'components/G3WField.vue';
+import GUI                from 'services/gui';
+import ProjectsRegistry   from 'store/projects';
+import G3WField           from 'components/G3WField.vue';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
+import { toRawType }      from 'utils/toRawType';
 
-const { getUniqueDomId, toRawType } = require('core/utils/utils');
-const { t }                         = require('core/i18n/i18n.service');
+const { t }               = require('core/i18n/i18n.service');
 
 Object
     .entries({

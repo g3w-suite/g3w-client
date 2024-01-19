@@ -46,10 +46,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'store/application-state';
-  import G3WField         from 'components/G3WField.vue';
-
-  const { getUniqueDomId } = require('core/utils/utils');
+  import ApplicationState   from 'store/application-state';
+  import G3WField           from 'components/G3WField.vue';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
 
   Object
     .entries({

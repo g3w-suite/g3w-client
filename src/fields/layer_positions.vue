@@ -48,10 +48,9 @@
 </template>
 
 <script>
-  import G3WField         from 'components/G3WField.vue';
-  import { MAP_SETTINGS } from 'app/constant';
-
-  const { getUniqueDomId } = require('core/utils/utils');
+  import G3WField           from 'components/G3WField.vue';
+  import { MAP_SETTINGS }   from 'app/constant';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
 
   Object
     .entries({
