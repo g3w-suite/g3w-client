@@ -17,9 +17,12 @@ import { createFeatureFromGeometry } from 'utils/createFeatureFromGeometry';
   * ```
   */
 export function createFeatureFromFeatureObject({ id, feature = {} }) {
-  feature = createFeatureFromGeometry({ id, geometry: feature.geometry });
+  //extract geometry and attributes from feature Object
+  const {geometry, attributes} = feature;
+  //create a new ol feature
+  feature = createFeatureFromGeometry({ id, geometry });
   Object
-    .keys(feature.attributes)
-    .forEach(attr => feature.set(attr, feature.attributes[attr]));
+    .keys(attributes)
+    .forEach(attr => feature.set(attr, attributes[attr]));
   return feature;
-};
+}
