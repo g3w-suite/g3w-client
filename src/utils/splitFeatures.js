@@ -12,9 +12,11 @@ export function splitFeatures({
   splitfeature,
 } = {}) {
   return features
-    .map(f => {
+    .reduce((a, f) => {
       const geometries = splitFeature({ splitfeature, feature: f });
-      return geometries.length > 1 ? { uid: f.getUid(), geometries } : null;
-    })
-    .filter(Boolean);
-};
+      if (geometries.length > 1) {
+        a.push({ uid: f.getUid(), geometries });
+      }
+      return a;
+    }, []);
+}
