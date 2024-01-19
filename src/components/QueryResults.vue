@@ -204,15 +204,32 @@
                   >
                     <template v-if="feature.show">
 
-                      <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureBody.vue@3.8 -->
-                      <tr>
+                      <!-- ADDED BY: https://github.com/g3w-suite/g3w-client/pull/505) -->
+                      <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@3.9 -->
+                      <tr
+                        @mouseover = "trigger({ id:'highlightgeometry' }, layer, feature, index)"
+                        @mouseout  = "trigger({ id:'clearHighlightGeometry' }, layer, feature, index)"
+                        class      = "featurebox-header"
+                      >
 
-                        <td v-for="attr in attributesSubset(layer)" class="attribute">
-                          <span v-if="getIcon({ layer, feature, attr })" class="skin-color" :class="getIcon({ layer, feature, attr })"></span>
-                          <span v-else>{{ feature.attributes[attr.name] }}</span>
+                        <td
+                          v-if     = "state.layersactions[layer.id].length"
+                          class    = "g3w-feature-actions"
+                          :colspan = "getColSpan(layer)"
+                        >
+                          <action
+                            v-for   = "action in state.layersactions[layer.id]"
+                            :key    = "action.id"
+                            v-bind  = "{
+                              layer:        layer,
+                              featureIndex: index,
+                              trigger:      trigger,
+                              feature:      feature,
+                              actions:      state.layersactions[layer.id]
+                            }"
+                            :action = "action"
+                          />
                         </td>
-
-                        <td v-if= "!hasLayerOneFeature(layer)"></td>
 
                       </tr>
 
@@ -256,46 +273,15 @@
                         </td>
                       </tr>
 
-                      <!-- TODO: simplify, duplicated from above: "featurebox-header" -->
-                      <!-- ADDED BY: https://github.com/g3w-suite/g3w-client/pull/505) -->
-                      <tr
-                        @click     = "toggleFeatureBoxAndZoom(layer,feature, index)"
-                        @mouseover = "trigger({ id: 'highlightgeometry' }, layer, feature, index)"
-                        @mouseout  = "trigger({ id: 'clearHighlightGeometry' }, layer, feature, index)"
-                        class      = "featurebox-header"
-                        :class     = "[getLayerFeatureBox(layer, feature).collapsed ? '' : 'featurebox-header-open']"
-                      >
-
-                        <td v-if="state.layersactions[layer.id].length" class="g3w-feature-actions">
-                          <action
-                            v-for   = "action in state.layersactions[layer.id]"
-                            :key    = "action.id"
-                            v-bind  = "{
-                              layer:        layer,
-                              featureIndex: index,
-                              trigger:      trigger,
-                              feature:      feature,
-                              actions:      state.layersactions[layer.id]
-                            }"
-                            :action = "action"
-                          />
-                        </td>
+                      <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureBody.vue@3.8 -->
+                      <tr>
 
                         <td v-for="attr in attributesSubset(layer)" class="attribute">
                           <span v-if="getIcon({ layer, feature, attr })" class="skin-color" :class="getIcon({ layer, feature, attr })"></span>
                           <span v-else>{{ feature.attributes[attr.name] }}</span>
                         </td>
 
-                        <td
-                          v-if   = "!hasLayerOneFeature(layer)"
-                          class  = "collapsed"
-                          :class = "{noAttributes: (0 === attributesSubset(layer).length) }"
-                        >
-                          <span
-                            class="fa link morelink skin-color"
-                            :class="[g3wtemplate.font[getLayerFeatureBox(layer, feature).collapsed ? 'plus' : 'minus']]"
-                          ></span>
-                        </td>
+                        <td v-if= "!hasLayerOneFeature(layer)"></td>
 
                       </tr>
 
