@@ -16,10 +16,6 @@ export function getDefaultLayerStyle(geometryType, options = {}) {
     case GEOMETRY_TYPES.LINEM:
     case GEOMETRY_TYPES.LINEZM:
     case GEOMETRY_TYPES.LINE25D:
-      return new ol.style.Style({
-        stroke: new ol.style.Stroke({ color, width: 3 }),
-      });
-
     // MultiLineString
     case GEOMETRY_TYPES.MULTILINESTRINGZ:
     case GEOMETRY_TYPES.MULTILINESTRINGM:
@@ -39,14 +35,6 @@ export function getDefaultLayerStyle(geometryType, options = {}) {
     case GEOMETRY_TYPES.POINTM:
     case GEOMETRY_TYPES.POINTZM:
     case GEOMETRY_TYPES.POINT25D:
-      return new ol.style.Style({
-        image: new ol.style.Circle({
-          fill: new ol.style.Fill({ color }),
-          stroke: new ol.style.Stroke({ color, width: 1 }),
-          radius: 5,
-        }),
-      });
-
     // MultiPoint
     case GEOMETRY_TYPES.MULTIPOINTZ:
     case GEOMETRY_TYPES.MULTIPOINTM:
@@ -65,11 +53,6 @@ export function getDefaultLayerStyle(geometryType, options = {}) {
     case GEOMETRY_TYPES.POLYGONM:
     case GEOMETRY_TYPES.POLYGONZM:
     case GEOMETRY_TYPES.POLYGON25D:
-      return new ol.style.Style({
-        fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
-        stroke: new ol.style.Stroke({ color, width: 3 }),
-      });
-
     // MultiPolygon
     case GEOMETRY_TYPES.MULTIPOLYGONZ:
     case GEOMETRY_TYPES.MULTIPOLYGONM:
@@ -79,10 +62,8 @@ export function getDefaultLayerStyle(geometryType, options = {}) {
         fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
         stroke: new ol.style.Stroke({ color, width: 3 }),
       })
-    
+
     default:
       console.warn('invalid geometry type: ', geometryType);
-
   }
-
-};
+}
