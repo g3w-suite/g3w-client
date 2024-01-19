@@ -1,9 +1,9 @@
 import { GEOMETRY_TYPES } from 'app/constant';
 
 /**
- * core/geometry/geometry::getAllLineGEOMETRY_TYPES@v3.4
+ * core/geometry/geometry::getAllLineGeometryTypes@v3.4
  */
-export function getAllLineGEOMETRY_TYPES() {
+export function getAllLineGeometryTypes() {
   return [
     GEOMETRY_TYPES.LINESTRING,
     GEOMETRY_TYPES.LINESTRINGZ,

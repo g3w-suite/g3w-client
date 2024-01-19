@@ -1,8 +1,8 @@
 import { GEOMETRY_TYPES } from "app/constant";
 /**
- * core/geometry/geometry::getAllPolygonGEOMETRY_TYPES@v3.4
+ * core/geometry/geometry::getAllPolygonGeometryTypes@v3.4
  */
-export function getAllPolygonGEOMETRY_TYPES() {
+export function getAllPolygonGeometryTypes() {
   return [
     GEOMETRY_TYPES.POLYGON,
     GEOMETRY_TYPES.POLYGONZ,
@@ -15,4 +15,4 @@ export function getAllPolygonGEOMETRY_TYPES() {
     GEOMETRY_TYPES.MULTIPOLYGONZM,
     GEOMETRY_TYPES.MULTIPOLYGON25D,
   ];
-};
+}
