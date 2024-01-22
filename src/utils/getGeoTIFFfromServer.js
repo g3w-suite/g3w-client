@@ -16,5 +16,5 @@ export async function getGeoTIFFfromServer(options = {}) {
   body.append('image',               options.params.image);
   body.append('csrfmiddlewaretoken', options.params.csrfmiddlewaretoken);
   body.append('bbox',                options.params.bbox);
-  return await (await fetch(options.url, { method: options.method, body })).blob();
-};
+  return await (await fetch(options.url, { method: options.method || "POST", body })).blob();
+}
