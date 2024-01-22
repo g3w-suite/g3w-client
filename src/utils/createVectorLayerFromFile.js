@@ -1,15 +1,13 @@
-import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
-
-const { uniqueId } = require('utils');
+import { GEOMETRY_FIELDS } from 'app/constant';
+import { getUniqueDomId }  from "./getUniqueDomId";
 
 function _createVectorLayer(name, crs, mapCrs, style, data, format, epsg) {
-  epsg = undefined === epsg ?  crs : epsg;
+  epsg = undefined === epsg ? crs : epsg;
 
-  let vectorLayer;
   const features = format.readFeatures(data, { dataProjection: epsg, featureProjection: mapCrs || epsg });
 
-  // skip when ..
-  if (!features.length) {
+  // skip when no features
+  if (0 === features.length) {
     return;
   }
 
@@ -18,19 +16,14 @@ function _createVectorLayer(name, crs, mapCrs, style, data, format, epsg) {
     features.forEach(f => f.unset('styleUrl'));
   }
 
-  vectorLayer = new ol.layer.Vector({
+  return new ol.layer.Vector({
     source: new ol.source.Vector({ features }),
     name,
-    _fields: Object.keys(features[0].getProperties()).filter(prop => geometryFields.indexOf(prop) < 0),
-    id: uniqueId()
+    _fields: Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0),
+    id: getUniqueDomId(),
+    style
   });
-
-  if (style) {
-    vectorLayer.setStyle(style);
-  }
-
-  return vectorLayer;
-};
+}
 
 function _createCSVLayer(name, crs, mapCrs, style, data) {
   const {
@@ -52,8 +45,12 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
         const coordinates = [];
         rowvalues.forEach((value, index) => {
           const field = headers[index];
-          if (field === x) coordinates[0] = 1 * value;
-          if (field === y) coordinates[1] = 1 * value;
+          if (field === x) {
+            coordinates[0] = 1 * value;
+          }
+          if (field === y) {
+            coordinates[1] = 1 * value;
+          }
           properties[field] = value;
         });
         // check if all coordinates is right
@@ -96,18 +93,14 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
     });
   }
 
-  layer = new ol.layer.Vector({
+  return new ol.layer.Vector({
     source: new ol.source.Vector({ features }),
     name,
     _fields: headers,
-    id: uniqueId()
+    id: getUniqueDomId(),
+    style,
   });
 
-  if (style) {
-    layer.setStyle(style);
-  }
-
-  return layer;
 }
 
 async function _createKMZLayer(name, crs, mapCrs, style, data) {
@@ -136,6 +129,7 @@ async function _createKMZLayer(name, crs, mapCrs, style, data) {
 }
 
 async function _createZIPLayer(name, crs, mapCrs, style, data) {
+  console.log(name)
   try {
     return await new Promise(async (resolve, reject) => {
       shp(await data.arrayBuffer(data))
@@ -170,13 +164,13 @@ export async function createVectorLayerFromFile({
   style
 } = {}) {
   switch (type) {
-    case 'gpx':     return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.GPX());
-    case 'gml':     return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.WMSGetFeatureInfo());
+    case 'gpx'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.GPX());
+    case 'gml'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.WMSGetFeatureInfo());
     case 'geojson': return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.GeoJSON());
-    case 'kml':     return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.KML({ extractStyles: false }),  "EPSG:4326");
-    case 'csv':     return _createCSVLayer(name, crs, mapCrs, style, data);
-    case 'kmz':     return _createKMZLayer(name, crs, mapCrs, style, data);
-    case 'zip':     return _createZIPLayer(name, crs, mapCrs, style, data);
+    case 'kml'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.KML({ extractStyles: false }),  "EPSG:4326");
+    case 'csv'    : return _createCSVLayer(name, crs, mapCrs, style, data);
+    case 'kmz'    : return _createKMZLayer(name, crs, mapCrs, style, data);
+    case 'zip'    : return _createZIPLayer(name, crs, mapCrs, style, data);
   }
   console.warn('invalid file type', type);
-};
+}
