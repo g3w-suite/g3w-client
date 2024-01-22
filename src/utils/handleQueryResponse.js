@@ -16,4 +16,4 @@ export function handleQueryResponse({
 } = {}) {
   layers = layers ? layers : [this._layer];
   return ResponseParser.get(layers[0].getInfoFormat())({ response, projections, layers, wms });
-};
+}

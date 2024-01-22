@@ -1,4 +1,4 @@
-import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
+import { GEOMETRY_FIELDS } from 'app/constant';
 
 /**
  * @param layerAttributes
@@ -6,14 +6,13 @@ import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
  * 
  * @returns { Array }
  */
-export function parseAttributes(layerAttributes, featureAttributes) {
+export function parseAttributes(layerAttributes=[], featureAttributes) {
   /** @FIXME add description */
-  if (layerAttributes && layerAttributes.length) {
-    let names = Object.keys(featureAttributes);
-    return layerAttributes.filter(attr => names.indexOf(attr.name) > -1)
+  if (layerAttributes && layerAttributes.length > 0) {
+    return layerAttributes.filter(attr => Object.keys(featureAttributes).indexOf(attr.name) > -1)
   }
   return Object
     .keys(featureAttributes)
-    .filter(name => -1 === geometryFields.indexOf(name))
+    .filter(name => -1 === GEOMETRY_FIELDS.indexOf(name))
     .map(featureAttributesName => ({ name: featureAttributesName, label: featureAttributesName }));
-};
+  }

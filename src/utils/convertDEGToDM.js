@@ -19,4 +19,4 @@ export function convertDEGToDM({
     case 'Object': return { degrees, minutes };
     default:       return degrees + "°" + minutes + "'";
   }
-};
+}

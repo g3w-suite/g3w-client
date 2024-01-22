@@ -21,4 +21,4 @@ export function closestOnSegment(coordinate, segment) {
   }
 
   return [x1 + along * dx, y1 + along * dy];
-};
+}
