@@ -1,10 +1,12 @@
-import ApplicationState                 from 'store/application-state';
-import DataRouterService                from 'services/data';
-import ProjectsRegistry                 from 'store/projects';
-import DownloadMixin                    from 'core/layers/mixins/download';
-import SelectionMixin                   from 'core/layers/mixins/selection';
-import { SELECTION as SELECTION_STATE } from 'core/layers/mixins/selection';
-import RelationsMixin                   from 'core/layers/mixins/relations';
+import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
+import ApplicationState                      from 'store/application-state';
+import DataRouterService                     from 'services/data';
+import ProjectsRegistry                      from 'store/projects';
+import DownloadMixin                         from 'core/layers/mixins/download';
+import SelectionMixin                        from 'core/layers/mixins/selection';
+import { SELECTION as SELECTION_STATE }      from 'core/layers/mixins/selection';
+import RelationsMixin                        from 'core/layers/mixins/relations';
+import { parseAttributes }                   from 'utils/parseAttributes';
 
 const { t }                 = require('core/i18n/i18n.service');
 const {
@@ -13,12 +15,7 @@ const {
   XHR,
 }                           = require('utils');
 const G3WObject             = require('core/g3wobject');
-const {
-  geometryFields,
-  parseAttributes,
-}                           =  require('utils/geo');
 const ProviderFactory       = require('core/layers/providersfactory');
-
 const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer

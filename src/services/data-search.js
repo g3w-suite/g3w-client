@@ -2,9 +2,9 @@
  * @file
  * @since v3.6
  */
+import { createOlFeatureFromApiResponseFeature } from 'utils/createOlFeatureFromApiResponseFeature';
 
 const { base, inherit }                         = require('utils');
-const { createOlFeatureFromApiResponseFeature } = require('utils/geo');
 const BaseService                               = require('core/data/service');
 
 function SearchService() {

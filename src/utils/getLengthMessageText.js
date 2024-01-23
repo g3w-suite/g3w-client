@@ -1,5 +1,6 @@
 import { needUseSphereMethods } from 'utils/needUseSphereMethods';
 import { transformMeterLength } from 'utils/transformMeterLength';
+import { isMultiGeometry }      from "utils/isMultiGeometry";
 
 /**
  * @param { Object } opts
@@ -15,14 +16,13 @@ export function getLengthMessageText({
   /**
    * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
    */
-  const { Geometry } = require('utils/geo');
   //
   const geometryType = geometry.getType();
   const useSphereMethods = needUseSphereMethods(projection);
   const length = useSphereMethods ? ol.sphere.getLength(geometry, {
     projection: projection.getCode()
-  }) : Geometry.isMultiGeometry(geometryType) ?
-    geometry.getLineStrings().reduce((totalLength, lineGeometry) => totalLength+= lineGeometry.getLength(), 0)
+  }) : isMultiGeometry(geometryType)
+    ? geometry.getLineStrings().reduce((totalLength, lineGeometry) => totalLength+= lineGeometry.getLength(), 0)
     : geometry.getLength();
   let message;
   switch(unit) {

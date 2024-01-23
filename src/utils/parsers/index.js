@@ -4,20 +4,18 @@
  * @since 3.9.0
  */
 
-import { G3W_FID }         from 'app/constant';
-import GUI                 from 'services/gui';
-import { reverseGeometry } from 'utils/reverseGeometry';
+import { G3W_FID }                         from 'app/constant';
+import GUI                                 from 'services/gui';
+import { is3DGeometry }                    from 'utils/is3DGeometry';
+import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGeometry';
+import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature';
+import { reverseGeometry }                 from 'utils/reverseGeometry';
 
-const { toRawType }             = require('utils');
-const Feature                   = require('core/layers/features/feature');
-const { t }                     = require('core/i18n/i18n.service');
+const { toRawType }                        = require('utils');
+const Feature                              = require('core/layers/features/feature');
+const { t }                                = require('core/i18n/i18n.service');
 
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
-
-/**
- * @FIXME circular dependency (ie. empty object when importing at top level)
- */
-// const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('utils/geo');
 
 /**
  * Response parser (internal utilities)
@@ -122,11 +120,6 @@ const utils = {
     return features;
   },
   parseLayerFeatureCollection({jsonresponse, layer, projections}) {
-    /**
-     * @FIXME circular dependency (ie. empty object when importing at top level)
-     */
-    const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('utils/geo');
-
     const x2js = new X2JS();
     const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
     const parser = new ol.format.WMSGetFeatureInfo();
@@ -229,7 +222,6 @@ const utils = {
  */
 const contenttypes = {
   'application/json'({layers=[], response, projections, wms=true}={}) {
-    const {sanitizeFidFeature} = require('utils/geo');
     const layersFeatures = [];
     const layersId = layers.map(layer => {
       layersFeatures.push({
