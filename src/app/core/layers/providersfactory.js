@@ -1,7 +1,8 @@
 import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
-import { QUERY_POINT_TOLERANCE }   from 'constant';
+import { QUERY_POINT_TOLERANCE }   from 'app/constant';
 import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
+import { handleQueryResponse }     from 'utils/handleQueryResponse';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
@@ -13,7 +14,6 @@ const {
   toRawType,
   getTimeoutPromise,
 }                                  = require('utils');
-const { handleQueryResponse }      = require('utils/geo');
 const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
