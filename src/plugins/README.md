@@ -102,92 +102,20 @@ As per [68da69f](https://github.com/g3w-suite/g3w-client/blob/68da69f23c7d4aa5d2
 ```js
 /* src/app/api.js */
 
-const g3wsdk = {
+g3wsdk = {
 
   // APP CONSTANTS
-  constant: G3W_CONSTANT, // TODO: rename to "constants" which is more appropriate (in version 4.0)
+  constant: G3W_CONSTANT,
 
   // CORE API METHODS AND OBJECTS
   core: {
     G3WObject,
     utils,
-    geoutils: {
-      geometryFields: GEOMETRY_FIELDS,
-      coordinatesToGeometry,
-      getDefaultLayerStyle,
-      createLayerStyle,
-      createFeatureFromCoordinates,
-      createFeatureFromBBOX,
-      createFeatureFromGeometry,
-      createFeatureFromFeatureObject,
-      createOlLayer,
-      createWMSLayer,
-      createVectorLayerFromGeometry,
-      createVectorLayerFromFeatures,
-      createVectorLayerFromFile,
-      createStyleFunctionToVectorLayer,
-      createSelectedStyle,
-      getAlphanumericPropertiesFromFeature,
-      getFormDataExpressionRequestFromFeature,
-      convertFeatureToGEOJSON,
-      getQueryLayersPromisesByBBOX,
-      getQueryLayersPromisesByGeometry,
-      getQueryLayersPromisesByCoordinates,
-      transformBBOX,
-      parseQueryLayersPromiseResponses,
-      getMapLayerById,
-      getMapLayersByFilter,
-      areCoordinatesEqual,
-      getFeaturesFromResponseVectorApi,
-      covertVectorFeaturesToResultFeatures: convertVectorFeaturesToResultFeatures,
-      splitGeometryLine,
-      splitFeatures,
-      splitFeature,
-      getPointFeaturesfromGeometryVertex,
-      getVertexLength,
-      isSameBaseGeometryType,
-      isSingleGeometry,
-      singleGeometriesToMultiGeometry,
-      multiGeometryToSingleGeometries,
-      convertSingleMultiGeometry,
-      dissolve,
-      within,
-      intersects,
-      findSelfIntersects,
-      normalizeEpsg,
-      crsToCrsObject,
-      ConvertDMToDEG: convertDMToDEG,
-      ConvertDEGToDM: convertDEGToDM,
-      ConvertDMSToDEG: convertDMSToDEG,
-      ConvertDEGToDMS: convertDEGToDMS,
-      getGeoTIFFfromServer,
-      createOlFeatureFromApiResponseFeature,
-      sanitizeFidFeature,
-      parseAttributes,
-      handleQueryResponse,
-      distance,
-      squaredDistance,
-      closestOnSegment,
-      get_LEGEND_ON_LEGEND_OFF_Params: get_legend_params,
-        Geometry: {
-          GeometryTypes: GEOMETRY_TYPES,
-          removeZValueToOLFeatureGeometry,
-          addZValueToOLFeatureGeometry,
-          getOLGeometry,
-          isMultiGeometry,
-          getAllPointGeometryTypes,
-          isPointGeometryType,
-          getAllLineGeometryTypes,
-          isLineGeometryType,
-          getAllPolygonGeometryTypes,
-          isPolygonGeometryType,
-          is3DGeometry,
-        },
-    },
+    geoutils,
     ApplicationService,
     ApplicationState,
     ApiService,
-    Router: RouterService,
+    Router,
     i18n,
     task: {
       TaskService
@@ -203,12 +131,22 @@ const g3wsdk = {
         Server
       }
     },
+    editing: {
+      Session,
+      SessionsRegistry,
+      Editor,
+      ChangesManager
+    },
+    geometry: {
+      Geom,
+      Geometry
+    },
     project: {
       ProjectsRegistry,
       Project
     },
     map: {
-      MapLayersStoreRegistry: MapLayersStoresRegistry
+      MapLayersStoreRegistry
     },
     catalog: {
       CatalogLayersStoresRegistry
@@ -224,7 +162,10 @@ const g3wsdk = {
       WmsLayer,
       XYZLayer,
       MapLayer,
-      geometry: {},
+      geometry: {
+        Geometry,
+        geom: Geom
+      },
       features: {
         Feature,
         FeaturesStore,
@@ -247,11 +188,12 @@ const g3wsdk = {
       PluginsRegistry,
       PluginService
     },
-    input: {
-      inputService: {
-        handleFilterExpressionFormInput: FormService._getFilterExpression,
-        handleDefaultExpressionFormInput: FormService._getDefaultExpression,
-      }
+    workflow: {
+      Task,
+      Step,
+      Flow,
+      Workflow,
+      WorkflowsStack
     }
   },
 
@@ -273,12 +215,10 @@ const g3wsdk = {
       MapComponent,
       ToolsComponent,
       QueryResultsComponent,
-      // main Form Component
       FormComponent,
-      // Form Components
       FormComponents: {
-        Body: FormBody,
-        Footer: FormFooter
+        Body,
+        Footer
       },
       Inputs: {
         G3wFormInputs,
@@ -288,14 +228,13 @@ const g3wsdk = {
       Charts: {
         ChartsFactory,
         c3: {
-          lineXY: C3XYLine
+          lineXY
         }
       },
       Fields,
       Mixins,
       services: {
-        SearchPanel: SearchPanelService,
-        FormService
+        SearchPanel: SearchPanelService
       }
     }
   },
@@ -312,45 +251,9 @@ const g3wsdk = {
       }
     },
     controls: {},
-    utils: {
-      merge: mergeOptions,
-      getExtentForViewAndSize,
-      createPolygonLayerFromBBox,
-      reverseGeometry,
-      getScaleFromResolution,
-      getResolutionFromScale,
-      getDPI,
-      getMetersFromDegrees,
-      needUseSphereMethods,
-      getLengthMessageText,
-      getAreaMessageText,
-      formatMeasure,
-      createMeasureTooltip,
-      getCurrentMapUnit,
-      transformMeterLength,
-      transformMeterArea,
-      removeMeasureTooltip,
-      setMeasureTooltipStatic,
-    },
+    utils: g3wolutils
   },
 
-  // G3W-SUITE debug info
-  info: () => {
-      $script(
-          'https://unpkg.com/platform@1.3.6/platform.js',
-          () => {
-              window.console.info(`
-[g3wsdk.info]\n
-- g3w-admin: __${initConfig.version}__
-- g3w-client: __${G3W_CONSTANT.APP_VERSION}__
-- browser: __${platform.name} ${platform.version}__
-- operating system: __${platform.os.toString()}__
-`.trim());
-          });
-  },
-
-  // G3W-CLIENT version
-  version: G3W_CONSTANT.APP_VERSION
 };
 ```
 
