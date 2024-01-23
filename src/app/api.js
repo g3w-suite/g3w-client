@@ -123,11 +123,11 @@ import { getDPI }                                  from 'utils/getDPI';
 import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
 import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
 import { mergeOptions }                            from 'utils/mergeOptions';
+import { ResponseParser }                          from 'utils/parsers';
 
 const G3WObject                  = require('core/g3wobject');
 const utils                      = require('utils');
 const i18n                       = require('core/i18n/i18n.service');
-const Server                     = require('core/errors/parser/servererrorparser');
 const Project                    = require('core/project/project');
 const LayersStoreRegistry        = require('core/layers/layersstoresregistry');
 const LayersStore                = require('core/layers/layersstore');
@@ -282,7 +282,7 @@ const g3wsdk = {
     },
     errors: {
       parsers: {
-        Server
+        Server: ResponseParser.get('g3w-error')
       }
     },
     project: {

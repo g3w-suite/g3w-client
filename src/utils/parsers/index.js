@@ -1,5 +1,8 @@
 /**
- * @file ORIGINAL SOURCE: src/app/core/utils/parsers.js@3.8
+ * @file
+ * 
+ * ORIGINAL SOURCE: src/app/core/utils/parsers.js@3.8
+ * ORIGINAL SOURCE: src/app/core/errors/parser/servererrorparser.js@3.9.1
  * 
  * @since 3.9.0
  */
@@ -40,6 +43,37 @@ export const ResponseParser = {
   /** Response parser (content types) */
   get(type) {
     switch (type) {
+
+      case 'g3w-error':
+        return function(options = {}) {
+          let { error } = options;
+          return ({
+            parse({ type = 'responseJSON' } = {}) {
+
+            /** @FIXME add description */
+            if ('responseJSON' === type && error && error.responseJSON && error.responseJSON.error.message) {
+              return error.responseJSON.error.message;
+            }
+
+            /** @FIXME add description */
+            if ('responseJSON' === type && error && error.errors){
+              return _traverseErrorMessage(error.errors);
+            }
+
+            /** @FIXME add description */
+            if ('String' === type && 'string' === typeof error) {
+              return error;
+            }
+
+            /** @FIXME add description */
+            if ('String' === type) {
+              return _traverseErrorMessage(error);
+            }
+
+            /** @FIXME add description */
+            return t("server_saver_error");
+          }})
+        };
 
       case 'g3w-table/json':
         return function(data = {}) {
@@ -330,3 +364,37 @@ export const ResponseParser = {
     }
   },
 };
+
+/**
+ * ORIGINAL SOURCE: src/app/core/errors/parser/servererrorparser.js@3.9.1
+ */
+function _traverseErrorMessage(errorObject, error_message = "server_saver_error") {
+  try {
+    const entries   = Object.entries(errorObject);
+    const entry     = entries.find(([key, value]) => key === 'fields');
+    const [, value] = (entry || entries[0]);
+
+    /** @FIXME add description */
+    if (!entry && !Array.isArray(value) && 'object' === typeof value) {
+      return _traverseErrorMessage(value, error_message)
+    }
+
+    /** @FIXME add description */
+    if (entry && 'string' === typeof value) {
+      error_message = `[${ entries.find(([key]) => 'fields' !== key)[0] }] ${value}`;
+    }
+
+    /** @FIXME add description */
+    if (entry && 'string' !== typeof value) {
+      error_message = Object.entries(value).reduce((message, [field, error]) => `${message}${field} ${ Array.isArray(error) ? error[0] : error }\n`, '');
+    }
+
+    /** @FIXME add description */
+    if (entry) {
+      return error_message.replace(/\:|\./g, '');
+    }
+
+  } catch(err){
+    console.warn(err);
+  }
+}
