@@ -9,7 +9,6 @@ import ApplicationService                          from 'services/application';
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
-import { GEOMETRY_TYPES, GEOMETRY_FIELDS }         from 'app/constant';
 import { addZValueToOLFeatureGeometry }            from 'utils/addZValueToOLFeatureGeometry';
 import { is3DGeometry }                            from 'utils/is3DGeometry';
 import { removeZValueToOLFeatureGeometry }         from 'utils/removeZValueToOLFeatureGeometry';
@@ -195,7 +194,7 @@ const g3wsdk = {
     G3WObject,
     utils,
     geoutils: {
-      geometryFields: GEOMETRY_FIELDS,
+      geometryFields: G3W_CONSTANT.GEOMETRY_FIELDS,
       coordinatesToGeometry,
       getDefaultLayerStyle,
       createLayerStyle,
@@ -253,7 +252,7 @@ const g3wsdk = {
       closestOnSegment,
       get_LEGEND_ON_LEGEND_OFF_Params: get_legend_params,
       Geometry: {
-        GeometryTypes: GEOMETRY_TYPES,
+        GeometryTypes: G3W_CONSTANT.GEOMETRY_TYPES,
         removeZValueToOLFeatureGeometry,
         addZValueToOLFeatureGeometry,
         getOLGeometry,
