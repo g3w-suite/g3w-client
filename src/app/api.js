@@ -302,7 +302,6 @@ const g3wsdk = {
       WmsLayer,
       XYZLayer,
       MapLayer,
-      geometry: {},
       features: {
         Feature,
         FeaturesStore,
