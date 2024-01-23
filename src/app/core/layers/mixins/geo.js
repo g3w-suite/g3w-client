@@ -5,13 +5,13 @@
  * @since 3.9.0
  */
 
-import GUI                               from 'services/gui';
-import ApplicationService                from 'services/application';
-import { getScaleFromResolution }        from 'utils/getScaleFromResolution';
+import GUI                                from 'services/gui';
+import ApplicationService                 from 'services/application';
+import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
+import { getScaleFromResolution }         from 'utils/getScaleFromResolution';
 
-const Projections                        = require('g3w-ol/projection/projections');
-const { createFeatureFromFeatureObject } = require('utils/geo');
-const { XHR, sanitizeUrl }               = require('utils');
+const Projections                         = require('g3w-ol/projection/projections');
+const { XHR, sanitizeUrl }                = require('utils');
 
 const RESERVERDPARAMETRS = {
   wms: [

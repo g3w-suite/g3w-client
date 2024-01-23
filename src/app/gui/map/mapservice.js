@@ -1,15 +1,20 @@
-import { MAP_SETTINGS }           from 'app/constant';
-import DataRouterService          from 'services/data';
-import MapLayersStoresRegistry    from 'store/map-layers';
-import ProjectsRegistry           from 'store/projects';
-import ApplicationService         from 'services/application';
-import ControlsRegistry           from 'store/map-controls';
-import GUI                        from 'services/gui';
-import MapControlZoomHistory      from 'components/MapControlZoomHistory.vue';
-import MapControlGeocoding        from 'components/MapControlGeocoding.vue';
-import { groupBy }                from 'utils/groupBy';
-import { getScaleFromResolution } from 'utils/getScaleFromResolution';
-import { getResolutionFromScale } from 'utils/getResolutionFromScale';
+import { MAP_SETTINGS }              from 'app/constant';
+import DataRouterService             from 'services/data';
+import MapLayersStoresRegistry       from 'store/map-layers';
+import ProjectsRegistry              from 'store/projects';
+import ApplicationService            from 'services/application';
+import ControlsRegistry              from 'store/map-controls';
+import GUI                           from 'services/gui';
+import MapControlZoomHistory         from 'components/MapControlZoomHistory.vue';
+import MapControlGeocoding           from 'components/MapControlGeocoding.vue';
+import { createVectorLayerFromFile } from 'utils/createVectorLayerFromFile'; 
+import { createWMSLayer }            from 'utils/createWMSLayer';
+import { createSelectedStyle }       from 'utils/createSelectedStyle';
+import { getMapLayersByFilter }      from 'utils/getMapLayersByFilter';
+import { getGeoTIFFfromServer }      from 'utils/getGeoTIFFfromServer';
+import { groupBy }                   from 'utils/groupBy';
+import { getScaleFromResolution }    from 'utils/getScaleFromResolution';
+import { getResolutionFromScale }    from 'utils/getResolutionFromScale';
 
 const {
   inherit,
@@ -17,17 +22,9 @@ const {
   copyUrl,
   uniqueId,
   throttle,
-  toRawType,
   createFilterFromString,
 }                               = require('utils');
 const G3WObject                 = require('core/g3wobject');
-const {
-  createVectorLayerFromFile,
-  createWMSLayer,
-  createSelectedStyle,
-  getMapLayersByFilter,
-  getGeoTIFFfromServer,
-}                               = require('utils/geo');
 const BaseLayers                = require('g3w-ol/layers/bases');
 const VectorLayer               = require('core/layers/vectorlayer');
 

@@ -1,5 +1,5 @@
-import { GEOMETRY_TYPES as GeometryTypes } from 'app/constant';
-import { is3DGeometry }                    from 'utils/is3DGeometry';
+import { GEOMETRY_TYPES } from 'app/constant';
+import { is3DGeometry }   from 'utils/is3DGeometry';
 
 /**
  * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
@@ -20,28 +20,28 @@ export function addZValueToOLFeatureGeometry({
   switch (geometryType || geometry.getType()) {
 
     // POINT: [x, y]
-    case GeometryTypes.POINTZ:
-    case GeometryTypes.POINTM:
-    case GeometryTypes.POINTZM:
-    case GeometryTypes.POINT25D:
+    case GEOMETRY_TYPES.POINTZ:
+    case GEOMETRY_TYPES.POINTM:
+    case GEOMETRY_TYPES.POINTZM:
+    case GEOMETRY_TYPES.POINT25D:
       coords.push(0);
       feature.getGeometry().setCoordinates(coords);
       break;
 
     // MULTIPOINT: [ [x1, y1], [x2, y2] ]
-    case GeometryTypes.MULTIPOINTZ:
-    case GeometryTypes.MULTIPOINTM:
-    case GeometryTypes.MULTIPOINTZM:
-    case GeometryTypes.MULTIPOINT25D:
+    case GEOMETRY_TYPES.MULTIPOINTZ:
+    case GEOMETRY_TYPES.MULTIPOINTM:
+    case GEOMETRY_TYPES.MULTIPOINTZM:
+    case GEOMETRY_TYPES.MULTIPOINT25D:
     // LINE: [ [x1, y1], [x2, y2] ]
-    case GeometryTypes.LINESTRINGZ:
-    case GeometryTypes.LINESTRINGM:
-    case GeometryTypes.LINESTRINGZM:
-    case GeometryTypes.LINESTRING25D:
-    case GeometryTypes.LINEZ:
-    case GeometryTypes.LINEM:
-    case GeometryTypes.LINEZM:
-    case GeometryTypes.LINE25D:
+    case GEOMETRY_TYPES.LINESTRINGZ:
+    case GEOMETRY_TYPES.LINESTRINGM:
+    case GEOMETRY_TYPES.LINESTRINGZM:
+    case GEOMETRY_TYPES.LINESTRING25D:
+    case GEOMETRY_TYPES.LINEZ:
+    case GEOMETRY_TYPES.LINEM:
+    case GEOMETRY_TYPES.LINEZM:
+    case GEOMETRY_TYPES.LINE25D:
       coords.forEach(c => c.push(0));
       feature.getGeometry().setCoordinates(coords);
       break;
@@ -50,14 +50,14 @@ export function addZValueToOLFeatureGeometry({
     //   [ [x1, y1], [x2, y2] ],
     //   [ [x3, y3], [x4, y4] ]
     // ]
-    case GeometryTypes.MULTILINESTRINGZ:
-    case GeometryTypes.MULTILINESTRINGM:
-    case GeometryTypes.MULTILINESTRINGZM:
-    case GeometryTypes.MULTILINESTRING25D:
-    case GeometryTypes.MULTILINEZ:
-    case GeometryTypes.MULTILINEM:
-    case GeometryTypes.MULTILINEZM:
-    case GeometryTypes.MULTILINE25D:
+    case GEOMETRY_TYPES.MULTILINESTRINGZ:
+    case GEOMETRY_TYPES.MULTILINESTRINGM:
+    case GEOMETRY_TYPES.MULTILINESTRINGZM:
+    case GEOMETRY_TYPES.MULTILINESTRING25D:
+    case GEOMETRY_TYPES.MULTILINEZ:
+    case GEOMETRY_TYPES.MULTILINEM:
+    case GEOMETRY_TYPES.MULTILINEZM:
+    case GEOMETRY_TYPES.MULTILINE25D:
       coords.forEach(line => line.forEach(c => c.push(0)));
       feature.getGeometry().setCoordinates(coords);
       break;
@@ -65,10 +65,10 @@ export function addZValueToOLFeatureGeometry({
     // POLYGON: [
     //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ]
     // ]
-    case GeometryTypes.POLYGONZ:
-    case GeometryTypes.POLYGONM:
-    case GeometryTypes.POLYGONZM:
-    case GeometryTypes.POLYGON25D:
+    case GEOMETRY_TYPES.POLYGONZ:
+    case GEOMETRY_TYPES.POLYGONM:
+    case GEOMETRY_TYPES.POLYGONZM:
+    case GEOMETRY_TYPES.POLYGON25D:
       coords[0].forEach(c => c.push(0));
       feature.getGeometry().setCoordinates(coords);
       break;
@@ -77,10 +77,10 @@ export function addZValueToOLFeatureGeometry({
     //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ],
     //   [ [xa, ya], [xb, yb], [xc, yc], [xa, ya] ]
     // ]
-    case GeometryTypes.MULTIPOLYGONZ:
-    case GeometryTypes.MULTIPOLYGONM:
-    case GeometryTypes.MULTIPOLYGOZM:
-    case GeometryTypes.MULTIPOLYGON25D:
+    case GEOMETRY_TYPES.MULTIPOLYGONZ:
+    case GEOMETRY_TYPES.MULTIPOLYGONM:
+    case GEOMETRY_TYPES.MULTIPOLYGOZM:
+    case GEOMETRY_TYPES.MULTIPOLYGON25D:
       coords.forEach(poly => poly[0].forEach(c => c.push(0)));
       feature.getGeometry().setCoordinates(coords);
       break;

@@ -1,4 +1,4 @@
-import { GEOMETRY_TYPES as GeometryTypes } from 'app/constant';
+import { GEOMETRY_TYPES } from 'app/constant';
 
 /**
  * Remove Z values from geometry coordinates
@@ -7,7 +7,7 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
 
   const geometry = feature.getGeometry();
 
-  // skip when ..
+  // skip when feature has no geometry (alphanumerical feature)
   if (!geometry) {
     return feature;
   }
@@ -17,7 +17,7 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
   switch (geometry.getType()) {
 
     // POINT: [x, y]
-    case GeometryTypes.POINT:
+    case GEOMETRY_TYPES.POINT:
       if (3 === coords.length) {
         coords.splice(2);
         feature.getGeometry().setCoordinates(coords);
@@ -25,10 +25,10 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
       break;
 
     // MULTIPOINT: [ [x1, y1], [x2, y2] ]
-    case GeometryTypes.MULTIPOINT:
+    case GEOMETRY_TYPES.MULTIPOINT:
     // LINE: [ [x1, y1], [x2, y2] ]
-    case GeometryTypes.LINESTRING:
-    case GeometryTypes.LINE:
+    case GEOMETRY_TYPES.LINESTRING:
+    case GEOMETRY_TYPES.LINE:
       coords.forEach(c => c.splice(2));
       feature.getGeometry().setCoordinates(coords);
       break;
@@ -37,8 +37,8 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
     //   [ [x1, y1], [x2, y2] ],
     //   [ [x3, y3], [x4, y4] ]
     // ]
-    case GeometryTypes.MULTILINESTRING:
-    case GeometryTypes.MULTILINE:
+    case GEOMETRY_TYPES.MULTILINESTRING:
+    case GEOMETRY_TYPES.MULTILINE:
       coords.forEach(line => line.forEach(c => c.splice(2)));
       feature.getGeometry().setCoordinates(coords);
       break;
@@ -46,7 +46,7 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
     // POLYGON: [
     //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ]
     // ]
-    case GeometryTypes.POLYGON:
+    case GEOMETRY_TYPES.POLYGON:
       coords[0].forEach(c => c.splice(2));
       feature.getGeometry().setCoordinates(coords);
       break;
@@ -55,7 +55,7 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
     //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ],
     //   [ [xa, ya], [xb, yb], [xc, yc], [xa, ya] ]
     // ]
-    case GeometryTypes.MULTIPOLYGON:
+    case GEOMETRY_TYPES.MULTIPOLYGON:
       coords.forEach(poly => poly[0].forEach(c => c.splice(2)));
       feature.getGeometry().setCoordinates(coords);
       break;

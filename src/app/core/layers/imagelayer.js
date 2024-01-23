@@ -9,7 +9,6 @@ const WMSLayer                            = require('core/layers/map/wmslayer');
 const WMSTLayer                           = require('core/layers/map/wmstlayer');
 const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                            = require('core/layers/map/xyzlayer');
-
 const GeoLayerMixin                       = require('core/layers/mixins/geo');
 
 /**
