@@ -171,18 +171,17 @@
 </template>
 
 <script>
-import GUI                           from 'services/gui';
-import ApplicationState              from 'store/application-state';
-import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
-import { PluginsRegistry }           from "store";
-import CatalogLayersStoresRegistry   from 'store/catalog-layers';
-import { toRawType, uniqueId }       from 'utils';
-import { flattenObject }             from 'utils/flattenObject';
+import GUI                              from 'services/gui';
+import ApplicationState                 from 'store/application-state';
+import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChooseLayer.vue';
+import { PluginsRegistry }              from "store";
+import CatalogLayersStoresRegistry      from 'store/catalog-layers';
+import { toRawType, uniqueId }          from 'utils';
+import { flattenObject }                from 'utils/flattenObject';
+import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
+import { isPointGeometryType }          from 'utils/isPointGeometryType';
+import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
 
-const {
-  Geometry,
-  convertSingleMultiGeometry,
-}                                   = require('utils/geo');
 const Projections                   = require('g3w-ol/projection/projections');
 
 /**
@@ -725,7 +724,7 @@ export default {
         const type = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
 
         // create a new editing feature (Point/MultiPoint + safe alias for keys without `raw_` prefix)
-        const _feature = Geometry.addZValueToOLFeatureGeometry({
+        const _feature = addZValueToOLFeatureGeometry({
           geometryType: type,
           feature: new ol.Feature({
             ...Object.entries(feature.attributes).reduce((acc, attr) => ({ ...acc, [attr[0].replace(feature.attributes.provider + '_', '').toLowerCase()]: attr[1] }), {}),
@@ -785,7 +784,7 @@ export default {
       // Get editing layers that has Point/MultiPoint Geometry type
       const editablePointLayers =  CatalogLayersStoresRegistry
         .getLayers({ EDITABLE: true, GEOLAYER: true })
-        .filter(l => Geometry.isPointGeometryType(l.getGeometryType()))
+        .filter(l => isPointGeometryType(l.getGeometryType()))
         .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
 
       // skip adding action icon when there is no editable layer

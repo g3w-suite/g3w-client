@@ -17,7 +17,6 @@ import QueryBuilderService from './querybuilder';
 import RelationsService from './relations';
 import RouterService from './router';
 import TaskService from './tasks';
-import WorkFlowsStack from './workflows';
 
 /**
  * @FIXME importing directly from this file breaks application
@@ -43,5 +42,4 @@ export {
   RelationsService,
   RouterService,
   TaskService,
-  WorkFlowsStack,
 };

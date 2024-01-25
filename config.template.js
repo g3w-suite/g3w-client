@@ -52,7 +52,7 @@ let conf = {
 
 // backward compatibilities (v3.x)
 if (version < '4') {
-  conf.assetsFolder           = (version < '3.7' ? './assets' : conf.assetsFolder);
+  conf.assetsFolder           = (version.localeCompare('3.7.0', undefined, { numeric: true, sensitivity: 'case' }) < 0 ? './assets' : conf.assetsFolder);
   conf.distFolder             = './dist';
   conf.clientFolder           = './dist/client';
   conf.admin_static_folder    = `${conf.admin_plugins_folder}/client/static`;
