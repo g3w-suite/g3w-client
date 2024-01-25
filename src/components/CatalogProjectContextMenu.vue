@@ -5,7 +5,7 @@
 
 <template>
 
-  <ul v-if="menu.show"
+  <ul v-if="edit_url && menu.show"
     id="project-context-menu"
     ref="project-context-menu"
     class="catalog-context-menu"
