@@ -8,7 +8,9 @@ import CONSTANT                    from 'app/constant';
 import { getMapLayerById }         from 'utils/getMapLayerById';
 import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
 import { toRawType }               from 'utils/toRawType';
-import { uniqueId }                from 'utils/getUniqueDomId';
+import {
+  getUniqueDomId as uniqueId
+}                                  from 'utils/getUniqueDomId';
 import { get_legend_params }       from 'utils/get_legend_params';
 import GUI                         from 'services/gui';
 
