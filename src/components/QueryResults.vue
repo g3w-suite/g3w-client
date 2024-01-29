@@ -60,19 +60,19 @@
                       </span>
                     </template>
                     <template v-else-if="layer.downloads.length > 1">
-                    <span
-                      v-download class="action-button"
-                      :class="{'toggled': layer.downloadformats.active}"
-                      v-t-tooltip:left.create="'Downloads'"
-                    >
                       <span
-                        class="action-button-icon"
-                        :class="g3wtemplate.getFontClass('download')"
-                        @click.stop="showLayerDownloadFormats(layer)"
-                      ></span>
-                    </span>
+                        v-download class="action-button"
+                        :class="{'toggled': layer.downloadformats.active}"
+                        v-t-tooltip:left.create="'Downloads'"
+                      >
+                        <span
+                          class="action-button-icon"
+                          :class="g3wtemplate.getFontClass('download')"
+                          @click.stop="showLayerDownloadFormats(layer)"
+                        ></span>
+                      </span>
                     </template>
-                    <!--        DOWNLOAD        -->
+                    <!--        END DOWNLOAD        -->
                   </template>
                   <span
                     v-if="layer.external || (layer.source && layer.source.type !== 'wms')"
