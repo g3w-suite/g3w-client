@@ -132,10 +132,10 @@
       }
     },
     computed: {
-      required_fields(){
+      required_fields() {
         return this.contenttype === 'editing' && this.fields.filter(field => field.validate.required).map(field => field.name);
       },
-      show(){
+      show() {
         return this.tabs.reduce((accumulator, tab) => accumulator || (tab.visible === undefined || !!tab.visible), false);
       }
     },
@@ -196,8 +196,7 @@
             tab.visibility_expression
               .referenced_columns
               .forEach(column => {
-                const field = this.fields
-                  .find(field => field.name === column);
+                const field = this.fields.find(field => field.name === column);
                 this.unwatch.push(
                   this.$watch(() => field.value,
                     async (value) => {
@@ -220,7 +219,8 @@
             if (nodes.length) {
               this.root_tabs.push([...nodes]);
               nodes.splice(0);
-            } this.root_tabs.push({nodes:[tab_node]});
+            }
+            this.root_tabs.push({nodes:[tab_node]});
           }
         });
         if (nodes.length) {
