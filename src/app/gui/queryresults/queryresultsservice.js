@@ -1495,7 +1495,13 @@ class QueryResultsService extends G3WObject {
     this.setLayerActionTool({
       layer,
       component: layer[name].active ? DownloadFormats : null,
-      config: layer[name].active ? this.state.actiontools[name][layer.id] : null
+      config: layer[name].active
+        ? {
+            ...this.state.actiontools[name][layer.id],
+            //for download layer need to filter pdf format because it works onbly for a single feature
+            downloads: this.state.actiontools[name][layer.id].downloads.filter(d => 'pdf' !== d.format)
+          }
+        : null
     })
   }
 
