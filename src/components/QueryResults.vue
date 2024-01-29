@@ -49,13 +49,13 @@
                       <span
                         v-download
                         class="action-button"
-                        :class="{'toggled': layer[layer.downloads[0]].active}"
-                        v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`"
+                        :class="{'toggled': layer.downloadformats.active}"
+                        v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${getLayerDownloads(layer.downloads)[0]}.hint`"
                       >
                         <span
                           class="action-button-icon"
                           :class="g3wtemplate.getFontClass('download')"
-                          @click.stop="saveLayerResult(layer, layer.downloads[0])"
+                          @click.stop="saveLayerResult(layer, getLayerDownloads(layer.downloads)[0])"
                         ></span>
                       </span>
                     </template>
@@ -239,7 +239,10 @@
                           :id="`${layer.id}_${index}`"
                           class="featurebox-body"
                         >
-                          <td :colspan="getColSpan(layer)">
+                          <td
+                            :colspan="getColSpan(layer)"
+                            :feature-html-content="`${layer.id}_${index}`"
+                          > <!-- @since v3.10.0  Reference to content of feature html response -->
                             <tabs
                               :fields="getQueryFields(layer, feature)"
                               :layerid="layer.id"
@@ -345,7 +348,10 @@
                         :id="`${layer.id}_${index}`"
                         class="featurebox-body"
                       >
-                        <td :colspan="getColSpan(layer)">
+                        <td
+                          :colspan="getColSpan(layer)"
+                          :feature-html-content="`${layer.id}_${index}`"
+                        ><!--@since v3.10.0  Reference to content of feature html response-->
                           <table class="feature_attributes">
                             <template v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <template v-if="isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
@@ -780,8 +786,7 @@
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
-        const container = this.getContainerFromFeatureLayer({layer, index});
-        await this.$options.queryResultsService.trigger(action.id, layer,feature, index, container);
+        await this.$options.queryResultsService.trigger(action.id, layer,feature, index, this.getContainerFromFeatureLayer({layer, index}));
       },
       showFullPhoto(url) {
         this.$options.queryResultsService.showFullPhoto(url);
@@ -802,22 +807,25 @@
     watch: {
       async 'state.layers'(layers) {
         layers.forEach(layer => {
-          if (layer.attributes.length <= MAX_SUBSET_LENGTH && !layer.hasImageField) layer.expandable = false;
-          layer.features.forEach(feature => {
-            this.getLayerFeatureBox(layer, feature);
-           if (feature.attributes.relations) {
-              const relations = feature.attributes.relations;
-              relations.forEach(relation => {
-                const boxid = `${layer.id}_${feature.id}_${relation.name}`;
-                const elements = relation.elements;
-                elements.forEach((element, index) => {
-                  this.state.layersFeaturesBoxes[boxid+index] = {
-                    collapsed: true
-                  };
-                });
-              })
-            }
-          })
+          if (layer.attributes.length <= MAX_SUBSET_LENGTH && !layer.hasImageField) {
+            layer.expandable = false;
+          }
+          layer.features
+            .forEach(feature => {
+              this.getLayerFeatureBox(layer, feature);
+              if (feature.attributes.relations) {
+                const relations = feature.attributes.relations;
+                relations.forEach(relation => {
+                  const boxid = `${layer.id}_${feature.id}_${relation.name}`;
+                  const elements = relation.elements;
+                  elements.forEach((element, index) => {
+                    this.state.layersFeaturesBoxes[boxid+index] = {
+                      collapsed: true
+                    };
+                  });
+                })
+              }
+            })
         });
 
         // check if is a single result layer and if it has one feature

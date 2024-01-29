@@ -1498,7 +1498,7 @@ class QueryResultsService extends G3WObject {
       config: layer[name].active
         ? {
             ...this.state.actiontools[name][layer.id],
-            //for download layer need to filter pdf format because it works onbly for a single feature
+            //for download layer need to filter pdf format because it works only for a single feature
             downloads: this.state.actiontools[name][layer.id].downloads.filter(d => 'pdf' !== d.format)
           }
         : null
@@ -1513,8 +1513,9 @@ class QueryResultsService extends G3WObject {
    * @param features
    * @param action
    * @param index
+   * @param feature_dom
    */
-  async downloadFeatures(type, layer, features = [], action, index) {
+  async downloadFeatures(type, layer, features = [], action, index, feature_dom) {
 
     if (features && !Array.isArray(features)) {
       features = [features];
@@ -1524,6 +1525,11 @@ class QueryResultsService extends G3WObject {
     const data           = {
       fids: features.map(f => f.attributes[G3W_FID]).join(',')
     };
+
+    //In case of pdf type need to add feature_dom html element
+    if ('pdf' === type) {
+      data.dom = feature_dom;
+    }
 
     /**
      * A function that che be called in case of querybypolygon
@@ -2107,9 +2113,9 @@ class QueryResultsService extends G3WObject {
           format,
           class: GUI.getFontClass(format),
           hint: `sdk.tooltips.download_${format}`,
-          cbk: (layer, feature, action, index) => {
+          cbk: (layer, feature, action, index, feature_dom) => {
             // un-toggle downloads action
-            this.downloadFeatures(format, layer, feature, action, index);
+            this.downloadFeatures(format, layer, feature, action, index, feature_dom);
             if ('polygon' !== this.state.query.type) {
               const downloadsaction = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
               downloadsaction.cbk(layer, feature, downloadsaction, index);

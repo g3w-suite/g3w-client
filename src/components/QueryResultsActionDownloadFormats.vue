@@ -68,7 +68,17 @@ export default {
     async download() {
       try {
         const download = this.config.downloads.find(action => action.format === this.download_format);
-        await download.cbk(this.layer, this.feature ? this.feature : this.layer.features, download, this.featureIndex);
+        await download.cbk(
+          this.layer,
+          this.feature
+            ? this.feature
+            : this.layer.features,
+          download,
+          this.featureIndex,
+          'pdf' === download.format
+           ? document.querySelector(`[feature-html-content="${this.layer.id}_${this.featureIndex}"]`).innerHTML
+           : null
+        );
       }
       catch(err) {
         console.warn(err);
