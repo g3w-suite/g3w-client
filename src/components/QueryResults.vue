@@ -45,7 +45,7 @@
                       <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                     </span>
                     <!--        DOWNLOAD        -->
-                    <template v-if="layer.downloads.length === 1">
+                    <template v-if="1 === getLayerDownloads(layer.downloads).length">
                       <span
                         v-download
                         class="action-button"
@@ -59,7 +59,7 @@
                         ></span>
                       </span>
                     </template>
-                    <template v-else-if="layer.downloads.length > 1">
+                    <template v-else-if="getLayerDownloads(layer.downloads).length > 1">
                       <span
                         v-download class="action-button"
                         :class="{'toggled': layer.downloadformats.active}"
@@ -264,7 +264,10 @@
                 <template v-else>
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class="table" :class="{'mobile': isMobile()}">
-                    <tbody v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
+                    <tbody
+                      v-if="feature.show"
+                      v-for="(feature, index) in layer.features" :key="feature.id"
+                    >
                       <header-feature-actions-body
                         :colspan="getColSpan(layer)"
                         :actions="state.layersactions[layer.id]"
@@ -294,13 +297,16 @@
                       <tr
                         v-if="!hasLayerOneFeature(layer)"
                         style="font-weight: bold; text-align: center" >
-                        <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">
+                        <td
+                          v-for="(attribute) in attributesSubset(layer)"
+                          class="centered"
+                        >
                           {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
                         </td>
                         <td
                           @click.stop="toggleFeatureBoxAndZoom(layer,feature)"
                           class="collapsed"
-                          style="text-align: end"
+                          style="text-align: end;"
                           :class="{noAttributes: attributesSubset(layer).length === 0}">
                             <span
                               class="fa link morelink skin-color"
@@ -327,10 +333,18 @@
                         :getLayerField="getLayerField"/>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                         <td :colspan="getColSpan(layer)">
-                          <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
+                          <component
+                            class="box-body"
+                            :is="component"
+                            :layer="layer"
+                            :feature="feature"/>
                         </td>
                       </tr>
-                      <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
+                      <tr
+                        v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
+                        :id="`${layer.id}_${index}`"
+                        class="featurebox-body"
+                      >
                         <td :colspan="getColSpan(layer)">
                           <table class="feature_attributes">
                             <template v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
@@ -358,7 +372,11 @@
                       </tr>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
                         <td colspan="getColSpan(layer)">
-                          <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
+                          <component
+                            class="box-body"
+                            :is="component"
+                            :layer="layer"
+                            :feature="feature"/>
                         </td>
                       </tr>
                     </tbody>
@@ -370,7 +388,9 @@
                 v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')"
                 class="box-body"
                 :class="{'mobile': isMobile()}" >
-                <component :is="component" :layer="layer"/>
+                <component
+                  :is="component"
+                  :layer="layer"/>
               </div>
             </div>
           </li>
@@ -489,6 +509,17 @@
 
     },
     methods: {
+
+      /**
+       * @since v3.10.0
+       *
+       * @param { Array.<string> } downloads
+       *
+       * return {Array} return array of download formats enable of layer features
+       */
+      getLayerDownloads(downloads=[]) {
+        return downloads.filter(d => 'pdf' !== d);
+      },
 
       /**
        * @param { Object } layer
