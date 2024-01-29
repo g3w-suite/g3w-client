@@ -12,7 +12,7 @@
         <ul class="formquerytabs nav nav-tabs">
           <template v-for="(tab, index) in root_tab">
             <li
-              v-if="tab.visible === undefined || tab.visible"
+              v-show="tab.visible === undefined || tab.visible"
               :class="{active: index === 0}"
               >
                 <a
@@ -33,7 +33,7 @@
         >
           <template v-for="(tab, index) in root_tab">
             <div
-              v-if="tab.visible === undefined || tab.visible"
+              v-show="tab.visible === undefined || tab.visible"
               :id="ids[index]"
               class="tab-pane fade"
               :class="{'in active': index === 0}"
