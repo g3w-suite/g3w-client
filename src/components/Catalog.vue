@@ -213,7 +213,7 @@ export default {
         VM.$emit('layer-change-style');
       } else {
         // get all layer tha changes style
-        changeStyleLayersId.forEach(layerId => { VM.$emit('layer-change-style', { layerId }); });
+        changeStyleLayersId.forEach(layerId => { VM.$emit('layer-change-style', { layerId, style: map_theme }); });
       }
     },
 
