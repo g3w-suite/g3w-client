@@ -85,16 +85,14 @@ export const XHR = {
         httpMethod,
         data
       });
-      timeoutId = setTimeout(()=>{
+      timeoutId = setTimeout(() =>{
         reject('Timeout');
         downloadPromise.abort();
       }, TIMEOUT);
       downloadPromise
-        .done(()=>resolve())
-        .fail(()=> reject())
-        .always(()=>{
-          clearTimeout(timeoutId)
-        });
+        .done(resolve)
+        .fail(reject)
+        .always(() => clearTimeout(timeoutId));
     })
   },
 };
