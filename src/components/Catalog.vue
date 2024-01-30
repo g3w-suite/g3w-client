@@ -214,7 +214,7 @@ export default {
       if ('tab' === this.legend.place) {
         VM.$emit('layer-change-style');
       } else {
-        // get all layer tha changes style
+        // get style of current map_theme to apply on each layer change
         const { styles } = await this.project.getMapThemeFromThemeName(map_theme);
         changeStyleLayersId.forEach(layerId => {
           VM.$emit('layer-change-style', {
