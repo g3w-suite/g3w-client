@@ -198,22 +198,30 @@ export default {
     async changeMapTheme(map_theme) {
       GUI.closeContent();
       const changes = await this.$options.service.changeMapTheme(map_theme);
-      const changeStyleLayersId = Object.keys(changes.layers).filter(layerId => {
-        if (changes.layers[layerId].style) {
-          if (!changes.layers[layerId].visible) {
-            const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-            // clear categories
-            layer.clearCategories();
-            layer.change();
+      const changeStyleLayersId = Object
+        .keys(changes.layers)
+        .filter(layerId => {
+          if (changes.layers[layerId].style) {
+            if (!changes.layers[layerId].visible) {
+              const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+              // clear categories
+              layer.clearCategories();
+              layer.change();
+            }
+            return true;
           }
-          return true;
-        }
-      });
+        })
       if ('tab' === this.legend.place) {
         VM.$emit('layer-change-style');
       } else {
         // get all layer tha changes style
-        changeStyleLayersId.forEach(layerId => { VM.$emit('layer-change-style', { layerId, style: map_theme }); });
+        const { styles } = await this.project.getMapThemeFromThemeName(map_theme);
+        changeStyleLayersId.forEach(layerId => {
+          VM.$emit('layer-change-style', {
+            layerId,
+            style: styles[layerId]
+          });
+        })
       }
     },
 
