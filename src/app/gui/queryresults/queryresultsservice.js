@@ -1513,9 +1513,9 @@ class QueryResultsService extends G3WObject {
    * @param features
    * @param action
    * @param index
-   * @param feature_dom
+   * @param html
    */
-  async downloadFeatures(type, layer, features = [], action, index, feature_dom) {
+  async downloadFeatures(type, layer, features = [], action, index, html) {
 
     if (features && !Array.isArray(features)) {
       features = [features];
@@ -1526,9 +1526,9 @@ class QueryResultsService extends G3WObject {
       fids: features.map(f => f.attributes[G3W_FID]).join(',')
     };
 
-    //In case of pdf type need to add feature_dom html element
+    //In case of pdf type need to add html element
     if ('pdf' === type) {
-      data.dom = feature_dom;
+      data.html = html;
     }
 
     /**
@@ -2113,12 +2113,12 @@ class QueryResultsService extends G3WObject {
           format,
           class: GUI.getFontClass(format),
           hint: `sdk.tooltips.download_${format}`,
-          cbk: (layer, feature, action, index, feature_dom) => {
+          cbk: (layer, feature, action, index, html) => {
             // un-toggle downloads action
-            this.downloadFeatures(format, layer, feature, action, index, feature_dom);
+            this.downloadFeatures(format, layer, feature, action, index, html);
             if ('polygon' !== this.state.query.type) {
               const downloadsaction = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-              downloadsaction.cbk(layer, feature, downloadsaction, index);
+              downloadsaction.cbk(layer, feature, downloadsaction, index, html);
             }
           }
         });
