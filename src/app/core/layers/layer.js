@@ -20,6 +20,8 @@ const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
+  //DEV CODE
+  //config.download_pdf = true;
 
   this.config = config;
 
@@ -62,7 +64,7 @@ function Layer(config={}, options={}) {
     this.config.urls.xls         = `${vectorUrl}xls/${suffixUrl}`;
     this.config.urls.gpx         = `${vectorUrl}gpx/${suffixUrl}`;
     this.config.urls.gpkg        = `${vectorUrl}gpkg/${suffixUrl}`;
-    this.config.urls.pdf         = `${vectorUrl}pdf/${suffixUrl}`; //@since 3.10.0
+    this.config.urls.pdf         = `/html2pdf/`; //@since 3.10.0
     this.config.urls.geotiff     = `${rasterUrl}geotiff/${suffixUrl}`;
     this.config.urls.editing     = `${vectorUrl}editing/${suffixUrl}`;
     this.config.urls.commit      = `${vectorUrl}commit/${suffixUrl}`;
