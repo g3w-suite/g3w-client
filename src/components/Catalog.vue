@@ -194,34 +194,31 @@ export default {
 
     /**
      * Change view 
+     * 
+     * @fires CatalogEventBus~layer-change-style
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
-      const changes = await this.$options.service.changeMapTheme(map_theme);
-      const changeStyleLayersId = Object
-        .keys(changes.layers)
-        .filter(layerId => {
-          if (changes.layers[layerId].style) {
-            if (!changes.layers[layerId].visible) {
-              const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-              // clear categories
-              layer.clearCategories();
-              layer.change();
-            }
-            return true;
-          }
-        })
-      if ('tab' === this.legend.place) {
-        VM.$emit('layer-change-style');
+
+      // get all layers with styles
+      const changes = (await this.$options.service.changeMapTheme(map_theme)).layers;
+      const layers  = Object.keys(changes).filter(id => changes[id].style);
+      const styles  = 'tab' !== this.legend.place ? (await this.project.getMapThemeFromThemeName(map_theme)).styles : undefined;
+      
+      // clear categories
+      layers.forEach(id => {
+        if (!changes[id].visible) {
+          const layer = CatalogLayersStoresRegistry.getLayerById(id);
+          layer.clearCategories();
+          layer.change();
+        }
+      });
+
+      // apply styles on each layer
+      if (styles) {
+        layers.forEach(id => VM.$emit('layer-change-style', { layerId: id, style: styles[id] }));
       } else {
-        // get style of current map_theme to apply on each layer change
-        const { styles } = await this.project.getMapThemeFromThemeName(map_theme);
-        changeStyleLayersId.forEach(layerId => {
-          VM.$emit('layer-change-style', {
-            layerId,
-            style: styles[layerId]
-          });
-        })
+        VM.$emit('layer-change-style');
       }
     },
 
