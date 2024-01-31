@@ -98,7 +98,6 @@ import PluginsRegistry                             from 'store/plugins';
 import ProjectsRegistry                            from 'store/projects';
 import RelationsService                            from 'services/relations';
 import TaskService                                 from 'services/tasks';
-import WorkflowsStack                              from 'services/workflows';
 import ApiService                                  from 'services/api';
 import RouterService                               from 'services/router';
 
@@ -147,10 +146,6 @@ const Filter                     = require('core/layers/filter/filter');
 const Expression                 = require('core/layers/filter/expression');
 const Plugin                     = require('core/plugin/plugin');
 const PluginService              = require('core/plugin/pluginservice');
-const Task                       = require('core/workflow/task');
-const Step                       = require('core/workflow/step');
-const Flow                       = require('core/workflow/flow');
-const Workflow                   = require('core/workflow/workflow');
 
 /**
  * GUI modules
@@ -307,8 +302,6 @@ const g3wsdk = {
       WmsLayer,
       XYZLayer,
       MapLayer,
-      geometry: {
-      },
       features: {
         Feature,
         FeaturesStore,
@@ -330,13 +323,6 @@ const g3wsdk = {
       Plugin,
       PluginsRegistry,
       PluginService
-    },
-    workflow: {
-      Task,
-      Step,
-      Flow,
-      Workflow,
-      WorkflowsStack
     },
     input: {
       inputService: {
