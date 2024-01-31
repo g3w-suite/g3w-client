@@ -203,7 +203,7 @@ export default {
       // get all layers with styles
       const changes = (await this.$options.service.changeMapTheme(map_theme)).layers;
       const layers  = Object.keys(changes).filter(id => changes[id].style);
-      const styles  = 'tab' !== this.legend.place ? (await this.project.getMapThemeFromThemeName(map_theme)).styles : undefined;
+      const styles  = (await this.project.getMapThemeFromThemeName(map_theme)).styles;
       
       // clear categories
       layers.forEach(id => {
@@ -215,11 +215,8 @@ export default {
       });
 
       // apply styles on each layer
-      if (styles) {
-        layers.forEach(id => VM.$emit('layer-change-style', { layerId: id, style: styles[id] }));
-      } else {
-        VM.$emit('layer-change-style');
-      }
+      layers.forEach(id => VM.$emit('layer-change-style', { layerId: id, style: styles[id] }));
+
     },
 
     delegationClickEventTab(evt) {
