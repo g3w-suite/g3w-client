@@ -139,7 +139,7 @@
       </div>
 
     </div>
-    
+
     <catalog-layer-context-menu :external="state.external" />
 
     <catalog-project-context-menu />
@@ -186,12 +186,12 @@ export default {
   computed: {
 
     /**
-     * @returns {boolean} whether to show group toolbar 
+     * @returns {boolean} whether to show group toolbar
      */
     showTocTools() {
       return (this.project.state.map_themes || []).length > 1;
     },
-  
+
     project() {
       return this.state.prstate.currentProject
     },
@@ -219,28 +219,30 @@ export default {
   methods: {
 
     /**
-     * Change view (aka. QGIS theme)
+     * Change view
+     *
+     * @fires CatalogEventBus~layer-change-style
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
-      const changes = await this.$options.service.changeMapTheme(map_theme);
-      const changeStyleLayersId = Object.keys(changes.layers).filter(layerId => {
-        if (changes.layers[layerId].style) {
-          if (!changes.layers[layerId].visible) {
-            const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-            // clear categories
-            layer.clearCategories();
-            layer.change();
-          }
-          return true;
+
+      // get all layers with styles
+      const changes = (await this.$options.service.changeMapTheme(map_theme)).layers;
+      const layers  = Object.keys(changes).filter(id => changes[id].style);
+      const styles  = (await this.project.getMapThemeFromThemeName(map_theme)).styles;
+
+      // clear categories
+      layers.forEach(id => {
+        if (!changes[id].visible) {
+          const layer = CatalogLayersStoresRegistry.getLayerById(id);
+          layer.clearCategories();
+          layer.change();
         }
       });
-      if ('tab' === this.legend.place) {
-        VM.$emit('layer-change-style');
-      } else {
-        // get all layer tha changes style
-        changeStyleLayersId.forEach(layerId => { VM.$emit('layer-change-style', { layerId }); });
-      }
+
+      // apply styles on each layer
+      layers.forEach(id => VM.$emit('layer-change-style', { layerId: id, style: styles[id] }));
+
     },
 
     delegationClickEventTab(evt) {
@@ -283,7 +285,7 @@ export default {
 
     /**
      * @TODO add description
-     * 
+     *
      * @since 3.10.0
      */
     onUnSelectionLayer(storeid, layerstree) {
@@ -292,7 +294,7 @@ export default {
 
     /**
      * @TODO add description
-     * 
+     *
      * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
@@ -301,9 +303,9 @@ export default {
 
     /**
      * Handle visibilty change on legend item
-     * 
+     *
      * @fires MapService~cataloglayervisible
-     * 
+     *
      * @since 3.10.0
      */
     onTreeNodeVisible(layer) {
@@ -312,9 +314,9 @@ export default {
 
     /**
      * Handle legend item select (single mouse click ?)
-     * 
+     *
      * @fires MapService~cataloglayerselected
-     * 
+     *
      * @since 3.10.0
      */
     onTreeNodeSelected(storeid, node) {
@@ -332,7 +334,7 @@ export default {
 
     /**
      * Handle temporary external layer add
-     * 
+     *
      * @since 3.10.0
      */
     onTreeNodeExternalSelected(layer) {
@@ -349,9 +351,9 @@ export default {
 
     /**
      * @TODO add description
-     * 
+     *
      * @listens ol.interaction~propertychange
-     * 
+     *
      * @since 3.10.0
      */
     onRegisterControl(id, control) {
@@ -367,7 +369,7 @@ export default {
   watch: {
 
     /**
-     * Listen external wms change. If remove all layer nee to set active the project or default tab 
+     * Listen external wms change. If remove all layer nee to set active the project or default tab
      */
     'state.external.wms'(newlayers, oldlayers) {
       if (oldlayers && 0 === newlayers.length) {
