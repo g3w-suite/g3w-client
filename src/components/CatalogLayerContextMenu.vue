@@ -768,89 +768,99 @@
         }, 600);
       },
 
-      downloadGeoTIFF(layerId, map_extent=false) {
+      /**
+       * @since v3.10.0
+       * @param type
+       * @param layerId
+       * @param options
+       * @private
+       */
+      _downloadFile({type, layerId, options={}}) {
         const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.geotiff = true;
+        this.layerMenu.loading[type] = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.downloadAsFile('geotiff',{
-          data: map_extent ? {
-            map_extent: GUI.getService('map').getMapExtent().toString()
-          } : undefined
-        })
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.geotiff = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
-      },
-
-      downloadShp(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.shp = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.downloadAsFile('shp')
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.shp = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
-      },
-
-      downloadCsv(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.csv = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-
-        layer.downloadAsFile('csv')
+        layer.downloadAsFile(type, options)
           .catch(err => {
+            console.warn(err);
             GUI.notify.error(t("info.server_error"))
           })
           .finally(() => {
-            this.layerMenu.loading.csv = false;
+            this.layerMenu.loading[type] = false;
             ApplicationService.setDownload(false, caller_download_id);
             this._hideMenu();
           })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       * @param map_extent
+       */
+      downloadGeoTIFF(layerId, map_extent=false) {
+        this._downloadFile({
+          type: 'geotiff',
+          layerId,
+          options: {
+            data: map_extent ? {
+              map_extent: GUI.getService('map').getMapExtent().toString()
+            } : undefined
+          }
+        })
+      },
+
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
+      downloadShp(layerId) {
+        this._downloadFile({
+          type: 'shp',
+          layerId,
+        })
+      },
+
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
+      downloadCsv(layerId) {
+        this._downloadFile({
+          type: 'csv',
+          layerId,
+        })
+      },
+
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadXls(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.xls = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.downloadAsFile('xls')
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.xls = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'xls',
+          layerId,
+        })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadGpx(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.gpx = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.downloadAsFile('gpx')
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.gpx = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'gpx',
+          layerId,
+        })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadGpkg(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.gpkg = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.downloadAsFile('gpkg')
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.gpkg = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'gpkg',
+          layerId,
+        })
       },
 
       changeLayerMapPosition({position, layer}) {
