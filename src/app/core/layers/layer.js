@@ -1240,7 +1240,7 @@ proto.getFeatureCount = function() {
  * @since 3.8.0
  */
 proto.getStyleFeatureCount = async function(style) {
-  if ("undefined" === typeof this.state.stylesfeaturecount[style]) {
+  if (undefined === this.state.stylesfeaturecount[style]) {
     try {
       const { result, data } = await XHR.post({
         url: `${this.config.urls.featurecount}${this.getId()}/`,
