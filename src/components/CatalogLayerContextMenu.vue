@@ -1087,7 +1087,9 @@
           menu.maxHeight = height >= maxH ? maxH : null;
           menu.overflowY = height >= maxH ? 'scroll' : null;
           menu.top = (height >= maxH ? contextmenu : menuentry).offset().top;
-          menu.left = this.isMobile() ? 0 :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
+          menu.left = this.isMobile()
+            ? 0
+            :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
           await this.$nextTick();
         }
         menu.show = bool;
@@ -1167,10 +1169,6 @@
         return layer.geolayer && layer.visible;
       },
 
-      _chooseFields() {
-
-      }
-
     },
 
     created() {
@@ -1183,7 +1181,7 @@
         this.layerMenu.show = true;
         this.layerMenu.colorMenu.color = layerstree.color;
         await this.$nextTick();
-        this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
+        this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height() / 2);
         $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
       });
       GUI.on('choose_layer_fields_to_download', _choose_layer_fields_to_download);
