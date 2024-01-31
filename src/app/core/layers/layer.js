@@ -1235,12 +1235,12 @@ proto.getFeatureCount = function() {
 /**
  * @param style
  * 
- * @returns {Promise<Object>}
+ * @returns { Promise<Object | void>}
  * 
  * @since 3.8.0
  */
 proto.getStyleFeatureCount = async function(style) {
-  //No feature count is set on this layer
+  // skip when layer hasn't feature count option set on QGIS project
   if (undefined === this.state.stylesfeaturecount) {
     return;
   }
