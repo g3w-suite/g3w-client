@@ -501,7 +501,7 @@
     </li>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
-    <li>
+    <li v-if="layers_url">
       <div>
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
         <span class="menu-icon skin-color-dark">
