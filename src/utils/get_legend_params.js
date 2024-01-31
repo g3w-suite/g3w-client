@@ -1,6 +1,6 @@
-
 /**
  * @param layer
+ * 
  * @returns {{ LEGEND_ON: undefined | string, LEGEND_OFF: undefined | string }} 
  */
 export function get_legend_params(layer) {
@@ -9,7 +9,7 @@ export function get_legend_params(layer) {
     .forEach(({
       checked,  // new Value
       _checked, // old Value
-      ruleKey
+      ruleKey,
     }) => {
       // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)
       if (checked === _checked) {

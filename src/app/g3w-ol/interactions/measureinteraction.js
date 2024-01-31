@@ -1,10 +1,9 @@
-const { t } = require('core/i18n/i18n.service');
-const {
-  createMeasureTooltip,
-  setMeasureTooltipStatic,
-  removeMeasureTooltip,
-  needUseSphereMethods
-} = require('utils/ol');
+import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
+import { setMeasureTooltipStatic } from 'utils/setMeasureTooltipStatic';
+import { removeMeasureTooltip }    from 'utils/removeMeasureTooltip';
+import { needUseSphereMethods }    from 'utils/needUseSphereMethods';
+
+const { t }                        = require('core/i18n/i18n.service');
 
 const MeasureIteraction = function(options={}) {
   this._helpTooltip;

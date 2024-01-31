@@ -1,9 +1,9 @@
-import MapLayersStoresRegistry from 'store/map-layers';
-import GUI from 'services/gui';
+import MapLayersStoresRegistry                 from 'store/map-layers';
+import GUI                                     from 'services/gui';
+import { getQueryLayersPromisesByCoordinates } from 'utils/getQueryLayersPromisesByCoordinates';
 
-const PickFeatureInteraction = require('g3w-ol/interactions/pickfeatureinteraction');
+const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
-const { getQueryLayersPromisesByCoordinates } = require('utils/geo');
 
 function PickLayerService(options={}) {
   this.pick_type = options.pick_type || 'wms';
