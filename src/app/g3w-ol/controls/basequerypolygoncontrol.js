@@ -2,13 +2,13 @@
  * @file
  * @since v3.8
  */
-import { SPATIAL_METHODS } from 'app/constant';
+import { SPATIAL_METHODS }            from 'app/constant';
+import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
+import { mergeOptions }               from 'utils/mergeOptions';
 
-const InteractionControl = require('g3w-ol/controls/interactioncontrol');
-const { merge }          = require('utils/ol');
-const { Geometry }       = require('utils/geo');
+const InteractionControl              = require('g3w-ol/controls/interactioncontrol');
 
-const VALIDGEOMETRIES    = Geometry.getAllPolygonGeometryTypes();
+const VALIDGEOMETRIES    = getAllPolygonGeometryTypes();
 
 const BaseQueryPolygonControl = function(options = {}) {
 
@@ -32,7 +32,7 @@ const BaseQueryPolygonControl = function(options = {}) {
     onhover: true
   };
 
-  options = merge(options, default_options);
+  options = mergeOptions(options, default_options);
 
   options.geometryTypes = VALIDGEOMETRIES;
 
