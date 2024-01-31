@@ -341,12 +341,6 @@ export default {
         list_of_relations_feature: 'List of relations of feature',
         error_missing_father_field: "Field is missing"
       },
-      workflow: {
-        steps: {
-          title: 'Steps',
-        },
-        next: 'Next'
-      },
       form: {
         loading: 'Loading ...',
         inputs: {

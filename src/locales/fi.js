@@ -341,12 +341,6 @@ export default {
         list_of_relations_feature: 'Lista ominaisuuden relaatioista',
         error_missing_father_field: "Kenttä puuttu"
       },
-      workflow: {
-        steps: {
-          title: 'Vaiheet'
-        },
-        next: "Seuraava",
-      },
       form: {
         loading: 'Ladataan...',
         inputs: {
