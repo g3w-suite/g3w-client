@@ -1240,6 +1240,10 @@ proto.getFeatureCount = function() {
  * @since 3.8.0
  */
 proto.getStyleFeatureCount = async function(style) {
+  //No feature count is set on this layer
+  if (undefined === this.state.stylesfeaturecount) {
+    return;
+  }
   if (undefined === this.state.stylesfeaturecount[style]) {
     try {
       const { result, data } = await XHR.post({
