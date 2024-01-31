@@ -1,5 +1,6 @@
 import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
 import ApplicationState                      from 'store/application-state';
+import GUI                                   from 'services/gui';
 import DataRouterService                     from 'services/data';
 import ProjectsRegistry                      from 'store/projects';
 import DownloadMixin                         from 'core/layers/mixins/download';
