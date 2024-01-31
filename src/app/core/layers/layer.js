@@ -1238,12 +1238,16 @@ proto.getFeatureCount = function() {
 /**
  * @param style
  * 
- * @returns {Promise<Object>}
+ * @returns { Promise<Object | void>}
  * 
  * @since 3.8.0
  */
 proto.getStyleFeatureCount = async function(style) {
-  if ("undefined" === typeof this.state.stylesfeaturecount[style]) {
+  // skip when layer hasn't feature count option set on QGIS project
+  if (undefined === this.state.stylesfeaturecount) {
+    return;
+  }
+  if (undefined === this.state.stylesfeaturecount[style]) {
     try {
       const { result, data } = await XHR.post({
         url: `${this.config.urls.featurecount}${this.getId()}/`,

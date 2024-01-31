@@ -224,8 +224,8 @@
               await this.setLayerCategories(false);                           // toggle categories.
             }
           }
-        } catch(err) {
-          console.warn('Error while changing layer style')
+        } catch(e) {
+          console.warn('Error while changing layer style', e)
         }
 
         this.loading = false;
