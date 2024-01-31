@@ -467,8 +467,7 @@ export default {
         let transform      = false;
         const [x, y, epsg] = (q || '').split(',');
         // get projection of coordinates is pass as third value
-        const projection    = epsg && Projections.get({ epsg: `EPSG:${epsg.trim()}` });
-
+        const projection    = epsg && await Projections.registerProjection(`EPSG:${epsg.trim()}`);
         // extract xCoord and yCoord
         if (isNumber(1 * x) && isNumber(1 * y)) {
           coordinates = [1 * x, 1 * y];
