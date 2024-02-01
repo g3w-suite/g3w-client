@@ -585,12 +585,13 @@ function GeocodingControl(options={}) {
       if (q) {
         const [x, y, epsg] = q.split(',');
         coordinates = isNumber(1*x) && isNumber(1*y) ? [1*x, 1*y] : null;
+        const projection = epsg && await Projections.registerProjection(`EPSG:${epsg.trim()}`);
         try {
           /**
            * check if is sett epsg code and if is register on project
            */
-          if (epsg && Projections.get(`EPSG:${epsg.trim()}`)) {
-            coordinates = ol.proj.transform(coordinates, Projections.get(`EPSG:${epsg.trim()}`), 'EPSG:4326');
+          if (projection) {
+            coordinates = ol.proj.transform(coordinates, projection.getCode(), 'EPSG:4326');
             transform = true;
           }
         } catch(err){}
