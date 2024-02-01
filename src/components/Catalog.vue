@@ -194,27 +194,29 @@ export default {
 
     /**
      * Change view 
+     *
+     * @fires CatalogEventBus~layer-change-style
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
-      const changes = await this.$options.service.changeMapTheme(map_theme);
-      const changeStyleLayersId = Object.keys(changes.layers).filter(layerId => {
-        if (changes.layers[layerId].style) {
-          if (!changes.layers[layerId].visible) {
-            const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-            // clear categories
-            layer.clearCategories();
-            layer.change();
-          }
-          return true;
+
+      // get all layers with styles
+      const changes = (await this.$options.service.changeMapTheme(map_theme)).layers;
+      const layers  = Object.keys(changes).filter(id => changes[id].style);
+      const styles  = (await this.project.getMapThemeFromThemeName(map_theme)).styles;
+
+      // clear categories
+      layers.forEach(id => {
+        if (!changes[id].visible) {
+          const layer = CatalogLayersStoresRegistry.getLayerById(id);
+          layer.clearCategories();
+          layer.change();
         }
       });
-      if ('tab' === this.legend.place) {
-        CatalogEventHub.$emit('layer-change-style');
-      } else {
-        // get all layer tha changes style
-        changeStyleLayersId.forEach(layerId => { CatalogEventHub.$emit('layer-change-style', { layerId }); });
-      }
+
+      // apply styles on each layer
+      layers.forEach(id => CatalogEventHub.$emit('layer-change-style', { layerId: id, style: styles[id] }));
+
     },
 
     delegationClickEventTab(evt) {
