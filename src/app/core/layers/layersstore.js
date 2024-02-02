@@ -90,7 +90,7 @@ proto.getLayersDict = function(filter = {}, options = {}) {
       filter.FILTERABLE,
       filter.EDITABLE,
       filter.VISIBLE,
-      // filter.SELECTED,
+      filter.SELECTED,
       filter.CACHED,
       filter.SELECTED_OR_ALL,
       filter.SERVERTYPE,
@@ -112,12 +112,14 @@ proto.getLayersDict = function(filter = {}, options = {}) {
     layers = layers.filter(layer => -1 !== ids.indexOf(layer.getId()));
   }
 
-  // return only selected if some one are selected
+  //in case of SELECTED_OR_ALL = true
   if (filter.SELECTED_OR_ALL) {
     let _layers = layers;
+    //check if there are selected layer
     layers = layers.filter(layer => layer.isSelected());
-    layers = layers.length ? layers : _layers;
-  } else if (false === filter.SELECTED_OR_ALL) {
+    //otherwise get all layers
+    layers = layers.length > 0 ? layers : _layers;
+  } else if ('boolean' === typeof filter.SELECTED) { //check if filter.SELECTED is Boolean
     layers = layers.filter(layer => filter.SELECTED === layer.isSelected());
   }
 
