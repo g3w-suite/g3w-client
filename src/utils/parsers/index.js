@@ -166,10 +166,13 @@ const utils = {
     for (let i=0; i < layers.length; i++) {
       const layer = layers[i];
       let originalName = (wms && layer.isWmsUseLayerIds()) ? layer.getId(): layer.getName();
-      let sanitizeLayerName = wms ? originalName.replace(/[/\s]/g, '') : originalName.replace(/[/\s]/g, '_');
+      let sanitizeLayerName = wms ? originalName.replace(/[/\s]/g, '') : originalName.replace(/\s+/g, '_');
       sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
       sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');
       sanitizeLayerName = sanitizeLayerName.replace(/(\(+)/, '');
+      //@since v3.10.0 fix replace / with ''
+      sanitizeLayerName = sanitizeLayerName.replace(/\//g, '');
+
       const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
       response = response.replace(reg, `qgs:layer${i}`);
     }
