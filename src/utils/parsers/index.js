@@ -161,8 +161,9 @@ const utils = {
   },
   handleXMLStringResponseBeforeConvertToJSON({response, layers, wms}={}) {
     if (!response) return; // return undefined if no response
-    if (!(typeof response === 'string'|| response instanceof String))
+    if (!(typeof response === 'string'|| response instanceof String)) {
       response = new XMLSerializer().serializeToString(response);
+    }
     for (let i=0; i < layers.length; i++) {
       const layer = layers[i];
       let originalName = (wms && layer.isWmsUseLayerIds()) ? layer.getId(): layer.getName();
@@ -170,8 +171,14 @@ const utils = {
       sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
       sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');
       sanitizeLayerName = sanitizeLayerName.replace(/(\(+)/, '');
-      //@since v3.10.0 fix replace / with ''
-      sanitizeLayerName = sanitizeLayerName.replace(/\//g, '');
+      // only in case of wfs (not wms)
+      if (!wms) {
+        //@since v3.10.0 fix replace / with ''
+        sanitizeLayerName = sanitizeLayerName.replace(/\//g, '');
+        //@since v3.10.0 fix replace : with '-'
+        sanitizeLayerName = sanitizeLayerName.replace(/\:/g, '-');
+      }
+
 
       const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
       response = response.replace(reg, `qgs:layer${i}`);
