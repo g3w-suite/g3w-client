@@ -172,7 +172,7 @@ proto.getWmsUrl = function({ type = 'map' } = {}) {
 };
 
 proto.getWFSLayerName = function() {
-  return this.getQueryLayerName().replace(/\s+/g, '_').replace( ':', '-' );
+  return this.getQueryLayerName().replace(/\s/g, '_').replaceAll( ':', '-' );
 };
 
 proto.useProxy = function(){
