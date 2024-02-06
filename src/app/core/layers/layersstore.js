@@ -109,7 +109,7 @@ proto.getLayersDict = function(filter = {}, options = {}) {
 
   if (filter.IDS) {
     const ids = [].concat(filter.IDS);
-    layers = layers.filter(layer => -1 !== ids.indexOf(layer.getId()));
+    layers = layers.filter(l => -1 !== ids.indexOf(l.getId()));
   }
 
   // check if there are `selected` layers otherwise get all `layers`
