@@ -112,10 +112,10 @@ proto.getLayersDict = function(filter = {}, options = {}) {
     layers = layers.filter(layer => -1 !== ids.indexOf(layer.getId()));
   }
 
-  // in case of SELECTED_OR_ALL = true
+  // check if there are `selected` layers otherwise get all `layers`
   if (filter.SELECTED_OR_ALL) {
-    const _layers = layers.filter(l => l.isSelected()); // check if there are selected layer
-    layers = _layers.length > 0 ? _layers : layers;     // otherwise get all layers
+    const selected = layers.filter(l => l.isSelected());
+    layers = selected.length > 0 ? selected : layers;
   }
 
   // checks if a boolean filter is setted
