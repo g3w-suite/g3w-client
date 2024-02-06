@@ -121,7 +121,7 @@ proto.getLayersDict = function(filter = {}, options = {}) {
   // checks if a boolean filter is setted
   const has = f => 'boolean' === typeof f;
   
-  if (has(filter.SELECTED) && !filter.SELECTED_OR_ALL)                    layers = layers.filter(l => filter.SELECTED === l.isSelected());
+  if (has(filter.SELECTED) && !filter.SELECTED_OR_ALL)                    layers = layers.filter(l => filter.SELECTED    === l.isSelected());
   if (has(filter.QUERYABLE))                                              layers = layers.filter(l => filter.QUERYABLE   === l.isQueryable());
   if (has(filter.FILTERABLE))                                             layers = layers.filter(l => filter.FILTERABLE  === l.isFilterable(options.filtrable || null));
   if (has(filter.EDITABLE))                                               layers = layers.filter(l => filter.EDITABLE    === l.isEditable());
@@ -133,7 +133,7 @@ proto.getLayersDict = function(filter = {}, options = {}) {
   if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      == l.isHidden());
   if (has(filter.DISABLED))                                               layers = layers.filter(l => filter.DISABLED    === l.isDisabled());
   if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
-  if (filter.PRINTABLE)                                                   layers = layers.filter(l => layer.state.geolayer && l.isPrintable({ scale: filter.PRINTABLE.scale }));
+  if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.state.geolayer && l.isPrintable({ scale: filter.PRINTABLE.scale }));
 
   return layers;
 };
