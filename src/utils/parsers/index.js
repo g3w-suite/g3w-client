@@ -171,7 +171,7 @@ const utils = {
       sanitizeLayerName     = sanitizeLayerName.replace(/(\'+)/, '');
       sanitizeLayerName     = sanitizeLayerName.replace(/(\)+)/, '');
       sanitizeLayerName     = sanitizeLayerName.replace(/(\(+)/, '');
-      sanitizeLayerName     = wms ? sanitizeLayerName : sanitizeLayerName.replace(/\//g, '');
+      sanitizeLayerName     = wms ? sanitizeLayerName : sanitizeLayerName.replace(/\/+/g, '');
       sanitizeLayerName     = wms ? sanitizeLayerName : sanitizeLayerName.replace(/\:/g, '-');
 
       const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
