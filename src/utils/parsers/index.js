@@ -168,17 +168,11 @@ const utils = {
       const layer = layers[i];
       let originalName = (wms && layer.isWmsUseLayerIds()) ? layer.getId(): layer.getName();
       let sanitizeLayerName = wms ? originalName.replace(/[/\s]/g, '') : originalName.replace(/\s+/g, '_');
-      sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
-      sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');
-      sanitizeLayerName = sanitizeLayerName.replace(/(\(+)/, '');
-      // only in case of wfs (not wms)
-      if (!wms) {
-        //@since v3.10.0 fix replace / with ''
-        sanitizeLayerName = sanitizeLayerName.replace(/\//g, '');
-        //@since v3.10.0 fix replace : with '-'
-        sanitizeLayerName = sanitizeLayerName.replace(/\:/g, '-');
-      }
-
+      sanitizeLayerName     = sanitizeLayerName.replace(/(\'+)/, '');
+      sanitizeLayerName     = sanitizeLayerName.replace(/(\)+)/, '');
+      sanitizeLayerName     = sanitizeLayerName.replace(/(\(+)/, '');
+      sanitizeLayerName     = wms ? sanitizeLayerName : sanitizeLayerName.replace(/\//g, '');
+      sanitizeLayerName     = wms ? sanitizeLayerName : sanitizeLayerName.replace(/\:/g, '-');
 
       const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
       response = response.replace(reg, `qgs:layer${i}`);
