@@ -214,7 +214,10 @@ export const ResponseParser = {
           // sanitize layer name (removes: whitespaces, quotes, parenthesis, slashes)
           if (response) {
             response = layers.reduce((acc, layer, i) => {
-              const id = (wms && layer.isWmsUseLayerIds() ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
+              let id = (wms && layer.isWmsUseLayerIds() ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
+              if (!wms) {
+                id = id.replaceAll('/', '').replaceAll(':', '-');
+              }
               return acc.replace(new RegExp(`qgs:${id}`, 'g'), `qgs:layer${i}`);
             }, response);
           }
