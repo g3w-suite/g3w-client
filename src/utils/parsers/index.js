@@ -216,7 +216,7 @@ export const ResponseParser = {
             response = layers.reduce((acc, layer, i) => {
               let id = (wms && layer.isWmsUseLayerIds() ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
               if (!wms) {
-                id = id.replaceAll('/', '').replaceAll(':', '-');
+                id = id.replace(/[/\\]+/g, '').replaceAll(':', '-');
               }
               return acc.replace(new RegExp(`qgs:${id}`, 'g'), `qgs:layer${i}`);
             }, response);
