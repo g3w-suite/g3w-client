@@ -310,7 +310,7 @@ export const ResponseParser = {
 
               fname
                 .forEach(f => {
-                  f[name].g3w_fid = {
+                  f[name][G3W_FID] = {
                     __prefix: f.__prefix,
                     __text:   f[name]._fid && f[name]._fid.split('.')[1]
                   };

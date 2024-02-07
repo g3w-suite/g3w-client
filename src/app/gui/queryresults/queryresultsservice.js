@@ -1950,7 +1950,7 @@ class QueryResultsService extends G3WObject {
    *
    * @since 3.9.0
    */
-  _getFeatureId(feature, external){
+  _getFeatureId(feature, external) {
     return external ? feature.id : feature.attributes[G3W_FID];
   }
 
