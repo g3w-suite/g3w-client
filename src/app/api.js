@@ -151,7 +151,6 @@ const PluginService              = require('core/plugin/pluginservice');
  */
 const Panel                      = require('gui/panel');
 const { ControlFactory }         = require('gui/map/mapservice');
-const ComponentsFactory          = require('gui/component/componentsfactory');
 const FieldsService              = require('gui/fields/fieldsservice');
 const Component                  = require('gui/component/component');
 const MetadataComponent          = require('gui/metadata/vue/metadata');
@@ -177,7 +176,6 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction   = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
-
 
 const g3wsdk = {
 
@@ -336,7 +334,9 @@ const g3wsdk = {
     GUI,
     Panel,
     ControlFactory,
-    ComponentsFactory,
+    ComponentsFactory: {
+      build: ({ vueComponentObject, service, propsData }, options={}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
+    },
     FieldsService,
     vue: {
       Component,
@@ -439,5 +439,21 @@ const g3wsdk = {
 g3wsdk.core.geometry                       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.core.layer.geometry                 = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.gui.vue.Charts.ChartsFactory.CHARTS = { c3: { lineXY: C3XYLine } };
+g3wsdk.gui.ComponentsFactory.buildSidebar  = ({ vueComponentObject }, options={}) => {
+  const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
+  const component = g3wsdk.gui.ComponentsFactory.build({ vueComponentObject }, {
+    id:          options.id,
+    title:       options.title,
+    open:        çç(options.open, false),
+    collapsible: çç(options.collapsible, true),
+    isolate:     çç(options.isolate, false),
+    iconColor:   çç(options.iconConfig, {}).color,
+    icon:        çç(options.iconConfig, {}).icon && GUI.getFontClass(options.iconConfig.icon),
+    mobile:      çç(options.mobile, true),
+    events:      çç(options.events, {})
+  });
+  GUI.addComponent(component, 'sidebar', çç(options.sidebarOptions, { position: 1 }));
+  return component;
+};
 
 module.exports = g3wsdk;
