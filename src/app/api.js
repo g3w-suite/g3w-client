@@ -363,7 +363,13 @@ const g3wsdk = {
         InputsComponents
       },
       Charts: {
-        ChartsFactory,
+        ChartsFactory: {
+          /** @param  type: <library(es:c3)>:<chartType:(es.lineXY)> */
+          build({ type, hooks = {} } = {}) {
+            const [library='c3', chartType='lineXY'] = type.split(':');
+            return Object.assign(hooks, this.CHARTS[library][chartType]);
+          }
+        },
         c3: {
           lineXY: C3XYLine
         }
@@ -431,9 +437,10 @@ const g3wsdk = {
 };
 
 // BACKOMP v3.x
-g3wsdk.core.geometry                      = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
-g3wsdk.core.layer.geometry                = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
-g3wsdk.gui.ComponentsFactory.buildSidebar = ({ vueComponentObject }, options={}) => {
+g3wsdk.core.geometry                       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+g3wsdk.core.layer.geometry                 = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+g3wsdk.gui.vue.Charts.ChartsFactory.CHARTS = { c3: { lineXY: C3XYLine } };
+g3wsdk.gui.ComponentsFactory.buildSidebar  = ({ vueComponentObject }, options={}) => {
   const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
   const component = g3wsdk.gui.ComponentsFactory.build({ vueComponentObject }, {
     id:          options.id,
