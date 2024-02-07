@@ -1,23 +1,27 @@
-import PluginsRegistry from 'store/plugins';
-import ProjectsRegistry from 'store/projects';
+import PluginsRegistry    from 'store/plugins';
+import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
-import GUI from 'services/gui';
+import GUI                from 'services/gui';
 
-const { base, inherit, toRawType } = require('utils');
-const G3WObject = require('core/g3wobject');
-const Component = require('gui/component/component');
+const {
+  base,
+  inherit,
+  toRawType
+}                       = require('utils');
+const G3WObject         = require('core/g3wobject');
+const Component         = require('gui/component/component');
 const { addI18nPlugin } = require('core/i18n/i18n.service');
 
 const TIMEOUT = 10000;
 
 const Plugin = function({
-    name = null,
-    config = PluginsRegistry.getPluginConfig(name),
-    service = null,
+    name         = null,
+    config       = PluginsRegistry.getPluginConfig(name),
+    service      = null,
     dependencies = [],
-    i18n = null,
-    fontClasses = [],
-    api = {}
+    i18n         = null,
+    fontClasses  = [],
+    api          = {}
   } = {}) {
   
   base(this);
@@ -51,39 +55,70 @@ inherit(Plugin, G3WObject);
 
 const proto = Plugin.prototype;
 
+/**
+ * @FIXME add description
+ */
 proto.setName = function(name) {
   this.name = name;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getName = function() {
   return this.name;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setConfig = function(config) {
   this.config = toRawType(config) === 'Object' ? config : null;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getConfig = function(name = this.name) {
   return this.config || PluginsRegistry.getPluginConfig(name);
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setLocale = function(i18n) {
-  if (i18n && this.name) addI18nPlugin({ name: this.name, config: i18n});
+  if (i18n && this.name) {
+    addI18nPlugin({ name: this.name, config: i18n});
+  }
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setService = function(service) {
   this.service = service;
-  if (service) service.setPlugin(this);
+  if (service) {
+    service.setPlugin(this);
+  }
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getService = function() {
   return this.service
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setDependencies = function(dependencies) {
   this.dependencies = dependencies;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setApi = function(api = {}) {
   this._api = api;
   /**
@@ -92,14 +127,23 @@ proto.setApi = function(api = {}) {
   api.getConfig = this._api.getConfig; // add alias for "api.getConfig()" method
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getApi = function() {
   return this._api;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setHookService = function(hook) {
   this._hook = hook;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getHookService = function(hook = "tools") {
   return this.hookservices[hook];
 };
@@ -356,7 +400,9 @@ proto.createSideBarComponent = function(vue, options = {}) {
  * @deprecated since v3.4.
  */
 proto.unload  = function() {
-  this.service && this.service.clearAllEvents();
+  if (this.service) {
+    this.service.clearAllEvents();
+  }
   this.emit('unload');
   //console.log('UNLOAD can be overwrite by plugin');
 };
