@@ -324,6 +324,10 @@ proto.removeTools = function() {
  * @param { Object }           options.sidebarOptions
  * @param { number | string }  options.sidebarOptions.position
  * 
+ * @returns component
+ * 
+ * @listens unload
+ * 
  */
 proto.createSideBarComponent = function(vue, options = {}) {
 
