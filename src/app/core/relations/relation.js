@@ -1,5 +1,5 @@
 const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject         = require('core/g3wobject');
 
 /**
  * Relation Class
@@ -136,8 +136,8 @@ proto.getType = function() {
  */
 proto.getFields = function() {
   return {
-    father: this.state.fatherField,
-    child:  this.state.childField,
+    father : this.state.fatherField,
+    child  : this.state.childField,
   };
 };
 
@@ -164,7 +164,7 @@ proto.getChildField = function() {
  *
  * @param bool
  */
-proto.setLoading = function(bool=false){
+proto.setLoading = function(bool=false) {
   this.state.loading = bool;
 };
 
@@ -173,7 +173,7 @@ proto.setLoading = function(bool=false){
  *
  * @returns { boolean }
  */
-proto.isLoading = function(){
+proto.isLoading = function() {
   return this.state.loading;
 };
 
@@ -182,7 +182,7 @@ proto.isLoading = function(){
  *
  * @since 3.9.0
  */
-proto.isEditable = function(){
+proto.isEditable = function() {
   return this.state.editable;
 };
 
@@ -197,7 +197,7 @@ proto.isEditable = function(){
  *
  * @since 3.9.0
  */
-proto.getPrefix = function(){
+proto.getPrefix = function() {
   return this.state.prefix;
 }
 
