@@ -153,7 +153,6 @@ proto.runSpatialQuery = async function() {
   try {
     await DataRouterService.getData('query:polygon', {
       inputs: {
-        layerName: 'Draw',
         feature: this.feature,
         excludeSelected: (null === this.getSelectedLayer()),
         external: {
@@ -177,7 +176,7 @@ proto.runSpatialQuery = async function() {
       }
     });
 
-  } catch(err){
+  } catch(err) {
     console.warn(err)
   }
 };
