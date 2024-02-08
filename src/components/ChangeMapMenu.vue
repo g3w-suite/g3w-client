@@ -171,13 +171,17 @@ export default {
       this.loading = true;
       this.parent = item;
       try {
-        this.items = await XHR.get({
-          url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${item.id}/`)
-        });
+          if (undefined  === this._cache.macrogroups[item.id]) {
+            this._cache.macrogroups[item.id] = await XHR.get({
+              url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${item.id}/`)
+            });
+          }
+          this.items = this._cache.macrogroups[item.id];
         this.current = 'groups';
       } catch(err) {
         this.items = [];
       }
+
       this.steps.push(this.parent);
       this.loading = false;
     },
@@ -191,10 +195,13 @@ export default {
         this.current = 'projects';
       } else {
         try {
-          this.items = await XHR.get({
-            url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`)
-          });
-          this.items.forEach(item => this.setItemImageSrc({ item, type: 'project' }));
+          if (undefined  === this._cache.groups[item.id]) {
+            this._cache.groups[item.id] = await XHR.get({
+              url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`)
+            });
+            this._cache.groups[item.id].forEach(item => this.setItemImageSrc({ item, type: 'project' }));
+          }
+          this.items = this._cache.groups[item.id];
           this.current = 'projects';
         } catch(err) {
           this.items = [];
@@ -272,7 +279,18 @@ export default {
 
   },
 
-  created() {
+  async created() {
+    /**
+     * @since 3.10.0
+     * Store configuration of macrogroups and groups
+     * avoid wasting time-server request
+     * @type {{macrogroups: {}, groups: {}}}
+     * @private
+     */
+    this._cache = {
+      macrogroups : {},
+      groups      : {}
+    }
 
     // at start time set item projects
     this.items = ProjectsRegistry.getListableProjects();
@@ -307,6 +325,9 @@ export default {
     }
 
   },
+  beforeDestroy() {
+    this._cache = null;
+  }
 
 };
 </script>
