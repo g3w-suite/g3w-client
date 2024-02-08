@@ -307,15 +307,12 @@ export const ResponseParser = {
               const fname  = originalFeatureMember.filter(f => f[name]);                          // features with same name
               let features = fname.filter(f => Array.isArray(f[name])).map(f => f[name]).pop();   // feature member array
               let prefix   = fname.filter(f => Array.isArray(f[name])).map(f => f.__prefix).pop();// feature member prefix
-
               fname
-                .forEach(f => {
-                  f[name][G3W_FID] = {
-                    __prefix: f.__prefix,
-                    __text:   f[name]._fid && f[name]._fid.split('.')[1]
-                  };
+                .forEach(fn => {
+                  if (fn[name]._fid) {
+                    olfeatures.find(f => fn[name]._fid === f.getId()).set(G3W_FID, fn[name]._fid.split('.')[1])
+                  }
                 });
-
               // check if features have the same fields. If not group the features with the same fields
               const grouped    = features && groupBy(features, f => Object.keys(f));
               const is_grouped = grouped && Object.keys(grouped).length > 1;
@@ -331,10 +328,9 @@ export const ResponseParser = {
                   return result;
                 }, { __prefix: prefix })
                 : fname.filter(feature => !Array.isArray(feature[name]));
-
-              // Remove Z values due a incorrect addition when using
+              // Remove Z values due an incorrect addition when using
               // ol.format.WMSGetFeatureInfo readFeatures method from XML
-              // (eg. WMS getFeatureInfo);
+              // (ex. WMS getFeatureInfo);
               if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
                 olfeatures.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
               }
