@@ -377,21 +377,17 @@ proto.createSideBarComponent = function(vue, opts = {}) {
 
   const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
-  opts.vueComponentObject           = vue; 
-  opts.collapsible                  = çç(opts.collapsible, true);
-  opts.mobile                       = çç(opts.mobile, true);
-  opts.isolate                      = çç(opts.isolate, false);
-  opts.iconConfig                   = çç(opts.iconConfig, {});
-  opts.sidebarOptions               = çç(opts.sidebarOptions, { position: 1 });
-  const { iconConfig, ...options }     = Object.assign({}, opts, { iconColor: opts.iconConfig.color, icon: GUI.getFontClass(opts.iconConfig.icon) });
+  opts.vueComponentObject = vue; 
+  opts.collapsible        = çç(opts.collapsible, true);
+  opts.mobile             = çç(opts.mobile, true);
+  opts.isolate            = çç(opts.isolate, false);
+  opts.sidebarOptions     = çç(opts.sidebarOptions, { position: 1 });
 
-  const component = new Component(options);
-
-  GUI.addComponent(component, 'sidebar', opts.sidebarOptions);
+  GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);
 
   this.once('unload', () => GUI.removeComponent(opts.id, 'sidebar', opts.sidebarOptions));
 
-  return component;
+  return GUI.getComponent(opts.id) ;
 };
 
 /**

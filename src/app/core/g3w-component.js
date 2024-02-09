@@ -2,6 +2,7 @@
  * @file
  * @since 3.10.0
  */
+import GUI from 'services/gui';
 
 const { 
   base,
@@ -36,6 +37,16 @@ const _cloneDeep = require('lodash.clonedeep');
  * @param options.service since 3.10.0
  */
 const Component = function(options = {}) {
+
+  // BACKOMP v3.x
+  if (options.iconConfig) {
+    options.iconColor = options.iconConfig.color;
+    options.icon      = options.iconConfig.icon;
+    delete options.iconConfig;
+  }
+
+  // TODO: check why `GUI.getFontClass` is undefined
+  options.icon = Vue.prototype.g3wtemplate.getFontClass(options.icon) || options.icon;
 
   const {
     id                           = Math.random() * 1000,
