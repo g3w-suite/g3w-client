@@ -190,7 +190,8 @@ export default {
         download_csv: "Télécharger CSV",
         download_xls: "Télécharger XLS",
         show_chart: "Montrer graphique",
-        atlas: "Imprimer l'Atlas"
+        atlas: "Imprimer l'Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {

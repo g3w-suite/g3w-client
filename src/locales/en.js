@@ -191,7 +191,8 @@ export default {
         download_csv: "Download CSV",
         download_xls: "Download XLS",
         show_chart: "Show Chart",
-        atlas: "Print Atlas"
+        atlas: "Print Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {

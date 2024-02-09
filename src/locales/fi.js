@@ -191,7 +191,8 @@ export default {
         download_csv: "Lataa CSV-tiedosto",
         download_xls: "Lataa XLS-tiedosto",
         show_chart: "Näytä kaavio",
-        atlas: "Tulosta Atlas"
+        atlas: "Tulosta Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {

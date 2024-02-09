@@ -2216,7 +2216,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: 'editing',
         class: GUI.getFontClass('pencil'),
-        hint: 'Editing',
+        hint: 'sdk.tooltips.editing',
         cbk: (layer, feature) => { this.editFeature({ layer, feature }) }
       });
   }

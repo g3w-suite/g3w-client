@@ -192,7 +192,8 @@ export default {
         download_csv: "Scarica CSV",
         download_xls: "Scarica XLS",
         show_chart: "Mostra Grafico",
-        atlas: "Stampa Atlas"
+        atlas: "Stampa Atlas",
+        editing: "Edita",
       },
       mapcontrols: {
         query: {

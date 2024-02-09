@@ -191,7 +191,8 @@ export default {
         download_csv: "Ladda CSV-fil",
         download_xls: "Ladda XLS-fil",
         show_chart: "Visa diagram", //Tero 9.12.2020
-        atlas: "Skriv ut Atlas"
+        atlas: "Skriv ut Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
