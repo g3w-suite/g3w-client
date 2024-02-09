@@ -254,7 +254,7 @@ const contenttypes = {
         const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
         const properties = feature.getProperties();
         feature.set(G3W_FID, g3w_fid);
-        fields.forEach(field=>{
+        fields.forEach(field => {
           if (properties[field.name] === undefined) {
             properties[field.label] !== undefined && feature.set(field.name, properties[field.label])
           }

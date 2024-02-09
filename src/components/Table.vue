@@ -53,6 +53,8 @@
         :headers                  = "state.headers"
         :filter                   = "state.tools.filter"
         :features                 = "state.features"
+        :edit                     = "state.edit"
+        :layer_id                 = "state.layer_id"
         :addRemoveSelectedFeature = "addRemoveSelectedFeature"
         :zoomAndHighLightFeature  = "zoomAndHighLightFeature"
       />
@@ -88,10 +90,10 @@ export default {
   mixins: [resizeMixin],
   data() {
     return {
-      tableBodyComponent:null,
-      state: null,
-      table: null,
-      selectedRow: null
+      tableBodyComponent : null,
+      state              : null,
+      table              : null,
+      selectedRow        : null,
     }
   },
   components: {

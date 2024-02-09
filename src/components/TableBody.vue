@@ -22,11 +22,22 @@
         v-for="(header, hindex) in headers"
         :tab-index="1"
       >
-        <select-row
-          v-if      = "0 === hindex"
-          @selected = "addRemoveSelectedFeature"
-          :feature  = "feature"
-        />
+        <template  v-if      = "0 === hindex">
+          <div style="display: flex">
+            <select-row
+              @selected = "addRemoveSelectedFeature"
+              :feature  = "feature"
+            />
+            <span
+              v-if="edit"
+              @click.stop="editFeature(feature)"
+              v-t-tooltip:top.create="'sdk.tooltips.editing'">
+              <i class="action-button skin-color" :class="g3wtemplate.getFontClass('pencil')"></i>
+            </span>
+          </div>
+
+        </template>
+
         <field
            v-else
           :feature = "feature"
@@ -40,6 +51,7 @@
 <script>
 import SelectRow from 'components/TableSelectRow.vue'
 import Field     from 'components/FieldG3W.vue';
+import GUI       from 'services/gui';
 
 export default {
   name: "table-body",
@@ -63,6 +75,15 @@ export default {
       default: {
         active: false
       }
+    },
+    /** @since 3.10.0 layer is editable? */
+    edit: {
+      type: Boolean,
+      default: false
+    },
+    /** @since 3.10.0 id of current layer */
+    layer_id: {
+      type: String,
     }
   },
   data() {
@@ -75,6 +96,18 @@ export default {
     SelectRow
   },
   methods: {
+    /**
+     * @since 3.10.0
+     * @param feature
+     */
+    editFeature(feature) {
+      GUI
+        .getService('queryresults')
+        .editFeature({
+          layer: { id: this.layer_id },
+          feature
+        })
+    },
     getField(feature, header) {
       return {
         value: feature.attributes[header.name],

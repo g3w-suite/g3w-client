@@ -124,7 +124,9 @@ const TableService = function(options = {}) {
       },
       show:        false,
       filter:      this.layer.state.filter
-    }
+    },
+    edit:          this.layer.isEditable(),     /*@since 3.10.0 */
+    layer_id:      this.layer.getId(),          /*@since 3.10.0*/
   };
 
   /**
@@ -566,7 +568,6 @@ proto.getData = function({
         this.state.pagination    = firstCall
           ? this.state.tools.filter.active || features.length < this.allfeaturesnumber
           : this.state.pagination;
-
         this.addFeatures(features);
 
         resolve({
