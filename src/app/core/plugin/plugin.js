@@ -353,45 +353,43 @@ proto.removeTools = function() {
 /**
  * Helper method to create and add a custom component item on the left sidebar
  * 
- * @param                      vue                                  vue component object (SFC)
- * @param { Object }           options
- * @param { string }           options.id
- * @param { string }           options.title                        textual description on left sidebar (eg. "metadata")
- * @param { boolean }          options.open                         true = collapsible button; false = button
- * @param { boolean }          options.collapsible                  whether expand the button when plugin is loaded
- * @param { boolean }          options.isolate                      whether propagate click event to all sidebar item
- * @param { boolean }          options.closewhenshowviewportcontent
- * @param { Object }           options.iconConfig
- * @param { string }           options.iconConfig.color             color of icon
- * @param { string }           options.iconConfig.icon              see gui\vue\vueappplugin.js font list
- * @param { Object }           options.events                       eg. events = { open: { when: 'before', cb: () => { } }
- * @param { Object }           options.sidebarOptions
- * @param { number | string }  options.sidebarOptions.position
+ * @param                      vue                               vue component object (SFC)
+ * @param { Object }           opts
+ * @param { string }           opts.id
+ * @param { string }           opts.title                        textual description on left sidebar (eg. "metadata")
+ * @param { boolean }          opts.open                         true = collapsible button; false = button
+ * @param { boolean }          opts.collapsible                  whether expand the button when plugin is loaded
+ * @param { boolean }          opts.isolate                      whether propagate click event to all sidebar item
+ * @param { boolean }          opts.closewhenshowviewportcontent
+ * @param { Object }           opts.iconConfig
+ * @param { string }           opts.iconConfig.color             color of icon
+ * @param { string }           opts.iconConfig.icon              see gui\vue\vueappplugin.js font list
+ * @param { Object }           opts.events                       eg. events = { open: { when: 'before', cb: () => { } }
+ * @param { Object }           opts.sidebarOptions
+ * @param { number | string }  opts.sidebarOptions.position
  * 
  * @returns component
  * 
  * @listens unload
  * 
  */
-proto.createSideBarComponent = function(vue, options = {}) {
+proto.createSideBarComponent = function(vue, opts = {}) {
 
   const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
-  options.open                         = çç(options.open, false);
-  options.collapsible                  = çç(options.collapsible, true);
-  options.mobile                       = çç(options.mobile, true);
-  options.isolate                      = çç(options.isolate, false);
-  options.closewhenshowviewportcontent = çç(options.closewhenshowviewportcontent, true);
-  options.iconConfig                   = çç(options.iconConfig, {});
-  options.events                       = çç(options.events, {});
-  options.sidebarOptions               = çç(options.sidebarOptions, { position: 1 });
-  const { iconConfig, ...opts }        = Object.assign({}, options, { iconColor: options.iconConfig.color, icon: GUI.getFontClass(options.iconConfig.icon) });
+  opts.vueComponentObject           = vue; 
+  opts.collapsible                  = çç(opts.collapsible, true);
+  opts.mobile                       = çç(opts.mobile, true);
+  opts.isolate                      = çç(opts.isolate, false);
+  opts.iconConfig                   = çç(opts.iconConfig, {});
+  opts.sidebarOptions               = çç(opts.sidebarOptions, { position: 1 });
+  const { iconConfig, ...options }     = Object.assign({}, opts, { iconColor: opts.iconConfig.color, icon: GUI.getFontClass(opts.iconConfig.icon) });
 
-  const component = (new Component(opts)).init({ vueComponentObject: vue });
+  const component = new Component(options);
 
-  GUI.addComponent(component, 'sidebar', options.sidebarOptions);
+  GUI.addComponent(component, 'sidebar', opts.sidebarOptions);
 
-  this.once('unload', () => GUI.removeComponent(options.id, 'sidebar', options.sidebarOptions));
+  this.once('unload', () => GUI.removeComponent(opts.id, 'sidebar', opts.sidebarOptions));
 
   return component;
 };

@@ -47,6 +47,7 @@ const Component = function(options = {}) {
     loading                      = false,
     disabled                     = false,
     closewhenshowviewportcontent = true,
+    events                       = {},
   } = options;
 
   this._firstLayout = true;
@@ -116,10 +117,12 @@ const Component = function(options = {}) {
   base(this);
 
   // add events options
-  this.events = options.events;
+  this.events = events;
 
-  if (this.events) {
-    this.handleEventsComponent();
+  this.handleEventsComponent();
+
+  if (options.vueComponentObject) {
+    this.init({ vueComponentObject: options.vueComponentObject });
   }
 
 };
