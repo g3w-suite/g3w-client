@@ -1,10 +1,78 @@
+/**
+ * @file
+ * @since 3.10.0
+ */
+
+import GUI                         from 'services/gui';
+import ComponentsRegistry          from 'store/components';
+import Component                   from 'core/g3w-component';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
+import ProjectsRegistry            from 'store/projects';
+import ApplicationService          from 'services/application';
 
-const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
+import * as catalogComp            from 'components/Catalog.vue';
+import * as LayersComp             from 'components/CatalogLayersGroup.vue';
+import * as TreeComp               from 'components/CatalogTristateTree.vue';
+import * as LegendComp             from 'components/CatalogLayersLegend.vue';
+import * as LegendItemsComp        from 'components/CatalogLayersLegendItems.vue';
 
+const { base, inherit }            = require('utils');
+const G3WObject                    = require('core/g3wobject');
+
+Vue.component('g3w-catalog', catalogComp);
+Vue.component('layers-group', LayersComp);
+Vue.component('tristate-tree', TreeComp);
+Vue.component('layerslegend', LegendComp);
+Vue.component('layerslegend-items', LegendItemsComp);
+
+/**
+ * ORIGINAL SOURCE: src/app/gui/catalog/vue/catalog.js@v3.9.3 
+ */
+export default function(opts = {}) {
+
+  const service = opts.service || new CatalogService();
+
+  const comp = new Component({
+    ...opts,
+    title: "catalog",
+    resizable: true,
+    service,
+    internalComponent: new (Vue.extend(catalogComp))({ service, legend: opts.config.legend }),
+  });
+
+  _listenToMapVisibility(opts.mapcomponentid);
+
+  return comp;
+};
+
+/**
+ * @TODO check if deprecated
+ */
+function _listenToMapVisibility(map_id, component) {
+  if(!map_id) {
+    return;
+  }
+
+  component.mapComponentId = map_id;
+
+  const map = GUI.getComponent(map_id);
+
+  const cb = map => {
+    const ctx = map.getService();
+    component.state.visible = !ctx.state.hidden;
+    ctx.onafter('setHidden', () => { component.state.visible = !ctx.state.hidden; component.state.expanded = true; });
+  };
+
+  if (map) {
+    cb(map);
+  } else {
+    ComponentsRegistry.on('componentregistered', c => c.getId() === map_id && cb(c))
+  }
+}
+
+/**
+ * ORIGINALE SOURCE: src/app/gui/catalog/catalogservice.js@v3.9.3
+ */
 function CatalogService() {
   this.state = {
     prstate: ProjectsRegistry.state,
@@ -64,6 +132,7 @@ function CatalogService() {
   };
 
   base(this);
+
   const layersStores = CatalogLayersStoresRegistry.getLayersStores();
 
   layersStores.forEach(layersStore => this.addLayersStoreToLayersTrees(layersStore));
@@ -178,5 +247,3 @@ proto.isExternalLayerSelected = function({id, type}) {
   const externalLayer = this.getExternalLayerById({ id, type });
   return !!(externalLayer && externalLayer.selected);
 };
-
-module.exports = CatalogService;

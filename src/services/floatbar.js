@@ -3,12 +3,11 @@
  * @since v3.7
  */
 
-import GUI from 'services/gui';
-
-const { barstack:Stack } = require('gui/utils/utils');
+import GUI          from 'services/gui';
+import { BarStack } from 'core/g3w-barstack';
 
 function FloatbarService(){
-  this.stack = new Stack();
+  this.stack = new BarStack();
   this.init = function(layout){
     this.layout = layout;
     this.sidebarEl = $(this.layout.options.controlSidebarOptions.selector);

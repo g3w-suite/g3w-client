@@ -1,9 +1,10 @@
-import ApplicationState from 'store/application-state';
-import GUI              from 'services/gui';
-import { mergeOptions } from 'utils/mergeOptions';
+import ApplicationState          from 'store/application-state';
+import GUI                       from 'services/gui';
+import { mergeOptions }          from 'utils/mergeOptions';
+import * as vueComp              from 'components/StreetView.vue';
+import Component                 from 'core/g3w-component';
 
 const { XHR }                    = require('utils');
-const StreetViewComponent        = require('gui/streetview/vue/streetview');
 const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
@@ -147,14 +148,12 @@ proto.showStreetView = function(coordinate){
   const [lng, lat] = ol.proj.transform(coordinate, this._map.getView().getProjection().getCode(), 'EPSG:4326');
   if (this.key) {
     GUI.setContent({
-      content: new StreetViewComponent({
-        keyError: this.keyError
-      }),
-      title: 'StreetView'
+      title: 'StreetView',
+      content: new Component({ internalComponent: (Vue.extend(vueComp))({ keyError: this.keyError }) }),
     });
-    !this.keyError && this.setPosition({
-      lng, lat
-    })
+    if (!this.keyError) {
+      this.setPosition({ lng, lat });
+    }
   } else  {
     this._streetViewFeature.setGeometry(
       new ol.geom.Point(coordinate)

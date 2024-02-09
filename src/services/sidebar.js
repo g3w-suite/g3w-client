@@ -3,11 +3,11 @@
  * @since v3.7
  */
 
+import { BarStack }         from 'core/g3w-barstack';
 import SidebarItemComponent from 'components/SidebarItem.vue';
 
 const { base, inherit } = require('utils');
-const { barstack: Stack } = require('gui/utils/utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject         = require('core/g3wobject');
 
 /**
  * TODO: temporary need to remove it
@@ -16,7 +16,7 @@ const SidebarItem = Vue.extend(SidebarItemComponent);
 
 function SidebarService() {
   //set sidebar stack
-  this.stack = new Stack();
+  this.stack = new BarStack();
   // set setter for close sidebarpanel to catch event
   // of closing panel of the sidebar
   this.setters = {

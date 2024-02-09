@@ -10,7 +10,7 @@ import GUI                        from 'services/gui';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getMetersFromDegrees }   from 'utils/getMetersFromDegrees';
-
+import * as vueComp               from 'components/PrintPage.vue';
 
 const {
   base,
@@ -20,7 +20,7 @@ const {
 }                           = require('utils');
 const { t }                 = require('core/i18n/i18n.service');
 const G3WObject             = require('core/g3wobject');
-const PrintPage             = require('gui/print/vue/printpage');
+const Component             = require('gui/component/component');
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
@@ -402,9 +402,13 @@ proto.print = function() {
     } else {
       this.state.output.url = null;
       this.state.output.layers = true;
-      this._page = new PrintPage({
-        service: this
+      
+      this._page = new Component({
+        service: this,
+        internalComponent: new (Vue.extend(vueComp))({ service: this }),
       });
+      this._page.internalComponent.state = this.state.output;
+      this._page.unmount = () => { this._page.getService().setPrintAreaAfterCloseContent(); return Component.prototype.unmount.call(this._page); };
 
       GUI.setContent({
         content: this._page,
