@@ -51,7 +51,7 @@
 
       <table-body
         :headers                  = "state.headers"
-        :filter                   = state.tools.filter
+        :filter                   = "state.tools.filter"
         :features                 = "state.features"
         :addRemoveSelectedFeature = "addRemoveSelectedFeature"
         :zoomAndHighLightFeature  = "zoomAndHighLightFeature"

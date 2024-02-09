@@ -14,7 +14,9 @@
     <label
       :for                        = "id"
       @click.capture.stop.prevent = "select"
-    ><span></span></label>
+    >
+      <span></span>
+    </label>
   </span>
 </template>
 
