@@ -4,7 +4,10 @@
 -->
 
 <template>
-  <div id="open_attribute_table" style="margin-top: 5px">
+  <div
+    id="open_attribute_table"
+    style="margin-top: 5px"
+  >
     <table
       v-if="hasHeaders()"
       ref="attribute_table"
@@ -35,7 +38,8 @@
                 :disabled = "state.nofilteredrow || state.features.length === 0">
               <label
                 for   = "attribute_table_select_all_rows"
-                style = "margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
+                style = "margin-bottom:0 !important;"
+                @click.capture.stop.prevent="selectAllRow"
               >
                 <span style="padding:5px"></span>
               </label>
@@ -54,16 +58,20 @@
       />
 
     </table>
-    <div v-else id="noheaders" v-t="'dataTable.no_data'" ></div>
+    <div
+      v-else
+      id="noheaders"
+      v-t="'dataTable.no_data'" >
+    </div>
   </div>
 </template>
 
 <script>
-import TableBody from 'components/TableBody.vue';
-import SelectRow from 'components/TableSelectRow.vue';
+import TableBody       from 'components/TableBody.vue';
+import SelectRow       from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import Field from 'components/FieldG3W.vue';
-import GUI from 'services/gui';
+import Field           from 'components/FieldG3W.vue';
+import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
 const { debounce } = require('utils');
@@ -141,16 +149,19 @@ export default {
           const hasGeometry = !!feature.geometry;
           $(rowElement).addClass('feature_attribute');
           feature.selected && $(rowElement).addClass('selected');
+
           $(rowElement).on('click', () => {
             if (hasGeometry) {
               this.zoomAndHighLightFeature(feature);
             }
           });
+
           $(rowElement).on('mouseover', () => {
             if (hasGeometry) {
               this.zoomAndHighLightFeature(feature, false);
             }
           });
+
           $(rowElement)
             .children()
             .each((index, element) => {
@@ -188,7 +199,7 @@ export default {
           })
         }
       });
-      setTimeout(()=> this.reloadLayout(), 0)
+      setTimeout(() => this.reloadLayout(), 0)
     },
     async resize() {
       await this.$nextTick();
@@ -197,7 +208,7 @@ export default {
       $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
     }
   },
-  beforeCreate(){
+  beforeCreate() {
     this.delayType = 'debounce';
   },
   async mounted() {
@@ -250,9 +261,7 @@ export default {
                 this.createdContentBody();
                 this.isMobile() && hideElements();
               })
-              .catch(error => {
-                console.log(error)
-              })
+              .catch(error => console.warn(error))
           }, 800),
           "serverSide": true,
           "deferLoading": this.state.allfeatures
