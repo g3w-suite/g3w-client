@@ -45,9 +45,11 @@ const utils = {
         jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter(feature => {
           const featureMember = feature[layerName];
           if (featureMember) {
+            //need to get fid number removing <layer_name_or_id.fid>
+            featureMember._fid = featureMember._fid && featureMember._fid.split('.')[1];
             featureMember.g3w_fid = {
               __prefix: feature.__prefix,
-              __text: featureMember._fid && featureMember._fid.split('.')[1]
+              __text: featureMember._fid
             };
             if (Array.isArray(featureMember)){
               featureMemberArrayAndPrefix.features = featureMember;
