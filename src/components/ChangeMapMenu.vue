@@ -141,13 +141,18 @@ export default {
       else if (item.header_logo_img)       item.header_logo_img = g3w_logo;
     },
 
-    back() {
+    async back() {
       if (this.steps.length > 1) {
         const item = this.steps[0];
         this.steps = [];
         this.showGroups(item);
       } else {
-        this.showRoot();
+        if (this.init && undefined === this.parent.macro_id) {
+          await this.showGroups(this.macrogroups.find(mg => 1 === mg.id));
+          this.init = false;
+        } else {
+          this.showRoot();
+        }
       }
     },
 
@@ -280,6 +285,7 @@ export default {
   },
 
   async created() {
+    this.init = true;
     /**
      * @since 3.10.0
      * Store configuration of macrogroups and groups
