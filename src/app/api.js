@@ -426,25 +426,16 @@ const g3wsdk = {
       .finally(async () => {
         /** @since 3.8.0 */
         const platform = window.platform || {};
+        const reg = PluginsRegistry;
+
         /** @since 3.10.0 */
-        await Promise.allSettled(Object
-          .keys(PluginsRegistry.pluginsConfigs)
-          .map(p => {
-            if (PluginsRegistry.getPlugin(p)) {
-              return Promise.resolve(PluginsRegistry.getPlugin(p));
-            } else {
-              return new Promise((resolve, reject) => {
-                PluginsRegistry.onceafter('registerPlugin', resolve);
-              })
-            }
-          })
-        );
+        await Promise.allSettled(Object.keys(reg.pluginsConfigs).map(p => new Promise(r => reg.getPlugin(p) ? r(reg.getPlugin(p)) : reg.onceafter('registerPlugin', r))));
 
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
-- g3w-client: __${__git__ ? `${__git__.branch}-${__git__.commit}__` : `${G3W_CONSTANT.APP_VERSION}__`}
-- plugins:\n${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${PluginsRegistry.getPlugin(p[0]).getInfo()}__`)).join('\n')}
+- g3w-client: __${G3W_CONSTANT.APP_VERSION}${__git__ ? `+${__git__.branch}-${__git__.commit}__` : ''}
+- plugins:\n${Object.entries(reg.pluginsConfigs).map((p) => (`    - ${p[0]}: __${reg.getPlugin(p[0]).getInfo()}__`)).join('\n')}
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
