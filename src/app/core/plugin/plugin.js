@@ -1,23 +1,27 @@
-import PluginsRegistry from 'store/plugins';
-import ProjectsRegistry from 'store/projects';
+import PluginsRegistry    from 'store/plugins';
+import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
-import GUI from 'services/gui';
+import GUI                from 'services/gui';
 
-const { base, inherit, toRawType } = require('utils');
-const G3WObject = require('core/g3wobject');
-const ComponentsFactory = require('gui/component/componentsfactory');
+const {
+  base,
+  inherit,
+  toRawType
+}                       = require('utils');
+const G3WObject         = require('core/g3wobject');
+const Component         = require('gui/component/component');
 const { addI18nPlugin } = require('core/i18n/i18n.service');
 
 const TIMEOUT = 10000;
 
 const Plugin = function({
-    name = null,
-    config = PluginsRegistry.getPluginConfig(name),
-    service = null,
+    name         = null,
+    config       = PluginsRegistry.getPluginConfig(name),
+    service      = null,
     dependencies = [],
-    i18n = null,
-    fontClasses = [],
-    api = {},
+    i18n         = null,
+    fontClasses  = [],
+    api          = {},
     version, /** @since 3.10.0 version of plugin*/
     git,     /** @since 3.10.0 git Object info {branch,commit}*/
   } = {}) {
@@ -55,26 +59,40 @@ inherit(Plugin, G3WObject);
 
 const proto = Plugin.prototype;
 
+/**
+ * @FIXME add description
+ */
 proto.setName = function(name) {
   this.name = name;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getName = function() {
   return this.name;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setConfig = function(config) {
   this.config = toRawType(config) === 'Object' ? config : null;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getConfig = function(name = this.name) {
   return this.config || PluginsRegistry.getPluginConfig(name);
 };
 
 /**
  * Set plugin version
- * @since 3.10.0
+ *
  * @param version
+ * 
+ * @since 3.10.0
  */
 proto.setVersion = function(version) {
   this._version = version;
@@ -82,8 +100,10 @@ proto.setVersion = function(version) {
 
 /**
  * Get plugin version
+ * 
+ * @returns { string }
+ * 
  * @since 3.10.0
- * @return String
  */
 proto.getVersion = function() {
   return this._version;
@@ -91,8 +111,10 @@ proto.getVersion = function() {
 
 /**
  * Set plugin git repository info
+ * 
+ * @param {{ branch, commit }} git
+ * 
  * @since 3.10.0
- * @return undefined
  */
 proto.setGitInfo = function(git) {
   this._git = git;
@@ -100,30 +122,34 @@ proto.setGitInfo = function(git) {
 
 /**
  * Return plugin git repository info
+ *
+ * @returns { {{ branch, commit }} | null } git
+ * 
  * @since 3.10.0
- * @return {Object|null} {branch, commit}
  */
 proto.getGitInfo = function(git) {
-  this._git = git;
+  return this._git;
 }
 
 /**
- *
- * @return {string}
+ * @return { string }
  */
 proto.getInfo = function() {
-  return `${this._git 
-    ? `${this._git.branch}-${this._git.commit}`
-    : `${this.getVersion()}`
-  }`;
+  return this._git ? `${this._git.branch}-${this._git.commit}` : `${this.getVersion()}`;
 }
 
+/*
+ * @FIXME add description
+ */
 proto.setLocale = function(i18n) {
   if (i18n && this.name) {
     addI18nPlugin({ name: this.name, config: i18n});
   }
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setService = function(service) {
   this.service = service;
   if (service) {
@@ -131,14 +157,23 @@ proto.setService = function(service) {
   }
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getService = function() {
   return this.service
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setDependencies = function(dependencies) {
   this.dependencies = dependencies;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setApi = function(api = {}) {
   this._api = api;
   /**
@@ -147,14 +182,23 @@ proto.setApi = function(api = {}) {
   api.getConfig = this._api.getConfig; // add alias for "api.getConfig()" method
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getApi = function() {
   return this._api;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setHookService = function(hook) {
   this._hook = hook;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getHookService = function(hook = "tools") {
   return this.hookservices[hook];
 };
@@ -363,51 +407,57 @@ proto.removeTools = function() {
 
 /**
  * Helper method to create and add a custom component item on the left sidebar
+ * 
+ * @param                      vue                                  vue component object (SFC)
+ * @param { Object }           options
+ * @param { string }           options.id
+ * @param { string }           options.title                        textual description on left sidebar (eg. "metadata")
+ * @param { boolean }          options.open                         true = collapsible button; false = button
+ * @param { boolean }          options.collapsible                  whether expand the button when plugin is loaded
+ * @param { boolean }          options.isolate                      whether propagate click event to all sidebar item
+ * @param { boolean }          options.closewhenshowviewportcontent
+ * @param { Object }           options.iconConfig
+ * @param { string }           options.iconConfig.color             color of icon
+ * @param { string }           options.iconConfig.icon              see gui\vue\vueappplugin.js font list
+ * @param { Object }           options.events                       eg. events = { open: { when: 'before', cb: () => { } }
+ * @param { Object }           options.sidebarOptions
+ * @param { number | string }  options.sidebarOptions.position
+ * 
+ * @returns component
+ * 
+ * @listens unload
+ * 
  */
-proto.createSideBarComponent = function(
-  vueComponentObject,                    // vue single file component (SFC)
-  options = {
-    id,
-    title,                               // textual description on left sidebar (eg. "metadata")
-    open = false,                        // true = collapsible button; false = button
-    collapsible = true,                  // if (collapsible) expand the button when plugin is loaded
-    mobile = true,                         
-    isolate = false,                     // true = click event doesn't propagate to all sidebar item
-    closewhenshowviewportcontent = true,
-    iconConfig = {
-      // color: 'yellow',                // color of icon
-      // icon:'pin',                     // see gui\vue\vueappplugin.js font list
-    },
-    events = {
-      // open: {
-      //   when: 'before',
-      //   cb:() => { /* TODO: add sample usage */ }
-      // }
-    },
-    sidebarOptions = {
-      position: 1                        // can be a number or a string 
-    }
-  } = {}) {
+proto.createSideBarComponent = function(vue, options = {}) {
 
-  const componentsFactoryOpts = {
-    ...options,
-    iconColor: options.iconConfig.color,
-    icon: GUI.getFontClass(options.iconConfig.icon),
-  };
+  const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
-  delete componentsFactoryOpts.iconConfig;
+  options.open                         = çç(options.open, false);
+  options.collapsible                  = çç(options.collapsible, true);
+  options.mobile                       = çç(options.mobile, true);
+  options.isolate                      = çç(options.isolate, false);
+  options.closewhenshowviewportcontent = çç(options.closewhenshowviewportcontent, true);
+  options.iconConfig                   = çç(options.iconConfig, {});
+  options.events                       = çç(options.events, {});
+  options.sidebarOptions               = çç(options.sidebarOptions, { position: 1 });
+  const { iconConfig, ...opts }        = Object.assign({}, options, { iconColor: options.iconConfig.color, icon: GUI.getFontClass(options.iconConfig.icon) });
 
-  const PluginSiderbarComponent = ComponentsFactory.build({ vueComponentObject }, componentsFactoryOpts);
-  GUI.addComponent(PluginSiderbarComponent, 'sidebar', options.sidebarOptions);
-  this.once('unload', () => GUI.removeComponent(id, 'sidebar', options.sidebarOptions));
-  return PluginSiderbarComponent;
+  const component = (new Component(opts)).init({ vueComponentObject: vue });
+
+  GUI.addComponent(component, 'sidebar', options.sidebarOptions);
+
+  this.once('unload', () => GUI.removeComponent(options.id, 'sidebar', options.sidebarOptions));
+
+  return component;
 };
 
 /**
  * @deprecated since v3.4.
  */
 proto.unload  = function() {
-  this.service && this.service.clearAllEvents();
+  if (this.service) {
+    this.service.clearAllEvents();
+  }
   this.emit('unload');
   //console.log('UNLOAD can be overwritten by plugin');
 };
