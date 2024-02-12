@@ -61,6 +61,7 @@
     "core-js-latest": "npm:core-js@^3.16.2",
     "current-git-branch": "^1.1.0",
     "del": "^2.2.2",
+    "event-stream": "^4.0.1",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.2",
     "gulp-concat": "^2.6.1",
