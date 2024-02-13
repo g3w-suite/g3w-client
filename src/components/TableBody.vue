@@ -28,14 +28,12 @@
               @selected = "addRemoveSelectedFeature"
               :feature  = "feature"
             />
-            <span
-              v-if="edit"
-              @click.stop="editFeature(feature)"
-              v-t-tooltip:top.create="'sdk.tooltips.editing'">
-              <i class="action-button skin-color" :class="g3wtemplate.getFontClass('pencil')"></i>
-            </span>
+            <edit-tool
+              :edit     = "edit"
+              :feature  = "feature"
+              :layer_id = "layer_id"
+            />
           </div>
-
         </template>
 
         <field
@@ -49,9 +47,9 @@
 </template>
 
 <script>
-import SelectRow from 'components/TableSelectRow.vue'
+import SelectRow from 'components/TableSelectRow.vue';
+import EditTool  from 'components/TableEditingTool.vue';
 import Field     from 'components/FieldG3W.vue';
-import GUI       from 'services/gui';
 
 export default {
   name: "table-body",
@@ -93,21 +91,10 @@ export default {
   },
   components: {
     Field,
-    SelectRow
+    SelectRow,
+    EditTool
   },
   methods: {
-    /**
-     * @since 3.10.0
-     * @param feature
-     */
-    editFeature(feature) {
-      GUI
-        .getService('queryresults')
-        .editFeature({
-          layer: { id: this.layer_id },
-          feature
-        })
-    },
     getField(feature, header) {
       return {
         value: feature.attributes[header.name],

@@ -71,6 +71,7 @@
 <script>
 import TableBody       from 'components/TableBody.vue';
 import SelectRow       from 'components/TableSelectRow.vue';
+import EditTool        from 'components/TableEditingTool.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
 import Field           from 'components/FieldG3W.vue';
 import GUI             from 'services/gui';
@@ -169,7 +170,9 @@ export default {
             .each((index, element) => {
               const header = this.state.headers[index];
               let contentDOM;
-              if (header === null) {
+              if (null === header) {
+                contentDOM = document.createElement('div');
+                contentDOM.style.display = 'flex';
                 const SelectRowClass = Vue.extend(SelectRow);
                 const SelectRowInstance = new SelectRowClass({
                   propsData: {
@@ -179,11 +182,20 @@ export default {
                 SelectRowInstance.$on('selected', feature => this.$options.service.addRemoveSelectedFeature(feature));
                 this.$watch(
                   () => feature.selected,
-                  function (selected) {
+                  (selected) => {
                     selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
                   }
                 );
-                contentDOM = SelectRowInstance.$mount().$el;
+                contentDOM.appendChild(SelectRowInstance.$mount().$el);
+                const editToolClass =  Vue.extend(EditTool);
+                const editToolInstance = new editToolClass({
+                  propsData: {
+                    feature,
+                    edit: this.state.edit,
+                    layer_id: this.state.layer_id
+                  }
+                })
+                contentDOM.appendChild(editToolInstance.$mount().$el);
               } else {
                 const fieldClass = Vue.extend(Field);
                 const fieldInstance = new fieldClass({
@@ -205,7 +217,7 @@ export default {
     },
     async resize() {
       await this.$nextTick();
-      const tableHeight = $(".content").height();
+      const tableHeight       = $(".content").height();
       const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
       $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
     }
@@ -261,7 +273,9 @@ export default {
                 callback(serverData);
                 await this.$nextTick();
                 this.createdContentBody();
-                this.isMobile() && hideElements();
+                if (this.isMobile()) {
+                  hideElements();
+                }
               })
               .catch(error => console.warn(error))
           }, 800),
@@ -301,12 +315,12 @@ export default {
     const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
     const G3WTableToolbarInstance = new G3WTableToolbarClass({
       propsData: {
-        tools: this.state.tools,
-        geolayer: this.state.geolayer,
-        switchSelection: this.switchSelection,
-        clearAllSelection: this.clearAllSelection,
-        toggleFilterToken: this.toggleFilterToken,
-        getDataFromBBOX: this.getDataFromBBOX
+        tools             : this.state.tools,
+        geolayer          : this.state.geolayer,
+        switchSelection   : this.switchSelection,
+        clearAllSelection : this.clearAllSelection,
+        toggleFilterToken : this.toggleFilterToken,
+        getDataFromBBOX   : this.getDataFromBBOX
       }
     });
 
