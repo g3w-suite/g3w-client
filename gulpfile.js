@@ -365,7 +365,7 @@ gulp.task('browserify:app', function() {
       // ]).then(() => process.exit());
     })
     .pipe(source('build.js'))
-    .pipe(replace('process.env.g3w_client_hash', `"${get_hash()}"`))
+    .pipe(replace('process.env.g3w_client_rev', `"${ production ? get_version() : get_version().split('-')[0] + '-' + get_branch() }"`))
     .pipe(buffer())
     .pipe(gulpif(production, sourcemaps.init()))
     .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
