@@ -431,7 +431,7 @@ const g3wsdk = {
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
 - g3w-client: __${G3W_CONSTANT.APP_VERSION}+${process.env.g3w_client_hash}__
-${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${p[1].version}${p[1].hash ? '+' + p[1].hash : ''}__`)).join('\n')}
+${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());

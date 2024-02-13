@@ -84,7 +84,7 @@ const dev_plugins = Array.from(
 );
 
 // Helper info about locally developed client plugins (Object<pluginName, pluginInfo>)
-const loaded_plugins = Object.fromEntries(dev_plugins.map(pluginName => { return [pluginName, { version: () => get_version(pluginName), hash: () => get_hash(pluginName) }]}));
+const loaded_plugins = Object.fromEntries(dev_plugins.map(pluginName => { return [pluginName, { version: get_version.bind(null, pluginName), hash: get_hash.bind(null, pluginName), branch: get_branch.bind(null, pluginName) }]}));
 
 // List all plugins within the `g3w.pluginsFolder`
 const local_plugins = fs.readdirSync(g3w.pluginsFolder).filter(file => file !== 'client' && file.indexOf('_templates') === -1 && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory() && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile());
@@ -115,8 +115,22 @@ function get_hash(pluginName) {
   try {
     let branch = execSync(`git -C  ${src} rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
     if (branch && 'HEAD' !== branch.trim()) {
-      return execSync(`git -C  ${src} log -n 1 --pretty=format:"%H"`, { encoding: 'utf8' }).trim().substring(0,7);
+      return execSync(`git -C  ${src} rev-parse --short HEAD`, { encoding: 'utf8' }).trim();
     }
+  } catch(err) {
+    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'git repository not found (' + GREEN__ + src + __RESET + ')' );
+  }
+}
+
+/**
+ * @param { string } pluginName
+ * 
+ * @since 3.10.0
+ */
+function get_branch(pluginName) {
+  const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
+  try {
+    return execSync(`git -C  ${src} rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
   } catch(err) {
     console.warn(YELLOW__ + '[WARN] ' + __RESET + 'git repository not found (' + GREEN__ + src + __RESET + ')' );
   }
@@ -182,6 +196,10 @@ const browserify_plugin = (pluginName, watch = true) => {
   del([`${src}/plugin.js.map`]);
 
   const rebundle = () => {
+    const version = loaded_plugins[pluginName].version();
+    const hash    = loaded_plugins[pluginName].hash();
+    const branch  = loaded_plugins[pluginName].branch();
+
     return merge(
         gulp
           .src(`./src/plugins/_version.js`),                        // NB: hardcoded file, do not use `g3w.pluginsFolder`!
@@ -197,8 +215,9 @@ const browserify_plugin = (pluginName, watch = true) => {
       )
       .pipe(concat('plugin.js'))
       .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
-      .pipe(replace('process.env.g3w_plugin_version', `"${loaded_plugins[pluginName].version()}"`))
-      .pipe(replace('process.env.g3w_plugin_hash', `"${loaded_plugins[pluginName].hash()}"`))
+      .pipe(replace('process.env.g3w_plugin_version', `"${production ? version : version.split('-')[0] + '-' + branch }"`))
+      .pipe(replace('process.env.g3w_plugin_hash', `"${hash}"`))
+      .pipe(replace('process.env.g3w_plugin_branch', `"${branch}"`))
       .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
       .pipe(gulp.dest(outputFolder)); // put plugin.js to static folder (PROD | DEV env)
   };
