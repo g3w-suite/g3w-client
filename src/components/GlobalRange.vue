@@ -44,7 +44,7 @@
 </template>
 
 <script>
-  const { debounce } = require('utils');
+  const { debounce, uniqueId } = require('utils');
 
   export default {
     name: "range",
@@ -54,7 +54,8 @@
        * ID value for label.
        */
       id: {
-        required: true,
+        type:"String",
+        default: () => uniqueId(),
       },
 
       /**
