@@ -232,9 +232,9 @@ function PluginsRegistry() {
     }
     return new Promise(function(resolve, reject) {
       const s = document.createElement('script');
-      s.src = url;
       s.onload = () => resolve();
       s.onerror = () => reject(new Error('Failed to load script: ' + url));
+      s.src = url;
       document.head.appendChild(s);
     });
   };
