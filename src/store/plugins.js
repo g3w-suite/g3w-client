@@ -67,43 +67,32 @@ function PluginsRegistry() {
 
   // initialize plugin
   //call by applications.js services folder
-  this.init = function(options={}) {
-    return new Promise(async (resolve, reject) => {
-      //get plugin loading urls
-      this.pluginsBaseUrl = options.pluginsBaseUrl;
-      // plugin configurations
-      this.setPluginsConfig(options.pluginsConfigs);
-      // filter
-      Object.keys(this.pluginsConfigs)
-        .forEach(pluginName => this._configurationPlugins.push(pluginName));
-      this.addLoadingPlugins();
-      // plugins that aren't in configuration server but in project
-      this.otherPluginsConfig = options.otherPluginsConfig;
-      //set other plugin on in initConfig.group.plugins
-      // law for example
-      this.setOtherPlugins();
-      ///
-      this.setDependencyPluginConfig();
-      try {
-        //load plugins
-        const plugins = await this._loadPlugins();
-        //resolve plugins promises
-        resolve(plugins);
-      } catch(error) {
-        reject(error);
-      }
-    })
+  /**
+   * 
+   * @param { Object } options
+   * @param options.pluginsBaseUrl     plugin loading urls
+   * @param options.pluginsConfigs     plugin configurations
+   * @param options.otherPluginsConfig plugins that aren't in configuration server but in project
+   */
+  this.init = async function(options = {}) {
+    this.pluginsBaseUrl = options.pluginsBaseUrl; 
+    this.setPluginsConfig(options.pluginsConfigs);
+    Object.keys(this.pluginsConfigs).forEach(name => this._configurationPlugins.push(name)); // filter
+    this.addLoadingPlugins();
+    this.otherPluginsConfig = options.otherPluginsConfig; 
+    this.setOtherPlugins();                                                                  // set other plugin on in initConfig.group.plugins (law for example)
+    this.setDependencyPluginConfig();
+    const plugins = await this._loadPlugins();                                               // load plugins
+    return Promise.resolve(plugins);
   };
 
   /**
-   * Based on server configuration plugins initConfig.group.plugins
-   * set loading plugin
+   * Set loading plugins adding them to `ApplicationService`,
+   * based on server configuration: `initConfig.group.plugins`
+   * 
    */
   this.addLoadingPlugins = function() {
-    //add to Application service plugin that need to be load
-    Object
-      .keys(this.pluginsConfigs)
-      .forEach(plugin => ApplicationService.loadingPlugin(plugin));
+    Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
   /**
@@ -120,9 +109,7 @@ function PluginsRegistry() {
    * @private
    */
   this._loadPlugins = function() {
-    return Promise.allSettled(Object
-      .entries(this.pluginsConfigs)
-      .map(([name, pluginConfig]) => this._setup(name, pluginConfig)));
+    return Promise.allSettled(Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => this._setup(name, pluginConfig)));
   };
 
   /**
