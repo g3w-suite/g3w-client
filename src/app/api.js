@@ -100,8 +100,8 @@ import RelationsService                            from 'services/relations';
 import TaskService                                 from 'services/tasks';
 import ApiService                                  from 'services/api';
 import RouterService                               from 'services/router';
-
 import GUI                                         from 'services/gui';
+
 //MIXINS
 import Mixins                                      from 'mixins';
 
@@ -152,7 +152,6 @@ const PluginService              = require('core/plugin/pluginservice');
  */
 const Panel                      = require('gui/panel');
 const { ControlFactory }         = require('gui/map/mapservice');
-const ComponentsFactory          = require('gui/component/componentsfactory');
 const FieldsService              = require('gui/fields/fieldsservice');
 const Component                  = require('gui/component/component');
 const MetadataComponent          = require('gui/metadata/vue/metadata');
@@ -166,7 +165,6 @@ const QueryResultsComponent      = require('gui/queryresults/vue/queryresults');
 const FormComponent              = require('gui/form/vue/form');
 const FormService                = require('gui/form/formservice');
 const InputsComponents           = require('gui/inputs/inputs');
-const ChartsFactory              = require('gui/charts/chartsfactory');
 const Fields                     = require('gui/fields/fields');
 const SearchPanelService         = require('gui/search/vue/panel/searchservice');
 
@@ -178,7 +176,6 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction   = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
-
 
 const g3wsdk = {
 
@@ -337,7 +334,9 @@ const g3wsdk = {
     GUI,
     Panel,
     ControlFactory,
-    ComponentsFactory,
+    ComponentsFactory: {
+      build: ({ vueComponentObject, service, propsData }, options={}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
+    },
     FieldsService,
     vue: {
       Component,
@@ -363,7 +362,13 @@ const g3wsdk = {
         InputsComponents
       },
       Charts: {
-        ChartsFactory,
+        ChartsFactory: {
+          /** @param  type: <library(es:c3)>:<chartType:(es.lineXY)> */
+          build({ type, hooks = {} } = {}) {
+            const [library='c3', chartType='lineXY'] = type.split(':');
+            return Object.assign(hooks, this.CHARTS[library][chartType]);
+          }
+        },
         c3: {
           lineXY: C3XYLine
         }
@@ -413,16 +418,24 @@ const g3wsdk = {
 
   // G3W-SUITE debug info
   info: () => {
-    $script(
-      'https://unpkg.com/platform@1.3.6/platform.js',
-      () => {
+    Promise
+      .allSettled([
+        new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
+        new Promise((resolve) => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve))
+      ])
+      .finally(async () => {
+        /** @since 3.8.0 */
+        const platform = window.platform || {};
+
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
-- g3w-client: __${G3W_CONSTANT.APP_VERSION}__
+- g3w-client: __${process.env.g3w_client_rev}__
+${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
+
       });
   },
 
@@ -431,7 +444,24 @@ const g3wsdk = {
 };
 
 // BACKOMP v3.x
-g3wsdk.core.geometry       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
-g3wsdk.core.layer.geometry = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+g3wsdk.core.geometry                       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+g3wsdk.core.layer.geometry                 = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+g3wsdk.gui.vue.Charts.ChartsFactory.CHARTS = { c3: { lineXY: C3XYLine } };
+g3wsdk.gui.ComponentsFactory.buildSidebar  = ({ vueComponentObject }, options={}) => {
+  const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
+  const component = g3wsdk.gui.ComponentsFactory.build({ vueComponentObject }, {
+    id:          options.id,
+    title:       options.title,
+    open:        çç(options.open, false),
+    collapsible: çç(options.collapsible, true),
+    isolate:     çç(options.isolate, false),
+    iconColor:   çç(options.iconConfig, {}).color,
+    icon:        çç(options.iconConfig, {}).icon && GUI.getFontClass(options.iconConfig.icon),
+    mobile:      çç(options.mobile, true),
+    events:      çç(options.events, {})
+  });
+  GUI.addComponent(component, 'sidebar', çç(options.sidebarOptions, { position: 1 }));
+  return component;
+};
 
 module.exports = g3wsdk;

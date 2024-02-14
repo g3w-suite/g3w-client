@@ -10,25 +10,51 @@ const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 /**
- * law project configuration on project is handle as plugin
+ * 'law' project configuration on project is handle as plugin
+ *
  * @type {string[]}
  */
 const OTHERPLUGINS = ['law'];
 
 function PluginsRegistry() {
+
   this.config = null;
+
+  /**
+   * Object where store plugin
+   *   key   = plugin name
+   *   value = plugin instance
+   */
   this._plugins = {};
+
+  /**
+   * Name array of initConfig.group.plugins names
+   */
   this._configurationPlugins = [];
+
+  /**
+   * Store initConfig.group.plugins object configuration
+   */
   this.pluginsConfigs = {};
+
+  /**
+   * Store array of plugin loaded url
+   */
   this._loadedPluginUrls = [];
+
   this.setters = {
-    //setters to register plugin
+
+    /**
+     * Setter method to register plugin (called by every plugin when all is ready)
+     */
     registerPlugin(plugin) {
+      // store plugin into registry (if not already registered )
       if (!this._plugins[plugin.name]) {
         this._plugins[plugin.name] = plugin;
       }
     }
   };
+
   /**
    * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).
    * NOW WHEN CHANGE MAP IS TRIGGER, PAGE IS RELOADED.
@@ -40,29 +66,30 @@ function PluginsRegistry() {
   base(this);
 
   // initialize plugin
-  this.init = function(options={}) {
-    return new Promise(async (resolve, reject) => {
-      this.pluginsBaseUrl = options.pluginsBaseUrl;
-      // plugin configurations
-      this.setPluginsConfig(options.pluginsConfigs);
-      // filter
-      Object.keys(this.pluginsConfigs).forEach(pluginName => this._configurationPlugins.push(pluginName));
-      this.addLoadingPlugins();
-      // plugins that aren't in configuration server but in project
-      this.otherPluginsConfig = options.otherPluginsConfig;
-      this.setOtherPlugins();
-      this.setDependencyPluginConfig();
-      try {
-        const plugins = await this._loadPlugins();
-        resolve(plugins);
-      } catch(error){
-        reject(error);
-      }
-    })
+  //call by applications.js services folder
+  /**
+   * 
+   * @param { Object } options
+   * @param options.pluginsBaseUrl     plugin loading urls
+   * @param options.pluginsConfigs     plugin configurations
+   * @param options.otherPluginsConfig plugins that aren't in configuration server but in project
+   */
+  this.init = async function(options = {}) {
+    this.pluginsBaseUrl = options.pluginsBaseUrl; 
+    this.setPluginsConfig(options.pluginsConfigs);
+    Object.keys(this.pluginsConfigs).forEach(name => this._configurationPlugins.push(name)); // filter
+    this.addLoadingPlugins();
+    this.otherPluginsConfig = options.otherPluginsConfig; 
+    this.setOtherPlugins();                                                                  // set other plugin on in initConfig.group.plugins (law for example)
+    this.setDependencyPluginConfig();
+    const plugins = await this._loadPlugins();                                               // load plugins
+    return Promise.resolve(plugins);
   };
 
   /**
-   * @FIXME add description
+   * Set loading plugins adding them to `ApplicationService`,
+   * based on server configuration: `initConfig.group.plugins`
+   * 
    */
   this.addLoadingPlugins = function() {
     Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
@@ -70,7 +97,7 @@ function PluginsRegistry() {
 
   /**
    * @param plugin
-   * @param ready
+   * @param ready //TODO used ???
    */
   this.removeLoadingPlugin = function(plugin, ready) {
     ApplicationService.loadedPlugin(plugin, ready);
@@ -78,31 +105,34 @@ function PluginsRegistry() {
 
   /**
    * @returns {Promise<{-readonly [P in keyof Promise<unknown>[]]: PromiseSettledResult<Awaited<Promise<unknown>[][P]>>}>}
-   * 
+   *
    * @private
    */
   this._loadPlugins = function() {
-    return Promise.allSettled(Object
-      .entries(this.pluginsConfigs)
-      .map(([name, pluginConfig]) => this._setup(name, pluginConfig)));
+    return Promise.allSettled(Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => this._setup(name, pluginConfig)));
   };
 
   /**
-   * @FIXME add description
+   *@TODO need to check if used
    */
   this.setDependencyPluginConfig = function() {
-    for (const pluginName in this.pluginsConfigs){
+    for (const pluginName in this.pluginsConfigs) {
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
       if (dependecyPluginConfig) {
         Object
           .keys(dependecyPluginConfig)
-          .forEach(pluginName => {this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}})
+          .forEach(pluginName => {
+            this.pluginsConfigs[pluginName] = {
+              ...this.pluginsConfigs[pluginName],
+              ...dependecyPluginConfig[pluginName]
+            }
+          })
       }
     }
   };
 
   /**
-   * @FIXME add description
+   * Method to set other plugin
    */
   this.setOtherPlugins = function() {
     const law = OTHERPLUGINS[0];
@@ -116,7 +146,14 @@ function PluginsRegistry() {
   };
 
   /**
-   * reload plugin in case of change map 
+   * Reaload plugin in case of change map
+   *
+   * @deprecated since 3.7
+   *
+   * @param initConfig
+   * @param project
+   *
+   * @returns { Promise<unknown> }
    */
   this.reloadPlugins = function(initConfig, project) {
     return new Promise(async (resolve, reject) => {
@@ -154,8 +191,8 @@ function PluginsRegistry() {
   };
 
   /**
-   * setup plugin config only filtered by gid configuration
-   * 
+   * Set plugin config only filtered by gid configuration
+   *
    * @param config
    */
   this.setPluginsConfig = function(config={}) {
@@ -168,67 +205,69 @@ function PluginsRegistry() {
 
   /**
    * Method to load external script
-   * 
+   *
    * @param url
+   * @param { boolean } legacy since 3.10.0 - whether fallback to jquery promises
+   *
    * @returns {*}
-   * 
+   *
    * @private
    */
-  this._loadScript = function(url) {
-    return $.getScript(url);
+  this._loadScript = function(url, legacy=true) {
+    if (legacy) {
+      return $.getScript(url);
+    }
+    return new Promise(function(resolve, reject) {
+      const s = document.createElement('script');
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load script: ' + url));
+      s.src = url;
+      document.head.appendChild(s);
+    });
   };
 
   /**
-   * load plugin script
+   * Load/Setup plugin script
+   *
+   * @param name
+   * @param pluginConfig
+   *
+   * @returns { Promise<void> }
+   *
+   * @private
    */
-  this._setup = function(name, pluginConfig) {
-    return new Promise(async (resolve, reject) => {
-      if (!_.isNull(pluginConfig)) {
-        const {jsscripts=[]} = pluginConfig;
-        const depedencypluginlibrariespromises = [];
-        for (const script of jsscripts) {
-          depedencypluginlibrariespromises.push(new Promise((resolve, reject) => {
-            this._loadScript(script)
-              .done(() => resolve())
-              .fail(() => reject())
-          }));
-        }
-        try {
-          await Promise.all(depedencypluginlibrariespromises);
-          const baseUrl = `${this.pluginsBaseUrl}${name}`;
-          const scriptUrl = `${baseUrl}/js/plugin.js?${Date.now()}`;
-          pluginConfig.baseUrl= this.pluginsBaseUrl;
-          this._loadScript(scriptUrl)
-            .done(() => {
-              this._loadedPluginUrls.push(scriptUrl);
-              resolve();
-            })
-            .fail((jqxhr, settings, exception) => {
-              console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
-              this.removeLoadingPlugin(name, false);
-              reject();
-            })
-        } catch(err) {
-          this.removeLoadingPlugin(name, false);
-          reject();
-        }
-      } else {
-        resolve();
-      }
-    })
+  this._setup = async function(name, pluginConfig) {
+    if (!pluginConfig) {
+      return Promise.resolve();
+    }
+    // create script url
+    const scriptUrl      = `${this.pluginsBaseUrl}${name}/js/plugin.js?${Date.now()}`;
+    pluginConfig.baseUrl = this.pluginsBaseUrl;
+    try {
+      // wait plugin dependencies before load plugin and then add url to loaded plugin urls
+      await Promise.all((pluginConfig.jsscripts || []).map(script => this._loadScript(script, false)));
+      await this._loadScript(scriptUrl, false);
+      this._loadedPluginUrls.push(scriptUrl);
+      return Promise.resolve();
+    } catch(err) {
+      console.warn('[G3W-PLUGIN]', err);
+      //remove plugin in case of error of dependencies
+      this.removeLoadingPlugin(name, false);
+      return Promise.reject();
+    }
   };
 
   /**
    * @param pluginName
-   * 
-   * @returns {*}
+   *
+   * @returns <Object> Plugin configuration server object
    */
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
 
   /**
-   * @returns {*|{}}
+   * @returns <Object> key pluginName, value plugin instance
    */
   this.getPlugins = function() {
     return this._plugins;
@@ -236,8 +275,8 @@ function PluginsRegistry() {
 
   /**
    * @param pluginName
-   * 
-   * @returns {*}
+   *
+   * @returns Plugin instance
    */
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
@@ -245,6 +284,10 @@ function PluginsRegistry() {
 
   /**
    * Check if a plugin is in configuration and will be added to application
+   *
+   * @param pluginName
+   *
+   * @returns { boolean }
    */
   this.isPluginInConfiguration = function(pluginName) {
     return this._configurationPlugins.indexOf(pluginName) !== -1;
@@ -252,8 +295,8 @@ function PluginsRegistry() {
 
   /**
    * @param pluginName
-   * 
-   * @returns {*}
+   *
+   * @returns plugin Configuration
    */
   this.isTherePlugin = function(pluginName) {
     return this.pluginsConfigs[pluginName];
