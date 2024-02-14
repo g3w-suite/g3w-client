@@ -219,7 +219,8 @@ const browserify_plugin = (pluginName, watch = true) => {
       .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
       .pipe(gulpif(production, sourcemaps.write(src)))
       .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
-      .pipe(gulp.dest(outputFolder)); // put plugin.js to static folder (PROD | DEV env)
+      .pipe(gulp.dest(outputFolder)) // put plugin.js to static folder (PROD | DEV env)
+      .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
   };
 
   return rebundle();
