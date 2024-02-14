@@ -220,13 +220,23 @@ function PluginsRegistry() {
    * Method to load external script
    *
    * @param url
+   * @param { boolean } legacy since 3.10.0 - whether fallback to jquery promises
    *
    * @returns {*}
    *
    * @private
    */
-  this._loadScript = function(url) {
-    return $.getScript(url);
+  this._loadScript = function(url, legacy=true) {
+    if (legacy) {
+      return $.getScript(url);
+    }
+    return new Promise(function(resolve, reject) {
+      const s = document.createElement('script');
+      s.src = url;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load script: ' + url));
+      document.head.appendChild(s);
+    });
   };
 
   /**
@@ -235,52 +245,29 @@ function PluginsRegistry() {
    * @param name
    * @param pluginConfig
    *
-   * @returns {Promise<unknown>}
+   * @returns { Promise<void> }
    *
    * @private
    */
-  this._setup = function(name, pluginConfig) {
-    return new Promise(async (resolve, reject) => {
-      if (!_.isNull(pluginConfig)) {
-        const {jsscripts=[]} = pluginConfig;
-        //Array contains plugin dependencies
-        const depedencypluginlibrariespromises = [];
-        //Need to wait plugin dependencies before load plugin
-        for (const script of jsscripts) {
-          depedencypluginlibrariespromises.push(new Promise((resolve, reject) => {
-            this._loadScript(script)
-              .done(() => resolve())
-              .fail(() => reject())
-          }));
-        }
-        try {
-          //when plugin dependencies are loaded
-          await Promise.all(depedencypluginlibrariespromises);
-          const baseUrl = `${this.pluginsBaseUrl}${name}`;
-          //create script url
-          const scriptUrl = `${baseUrl}/js/plugin.js?${Date.now()}`;
-          pluginConfig.baseUrl= this.pluginsBaseUrl;
-          this._loadScript(scriptUrl)
-            .done(() => {
-              //add url to loaded plugin urls
-              this._loadedPluginUrls.push(scriptUrl);
-              resolve();
-            })
-            .fail((jqxhr, settings, exception) => {
-              console.warn('[G3W-PLUGIN]', scriptUrl, exception, settings, jqxhr);
-              //remove plugin in case of error
-              this.removeLoadingPlugin(name, false);
-              reject();
-            })
-        } catch(err) {
-          //remove plugin in case of error of dependencies
-          this.removeLoadingPlugin(name, false);
-          reject();
-        }
-      } else {
-        resolve();
-      }
-    })
+  this._setup = async function(name, pluginConfig) {
+    if (!pluginConfig) {
+      return Promise.resolve();
+    }
+    // create script url
+    const scriptUrl      = `${this.pluginsBaseUrl}${name}/js/plugin.js?${Date.now()}`;
+    pluginConfig.baseUrl = this.pluginsBaseUrl;
+    try {
+      // wait plugin dependencies before load plugin and then add url to loaded plugin urls
+      await Promise.all((pluginConfig.jsscripts || []).map(script => this._loadScript(script, false)));
+      await this._loadScript(scriptUrl, false);
+      this._loadedPluginUrls.push(scriptUrl);
+      return Promise.resolve();
+    } catch(err) {
+      console.warn('[G3W-PLUGIN]', err);
+      //remove plugin in case of error of dependencies
+      this.removeLoadingPlugin(name, false);
+      return Promise.reject();
+    }
   };
 
   /**
