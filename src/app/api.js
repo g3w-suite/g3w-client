@@ -100,8 +100,8 @@ import RelationsService                            from 'services/relations';
 import TaskService                                 from 'services/tasks';
 import ApiService                                  from 'services/api';
 import RouterService                               from 'services/router';
-
 import GUI                                         from 'services/gui';
+
 //MIXINS
 import Mixins                                      from 'mixins';
 
@@ -418,16 +418,24 @@ const g3wsdk = {
 
   // G3W-SUITE debug info
   info: () => {
-    $script(
-      'https://unpkg.com/platform@1.3.6/platform.js',
-      () => {
+    Promise
+      .allSettled([
+        new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
+        new Promise((resolve) => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve))
+      ])
+      .finally(async () => {
+        /** @since 3.8.0 */
+        const platform = window.platform || {};
+
         window.console.info(`
 [g3wsdk.info]\n
 - g3w-admin: __${initConfig.version}__
-- g3w-client: __${G3W_CONSTANT.APP_VERSION}__
+- g3w-client: __${process.env.g3w_client_rev}__
+${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
+
       });
   },
 
