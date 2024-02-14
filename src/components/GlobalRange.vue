@@ -151,13 +151,13 @@
         });
       }
     },
-    watch:{
+    watch: {
       'state.value'(value) {
         this.changeBackGround(value);
         this.sync && this.emitChangeValue(value);
       }
     },
-    created(){
+    created() {
       this.changedValue =  this.sync ? ()=> this.$emit('changed') : debounce(value => {
         this.emitChangeValue(value)
       })
@@ -166,7 +166,6 @@
       await this.$nextTick();
       this.changeBackGround(this.value);
     },
-    beforeDestroy() {}
   }
 </script>
 
