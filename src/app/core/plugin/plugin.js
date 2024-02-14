@@ -21,7 +21,7 @@ const Plugin = function({
     dependencies = [],
     i18n         = null,
     fontClasses  = [],
-    api          = {}
+    api          = {},
   } = {}) {
   
   base(this);
@@ -83,7 +83,7 @@ proto.getConfig = function(name = this.name) {
   return this.config || PluginsRegistry.getPluginConfig(name);
 };
 
-/**
+/*
  * @FIXME add description
  */
 proto.setLocale = function(i18n) {
@@ -404,7 +404,7 @@ proto.unload  = function() {
     this.service.clearAllEvents();
   }
   this.emit('unload');
-  //console.log('UNLOAD can be overwrite by plugin');
+  //console.log('UNLOAD can be overwritten by plugin');
 };
 
 /**
