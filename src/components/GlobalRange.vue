@@ -127,23 +127,23 @@
       }
 
     },
-    data(){
+    data() {
       return {
         state: { value: this.value }
       };
     },
-    methods:{
-      changeBackGround(value){
+    methods: {
+      changeBackGround(value) {
         this.$refs['range-input'].style.backgroundSize = `${value ? (value - this.min) * 100 / (this.max - this.min): 0}% 100%`;
       },
       setValue(value){
         this.changedValue(value);
       },
-      change(evt){
+      change(evt) {
         const value = 1*evt.target.value;
         this.changedValue(value);
       },
-      emitChangeValue(value){
+      emitChangeValue(value) {
         this.state.value = value;
         this.$emit('change-range', {
           id: this.id,
@@ -162,7 +162,7 @@
         this.emitChangeValue(value)
       })
     },
-    async mounted(){
+    async mounted() {
       await this.$nextTick();
       this.changeBackGround(this.value);
     },

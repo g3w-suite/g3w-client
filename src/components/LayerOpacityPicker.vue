@@ -27,15 +27,14 @@
        }">
       <li>
         <range
-          :value="layer.opacity"
-          :min="0"
-          :max="100"
-          :step="1"
-          :sync="false"
-          :showValue="true"
-          :unit="'%'"
-          @change-range="setLayerOpacity">
-        </range>
+          :value        = "layer.opacity"
+          :min          = "0"
+          :max          = "100"
+          :step         = "1"
+          :sync         = "false"
+          :showValue    = "true"
+          :unit         = "'%'"
+          @change-range = "setLayerOpacity"/>
       </li>
     </ul>
 
@@ -45,7 +44,7 @@
 
 <script>
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import { CatalogEventBus as VM } from 'app/eventbus';
+  import { CatalogEventBus as VM }   from 'app/eventbus';
 
   export default {
 
