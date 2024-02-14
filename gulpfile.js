@@ -202,22 +202,22 @@ const browserify_plugin = (pluginName, watch = true) => {
 
     return merge(
         gulp
-          .src(`./src/plugins/_version.js`),                        // NB: hardcoded file, do not use `g3w.pluginsFolder`!
+          .src(`./src/plugins/_version.js`)                                // NB: hardcoded file, do not use `g3w.pluginsFolder`!
+          .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
+          .pipe(replace('process.env.g3w_plugin_version', `"${production ? version : version.split('-')[0] + '-' + branch }"`))
+          .pipe(replace('process.env.g3w_plugin_hash', `"${hash}"`))
+          .pipe(replace('process.env.g3w_plugin_branch', `"${branch}"`)),
         bundler
           .bundle()
           .on('error', (err) => { gutil.log(err); process.exit(); })
           .pipe(source(`${src}/build.js`))
           .pipe(buffer())
-          .pipe(gulpif(production, sourcemaps.init()))
-          .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
           .pipe(rename('plugin.js'))
-          .pipe(gulpif(production, sourcemaps.write(src)))
       )
       .pipe(concat('plugin.js'))
-      .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
-      .pipe(replace('process.env.g3w_plugin_version', `"${production ? version : version.split('-')[0] + '-' + branch }"`))
-      .pipe(replace('process.env.g3w_plugin_hash', `"${hash}"`))
-      .pipe(replace('process.env.g3w_plugin_branch', `"${branch}"`))
+      .pipe(gulpif(production, sourcemaps.init()))
+      .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
+      .pipe(gulpif(production, sourcemaps.write(src)))
       .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
       .pipe(gulp.dest(outputFolder)); // put plugin.js to static folder (PROD | DEV env)
   };
