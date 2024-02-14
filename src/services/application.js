@@ -176,6 +176,7 @@ const ApplicationService = function() {
    * @param {string} plugin name of plugin
    */
   this.loadedPlugin = function(plugin) {
+    //remove from list loading plugin
     ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
   };
 
@@ -646,7 +647,7 @@ const ApplicationService = function() {
           otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
         });
       } catch(err) {
-        /* FAIL SILENTLY */
+        console.warn(err);
       } finally {
         this.complete = true;
         this.emit('complete');
