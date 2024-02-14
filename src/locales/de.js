@@ -413,6 +413,7 @@ export default {
     no: "No",
     back: "Zurück",
     backto: "Zurück zu ",
+    help: "Helfen",
     changemap: "Karte ändern",
     change_session: "Sitzung ändern",
     component: "Allgemeine Komponente",
