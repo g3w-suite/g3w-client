@@ -337,13 +337,6 @@ export default {
         list_of_relations_feature: 'Lista på egenskapens relationer',
         error_missing_father_field: "Fält saknas"
       },
-      workflow: {
-        steps: {
-          title: 'Skeden'
-        },
-        next: "Nästa",
-
-      },
       form: {
         loading: 'Laddning...',
         inputs: {

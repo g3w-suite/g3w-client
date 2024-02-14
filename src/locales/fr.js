@@ -337,12 +337,6 @@ export default {
         list_of_relations_feature: 'Liste des relations entre les caractéristiques',
         error_missing_father_field: "Le champ concerné n'existe pas"
       },
-      workflow: {
-        steps: {
-          title: 'Étapes',
-        },
-        next: 'Suivant'
-      },
       form: {
         loading: 'Chargement...',
         inputs: {

@@ -339,12 +339,6 @@ export default {
         list_of_relations_feature: 'Lista delle relazioni della feature',
         error_missing_father_field: "Il campo relazionato non esiste"
       },
-      workflow: {
-        steps: {
-          title: 'Passi',
-        },
-        next: 'Avanti'
-      },
       form: {
         loading: 'Caricamento ...',
         inputs: {

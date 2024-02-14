@@ -9,7 +9,6 @@ const WMSLayer                            = require('core/layers/map/wmslayer');
 const WMSTLayer                           = require('core/layers/map/wmstlayer');
 const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                            = require('core/layers/map/xyzlayer');
-
 const GeoLayerMixin                       = require('core/layers/mixins/geo');
 
 /**
@@ -172,8 +171,8 @@ proto.getWmsUrl = function({ type = 'map' } = {}) {
   return this.config.wmsUrl;
 };
 
-proto.getWFSLayerName = function(){
-  return this.getQueryLayerName().replace(/[/\s]/g, '_')
+proto.getWFSLayerName = function() {
+  return this.getQueryLayerName().replace(/\s/g, '_').replaceAll( ':', '-' );
 };
 
 proto.useProxy = function(){
