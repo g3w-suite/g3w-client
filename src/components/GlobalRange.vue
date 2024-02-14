@@ -22,7 +22,7 @@
           type="range"
           ref="range-input"
           @change="change"
-          v-model="value"
+          v-model="state.value"
           :id="id"
           :min="min"
           :max="max"
@@ -37,7 +37,7 @@
 
     </section>
     <template v-if="showValue">
-      <span>{{value}}</span>
+      <span>{{state.value}}</span>
       <span style="font-weight: bold;">{{unit}}</span>
     </template>
   </div>
@@ -54,8 +54,8 @@
        * ID value for label.
        */
       id: {
-        type: String,
-        default: () => uniqueId(),
+        // type: String,
+        default: undefined,
       },
 
       /**
@@ -128,7 +128,9 @@
 
     },
     data(){
-      return {}
+      return {
+        state: { value: this.value }
+      };
     },
     methods:{
       changeBackGround(value){
@@ -142,7 +144,7 @@
         this.changedValue(value);
       },
       emitChangeValue(value){
-        this.value = value;
+        this.state.value = value;
         this.$emit('change-range', {
           id: this.id,
           value
@@ -150,7 +152,7 @@
       }
     },
     watch:{
-      value(value){
+      'state.value'(value) {
         this.changeBackGround(value);
         this.sync && this.emitChangeValue(value);
       }
