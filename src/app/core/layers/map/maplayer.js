@@ -1,5 +1,5 @@
-const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+const { base, inherit } = require('utils');
+const G3WObject         = require('core/g3wobject');
 
 function MapLayer(config={}) {
   this.config = config;

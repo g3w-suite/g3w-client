@@ -5,11 +5,25 @@
 
 <template>
   <div class="tab-node group">
-    <h5 class="title group-title" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
-    <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}">
-      <template v-for="column in columnNumber" style="padding:2px">
+    <h5
+      v-if="showGroupTile"
+      class="title group-title"
+      :class="{'mobile': isMobile()}"
+      :style="{fontSize: isMobile() ? '1em' : '1.1em'}">{{ node.name }}
+    </h5>
+    <div
+      v-for="row in rows"
+      class="node-row"
+      :class="{'mobile': isMobile()}"
+    >
+      <template
+        v-for="column in columnNumber"
+        style="padding:2px"
+      >
         <template v-if="getNode(row, column)">
-          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 5px 3px 5px 3px;"
+          <component
+            v-if="getNodeType(getNode(row, column)) === 'field'"
+            style="padding: 5px 3px 5px 3px;"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
@@ -20,9 +34,19 @@
             :feature="feature"
             :is="getComponent(getField(getNode(row, column)))"/>
           <template v-else>
-            <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"/>
+            <tabs
+              v-if="getNodeType(getNode(row, column)) === 'group'"
+              class="sub-group" style="width: 100% !important"
+              :group="true"
+              :tabs="[getNode(row, column)]"
+              v-bind="$props"/>
             <template v-else>
-              <div v-if="showRelationByField" v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading" @click.stop="handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}">
+              <div
+                v-if="showRelationByField"
+                v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading"
+                @click.stop="handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})"
+                :style="{cursor: showRelationByField && 'pointer'}"
+              >
                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
                 <div style="display: flex; align-items: center">
                   <div  class="query_relation_field">
@@ -44,13 +68,24 @@
 <script>
   import G3wInput from 'components/InputG3W.vue';
   import ProjectsRegistry from 'store/projects';
-  import GUI from 'services/gui';
 
   const Fields = require('gui/fields/fields');
 
   export default {
     name: "node",
-    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'removeToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
+    props: [
+      'contenttype',
+      'node',
+      'fields',
+      'showTitle',
+      'addToValidate',
+      'removeToValidate',
+      'changeInput',
+      'layerid',
+      'feature',
+      'showRelationByField',
+      'handleRelation'
+    ],
     components: {
       G3wInput,
       ...Fields
@@ -62,6 +97,10 @@
       }
     },
     computed: {
+      /**
+       *
+       * @returns {*|*[]}
+       */
       filterNodes() {
         const filterNodes = this.node.nodes && this.node.nodes.filter(node => {
           if (this.getNodeType(node) === 'group') {
@@ -78,40 +117,78 @@
         });
         return filterNodes || [];
       },
+      /**
+       *
+       * @returns {number}
+       */
       nodesLength() {
         return this.filterNodes.length;
       },
+      /**
+       *
+       * @returns {number}
+       */
       rows() {
         let rowCount = 1;
-        if (this.nodesLength === 0) rowCount = 0;
-        else if (this.columnNumber  <= this.nodesLength) {
+        if (this.nodesLength === 0) {
+          rowCount = 0;
+        } else if (this.columnNumber  <= this.nodesLength) {
           const rest = this.nodesLength  % this.columnNumber;
           rowCount = Math.floor(this.nodesLength / this.columnNumber) + rest;
         }
         return rowCount;
       },
+      /**
+       *
+       * @returns {number|number|number}
+       */
       columnNumber() {
         const columnCount = parseInt(this.node.columncount) ? parseInt(this.node.columncount): 1;
         return columnCount > this.nodesLength ? this.nodesLength:  columnCount;
       },
+      /**
+       *
+       * @returns {*}
+       */
       showGroupTile() {
         return this.showTitle && this.node.showlabel && this.node.groupbox
       }
     },
     methods: {
-      loadingRelation(relation){
+      /**
+       *
+       * @param relation
+       * @returns {*|{loading: boolean}}
+       */
+      loadingRelation(relation) {
         const layer = ProjectsRegistry.getCurrentProject().getLayerById(this.layerid);
-        const relation_project = layer.getRelationById(relation.name);
-        return relation_project.state;
+        // FIXME: prevent a fatal error when creating a relation Tab (even if the project has no relations)
+        return layer.getRelationById(relation.name) || ({ state: {loading: false} }).state;
       },
+      /**
+       *
+       * @param relation
+       * @returns {boolean|false|*}
+       */
       isRelationDisabled(relation){
-        return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
+        return this.getRelationName(relation.name) === undefined ||
+          (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
+      /**
+       *
+       * @param relationId
+       * @returns {*}
+       */
       getRelationName(relationId) {
         const relation = ProjectsRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
+      /**
+       *
+       * @param relation
+       * @returns {boolean}
+       */
       isRelationChildLayerNotEditable(relation){
         const {nmRelationId, name} = relation;
         ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
@@ -138,32 +215,58 @@
         // // check if is editable. In case of nmRelation layer need to be table to be editable
         // return !relationLayer.isEditable() || (nmRelationId ? relationLayer.isVector() : false);
       },
+      /**
+       *
+       * @param row
+       * @returns {T[]}
+       */
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
         return this.filterNodes.slice(startIndex, this.columnNumber + startIndex);
       },
+      /**
+       *
+       * @param row
+       * @param column
+       * @returns {T}
+       */
       getNode(row, column) {
         return this.getNodes(row)[column - 1];
       },
+      /**
+       *
+       * @param node
+       * @returns {{relation}|*}
+       */
       getField(node) {
         if (node.relation) return node;
-        const field = this.fields.find((field) => {
+        return this.fields.find((field) => {
           const field_name = node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name;
           return field.name === field_name;
         });
-        return field;
       },
+      /**
+       *
+       * @param node
+       * @returns {string}
+       */
       getNodeType(node) {
-        const type = node.groupbox || node.nodes ? 'group' : node.relation ? 'relation': 'field';
+        const type = (node.groupbox || node.nodes) ?
+          'group' :
+          node.relation ? 'relation': 'field';
         if (type === 'field' && (node.alias === undefined || node.alias === '')) {
           node.alias = node.field_name;
         }
         return type;
       },
       getComponent(field) {
-        if (field.relation) return;
-        else if (field.query) return field.input.type;
-        else return 'g3w-input';
+        if (field.relation) {
+          return;
+        } else if (field.query) {
+          return field.input.type;
+        } else {
+          return 'g3w-input';
+        }
       }
     }
   }

@@ -6,7 +6,7 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry from 'store/map-layers';
 
-const { base, inherit, XHR } = require('core/utils/utils');
+const { base, inherit, XHR } = require('utils');
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
 

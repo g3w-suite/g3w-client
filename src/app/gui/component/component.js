@@ -1,30 +1,62 @@
-const { base, inherit, merge, noop, capitalize_first_letter, resolve } = require('core/utils/utils');
+const { 
+  base,
+  inherit,
+  merge,
+  noop,
+  capitalize_first_letter,
+  resolve
+}               = require('utils');
 const G3WObject = require('core/g3wobject');
 
-const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
 
-// class component
-const Component = function(options={}) {
-  this._firstLayout = true;
-  // internal VUE component
-  this.internalComponent = null;
-  this._components = [];
+/**
+ * Component class
+ * 
+ * @param { Object} options
+ * @param { number } options.id 
+ * @param { string } options.title
+ * @param { boolean } options.visible
+ * @param { boolean } options.open
+ * @param { boolean } options.resizable
+ * @param { null | unknown } options.info
+ * @param { boolean } options.loading
+ * @param { boolean } options.disabled
+ * @param { boolean } options.closewhenshowviewportcontent
+ * @param options.events
+ */
+const Component = function(options = {}) {
+
   const {
-    id=Math.random() * 1000,
-    title='',
-    visible=true,
-    open=false,
-    resizable=false,
-    info=null,
-    loading=false,
-    disabled=false,
-    closewhenshowviewportcontent=true,
+    id                           = Math.random() * 1000,
+    title                        = '',
+    visible                      = true,
+    open                         = false,
+    resizable                    = false,
+    info                         = null,
+    loading                      = false,
+    disabled                     = false,
+    closewhenshowviewportcontent = true,
   } = options;
-  this.id = id ;
+
+  this._firstLayout = true;
+
+  /** internal VUE component */
+  this.internalComponent = null;
+
+  /** @type { Array } */
+  this._components = [];
+
+  /** @type { string } */
+  this.id = id;
+
+  /** @type { string } */
   this.title = title;
+
   this.state = {
-    visible, // visibile
-    open, // open,
+    visible,
+    open,
     resizable,
     info,
     loading,
@@ -35,55 +67,85 @@ const Component = function(options={}) {
       height:0
     }
   };
-  //setters
+
   this.setters = {
+
     setOpen(bool) {
       this.state.open = bool;
       this._setOpen(bool);
     },
+
     setVisible(bool) {
       this.state.visible = bool;
       this._setVisible(bool);
     },
-    setLoading(bool=false){
+
+    setLoading(bool=false) {
       this.state.loading = bool;
     },
-    setDisabled(bool=false){
+
+    setDisabled(bool=false) {
       this.state.disabled = bool;
     },
+
     reload() {
       this._reload();
-    }
+    },
+
   };
+
   merge(this, options);
+
   base(this);
+
   // add events options
   this.events = options.events;
-  this.events && this.handleEventsComponent();
+
+  if (this.events) {
+    this.handleEventsComponent();
+  }
+
 };
 
 inherit(Component, G3WObject);
 
 const proto = Component.prototype;
 
+/**
+ * @param { Object } options
+ * @param { Array } options.components
+ * @param { Object } options.service
+ * @param { Function } options.service.init
+ * @param options.vueComponentObject
+ * @param options.template
+ * @param options.propsData
+ */
 proto.init = function(options = {}) {
   this.vueComponent = this.createVueComponent(options.vueComponentObject);
-  this._components = options.components || [];
-  const service = options.service || noop ;
-  const {template, propsData} = options;
-  this.setService(service);
-  this._service.init ? this._service.init(options): null;
-  template && this.setInternalComponentTemplate(template);
+  this._components  = options.components || [];
+
+  this.setService(options.service || noop);
+
+  if (this._service.init) {
+    this._service.init(options);
+  }
+
+  if (options.template) {
+    this.setInternalComponentTemplate(options.template);
+  }
+
   this.setInternalComponent = function() {
-    const InternalComponent = Vue.extend(this.vueComponent);
-    this.internalComponent = new InternalComponent({
+    this.internalComponent = new (Vue.extend(this.vueComponent))({
       service: this._service,
-      template,
-      propsData
+      template: options.template,
+      propsData: options.propsData
     });
     this.internalComponent.state = this.getService().state;
   };
+
   this.setInternalComponent();
+
+  return this;
 };
 
 proto.getId = function() {
@@ -98,7 +160,7 @@ proto.getOpen = function() {
   return this.state.open;
 };
 
-proto.closeWhenViewportContentIsOpen = function(){
+proto.closeWhenViewportContentIsOpen = function() {
   return this.getOpen() && this.state.closewhenshowviewportcontent;
 };
 
@@ -122,10 +184,9 @@ proto.setService = function(service) {
   this._service = service;
 };
 
-proto.handleEventsComponent = function(){
-  const {open, visible} = this.events;
-  if (open) {
-    const {when="after", cb=()=>{}, guiEvents=[]} = open;
+proto.handleEventsComponent = function() {
+  if (this.events.open) {
+    const { when = "after", cb = () => {} } = this.events.open;
     this[`on${when}`]('setOpen', bool => cb(bool));
   }
 };
@@ -147,9 +208,9 @@ proto.popComponent = function() {
 };
 
 proto.removeComponent = function(Component) {
-  this._components.forEach((component, index) => {
-    if (component === Component) {
-      this.splice(index, 1);
+  this._components.forEach((c, i) => {
+    if (c === Component) {
+      this.splice(i, 1);
       return false;
     }
   })
@@ -168,17 +229,12 @@ proto.getInternalComponent = function() {
 };
 
 proto.setInternalComponent = function(internalComponent, options={}) {
-  if (!internalComponent && this.internalComponentClass) this.internalComponent = new this.internalComponentClass;
-  else this.internalComponent = internalComponent;
-  const {events=[]} = options;
-  events.forEach(event => {
-    const {name, handler} = event;
-    this.internalComponent.$on(name, data => handler && handler(data) || this[`set${capitalize_first_letter(name)}`](data));
-  })
+  this.internalComponent = !internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
+  (options.events || []).forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${capitalize_first_letter(e.name)}`](data)))
 };
 
 proto.createVueComponent = function (vueObjOptions) {
-  return _.cloneDeep(vueObjOptions);
+  return _cloneDeep(vueObjOptions);
 };
 
 proto.addInternalComponentData = function(data) {
@@ -194,30 +250,32 @@ proto.overwriteServiceMethods = function(methodsOptions) {
 };
 
 proto.extendService = function(serviceOptions) {
-  this._service && merge(this._service, serviceOptions);
+  if (this._service) {
+    merge(this._service, serviceOptions);
+  }
 };
 
 proto.extendInternalComponent = function(internalComponentOptions) {
-  if (this.vueComponent) {
-    Object.entries(internalComponentOptions).forEach(([key, value]) => {
-      if (VUECOMPONENTSATTRIBUTES.indexOf(key) > -1) {
-        switch (key) {
-          case 'methods':
-            this.extendInternalComponentMethods(value);
-            break;
-          case 'components':
-            this.extendInternalComponentComponents(value);
-            break;
-          default:
-            merge(this.vueComponent[key], value);
-        }
+  if(!this.vueComponent) {
+    this.vueComponent = internalComponentOptions;
+    return;
+  }
+  Object
+    .entries(internalComponentOptions)
+    .forEach(([key, value]) => {
+      switch (key) {
+        case 'methods':    this.extendInternalComponentMethods(value); break;
+        case 'components': this.extendInternalComponentComponents(value); break;
+        case 'computed':   merge(this.vueComponent[key], value); break;
+        case 'data':       merge(this.vueComponent[key], value); break;
       }
     });
-  } else this.vueComponent = internalComponentOptions;
 };
 
 proto.extendInternalComponentComponents = function(components) {
-  components && merge(this.vueComponent.components, components);
+  if (components) {
+    merge(this.vueComponent.components, components);
+  }
 };
 
 proto.extendComponents = function(components) {
@@ -225,9 +283,12 @@ proto.extendComponents = function(components) {
 };
 
 proto.addComponent = function(component) {
-  if (component) this.vueComponent.components[component.key] = component.value;
+  if (component) {
+    this.vueComponent.components[component.key] = component.value;
+  }
 };
 
+/** @TODO check if unusued (invalid call to "forEach.forEach") */
 proto.extendInternalComponentMethods = function(methods) {
   if (methods) {
     Object.entries(methods).forEach.forEach(([key, value]) => (!(value instanceof Function)) && delete methods[key]);
@@ -243,7 +304,9 @@ proto.extendInternalComponentComputed = function(computed) {
 };
 
 proto.setInternalComponentTemplate = function(template) {
-  if (template) this.vueComponent.template = template;
+  if (template) {
+    this.vueComponent.template = template;
+  }
 };
 
 proto.getInternalTemplate = function() {
@@ -252,7 +315,7 @@ proto.getInternalTemplate = function() {
 
 proto.destroy = function() {};
 
-proto.click = function(){};
+proto.click = function() {};
 
 // hook function to show componet
 proto.show = function() {};
@@ -263,54 +326,83 @@ proto._setVisible = function() {};
 
 proto._reload = function() {};
 
+/**
+ * @param { Element | 'string' } parent DOM element
+ * @param { boolean } append
+ *  
+ * @returns jquery promise
+ * 
+ * @fires internalComponent~ready
+ * @fires mount
+ */
 proto.mount = function(parent, append) {
   return new Promise((resolve, reject) => {
-    if (!this.internalComponent) this.setInternalComponent();
+
+    if (!this.internalComponent) {
+      this.setInternalComponent();
+    }
+
     if (append) {
-      const iCinstance = this.internalComponent.$mount();
-      $(parent).append(iCinstance.$el);
-    } else this.internalComponent.$mount(parent);
+      $(parent).append(this.internalComponent.$mount().$el);
+    }
+    
+    if (!append){
+      this.internalComponent.$mount(parent);
+    }
+
     this.internalComponent.$nextTick(() => {
       $(parent).localize();
       this.emit('ready');
       resolve(true);
     });
+
     // emit mount event
     this.emit('mount');
-  })
+
+  });
 };
 
+/**
+ * @returns jquery promise
+ * 
+ * @fires unmount
+ */
 proto.unmount = function() {
-  if (!this.internalComponent) return resolve();
-  if (this.state.resizable) this.internalComponent.$off('resize-component', this.internalComponent.layout);
+  if (!this.internalComponent) {
+    return resolve();
+  }
+  if (this.state.resizable) {
+    this.internalComponent.$off('resize-component', this.internalComponent.layout);
+  }
   this.state.open = false;
-  // destroy vue component
-  this.internalComponent.$destroy(true);
-  // remove dom element
-  $(this.internalComponent.$el).remove();
-  // set internal componet to null (for GC)
-  this.internalComponent = null;
-  // emit unmount event
-  this.emit('unmount');
+  this.internalComponent.$destroy(true);  // destroy vue component
+  $(this.internalComponent.$el).remove(); // remove dom element
+  this.internalComponent = null;          // set internal componet to null (for GC)
+  this.emit('unmount');                   // emit unmount event
   return resolve();
 };
 
+/**
+ * @returns { Element } DOM element
+ */
 proto.ismount = function() {
   return this.internalComponent && this.internalComponent.$el;
 };
 
+/**
+ * @param { number } width 
+ * @param { number } height 
+ * 
+ * @listens internalComponent~resize-component
+ * @fires internalComponent~resize-component
+ * @fires layout
+ */
 proto.layout = function(width, height) {
   if (this.state.resizable && this._firstLayout) {
     this.internalComponent.$on('resize-component', this.internalComponent.layout);
     this._firstLayout = false;
   }
-  this.internalComponent.$nextTick(() => {
-    this.internalComponent.$emit('resize-component', {
-      width,
-      height
-    })
-  });
-  // emit layout event
+  this.internalComponent.$nextTick(() => { this.internalComponent.$emit('resize-component', { width, height }); });
   this.emit('layout');
 };
 

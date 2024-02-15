@@ -10,7 +10,7 @@
         <img class="img-thumbnail" @click="showGallery(index)" :src="getSrc(value)"/>
       </div>
     </div>
-    <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"></g3w-images-gallery>
+    <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"/>
   </div>
 </template>
 

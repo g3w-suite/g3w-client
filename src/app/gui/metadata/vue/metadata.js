@@ -2,7 +2,7 @@ import * as vueComponentOptions from 'components/Metadata.vue';
 
 import GUI from 'services/gui';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Component = require('gui/component/component');
 const MetadataService = require('gui/metadata/metadataservice');
 

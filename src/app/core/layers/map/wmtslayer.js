@@ -1,6 +1,6 @@
-const { inherit, base } = require('core/utils/utils');
-const MapLayer = require('core/layers/map/maplayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
+const { inherit, base } = require('utils');
+const MapLayer          = require('core/layers/map/maplayer');
+const RasterLayers      = require('g3w-ol/layers/rasters');
 
 function WMSTLayer(options={}, extraParams={}, method='GET') {
   this.LAYERTYPE = {
@@ -17,7 +17,9 @@ inherit(WMSTLayer, MapLayer);
 const proto = WMSTLayer.prototype;
 
 proto.getOLLayer = function(withLayers) {
-  if (!this._olLayer) this._olLayer = this._makeOlLayer(withLayers);
+  if (!this._olLayer) {
+    this._olLayer = this._makeOlLayer(withLayers);
+  }
   return this._olLayer;
 };
 
@@ -75,17 +77,16 @@ proto._getVisibleLayers = function() {
 };
 
 proto._makeOlLayer = function() {
-  const wmsConfig = {
-    url: this.config.url,
-    id: this.config.id,
+  const olLayer = new RasterLayers.WMSTLayer({
+    url:        this.config.url,
+    id:         this.config.id,
     projection: this.config.projection
-  };
+  }, this.extraParams, this._method);
 
-  const olLayer = new RasterLayers.WMSTLayer(wmsConfig, this.extraParams, this._method);
+  olLayer.getSource().on('tileloadstart', () => this.emit('loadstart'));
+  olLayer.getSource().on('tileloadend',   () => this.emit('loadend'));
+  olLayer.getSource().on('tileloaderror', () => this.emit('loaderror'));
 
-  olLayer.getSource().on('tileloadstart', () => this.emit("loadstart"));
-  olLayer.getSource().on('tileloadend', () => this.emit("loadend"));
-  olLayer.getSource().on('tileloaderror', ()=> this.emit("loaderror"));
   return olLayer
 };
 
@@ -102,23 +103,30 @@ proto.checkLayersDisabled = function(resolution, mapUnits) {
 };
 
 //update Layers
-proto._updateLayers = function(mapState={}, extraParams={}) {
-  let {force=false, ...params} = extraParams;
+proto._updateLayers = function(mapState = {}, extraParams = {}) {
+  let {
+    force=false,
+    ...params
+  } = extraParams;
+
   //check disabled layers
-  const {mapUnits} = mapState;
-  !force && this.checkLayersDisabled(mapState.resolution, mapUnits);
-  const visibleLayers = this._getVisibleLayers(mapState) || [];
-  if (visibleLayers.length > 0) {
-    const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
-    params = {
-      ...params,
-      LAYERS: `${prefix}${visibleLayers.map(layer => {
-        return layer.getWMSLayerName();
-      }).join(',')}`
-    };
-    this._olLayer.setVisible(true);
-    this._olLayer.getSource().updateParams(params);
-  } else this._olLayer.setVisible(false);
+  if (!force) {
+    this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
+  } 
+
+  const layers = this._getVisibleLayers(mapState) || [];
+
+  // skip when ..
+  if (layers.length <= 0) {
+    this._olLayer.setVisible(false);
+    return;
+  }
+
+  this._olLayer.setVisible(true);
+  this._olLayer.getSource().updateParams({
+    ...params,
+    LAYERS: `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`
+  });
 };
 
 module.exports = WMSTLayer;

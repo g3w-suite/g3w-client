@@ -7,7 +7,7 @@
   <field :state="state">
     <div slot="field" style="text-align: left">
       <img v-for="(value, index) in values" class="img-responsive" style="max-height:50px" @click="showGallery(index)" :src="getSrc(value)"/>
-      <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"></g3w-images-gallery>
+      <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"/>
     </div>
   </field>
 </template>
@@ -15,7 +15,7 @@
 <script>
 import Field from 'components/Field.vue';
 
-const { toRawType } = require('core/utils/utils');
+const { toRawType } = require('utils');
 
 export default {
 

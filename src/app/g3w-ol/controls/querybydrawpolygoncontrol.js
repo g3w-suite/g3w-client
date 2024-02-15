@@ -6,7 +6,7 @@ import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
-const { throttle }            = require('core/utils/utils');
+const { throttle }            = require('utils');
 const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
 
 const QueryByDrawPolygonControl = function(options={}) {
@@ -153,7 +153,6 @@ proto.runSpatialQuery = async function() {
   try {
     await DataRouterService.getData('query:polygon', {
       inputs: {
-        layerName: 'Draw',
         feature: this.feature,
         excludeSelected: (null === this.getSelectedLayer()),
         external: {
@@ -165,7 +164,10 @@ proto.runSpatialQuery = async function() {
         filterConfig: {
           spatialMethod: this.getSpatialMethod()
         },
-        multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name)
+        multilayers: ProjectsRegistry.getCurrentProject().isQueryMultiLayers(this.name),
+        /**@since 3.9.0**/
+        //add a custom type
+        type: 'drawpolygon',
       },
       outputs: {
         show({error = false}) {
@@ -174,7 +176,7 @@ proto.runSpatialQuery = async function() {
       }
     });
 
-  } catch(err){
+  } catch(err) {
     console.warn(err)
   }
 };

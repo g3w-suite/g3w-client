@@ -1,13 +1,15 @@
-import GUI from 'services/gui';
-import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
+import GUI                            from 'services/gui';
+import DataRouterService              from 'services/data';
+import ProjectsRegistry               from 'store/projects';
+import { getMapLayersByFilter }       from 'utils/getMapLayersByFilter';
+import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
+import { isPolygonGeometryType }      from 'utils/isPolygonGeometryType';
 
-const { throttle }                       = require('core/utils/utils');
-const { getMapLayersByFilter, Geometry } = require('core/utils/geo');
+const { throttle }                       = require('utils');
 const BaseQueryPolygonControl            = require('g3w-ol/controls/basequerypolygoncontrol');
 const PickCoordinatesInteraction         = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
-const VALIDGEOMETRIES = Geometry.getAllPolygonGeometryTypes();
+const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 const condition = {
   filtrable: {
@@ -229,7 +231,7 @@ proto.listenPolygonLayersChange = function() {
 proto.onAddExternalLayer = function({layer, unWatches}) {
 
   // watch `layer.selected` property only on Polygon layers (in order to enable/disable map control)
-  if (Geometry.isPolygonGeometryType(layer.geometryType)) {
+  if (isPolygonGeometryType(layer.geometryType)) {
     unWatches.push(
       this.watchLayer(
         () => layer.selected,                                    // watch `layer.selected` property

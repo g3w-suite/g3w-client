@@ -1,7 +1,7 @@
 import ProjectsRegistry from 'store/projects';
 import GUI from 'services/gui';
 
-const { resolve } = require('core/utils/utils');
+const { resolve } = require('utils');
 
 function BaseService(){
   ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);

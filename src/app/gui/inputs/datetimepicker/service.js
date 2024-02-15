@@ -1,6 +1,6 @@
 import ApplicationService from 'services/application';
 
-const { inherit, base, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
+const { inherit, base, convertQGISDateTimeFormatToMoment } = require('utils');
 const Service = require('gui/inputs/service');
 
 function DateTimePickerService(options={}) {

@@ -6,8 +6,14 @@
 <template>
   <div style="position: relative">
     <div style="display: flex;justify-content: flex-end;height: 35px;margin-right: 12px; margin-bottom: 5px">
-      <button ref="g3w-input-lat-lon" @click.prevent.stop="toggleGetCoordinate" :style="{border: coordinatebutton.active ? '2px solid' : 0}"
-        data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.form.inputs.tooltips.lonlat'"
+      <button
+        ref="g3w-input-lat-lon"
+        @click.prevent.stop="toggleGetCoordinate"
+        :style="{border: coordinatebutton.active ? '2px solid' : 0}"
+        data-placement="left"
+        data-container="body"
+        data-toggle="tooltip"
+        v-t-tooltip="'sdk.form.inputs.tooltips.lonlat'"
         class="action skin-tooltip-left skin-color skin-border-color"
         style="border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
         :class="g3wtemplate.font['crosshairs']">
@@ -59,7 +65,7 @@
 </template>
 
 <script>
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 const Input = require('gui/inputs/input');
 
 export default {

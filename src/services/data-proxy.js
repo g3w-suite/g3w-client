@@ -5,7 +5,7 @@
 
 import ApplicationService from 'services/application';
 
-const { base, inherit, XHR } = require('core/utils/utils');
+const { base, inherit, XHR } = require('utils');
 const BaseService = require('core/data/service');
 
 function ProxyService(){

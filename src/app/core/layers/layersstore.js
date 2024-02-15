@@ -1,4 +1,4 @@
-const { base, inherit, uniqueId } = require('core/utils/utils');
+const { base, inherit, uniqueId } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // Interface for Layers
@@ -79,86 +79,67 @@ proto.removeLayers = function() {
   })
 };
 
-proto.getLayersDict = function(filter = {}, options={}) {
-  // in case  we pass filter = null
-  if (!filter) return this._layers;
-  const {
-    PRINTABLE,
-    QUERYABLE,
-    FILTERABLE,
-    EDITABLE,
-    VISIBLE,
-    SELECTED,
-    CACHED,
-    SELECTED_OR_ALL,
-    SERVERTYPE,
-    BASELAYER,
-    GEOLAYER,
-    VECTORLAYER,
-    HIDDEN,
-    DISABLED,
-    IDS
-  } = filter;
+proto.getLayersDict = function(filter = {}, options = {}) {
 
-  // if filter is passed
+  // skip when no filter is provided (eg. `filter = null`)
   if (
-    _.isUndefined(QUERYABLE) &&
-    _.isUndefined(FILTERABLE) &&
-    _.isUndefined(EDITABLE) &&
-    _.isUndefined(VISIBLE) &&
-    _.isUndefined(SERVERTYPE) &&
-    _.isUndefined(CACHED) &&
-    _.isUndefined(SELECTED_OR_ALL) &&
-    _.isUndefined(SERVERTYPE) &&
-    _.isUndefined(GEOLAYER) &&
-    _.isUndefined(HIDDEN) &&
-    _.isUndefined(DISABLED) &&
-    _.isUndefined(BASELAYER) &&
-    _.isUndefined(VECTORLAYER) &&
-    _.isUndefined(PRINTABLE) &&
-    _.isUndefined(IDS)
-  ) return this._layers;
-
-  let layers = [];
-
-  for (let key in this._layers) {
-    layers.push(this._layers[key]);
+    !filter ||
+    [
+      filter.PRINTABLE,
+      filter.QUERYABLE,
+      filter.FILTERABLE,
+      filter.EDITABLE,
+      filter.VISIBLE,
+      filter.SELECTED,
+      filter.CACHED,
+      filter.SELECTED_OR_ALL,
+      filter.SERVERTYPE,
+      filter.BASELAYER,
+      filter.GEOLAYER,
+      filter.VECTORLAYER,
+      filter.HIDDEN,
+      filter.DISABLED,
+      filter.IDS,
+    ].every(f => undefined === f)
+    ) {
+    return this._layers;
   }
 
-  if (IDS) {
-    const ids = Array.isArray(IDS) ? IDS : [IDS];
-    layers = layers.filter(layer => ids.indexOf(layer.getId()) !== -1)
+  let layers = Object.values(this._layers);
+
+  if (filter.IDS) {
+    const ids = [].concat(filter.IDS);
+    layers = layers.filter(l => -1 !== ids.indexOf(l.getId()));
   }
 
-  // return only selected if some one are selected
-  if (SELECTED_OR_ALL) {
-    let _layers = layers;
-    layers = layers.filter(layer => layer.isSelected());
-    layers = layers.length ? layers : _layers;
+  // check if there are `selected` layers otherwise get all `layers`
+  if (filter.SELECTED_OR_ALL) {
+    const selected = layers.filter(l => l.isSelected());
+    layers = selected.length > 0 ? selected : layers;
   }
 
-  if ('boolean' === typeof SELECTED && !SELECTED_OR_ALL) layers = layers.filter(layer => SELECTED === layer.isSelected());
-
-  if ('boolean' === typeof QUERYABLE)   layers = layers.filter(layer => QUERYABLE   === layer.isQueryable());
-  if ('boolean' === typeof FILTERABLE)  layers = layers.filter(layer => FILTERABLE  === layer.isFilterable(options.filtrable || null));
-  if ('boolean' === typeof EDITABLE)    layers = layers.filter(layer => EDITABLE    === layer.isEditable());
-  if ('boolean' === typeof VISIBLE)     layers = layers.filter(layer => VISIBLE     === layer.isVisible());
-  if ('boolean' === typeof CACHED)      layers = layers.filter(layer => CACHED      === layer.isCached());
-  if ('boolean' === typeof BASELAYER)   layers = layers.filter(layer => BASELAYER   === layer.isBaseLayer());
-  if ('boolean' === typeof GEOLAYER)    layers = layers.filter(layer => GEOLAYER    === layer.state.geolayer);
-  if ('boolean' === typeof VECTORLAYER) layers = layers.filter(layer => VECTORLAYER === layer.isType('vector'));
-  if ('boolean' === typeof HIDDEN)      layers = layers.filter(layer => HIDDEN      == layer.isHidden());
-  if ('boolean' === typeof DISABLED)    layers = layers.filter(layer => DISABLED    === layer.isDisabled());
-
-  if ('string' === typeof SERVERTYPE && '' !== SERVERTYPE) layers = layers.filter(layer => SERVERTYPE === layer.getServerType());
-
-  if (PRINTABLE) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: PRINTABLE.scale}));
+  // checks if a boolean filter is setted
+  const has = f => 'boolean' === typeof f;
+  
+  if (has(filter.SELECTED) && !filter.SELECTED_OR_ALL)                    layers = layers.filter(l => filter.SELECTED    === l.isSelected());
+  if (has(filter.QUERYABLE))                                              layers = layers.filter(l => filter.QUERYABLE   === l.isQueryable());
+  if (has(filter.FILTERABLE))                                             layers = layers.filter(l => filter.FILTERABLE  === l.isFilterable(options.filtrable || null));
+  if (has(filter.EDITABLE))                                               layers = layers.filter(l => filter.EDITABLE    === l.isEditable());
+  if (has(filter.VISIBLE))                                                layers = layers.filter(l => filter.VISIBLE     === l.isVisible());
+  if (has(filter.CACHED))                                                 layers = layers.filter(l => filter.CACHED      === l.isCached());
+  if (has(filter.BASELAYER))                                              layers = layers.filter(l => filter.BASELAYER   === l.isBaseLayer());
+  if (has(filter.GEOLAYER))                                               layers = layers.filter(l => filter.GEOLAYER    === l.state.geolayer);
+  if (has(filter.VECTORLAYER))                                            layers = layers.filter(l => filter.VECTORLAYER === l.isType('vector'));
+  if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      == l.isHidden());
+  if (has(filter.DISABLED))                                               layers = layers.filter(l => filter.DISABLED    === l.isDisabled());
+  if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
+  if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.state.geolayer && l.isPrintable({ scale: filter.PRINTABLE.scale }));
 
   return layers;
 };
 
 // return layers array
-proto.getLayers = function(filter={}, options={}) {
+proto.getLayers = function(filter = {}, options = {}) {
   return Object.values(this.getLayersDict(filter, options));
 };
 

@@ -27,15 +27,14 @@
        }">
       <li>
         <range
-          :value="layer.opacity"
-          :min="0"
-          :max="100"
-          :step="1"
-          :sync="false"
-          :showValue="true"
-          :unit="'%'"
-          @change-range="setLayerOpacity">
-        </range>
+          :value        = "layer.opacity"
+          :min          = "0"
+          :max          = "100"
+          :step         = "1"
+          :sync         = "false"
+          :showValue    = "true"
+          :unit         = "'%'"
+          @change-range = "setLayerOpacity"/>
       </li>
     </ul>
 
@@ -45,7 +44,7 @@
 
 <script>
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import { CatalogEventBus as VM }   from 'app/eventbus';
 
   export default {
 
@@ -77,7 +76,7 @@
       /**
        * @param {{ id:? string, value: number }}
        * 
-       * @fires CatalogEventHub~layer-change-opacity
+       * @fires CatalogEventBus~layer-change-opacity
        */
       setLayerOpacity( { id = this.layer.id, value: opacity }) {
         // skip if nothing has changed
@@ -87,7 +86,7 @@
         this.layer.opacity = opacity;
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (layer) {
-          CatalogEventHub.$emit('layer-change-opacity', { layerId: id });
+          VM.$emit('layer-change-opacity', { layerId: id });
           layer.change();
         }
       },

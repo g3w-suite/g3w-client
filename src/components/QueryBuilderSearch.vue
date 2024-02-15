@@ -6,21 +6,41 @@
 <template>
   <li>
     <div style="position:relative">
-      <bar-loader :loading="loading"></bar-loader>
+      <bar-loader :loading="loading"/>
       <div class="querybuliserch-tools" style="display:flex; align-items: baseline">
         <i :class="g3wtemplate.getFontClass('filter')" style="margin-right: 14px; margin-left: 1px;"></i>
         <span style="white-space: pre-wrap">{{querybuildersearch.name}}</span>
         <div style="margin-left: auto">
-          <span class="icon-search-action skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.run'">
+          <span
+            class="icon-search-action skin-tooltip-bottom"
+            data-placement="bottom"
+            data-toggle="tooltip"
+            data-container="body"
+            v-t-tooltip="'sdk.querybuilder.search.run'">
             <i @click.stop="run" style="color: green;  padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('run')"></i>
           </span>
-          <span class="icon-search-action skin-tooltip-bottom"  data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.info'">
+          <span
+            class="icon-search-action skin-tooltip-bottom"
+            data-placement="bottom"
+            data-toggle="tooltip"
+            data-container="body"
+            v-t-tooltip="'sdk.querybuilder.search.info'">
             <i @click.stop="showinfo=!showinfo" style="color: #FFFFFF; padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('info')"></i>
           </span>
-          <span class="icon-search-action skin-tooltip-bottom"  data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.edit'">
+          <span
+            class="icon-search-action skin-tooltip-bottom"
+            data-placement="bottom"
+            data-toggle="tooltip"
+            data-container="body"
+            v-t-tooltip="'sdk.querybuilder.search.edit'">
             <i @click.stop="edit" style="color: #307095; padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('pencil')"></i>
           </span>
-          <span class="icon-search-action skin-tooltip-bottom"  data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.delete'">
+          <span
+            class="icon-search-action skin-tooltip-bottom"
+            data-placement="bottom"
+            data-toggle="tooltip"
+            data-container="body"
+            v-t-tooltip="'sdk.querybuilder.search.delete'">
             <i @click.stop="remove" style="color: red;  padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('trash')"></i>
           </span>
         </div>

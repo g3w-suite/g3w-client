@@ -2,7 +2,7 @@
  * @file
  * @since v3.7
  */
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // service sidebar

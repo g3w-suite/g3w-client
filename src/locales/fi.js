@@ -13,11 +13,13 @@ export default {
     sign_in:"Kirjaudu sisään",
     layer_selection_filter: {
       tools: {
-        filter: "Lisätä/Poista Suodattaa",
+        filter: "Ota suodatin käyttöön/poista käytöstä",
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
-        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet"
+        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
+        savefilter: "Tallenna suodatin",
+        filterName: "Suodattimen Nimi",
       }
     },
     warning: {
@@ -179,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Rivinäkymä",
-          row_to_form: "Taulukkonäkymä"
+          row_to_form: "Taulukkonäkymä",
+          zoomtogeometry: "Zoomaa geometriaan",
         },
         copy_map_extent_url: 'Kopioi kartan katselulinkki',
         download_shapefile: "Lataa SHP-tiedosto",
@@ -334,12 +337,6 @@ export default {
         list_of_relations_feature: 'Lista ominaisuuden relaatioista',
         error_missing_father_field: "Kenttä puuttu"
       },
-      workflow: {
-        steps: {
-          title: 'Vaiheet'
-        },
-        next: "Seuraava",
-      },
       form: {
         loading: 'Ladataan...',
         inputs: {
@@ -486,8 +483,10 @@ export default {
       geolocations: {
         error: "Sijaintiasi ei saada"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Valitse kerros, johon tämä ominaisuus lisätään",
         placeholder: "Osoite ...",
+        nolayers: "Tästä projektista ei löytynyt muokattavia pistetasoja",
         noresults: "Ei tuloksia",
         notresponseserver: "Ei vastausta palvelimelta"
       },
@@ -531,7 +530,8 @@ export default {
         show_metadata: "Metatiedot",
         styles: "Tyylejä",
         vector_color_menu: "Aseta/muuta väriä",
-        layer_opacity: "Peittävyys"
+        layer_opacity: "Peittävyys",
+        filters: "Filters",
       }
     },
     dataTable: {

@@ -2,7 +2,7 @@ import * as vueComponentOptions from 'components/Form.vue';
 import BodyFormComponent from 'components/FormBody.vue';
 import GUI from 'services/gui';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const Component = require('gui/component/component');
 const Service = require('gui/form/formservice');
 

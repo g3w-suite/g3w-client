@@ -5,7 +5,7 @@
 
 <template>
   <ul class="g3w-tools treeview-menu">
-    <bar-loader :loading="state.loading"></bar-loader>
+    <bar-loader :loading="state.loading"/>
     <li v-for="group in state.toolsGroups" :key="group.name">
       <div class="tool-header">
         <i :class="g3wtemplate.getFontClass('tool')"></i>

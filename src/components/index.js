@@ -3,6 +3,7 @@ import C3XYLine from './C3XYLine.vue';
 import Catalog from './Catalog.vue';
 import CatalogChangeMapThemes from './CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu from './CatalogLayerContextMenu.vue';
+import CatalogProjectContextMenu from './CatalogProjectContextMenu.vue';
 import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
@@ -23,14 +24,14 @@ import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
-import GlobalBarLoader from './GlobalBarLoader.js';
+import GlobalBarLoader from './GlobalBarLoader.vue';
 import GlobalDateTime from './GlobalDateTime.vue';
 import GlobalDivider from './GlobalDivider.vue';
 import GlobalGallery from './GlobalGallery.vue';
 import GlobalGeo from './GlobalGeo.vue';
 import GlobalImage from './GlobalImage.vue';
 import GlobalLayerPositions from './GlobalLayerPositions.vue';
-import GlobalProgressBar from './GlobalProgressBar.js';
+import GlobalProgressBar from './GlobalProgressBar.vue';
 import GlobalRange from './GlobalRange.vue';
 import GlobalResize from './GlobalResize.vue';
 import GlobalResizeIcon from './GlobalResizeIcon.vue';
@@ -62,6 +63,8 @@ import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
+import MapControlButton from './MapControlButton.js';
+import MapControlGeocoding from './MapControlGeocoding.vue';
 import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
@@ -118,6 +121,10 @@ export {
   Catalog,
   CatalogChangeMapThemes,
   CatalogLayerContextMenu,
+  /**
+   * @since 3.10.0
+   */
+  CatalogProjectContextMenu,
   CatalogLayerLegend,
   CatalogLayersGroup,
   CatalogLayersLegendItems,
@@ -181,6 +188,8 @@ export {
   LayerOpacityPicker,
   Map,
   MapAddLayer,
+  MapControlButton,
+  MapControlGeocoding,
   MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,

@@ -1,5 +1,5 @@
-const Validators = require('core/utils/validators');
-const {toRawType} = require('core/utils/utils');
+const Validators = require('utils/validators');
+const {toRawType} = require('utils');
 const {t} = require('core/i18n/i18n.service');
 
 function Service(options = {}) {

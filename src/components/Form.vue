@@ -5,7 +5,7 @@
 
 <template>
   <div class="g3wform_content" style="position: relative">
-    <bar-loader :loading="state.loading"></bar-loader>
+    <bar-loader :loading="state.loading"/>
     <g3wformheader ref="g3wformheader"
       :currentid="state.currentheaderid"
       :headers="state.headers"

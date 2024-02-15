@@ -14,7 +14,6 @@ import ApplicationState from 'store/application-state';
 
 //import services
 import ApplicationService from 'services/application';
-import viewport from "services/viewport";
 import GUI from 'services/gui';
 import FloatbarService from "services/floatbar";
 import NavbarItemsService from 'services/navbaritems';
@@ -30,8 +29,8 @@ import ImageComponent from 'components/GlobalImage.vue';
 import GalleryImagesComponent from 'components/GlobalGallery.vue';
 import GeospatialComponet from 'components/GlobalGeo.vue';
 import Skeleton from 'components/GlobalSkeleton.vue';
-import BarLoader from 'components/GlobalBarLoader';
-import Progressbar from 'components/GlobalProgressBar';
+import BarLoader from 'components/GlobalBarLoader.vue';
+import Progressbar from 'components/GlobalProgressBar.vue';
 import HelpDiv from 'components/GlobalHelpDiv.vue';
 import Resize from 'components/GlobalResize.vue'
 import LayerPositions from 'components/GlobalLayerPositions.vue';
@@ -60,11 +59,12 @@ import vTPlugin from 'directives/v-t-plugin';
 import vPlugins from 'directives/v-plugins';
 import vOnline from 'directives/v-online';
 import vDownload from 'directives/v-download';
+import vClickOutside from 'directives/v-click-outside'
 
 // constants
 import { FONT_AWESOME_ICONS } from 'app/constant';
 
-const { base, inherit, toRawType } = require('core/utils/utils');
+const { base, inherit, toRawType } = require('utils');
 const { t, tPlugin }               = require('core/i18n/i18n.service');
 const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
@@ -117,6 +117,7 @@ Vue.directive("t-plugin", vTPlugin);
 Vue.directive("plugins", vPlugins);
 Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
+Vue.directive("click-outside", vClickOutside);
 
 
 /**
@@ -744,7 +745,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       const queryResultsComponent = GUI.getComponent('queryresults');
       const queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
-      results && queryResultService.setQueryResponse(results);
+      if (results) {
+        queryResultService.setQueryResponse(results);
+      }
       GUI.showContextualContent({
         content: queryResultsComponent,
         title: "info.title",
@@ -866,9 +869,9 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     // MODAL
     GUI.setModal = this._showModalOverlay.bind(this);
-    
+
     /**
-     * Toggle set full screen modal 
+     * Toggle set full screen modal
      */
     GUI.showFullModal = function({element = "#full-screen-modal", show = true} = {}) {
       $(element).modal(show ? 'show' : 'hide')
@@ -1068,7 +1071,8 @@ const ApplicationTemplate = function({ApplicationService}) {
         title: '',
         perc: 100
       });
-    }
+    };
+
   };
 
   base(this);

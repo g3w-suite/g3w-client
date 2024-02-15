@@ -1,6 +1,6 @@
 import * as vueComponentOptions from 'components/ViewportContentsViewer.vue';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const { barstack: Stack } = require('gui/utils/utils');
 const Component = require('gui/component/component');
 

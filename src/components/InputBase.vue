@@ -15,7 +15,7 @@
     <div class="col-sm-12">
       <slot name="loading">
         <div style="position:relative; width: 100%" slot="loading" v-if="loadingState === 'loading'">
-          <bar-loader loading="true"></bar-loader>
+          <bar-loader loading="true"/>
         </div>
       </slot>
       <slot name="body"></slot>

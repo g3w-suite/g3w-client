@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 function CatalogLayersStoresRegistry() {

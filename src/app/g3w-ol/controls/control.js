@@ -1,12 +1,48 @@
-const { layout } = require('g3w-ol/controls/utils');
+import MapControlButton from 'components/MapControlButton';
 
+/**
+ * @FIXME add description
+ */
+const layout = function ({ map, position, element }) {};
+
+/**
+ * @param {Object}  options 
+ * @param {string}  options.name
+ * @param {boolean} options.enabled 
+ */
 const Control = function(options={}) {
-  const {name="", visible=true, enabled=false} = options;
+
+  const {
+    name="",
+    visible=true,
+    enabled=false
+  } = options;
+
+  /**
+   * @FIXME add description
+   */
   this._enabled = enabled;
+
+  /**
+   * @FIXME add description
+   */
   this.offline = options.offline !== undefined ? options.offline : true;
+
+  /**
+   * @FIXME add description
+   */
   this.name = name.split(' ').join('-').toLowerCase();
+
+  /**
+   * @FIXME add description
+   */
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
-  this.eventKeys = {}; // store eventKey and original havenHandler
+
+  /**
+   * store eventKey and original havenHandler
+   */
+  this.eventKeys = {};
+
   /*
     tl: top-left
     tr: top-right
@@ -14,49 +50,30 @@ const Control = function(options={}) {
     bt: bottom-right
    */
   this.positionCode = options.position || 'tl';
+
+  /**
+   * @FIXME add description
+   */
   this.priority = options.priority || 0;
+
   if (!options.element) {
-    const className = "ol-"+this.name.split(' ').join('-').toLowerCase();
-    const customClass = options.customClass;
-    const tipLabel = options.tipLabel || this.name;
-    const label = options.label || '';
-    const mapControlButtonVue =  Vue.extend({
-      functional: true,
-      render(h){
-        return h('div', {
-          class: {
-            [className]: !!className,
-            'ol-unselectable': true,
-            'ol-control': true
-          }
-        }, [
-            h('button', {
-              attrs: {
-                type: 'button',
-              },
-              directives: [{
-                name: 't-tooltip',
-                value: tipLabel
-              }]
-            }, [
-                label,
-                h('i', {
-                  class: {
-                    [customClass]: !!customClass
-                  }
-                })
-            ])
-          ]
-        )
-      }
-    });
-    const mapControlButtonDOMElement = new mapControlButtonVue().$mount().$el;
-    options.element = mapControlButtonDOMElement;
+    const mapControlButtonVue =  Vue.extend(MapControlButton({
+      className:   "ol-"+this.name.split(' ').join('-').toLowerCase(),
+      customClass: options.customClass,
+      tipLabel:    options.tipLabel || this.name,
+      label:       options.label    || '',
+    }));
+    options.element = new mapControlButtonVue().$mount().$el;
   }
-  const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
-  $(options.element).on('click',buttonClickHandler);
+
+  // button click handler
+  $(options.element).on('click', options.buttonClickHandler || Control.prototype._handleClick.bind(this));
+
+  // parent constructor
   ol.control.Control.call(this, options);
+
   this.setVisible(visible);
+
   this._postRender();
 };
 
@@ -65,15 +82,23 @@ ol.inherits(Control, ol.control.Control);
 const proto = Control.prototype;
 
 
-//return if clickmap
+/**
+ * return if clickmap
+ */
 proto.isClickMap = function(){
   return this.clickmap;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.isToggled = function() {
   return this._toggled;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setEventKey = function({eventType, eventKey}){
   this.eventKeys[eventType] = {
     eventKey,
@@ -106,6 +131,9 @@ proto.overwriteEventHandler = function({eventType, handler}) {
   }
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getPosition = function(positionCode) {
   positionCode = positionCode || this.positionCode;
   const position = {};
@@ -117,7 +145,8 @@ proto.getPosition = function(positionCode) {
 };
 
 /**
- * Method to handle toggle map controls
+ * Handle toggle of map controls
+ * 
  * @param event
  */
 proto._handleClick = function(event) {
@@ -136,12 +165,16 @@ proto._handleClick = function(event) {
   this.dispatchEvent('controlclick');
 };
 
-//shift of control position
+/**
+ * shift control's position
+ */
 proto.shiftPosition = function(position) {
   $(this.element).css(hWhere, position+'px');
 };
 
-// layout handler
+/**
+ * layout handler 
+ */
 proto.layout = function(map) {
   if (map) {
     const position =  this.getPosition();
@@ -150,24 +183,35 @@ proto.layout = function(map) {
   }
 };
 
-// change layout of controls // overwrite to customize beahviour
-proto.changelayout = function(map) {};
+/**
+ * change layout of controls
+ */
+proto.changelayout = function(map) {
+  // overwrite to customize beahviour
+};
 
-//called when a control is added ore removed to map (added: map is an ol.Map instance , removed map is null)
+/**
+ * Called when a control is added ore removed to map
+ * 
+ * @param {ol.Map | null} map instace to be added (null = remove from map)
+ */
 proto.setMap = function(map) {
   if (map) {
     this.layout(map);
     ol.control.Control.prototype.setMap.call(this, map);
   }
 };
+
 /**
- *
+ * @FIXME add description
  */
 proto.showControl = function(){
   $(this.element).show();
 };
 
-//hide control and move all controls that sit on his right position
+/**
+ * Hide control and move all controls that sit on his right position
+ */
 proto.hideControl = function() {
   let position = $(this.element).position().left;
   let controlWidth = $(this.element).outerWidth();
@@ -200,20 +244,31 @@ proto.setEnable = function(enabled) {
   this._enabled = enabled;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getEnable = function() {
   return this._enabled;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.setVisible = function(visible=true){
   this._visible = visible;
   $(this.element)[visible ? 'show': 'hide']();
 };
 
+/**
+ * @FIXME add description
+ */
 proto.isVisible = function(){
   return this._visible;
 };
 
-
+/**
+ * @FIXME add description
+ */
 proto._postRender = function() {};
 
 module.exports = Control;
