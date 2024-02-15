@@ -337,12 +337,6 @@ export default {
         list_of_relations_feature: 'List of relations of feature',
         error_missing_father_field: "Field is missing"
       },
-      workflow: {
-        steps: {
-          title: 'Steps',
-        },
-        next: 'Next'
-      },
       form: {
         loading: 'Loading ...',
         inputs: {
@@ -489,8 +483,10 @@ export default {
       geolocations: {
         error: "Can't get your position"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Choose a layer where to add this feature",
         placeholder: "Address ...",
+        nolayers: "No editable point layers found on this project",
         noresults: "No results",
         notresponseserver: "No response from server"
       },

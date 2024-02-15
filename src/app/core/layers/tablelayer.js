@@ -1,15 +1,37 @@
-import { DEFAULT_EDITING_CAPABILITIES } from 'app/constant';
+import { TIMEOUT }                        from "constant";
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import ProjectsRegistry                 from 'store/projects';
 
 const { base, inherit }                 = require('utils');
 const Layer                             = require('core/layers/layer');
-const Editor                            = require('core/editing/editor');
 const FeaturesStore                     = require('core/layers/features/featuresstore');
 const Feature                           = require('core/layers/features/feature');
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
+
+/**
+ * Function to wait for predicates.
+ * 
+ * @param { () => Boolean } predicate - A function that returns a bool
+ * @param { number }        [timeout] - Optional maximum waiting time in ms after rejected
+ * 
+ * @see https://gist.github.com/chrisjhoughton/7890239?permalink_comment_id=4411125#gistcomment-4411125
+ */
+function _waitFor(predicate, timeout) {
+  return new Promise((resolve, reject) => {
+    const check = () => {
+      if (!predicate()) return;
+      clearInterval(interval);
+      resolve();
+    };
+    const interval = setInterval(check, 100);
+    check();
+    if (timeout) {
+      setTimeout(() => { clearInterval(interval); reject(); }, timeout);
+    }
+  });
+}
 
 function _createAttributesFromFields(fields) {
   const attributes = {};
@@ -132,28 +154,23 @@ function TableLayer(config = {}, options = {}) {
     this.layerForEditing = new Promise((resolve, reject) => {
       this
         .getEditingConfig()                                // get editing layer config
-        .then(({
+        .then(async ({
           vector,
           constraints = {},
-          capabilities = DEFAULT_EDITING_CAPABILITIES,
+          capabilities,
         } = {}) => {
+          await _waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait unitil "editing" plugin is loaded
           this.config.editing.fields       = vector.fields;
           this.config.editing.format       = vector.format;
           this.config.editing.constraints  = constraints;
-          this.config.editing.capabilities = capabilities; // set default editing capabilities
+          this.config.editing.capabilities = capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES; // set default editing capabilities
           this.config.editing.form = { perc: null };       // set editing form `perc` to null at beginning
-          this.config.editing.style = vector.style;
-          // get vector layer style
-          if (vector.style) {                              // set vector layer color
+          this.config.editing.style = vector.style;        // get vector layer style
+          if (vector.style) {                              // set vector layer color 
             this.setColor(vector.style.color);
           }
-
           this._setOtherConfigParameters(vector);
-
-          // create an instance of editor
-          this._editor = new Editor({
-            layer: this
-          });      // create an instance of editor
+          this._editor = new window.g3wsdk.core.editing.Editor({ layer: this }); // create an instance of editor
           resolve(this);
           this.setReady(true);                             // set ready
         })

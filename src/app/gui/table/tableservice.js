@@ -1,11 +1,11 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
+import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 
 const { inherit, noop }         = require('utils');
 const G3WObject                 = require('core/g3wobject');
 const { t }                     = require('core/i18n/i18n.service');
-const { coordinatesToGeometry } = require('utils/geo');
 const { SELECTION_STATE }       = require('core/layers/layer');
 
 const PAGELENGTHS = [10, 25, 50];
@@ -710,7 +710,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
       features
     }) => {
       const values = fields.map(f => feature.attributes[f]);
-      const k      = _createFeatureKey(values);
 
       field_values.push(values);
       
@@ -733,14 +732,6 @@ proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom = 
              },
             outputs: false, // just a request not show on result
           });
-      }
-
-      if (zoom && undefined === features[k]) {
-        promise = Promise.reject();
-      }
-
-      if (undefined !== features[k]) {
-        promise = Promise.resolve({ data: [{ features: features[k] }] });
       }
 
       promises.push(promise);

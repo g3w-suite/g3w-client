@@ -61,20 +61,22 @@ export function createFilterFormInputs({
                   (index < attributesLength - 1) 
                     ? '|AND,'
                     : inputIndex < inputsLength - 1 
-                      ? `|${input.logicop}`
+                      ? `|${input.logicop},`
                       : ''
                 );
               }, '');
           } else {
-            return createSingleFieldParameter({
+            //need to add logic operator of input
+            return `${inputIndex > 0 ? `|${inputs[inputIndex -1].logicop},` : ''}${createSingleFieldParameter({
               field: input.attribute,
               value: input.value,
               operator: input.operator,
               logicop: input.logicop,
-            })
+            })}`
           }
         });
-      filter = fields.length ? fields.join() : undefined;
+      //need to join with empty value because comma separation at the end is already add at the end
+      filter = fields.length > 0 ? fields.join('') : undefined;
       if (isLayerArray) {
         layer.forEach(() => filters.push(filter));
       }

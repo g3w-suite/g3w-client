@@ -339,12 +339,6 @@ export default {
         list_of_relations_feature: 'Lista delle relazioni della feature',
         error_missing_father_field: "Il campo relazionato non esiste"
       },
-      workflow: {
-        steps: {
-          title: 'Passi',
-        },
-        next: 'Avanti'
-      },
       form: {
         loading: 'Caricamento ...',
         inputs: {
@@ -495,8 +489,10 @@ export default {
         title: "",
         error: "Non è possibile calcolare la tua posizione."
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Scegli un livello in cui aggiungere questa funzionalità",
         placeholder: "Indirizzo ...",
+        nolayers: "Nessun layer di punti modificabile trovato in questo progetto",
         noresults: "Nessun risultato",
         notresponseserver: "Il server non risponde"
       },

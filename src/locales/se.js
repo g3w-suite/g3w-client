@@ -337,13 +337,6 @@ export default {
         list_of_relations_feature: 'Lista på egenskapens relationer',
         error_missing_father_field: "Fält saknas"
       },
-      workflow: {
-        steps: {
-          title: 'Skeden'
-        },
-        next: "Nästa",
-
-      },
       form: {
         loading: 'Laddning...',
         inputs: {
@@ -490,8 +483,10 @@ export default {
       geolocations: {
         error: "Du kan inte lokaliseras"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Välj ett lager där du vill lägga till denna funktion",
         placeholder: "Adress ...",
+        nolayers: "Inga redigerbara punktlager hittades i det här projektet",
         noresults: "Inga resultat",
         notresponseserver: "Inget svar från servern"
       },

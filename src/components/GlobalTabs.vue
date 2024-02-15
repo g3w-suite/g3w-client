@@ -4,20 +4,40 @@
 -->
 
 <template>
-  <div class="tabs-wrapper" v-if="show">
+  <div
+    v-if="show"
+    class="tabs-wrapper">
     <template v-for="root_tab in root_tabs">
       <template v-if="Array.isArray(root_tab)">
         <ul class="formquerytabs nav nav-tabs">
           <template v-for="(tab, index) in root_tab">
-            <li :class="{active: index === 0}" v-if="tab.visible === undefined || tab.visible">
-              <a data-toggle="tab" class="tab_a" :href="`#${ids[index]}`" :class="{'mobile': isMobile(), 'group-title': group}" :style="{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}">
-                {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span></a>
+            <li
+              v-if="tab.visible === undefined || tab.visible"
+              :class="{active: index === 0}"
+              >
+                <a
+                  data-toggle="tab"
+                  class="tab_a"
+                  :href="`#${ids[index]}`"
+                  :class="{'mobile': isMobile(), 'group-title': group}"
+                  :style="{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
+                >
+                 {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span>
+                </a>
             </li>
           </template>
         </ul>
-        <div class="tab-content" :class="{editing: contenttype === 'editing'}">
+        <div
+          class="tab-content"
+          :class="{editing: contenttype === 'editing'}"
+        >
           <template v-for="(tab, index) in root_tab">
-            <div :id="ids[index]" class="tab-pane fade" :class="{'in active': index === 0}" v-if="tab.visible === undefined || tab.visible">
+            <div
+              v-if="tab.visible === undefined || tab.visible"
+              :id="ids[index]"
+              class="tab-pane fade"
+              :class="{'in active': index === 0}"
+            >
               <node
                 :showRelationByField="showRelationByField"
                 :handleRelation="handleRelation"
@@ -34,7 +54,8 @@
           </template>
         </div>
       </template>
-      <node v-else :showRelationByField="showRelationByField"
+      <node v-else
+        :showRelationByField="showRelationByField"
         :handleRelation="handleRelation"
         :feature="feature"
         :layerid="layerid"
@@ -51,19 +72,16 @@
 
 <script>
 
-  import DataRouterService from 'services/data';
-  import Node              from 'components/GlobalTabsNode.vue';
-  import GUI               from 'services/gui';
+  import DataRouterService                           from 'services/data';
+  import Node                                        from 'components/GlobalTabsNode.vue';
+  import GUI                                         from 'services/gui';
+  import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
+  import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
 
   const {
     getUniqueDomId,
     noop
   }                        = require ('utils');
-
-  const {
-    getFormDataExpressionRequestFromFeature,
-    convertFeatureToGEOJSON,
-  }                        = require('utils/geo');
 
   export default {
     name: "tabs",
@@ -88,16 +106,16 @@
         required: true
       },
       addToValidate: {
-          type: Function,
-          default: noop
+        type: Function,
+        default: noop
       },
       removeToValidate: {
-          type: Function,
-          default: noop
+        type: Function,
+        default: noop
       },
       changeInput: {
-          type: Function,
-          default: noop
+        type: Function,
+        default: noop
       },
       showRelationByField: {
         type: Boolean,
@@ -125,14 +143,18 @@
       /**
        * ORIGINAL SOURCE: src/app/core/expression/tabservice.js@3.8.6
        */
-      async setVisibility(tab){
-        tab.visible = DataRouterService
+      async setVisibility(tab) {
+        tab.visible = await DataRouterService
           .getData(
             'expression:expression_eval',
               {
               inputs: {
                 qgs_layer_id: this.layerid,
-                form_data:    ('editing' === this.contenttype ? convertFeatureToGEOJSON : getFormDataExpressionRequestFromFeature)(this.feature || {}),
+                form_data:    (
+                  'editing' === this.contenttype ?
+                    convertFeatureToGEOJSON :
+                    getFormDataExpressionRequestFromFeature)(this.feature || {}
+                ),
                 expression:   tab.visibility_expression.expression,
                 formatter:    ('query' === this.contenttype ? 1 : 0),
               },
@@ -141,10 +163,13 @@
           );
       },
       // method to set required tab for editing
-      setEditingRequireTab(obj){
+      setEditingRequireTab(obj) {
         let required = false;
-        if (obj.nodes === undefined) required = this.required_fields.indexOf(obj.field_name) !== -1;
-        else required = !!obj.nodes.find(node => this.setEditingRequireTab(node));
+        if (obj.nodes === undefined) {
+          required = this.required_fields.indexOf(obj.field_name) !== -1;
+        } else {
+          required = !!obj.nodes.find(node => this.setEditingRequireTab(node));
+        }
         return required;
       },
       getField(fieldName) {
@@ -158,19 +183,29 @@
       this.unwatch = [];
       for (const tab of this.tabs) {
         if (tab.visibility_expression) {
-           if (tab.visible === undefined) this.$set(tab, 'visible', 0);
+           if (tab.visible === undefined) {
+             this.$set(tab, 'visible', 0);
+           }
            this.setVisibility(tab);
         }
         if (this.contenttype === 'editing') {
-          if (tab.required === undefined) tab.required = this.setEditingRequireTab(tab);
-          if (tab.visibility_expression){
-            tab.visibility_expression.referenced_columns.forEach(column =>{
-              const field = this.fields.find(field => field.name === column);
-              this.unwatch.push(this.$watch(()=> field.value, async value=>{
-                this.feature.set(field.name, value);
-                this.setVisibility(tab);
-              }))
-            })
+          if (tab.required === undefined) {
+            tab.required = this.setEditingRequireTab(tab);
+          }
+          if (tab.visibility_expression) {
+            tab.visibility_expression
+              .referenced_columns
+              .forEach(column => {
+                const field = this.fields
+                  .find(field => field.name === column);
+                this.unwatch.push(
+                  this.$watch(() => field.value,
+                    async (value) => {
+                      this.feature.set(field.name, value);
+                      this.setVisibility(tab);
+                    })
+                )
+              })
           }
         }
         this.ids.push(`tab_${getUniqueDomId()}`);
@@ -178,20 +213,26 @@
       this.root_tabs = [];
       if (!this.group){
         const nodes = [];
-        this.tabs.forEach(tab_node =>{
-          if (tab_node.nodes) nodes.push(tab_node);
-          else {
-            if (nodes.length){
+        this.tabs.forEach(tab_node => {
+          if (tab_node.nodes) {
+            nodes.push(tab_node);
+          } else {
+            if (nodes.length) {
               this.root_tabs.push([...nodes]);
               nodes.splice(0);
             } this.root_tabs.push({nodes:[tab_node]});
           }
         });
-        if (nodes.length) this.root_tabs.push(nodes)
-      } else this.root_tabs = [this.tabs];
+        if (nodes.length) {
+          this.root_tabs.push(nodes)
+        }
+      } else {
+        this.root_tabs = [this.tabs];
+      }
     },
     beforeDestroy() {
-      this.unwatch.forEach(unwatch => unwatch());
+      this.unwatch
+        .forEach(unwatch => unwatch());
       this.unwatch = null;
     }
   }
@@ -224,5 +265,11 @@
     border-bottom: 0;
     margin-bottom: 3px;
     border-radius: 3px 3px 0 0;
+  }
+  .formquerytabs li a.tab_a.group-title {
+    color: inherit !important;
+    font-weight: 600;
+    font-size: 1em !important;
+    padding: 0.25em;
   }
 </style>

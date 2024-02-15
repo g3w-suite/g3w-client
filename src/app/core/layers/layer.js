@@ -1,10 +1,12 @@
-import ApplicationState                 from 'store/application-state';
-import DataRouterService                from 'services/data';
-import ProjectsRegistry                 from 'store/projects';
-import DownloadMixin                    from 'core/layers/mixins/download';
-import SelectionMixin                   from 'core/layers/mixins/selection';
-import { SELECTION as SELECTION_STATE } from 'core/layers/mixins/selection';
-import RelationsMixin                   from 'core/layers/mixins/relations';
+import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
+import ApplicationState                      from 'store/application-state';
+import DataRouterService                     from 'services/data';
+import ProjectsRegistry                      from 'store/projects';
+import DownloadMixin                         from 'core/layers/mixins/download';
+import SelectionMixin                        from 'core/layers/mixins/selection';
+import { SELECTION as SELECTION_STATE }      from 'core/layers/mixins/selection';
+import RelationsMixin                        from 'core/layers/mixins/relations';
+import { parseAttributes }                   from 'utils/parseAttributes';
 
 const { t }                 = require('core/i18n/i18n.service');
 const {
@@ -13,12 +15,7 @@ const {
   XHR,
 }                           = require('utils');
 const G3WObject             = require('core/g3wobject');
-const {
-  geometryFields,
-  parseAttributes,
-}                           =  require('utils/geo');
 const ProviderFactory       = require('core/layers/providersfactory');
-
 const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
@@ -524,6 +521,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
  * @param { Array }     opts.field     - Array of object with type of suggest (see above)
  * @param opts.unique
  * @param opts.fformatter
+ * @param opts.ffield
  * @param opts.queryUrl
  * @param opts.ordering
 
@@ -534,6 +532,7 @@ proto.getFilterData = async function({
   field,
   unique,
   fformatter, //@since v3.9
+  ffield,     //@since 3.9.1
   formatter = 1,
   queryUrl,
   ordering,
@@ -549,6 +548,7 @@ proto.getFilterData = async function({
       formatter,
       unique,
       fformatter,
+      ffield,
     });
 };
 
@@ -1235,12 +1235,16 @@ proto.getFeatureCount = function() {
 /**
  * @param style
  * 
- * @returns {Promise<Object>}
+ * @returns { Promise<Object | void>}
  * 
  * @since 3.8.0
  */
 proto.getStyleFeatureCount = async function(style) {
-  if ("undefined" === typeof this.state.stylesfeaturecount[style]) {
+  // skip when layer hasn't feature count option set on QGIS project
+  if (undefined === this.state.stylesfeaturecount) {
+    return;
+  }
+  if (undefined === this.state.stylesfeaturecount[style]) {
     try {
       const { result, data } = await XHR.post({
         url: `${this.config.urls.featurecount}${this.getId()}/`,
@@ -1253,6 +1257,17 @@ proto.getStyleFeatureCount = async function(style) {
     }
   }
   return this.state.stylesfeaturecount[style];
+};
+
+/**
+ * @returns { string } layer format (eg. 'image/png') 
+ * 
+ * @since 3.9.1
+ */
+proto.getFormat = function() {
+  return this.config.format ||
+    ProjectsRegistry.getCurrentProject().getWmsGetmapFormat() ||
+    'image/png'
 };
 
 /**

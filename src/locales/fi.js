@@ -337,12 +337,6 @@ export default {
         list_of_relations_feature: 'Lista ominaisuuden relaatioista',
         error_missing_father_field: "Kenttä puuttu"
       },
-      workflow: {
-        steps: {
-          title: 'Vaiheet'
-        },
-        next: "Seuraava",
-      },
       form: {
         loading: 'Ladataan...',
         inputs: {
@@ -489,8 +483,10 @@ export default {
       geolocations: {
         error: "Sijaintiasi ei saada"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Valitse kerros, johon tämä ominaisuus lisätään",
         placeholder: "Osoite ...",
+        nolayers: "Tästä projektista ei löytynyt muokattavia pistetasoja",
         noresults: "Ei tuloksia",
         notresponseserver: "Ei vastausta palvelimelta"
       },

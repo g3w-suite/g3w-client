@@ -1,5 +1,6 @@
 import ProjectsRegistry                   from 'store/projects';
 import ApplicationService                 from 'services/application';
+import { get_legend_params }              from 'utils/get_legend_params';
 
 const { base, inherit, mixin }            = require('utils');
 const Layer                               = require('core/layers/layer');
@@ -8,7 +9,6 @@ const WMSLayer                            = require('core/layers/map/wmslayer');
 const WMSTLayer                           = require('core/layers/map/wmstlayer');
 const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                            = require('core/layers/map/xyzlayer');
-const { get_LEGEND_ON_LEGEND_OFF_Params } = require('utils/geo');
 const GeoLayerMixin                       = require('core/layers/mixins/geo');
 
 /**
@@ -171,8 +171,8 @@ proto.getWmsUrl = function({ type = 'map' } = {}) {
   return this.config.wmsUrl;
 };
 
-proto.getWFSLayerName = function(){
-  return this.getQueryLayerName().replace(/[/\s]/g, '_')
+proto.getWFSLayerName = function() {
+  return this.getQueryLayerName().replace(/\s/g, '_').replaceAll( ':', '-' );
 };
 
 proto.useProxy = function(){
@@ -347,7 +347,7 @@ proto.getLegendUrl = function(params = {}, opts = {categories:false,  all:false,
   else {
     const ctx_legend = (
       opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
-        ? get_LEGEND_ON_LEGEND_OFF_Params(this)
+        ? get_legend_params(this)
         : undefined // disabled when `FORMAT=application/json` (otherwise it create some strange behaviour on WMS `getMap` when switching between layer styles)   
     );
     base_url   = this.getWmsUrl({ type: 'legend' });
@@ -425,6 +425,17 @@ proto.getMapLayer = function(options = {}, extraParams) {
   return new WMSLayer({ ...options, url }, extraParams, method);
 };
 
+/**
+ * @override Layer~getFormat
+ * 
+ * @since 3.9.1
+ */
+proto.getFormat = function() {
+  if (this.isExternalWMS() && this.getSource()) {
+    return this.getSource().format;
+  }
+  return base(this, 'getFormat');
+};
 
 ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.QGIS,

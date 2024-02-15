@@ -12,12 +12,11 @@ import GUI from './gui';
 import HistoryService from './history';
 import AppService from './iframe-app';
 import EditingService from './iframe-editing';
-import IframePluginService from './iframe-plugin';
+import IframeService from './iframe';
 import QueryBuilderService from './querybuilder';
 import RelationsService from './relations';
 import RouterService from './router';
 import TaskService from './tasks';
-import WorkFlowsStack from './workflows';
 
 /**
  * @FIXME importing directly from this file breaks application
@@ -38,10 +37,9 @@ export {
   HistoryService,
   AppService,
   EditingService,
-  IframePluginService,
+  IframeService,
   QueryBuilderService,
   RelationsService,
   RouterService,
   TaskService,
-  WorkFlowsStack,
 };

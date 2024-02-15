@@ -337,12 +337,6 @@ export default {
         list_of_relations_feature: 'Lista de relații a entității',
         error_missing_father_field: "Câmpul de legătură lipsește"
       },
-      workflow: {
-        steps: {
-          title: 'Pași',
-        },
-        next: 'Următorul'
-      },
       form: {
         loading: 'Se încarcă ...',
         inputs: {
@@ -489,8 +483,10 @@ export default {
       geolocations: {
         error: "Nu te-am putut localiza"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Alegeți un strat unde să adăugați această caracteristică",
         placeholder: "Adresa ...",
+        nolayers: "Nu s-au găsit straturi de puncte editabile în acest proiect",
         noresults: "Niciun rezultat",
         notresponseserver: "Niciun răspuns de la server"
       },

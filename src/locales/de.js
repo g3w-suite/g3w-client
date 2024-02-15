@@ -337,12 +337,6 @@ export default {
         list_of_relations_feature: 'Liste der Relationen des Features',
         error_missing_father_field: "Ein Feld fehlt"
       },
-      workflow: {
-        steps: {
-          title: 'Schritte',
-        },
-        next: 'Weiter'
-      },
       form: {
         loading: 'Laden ...',
         inputs: {
@@ -489,8 +483,10 @@ export default {
       geolocations: {
         error: "Position kann nicht bestimmt werden"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Wählen Sie eine Ebene aus, auf der Sie diese Funktion hinzufügen möchten",
         placeholder: "Addresse ...",
+        nolayers: "Für dieses Projekt wurden keine bearbeitbaren Punktebenen gefunden",
         noresults: "Keine Ergebnisse",
         notresponseserver: "Keine Antwort vom Server"
       },

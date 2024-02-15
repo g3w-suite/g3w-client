@@ -181,21 +181,19 @@ proto.createInputsFormFromFilter = async function({
       widget:    null,
     };
 
-    // check if it has a dependance
-    const dependance_strict = undefined !== input.options.dependance_strict ? input.options.dependance_strict : false; 
-    const dependance        = undefined !== input.options.dependance        ? input.options.dependance        : false;
-    const GIVE_ME_A_NAME_1  = ['selectfield', 'autocompletefield'].includes(input.type);
-    const GIVE_ME_A_NAME_2  = GIVE_ME_A_NAME_1 && dependance;
-
-    input.options.values    = undefined !== input.options.values            ? input.options.values            : [];
-    const { values }        = input.options;
+    // check if it has a dependence
+    const dependance_strict             = undefined !== input.options.dependance_strict ? input.options.dependance_strict : false;
+    const dependance                    = undefined !== input.options.dependance        ? input.options.dependance        : false;
+    const isInputSelectType             = ['selectfield', 'autocompletefield'].includes(input.type);
+    input.options.values                = undefined !== input.options.values            ? input.options.values            : [];
+    const { values }                    = input.options;
 
     let promise;
 
-    /** @FIXME add description */
-    if (GIVE_ME_A_NAME_1) {
-      // ensure seting values options to empty array when undefined
-      input.loading = input.type !== 'autocompletefield';
+    //In case of select input
+    if ('selectfield' ===  input.type) {
+      // ensure setting values options to empty array when undefined
+      input.loading = true;
 
       promise = new Promise((resolve, reject) => {
 
@@ -205,19 +203,25 @@ proto.createInputsFormFromFilter = async function({
           return resolve();
         }
 
-        // set array of values for select
+        // not strictly dependence
         if (!dependance_strict) {
           this
             .getValuesFromField(input)
-            .then(_values => { values.splice(0, values.length).concat(this.valuesToKeysValues(_values)); })
+            .then(_values => { values.splice(0, values.length, ...this.valuesToKeysValues(_values)); })
             .catch((err)  => { console.warn(err); values.length = 0 })
             .finally(()   => { input.loading = false; resolve(); })
         }
       });
+
+      promise.then(() => {
+        values[values.length && ALLVALUE !== values[0].value ? 'unshift' : 'push']({ value:ALLVALUE });
+        input.value = ALLVALUE;
+      });
+
     }
 
     // there is a dependence
-    if (GIVE_ME_A_NAME_2) {
+    if (isInputSelectType && dependance) {
       this.inputdependance[input.attribute] = dependance;              // set dependence of input
       this.state.loading[dependance]        = false;
       input.options.disabled                = dependance_strict;       // disabled for BACKCOMP
@@ -226,23 +230,14 @@ proto.createInputsFormFromFilter = async function({
     }
 
     // set widget type for fill dependency
-    if (GIVE_ME_A_NAME_2 && values.length) {
+    if (isInputSelectType && dependance && values.length > 0) {
       input.widget          = 'valuemap';
       input.options._values = [...values];
     }
 
-    /** @TODO add description */
-    if (GIVE_ME_A_NAME_2 && !values.length && input.options.layer_id) {
+    //Set input widget
+    if (isInputSelectType && dependance && !values.length && input.options.layer_id) {
       input.widget = 'valuerelation';
-    }
-
-    /** @TODO add description */
-    if (GIVE_ME_A_NAME_1 && 'autocompletefield' !== input.type) {
-      promise
-        .then(() => {
-          values[values.length && ALLVALUE !== values[0].value ? 'unshift' : 'push']({ value:ALLVALUE });
-          input.value = ALLVALUE;
-      });
     }
 
     // add form inputs to list of search input
@@ -716,16 +711,19 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           this.cachedependencies[field][dependenceValue][value] = this.cachedependencies[field][dependenceValue][value] || {}
         }
         // exclude autocomplete subscribers
-        if (notAutocompleteSubscribers.length) {
+        if (notAutocompleteSubscribers.length > 0) {
           const fieldParams = this.createFieldsDependenciesAutocompleteParameter({
             field,
             value
           });
-          //need to set undefined because if we has a subscribe input with valuerelations widget i need to extract the value of the field to get
+          //need to set undefined because if
+          // it has a subscribe input with valuerelations widget needs to extract the value of the field to get
           // filter data from relation layer
           this.searchLayer.getFilterData({
-            field: fieldParams
-          }).then(async data => {
+            field: fieldParams,
+            formatter: 0 //v3.0 need to force to use raw value with formatter 0 parameter
+          })
+          .then(async data => {
             const parentData = data.data[0].features || [];
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
               const subscribe = notAutocompleteSubscribers[i];
@@ -736,13 +734,16 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                 let values = [...subscribe.options._values];
                 parentData.forEach(feature => {
                   const value = feature.get(attribute);
-                  value && uniqueValues.add(value);
+                  if (value) {
+                    // need to covert to string
+                    // because input values are string
+                    uniqueValues.add(`${value}`);
+                  }
                 });
                 const data = [...uniqueValues];
-                values = values.filter(({key}) => data.indexOf(key) !== -1);
+                values = values.filter(({key}) =>  data.indexOf(key) !== -1);
                 values.forEach(value => subscribe.options.values.push(value));
-              }
-              else if (widget === 'valuerelation') {
+              } else if (widget === 'valuerelation') {
                 parentData.forEach(feature => {
                   const value = feature.get(attribute);
                   value && uniqueValues.add(value);
@@ -751,7 +752,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                   const filter = createSingleFieldParameter({
                     layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
                     search_endpoint: this.getSearchEndPoint(),
-                    field: subscribe.options.key,
+                    field: subscribe.options.value, //v3.8.x has subscribe.options.key
                     value: [...uniqueValues]
                   });
                   try {
@@ -759,23 +760,24 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                     values.forEach(value =>  subscribe.options.values.push(value));
                   } catch(err) {console.log(err)}
                 }
-                }
-              else {
+              } else {
                 parentData.forEach(feature => {
                   const value = feature.get(attribute);
                   value && uniqueValues.add(value);
                 });
                 this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
               }
-              if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
-              else {
+              if (isRoot) {
+                this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              } else {
                 const dependenceValue = this.getDependanceCurrentValue(field);
                 this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
               }
               subscribe.options.disabled = false;
             }
-          }).catch(error => reject(error))
-            .finally(() => {
+          })
+          .catch(error => reject(error))
+          .finally(() => {
             this.state.loading[field] = false;
             resolve();
           })
@@ -970,7 +972,6 @@ async function parse_search_1n(data, options) {
     });
 
   }
-
   return data;
 }
 

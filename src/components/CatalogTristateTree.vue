@@ -7,7 +7,7 @@
 
   <li
     class="tree-item"
-    @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
+    @contextmenu.prevent.stop="showContextMenu"
     @click.stop="onTreeItemClick"
     :style="{
       marginLeft: !isGroup ? '5px' : '0'
@@ -24,7 +24,7 @@
       style="padding-right: 2px;"
       :class="[
         { bold : isGroup },
-         g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
+        g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
       @click.stop="expandCollapse"
       class="root collapse-expande-collapse-icon"
@@ -226,11 +226,11 @@
 </template>
 
 <script>
-import LayerLegend from 'components/CatalogLayerLegend.vue';
-import { CatalogEventBus as VM } from 'app/eventbus';
+import LayerLegend                 from 'components/CatalogLayerLegend.vue';
+import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ClickMixin from 'mixins/click';
-import GUI from 'services/gui';
+import ClickMixin                  from 'mixins/click';
+import GUI                         from 'services/gui';
 
 const { downloadFile } = require('utils');
 
@@ -408,97 +408,110 @@ export default {
       }
     },
 
+  },
+
+  methods: {
+
     /**
      * Handle change checked property of group
      *
-     * @param group
+     * @param {boolean} group.checked
+     * @param {uknown}  group.parentGroup
+     * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      let { checked, parentGroup, nodes } = group;
+      let {
+        checked,
+        parentGroup,
+        nodes
+      } = group;
+    
       const setAllLayersVisible = ({nodes, visible}) => {
         nodes.forEach(node => {
-          if (undefined !== node.id) {
-            if (node.parentGroup.checked && node.checked) {
-              CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(visible);
-            }
-          } else {
+          if (undefined === node.id) {
             setAllLayersVisible({ nodes: node.nodes, visible: visible && node.checked });
+          } else if (node.parentGroup.checked && node.checked) {
+            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(visible);
           }
         });
       };
-      if (checked) {
-        const visible = parentGroup ? parentGroup.checked : true;
-        if (parentGroup && parentGroup.mutually_exclusive) {
-          parentGroup.nodes.forEach(node => {
-            node.checked = node.groupId === group.groupId;
-            if (node.checked) {
-              setAllLayersVisible({ nodes: node.nodes, visible });
-            }
-          });
-        } else {
-          setAllLayersVisible({ nodes, visible });
-        }
-        while (parentGroup) {
-          parentGroup.checked = parentGroup.root || parentGroup.checked;
-          parentGroup = parentGroup.parentGroup
-        }
-      } else {
+
+      if (!checked) {
         nodes.forEach(node => {
-          if (undefined !== node.id) {
-            if (node.checked) {
-              CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(false);
-            }
-          } else {
+          if (undefined === node.id) {
             setAllLayersVisible({ nodes: node.nodes, visible: false });
+          } else if (node.checked) {
+            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(false);
+          }
+        });
+        return; // NB exit early!
+      }
+
+      const visible = parentGroup ? parentGroup.checked : true;
+      if (false === (parentGroup && parentGroup.mutually_exclusive)) {
+        setAllLayersVisible({ nodes, visible });
+      } else {
+        parentGroup.nodes.forEach(node => {
+          node.checked = node.groupId === group.groupId;
+          if (node.checked) {
+            setAllLayersVisible({ nodes: node.nodes, visible });
           }
         });
       }
+      while (parentGroup) {
+        parentGroup.checked = parentGroup.root || parentGroup.checked;
+        parentGroup = parentGroup.parentGroup
+      }
+
     },
 
     /**
      * Handle changing checked property of layer
      *
-     * @param {{ checked: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
+     * @param {boolean} layer.checked
+     * @param {string}  layer.id
+     * @param {boolean} layer.disabled
+     * @param {boolean} layer.projectLayer
+     * @param {uknown}  layer.parentGroup
      */
-    handleLayerChecked(layerObject) {
+    handleLayerChecked(layer) {
       let {
         checked,
         id,
-        disabled,
+        // disabled,
         projectLayer=false,
         parentGroup
-      } = layerObject;
+      } = layer;
 
       // case external layer (eg. temporary layer through `addlayerscontrol`)
       if (!projectLayer) {
         // update `layer.visible` property
-        layerObject.visible = checked;
+        layer.visible = checked;
         GUI.getService('map').changeLayerVisibility({ id, visible: checked });
+        return;  // NB exit early!
       }
 
       // case project layer (eg. qgis layer)
-      else {
-        const layer = CatalogLayersStoresRegistry.getLayerById(id);
-        if (checked) {
-          const visible = layer.setVisible(!disabled);
-          /**
-           * @TODO is it necessary to emit the `layer-change-style` event here?
-           */
-          // if (visible && 'toc' === this.legendplace) {
-          //  setTimeout(() => VM.$emit('layer-change-style', { layerId: id }));
-          // }
-          if (parentGroup.mutually_exclusive) {
-            parentGroup.nodes.forEach(node => node.checked = node.id === id);
-          }
-          while (parentGroup) {
-            parentGroup.checked = true;
-            parentGroup = parentGroup.parentGroup;
-          }
-        } else {
-          layer.setVisible(false);
+      layer = CatalogLayersStoresRegistry.getLayerById(id);
+      if (checked) {
+        // const visible = layer.setVisible(!disabled);
+        /**
+         * @TODO is it necessary to emit the `layer-change-style` event here?
+         */
+        // if (visible && 'toc' === this.legendplace) {
+        //  setTimeout(() => VM.$emit('layer-change-style', { layerId: id }));
+        // }
+        if (parentGroup.mutually_exclusive) {
+          parentGroup.nodes.forEach(node => node.checked = node.id === id);
         }
-        VM.$emit('treenodevisible', layer);
+        while (parentGroup) {
+          parentGroup.checked = true;
+          parentGroup = parentGroup.parentGroup;
+        }
+      } else {
+        layer.setVisible(false);
       }
+      VM.$emit('treenodevisible', layer);
 
     },
 
@@ -511,10 +524,16 @@ export default {
       CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();
     },
 
+    /**
+     * @fires CatalogEventBus~activefiltertokenlayer
+     */
     toggleFilterLayer() {
       VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
+    /**
+     * @fires CatalogEventBus~unselectionlayer
+     */
     clearSelection() {
       VM.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
@@ -549,15 +568,17 @@ export default {
     /**
      * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
      *
-     * @since v3.8
+     * @since 3.10.0
      */
-    zoomToLayer(layer) {
-      GUI
-        .getService('map')
-        .goToBBox(
-          [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-          layer.epsg
-        );
+    maybeZoomToLayer(layer) {
+      if (this.canZoom(this.layerstree)) {
+        GUI
+          .getService('map')
+          .goToBBox(
+            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+            layer.epsg
+          );
+      }
     },
 
     /**
@@ -580,7 +601,7 @@ export default {
      onTreeItemClick() {
       this.handleClick({
         '1': () => !this.isTable && !this.isGroup && this.select(),
-        '2': () => !this.isTable && this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
+        '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree)
       }, this);
     },
 
@@ -600,20 +621,41 @@ export default {
       GUI.getService('map').removeExternalLayer(name, wms);
     },
 
-    showLayerMenu(layerstree, evt) {
+    /**
+     * @param evt
+     * 
+     * @fires CatalogEventBus~hide-layer-context-menu
+     * @fires CatalogEventBus~hide-project-context-menu
+     * @fires CatalogEventBus~show-layer-context-menu
+     * @fires CatalogEventBus~show-project-context-menu
+     * 
+     * @since 3.10.0
+     */
+    showContextMenu(evt) {
       if (
         !this.isGroup &&
         (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
       ) {
-        VM.$emit('showmenulayer', layerstree, evt);
+        VM.$emit('hide-project-context-menu');
+        VM.$emit('show-layer-context-menu', this.layerstree, evt);
+      } else if (this.isGroup && true === this.layerstree.root) {
+        VM.$emit('hide-layer-context-menu');
+        VM.$emit('show-project-context-menu', evt);
       }
     },
 
   },
 
+  /**
+   * Inizialize layer (disable, visible etc..)
+   */
   created() {
-    // just firs time
-    this.init();
+    if (this.isGroup && !this.layerstree.checked) {
+      this.handleGroupChecked(this.layerstree);
+    }
+    if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
+      this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
+    }
   },
 
   async mounted() {
