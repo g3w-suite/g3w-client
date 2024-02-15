@@ -49,7 +49,7 @@ import GUI               from 'services/gui';
 import { g3wInputMixin } from 'mixins';
 import G3WField          from 'components/FieldG3W.vue';
 
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 const { t }              = require('core/i18n/i18n.service');
 
 const MediaField = G3WField.components.media_field;

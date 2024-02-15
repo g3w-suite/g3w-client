@@ -123,7 +123,7 @@
 
 <script>
 import { MAP_SETTINGS }            from 'app/constant';
-import CatalogEventHub             from 'gui/catalog/vue/catalogeventhub';
+import { CatalogEventBus as VM }   from 'app/eventbus';
 import ChangeMapThemesComponent    from 'components/CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -210,10 +210,10 @@ export default {
         }
       });
       if ('tab' === this.legend.place) {
-        CatalogEventHub.$emit('layer-change-style');
+        VM.$emit('layer-change-style');
       } else {
         // get all layer tha changes style
-        changeStyleLayersId.forEach(layerId => { CatalogEventHub.$emit('layer-change-style', { layerId }); });
+        changeStyleLayersId.forEach(layerId => { VM.$emit('layer-change-style', { layerId }); });
       }
     },
 
@@ -289,32 +289,28 @@ export default {
     /**
      * @TODO add description
      */
-    CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
-      if (layerstree.external) {
-        GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
-      } else {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).clearSelectionFids();
-      }
+    VM.$on('unselectionlayer', (storeid, layerstree) => {
+      GUI.getService('queryresults').removeFromSelection(layerstree, storeid);
     });
 
     /**
      * @TODO add description
      */
-    CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {
+     VM.$on('activefiltertokenlayer', async (storeid, layerstree) => {
       layerstree.filter.active = await CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).toggleFilterToken();
     });
 
     /**
      * Handle visibilty change on legend item
      */
-    CatalogEventHub.$on('treenodevisible', layer => {
+     VM.$on('treenodevisible', layer => {
       GUI.getService('map').emit('cataloglayervisible', layer);
     });
 
     /**
      * Handle legend item select (single mouse click ?)
      */
-    CatalogEventHub.$on('treenodeselected', function (storeid, node) {
+     VM.$on('treenodeselected', function (storeid, node) {
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       // emit signal of select layer from catalog
       if (!layer.isSelected()) {
@@ -330,7 +326,7 @@ export default {
     /**
      * Handle temporary external layer add
      */
-    CatalogEventHub.$on('treenodeexternalselected', layer => {
+    VM.$on('treenodeexternalselected', layer => {
       GUI
         .getService('catalog')
         .setSelectedExternalLayer({ layer, type: 'vector', selected: !layer.selected})

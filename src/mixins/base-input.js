@@ -35,7 +35,16 @@ export default {
 
   methods: {
 
-    showHideHelp() {
+    /**
+     * @param bool
+     * 
+     * @since 3.9.1
+     */
+    setLoading(bool) {
+      this.state.input.options.loading.state = bool ? 'loading' : 'ready';
+    },
+
+    showHideHelp(){
       this.state.help.visible = !this.state.help.visible
     },
 

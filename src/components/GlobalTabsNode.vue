@@ -122,6 +122,9 @@
 
     computed: {
 
+      /**
+       * @returns {*|*[]}
+       */
       filterNodes() {
         const filterNodes = this.node.nodes && this.node.nodes.filter(node => {
           if (this.getNodeType(node) === 'group') {
@@ -138,10 +141,16 @@
         return filterNodes || [];
       },
 
+      /**
+       * @returns {number}
+       */
       nodesLength() {
         return this.filterNodes.length;
       },
 
+      /**
+       * @returns {number}
+       */
       rows() {
         let rowCount = 1;
         if (this.nodesLength === 0) {
@@ -152,12 +161,18 @@
         return rowCount;
       },
 
+      /**
+       * @returns { number }
+       */
       columnNumber() {
         const columnCount = parseInt(this.node.columncount) ? parseInt(this.node.columncount) : 1;
         return columnCount > this.nodesLength ? this.nodesLength : columnCount;
       },
 
-      showGroupTile() {
+      /**
+       * @returns {*}
+       */
+       showGroupTile() {
         return this.showTitle && this.node.showlabel && this.node.groupbox;
       },
 
@@ -165,29 +180,51 @@
 
     methods: {
   
+      /**
+       * @param relation
+       * 
+       * @returns {*|{loading: boolean}}
+       */
       loadingRelation(relation) {
-        return ProjectsRegistry
-          .getCurrentProject()
-          .getLayerById(this.layerid)
-          .getRelationById(relation.name)
-          .state;
+        return (
+            ProjectsRegistry
+            .getCurrentProject()
+            .getLayerById(this.layerid)
+            .getRelationById(relation.name) ||
+            ({ state: {loading: false} }) // FIXME: prevent a fatal error when creating a relation Tab (even if the project has no relations)
+          ).state;
       },
 
+      /**
+       * @param relation
+       * 
+       * @returns {boolean|false|*}
+       */
       isRelationDisabled(relation) {
         return undefined === this.getRelationName(relation.name) || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
 
+
+      /**
+       * @param relationId
+       * 
+       * @returns {*}
+       */
       getRelationName(relationId) {
         const relation = ProjectsRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
-  
-      isRelationChildLayerNotEditable(relation) {
-        const {/*nmRelationId,*/ name} = relation;
 
-        // TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
-        const currentProject  = ProjectsRegistry.getCurrentProject();
+      /**
+       * @param relation
+       * 
+       * @returns { boolean }
+       */
+      isRelationChildLayerNotEditable(relation){
+        const {nmRelationId, name} = relation;
+        ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
+        const currentProject = ProjectsRegistry.getCurrentProject();
         const projectRelation = currentProject.getRelationById(name);
         const relationLayerId = projectRelation.referencingLayer;
         const relationLayer   = currentProject.getLayerById(relationLayerId);
@@ -213,15 +250,31 @@
         // return !relationLayer.isEditable() || (nmRelationId ? relationLayer.isVector() : false);
       },
 
+      /**
+       * @param row
+       * 
+       * @returns {T[]}
+       */
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
         return this.filterNodes.slice(startIndex, this.columnNumber + startIndex);
       },
 
+      /**
+       * @param row
+       * @param column
+       * 
+       * @returns {T}
+       */
       getNode(row, column) {
         return this.getNodes(row)[column - 1];
       },
 
+      /**
+       * @param node
+       * 
+       * @returns {{relation}|*}
+       */
       getField(node) {
         if (node.relation) {
           return node;
@@ -229,7 +282,12 @@
         return this.fields.find((field) => field.name === (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name));
       },
 
-      getNodeType(node) {
+      /**
+       * @param node
+       * 
+       * @returns {string}
+       */
+       getNodeType(node) {
         const type = (
           node.groupbox ||
           node.nodes

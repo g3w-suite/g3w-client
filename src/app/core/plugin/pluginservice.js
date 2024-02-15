@@ -1,8 +1,7 @@
 import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
 import G3WObject          from 'core/g3wobject';
-
-const { base, inherit } = require('core/utils/utils');
+import { base, inherit }  from 'utils';
 
 function PluginService(options={}) {
   base(this, options);

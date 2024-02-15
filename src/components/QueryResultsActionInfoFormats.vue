@@ -11,16 +11,22 @@
     :select2_value="infoformat"
     :search="false"
   >
-    <option v-for="infoformat in infoformats" :key="infoformat" :value="infoformat">{{infoformat}}</option>
+    <option
+      v-for  = "infoformat in infoformats"
+      :key   = "infoformat"
+      :value = "infoformat"
+    >
+      {{infoformat}}
+    </option>
   </select>
 </template>
 
 <script>
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import GUI from 'services/gui';
+import CatalogLayersStoresRegistry             from 'store/catalog-layers';
+import GUI                                     from 'services/gui';
 
-const { response:responseParser } = require('core/utils/parsers');
-const { getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
+const { response:responseParser }              = require('utils/parsers');
+const { getAlphanumericPropertiesFromFeature } = require('utils/geo');
 
 export default {
   name: 'Infoformats',
@@ -58,6 +64,8 @@ export default {
 
     async reloadLayerDataWithChangedContentType(contenttype) {
       this.layer.loading = true;
+      // disable select during get data from server
+      this.$el.disabled = true;
       try {
         const response = await this.projectLayer.changeProxyDataAndReloadFromServer('wms', {
           headers: { 'Content-Type': contenttype },
@@ -75,6 +83,8 @@ export default {
         console.log(err);
       }
       this.layer.loading = false;
+      // enable select during get data from server
+      this.$el.disabled = false;
     },
 
     /**

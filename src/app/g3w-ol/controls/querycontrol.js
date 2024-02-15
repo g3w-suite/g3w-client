@@ -1,9 +1,9 @@
-import GUI from 'services/gui';
-import ProjectsRegistry from 'store/projects';
+import GUI               from 'services/gui';
+import ProjectsRegistry  from 'store/projects';
 import DataRouterService from 'services/data';
+import { mergeOptions }  from 'utils/mergeOptions';
 
-const { throttle }               = require('core/utils/utils');
-const utils                      = require('core/utils/ol');
+const { throttle }               = require('utils');
 const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
@@ -17,7 +17,7 @@ const QueryControl = function(options = {}){
     interactionClass: PickCoordinatesInteraction,
   };
 
-  options = utils.merge(options, _options);
+  options = mergeOptions(options, _options);
 
   InteractionControl.call(this, options);
 };
@@ -29,20 +29,18 @@ const proto = QueryControl.prototype;
 /**
  * @param {ol.Map} map
  * 
+ * @fires   picked                     fired after map `singleclick` ?
  * @listens InteractionControl~toggled
  */
 proto.setMap = function(map) {
- let eventSingleClickKey = null;
+ let key = null;
 
-  this.on('toggled', ({toggled}) => {
-
+  this.on('toggled', ({ toggled }) => {
     if (true !== toggled) {
-      ol.Observable.unByKey(eventSingleClickKey);
-      eventSingleClickKey = null;
-    } else if (null === eventSingleClickKey && map) {
-      // register click on map event. It use to dispatch picked event by control
-      eventSingleClickKey = map
-        .on('singleclick', throttle(evt => this.dispatchEvent({ type: 'picked', coordinates:evt.coordinate })));
+      ol.Observable.unByKey(key);
+      key = null;
+    } else if (null === key && map) {
+      key = this.getInteraction().on('picked', throttle(evt => this.runQuery({coordinates: evt.coordinate })));
     }
   });
 
@@ -56,6 +54,7 @@ proto.setMap = function(map) {
 
 /**
  * @since 3.8.0
+ * 
  * @param event
  */
 proto.runQuery = async function({coordinates}) {

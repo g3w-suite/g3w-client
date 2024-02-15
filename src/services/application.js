@@ -21,9 +21,12 @@ import RouterService                     from 'services/router';
 import G3WObject                         from 'core/g3wobject';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
-const { base, inherit, XHR, uniqueId }   = require('core/utils/utils');
+const { base, inherit, XHR, uniqueId }   = require('utils');
 
 console.assert(undefined !== ComponentsRegistry, 'ComponentsRegistry is undefined');
+
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
 
 /**
  * Manage Application 
@@ -662,7 +665,7 @@ const ApplicationService = function() {
    * iframeservice 
    */
   this.startIFrameService = function({project}={}) {
-    const iframeService = require('core/iframe/routerservice');
+    const iframeService = require('services/iframe').default;
     iframeService.init({project});
   };
 
@@ -725,7 +728,7 @@ const ApplicationService = function() {
   };
 
   /**
-   * @TODO check if deprecated
+   * It used by plugin https://github.com/g3w-suite/g3w-client-plugin-openrouteservice
    */
   this.reloadCurrentProject = function() {
     return this.changeProject({ gid: ProjectsRegistry.getCurrentProject().getGid() });
@@ -805,8 +808,8 @@ const ApplicationService = function() {
     return ApplicationState.gui.layout.__current;
   };
 
-  this.cloneLayout = function(which='app') {
-    return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]))
+  this.cloneLayout = function(which = 'app') {
+    return _cloneDeep(ApplicationState.gui.layout[which])
   };
 
   this.clear = function() {

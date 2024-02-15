@@ -5,7 +5,7 @@
 
 import G3WObject from 'core/g3wobject';
 
-const { base,inherit, Base64 } = require('core/utils/utils');
+const { base,inherit, Base64 } = require('utils');
 
 
 /*

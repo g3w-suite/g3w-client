@@ -2,16 +2,16 @@ import {
   QUERY_POINT_TOLERANCE,
   TOC_LAYERS_INIT_STATUS,
   TOC_THEMES_INIT_STATUS
-}                         from 'app/constant';
-import ApplicationState   from 'store/application-state';
-import ApplicationService from 'services/application';
-import G3WObject          from 'core/g3wobject';
+}                             from 'app/constant';
+import ApplicationState       from 'store/application-state';
+import ApplicationService     from 'services/application';
+import G3WObject              from 'core/g3wobject';
+import { base, inherit, XHR } from 'utils';
 
-const { base, inherit, XHR } = require('core/utils/utils');
-const { crsToCrsObject }     = require('core/utils/geo');
-const LayerFactory           = require('core/layers/layerfactory');
-const LayersStore            = require('core/layers/layersstore');
-const Projections            = require('g3w-ol/projection/projections');
+const { crsToCrsObject }      = require('utils/geo');
+const LayerFactory            = require('core/layers/layerfactory');
+const LayersStore             = require('core/layers/layersstore');
+const Projections             = require('g3w-ol/projection/projections');
 
 /**
  * @FIXME options param appears to be unusued
@@ -107,6 +107,16 @@ function Project(config={}, options={}) {
 inherit(Project, G3WObject);
 
 const proto = Project.prototype;
+
+/**
+ * @returns `wms_getmap_format` attribute from server (project settings) 
+ *
+ * @since 3.9.0
+ */
+
+proto.getWmsGetmapFormat = function() {
+  return this.state.wms_getmap_format;
+}
 
 /**
  * Get search end point value (ows or api)

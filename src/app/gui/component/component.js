@@ -1,6 +1,15 @@
 import G3WObject from 'core/g3wobject';
+import {
+  base,
+  inherit,
+  merge,
+  noop,
+  capitalize_first_letter,
+  resolve,
+}                from 'utils';
 
-const { base, inherit, merge, noop, capitalize_first_letter, resolve } = require('core/utils/utils');
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
 
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
@@ -179,7 +188,7 @@ proto.setInternalComponent = function(internalComponent, options={}) {
 };
 
 proto.createVueComponent = function (vueObjOptions) {
-  return _.cloneDeep(vueObjOptions);
+  return _cloneDeep(vueObjOptions);
 };
 
 proto.addInternalComponentData = function(data) {

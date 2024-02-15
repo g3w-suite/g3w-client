@@ -4,7 +4,7 @@ import RouterService                    from 'services/router';
 import ComponentsRegistry               from 'store/components';
 import G3WObject                        from 'core/g3wobject';
 
-const { noop, toRawType } = require('core/utils/utils');
+const { noop, toRawType }                = require('utils');
 
 const ProjectsMenuComponent              = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent             = require('gui/changemapmenu/changemapmenu');
@@ -931,6 +931,26 @@ class GUI extends G3WObject {
     this.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
 
   };
+
+  /**
+   * Wrapper for download
+   * 
+   * @param { Function } downloadFnc function to call
+   * @param { Object }   options     Object parameters
+   * 
+   * @since 3.9.0
+   */
+  async downloadWrapper(downloadFnc, options = {}) {
+    const download_caller_id = ApplicationService.setDownload(true);
+    this.setLoadingContent(true);
+    try {
+      await downloadFnc(options);
+    } catch(err) {
+      this.showUserMessage({ type: 'alert', message: err || 'server_error', textMessage: !!err })
+    }
+    ApplicationService.setDownload(false, download_caller_id);
+    this.setLoadingContent(false);
+  }
 
 }
 

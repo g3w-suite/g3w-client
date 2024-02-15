@@ -5,7 +5,7 @@
 
 import G3WObject from 'core/g3wobject';
 
-const { reject } = require('core/utils/utils');
+const { reject } = require('utils');
 
 class ApiService extends G3WObject {
 

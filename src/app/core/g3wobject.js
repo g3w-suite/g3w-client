@@ -1,4 +1,4 @@
-const { noop, debounce, throttle } = require('core/utils/utils');
+const { noop, debounce, throttle } = require('utils');
 
 /**
  * Mimics the behavior of child class fields in parent class,

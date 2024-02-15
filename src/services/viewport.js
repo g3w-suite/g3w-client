@@ -8,7 +8,7 @@ import { VIEWPORT as viewportConstraints } from 'app/constant';
 import GUI                                 from 'services/gui';
 import G3WObject                           from 'core/g3wobject';
 
-const { uniqueId }          = require('core/utils/utils');
+const { uniqueId }                         = require('utils');
 
 console.assert(undefined !== GUI, 'GUI is undefined');
 

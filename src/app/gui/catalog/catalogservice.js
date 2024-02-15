@@ -2,8 +2,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
 import ApplicationService          from 'services/application';
 import G3WObject                   from 'core/g3wobject';
-
-const { base, inherit } = require('core/utils/utils');
+import { base, inherit }           from 'utils';
 
 function CatalogService() {
   this.state = {
@@ -176,7 +175,7 @@ proto.getExternalLayerById = function({id, type='vector'}) {
  */
 proto.isExternalLayerSelected = function({id, type}) {
   const externalLayer = this.getExternalLayerById({ id, type });
-  return externalLayer && externalLayer.selected;
+  return !!(externalLayer && externalLayer.selected);
 };
 
 module.exports = CatalogService;

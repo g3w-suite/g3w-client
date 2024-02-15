@@ -1,4 +1,4 @@
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Panel = require('gui/panel');
 const QueryBuilder = require('gui/querybuilder/vue/querybuilder');
 

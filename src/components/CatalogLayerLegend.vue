@@ -6,7 +6,7 @@
 <template>
 
   <div
-    v-show="show"
+    v-if="show"
     class="layer-legend"
     @click.stop.prevent=""
   >
@@ -66,7 +66,7 @@
 
 <script>
   import GUI from 'services/gui';
-  import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import { CatalogEventBus as VM } from 'app/eventbus';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ProjectsRegistry from 'store/projects';
   import ClickMixin from 'mixins/click';
@@ -381,7 +381,7 @@
       this.mapReady = false;
 
       // listen layer change style event
-      CatalogEventHub.$on('layer-change-style', this.onChangeLayerLegendStyle);
+      VM.$on('layer-change-style', this.onChangeLayerLegendStyle);
 
       // Get all legend graphics of a layer when start
       // need to exclude wms source
@@ -392,7 +392,7 @@
     },
 
     beforeDestroy() {
-      CatalogEventHub.$off('layer-change-style', this.onChangeLayerLegendStyle);
+      VM.$off('layer-change-style', this.onChangeLayerLegendStyle);
     },
 
   }

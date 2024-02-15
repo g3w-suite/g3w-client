@@ -1,4 +1,5 @@
-const utils = require('core/utils/ol');
+import { mergeOptions } from 'utils/mergeOptions';
+
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const ResetControl = function(options){
@@ -9,7 +10,7 @@ const ResetControl = function(options){
       tipLabel: "Pan",
       label: "\ue901"
     };
-  options = utils.merge(options,_options);
+  options = mergeOptions(options,_options);
   InteractionControl.call(this,options);
 };
 

@@ -4,28 +4,20 @@
 -->
 
 <template>
-  <div class="query-relations" style="overflow-y:auto">
-    <div
-      class = "header skin-background-color lighten"
-      style = "margin-bottom: 10px; border-radius: 4px; padding: 5px;"
-    >
+  <div class="query-relations">
+    <div class="header skin-background-color lighten">
       <div class="skin-color-dark">
         <span style="font-size: 1.1em;" v-t:pre="'sdk.relations.list_of_relations_feature'"> </span>
-        <span
-          v-for = "info in featureInfo()"
-        ><b>{{ info.key }}</b>: {{ info.value }} </span>
+        <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span>
       </div>
     </div>
-    <div
-      class = "query-relations-content"
-      style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px; grid-row-gap: 5px;"
-    >
+    <div class="query-relations-content">
       <div
         v-for  = "relation in relations"
         @click = "showRelation(relation)"
         class  = "skin-border-color relation-grid-item"
       >
-        <span style="font-weight: bold; padding: 5px;" class="skin-color g3w-long-text">{{ relation.name }}</span>
+        <span class="skin-color g3w-long-text">{{ relation.name }}</span>
       </div>
     </div>
   </div>
@@ -40,32 +32,45 @@ export default {
   props: [
     'relations',
     'feature',
-    'loading'
+    'loading',
   ],
 
   methods: {
 
+    /**
+     * @param relation 
+     */
     async showRelation(relation) {
       await this.$parent.showRelation(relation);
     },
 
+    /**
+     * @FIXME add description
+     */
     featureInfo() {
       let infoFeatures = [];
-      let index = 0;
+      let index        = 0;
       Object
         .entries(this.feature.attributes)
         .forEach(([key, value]) => {
-          if (index > 2) return false;
+          // skip when ..
+          if (index > 2) {
+            return false;
+          }
+          /** @FIXME add description */
           if (value && _.isString(value) && -1 === value.indexOf('/')) {
-            infoFeatures.push({ key, value });
+            infoFeatures.push({ key: key, value: value });
             index++;
           }
         });
-      return infoFeatures
+      return infoFeatures;
     },
 
   },
 
+  /**
+   * @FIXME add description
+   */
   async mounted() {
     if (1 === this.relations.length) {
       this.relations[0].noback = true;
@@ -73,6 +78,9 @@ export default {
     }
   },
 
+  /**
+   * @FIXME add description
+   */
   beforeDestroy() {
     if (1 === this.relations.length) {
       delete this.relations[0].noback;
@@ -95,5 +103,22 @@ export default {
   .relation-grid-item:hover {
     background-color: transparent;
   }
-
+  .query-relations {
+    overflow-y: auto;
+  }
+  .query-relations > .header {
+    margin-bottom: 10px;
+    border-radius: 4px;
+    padding: 5px;
+  }
+  .query-relations > .query-relations-content {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    grid-column-gap: 5px;
+    grid-row-gap: 5px;
+  }
+  .relation-grid-item > .g3w-long-text {
+    font-weight: bold;
+    padding: 5px;
+  }
 </style>

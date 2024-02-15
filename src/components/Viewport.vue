@@ -249,14 +249,16 @@
       styles() {
         return {
           map: {
-            width:     `${this.state.map.sizes.width}px`,
-            height:    `${this.state.map.sizes.height}px`,
+            width:         `${this.state.map.sizes.width}px`,
+            height:        `${this.state.map.sizes.height}px`,
           },
           content: {
-            width:     `${this.state.content.sizes.width}px`,
-            height:    `${this.state.content.sizes.height}px`,
-            zIndex:    ZINDEXES.usermessage.tool + 1,
-            minHeight: this.state.split === 'v' ? `${viewportConstraints.resize.content.min}px` : null
+            width:         `${this.state.content.sizes.width}px`,
+            height:        `${this.state.content.sizes.height}px`,
+            zIndex:        ZINDEXES.usermessage.tool + 1,
+            minHeight:     'v' === this.state.split ? `${viewportConstraints.resize.content.min}px` : null,
+            paddingTop:    '8px',
+            paddingBottom: '8px',
           }
         }
       },

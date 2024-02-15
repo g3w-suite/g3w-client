@@ -6,7 +6,7 @@
 import ApplicationService from 'services/application';
 import { BaseService }     from 'core/data/service';
 
-const { XHR } = require('core/utils/utils');
+const { XHR } = require('utils');
 
 class OWSService extends BaseService {
 

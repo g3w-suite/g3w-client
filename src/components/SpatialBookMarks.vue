@@ -87,7 +87,7 @@
   import SpatialBookMarkItem  from 'components/SpatialBookMarkItem.vue';
   import InputText            from 'components/InputText.vue';
 
-  const { uniqueId }          = require('core/utils/utils');
+  const { uniqueId }          = require('utils');
   const { t }                 = require('core/i18n/i18n.service');
 
 

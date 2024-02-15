@@ -13,11 +13,13 @@ export default {
     sign_in: "Se connecter ",
     layer_selection_filter: {
       tools: {
-        filter: "Ajout/Suppression de filtre ",
+        filter: "Activer/Désactiver le filtre",
         nofilter: "Supprimer le filtre ",
         invert: "Sélection inversée ",
         clear: "Effacer la sélection ",
-        show_features_on_map: "Afficher les caractéristiques visibles sur la carte"
+        show_features_on_map: "Afficher les caractéristiques visibles sur la carte",
+        savefilter: "Sauver le Filtre",
+        filterName: "Nom du Filtre",
       }
     },
     warning: {
@@ -177,7 +179,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Afficher le format de la ligne",
-          row_to_form: "Format du formulaire d'affichage"
+          row_to_form: "Format du formulaire d'affichage",
+          zoomtogeometry: "Zoom sur la géométrie",
         },
         zoom_to_features_extent: "Zoom sur les fonctionnalités",
         copy_map_extent_url: 'Copier le lien de visualisation de la carte',
@@ -488,8 +491,10 @@ export default {
         title: "",
         error: "Votre position ne peut être calculée."
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Choisissez un calque où ajouter cette fonctionnalité",
         placeholder: "Adresse ...",
+        nolayers: "Aucune couche de points modifiable trouvée sur ce projet",
         noresults: "Aucun résultat",
         notresponseserver: "Le serveur ne répond pas"
       },
@@ -533,7 +538,8 @@ export default {
         show_metadata: "Métadonnées",
         styles: "Styles",
         vector_color_menu:"Définir/changer la couleur",
-        layer_opacity: "Opacité"
+        layer_opacity: "Opacité",
+        filters: "Filters",
       }
     },
     dataTable: {

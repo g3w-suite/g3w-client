@@ -26,7 +26,7 @@ import { g3wInputMixin, widgetMixins } from 'mixins';
 
 console.assert(undefined !== g3wInputMixin);
 
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
 

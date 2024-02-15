@@ -8,8 +8,8 @@ import ProjectsRegistry            from 'store/projects';
 import DataRouterService           from 'services/data';
 import G3WObject                   from 'core/g3wobject';
 
-const { XHR, createSingleFieldParameter }                          = require('core/utils/utils');
-const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
+const { XHR, createSingleFieldParameter }                          = require('utils');
+const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('utils/geo');
 
 class RelationsService extends G3WObject {
 

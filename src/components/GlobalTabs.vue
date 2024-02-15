@@ -94,11 +94,19 @@
 
 <script>
 
-  import TabService from 'core/expression/tabservice';
-  import Node       from 'components/GlobalTabsNode.vue';
-  import GUI        from 'services/gui';
+  import DataRouterService from 'services/data';
+  import Node              from 'components/GlobalTabsNode.vue';
+  import GUI               from 'services/gui';
 
-  const { getUniqueDomId, noop } = require ('core/utils/utils');
+  const {
+    getUniqueDomId,
+    noop
+  }                        = require ('utils');
+
+  const {
+    getFormDataExpressionRequestFromFeature,
+    convertFeatureToGEOJSON,
+  }                        = require('utils/geo');
 
   export default {
 
@@ -132,18 +140,18 @@
       },
 
       addToValidate: {
-          type: Function,
-          default: noop
+        type: Function,
+        default: noop
       },
 
       removeToValidate: {
-          type: Function,
-          default: noop
+        type: Function,
+        default: noop
       },
 
       changeInput: {
-          type: Function,
-          default: noop
+        type: Function,
+        default: noop
       },
 
       showRelationByField: {
@@ -178,13 +186,27 @@
 
     methods: {
 
+      /**
+       * ORIGINAL SOURCE: src/app/core/expression/tabservice.js@3.8.6
+       */
       async setVisibility(tab) {
-        tab.visible = await TabService.getVisibility({
-          qgs_layer_id: this.layerid,
-          expression:   tab.visibility_expression.expression,
-          feature:      this.feature,
-          contenttype:  this.contenttype
-        });
+        tab.visible = DataRouterService
+          .getData(
+            'expression:expression_eval',
+              {
+              inputs: {
+                qgs_layer_id: this.layerid,
+                form_data:    (
+                  'editing' === this.contenttype ?
+                    convertFeatureToGEOJSON :
+                    getFormDataExpressionRequestFromFeature)(this.feature || {}
+                ),
+                expression:   tab.visibility_expression.expression,
+                formatter:    ('query' === this.contenttype ? 1 : 0),
+              },
+              outputs: false,
+            }
+          );
       },
 
       /**
@@ -275,7 +297,8 @@
     },
 
     beforeDestroy() {
-      this.unwatch.forEach(unwatch => unwatch());
+      this.unwatch
+        .forEach(unwatch => unwatch());
       this.unwatch = null;
     },
 
@@ -309,5 +332,11 @@
     border-bottom: 0;
     margin-bottom: 3px;
     border-radius: 3px 3px 0 0;
+  }
+  .formquerytabs li a.tab_a.group-title {
+    color: inherit !important;
+    font-weight: 600;
+    font-size: 1em !important;
+    padding: 0.25em;
   }
 </style>

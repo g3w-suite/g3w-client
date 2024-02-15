@@ -13,11 +13,13 @@ export default {
     sign_in: "Sign in",
     layer_selection_filter: {
       tools: {
-        filter: "Add/Remove Filter",
+        filter: "Enable/Disable filter",
         nofilter: "Remove Filter",
         invert: "Invert Selection",
         clear: "Clear Selection",
-        show_features_on_map: "Show features visible on map"
+        show_features_on_map: "Show features visible on map",
+        savefilter: "Save Filter",
+        filterName: "Filter Name",
       }
     },
     warning: {
@@ -179,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Row View",
-          row_to_form: "Form View"
+          row_to_form: "Form View",
+          zoomtogeometry: "Zoom to Geometry",
         },
         copy_map_extent_url: 'Copy map view link',
         download_shapefile: "Download Shapefile",
@@ -486,8 +489,10 @@ export default {
       geolocations: {
         error: "Can't get your position"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Choose a layer where to add this feature",
         placeholder: "Address ...",
+        nolayers: "No editable point layers found on this project",
         noresults: "No results",
         notresponseserver: "No response from server"
       },
@@ -531,7 +536,8 @@ export default {
         show_metadata: "Metadata",
         styles: 'Styles',
         vector_color_menu:"Set/Change Color",
-        layer_opacity: "Opacity"
+        layer_opacity: "Opacity",
+        filters: "Filters",
       }
     },
     dataTable: {

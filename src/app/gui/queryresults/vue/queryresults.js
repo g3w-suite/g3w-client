@@ -1,6 +1,6 @@
 import * as vueComponentOptions from 'components/QueryResults.vue';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const Component = require('gui/component/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 

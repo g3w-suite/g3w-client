@@ -5,80 +5,79 @@
 
 import { BaseService } from 'core/data/service';
 
-const { createOlFeatureFromApiResponseFeature } = require('core/utils/geo');
+const { createOlFeatureFromApiResponseFeature } = require('utils/geo');
 
 class SearchService extends BaseService {
 
   /**
    * Search features
+   * 
+   * @param options.layer
+   * @param { 'api' | 'ows' } options.search_endpoint
+   * @param options.filter
+   * @param options.raw
+   * @param options.queryUrl
+   * @param options.feature_count
+   * @param options.formatter
+   * @param options.ordering
+   * 
+   * @returns { Promise<{ data: [], query: { type: 'search', search: * }, type: 'api' | 'ows' }> }
    */
   async features(options = {
     layer,
     search_endpoint,
     filter,
-    raw:false,
+    raw: false,
     queryUrl,
     feature_count,
-    ordering
+    formatter: 1,
+    ordering,
   }) {
+    
+    const promises                = [];
+    const { layer, ...params }    = options;
+    const { raw = false, filter } = options;
+    let data                      = [];
+    const layers                  = Array.isArray(layer) ? layer : [layer];                         // check if layer is array
+    params.filter                 = Array.isArray(params.filter) ? params.filter : [params.filter]; // check if filter is array
 
-    const responses =[];
+    // if 'api' or 'ows' search_endpoint
+    if ('api' === params.search_endpoint) {
+      layers.forEach((layer, i) => promises.push(layer.searchFeatures({ ...params, filter: params.filter[i] })));
+    } else {
+      promises
+        .push(new Promise((resolve, reject) => {
+          layers[0]                                                  // get query provider for get one request only
+          .getProvider('search')
+          .query({ ...params, layers, ...layers[0].getSearchParams() /* get search params*/ })
+          .then(data => { resolve({ data })})
+          .fail(reject)
+        }));
+    }
 
-    const {
-      layer,
-      ...params
-    } = options;
+    (await Promise.allSettled(promises))
+      .forEach(({ status, value } = {}) => {
+        // filter only fulfilled response
+        if ('fulfilled' !== status) { 
+          return;
+        }
+        if (raw) {
+          data.push('api' === params.search_endpoint ? { data: value } : value);
+        } else if ('api' !== params.search_endpoint) {
+          data = value.data = undefined !== value.data ? value.data : [];
+        } else if(Array.isArray(value.data) && value.data.length) {
+          data.push(value.data[0]);
+        }
+      });
 
-    const {
-      raw = false,
-      filter
-    } = options;
-  
-    const dataSearch = {
-      data: [],
+    return {
+      data,
       query: {
         type: 'search',
-        search: filter
+        search: filter,
       },
-      type: params.search_endpoint
+      type: params.search_endpoint,
     };
-
-    const layers  = Array.isArray(layer) ? layer : [layer];
-    params.filter = Array.isArray(params.filter) ? params.filter : [params.filter];
-
-    if ('api' === params.search_endpoint) {
-      layers
-        .forEach(
-          (layer, index) => responses.push(layer.searchFeatures({ ...params, filter: params.filter[index] }))
-        );
-    }
-
-    // params.search_endpoint == 'ows' ??
-    if ('api' !== params.search_endpoint) {
-      const promise = new Promise((resolve, reject) => {
-        layers[0]
-          .getProvider('search')
-          .query({ ...params, layers, ...layers[0].getSearchParams() })
-          .then(data => { resolve({ data }) })
-          .fail(reject);
-      });
-      responses.push(promise);
-    }
-
-    (await Promise.allSettled(responses))
-      .forEach(
-        ({ status, value } = {}) => {
-          if (raw && 'fulfilled' === status) {
-            dataSearch.data.push('api' === params.search_endpoint ? { data: value } : value );
-          }
-          if(!raw && 'fulfilled' === status) {
-            const { data = [] } = value;
-            params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
-          }
-        }
-      );
-
-    return dataSearch;
   }
 
   /**
@@ -86,60 +85,59 @@ class SearchService extends BaseService {
    * 
    * @param opts.layer
    * @param opts.formatter
-   * @param opts.fid
+   * @param opts.fids
    * 
-   * @returns {Promise<{data: [], layer}|{data: [{features: ([*]|[]), query: {type: string}, layer: *}]}>}
+   * @returns { Promise<{ data: Array<{ layer: *, features: []}>, query: { type: 'search' }}> } 
    */
   async fids({
     layer,
     formatter = 0,
-    fids      = []
+    fids      = [],
   } = {}) {
-    const response = {
-      data:  [{ layer, features: [] } ],
+    const features = []; 
+    try {
+      const feats = layer && await layer.getFeatureByFids({ fids, formatter });
+      if (feats) {
+        feats.forEach(f => features.push(createOlFeatureFromApiResponseFeature(f)));
+      }
+    } catch(err) {
+      console.warn(err);
+    }
+    return {
+      data: [{
+        layer,
+        features
+      }],
       query: { type: 'search' },
     };
-    try {
-      const features = layer && await layer.getFeatureByFids({fids, formatter});
-      if (features) {
-        features.forEach(feat => response.data[0].features.push(createOlFeatureFromApiResponseFeature(feat)));
-      }
-    } catch(e) {
-      console.warn(e);
-    } finally {
-      return response;
-    }
   }
 
   /**
-   * Load many layers with each one with its fids
+   * Search service function to load many layers with each one with its fids
    * 
-   * @param opts.layers    array of layers that we want serach fids features
-   * @param opts.fids      array of array of fids
-   * @param opts.formatter how we want visualize
+   * @param options.layers    - Array of layers that we want serach fids features
+   * @param options.fids      - Array of array of fids
+   * @param options.formatter - how we want visualize
    * 
-   * @returns {Promise<void>}
+   * @returns { Promise<{ data: [], query: { type: 'search' }}> }
    */
   async layersfids({
     layers    = [],
     fids      = [],
     formatter = 0,
   } = {}) {
-    const responses = [];
-    const response = {
-      data:  [],
+    const promises = [];
+    const data     = [];
+    layers.forEach((layer, i) => { promises.push(this.fids({ layer, fids: fids[i], formatter })) });
+    try {
+      (await Promise.all(promises)).forEach(response => { data.push(response.data) });
+    } catch(err) {
+      console.warn(err);
+    }
+    return {
+      data,
       query: { type: 'search' }
     };
-    layers.forEach((layer, index) => {
-      responses.push(this.fids({ layer, fids: fids[index], formatter }))
-    });
-    try {
-      (await Promise.all(responses)).forEach(layer => response.data.push(layer.data))
-    } catch(e) {
-      console.warn(e)
-    } finally {
-      return response;
-    }
   }
 
 }

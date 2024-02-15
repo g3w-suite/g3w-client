@@ -37,7 +37,7 @@
 
 <script>
   import GUI from 'services/gui';
-  const { debounce } = require('core/utils/utils');
+  const { debounce } = require('utils');
 
   export default {
     name: "MapControlZoomHistory",

@@ -33,15 +33,11 @@ export default class LayersStoresRegistry extends G3WObject {
   }
 
   getLayers(filter) {
-    let layers = [];
-    Object
-      .entries(this.stores)
-      .forEach(([id, store]) => { layers = layers.concat(store.getLayers(filter)); });
-    return layers;
+    return Object.values(this.stores).flatMap(store => store.getLayers(filter));
   }
 
   getQuerableLayersStores() {
-    return this.getLayersStores().filter((store) => store.isQueryable());
+    return this.getLayersStores().filter(store => store.isQueryable());
   }
 
   getLayersStore(id) {
@@ -49,16 +45,14 @@ export default class LayersStoresRegistry extends G3WObject {
   }
 
   getLayersStores() {
-    const stores = [];
-    this.storesArray.forEach((id) => { stores.push(this.stores[id]); });
-    return stores;
+    return this.storesArray.map(storeId => this.stores[storeId]);
   }
 
   _addLayersStore(layersStore, idx) {
     const id = layersStore.getId();
     this.stores[id] = layersStore;
     if (!_.isNil(idx)) {
-      this.storesArray.splice(idx,0, id);
+      this.storesArray.splice(idx, 0, id);
     } else {
       this.storesArray.push(id);
     }

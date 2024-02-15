@@ -55,7 +55,7 @@ const __H1 = __INFO + "\n";
 
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
 
 // Built-in client plugins
 const default_plugins = [
@@ -181,16 +181,12 @@ gulp.task('browserify:app', function() {
       imgurify
     ]
   });
+
+  dependencies.forEach(dep => bundler.external(dep));   // exclude external npm dependencies
+
   if (production) {
     bundler.ignore('./src/index.dev.js');               // ignore dev index file (just to be safe)
-    dependencies.forEach(dep => bundler.external(dep)); // add external module node_modules on vendor
   } else {
-    bundler.on('prebundle', bundle => {
-      dependencies.forEach(dep => {
-        bundle.external(dep);
-        bundle.require(dep);
-      });
-    });
     bundler = watchify(bundler);
   }
 
@@ -212,6 +208,7 @@ gulp.task('browserify:app', function() {
       .pipe(rename('app.min.js'))
       .pipe(gulpif(production, sourcemaps.write('.')))
       .pipe(gulp.dest(outputFolder + '/static/client/js/'));
+
 
   if (production) {
     rebundle = () => bundle();
@@ -257,6 +254,15 @@ gulp.task('images', function () {
     ])
     .pipe(flatten())
     .pipe(gulp.dest(outputFolder + '/static/client/fonts/'))
+});
+
+/**
+ * Deploy geocoding providers (src/assets/geocoding-providers)
+ */
+gulp.task('geocoding-providers', function () {
+  return gulp.src(`${g3w.assetsFolder}/geocoding-providers/*`)
+    .pipe(flatten())
+    .pipe(gulp.dest(outputFolder + '/static/client/geocoding-providers/'));
 });
 
 /**
@@ -334,10 +340,11 @@ gulp.task('browser-sync', function() {
   // gulp.watch(['./src/index.html', './src/**/*.html'], gulp.series('browser:reload'));
   //
 
-  gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
-  gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
-  gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
-  gulp.watch(g3w.pluginsFolder + '/*/plugin.js',      (file) => {
+  gulp.watch([g3w.assetsFolder + '/style/**/*.less'],          () => runSequence('less',                'browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/geocoding-providers/**/*'], () => runSequence('geocoding-providers', 'browser:reload'));
+  gulp.watch('./src/**/*.{png,jpg,gif,svg}',                   () => runSequence('images',              'browser:reload'));
+  gulp.watch(['./src/index.html'],                             () => runSequence('html',                'browser:reload'));
+  gulp.watch(g3w.pluginsFolder + '/*/plugin.js',               (file) => {
     const plugins = process.env.G3W_PLUGINS;
     process.env.G3W_PLUGINS = path.basename(path.dirname(file.path));
     runSequence('deploy-plugins', 'browser:reload', () => process.env.G3W_PLUGINS = plugins)
@@ -468,7 +475,7 @@ gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'selec
 /**
  * Compile and deploy local developed client file assets (static and templates)
  */
-gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'html']);
+gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'geocoding-providers', 'html']);
 
 /**
  * [PROD] Compile and deploy client application

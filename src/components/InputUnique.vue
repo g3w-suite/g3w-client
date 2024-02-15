@@ -26,7 +26,7 @@
 <script>
 import { g3wInputMixin, selectMixin } from 'mixins';
 
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
 

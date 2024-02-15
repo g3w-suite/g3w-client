@@ -2,8 +2,8 @@ import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
 
-const { throttle }                       = require('core/utils/utils');
-const { getMapLayersByFilter, Geometry } = require('core/utils/geo');
+const { throttle }                       = require('utils');
+const { getMapLayersByFilter, Geometry } = require('utils/geo');
 const BaseQueryPolygonControl            = require('g3w-ol/controls/basequerypolygoncontrol');
 const PickCoordinatesInteraction         = require('g3w-ol/interactions/pickcoordinatesinteraction');
 

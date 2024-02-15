@@ -20,6 +20,7 @@
         @click.prevent.stop = "toggleGetCoordinate"
         :style              = "{ border: coordinatebutton.active ? '2px solid' : 0 }"
         data-placement      = "left"
+        data-container      = "body"
         data-toggle         = "tooltip"
         v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
         class               = "action skin-tooltip-left skin-color skin-border-color"
@@ -88,7 +89,7 @@
 <script>
 import { g3wInputMixin } from 'mixins';
 
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
 

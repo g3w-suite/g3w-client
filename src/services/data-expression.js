@@ -4,8 +4,8 @@
  */
 import { BaseService } from 'core/data/service'
 
-const { XHR }                              = require('core/utils/utils');
-const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
+const { XHR }                              = require('utils');
+const { getFeaturesFromResponseVectorApi } = require('utils/geo');
 
 class ExpressionService extends BaseService {
 

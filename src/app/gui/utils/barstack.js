@@ -1,6 +1,6 @@
 import G3WObject from 'core/g3wobject';
 
-const { resolve, inherit } = require('core/utils/utils');
+const { resolve, inherit } = require('utils');
 const Component            = require('gui/component/component');
 const Panel                = require('gui/panel');
 

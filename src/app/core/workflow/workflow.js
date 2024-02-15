@@ -1,174 +1,336 @@
-import WorkflowsStack   from 'services/workflows';
-import GUI              from 'services/gui';
-import G3WObject        from 'core/g3wobject';
-import UserMessageSteps from 'components/UserMessageSteps';
+import WorkflowsStack               from 'services/workflows';
+import GUI                          from 'services/gui';
+import G3WObject                    from 'core/g3wobject';
+import UserMessageSteps             from 'components/UserMessageSteps';
+import { base, inherit, resolve }   from 'utils';
 
-const { base, inherit, resolve }    = require('core/utils/utils');
 const Flow                          = require('core/workflow/flow');
 const { MESSAGES }                  = require('core/workflow/step');
 
-//Class to manage flow of steps
-function Workflow(options={}) {
-  const {inputs=null, context=null, flow=new Flow(), steps=[], runOnce=false} = options;
+/**
+ * Workflow Class (manage flow of steps)
+ *
+ * @param options.inputs
+ * @param options.context
+ * @param options.flow
+ * @param options.steps
+ * @param options.runOnce
+ * @param options.backbuttonlabel
+ *
+ * @constructor
+ */
+function Workflow(options = {}) {
+
+  const {
+    inputs          = null,
+    context         = null,
+    flow            = new Flow(),
+    steps           = [],
+    runOnce         = false,
+    backbuttonlabel = null,
+  } = options;
+
   base(this);
+
+  /**
+   * @FIXME add description
+   */
   this._promise = null;
-  // inputs mandatory to work with editing
+
+  /**
+   * Mandatory inputs to work with editing
+   */
   this._inputs = inputs;
+
+  /**
+   * @FIXME add description
+   */
   this._context = context;
-  // flow object to control the flow
+
+  /**
+   * Flow object to control the flow
+   */
   this._flow = flow;
-  // all steps of flow
+
+  /**
+   * All steps of flow
+   */
   this._steps = steps;
-  // if is child of another workflow
+
+  /**
+   * Whether is child of another workflow
+   */
   this._child = null;
-  // stack workflowindex
+
+  /**
+   * stack workflowindex
+   */
   this._stackIndex = null;
-  // stop when flow stop
+
+  /**
+   * Stop when flow stop
+   */
   this.runOnce = runOnce;
+
+  /**
+   * @FIXME add description
+   */
   this._messages = MESSAGES;
+
+  /**
+   * @FIXME add description
+   */
   this._userMessageSteps = this._steps.reduce((messagesSteps, step) => {
     const usermessagesteps = step.getTask().getUserMessageSteps();
-    return usermessagesteps && {
-      ...messagesSteps,
-      ...usermessagesteps,
-    } || messagesSteps
-  },  {});
+    return usermessagesteps && { ...messagesSteps, ...usermessagesteps, } || messagesSteps },
+  {});
+
+  /**
+   * Holds back button label (in case of child workflow)
+   * 
+   * @since 3.9.0
+   */
+  this.backbuttonlabel = backbuttonlabel;
+
 }
 
 inherit(Workflow, G3WObject);
 
 const proto = Workflow.prototype;
 
+/**
+ * @returns { * }
+ */
 proto.getContextService = function() {
-  const context = this.getContext();
-  return context.service;
+  return this.getContext().service;
 };
 
+/**
+ * @param service
+ */
 proto.setContextService = function(service) {
-  const context = this.getContext();
-  context.service = service;
+  this.getContext().service = service;
 };
 
+/**
+ * @returns { null | * }
+ */
 proto.getStackIndex = function() {
   return this._stackIndex;
 };
 
+/**
+ * @param workflow
+ */
 proto.addChild = function(workflow) {
-  if (this._child) this._child.addChild(workflow);
-  else this._child = workflow;
+  if (this._child) {
+    this._child.addChild(workflow);
+  } else {
+    this._child = workflow;
+  }
 };
 
+/**
+ * @FIXME add description
+ */
 proto.removeChild = function() {
   if (this._child) {
-    const index = this._child.getStackIndex();
-    WorkflowsStack.removeAt(index);
+    WorkflowsStack.removeAt(this._child.getStackIndex());
   }
   this._child = null;
 };
 
-proto.setInput = function({key, value}) {
+/**
+ * @param input.key
+ * @param input.value
+ */
+proto.setInput = function({
+  key,
+  value,
+}) {
   this._inputs[key] = value;
 };
 
 /**
- * maybe unused method. Remove
+ * @TODO check if deprecated (probably unused)
+ * 
  * @param inputs
+ * 
  * @private
  */
 proto._setInputs = function(inputs) {
  this._inputs = inputs;
 };
 
+/**
+ * @returns { null | * }
+ */
 proto.getInputs = function() {
   return this._inputs;
 };
 
+/**
+ * @param context
+ */
 proto.setContext = function(context) {
  this._context = context;
 };
 
+/**
+ * @returns { * | {} | null }
+ */
 proto.getContext = function() {
   return this._context;
 };
 
+/**
+ * @returns {*}
+ */
 proto.getFlow = function() {
   return this._flow;
 };
 
+/**
+ * @param flow
+ */
 proto.setFlow = function(flow) {
   this._flow = flow;
 };
 
+/**
+ * @param step
+ */
 proto.addStep = function(step) {
   this._steps.push(step);
 };
 
+/**
+ * @param steps
+ */
 proto.setSteps = function(steps) {
   this._steps = steps;
 };
 
+/**
+ * @returns { * | Array }
+ */
 proto.getSteps = function() {
   return this._steps;
 };
 
+/**
+ * @param index
+ * 
+ * @returns { * }
+ */
 proto.getStep = function(index) {
   return this._steps[index];
 };
 
+/**
+ * @param messages
+ */
 proto.setMessages = function(messages) {
   Object.assign(this._messages, messages);
 };
 
+/**
+ * @FIXME add description
+ */
 proto.getMessages = function() {
   return this._messages;
 };
 
+/**
+ * @FIXME add description
+ */
 proto.clearMessages = function() {
   this._messages.help = null;
-  this._isThereUserMessaggeSteps() && this.clearUserMessagesSteps();
+  if (this._isThereUserMessaggeSteps()) {
+    this.clearUserMessagesSteps();
+  }
 };
 
+/**
+ * @returns { * | null }
+ */
 proto.getLastStep = function() {
-  const length = this._steps.length;
-  return length ? this._steps[length-1] : null;
+  return this._steps.length ? this._steps[ this._steps.length - 1 ] : null;
 };
 
+/**
+ * @returns { T }
+ */
 proto.getRunningStep = function() {
   return this._steps.find(step => step.isRunning());
 };
 
-//stop all workflow children
+/**
+ * Stop all workflow children 
+ */
 proto._stopChild = function() {
-  return this._child ? this._child.stop(): resolve();
+  return this._child ?
+    this._child.stop() :
+    resolve();                 // <-- FIXME: undefined function ? 
 };
 
+/**
+ * @returns { number }
+ * 
+ * @private
+ */
 proto._isThereUserMessaggeSteps = function() {
   return Object.keys(this._userMessageSteps).length;
 };
 
-proto.reject  = function(){
-  this._promise && this._promise.reject();
-};
-
-proto.resolve = function(){
-  this._promise && this._promise.resolve();
-};
-
-// start workflow
-proto.start = function(options={}) {
-  const d = $.Deferred();
-  this._promise = d;
-  this._inputs = options.inputs;
-  this._context = options.context || {};
-  const isChild = this._context.isChild || false;
-  //check if are workflow running and if need to stop child
-  if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
-    !isChild && WorkflowsStack.getCurrent().addChild(this)
+/**
+ * @FIXME add description
+ */
+proto.reject  = function() {
+  if (this._promise) {
+    this._promise.reject();
   }
+};
+
+/**
+ * @FIXME add description
+ */
+proto.resolve = function() {
+  if (this._promise) {
+    this._promise.resolve();
+  }
+};
+
+/**
+ * Start workflow
+ * 
+ * @param options.inputs
+ * @param options.context
+ * @param options.flow
+ * @param options.steps
+ * 
+ * @fires start
+ */
+proto.start = function(options = {}) {
+  const d       = $.Deferred();
+
+  this._promise = d;
+  this._inputs  = options.inputs;
+  this._context = options.context || {};
+
+  const isChild = this._context.isChild || false;
+  
+  // stop child when a workflow is running 
+  if (!isChild && WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
+    WorkflowsStack.getCurrent().addChild(this)
+  }
+
   this._stackIndex = WorkflowsStack.push(this);
-  this._flow = options.flow || this._flow;
-  this._steps = options.steps || this._steps;
+  this._flow       = options.flow || this._flow;
+  this._steps      = options.steps || this._steps;
+
   const showUserMessage = this._isThereUserMessaggeSteps();
+
   if (showUserMessage) {
     GUI.showUserMessage({
       title: 'sdk.workflow.steps.title',
@@ -182,49 +344,71 @@ proto.start = function(options={}) {
     });
   }
 
-  this._flow.start(this)
+  this._flow
+    .start(this)
     .then(outputs => {
-      showUserMessage && setTimeout(()=>{
-        this.clearUserMessagesSteps();
-        d.resolve(outputs)
-      }, 500) || d.resolve(outputs);
+      if (showUserMessage) {
+        setTimeout(() => { this.clearUserMessagesSteps(); d.resolve(outputs); }, 500);
+      } else {
+        d.resolve(outputs);
+      }
     })
     .fail(error => {
-      showUserMessage && this.clearUserMessagesSteps();
+      if (showUserMessage) {
+        this.clearUserMessagesSteps();
+      }
       d.reject(error);
     })
-    .always(()=>{
-      this.runOnce && this.stop();
+    .always(() => {
+      if (this.runOnce) {
+        this.stop();
+      }
     });
+
   this.emit('start');
+
   return d.promise();
 };
 
-// stop workflow during flow
+/**
+ * Stop workflow during flow
+ * 
+ * @fires stop
+ */
 proto.stop = function() {
-  this._promise = null;
   const d = $.Deferred();
-  // stop child workflow
-  this._stopChild()
-    // in every case remove child
-    .always(() => {
+
+  this._promise = null;
+
+
+  this
+    ._stopChild()                                   // stop child workflow
+    .always(() => {                                 // ensure that child is always removed
       this.removeChild();
       WorkflowsStack.removeAt(this.getStackIndex());
-      // call stop flow
-      this._flow.stop()
-        .then(() => d.resolve())
-        .fail(err => d.reject(err))
+      this._flow
+        .stop()
+        .then(d.resolve)
+        .fail(d.reject)
         .always(() => this.clearMessages())
   });
+  
   this.emit('stop');
+  
   return d.promise();
 };
 
-proto.clearUserMessagesSteps = function(){
+/**
+ * @FIXME add description
+ */
+proto.clearUserMessagesSteps = function() {
   this._resetUserMessaggeStepsDone();
   GUI.closeUserMessage();
 };
 
+/**
+ * @private
+ */
 proto._resetUserMessaggeStepsDone = function() {
   Object.keys(this._userMessageSteps).forEach(type => {
     const userMessageSteps = this._userMessageSteps[type];
@@ -232,5 +416,21 @@ proto._resetUserMessaggeStepsDone = function() {
     if (userMessageSteps.buttonnext) userMessageSteps.buttonnext.disabled = true;
   })
 };
+
+/**
+ * @since 3.9.0
+ */
+proto.setBackButtonLabel = function(label=null) {
+  this.backbuttonlabel = label;
+}
+
+/**
+ * @returns { null }
+ * 
+ * @since 3.9.0
+ */
+proto.getBackButtonLabel = function() {
+  return this.backbuttonlabel;
+}
 
 module.exports = Workflow;

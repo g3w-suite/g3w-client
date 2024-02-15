@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+import { CatalogEventBus as VM } from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ApplicationService from 'services/application';
 import ProjectsRegistry from 'store/projects';
@@ -285,7 +285,7 @@ export default {
     /**
      * listen when layer has changed style
      */
-    CatalogEventHub.$on('layer-change-style', (options={}) => {
+    VM.$on('layer-change-style', (options={}) => {
       this.getLegendSrc();
     });
   },

@@ -13,7 +13,7 @@ const {
   getQueryLayersPromisesByGeometry,
   getQueryLayersPromisesByBBOX,
   getMapLayersByFilter
-} = require('core/utils/geo');
+} = require('utils/geo');
 
 class QueryService extends BaseService {
 
@@ -55,9 +55,11 @@ class QueryService extends BaseService {
     external = {
       add: true,
       filter: {
-        SELECTED : false
+        SELECTED : false,
       },
     },
+    /**@since 3.9.0**/
+    type = 'polygon'
   } = {}) {
     const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
     const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
@@ -102,7 +104,7 @@ class QueryService extends BaseService {
         fid,
         geometry,
         layerName,
-        type: 'polygon',
+        type,
         filterConfig,
         external
       }

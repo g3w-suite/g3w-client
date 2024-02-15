@@ -1,6 +1,6 @@
 <!--
   @file
-  @since v3.9
+  @since 3.9.0
 -->
 
 <template>

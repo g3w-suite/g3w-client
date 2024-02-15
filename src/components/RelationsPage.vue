@@ -23,9 +23,9 @@ import GUI from 'services/gui';
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent from 'components/Relation.vue';
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import { RelationEventBus as VM } from 'app/eventbus';
 
-const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
-const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
+const {getFeaturesFromResponseVectorApi} = require('utils/geo');
 
 export default {
 
@@ -71,7 +71,7 @@ export default {
       this.$options.service.saveRelations(type)
     },
     reloadLayout() {
-      RelationPageEventBus.$emit('reload');
+      VM.$emit('reload');
     },
     showChart(container, relationData){
       const relationLayerId = this.relation.referencingLayer;

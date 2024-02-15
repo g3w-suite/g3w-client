@@ -1,7 +1,9 @@
-import inputService from 'core/expression/inputservice';
-import G3WObject from 'core/g3wobject';
+import inputService               from 'core/expression/inputservice';
+import G3WObject                  from 'core/g3wobject';
+import { inherit, base }          from 'utils';
+import DataRouterService          from 'services/data';
 
-const { inherit, base } = require('core/utils/utils');
+const { convertFeatureToGEOJSON } = require('utils/geo');
 
 function FormService() {
 
@@ -227,7 +229,7 @@ proto.evaluateDefaultExpressionFields = function(input={}) {
   if (filter) {
     this.feature.set(input.name, input.value);
     filter.forEach(dependency_field =>{
-      inputService.handleDefaultExpressionFormInput({
+      FormService._getDefaultExpression({
         parentData: this.parentData,
         qgs_layer_id: this.layer.getId(),
         field: this._getField(dependency_field),
@@ -252,7 +254,7 @@ proto.evaluateFilterExpressionFields = function(input={}) {
      this.feature.set(fieldForm.name, fieldForm.value);
     }
     filter.forEach(dependency_field => {
-      inputService.handleFilterExpressionFormInput({
+      FormService._getFilterExpression({
         parentData: this.parentData,
         qgs_layer_id: this.layer.getId(),
         field: this._getField(dependency_field),
@@ -294,7 +296,7 @@ proto._handleFieldWithFilterExpression = function(field, filter_expression) {
   });
 
   // Call input service if a field has a `filter_expression` every time we open a form
-  inputService.handleFilterExpressionFormInput({
+  FormService._getFilterExpression({
     parentData: this.parentData,
     qgs_layer_id: this.layer.getId(),
     field,
@@ -346,7 +348,7 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
 
     // Call input service if a field has a default_expression and is a new feature
     if (this.state.isnew) {
-      inputService.handleDefaultExpressionFormInput({
+      FormService._getDefaultExpression({
         field,
         feature: this.feature,
         qgs_layer_id: this.layer.getId(),
@@ -624,7 +626,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
       }
       // get value. Need to wait response
       try {
-        const value = await inputService.handleDefaultExpressionFormInput({
+        const value = await FormService._getDefaultExpression({
           field: this._getField(dFs[i]),
           feature: this.feature,
           qgs_layer_id: this.layer.getId(),
@@ -643,7 +645,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
 
   this.default_expression_fields_on_update.forEach(field => {
     if ("undefined" === typeof requested_expressions.find(name => name === field.name)) {
-      pending_expressions.push(inputService.handleDefaultExpressionFormInput({
+      pending_expressions.push(FormService._getDefaultExpression({
         field,
         feature: this.feature,
         qgs_layer_id: this.layer.getId(),
@@ -660,6 +662,162 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
 
   // enable listen changeInput
   this.listenChangeInput = true;
+
+};
+
+/**
+ * ORIGINAL SOURCE: src/app/core/expression/inputservice.js@3.8.6
+ * 
+ * @param expr.field        related field
+ * @param expr.feature      feature to transform in form_data
+ * @param expr.qgs_layer_id layer id owner of the feature data 
+ * @param expr.parentData
+ * 
+ * @returns { void | Promise<unknown> }
+ * 
+ * @since 3.9.0
+ */
+FormService._getFilterExpression = async function({
+  field,
+  feature,
+  qgs_layer_id,
+  parentData,
+} = {}) {
+ let {
+   key,
+   value,
+   layer_id = qgs_layer_id,
+   filter_expression,
+   loading,
+ } = field.input.options;
+
+ /**
+  * @FIXME should return Promise.reject('some error message') ?
+  */
+ if (!filter_expression) {
+   return;
+ }
+
+ loading.state = 'loading';
+
+ try {
+
+   const features = await DataRouterService.getData('expression:expression', {
+     inputs: {
+       field_name: field.name,
+       layer_id,
+       qgs_layer_id,
+       form_data: convertFeatureToGEOJSON(feature),
+       parent: parentData && ({
+         form_data: convertFeatureToGEOJSON(parentData.feature),
+         qgs_layer_id: parentData.qgs_layer_id,
+         formatter: 0,
+       }),
+       formatter: 0,
+       expression: filter_expression.expression,
+     },
+     outputs: false,
+   });
+
+   if('select_autocomplete' === field.input.type) {
+     field.input.options.values = [];
+     // temporary array to sort the keys
+     const values = [];
+     for (let i = 0; i < features.length; i++) {
+       values.push({
+         key: features[i].properties[key],
+         value: features[i].properties[value]
+       })
+     }
+     values.sort(({ key: aKey }, { key: bKey }) => {
+       if ('string' === typeof aKey ) {
+         aKey = aKey.toLowerCase();
+         bKey = bKey.toLowerCase()
+       }
+       if (aKey < bKey) return -1;
+       if (aKey > bKey) return 1;
+       return 0;
+     });
+     field.input.options.values = values;
+   }
+
+   return features;
+
+ } catch(err) {
+   return Promise.reject(err);
+ } finally {
+   loading.state = 'ready';
+ }
+
+};
+
+/**
+ * ORIGINAL SOURCE: src/app/core/expression/inputservice.js@3.8.6
+ * 
+ * @param expr.field        related field
+ * @param expr.feature      feature to transform in form_data
+ * @param expr.qgs_layer_id layer id owner of the feature data 
+ * @param expr.parentData
+ *  
+ * @returns { void | Promise<unknown> } 
+ * 
+ * @since 3.9.0
+ */
+FormService._getDefaultExpression = async function({
+  field,
+  feature,
+  qgs_layer_id,
+  parentData,
+} = {}) {
+  
+  const {
+    layer_id = qgs_layer_id,
+    default_expression,
+    loading,
+    default: default_value,
+  } = field.input.options;
+
+  /**
+   * @FIXME should return Promise.reject('some error message') ?
+   */
+  if (!default_expression) {
+    return;
+  }
+
+  loading.state = 'loading';
+
+  // Call `expression:expression_eval` to get value from expression and set it to field
+  try {
+
+    const value = await DataRouterService.getData('expression:expression_eval', {
+      inputs: {
+        field_name: field.name,
+        layer_id, //
+        qgs_layer_id, //layer id owner of the data
+        form_data: convertFeatureToGEOJSON(feature),
+        formatter: 0,
+        expression: default_expression.expression,
+        parent: parentData && {
+          form_data: convertFeatureToGEOJSON(parentData.feature),
+          qgs_layer_id: parentData.qgs_layer_id,
+          formatter: 0
+        }
+      },
+      outputs: false
+    });
+
+    field.value = value;
+
+    return value;
+
+  } catch(err) {
+    if ("undefined" !== typeof default_value) {
+      field.value = default_value
+    }
+    return Promise.reject(err);
+  } finally {
+    loading.state = 'ready';
+  }
 
 };
 

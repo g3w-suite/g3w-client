@@ -6,7 +6,7 @@ import ApplicationService from 'services/application';
 import ProjectsRegistry from 'store/projects';
 import PluginsRegistry from 'store/plugins';
 window.g3wsdk = require('api'); //usefull for plugiin
-const {XHR} = require('core/utils/utils');
+const {XHR} = require('utils');
 const Application = require('gui/app/main');
 const MapComponent = require('gui/map/vue/map');
 const mapDOM = {

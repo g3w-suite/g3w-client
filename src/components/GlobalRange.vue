@@ -47,7 +47,7 @@
 </template>
 
 <script>
-  const { debounce } = require('core/utils/utils');
+  const { debounce } = require('utils');
 
   export default {
     name: "range",

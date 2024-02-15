@@ -1,10 +1,10 @@
-import PluginsRegistry    from 'store/plugins';
-import ProjectsRegistry   from 'store/projects';
-import ApplicationService from 'services/application';
-import GUI                from 'services/gui';
-import G3WObject          from 'core/g3wobject';
+import PluginsRegistry              from 'store/plugins';
+import ProjectsRegistry             from 'store/projects';
+import ApplicationService           from 'services/application';
+import GUI                          from 'services/gui';
+import G3WObject                    from 'core/g3wobject';
+import { base, inherit, toRawType } from 'utils';
 
-const { base, inherit, toRawType } = require('core/utils/utils');
 const ComponentsFactory            = require('gui/component/componentsfactory');
 const { addI18nPlugin }            = require('core/i18n/i18n.service');
 

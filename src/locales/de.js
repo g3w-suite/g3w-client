@@ -13,11 +13,13 @@ export default {
     sign_in: "Anmelden",
     layer_selection_filter: {
       tools: {
-        filter: "Filter hinzufügen/entfernen",
+        filter: "Filter aktivieren/deaktivieren",
         nofilter: "Filter entfernen",
         invert: "Auswahl umkehren",
         clear: "Auswahl löschen",
-        show_features_on_map: "Auf der Karte sichtbare Features anzeigen"
+        show_features_on_map: "Auf der Karte sichtbare Features anzeigen",
+        savefilter: "Filter speichern",
+        filterName: "Filtername",
       }
     },
     warning: {
@@ -179,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Zeilenansicht",
-          row_to_form: "Formularansicht"
+          row_to_form: "Formularansicht",
+          zoomtogeometry: "Auf Geometrie zoomen",
         },
         copy_map_extent_url: 'Link zur Kartenansicht kopieren',
         download_shapefile: "Shapefile herunterladen",
@@ -486,8 +489,10 @@ export default {
       geolocations: {
         error: "Position kann nicht bestimmt werden"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Wählen Sie eine Ebene aus, auf der Sie diese Funktion hinzufügen möchten",
         placeholder: "Addresse ...",
+        nolayers: "Für dieses Projekt wurden keine bearbeitbaren Punktebenen gefunden",
         noresults: "Keine Ergebnisse",
         notresponseserver: "Keine Antwort vom Server"
       },
@@ -531,7 +536,8 @@ export default {
         show_metadata: "Metadaten",
         styles: 'Stile',
         vector_color_menu:"Farbe einstellen/ändern",
-        layer_opacity: "Opazität"
+        layer_opacity: "Opazität",
+        filters: "Filters",
       }
     },
     dataTable: {

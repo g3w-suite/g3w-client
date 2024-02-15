@@ -1,8 +1,8 @@
-import GUI from 'services/gui';
-import G3WObject from 'core/g3wobject';
+import GUI                                from 'services/gui';
+import G3WObject                          from 'core/g3wobject';
+import { inherit }                        from 'utils';
 
-const { inherit }                         = require('core/utils/utils');
-const { createOlLayer, createLayerStyle } = require('core/utils/geo');
+const { createOlLayer, createLayerStyle } = require('utils/geo');
 
 function VectorLayer(options = {}) {
   this.mapService = GUI.getComponent('map').getService();
@@ -24,8 +24,6 @@ function VectorLayer(options = {}) {
 
 inherit(VectorLayer, G3WObject);
 
-module.exports = VectorLayer;
-
 const proto = VectorLayer.prototype;
 
 proto.setProvider = function(provider) {
@@ -43,13 +41,12 @@ proto.resetSource = function(features=[]){
   this.setSource(source);
 };
 
-proto._makeOlLayer = function({style} = {}) {
-  const _style = this._makeStyle(style);
+proto._makeOlLayer = function({ style } = {}) {
   this._olLayer = new ol.layer.Vector({
-    name: this.name,
-    id: this.id,
-    style: _style,
-    source: new ol.source.Vector({})
+    name:   this.name,
+    id:     this.id,
+    style:  this._makeStyle(style),
+    source: new ol.source.Vector({}),
   })
 };
 
@@ -159,4 +156,4 @@ proto.addToMap = function(map){
   map.addLayer(this._olLayer);
 };
 
-
+module.exports = VectorLayer;

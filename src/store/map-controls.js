@@ -5,7 +5,7 @@
 
 import ApplicationService from 'services/application';
 import ComponentsRegistry from 'store/components';
-import { VM }             from 'g3w-ol/constants';
+import { VM }             from 'app/eventbus';
 import G3WObject          from 'core/g3wobject';
 
 console.assert(undefined !== ApplicationService, 'ApplicationService is undefined');

@@ -28,7 +28,7 @@
 <script>
 import Field from 'components/Field.vue';
 
-const { toRawType } = require('core/utils/utils');
+const { toRawType } = require('utils');
 
 export default {
 

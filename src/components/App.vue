@@ -276,7 +276,7 @@ import GUI from 'services/gui';
 import { resizeMixin } from 'mixins';
 import { LOCAL_ITEM_IDS } from "constant";
 
-const { uniqueId } = require('core/utils/utils');
+const { uniqueId } = require('utils');
 const { t } = require('core/i18n/i18n.service');
 
 //Make sure jQuery has been loaded before app.js
@@ -1395,6 +1395,8 @@ export default {
       setFloatBarMaxHeight();
       $('#g3w-modal-overlay').css('height',$(window).height());
     });
+
+    document.body.classList.toggle('is-mobile', this.isMobile());
 
   },
 

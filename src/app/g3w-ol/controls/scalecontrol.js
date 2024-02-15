@@ -1,6 +1,8 @@
-const {t} = require('core/i18n/i18n.service');
-const { getResolutionFromScale, getScaleFromResolution } = require('core/utils/ol');
-import { PRINT_SCALES } from 'app/constant';
+import { PRINT_SCALES }           from 'app/constant';
+import { getResolutionFromScale } from 'utils/getResolutionFromScale';
+import { getScaleFromResolution } from 'utils/getScaleFromResolution';
+
+const { t } = require('core/i18n/i18n.service');
 
 const ScaleControl = function(options= {}) {
   this.isMobile = options.isMobile || false;

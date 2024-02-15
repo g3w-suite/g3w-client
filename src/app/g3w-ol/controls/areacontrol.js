@@ -1,4 +1,5 @@
-const utils = require('core/utils/ol');
+import { mergeOptions } from 'utils/mergeOptions';
+
 const AreaIteraction = require('g3w-ol/interactions/areainteraction');
 const MeasureControl = require('g3w-ol/controls/measurecontrol');
 
@@ -9,7 +10,7 @@ const AreaControl = function(options={}) {
     clickmap: true, // set ClickMap
     interactionClass: AreaIteraction
   };
-  options = utils.merge(options, _options);
+  options = mergeOptions(options, _options);
   MeasureControl.call(this, options);
 };
 

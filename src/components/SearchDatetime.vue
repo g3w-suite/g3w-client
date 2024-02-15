@@ -11,7 +11,7 @@
 <script>
   import ApplicationState from 'store/application-state';
 
-  const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
+  const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('utils');
 
   export default {
     name: 'Searchdatetime',

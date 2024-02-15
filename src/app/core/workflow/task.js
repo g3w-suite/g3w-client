@@ -1,6 +1,5 @@
-import G3WObject from 'core/g3wobject';
-
-const { base, inherit } = require('core/utils/utils');
+import G3WObject         from 'core/g3wobject';
+import { base, inherit } from 'utils';
 
 function Task(options={}) {
   base(this, options);

@@ -4,7 +4,7 @@ import ApplicationService from 'services/application';
 import GUI                from 'services/gui';
 import G3WObject          from 'core/g3wobject';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 
 function RelationsComponentService(options={}) {
   this.state = {};
