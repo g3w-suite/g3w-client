@@ -178,21 +178,20 @@
 </template>
 
 <script>
-import { Fragment }                           from 'vue-fragment';
-import ApplicationState                       from 'store/application-state';
-import CatalogLayersStoresRegistry            from 'store/catalog-layers';
-import ProjectsRegistry                       from 'store/projects';
-import MapLayersStoresRegistry                from 'store/map-layers';
-import ApplicationService                     from 'services/application';
-import GUI                                    from 'services/gui';
-import { getFieldType }                       from 'utils/getFieldType';
-import { getMediaFieldType }                  from 'utils/getMediaFieldType';
-import {
-  truefnc,
-  toRawType,
-  convertQGISDateTimeFormatToMoment,
-}                                             from 'utils';
-const { getQueryLayersPromisesByCoordinates } = require('utils/geo');
+import { Fragment }                            from 'vue-fragment';
+import ApplicationState                        from 'store/application-state';
+import CatalogLayersStoresRegistry             from 'store/catalog-layers';
+import ProjectsRegistry                        from 'store/projects';
+import MapLayersStoresRegistry                 from 'store/map-layers';
+import ApplicationService                      from 'services/application';
+import GUI                                     from 'services/gui';
+import { getFieldType }                        from 'utils/getFieldType';
+import { getMediaFieldType }                   from 'utils/getMediaFieldType';
+import { truefnc }                             from 'utils';
+import { toRawType }                           from 'utils/toRawType';
+import { convertQGISDateTimeFormatToMoment }   from 'utils/convertQGISDateTimeFormatToMoment';
+import { getQueryLayersPromisesByCoordinates } from 'utils/getQueryLayersPromisesByCoordinates';
+
 const PickFeatureInteraction                  = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction              = require('g3w-ol/interactions/pickcoordinatesinteraction');
 const { t }                                   = require('core/i18n/i18n.service');
