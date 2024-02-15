@@ -340,7 +340,7 @@ export default {
       chain_filters=false, /** @type Boolean if true filter_fields select are related ech other*/
     } = this.state.input.options;
     //In case of relation reference check if filter_fields is set
-    if (relation_reference && filter_fields.length > 0) {
+    if (relation_reference && Array.isArray(filter_fields) && filter_fields.length > 0) {
       //set loading true
       this.$parent.setLoading(true);
 			/** {Boolean} @type it used to show component when all data are ready*/

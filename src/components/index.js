@@ -3,6 +3,7 @@ import C3XYLine from './C3XYLine.vue';
 import Catalog from './Catalog.vue';
 import CatalogChangeMapThemes from './CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu from './CatalogLayerContextMenu.vue';
+import CatalogProjectContextMenu from './CatalogProjectContextMenu.vue';
 import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
@@ -73,7 +74,6 @@ import Tool from './Tool.vue';
 import Tools from './Tools.vue';
 import UserMessage from './UserMessage.vue';
 import ViewportContentsViewer from './ViewportContentsViewer.vue';
-import UserMessageSteps from './UserMessageSteps.js';
 import WMS from './WMS.vue';
 import WMSLayersPanel from './WMSLayersPanel.vue';
 
@@ -83,6 +83,10 @@ export {
   Catalog,
   CatalogChangeMapThemes,
   CatalogLayerContextMenu,
+  /**
+   * @since 3.10.0
+   */
+  CatalogProjectContextMenu,
   CatalogLayerLegend,
   CatalogLayersGroup,
   CatalogLayersLegendItems,
@@ -155,7 +159,6 @@ export {
   Tools,
   UserMessage,
   ViewportContentsViewer,
-  UserMessageSteps,
   WMS,
   WMSLayersPanel,
 };

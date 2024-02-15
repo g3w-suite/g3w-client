@@ -489,6 +489,7 @@
                 message: `  [${query.bbox.join(' , ')}]`
               };
             case 'polygon':
+            case 'drawpolygon':
               return {
                 icon: 'draw',
                 message: (query.layerName) ?

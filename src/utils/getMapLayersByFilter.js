@@ -1,10 +1,10 @@
 import MapLayersStoresRegistry from 'store/map-layers';
 
 /**
- * @param {*} filter defaults `GEOLAYER: true`
- * @param {*} options
+ * @param filter defaults `GEOLAYER: true`
+ * @param options
  * 
- * @returns mapLayer based on filtered properties of layer.
+ * @returns { Array } map layers based on filtered properties of layer (eg. `GEOLAYER : true`)
  */
 export function getMapLayersByFilter(filter = {}, options = {}) {
   filter = {
@@ -14,6 +14,6 @@ export function getMapLayersByFilter(filter = {}, options = {}) {
     ...filter
   };
   return MapLayersStoresRegistry
-    .getLayersStores()
-    .flatMap(store => store.isQueryable() ? store.getLayers(filter, options) : []);
-};
+    .getQuerableLayersStores()
+    .flatMap(store => store.getLayers(filter, options));
+}

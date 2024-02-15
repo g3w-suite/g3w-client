@@ -1,17 +1,23 @@
-import GUI                                from 'services/gui';
+import GUI                                      from 'services/gui';
 import {
   G3W_FID,
   LIST_OF_RELATIONS_TITLE,
   LIST_OF_RELATIONS_ID,
-}                                         from 'constant';
-import ProjectsRegistry                   from 'store/projects';
-import DataRouterService                  from 'services/data';
-import CatalogLayersStoresRegistry        from 'store/catalog-layers';
-import DownloadFormats                    from 'components/QueryResultsActionDownloadFormats.vue';
-import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-import ApplicationService                 from 'services/application';
-import { addToSelection }                 from 'core/layers/utils/addToSelection';
-import { removeFromSelection }            from 'core/layers/utils/removeFromSelection';
+}                                               from 'app/constant';
+import ProjectsRegistry                         from 'store/projects';
+import DataRouterService                        from 'services/data';
+import CatalogLayersStoresRegistry              from 'store/catalog-layers';
+import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
+import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
+import ApplicationService                       from 'services/application';
+import { addToSelection }                       from 'core/layers/utils/addToSelection';
+import { removeFromSelection }                  from 'core/layers/utils/removeFromSelection';
+import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
+import { createFeatureFromGeometry }            from 'utils/createFeatureFromGeometry';
+import { createFeatureFromBBOX }                from 'utils/createFeatureFromBBOX';
+import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoordinates';
+import { intersects }                           from 'utils/intersects';
+import { within }                               from 'utils/within';
 
 const {
   noop,
@@ -20,16 +26,6 @@ const {
   getUniqueDomId,
   copyUrl,
 }                                = require('utils');
-
-const {
-  getAlphanumericPropertiesFromFeature,
-  createFeatureFromGeometry,
-  createFeatureFromBBOX,
-  createFeatureFromCoordinates,
-  intersects,
-  within,
-}                                = require('utils/geo');
-
 const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const G3WObject                  = require('core/g3wobject');
@@ -2320,7 +2316,8 @@ QueryResultsService.prototype.setters = {
       switch (this.state.query.type) {
         case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
         case 'bbox':        this.showBBOX(this.state.query.bbox); break;
-        case 'polygon':     this.showGeometry(this.state.query.geometry); break;
+        case 'polygon':
+        case 'drawpolygon': this.showGeometry(this.state.query.geometry); break;
       }
     }
 

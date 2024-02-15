@@ -204,15 +204,13 @@
 </template>
 
 <script>
-import { Chrome as ChromeComponent } from 'vue-color';
+import { Chrome as ChromeComponent }        from 'vue-color';
 
-import { EPSG }                      from 'app/constant';
+import { EPSG }                             from 'app/constant';
+import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
+import { createStyleFunctionToVectorLayer } from 'utils/createStyleFunctionToVectorLayer';
 
-const Projections                    = require('g3w-ol/projection/projections');
-const {
-  createVectorLayerFromFile,
-  createStyleFunctionToVectorLayer,
-}                                    = require('utils/geo');
+const Projections = require('g3w-ol/projection/projections');
 
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS   = [',', ';'];

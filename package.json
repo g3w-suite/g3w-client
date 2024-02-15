@@ -5,10 +5,8 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "build": "gulp version && gulp build --max-old-space-size=2048",
-    "build:plugins": "gulp version && gulp build:plugins",
-    "watch:plugins": "gulp version && gulp watch:plugins",
-    "dev": "gulp dev --max-old-space-size=2048",
+    "build": "gulp build",
+    "dev": "gulp dev",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
     "docker:up": "npm run docker up -- -d",
@@ -19,7 +17,9 @@
     "cy:open": "cypress open",
     "preversion": "npm run test",
     "version": "npm run build && git add -A",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "build:plugins": "npm run build",
+    "watch:plugins": "npm run dev"
   },
   "repository": {
     "type": "git",
@@ -63,6 +63,7 @@
     "core-js-latest": "npm:core-js@^3.16.2",
     "current-git-branch": "^1.1.0",
     "del": "^2.2.2",
+    "event-stream": "^4.0.1",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.2",
     "gulp-concat": "^2.6.1",

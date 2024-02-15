@@ -53,6 +53,7 @@ import vTPlugin from 'directives/v-t-plugin';
 import vPlugins from 'directives/v-plugins';
 import vOnline from 'directives/v-online';
 import vDownload from 'directives/v-download';
+import vClickOutside from 'directives/v-click-outside'
 
 // constants
 import { FONT_AWESOME_ICONS } from 'app/constant';
@@ -103,6 +104,7 @@ Vue.directive("t-plugin", vTPlugin);
 Vue.directive("plugins", vPlugins);
 Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
+Vue.directive("click-outside", vClickOutside);
 
 
 /**
