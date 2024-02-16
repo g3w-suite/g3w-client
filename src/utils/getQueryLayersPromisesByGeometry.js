@@ -14,69 +14,60 @@ const Filter = require('core/layers/filter/filter');
  * @returns { JQuery.Promise<any, any, any> }
  */
 export function getQueryLayersPromisesByGeometry(layers, { multilayers = false, geometry, filterConfig = {}, projection, feature_count = 10 } ={}) {
-  const d              = $.Deferred();
-  const queryResponses = [];
-  const queryErrors    = [];
-  const mapCrs         = projection.getCode();
-  const filter         = new Filter(filterConfig);
+  const qres   = []; // query responses
+  const qerr   = []; // query errors
+  const mapCrs = projection.getCode();
+  const filter = new Filter(filterConfig);
 
-  /** In case of no features  */
+  // no features
   if (0 === layers.length) {
-    d.resolve([]);
+    return Promise.resolve([]);
   }
 
-  /** Group query by layers instead single layer request  */
-  if (multilayers) {
-    const multiLayers     = groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
-    const numberRequested = Object.keys(multiLayers).length;
-    let layersLength      = numberRequested;
+  return new Promise((resolve, reject) => {
+    /** Group query by layers instead single layer request  */
+    if (multilayers) {
+      const multi = groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
+      const num   = Object.keys(multi).length; // number of request
+      let len     = num;
 
-    for (let key in multiLayers) {
-      const _multilayer = multiLayers[key];
-      const layers      = _multilayer;
-      const multilayer  = multiLayers[key][0];
-      const provider    = multilayer.getProvider('filter');
-      const layerCrs    = multilayer.getProjection().getCode();
-      // Convert filter geometry from `mapCRS` to `layerCrs`
-      filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
-      provider
-        .query({ filter, layers, feature_count })
-        .then(response => queryResponses.push(response))
-        .fail(error => queryErrors.push(error))
-        .always(() => {
-          layersLength -= 1;
-          if (0 === layersLength) {
-            queryErrors.length === numberRequested
-              ? d.reject(queryErrors)
-              : d.resolve(queryResponses)
-          }
-        });
+      for (let key in multi) {
+        const provider    = multi[key][0].getProvider('filter');
+        const layerCrs    = multi[key][0].getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
+        provider
+          .query({
+            filter,
+            layers: multi[key],
+            feature_count,
+          })
+          .then(d => qres.push(d))
+          .catch(e => qerr.push(e))
+          .finally(() => {
+            len -= 1;
+            if (0 === len) {
+              qerr.length === num ? reject(qerr) : resolve(qres)
+            }
+          });
+      }
+    } else {
+      let len = layers.length;
+      layers.forEach(layer => {
+        const layerCrs = layer.getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs));
+        layer
+          .query({ filter, filterConfig, feature_count })
+          .then(d => qres.push(d))
+          .catch(e => qerr.push(e))
+          .finally(() => {
+            len -= 1;
+            if (0 === len) {
+              (qerr.length === layers.length) ? reject(qerr) : resolve(qres)
+            }
+          })
+      });
     }
-  } else {
-
-    let layersLenght = layers.length;
-    layers.forEach(layer => {
-      const layerCrs = layer.getProjection().getCode();
-      // Convert filter geometry from `mapCRS` to `layerCrs`
-      filter.setGeometry(
-        (mapCrs === layerCrs)
-          ? geometry
-          : geometry.clone().transform(mapCrs, layerCrs)
-      );
-      layer
-        .query({ filter, filterConfig, feature_count })
-        .then(response => queryResponses.push(response))
-        .fail(error => queryErrors.push(error))
-        .always(() => {
-          layersLenght -= 1;
-          if (0 === layersLenght) {
-            (queryErrors.length === layers.length)
-              ? d.reject(queryErrors)
-              : d.resolve(queryResponses)
-          }
-        })
-    });
-  }
-
-  return d.promise();
+  });
 }

@@ -1138,5 +1138,5 @@ ApplicationService.init()
       else if (error.statusText) error = error.statusText;
     }
     console.error(error);
-    ApplicationTemplate.fail({ error });
+    ApplicationTemplate.catch({ error });
   });

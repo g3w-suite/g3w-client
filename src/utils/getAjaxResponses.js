@@ -1,29 +1,19 @@
 export function getAjaxResponses(listRequests = []) {
-  const d = $.Deferred();
-  const DoneRespones = [];
-  const FailedResponses = [];
-  let requestsLenght = listRequests.length;
-
-  listRequests
-    .forEach((request) => {
+  return new Promise((resolve, reject) => {
+    const DoneRespones    = [];
+    const FailedResponses = [];
+    let reqs              = listRequests.length;
+  
+    listRequests.forEach((request) => {
       request
-        .then((response) => {
-          DoneRespones.push(response)
-        })
-        .fail((err) => {
-          FailedResponses.push(err)
-        })
-        .always(() => {
-          requestsLenght = requestsLenght > 0 ? requestsLenght - 1: requestsLenght;
-          if (requestsLenght === 0) {
-            d.resolve({
-              done: DoneRespones,
-              fail: FailedResponses
-            })
+        .then(d => DoneRespones.push(d))
+        .catch(e => FailedResponses.push(e))
+        .finally(() => {
+          reqs = reqs > 0 ? reqs - 1 : reqs;
+          if (0 === reqs) {
+            resolve({ done: DoneRespones, fail: FailedResponses });
           }
-
-    })
+        });
+    });
   });
-
-  return d.promise();
 };

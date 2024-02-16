@@ -27,37 +27,30 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
     })
   }
 
-  const d              = $.Deferred();
   const mapCrs         = mapProjection.getCode();
-  const promise        = d.promise();
   const queryResponses = [];
   const queryErrors    = [];
-  let layersLenght     = layers.length;
+  let len              = layers.length;
 
-  /** @FIXME add description */
-  layers
-    .forEach(layer => {
-      const filter   = new Filter(filterConfig);
-      const layerCrs = layer.getProjection().getCode();
-      // Convert filter geometry from `mapCRS` to `layerCrs`
-      filter.setGeometry(mapCrs === layerCrs
-        ? geometry
-        : geometry.clone().transform(mapCrs, layerCrs)
-      );
+  return new Promise((resolve, reject) => {
+    /** @FIXME add description */
+    layers
+      .forEach(layer => {
+        const filter   = new Filter(filterConfig);
+        const layerCrs = layer.getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
 
-      layer
-        .query({ filter, feature_count })
-        .then(response => queryResponses.push(response))
-        .fail(error => queryErrors.push(error))
-        .always(() => {
-          layersLenght -= 1;
-          if (0 === layersLenght) {
-            queryErrors.length === layers.length
-              ? d.reject(queryErrors)
-              : d.resolve(queryResponses);
-          }
-      })
-    });
-
-  return promise;
+        layer
+          .query({ filter, feature_count })
+          .then(d => queryResponses.push(d))
+          .catch(e => queryErrors.push(e))
+          .finally(() => {
+            len -= 1;
+            if (0 === len) {
+              queryErrors.length === layers.length ? reject(queryErrors) : resolve(queryResponses);
+            }
+        })
+      });
+  });
 }

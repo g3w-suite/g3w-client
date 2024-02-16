@@ -607,10 +607,10 @@ const ApplicationService = function() {
       this.setupI18n();
       const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
       if (!ApplicationState.ready) {
-        $.when(
+        Promise.all([
           ProjectsRegistry.init(this._config),
           ApiService.init(this._config)
-        ).then(() => {
+        ]).then(() => {
           clearTimeout(timeout);
           this.registerOnlineOfflineEvent();
           this.emit('ready');
@@ -624,7 +624,7 @@ const ApplicationService = function() {
           DataRouterService.init();
           this.initLocalItems();
           resolve(true);
-        }).fail(error => reject(error))
+        }).catch(e => reject(e))
       }
     });
   };

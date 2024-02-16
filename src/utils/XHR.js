@@ -2,13 +2,11 @@ import { TIMEOUT } from 'app/constant';
 
 export const XHR = {
 
-  get({url, params={}}={}) {
+  get({url, params = {}, contentType }={}) {
     return new Promise((resolve, reject) => {
       url ?
         $.get(url, params)
-          .then(response => {
-            resolve(response)
-          })
+          .then(response => { resolve(response) })
           .fail(error => reject(error))
       : reject('No url')
     })
