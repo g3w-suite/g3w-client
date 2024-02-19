@@ -7,7 +7,7 @@ import Panel     from 'core/g3w-panel';
 import Component from 'core/g3w-component';
 
 const { resolve } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject   = require('core/g3wobject');
 
 /**
  * Barstack Class - used to mount panels stack on top of each parent
@@ -24,7 +24,7 @@ export class BarStack extends G3WObject {
     /** identify the DOM element where insert the component/panel  */
     this._parent = null;
 
-    /** barstack state. It store the panels array */
+    /** barstack state. It stores the panels array */
     this.state = {
       contentsdata: []
     }
