@@ -147,8 +147,13 @@ export default {
         this.steps = [];
         this.showGroups(item);
       } else {
-        if (this.init && undefined === this.parent.macro_id) {
-          await this.showGroups(this.macrogroups.find(mg => 1 === mg.id));
+        if (
+          this.init
+          && Array.isArray(this.parent.macrogroup_id)
+          && this.parent.macrogroup_id.length > 0
+        ) {
+          //get first
+          await this.showGroups(this.macrogroups.find(mg => this.parent.macrogroup_id[0] === mg.id));
           this.init = false;
         } else {
           this.showRoot();
