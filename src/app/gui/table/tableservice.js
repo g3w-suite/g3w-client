@@ -325,9 +325,9 @@ proto.getAllFeatures = function(params) {
           resolve(data.features);
         }        
       })
-      .fail(()   => reject())
-      .always(() => GUI.setLoadingContent(false));
-  });
+      .catch(()   => reject())
+      .finally(() => GUI.setLoadingContent(false))
+  })
 };
 
 proto.switchSelection = async function() {
@@ -575,8 +575,8 @@ proto.getData = function({
           recordsTotal:    data.count
         });
       })
-      .fail(err  => { GUI.notify.error(t("info.server_error")); reject(err); })
-      .always(() => { GUI.setLoadingContent(false); })
+      .catch(err  => { GUI.notify.error(t("info.server_error")); reject(err); })
+      .finally(() => { GUI.setLoadingContent(false); })
   });
 };
 

@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-const { base, inherit, reject } = require('utils');
+const { base, inherit, reject, XHR } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // Class Api Service
@@ -11,13 +11,13 @@ function ApiService(){
   this._config = null;
   this._baseUrl = null;
   this.init = function(config={}) {
-    const d = $.Deferred();
-    this._config = config;
-    // prende l'url base delle api dal config dell'applicazione
-    this._baseUrl = config.urls.api;
-    this._apiEndpoints = config.urls.apiEndpoints;
-    d.resolve();
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      this._config = config;
+      // prende l'url base delle api dal config dell'applicazione
+      this._baseUrl = config.urls.api;
+      this._apiEndpoints = config.urls.apiEndpoints;
+      resolve();
+    })
   };
   let howManyAreLoading = 0;
   this._incrementLoaders = function(){
@@ -37,16 +37,19 @@ function ApiService(){
       const params = options.params || {};
       this.emit(api+'querystart');
       this._incrementLoaders();
-      return $.get(completeUrl,params)
-      .done(response => {
+      return XHR.get({
+        url:completeUrl,
+        params
+      })
+      .then(response => {
         this.emit(api+'queryend',response);
         return response;
       })
-      .fail(error => {
+      .catch(error => {
         this.emit(api+'queryfail', error);
         return error;
       })
-      .always(() => this._decrementLoaders());
+      .finally(() => this._decrementLoaders());
     }
     else return reject();
   };

@@ -607,10 +607,10 @@ const ApplicationService = function() {
       this.setupI18n();
       const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
       if (!ApplicationState.ready) {
-        $.when(
+        Promise.all([
           ProjectsRegistry.init(this._config),
           ApiService.init(this._config)
-        ).then(() => {
+        ]).then(() => {
           clearTimeout(timeout);
           this.registerOnlineOfflineEvent();
           this.emit('ready');
@@ -624,7 +624,7 @@ const ApplicationService = function() {
           DataRouterService.init();
           this.initLocalItems();
           resolve(true);
-        }).fail(error => reject(error))
+        }).catch(e => reject(e))
       }
     });
   };
@@ -740,20 +740,20 @@ const ApplicationService = function() {
    * @returns {JQuery.Promise<any, any, any>}
    */
   this._changeProject = function({gid, host, crs}={}) {
-    const d = $.Deferred();
-    this._gid = gid;
-    const projectUrl = ProjectsRegistry.getProjectUrl(gid);
-    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
-    /**
-     * @since 3.7.15
-     */
-    // in case of url with not same origin (CORS issue) trigger an error
-    try {
-      history.replaceState(null, null, url);
-    } catch (err) {}
-    location.replace(url);
-    d.resolve();
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      this._gid = gid;
+      const projectUrl = ProjectsRegistry.getProjectUrl(gid);
+      const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
+      /**
+       * @since 3.7.15
+       */
+      // in case of url with not same origin (CORS issue) trigger an error
+      try {
+        history.replaceState(null, null, url);
+      } catch (err) {}
+      location.replace(url);
+      resolve();
+    });
   };
 
   /**

@@ -276,8 +276,8 @@ import GUI                from "services/gui";
 import { resizeMixin }    from "mixins";
 import { LOCAL_ITEM_IDS } from "app/constant";
 
-const { uniqueId } = require('utils');
-const { t }        = require('core/i18n/i18n.service');
+const { uniqueId, XHR } = require('utils');
+const { t } = require('core/i18n/i18n.service');
 
 //Make sure jQuery has been loaded before app.js
 if (typeof jQuery === "undefined") {
@@ -1342,7 +1342,9 @@ export default {
       return false;
     }): [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
+    !!this.appconfig.credits && XHR
+      .get({url: this.appconfig.credits})
+      .then(credits=> this.customcredits = credits !== 'None' && credits);
   },
 
   async mounted() {

@@ -69,38 +69,28 @@ function TableLayer(config = {}, options = {}) {
      * @param {*} options
      */
     getFeatures(options = {}) {
-      const d = $.Deferred();
-      this._featuresstore
-        .getFeatures(options)
-        .then(promise => {
-          promise
-            .then(features => {
-              this.emit('getFeatures', features);
-              return d.resolve(features);
-            })
-            .fail(d.reject)
-        })
-        .fail(d.reject);
-
-      return d.promise();
+      return new Promise((resolve, reject) => {
+        this._featuresstore
+          .getFeatures(options)
+          .then(features => {
+            this.emit('getFeatures', features);
+            resolve(features);
+          }).catch(err => reject(err))
+      });
     },
 
     commit(commitItems) {
-      const d = $.Deferred();
-      this._featuresstore
-        .commit(commitItems)
-        .then(promise => {
-          promise
-            .then(response => {
-              if(response) {
-                response.result && this.syncSelectionFilterFeatures(commitItems);
-              }
-              d.resolve(response)
-            })
-            .fail(d.reject)
-        })
-        .fail(d.reject);
-      return d.promise();
+      return new Promise((resolve, reject) => {
+        this._featuresstore
+          .commit(commitItems)
+          .then(response => {
+            if (response && response.result) {
+              this.syncSelectionFilterFeatures(commitItems);
+            }
+            resolve(response)
+          })
+          .catch(err => reject(err))
+      })
     },
 
   };
@@ -174,7 +164,7 @@ function TableLayer(config = {}, options = {}) {
           resolve(this);
           this.setReady(true);                             // set ready
         })
-        .fail(err => {
+        .catch(err => {
           reject(this);
           this.setReady(false);
         })
@@ -355,12 +345,12 @@ proto.isFieldRequired = function(fieldName) {
  * @returns jQuery Promise
  */
 proto.unlock = function() {
-  const d = $.Deferred();
-  this._featuresstore
-    .unlock()
-    .then(() => d.resolve())
-    .fail(d.reject);
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this._featuresstore
+      .unlock()
+      .then(() => resolve())
+      .catch(err => reject(err));
+  });
 };
 
 proto._setOtherConfigParameters = function(config) {
@@ -445,13 +435,13 @@ proto.setReady = function(bool=false) {
  * @returns jQuery Promise
  */
 proto.getEditingConfig = function(options={}) {
-  const d = $.Deferred();
-  this
-    .getProvider('data')
-    .getConfig(options)
-    .then(d.resolve)
-    .fail(d.reject);
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this
+      .getProvider('data')
+      .getConfig(options)
+      .then(config => resolve(config))
+      .catch(err => reject(err));
+  });
 };
 
 proto.addEditingConfigFieldOption = function({
@@ -464,13 +454,13 @@ proto.addEditingConfigFieldOption = function({
 };
 
 proto.getWidgetData = function(options) {
-  const d = $.Deferred();
-  this
-    .getProvider('data')
-    .getWidgetData(options)
-    .then(d.resolve)
-    .fail(d.reject);
-  return d.promise()
+  return new Promise((resolve, reject) => {
+    this
+      .getProvider('data')
+      .getWidgetData(options)
+      .then(response => resolve(response))
+      .catch(err => reject(err));
+  })
 };
 
 proto.getCommitUrl = function() {

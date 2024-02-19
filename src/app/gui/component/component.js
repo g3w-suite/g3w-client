@@ -336,30 +336,30 @@ proto._reload = function() {};
  * @fires mount
  */
 proto.mount = function(parent, append) {
-  const d = $.Deferred();
+  return new Promise((resolve, reject) => {
 
-  if (!this.internalComponent) {
-    this.setInternalComponent();
-  }
+    if (!this.internalComponent) {
+      this.setInternalComponent();
+    }
 
-  if (append) {
-    $(parent).append(this.internalComponent.$mount().$el);
-  }
-  
-  if (!append){
-    this.internalComponent.$mount(parent);
-  }
+    if (append) {
+      $(parent).append(this.internalComponent.$mount().$el);
+    }
+    
+    if (!append){
+      this.internalComponent.$mount(parent);
+    }
 
-  this.internalComponent.$nextTick(() => {
-    $(parent).localize();
-    this.emit('ready');
-    d.resolve(true);
+    this.internalComponent.$nextTick(() => {
+      $(parent).localize();
+      this.emit('ready');
+      resolve(true);
+    });
+
+    // emit mount event
+    this.emit('mount');
+
   });
-
-  // emit mount event
-  this.emit('mount');
-
-  return d.promise();
 };
 
 /**

@@ -242,7 +242,7 @@ function QueryService(){
       request.then(response => {
         const results = this.handleResponse(response, query);
         resolve(results);
-      }).fail(reject)
+      }).catch(reject)
     })
   };
 

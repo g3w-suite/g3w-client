@@ -27,6 +27,13 @@ proto.onafter = function(setter, listener, priority){
   return this._onsetter('after', setter, listener, false, priority);
 };
 
+/**
+ * @FIXME add description
+ * @param setter
+ * @param listener
+ * @param priority
+ * @return {*}
+ */
 proto.onceafter = function(setter, listener, priority){
   return this._onsetter('after', setter, listener, false, priority, true);
 };
@@ -55,15 +62,25 @@ proto.onbeforeasync = function(setter, listener, priority) {
   return this._onsetter('before', setter, listener, true, priority);
 };
 
+/**
+ * @FIXME add description
+ * @param setter
+ * @param key
+ */
 proto.un = function(setter, key) {
   // cicle on after before (key) and for each settersListeners (array) find key
-  Object.entries(this.settersListeners).forEach(([_key, settersListeners]) => {
-    if (key === undefined) settersListeners[setter].splice(0);
-    else settersListeners[setter].forEach((setterListener, idx) => {
-      if (setterListener.key === key) {
-        settersListeners[setter].splice(idx, 1);
+  Object
+    .entries(this.settersListeners)
+    .forEach(([_key, settersListeners]) => {
+      if (undefined === key) {
+        settersListeners[setter].splice(0);
+      } else {
+        settersListeners[setter].forEach((setterListener, idx) => {
+          if (setterListener.key === key) {
+            settersListeners[setter].splice(idx, 1);
+          }
+        })
       }
-    })
   });
 };
 
@@ -75,7 +92,7 @@ proto.un = function(setter, key) {
 proto._onsetter = function(when, setter, listener, async, priority=0, once=false) {
   let listenerKey;
   // check if setter function is register.
-  if (typeof this.settersListeners[when][setter] !== "undefined") {
+  if (undefined !== this.settersListeners[when][setter]) {
     // set unique listenerKey value
     listenerKey = `${Math.floor(Math.random()*1000000) + Date.now()}`;
     // add info object to setters listeners
@@ -86,105 +103,121 @@ proto._onsetter = function(when, setter, listener, async, priority=0, once=false
       priority,
       once
     });
-    // set lineners base on priority
+    // set listeners base on priority
     this.settersListeners[when][setter] = _.sortBy(this.settersListeners[when][setter], setterListener => setterListener.priority);
   }
   // return key
   return listenerKey // in case of no setter register return undefined listerKey
 };
 
+/**
+ * @FIXME add description
+ * @param setters
+ * @return {*|{before: {}, after: {}}}
+ * @private
+ */
 proto._setupListenersChain = function(setters) {
   // initialize all methods inside object "setters" of child class.
   this.settersListeners = {
-    after: {},
-    before: {}
+    after : {},
+    before: {},
   };
   for (const setter in setters) {
-    const setterOption = setters[setter];
-    let setterFnc = noop;
+    let setterFnc      = noop;
     let setterFallback = noop;
-    if (_.isFunction(setterOption)) setterFnc = setterOption;
-    else {
-      setterFnc = setterOption.fnc;
+    const setterOption = setters[setter];
+    if ('function' === typeof setterOption) {
+      setterFnc = setterOption;
+    } else {
+      setterFnc      = setterOption.fnc;
       setterFallback = setterOption.fallback || noop; // method called in case of error
     }
     // create array to push before and after subscribers
-    this.settersListeners.after[setter] = [];
+    this.settersListeners.after[setter]  = [];
     this.settersListeners.before[setter] = [];
-    // assign the property settern name to the object as own method
+    // assign the property setter name to the object as own method
     this[setter] = function(...args) {
-      const deferred = $.Deferred();
-      let returnVal = null;
-      let counter = 0;
-      // function to call original function(setter function)
-      const callSetter = () => {
-        // run setter function
-        returnVal = setterFnc.apply(this, args);
-        // resolve promise
-        deferred.resolve(returnVal);
-        //call all subscribed methods afet setter
-        const onceListenerKeys = [];
-        const afterListeners = this.settersListeners.after[setter];
-        afterListeners.forEach(listener => {
-          listener.fnc.apply(this, args);
-          listener.once && onceListenerKeys.push(listener.key);
-        });
-        onceListenerKeys.forEach(key => this.un(setter, key));
-      };
-      //  abort function
-      const abort = () => {
-        setterFallback.apply(this, args);
-        deferred.reject();
-      };
-      // get all before listeners functions of setter
-      const beforeListeners = this.settersListeners['before'][setter];
-      // listener counter
-      counter = 0;
-      const next = bool => {
-        // initilize cont to true (continue)
-        let cont = true;
-        // check if bool is Boolean
-        if (_.isBoolean(bool)) cont = bool;
-        // check if count is false or we are arrived to the end of onbefore subscriber
-        if (cont === false) {
+      return new Promise((resolve, reject) => {
+        let returnVal = null;
+        let counter = 0;
+        // function to call original function(setter function)
+        const callSetter = () => {
+          // run setter function
+          returnVal = setterFnc.apply(this, args);
+          // resolve promise
+          resolve(returnVal);
+          //call all subscribed methods afet setter
+          const onceListenerKeys = [];
+          const afterListeners = this.settersListeners.after[setter];
+          afterListeners.forEach(listener => {
+            listener.fnc.apply(this, args);
+            if (listener.once) {
+              onceListenerKeys.push(listener.key);
+            }
+          });
+          onceListenerKeys.forEach(key => this.un(setter, key));
+        };
+        //  abort function
+        const abort = () => {
+          setterFallback.apply(this, args);
+          reject();
+        };
+        // get all before listeners functions of setter
+        const beforeListeners = this.settersListeners['before'][setter];
+        // listener counter
+        counter = 0;
+        const next = bool => {
+          // initilize cont to true (continue)
+          let cont = true;
+          // check if bool is Boolean
+          if (_.isBoolean(bool)) {
+            cont = bool;
+          }
+          // check if count is false, or we are arrived to the end of onbefore subscriber
+          if (cont === false) {
             // found an error so we can abort
             abort.apply(this, args);
-        } else if (counter === beforeListeners.length) {
-          // call complete method methods
-          const completed = callSetter();
-          //verifico che cosa ritorna
-          if (completed === undefined || completed === true) {
-            this.emitEvent(`set:${setter}`,args);
+          } else if (counter === beforeListeners.length) {
+            // call complete method methods
+            const completed = callSetter();
+            //check return value
+            if (undefined === completed || completed === true) {
+              this.emitEvent(`set:${setter}`,args);
+            }
+          } else if (cont) {
+            const listenerObj = beforeListeners[counter];
+            const currentCounter = counter;
+            // if is async functtion
+            if (beforeListeners[counter].async) {
+              //add function next to argument of listnerFunction
+              args.push(next);
+              // update counter
+              counter += 1;
+              listenerObj.fnc.apply(this, args)
+            } else {
+              // return or undefine or a boolen to tell if ok(true) can conitnue or not (false)
+              const bool = listenerObj.fnc.apply(this, args);
+              //update counter
+              counter += 1;
+              next(bool);
+            }
+            listenerObj.once && beforeListeners.splice(currentCounter, 1);
           }
-        } else if (cont) {
-          const listenerObj = beforeListeners[counter];
-          const currentCounter = counter;
-          // if is async functtion
-          if (beforeListeners[counter].async) {
-            //add function next to argument of listnerFunction
-            args.push(next);
-            // update counter
-            counter += 1;
-            listenerObj.fnc.apply(this, args)
-          } else {
-            // return or undefine or a boolen to tell if ok(true) can conitnue or not (false)
-            const bool = listenerObj.fnc.apply(this, args);
-            //update counter
-            counter += 1;
-            next(bool);
-          }
-          listenerObj.once && beforeListeners.splice(currentCounter, 1);
-        }
-      };
-      // run next to start to run all the subscribers and setrer its self
-      next();
-      // retun a promise
-      return deferred.promise();
+        };
+        // run next to start to run all the subscribers and setrer its self
+        next();
+        // return a promise
+      })
     }
   }
   return this.settersListeners
 };
 
+/**
+ * @FIXME add description
+ * @param debounces
+ * @private
+ */
 proto._setupDebounces = function(debounces) {
   for (const name in debounces) {
     const delay = debounces[name].delay;
@@ -193,6 +226,11 @@ proto._setupDebounces = function(debounces) {
   }
 };
 
+/**
+ * @FIXME add description
+ * @param throttles
+ * @private
+ */
 proto._setupThrottles = function(throttles) {
   for (const name in throttles) {
     const delay = throttles[name].delay;

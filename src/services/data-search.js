@@ -53,7 +53,7 @@ function SearchService() {
           .getProvider('search')
           .query({ ...params, layers, ...layers[0].getSearchParams() /* get search params*/ })
           .then(data => { resolve({ data })})
-          .fail(reject)
+          .catch(reject)
         }));
     }
 

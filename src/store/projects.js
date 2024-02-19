@@ -6,7 +6,7 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry from 'store/map-layers';
 
-const { base, inherit } = require('utils');
+const { base, inherit, XHR } = require('utils');
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
 
@@ -68,34 +68,34 @@ function ProjectsRegistry() {
 
   //Inizialize configuration for all project belong to group
   this.init = function(config = {}) {
-    const d = $.Deferred();
+    return new Promise((resolve, reject) => {
 
-    // check if already initialized
-    if (this.initialized) {
-      d.resolve(this.getCurrentProject());
-      return d.promise();
-    }
+      // check if already initialized
+      if (this.initialized) {
+        resolve(this.getCurrentProject());
+        return;
+      }
 
-    this.config              = config;
-    this.currentProjectGroup = config.group;
-    this.overviewproject     = config.overviewproject;
+      this.config              = config;
+      this.currentProjectGroup = config.group;
+      this.overviewproject     = config.overviewproject;
 
-    this.setupState();
+      this.setupState();
 
-    // get current configuration
-    this
-      .getProject(
-        config.initproject,
-        { map_theme: (new URLSearchParams(location.search)).get('map_theme') }
-      )
-      .then(project => {
-        this.setCurrentProject(project);
-        this.initialized = true;
-        d.resolve(project);
-      })
-      .fail(error => d.reject(error));
+      // get current configuration
+      this
+        .getProject(
+          config.initproject,
+          { map_theme: (new URLSearchParams(location.search)).get('map_theme') }
+        )
+        .then(project => {
+          this.setCurrentProject(project);
+          this.initialized = true;
+          resolve(project);
+        })
+        .catch(error => reject(error));
 
-    return d.promise();
+    });
   };
 
   this.clear = function() {
@@ -185,41 +185,43 @@ function ProjectsRegistry() {
    * @param {boolean} [options.reload = false] `true` = force to get project configuration from server
    */
   this.getProject = function(projectGid, options = { reload:false}) {
-    const d = $.Deferred();
-    const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
+    return new Promise((resolve, reject) => {
 
-    // skipe if project doesn't exist
-    if (!pendingProject) {
-      d.reject("Project doesn't exist");
-      return d.promise();
-    }
+      const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
 
-    const projectConfig = !options.reload && this._projectConfigs[projectGid];
+      // skipe if project doesn't exist
+      if (!pendingProject) {
+        reject("Project doesn't exist");
+        return;
+      }
 
-    /** @TODO add description */
-    if (projectConfig) {
-      d.resolve((new Project(projectConfig)));
-      return d.promise();
-    }
+      const projectConfig = !options.reload && this._projectConfigs[projectGid];
 
-    this
-      ._getProjectFullConfig(pendingProject, { map_theme: options.map_theme })
-      .then(projectFullConfig => {
+      /** @TODO add description */
+      if (projectConfig) {
+        resolve((new Project(projectConfig)));
+        return;
+      }
 
-        const projectConfig = _.merge(pendingProject, projectFullConfig);
-        projectConfig.WMSUrl    = this.config.getWmsUrl(projectConfig);
-        projectConfig.relations = this._setProjectRelations(projectConfig);
+      this
+        ._getProjectFullConfig(pendingProject, { map_theme: options.map_theme })
+        .then(projectFullConfig => {
 
-        this._projectConfigs[projectConfig.gid] = projectConfig;
+          const projectConfig = _.merge(pendingProject, projectFullConfig);
+          projectConfig.WMSUrl    = this.config.getWmsUrl(projectConfig);
+          projectConfig.relations = this._setProjectRelations(projectConfig);
 
-        // instance of Project
-        this.createProject(projectConfig);
+          this._projectConfigs[projectConfig.gid] = projectConfig;
 
-        // add to project
-        d.resolve((new Project(projectConfig)));
-      })
-      .fail(error => d.reject(error))
-    return d.promise();
+          // instance of Project
+          this.createProject(projectConfig);
+
+          // add to project
+          resolve((new Project(projectConfig)));
+        })
+        .catch(error => reject(error))
+
+    });
   };
 
   this._setProjectRelations = function(projectConfig) {
@@ -296,38 +298,38 @@ function ProjectsRegistry() {
    * @param options.map_theme
    */
   this._getProjectFullConfig = function(config, options={}) {
-    const d = $.Deferred();
+    return new Promise((resolve, reject) => {
 
-    $
-      .get(this.config.getProjectConfigUrl(config))
-      .done(serverConfig => {
+      XHR
+        .get({ url: this.config.getProjectConfigUrl(config) })
+        .then(serverConfig => {
 
-        /** @TODO add description */
-        if (!options.map_theme) {
-          d.resolve(serverConfig);
-          return;
-        }
+          /** @TODO add description */
+          if (!options.map_theme) {
+            resolve(serverConfig);
+            return;
+          }
 
-        const map_theme = serverConfig.map_themes.find(({theme}) => theme === options.map_theme);
+          const map_theme = serverConfig.map_themes.find(({theme}) => theme === options.map_theme);
 
-        /** @TODO add description */
-        if (map_theme) {
-          $
-            .get(`/${config.type}/api/prjtheme/${config.id}/${options.map_theme}`)
-            .done(({result, data}) => {
-              if (result) {
-                serverConfig.layerstree = data;
-                map_theme.layetstree    = data;
-                map_theme.default       = true;
-              }
-            })
-            .always(() => { d.resolve(serverConfig)});
-        }
+          /** @TODO add description */
+          if (map_theme) {
+            XHR
+              .get({ url: `/${config.type}/api/prjtheme/${config.id}/${options.map_theme}` })
+              .then(({result, data}) => {
+                if (result) {
+                  serverConfig.layerstree = data;
+                  map_theme.layetstree    = data;
+                  map_theme.default       = true;
+                }
+              })
+              .finally(() => { resolve(serverConfig)});
+          }
 
-      })
-      .fail(error => d.reject(error));
+        })
+        .catch(error => reject(error));
 
-    return d.promise();
+    });
   };
 
   /**

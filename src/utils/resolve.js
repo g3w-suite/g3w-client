@@ -1,5 +1,3 @@
-export function resolve(value){
-  const d = $.Deferred();
-  d.resolve(value);
-  return d.promise();
+export function resolve(value) {
+  return Promise.resolve(value);
 };

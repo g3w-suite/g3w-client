@@ -401,37 +401,37 @@ proto.getDataTable = function({
   field,
   in_bbox,
 } = {}) {
-  const d = $.Deferred();
-  let provider;
-  const params = {
-    ...custom_params,
-    field,
-    page,
-    page_size,
-    ordering,
-    search,
-    formatter,
-    suggest,
-    in_bbox,
-    filtertoken: ApplicationState.tokens.filtertoken
-  };
-  if (!(this.getProvider('filter') || this.getProvider('data'))) {
-   d.reject();
-  } else {
-    provider = this.getProvider('data');
-    provider.getFeatures({editing: false}, params)
-      .done(response => {
-        const features = response.data.features && response.data.features || [];
-        d.resolve(({
-          headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
-          features,
-          title: this.getTitle(),
-          count: response.count
-        }));
-      })
-      .fail(err => d.reject(err))
-  }
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    let provider;
+    const params = {
+      ...custom_params,
+      field,
+      page,
+      page_size,
+      ordering,
+      search,
+      formatter,
+      suggest,
+      in_bbox,
+      filtertoken: ApplicationState.tokens.filtertoken
+    };
+    if (!(this.getProvider('filter') || this.getProvider('data'))) {
+      reject();
+    } else {
+      provider = this.getProvider('data');
+      provider.getFeatures({editing: false}, params)
+        .then(response => {
+          const features = response.data.features && response.data.features || [];
+          resolve(({
+            headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
+            features,
+            title: this.getTitle(),
+            count: response.count
+          }));
+        })
+        .catch(err => reject(err))
+    }
+  });
 };
 
 /**
@@ -486,7 +486,7 @@ proto.searchFeatures = function(options = {}, params = {}) {
         this
           .search(options, params)
           .then(results => { resolve(({ data: results })); })
-          .fail(reject);
+          .catch(error => reject(error));
         break;
 
       case 'api':
@@ -562,33 +562,34 @@ proto.search = function(options={}, params={}) {
     ...options,
     ...this.config.searchParams,
     ...params
-  };
-  const d = $.Deferred();
-  const provider = this.getProvider('search');
-  if (provider) {
-    provider.query(options)
-      .done(response => d.resolve(response))
-      .fail(err => d.reject(err));
-  } else {
-    d.reject(t('sdk.search.layer_not_searchable'));
-  }
-  return d.promise();
+    };
+  return new Promise((resolve, reject) => {
+    const provider = this.getProvider('search');
+    if (provider) {
+      provider.query(options)
+        .then(response => resolve(response))
+        .catch(err => reject(err));
+    } else {
+      reject(t('sdk.search.layer_not_searchable'));
+    }
+  });
 };
 
 /**
  * Info from layer (only for querable layers) 
  */
 proto.query = function(options={}) {
-  const d = $.Deferred();
-  const provider = this.getProvider(options.filter ? 'filter' : 'query');
-  if (provider) {
-    provider.query(options)
-      .done(response => d.resolve(response))
-      .fail(err => d.reject(err));
-  } else {
-    d.reject(t('sdk.search.layer_not_querable'));
-  }
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const {filter} = options;
+    const provider = this.getProvider(filter ? 'filter' : 'query');
+    if (provider) {
+      provider.query(options)
+        .then(response => resolve(response))
+        .catch(err => reject(err));
+    } else {
+      reject(t('sdk.search.layer_not_querable'));
+    }
+  });
 };
 
 /**
