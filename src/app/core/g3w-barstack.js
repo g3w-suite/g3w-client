@@ -3,11 +3,10 @@
  * @since 3.10.0
  */
 
-import Panel     from 'core/g3w-panel';
-import Component from 'core/g3w-component';
-
-const { resolve } = require('utils');
-const G3WObject   = require('core/g3wobject');
+import Panel       from 'core/g3w-panel';
+import Component   from 'core/g3w-component';
+import G3WObject   from 'core/g3wobject';
+import { resolve } from 'utils/resolve';
 
 /**
  * Barstack Class - used to mount panels stack on top of each parent

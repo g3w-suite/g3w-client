@@ -1,4 +1,6 @@
-const { noop, debounce, throttle } = require('utils');
+import { noop }     from 'utils/noop';
+import { debounce } from 'utils/debounce';
+import { throttle } from 'utils/throttle';
 
 /**
  * Mimics the behavior of child class fields in parent class,

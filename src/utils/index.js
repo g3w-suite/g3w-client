@@ -11,6 +11,7 @@ import { merge }                             from './merge';
 import { hasOwn }                            from './hasOwn';
 import { inherit }                           from './inherit';
 import { base }                              from './base';
+import { noop }                              from './noop';
 import { resolve }                           from './resolve';
 import { reject }                            from './reject';
 import { getAjaxResponses }                  from './getAjaxResponses';
@@ -113,7 +114,7 @@ const utils = {
   hasOwn,
   inherit,
   base,
-  noop() {},
+  noop,
   truefnc() { return true },
   /** @FIXME broken implementation, maybe unusued? */
   falsefnc() { return true }, 

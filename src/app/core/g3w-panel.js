@@ -3,10 +3,9 @@
  * @since 3.10.0
  */
 
-import GUI from 'services/gui';
-
-const { resolve } = require('utils');
-const G3WObject            = require('core/g3wobject');
+import GUI         from 'services/gui';
+import G3WObject   from 'core/g3w-object';
+import { resolve } from 'utils/resolve';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/panel.js@v3.9.3 

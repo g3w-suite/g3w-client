@@ -2,15 +2,12 @@
  * @file
  * @since 3.10.0
  */
-import GUI from 'services/gui';
-
-const { 
-  merge,
-  noop,
-  capitalize_first_letter,
-  resolve
-}               = require('utils');
-const G3WObject = require('core/g3wobject');
+import GUI                          from 'services/gui';
+import G3WObject                    from 'core/g3wobject';
+import { merge }                    from 'utils/merge';
+import { noop }                     from 'utils/noop';
+import { capitalize_first_letter }  from 'utils/capitalize_first_letter';
+import { resolve }                  from 'utils/resolve';
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
