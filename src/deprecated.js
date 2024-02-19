@@ -105,7 +105,7 @@ $.Deferred = function() {
    *   promise.resolve() = _resolve;
    *   promise.resolve() = _reject;
    */
-  d.reject = deprecate(d.reject, '[G3W-CLIENT] $.Deferred::reject() is deprecated');
+  d.reject = deprecate(d.resolve, '[G3W-CLIENT] $.Deferred::reject() is deprecated');
 
   /**
    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.then' instead
