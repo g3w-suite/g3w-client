@@ -73,6 +73,20 @@ import { API_BASE_URLS, LOGO_GIS3W } from "app/constant";
 const Projections = require('g3w-ol/projection/projections');
 const { XHR }     = require('utils');
 
+/** Cached HTTP GET request */
+async function get_macro(id) {
+  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${id}/`) });
+  return get_macro[id];
+}
+
+/** Cached HTTP GET request */
+async function get_group(id) {
+  const g = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
+  if (!get_group[id]) g.forEach(cb);
+  else get_group[id] = g;
+  return g;
+}
+
 export default {
 
   /** @since 3.8.6 */
@@ -142,20 +156,20 @@ export default {
     },
 
     async back() {
-      const has_steps = this.steps.length > 1;
-      const macro     = this.parent.macrogroup_id;
-      if (has_steps) {
+      if (this.steps.length > 1) {
         const item = this.steps[0];
         this.steps = [];
         this.showGroups(item);
+        return;
       }
-      if (!has_steps && this.init && Array.isArray(macro) && macro.length > 0) {
-        // get first
+      const macro = this.parent && this.parent.macrogroup_id;
+      // go back to first MacroGroup when Group belongs to multiple MacroGroups
+      if (this.init && Array.isArray(macro) && macro.length > 0 ) {
         await this.showGroups(this.macrogroups.find(mg => macro[0] === mg.id));
         this.init = false;
-      } else {
-        this.showRoot();
+        return;
       }
+      this.showRoot();
     },
 
     showRoot() {
@@ -178,12 +192,7 @@ export default {
       this.loading = true;
       this.parent = item;
       try {
-          if (undefined  === this._cache.macrogroups[item.id]) {
-            this._cache.macrogroups[item.id] = await XHR.get({
-              url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${item.id}/`)
-            });
-          }
-          this.items = this._cache.macrogroups[item.id];
+        this.items = await get_macro(item.id);
         this.current = 'groups';
       } catch(err) {
         this.items = [];
@@ -202,13 +211,7 @@ export default {
         this.current = 'projects';
       } else {
         try {
-          if (undefined  === this._cache.groups[item.id]) {
-            this._cache.groups[item.id] = await XHR.get({
-              url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`)
-            });
-            this._cache.groups[item.id].forEach(item => this.setItemImageSrc({ item, type: 'project' }));
-          }
-          this.items = this._cache.groups[item.id];
+          this.items = get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }));
           this.current = 'projects';
         } catch(err) {
           this.items = [];
@@ -288,17 +291,6 @@ export default {
 
   async created() {
     this.init = true;
-    /**
-     * @since 3.10.0
-     * Store configuration of macrogroups and groups
-     * avoid wasting time-server request
-     * @type {{macrogroups: {}, groups: {}}}
-     * @private
-     */
-    this._cache = {
-      macrogroups : {},
-      groups      : {}
-    }
 
     // at start time set item projects
     this.items = ProjectsRegistry.getListableProjects();
@@ -333,9 +325,6 @@ export default {
     }
 
   },
-  beforeDestroy() {
-    this._cache = null;
-  }
 
 };
 </script>
