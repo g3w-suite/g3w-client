@@ -80,7 +80,7 @@ async function get_macro(id) {
 }
 
 /** Cached HTTP GET request */
-async function get_group(id) {
+async function get_group(id, cb) {
   const g = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
   if (!get_group[id]) g.forEach(cb);
   else get_group[id] = g;
