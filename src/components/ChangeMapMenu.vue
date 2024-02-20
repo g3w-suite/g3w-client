@@ -142,22 +142,19 @@ export default {
     },
 
     async back() {
-      if (this.steps.length > 1) {
+      const has_steps = this.steps.length > 1;
+      const macro     = this.parent.macrogroup_id;
+      if (has_steps) {
         const item = this.steps[0];
         this.steps = [];
         this.showGroups(item);
+      }
+      if (!has_steps && this.init && Array.isArray(macro) && macro.length > 0) {
+        // get first
+        await this.showGroups(this.macrogroups.find(mg => macro[0] === mg.id));
+        this.init = false;
       } else {
-        if (
-          this.init
-          && Array.isArray(this.parent.macrogroup_id)
-          && this.parent.macrogroup_id.length > 0
-        ) {
-          //get first
-          await this.showGroups(this.macrogroups.find(mg => this.parent.macrogroup_id[0] === mg.id));
-          this.init = false;
-        } else {
-          this.showRoot();
-        }
+        this.showRoot();
       }
     },
 
