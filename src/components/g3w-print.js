@@ -3,8 +3,9 @@
  * @since 3.10.0
  */
 
-import * as vueComp from 'components/Print.vue';
 import Component    from 'core/g3w-component';
+
+import * as vueComp from 'components/Print.vue';
 
 const { PrintComponentService } = require('gui/print/printservice');
 
@@ -15,7 +16,7 @@ export default function(opts = {}) {
   const comp = new Component({
     ...opts,
     title: 'print',
-    service: opts.service || new PrintComponentService
+    service: opts.service || new PrintComponentService()
   });
 
   comp.vueComponent = vueComp;

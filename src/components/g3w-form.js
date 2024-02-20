@@ -3,12 +3,13 @@
  * @since 3.10.0
  */
 
+import Component    from 'core/g3w-component';
+import GUI          from 'services/gui';
+import { noop }     from 'utils/noop';
+
 import * as vueComp from 'components/Form.vue';
 import BodyFormComp from 'components/FormBody.vue';
-import GUI          from 'services/gui';
-import Component    from 'core/g3w-component';
 
-const { noop } = require('utils');
 const Service  = require('gui/form/formservice');
 
 /**
@@ -16,7 +17,7 @@ const Service  = require('gui/form/formservice');
  */
 export default function(opts = {}) {
   opts.id                 = opts.id || 'form';
-  opts.service            = opts.service ? new opts.service : new Service;
+  opts.service            = opts.service ? new opts.service : new Service();
   opts.vueComponentObject = opts.vueComponentObject  || vueComp;
   opts.perc               = null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc;
   

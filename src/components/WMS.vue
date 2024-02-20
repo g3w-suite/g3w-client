@@ -218,19 +218,29 @@
       },
 
       /**
+       * Load WMS Data from server and show WMS Layers Panel
+       * 
        * @param url
        * 
        * @returns { Promise<void> }
        */
       async showWmsLayersPanel(url) {
+        let error = false;
+        let added = false;
         try {
-          this.loading           = true;
-          const { error, added } = await this.$options.service.loadWMSDataAndShowWmsLayersPanel(url);
-          this.status.error      = error;
-          this.status.added      = added;
-          this.loading           = false;
-        } catch(err) {
-          console.warn(err);
+          this.loading = true;
+          const d = await this.$options.service.getWMSLayers(url);
+          error = !d.result;
+          if (!error) {
+            d.wmsurl = url;
+            this.$options.service.showWmsLayersPanel(d);
+          }
+        } catch(e) {
+          console.warn(e);
+        } finally {
+          this.status.error = error;
+          this.status.added = added;
+          this.loading      = false;
         }
       },
 

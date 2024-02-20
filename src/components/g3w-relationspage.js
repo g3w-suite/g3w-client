@@ -3,14 +3,14 @@
  * @since 3.10.0
  */
 
-import * as vueComp       from 'components/RelationsPage.vue';
-import Component          from 'core/g3w-component';
 import { G3W_FID }        from 'app/constant';
+import G3WObject          from 'core/g3w-object';
+import Component          from 'core/g3w-component';
 import RelationsService   from 'services/relations';
 import ApplicationService from 'services/application';
 import GUI                from 'services/gui';
 
-const G3WObject         = require('core/g3wobject');
+import * as vueComp       from 'components/RelationsPage.vue';
 
 const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
@@ -21,69 +21,38 @@ const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
  */
 export default function(opts = {}) {
 
-  const service = opts.service || new (class extends G3WObject {
+  const state = {};
 
-    constructor () {
-      super();
-      this.state = {};
-      this._options = {};
+  const service = opts.service || new G3WObject();
+
+  service.state          = state;
+  service._options       = {};
+  service.getRelations   = o => { service._options = o; return RelationsService.getRelations(o); };
+  service.getRelationsNM = r => RelationsService.getRelationsNM(r);
+   service.saveRelations  = async type => {
+    service._options.type = type;
+    const id = ApplicationService.setDownload(true);
+    try      { await RelationsService.save(service._options) }
+    catch(e) { GUI.showUserMessage({ type: 'alert', message: e || 'info.server_error', closable: true }); }
+    ApplicationService.setDownload(false, id);
+  };
+
+  service.buildRelationTable = (relations = [], id) => {
+    relations = relations || [];
+    const layer = ApplicationService.getCurrentProject().getLayerById(id);
+    const attrs = Object.keys(relations[0] ? relations[0].attributes : {});
+    const cols  = layer.getTableHeaders().filter(h => -1 !== attrs.indexOf(h.name));
+    return {
+      columns:          cols.map(c => c.label),
+      rows:             relations.map(r => cols.map(c => r.attributes[c.name])),
+      rows_fid:         relations.map(r => r.attributes[G3W_FID]),
+      features:         relations,
+      fields:           cols.length ? cols : null,
+      formStructure:    layer.getLayerEditingFormStructure(),
+      rowFormStructure: null,
+      layerId:          layer.getId()
     }
-  
-    getRelations(opts={}) {
-      this._options = opts;
-      return RelationsService.getRelations(opts);
-    }
-  
-    async getRelationsNM({ nmRelation, features }) {
-      return await RelationsService.getRelationsNM({ nmRelation, features });
-    }
-  
-    async saveRelations(type) {
-      this._options.type = type;
-      const caller_download_id = ApplicationService.setDownload(true);
-      try {
-        await RelationsService.save(this._options)
-      } catch(err){
-        GUI.showUserMessage({
-          type: 'alert',
-          message: err || "info.server_error",
-          closable: true
-        })
-      }
-      ApplicationService.setDownload(false, caller_download_id);
-    }
-  
-    buildRelationTable(relations=[], id) {
-      const layer = ApplicationService.getCurrentProject().getLayerById(id);
-      const headers = layer.getTableHeaders();
-      let columns = null;
-      let rows = [];
-      let rows_fid = [];
-      let fields;
-      if (relations.length) {
-        const attributes = Object.keys(relations[0].attributes);
-        columns = headers.filter(header => attributes.indexOf(header.name) !==-1);
-        rows = relations.map(relation => {
-          rows_fid.push(relation.attributes[G3W_FID]);
-          return columns.map(column => {
-            return relation.attributes[column.name]
-          })
-        });
-        fields = columns;
-        columns = columns.map(column => column.label);
-      }
-      return {
-        columns,
-        rows,
-        rows_fid,
-        features: relations,
-        fields,
-        formStructure : layer.getLayerEditingFormStructure(),
-        rowFormStructure: null,
-        layerId: layer.getId()
-      }
-    }
-  });
+  };
 
   const comp = new Component({
     ...opts,

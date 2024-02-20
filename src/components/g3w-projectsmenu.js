@@ -3,12 +3,12 @@
  * @since 3.10.0
  */
 
+import Component          from 'core/g3w-component';
 import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
-import * as vueComp       from 'components/ProjectsMenu.vue';
-import Component          from 'core/g3w-component';
+import { noop }           from 'utils/noop';
 
-const { noop } = require('utils');
+import * as vueComp       from 'components/ProjectsMenu.vue';
 
 /**
  * ORIGINAL SOURCE:
@@ -26,11 +26,11 @@ export default function (opts={}) {
   comp.state.menuitems = opts.menuitems || [];
   comp.setInternalComponent(new (Vue.extend(vueComp))({ service: comp, host: opts.host }));
   comp.state.menuitems = (opts.projects || ProjectsRegistry.getListableProjects()).map(p => ({
-    title: p.title,
+    title:       p.title,
     description: p.description,
-    thumbnail: p.thumbnail,
-    gid: p.gid,
-    cbk: opts.cbk || ((o = {}) => ApplicationService.changeProject({ host: opts.host, gid: o.gid })),
+    thumbnail:   p.thumbnail,
+    gid:         p.gid,
+    cbk:         opts.cbk || ((o = {}) => ApplicationService.changeProject({ host: opts.host, gid: o.gid })),
   }));
   comp.trigger         = noop;
 

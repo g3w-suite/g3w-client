@@ -3,16 +3,17 @@
  * @since 3.10.0
  */
 
-import * as vueComp from 'components/QueryResults.vue';
 import Component    from 'core/g3w-component';
+import { noop }     from 'utils/noop';
 
-const { noop }            = require('utils');
+import * as vueComp from 'components/QueryResults.vue';
+
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 
 /**
  * ORIGINAL SOURCE: src/app/gui/queryresults/vue/queryresults.js@v3.9.3
  */
-export default function(opts={}) {
+export default function(opts = {}) {
   const service = new QueryResultsService();
 
   const comp = new Component({

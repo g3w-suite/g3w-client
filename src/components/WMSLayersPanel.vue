@@ -126,7 +126,13 @@ export default {
         position: this.position,
       };
 
-      this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
+      // check if WMS already added (by name)
+      const data = this.$options.service.getLocalWMSData();
+      this.added = data.wms[this.url] && data.wms[this.url].some(
+        w => w.layers.length === this.selectedlayers.length
+          ? this.selectedlayers.every(l => w.layers.includes(l))
+          : undefined
+        );
 
       if (this.added) {
         console.warn('WMS Layer already added');

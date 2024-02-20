@@ -2655,11 +2655,15 @@ proto.removeExternalLayer = function(name) {
 /**
  * Add external WMS layer to map
  * 
- * @param url
- * @param layers
- * @param name
- * @param projection
- * @param position
+ * @param { Object } wms
+ * @param { string } wms.url
+ * @param { string } wms.name
+ * @param wms.epsg
+ * @param wms.position
+ * @param wms.opacity
+ * @param wms.visible
+ * @param wms.layers
+ * 
  * @returns {Promise<unknown>}
  */
 proto.addExternalWMSLayer = function({

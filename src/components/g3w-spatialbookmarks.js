@@ -3,9 +3,10 @@
  * @since 3.10.0
  */
 
-import * as vueComp from 'components/SpatialBookMarks.vue';
 import Component    from 'core/g3w-component';
 import GUI          from 'services/gui';
+
+import * as vueComp from 'components/SpatialBookMarks.vue';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/spatialbookmarks/vue/spatialbookmarks.js@v3.9.3

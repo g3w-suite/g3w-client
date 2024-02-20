@@ -1,4 +1,10 @@
+/**
+ * @file
+ * @since 3.10.0
+ */
+
 import Panel        from 'core/g3w-panel';
+
 import * as vueComp from 'components/QueryBuilder.vue';
 
 const QueryBuilder = Vue.extend(vueComp);
@@ -13,17 +19,12 @@ export default {
     this.type = this.type === null ? type : this.type;
     if ('modal' === this.type) {
       QB = new QueryBuilder({ options });
-      GUI.showModalDialog({
-        title: 'Query Builder',
-        message: QB.$mount().$el,
-        className: "modal-background-dark "
-      })
+      GUI.showModalDialog({ title: 'Query Builder', message: QB.$mount().$el, className: "modal-background-dark " });
     } else {
       options.title = 'Query Builder';
-      const panel = new Panel(options);
-      panel.setInternalPanel(new QueryBuilder(options));
-      QB = panel.getInternalPanel();
-      panel.show();
+      options.internalPanel = new QueryBuilder(options); 
+      options.show = true;
+      QB = (new Panel(options)).getInternalPanel();
     }
     return QB;
   }

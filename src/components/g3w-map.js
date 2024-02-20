@@ -3,8 +3,9 @@
  * @since 3.10.0
  */
 
-import * as vueComp from 'components/Map.vue';
 import Component    from 'core/g3w-component';
+
+import * as vueComp from 'components/Map.vue';
 
 const { MapService } = require('gui/map/mapservice');
 

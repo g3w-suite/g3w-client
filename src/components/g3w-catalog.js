@@ -3,11 +3,12 @@
  * @since 3.10.0
  */
 
-import GUI                         from 'services/gui';
-import ComponentsRegistry          from 'store/components';
+import G3WObject                   from 'core/g3w-object';
 import Component                   from 'core/g3w-component';
+import ComponentsRegistry          from 'store/components';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
+import GUI                         from 'services/gui';
 import ApplicationService          from 'services/application';
 
 import * as catalogComp            from 'components/Catalog.vue';
@@ -16,9 +17,6 @@ import * as TreeComp               from 'components/CatalogTristateTree.vue';
 import * as LegendComp             from 'components/CatalogLayersLegend.vue';
 import * as LegendItemsComp        from 'components/CatalogLayersLegendItems.vue';
 
-const { base, inherit }            = require('utils');
-const G3WObject                    = require('core/g3wobject');
-
 Vue.component('g3w-catalog', catalogComp);
 Vue.component('layers-group', LayersComp);
 Vue.component('tristate-tree', TreeComp);
@@ -26,11 +24,96 @@ Vue.component('layerslegend', LegendComp);
 Vue.component('layerslegend-items', LegendItemsComp);
 
 /**
- * ORIGINAL SOURCE: src/app/gui/catalog/vue/catalog.js@v3.9.3 
+ * ORIGINAL SOURCE:
+ * - src/app/gui/catalog/vue/catalog.js@v3.9.3
+ * - src/app/gui/catalog/catalogservice.js@v3.9.3
  */
 export default function(opts = {}) {
 
-  const service = opts.service || new CatalogService();
+  const catalog = CatalogLayersStoresRegistry;
+
+  const state = {
+    prstate: ProjectsRegistry.state,
+    highlightlayers: false,
+    external: {  // external layers
+      wms: [],   // added by wms sidebar component
+      vector: [] // added to map controls for the moment
+    },
+    layerstrees: [],
+    layersgroups: []
+  };
+
+  const service = opts.service || new G3WObject({ setters: {
+    /**
+     * @param {{ layer: unknown, type: 'vector' }}
+     * 
+     * @fires CatalogService~addExternalLayer
+     * 
+     * @since 3.8.0
+     */
+    addExternalLayer({ layer, type='vector' } = {}) {
+      layer.removable = true;
+      state.external[type].push(layer);
+    },
+    /**
+     * @param {{ name: string, type: 'vector' }}
+     * 
+     * @fires CatalogService~removeExternalLayer
+     * 
+     * @since 3.8.0
+     */
+    removeExternalLayer({ name, type='vector' } = {}) {
+      state.external[type].filter((l, i) => {
+        if (l.name === name) {
+          state.external[type].splice(i, 1);
+          return true
+        }
+      });
+    },
+    /**
+     * @param {{ layer: unknown, type: unknown, selected: unknown }}
+     * 
+     * @fires CatalogService~setSelectedExternalLayer
+     * 
+     * @since 3.8.0
+     */
+    setSelectedExternalLayer({ layer, type, selected }) {
+      state.external[type].forEach(l => { if (undefined !== l.selected) l.selected = l === layer ? selected : false; })
+    },
+  }});
+
+  service.state                       = state;
+  service.getMajorQgisVersion         = () => ProjectsRegistry.getCurrentProject().getQgisVersion({ type: 'major' });
+  service.createLayersGroup           = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
+  service.getExternalLayers           = ({ type = 'vector' })     => state.external[type];
+  service.getExternalSelectedLayers   = ({ type = 'vector' })     => state.external[type].filter(l => l.selected);
+  service.getExternalLayerById        = ({ id, type = 'vector' }) => state.external[type].find(l => l.id === id);
+  service.isExternalLayerSelected     = l => !!(this.getExternalLayerById(l) && this.getExternalLayerById(l).selected);
+  service.addLayersGroup              = g => { state.layersgroups.push(g); };
+  service.addLayersStoreToLayersTrees = s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); };
+  service.changeMapTheme              = async map_theme => {
+    ApplicationService.changeProjectView(true);
+    const rootNode = state.layerstrees[0];
+    rootNode.checked = true;
+    const changes = await ProjectsRegistry.getCurrentProject().setLayersTreePropertiesFromMapTheme({ map_theme, rootNode, layerstree: rootNode.tree[0].nodes });
+    ApplicationService.changeProjectView(false);
+    return changes;
+  };
+
+  catalog.getLayersStores().forEach(s => service.addLayersStoreToLayersTrees(s));
+  catalog.onafter('addLayersStore', s => { service.addLayersStoreToLayersTrees(s) });
+  catalog.onafter('removeLayersStore', s => {
+    state.layerstrees.find((tree, i) => {
+      if (tree.storeid === s.getId()) {
+        state.layerstrees.splice(i, 1);
+        return true;
+      }
+    });
+  });
+
+  catalog.onafter('removeLayersStores', () => {
+    state.layerstrees.forEach((_, i) => { state.layerstrees.splice(i, 1); });
+  });
 
   const comp = new Component({
     ...opts,
@@ -69,181 +152,3 @@ function _listenToMapVisibility(map_id, component) {
     ComponentsRegistry.on('componentregistered', c => c.getId() === map_id && cb(c))
   }
 }
-
-/**
- * ORIGINALE SOURCE: src/app/gui/catalog/catalogservice.js@v3.9.3
- */
-function CatalogService() {
-  this.state = {
-    prstate: ProjectsRegistry.state,
-    highlightlayers: false,
-    external: {
-      wms: [], // added by wms cside bar component
-      vector: [] // added to map controls for the moment
-    },
-    layerstrees: [],
-    layersgroups: []
-  };
-
-  this.setters = {
-
-    /**
-     * @param {{ layer: unknown, type: 'vector' }}
-     * 
-     * @fires CatalogService~addExternalLayer
-     * 
-     * @since 3.8.0
-     */
-    addExternalLayer({layer, type='vector'} = {}) {
-      layer.removable = true;
-      this.state.external[type].push(layer);
-    },
-
-    /**
-     * @param {{ name: string, type: 'vector' }}
-     * 
-     * @fires CatalogService~removeExternalLayer
-     * 
-     * @since 3.8.0
-     */
-    removeExternalLayer({name, type='vector'} = {}) {
-      this.state.external[type].filter((layer, index) => {
-        if (layer.name === name) {
-          this.state.external[type].splice(index, 1);
-          return true
-        }
-      });
-    },
-
-    /**
-     * @param {{ layer: unknown, type: unknown, selected: unknown }}
-     * 
-     * @fires CatalogService~setSelectedExternalLayer
-     * 
-     * @since 3.8.0
-     */
-    setSelectedExternalLayer({layer, type, selected}) {
-      this.state.external[type].forEach(externalLayer => {
-        if (typeof externalLayer.selected != "undefined")
-          externalLayer.selected = (layer === externalLayer) ? selected : false;
-      })
-    },
-
-  };
-
-  base(this);
-
-  const layersStores = CatalogLayersStoresRegistry.getLayersStores();
-
-  layersStores.forEach(layersStore => this.addLayersStoreToLayersTrees(layersStore));
-
-  CatalogLayersStoresRegistry.onafter('addLayersStore', layersStore => {
-    this.addLayersStoreToLayersTrees(layersStore)
-  });
-
-  CatalogLayersStoresRegistry.onafter('removeLayersStore', layersStore => {
-    this.state.layerstrees.find((layersTree, idx) => {
-      if (layersTree.storeid === layersStore.getId()) {
-        this.state.layerstrees.splice(idx, 1);
-        return true;
-      }
-    });
-  });
-  CatalogLayersStoresRegistry.onafter('removeLayersStores', () => {
-    this.state.layerstrees.forEach((layersTree, idx) => {
-      this.state.layerstrees.splice(idx, 1);
-    });
-  });
-}
-
-inherit(CatalogService, G3WObject);
-
-const proto = CatalogService.prototype;
-
-proto.createLayersGroup = function({title = 'Layers Group', layers =[]} = {}) {
-  const nodes = [];
-  layers.forEach(layer => nodes.push(layer));
-  return {
-    title,
-    nodes
-  }
-};
-
-proto.getMajorQgisVersion = function() {
-  return ProjectsRegistry.getCurrentProject().getQgisVersion({
-    type: 'major'
-  });
-};
-
-// method to add a custom layers group
-proto.addLayersGroup = function(layersGroup) {
-  this.state.layersgroups.push(layersGroup);
-};
-
-proto.addLayersStoreToLayersTrees = function(layersStore) {
-  this.state.layerstrees.push({
-    tree: layersStore.getLayersTree(),
-    storeid: layersStore.getId()
-  });
-};
-
-proto.changeMapTheme = async function(map_theme) {
-  // set is changing project view
-  ApplicationService.changeProjectView(true);
-  const {currentProject} = this.state.prstate;
-  const rootNode = this.state.layerstrees[0];
-  rootNode.checked = true;
-  const layerstree = rootNode.tree[0].nodes;
-  const changeMapThemeProjectObj = await currentProject.setLayersTreePropertiesFromMapTheme({
-    map_theme,
-    layerstree,
-    rootNode
-  });
-  ApplicationService.changeProjectView(false);
-  return changeMapThemeProjectObj;
-};
-
-/**
- * @param {{ type: 'vector' }}
- * 
- * @returns {unknown}
- * 
- * @since 3.8.0
- */
-proto.getExternalLayers = function({type='vector'}) {
-  return this.state.external[type];
-};
-
-/**
- * @param {{ type: 'vector' }}
- * 
- * @returns {unknown}
- * 
- * @since 3.8.0
- */
-proto.getExternalSelectedLayers = function({type='vector'}) {
-  return this.getExternalLayers({type}).filter(layer => layer.selected);
-};
-
-/**
- * @param {{ id: string, type: 'vector' }}
- * 
- * @returns {unknown}
- * 
- * @since 3.8.0
- */
-proto.getExternalLayerById = function({id, type='vector'}) {
-  return this.state.external[type].find(layer => layer.id === id);
-};
-
-/**
- * @param {{ id: string, type: unknown }}
- * 
- * @returns {boolean}
- * 
- * @since 3.8.0
- */
-proto.isExternalLayerSelected = function({id, type}) {
-  const externalLayer = this.getExternalLayerById({ id, type });
-  return !!(externalLayer && externalLayer.selected);
-};

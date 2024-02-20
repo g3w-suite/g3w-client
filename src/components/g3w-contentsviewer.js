@@ -3,9 +3,10 @@
  * @since 3.10.0
  */
 
-import * as vueComp from 'components/ViewportContentsViewer.vue';
 import Component    from 'core/g3w-component';
 import { BarStack } from 'core/g3w-barstack';
+
+import * as vueComp from 'components/ViewportContentsViewer.vue';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/viewport/contentsviewer.js@v3.9.3
@@ -127,12 +128,13 @@ export default function(opts = {}) {
         // el.parent() is div g3w-view-content
         const height = el.parent().height()
           - el.siblings('.close-panel-block').outerHeight(true)
-          - el.siblings('.content_breadcrumb').outerHeight(true) - 10; // margin 10 from bottom
+          - el.siblings('.content_breadcrumb').outerHeight(true)
+          - 10; // margin 10 from bottom
         el.height(height);
         el.children().first().height(height);
         contentsdata.forEach(data => {
           //check each componentstored in stack
-          if (typeof data.content.layout == 'function') {
+          if ('function' == typeof data.content.layout) {
             //call function layout of each component that are stored into the stack
             data.content.layout(parentWidth + 0.5, height);
           }

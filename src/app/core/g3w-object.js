@@ -34,14 +34,16 @@ function defineClassField(obj, key, cb, initVal) {
  */
 export default class G3WObject extends EventEmitter {
 
-  constructor() {
-    super();
+  constructor(opts) {
+    super(opts);
+
+    opts = opts || {};
 
     // Register the chain of events
 
-    defineClassField(this, 'setters',   this._setupListenersChain, this.setters);
-    defineClassField(this, 'throttles', this._setupThrottles,      this.throttles);
-    defineClassField(this, 'debounces', this._setupDebounces,      this.debounces);
+    defineClassField(this, 'setters',   this._setupListenersChain, opts.setters   || this.setters);
+    defineClassField(this, 'throttles', this._setupThrottles,      opts.throttles || this.throttles);
+    defineClassField(this, 'debounces', this._setupDebounces,      opts.debounces || this.debounces);
   }
 
   /**
