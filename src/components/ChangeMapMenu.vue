@@ -6,7 +6,13 @@
 <template>
   <div id="g3w-change-map-menu">
     <template v-if="isChildNode">
-      <div style="display: flex; align-items: center; color: #ffffff" class="skin-background-color">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          color: #ffffff"
+        class="skin-background-color"
+      >
         <span
           v-t-tooltip:bottom.create="'change_session'"
           v-disabled="loading"
@@ -20,24 +26,37 @@
             border-radius: 3px;
           "
         >
-          <i style="color: #FFFFFF" :class="g3wtemplate.getFontClass('reply')"></i>
+          <i
+            style="color: #FFFFFF"
+            :class="g3wtemplate.getFontClass('reply')">
+          </i>
         </span>
 
-        <div v-if="parent" style="margin: auto">
-          <h3 style="font-weight: bold">{{parent.title || parent.name}}</h3>
+        <div
+          v-if="parent"
+          style="margin: auto"
+        >
+          <h3 style="font-weight: bold">
+            {{parent.title || parent.name}}
+          </h3>
         </div>
       </div>
     </template>
 
-    <div v-if="items.length" class="g3w-change-map-menu-container">
+    <div
+      v-if="items.length"
+      class="g3w-change-map-menu-container">
       <div
         v-for="item in items"
-        :key="item.title"
+        :key="item.name"
         class="menu-item"
       >
 
       <!-- ITEM IMAGE -->
-        <div class="menu-item-image" @click.stop="trigger(item)">
+        <div
+          class="menu-item-image"
+          @click.stop="trigger(item)"
+        >
           <img
             :src="item.thumbnail || item.header_logo_img || item.logo_img"
             @error="setFallBackImage(item)"
@@ -49,7 +68,9 @@
         <!-- ITEM CONTENT -->
         <div class="menu-item-content">
           <div class="menu-item-text">
-            <h4 class="menu-item-title">{{ item.title }}</h4>
+            <h4 class="menu-item-title">
+              {{ item.title }}
+            </h4>
             <div v-html="item.description"></div>
           </div>
         </div>
@@ -58,7 +79,10 @@
     </div>
 
     <template v-else>
-      <h3 style="font-weight: bold" v-t="`no_other_${current}`"></h3>
+      <h3
+        style="font-weight: bold"
+        v-t="`no_other_${current}`">
+      </h3>
     </template>
 
   </div>
@@ -81,10 +105,8 @@ async function get_macro(id) {
 
 /** Cached HTTP GET request */
 async function get_group(id) {
-  const g = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
-  if (!get_group[id]) g.forEach(cb);
-  else get_group[id] = g;
-  return g;
+  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
+  return get_group[id];
 }
 
 export default {
@@ -151,8 +173,11 @@ export default {
      */
      setFallBackImage(item) {
       const g3w_logo = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
-      if (item.thumbnail || item.logo_img) item.thumbnail       = g3w_logo;
-      else if (item.header_logo_img)       item.header_logo_img = g3w_logo;
+      if (item.thumbnail || item.logo_img) {
+        item.thumbnail = g3w_logo;
+      } else if (item.header_logo_img) {
+        item.header_logo_img = g3w_logo;
+      }
     },
 
     async back() {
@@ -164,9 +189,14 @@ export default {
       }
       const macro = this.parent && this.parent.macrogroup_id;
       // go back to first MacroGroup when Group belongs to multiple MacroGroups
-      if (this.init && Array.isArray(macro) && macro.length > 0 ) {
-        await this.showGroups(this.macrogroups.find(mg => macro[0] === mg.id));
-        this.init = false;
+      if (Array.isArray(macro) && macro.length > 0 ) {
+        if (1 === macro.length) {
+          await this.showGroups(this.macrogroups.find(mg => macro[0] === mg.id));
+        } else {
+          this.current = 'macrogroups';
+          this.items = this.macrogroups.filter(m => this.parent.macrogroup_id.includes(m.id));
+          this.parent = {}; //set empty parent object (need to show title ??)
+        }
         return;
       }
       this.showRoot();
@@ -211,7 +241,7 @@ export default {
         this.current = 'projects';
       } else {
         try {
-          this.items = get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }));
+          this.items = await get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }));
           this.current = 'projects';
         } catch(err) {
           this.items = [];
@@ -242,10 +272,10 @@ export default {
 
     async trigger(item) {
       switch(this.current) {
-        case 'root':       return this._onChangeRoot(item);
-        case 'macrogroup': return this.showGroups(item);
-        case 'groups':     return await this.showProjects(item);
-        case 'projects':   return await this.changeMapProject(item);
+        case 'root':        return this._onChangeRoot(item);
+        case 'macrogroups': return this.showGroups(item);
+        case 'groups':      return await this.showProjects(item);
+        case 'projects':    return await this.changeMapProject(item);
       }
     },
 
@@ -290,7 +320,6 @@ export default {
   },
 
   async created() {
-    this.init = true;
 
     // at start time set item projects
     this.items = ProjectsRegistry.getListableProjects();
