@@ -15,27 +15,21 @@ Vue.component('g3w-map', vueComp);
  * ORIGINAL SOURCE: src/app/gui/map/vue/map.js@v3.9.3 
  */
 export default function(opts = {}) {
-  opts.target         = opts.target || "map";
-  opts.maps_container = opts.maps_container || "g3w-maps";
-
-  const service       = new MapService(opts);
-
+  const service       = new MapService(Object.assign({ target: 'map', maps_container: 'g3w-maps' }, opts));
   const comp          = new Component({
     id: 'map',
     title: 'Map Component',
     service,
-    internalComponent: new (Vue.extend(vueComp))({ service, target: opts.target, maps_container: opts.maps_container })
+    internalComponent: new (Vue.extend(vueComp))({ service })
   })
 
-  service.getCookie = comp.internalComponent.$cookie.get; // add Vue get cookie method
-
-  comp.layout = (width, height) => {
+  comp.layout = (w, h) => {
     const el = document.getElementById(comp.target);
     if (el) {
-      el.style.height = height + 'px';
-      el.style.width  = width + 'px';
+      el.style.height = h + 'px';
+      el.style.width  = w + 'px';
     }
-    comp._service.layout({ width, height });
+    comp._service.layout({ width: w, height: h });
   };
 
   return comp;

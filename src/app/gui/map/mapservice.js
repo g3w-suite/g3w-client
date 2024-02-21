@@ -2972,6 +2972,8 @@ proto._handlePrint = async function(controlType) {
   return true;
 };
 
+proto.getCookie = (name) => Vue.cookie.get(name);
+
 /**
  * Wrapper for native Open Layers controls 
  */

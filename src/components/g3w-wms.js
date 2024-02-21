@@ -92,20 +92,18 @@ export default function(opts = {}) {
      */
     deleteWms(name) {
       const data = this.getLocalWMSData();
-      Object
-        .keys(data.wms)
-        .find(url => {
-          const index = data.wms[url].findIndex(w => w.name == name);
-          /** @TODO add description */
-          if (-1 !== index) {
-            data.wms[url].splice(index, 1);
-          }
-          /** @TODO add description */
-          if (-1 !== index && 0 == data.wms[url].length) {
-            delete data.wms[url];
-          }
-          return true;
-        });
+      Object.keys(data.wms).find(url => {
+        const index = data.wms[url].findIndex(w => w.name == name);
+        /** @TODO add description */
+        if (-1 !== index) {
+          data.wms[url].splice(index, 1);
+        }
+        /** @TODO add description */
+        if (-1 !== index && 0 == data.wms[url].length) {
+          delete data.wms[url];
+        }
+        return true;
+      });
       this.updateLocalWMSData(data);
     },
 
@@ -131,9 +129,9 @@ export default function(opts = {}) {
      */
     showWmsLayersPanel(config={}) {
       panel = new Panel({
-        service: this,
-        id: getUniqueDomId(),
-        title: 'sidebar.wms.panel.title',
+        service:       this,
+        id:            getUniqueDomId(),
+        title:         'sidebar.wms.panel.title',
         internalPanel: new (Vue.extend(vuePanelComp))({ service: this, config }) 
       });
       panel.unmount = () => Panel.prototype.unmount.call(panel).then(() => this.clear());

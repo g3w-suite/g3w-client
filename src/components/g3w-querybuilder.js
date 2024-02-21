@@ -19,7 +19,7 @@ export default {
     this.type = this.type === null ? type : this.type;
     if ('modal' === this.type) {
       QB = new QueryBuilder({ options });
-      GUI.showModalDialog({ title: 'Query Builder', message: QB.$mount().$el, className: "modal-background-dark " });
+      GUI.showModalDialog({ title: 'Query Builder', message: QB.$mount().$el, className: 'modal-background-dark ' });
     } else {
       options.title = 'Query Builder';
       options.internalPanel = new QueryBuilder(options); 

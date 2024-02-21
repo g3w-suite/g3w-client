@@ -28,6 +28,27 @@ import {
 }                                           from "app/constant";
 import { RelationEventBus as VM }           from "app/eventbus";
 import { getFeaturesFromResponseVectorApi } from "utils/getFeaturesFromResponseVectorApi";
+import RelationsService                     from 'services/relations';
+import ApplicationService                   from 'services/application';
+
+let _options;
+
+function _buildRelationTable(relations = [], id) {
+  relations = relations || [];
+  const layer = ApplicationService.getCurrentProject().getLayerById(id);
+  const attrs = Object.keys(relations[0] ? relations[0].attributes : {});
+  const cols  = layer.getTableHeaders().filter(h => -1 !== attrs.indexOf(h.name));
+  return {
+    columns:          cols.map(c => c.label),
+    rows:             relations.map(r => cols.map(c => r.attributes[c.name])),
+    rows_fid:         relations.map(r => r.attributes[G3W_FID]),
+    features:         relations,
+    fields:           cols.length ? cols : null,
+    formStructure:    layer.getLayerEditingFormStructure(),
+    rowFormStructure: null,
+    layerId:          layer.getId()
+  };
+}
 
 export default {
 
@@ -35,28 +56,30 @@ export default {
   name: 'relation-page',
 
   data() {
-    this.chartRelationIds = this.$options.chartRelationIds || [];
     const {
-      table,
-      relation=null,
-      relations,
+      table = null,
+      relation = null,
+      relations = [],
       nmRelation,
-      feature,
-      currentview,
-      service
+      feature = null,
+      currentview = 'relations',
+      chartRelationIds = [],
+      layer,
     } = this.$options;
     return {
       loading: false,
       state: null,
       error: false,
-      table: table ? service.buildRelationTable(table) : null,
+      table: table ? _buildRelationTable(table) : null,
       relation,
       relations,
       nmRelation,
       showChartButton: false,
       feature,
       currentview,
-      previousview: currentview
+      previousview: currentview,
+      chartRelationIds,
+      layer,
     }
   },
   provide() {
@@ -69,8 +92,11 @@ export default {
     'relation': RelationComponent
   },
   methods: {
-    saveRelations(type){
-      this.$options.service.saveRelations(type)
+    async saveRelations(type){
+      const id = ApplicationService.setDownload(true);
+      try      { await RelationsService.save(Object.assign(_options, { type })) }
+      catch(e) { GUI.showUserMessage({ type: 'alert', message: e || 'info.server_error', closable: true }); }
+      ApplicationService.setDownload(false, id);
     },
     reloadLayout() {
       VM.$emit('reload');
@@ -89,23 +115,24 @@ export default {
       let relationLayerId = relation.referencingLayer;
       const fid = this.feature.attributes[G3W_FID];
       try {
-        const response = await this.$options.service.getRelations({
+        _options = {
           layer: this.$options.layer,
           relation,
           fid
-        });
+        };
+        const response = await RelationsService.getRelations(_options);
         let relations = getFeaturesFromResponseVectorApi(response, {
           type: 'result'
         });
         if (this.nmRelation) {
           relationLayerId = this.nmRelation.referencedLayer;
-          relations = await this.$options.service.getRelationsNM({
+          relations = await RelationsService.getRelationsNM({
             nmRelation: this.nmRelation,
             features: relations
           });
         }
         this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
-        this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
+        this.table = _buildRelationTable(relations, relationLayerId);
 
         GUI.changeCurrentContentOptions({
           title: relation.name,
@@ -131,7 +158,7 @@ export default {
         }
       });
       this.loading = false;
-    }
+    },
   },
   beforeMount() {
     if (this.currentview === 'relation' || (this.relations.length === 1 && this.relations[0].type === 'ONE')) this.showRelation(this.relations[0])
@@ -151,6 +178,9 @@ export default {
         GUI.popContent()
       });
     this.error = false;
+  },
+  created() {
+    this.$on('resize-component', this.reloadLayout);
   }
 };
 </script>

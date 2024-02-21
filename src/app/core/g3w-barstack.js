@@ -53,7 +53,7 @@ export class BarStack extends G3WObject {
   }
 
   /**
-   * clear all stack 
+   * clear all stack
    */
   clear() {
     const d = $.Deferred();
@@ -65,6 +65,7 @@ export class BarStack extends G3WObject {
     } else {
       d.resolve();
     }
+    this.emit('clear');
     return d.promise();
   }
 
@@ -181,6 +182,13 @@ export class BarStack extends G3WObject {
    */
   getLength() {
     return this.state.contentsdata.length;
+  }
+
+  /**
+   * @since 3.10.0
+   */
+  getComponentById(id) {
+    return (this.getContentData().find(d => d.content.id == id) || {}).content;
   }
 
 }

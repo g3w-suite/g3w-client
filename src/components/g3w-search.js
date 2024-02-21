@@ -36,7 +36,7 @@ export function SearchComponent(opts = {}) {
 
   const state = {
     searches: [],
-    searchtools: [],
+    tools: [],
     querybuildersearches: QueryBuilderService.getCurrentProjectItems()
   };
 
@@ -46,13 +46,13 @@ export function SearchComponent(opts = {}) {
   service.title                 = project.state.search_title || "search";
   service.init                  = s  => { state.searches = s || project.state.search; };
   service.addQueryBuilderSearch = s  => { state.querybuildersearches.push(s); }
-  service.addTool               = t  => { state.searchtools.push(t); };
+  service.addTool               = t  => { state.tools.push(t); };
   service.addTools              = tt => { for (const t of tt) service.addTool(t); };
   service.showPanel             = o  => new SearchPanel(o, true);
   service.removeItem            = ({ type, index } = {}) => { 'querybuilder' === type && state.querybuildersearches.splice(index, 1); };
   service.getTitle              = () => service.title;
   service.cleanSearchPanels     = () => { state.panels = {}; };
-  service.removeTools           = () => { state.searchtools.splice(0) };
+  service.removeTools           = () => { state.tools.splice(0) };
   service.stop                  = resolve;
   service.removeTool            = noop;
   service.reload                = () => {
@@ -70,7 +70,6 @@ export function SearchComponent(opts = {}) {
   });
 
   comp._reload = () => { comp._service.reload() };
-  comp.unmount = () => { comp._searches_searchtools.$destroy(); Component.prototype.unmount.call(comp); };
 
   return comp;
 }
@@ -1057,7 +1056,6 @@ function parse_search_by_returnType(data, returnType) {
     if (isEmptyObject(data)) {
       DataRouterService.showCustomOutputDataPromise(Promise.resolve({}));
     } else {
-      const SearchPanel = require('gui/search/vue/panel/searchpanel');
       (new SearchPanel(data)).show();
     }
   }

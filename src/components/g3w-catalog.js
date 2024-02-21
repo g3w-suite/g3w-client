@@ -66,7 +66,7 @@ export default function(opts = {}) {
       state.external[type].filter((l, i) => {
         if (l.name === name) {
           state.external[type].splice(i, 1);
-          return true
+          return true;
         }
       });
     },
@@ -79,16 +79,16 @@ export default function(opts = {}) {
      */
     setSelectedExternalLayer({ layer, type, selected }) {
       state.external[type].forEach(l => { if (undefined !== l.selected) l.selected = l === layer ? selected : false; })
+      // state.external[type].forEach(l => { l.selected = (undefined === l.selected ? l.selected : (l === layer ? selected : false)); })
     },
   }});
 
   service.state                       = state;
-  service.getMajorQgisVersion         = () => ProjectsRegistry.getCurrentProject().getQgisVersion({ type: 'major' });
   service.createLayersGroup           = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
   service.getExternalLayers           = ({ type = 'vector' })     => state.external[type];
   service.getExternalSelectedLayers   = ({ type = 'vector' })     => state.external[type].filter(l => l.selected);
   service.getExternalLayerById        = ({ id, type = 'vector' }) => state.external[type].find(l => l.id === id);
-  service.isExternalLayerSelected     = l => !!(this.getExternalLayerById(l) && this.getExternalLayerById(l).selected);
+  service.isExternalLayerSelected     = l => !!(service.getExternalLayerById(l) && service.getExternalLayerById(l).selected);
   service.addLayersGroup              = g => { state.layersgroups.push(g); };
   service.addLayersStoreToLayersTrees = s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); };
   service.changeMapTheme              = async map_theme => {
@@ -100,24 +100,22 @@ export default function(opts = {}) {
     return changes;
   };
 
-  catalog.getLayersStores().forEach(s => service.addLayersStoreToLayersTrees(s));
-  catalog.onafter('addLayersStore', s => { service.addLayersStoreToLayersTrees(s) });
+  // add layers stores to tree
+  catalog.getLayersStores().forEach(service.addLayersStoreToLayersTrees);
+  catalog.onafter('addLayersStore', service.addLayersStoreToLayersTrees);
   catalog.onafter('removeLayersStore', s => {
-    state.layerstrees.find((tree, i) => {
-      if (tree.storeid === s.getId()) {
-        state.layerstrees.splice(i, 1);
-        return true;
-      }
-    });
+    const i = state.layerstrees.findIndex(t => t.storeid === s.getId());
+    if (-1 !== i) {
+      state.layerstrees.splice(i, 1);
+    }
   });
-
   catalog.onafter('removeLayersStores', () => {
     state.layerstrees.forEach((_, i) => { state.layerstrees.splice(i, 1); });
   });
 
   const comp = new Component({
     ...opts,
-    title: "catalog",
+    title: 'catalog',
     resizable: true,
     service,
     internalComponent: new (Vue.extend(catalogComp))({ service, legend: opts.config.legend }),

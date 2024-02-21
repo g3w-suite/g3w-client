@@ -29,10 +29,7 @@ export default function(opts = {}) {
 
   const service = new G3WObject({ setters: {
     addTool(tool, groupName) {
-      tool.state = tool.state ? tool.state : {
-        type: null,
-        message: null
-      };
+      tool.state = tool.state ? tool.state : { type: null, message: null };
       let group = state.toolsGroups.find(g => g.name === groupName.title);
       if (!group) {
         group = { name: groupName.title, tools: [] };
@@ -67,7 +64,6 @@ export default function(opts = {}) {
   service.getState         = () => state;
   service.reload           = () => { service.removeTools(); };
   service.setLoading       = (bool = false) => { state.loading = bool; }
-  service._removeTool      = toolIdx => { state.toolsGroups = state.toolsGroups.splice(toolIdx, 1); };
   service.updateToolsGroup = (order, config) => { Vue.set(state.toolsGroups, order, config); }
   service.setToolState     = ({ id, state: newState = { type: null, message: null } } = {}) => {
     state.toolsGroups.find(g => {

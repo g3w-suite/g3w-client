@@ -7,6 +7,12 @@ import { noop }          from 'utils/noop';
 import * as MetadataComp from 'components/Metadata.vue';
 import MetadataProjComp  from 'components/MetadataProject.vue';
 
+const GROUPS = {
+  general: ['title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url'],
+  spatial: ['crs', 'extent'],
+  layers: ['layers'],
+};
+
 /**
  * ORIGINAL SOURCE:
  * - src/app/gui/metadata/vue/metadata.js@v3.9.3
@@ -19,50 +25,26 @@ export default function(opts) {
     groups: {}
   };
 
-  const service              = opts.service || new G3WObject();
-  service.state              = state;
-  service.content            = null;
-  service.show               = false;
-  service.getProjectMetadata = () => state;
-  service.getLayersMetadata  = () => state.groups.layers;
-  service.getLayerMetadata   = id => state.groups.layers.filter(l => l.id === id)[0];
-
-  service.showMetadata = b => {
-    service.show = b;
-    if (service.show) {
-      service.content        = new Component({ service, internalComponent: new (Vue.extend(MetadataProjComp))({ state }) });
-      service.content.layout = noop;
-      GUI.setContent({ content: service.content, title: "sdk.metadata.title", perc: 100 });
-      service.show = true;
-    } else {
-      GUI.closeContent()
-    }
-  }
-
+  const service   = opts.service || new G3WObject();
+  service.state   = state;
+  service.content = null;
+  service.show    = false;
   service.reload = (emit = true) => {
     if (emit) {
       service.emit('reload');
     }
     const project = ProjectsRegistry.getCurrentProject().getState();
-    state.name = project.title;
-    const groups = {};
-    Object.entries({
-      general: ['title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url'],
-      spatial: ['crs', 'extent'],
-      layers: ['layers']
-    }).forEach(([groupName, value]) => {
-      groups[groupName] = {};
-      value.forEach(field => {
-        const fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
-        if (!!fieldValue) {
-          groups[groupName][field] = {
-            label: ['sdk','metadata','groups', groupName, 'fields', field].join('.'),
-            value: fieldValue
-          }
+    state.name    = project.title;
+    state.groups  = Object.entries(GROUPS).reduce((g, [name, fields]) => {
+      g[name] = fields.reduce((f, field) => {
+        const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
+        if (!!value) {
+          f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
         }
-      })
-    });
-    state.groups = groups;
+        return f;
+      }, {});
+      return g;
+    }, {});
   };
 
   // build project group metadata
@@ -75,11 +57,23 @@ export default function(opts) {
     internalComponent: new (Vue.extend(MetadataComp))({ service }),
   });
 
-  comp._service.on('reload', () => { comp.setOpen(false); });
+  comp._service.on('reload', () => comp.setOpen(false));
 
-  comp._setOpen = b => { comp._service.showMetadata(b); };
+  // show metadata
+  comp.onafter('setOpen', b => { 
+    const service = comp._service;
+    service.show = b;
+    if (b) {
+      service.content        = new Component({ service, internalComponent: new (Vue.extend(MetadataProjComp))({ state }) });
+      service.content.layout = noop;
+      GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
+      service.show = true;
+    } else {
+      GUI.closeContent()
+    }
+  });
 
-  GUI.on('closecontent', () => { comp.state.open = false; })
+  GUI.on('closecontent', () => comp.state.open = false);
 
   return comp;
 };

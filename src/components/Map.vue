@@ -56,10 +56,10 @@ export default {
   name: 'g3w-map',
 
   data() {
-    const {service, target} = this.$options;
+    const { service } = this.$options;
     return {
-      target,
-      maps_container: this.$options.maps_container,
+      target:         this.$options.service.target,
+      maps_container: this.$options.service.maps_container,
       service,
       hidemaps: service.state.hidemaps,
       map_info: service.state.map_info,

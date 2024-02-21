@@ -9,7 +9,7 @@
       <i :class="g3wtemplate.getFontClass('empty-circle')"></i>
       <span>{{ search.name }}</span>
     </li>
-    <li v-for="searchtool in state.searchtools">
+    <li v-for="searchtool in state.tools">
       <g3w-tool :tool="searchtool"></g3w-tool>
     </li>
     <g3w-search-querybuilder v-for="(querybuildersearch, index) in state.querybuildersearches" :key="querybuildersearch.id"
@@ -38,7 +38,7 @@ export default {
   },
   computed: {
     show(){
-      return this.state.searches.length + this.state.searchtools.length + this.state.querybuildersearches.length > 0;
+      return this.state.searches.length + this.state.tools.length + this.state.querybuildersearches.length > 0;
     }
   },
   methods: {

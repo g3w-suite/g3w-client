@@ -453,6 +453,9 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
+  if (!component) {
+    return;
+  }
   const {id, title, name, icon, valid, headerComponent, header=true} = component;
   if (valid !== undefined) {
     this.state.componentstovalidate[id] = valid;

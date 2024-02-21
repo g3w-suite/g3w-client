@@ -5,7 +5,6 @@
 
 import Component    from 'core/g3w-component';
 import GUI          from 'services/gui';
-import { noop }     from 'utils/noop';
 
 import * as vueComp from 'components/Form.vue';
 import BodyFormComp from 'components/FormBody.vue';
@@ -35,20 +34,13 @@ export default function(opts = {}) {
     headerComponent
   }];
 
-  comp.getService().addComponents(components);
-  comp.getService().setComponent(components[0].component);
+  comp._service.addComponents(components);
+  comp._service.setComponent(components[0].component);
 
   // add component to form body
-  comp.addBodyFormComponent     = (c = {}) => { comp.getInternalComponent().body.components[c.where || 'after'].push(c.component); };
-  comp.addBodyFormComponents    = (c = {}) => { (c.components || []).forEach(c => comp.addBodyFormComponent({ component: c, where: c.where || 'after' })) };
-  comp.addFormComponents        = (c = []) => { comp.getService().addComponents(c); };
-  comp.addFormComponent         = c => { c && comp.getService().addComponent(c) };
-  comp.addDependecyComponents   = c => { comp.getService().addDependecyComponents(c) };
-  comp.layout                   = () => { comp.internalComponent.reloadLayout(); };
-  comp.addComponentBeforeBody   = noop;
-  comp.addComponentAfterBody    = noop;
-  comp.addComponentBeforeFooter = noop;
-  comp.addComponentAfterFooter  = noop;
+  comp.addFormComponents = c => comp._service.addComponents(c);
+  comp.addFormComponent  = c => comp._service.addComponent(c);
+  comp.layout            = () => { comp.internalComponent.reloadLayout(); };
 
   // set modal window to true
   comp.onafter('mount', () => GUI.setModal(true));

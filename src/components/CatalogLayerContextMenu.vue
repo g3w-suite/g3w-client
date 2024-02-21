@@ -933,11 +933,13 @@
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         this.layerMenu.loading.data_table = true;
 
+        const service = new TableService({ layer, formatter: 1 });
+
         // table content
         const comp = new Component({
           id: 'openattributetable',
-          service: new TableService({ layer, formatter: 1 }),
-          internalComponent: new (Vue.extend(Table))({ service: comp._service }),
+          service,
+          internalComponent: new (Vue.extend(Table))({ service }),
          }); 
 
         comp.layout = () => { comp.internalComponent.reloadLayout(); };

@@ -114,11 +114,9 @@ export default class Component extends G3WObject {
 
     };
 
-    if (options.service) {
-      this.setService(options.service);
-    }
+    this.setService(options.service || this);
 
-    if (options.internalComponent && this._service) {
+    if (options.internalComponent) {
       this.setInternalComponent(options.internalComponent);
     }
 
