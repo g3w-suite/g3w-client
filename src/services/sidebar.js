@@ -77,8 +77,6 @@ export default new (class SidebarService extends G3WObject {
     item.collapsible = ('boolean' === typeof comp.collapsible) ? comp.collapsible : true;
     item.isolate     = ('boolean' === typeof comp.isolate)     ? comp.isolate     : false;
 
-    console.log(item, opts);
-
     // append component to `g3w-sidebarcomponents`
     const el = item.$mount().$el;
     const id = `#g3w-sidebarcomponents${ $('.g3w-sidebarpanel').is(':visible') ? ':hidden': ''}`;

@@ -14,6 +14,8 @@ const _cloneDeep = require('lodash.clonedeep');
 
 const deprecate  = require('util-deprecate');
 
+const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
+
 /**
  * Component class
  * 
@@ -47,19 +49,6 @@ export default class Component extends G3WObject {
     // TODO: check why `GUI.getFontClass` is undefined
     opts.icon = Vue.prototype.g3wtemplate.getFontClass(opts.icon) || opts.icon;
 
-    const {
-      id                           = Math.random() * 1000,
-      title                        = '',
-      visible                      = true,
-      open                         = false,
-      resizable                    = false,
-      info                         = null,
-      loading                      = false,
-      disabled                     = false,
-      closewhenshowviewportcontent = true,
-      events                       = {},
-    } = opts;
-
     super();
 
     this._firstLayout = true;
@@ -71,23 +60,20 @@ export default class Component extends G3WObject {
     this._components = [];
 
     /** @type { string } */
-    this.id = id;
+    this.id = opts.id || Math.random() * 1000;
 
     /** @type { string } */
-    this.title = title;
+    this.title = opts.title || '';
 
     this.state = {
-      visible,
-      open,
-      resizable,
-      info,
-      loading,
-      disabled,
-      closewhenshowviewportcontent,
-      sizes: {
-        width:0,
-        height:0
-      }
+      sizes:                        { width: 0, height:0 },
+      info:                         çç(opts.info, null),
+      open:                         çç(opts.open, false),
+      visible:                      çç(opts.visible, true),
+      loading:                      çç(opts.loading, false),
+      disabled:                     çç(opts.disabled, false),
+      resizable:                    çç(opts.resizable, false),
+      closewhenshowviewportcontent: çç(opts.closewhenshowviewportcontent, true),
     };
 
     this.setters = {
@@ -131,7 +117,7 @@ export default class Component extends G3WObject {
     merge(this, opts);
 
     // add events options
-    this.events = events;
+    this.events = opts.events || {};
 
     if (this.events.open) {
       const { when = "after", cb = () => {} } = this.events.open;
