@@ -145,7 +145,7 @@ export default {
       /**
        * @type {Array}
        */
-      steps: [],
+      steps: [], //Contain all items from top to bottom
 
       /**
        * @type {string}
@@ -179,27 +179,59 @@ export default {
         item.header_logo_img = g3w_logo;
       }
     },
-
-    async back() {
-      if (this.steps.length > 1) {
-        const item = this.steps[0];
-        this.steps = [];
-        this.showGroups(item);
-        return;
-      }
-      const macro = this.parent && this.parent.macrogroup_id;
-      // go back to first MacroGroup when Group belongs to multiple MacroGroups
-      if (Array.isArray(macro) && macro.length > 0 ) {
-        if (1 === macro.length) {
-          await this.showGroups(this.macrogroups.find(mg => macro[0] === mg.id));
-        } else {
-          this.current = 'macrogroups';
-          this.items = this.macrogroups.filter(m => this.parent.macrogroup_id.includes(m.id));
-          this.parent = {}; //set empty parent object (need to show title ??)
+    /**
+     *
+     * @return {void}
+     */
+    back() {
+      if (this.steps.length > 0) {
+        this.steps.pop(); //remove last
+        if (0 === this.steps.length) {
+         this.showRoot();
+         return;
         }
-        return;
+        const item = this.steps[this.steps.length - 1];
+
+        if (undefined === item.macrogroup_id) {
+          this.showGroups(item);
+          return;
+        } else {
+          this.showMacroGroups(item.macrogroup_id);
+          return;
+        }
       }
+      //no steps done -> First time of only back
+      if (0 === this.steps.length) {
+        //check if parent is parent (group) belong to macrogroups
+        if (Array.isArray(this.parent.macrogroup_id) && this.parent.macrogroup_id.length > 0) {
+          this.showMacroGroups(this.parent.macrogroup_id);
+          return;
+        }
+      }
+      //if group of project doesn't belong to macrogroup, go to root
       this.showRoot();
+    },
+
+    /**
+     * @since 3.10.0
+      * @param macrogroup_id
+     * @return {Promise<void>}
+     */
+    async showMacroGroups(macrogroup_id=[]) {
+      //Belong just one macrogroup
+      if (1 === macrogroup_id.length) {
+        const macrogroup = this.macrogroups.find(mg => macrogroup_id[0] === mg.id);
+        this.parent = macrogroup;
+        await this.showGroups(macrogroup);
+      } else { //belong to more than one macrogroups
+        this.items = this.macrogroups.filter(m => macrogroup_id.includes(m.id));
+        this.current = 'macrogroups';
+        this.parent = {
+          ...this.parent,
+          title: null,
+          name: null
+        }
+      }
     },
 
     showRoot() {
@@ -220,7 +252,12 @@ export default {
 
     async showGroups(item) {
       this.loading = true;
-      this.parent = item;
+      const from_macros = 'macrogroups' === this.current;
+      if (!from_macros) {
+        this.parent = item;
+      } else {
+        console.log(this.parent)
+      }
       try {
         this.items = await get_macro(item.id);
         this.current = 'groups';
@@ -229,6 +266,7 @@ export default {
       }
 
       this.steps.push(this.parent);
+
       this.loading = false;
     },
 
