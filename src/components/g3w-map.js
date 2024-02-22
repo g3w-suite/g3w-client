@@ -15,7 +15,7 @@ Vue.component('g3w-map', vueComp);
  * ORIGINAL SOURCE: src/app/gui/map/vue/map.js@v3.9.3 
  */
 export default function(opts = {}) {
-  const service       = new MapService(Object.assign({ target: 'map', maps_container: 'g3w-maps' }, opts));
+  const service       = new MapService(opts);
   const comp          = new Component({
     id: 'map',
     title: 'Map Component',

@@ -353,9 +353,9 @@ function MapService(options={}) {
   })
 
   this.viewer = null;
-  this.target = options.target || null;
+  this.target = options.target || 'map';
   this.layersCount = 0; // useful to set Zindex to layer order on map
-  this.maps_container = options.maps_container || null;
+  this.maps_container = options.maps_container || 'g3w-maps';
   this._layersStoresEventKeys = {};
   this._keyEvents = {
     ol: [],
