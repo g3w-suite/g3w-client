@@ -107,7 +107,7 @@ function SidebarService() {
    * close for the moment only conlapsbale
    */
   this.closeOpenComponents = function(collapsible=true){
-    this.getComponents().forEach(component => component.closeWhenViewportContentIsOpen() && component.collapsible && component.click({open: false}))
+    this.getComponents().forEach(c => c.getOpen() && c.state.closewhenshowviewportcontent && c.collapsible && c.click({ open: false }))
   };
 
   this.reloadComponent = function(id) {

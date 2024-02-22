@@ -78,16 +78,15 @@ export function SearchComponent(opts = {}) {
  * ORIGINAL SOURCE: src/app/gui/search/vue/panel/searchpanel.js@v3.9.3
  */
 export function SearchPanel(opts = {}, show = false) {
-  const comp = new Panel({
+  const service = opts.service || new SearchService(opts); 
+  return new Panel({
     ...opts,
-    service: opts.service || new SearchService(opts),
+    show,
+    service,
     id: getUniqueDomId(),
     title: 'search',
+    internalPanel: new (opts.component || Vue.extend(vueSearchComp))({ service }),
   });
-  comp.setInternalPanel(new (opts.component || Vue.extend(vueSearchComp))({ service: comp.service }));
-  comp.unmount = () => Panel.prototype.unmount.call(this).then(() => { comp.service.clear() });
-  if(show) comp.show();
-  return comp;
 };
 
 

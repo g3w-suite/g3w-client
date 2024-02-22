@@ -12,38 +12,40 @@ import { resolve }                  from 'utils/resolve';
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
 
+const deprecate  = require('util-deprecate');
+
 /**
  * Component class
  * 
  * ORIGINAL SOURCE src/app/gui/component/component.js@v3.9.3
  * 
- * @param { Object} options
- * @param { number } options.id 
- * @param { string } options.title
- * @param { boolean } options.visible
- * @param { boolean } options.open
- * @param { boolean } options.resizable
- * @param { null | unknown } options.info
- * @param { boolean } options.loading
- * @param { boolean } options.disabled
- * @param { boolean } options.closewhenshowviewportcontent
- * @param options.events
- * @param options.internalComponent since 3.10.0
- * @param options.service since 3.10.0
+ * @param { Object} opts
+ * @param { number } opts.id 
+ * @param { string } opts.title
+ * @param { boolean } opts.visible
+ * @param { boolean } opts.open
+ * @param { boolean } opts.resizable
+ * @param { null | unknown } opts.info
+ * @param { boolean } opts.loading
+ * @param { boolean } opts.disabled
+ * @param { boolean } opts.closewhenshowviewportcontent
+ * @param opts.events
+ * @param opts.internalComponent since 3.10.0
+ * @param opts.service since 3.10.0
  */
 export default class Component extends G3WObject {
 
-  constructor(options = {}) {
+  constructor(opts = {}) {
 
     // BACKOMP v3.x
-    if (options.iconConfig) {
-      options.iconColor = options.iconConfig.color;
-      options.icon      = options.iconConfig.icon;
-      delete options.iconConfig;
+    if (opts.iconConfig) {
+      opts.iconColor = opts.iconConfig.color;
+      opts.icon      = opts.iconConfig.icon;
+      delete opts.iconConfig;
     }
 
     // TODO: check why `GUI.getFontClass` is undefined
-    options.icon = Vue.prototype.g3wtemplate.getFontClass(options.icon) || options.icon;
+    opts.icon = Vue.prototype.g3wtemplate.getFontClass(opts.icon) || opts.icon;
 
     const {
       id                           = Math.random() * 1000,
@@ -56,14 +58,14 @@ export default class Component extends G3WObject {
       disabled                     = false,
       closewhenshowviewportcontent = true,
       events                       = {},
-    } = options;
+    } = opts;
 
     super();
 
     this._firstLayout = true;
 
     /** internal VUE component */
-    this.internalComponent = options.internalComponent || null;
+    this.internalComponent = opts.internalComponent || null;
 
     /** @type { Array } */
     this._components = [];
@@ -92,12 +94,16 @@ export default class Component extends G3WObject {
 
       setOpen(bool) {
         this.state.open = bool;
-        this._setOpen(bool);
+        if (this._setOpen) {
+          this._setOpen(bool);
+        }
       },
 
       setVisible(bool) {
         this.state.visible = bool;
-        this._setVisible(bool);
+        if (this._setVisible) {
+          this._setVisible(bool);
+        }
       },
 
       setLoading(bool=false) {
@@ -109,26 +115,31 @@ export default class Component extends G3WObject {
       },
 
       reload() {
-        this._reload();
+        if (this._reload) {
+          this._reload();
+        }
       },
 
     };
 
-    this.setService(options.service || this);
+    this.setService(opts.service || this);
 
-    if (options.internalComponent) {
-      this.setInternalComponent(options.internalComponent);
+    if (opts.internalComponent) {
+      this.setInternalComponent(opts.internalComponent);
     }
 
-    merge(this, options);
+    merge(this, opts);
 
     // add events options
     this.events = events;
 
-    this.handleEventsComponent();
+    if (this.events.open) {
+      const { when = "after", cb = () => {} } = this.events.open;
+      this[`on${when}`]('setOpen', bool => cb(bool));
+    }
 
-    if (options.vueComponentObject) {
-      this.init({ vueComponentObject: options.vueComponentObject });
+    if (opts.vueComponentObject) {
+      this.init({ vueComponentObject: opts.vueComponentObject });
     }
   }
 
@@ -142,7 +153,7 @@ export default class Component extends G3WObject {
    * @param options.propsData
    */
   init(options = {}) {
-    this.vueComponent = this.createVueComponent(options.vueComponentObject);
+    this.vueComponent = _cloneDeep(options.vueComponentObject);
     this._components  = options.components || [];
 
     this.setService(options.service || noop);
@@ -152,7 +163,7 @@ export default class Component extends G3WObject {
     }
 
     if (options.template) {
-      this.setInternalComponentTemplate(options.template);
+      this.vueComponent.template = options.template;
     }
 
     this.setInternalComponent = function() {
@@ -205,27 +216,16 @@ export default class Component extends G3WObject {
     this._service = service;
   }
 
-  handleEventsComponent() {
-    if (this.events.open) {
-      const { when = "after", cb = () => {} } = this.events.open;
-      this[`on${when}`]('setOpen', bool => cb(bool));
-    }
-  }
-
-  insertComponentAt(index, Component) {
-    this._components.splice(index, 0, Component);
-  }
-
-  removeCompomentAt(index) {
-    this._components.splice(index, 1);
-  }
-
+  /** @FIXME duplicated function definition */
   addComponent(Component) {
     this._components.push(Component);
   }
 
-  popComponent() {
-    return this._components.pop();
+  /** @FIXME duplicated function definition */
+  addComponent(component) {
+    if (component) {
+      this.vueComponent.components[component.key] = component.value;
+    }
   }
 
   removeComponent(Component) {
@@ -236,14 +236,6 @@ export default class Component extends G3WObject {
       }
     })
   }
-
-  setComponents(components) {
-    this._components = Array.isArray(components) ? components: [];
-  };
-
-  exendComponents(components) {
-    _.merge(this._components, components);
-  };
 
   getInternalComponent() {
     return this.internalComponent;
@@ -256,99 +248,6 @@ export default class Component extends G3WObject {
       this.internalComponent.state = this._service.state;
     }
   }
-
-  createVueComponent(vueObjOptions) {
-    return _cloneDeep(vueObjOptions);
-  }
-
-  addInternalComponentData(data) {
-    _.merge(this.internalComponent, data)
-  }
-
-  overwriteServiceMethod(methodName, method) {
-    this._service[methodName] = method;
-  }
-
-  overwriteServiceMethods(methodsOptions) {
-    Object.entries(methodsOptions).forEach(([methodName, method]) => this.overwriteServiceMethod(methodName, method))
-  }
-
-  extendService(serviceOptions) {
-    if (this._service) {
-      merge(this._service, serviceOptions);
-    }
-  }
-
-  extendInternalComponent(internalComponentOptions) {
-    if(!this.vueComponent) {
-      this.vueComponent = internalComponentOptions;
-      return;
-    }
-    Object
-      .entries(internalComponentOptions)
-      .forEach(([key, value]) => {
-        switch (key) {
-          case 'methods':    this.extendInternalComponentMethods(value); break;
-          case 'components': this.extendInternalComponentComponents(value); break;
-          case 'computed':   merge(this.vueComponent[key], value); break;
-          case 'data':       merge(this.vueComponent[key], value); break;
-        }
-      });
-  }
-
-  extendInternalComponentComponents(components) {
-    if (components) {
-      merge(this.vueComponent.components, components);
-    }
-  }
-
-  extendComponents(components) {
-    this.extendInternalComponentComponents(components);
-  }
-
-  addComponent(component) {
-    if (component) {
-      this.vueComponent.components[component.key] = component.value;
-    }
-  }
-
-  /** @TODO check if unusued (invalid call to "forEach.forEach") */
-  extendInternalComponentMethods(methods) {
-    if (methods) {
-      Object.entries(methods).forEach.forEach(([key, value]) => (!(value instanceof Function)) && delete methods[key]);
-      merge(this.vueComponent.methods, methods);
-    }
-  }
-
-  extendInternalComponentComputed(computed) {
-    if (computed) {
-      Object.entries(computed).forEach(([key, value]) =>  (!(value instanceof Function)) && delete computed[key]);
-      merge(this.vueComponent.computed, computed);
-    }
-  }
-
-  setInternalComponentTemplate(template) {
-    if (template) {
-      this.vueComponent.template = template;
-    }
-  }
-
-  getInternalTemplate() {
-    return this.vueComponent.template;
-  }
-
-  destroy() {}
-
-  click() {};
-
-  // hook function to show componet
-  show() {}
-
-  _setOpen(bool) {}
-
-  _setVisible() {}
-
-  _reload() {}
 
   /**
    * @param { Element | 'string' } parent DOM element
@@ -431,3 +330,36 @@ export default class Component extends G3WObject {
   }
 
 }
+
+/**
+ * @deprecated since 3.10.0 Will be deleted in 4.x.
+ */
+Object.assign(Component.prototype, {
+  _setOpen:                          noop,
+  _setVisible:                       noop,
+  _reload:                           noop,
+  destroy:                           noop,
+  click:                             noop,
+  show:                              noop,
+  setComponents:                     deprecate(function(c) { this._components = Array.isArray(c) ? c: []; }, '[G3W-CLIENT] Component::setComponents(components) is deprecated'),
+  setInternalComponentTemplate:      deprecate(function(t) { t && (this.vueComponent.template = t); }, '[G3W-CLIENT] Component::setInternalComponentTemplate(template) is deprecated'),
+  getInternalTemplate:               deprecate(function() { return this.vueComponent.template; }, '[G3W-CLIENT] Component::getInternalTemplate() is deprecated'),
+  insertComponentAt:                 deprecate(function(i, c) { this._components.splice(i, 0, c); }, '[G3W-CLIENT] Component::insertComponentAt(index, Component) is deprecated'),
+  removeCompomentAt:                 deprecate(function(i) { this._components.splice(i, 1); }, '[G3W-CLIENT] Component::removeCompomentAt(index) is deprecated'),
+  exendComponents:                   deprecate(function(c) { _.merge(this._components, c); }, '[G3W-CLIENT] Component::exendComponents(components) is deprecated'),
+  addInternalComponentData:          deprecate(function(d) { _.merge(this.internalComponent, d) }, '[G3W-CLIENT] Component::addInternalComponentData(data) is deprecated'),
+  handleEventsComponent:             deprecate(function() { this.events.open && this['on' + (this.events.open || 'after')]('setOpen', b => (this.events.open.cb || (() => {}))(b)); }, '[G3W-CLIENT] Component::handleEventsComponent() is deprecated'),
+  popComponent:                      deprecate(function() { return this._components.pop(); }, '[G3W-CLIENT] Component::popComponent() is deprecated'),
+  overwriteServiceMethod:            deprecate(function(n, m) { this._service[n] = m; }, '[G3W-CLIENT] Component::overwriteServiceMethod(methodName, method) is deprecated'),
+  extendInternalComponentMethods:    deprecate(function(m) { m && Object.entries(m).forEach(([k, v]) => (!(v instanceof Function)) && delete m[k]); merge(this.vueComponent.methods, m); }, '[G3W-CLIENT] Component::extendInternalComponentMethods(methods) is deprecated'),
+  extendInternalComponentComponents: deprecate(function(c) { c && merge(this.vueComponent.components, c); }, '[G3W-CLIENT] Component::extendInternalComponentComponents(components) is deprecated'),
+  extendComponents:                  deprecate(function(c) { this.extendInternalComponentComponents(c); }, '[G3W-CLIENT] Component::extendComponents(components) is deprecated'),
+  extendInternalComponentComputed:   deprecate(function(c) { c && Object.entries(c).forEach(([k, v]) =>  (!(v instanceof Function)) && delete c[k]); merge(this.vueComponent.computed, c); }, '[G3W-CLIENT] Component::extendInternalComponentComputed(computed) is deprecated'),
+  extendService:                     deprecate(function(o) { this._service && merge(this._service, serviceOptions); }, '[G3W-CLIENT] Component::extendService(serviceOptions) is deprecated'),
+  createVueComponent:                deprecate(function(o) { return _cloneDeep(o); }, '[G3W-CLIENT] Component::createVueComponent(vueObjOptions) is deprecated'),
+  closeWhenViewportContentIsOpen:    deprecate(function() { return this.getOpen() && this.state.closewhenshowviewportcontent; }, '[G3W-CLIENT] Component::closeWhenViewportContentIsOpen() is deprecated'),
+  /** used by the following plugins: "cadastre", "iternet" */
+  overwriteServiceMethods:           deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
+  /** used by the following plugins: "cadastre" */
+  extendInternalComponent:           deprecate(function(o) { this.vueComponent ? Object.entries(o).forEach(([k, v]) => { switch (k) { case 'methods': this.extendInternalComponentMethods(v); break; case 'components': this.extendInternalComponentComponents(v); break; case 'computed':   merge(this.vueComponent[k], v); break; case 'data': merge(this.vueComponent[k], v); break; } }): (this.vueComponent = o); }, '[G3W-CLIENT] Component::extendInternalComponent(internalComponentOptions) is deprecated'),
+});

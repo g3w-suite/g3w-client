@@ -59,9 +59,9 @@ export class BarStack extends G3WObject {
     const d = $.Deferred();
     const data = this.state.contentsdata;
     if (data.length) {
-      let reqs = [];
-      data.forEach((data) => reqs.push(this._unmount(data.content)));
-      $.when(reqs).then(() => { data.splice(0, data.length); d.resolve(); });
+      $
+        .when(data.map(d => this._unmount(d.content)))
+        .then(() => { data.splice(0, data.length); d.resolve(); });
     } else {
       d.resolve();
     }

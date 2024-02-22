@@ -24,12 +24,13 @@ export default function(opts = {}) {
     }))(),
   });
 
-  comp.stack        = stack;
-  comp.contentsdata = stack.state.contentsdata;
-
   stack.on('clear', () => comp.contentsdata = stack.state.contentsdata);
 
   Object.assign(comp, {
+
+    stack,
+
+    contentsdata: stack.state.contentsdata,
 
     setContent(opts = {}) {
       const d = $.Deferred();
@@ -41,7 +42,6 @@ export default function(opts = {}) {
         // clear stack
         comp.clearContents().then(() => { comp.addContent(opts.content, opts).then(() => d.resolve(opts)); })
       }
-    
       comp.setOpen(true);
       return d.promise();
     },

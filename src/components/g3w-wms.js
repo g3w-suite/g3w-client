@@ -132,10 +132,9 @@ export default function(opts = {}) {
         service:       this,
         id:            getUniqueDomId(),
         title:         'sidebar.wms.panel.title',
-        internalPanel: new (Vue.extend(vuePanelComp))({ service: this, config }) 
+        internalPanel: new (Vue.extend(vuePanelComp))({ service: this, config }),
+        show:          true,
       });
-      panel.unmount = () => Panel.prototype.unmount.call(panel).then(() => this.clear());
-      panel.show();
       return panel;
     },
 

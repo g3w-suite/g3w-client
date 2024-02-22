@@ -78,8 +78,7 @@ export default function(opts = {}) {
      * @since 3.8.0
      */
     setSelectedExternalLayer({ layer, type, selected }) {
-      state.external[type].forEach(l => { if (undefined !== l.selected) l.selected = l === layer ? selected : false; })
-      // state.external[type].forEach(l => { l.selected = (undefined === l.selected ? l.selected : (l === layer ? selected : false)); })
+      state.external[type].forEach(l => { l.selected = (undefined === l.selected ? l.selected : (l === layer ? selected : false)); })
     },
   }});
 
@@ -88,9 +87,8 @@ export default function(opts = {}) {
   service.getExternalLayers           = ({ type = 'vector' })     => state.external[type];
   service.getExternalSelectedLayers   = ({ type = 'vector' })     => state.external[type].filter(l => l.selected);
   service.getExternalLayerById        = ({ id, type = 'vector' }) => state.external[type].find(l => l.id === id);
-  service.isExternalLayerSelected     = l => !!(service.getExternalLayerById(l) && service.getExternalLayerById(l).selected);
+  service.isExternalLayerSelected     = l => !!(service.getExternalLayerById(l) || {}).selected;
   service.addLayersGroup              = g => { state.layersgroups.push(g); };
-  service.addLayersStoreToLayersTrees = s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); };
   service.changeMapTheme              = async map_theme => {
     ApplicationService.changeProjectView(true);
     const rootNode = state.layerstrees[0];
@@ -101,8 +99,8 @@ export default function(opts = {}) {
   };
 
   // add layers stores to tree
-  catalog.getLayersStores().forEach(service.addLayersStoreToLayersTrees);
-  catalog.onafter('addLayersStore', service.addLayersStoreToLayersTrees);
+  catalog.getLayersStores().forEach(s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
+  catalog.onafter('addLayersStore', s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
   catalog.onafter('removeLayersStore', s => {
     const i = state.layerstrees.findIndex(t => t.storeid === s.getId());
     if (-1 !== i) {

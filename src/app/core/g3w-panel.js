@@ -12,13 +12,13 @@ import { resolve } from 'utils/resolve';
  */
 export default class Panel extends G3WObject {
 
-  constructor (options = {}) {
+  constructor (opts = {}) {
     super();
-    this.id = options.id || null;
-    this.title = options.title || '';
-    this.internalPanel = options.panel || null;
-    this.service = options.service;
-    if (true === options.show && this.internalPanel) {
+    this.id            = opts.id || null;
+    this.title         = opts.title || '';
+    this.internalPanel = opts.panel || null;
+    this.service       = opts.service;
+    if (true === opts.show && this.internalPanel) {
       this.show();
     }
   }
@@ -57,9 +57,9 @@ export default class Panel extends G3WObject {
 
   mount(parent) {
     const panel = this.internalPanel;
-    const iCinstance = panel.$mount();
-    $(parent).append(iCinstance.$el);
-    iCinstance.$nextTick(() => {
+    const vueComp = panel.$mount();
+    $(parent).append(vueComp.$el);
+    vueComp.$nextTick(() => {
       $(parent).localize();
       panel.onShow && panel.onShow();
     });
@@ -68,13 +68,14 @@ export default class Panel extends G3WObject {
 
   unmount() {
     const panel = this.internalPanel;
-    const d = $.Deferred();
     panel.$destroy(true);
     $(panel.$el).remove();
     panel.onClose && panel.onClose();
     this.internalComponent = null;
-    d.resolve();
-    return d.promise();
+    if (this.service && this.service.clear) {
+      this.service.clear();
+    }
+    return resolve();
   }
 
   onResize(parentWidth,parentHeight) {}
