@@ -3,18 +3,11 @@
  * @since v3.7
  */
 
-import { BarStack }         from 'core/g3w-barstack';
-import SidebarItemComponent from 'components/SidebarItem.vue';
+import G3WObject    from 'core/g3w-object';
+import { BarStack } from 'core/g3w-barstack';
+import vueComp      from 'components/SidebarItem.vue';
 
-const { base, inherit } = require('utils');
-const G3WObject         = require('core/g3wobject');
-
-/**
- * TODO: temporary need to remove it
- */
-const SidebarItem = Vue.extend(SidebarItemComponent);
-
-class SidebarService extends G3WObject {
+export default new (class SidebarService extends G3WObject {
 
   constructor() {
     super();
@@ -36,8 +29,12 @@ class SidebarService extends G3WObject {
      * of closing panel of the sidebar
      */
     this.setters = {
-      closeSidebarPanel() {},
-      openCloseItem(bool) {}
+      closeSidebarPanel() {
+        console.info('closing sidebar panel');
+      },
+      openCloseItem(bool) {
+        console.info('toggle sidebar panel');
+      }
     };
 
   }
@@ -69,7 +66,7 @@ class SidebarService extends G3WObject {
 
     opts.before      = undefined === opts.before ? true : opts.before;
 
-    const item       = new SidebarItem({ service: this, info: opts.info, component: comp });
+    const item       = new (Vue.extend(vueComp))({ service: this, component: comp });
     item.title       = comp.title       || item.title;
     item.info        = comp.info        || item.info;
     item.actions     = comp.actions     || item.actions;
@@ -78,7 +75,9 @@ class SidebarService extends G3WObject {
     item.iconColor   = comp.iconColor;
     item.state       = comp.state       || true;
     item.collapsible = ('boolean' === typeof comp.collapsible) ? comp.collapsible : true;
-    item.isolate     = ('boolean' === typeof comp.isolate)     ? comp.isolate: false;
+    item.isolate     = ('boolean' === typeof comp.isolate)     ? comp.isolate     : false;
+
+    console.log(item, opts);
 
     // append component to `g3w-sidebarcomponents`
     const el = item.$mount().$el;
@@ -94,7 +93,7 @@ class SidebarService extends G3WObject {
       children.each((i, c) => {
         const found = Number.isInteger(opts.position) ? opts.position === i : c.id === opts.position;
         if (found) {
-          $(el)[`insert${before ? 'Before' : 'After'}`](c);
+          $(el)[`insert${opts.before ? 'Before' : 'After'}`](c);
         }
       });
     }
@@ -206,6 +205,4 @@ class SidebarService extends G3WObject {
     this.stack.clear();
   }
 
-}
-
-export default new SidebarService();
+})();
