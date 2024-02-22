@@ -15,7 +15,8 @@
     :class="{
       selected: !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
-      disabled: isInGrey, group: isGroup
+      disabled: isInGrey,
+      group: isGroup
     }"
   >
     <!-- GROUP LAYER -->
@@ -234,6 +235,16 @@ import GUI                         from 'services/gui';
 
 const { downloadFile } = require('utils');
 
+function _setAllLayersVisible(layers) {
+  layers.nodes.forEach(n => {
+    if (undefined === n.id) {
+      _setAllLayersVisible({ nodes: n.nodes, visible: layers.visible && n.checked });
+    } else if (n.parentGroup.checked && n.checked) {
+      CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(layers.visible);
+    }
+  });
+};
+
 export default {
 
   /** @since 3.8.6 */
@@ -360,16 +371,9 @@ export default {
 
   },
 
-  watch:{
+  watch: {
 
-    /**
-     * @FIXME empty function ? 
-     */
-    'layerstree.disabled'(bool) {
-
-    },
-
-    'layerstree.checked'(n, o) {
+    'layerstree.checked'() {
       if (this.isGroup) {
         this.handleGroupChecked(this.layerstree);
       } else {
@@ -386,31 +390,9 @@ export default {
      *
      * @since 3.9.0
      */
-    async removeCurrentFilter() {
-      await CatalogLayersStoresRegistry
-        .getLayerById(this.layerstree.id)
-        .deleteFilterToken();
+    removeCurrentFilter() {
+      return CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).deleteFilterToken();
     },
-
-    /**
-     * Inizialize layer (disable, visible etc..)
-     */
-    init() {
-      if (this.isGroup && !this.layerstree.checked) {
-        this.handleGroupChecked(this.layerstree);
-      }
-      if (this.isGroup && !this.root) {
-        this.layerstree.nodes.forEach(node => {
-          if (node.id && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
-            node.uncheckable = true;
-          }
-        })
-      }
-    },
-
-  },
-
-  methods: {
 
     /**
      * Handle change checked property of group
@@ -420,49 +402,39 @@ export default {
      * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      let {
-        checked,
-        parentGroup,
-        nodes
-      } = group;
-    
-      const setAllLayersVisible = ({nodes, visible}) => {
-        nodes.forEach(node => {
-          if (undefined === node.id) {
-            setAllLayersVisible({ nodes: node.nodes, visible: visible && node.checked });
-          } else if (node.parentGroup.checked && node.checked) {
-            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(visible);
-          }
-        });
-      };
-
-      if (!checked) {
-        nodes.forEach(node => {
-          if (undefined === node.id) {
-            setAllLayersVisible({ nodes: node.nodes, visible: false });
-          } else if (node.checked) {
-            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(false);
+      if (!group.checked) {
+        group.nodes.forEach(n => {
+          if (undefined === n.id) {
+            _setAllLayersVisible({ nodes: n.nodes, visible: false });
+          } else if (n.checked) {
+            CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(false);
           }
         });
         return; // NB exit early!
       }
 
-      const visible = parentGroup ? parentGroup.checked : true;
-      if (false === (parentGroup && parentGroup.mutually_exclusive)) {
-        setAllLayersVisible({ nodes, visible });
-      } else {
-        parentGroup.nodes.forEach(node => {
-          node.checked = node.groupId === group.groupId;
-          if (node.checked) {
-            setAllLayersVisible({ nodes: node.nodes, visible });
+      const visible            = group.parentGroup ? group.parentGroup.checked : true;
+      const mutually_exclusive = group.parentGroup && group.parentGroup.mutually_exclusive;
+
+      if (!mutually_exclusive) {
+        _setAllLayersVisible({ nodes: group.nodes, visible });
+      }
+
+      if (mutually_exclusive) {
+        group.parentGroup.nodes.forEach(n => {
+          n.checked = n.groupId === group.groupId;
+          if (n.checked) {
+            _setAllLayersVisible({ nodes: n.nodes, visible });
           }
         });
       }
-      while (parentGroup) {
-        parentGroup.checked = parentGroup.root || parentGroup.checked;
-        parentGroup = parentGroup.parentGroup
-      }
 
+      // traverse parent groups
+      let g = group.parentGroup;
+      while (g) {
+        g.checked = g.root || g.checked;
+        g         = g.parentGroup;
+      }
     },
 
     /**
@@ -475,44 +447,32 @@ export default {
      * @param {uknown}  layer.parentGroup
      */
     handleLayerChecked(layer) {
-      let {
-        checked,
-        id,
-        // disabled,
-        projectLayer=false,
-        parentGroup
-      } = layer;
 
-      // case external layer (eg. temporary layer through `addlayerscontrol`)
-      if (!projectLayer) {
-        // update `layer.visible` property
-        layer.visible = checked;
-        GUI.getService('map').changeLayerVisibility({ id, visible: checked });
+      // external layer (eg. temporary layer through `addlayerscontrol`)
+      if (!layer.projectLayer) {
+        layer.visible = layer.checked;
+        GUI.getService('map').changeLayerVisibility({ id: layer.id, visible: layer.checked });
         return;  // NB exit early!
       }
 
-      // case project layer (eg. qgis layer)
-      layer = CatalogLayersStoresRegistry.getLayerById(id);
-      if (checked) {
-        // const visible = layer.setVisible(!disabled);
-        /**
-         * @TODO is it necessary to emit the `layer-change-style` event here?
-         */
-        // if (visible && 'toc' === this.legendplace) {
-        //  setTimeout(() => VM.$emit('layer-change-style', { layerId: id }));
-        // }
-        if (parentGroup.mutually_exclusive) {
-          parentGroup.nodes.forEach(node => node.checked = node.id === id);
-        }
-        while (parentGroup) {
-          parentGroup.checked = true;
-          parentGroup = parentGroup.parentGroup;
-        }
-      } else {
-        layer.setVisible(false);
-      }
-      VM.$emit('treenodevisible', layer);
+      // project layer (eg. qgis layer)
+      const qlayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const checked = layer.checked;
 
+      qlayer.setVisible(checked ? !layer.disabled : false)
+
+      if (checked && layer.parentGroup.mutually_exclusive) {
+        layer.parentGroup.nodes.forEach(n => n.checked = n.id === layer.id);
+      }
+
+      // traverse parent groups
+      let g = layer.parentGroup;
+      while (checked && g) {
+        g.checked = true;
+        g         = g.parentGroup;
+      }
+
+      VM.$emit('treenodevisible', qlayer);
     },
 
     /**
@@ -598,7 +558,7 @@ export default {
      *
      * @since v3.8
      */
-     onTreeItemClick() {
+    onTreeItemClick() {
       this.handleClick({
         '1': () => !this.isTable && !this.isGroup && this.select(),
         '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree)
