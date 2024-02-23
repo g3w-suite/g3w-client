@@ -184,40 +184,38 @@ export default {
      * @return {void}
      */
     back() {
-      if (this.steps.length > 0) {
-        this.steps.pop(); //remove last
-        if (0 === this.steps.length) {
-         this.showRoot();
-         return;
-        }
-        const item = this.steps[this.steps.length - 1];
-
-        if (undefined === item.macrogroup_id) {
-          this.showGroups(item);
-          return;
-        } else {
-          this.showMacroGroups(item.macrogroup_id);
-          return;
-        }
-      }
+      const isThereStep = this.steps.pop(); //remove last
       //no steps done -> First time of only back
       if (0 === this.steps.length) {
         //check if parent is parent (group) belong to macrogroups
-        if (Array.isArray(this.parent.macrogroup_id) && this.parent.macrogroup_id.length > 0) {
-          this.showMacroGroups(this.parent.macrogroup_id);
-          return;
+        if (undefined === isThereStep && Array.isArray(this.parent.macrogroup_id) && this.parent.macrogroup_id.length > 0) {
+          this.showMacroGroups(this.parent.macrogroup_id, true);
+        } else {
+          this.showRoot();
         }
+      } else {
+        //get last step
+        const item = this.steps[this.steps.length - 1];
+        //set false to add step because it is comping from bottom to top
+        const addStep = false;
+        if (undefined === item.macrogroup_id) {
+          this.showGroups(item, addStep);
+        } else {
+          //set false to add step because it is comping from bottom to top
+          this.showMacroGroups(item.macrogroup_id, addStep);
+        }
+
       }
-      //if group of project doesn't belong to macrogroup, go to root
-      this.showRoot();
+
     },
 
-    /**
-     * @since 3.10.0
-      * @param macrogroup_id
-     * @return {Promise<void>}
-     */
-    async showMacroGroups(macrogroup_id=[]) {
+      /**
+       * @since 3.10.0
+       * @param macrogroup_id
+       * @param addStep Boolean
+       * @return {Promise<void>}
+       */
+    async showMacroGroups(macrogroup_id=[], addStep=true) {
       //Belong just one macrogroup
       if (1 === macrogroup_id.length) {
         const macrogroup = this.macrogroups.find(mg => macrogroup_id[0] === mg.id);
@@ -227,49 +225,42 @@ export default {
         this.items = this.macrogroups.filter(m => macrogroup_id.includes(m.id));
         this.current = 'macrogroups';
         this.parent = {
-          ...this.parent,
-          title: null,
-          name: null
+          macrogroup_id,
+          title: null, // need to set empty (no title)
+          name: null // need to be set empty
         }
+        if (addStep) {
+          this.steps.push(this.parent);
+        }
+
       }
     },
 
-    showRoot() {
-      this.current = 'root';
-      this.items = this.macrogroupsandgroups;
-      this.steps = [];
-    },
-
-    _onChangeRoot(item) {
-      // item is a macrogroup
-      if (undefined === item.srid) {
-        this.showGroups(item)
-      } else {
-        // item is a group
-        this.showProjects(item);
-      }
-    },
-
-    async showGroups(item) {
+    /**
+     *
+      * @param item
+     * @return {Promise<void>}
+     */
+    async showGroups(item, addStep=true) {
       this.loading = true;
-      const from_macros = 'macrogroups' === this.current;
-      if (!from_macros) {
-        this.parent = item;
-      } else {
-        console.log(this.parent)
-      }
+      this.parent = item;
       try {
         this.items = await get_macro(item.id);
         this.current = 'groups';
       } catch(err) {
         this.items = [];
       }
-
-      this.steps.push(this.parent);
-
+      if (addStep) {
+        this.steps.push(this.parent);
+      }
       this.loading = false;
     },
 
+    /**
+     *
+      * @param item
+     * @return {Promise<void>}
+     */
     async showProjects(item) {
       this.loading = true;
       this.parent = item;
@@ -288,6 +279,22 @@ export default {
 
       this.steps.push(this.parent);
       this.loading = false;
+    },
+
+    showRoot() {
+      this.current = 'root';
+      this.items = this.macrogroupsandgroups;
+      this.steps = [];
+    },
+
+    _onChangeRoot(item) {
+      // item is a macrogroup
+      if (undefined === item.srid) {
+        this.showGroups(item)
+      } else {
+        // item is a group
+        this.showProjects(item);
+      }
     },
 
     /**
