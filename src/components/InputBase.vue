@@ -6,9 +6,19 @@
 <template>
   <div class="form-group" v-if="state.visible">
     <slot name="label">
-      <label :for="state.name" v-disabled="!editable" class="col-sm-12 control-label">{{ state.label }}
+      <!-- @since 3.10.0 -->
+      <label
+        :for="state.name"
+        v-disabled="!editable"
+        class="col-sm-12 control-label" v-t="state.i18nLabel ? state.label : ''">{{ state.i18nLabel ? '' : state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
-        <i v-if="showhelpicon" :class="g3wtemplate.font['info']" class="skin-color" style="margin-left: 3px; cursor: pointer" @click="showHideHelp"></i>
+        <i
+          v-if="showhelpicon"
+          :class="g3wtemplate.font['info']"
+          class="skin-color"
+          style="margin-left: 3px; cursor: pointer"
+          @click.stop="showHideHelp">
+        </i>
         <slot name="label-action"></slot>
       </label>
     </slot>

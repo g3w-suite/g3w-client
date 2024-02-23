@@ -91,8 +91,6 @@
   import InputText            from "components/InputText.vue";
 
   const { uniqueId } = require('utils');
-  const { t }        = require('core/i18n/i18n.service');
-
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
@@ -139,7 +137,8 @@
 
         addbookmarkinput: {
           name: 'add-bookmark',
-          label: t('sdk.spatialbookmarks.input.name'),
+          label:'sdk.spatialbookmarks.input.name',
+          i18nLabel: true,
           value: null,
           editable: true,
           type: 'varchar',
@@ -207,7 +206,7 @@
       })
     },
 
-    /** @FIXME remove unusued method ? */
+    /** @FIXME remove unusued method? */
     async mounted() {}
 
   };
