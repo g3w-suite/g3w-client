@@ -377,6 +377,7 @@ export default {
       catalog: {
         current_map_theme_prefix: "TEMA",
         choose_map_theme: "SCEGLI TEMA",
+        choose_map_theme_input_label: 'Nome del nuovo tema',
         menu: {
           layerposition: 'Posizione Layer',
           setwmsopacity: "Cambia opacità",
