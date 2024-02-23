@@ -144,7 +144,7 @@
        * ORIGINAL SOURCE: src/app/core/expression/tabservice.js@3.8.6
        */
       async setVisibility(tab) {
-        tab.visible = DataRouterService
+        tab.visible = await DataRouterService
           .getData(
             'expression:expression_eval',
               {
