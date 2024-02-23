@@ -6,11 +6,11 @@
 <template>
   <div id="open_attribute_table" style="margin-top: 5px">
     <table
-      v-if="hasHeaders()"
-      ref="attribute_table"
-      id="layer_attribute_table"
-      class="table table-striped row-border compact nowrap"
-      style="width:100%"
+      v-if  = "hasHeaders()"
+      ref   = "attribute_table"
+      id    = "layer_attribute_table"
+      class = "table table-striped row-border compact nowrap"
+      style = "width:100%"
     >
       <thead>
         <tr>
@@ -34,8 +34,9 @@
                 class     = "magic-checkbox"
                 :disabled = "state.nofilteredrow || state.features.length === 0">
               <label
-                for   = "attribute_table_select_all_rows"
-                style = "margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
+                for                         = "attribute_table_select_all_rows"
+                style                       = "margin-bottom:0 !important;"
+                @click.capture.stop.prevent = "selectAllRow"
               >
                 <span style="padding:5px"></span>
               </label>
@@ -59,14 +60,13 @@
 </template>
 
 <script>
-import TableBody from 'components/TableBody.vue';
-import SelectRow from 'components/TableSelectRow.vue';
+import TableBody       from 'components/TableBody.vue';
+import SelectRow       from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import Field from 'components/FieldG3W.vue';
-import GUI from 'services/gui';
+import Field           from 'components/FieldG3W.vue';
+import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
-
-const { debounce } = require('utils');
+import { debounce }    from 'utils/debounce';
 
 let dataTable;
 let fieldsComponents = [];
