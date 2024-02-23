@@ -104,9 +104,6 @@ import SpatialBookMarkItem from './SpatialBookMarkItem.vue';
 import SpatialBookMarks from './SpatialBookMarks.vue';
 import StreetView from './StreetView.vue';
 import Table from './Table.vue';
-import TableBody from './TableBody.vue';
-import TableLink from './TableLink.vue';
-import TableSelectRow from './TableSelectRow.vue';
 import TableToolbar from './TableToolbar.vue';
 import Tool from './Tool.vue';
 import Tools from './Tools.vue';
@@ -228,9 +225,6 @@ export {
   SpatialBookMarks,
   StreetView,
   Table,
-  TableBody,
-  TableLink,
-  TableSelectRow,
   TableToolbar,
   Tool,
   Tools,
