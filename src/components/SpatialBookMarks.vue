@@ -32,8 +32,11 @@
           class="container add-bookmark-input"
           style="padding: 5px; width: 100%"
         >
-          <input-text :state="addbookmarkinput" />
+          <input-text
+            ref="add_bookmark_input"
+            :state="addbookmarkinput" />
         </div>
+
         <div style="margin-top: 5px;">
           <button
             @click.stop="addBookMark"
@@ -200,6 +203,18 @@
 
     },
 
+    watch: {
+      async showaddform(bool) {
+        if (bool) {
+          await this.$nextTick();
+          //need to remove all class so input is adapted to 100% width
+          for (let i = 0; i < this.$refs.add_bookmark_input.$el.children.length; i++) {
+            this.$refs.add_bookmark_input.$el.children[i].classList.remove('col-sm-12')
+          }
+        }
+      }
+    },
+
     created() {
       this.$on('close', ()=>{
         this.showaddform = false
@@ -219,8 +234,5 @@
     padding: 5px;
     border-bottom: 2px solid #ffffff;
     margin-bottom: 5px;
-  }
-  .container.add-bookmark-input p.error-input-message {
-    color: #ffffff;
   }
 </style>
