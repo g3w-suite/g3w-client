@@ -21,7 +21,8 @@
               style        = "height: 25px; min-width: 40px; padding: 2px;"
               class        = "form-control column-search"
               @keyup       = "changeColumn($event, i)"
-              :placeholder = "header.name"/>
+              :placeholder = "header.name"
+            />
           </th>
         </tr>
         <tr>
@@ -32,7 +33,8 @@
                 id        = "attribute_table_select_all_rows"
                 :checked  = "state.selectAll"
                 class     = "magic-checkbox"
-                :disabled = "state.nofilteredrow || state.features.length === 0">
+                :disabled = "state.nofilteredrow || state.features.length === 0"
+              >
               <label
                 for                         = "attribute_table_select_all_rows"
                 style                       = "margin-bottom:0 !important;"
@@ -85,7 +87,7 @@
       </tbody>
 
     </table>
-    <div v-else id="noheaders" v-t="'dataTable.no_data'" ></div>
+    <div v-else id="noheaders" v-t="'dataTable.no_data'"></div>
   </div>
 </template>
 
