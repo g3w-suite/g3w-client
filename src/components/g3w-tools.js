@@ -7,8 +7,7 @@ import Component        from 'core/g3w-component';
 import G3WObject        from 'core/g3w-object';
 import ProjectsRegistry from 'store/projects';
 import GUI              from 'services/gui';
-
-import * as vueComp     from 'components/Tools.vue';
+import G3wTool          from 'components/Tool.vue';
 
 const ACTIONS = {}
 
@@ -16,6 +15,7 @@ const ACTIONS = {}
  * ORIGINAL SOURCE:
  * - src/app/gui/tools/vue/tools.js@v3.9.3
  * - src/app/gui/tools/service.js@v3.9.3
+ * - src/components/Tools.vue@v3.9.3
  */
 export default function(opts = {}) {
 
@@ -84,7 +84,7 @@ export default function(opts = {}) {
   for (let t in tools) {
     service.addToolGroup(0, t.toUpperCase());
     service.addTools(
-      tools[t].map(tool => ({ name: tool.name, action: ToolsService.ACTIONS[t].bind(null, tool) })),
+      tools[t].map(tool => ({ name: tool.name, action: ACTIONS[t].bind(null, tool) })),
       { position: 0, title: t.toUpperCase() }
     );
   }
@@ -93,10 +93,25 @@ export default function(opts = {}) {
     ...opts,
     title: "tools",
     service,
-    internalComponent: new (Vue.extend(vueComp))({ toolsService: service }),
+    internalComponent: new (Vue.extend({
+      template: /* html */ `
+<ul class="g3w-tools treeview-menu">
+  <bar-loader :loading="state.loading"/>
+  <li v-for="g in state.toolsGroups" :key="g.name">
+    <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span style="">{{ g.name }}</span></div>
+    <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
+  </li>
+</ul>`,
+      components: { G3wTool },
+      data: () => ({ state: null }),
+      watch: {
+        'state.toolsGroups'(g) {
+          comp.setVisible(g.length > 0);
+          this.$emit('visible', g.length > 0);
+        }
+      },
+    }))(),
   });
-
-  comp.internalComponent.$on('visible', data => comp.setVisible(data));
 
   comp._setOpen = (b=false) => {
     comp.internalComponent.state.open = b;

@@ -106,7 +106,6 @@ import StreetView from './StreetView.vue';
 import Table from './Table.vue';
 import TableToolbar from './TableToolbar.vue';
 import Tool from './Tool.vue';
-import Tools from './Tools.vue';
 import UserMessage from './UserMessage.vue';
 import ViewportContentsViewer from './ViewportContentsViewer.vue';
 import WMS from './WMS.vue';
@@ -227,7 +226,6 @@ export {
   Table,
   TableToolbar,
   Tool,
-  Tools,
   UserMessage,
   ViewportContentsViewer,
   WMS,

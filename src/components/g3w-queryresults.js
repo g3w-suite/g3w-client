@@ -23,10 +23,9 @@ export default function(opts = {}) {
     service,
     internalComponent: new (Vue.extend(vueComp))({ queryResultsService: service }),
   });
-  comp.internalComponent.querytitle = comp._service.state.querytitle;
-  comp.getElement                   = () => comp.internalComponent ? comp.internalComponent.$el : undefined;
-  comp.unmount                      = () => { comp._service.closeComponent(); return Component.prototype.unmount.call(comp) };
-  comp.layout                       = noop;
+  comp.getElement = () => comp.internalComponent ? comp.internalComponent.$el : undefined;
+  comp.unmount    = () => { comp._service.closeComponent(); return Component.prototype.unmount.call(comp) };
+  comp.layout     = noop;
 
   comp._service.onafter('setLayersData', async () => {
     if (!comp.internalComponent) {
