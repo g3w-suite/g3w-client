@@ -5,7 +5,8 @@
 
 <template>
   <div id="g3w-change-map-menu">
-    <template v-if="isChildNode">
+    <!-- current node is a child -->
+    <template v-if="'root' !== this.current">
       <div
         style="
           display: flex;
@@ -155,17 +156,6 @@ export default {
     }
   },
 
-  computed: {
-
-    /**
-     * @returns {boolean} whether current node isn't a "root" element
-     */
-    isChildNode() {
-      return 'root' !== this.current;
-    },
-
-  },
-
   methods: {
 
     /**
@@ -279,16 +269,6 @@ export default {
       this.steps = [];
     },
 
-    _onChangeRoot(item) {
-      // item is a macrogroup
-      if (undefined === item.srid) {
-        this.showGroups(item)
-      } else {
-        // item is a group
-        this.showProjects(item);
-      }
-    },
-
     /**
      * @param {string} item.url
      * @param {string} item.map_url
@@ -301,7 +281,7 @@ export default {
       try {
         new URL(base_url);
         url = `${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
-      } catch(err) {
+      } catch(e) {
         url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       }
       return ApplicationService.changeMapProject({ url, epsg });
@@ -309,7 +289,7 @@ export default {
 
     async trigger(item) {
       switch(this.current) {
-        case 'root':        return this._onChangeRoot(item);
+        case 'root':        return undefined === item.srid ? this.showGroups(item) : this.showProjects(item); // `srid` is undefined when item is a macrogroup
         case 'macrogroups': return this.showGroups(item);
         case 'groups':      return await this.showProjects(item);
         case 'projects':    return await this.changeMapProject(item);
