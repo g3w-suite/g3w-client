@@ -59,7 +59,7 @@
         >
           <img
             :src="item.thumbnail || item.header_logo_img || item.logo_img"
-            @error="setFallBackImage(item)"
+            @error="setItemImageSrc({ item, type: 'net_error' })"
             alt="logo"
             class="img-responsive"
           >
@@ -148,9 +148,9 @@ export default {
       steps: [], //Contain all items from top to bottom
 
       /**
-       * @type {string}
+       * @type {string} ID of current project group 
        */
-      currentProjectGroupId: null,
+      curr_group: null,
  
     }
   },
@@ -167,18 +167,6 @@ export default {
   },
 
   methods: {
-
-    /**
-     * Set a fallback image on network error.
-     */
-     setFallBackImage(item) {
-      const g3w_logo = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
-      if (item.thumbnail || item.logo_img) {
-        item.thumbnail = g3w_logo;
-      } else if (item.header_logo_img) {
-        item.header_logo_img = g3w_logo;
-      }
-    },
 
     /**
      * @returns { void | Promise<void> }
@@ -271,7 +259,7 @@ export default {
         this.loading = true;
         this.parent  = item;
         this.items   = (
-          this.parent.id === this.currentProjectGroupId
+          this.parent.id === this.curr_group
             ? ProjectsRegistry.getListableProjects()
             : await get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }))
         );
@@ -287,7 +275,7 @@ export default {
 
     showRoot() {
       this.current = 'root';
-      this.items = this.macrogroupsandgroups;
+      this.items = [...this.macrogroups, ...this.groups];
       this.steps = [];
     },
 
@@ -339,6 +327,14 @@ export default {
         case 'project':    item.thumbnail       = this._setSrc(item.thumbnail); break;
         case 'group':      item.header_logo_img = this._setSrc(item.header_logo_img); break;
         case 'macrogroup': item.logo_img        = this._setSrc(item.logo_img); break;
+        // Set a fallback image on network error.
+        case 'net_error':
+          if (item.thumbnail || item.logo_img) {
+            item.thumbnail = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+          } else if (item.header_logo_img) {
+            item.header_logo_img = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+          }
+          break;
       }
     },
 
@@ -370,22 +366,19 @@ export default {
 
   async created() {
 
-    // at start time set item projects
-    this.items = ProjectsRegistry.getListableProjects();
-    this.items.forEach(item => this.setItemImageSrc({ item, type: 'project' }));
-    this.parent = ProjectsRegistry.getCurrentProjectGroup();
-    this.currentProjectGroupId = this.parent.id;
+    const config = ApplicationService.getConfig();
 
-    // get macrogroups
-    this.macrogroups = ApplicationService.getConfig().macrogroups;
-    this.macrogroups.forEach(item => this.setItemImageSrc({ item, type: 'magrocroup' }));
-    
-    // get groups
-    this.groups = ApplicationService.getConfig().groups;
-    this.groups.forEach(item => this.setItemImageSrc({ item, type: 'group' }));
+    // setup items data (macrogrups and groups).
+    this.items       = ProjectsRegistry.getListableProjects();
+    this.parent      = ProjectsRegistry.getCurrentProjectGroup();
+    this.curr_group  = this.parent.id;
+    this.macrogroups = config.macrogroups;
+    this.groups      = config.groups;
 
-    // collect all groups and macrogroups
-    this.macrogroupsandgroups = [...this.macrogroups, ...this.groups];
+    // setup items images
+    Object
+      .entries({ 'project': this.items, 'magrocroup': this.macrogroups, 'group': this.groups })
+      .forEach(([type, d]) => d.forEach(item => this.setItemImageSrc({ item, type })))
 
     if (0 === this.items.length) {
       this.back();
