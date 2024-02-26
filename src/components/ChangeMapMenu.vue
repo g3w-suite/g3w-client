@@ -144,12 +144,12 @@ export default {
       parent: null,
 
       /**
-       * @type {Array}
+       * @type { Array } all items from top to bottom
        */
-      steps: [], //Contain all items from top to bottom
+      steps: [], 
 
       /**
-       * @type {string} ID of current project group 
+       * @type { string } ID of current project group 
        */
       curr_group: null,
  
@@ -159,9 +159,9 @@ export default {
   methods: {
 
     /**
-     * @returns { void | Promise<void> }
+     * @returns { Promise<void> }
      */
-    back() {
+    async back() {
       const last_step   = this.steps.pop();                               // remove last
       const has_steps   = this.steps.length > 0;
       const item        = has_steps && this.steps[this.steps.length - 1]; //get last step
