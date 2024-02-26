@@ -23,7 +23,7 @@
     </label>
     <select
       id        = "g3w-wms-layers"
-      multiple  = "multiple"
+      :multiple  = "true"
       clear     = "true"
       v-select2 = "'selectedlayers'"
     >
