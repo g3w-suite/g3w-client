@@ -13,7 +13,9 @@ export default {
       select2_value,
       indexItem, /** @since 3.9.1 */
     } = vnode.data.attrs || {};
-    const isArray = binding.value && Array.isArray(vnode.context[binding.value]); //check if is an array
+    const isArrayWithIndex = binding.value
+      && Array.isArray(vnode.context[binding.value]) //check if is an array
+      && undefined !== indexItem //check if indexItem is defined /** @since 3.10.0 **/
     $(el)
       .select2({
         width: '100%',
@@ -24,19 +26,21 @@ export default {
       })
       .on('select2:select', (e) => {
         if (binding.value) {
+          //get value
           const value = e.params.data.id;
+          //check is can have multiple value
           if (multiple && (
-            (isArray
+            (isArrayWithIndex
               ? vnode.context[binding.value][indexItem].value
               : vnode.context[binding.value]
             ).filter(d => value === d).length === 0)
           ) {
-            (isArray
+            (isArrayWithIndex
               ? vnode.context[binding.value][indexItem].value
               : vnode.context[binding.value]
             ).push(value);
           } else {
-            if (isArray) {
+            if (isArrayWithIndex) {
               vnode.context[binding.value][indexItem].value = value;
             } else {
               vnode.context[binding.value] = value;
@@ -46,7 +50,7 @@ export default {
       })
       .on('select2:unselect', (e) => {
         if (binding.value && multiple) {
-          if (isArray) {
+          if (isArrayWithIndex) {
             vnode.context[binding.value][indexItem].value = vnode.context[binding.value][indexItem].value.filter(d => e.params.data.id !== d);
           } else {
             vnode.context[binding.value] = vnode.context[binding.value].filter(d => e.params.data.id !== d);
