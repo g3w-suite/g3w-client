@@ -1,259 +1,460 @@
 <!--
   @file
-  @since v3.7
+  @since 3.8.0
 -->
 
 <template>
-  <ul class="sidebar-menu">
-    <li
-      id="g3w-catalog-toc-views"
-      class="treeview sidebaritem skin-border-color"
-      style="margin-bottom: 5px; border-bottom: 2px solid"
-    >
-      <a
-        href="#"
-        ref="g3w-map-theme-ancor"
-        style="padding: 0; margin-bottom: 5px;"
+  <div id="g3w-change-map-menu">
+    <template v-if="isChildNode">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          color: #ffffff"
+        class="skin-background-color"
       >
-        <section style="display: flex;  flex-wrap: wrap; align-items: center; padding: 5px;">
-          <i
-            style="padding: 3px;"
-            :class="g3wtemplate.getFontClass('caret-down')">
-          </i>
-          <i
-            style="padding: 0 0 0 4px;"
-            :class="g3wtemplate.getFontClass('eye')">
-          </i>
-          <!-- Text of current theme -->
-          <span
-            v-if="current_map_theme"
-            class="treeview-label g3w-long-text"
-            style="overflow: hidden; white-space: normal;text-overflow: ellipsis;"
-          >
-            <span
-              style="color: #cccccc !important;"
-              v-t:pre="'sdk.catalog.current_map_theme_prefix'"
-            >:</span>
-            <span
-              class="skin-color"
-              style="font-size: 1.1em;">
-                {{ current_map_theme }}
-            </span>
-          </span>
-          <span
-            v-else
-            class="treeview-label"
-            style="color: #cccccc !important; font-weight: bold"
-          >
-            <span v-t="'sdk.catalog.choose_map_theme'"></span>
-          </span>
-        </section>
-      </a>
-      <!-- ADD NEW BOOKMARK (FORM) -->
-      <template v-if="showSaveMapThemeForm">
-
-        <li
-          style="border-top: 2px solid; margin: 5px 0"
-          class="skin-border-color"
+        <span
+          v-t-tooltip:bottom.create="'change_session'"
+          v-disabled="loading"
+          @click.stop="back"
+          style="
+            font-size: 2em;
+            margin: 5px;
+            cursor: pointer;
+            padding: 3px;
+            border: 2px solid #ffffff;
+            border-radius: 3px;
+          "
         >
-          <div style="display: flex; justify-content: end; padding-top: 5px;">
-            <span
-              v-t-tooltip:left.create="'close'"
-              @click.stop="showSaveMapThemeForm = false"
-              :class="g3wtemplate.getFontClass('close')"
-              class="sidebar-button sidebar-button-icon"
-              style="padding: 5px; margin: 3px; cursor: pointer;"
-            ></span>
-          </div>
-          <div
-            class="container add-map-theme-input"
-            style="padding: 5px; width: 100%"
-          >
-            <input-text
-              ref="add_map_theme_input"
-              :state="adduserthemeinput" />
-          </div>
-          <div style="margin-top: 5px;">
-            <button
-              class="sidebar-button-run btn btn-block"
-              v-t="'add'"
-              @click.stop="save"
-              v-disabled="!canSave">
-            </button>
-          </div>
-        </li>
-      </template>
-      <template v-else>
-        <ul
-          id="g3w-catalog-views"
-          class="treeview-menu"
-          :class="{'menu-open': !collapsed}"
-          :style="{display: collapsed ? 'none' : 'block'}"
-        >
-          <li id="g3w-catalog-views-project">
-            <ul style="padding: 0">
-              <li>
-                <div style="font-weight: bold; padding: 5px 3px">Temi progetto</div>
-                <divider/>
-              </li>
-              <li style="padding: 5px 5px 5px 17px;">
-                <div
-                  v-for="(map_theme, index) in map_themes"
-                  :key="map_theme.theme"
-                >
-                  <input
-                    type="radio"
-                    name="radio"
-                    :id="`g3w-map_theme-${index}`"
-                    :value="map_theme.theme"
-                    v-model="current_map_theme"
-                    class="magic-radio"
-                    :checked="map_theme.default">
-                  <label
-                    :for="`g3w-map_theme-${index}`"
-                    style="display: flex; justify-content: space-between;"
-                  >
-                    <span class="g3w-long-text">{{ map_theme.theme }}</span>
-                  </label>
-                </div>
-              </li>
-            </ul>
-          </li>
-          <li id="g3w-catalog-views-user">
-            <ul style="padding: 0">
-              <li>
-                <div style="font-weight: bold; padding: 5px 3px; display: flex; justify-content: space-between">
-                  <span>Temi uente</span>
-                  <!-- Add theme button -->
-                  <span
-                    @click.stop="showSaveMapThemeForm = !showSaveMapThemeForm"
-                    :class="g3wtemplate.getFontClass('plus')"
-                    class="action sidebar-button sidebar-button-icon"
-                    style="margin-left: auto; padding: 5px; cursor:pointer;"
-                  >
-                  </span>
-                </div>
-                <divider/>
-              </li>
-              <li style="padding: 5px 5px 5px 17px">
-                <div
-                  v-for="(map_theme, index) in map_themes"
-                  :key="map_theme.theme"
-                >
-                  <input
-                    type="radio"
-                    name="radio"
-                    :id="`g3w-map_theme-${index}-user`"
-                    :value="map_theme.theme"
-                    v-model="current_map_theme"
-                    class="magic-radio"
-                    :checked="map_theme.default">
-                  <label
-                    :for="`g3w-map_theme-${index}-user`"
-                    style="display: flex; justify-content: space-between;"
-                  >
-                    <span class="g3w-long-text">{{ map_theme.theme }}</span>
-                  </label>
-                </div>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </template>
+          <i
+            style="color: #FFFFFF"
+            :class="g3wtemplate.getFontClass('reply')">
+          </i>
+        </span>
 
-    </li>
-  </ul>
+        <div
+          v-if="parent"
+          style="margin: auto"
+        >
+          <h3 style="font-weight: bold">
+            {{parent.title || parent.name}}
+          </h3>
+        </div>
+      </div>
+    </template>
+
+    <div
+      v-if="items.length"
+      class="g3w-change-map-menu-container">
+      <div
+        v-for="item in items"
+        :key="item.name"
+        class="menu-item"
+      >
+
+      <!-- ITEM IMAGE -->
+        <div
+          class="menu-item-image"
+          @click.stop="trigger(item)"
+        >
+          <img
+            :src="item.thumbnail || item.header_logo_img || item.logo_img"
+            @error="setFallBackImage(item)"
+            alt="logo"
+            class="img-responsive"
+          >
+        </div>
+
+        <!-- ITEM CONTENT -->
+        <div class="menu-item-content">
+          <div class="menu-item-text">
+            <h4 class="menu-item-title">
+              {{ item.title }}
+            </h4>
+            <div v-html="item.description"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <template v-else>
+      <h3
+        style="font-weight: bold"
+        v-t="`no_other_${current}`">
+      </h3>
+    </template>
+
+  </div>
+
 </template>
 
 <script>
-import ProjectsRegistry from 'store/projects';
-import InputText        from "./InputText.vue";
+import ApplicationService            from "services/application";
+import ProjectsRegistry              from "store/projects";
+import { API_BASE_URLS, LOGO_GIS3W } from "app/constant";
 
-/**
- * Attributes to send to server of layerstrees object
- *
- * node (single layer): keys [id, name, showfeaturecount, visible]
- * group (Group) : keys [checked, expanded, mutually-exclusive, name, nodes]
- */
-const LAYERSTREES_KEYS = {
-  node:  ['id', 'name', 'showfeaturecount', 'visible'],
-  group: ['name', 'checked', 'expanded', 'mutually-exclusive', 'nodes']
+const Projections = require('g3w-ol/projection/projections');
+const { XHR }     = require('utils');
+
+/** Cached HTTP GET request */
+async function get_macro(id) {
+  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${id}/`) });
+  return get_macro[id];
+}
+
+/** Cached HTTP GET request */
+async function get_group(id) {
+  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
+  return get_group[id];
 }
 
 export default {
-  name: "changemapthemes",
-  components: {
-    InputText
-  },
-  props: {
-    map_themes: {
-      type: Array,
-      default: []
-    },
-    layerstrees: {
-      type: Array,
-    }
-  },
-  data() {
-    const current_map_theme = this.map_themes.find(map_theme => map_theme.default);
-    return {
-      showSaveMapThemeForm : false,  /**@since 3.10.0 **/
-      current_map_theme    : current_map_theme ? current_map_theme.theme : null,
-      collapsed            : 'collapsed' === ProjectsRegistry.getCurrentProject().state.toc_themes_init_status,
-      canSave              :  false, /** @since 3.10.0 */
-      themeName            :  null, /** @since 3.10.0 */
-      adduserthemeinput: {
-        name: 'add-user-theme',
-        label: 'sdk.catalog.choose_map_theme_input_label',
-        i18nLabel: true,
-        value: null,
-        editable: true,
-        type: 'varchar',
-        input: {
-          type: 'text',
-          options: {}
-        },
-        visible: true,
-        info: 'Pippo',
-        validate: {
-          valid: false,
-          required: true
-        }
-      }
-    }
-  },
-  methods: {
-    /**
-     * Save current theme (layerstree state)
-     * @since 3.10.0
-     */
-    save() {
 
-      console.log(this.layerstrees[0].tree)
-      //@TODO
-      this.$emit('save-map-theme');
+  /** @since 3.8.6 */
+  name: 'change-map-menu',
+
+  data() {
+    return {
+      
+      /**
+       * @type {uknown}
+       */
+      state: null,
+
+      /**
+       * @type {boolean}
+       */
+      loading: false,
+
+      /**
+       * @type { 'projects' | 'groups' | 'root' }
+       */
+      current: 'projects', 
+
+      /**
+       * @type {Array}
+       */
+      items: [],
+
+      /**
+       * @type {uknown}
+       */
+      parent: null,
+
+      /**
+       * @type {Array}
+       */
+      steps: [], //Contain all items from top to bottom
+
+      /**
+       * @type {string}
+       */
+      currentProjectGroupId: null,
+ 
     }
   },
-  watch: {
-    'current_map_theme': {
-      immediate: false,
-      handler(map_theme) {
-        this.$emit('change-map-theme', map_theme);
+
+  computed: {
+
+    /**
+     * @returns {boolean} whether current node isn't a "root" element
+     */
+    isChildNode() {
+      return 'root' !== this.current;
+    },
+
+  },
+
+  methods: {
+
+    /**
+     * Set a fallback image on network error.
+     */
+     setFallBackImage(item) {
+      const g3w_logo = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+      if (item.thumbnail || item.logo_img) {
+        item.thumbnail = g3w_logo;
+      } else if (item.header_logo_img) {
+        item.header_logo_img = g3w_logo;
       }
     },
-    'themeName'(name) {
-      this.canSave = name ? name.trim() : false;
+    /**
+     *
+     * @return {void}
+     */
+    back() {
+      const isThereStep = this.steps.pop(); //remove last
+      //no steps done -> First time of only back
+      if (0 === this.steps.length) {
+        //check if parent is parent (group) belong to macrogroups
+        if (undefined === isThereStep && Array.isArray(this.parent.macrogroup_id) && this.parent.macrogroup_id.length > 0) {
+          this.showMacroGroups(this.parent.macrogroup_id, true);
+        } else {
+          this.showRoot();
+        }
+      } else {
+        //get last step
+        const item = this.steps[this.steps.length - 1];
+        //set false to add step because it is comping from bottom to top
+        const addStep = false;
+        if (undefined === item.macrogroup_id) {
+          this.showGroups(item, addStep);
+        } else {
+          //set false to add step because it is comping from bottom to top
+          this.showMacroGroups(item.macrogroup_id, addStep);
+        }
+
+      }
+
     },
-    async showSaveMapThemeForm(bool) {
-      this.themeName = null;
-      if (bool) {
-        await this.$nextTick();
-        //need to remove all class so input is adapted to 100% width
-        for (let i = 0; i < this.$refs.add_map_theme_input.$el.children.length; i++) {
-          this.$refs.add_map_theme_input.$el.children[i].classList.remove('col-sm-12')
+
+      /**
+       * @since 3.10.0
+       * @param macrogroup_id
+       * @param addStep Boolean
+       * @return {Promise<void>}
+       */
+    async showMacroGroups(macrogroup_id=[], addStep=true) {
+      //Belong just one macrogroup
+      if (1 === macrogroup_id.length) {
+        const macrogroup = this.macrogroups.find(mg => macrogroup_id[0] === mg.id);
+        this.parent = macrogroup;
+        await this.showGroups(macrogroup);
+      } else { //belong to more than one macrogroups
+        this.items = this.macrogroups.filter(m => macrogroup_id.includes(m.id));
+        this.current = 'macrogroups';
+        this.parent = {
+          macrogroup_id,
+          title: null, // need to set empty (no title)
+          name: null // need to be set empty
+        }
+        if (addStep) {
+          this.steps.push(this.parent);
+        }
+
+      }
+    },
+
+    /**
+     *
+      * @param item
+     * @return {Promise<void>}
+     */
+    async showGroups(item, addStep=true) {
+      this.loading = true;
+      this.parent = item;
+      try {
+        this.items = await get_macro(item.id);
+        this.current = 'groups';
+      } catch(err) {
+        this.items = [];
+      }
+      if (addStep) {
+        this.steps.push(this.parent);
+      }
+      this.loading = false;
+    },
+
+    /**
+     *
+      * @param item
+     * @return {Promise<void>}
+     */
+    async showProjects(item) {
+      this.loading = true;
+      this.parent = item;
+
+      if (this.parent.id === this.currentProjectGroupId) {
+        this.items = ProjectsRegistry.getListableProjects();
+        this.current = 'projects';
+      } else {
+        try {
+          this.items = await get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }));
+          this.current = 'projects';
+        } catch(err) {
+          this.items = [];
         }
       }
+
+      this.steps.push(this.parent);
+      this.loading = false;
+    },
+
+    showRoot() {
+      this.current = 'root';
+      this.items = this.macrogroupsandgroups;
+      this.steps = [];
+    },
+
+    _onChangeRoot(item) {
+      // item is a macrogroup
+      if (undefined === item.srid) {
+        this.showGroups(item)
+      } else {
+        // item is a group
+        this.showProjects(item);
+      }
+    },
+
+    /**
+     * @param {string} item.url
+     * @param {string} item.map_url
+     */
+    async changeMapProject(item) {
+      let url;
+      const base_url = ProjectsRegistry.getBaseUrl();
+      const epsg = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
+      await Projections.registerProjection(epsg);
+      try {
+        new URL(base_url);
+        url = `${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
+      } catch(err) {
+        url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
+      }
+      return ApplicationService.changeMapProject({ url, epsg });
+    },
+
+    async trigger(item) {
+      switch(this.current) {
+        case 'root':        return this._onChangeRoot(item);
+        case 'macrogroups': return this.showGroups(item);
+        case 'groups':      return await this.showProjects(item);
+        case 'projects':    return await this.changeMapProject(item);
+      }
+    },
+
+    /**
+     * Set scr image of project, group, macrogroup
+     * 
+     * @param { 'project' | 'group' | 'macrogroup' } image.type
+     * @param                                        image.item
+      */
+    setItemImageSrc({ item, type } = {}) {
+      switch(type) {
+        case 'project':    item.thumbnail       = this._setSrc(item.thumbnail); break;
+        case 'group':      item.header_logo_img = this._setSrc(item.header_logo_img); break;
+        case 'macrogroup': item.logo_img        = this._setSrc(item.logo_img); break;
+      }
+    },
+
+    /**
+     * @TODO extract as utility function (almost the same as `components/ProjectsMenu::logoSrc(src)`) 
+     */
+    _setSrc(src) {
+      let imageSrc;
+      const host       = this.$options.host || '';
+      const mediaurl   = ProjectsRegistry.config.mediaurl;
+      const clienturl  = ApplicationService.getConfig().urls.clienturl;
+      const has_media  = src && (-1 !== src.indexOf(mediaurl));
+      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'));
+
+      if (!src) {
+        imageSrc = `${clienturl}${LOGO_GIS3W}`;
+      } else if (has_media) {
+        imageSrc = src;
+      } else if (not_static) {  
+        imageSrc = `${mediaurl}${src}`;
+      } else {
+        imageSrc = `${clienturl}${LOGO_GIS3W}`;
+      }
+
+      return `${host}${imageSrc}`;
+    },
+
+  },
+
+  async created() {
+
+    // at start time set item projects
+    this.items = ProjectsRegistry.getListableProjects();
+    this.items.forEach(item => this.setItemImageSrc({ item, type: 'project' }));
+    this.parent = ProjectsRegistry.getCurrentProjectGroup();
+    this.currentProjectGroupId = this.parent.id;
+
+    // get macrogroups
+    this.macrogroups = ApplicationService.getConfig().macrogroups;
+    this.macrogroups.forEach(item => this.setItemImageSrc({ item, type: 'magrocroup' }));
+    
+    // get groups
+    this.groups = ApplicationService.getConfig().groups;
+    this.groups.forEach(item => this.setItemImageSrc({ item, type: 'group' }));
+
+    // collect all groups and macrogroups
+    this.macrogroupsandgroups = [...this.macrogroups, ...this.groups];
+
+    // check if group on initConfig is referred to macrogrop
+    const isMacroGroup = this.macrogroups.find(macrogroup => macrogroup.id === this.parent.id);
+    if (isMacroGroup) {
+      // check belong group
+      const findGroup = this.groups.find(group => group.id === this.parent.id);
+      if (findGroup) {
+        this.parent = findGroup;
+        this.currentProjectGroupId = this.parent.id;
+      }
     }
-  }
-}
+  
+    if (0 === this.items.length) {
+      this.showRoot();
+    }
+
+  },
+
+};
 </script>
+
+<style scoped>
+  #g3w-change-map-menu {
+    width: 100%;
+    position: relative;
+  }
+  .g3w-change-map-menu-container {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
+    grid-gap: 1em;
+    overflow-y: auto;
+
+  }
+  .menu-item {
+    margin-bottom: 20px;
+    margin-top:20px;
+  }
+
+  .menu-item-image {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 50%;
+    opacity: 0.7;
+  }
+
+  .menu-item-image:hover {
+    opacity: 1;
+  }
+
+  .menu-item-image img {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto
+  }
+  .menu-item-content {
+    padding: 15px;
+    background: rgba(255,255,255,0.3);
+  }
+  .menu-item-text {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    text-align: justify;
+  }
+  .menu-item-title {
+    text-align: center;
+    font-weight: bold;
+    background: rgba(255,255,255,0.5);
+    padding: 5px;
+  }
+</style>
