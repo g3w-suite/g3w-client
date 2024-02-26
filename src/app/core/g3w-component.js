@@ -230,7 +230,7 @@ export default class Component extends G3WObject {
   setInternalComponent(internalComponent, options={}) {
     this.internalComponent = !internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
     (options.events || []).forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${capitalize_first_letter(e.name)}`](data)));
-    if (this._service) {
+    if (this._service && this._service.state) {
       this.internalComponent.state = this._service.state;
     }
   }

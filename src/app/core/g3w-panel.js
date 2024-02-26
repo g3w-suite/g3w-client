@@ -16,7 +16,7 @@ export default class Panel extends G3WObject {
     super();
     this.id            = opts.id || null;
     this.title         = opts.title || '';
-    this.internalPanel = opts.panel || null;
+    this.internalPanel = opts.panel || opts.internalPanel || null;
     this.service       = opts.service;
     if (true === opts.show && this.internalPanel) {
       this.show();
