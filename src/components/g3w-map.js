@@ -23,14 +23,7 @@ export default function(opts = {}) {
     internalComponent: new (Vue.extend(vueComp))({ service })
   })
 
-  comp.layout = (w, h) => {
-    const el = document.getElementById(comp.target);
-    if (el) {
-      el.style.height = h + 'px';
-      el.style.width  = w + 'px';
-    }
-    comp._service.layout({ width: w, height: h });
-  };
+  comp.layout = (w, h) => { comp._service.layout({ width: w, height: h }); };
 
   return comp;
 };

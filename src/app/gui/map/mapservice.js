@@ -2424,7 +2424,12 @@ proto.refreshMap = function(options={force: true}) {
 };
 
 // called when layout (window) resize
-proto.layout = function({width, height}) {
+proto.layout = function({ width, height }) {
+  const el = document.getElementById(this.target);
+  if (el) {
+    el.style.height = height + 'px';
+    el.style.width  = width + 'px';
+  }
   const is_hidden = (width <= 0 || height <= 0);
   if (!this.viewer) {
     this.setupViewer(width,height);
