@@ -387,20 +387,8 @@ export default {
     // collect all groups and macrogroups
     this.macrogroupsandgroups = [...this.macrogroups, ...this.groups];
 
-    console.log(this.parent.macrogroup_id);
-
-    // check if group on initConfig is referred to macrogrop
-    const is_macro = this.macrogroups.find(mg => mg.id === this.parent.id);
-    const group    = is_macro && this.groups.find(g => g.id === this.parent.id);
-    if (group) {
-      this.parent                = group;
-      this.currentProjectGroupId = this.parent.id;
-    }
-  
-    console.log(this.parent.macrogroup_id);
-
     if (0 === this.items.length) {
-      this.showRoot();
+      this.back();
     }
 
   },
