@@ -15,12 +15,11 @@ Vue.component('g3w-map', vueComp);
  * ORIGINAL SOURCE: src/app/gui/map/vue/map.js@v3.9.3 
  */
 export default function(opts = {}) {
-  const service       = new MapService(opts);
-  const comp          = new Component({
+  const comp = new Component({
     id: 'map',
     title: 'Map Component',
-    service,
-    internalComponent: new (Vue.extend(vueComp))({ service })
+    service: new MapService(opts),
+    vueComponentObject: vueComp,
   })
 
   comp.layout = (w, h) => { comp._service.layout({ width: w, height: h }); };

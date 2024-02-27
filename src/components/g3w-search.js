@@ -40,33 +40,31 @@ export function SearchComponent(opts = {}) {
     querybuildersearches: QueryBuilderService.getCurrentProjectItems()
   };
 
-  const service = opts.service || new G3WObject();
-
-  service.state                 = state;
-  service.title                 = project.state.search_title || "search";
-  service.init                  = s  => { state.searches = s || project.state.search; };
-  service.addQueryBuilderSearch = s  => { state.querybuildersearches.push(s); }
-  service.addTool               = t  => { state.tools.push(t); };
-  service.addTools              = tt => { for (const t of tt) service.addTool(t); };
-  service.showPanel             = o  => new SearchPanel(o, true);
-  service.removeItem            = ({ type, index } = {}) => { 'querybuilder' === type && state.querybuildersearches.splice(index, 1); };
-  service.getTitle              = () => service.title;
-  service.cleanSearchPanels     = () => { state.panels = {}; };
-  service.removeTools           = () => { state.tools.splice(0) };
-  service.stop                  = resolve;
-  service.removeTool            = noop;
-  service.reload                = () => {
-    state.searches             = ProjectsRegistry.getCurrentProject().state.search;
-    state.querybuildersearches = QueryBuilderService.getCurrentProjectItems();
-  };
-
   const comp = new Component({
     ...opts,
-    service,
     id: 'search',
-    title: service.getTitle(),
-    internalComponent: new (Vue.extend(vueComp))({ service }),
     visible: true,
+    title: project.state.search_title || 'search',
+    service: Object.assign(opts.service || new G3WObject(), {
+      state,
+      title:                 project.state.search_title || "search",
+      init:                  s  => { state.searches = s || project.state.search; },
+      addQueryBuilderSearch: s  => { state.querybuildersearches.push(s); },
+      addTool:               t  => { state.tools.push(t); },
+      addTools:              tt => { for (const t of tt) service.addTool(t); },
+      showPanel:             o  => new SearchPanel(o, true),
+      removeItem:            ({ type, index } = {}) => { 'querybuilder' === type && state.querybuildersearches.splice(index, 1); },
+      getTitle:              () => service.title,
+      cleanSearchPanels:     () => { state.panels = {}; },
+      removeTools:           () => { state.tools.splice(0) },
+      stop:                  resolve,
+      removeTool:            noop,
+      reload:                () => {
+        state.searches             = ProjectsRegistry.getCurrentProject().state.search;
+        state.querybuildersearches = QueryBuilderService.getCurrentProjectItems();
+      },
+    }),
+    vueComponentObject: vueComp,
   });
 
   comp._reload = () => { comp._service.reload() };

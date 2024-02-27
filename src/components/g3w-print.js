@@ -13,15 +13,13 @@ const { PrintComponentService } = require('gui/print/printservice');
  * ORIGINAL SOURCE: src/app/gui/print/vue/print.js@v3.9.3 
  */
 export default function(opts = {}) {
-  const service = opts.service || new PrintComponentService();
   const comp = new Component({
     ...opts,
     title: 'print',
-    service,
-    internalComponent: new (Vue.extend(vueComp))({ service })
+    service: opts.service || new PrintComponentService(),
+    vueComponentObject: vueComp,
   });
 
-  comp._service.init();
   comp.state.visible = comp._service.state.visible;
 
   comp.onafter('setOpen', b => comp._service.showPrintArea(b));

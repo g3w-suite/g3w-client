@@ -25,38 +25,36 @@ export default function(opts) {
     groups: {}
   };
 
-  const service   = opts.service || new G3WObject();
-  service.state   = state;
-  service.content = null;
-  service.show    = false;
-  service.reload = (emit = true) => {
-    if (emit) {
-      service.emit('reload');
-    }
-    const project = ProjectsRegistry.getCurrentProject().getState();
-    state.name    = project.title;
-    state.groups  = Object.entries(GROUPS).reduce((g, [name, fields]) => {
-      g[name] = fields.reduce((f, field) => {
-        const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
-        if (!!value) {
-          f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
-        }
-        return f;
-      }, {});
-      return g;
-    }, {});
-  };
-
-  // build project group metadata
-  service.reload(false);
-
   const comp = new Component({
     ...opts,
     title: 'sdk.metadata.title',
-    service,
-    internalComponent: new (Vue.extend(MetadataComp))({ service }),
+    service: Object.assign(opts.service || new G3WObject(), {
+      state,
+      content: null,
+      show: false,
+      reload(emit = true) {
+        if (emit) {
+          comp._service.emit('reload');
+        }
+        const project = ProjectsRegistry.getCurrentProject().getState();
+        state.name    = project.title;
+        state.groups  = Object.entries(GROUPS).reduce((g, [name, fields]) => {
+          g[name] = fields.reduce((f, field) => {
+            const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
+            if (!!value) {
+              f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
+            }
+            return f;
+          }, {});
+          return g;
+        }, {});
+      }
+    }),
+    vueComponentObject: MetadataComp,
   });
 
+  // build project group metadata
+  comp._service.reload(false);
   comp._service.on('reload', () => comp.setOpen(false));
 
   // show metadata

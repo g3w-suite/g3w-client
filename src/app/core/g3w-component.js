@@ -142,9 +142,9 @@ export default class Component extends G3WObject {
     this.vueComponent = _cloneDeep(options.vueComponentObject);
     this._components  = options.components || [];
 
-    this.setService(options.service || noop);
+    this.setService(options.service || this._service || noop);
 
-    if (this._service.init) {
+    if (this._service.init && this.init !== this._service.init) {
       this._service.init(options);
     }
 

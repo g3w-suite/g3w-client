@@ -5,6 +5,7 @@
 
 import Component    from 'core/g3w-component';
 import { BarStack } from 'core/g3w-barstack';
+import { resolve }  from 'utils/resolve';
 
 /**
  * ORIGINAL SOURCE:
@@ -13,15 +14,15 @@ import { BarStack } from 'core/g3w-barstack';
  */
 export default function(opts = {}) {
 
-  const stack = new BarStack();
+  const stack = new BarStack(); // handles the logic of mounting component on DOM
   const comp  = new Component({
     ...opts,
     title: 'contents',
-    internalComponent: new (Vue.extend({
+    vueComponentObject: {
       name: 'viewport-contents-viewer',
       template: `<div id="contents" class="contents"></div>`,
       data: () => ({ state: null }),
-    }))(),
+    },
   });
 
   stack.on('clear', () => comp.contentsdata = stack.state.contentsdata);
@@ -32,16 +33,10 @@ export default function(opts = {}) {
 
     contentsdata: stack.state.contentsdata,
 
+    // `push` = whether to clean the stack every time, sure to have just one component.
     setContent(opts = {}) {
       const d = $.Deferred();
-      // clean the stack every time, sure to have just one component.
-      // Use barstack because it handle the logic og mounting component on DOM
-      if (opts.push) {
-        comp.addContent(opts.content, opts).then(() => d.resolve(opts));
-      } else {
-        // clear stack
-        comp.clearContents().then(() => { comp.addContent(opts.content, opts).then(() => d.resolve(opts)); })
-      }
+      (opts.push ? resolve() : stack.clear()).then(() => comp.addContent(opts.content, opts).then(() => d.resolve(opts)));
       comp.setOpen(true);
       return d.promise();
     },
@@ -51,7 +46,7 @@ export default function(opts = {}) {
       stack.push(content, Object.assign(opts, { parent: comp.internalComponent.$el, append: true })).then(() => {
         comp.contentsdata = stack.state.contentsdata; // get stack content
         Array
-          .from(comp.internalComponent.$el.children)       // hide other elements but not the last one
+          .from(comp.internalComponent.$el.children)  // hide other elements but not the last one
           .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
         d.resolve();
       });
@@ -61,7 +56,7 @@ export default function(opts = {}) {
     // remove content from stack
     removeContent() {
       comp.setOpen(false);
-      return comp.clearContents();
+      return stack.clear();
     },
 
     // used by  viewport.js, update the content of contentsdata only after stack is updated
@@ -74,12 +69,6 @@ export default function(opts = {}) {
       });
     },
 
-    getComponentById:       stack.getComponentById.bind(stack),
-    getContentData:         stack.getContentData.bind(stack),
-    getCurrentContentData:  stack.getCurrentContentData.bind(stack),
-    getPreviousContentData: stack.getPreviousContentData.bind(stack),
-    clearContents:          stack.clear.bind(stack),
-
     // Set layout of the content each time
     layout(parentWidth) {
       const el = comp.internalComponent.$el;
@@ -88,17 +77,23 @@ export default function(opts = {}) {
           - ((el.parentElement.querySelector('.close-panel-block') || {}).offsetHeight || 0)
           - ((el.parentElement.querySelector('.content_breadcrumb') || {}).offsetHeight || 0)
           - 10;                                                                // margin 10 from bottom
-        el.style.height            = height + 'px';
+        el.style.height = height + 'px';
         if (el.firstChild) {
           el.firstChild.style.height = height + 'px';
         }
-        stack.state.contentsdata.forEach(data => {                             // re-layout each component stored into the stack
-          if ('function' == typeof data.content.layout) {  
-            data.content.layout(parentWidth + 0.5, height);
+        stack.state.contentsdata.forEach(d => {                                // re-layout each component stored into the stack
+          if ('function' == typeof d.content.layout) {  
+            d.content.layout(parentWidth + 0.5, height);
           }
         })
       })
     },
+
+    getComponentById:       stack.getComponentById.bind(stack),
+    getContentData:         stack.getContentData.bind(stack),
+    getCurrentContentData:  stack.getCurrentContentData.bind(stack),
+    getPreviousContentData: stack.getPreviousContentData.bind(stack),
+    clearContents:          stack.clear.bind(stack),
 
   }); 
 

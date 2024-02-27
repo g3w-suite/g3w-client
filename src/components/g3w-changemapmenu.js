@@ -14,6 +14,6 @@ export default function(opts = {}) {
   return new Component({
     ...opts,
     id: 'changemapmenu',
-    internalComponent: new (Vue.extend(vueComp))(),
+    vueComponentObject: vueComp,
   })
 };

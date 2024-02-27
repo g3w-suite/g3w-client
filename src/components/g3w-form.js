@@ -15,14 +15,13 @@ const Service  = require('gui/form/formservice');
  * ORIGINAL SOURCE: src/app/gui/form/vue/form.js@v3.9.3 
  */
 export default function(opts = {}) {
-  opts.id                 = opts.id || 'form';
-  opts.service            = opts.service ? new opts.service : new Service();
-  opts.vueComponentObject = opts.vueComponentObject  || vueComp;
-  opts.perc               = null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc;
-  
-  const comp              = new Component(opts);
-
-  comp.init(opts);
+  const comp = new Component({
+    ...opts,
+    id: opts.id || 'form',
+    perc: null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc,
+    service: new (opts.service || Service)(),
+    vueComponentObject: opts.vueComponentObject || vueComp,
+  });
 
   // set element of the form
   const components = opts.components || [{

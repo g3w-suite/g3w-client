@@ -15,7 +15,7 @@ export default function (opts = {}) {
   const comp = new Component({
     ...opts,
     title: 'sdk.spatialbookmarks.title',
-    internalComponent: new (Vue.extend(vueComp))(),
+    vueComponentObject: vueComp,
   });
 
   GUI.on('closecontent', () => { comp.state.open = false; });

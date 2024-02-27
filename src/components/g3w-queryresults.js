@@ -14,15 +14,14 @@ const QueryResultsService = require('gui/queryresults/queryresultsservice');
  * ORIGINAL SOURCE: src/app/gui/queryresults/vue/queryresults.js@v3.9.3
  */
 export default function(opts = {}) {
-  const service = new QueryResultsService();
-
   const comp = new Component({
     ...opts,
     id: 'queryresults',
     title: 'Query Results',
-    service,
-    internalComponent: new (Vue.extend(vueComp))({ queryResultsService: service }),
+    service: new QueryResultsService(),
+    vueComponentObject: vueComp,
   });
+
   comp.getElement = () => comp.internalComponent ? comp.internalComponent.$el : undefined;
   comp.unmount    = () => { comp._service.closeComponent(); return Component.prototype.unmount.call(comp) };
   comp.layout     = noop;
