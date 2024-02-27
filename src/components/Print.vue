@@ -139,7 +139,8 @@
               class="sidebar-button-run btn"
               v-disabled="button.disabled"
               @click.stop.prevent="print"
-              v-download v-t="'create_print'">
+              v-download
+              v-t="'create_print'">
             </button>
           </span>
         </div>
@@ -164,7 +165,7 @@ export default {
       templateChanged: false,  // useful to a redrawn component related to change template
       button: {
         class: "btn-success",
-        type:"stampa",
+        type :"print",
         disabled: false
       }
     }
