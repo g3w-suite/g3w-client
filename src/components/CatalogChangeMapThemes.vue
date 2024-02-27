@@ -72,12 +72,12 @@
                 :state="adduserthemeinput" />
             </div>
             <div style="margin-top: 5px;">
-                <button
-                  class="sidebar-button-run btn btn-block"
-                  v-t="'add'"
-                  @click.stop="save"
-                  v-disabled="!canSave">
-                </button>
+              <button
+                class="sidebar-button-run btn btn-block"
+                v-t="'add'"
+                @click.stop="save"
+                v-disabled="!canSave">
+              </button>
             </div>
           </li>
       </template>
@@ -172,9 +172,9 @@ import InputText        from "./InputText.vue";
  * node (single layer): keys [id, name, showfeaturecount, visible]
  * group (Group) : keys [checked, expanded, mutually-exclusive, name, nodes]
  */
-const LAYERSTREES_KEYS = {
-  node:  ['id', 'name', 'showfeaturecount', 'visible'],
-  group: ['name', 'checked', 'expanded', 'mutually-exclusive', 'nodes']
+const LAYERSTREES_ATTRIBUTES = {
+  node:  ['id', 'name', 'visible', 'expanded'],
+  group: ['name', 'checked', 'expanded', 'mutually-exclusive']
 }
 
 export default {
@@ -198,7 +198,6 @@ export default {
       current_map_theme    : current_map_theme ? current_map_theme.theme : null,
       collapsed            : 'collapsed' === ProjectsRegistry.getCurrentProject().state.toc_themes_init_status,
       canSave              :  false, /** @since 3.10.0 */
-      themeName            :  null, /** @since 3.10.0 */
       adduserthemeinput: {
         name: 'add-user-theme',
         label: 'sdk.catalog.choose_map_theme_input_label',
@@ -225,9 +224,37 @@ export default {
      * @since 3.10.0
      */
     save() {
-      console.log(this.layerstrees[0].tree)
-      //@TODO
-      this.$emit('save-map-theme');
+      const params = {
+        layerstree : [],
+        styles     : {},
+      };
+      const createTreeItem = (type, node) => {
+         return LAYERSTREES_ATTRIBUTES[type]
+          .reduce((accumulator, a) => {
+            accumulator[a] = node[a];
+            return accumulator
+          }, {} );
+      }
+      const traverse = (nodes, tree) => {
+        //loop through nodes (children)
+        for (let i = 0; i < nodes.length; i++) {
+          const node = nodes[i];
+          //check if layer (node) of folder
+          if (undefined !== node.id) {
+            params.styles[node.id] = node.styles.find(s => s.current).name; //get current layer style
+            tree.push(createTreeItem('node', node));
+          }
+          if (Array.isArray(node.nodes)) {
+            const group = createTreeItem('group', node)
+            group.nodes = [];
+            tree.push(group);
+            traverse(node.nodes, group.nodes);
+          }
+        }
+      };
+      traverse(this.layerstrees[0].tree[0].nodes, params.layerstree);
+
+      /** @TODO send to server state of current projects  **/
     }
   },
   watch: {
@@ -237,11 +264,11 @@ export default {
         this.$emit('change-map-theme', map_theme);
       }
     },
-    'themeName'(name) {
+    'adduserthemeinput.value'(name) {
       this.canSave = name ? name.trim() : false;
     },
     async showSaveMapThemeForm(bool) {
-      this.themeName = null;
+      this.adduserthemeinput.value = null;
       if (bool) {
         await this.$nextTick();
         //need to remove all class so input is adapted to 100% width
