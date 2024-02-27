@@ -223,7 +223,9 @@ function PrintComponentService() {
       maxx: [0, 0],
       maxy: [0, 0]
     };
-    this.state.visible && this.setInitState();
+    if (this.state.visible) {
+      this.setInitState();
+    }
   };
 }
 
@@ -261,6 +263,7 @@ proto.changeTemplate = function() {
     return;
   }
   const isPreviousAtlas  = this.state.atlas;
+  const isPreviousNoMaps = 0 === this.state.maps.length; /** since 3.10.0 **/
   const {
     atlas,
     maps,
@@ -274,7 +277,7 @@ proto.changeTemplate = function() {
 
     this._clearPrint() :
 
-    isPreviousAtlas ?
+    isPreviousAtlas || isPreviousNoMaps ?
       this.showPrintArea(true) :
       this._setPrintArea();
 };
@@ -283,7 +286,9 @@ proto.changeTemplate = function() {
  * On change scala set print area
  */
 proto.changeScale = function() {
-  this.state.scala && this._setPrintArea();
+  if (this.state.scala) {
+    this._setPrintArea();
+  }
 };
 
 /**
@@ -372,6 +377,7 @@ proto.print = function() {
   return new Promise((resolve, reject) => {
     //disable sidebar
     GUI.disableSideBar(true);
+    //atlas print
     if (this.state.atlas) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.state.loading = true;
@@ -496,6 +502,11 @@ proto._calculateInternalPrintExtent = function() {
  * @private
  */
 proto._setPrintArea = function() {
+  //No maps set. Only attributes label
+  if (0 === this.state.maps.length) {
+    this._clearPrint();
+    return;
+  }
   this.state.size         = this._map.getSize();
   const resolution        = this._map.getView().getResolution();
   this.state.currentScala = getScaleFromResolution(resolution, this._mapUnits);
