@@ -158,22 +158,46 @@ proto.getQueryFeatureCount = function() {
   return this.state.feature_count || 5;
 };
 
+/**
+ *
+ * @param mapcontrol
+ * @return {*|boolean}
+ */
 proto.isQueryMultiLayers = function(mapcontrol) {
   return this.state.querymultilayers && -1 !== this.state.querymultilayers.indexOf(mapcontrol);
 };
 
+/**
+ *
+ * @return {*}
+ */
 proto.getRelations = function() {
   return this.state.relations;
 };
 
+/**
+ *
+ * @param relationId
+ * @return {*}
+ */
 proto.getRelationById = function(relationId) {
   return this.state.relations.find(relation => relation.id === relationId);
 };
 
+/**
+ *
+ * @param layerId
+ * @param type
+ * @return {*}
+ */
 proto.getRelationsByLayerId = function({layerId, type}={}) {
   return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
 };
 
+/**
+ *
+ * @return {"POST"|"GET"}
+ */
 proto.getOwsMethod = function() {
   return this.state.ows_method;
 };
@@ -366,18 +390,34 @@ proto.getQgisVersion = function({type}={}) {
   return -1 === index ? this.state.qgis_version : +this.state.qgis_version.split('.')[index];
 };
 
+/**
+ *
+ * @return {*}
+ */
 proto.getProjection = function() {
   return this._projection;
 };
 
+/**
+ *
+ * @return {*}
+ */
 proto.getWmsUrl = function() {
   return this.state.WMSUrl;
 };
 
+/**
+ *
+ * @return {string}
+ */
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
+/**
+ *
+ * @return {*}
+ */
 proto.getLayersStore = function() {
   return this._layersStore;
 };
@@ -385,7 +425,7 @@ proto.getLayersStore = function() {
 /// Map Themes
 
 /**
- * Set properties ( checked and visible) from view to layerstree
+ * Set properties (checked and visible) from view to layerstree
  * 
  * @param map_theme map theme name
  * @param layerstree // current layerstree of TOC
@@ -397,7 +437,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
    */
   const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
   // extract layerstree
-  const {layerstree:mapThemeLayersTree} = mapThemeConfig;
+  const { layerstree:mapThemeLayersTree } = mapThemeConfig;
   // create a chages need to apply map_theme changes to map and TOC
   const changes = {
     layers: {} // key is the layer id and object has style, visibility change (Boolean)
@@ -411,7 +451,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
   const groups = [];
   const traverse = (mapThemeLayersTree, layerstree, checked) =>{
     mapThemeLayersTree.forEach((node, index) => {
-      if (node.nodes) { // case of group
+      if (node.nodes) { // case of a group
         groups.push({
           node,
           group: layerstree[index]
