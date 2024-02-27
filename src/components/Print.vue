@@ -32,6 +32,7 @@
 
             <label for="scala" v-t="'sdk.print.scale'"></label>
             <select
+              v-disabled="noMaps"
               id="scala"
               class="form-control"
               @change="onChangeScale"
@@ -57,6 +58,7 @@
 
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input
+              v-disabled="noMaps"
               min="-360"
               max="360"
               @input="onChangeRotation"
@@ -83,21 +85,21 @@
           <!-- since 3.8.7 -->
           <!-- Needed to recreate a component on change template -->
           <template v-else-if="!templateChanged">
-              <template v-if="state.atlas.field_name">
-                <select-atlas-field-values
-                  @disable-print-button="setDisabledPrintButton"
-                  @set-values="setAtlasValues"
-                  :atlas="state.atlas"
-                  :reset="!state.isShow"/>
-              </template>
+            <template v-if="state.atlas.field_name">
+              <select-atlas-field-values
+                @disable-print-button="setDisabledPrintButton"
+                @set-values="setAtlasValues"
+                :atlas="state.atlas"
+                :reset="!state.isShow"/>
+            </template>
 
-              <template v-else>
-                <fid-atlas-values
-                  @disable-print-button="setDisabledPrintButton"
-                  @set-values="setAtlasValues"
-                  :atlas="state.atlas"
-                  :reset="!state.isShow"/>
-              </template>
+            <template v-else>
+              <fid-atlas-values
+                @disable-print-button="setDisabledPrintButton"
+                @set-values="setAtlasValues"
+                :atlas="state.atlas"
+                :reset="!state.isShow"/>
+            </template>
           </template>
 
           <template v-if="state.labels && state.labels.length">
@@ -177,6 +179,14 @@ export default {
   computed: {
     disabled() {
       return this.state.output.loading || (!!this.state.atlas &&  0 === this.state.atlasValues.length);
+    },
+    /**
+     * @since v3.10.0
+     * Check if current print has maps (only alphanumerical data)
+     * @return {boolean}
+     */
+    noMaps() {
+      return 0 === this.state.maps.length;
     }
   },
   methods: {
