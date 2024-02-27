@@ -175,12 +175,14 @@ function Layer(config={}, options={}) {
      */
     stylesfeaturecount: config.featurecount && defaultstyle && {
       [defaultstyle]: config.featurecount
-    }
+    },
+    name: config.name, /** since 3.10.0 **/
+    expanded: config.expanded,  /** since 3.10.0 **/
 
   };
 
   /**
-   * Store all selection features `fids`
+   * Store all selections feature `fids`
    */
   this.selectionFids = new Set();
 
