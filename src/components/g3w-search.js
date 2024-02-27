@@ -76,14 +76,13 @@ export function SearchComponent(opts = {}) {
  * ORIGINAL SOURCE: src/app/gui/search/vue/panel/searchpanel.js@v3.9.3
  */
 export function SearchPanel(opts = {}, show = false) {
-  const service = opts.service || new SearchService(opts); 
   return new Panel({
     ...opts,
     show,
-    service,
+    service: opts.service || new SearchService(opts),
     id: getUniqueDomId(),
     title: 'search',
-    internalPanel: new (opts.component || Vue.extend(vueSearchComp))({ service }),
+    vueComponentObject: opts.component || vueSearchComp,
   });
 };
 

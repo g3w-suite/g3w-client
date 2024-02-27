@@ -14,10 +14,19 @@ export default class Panel extends G3WObject {
 
   constructor (opts = {}) {
     super();
-    this.id            = opts.id || null;
-    this.title         = opts.title || '';
-    this.internalPanel = opts.panel || opts.internalPanel || null;
-    this.service       = opts.service;
+
+    this.id = opts.id || null;
+
+    this.title = opts.title || '';
+
+    this.service = opts.service;
+
+    if (opts.vueComponentObject) {
+      this.internalPanel = new (Vue.extend(opts.vueComponentObject))({ service: this.service });
+    } else {
+      this.internalPanel = opts.panel || opts.internalPanel || null;  
+    }
+
     if (true === opts.show && this.internalPanel) {
       this.show();
     }
