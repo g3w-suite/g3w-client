@@ -23,7 +23,7 @@ export class BarStack extends G3WObject {
     /** identify the DOM element where insert the component/panel  */
     this._parent = null;
 
-    /** barstack state. It stores the panels array */
+    /** barstack state. It stores the panel array */
     this.state = {
       contentsdata: []
     }
@@ -39,7 +39,7 @@ export class BarStack extends G3WObject {
   }
 
   /**
-   * remove last component from stack
+   * remove the last component from stack
    */
   pop() {
     const d = $.Deferred();
@@ -53,7 +53,7 @@ export class BarStack extends G3WObject {
   }
 
   /**
-   * clear all stack
+   * clear all stacks
    */
   clear() {
     const d = $.Deferred();
@@ -95,7 +95,9 @@ export class BarStack extends G3WObject {
     // String
     if (_.isString(content)) {
       let el = $(content);
-      if (!el.length) el = $('<div>' + content + '</div>');
+      if (0 === el.length) {
+        el = $('<div>' + content + '</div>');
+      }
       return this._setJqueryContent(el);
     }
 
@@ -153,7 +155,11 @@ export class BarStack extends G3WObject {
     let idxToRemove = null;
     const id = content.getId();
     const data = this.state.contentsdata;
-    data.forEach((d, i) => { if (d.content.getId && (d.content.getId() == id)) idxToRemove = i; });
+    data.forEach((d, i) => {
+      if (d.content.getId && (d.content.getId() == id)) {
+        idxToRemove = i;
+      }
+    });
     if (!_.isNull(idxToRemove)) {
       data[idxToRemove].content.unmount().then(() => data.splice(idxToRemove,1));
     }
