@@ -389,7 +389,7 @@ export default {
         });
 
         try {
-          const output = await PRINT_UTILS.print({
+          const output = await this.$options.service.printService.print({
             rotation:             this.state.rotation,
             dpi:                  this.state.dpi,
             template:             this.state.template,
