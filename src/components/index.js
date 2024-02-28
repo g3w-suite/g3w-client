@@ -75,9 +75,7 @@ import NotifyDownload from './NotifyDownload.vue';
 import NotifyOnline from './NotifyOnline.vue';
 import NotifyPlugins from './NotifyPlugins.vue';
 import Print from './Print.vue';
-import PrintFidAtlasValues from './PrintFidAtlasValues.vue';
 import PrintPage from './PrintPage.vue';
-import PrintSelectAtlasFieldValues from './PrintSelectAtlasFieldValues.vue';
 import ChangeMapMenu from "./ChangeMapMenu.vue";
 import ProjectsMenu from './ProjectsMenu.vue';
 import QueryBuilder from './QueryBuilder.vue';
@@ -196,9 +194,7 @@ export {
   NotifyOnline,
   NotifyPlugins,
   Print,
-  PrintFidAtlasValues,
   PrintPage,
-  PrintSelectAtlasFieldValues,
   ProjectsMenu,
   QueryBuilder,
   QueryBuilderSearch,

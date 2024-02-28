@@ -16,9 +16,7 @@
   import { SEARCH_ALLVALUE as ALLVALUE } from 'app/constant';
   import { select2Mixin } from 'mixins';
 
-  const autocompleteOptions = require('gui/external/select2/options/autocomplete');
   const { t } = require('core/i18n/i18n.service');
-  const { debounce } = require('utils');
 
   export default {
     name: "select2",
@@ -62,7 +60,24 @@
               }
             }
           } : null,
-         ...autocompleteOptions
+          /**
+           * @param { Object } params
+           * @param params.term the term that is used for searching
+           * @param { Object } data
+           * @param data.text the text that is displayed for the data object
+           */
+          matcher: (params, data) => {
+              const search = params.term ? params.term.toLowerCase() : params.term;
+              if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
+              if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term 
+              return null;                                                                                 // hide the term
+          },
+          language: {
+            noResults:     () => t("sdk.search.no_results"),
+            errorLoading:  () => t("sdk.search.error_loading"),
+            searching:     () => t("sdk.search.searching"),
+            inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
+          },
         });
         this.select2.on('select2:select', evt => {
           this.emitChangeEvent(evt);

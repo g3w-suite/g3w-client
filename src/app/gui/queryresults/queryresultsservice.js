@@ -18,6 +18,7 @@ import { createFeatureFromBBOX }                from 'utils/createFeatureFromBBO
 import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoordinates';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
+import { PRINT_UTILS }                          from 'components/g3w-print';
 
 const {
   noop,
@@ -30,13 +31,10 @@ const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const G3WObject                  = require('core/g3wobject');
 const VectorLayer                = require('core/layers/vectorlayer');
-const { PRINT_UTILS }            = require('gui/print/printservice');
 const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const deprecate                  = require('util-deprecate');
-
-const { printAtlas } = PRINT_UTILS;
 
 /**
  * Get and set vue reactivity to QueryResultsService
@@ -1385,7 +1383,7 @@ class QueryResultsService extends G3WObject {
     features = [],
   } = {}) {
     let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
-    return printAtlas({
+    return PRINT_UTILS.printAtlas({
         field,
         values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
         template: atlas.name,
