@@ -23,11 +23,39 @@ Vue.component('tristate-tree', TreeComp);
 Vue.component('layerslegend', LegendComp);
 Vue.component('layerslegend-items', LegendItemsComp);
 
+
+
 /**
  * ORIGINAL SOURCE:
  * - src/app/gui/catalog/vue/catalog.js@v3.9.3
  * - src/app/gui/catalog/catalogservice.js@v3.9.3
  */
+
+/**
+ * @TODO check if deprecated
+ */
+function _listenToMapVisibility(map_id, component) {
+  if(!map_id) {
+    return;
+  }
+
+  component.mapComponentId = map_id;
+
+  const map = GUI.getComponent(map_id);
+
+  const cb = map => {
+    const ms = map.getService();
+    component.state.visible = !ms.state.hidden;
+    ms.onafter('setHidden', () => { component.state.visible = !ms.state.hidden; component.state.expanded = true; });
+  };
+
+  if (map) {
+    cb(map);
+  } else {
+    ComponentsRegistry.on('componentregistered', c => map_id === c.getId() && cb(c));
+  }
+}
+
 export default function(opts = {}) {
 
   const state = {
@@ -84,11 +112,15 @@ export default function(opts = {}) {
 
   service.state                       = state;
   service.createLayersGroup           = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
+  /** @TODO check if deprecated */
+  service.getMajorQgisVersion         = () => ProjectsRegistry.getCurrentProject().getQgisVersion({type: 'major'});
   service.getExternalLayers           = ({ type = 'vector' })     => state.external[type];
   service.getExternalSelectedLayers   = ({ type = 'vector' })     => state.external[type].filter(l => l.selected);
   service.getExternalLayerById        = ({ id, type = 'vector' }) => state.external[type].find(l => l.id === id);
   service.isExternalLayerSelected     = l => !!(service.getExternalLayerById(l) || {}).selected;
   service.addLayersGroup              = g => { state.layersgroups.push(g); };
+  /** @TODO check if deprecated */
+  service.addLayersStoreToLayersTrees = layersStore => state.layerstrees.push({tree: layersStore.getLayersTree(), storeid: layersStore.getId()});
   service.changeMapTheme              = async map_theme => {
     ApplicationService.changeProjectView(true);
     const rootNode = state.layerstrees[0];
@@ -119,32 +151,7 @@ export default function(opts = {}) {
     internalComponent: new (Vue.extend(catalogComp))({ service, legend: opts.config.legend }),
   });
 
-  _listenToMapVisibility(opts.mapcomponentid);
+  _listenToMapVisibility(opts.mapcomponentid, comp);
 
   return comp;
 };
-
-/**
- * @TODO check if deprecated
- */
-function _listenToMapVisibility(map_id, component) {
-  if(!map_id) {
-    return;
-  }
-
-  component.mapComponentId = map_id;
-
-  const map = GUI.getComponent(map_id);
-
-  const cb = map => {
-    const ctx = map.getService();
-    component.state.visible = !ctx.state.hidden;
-    ctx.onafter('setHidden', () => { component.state.visible = !ctx.state.hidden; component.state.expanded = true; });
-  };
-
-  if (map) {
-    cb(map);
-  } else {
-    ComponentsRegistry.on('componentregistered', c => c.getId() === map_id && cb(c))
-  }
-}
