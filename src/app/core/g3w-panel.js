@@ -15,9 +15,9 @@ export default class Panel extends G3WObject {
   constructor (opts = {}) {
     super();
 
-    this.id = opts.id || null;
+    this.id      = opts.id || null;
 
-    this.title = opts.title || '';
+    this.title   = opts.title || '';
 
     this.service = opts.service;
 
