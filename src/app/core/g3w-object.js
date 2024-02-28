@@ -12,13 +12,23 @@ import { throttle } from 'utils/throttle';
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields
  */
 function defineClassField(obj, key, cb, initVal) {
-  // Field is already available within parent constructor
-  // in case of ES5 inheritance (ie. `inherit(ChildClass, G3WObject);`)
+  // The Field is already available within parent constructor
+  // in case of ES5 inheritance (i.e. `inherit(ChildClass, G3WObject);`)
   if (initVal) {
     return cb.call(obj, initVal);
   }
-  // Field is not available within parent constructor
-  // in case ES6 inheritance (ie. `class ChildClass extends G3WObject { };`);
+  // The Field is not available within parent constructor
+  // in case ES6 inheritance (i.e. `class ChildClass extends G3WObject { };`);
+  // I.e
+  // class A extends G3WObject {
+  //   constructor() {
+  //     super();
+  //     this.setters = {
+  //       foo() {},
+  //       bar() {},
+  //     };
+  //   }
+  // }
   let currVal = initVal;
   return Object.defineProperty(obj, key, {
     get() { return currVal; },
@@ -47,7 +57,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener after executing a setter method 
+   * Attach an event listener after executing a setter method
    * 
    * @param {string}   setter   - function name to listen for 
    * @param {function} listener - event listener (sync)
@@ -58,7 +68,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener after executing a setter method (once)
+   * Attach an event listener after executing a setter method (once)
    * 
    * @param {string}   setter   - function name to listen for 
    * @param {function} listener - event listener (sync)
@@ -69,7 +79,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener before executing a setter method
+   * Attach an event listener before executing a setter method
    * 
    * @param {string}   setter   - function name to listen for
    * @param {function} listener - event listener (sync)
@@ -80,7 +90,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener before executing a setter method (once)
+   * Attach an event listener before executing a setter method (once)
    * 
    * @param {string}   setter   - function name to listen for
    * @param {function} listener - event listener (sync)
@@ -102,7 +112,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   *  Cicle each settersListeners (array) and find setter key (before/after) to be removed
+   *  Loop each settersListeners (array) and find a setter key (before/after) to be removed
    */
   un(setter, key) {
     Object.entries(this.settersListeners)
@@ -119,13 +129,17 @@ export default class G3WObject extends EventEmitter {
   * Register and handle <before/after> listeners
   * 
   * @param { 'before' | 'after' } when
-  * @param { 'sync' | 'async' }   type
+  * @param { Function } setter
+  * @param { Object } listener
+  * @param { Boolean } async
+  * @param { Number } priority
+  * @param { Boolean }   once
   */
   _onsetter(when, setter, listener, async, priority = 0, once = false) {
     // unique listenerKey
     let key;
     // check if setter function is registered
-    // and then add info object to setters listeners
+    // and then add an info object to setter listeners
     // (sorted based on priority)
     if (this.settersListeners && undefined !== this.settersListeners[when][setter]) {
       key = `${Math.floor(Math.random() * 1000000) + Date.now()}`;
@@ -160,53 +174,57 @@ export default class G3WObject extends EventEmitter {
 
         const deferred = $.Deferred();
 
+        /**
+         *
+         * @param {undefined | Boolean} bool
+         */
         const next = (bool) => {
-          let skip  = _.isBoolean(bool) ? !bool : false;
+          //check if it needs to skip (exit)
+          const skip  = _.isBoolean(bool) ? !bool : false;
+          //get count of before subscribers on setter function
           const len = this.settersListeners.before[setter].length;
 
-          // abort in case of error 
-          // check if count is false or we reached the end of onbefore subscriber
-          if (skip !== false) {
+          // abort in case of error bool false,
+          // or we reached the end of onbefore subscriber
+          if (skip) {
             (_.isFunction(setters[setter]) ? noop : (setters[setter].fallback || noop)).apply(this, args);
             deferred.reject();
+            return;
           }
 
           // call complete method methods and check what returns
-          if (
-            skip === false &&
-            count === len &&
-            [undefined, true].includes((
-              () => {
-                // run setter function (resolve promise)
-                deferred.resolve((_.isFunction(setters[setter]) ? setters[setter] : setters[setter].fnc).apply(this, args));
-                // call all subscribed methods afet setter
-                const onceListeners = [];
-                this
-                  .settersListeners
-                  .after[setter]
-                  .forEach(listener => {
-                    listener.fnc.apply(this, args);
-                    if (listener.once) {
-                      onceListeners.push(listener.key);
-                    }
-                  });
-                onceListeners.forEach(key => this.un(setter, key));
-              }
-            )())
-          ) {
-            this.emitEvent(`set:${setter}`,args);
+          if (count === len) {
+            // run setter function (resolve promise)
+            deferred.resolve((_.isFunction(setters[setter]) ? setters[setter] : setters[setter].fnc).apply(this, args));
+            // call all subscribed methods after setter
+            const onceListeners = [];
+            this
+              .settersListeners
+              .after[setter]
+              .forEach(listener => {
+                listener.fnc.apply(this, args);
+                if (listener.once) {
+                  onceListeners.push(listener.key);
+                }
+              });
+            onceListeners.forEach(key => this.un(setter, key));
+            this.emitEvent(`set:${setter}`, args);
           }
-          
-          if (!skip && skip === false && count !== len) {
+          // still call an onbefore listener subscribers
+          if (count < len) {
+            //get on before listener subscribes and increment count to 1
             const listener = this.settersListeners.before[setter][count++];
+            //check if it is async
             if (listener.async) {
               // add function next to argument of listener function
               args.push(next);
               listener.fnc.apply(this, args)
             } else {
-              // return or undefined or a boolen to tell if ok(true) can conitnue or not (false)
+              // return or undefined or a boolean to tell if ok(true) can continue or not (false)
               next(listener.fnc.apply(this, args));
             }
+            //in case of listener subscribe function need to run just one time
+            // after call remove it from listeners
             if (listener.once) {
               this.settersListeners.before[setter].splice(count - 1, 1);
             }
@@ -215,7 +233,7 @@ export default class G3WObject extends EventEmitter {
         };
 
         // run all the subscribers and setters
-        next();
+        next(true);
 
         return deferred.promise();
       }

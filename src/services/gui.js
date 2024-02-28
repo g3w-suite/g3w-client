@@ -2,19 +2,25 @@ import ApplicationService from 'services/application';
 import RouterService      from 'services/router';
 import ComponentsRegistry from 'store/components';
 
-const { base, inherit, noop } = require('utils');
+const {
+  base,
+  inherit,
+  noop
+}               = require('utils');
 const G3WObject = require('core/g3wobject');
 
 // API della GUI.
 // methods have be defined by application
 // app should call GUI.ready() when GUI is ready
 function GUI() {
+
   this.setters = {
     setContent(options={}) {
       this.emit('opencontent', true);
       this._setContent(options)
     }
   };
+
   this.isready = false;
   // images urls
   this.getResourcesUrl = noop;
@@ -36,13 +42,13 @@ function GUI() {
   this.showUserMessage = noop;
   this.closeUserMessage = noop;
   this.showModalDialog = noop;
-  //property to how result has to be add or close all and show new
+  //property to how a result has to be adding or close all and show new
   // false mean create new and close all open
   this.push_content=false;
   this.setPushContent = function (bool=false) {
     this.push_content = bool;
   };
-  this.getPushContent = function(){
+  this.getPushContent = function() {
     return this.push_content;
   };
   this._closeUserMessageBeforeSetContent = true;
@@ -75,7 +81,7 @@ function GUI() {
    * @param componentId
    * @returns {*}
    */
-  this.getService = function(componentId){
+  this.getService = function(componentId) {
     const component = this.getComponent(componentId);
     return component && component.getService();
   };
@@ -86,7 +92,7 @@ function GUI() {
   this.notify = noop;
   this.dialog = noop;
   this.isMobile = noop;
-  //useful to registere setters
+  //useful to register setters
   base(this);
 }
 

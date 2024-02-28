@@ -121,7 +121,7 @@ proto.setPosition = function(position) {
       self._panorama.setPosition(data.location.latLng);
     }
   }).then(response => {
-    if (response === undefined) {
+    if (undefined === response) {
       GUI.closeContent();
     }
   }).catch(() => this.toggle())
@@ -136,20 +136,22 @@ proto.setMap = function(map) {
 
   this._interaction.on('picked', ({coordinate}) => {
     this.showStreetView(coordinate);
-    this._autountoggle && this.toggle();
+    if (this._autountoggle) {
+      this.toggle();
+    }
   });
 };
 
 /**
- * Method to show StreetView depending of key and keyError
+ * Method to show StreetView depending on a key and keyError
  * @param coordinate
  */
-proto.showStreetView = function(coordinate){
+proto.showStreetView = function(coordinate) {
   const [lng, lat] = ol.proj.transform(coordinate, this._map.getView().getProjection().getCode(), 'EPSG:4326');
   if (this.key) {
     GUI.setContent({
       title: 'StreetView',
-      content: new Component({ internalComponent: (Vue.extend(vueComp))({ keyError: this.keyError }) }),
+      content: new Component({ internalComponent: new (Vue.extend(vueComp))({ keyError: this.keyError }) }),
     });
     if (!this.keyError) {
       this.setPosition({ lng, lat });
@@ -177,8 +179,11 @@ proto.clear = function() {
 
 proto.toggle = function(toggle) {
   InteractionControl.prototype.toggle.call(this, toggle);
-  if (!this.isToggled()) this.clear();
-  else this._layer.getSource().addFeatures([this._streetViewFeature]);
+  if (this.isToggled()) {
+    this._layer.getSource().addFeatures([this._streetViewFeature]);
+  } else {
+    this.clear();
+  }
 };
 
 module.exports = StreetViewControl;

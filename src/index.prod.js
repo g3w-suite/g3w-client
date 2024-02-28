@@ -146,9 +146,11 @@ Vue.use({
           font: this.font
         }
       },
-      addFontClass({name, className}={}){
-        let added = this.font[name] === undefined;
-        if (added) this.font[name] = className;
+      addFontClass({name, className}={}) {
+        let added = undefined === this.font[name];
+        if (added) {
+          this.font[name] = className;
+        }
         return added;
       },
       /**
@@ -156,7 +158,7 @@ Vue.use({
        */
       getInfoString() {},
       getFontClass(type) {
-        return typeof this.font[type] !== "undefined" ? this.font[type] : '';
+        return undefined !== this.font[type] ? this.font[type] : '';
       }
     };
     // include isMobile() method within all Vue instances
@@ -167,6 +169,22 @@ Vue.use({
         }
       }
     })
+
+    /** @since 3.10.0 remove _setUpTemplateDependencies method**/
+    GUI.isMobile = function() {
+      return isMobile.any;
+    };
+    // method that returns Template Info
+    GUI.getTemplateInfo = function() {
+      return Vue.prototype.g3wtemplate.getInfo();
+    };
+    GUI.getTemplateInfo = function() {
+      return Vue.prototype.g3wtemplate.getInfo();
+    };
+    GUI.getFontClass = function(type) {
+      return Vue.prototype.g3wtemplate.getFontClass(type);
+    };
+
   }
 }, {});
 
@@ -195,10 +213,10 @@ const ApplicationTemplate = function({ApplicationService}) {
     }
   };
   /*
-    usefull to show onaly last waiting request output
-    at moment will be an object
+    usefully to show only last waiting request output
+    at a moment will be an object
     {
-      stop: method to sot to show result
+      stop: method to sot to show a result
     }
    */
   this.waitingoutputdataplace = null;
@@ -208,18 +226,17 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
   // create application config
   this._createTemplateConfig = function() {
-    const G3WTemplate = Vue.prototype.g3wtemplate;
-    const appTitle = ApplicationService.getConfig().apptitle || 'G3W Suite';
-    const ContentsComponent = require('gui/viewport/contentsviewer');
-    const CatalogComponent = require('gui/catalog/vue/catalog');
-    const SearchComponent = require('gui/search/vue/search');
-    const QueryBuilderUIFactory = require('gui/querybuilder/querybuilderuifactory');
-    const PrintComponent = require('gui/print/vue/print');
-    const MetadataComponent = require('gui/metadata/vue/metadata');
-    const ToolsComponent = require('gui/tools/vue/tools');
-    const WMSComponent = require('gui/wms/vue/wms');
-    const MapComponent = require('gui/map/vue/map');
-    const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
+    const appTitle                  = ApplicationService.getConfig().apptitle || 'G3W Suite';
+    const ContentsComponent         = require('gui/viewport/contentsviewer');
+    const CatalogComponent          = require('gui/catalog/vue/catalog');
+    const SearchComponent           = require('gui/search/vue/search');
+    const QueryBuilderUIFactory     = require('gui/querybuilder/querybuilderuifactory');
+    const PrintComponent            = require('gui/print/vue/print');
+    const MetadataComponent         = require('gui/metadata/vue/metadata');
+    const ToolsComponent            = require('gui/tools/vue/tools');
+    const WMSComponent              = require('gui/wms/vue/wms');
+    const MapComponent              = require('gui/map/vue/map');
+    const QueryResultsComponent     = require('gui/queryresults/vue/queryresults');
     const SpatialBookMarksComponent = require('gui/spatialbookmarks/vue/spatialbookmarks');
     return {
       title: appTitle,
@@ -233,31 +250,31 @@ const ApplicationTemplate = function({ApplicationService}) {
               id: 'metadata',
               open: false,
               collapsible: false,
-              icon: G3WTemplate.getFontClass('file'),
+              icon: GUI.getFontClass('file'),
               mobile: true
             }),
             new SpatialBookMarksComponent({
               id: 'spatialbookmarks',
               open: false,
               collapsible: true,
-              icon: G3WTemplate.getFontClass('bookmark'),
+              icon: GUI.getFontClass('bookmark'),
               mobile: true
             }),
             new PrintComponent({
               id: 'print',
               open: false,
               collapsible: true, //  it used to manage click event if can run setOpen component method
-              icon: G3WTemplate.getFontClass('print'),
+              icon: GUI.getFontClass('print'),
               mobile: false
             }),
             new SearchComponent({
               id: 'search',
               open: false,
               collapsible: true,
-              icon: G3WTemplate.getFontClass('search'),
+              icon: GUI.getFontClass('search'),
               actions: [{
                 id:"querybuilder",
-                class: `${G3WTemplate.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
+                class: `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
                 tooltip: 'Query Builder',
                 fnc:() => {
                   GUI.closeContent();
@@ -281,14 +298,14 @@ const ApplicationTemplate = function({ApplicationService}) {
               id: 'tools',
               open: false,
               collapsible: true,
-              icon: G3WTemplate.getFontClass('tools'),
+              icon: GUI.getFontClass('tools'),
               mobile: true
             }),
             new WMSComponent({
               id: 'wms',
               open: false,
               collapsible: true,
-              icon: G3WTemplate.getFontClass('layers'),
+              icon: GUI.getFontClass('layers'),
               mobile: true
             }),
             new CatalogComponent({
@@ -296,7 +313,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               open: false,
               collapsible: false,
               isolate: true,
-              icon: G3WTemplate.getFontClass('map'),
+              icon: GUI.getFontClass('map'),
               mobile: true,
               config: {
                 legend: {
@@ -354,7 +371,6 @@ const ApplicationTemplate = function({ApplicationService}) {
         await this.$nextTick();
         self._buildTemplate();
         // setup Font, Css class methods
-        self._setUpTemplateDependencies(this);
         $(document).localize();
         self._setViewport(self.templateConfig.viewport);
         const skinColor = $('.navbar').css('background-color');
@@ -520,23 +536,6 @@ const ApplicationTemplate = function({ApplicationService}) {
     $('body').addClass('sidebar-collapse')
   };
 
-  // setup Fonts Css dependencies methods
-  this._setUpTemplateDependencies = function(VueApp) {
-    GUI.isMobile = function() {
-      return isMobile.any;
-    };
-    // method that return Template Info
-    GUI.getTemplateInfo = function() {
-      return VueApp.g3wtemplate.getInfo();
-    };
-    GUI.getTemplateInfo = function() {
-      return VueApp.g3wtemplate.getInfo();
-    };
-    GUI.getFontClass = function(type) {
-      return VueApp.g3wtemplate.getFontClass(type);
-    };
-  };
-
   /**
    * Convert error to user message showed
    * @param error
@@ -571,7 +570,7 @@ const ApplicationTemplate = function({ApplicationService}) {
 
   // setup Interaces
   this._setupInterface = function() {
-    /* PLUBLIC INTERFACE */
+    /* PUBLIC INTERFACE */
 
     /* Common methods */
     GUI.layout = layout;

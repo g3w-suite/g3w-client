@@ -2,12 +2,12 @@
  * @file
  * @since 3.10.0
  */
-import GUI                          from 'services/gui';
 import G3WObject                    from 'core/g3wobject';
 import { merge }                    from 'utils/merge';
 import { noop }                     from 'utils/noop';
 import { capitalize_first_letter }  from 'utils/capitalize_first_letter';
 import { resolve }                  from 'utils/resolve';
+import GUI                          from 'services/gui';
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
@@ -47,23 +47,55 @@ export default class Component extends G3WObject {
     }
 
     // TODO: check why `GUI.getFontClass` is undefined
-    opts.icon = Vue.prototype.g3wtemplate.getFontClass(opts.icon) || opts.icon;
+    opts.icon = GUI.getFontClass(opts.icon) || opts.icon;
 
-    super();
+    super({
+      setters: {
+
+        setOpen(bool) {
+          this.state.open = bool;
+          if (this._setOpen) {
+            this._setOpen(bool);
+          }
+        },
+
+        setVisible(bool) {
+          this.state.visible = bool;
+          if (this._setVisible) {
+            this._setVisible(bool);
+          }
+        },
+
+        setLoading(bool = false) {
+          this.state.loading = bool;
+        },
+
+        setDisabled(bool = false) {
+          this.state.disabled = bool;
+        },
+
+        reload() {
+          if (this._reload) {
+            this._reload();
+          }
+        },
+      }
+
+    });
 
     this._firstLayout = true;
 
     /** internal VUE component */
-    this.internalComponent = opts.internalComponent || null;
+    this.internalComponent = çç(opts.internalComponent, null);
 
     /** @type { Array } */
     this._components = [];
 
     /** @type { string } */
-    this.id = opts.id || Math.random() * 1000;
+    this.id = çç(opts.id, Math.random() * 1000);
 
     /** @type { string } */
-    this.title = opts.title || '';
+    this.title = çç(opts.title, '');
 
     this.state = {
       sizes:                        { width: 0, height:0 },
@@ -76,38 +108,6 @@ export default class Component extends G3WObject {
       closewhenshowviewportcontent: çç(opts.closewhenshowviewportcontent, true),
     };
 
-    this.setters = {
-
-      setOpen(bool) {
-        this.state.open = bool;
-        if (this._setOpen) {
-          this._setOpen(bool);
-        }
-      },
-
-      setVisible(bool) {
-        this.state.visible = bool;
-        if (this._setVisible) {
-          this._setVisible(bool);
-        }
-      },
-
-      setLoading(bool=false) {
-        this.state.loading = bool;
-      },
-
-      setDisabled(bool=false) {
-        this.state.disabled = bool;
-      },
-
-      reload() {
-        if (this._reload) {
-          this._reload();
-        }
-      },
-
-    };
-
     this.setService(opts.service || this);
 
     if (opts.internalComponent) {
@@ -117,7 +117,7 @@ export default class Component extends G3WObject {
     merge(this, opts);
 
     // add events options
-    this.events = opts.events || {};
+    this.events = çç(opts.events, {});
 
     if (this.events.open) {
       const { when = "after", cb = () => {} } = this.events.open;
@@ -130,33 +130,33 @@ export default class Component extends G3WObject {
   }
 
   /**
-   * @param { Object } options
-   * @param { Array } options.components
-   * @param { Object } options.service
-   * @param { Function } options.service.init
-   * @param options.vueComponentObject
-   * @param options.template
-   * @param options.propsData
+   * @param { Object } opts
+   * @param { Array } opts.components
+   * @param { Object } opts.service
+   * @param { Function } opts.service.init
+   * @param opts.vueComponentObject
+   * @param opts.template
+   * @param opts.propsData
    */
-  init(options = {}) {
-    this.vueComponent = _cloneDeep(options.vueComponentObject);
-    this._components  = options.components || [];
+  init(opts = {}) {
+    this.vueComponent = _cloneDeep(opts.vueComponentObject);
+    this._components  = opts.components || [];
 
-    this.setService(options.service || this._service || noop);
+    this.setService(opts.service || this._service || noop);
 
     if (this._service.init && this.init !== this._service.init) {
-      this._service.init(options);
+      this._service.init(opts);
     }
 
-    if (options.template) {
-      this.vueComponent.template = options.template;
+    if (opts.template) {
+      this.vueComponent.template = opts.template;
     }
 
     this.setInternalComponent = function() {
       this.internalComponent = new (Vue.extend(this.vueComponent))({
         service: this._service,
-        template: options.template,
-        propsData: options.propsData
+        template: opts.template,
+        propsData: opts.propsData
       });
       this.internalComponent.state = this.getService().state;
     };
@@ -201,24 +201,15 @@ export default class Component extends G3WObject {
   setService(service) {
     this._service = service;
   }
-
-  /** @FIXME duplicated function definition */
   addComponent(Component) {
     this._components.push(Component);
   }
 
-  /** @FIXME duplicated function definition */
-  addComponent(component) {
-    if (component) {
-      this.vueComponent.components[component.key] = component.value;
-    }
-  }
-
   removeComponent(Component) {
-    this._components.forEach((c, i) => {
+    this._components.find((c, i) => {
       if (c === Component) {
         this.splice(i, 1);
-        return false;
+        return true;
       }
     })
   }
@@ -228,8 +219,9 @@ export default class Component extends G3WObject {
   }
 
   setInternalComponent(internalComponent, options={}) {
-    this.internalComponent = !internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
-    (options.events || []).forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${capitalize_first_letter(e.name)}`](data)));
+    this.internalComponent = undefined === internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
+    (options.events || [])
+      .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${capitalize_first_letter(e.name)}`](data)));
     if (this._service && this._service.state) {
       this.internalComponent.state = this._service.state;
     }
@@ -242,7 +234,7 @@ export default class Component extends G3WObject {
    * @returns jquery promise
    * 
    * @fires internalComponent~ready
-   * @fires mount
+   * @fires mount event
    */
   mount(parent, append) {
     const d = $.Deferred();
