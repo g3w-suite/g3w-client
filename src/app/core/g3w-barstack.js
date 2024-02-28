@@ -156,7 +156,7 @@ export class BarStack extends G3WObject {
     const id = content.getId();
     const data = this.state.contentsdata;
     data.forEach((d, i) => {
-      if (d.content.getId && (d.content.getId() == id)) {
+      if (d.content.getId && (id == d.content.getId())) {
         idxToRemove = i;
       }
     });
