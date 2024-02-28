@@ -53,16 +53,16 @@ export default class Component extends G3WObject {
     this._firstLayout = true;
 
     /** internal VUE component */
-    this.internalComponent = opts.internalComponent || null;
+    this.internalComponent = çç(opts.internalComponent, null);
 
     /** @type { Array } */
     this._components = [];
 
     /** @type { string } */
-    this.id = opts.id || Math.random() * 1000;
+    this.id = çç(opts.id, Math.random() * 1000);
 
     /** @type { string } */
-    this.title = opts.title || '';
+    this.title = çç(opts.title, '');
 
     this.state = {
       sizes:                        { width: 0, height:0 },
@@ -116,7 +116,7 @@ export default class Component extends G3WObject {
     merge(this, opts);
 
     // add events options
-    this.events = opts.events || {};
+    this.events = çç(opts.events, {});
 
     if (this.events.open) {
       const { when = "after", cb = () => {} } = this.events.open;
@@ -200,24 +200,15 @@ export default class Component extends G3WObject {
   setService(service) {
     this._service = service;
   }
-
-  /** @FIXME duplicated function definition */
   addComponent(Component) {
     this._components.push(Component);
   }
 
-  /** @FIXME duplicated function definition */
-  addComponent(component) {
-    if (component) {
-      this.vueComponent.components[component.key] = component.value;
-    }
-  }
-
   removeComponent(Component) {
-    this._components.forEach((c, i) => {
+    this._components.find((c, i) => {
       if (c === Component) {
         this.splice(i, 1);
-        return false;
+        return true;
       }
     })
   }
