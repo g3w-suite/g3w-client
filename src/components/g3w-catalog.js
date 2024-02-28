@@ -30,8 +30,6 @@ Vue.component('layerslegend-items', LegendItemsComp);
  */
 export default function(opts = {}) {
 
-  const catalog = CatalogLayersStoresRegistry;
-
   const state = {
     prstate: ProjectsRegistry.state,
     highlightlayers: false,
@@ -40,47 +38,49 @@ export default function(opts = {}) {
       vector: [] // added to map controls for the moment
     },
     layerstrees: [],
-    layersgroups: []
+    layersgroups: [],
   };
 
-  const service = opts.service || new G3WObject({ setters: {
-    /**
-     * @param {{ layer: unknown, type: 'vector' }}
-     * 
-     * @fires CatalogService~addExternalLayer
-     * 
-     * @since 3.8.0
-     */
-    addExternalLayer({ layer, type='vector' } = {}) {
-      layer.removable = true;
-      state.external[type].push(layer);
-    },
-    /**
-     * @param {{ name: string, type: 'vector' }}
-     * 
-     * @fires CatalogService~removeExternalLayer
-     * 
-     * @since 3.8.0
-     */
-    removeExternalLayer({ name, type='vector' } = {}) {
-      state.external[type].filter((l, i) => {
-        if (l.name === name) {
-          state.external[type].splice(i, 1);
-          return true;
-        }
-      });
-    },
-    /**
-     * @param {{ layer: unknown, type: unknown, selected: unknown }}
-     * 
-     * @fires CatalogService~setSelectedExternalLayer
-     * 
-     * @since 3.8.0
-     */
-    setSelectedExternalLayer({ layer, type, selected }) {
-      state.external[type].forEach(l => { l.selected = (undefined === l.selected ? l.selected : (l === layer ? selected : false)); })
-    },
-  }});
+  const service = opts.service || new G3WObject({
+    setters: {
+      /**
+       * @param {{ layer: unknown, type: 'vector' }}
+       *
+       * @fires CatalogService~addExternalLayer
+       *
+       * @since 3.8.0
+       */
+      addExternalLayer({ layer, type='vector' } = {}) {
+        layer.removable = true;
+        state.external[type].push(layer);
+      },
+      /**
+       * @param {{ name: string, type: 'vector' }}
+       *
+       * @fires CatalogService~removeExternalLayer
+       *
+       * @since 3.8.0
+       */
+      removeExternalLayer({ name, type='vector' } = {}) {
+        state.external[type].filter((l, i) => {
+          if (l.name === name) {
+            state.external[type].splice(i, 1);
+            return true;
+          }
+        });
+      },
+      /**
+       * @param {{ layer: unknown, type: unknown, selected: unknown }}
+       *
+       * @fires CatalogService~setSelectedExternalLayer
+       *
+       * @since 3.8.0
+       */
+      setSelectedExternalLayer({ layer, type, selected }) {
+        state.external[type].forEach(l => { l.selected = (undefined === l.selected ? l.selected : (l === layer ? selected : false)); })
+      },
+    }
+  });
 
   service.state                       = state;
   service.createLayersGroup           = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
@@ -99,15 +99,15 @@ export default function(opts = {}) {
   };
 
   // add layers stores to tree
-  catalog.getLayersStores().forEach(s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
-  catalog.onafter('addLayersStore', s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
-  catalog.onafter('removeLayersStore', s => {
+  CatalogLayersStoresRegistry.getLayersStores().forEach(s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
+  CatalogLayersStoresRegistry.onafter('addLayersStore', s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
+  CatalogLayersStoresRegistry.onafter('removeLayersStore', s => {
     const i = state.layerstrees.findIndex(t => t.storeid === s.getId());
     if (-1 !== i) {
       state.layerstrees.splice(i, 1);
     }
   });
-  catalog.onafter('removeLayersStores', () => {
+  CatalogLayersStoresRegistry.onafter('removeLayersStores', () => {
     state.layerstrees.forEach((_, i) => { state.layerstrees.splice(i, 1); });
   });
 
