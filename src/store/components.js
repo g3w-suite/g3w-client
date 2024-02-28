@@ -5,16 +5,16 @@
  * @deprecated will be probably removed after v4.x. Use Vue Single File Components (SFC) instead
  */
 
-const G3WObject = require('core/g3wobject');
+const G3WObject         = require('core/g3wobject');
 const { base, inherit } = require('utils');
 
-//class Componet Registry (singleton)
+//class Component Registry (singleton)
 // store all components added
 function ComponentsRegistry() {
   this.components = {};
   this.registerComponent = function(component) {
     const id = component.getId();
-    if (!this.components[id]) {
+    if (undefined === this.components[id]) {
       this.components[id] = component;
       this.emit('componentregistered', component);
     }
@@ -31,7 +31,9 @@ function ComponentsRegistry() {
   this.unregisterComponent = function(id) {
     const component = this.components[id];
     if (component) {
-      if (typeof component.destroy === 'function') component.destroy();
+      if (typeof component.destroy === 'function') {
+        component.destroy();
+      }
       this.components[id] = null;
     }
     return component;
