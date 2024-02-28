@@ -48,7 +48,39 @@ export default class Component extends G3WObject {
     // TODO: check why `GUI.getFontClass` is undefined
     opts.icon = Vue.prototype.g3wtemplate.getFontClass(opts.icon) || opts.icon;
 
-    super();
+    super({
+      setters: {
+
+        setOpen(bool) {
+          this.state.open = bool;
+          if (this._setOpen) {
+            this._setOpen(bool);
+          }
+        },
+
+        setVisible(bool) {
+          this.state.visible = bool;
+          if (this._setVisible) {
+            this._setVisible(bool);
+          }
+        },
+
+        setLoading(bool = false) {
+          this.state.loading = bool;
+        },
+
+        setDisabled(bool = false) {
+          this.state.disabled = bool;
+        },
+
+        reload() {
+          if (this._reload) {
+            this._reload();
+          }
+        },
+      }
+
+    });
 
     this._firstLayout = true;
 
@@ -73,38 +105,6 @@ export default class Component extends G3WObject {
       disabled:                     çç(opts.disabled, false),
       resizable:                    çç(opts.resizable, false),
       closewhenshowviewportcontent: çç(opts.closewhenshowviewportcontent, true),
-    };
-
-    this.setters = {
-
-      setOpen(bool) {
-        this.state.open = bool;
-        if (this._setOpen) {
-          this._setOpen(bool);
-        }
-      },
-
-      setVisible(bool) {
-        this.state.visible = bool;
-        if (this._setVisible) {
-          this._setVisible(bool);
-        }
-      },
-
-      setLoading(bool=false) {
-        this.state.loading = bool;
-      },
-
-      setDisabled(bool=false) {
-        this.state.disabled = bool;
-      },
-
-      reload() {
-        if (this._reload) {
-          this._reload();
-        }
-      },
-
     };
 
     this.setService(opts.service || this);
