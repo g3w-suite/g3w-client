@@ -34,14 +34,14 @@ export default function(opts) {
       show: false,
       reload(emit = true) {
         if (emit) {
-          comp._service.emit('reload');
+          comp.getService().emit('reload');
         }
         const project = ProjectsRegistry.getCurrentProject().getState();
         state.name    = project.title;
         state.groups  = Object.entries(GROUPS).reduce((g, [name, fields]) => {
           g[name] = fields.reduce((f, field) => {
             const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
-            if (!!value) {
+            if (value) {
               f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
             }
             return f;
@@ -54,12 +54,12 @@ export default function(opts) {
   });
 
   // build project group metadata
-  comp._service.reload(false);
-  comp._service.on('reload', () => comp.setOpen(false));
+  comp.getService().reload(false);
+  comp.getService().on('reload', () => comp.setOpen(false));
 
   // show metadata
-  comp.onafter('setOpen', b => { 
-    const service = comp._service;
+  comp.onafter('setOpen', b => {
+    const service = comp.getService();
     service.show = b;
     if (b) {
       service.content        = new Component({ service, internalComponent: new (Vue.extend(MetadataProjComp))({ state }) });
