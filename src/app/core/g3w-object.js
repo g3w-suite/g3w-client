@@ -12,13 +12,13 @@ import { throttle } from 'utils/throttle';
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields
  */
 function defineClassField(obj, key, cb, initVal) {
-  // Field is already available within parent constructor
-  // in case of ES5 inheritance (ie. `inherit(ChildClass, G3WObject);`)
+  // The Field is already available within parent constructor
+  // in case of ES5 inheritance (i.e. `inherit(ChildClass, G3WObject);`)
   if (initVal) {
     return cb.call(obj, initVal);
   }
-  // Field is not available within parent constructor
-  // in case ES6 inheritance (ie. `class ChildClass extends G3WObject { };`);
+  // The Field is not available within parent constructor
+  // in case ES6 inheritance (i.e. `class ChildClass extends G3WObject { };`);
   let currVal = initVal;
   return Object.defineProperty(obj, key, {
     get() { return currVal; },
@@ -47,7 +47,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener after executing a setter method 
+   * Attach an event listener after executing a setter method
    * 
    * @param {string}   setter   - function name to listen for 
    * @param {function} listener - event listener (sync)
@@ -58,7 +58,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener after executing a setter method (once)
+   * Attach an event listener after executing a setter method (once)
    * 
    * @param {string}   setter   - function name to listen for 
    * @param {function} listener - event listener (sync)
@@ -69,7 +69,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener before executing a setter method
+   * Attach an event listener before executing a setter method
    * 
    * @param {string}   setter   - function name to listen for
    * @param {function} listener - event listener (sync)
@@ -80,7 +80,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   * Attatch an event listener before executing a setter method (once)
+   * Attach an event listener before executing a setter method (once)
    * 
    * @param {string}   setter   - function name to listen for
    * @param {function} listener - event listener (sync)
@@ -102,7 +102,7 @@ export default class G3WObject extends EventEmitter {
   }
 
   /**
-   *  Cicle each settersListeners (array) and find setter key (before/after) to be removed
+   *  Loop each settersListeners (array) and find a setter key (before/after) to be removed
    */
   un(setter, key) {
     Object.entries(this.settersListeners)
@@ -119,13 +119,17 @@ export default class G3WObject extends EventEmitter {
   * Register and handle <before/after> listeners
   * 
   * @param { 'before' | 'after' } when
-  * @param { 'sync' | 'async' }   type
+  * @param { Function } setter
+  * @param { Object } listener
+  * @param { Boolean } async
+  * @param { Number } priority
+  * @param { Boolean }   once
   */
   _onsetter(when, setter, listener, async, priority = 0, once = false) {
     // unique listenerKey
     let key;
     // check if setter function is registered
-    // and then add info object to setters listeners
+    // and then add an info object to setter listeners
     // (sorted based on priority)
     if (this.settersListeners && undefined !== this.settersListeners[when][setter]) {
       key = `${Math.floor(Math.random() * 1000000) + Date.now()}`;
