@@ -19,6 +19,16 @@ function defineClassField(obj, key, cb, initVal) {
   }
   // The Field is not available within parent constructor
   // in case ES6 inheritance (i.e. `class ChildClass extends G3WObject { };`);
+  // I.e
+  // class A extends G3WObject {
+  //   constructor() {
+  //     super();
+  //     this.setters = {
+  //       foo() {},
+  //       bar() {},
+  //     };
+  //   }
+  // }
   let currVal = initVal;
   return Object.defineProperty(obj, key, {
     get() { return currVal; },
