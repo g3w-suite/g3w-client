@@ -2,7 +2,6 @@
  * @file
  * @since 3.10.0
  */
-import GUI                          from 'services/gui';
 import G3WObject                    from 'core/g3wobject';
 import { merge }                    from 'utils/merge';
 import { noop }                     from 'utils/noop';
