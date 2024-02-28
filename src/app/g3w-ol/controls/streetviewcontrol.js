@@ -151,7 +151,7 @@ proto.showStreetView = function(coordinate) {
   if (this.key) {
     GUI.setContent({
       title: 'StreetView',
-      content: new Component({ internalComponent: (Vue.extend(vueComp))({ keyError: this.keyError }) }),
+      content: new Component({ internalComponent: new (Vue.extend(vueComp))({ keyError: this.keyError }) }),
     });
     if (!this.keyError) {
       this.setPosition({ lng, lat });
