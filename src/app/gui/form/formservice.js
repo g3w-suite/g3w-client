@@ -457,7 +457,7 @@ proto.addComponent = function(component) {
     return;
   }
   const {id, title, name, icon, valid, headerComponent, header=true} = component;
-  if (valid !== undefined) {
+  if (undefined !== valid) {
     this.state.componentstovalidate[id] = valid;
     this.state.valid = this.state.valid && valid;
     this.eventBus.$emit('add-component-validate', {
@@ -480,8 +480,11 @@ proto.replaceComponent = function({id, component}={}) {
 };
 
 proto.disableComponent = function({id, disabled}) {
-  if (disabled) this.state.disabledcomponents.push(id);
-  else this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => disabledId !== id);
+  if (disabled) {
+    this.state.disabledcomponents.push(id);
+  } else {
+    this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => disabledId !== id);
+  }
 };
 
 proto.setCurrentComponentById = function(id) {
@@ -521,7 +524,7 @@ proto.addedComponentTo = function(formcomponent = 'body') {
 
 proto.addToValidate = function(input) {
   this.state.tovalidate[input.name] = input;
-  // check if is mounted on form gui otherwise leave form component to run is Valid whe form is mounted on dom
+  // check if is mounted on form gui otherwise leave form component to run is Valid when form is mounted on dom
   if (this.state.ready) {
    this.isValid(input);
   }
@@ -532,7 +535,7 @@ proto.removeToValidate = function(input) {
   this.isValid();
 };
 
-proto.getState = function () {
+proto.getState = function() {
   return this.state;
 };
 
@@ -600,7 +603,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
   // disable listen changeInput
   this.listenChangeInput = false;
 
-  // Array contain field name already resolved with server default_expression request
+  // Array contains field name already resolved with server default_expression request
   const requested_expressions = [];
   // array of defaultExpressionPromises request
   const pending_expressions = [];
@@ -614,7 +617,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
         return (
           // check if dependency field is field on update
           this.default_expression_fields_on_update.find(({name}) => name === field) &&
-          // if has bind current field
+          // if it has bind current field
           this.default_expression_fields_dependencies[field].find(fieldName => fieldName === this.default_expression_fields_on_update[i].name)
         )
       });
@@ -623,7 +626,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
     // need to evaluate its value and after evaluate field value expression
     for (let i = 0; i < dFs.length; i++) {
       // in case already done a default_expression request evaluation from server
-      if ("undefined" !== typeof requested_expressions.find(name => name === dFs[i])) {
+      if (undefined !== requested_expressions.find(name => name === dFs[i])) {
         continue;
       }
       // get value. Need to wait response
@@ -646,7 +649,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
   }
 
   this.default_expression_fields_on_update.forEach(field => {
-    if ("undefined" === typeof requested_expressions.find(name => name === field.name)) {
+    if (undefined === requested_expressions.find(name => name === field.name)) {
       pending_expressions.push(FormService._getDefaultExpression({
         field,
         feature: this.feature,
@@ -813,7 +816,7 @@ FormService._getDefaultExpression = async function({
     return value;
 
   } catch(err) {
-    if ("undefined" !== typeof default_value) {
+    if (undefined !== default_value) {
       field.value = default_value
     }
     return Promise.reject(err);
