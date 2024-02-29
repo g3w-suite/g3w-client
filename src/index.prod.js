@@ -350,22 +350,22 @@ const ApplicationTemplate = function({ApplicationService}) {
   this._createApp = function() {
     this._setDataTableLanguage();
     const self = this;
-    if (isMobile.any || this._isIframe) $('body').addClass('sidebar-collapse');
+    if (isMobile.any || this._isIframe) {
+      $('body').addClass('sidebar-collapse');
+    }
     return new Vue({
       el: '#app',
       created() {
-        // set general metods for the application as  GUI.showForm etc ..
+        // set general methods for the application as GUI.showForm etc ..
         self._setupInterface();
         // setup layout
         self._setupLayout();
-        //register all services fro the application
+        //register all services for the application
         self._setUpServices();
         // create templateConfig
         self.templateConfig = self._createTemplateConfig();
         // listen lng change and reset datatable language
-        this.$watch(()=> ApplicationState.language, ()=>{
-          self._setDataTableLanguage();
-        });
+        this.$watch(() => ApplicationState.language, () => self._setDataTableLanguage());
       },
       async mounted() {
         await this.$nextTick();
@@ -425,7 +425,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     !dataTable ? $.extend( true, $.fn.dataTable.defaults, languageOptions) : dataTable.dataTable( {"oLanguage": languageOptions});
   };
 
-  // route setting att beginning (is an example)
+  // route setting at beginning (is an example)
   this._addRoutes = function() {
     const RouterService = ApplicationService.getRouterService();
     const mapService = GUI.getComponent('map').getService();
@@ -501,7 +501,9 @@ const ApplicationTemplate = function({ApplicationService}) {
     let register = true;
     if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
       const placeholderService = ApplicationTemplate.Services[placeholder];
-      if (placeholderService) register = placeholderService.addComponents(components, options);
+      if (placeholderService) {
+        register = placeholderService.addComponents(components, options);
+      }
     }
     Object.entries(components).forEach(([key, component])=> {
       if (register) {
