@@ -31,15 +31,15 @@
           <template v-if="!state.atlas">
 
             <!-- PRINT SCALE -->
-            <label for="scala" v-t="'sdk.print.scale'"></label>
+            <label for="scale" v-t="'sdk.print.scale'"></label>
             <select
-              id         = "scala"
+              id         = "scale"
               v-disabled = "!has_maps"
               class      = "form-control"
               @change    = "changeScale"
-              v-model    = "state.scala"
+              v-model    = "state.scale"
             >
-              <option v-for="scale in state.scale" :value="scale.value">{{ scale.label }}</option>
+              <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
             </select>
 
             <!-- PRINT DPI -->
@@ -217,7 +217,7 @@ export default {
           url: null,
           method: ProjectsRegistry.getCurrentProject().getOwsMethod(),
           layers: true,
-          format: visible ? null : undefined,
+          format: PRINT_FORMATS[0].value,
           loading: false,
           type: null,
         },
@@ -227,8 +227,8 @@ export default {
         atlas:       visible ? print[0].atlas  : undefined,
         rotation:    visible ? 0               : undefined,
         inner:       [0, 0, 0, 0],
-        scale:       PRINT_SCALES,
-        scala:       visible ? null            : undefined,
+        scales:      PRINT_SCALES,
+        scale:       visible ? null            : undefined,
         dpis:        PRINT_RESOLUTIONS,
         dpi:         PRINT_RESOLUTIONS[0],
         formats:     PRINT_FORMATS,
@@ -280,10 +280,10 @@ export default {
     },
 
     /**
-     * On change scala set print area
+     * On scale change set print area
      */
     changeScale() {
-      if (this.state.scala) {
+      if (this.state.scale) {
         this._setPrintArea();
       }
     },
@@ -374,14 +374,14 @@ export default {
             rotation:             this.state.rotation,
             dpi:                  this.state.dpi,
             template:             this.state.template,
-            scale:                this.state.scala,
+            scale:                this.state.scale,
             format:               this.state.output.format,
             labels:               this.state.labels,
             is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
             maps:                 this.state.maps.map(m => ({
               name:         m.name,
               preset_theme: m.preset_theme,
-              scale:        m.overview ? m.scale : this.state.scala,
+              scale:        m.overview ? m.scale : this.state.scale,
               extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
             })),
           }, this.state.output.method);
@@ -448,8 +448,8 @@ export default {
       const resolution = map.getView().getResolution();
       const { h, w }   = this.state.maps.find(m=> !m.overview);
       const res        = GUI.getService('map').getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution); // resolution in meters
-      const w2         = (((w / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
-      const h2         = (((h / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
+      const w2         = (((w / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
+      const h2         = (((h / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
       this.state.inner = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
       GUI.getService('map').setInnerGreyCoverBBox({
@@ -475,7 +475,7 @@ export default {
       let res        = maxResolution;
       const units    = GUI.getService('map').getMapUnits();
       const mapScala = getScaleFromResolution(res, units);
-      const scales   = _.orderBy(this.state.scale, ['value'], ['desc']);
+      const scales   = _.orderBy(this.state.scales, ['value'], ['desc']);
       let scale      = [];
       let first      = true;
       scales
@@ -489,7 +489,7 @@ export default {
             res /= 2;
           }
         });
-      this.state.scale = scale;
+      this.state.scales = scale;
     },
   
     _initPrintConfig() {
@@ -504,7 +504,7 @@ export default {
         .entries(this._scalesResolutions)
         .find(([scala, res]) => {
           if (resolution <= res) {
-            this.state.scala = scala;
+            this.state.scale = scala;
             return true
           }
         });
@@ -522,9 +522,8 @@ export default {
         this._initPrintConfig();
         const map = GUI.getService('map');
         map.on('changeviewaftercurrentproject', () => {
-          const maxResolution = map.viewer.map.getView().getMaxResolution();
-          this.state.scale = PRINT_SCALES;
-          this._setAllScalesBasedOnMaxResolution(maxResolution);
+          this.state.scales = PRINT_SCALES;
+          this._setAllScalesBasedOnMaxResolution(map.viewer.map.getView().getMaxResolution());
         });
       } else {
         this._clearPrint();
