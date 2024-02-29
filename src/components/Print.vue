@@ -469,9 +469,11 @@ export default {
     },
   
     /**
+     * Set all scales based on max resolution
+     * 
      * @param maxResolution
      */
-    _setAllScalesBasedOnMaxResolution(maxResolution) {
+    _setScales(maxResolution) {
       let res        = maxResolution;
       const units    = GUI.getService('map').getMapUnits();
       const mapScala = getScaleFromResolution(res, units);
@@ -495,7 +497,7 @@ export default {
     _initPrintConfig() {
       const view = GUI.getService('map').viewer.map.getView();
       if (!this._initialized) {
-        this._setAllScalesBasedOnMaxResolution(view.getMaxResolution());
+        this._setScales(view.getMaxResolution());
         this._initialized = true;
       }
       const resolution = view.getResolution();
@@ -523,7 +525,7 @@ export default {
         const map = GUI.getService('map');
         map.on('changeviewaftercurrentproject', () => {
           this.state.scales = PRINT_SCALES;
-          this._setAllScalesBasedOnMaxResolution(map.viewer.map.getView().getMaxResolution());
+          this._setScales(map.viewer.map.getView().getMaxResolution());
         });
       } else {
         this._clearPrint();
