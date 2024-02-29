@@ -70,7 +70,7 @@
             <select
               id      = "format"
               class   = "form-control"
-              v-model = "state.output.format"
+              v-model = "state.format"
             >
               <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
             </select>
@@ -170,6 +170,7 @@ export default {
   mixins: [resizeMixin],
 
   data() {
+    console.log(this);
     this.init();
     return {
       state: this.state || {},
@@ -208,30 +209,24 @@ export default {
       const visible = print.length > 0; 
 
       this.state = Object.assign(this.state || {}, {
-        visible,
         print,
-        isShow: false,
-        loading: false,
-        url: null,
-        output: {
-          url: null,
-          method: ProjectsRegistry.getCurrentProject().getOwsMethod(),
-          layers: true,
-          format: PRINT_FORMATS[0].value,
-          loading: false,
-          type: null,
-        },
-        maps:        visible ? print[0].maps   : undefined,
-        labels:      visible ? print[0].labels : undefined,
-        template:    visible ? print[0].name   : undefined,
-        atlas:       visible ? print[0].atlas  : undefined,
-        rotation:    visible ? 0               : undefined,
-        inner:       [0, 0, 0, 0],
-        scales:      PRINT_SCALES,
-        scale:       visible ? null            : undefined,
-        dpis:        PRINT_RESOLUTIONS,
-        dpi:         PRINT_RESOLUTIONS[0],
-        formats:     PRINT_FORMATS,
+        loading:      false,
+        downloading:  false,
+        url:          null,
+        layers:       true,
+        mime_type:    null,
+        maps:         visible ? print[0].maps   : undefined,
+        labels:       visible ? print[0].labels : undefined,
+        template:     visible ? print[0].name   : undefined,
+        atlas:        visible ? print[0].atlas  : undefined,
+        rotation:     visible ? 0               : undefined,
+        inner:        [0, 0, 0, 0],
+        scales:       PRINT_SCALES,
+        scale:        visible ? null            : undefined,
+        dpis:         PRINT_RESOLUTIONS,
+        dpi:          PRINT_RESOLUTIONS[0],
+        formats:      PRINT_FORMATS,
+        format:       PRINT_FORMATS[0].value,
       });
     },
 
@@ -348,18 +343,15 @@ export default {
       }
 
       if (!has_atlas) {
-        this.state.output.url    = null;
-        this.state.output.layers = true;
+        this.state.url    = null;
+        this.state.layers = true;
 
-        console.log(this);
-
-        this._page = new Component({ service: this.$options.service, vueComponentObject: vueComp });
-        this._page.internalComponent.state = this.state.output;
+        this._page = new Component({ service: this, vueComponentObject: vueComp });
 
         // set print area after closing content
         this._page.unmount = () => {
           GUI.getService('map').viewer.map.once('postrender', this._setPrintArea.bind(this));
-          this.state.output.loading = false;
+          this.state.downloading = false;
           return Component.prototype.unmount.call(this._page);
         };
 
@@ -375,7 +367,7 @@ export default {
             dpi:                  this.state.dpi,
             template:             this.state.template,
             scale:                this.state.scale,
-            format:               this.state.output.format,
+            format:               this.state.format,
             labels:               this.state.labels,
             is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
             maps:                 this.state.maps.map(m => ({
@@ -384,17 +376,17 @@ export default {
               scale:        m.overview ? m.scale : this.state.scale,
               extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
             })),
-          }, this.state.output.method);
-          this.state.output.url       = output.url;
-          this.state.output.layers    = output.layers;
-          this.state.output.mime_type = output.mime_type;
+          }, ProjectsRegistry.getCurrentProject().getOwsMethod());
+          this.state.url       = output.url;
+          this.state.layers    = output.layers;
+          this.state.mime_type = output.mime_type;
         } catch (e) {
           err = e;
         }
       }
 
       // in case of no layers
-      if (has_atlas || !this.state.output.layers) {
+      if (has_atlas || !this.state.layers) {
         GUI.disableSideBar(false);
       }
 
@@ -412,7 +404,10 @@ export default {
      */
     showPrintArea(show) {
       // close content if open
-      this.state.isShow = show;
+      const reset = !show;
+      if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
+      if (reset)                           { this.atlas_values = []; }
+      if (reset && !this.has_autocomplete) { this.disabled = true }
       GUI
         .closeContent()
         .then(component => {
@@ -476,13 +471,13 @@ export default {
     _setScales(maxResolution) {
       let res        = maxResolution;
       const units    = GUI.getService('map').getMapUnits();
-      const mapScala = getScaleFromResolution(res, units);
-      const scales   = _.orderBy(this.state.scales, ['value'], ['desc']);
+      const mapScale = getScaleFromResolution(res, units);
+      const scales   = this.state.scales.sort((a, b) => b.value - a.value);
       let scale      = [];
       let first      = true;
       scales
         .forEach((scala, i) => {
-          if (mapScala > scala.value) {
+          if (mapScale > scala.value) {
             let s = first ? scales[i-1] : scala;
             first = false;
             scale.push(s);
@@ -514,7 +509,7 @@ export default {
 
     reload() {
       this.state.print    = ProjectsRegistry.getCurrentProject().state.print || [];
-      const visible       = this.state.visible = this.state.print.length > 0;
+      const visible       = this.state.print.length > 0;
       const init          = this._initialized;
       this.state.template = visible ? this.state.print[0].name : this.state.template;
       if (visible && !init) {
@@ -538,6 +533,7 @@ export default {
 
     async has_autocomplete(b) {
       if (!b) return;
+
       await this.$nextTick();
 
       this.select2 = $('#print_atlas_autocomplete').select2({
@@ -594,7 +590,6 @@ export default {
         if (this._skip_atlas_check) {
           return;
         }
-        console.log(this.has_autocomplete, vals);
         if (this.has_autocomplete) {
           this.disabled = 0 === vals.length;
           return;
@@ -627,20 +622,6 @@ export default {
         await this.$nextTick();
         this._skip_atlas_check = false;
         this.disabled = '' === value.trim();
-      }
-    },
-
-    'state.isShow'(isShow) {
-      const reset = !isShow;
-      if (!reset) {
-        return;
-      }
-      if (this.select2) {
-        this.select2.val(null).trigger('change');
-      }
-      this.atlas_values = [];
-      if (!this.has_autocomplete) {
-        this.disabled = true
       }
     },
 

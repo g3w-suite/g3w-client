@@ -7,7 +7,7 @@
   <div id="print-output">
 
     <transition :duration="500" name="fade">
-      <bar-loader :loading="loading"/>
+      <bar-loader :loading="state.downloading && state.layers"/>
     </transition>
 
     <!-- PRINT as PDF -->
@@ -24,7 +24,7 @@
       class     = "g3w-print-png-output"
     >
       <div id="g3w-print-header">
-        <div :class="{ 'g3w-disabled': !!state.loading }">
+        <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
           <a :href="state.url" :download="`download.${state.format}`">
             <button
               @click             = "downloadImage"
@@ -48,8 +48,9 @@
 </template>
 
 <script>
-import { TIMEOUT } from 'app/constant';
-import GUI         from 'services/gui';
+import { TIMEOUT }      from 'app/constant';
+import ProjectsRegistry from 'store/projects';
+import GUI              from 'services/gui';
 
 const { imageToDataURL } = require('utils');
 
@@ -65,22 +66,16 @@ export default {
     }
   },
 
-  computed: {
-    loading() {
-      return this.state.loading && this.state.layers;
-    }
-  },
-
   methods: {
 
     downloadImage() {
       GUI.disableSideBar(true);
-      this.state.loading = true;
+      this.state.downloading = true;
       if (['jpg', 'png'].includes(this.state.format)) {
         imageToDataURL({
         src: this.state.url,
         type: `image/${this.state.format}`,
-        callback: () => setTimeout(() => { GUI.disableSideBar(false); this.state.loading = false; })
+        callback: () => setTimeout(() => { GUI.disableSideBar(false); this.state.downloading = false; })
       });
       }
     },
@@ -96,15 +91,15 @@ export default {
       await this.$nextTick();
 
       // add timeout
-      // const timeout = setTimeout(() => {
-      //   GUI.disableSideBar(false);
-      //   this.state.loading = false;
-      //   GUI.showUserMessage({ type: 'alert', message: 'timeout' });
-      // }, TIMEOUT);
+      const timeout = setTimeout(() => {
+        GUI.disableSideBar(false);
+        this.state.downloading = false;
+        GUI.showUserMessage({ type: 'alert', message: 'timeout' });
+      }, TIMEOUT);
 
       // fetch(url)
       //   .then(async response => {
-      //     this.$options.service.state.loading = false;
+      //     this.state.loading = false;
       //     if (!response.ok) {
       //       GUI.notify.error(response.statusText || t("info.server_error"));
       //       GUI.closeContent();
@@ -117,25 +112,18 @@ export default {
       //   .finally(() => {
       //     clearTimeout(timeout);
       //     GUI.disableSideBar(false);
-      //     this.state.loading = false;
+      //     this.state.downloading = false;
       //   });
 
-      // add timeout
-      const timeOut = setTimeout(()=>{
-        GUI.disableSideBar(false);
-        this.state.loading = false;
-        GUI.showUserMessage({ type: 'alert', message: 'timeout' });
-      }, TIMEOUT);
-
       $(this.$refs.out).load(url, (response, status) => {
-        this.$options.service.state.loading = false;
+        this.state.loading = false;
         if ('error' === status) {
           GUI.notify.error(status || t("info.server_error"));
           GUI.closeContent();
         }
-        clearTimeout(timeOut);
+        clearTimeout(timeout);
         GUI.disableSideBar(false);
-        this.state.loading = false;
+        this.state.downloading = false;
       });
     }
   },
@@ -143,12 +131,12 @@ export default {
   async mounted() {
     await this.$nextTick();
     if (this.state.layers) {
-      this.$options.service.state.loading = true
+      this.state.loading = true;
     }
   },
 
   beforeDestroy() {
-    if (this.state.url && 'POST' === this.state.method) {
+    if (this.state.url && 'POST' === ProjectsRegistry.getCurrentProject().getOwsMethod()) {
       window.URL.revokeObjectURL(this.state.url);
     }
   },
