@@ -618,14 +618,15 @@ export default {
 
     atlas_values: {
       immediate: true,
-      handler(value) {
+      handler(values) {
         if (this.is_autocomplete) {
-          this.disabled = 0 === value.length;
+          this.disabled = 0 === values.length;
           return;
         }
         const validate = n => n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count || null;
         const values = new Set();
-        (value || '').split(',').filter(v => v).forEach(value => {
+        const value = (values ? values[0] : '') || '';
+        value.split(',').filter(v => v).forEach(value => {
           if (value.indexOf('-') !== -1) {
             const _values = value.split('-');
             const range = _values.filter(v => validate(v) !== null);
