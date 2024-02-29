@@ -492,9 +492,10 @@
         this.state.adminwmsurls = project.wmsurls || [];
       });
 
+      await GUI.isReady();
+
       const map = GUI.getService('map');
 
-      await GUI.isReady();
       await map.isReady();
 
       this.deleteWms = this.deleteWms.bind(this);
