@@ -79,10 +79,10 @@
 
           <!-- PRINT ATLAS -->
           <div
-            v-if                = "state.atlas"
-            class               = "form-group"
-            style               = "width: 100%;"
-            ref                 = "print_atlas"
+            v-if  = "state.atlas"
+            class = "form-group"
+            style = "width: 100%;"
+            ref   = "print_atlas"
           >
             <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
             <template v-if = "has_autocomplete">
