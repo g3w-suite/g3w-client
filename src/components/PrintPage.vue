@@ -96,34 +96,20 @@ export default {
         GUI.showUserMessage({ type: 'alert', message: 'timeout' });
       }, TIMEOUT);
 
-      // fetch(url)
-      //   .then(async response => {
-      //     this.state.loading = false;
-      //     if (!response.ok) {
-      //       GUI.notify.error(response.statusText || t("info.server_error"));
-      //       GUI.closeContent();
-      //       return;
-      //     }
-      //     console.log(this.$refs.out);
-      //     // this.$refs.out.innerHTML = await response.text();
-      //   })
-      //   .catch(console.warn)
-      //   .finally(() => {
-      //     clearTimeout(timeout);
-      //     GUI.disableSideBar(false);
-      //     this.state.downloading = false;
-      //   });
-
-      $(this.$refs.out).load(url, (response, status) => {
-        this.state.loading = false;
-        if ('error' === status) {
-          GUI.notify.error(status || t("info.server_error"));
-          GUI.closeContent();
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw response.statusText;
         }
-        clearTimeout(timeout);
-        GUI.disableSideBar(false);
-        this.state.downloading = false;
-      });
+      } catch (e) {
+        console.warn(e);
+        GUI.notify.error(e || t("info.server_error"));
+        GUI.closeContent();
+      }
+
+      clearTimeout(timeout);
+      GUI.disableSideBar(false);
+      this.state.downloading = false;
     }
   },
 
