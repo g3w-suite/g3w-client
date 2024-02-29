@@ -394,7 +394,7 @@ export default {
       }
 
       // in case of no layers
-      if (has_atlas || (!has_atlas && !this.state.output.layers)) {
+      if (has_atlas || !this.state.output.layers) {
         GUI.disableSideBar(false);
       }
 
