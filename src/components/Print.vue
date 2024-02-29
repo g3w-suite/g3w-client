@@ -428,7 +428,7 @@ export default {
         .closeContent()
         .then(component => {
           setTimeout(() => {
-            const map      = GUI.getService('map');
+            const map      = component.getService();
             map.getMap().once('postrender', e => {
               if (!show) {
                 return this._clearPrint();
@@ -447,6 +447,11 @@ export default {
     },
 
     _setPrintArea() {
+      //No maps set. Only attributes label
+      if (!this.has_maps) {
+        this._clearPrint();
+        return;
+      }
       const map               = GUI.getService('map').viewer.map;
       this.state.size         = map.getSize();
       const resolution        = map.getView().getResolution();
