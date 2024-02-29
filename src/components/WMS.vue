@@ -276,10 +276,11 @@
        * @param { Object } wms
        * @param { string } wms.url
        * @param { string } wms.name
-       * @param wms.epsg
-       * @param wms.position
-       * @param wms.methods
+       * @param { string } wms.epsg
+       * @param { string} wms.position
+       * @param wms.opacity
        * @param wms.layers
+       * @param {Boolean } wms.visible
        * 
        * @returns { Promise<void> }
        */
@@ -485,16 +486,16 @@
 
     // Load WMS urls from local storage
     async mounted() {
-
+      /**@deprecated Will be removed on v4.x **/
       ProjectsRegistry.onafter('setCurrentProject', async (project) => {
         this.projectId  = PID = project.getId();
         this.state.adminwmsurls = project.wmsurls || [];
       });
 
-      await GUI.isReady();
-      await GUI.getService('map').isReady();
-      
       const map = GUI.getService('map');
+
+      await GUI.isReady();
+      await map.isReady();
 
       this.deleteWms = this.deleteWms.bind(this);
 
@@ -505,7 +506,7 @@
       if (undefined === data) {
         data = {
           urls: [], // unique url for wms
-          wms:  {}, // bject contain url as key and array of layers bind to url
+          wms:  {}, // object contains url as a key and array of layers bind to url
         };
         this.updateLocalWMSData(data);
       }
