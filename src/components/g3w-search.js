@@ -84,7 +84,7 @@ export function SearchPanel(opts = {}, show = false) {
     title: 'search',
     vueComponentObject: opts.component || vueSearchComp,
   });
-};
+}
 
 
 /**
@@ -209,7 +209,7 @@ export class SearchService extends G3WObject {
 
     /**
      * Store layers that will be searchable for that search form.
-     * First one is layer owner of the search setted on admin.
+     * The First one is a layer owner of the search set on admin.
      */
     this.searchLayers = [ layerid, ...(options.otherquerylayerids || []) ].map(id => CatalogLayersStoresRegistry.getLayerById(id));
 
@@ -296,7 +296,7 @@ export class SearchService extends G3WObject {
 
       }
 
-      // set widget type for fill dependency
+      // set a widget type for fill dependency
       if (isInputSelectType && dependance && values.length > 0) {
         input.widget          = 'valuemap';
         input.options._values = [...values];
@@ -313,7 +313,7 @@ export class SearchService extends G3WObject {
   }
 
   /**
-   * Get return type
+   * Get a return type
    */
   getReturnType() {
     return this.return;
@@ -362,9 +362,9 @@ export class SearchService extends G3WObject {
       return fields.length && fields.join() || undefined;
     }
     const [dfield, dvalue] = Object.entries(dependendency)[0];
-    // In case of some input dependeny are not filled
+    // In case of some input dependency is not filled
     if (undefined !== dvalue) {
-      // need to set to lower case for api purpose
+      // need to set to lower a case for api purpose
       const { op, logicop } = this.getFilterInputFromField(dfield);
       fields.unshift(`${dfield}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
     }
@@ -457,6 +457,7 @@ export class SearchService extends G3WObject {
 
   /**
    * @param layers
+   * @param options
    * @param options.field
    * @param options.suggest
    * @param options.unique
@@ -490,7 +491,7 @@ export class SearchService extends G3WObject {
         .filter(({status}) => 'fulfilled' === status)
         .reduce((accumulator, { value = [] }) => new Set([...accumulator, ...value]), [])
     )
-    //check if is not empty array
+    //check if is not an empty array
     switch (data.length && typeof data[0]) {
       case 'string': return sortAlphabeticallyArray(data);
       case 'number': return sortNumericArray(data);
@@ -504,7 +505,7 @@ export class SearchService extends G3WObject {
    * @param { Object } options
    * @param options.field
    * @param options.value
-   * @param options.unique 
+   * @param options.output
    * 
    * @returns { Promise<[]> }
    */
@@ -586,7 +587,7 @@ export class SearchService extends G3WObject {
       console.warn(e);
     }
 
-    //set searchin false
+    //set searching false
     this.state.searching = false;
 
     return data;
@@ -717,7 +718,7 @@ export class SearchService extends G3WObject {
     return new Promise((resolve, reject) => {
       //loop over dependencies fields inputs
       subscribers.forEach(subscribe => {
-        // in case of autocomplete reset values to empty array
+        // in the case of autocomplete reset values to an empty array
         if (subscribe.type === 'autocompletefield') {
           subscribe.options.values.splice(0);
         } else {
