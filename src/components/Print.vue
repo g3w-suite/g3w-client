@@ -92,7 +92,7 @@
             <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
             <template v-else>
               <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
-              <input class="form-control" v-model="atlas_value" @keydown.space.prevent>
+              <input class="form-control" v-model="atlas_values" @keydown.space.prevent>
               <div id="fid-print-atals-instruction">
                 <div id="fids_intruction"      v-t="'sdk.print.fids_instruction'"></div>
                 <div id="fids_examples_values" v-t="'sdk.print.fids_example'"></div>
@@ -176,8 +176,6 @@ export default {
       /** @since 3.8.7 **/
       atlas_change: false, // whether redraw component after changing template
       disabled: false,
-      /** @since 3.10.0 */
-      atlas_value: '',
       /** @since 3.10.0 */
       atlas_values: [],
     };
@@ -609,7 +607,6 @@ export default {
       if (!b) return;
       await this.$nextTick();
       this.atlas_values = null;
-      this.atlas_value = null;
       // destroy select2 dom element and remove all events
       if (this.select2) {
         this.select2.select2('destroy');
@@ -621,21 +618,12 @@ export default {
 
     atlas_values: {
       immediate: true,
-      handler(values) {
-        if (this.is_autocomplete) {
-          this.disabled = 0 === values.length;
-        }
-      }
-    },
-
-    atlas_value: {
-      immediate: true,
       handler(value) {
-        if (!this.is_autocomplete) {
+        if (this.is_autocomplete) {
+          this.disabled = 0 === value.length;
           return;
         }
         const validate = n => n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count || null;
-        this.atlas_value = value;
         const values = new Set();
         (value || '').split(',').filter(v => v).forEach(value => {
           if (value.indexOf('-') !== -1) {
@@ -670,12 +658,9 @@ export default {
       if (this.select2) {
         this.select2.val(null).trigger('change');
       }
-      if (this.is_autocomplete) {
-        this.atlas_values = [];
-        this.$nextTick().then(() => this.state.atlasValues = this.atlas_values || []);
-      } else {
-        this.atlas_value = '';
-        this.state.atlasValues = [];
+      this.atlas_values = [];
+      this.$nextTick().then(() => this.state.atlasValues = this.atlas_values || []);
+      if (!this.is_autocomplete) {
         this.disabled = true
       }
     },
