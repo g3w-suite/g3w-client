@@ -221,12 +221,6 @@ export default {
           loading: false,
           type: null,
         },
-        printextent: {
-          minx: [0, 0],
-          miny: [0, 0],
-          maxx: [0, 0],
-          maxy: [0, 0]
-        },
         maps:        visible ? print[0].maps   : undefined,
         labels:      visible ? print[0].labels : undefined,
         template:    visible ? print[0].name   : undefined,
@@ -309,15 +303,17 @@ export default {
      */
     getOverviewExtent(extent={}) {
       const { xmin, xmax, ymin, ymax } = extent;
-      return (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax ] : [xmin, ymin, xmax, ymax]).join();
+      return (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
     },
 
     /**
      * @returns { string }
      */
     getPrintExtent() {
-      const [minx, miny, maxx, maxy] = [...this.state.printextent.lowerleft, ...this.state.printextent.upperright];
-      return (GUI.getService('map').isAxisOrientationInverted() ? [miny, minx, maxy, maxx ] : [minx, miny, maxx, maxy]).join();
+      const map          = GUI.getService('map').viewer.map;
+      const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
+      const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
+      return (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
     },
 
     /**
@@ -439,30 +435,23 @@ export default {
         })
     },
 
+    /**
+     * Calculate internal print extent
+     */
     _setPrintArea() {
-      //No maps set. Only attributes label
+      // No maps set. Only attributes label
       if (!this.has_maps) {
-        this._clearPrint();
-        return;
+        return this._clearPrint();
       }
-      const map               = GUI.getService('map').viewer.map;
-      const size              = map.getSize();
-      const resolution        = map.getView().getResolution();
-      this.state.currentScala = getScaleFromResolution(resolution, GUI.getService('map').getMapUnits());
-  
-      // calculate internal print extent
-      const { h, w }          = this.state.maps.find(m=> !m.overview);
-      const res               = GUI.getService('map').getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution); // resolution in meters
-      const w2                = (((w / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
-      const h2                = (((h / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
-      const [x, y]            = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
-      this.state.inner        = [x - w2, y + h2, x + w2, y - h2];                       // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
-      const ll                = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
-      const ur                = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
-      const { printextent }   = this.state;
-      printextent.lowerleft   = ll ? ll : printextent.lowerleft;
-      printextent.upperright  = ur ? ur : printextent.upperright;
-  
+      const map        = GUI.getService('map').viewer.map;
+      const size       = map.getSize();
+      const resolution = map.getView().getResolution();
+      const { h, w }   = this.state.maps.find(m=> !m.overview);
+      const res        = GUI.getService('map').getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution); // resolution in meters
+      const w2         = (((w / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
+      const h2         = (((h / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
+      const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
+      this.state.inner = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
       GUI.getService('map').setInnerGreyCoverBBox({
         type: 'pixel',
         inner: this.state.inner,
@@ -633,7 +622,6 @@ export default {
           }
         });
         this._skip_atlas_check = true;
-        // await this.$nextTick();
         this.atlas_values = Array.from(values);
         await this.$nextTick();
         this._skip_atlas_check = false;
