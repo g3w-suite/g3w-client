@@ -199,10 +199,10 @@ export default {
   methods: {
 
     init() {
-      this._initialized       = undefined !== this._initialized ? this._initialized: false;
-      this._moveMapKeyEvent   = this._moveMapKeyEvent || null;
-      this._page              = this._page || null;
-      this._scalesResolutions = this._scalesResolutions || {};
+      this._init        = undefined !== this._init ? this._init: false;
+      this._moveKey     = this._moveKey || null;
+      this._page        = this._page || null;
+      this._resolutions = this._resolutions || {};
 
       const print   = ProjectsRegistry.getCurrentProject().getPrint() || [];
       const visible = print.length > 0; 
@@ -422,7 +422,7 @@ export default {
               if (!show) {
                 return this._clearPrint();
               }
-              this._moveMapKeyEvent = map.viewer.map.on('moveend', this._setPrintArea.bind(this));
+              this._moveKey = map.viewer.map.on('moveend', this._setPrintArea.bind(this));
               this._initPrintConfig();
               // show print area
               if (undefined === this.state.atlas) {
@@ -463,8 +463,8 @@ export default {
      * @param reset
      */
     _clearPrint(reset=false) {
-      ol.Observable.unByKey(this._moveMapKeyEvent);
-      this._moveMapKeyEvent = null;
+      ol.Observable.unByKey(this._moveKey);
+      this._moveKey = null;
       GUI.getService('map').stopDrawGreyCover();
     },
   
@@ -487,7 +487,7 @@ export default {
             first = false;
             scale.push(s);
             res = getResolutionFromScale(s.value, units);
-            this._scalesResolutions[s.value] = res;
+            this._resolutions[s.value] = res;
             res /= 2;
           }
         });
@@ -503,7 +503,7 @@ export default {
       const resolution = view.getResolution();
       // set current scale
       Object
-        .entries(this._scalesResolutions)
+        .entries(this._resolutions)
         .find(([scala, res]) => {
           if (resolution <= res) {
             this.state.scale = scala;
