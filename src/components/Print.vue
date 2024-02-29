@@ -583,7 +583,7 @@ export default {
     atlas_values: {
       immediate: true,
       async handler(vals) {
-        if (this._skip_atlas_check) {
+        if (this._skip_atlas_check || !this.atlas) {
           return;
         }
         if (this.has_autocomplete) {
