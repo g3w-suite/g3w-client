@@ -18,7 +18,7 @@ import { createFeatureFromBBOX }                from 'utils/createFeatureFromBBO
 import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoordinates';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
-import { PRINT_UTILS }                          from 'components/g3w-print';
+import { printAtlas }                           from 'utils/printAtlas';
 
 const {
   noop,
@@ -54,9 +54,6 @@ class QueryResultsService extends G3WObject {
      */
     this._changeLayerResult = this.setters.changeLayerResult;
     this._addComponent      = this.setters.addComponent;
-
-    /** @deprecated since 3.9.1 will be removed in 4.x */
-    this.printService = PRINT_UTILS;
 
     /**
      * @FIXME add description
@@ -1383,7 +1380,7 @@ class QueryResultsService extends G3WObject {
     features = [],
   } = {}) {
     let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
-    return PRINT_UTILS.printAtlas({
+    return printAtlas({
         field,
         values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
         template: atlas.name,

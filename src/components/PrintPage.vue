@@ -14,8 +14,7 @@
     <iframe
       v-if  = "'pdf' === state.format"
       :type = "state.mime_type"
-      ref   = "printoutput"
-      style = ""
+      ref   = "out"
       :src = "state.url"
     ></iframe>
   
@@ -41,7 +40,7 @@
         </div>
       </div>
       <div v-show="state.url" class="g3w-print-url">
-        <img ref="printoutput" :src="state.url">
+        <img ref="out" :src="state.url">
       </div>
     </div>
     <h4 v-if="!state.layers" v-t="'sdk.print.no_layers'"></h4>
@@ -60,6 +59,7 @@ export default {
   name: 'print-page',
 
   data() {
+    console.log(this);
     return {
       state: {},
     }
@@ -96,14 +96,39 @@ export default {
       await this.$nextTick();
 
       // add timeout
+      // const timeout = setTimeout(() => {
+      //   GUI.disableSideBar(false);
+      //   this.state.loading = false;
+      //   GUI.showUserMessage({ type: 'alert', message: 'timeout' });
+      // }, TIMEOUT);
+
+      // fetch(url)
+      //   .then(async response => {
+      //     this.$options.service.state.loading = false;
+      //     if (!response.ok) {
+      //       GUI.notify.error(response.statusText || t("info.server_error"));
+      //       GUI.closeContent();
+      //       return;
+      //     }
+      //     console.log(this.$refs.out);
+      //     // this.$refs.out.innerHTML = await response.text();
+      //   })
+      //   .catch(console.warn)
+      //   .finally(() => {
+      //     clearTimeout(timeout);
+      //     GUI.disableSideBar(false);
+      //     this.state.loading = false;
+      //   });
+
+      // add timeout
       const timeOut = setTimeout(()=>{
         GUI.disableSideBar(false);
         this.state.loading = false;
         GUI.showUserMessage({ type: 'alert', message: 'timeout' });
       }, TIMEOUT);
 
-      $(this.$refs.printoutput).load(url, (response, status) => {
-        this.state.output.loading = false;
+      $(this.$refs.out).load(url, (response, status) => {
+        this.$options.service.state.loading = false;
         if ('error' === status) {
           GUI.notify.error(status || t("info.server_error"));
           GUI.closeContent();
@@ -118,7 +143,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     if (this.state.layers) {
-      this.state.output.loading = true
+      this.$options.service.state.loading = true
     }
   },
 

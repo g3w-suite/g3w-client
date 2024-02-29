@@ -79,7 +79,7 @@
 
           <!-- PRINT ATLAS -->
           <div
-            v-if                = "!templateChanged && state.atlas"
+            v-if                = "!atlas_change && state.atlas"
             class               = "form-group"
             style               = "width: 100%;"
             ref                 = "print_atlas"
@@ -124,7 +124,7 @@
             <button
               id                  = "printbutton"
               class               = "sidebar-button-run btn"
-              v-disabled          = "button.disabled"
+              v-disabled          = "disabled"
               v-download
               v-t                 = "'create_print'"
               @click.stop.prevent = "print"
@@ -153,6 +153,9 @@ import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
 import { getMetersFromDegrees }     from 'utils/getMetersFromDegrees';
 import { downloadFile }             from 'utils/downloadFile';
+import { printAtlas }               from 'utils/printAtlas';
+import { print }                    from 'utils/print';
+
 import resizeMixin                  from 'mixins/resize';
 
 import * as vueComp                 from 'components/PrintPage.vue';
@@ -171,12 +174,8 @@ export default {
     return {
       state: this.state || {},
       /** @since 3.8.7 **/
-      templateChanged: false, // whether redraw component after changing template
-      button: {
-        class: "btn-success",
-        type :"print",
-        disabled: false,
-      },
+      atlas_change: false, // whether redraw component after changing template
+      disabled: false,
       /** @since 3.10.0 */
       atlas_value: '',
       /** @since 3.10.0 */
@@ -185,10 +184,6 @@ export default {
   },
 
   computed: {
-
-    disabled() {
-      return this.state.output.loading || (!!this.state.atlas &&  0 === this.state.atlasValues.length);
-    },
 
     /**
      * @return { boolean } whether current print has maps (only alphanumerical data)
@@ -200,7 +195,7 @@ export default {
     },
 
     is_autocomplete() {
-      return this.state.atlas && this.state.atlas.field_name;
+      return !!(this.state.atlas && this.state.atlas.field_name);
     },
 
   },
@@ -264,7 +259,7 @@ export default {
         return;
       }
 
-      this.templateChanged = true;
+      this.atlas_change = true;
 
       const has_previous = this.state.atlas || 0 === this.state.maps.length;
       const print        = this.state.print.find(p => p.name === this.state.template)
@@ -286,7 +281,7 @@ export default {
 
       await this.$nextTick();
 
-      this.templateChanged = false;
+      this.atlas_change = false;
     },
 
     onChangeRotation(e) {
@@ -330,10 +325,7 @@ export default {
      * @returns { string }
      */
     getPrintExtent() {
-      const [minx, miny, maxx, maxy] = [
-        ... this.state.printextent.lowerleft,
-        ...this.state.printextent.upperright
-      ];
+      const [minx, miny, maxx, maxy] = [...this.state.printextent.lowerleft, ...this.state.printextent.upperright];
       return (GUI.getService('map').isAxisOrientationInverted() ? [miny, minx, maxy, maxx ] : [minx, miny, maxx, maxy]).join();
     },
 
@@ -352,7 +344,7 @@ export default {
         this.state.loading = true;
         try {
           return await downloadFile({
-            url: (await this.$options.service.printService.printAtlas({
+            url: (await printAtlas({
               template: this.state.template,
               field:    this.state.atlas.field_name || '$id',
               values:   this.state.atlasValues,
@@ -372,6 +364,8 @@ export default {
         this.state.output.url    = null;
         this.state.output.layers = true;
 
+        console.log(this);
+
         this._page = new Component({ service: this.$options.service, vueComponentObject: vueComp });
         this._page.internalComponent.state = this.state.output;
 
@@ -389,7 +383,7 @@ export default {
         });
 
         try {
-          const output = await this.$options.service.printService.print({
+          const output = await print({
             rotation:             this.state.rotation,
             dpi:                  this.state.dpi,
             template:             this.state.template,
@@ -401,12 +395,12 @@ export default {
               name:         m.name,
               preset_theme: m.preset_theme,
               scale:        m.overview ? m.scale : this.state.scala,
-              extent:       m.overview ? this.getOverviewExtent(m.extent) : this._getPrintExtent()
+              extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
             })),
           }, this.state.output.method);
           this.state.output.url       = output.url;
           this.state.output.layers    = output.layers;
-          this.state.output.mime_type = output.mime_type;            
+          this.state.output.mime_type = output.mime_type;
         } catch (e) {
           err = e;
         }
@@ -418,9 +412,10 @@ export default {
       }
 
       if (err) {
+        console.warn(err);
         GUI.notify.error(err || t("info.server_error"));
         GUI.closeContent();
-        throw e;
+        throw err;
       }
 
     },
@@ -610,7 +605,7 @@ export default {
       });
     },
 
-    async templateChanged(b) {
+    async atlas_change(b) {
       if (!b) return;
       await this.$nextTick();
       this.atlas_values = null;
@@ -621,23 +616,25 @@ export default {
         this.select2.off();
         this.select2 = null;
       }
-      this.button.disabled = false
+      this.disabled = false
     },
 
     atlas_values: {
       immediate: true,
       handler(values) {
-        this.button.disabled = 0 === values.length;
+        if (this.is_autocomplete) {
+          this.disabled = 0 === values.length;
+        }
       }
     },
 
     atlas_value: {
       immediate: true,
       handler(value) {
-        const validate = (val) => {
-          val = val && 1 * val;
-          return Number.isInteger(val) && val >=0 && val < this.state.atlas.feature_count || null;
-        };
+        if (!this.is_autocomplete) {
+          return;
+        }
+        const validate = n => n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count || null;
         this.atlas_value = value;
         const values = new Set();
         (value || '').split(',').filter(v => v).forEach(value => {
@@ -661,22 +658,25 @@ export default {
           }
         });
         this.state.atlasValues = Array.from(values);
-        this.button.disabled = '' === value.trim();
+        this.disabled = '' === value.trim();
       }
     },
 
     'state.isShow'(isShow) {
       const reset = !isShow;
-      if (reset && this.select2) {
+      if (!reset) {
+        return;
+      }
+      if (this.select2) {
         this.select2.val(null).trigger('change');
       }
-      if (reset && this.state.atlas && this.state.atlas.field_name) {
+      if (this.is_autocomplete) {
         this.atlas_values = [];
         this.$nextTick().then(() => this.state.atlasValues = this.atlas_values || []);
-      } else if (reset) {
+      } else {
         this.atlas_value = '';
         this.state.atlasValues = [];
-        this.button.disabled = true
+        this.disabled = true
       }
     },
 
