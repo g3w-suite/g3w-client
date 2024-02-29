@@ -351,8 +351,6 @@ export default {
         this.state.output.url    = null;
         this.state.output.layers = true;
 
-        console.log(this);
-
         this._page = new Component({ service: this.$options.service, vueComponentObject: vueComp });
         this._page.internalComponent.state = this.state.output;
 
@@ -594,7 +592,6 @@ export default {
         if (this._skip_atlas_check) {
           return;
         }
-        console.log(this.has_autocomplete, vals);
         if (this.has_autocomplete) {
           this.disabled = 0 === vals.length;
           return;
