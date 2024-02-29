@@ -59,7 +59,7 @@
               v-disabled = "!has_maps"
               min        = "-360"
               max        = "360"
-              @input     = "onChangeRotation"
+              @input     = "changeRotation"
               v-model    = "state.rotation"
               class      = "form-control"
               type       = "number"
@@ -79,13 +79,13 @@
 
           <!-- PRINT ATLAS -->
           <div
-            v-if                = "!atlas_change && state.atlas"
+            v-if                = "state.atlas"
             class               = "form-group"
             style               = "width: 100%;"
             ref                 = "print_atlas"
           >
             <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
-            <template v-if = "is_autocomplete">
+            <template v-if = "has_autocomplete">
               <label for="print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
               <select id="print_atlas_autocomplete" :name="state.atlas.field_name" class="form-control"></select>
             </template>
@@ -173,8 +173,6 @@ export default {
     this.init();
     return {
       state: this.state || {},
-      /** @since 3.8.7 **/
-      atlas_change: false, // whether redraw component after changing template
       disabled: false,
       /** @since 3.10.0 */
       atlas_values: [],
@@ -192,7 +190,7 @@ export default {
       return this.state.maps.length > 0;
     },
 
-    is_autocomplete() {
+    has_autocomplete() {
       return !!(this.state.atlas && this.state.atlas.field_name);
     },
 
@@ -229,20 +227,17 @@ export default {
           maxx: [0, 0],
           maxy: [0, 0]
         },
-        template:    visible ? print[0].name        : undefined,
-        atlas:       visible ? print[0].atlas       : undefined,
-        atlasValues: visible ? []                   : undefined,
-        rotation:    visible ? 0                    : undefined,
-        inner:       visible ? [0, 0, 0, 0]         : undefined,
-        center:      visible ? null                 : undefined,
-        size:        visible ? null                 : undefined,
-        scale:       visible ? PRINT_SCALES         : undefined,
-        scala:       visible ? null                 : undefined,
-        dpis:        visible ? PRINT_RESOLUTIONS    : undefined,
-        dpi:         visible ? PRINT_RESOLUTIONS[0] : undefined,
-        formats:     visible ? PRINT_FORMATS        : undefined,
-        maps:        visible ? print[0].maps        : undefined,
-        labels:      visible ? print[0].labels      : undefined,
+        maps:        visible ? print[0].maps   : undefined,
+        labels:      visible ? print[0].labels : undefined,
+        template:    visible ? print[0].name   : undefined,
+        atlas:       visible ? print[0].atlas  : undefined,
+        rotation:    visible ? 0               : undefined,
+        inner:       [0, 0, 0, 0],
+        scale:       PRINT_SCALES,
+        scala:       visible ? null            : undefined,
+        dpis:        PRINT_RESOLUTIONS,
+        dpi:         PRINT_RESOLUTIONS[0],
+        formats:     PRINT_FORMATS,
       });
     },
 
@@ -257,7 +252,16 @@ export default {
         return;
       }
 
-      this.atlas_change = true;
+      await this.$nextTick();
+
+      // destroy select2 dom element and remove all events
+      if (this.select2) {
+        this.select2.select2('destroy');
+        this.select2.off();
+        this.select2 = null;
+      }
+
+      this.disabled = false;
 
       const has_previous = this.state.atlas || 0 === this.state.maps.length;
       const print        = this.state.print.find(p => p.name === this.state.template)
@@ -266,8 +270,9 @@ export default {
         maps:        print.maps,
         atlas:       print.atlas,
         labels:      print.labels,
-        atlasValues: [],
       });
+
+      this.atlas_values = [];
 
       if (this.state.atlas) {
         this._clearPrint();
@@ -278,19 +283,6 @@ export default {
       }
 
       await this.$nextTick();
-
-      this.atlas_change = false;
-    },
-
-    onChangeRotation(e) {
-      if (this.state.rotation >= 0 && null !== this.state.rotation  && '' != this.state.rotation) {
-        e.target.value = this.state.rotation = Math.min(this.state.rotation, 360);
-      } else if (this.state.rotation < 0) {
-        e.target.value = this.state.rotation = Math.max(this.state.rotation, -360);
-      } else {
-        this.state.rotation = 0;
-      }
-      this.changeRotation();
     },
 
     /**
@@ -306,6 +298,7 @@ export default {
      * On change rotation, rotate print area
      */
     changeRotation() {
+      this.state.rotation = this.state.rotation >= 0 ? Math.min(this.state.rotation || 0, 360) : Math.max(this.state.rotation || 0, -360);
       GUI.getService('map').setInnerGreyCoverBBox({ rotation: this.state.rotation });
     },
 
@@ -345,7 +338,7 @@ export default {
             url: (await printAtlas({
               template: this.state.template,
               field:    this.state.atlas.field_name || '$id',
-              values:   this.state.atlasValues,
+              values:   this.state.atlas_values,
               download: true
             })).url,
             filename: this.state.template,
@@ -453,17 +446,16 @@ export default {
         return;
       }
       const map               = GUI.getService('map').viewer.map;
-      this.state.size         = map.getSize();
+      const size              = map.getSize();
       const resolution        = map.getView().getResolution();
       this.state.currentScala = getScaleFromResolution(resolution, GUI.getService('map').getMapUnits());
-      this.state.center       = map.getView().getCenter();
   
       // calculate internal print extent
       const { h, w }          = this.state.maps.find(m=> !m.overview);
       const res               = GUI.getService('map').getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution); // resolution in meters
       const w2                = (((w / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
       const h2                = (((h / 1000.0) * parseFloat(this.state.scala)) / res) / 2;
-      const [x, y]            = [ (this.state.size[0]) / 2, (this.state.size[1]) / 2 ]; // current map center: [x, y] (in pixel)
+      const [x, y]            = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
       this.state.inner        = [x - w2, y + h2, x + w2, y - h2];                       // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
       const ll                = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
       const ur                = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
@@ -554,7 +546,7 @@ export default {
 
   watch: {
 
-    async is_autocomplete(b) {
+    async has_autocomplete(b) {
       if (!b) return;
       await this.$nextTick();
 
@@ -600,37 +592,26 @@ export default {
       });
       this.select2.on('select2:select', e => {
         this.atlas_values.push(e.params.data.id);
-        this.$nextTick().then(() => this.state.atlasValues = this.atlas_values || []);
       });
       this.select2.on('select2:unselect', async e => {
         this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
-        this.$nextTick().then(() => this.state.atlasValues = this.atlas_values || []);
       });
-    },
-
-    async atlas_change(b) {
-      if (!b) return;
-      await this.$nextTick();
-      this.atlas_values = null;
-      // destroy select2 dom element and remove all events
-      if (this.select2) {
-        this.select2.select2('destroy');
-        this.select2.off();
-        this.select2 = null;
-      }
-      this.disabled = false
     },
 
     atlas_values: {
       immediate: true,
-      handler(values) {
-        if (this.is_autocomplete) {
-          this.disabled = 0 === values.length;
+      async handler(vals) {
+        if (this._skip_atlas_check) {
           return;
         }
-        const validate = n => n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count || null;
+        console.log(this.has_autocomplete, vals);
+        if (this.has_autocomplete) {
+          this.disabled = 0 === vals.length;
+          return;
+        }
+        const validate = n => (n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count) || null;
         const values = new Set();
-        const value = (values ? values[0] : '') || '';
+        const value = (vals ? vals[0] : '') || '';
         value.split(',').filter(v => v).forEach(value => {
           if (value.indexOf('-') !== -1) {
             const _values = value.split('-');
@@ -651,7 +632,11 @@ export default {
             values.add(value);
           }
         });
-        this.state.atlasValues = Array.from(values);
+        this._skip_atlas_check = true;
+        // await this.$nextTick();
+        this.atlas_values = Array.from(values);
+        await this.$nextTick();
+        this._skip_atlas_check = false;
         this.disabled = '' === value.trim();
       }
     },
@@ -665,8 +650,7 @@ export default {
         this.select2.val(null).trigger('change');
       }
       this.atlas_values = [];
-      this.$nextTick().then(() => this.state.atlasValues = this.atlas_values || []);
-      if (!this.is_autocomplete) {
+      if (!this.has_autocomplete) {
         this.disabled = true
       }
     },
