@@ -318,13 +318,13 @@ export default {
       GUI.disableSideBar(true);
 
       const has_atlas = !!this.state.atlas;
-      let err;
+      let err, download_id;
 
       // ATLAS PRINT 
       if (has_atlas) {
-        const download_id = ApplicationService.setDownload(true);
-        this.state.loading = true;
         try {
+          download_id = ApplicationService.setDownload(true);
+          this.state.loading = true;
           return await downloadFile({
             url: (await printAtlas({
               template: this.state.template,
@@ -344,25 +344,24 @@ export default {
 
       // SIMPLE PRINT
       if (!has_atlas) {
-        this.state.url    = null;
-        this.state.layers = true;
-
-        this._page = new Component({ service: this, vueComponentObject: vueComp });
-
-        // set print area after closing content
-        this._page.unmount = () => {
-          GUI.getService('map').viewer.map.once('postrender', this._setPrintArea.bind(this));
-          this.state.downloading = false;
-          return Component.prototype.unmount.call(this._page);
-        };
-
-        GUI.setContent({
-          content: this._page,
-          title: 'print',
-          perc: 100
-        });
-
         try {
+          this.state.url    = null;
+          this.state.layers = true;
+
+          this._page = new Component({ service: this, vueComponentObject: vueComp });
+
+          // set print area after closing content
+          this._page.unmount = () => {
+            GUI.getService('map').viewer.map.once('postrender', this._setPrintArea.bind(this));
+            this.state.downloading = false;
+            return Component.prototype.unmount.call(this._page);
+          };
+
+          GUI.setContent({
+            content: this._page,
+            title: 'print',
+            perc: 100
+          });
           const output = await print({
             rotation:             this.state.rotation,
             dpi:                  this.state.dpi,

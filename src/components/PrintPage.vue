@@ -47,11 +47,10 @@
 </template>
 
 <script>
-import { TIMEOUT }      from 'app/constant';
-import ProjectsRegistry from 'store/projects';
-import GUI              from 'services/gui';
-
-const { imageToDataURL } = require('utils');
+import { TIMEOUT }        from 'app/constant';
+import ProjectsRegistry   from 'store/projects';
+import GUI                from 'services/gui';
+import { imageToDataURL } from 'utils/imageToDataURL';
 
 export default {
 
@@ -67,15 +66,19 @@ export default {
 
   methods: {
 
-    downloadImage() {
-      GUI.disableSideBar(true);
-      this.state.downloading = true;
-      if (['jpg', 'png'].includes(this.state.format)) {
-        imageToDataURL({
-          src: this.state.url,
-          type: `image/${this.state.format}`,
-          callback: () => setTimeout(() => { GUI.disableSideBar(false); this.state.downloading = false; })
-        });
+    async downloadImage() {
+      try {
+        GUI.disableSideBar(true);
+        this.state.downloading = true;
+        if (['jpg', 'png'].includes(this.state.format)) {
+          await imageToDataURL({ src: this.state.url, type: `image/${this.state.format}` });
+          setTimeout(() => {
+            GUI.disableSideBar(false);
+            this.state.downloading = false;
+          });
+        }
+      } catch (e) {
+        console.warn(e);
       }
     },
 
@@ -86,18 +89,21 @@ export default {
       if (!url) {
         return;
       }
-
-      await this.$nextTick();
-
-      // add timeout
-      const timeout = setTimeout(() => {
-        GUI.disableSideBar(false);
-        this.state.downloading = false;
-        GUI.showUserMessage({ type: 'alert', message: 'timeout' });
-      }, TIMEOUT);
+      let timeout;
 
       try {
+
+        await this.$nextTick();
+
+        // add timeout
+        timeout = setTimeout(() => {
+          GUI.disableSideBar(false);
+          this.state.downloading = false;
+          GUI.showUserMessage({ type: 'alert', message: 'timeout' });
+        }, TIMEOUT);
+
         const response = await fetch(url);
+
         if (!response.ok) {
           throw response.statusText;
         }
@@ -105,11 +111,12 @@ export default {
         console.warn(e);
         GUI.notify.error(e || t("info.server_error"));
         GUI.closeContent();
+      } finally {
+        clearTimeout(timeout);
+        GUI.disableSideBar(false);
+        this.state.downloading = false;
       }
 
-      clearTimeout(timeout);
-      GUI.disableSideBar(false);
-      this.state.downloading = false;
     }
   },
 
