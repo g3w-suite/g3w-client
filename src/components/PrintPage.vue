@@ -13,7 +13,6 @@
     <!-- PRINT as PDF -->
     <iframe
       v-if  = "'pdf' === state.format"
-      :type = "state.mime_type"
       ref   = "out"
       :src = "state.url"
     ></iframe>
@@ -73,10 +72,10 @@ export default {
       this.state.downloading = true;
       if (['jpg', 'png'].includes(this.state.format)) {
         imageToDataURL({
-        src: this.state.url,
-        type: `image/${this.state.format}`,
-        callback: () => setTimeout(() => { GUI.disableSideBar(false); this.state.downloading = false; })
-      });
+          src: this.state.url,
+          type: `image/${this.state.format}`,
+          callback: () => setTimeout(() => { GUI.disableSideBar(false); this.state.downloading = false; })
+        });
       }
     },
 

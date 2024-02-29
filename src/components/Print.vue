@@ -214,7 +214,6 @@ export default {
         downloading:  false,
         url:          null,
         layers:       true,
-        mime_type:    null,
         maps:         visible ? print[0].maps   : undefined,
         labels:       visible ? print[0].labels : undefined,
         template:     visible ? print[0].name   : undefined,
@@ -321,6 +320,7 @@ export default {
       const has_atlas = !!this.state.atlas;
       let err;
 
+      // ATLAS PRINT 
       if (has_atlas) {
         const download_id = ApplicationService.setDownload(true);
         this.state.loading = true;
@@ -342,6 +342,7 @@ export default {
         ApplicationService.setDownload(false, download_id);
       }
 
+      // SIMPLE PRINT
       if (!has_atlas) {
         this.state.url    = null;
         this.state.layers = true;
@@ -379,7 +380,6 @@ export default {
           }, ProjectsRegistry.getCurrentProject().getOwsMethod());
           this.state.url       = output.url;
           this.state.layers    = output.layers;
-          this.state.mime_type = output.mime_type;
         } catch (e) {
           err = e;
         }
@@ -441,7 +441,7 @@ export default {
       const map        = GUI.getService('map').viewer.map;
       const size       = map.getSize();
       const resolution = map.getView().getResolution();
-      const { h, w }   = this.state.maps.find(m=> !m.overview);
+      const { h, w }   = this.state.maps.find(m => !m.overview);
       const res        = GUI.getService('map').getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution); // resolution in meters
       const w2         = (((w / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const h2         = (((h / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
@@ -576,12 +576,8 @@ export default {
           inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
         },
       });
-      this.select2.on('select2:select', e => {
-        this.atlas_values.push(e.params.data.id);
-      });
-      this.select2.on('select2:unselect', async e => {
-        this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
-      });
+      this.select2.on('select2:select',   e => { this.atlas_values.push(e.params.data.id); });
+      this.select2.on('select2:unselect', e => { this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
     },
 
     atlas_values: {
@@ -597,26 +593,24 @@ export default {
         const validate = n => (n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count) || null;
         const values = new Set();
         const value = (vals ? vals[0] : '') || '';
-        value.split(',').filter(v => v).forEach(value => {
-          if (value.indexOf('-') !== -1) {
+        console.log(vals);
+        value
+          .split(',')
+          .filter(v => v)
+          .forEach(value => {
+            if (-1 === value.indexOf('-') && validate(value) !== null) {
+              values.add(value);
+              return;
+            }
             const _values = value.split('-');
             const range = _values.filter(v => validate(v) !== null);
             if (range.length === _values.length && range.reduce((bool, value, i) => bool && ((0 === i) || range[i-1] <= value), true)) {
-              const r = range || [];
-              const len = r.length;
-              for (let i=1; i<len; i++) {
-                const start = r[i-1];
-                const end = r[i];
-                for (let _i=start; _i < end; _i++ ) {
-                  values.add(_i+'');
-                }
+              for (let i = 1; i < range.length; i++) {
+                for (let j = range[i-1]; j < range[i]; j++ ) { values.add(j+''); }
               }
-              values.add(r[len-1]);
+              values.add(range[range.length-1]);
             }
-          } else if(validate(value) !== null) {
-            values.add(value);
-          }
-        });
+          });
         this._skip_atlas_check = true;
         this.atlas_values = Array.from(values);
         await this.$nextTick();
