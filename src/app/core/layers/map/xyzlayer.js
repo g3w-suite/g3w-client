@@ -42,7 +42,7 @@ proto.isVisible = function(){
 
 proto._makeOlLayer = function(){
   this._olLayer = new RasterLayers.XYZLayer({
-    url:             `${this.layer.getCacheUrl()}/{z}/{x}/{y}.png`,
+    url:             `${this.layer.getCacheUrl()}`,
     maxZoom:         20,
     extent:          this.config.extent,
     iframe_internal: this.iframe_internal,
