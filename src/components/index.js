@@ -79,7 +79,6 @@ import PrintPage                                   from './PrintPage.vue';
 import ChangeMapMenu                               from "./ChangeMapMenu.vue";
 import ProjectsMenu                                from './ProjectsMenu.vue';
 import QueryBuilder                                from './QueryBuilder.vue';
-import QueryBuilderSearch                          from './QueryBuilderSearch.vue';
 import QueryResults                                from './QueryResults.vue';
 import QueryResultsAction                          from './QueryResultsAction.vue';
 import QueryResultsActionDownloadFormats           from './QueryResultsActionDownloadFormats.vue';
@@ -196,7 +195,6 @@ export {
   PrintPage,
   ProjectsMenu,
   QueryBuilder,
-  QueryBuilderSearch,
   QueryResults,
   QueryResultsAction,
   QueryResultsActionDownloadFormats,

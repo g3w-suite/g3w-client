@@ -4,216 +4,199 @@
  */
 
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import DataRouterService from 'services/data';
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-import GUI from 'services/gui';
+import DataRouterService           from 'services/data';
+import ProjectsRegistry            from 'store/projects';
+import ApplicationService          from 'services/application';
+import GUI                         from 'services/gui';
+import { getUniqueDomId }          from 'utils/getUniqueDomId';
+import { createFilterFromString }  from 'utils/createFilterFromString';
+import { XHR }                     from 'utils/XHR';
+import { noop }                    from 'utils/noop';
 
 const { t } = require('core/i18n/i18n.service');
-const { uniqueId, createFilterFromString, XHR } = require('utils');
 
-const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
+let CACHE = {};
+let ITEMS = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES') || {};
 
-function QueryBuilderService(options={}){
-  this._cacheValues = {};
-  this._items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES) || {};
+/**
+ * @param id project id 
+ */
+function _getItems(id) {
+  const items = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+  id = id || ProjectsRegistry.getCurrentProject().getId();
+  return items ? items[id] || [] : [];
 }
 
-const proto = QueryBuilderService.prototype;
-
-proto.getCurrentProjectItems = function() {
-  const projectId = ProjectsRegistry.getCurrentProject().getId();
-  this._items[projectId] = this._items[projectId] || [];
-  return this._items[projectId];
-};
-
-proto.getItems = function(projectId) {
-  const items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
-  projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
-  return items ? items[projectId] || [] : [];
-};
-
-proto._getLayerById = function(layerId){
-  return CatalogLayersStoresRegistry.getLayerById(layerId);
-};
-
-proto.getValues = async function({layerId, field}={}){
-  this._cacheValues[layerId] = this._cacheValues[layerId] || {};
-  let valuesField = this._cacheValues[layerId][field];
-  if (valuesField  === undefined) {
-    try {
-      const layer = this._getLayerById(layerId);
-      const dataUrl = layer.getUrl('data');
-      const response = await XHR.get({
-        url: dataUrl,
-        params: {
-          ordering:field,
-          unique: field
-        }
-      });
-      if (response.result) this._cacheValues[layerId][field] = this._cacheValues[layerId][field] || response.data;
-      return this._cacheValues[layerId][field] || [];
-    } catch(err) {
-      reject();
-    }
-  } else return valuesField;
-};
-
-proto.run = function({layerId, filter:stringFilter, showResult=true}={}){
-  return new Promise(async (resolve, reject) => {
-    const layer = this._getLayerById(layerId);
+async function _run({ layerId, filter, showResult = true } = {}) {
+  try {
+    const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     const search_endpoint = layer.getSearchEndPoint();
-    const filter = createFilterFromString({
-      layer,
-      search_endpoint,
-      filter: stringFilter
-    });
-    try {
-      const {data} = await DataRouterService.getData('search:features', {
+    return (
+      await DataRouterService.getData('search:features', {
         inputs: {
           layer,
-          filter,
+          filter: createFilterFromString({ layer, search_endpoint, filter }),
           search_endpoint,
-          feature_count: 100
+          feature_count: 100,
         },
-        outputs: showResult
-      });
-      resolve(data);
-    } catch(error){
-      GUI.showUserMessage({
-        type: 'alert',
-        message: 'sdk.querybuilder.error_run',
-        autoclose: true
-      });
-      reject(error)
-    }
-  })
-};
-
-proto.test = async function({layerId, filter}={}){
-  try {
-    const data = await this.run({
-      layerId,
-      filter,
-      showResult: false
-    });
-    return data.length && data[0].features.length;
-  } catch(err){
-    err = t('sdk.querybuilder.error_test');
-    return Promise.reject(err);
+        outputs: showResult,
+      })
+    ).data;
+  } catch(e) {
+    console.warn(e);
+    GUI.showUserMessage({ type: 'alert', message: 'sdk.querybuilder.error_run', autoclose: true });
+    return Promise.reject(e);
   }
-};
+}
 
-proto.delete = function({id}={}){
-  return new Promise((resolve, reject) => {
-    GUI.dialog.confirm(t('sdk.querybuilder.delete'), (result)=>{
-      if (result) {
-        const querybuildersearches = this.getItems().filter(item => item.id !== id);
-        const projectId = ProjectsRegistry.getCurrentProject().getId();
-        const saveitems = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
-        if (querybuildersearches.length)
-          saveitems[projectId] = querybuildersearches;
-        else delete saveitems[projectId];
-        if (Object.keys(saveitems).length)
-          ApplicationService.setLocalItem({
-            id: QUERYBUILDERSEARCHES,
-            data: saveitems
-          });
-        else ApplicationService.removeLocalItem(QUERYBUILDERSEARCHES);
-        resolve();
-      } else reject();
-    })
-  })
-};
-
-proto.editLocalItem = function(projectId, querybuildersearch) {
-  projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
-  const querybuildersearches = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
-  querybuildersearches[projectId].find((_querybuildersearch, index) => {
-    if (_querybuildersearch.id === querybuildersearch.id) {
-      querybuildersearches[projectId][index] = querybuildersearch;
-      return true;
-    }
-  });
-  ApplicationService.setLocalItem({
-    id: QUERYBUILDERSEARCHES,
-    data: querybuildersearches
-  });
-  this._resetItems(projectId, querybuildersearches[projectId]);
-};
-
-proto._resetItems = function(projectId, querybuildersearches) {
-  setTimeout(()=> {
-    querybuildersearches.forEach(querybuildersearch => this._items[projectId].push(querybuildersearch));
-  },0);
-  this._items[projectId].splice(0);
-};
-
-proto.addLocalItem = function(projectId, querybuildersearch) {
-  querybuildersearch.id = uniqueId();
-  projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
-  const querybuildersearches = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
-  if (querybuildersearches === undefined) {
-    const querybuildersearches = [querybuildersearch];
-    ApplicationService.setLocalItem({
-      id: QUERYBUILDERSEARCHES,
-      data: {
-        [projectId]: querybuildersearches
-      }
-    });
-    this._resetItems(projectId, querybuildersearches);
-  } else {
-    querybuildersearches[projectId] =  querybuildersearches[projectId] ? [...querybuildersearches[projectId], querybuildersearch] : [querybuildersearch];
-    ApplicationService.setLocalItem({
-      id: QUERYBUILDERSEARCHES,
-      data: querybuildersearches
-    });
-    this._resetItems(projectId, querybuildersearches[projectId]);
-  }
-};
-
-proto.save = function({id, name, layerId, filter, projectId} = {}){
-  const layerName = this._getLayerById(layerId).getName();
-  const querybuildersearch = {
+function _save({ id, name, layerId, filter, projectId } = {}) {
+  const query = {
     layerId,
     filter,
-    layerName
+    layerName: CatalogLayersStoresRegistry.getLayerById(layerId).getName(),
   };
   if (id) {
-    querybuildersearch.name = name;
-    querybuildersearch.id = id;
-    this.editLocalItem(projectId, querybuildersearch);
-    GUI.showUserMessage({
-      type: 'success',
-      message: t("sdk.querybuilder.messages.changed"),
-      autoclose: true
-    });
+    query.name = name;
+    query.id = id;
+    _editLocalItem(projectId, query);
+    GUI.showUserMessage({ type: 'success', message: t("sdk.querybuilder.messages.changed"), autoclose: true });
     return;
   }
-  GUI.dialog.prompt(t('sdk.querybuilder.additem'), (result)=>{
+  GUI.dialog.prompt(t('sdk.querybuilder.additem'), (result) => {
     if (result) {
-      const searchService = GUI.getComponent('search').getService();
-      querybuildersearch.name =result;
-      searchService.addQueryBuilderSearch(querybuildersearch);
-      this.addLocalItem(projectId, querybuildersearch);
-      GUI.showUserMessage({
-        type: 'success',
-        message: t("sdk.querybuilder.messages.changed"),
-        autoclose: true
-      });
+      query.name =result;
+      GUI.getComponent('search').getService().addQueryBuilderSearch(query);
+      this.addLocalItem(projectId, query);
+      GUI.showUserMessage({ type: 'success', message: t("sdk.querybuilder.messages.changed"), autoclose: true });
     }
   })
+}
+
+/** 
+ * @returns { number } number of features 
+ */
+async function _test({ layerId, filter } = {}) {
+  try {
+    const data = await _run({ layerId, filter, showResult: false });
+    return data.length && data[0].features.length;
+  } catch(e) {
+    console.warn(e);
+    return Promise.reject(t('sdk.querybuilder.error_test'));
+  }
+}
+
+/**
+* @param id    project id 
+* @param queries query builder searches 
+*/
+function _resetItems(id, queries) {
+  setTimeout(() => { queries.forEach(q => ITEMS[id].push(q)); }, 0);
+  ITEMS[id].splice(0);
+}
+
+/**
+ * @param id    project id 
+ * @param query query builder search 
+ */
+function _editLocalItem(id, query) {
+  id = id || ProjectsRegistry.getCurrentProject().getId();
+  const searches = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+  const i = searches[id].findIndex(s => s.id === query.id);
+  if (-1 !== i) {
+    searches[id][i] = query;
+  }
+  ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: searches });
+  _resetItems(id, searches[id]);
+}
+
+/**
+ * @param id    project id 
+ * @param query query builder searches 
+ */
+function _addLocalItem(id, query) {
+  query.id = getUniqueDomId();
+  id = id || ProjectsRegistry.getCurrentProject().getId();
+  const searches = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+  let data, queries;
+  if (undefined === searches) {
+    data = { [id]: [query] };
+    queries = data[id];
+  } else {
+    searches[id] = searches[id] ? [...searches[id], query] : [query];
+    data = searches;
+    queries = searches[id];
+  }
+  ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data });
+  _resetItems(id, queries);
+}
+
+async function _delete({ id } = {}) {
+  try {
+    await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.delete'), d => d ? res() : rej()) }));
+    const searches  = _getItems().filter(item => item.id !== id);
+    const projectId = ProjectsRegistry.getCurrentProject().getId();
+    const items     = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+    if (searches.length)           items[projectId] = searches;
+    else                           delete items[projectId];
+    if (Object.keys(items).length) ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: items });
+    else                           ApplicationService.removeLocalItem('QUERYBUILDERSEARCHES');
+  } catch (e) {
+    console.warn(e);
+    return Promise.reject(e);
+  }
+}
+
+async function _getValues({ layerId, field } = {}) {
+  CACHE[layerId] = CACHE[layerId] || {};
+  let cached = CACHE[layerId][field];
+  if (undefined !== cached) {
+    return cached;
+  }
+  try {
+    const response = await XHR.get({
+      url: CatalogLayersStoresRegistry.getLayerById(layerId).getUrl('data'),
+      params: { ordering: field, unique: field }
+    });
+    if (response.result) {
+      CACHE[layerId][field] = CACHE[layerId][field] || response.data;
+    }
+    return CACHE[layerId][field] || [];
+  } catch(e) {
+    console.warn(e);
+    reject();
+  }
+}
+
+function _clear() {
+  CACHE = {};
+}
+
+function _getLayerById(layerId) {
+  return CatalogLayersStoresRegistry.getLayerById(layerId);
+}
+
+function _getCurrentProjectItems() {
+  const id = ProjectsRegistry.getCurrentProject().getId();
+  ITEMS[id] = ITEMS[id] || [];
+  return ITEMS[id];
+}
+
+export default {
+  _cacheValues:           CACHE,
+  _items:                 ITEMS,
+  getCurrentProjectItems: _getCurrentProjectItems,
+  getItems:               _getItems,
+  getValues:              _getValues,
+  run:                    _run,
+  test:                   _test,
+  delete:                 _delete,
+  editLocalItem:          _editLocalItem,
+  addLocalItem:           _addLocalItem,
+  save:                   _save,
+  clear:                  _clear,
+  all:                    noop,
+  sample:                 noop,
+  add:                    noop,
+  _resetItems,
+  _getLayerById,
 };
-
-proto.all = function() {};
-
-proto.sample = function() {};
-
-proto.clear = function() {
-  this._cacheValues = {};
-};
-
-proto.add = function() {};
-
-
-export default new QueryBuilderService();
