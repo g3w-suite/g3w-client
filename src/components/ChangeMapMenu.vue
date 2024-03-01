@@ -359,11 +359,6 @@ export default {
     Object
       .entries({ 'project': this.items, 'magrocroup': this.macrogroups, 'group': this.groups })
       .forEach(([type, d]) => d.forEach(item => this.setItemImageSrc({ item, type })))
-
-    if (0 === this.items.length) {
-      this.back();
-    }
-
   },
 
 };
