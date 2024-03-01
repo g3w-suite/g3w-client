@@ -42,7 +42,9 @@
         <img ref="out" :src="state.url">
       </div>
     </div>
+
     <h4 v-if="!state.layers" v-t="'sdk.print.no_layers'"></h4>
+
   </div>
 </template>
 
