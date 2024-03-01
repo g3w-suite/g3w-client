@@ -4,6 +4,27 @@ const DPI = getDPI();
 
 const RasterLayers = {};
 
+/**
+ * @since 3.10.0
+ * @param projection
+ * @param cache_provider
+ * @param maxZoom
+ * @private
+ */
+function createTileGrid({projection, cache_provider, maxZoom}) {
+  if ('degrees' === projection.getUnits() || 'mapproxy' === cache_provider) { /** @since 3.10.0 add cache_provider **/
+  const extent = projection.getExtent();
+    const resolutions = ol.tilegrid.createXYZ({extent, maxZoom}).getResolutions();
+    // Need to remove the first resolution because in this version of ol createXYZ doesn't accept maxResolution options.
+    // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculated
+    // by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
+    // we need to calculate to Math.min instead, so we have to remove the first resolution
+    resolutions.splice(0,1);
+    //////////////////////////////////////////
+    return new ol.tilegrid.TileGrid({ extent, resolutions});
+  }
+}
+
 const loadImageTileFunction = function({method='GET', type='image', sourceOptions={}}) {
   window.URL = window.URL || window.webkitURL;
   sourceOptions[`${type}LoadFunction`] = function(imageTile, url) {
@@ -14,13 +35,16 @@ const loadImageTileFunction = function({method='GET', type='image', sourceOption
     xhr.responseType = 'blob';
     xhr.onload = function() {
       const data = this.response;
-      if (data !== undefined) imageTile.getImage().src = window.URL.createObjectURL(data);
-      else imageTile.setState(ol.TileState.ERROR);
+      if (data !== undefined) {
+        imageTile.getImage().src = window.URL.createObjectURL(data);
+      } else {
+        imageTile.setState(ol.TileState.ERROR);
+      }
     };
     xhr.onerror = function() {
       image.setState(ol.TileState.ERROR);
     };
-    xhr.send(method=== 'POST' && params);
+    xhr.send(method === 'POST' && params);
   };
 };
 
@@ -167,29 +191,16 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
     maxZoom,
     minZoom,
     projection,
-    crossOrigin
+    crossOrigin,
+    tileGrid: createTileGrid({ projection, cache_provider, maxZoom }),
   };
+
   if (iframe_internal) {
     loadImageTileFunction({
       method,
       type: 'tile',
       sourceOptions
     });
-  }
-
-  if ('degrees' === projection.getUnits() || 'mapproxy' === cache_provider) { /** @since 3.10.0 add cache_provider **/
-    const extent = projection.getExtent();
-    const resolutions = ol.tilegrid.createXYZ({extent, maxZoom}).getResolutions();
-    // Need to remove the first resolution because in this version of ol createXYZ doesn't accept maxResolution options.
-    // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculated
-    // by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
-    // we need to calculate to Math.min instead, so we have to remove the first resolution
-    resolutions.splice(0,1);
-    //////////////////////////////////////////
-    sourceOptions.tileGrid =  new ol.tilegrid.TileGrid({
-      extent,
-      resolutions
-    })
   }
 
   const source = new ol.source.XYZ(sourceOptions);
@@ -199,6 +210,8 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
     source
   });
 };
+
+
 
 module.exports = RasterLayers;
 
