@@ -15,7 +15,11 @@ export async function downloadFile({
 } = {}) {
 
   if (content) {
-    return _download(new Blob([content], { type: mime_type }), filename, mime_type);
+    return _download(
+      new Blob([content], { type: mime_type }),
+      filename,
+      mime_type,
+    );
   }
 
   if (url) {
@@ -24,13 +28,15 @@ export async function downloadFile({
       throw (await response.json()).message;
     }
     if (200 === response.status) {
-      mime_type = mime_type || response.headers.get('content-type');
-      filename  = (
-        filename || response.headers.get('content-disposition').split('filename=').length
-          ? response.headers.get('content-disposition').split('filename=')[1]
-          : 'g3w_download_file'
+      _download(
+        await response.blob(),
+        (
+          filename || response.headers.get('content-disposition').split('filename=').length
+            ? response.headers.get('content-disposition').split('filename=')[1]
+            : 'g3w_download_file'
+        ),
+        mime_type || response.headers.get('content-type'),
       );
-      _download(await response.blob(), filename, mime_type);
     }
   }
 
