@@ -142,6 +142,7 @@ import {
   PRINT_SCALES,
   PRINT_RESOLUTIONS,
   PRINT_FORMATS,
+  TIMEOUT,
 }                                   from 'app/constant';
 import Component                    from 'core/g3w-component';
 import ApplicationState             from 'store/application-state';
@@ -314,18 +315,20 @@ export default {
      * @returns { Promise<unknown> }
      */
     async print() {
-      // disable sidebar
-      GUI.disableSideBar(true);
-
       const has_atlas = !!this.state.atlas;
       let err, download_id;
 
-      // ATLAS PRINT 
-      if (has_atlas) {
-        try {
+      this.state.loading = true;
+
+      try {
+
+        // disable sidebar
+        GUI.disableSideBar(true);
+
+        // ATLAS PRINT 
+        if (has_atlas) {
           download_id = ApplicationService.setDownload(true);
-          this.state.loading = true;
-          return await downloadFile({
+          await downloadFile({
             url: (await printAtlas({
               template: this.state.template,
               field:    this.state.atlas.field_name || '$id',
@@ -335,20 +338,14 @@ export default {
             filename: this.state.template,
             mime_type: 'application/pdf'
           });
-        } catch (e) {
-          err = e;
         }
-        this.state.loading = false;
-        ApplicationService.setDownload(false, download_id);
-      }
 
-      // SIMPLE PRINT
-      if (!has_atlas) {
-        try {
-          this.state.url    = null;
-          this.state.layers = true;
+        // SIMPLE PRINT
+        if (!has_atlas) {
+          this.state.url       = null;
+          this.state.layers    = true;
 
-          this._page = new Component({ service: this, vueComponentObject: vueComp });
+          this._page = new Component({ service: { state: this.state }, vueComponentObject: vueComp });
 
           // set print area after closing content
           this._page.unmount = () => {
@@ -379,9 +376,16 @@ export default {
           }, ProjectsRegistry.getCurrentProject().getOwsMethod());
           this.state.url       = output.url;
           this.state.layers    = output.layers;
-        } catch (e) {
-          err = e;
         }
+
+      } catch(e) {
+        err = e;
+      }
+
+      this.state.loading = false;
+
+      if (download_id) {
+        ApplicationService.setDownload(false, download_id);
       }
 
       // in case of no layers
@@ -393,7 +397,6 @@ export default {
         console.warn(err);
         GUI.notify.error(err || t("info.server_error"));
         GUI.closeContent();
-        throw err;
       }
 
     },
@@ -453,10 +456,7 @@ export default {
       });
     },
 
-    /**
-     * @param reset
-     */
-    _clearPrint(reset=false) {
+    _clearPrint() {
       ol.Observable.unByKey(this._moveKey);
       this._moveKey = null;
       GUI.getService('map').stopDrawGreyCover();
@@ -495,6 +495,7 @@ export default {
         this._initialized = true;
       }
       const resolution = view.getResolution();
+
       // set current scale
       Object
         .entries(this._resolutions)
@@ -592,7 +593,6 @@ export default {
         const validate = n => (n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count) || null;
         const values = new Set();
         const value = (vals ? vals[0] : '') || '';
-        console.log(vals);
         value
           .split(',')
           .filter(v => v)
@@ -617,6 +617,40 @@ export default {
         this.disabled = '' === value.trim();
       }
     },
+
+    'state.url': async function(url) {
+      if (!url) {
+        return;
+      }
+      let timeout;
+
+      try {
+
+        await this.$nextTick();
+
+        // add timeout
+        timeout = setTimeout(() => {
+          GUI.disableSideBar(false);
+          this.state.downloading = false;
+          GUI.showUserMessage({ type: 'alert', message: 'timeout' });
+        }, TIMEOUT);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw response.statusText;
+        }
+      } catch (e) {
+        console.warn(e);
+        GUI.notify.error(e || t("info.server_error"));
+        GUI.closeContent();
+      } finally {
+        clearTimeout(timeout);
+        GUI.disableSideBar(false);
+        this.state.downloading = false;
+      }
+
+    }
 
   },
 

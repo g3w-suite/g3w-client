@@ -38,7 +38,7 @@
           </a>
         </div>
       </div>
-      <div v-show="state.url" class="g3w-print-url">
+      <div v-if="state.url" class="g3w-print-url">
         <img ref="out" :src="state.url">
       </div>
     </div>
@@ -49,7 +49,6 @@
 </template>
 
 <script>
-import { TIMEOUT }        from 'app/constant';
 import ProjectsRegistry   from 'store/projects';
 import GUI                from 'services/gui';
 import { imageToDataURL } from 'utils/imageToDataURL';
@@ -62,7 +61,7 @@ export default {
   data() {
     console.log(this);
     return {
-      state: {},
+      state: {} || this.$options.state,
     }
   },
 
@@ -84,49 +83,6 @@ export default {
       }
     },
 
-  },
-
-  watch: {
-    'state.url': async function(url) {
-      if (!url) {
-        return;
-      }
-      let timeout;
-
-      try {
-
-        await this.$nextTick();
-
-        // add timeout
-        timeout = setTimeout(() => {
-          GUI.disableSideBar(false);
-          this.state.downloading = false;
-          GUI.showUserMessage({ type: 'alert', message: 'timeout' });
-        }, TIMEOUT);
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw response.statusText;
-        }
-      } catch (e) {
-        console.warn(e);
-        GUI.notify.error(e || t("info.server_error"));
-        GUI.closeContent();
-      } finally {
-        clearTimeout(timeout);
-        GUI.disableSideBar(false);
-        this.state.downloading = false;
-      }
-
-    }
-  },
-
-  async mounted() {
-    await this.$nextTick();
-    if (this.state.layers) {
-      this.state.loading = true;
-    }
   },
 
   beforeDestroy() {
