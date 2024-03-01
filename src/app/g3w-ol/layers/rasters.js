@@ -149,8 +149,19 @@ RasterLayers._WMSLayer = function(options={}) {
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
   const iframe_internal = options.iframe_internal || false;
-  const {url, projection, maxZoom, minZoom, visible=true, crossOrigin} = options;
-  if (!url) return;
+  const {
+    url,
+    projection,
+    maxZoom,
+    minZoom,
+    visible=true,
+    crossOrigin,
+    cache_provider, /** @since 3.10.0 **/
+  } = options;
+  //in case of no url provide, skip
+  if (!url) {
+    return;
+  }
   const sourceOptions = {
     url,
     maxZoom,
@@ -158,19 +169,21 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
     projection,
     crossOrigin
   };
-  if (iframe_internal)
+  if (iframe_internal) {
     loadImageTileFunction({
       method,
       type: 'tile',
       sourceOptions
     });
+  }
 
-  if (projection.getUnits() === 'degrees') {
+  if ('degrees' === projection.getUnits() || 'mapproxy' === cache_provider) { /** @since 3.10.0 add cache_provider **/
     const extent = projection.getExtent();
     const resolutions = ol.tilegrid.createXYZ({extent, maxZoom}).getResolutions();
-    // needed to remove the first resolutis because in this version of ol createXYZ doesn't  accept maxResolution options .
-    // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculate by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
-    // we need to calculate to Math.min instead so we have to remove the first resolution
+    // Need to remove the first resolution because in this version of ol createXYZ doesn't accept maxResolution options.
+    // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculated
+    // by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
+    // we need to calculate to Math.min instead, so we have to remove the first resolution
     resolutions.splice(0,1);
     //////////////////////////////////////////
     sourceOptions.tileGrid =  new ol.tilegrid.TileGrid({

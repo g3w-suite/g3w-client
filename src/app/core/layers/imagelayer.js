@@ -410,9 +410,10 @@ proto.getMapLayer = function(options = {}, extraParams) {
   const extent            = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
   const url               = options.url || this.getWmsUrl();
   const source            = this.config.source;
+  const cache_provider    = this.config.cache_provider;
 
   if (this.isCached()) {
-    return new XYZLayer({ ...options, extent }, method);
+    return new XYZLayer({ ...options, extent, cache_provider }, method);
   }
 
   if (this.isExternalWMS() && source && Layer.SourceTypes.ARCGISMAPSERVER === source.type) {

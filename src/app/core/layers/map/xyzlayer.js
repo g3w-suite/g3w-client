@@ -47,6 +47,7 @@ proto._makeOlLayer = function(){
     extent:          this.config.extent,
     iframe_internal: this.iframe_internal,
     projection:      this.projection ? this.projection : this.layer.getProjection(),
+    cache_provider:  this.config.cache_provider,
   }, this._method);
 
   this._olLayer.getSource().on('imageloadstart', () => this.emit('loadstart'));
