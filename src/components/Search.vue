@@ -10,6 +10,7 @@
     class ="treeview-menu g3w-search g3w-tools menu-items"
   >
 
+    <!-- SAVED SEARCHES (from g3w-admin) -->
     <li
       v-for       = "search in state.searches"
       class       = "menu-item"
@@ -100,8 +101,9 @@ export default {
   name: 'search',
 
   data() {
+    console.log(this);
     return {
-      state: null
+      state: this.state || {},
     };
   },
 

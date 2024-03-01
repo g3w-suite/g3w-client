@@ -35,7 +35,7 @@ export function SearchComponent(opts = {}) {
   const project = ProjectsRegistry.getCurrentProject();
 
   const state = {
-    searches: [],
+    searches: project.state.search || [],
     tools: [],
     querybuildersearches: QueryBuilderService.getCurrentProjectItems()
   };
@@ -48,7 +48,7 @@ export function SearchComponent(opts = {}) {
     service: Object.assign(opts.service || new G3WObject(), {
       state,
       title:                 project.state.search_title || "search",
-      init:                  s  => { state.searches = s || project.state.search; },
+      // init:                  s  => { state.searches = s || project.state.search; },
       addQueryBuilderSearch: s  => { state.querybuildersearches.push(s); },
       addTool:               t  => { state.tools.push(t); },
       addTools:              tt => { for (const t of tt) service.addTool(t); },
