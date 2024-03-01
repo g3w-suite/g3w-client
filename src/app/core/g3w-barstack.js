@@ -25,7 +25,7 @@ export class BarStack extends G3WObject {
 
     /** barstack state. It stores the panel array */
     this.state = {
-      contentsdata: []
+      contentsdata: [] // Array<{ content, options }> 
     }
 
   }
@@ -82,87 +82,49 @@ export class BarStack extends G3WObject {
   }
 
   /**
-   * mount component
+   * Mount component to parent
    */
   _mount(content, options) {
+    const d    = $.Deferred();
+    const data = this.state.contentsdata;
+
     // check the type of content:
 
-    // JQuery type
-    if (content instanceof jQuery) {
-      return this._setJqueryContent(content);
+    // String or JQuery
+    if (content instanceof jQuery || _.isString(content)) {
+      let el = _.isString(content) ? ($(content).length ? $('<div>' + content + '</div>') : $(content)) : content
+      $(this._parent).append(el);
+      data.push({ content: el, options });
+      d.resolve();
     }
 
-    // String
-    if (_.isString(content)) {
-      let el = $(content);
-      if (0 === el.length) {
-        el = $('<div>' + content + '</div>');
+    // Vue element
+    else if (content.mount && 'function' === typeof content.mount) {
+      // Check duplicate element by component id (if already exist)
+      let id = data.findIndex(d => d.content.getId && (d.content.getId() === content.getId()));
+      if (-1 !== id) {
+        data[id].content.unmount().then(() => data.splice(id, 1));
       }
-      return this._setJqueryContent(el);
+      // Mount vue component 
+      content
+        .mount(this._parent, options.append || false)
+        .then(() => {
+          $(this._parent).localize();
+          data.push({ content, options });
+          d.resolve(content);
+        });
+
     }
 
-    // Vue
-    if (content.mount && 'function' === typeof content.mount) {
-      this._checkDuplicateVueContent(content); // if already exist it removed before based on id
-      return this._setVueContent(content,options)
+    // DOM element
+    else {
+      this._parent.appendChild(content);
+      data.push({ content, options });
+      d.resolve();
     }
 
-    // DOM
-    return this._setDOMContent(content);
-  }
-
-  /**
-   * append jQuery component 
-   */
-  _setJqueryContent(content, options) {
-    $(this._parent).append(content);
-    this.state.contentsdata.push({ content, options });
-    return resolve();
-  }
-
-  /**
-   * Append DOM element 
-   */
-  _setDOMContent(content, options) {
-    this._parent.appendChild(content);
-    this.state.contentsdata.push({ content, options });
-    return resolve();
-  }
-
-  /**
-   * Mount component to parent 
-   */
-  _setVueContent(content, options={}) {
-    const d = $.Deferred();
-    const append = options.append || false;
-    content
-      .mount(this._parent, append)
-      .then(() => {
-        $(this._parent).localize();
-        // Insert the content into the array with the following attributes:
-        // content: component object
-        // options: es. title, perc etc ...
-        this.state.contentsdata.push({ content, options });
-        d.resolve(content);
-      });
     return d.promise();
-  }
 
-  /**
-   * Check duplicate Vue Content 
-   */
-  _checkDuplicateVueContent(content) {
-    let idxToRemove = null;
-    const id = content.getId();
-    const data = this.state.contentsdata;
-    data.forEach((d, i) => {
-      if (d.content.getId && (id == d.content.getId())) {
-        idxToRemove = i;
-      }
-    });
-    if (!_.isNull(idxToRemove)) {
-      data[idxToRemove].content.unmount().then(() => data.splice(idxToRemove,1));
-    }
   }
 
   /**
