@@ -6,7 +6,6 @@
 import Panel       from 'core/g3w-panel';
 import Component   from 'core/g3w-component';
 import G3WObject   from 'core/g3wobject';
-import { resolve } from 'utils/resolve';
 
 /**
  * Barstack Class - used to mount panels stack on top of each parent
@@ -95,6 +94,7 @@ export class BarStack extends G3WObject {
       let el = _.isString(content) ? ($(content).length ? $('<div>' + content + '</div>') : $(content)) : content
       $(this._parent).append(el);
       data.push({ content: el, options });
+      console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', data[data.length - 1]);
       d.resolve();
     }
 
