@@ -137,7 +137,7 @@ export default new (class SidebarService extends G3WObject {
   /**
    * close for the moment only conlapsbale
    */
-  closeOpenComponents(collapsible=true) {
+  closeOpenComponents() {
     this.getComponents().forEach(c => c.getOpen() && c.state.closewhenshowviewportcontent && c.collapsible && c.click({ open: false }))
   }
 
