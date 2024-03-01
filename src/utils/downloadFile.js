@@ -23,19 +23,19 @@ export async function downloadFile({
   }
 
   if (url) {
-    const response = await fetch(url);
-    if (400 === response.status || 500 ===  response.status) {
-      throw (await response.json()).message;
+    const d = await fetch(url);
+    if (400 === d.status || 500 === d.status) {
+      throw (await d.json()).message;
     }
-    if (200 === response.status) {
+    if (200 === d.status) {
       _download(
-        await response.blob(),
+        await d.blob(),
         (
-          filename || response.headers.get('content-disposition').split('filename=').length
-            ? response.headers.get('content-disposition').split('filename=')[1]
+          filename || d.headers.get('content-disposition').split('filename=').length
+            ? d.headers.get('content-disposition').split('filename=')[1]
             : 'g3w_download_file'
         ),
-        mime_type || response.headers.get('content-type'),
+        mime_type || d.headers.get('content-type'),
       );
     }
   }
