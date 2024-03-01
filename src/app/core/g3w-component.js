@@ -75,6 +75,7 @@ export default class Component extends G3WObject {
         },
 
         reload() {
+          console.warn('[G3W-CLIENT] reloading of components will be discontinued, please update your code as soon as possible', this.getId())
           if (this._reload) {
             this._reload();
           }
