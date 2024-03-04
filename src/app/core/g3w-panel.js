@@ -70,7 +70,7 @@ export default class Panel extends G3WObject {
     $(parent).append(vueComp.$el);
     vueComp.$nextTick(() => {
       $(parent).localize();
-      panel.onShow && panel.onShow();
+      if (panel.onShow) { panel.onShow();}
     });
     return resolve(true);
   }
@@ -79,7 +79,7 @@ export default class Panel extends G3WObject {
     const panel = this.internalPanel;
     panel.$destroy(true);
     $(panel.$el).remove();
-    panel.onClose && panel.onClose();
+    if (panel.onClose) { panel.onClose();}
     this.internalComponent = null;
     if (this.service && this.service.clear) {
       this.service.clear();
