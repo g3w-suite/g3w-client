@@ -20,8 +20,10 @@
       <img :src="getWmsSourceLayerLegendUrl()" >
     </figure>
 
-    <figure v-else v-disabled="loading">
-
+    <figure
+      v-else
+      v-disabled="loading"
+    >
       <bar-loader :loading="loading"/>
 
       <div v-for="(category, index) in categories"
@@ -65,11 +67,11 @@
 </template>
 
 <script>
-  import GUI from 'services/gui';
-  import { CatalogEventBus as VM } from 'app/eventbus';
+  import GUI                         from 'services/gui';
+  import { CatalogEventBus as VM }   from 'app/eventbus';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import ProjectsRegistry from 'store/projects';
-  import ClickMixin from 'mixins/click';
+  import ProjectsRegistry            from 'store/projects';
+  import ClickMixin                  from 'mixins/click';
 
 
   export default {
@@ -371,8 +373,8 @@
       /**
        * @FIXME the following comment seems wrong (isn't `this.dynamic` a `boolean` variable?)
        *
-       * Store legend url icons based on current style of layer.
-       * It use to cache all symbol of a style without get a new request to server
+       * Store legend url icons based on the current style of layer.
+       * It uses to cache all symbols of a style without get a new request to server
        *
        * @type {{}}
        */
@@ -380,7 +382,7 @@
 
       this.mapReady = false;
 
-      // listen layer change style event
+      // listen to layer change style event
       VM.$on('layer-change-style', this.onChangeLayerLegendStyle);
 
       // Get all legend graphics of a layer when start
