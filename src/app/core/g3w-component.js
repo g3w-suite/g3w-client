@@ -126,7 +126,7 @@ export default class Component extends G3WObject {
     }
 
     if (opts.vueComponentObject) {
-      this.init({ vueComponentObject: opts.vueComponentObject });
+      this.init(opts);
     }
   }
 
