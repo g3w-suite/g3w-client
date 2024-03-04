@@ -7,18 +7,18 @@
   <div class="legend-item">
 
     <figure v-for="legendurl in legendurls">
-        <bar-loader
-          :loading="legendurl.loading"
-        />
+      <bar-loader
+        :loading="legendurl.loading"
+      />
 
-        <img
-          v-show="!legendurl.loading && !legendurl.error"
-          :src="legendurl.url"
-          @error="setError(legendurl)"
-          @load="urlLoaded(legendurl)"
-        >
+      <img
+        v-show="!legendurl.loading && !legendurl.error"
+        :src="legendurl.url"
+        @error="setError(legendurl)"
+        @load="urlLoaded(legendurl)"
+      >
 
-        <span class="divider"></span>
+      <span class="divider"></span>
 
       </figure>
 
@@ -26,11 +26,11 @@
 </template>
 
 <script>
-import { CatalogEventBus as VM } from 'app/eventbus';
+import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationService from 'services/application';
-import ProjectsRegistry from 'store/projects';
-import GUI from 'services/gui';
+import ApplicationService          from 'services/application';
+import ProjectsRegistry            from 'store/projects';
+import GUI                         from 'services/gui';
 
 export default {
 
