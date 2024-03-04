@@ -23,7 +23,10 @@ const loadImageTileFunction = (method='GET') => {
 };
 
 const RasterLayers = {
-  
+
+  /**
+   * @returns { ol.layer.Tile }
+   */
   TiledWMSLayer(layerObj, extraParams) {
     return RasterLayers._WMSLayer({
       layerObj,
@@ -32,6 +35,9 @@ const RasterLayers = {
     });
   },
 
+  /**
+   * @returns { ol.layer.Image }
+   */
   WMSLayer(layerObj, extraParams = {}, method = 'GET') {
     return RasterLayers._WMSLayer({
       layerObj,
@@ -40,6 +46,9 @@ const RasterLayers = {
     });
   },
 
+  /**
+   * @returns { ol.layer.Tile } 
+   */
   WMTSLayer() {
     return new ol.layer.Tile({
       opacity: 1,
@@ -52,6 +61,8 @@ const RasterLayers = {
    * @param { string } opts.url
    * @param { number } options.ratio
    * @param opts.format
+   * 
+   * @returns { ol.layer.Image }
    */
   ImageArgisMapServer(opts = {}) {
     return new ol.layer.Image({
@@ -72,7 +83,9 @@ const RasterLayers = {
    * @param opts.extent
    * @param opts.projection
    * @param opts.attributions
-   * @param { boolean } opts.crossOrigin 
+   * @param { boolean } opts.crossOrigin
+   * 
+   * @returns { ol.layer.Tile }
    */
   TiledArgisMapServer(opts = {}) {
     return new ol.layer.Tile({
@@ -106,6 +119,8 @@ const RasterLayers = {
    * @param opts.layerObj.extent
    * @param opts.layerObj.maxResolution
    * @param { boolean } opts.layerObj.tiled
+   * 
+   * @returns { ol.layer.Tile | ol.layer.Image }
    */
   _WMSLayer(opts = {}) {
     return new (opts.tiled ? ol.layer.Tile : ol.layer.Image)({
@@ -143,7 +158,9 @@ const RasterLayers = {
    * @param { boolean } opts.crossOrigin
    * @param { boolean } opts.iframe_internal
    * @param { string } opts.cache_provider since 3.10.0 (eg. mapproxy)
-   * @param { 'GET' | 'POST' } method 
+   * @param { 'GET' | 'POST' } method
+   * 
+   * @returns { ol.layer.Tile }
    */
   XYZLayer(opts = {}, method = 'GET') {
     // skip invalid URLs
