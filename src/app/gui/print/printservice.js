@@ -262,24 +262,21 @@ proto.changeTemplate = function() {
   if (!this.state.template) {
     return;
   }
-  const isPreviousAtlas  = this.state.atlas;
-  const isPreviousNoMaps = 0 === this.state.maps.length; /** since 3.10.0 **/
-  const {
-    atlas,
-    maps,
-    labels
-  }                      = this.state.print.find(print => print.name === this.state.template);
-  this.state.maps        = maps;
-  this.state.atlas       = atlas;
-  this.state.labels      = labels;
+  const has_previous = this.state.atlas || 0 === this.state.maps.length;
+  const print        = this.state.print.find(p => p.name === this.state.template)
+
+  this.state.maps        = print.maps;
+  this.state.atlas       = print.atlas;
+  this.state.labels      = print.labels;
   this.state.atlasValues = [];
-  this.state.atlas ?
 
-    this._clearPrint() :
-
-    isPreviousAtlas || isPreviousNoMaps ?
-      this.showPrintArea(true) :
-      this._setPrintArea();
+  if (this.state.atlas) {
+    this._clearPrint();
+  } else if (has_previous) {
+    this.showPrintArea(true);
+  } else {
+    this._setPrintArea();
+  }
 };
 
 /**
