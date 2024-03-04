@@ -19,20 +19,20 @@ export default function(opts = {}) {
   });
 
   // BACKCOMP v3.x
-  comp._service.state             = comp.internalComponent.state;
-  comp._service.changeScale       = comp.internalComponent.changeScale;
-  comp._service.getOverviewExtent = comp.internalComponent.getOverviewExtent;
-  comp._service.changeRotation    = comp.internalComponent.changeRotation;
-  comp._service.changeTemplate    = comp.internalComponent.changeTemplate;
-  comp._service.print             = comp.internalComponent.print;
-  comp._service.showPrintArea     = comp.internalComponent.showPrintArea;
-  comp._service.reload            = comp.internalComponent.reload;
+  const service             = comp.getService();
+  const internalComponent   = comp.getInternalComponent();
 
-  comp.onafter('setOpen', b => comp._service.showPrintArea(b));
-  comp.onafter('reload', () => {
-    comp._service.reload();
-    comp.state.visible = comp._service.state.visible;
-  });
+  service.state             = internalComponent.state;
+  service.changeScale       = internalComponent.changeScale;
+  service.getOverviewExtent = internalComponent.getOverviewExtent;
+  service.changeRotation    = internalComponent.changeRotation;
+  service.changeTemplate    = internalComponent.changeTemplate;
+  service.print             = internalComponent.print;
+  service.showPrintArea     = internalComponent.showPrintArea;
+  service.reload            = internalComponent.reload;
+
+  comp.onafter('setOpen', b => service.showPrintArea(b));
+  comp.onafter('reload', () => { service.reload(); comp.state.visible = service.state.visible; });
 
   return comp;
 };
