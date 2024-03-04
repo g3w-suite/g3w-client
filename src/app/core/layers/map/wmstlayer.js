@@ -23,6 +23,7 @@ proto._makeOlLayer = function(withLayers) {
     projection:      this.config.projection,
     iframe_internal: this.iframe_internal,
     layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
+    cache_provider:  this.config.cache_provider, /** @since 3.10.0 **/
   }, this.extraParams, this._method);
 
   olLayer.getSource().on('tileloadstart', () => this.emit('loadstart'));

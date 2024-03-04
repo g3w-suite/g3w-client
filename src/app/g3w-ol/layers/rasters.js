@@ -11,7 +11,11 @@ const RasterLayers = {};
  * @param maxZoom
  * @private
  */
-function createTileGrid({projection, cache_provider, maxZoom}) {
+function createTileGrid({
+  projection,
+  cache_provider,
+  maxZoom
+}) {
   if ('degrees' === projection.getUnits() || 'mapproxy' === cache_provider) { /** @since 3.10.0 add cache_provider **/
   const extent = projection.getExtent();
     const resolutions = ol.tilegrid.createXYZ({extent, maxZoom}).getResolutions();
@@ -162,6 +166,7 @@ RasterLayers._WMSLayer = function(options={}) {
   };
 
   if (tiled) {
+    sourceOptions.tileGrid = createTileGrid({ projection, cache_provider: layerObj.cache_provider, maxZoom })
     imageOptions.source = new ol.source.TileWMS(sourceOptions);
     return new ol.layer.Tile(imageOptions);
   }

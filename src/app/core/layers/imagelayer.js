@@ -410,7 +410,7 @@ proto.getMapLayer = function(options = {}, extraParams) {
   const extent            = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
   const url               = options.url || this.getWmsUrl();
   const source            = this.config.source;
-  const cache_provider    = this.config.cache_provider;
+  const cache_provider    = this.config.cache_provider; /** @since 3.10.0 **/
 
   if (this.isCached()) {
     return new XYZLayer({ ...options, extent, cache_provider }, method);
@@ -421,7 +421,7 @@ proto.getMapLayer = function(options = {}, extraParams) {
   }
 
   if (this.isExternalWMS() && source && Layer.SourceTypes.WMST === source.type) {
-    return new WMSTLayer({...options, url }, extraParams, method);
+    return new WMSTLayer({...options, url, cache_provider }, extraParams, method);
   }
 
   return new WMSLayer({ ...options, url }, extraParams, method);
