@@ -109,7 +109,6 @@ export default {
   name: 'search',
 
   data() {
-    console.log(this);
     return {
       state: this.state || {},
     };

@@ -171,7 +171,6 @@ export default {
   mixins: [resizeMixin],
 
   data() {
-    console.log(this);
     this.init();
     return {
       state: this.state || {},

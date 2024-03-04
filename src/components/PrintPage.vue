@@ -59,7 +59,6 @@ export default {
   name: 'print-page',
 
   data() {
-    console.log(this);
     return {
       state: {} || this.$options.state,
     }
