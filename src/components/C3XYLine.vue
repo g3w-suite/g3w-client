@@ -4,8 +4,14 @@
 -->
 
 <template>
-<div class="chart_wrapper" style="height: 100%; width: 100%">
-  <div style="height: 100%; min-height: 200px;  background-color: #ffffff" :id="id"></div>
+<div
+  class="chart_wrapper"
+  style="height: 100%; width: 100%"
+>
+  <div
+    style="height: 100%; min-height: 200px;  background-color: #ffffff"
+    :id="id">
+  </div>
   <div v-for="component in components">
     <span class="divider"></span>
     <component
@@ -18,8 +24,7 @@
       :data="data"
       :selectitems="selectitems"
       :size="size"
-      :is="component">
-    </component>
+      :is="component"/>
   </div>
 </div>
 </template>
@@ -64,10 +69,10 @@ export default {
     addComponent(component) {
       this.components.push(component);
     },
-    addComponents(components=[]){
+    addComponents(components=[]) {
       components.forEach(component => this.addComponent(component))
     },
-    setConfig(config={}){
+    setConfig(config={}) {
       this.config = config;
     },
     setDataOffset(offset, render=false) {
@@ -112,30 +117,30 @@ export default {
       });
     },
     _setAllowedSpace() {
-      if (this.components && this.components.length)
+      if (this.components && this.components.length) {
         this.size.height =  document.querySelector('.g3wform_content').offsetHeight -
           this.$el.offsetHeight -
           document.querySelector('.g3wform_header').offsetHeight - 50;
+      }
     },
     _setMaxMin({value, max, min}) {
       min = value ? +value : +min;
       max = value ? +value : +max;
-      if (min < this.chart.axis.min().y)
+      if (min < this.chart.axis.min().y) {
         this.chart.axis.min(min);
-      else if (max > this.chart.axis.max().y)
+      } else if (max > this.chart.axis.max().y) {
         this.chart.axis.max(max);
-      else {
+      } else {
         const dataValues = this.data.map(data => +data.value);
         this.chart.axis.max(Math.max(...dataValues));
         this.chart.axis.min(Math.min(...dataValues));
-
       }
       this.resize();
     },
     changeItems(items) {
-      if (items.length === 1)
+      if (items.length === 1) {
         this._setMaxMin(items[0].value);
-      else {
+      } else {
         const max = Math.max(...items.map(item => +item.value));
         const min = Math.min(...items.map(item => +item.value));
         this._setMaxMin({
@@ -146,8 +151,7 @@ export default {
       this.resize();
     },
     changeItem({item, render=true}) {
-      const value = item.value;
-      this._setMaxMin({value});
+      this._setMaxMin({value: item.value});
       if (render) {
         this.resize();
       }
@@ -161,17 +165,15 @@ export default {
         const _temp = [...self.selectitems, evt];
         self.selectitems = _temp;
       };
-      this.config.data.onunselected = function(evt){
-        self.selectitems = self.selectitems.filter((selectitem) => {
-          return selectitem.index !== evt.index
-        });
+      this.config.data.onunselected = function(evt) {
+        self.selectitems = self.selectitems.filter((selectitem) => selectitem.index !== evt.index);
       };
       this.chart = c3.generate({
         bindto: `#${this.id}`,
         ...this.config,
       });
       const data = this.chart.data()[0] ? this.chart.data()[0].values : [];
-      data.forEach((item) => {this.data.push(item)});
+      data.forEach((item) => this.data.push(item));
       this._setAllowedSpace();
       // emt event and pass chart
       this.$emit('chart-ready', this.chart);
