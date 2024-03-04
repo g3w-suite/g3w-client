@@ -36,7 +36,7 @@ function __(name, value) {
  * @param config.bbox
  * @param config.capabilities
  * @param config.cache_url
- * @param config.cache_provider  @since 3.10.0
+ * @param { string } config.cache_provider since 3.10.0 (eg. "mapproxy")
  * @param config.baselayer
  * @param config.geometrytype
  * @param config.editops
