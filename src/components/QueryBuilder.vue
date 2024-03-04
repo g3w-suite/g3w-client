@@ -153,9 +153,18 @@
 </template>
 
 <script>
-import { FILTER_OPERATORS } from 'app/constant';
-import QueryBuilderService  from 'services/querybuilder';
-import ProjectsRegistry     from 'store/projects';
+import { FILTER_OPERATORS }        from 'app/constant';
+import ApplicationState            from 'store/application-state';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ProjectsRegistry            from 'store/projects';
+import ApplicationService          from 'services/application';
+import DataRouterService           from 'services/data';
+import GUI                         from 'services/gui';
+import { getUniqueDomId }          from 'utils/getUniqueDomId';
+import { createFilterFromString }  from 'utils/createFilterFromString';
+import { XHR }                     from 'utils/XHR';
+
+const { t } = require('core/i18n/i18n.service');
 
 export default {
 
@@ -214,10 +223,28 @@ export default {
       if (value) this.filter = (`${this.filter}${value}`);
     },
 
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
     async all() {
       this.loading.values = true;
       try {
-        this.values       = await QueryBuilderService.getValues({ layerId: this.currentlayer.id, field: this.select.field });
+        let layerId    = this.currentlayer.id;
+        let field      = this.select.field;
+        let CACHE      = ApplicationState.querybuilder.cache;
+        CACHE[layerId] = CACHE[layerId] || {};
+        if (undefined !== CACHE[layerId][field]) {
+          this.values = CACHE[layerId][field];
+        } else {
+          const response = await XHR.get({
+            url: CatalogLayersStoresRegistry.getLayerById(layerId).getUrl('data'),
+            params: { ordering: field, unique: field }
+          });
+          if (response.result) {
+            CACHE[layerId][field] = CACHE[layerId][field] || response.data;
+          }
+          this.values = CACHE[layerId][field] || [];
+        }
       } catch(e) {
         console.warn(e);
       }
@@ -235,37 +262,93 @@ export default {
       this.filterElement.operator = null;
     },
 
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
     async test() {
-      this.loading.test = true;
-      try {
-        const n         = await QueryBuilderService.test({ layerId: this.currentlayer.id, filter: this.filter });
-        this.message    = undefined !== n ? ` ${n}` : ''
-      } catch(e) {
-        console.warn(e);
-        this.message    = e;
-      }
-      this.loading.test = false;
+      const data      = await this.run(false);
+      const n         = data.length && data[0].features.length; // number of features
+      this.message    = undefined !== n ? ` ${n}` : ''
       await this.$nextTick();
     },
 
-    async run() {
-      this.loading.test = true;
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
+    async run(showResult = true) {
       try {
-        await QueryBuilderService.run({ layerId: this.currentlayer.id, filter: this.filter });
+        this.loading.test = true;
+        const layer = CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id);
+        const search_endpoint = layer.getSearchEndPoint();
+        return (
+          await DataRouterService.getData('search:features', {
+            inputs: {
+              layer,
+              filter: createFilterFromString({ layer, search_endpoint, filter: this.filter }),
+              search_endpoint,
+              feature_count: 100,
+            },
+            outputs: showResult,
+          })
+        ).data;
       } catch(e) {
         console.warn(e);
+        if (!showResult) {
+          GUI.showUserMessage({ type: 'alert', message: 'sdk.querybuilder.error_run', autoclose: true });
+          this.message = t('sdk.querybuilder.error_test');
+        }
+      } finally {
+        this.loading.test = false;
       }
-      this.loading.test = false;
+      
     },
 
-    save() {
-      QueryBuilderService.save({
-        layerId:   this.currentlayer.id,
-        filter:    this.filter,
-        projectId: this.projectId,
-        name:      this.edit && this.$options.options.name,
-        id:        this.edit && this.$options.options.id,
-      });
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
+    async save() {
+      const id      = this.projectId || ProjectsRegistry.getCurrentProject().getId();
+      const edit_id = this.edit && this.$options.options.id;
+      let searches  = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+      let query;
+
+      try {
+        query = {
+          layerId:   this.currentlayer.id,
+          filter:    this.filter,
+          layerName: CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id).getName(),
+          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
+          id:        edit_id || getUniqueDomId(),
+        };
+
+        // edit local item
+        if (edit_id) {
+          const i = searches[id].findIndex(s => s.id === query.id);
+          if (-1 !== i) {
+            searches[id][i] = query;
+          }
+        }
+
+        // add local item
+        else {
+          GUI.getComponent('search').getService().addQueryBuilderSearch(query);
+          if (undefined === searches) {
+            searches     = { [id]: [query] };
+          } else {
+            searches[id] = [...(searches[id] || []), query];
+          }
+        }
+      } catch (e) {
+        console.warn(e);
+        return;
+      }
+
+      // reset items
+      const ITEMS = ApplicationState.querybuilder.searches;
+      ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: searches });
+      setTimeout(() => { searches[id].forEach(q => ITEMS[id].push(q)); }, 0);
+      ITEMS[id].splice(0);
+      GUI.showUserMessage({ type: 'success', message: t("sdk.querybuilder.messages.changed"), autoclose: true });
     },
 
   },

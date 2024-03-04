@@ -90,10 +90,18 @@
 </template>
 
 <script>
-import Panel                 from 'core/g3w-panel';
-import QueryBuilderService   from 'services/querybuilder';
-import G3WTool               from 'components/Tool.vue';
-import * as vueComp          from 'components/QueryBuilder.vue';
+import Panel                       from 'core/g3w-panel';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ProjectsRegistry            from 'store/projects';
+import ApplicationService          from 'services/application';
+import DataRouterService           from 'services/data';
+import GUI                         from 'services/gui';
+import { createFilterFromString }  from 'utils/createFilterFromString';
+
+import G3WTool                     from 'components/Tool.vue';
+import * as vueComp                from 'components/QueryBuilder.vue';
+
+const { t } = require('core/i18n/i18n.service');
 
 export default {
 
@@ -123,9 +131,19 @@ export default {
       this.$options.service.showPanel(config);
     },
 
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
     async remove(search, index) {
       try {
-        await QueryBuilderService.delete(search);
+        await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.delete'), d => d ? res() : rej()) }));
+        const items     = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+        const projectId = ProjectsRegistry.getCurrentProject().getId();
+        const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
+        if (searches.length)           items[projectId] = searches;
+        else                           delete items[projectId];
+        if (Object.keys(items).length) ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: items });
+        else                           ApplicationService.removeLocalItem('QUERYBUILDERSEARCHES');
         this.$options.service.removeItem({ type: 'querybuilder', index });
       } catch(e) {
         console.warn(e);
@@ -145,13 +163,29 @@ export default {
       new Panel(opts);
     },
 
-    run(search) {
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
+    async run(search) {
       search.qbloading = true;
-      QueryBuilderService
-        .run({ layerId: search.layerId, filter:  search.filter })
-        .finally(() => { search.qbloading = false; });
+      try {
+        const layer = CatalogLayersStoresRegistry.getLayerById(search.layerId);
+        const search_endpoint = layer.getSearchEndPoint();
+        await DataRouterService.getData('search:features', {
+          inputs: {
+            layer,
+            filter: createFilterFromString({ layer, search_endpoint, filter: search.filter }),
+            search_endpoint,
+            feature_count: 100,
+          },
+          outputs: true,
+        });
+      } catch(e) {
+        console.warn(e);
+        GUI.showUserMessage({ type: 'alert', message: 'sdk.querybuilder.error_run', autoclose: true });
+      }
+      search.qbloading = false;
     },
-    
 
   },
 

@@ -7,9 +7,9 @@ import { SEARCH_ALLVALUE as ALLVALUE } from 'app/constant';
 import G3WObject                       from 'core/g3w-object';
 import Component                       from 'core/g3w-component';
 import Panel                           from 'core/g3w-panel';
+import ApplicationState                from 'store/application-state';
 import ProjectsRegistry                from 'store/projects';
 import CatalogLayersStoresRegistry     from 'store/catalog-layers';
-import QueryBuilderService             from 'services/querybuilder';
 import DataRouterService               from 'services/data';
 import GUI                             from 'services/gui';
 import { toRawType }                   from 'utils/toRawType';
@@ -26,6 +26,16 @@ import * as vueComp                    from 'components/Search.vue';
 import * as vueSearchComp              from 'components/SearchPanel.vue';
 
 /**
+ * Retrieve from local storage
+ */
+function _getSavedSearches() {
+  const ITEMS = ApplicationState.querybuilder.searches;
+  const id = ProjectsRegistry.getCurrentProject().getId();
+  ITEMS[id] = ITEMS[id] || [];
+  return ITEMS[id];
+}
+
+/**
  * ORIGINAL SOURCE:
  * - src/app/gui/search/vue/search.js@v3.9.3
  * - src/app/gui/search/service.js@3.9.3
@@ -37,7 +47,7 @@ export function SearchComponent(opts = {}) {
   const state = {
     searches: project.state.search || [],
     tools: [],
-    querybuildersearches: QueryBuilderService.getCurrentProjectItems()
+    querybuildersearches: _getSavedSearches()
   };
 
   const comp = new Component({
@@ -48,7 +58,6 @@ export function SearchComponent(opts = {}) {
     service: Object.assign(opts.service || new G3WObject(), {
       state,
       title:                 project.state.search_title || "search",
-      // init:                  s  => { state.searches = s || project.state.search; },
       addQueryBuilderSearch: s  => { state.querybuildersearches.push(s); },
       addTool:               t  => { state.tools.push(t); },
       addTools:              tt => { for (const t of tt) service.addTool(t); },
@@ -61,7 +70,7 @@ export function SearchComponent(opts = {}) {
       removeTool:            noop,
       reload:                () => {
         state.searches             = ProjectsRegistry.getCurrentProject().state.search;
-        state.querybuildersearches = QueryBuilderService.getCurrentProjectItems();
+        state.querybuildersearches = _getSavedSearches();
       },
     }),
     vueComponentObject: vueComp,

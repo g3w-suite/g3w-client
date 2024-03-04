@@ -23,39 +23,11 @@ Vue.component('tristate-tree', TreeComp);
 Vue.component('layerslegend', LegendComp);
 Vue.component('layerslegend-items', LegendItemsComp);
 
-
-
 /**
  * ORIGINAL SOURCE:
  * - src/app/gui/catalog/vue/catalog.js@v3.9.3
  * - src/app/gui/catalog/catalogservice.js@v3.9.3
  */
-
-/**
- * @TODO check if deprecated
- */
-function _listenToMapVisibility(map_id, component) {
-  if(!map_id) {
-    return;
-  }
-
-  component.mapComponentId = map_id;
-
-  const map = GUI.getComponent(map_id);
-
-  const cb = map => {
-    const ms = map.getService();
-    component.state.visible = !ms.state.hidden;
-    ms.onafter('setHidden', () => { component.state.visible = !ms.state.hidden; component.state.expanded = true; });
-  };
-
-  if (map) {
-    cb(map);
-  } else {
-    ComponentsRegistry.on('componentregistered', c => map_id === c.getId() && cb(c));
-  }
-}
-
 export default function(opts = {}) {
 
   const state = {
@@ -155,3 +127,28 @@ export default function(opts = {}) {
 
   return comp;
 };
+
+/**
+ * @TODO check if deprecated
+ */
+function _listenToMapVisibility(map_id, component) {
+  if(!map_id) {
+    return;
+  }
+
+  component.mapComponentId = map_id;
+
+  const map = GUI.getComponent(map_id);
+
+  const cb = map => {
+    const ms = map.getService();
+    component.state.visible = !ms.state.hidden;
+    ms.onafter('setHidden', () => { component.state.visible = !ms.state.hidden; component.state.expanded = true; });
+  };
+
+  if (map) {
+    cb(map);
+  } else {
+    ComponentsRegistry.on('componentregistered', c => map_id === c.getId() && cb(c));
+  }
+}
