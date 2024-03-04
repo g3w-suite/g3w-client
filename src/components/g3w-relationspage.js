@@ -3,7 +3,7 @@
  * @since 3.10.0
  */
 
-import Component from 'core/g3w-component';
+import Component    from 'core/g3w-component';
 
 import * as vueComp from 'components/RelationsPage.vue';
 
