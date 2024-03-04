@@ -148,15 +148,16 @@
 </template>
 
 <script>
-import { MAP_SETTINGS } from 'app/constant';
-import { CatalogEventBus as VM } from 'app/eventbus';
-import ChangeMapThemesComponent from 'components/CatalogChangeMapThemes.vue';
-import CatalogLayerContextMenu from 'components/CatalogLayerContextMenu.vue';
-import CatalogProjectContextMenu from 'components/CatalogProjectContextMenu.vue';
+
+import { MAP_SETTINGS }            from 'app/constant';
+import { CatalogEventBus as VM }   from 'app/eventbus';
+import ChangeMapThemesComponent    from 'components/CatalogChangeMapThemes.vue';
+import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
+import CatalogProjectContextMenu   from 'components/CatalogProjectContextMenu.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationService from 'services/application';
-import ControlsRegistry from 'store/map-controls';
-import GUI from 'services/gui';
+import ApplicationService          from 'services/application';
+import ControlsRegistry            from 'store/map-controls';
+import GUI                         from 'services/gui';
 
 const DEFAULT_ACTIVE_TAB = 'layers';
 
@@ -359,7 +360,9 @@ export default {
     onRegisterControl(id, control) {
       if ('querybbox' === id) {
         control.getInteraction().on('propertychange', evt => {
-          if ('active' === evt.key) this.state.highlightlayers = !evt.oldValue;
+          if ('active' === evt.key) {
+            this.state.highlightlayers = !evt.oldValue;
+          }
         })
       }
     },
@@ -369,7 +372,7 @@ export default {
   watch: {
 
     /**
-     * Listen external wms change. If remove all layer nee to set active the project or default tab
+     * Listen external wms change. If remove all layerd need to set active the project or default tab
      */
     'state.external.wms'(newlayers, oldlayers) {
       if (oldlayers && 0 === newlayers.length) {
