@@ -1254,7 +1254,8 @@ proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features = '', 
 };
 
 proto.getMapExtent = function() {
-  return this.getMap().getView().calculateExtent(map.getSize());
+  const map = this.getMap();
+  return map.getView().calculateExtent(map.getSize());
 };
 
 /**
