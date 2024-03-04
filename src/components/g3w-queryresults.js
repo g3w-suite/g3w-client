@@ -23,10 +23,10 @@ export default function(opts = {}) {
   });
 
   comp.getElement = () => comp.internalComponent ? comp.internalComponent.$el : undefined;
-  comp.unmount    = () => { comp._service.closeComponent(); return Component.prototype.unmount.call(comp) };
+  comp.unmount    = () => { comp.getService().closeComponent(); return Component.prototype.unmount.call(comp) };
   comp.layout     = noop;
 
-  comp._service.onafter('setLayersData', async () => {
+  comp.getService().onafter('setLayersData', async () => {
     if (!comp.internalComponent) {
       comp.setInternalComponent();
     }
