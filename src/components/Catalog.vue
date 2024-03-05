@@ -150,19 +150,8 @@
           </ul>
         </div>
 
-        <!-- TODO: add description -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
-       
-        <!-- <catalog-layers-legend
-          v-if        = "'tab' === state.legend.place"
-          v-for       = "tree in state.layerstrees"
-          :key        = "tree.id"
-          :legend     = "state.legend"
-          :active     = "'state.legend' === activeTab"
-          :layerstree = "tree"
-          @showlegend = "showLegend"
-        /> -->
         <div
           v-if   = "'tab' === state.legend.place"
           v-for  = "tree in state.layerstrees"
@@ -171,9 +160,8 @@
           id     = "legend"
           class  = "tab-pane"
           :class = "{ active: 'legend' === activeTab }"
-          
         >
-          <div v-for="t in tree.tree" class="legend-item">
+          <div v-for="t in tree.tree" class="legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
             <figure v-for="url in t.legendurls">
               <bar-loader :loading="url.loading" />
               <img
