@@ -5,8 +5,6 @@ import CatalogChangeMapThemes                      from './CatalogChangeMapTheme
 import CatalogLayerContextMenu                     from './CatalogLayerContextMenu.vue';
 import CatalogProjectContextMenu                   from './CatalogProjectContextMenu.vue';
 import CatalogLayerLegend                          from './CatalogLayerLegend.vue';
-import CatalogLayersGroup                          from './CatalogLayersGroup.vue';
-import CatalogLayersLegendItems                    from './CatalogLayersLegendItems.vue';
 import CatalogTristateTree                         from './CatalogTristateTree.vue';
 import Field                                       from './Field.vue';
 import FieldG3W                                    from './FieldG3W.vue';
@@ -118,8 +116,6 @@ export {
    */
   CatalogProjectContextMenu,
   CatalogLayerLegend,
-  CatalogLayersGroup,
-  CatalogLayersLegendItems,
   CatalogTristateTree,
   /**
    * @since 3.8.0

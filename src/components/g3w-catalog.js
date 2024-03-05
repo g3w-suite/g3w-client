@@ -20,6 +20,8 @@ import * as vueComp                from 'components/Catalog.vue';
  */
 export default function(opts = {}) {
 
+  console.log(opts);
+
   const state = {
     prstate: ProjectsRegistry.state,
     highlightlayers: false,
@@ -29,6 +31,7 @@ export default function(opts = {}) {
     },
     layerstrees: [],
     layersgroups: [],
+    legend: Object.assign(opts.config.legend || {}, { place: ApplicationService.getCurrentProject().getLegendPosition() || 'tab' }),
   };
 
   const service = opts.service || new G3WObject({
@@ -110,7 +113,7 @@ export default function(opts = {}) {
     title: 'catalog',
     resizable: true,
     service,
-    internalComponent: new (Vue.extend(vueComp))({ service, legend: opts.config.legend }),
+    vueComponentObject: vueComp,
   });
 
   _listenToMapVisibility(opts.mapcomponentid, comp);

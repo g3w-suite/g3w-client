@@ -536,7 +536,7 @@
   const OFFSETMENU  = { top: 50, left: 15 };
 
   export default {
-    name: 'Cataloglayermenu',
+    name: 'catalog-layer-context-menu',
 
     props: {
       external: {

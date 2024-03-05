@@ -269,7 +269,6 @@ export default {
   mixins: [ClickMixin],
 
   data() {
-    console.log(this);
     return {
       expanded:       this.layerstree.expanded,
       isGroupChecked: true,

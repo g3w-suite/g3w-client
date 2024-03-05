@@ -10,8 +10,8 @@
     <div class="tabbable-line">
 
       <!-- TAB MENU (header) -->
-      <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click.capture="delegationClickEventTab">
-        <li v-if="hasLayers" role="presentation"  :class="{ active: ('layers' === activeTab) }">
+      <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click.capture="onTabClick">
+        <li v-if="hasLayers" role="presentation" :class="{ active: ('layers' === activeTab) }">
           <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
         </li>
         <li v-if="state.external.wms.length" role="presentation" :class="{ active: ('externalwms' === activeTab) }">
@@ -20,7 +20,7 @@
         <li v-if="hasBaseLayers" role="presentation" :class="{ active: ('baselayers' === activeTab) }" >
           <a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a>
         </li>
-        <li v-if="'tab' === legend.place && showlegend" role="presentation" :class="{ active: ('legend' === activeTab) }">
+        <li v-if="'tab' === state.legend.place && showlegend" role="presentation" :class="{ active: ('legend' === activeTab) }">
           <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a>
         </li>
       </ul>
@@ -30,13 +30,18 @@
 
         <bar-loader :loading="loading" />
 
-        <div id="layers" role="tabpanel" class="tab-pane" :class="{ active: ('layers' === activeTab) }">
+        <div
+          id     = "layers"
+          role   = "tabpanel"
+          class  = "tab-pane"
+          :class = "{ active: ('layers' === activeTab) }"
+        >
 
           <helpdiv message="catalog_items.helptext" />
 
           <!-- TOOLBAR -->
           <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
-            <change-map-themes-component
+            <catalog-change-map-themes
               :key              = "project.state.gid"
               :map_themes       = "project.state.map_themes"
               @change-map-theme = "changeMapTheme"
@@ -45,80 +50,100 @@
 
           <!-- LAYER TREES -->
           <ul
-            v-for = "_layerstree in state.layerstrees"
-            :key  = "_layerstree.storeid"
+            v-for = "root in state.layerstrees"
+            :key  = "root.storeid"
             class = "tree-root root project-root"
           >
             <catalog-tristate-tree
-              v-for                      = "layerstree in _layerstree.tree"
-              :key                       = "layerstree.id"
+              v-for                      = "tree in root.tree"
+              :key                       = "tree.id"
               :highlightlayers           = "state.highlightlayers"
-              :layerstree                = "layerstree"
+              :layerstree                = "tree"
               class                      = "item"
               :parentFolder              = "false"
               :root                      = "true"
-              :legendplace               = "legend.place"
+              :legendplace               = "state.legend.place"
               :parent_mutually_exclusive = "false"
-              :storeid                   = "_layerstree.storeid"
+              :storeid                   = "root.storeid"
             />
           </ul>
 
           <!-- EXTERNAL VECTOR LAYER -->
           <ul v-if="state.external.vector.length" class="g3w-external_layers-group">
             <catalog-tristate-tree
-              v-for           = "layerstree in state.external.vector"
-              :key            = "layerstree.id"
+              v-for           = "vector in state.external.vector"
+              :key            = "vector.id"
               :externallayers = "state.external.vector"
-              :layerstree     = "layerstree"
+              :layerstree     = "vector"
               class           = "item"
             />
           </ul>
 
           <!-- GROUP OF LAYERS -->
-          <ul v-for="layersgroup in state.layersgroups">
-            <catalog-layers-group :layersgroup="layersgroup" />
+          <!-- ORIGINAL SOURCE: src/components/CatalogLayersGroup.vue@v3.9.3 -->
+          <ul v-for="group in state.layersgroups" class="g3w-catalog-layers-group">
+            <div>
+              <h4>{{ group.title }}</h4>
+              <catalog-tristate-tree
+                v-for       = "node in group.nodes"  
+                :layerstree = "node"
+                class       = "item"
+              />
+            </div>
           </ul>
 
         </div>
 
         <!-- EXTERNAL WMS LAYER -->
-        <div v-if="state.external.wms.length" id="externalwms" role="tabpanel" class="tab-pane" :class="{ active: ('externalwms' === activeTab) }">
+        <div
+          v-if   = "state.external.wms.length"
+          id     = "externalwms"
+          role   = "tabpanel"
+          class  = "tab-pane"
+          :class = "{ active: ('externalwms' === activeTab) }"
+        >
           <ul class="g3w-external_wms_layers-group">
             <catalog-tristate-tree
-              v-for           = "layerstree in state.external.wms"
-              :key            = "layerstree.id"
+              v-for           = "wms in state.external.wms"
+              :key            = "wms.id"
               :externallayers = "state.external.wms"
-              :layerstree     = "layerstree"
+              :layerstree     = "wms"
               class           = "item"
             />
           </ul>
         </div>
 
         <!-- BASE LAYERS -->
-        <div v-if="hasBaseLayers" id="baselayers" role="tabpanel" class="tab-pane baselayers" :class="{ active: ('baselayers' === activeTab || !hasLayers) }">
+        <div
+          v-if   = "hasBaseLayers"
+          id     = "baselayers"
+          role   = "tabpanel"
+          class  = "tab-pane baselayers"
+          :class = "{ active: ('baselayers' === activeTab || !hasLayers) }"
+        >
           <ul
-            id="baselayers-content"
-            :class="{'mobile': isMobile()}"
-            :style="{ gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))` }"
+            id     = "baselayers-content"
+            :class = "{'mobile': isMobile()}"
+            :style = "{ gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))` }"
           >
             <li
-              v-if="!baselayer.fixed"
-              v-for="baselayer in baselayers"
-              :key="baselayer.title"
+              v-if  = "!base.fixed"
+              v-for = "base in baselayers"
+              :key  = "base.title"
             >
               <img
-                :src="getSrcBaseLayerImage(baselayer)"
-                @click.stop="setBaseLayer(baselayer.id)"
-                class="img-responsive img-thumbnail baselayer"
-                :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}"
+                :src        = "getSrcBaseLayerImage(base)"
+                @click.stop = "setBaseLayer(base.id)"
+                class       = "img-responsive img-thumbnail baselayer"
+                :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5 }"
               >
-              <div class="baseselayer-text text-center">{{ baselayer.title }}</div>
+              <div class="baseselayer-text text-center">{{ base.title }}</div>
             </li>
             <li @click.stop="setBaseLayer(null)">
               <img
-                :src="getSrcBaseLayerImage(null)"
-                class="img-responsive img-thumbnail baselayer"
-                :style="{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
+                :src   = "getSrcBaseLayerImage(null)"
+                class  = "img-responsive img-thumbnail baselayer"
+                :style = "{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
               >
               <div class="baseselayer-text text-center" v-t="'nobaselayer'"></div>
             </li>
@@ -126,15 +151,41 @@
         </div>
 
         <!-- TODO: add description -->
-        <catalog-layers-legend
-          v-if="'tab' === legend.place"
-          v-for="_layerstree in state.layerstrees"
-          :key="_layerstree.id"
-          :legend="legend"
-          :active="'legend' === activeTab"
-          :layerstree="_layerstree"
-          @showlegend="showLegend"
-        />
+        <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
+        <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
+       
+        <!-- <catalog-layers-legend
+          v-if        = "'tab' === state.legend.place"
+          v-for       = "tree in state.layerstrees"
+          :key        = "tree.id"
+          :legend     = "state.legend"
+          :active     = "'state.legend' === activeTab"
+          :layerstree = "tree"
+          @showlegend = "showLegend"
+        /> -->
+        <div
+          v-if   = "'tab' === state.legend.place"
+          v-for  = "tree in state.layerstrees"
+          :key   = "tree.id"
+          role   = "tabpanel"
+          id     = "legend"
+          class  = "tab-pane"
+          :class = "{ active: 'legend' === activeTab }"
+          
+        >
+          <div v-for="t in tree.tree" class="legend-item">
+            <figure v-for="url in t.legendurls">
+              <bar-loader :loading="url.loading" />
+              <img
+                v-show = "!url.loading && !url.error"
+                :src   = "url.url"
+                @error = "onLegendError(url)"
+                @load  = "onLegendLoad(url)"
+              />
+              <span class="divider"></span>
+            </figure>
+          </div>
+        </div>
 
       </div>
 
@@ -149,21 +200,29 @@
 
 <script>
 
-import { MAP_SETTINGS }            from 'app/constant';
 import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationService          from 'services/application';
+import ProjectsRegistry            from 'store/projects';
 import ControlsRegistry            from 'store/map-controls';
+import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 
-import ChangeMapThemesComponent    from 'components/CatalogChangeMapThemes.vue';
+import CatalogChangeMapThemes      from 'components/CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
 import CatalogProjectContextMenu   from 'components/CatalogProjectContextMenu.vue';
-import CatalogLayersGroup          from 'components/CatalogLayersGroup.vue';
 import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
-import CatalogLayersLegend         from 'components/CatalogLayersLegend.vue';
 
-const DEFAULT_ACTIVE_TAB = 'layers';
+/**
+ * Stringify a query URL param (eg. `&WIDTH=700`)
+ * 
+ * @param name
+ * @param value
+ * 
+ * @returns { string | null } a string if value is set or null
+ */
+ function __(name, value) {
+  return (value || 0 === value) ? `${name}${value}` : null;
+}
 
 export default {
 
@@ -171,24 +230,21 @@ export default {
   name: 'catalog',
 
   data() {
-    this.$options.legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
+    console.log(this);
     return {
-      state:            null,
-      legend:           this.$options.legend,
+      state:            this.$options.service.state || {},
       showlegend:       false,
       currentBaseLayer: null,
-      activeTab:        null,
+      activeTab:        'layers',
       loading:          false,
     }
   },
 
   components: {
-    ChangeMapThemesComponent,
+    CatalogChangeMapThemes,
     CatalogLayerContextMenu,
     CatalogProjectContextMenu,
-    CatalogLayersGroup,
     CatalogTristateTree,
-    CatalogLayersLegend,
   },
 
   computed: {
@@ -226,6 +282,172 @@ export default {
 
   methods: {
 
+    onLegendError(legendurl) {
+      legendurl.error = true;
+      legendurl.loading = false;
+    },
+
+    onLegendLoad(legendurl) {
+      legendurl.loading = false;
+    },
+
+    /**
+     * Get legend src for visible layers
+     * 
+     * @returns {Promise<void>}
+     */
+    getLegendSrc(change = false) {
+      // skip if not active
+      if ('tab' !== this.state.legend.place) {
+        return;
+      }
+
+      this.state.layerstrees.forEach(t => {
+        let layers = this._traverseVisibleLayers(t.tree);
+        this.showlegend = this.showlegend || layers.length > 0;
+        t.tree.forEach(async tree => {
+          try {
+            if (
+              change && (
+                (tree.legendurls && 0 === tree.legendurls.length) ||
+                layers.some(l => l.legend.change) ||
+                ProjectsRegistry.getCurrentProject().getContextBaseLegend()
+              )
+            ) { 
+              layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
+            }
+            tree.legendurls = await this._getLegendSrc(layers);
+          } catch (e) {
+            console.warn(e);
+          }
+        });
+      });
+    },
+
+    _traverseVisibleLayers(obj, _layers = []) {
+      for (const layer of obj) {
+        if (null !== layer.id && undefined !== layer.id && layer.visible && layer.geolayer && !layer.exclude_from_legend) {
+          _layers.push(layer);
+        }
+        if (null !== layer.nodes && undefined !== layer.nodes) {
+          _layers = _layers.concat(this._traverseVisibleLayers(layer.nodes, _layers));
+        }
+      }
+      return _layers;
+    },
+
+    /**
+     * Get legend src for visible layers
+     * 
+     * @returns {Promise<void>}
+     */
+    async _getLegendSrc(visiblelayers) {
+
+      // reset layers url
+      const legendurls = [];
+
+      // filter geolayer
+      const layers = visiblelayers.filter(l => l.geolayer);
+
+      const http = { GET: {}, POST: {} };
+
+      layers.forEach(layer => {
+        const name         = http[(layer.source && layer.source.url) || layer.external ? 'GET' : layer.ows_method];
+        const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+
+        const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
+          all:        !ProjectsRegistry.getCurrentProject().getContextBaseLegend(), // true = dynamic legend 
+          format:     'image/png',
+          categories: layer.categories
+        }) : undefined;
+
+
+        // no url is set
+        if (undefined === catalogLayer) {
+          return;
+        }
+
+        if (layer.source && layer.source.url) {
+          name[url] = [];
+          return
+        }
+
+        // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
+        let prefix = url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
+
+        if (!name[prefix]) {
+          name[prefix] = [];
+        }
+
+        name[prefix].unshift({
+          layerName:  url.split('LAYER=')[1],
+          style:      (Array.isArray(layer.styles) && layer.styles.find(style => style.current) || ({ name: false })).name,
+          legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
+          legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
+        });
+      });
+
+      for (const method in http) {
+        for (const url in http[method]) {
+          const obj = {
+            loading: true,
+            url: null,
+            error: false
+          };
+
+          legendurls.push(obj);
+
+          const params = {
+            LAYERS:[],
+            STYLES:[],
+            LEGEND_ON:[],
+            LEGEND_OFF:[]
+          };
+
+          (http[method][url] || []).reduce((_, layer) => {
+              params.LAYERS.push(layer.layerName);
+              params.STYLES.push(layer.style);
+              if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on); }
+              if (layer.legend_off) { params.LEGEND_OFF.push(layer.legend_off); }
+              return params;
+            }, params);
+
+          let url_params = [
+            __('LAYERS=',     params.LAYERS.join(',')),
+            __('STYLES=',     params.STYLES.join(',')),
+            __('LEGEND_ON=',  params.LEGEND_ON.join(',')),
+            __('LEGEND_OFF=', params.LEGEND_OFF.join(',')),
+            __('filtertoken=', ApplicationService.getFilterToken()),
+          ]
+          .filter(p => p) // discard nullish parameters (without a value)
+          .join('&');
+
+          try {
+            obj.url = 'GET' === method 
+              ? url + (http[method][url].length ? url_params : '')
+              : URL.createObjectURL(await (await fetch(url.split('?')[0], {
+                  method:  'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                  // send encoded params 
+                  body: // new URLSearchParams(url.split('?')[1]) 
+                    url
+                      .split('?')[1]
+                      .split('&')
+                      .filter(p => p.split('=')[0]).map(p => `${p.split('=')[0]}=${encodeURIComponent(p.split('=')[1])}`)
+                      .join('&')
+                      + '&' + url_params
+                })).blob());
+          } catch (e) {
+            console.warn(e);
+          }
+
+          obj.loading = false;
+        }
+      }
+
+    return legendurls;
+    },
+
     /**
      * Change view
      *
@@ -253,12 +475,10 @@ export default {
 
     },
 
-    delegationClickEventTab(evt) {
-     this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;
-    },
-
-    showLegend(bool) {
-      this.showlegend = bool;
+    onTabClick(e) {
+      if (e.target.attributes['aria-controls']) {
+        this.activeTab = e.target.attributes['aria-controls'].value;
+      }
     },
 
     setBaseLayer(id) {
@@ -268,27 +488,14 @@ export default {
     },
 
     getSrcBaseLayerImage(baseLayer) {
-      let image;
-      let customimage = false;
+      let image = 'nobaselayer.png';
       switch (baseLayer && baseLayer.servertype || baseLayer) {
-        case 'OSM':
-          image = 'osm.png';
-          break;
-        case 'Bing':
-          const subtype = baseLayer.source.subtype;
-          image = `bing${subtype}.png`;
-          break;
-        case 'TMS':
-        case 'WMTS':
-          if (baseLayer.icon) {
-            customimage = true;
-            image = baseLayer.icon;
-            break;
-          }
-        default:
-          image = 'nobaselayer.png';
+        case 'OSM':  image = 'osm.png';                                    break;
+        case 'Bing': image = `bing${baseLayer.source.subtype}.png`;        break;
+        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : undefined;  break;
+        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : undefined;  break;
       }
-      return customimage ? image : `${GUI.getResourcesUrl()}images/${image}`;
+      return baseLayer.icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
     },
 
     /**
@@ -366,9 +573,9 @@ export default {
      */
     onRegisterControl(id, control) {
       if ('querybbox' === id) {
-        control.getInteraction().on('propertychange', evt => {
-          if ('active' === evt.key) {
-            this.state.highlightlayers = !evt.oldValue;
+        control.getInteraction().on('propertychange', e => {
+          if ('active' === e.key) {
+            this.state.highlightlayers = !e.oldValue;
           }
         })
       }
@@ -379,17 +586,17 @@ export default {
   watch: {
 
     /**
-     * Listen external wms change. If remove all layerd need to set active the project or default tab
+     * Listen external wms change. If remove all layer need to set active the project or default tab
      */
     'state.external.wms'(newlayers, oldlayers) {
       if (oldlayers && 0 === newlayers.length) {
-        this.activeTab = this.project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+        this.activeTab = this.project.state.catalog_tab || 'layers';
       }
     },
 
     'state.prstate.currentProject': {
       async handler(project, oldproject) {
-        const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+        const activeTab = project.state.catalog_tab || 'layers';
         this.loading = 'baselayers' === activeTab;
         await this.$nextTick();
         setTimeout(() => {
@@ -398,6 +605,12 @@ export default {
         }, ('baselayers' === activeTab) ? 500 : 0)
       },
       immediate: false
+    },
+
+    activeTab(tab) {
+      if ('legend' === tab) {
+        this.getLegendSrc(true);
+      }
     },
 
   },
@@ -411,19 +624,39 @@ export default {
    * @listens ControlsRegistry~registerControl
    */
   created() {
-    this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
-
-    VM.$on('unselectionlayer',         this.onUnSelectionLayer);
-    VM.$on('activefiltertokenlayer',   this.onActiveFilterTokenLayer);
-    VM.$on('treenodevisible',          this.onTreeNodeVisible);
-    VM.$on('treenodeselected',         this.onTreeNodeSelected);
-    VM.$on('treenodeexternalselected', this.onTreeNodeExternalSelected);
-    ControlsRegistry.onafter('registerControl',     this.onRegisterControl);
+    VM.$on('unselectionlayer',                  this.onUnSelectionLayer);
+    VM.$on('activefiltertokenlayer',            this.onActiveFilterTokenLayer);
+    VM.$on('treenodevisible',                   this.onTreeNodeVisible);
+    VM.$on('treenodeselected',                  this.onTreeNodeSelected);
+    VM.$on('treenodeexternalselected',          this.onTreeNodeExternalSelected);
+    VM.$on('layer-change-style',                this.getLegendSrc);
+    ControlsRegistry.onafter('registerControl', this.onRegisterControl);
   },
 
   beforeMount() {
     this.currentBaseLayer = this.project.state.initbaselayer;
   },
 
+  async mounted() {
+    await this.$nextTick();
+    // in case of dynamic legend
+    if (ProjectsRegistry.getCurrentProject().getContextBaseLegend()) {
+      GUI.getService('map').on('change-map-legend-params', () => { this.getLegendSrc(); });
+    } else {
+      this.getLegendSrc();
+    }
+  },
+
 };
 </script>
+
+<style scoped>
+.g3w-catalog-layers-group > div {
+  border: 1px solid #ffffff33;
+  margin: 5px;
+}
+.g3w-catalog-layers-group > div > h4 {
+  margin: 5px;
+  font-weight: bold;
+}
+</style>
