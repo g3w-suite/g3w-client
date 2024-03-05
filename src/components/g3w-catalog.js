@@ -11,17 +11,7 @@ import ProjectsRegistry            from 'store/projects';
 import GUI                         from 'services/gui';
 import ApplicationService          from 'services/application';
 
-import * as catalogComp            from 'components/Catalog.vue';
-import * as LayersComp             from 'components/CatalogLayersGroup.vue';
-import * as TreeComp               from 'components/CatalogTristateTree.vue';
-import * as LegendComp             from 'components/CatalogLayersLegend.vue';
-import * as LegendItemsComp        from 'components/CatalogLayersLegendItems.vue';
-
-Vue.component('g3w-catalog', catalogComp);
-Vue.component('layers-group', LayersComp);
-Vue.component('tristate-tree', TreeComp);
-Vue.component('layerslegend', LegendComp);
-Vue.component('layerslegend-items', LegendItemsComp);
+import * as vueComp                from 'components/Catalog.vue';
 
 /**
  * ORIGINAL SOURCE:
@@ -120,7 +110,7 @@ export default function(opts = {}) {
     title: 'catalog',
     resizable: true,
     service,
-    internalComponent: new (Vue.extend(catalogComp))({ service, legend: opts.config.legend }),
+    internalComponent: new (Vue.extend(vueComp))({ service, legend: opts.config.legend }),
   });
 
   _listenToMapVisibility(opts.mapcomponentid, comp);

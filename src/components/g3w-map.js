@@ -9,8 +9,6 @@ import * as vueComp from 'components/Map.vue';
 
 const { MapService } = require('gui/map/mapservice');
 
-Vue.component('g3w-map', vueComp);
-
 /**
  * ORIGINAL SOURCE: src/app/gui/map/vue/map.js@v3.9.3 
  */

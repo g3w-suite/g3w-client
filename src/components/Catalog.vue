@@ -37,46 +37,46 @@
           <!-- TOOLBAR -->
           <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
             <change-map-themes-component
-              :key="project.state.gid"
-              :map_themes="project.state.map_themes"
-              @change-map-theme="changeMapTheme"
+              :key              = "project.state.gid"
+              :map_themes       = "project.state.map_themes"
+              @change-map-theme = "changeMapTheme"
             />
           </div>
 
           <!-- LAYER TREES -->
           <ul
-            v-for="_layerstree in state.layerstrees"
-            :key="_layerstree.storeid"
-            class="tree-root root project-root"
+            v-for = "_layerstree in state.layerstrees"
+            :key  = "_layerstree.storeid"
+            class = "tree-root root project-root"
           >
-            <tristate-tree
-              v-for="layerstree in _layerstree.tree"
-              :key="layerstree.id"
-              :highlightlayers="state.highlightlayers"
-              :layerstree="layerstree"
-              class="item"
-              :parentFolder="false"
-              :root="true"
-              :legendplace="legend.place"
-              :parent_mutually_exclusive="false"
-              :storeid="_layerstree.storeid"
+            <catalog-tristate-tree
+              v-for                      = "layerstree in _layerstree.tree"
+              :key                       = "layerstree.id"
+              :highlightlayers           = "state.highlightlayers"
+              :layerstree                = "layerstree"
+              class                      = "item"
+              :parentFolder              = "false"
+              :root                      = "true"
+              :legendplace               = "legend.place"
+              :parent_mutually_exclusive = "false"
+              :storeid                   = "_layerstree.storeid"
             />
           </ul>
 
           <!-- EXTERNAL VECTOR LAYER -->
           <ul v-if="state.external.vector.length" class="g3w-external_layers-group">
-            <tristate-tree
-              v-for="layerstree in state.external.vector"
-              :key="layerstree.id"
-              :externallayers="state.external.vector"
-              :layerstree="layerstree"
-              class="item"
+            <catalog-tristate-tree
+              v-for           = "layerstree in state.external.vector"
+              :key            = "layerstree.id"
+              :externallayers = "state.external.vector"
+              :layerstree     = "layerstree"
+              class           = "item"
             />
           </ul>
 
           <!-- GROUP OF LAYERS -->
           <ul v-for="layersgroup in state.layersgroups">
-            <layers-group :layersgroup="layersgroup" />
+            <catalog-layers-group :layersgroup="layersgroup" />
           </ul>
 
         </div>
@@ -84,12 +84,12 @@
         <!-- EXTERNAL WMS LAYER -->
         <div v-if="state.external.wms.length" id="externalwms" role="tabpanel" class="tab-pane" :class="{ active: ('externalwms' === activeTab) }">
           <ul class="g3w-external_wms_layers-group">
-            <tristate-tree
-              v-for="layerstree in state.external.wms"
-              :key="layerstree.id"
-              :externallayers="state.external.wms"
-              :layerstree="layerstree"
-              class="item"
+            <catalog-tristate-tree
+              v-for           = "layerstree in state.external.wms"
+              :key            = "layerstree.id"
+              :externallayers = "state.external.wms"
+              :layerstree     = "layerstree"
+              class           = "item"
             />
           </ul>
         </div>
@@ -126,7 +126,7 @@
         </div>
 
         <!-- TODO: add description -->
-        <layerslegend
+        <catalog-layers-legend
           v-if="'tab' === legend.place"
           v-for="_layerstree in state.layerstrees"
           :key="_layerstree.id"
@@ -151,13 +151,17 @@
 
 import { MAP_SETTINGS }            from 'app/constant';
 import { CatalogEventBus as VM }   from 'app/eventbus';
-import ChangeMapThemesComponent    from 'components/CatalogChangeMapThemes.vue';
-import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
-import CatalogProjectContextMenu   from 'components/CatalogProjectContextMenu.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ApplicationService          from 'services/application';
 import ControlsRegistry            from 'store/map-controls';
 import GUI                         from 'services/gui';
+
+import ChangeMapThemesComponent    from 'components/CatalogChangeMapThemes.vue';
+import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
+import CatalogProjectContextMenu   from 'components/CatalogProjectContextMenu.vue';
+import CatalogLayersGroup          from 'components/CatalogLayersGroup.vue';
+import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
+import CatalogLayersLegend         from 'components/CatalogLayersLegend.vue';
 
 const DEFAULT_ACTIVE_TAB = 'layers';
 
@@ -182,6 +186,9 @@ export default {
     ChangeMapThemesComponent,
     CatalogLayerContextMenu,
     CatalogProjectContextMenu,
+    CatalogLayersGroup,
+    CatalogTristateTree,
+    CatalogLayersLegend,
   },
 
   computed: {

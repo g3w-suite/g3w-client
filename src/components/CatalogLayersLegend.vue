@@ -6,16 +6,16 @@
 <template>
 
   <div
-    role="tabpanel"
-    id="legend"
-    class="tab-pane"
-    :class="{active:active}"
+    role   = "tabpanel"
+    id     = "legend"
+    class  = "tab-pane"
+    :class = "{active:active}"
   >
 
-    <layerslegend-items
-      :active="active"
-      :legend="legend"
-      :layers="visiblelayers"
+    <catalog-layers-legend-items
+      :active = "active"
+      :legend = "legend"
+      :layers = "visiblelayers"
     />
 
   </div>
@@ -23,11 +23,17 @@
 </template>
 
 <script>
+import CatalogLayersLegendItems from 'components/CatalogLayersLegendItems.vue';
+
 export default {
   
   /** @since 3.8.6 */
   name: 'catalog-layers-legend',
   
+  components: {
+    CatalogLayersLegendItems,
+  },
+
   props: [
     'layerstree',
     'legend',

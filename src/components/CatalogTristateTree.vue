@@ -6,13 +6,13 @@
 <template>
 
   <li
-    class="tree-item"
-    @contextmenu.prevent.stop="showContextMenu"
-    @click.stop="onTreeItemClick"
+    class                     = "tree-item"
+    @contextmenu.prevent.stop = "showContextMenu"
+    @click.stop               = "onTreeItemClick"
     :style="{
       marginLeft: !isGroup ? '5px' : '0'
     }"
-    :class="{
+    :class                    = "{
       selected: !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
       disabled: isInGrey,
@@ -21,30 +21,30 @@
   >
     <!-- GROUP LAYER -->
     <span
-      v-if="isGroup"
-      style="padding-right: 2px;"
-      :class="[
+      v-if        = "isGroup"
+      style       = "padding-right: 2px;"
+      :class      = "[
         { bold : isGroup },
         g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
-      @click.stop="expandCollapse"
-      class="root collapse-expande-collapse-icon"
+      @click.stop = "expandCollapse"
+      class       = "root collapse-expande-collapse-icon"
     ></span>
 
     <!-- GROUP LAYER -->
     <span
-      v-if="isGroup"
-      @click.stop="toggle()"
-      style="color: #ffffff"
-      :class="[triClass()]"
+      v-if        = "isGroup"
+      @click.stop = "toggle()"
+      style       = "color: #ffffff"
+      :class      = "[triClass()]"
     ></span>
 
     <!-- TABLE LAYER -->
     <span
-      v-else-if="isTable"
-      v-show="!layerstree.hidden"
-      style="padding-left: 18px"
-      :class="[
+      v-else-if = "isTable"
+      v-show    = "!layerstree.hidden"
+      style     = "padding-left: 18px"
+      :class    = "[
         parentFolder ? 'child' : 'root',
         g3wtemplate.getFontClass('table')
       ]"
@@ -54,36 +54,36 @@
 
       <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
       <span
-        v-if="layerstree.external && layerstree.removable"
-        style="color: red; padding-left: 1px;"
-        :class="g3wtemplate.getFontClass('trash')"
-        @click.stop="removeExternalLayer(layerstree.name, layerstree._type)"
+        v-if        = "layerstree.external && layerstree.removable"
+        style       = "color: red; padding-left: 1px;"
+        :class      = "g3wtemplate.getFontClass('trash')"
+        @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
       <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
       <span
-        v-if="layerstree.external && layerstree.download"
-        style="color: #ffffff; margin-left: 5px;"
-        :class="g3wtemplate.getFontClass('download')"
-        @click="downloadExternalLayer(layerstree.download)"
+        v-if   = "layerstree.external && layerstree.download"
+        style  = "color: #ffffff; margin-left: 5px;"
+        :class = "g3wtemplate.getFontClass('download')"
+        @click = "downloadExternalLayer(layerstree.download)"
       ></span>
 
       <!-- HIDDEN NODE (LAYER) -->
       <span
-        v-show="!layerstree.hidden"
-        class="checkbox-layer"
-        :class="parentFolder ? 'child' : 'root'"
+        v-show = "!layerstree.hidden"
+        class  = "checkbox-layer"
+        :class = "parentFolder ? 'child' : 'root'"
       >
         <span
-          v-if="'toc' === legendlayerposition || !isGroup && layerstree.categories"
-          @click.self.stop="expandCollapse"
-          class="collapse-expande-collapse-icon"
-          :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
+          v-if             = "'toc' === legendlayerposition || !isGroup && layerstree.categories"
+          @click.self.stop = "expandCollapse"
+          class            = "collapse-expande-collapse-icon"
+          :class           = "g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
         ></span>
 
         <span
-          @click.stop="toggle()"
-          :style="{
+          @click.stop = "toggle()"
+          :style      = "{
             paddingLeft: ('toc' === legendlayerposition)
               ? '5px'
               : !isGroup && layerstree.categories
@@ -92,7 +92,7 @@
                   ? '1px'
                   : '18px'
           }"
-          :class="[
+          :class      = "[
             g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'),
             { 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }
           ]"
@@ -104,14 +104,13 @@
 
     <!-- VISIBLE NODE (LAYER or GROUP) -->
     <div
-      v-show="!layerstree.hidden || isGroup"
-      class="tree-node-title"
-      :class="{
+      v-show = "!layerstree.hidden || isGroup"
+      class  = "tree-node-title"
+      :class = "{
         disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)),
         bold: isGroup
       }"
     >
-
 
       <span
         :class           = "{
@@ -191,32 +190,32 @@
     </div>
 
     <!-- NODE LEGEND (LAYER) -->
-    <layerlegend
-      v-if="showLayerTocLegend"
-      :legendplace="legendplace"
-      :layer="layerstree"
+    <catalog-layer-legend
+      v-if         = "showLayerTocLegend"
+      :legendplace = "legendplace"
+      :layer       = "layerstree"
     />
 
     <!-- CHILD NODES (GROUP) -->
     <ul
-      v-if="isGroup"
-      class="tree-content-items group"
-      :class="[`g3w-lendplace-${legendplace}`]"
-      v-show="layerstree.expanded"
+      v-if   = "isGroup"
+      class  = "tree-content-items group"
+      :class = "[`g3w-lendplace-${legendplace}`]"
+      v-show ="layerstree.expanded"
     >
 
       <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
 
-        <tristate-tree
-          :root="false"
-          :legendConfig="legend"
-          :legendplace="legendplace"
-          :highlightlayers="highlightlayers"
-          :parentFolder="isGroup"
-          :layerstree="_layerstree"
-          :storeid="storeid"
-          :parent="layerstree"
-          :parent_mutually_exclusive="!!layerstree.mutually_exclusive"
+        <catalog-tristate-tree
+          :root                      = "false"
+          :legendConfig              = "legend"
+          :legendplace               = "legendplace"
+          :highlightlayers           = "highlightlayers"
+          :parentFolder              = "isGroup"
+          :layerstree                = "_layerstree"
+          :storeid                   = "storeid"
+          :parent                    = "layerstree"
+          :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
         />
 
       </span>
@@ -227,11 +226,11 @@
 </template>
 
 <script>
-import LayerLegend                 from 'components/CatalogLayerLegend.vue';
 import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ClickMixin                  from 'mixins/click';
 import GUI                         from 'services/gui';
+import ClickMixin                  from 'mixins/click';
+import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
 
 const { downloadFile } = require('utils');
 
@@ -264,12 +263,13 @@ export default {
   ],
 
   components: {
-    'layerlegend': LayerLegend
+    CatalogLayerLegend
   },
 
   mixins: [ClickMixin],
 
   data() {
+    console.log(this);
     return {
       expanded:       this.layerstree.expanded,
       isGroupChecked: true,

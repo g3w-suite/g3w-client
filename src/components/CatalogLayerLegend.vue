@@ -75,7 +75,7 @@
 
 
   export default {
-    name: "layerlegend",
+    name: "catalog-layer-legend",
     props: {
       legendplace: {
         type: String
