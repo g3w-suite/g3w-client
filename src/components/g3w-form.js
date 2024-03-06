@@ -13,6 +13,8 @@ const Service  = require('gui/form/formservice');
 
 /**
  * ORIGINAL SOURCE: src/app/gui/form/vue/form.js@v3.9.3 
+ * 
+ * Used by the following plugins: "editing", "cadastre", "geonotes", "iternet"  
  */
 export default class FormComponent extends Component {
   constructor(opts={}) {
@@ -40,44 +42,17 @@ export default class FormComponent extends Component {
     this.onafter('mount', () => GUI.setModal(true))
   }
 
-  /**
-   * Used to add component to form body
-   * @param component
-   */
-  addBodyFormComponent({component, where='after'}={}){
-    this.getInternalComponent().body.components[where].push(component);
-  };
+  addFormComponents(c = []) { this.getService().addComponents(c); }
+  addFormComponent(c)       { c && this.getService().addComponent(c); }
+  layout()                  { this.getInternalComponent().reloadLayout(); }
 
-  addBodyFormComponents({components=[], where="after"}={}){
-    components.forEach(component => this.addBodyFormComponent({
-      component,
-      where
-    }))
-  };
-
-  addFormComponents(components = []) {
-    this.getService().addComponents(components);
-  };
-
-  addFormComponent(component) {
-    component && this.getService().addComponent(component)
-  };
-  // some utilities methods
-  addDependecyComponents(components) {
-    this.getService().addDependecyComponents(components)
-  };
-
-  // overwrite father mount method.
-  mount(parent, append) {
-    return super.mount(parent, append)
-      .then(() => {
-        // set a modal window to true
-        GUI.setModal(true);
-      });
-  };
-
-  layout() {
-    this.getInternalComponent().reloadLayout();
-  };
+  /** @TODO check if deprecated */
+  addBodyFormComponent(c)   { c && this.getInternalComponent().body.components[c.where || 'after'].push(c.component); };
+  /** @TODO check if deprecated */
+  addBodyFormComponents(cs) { cs && (cs.components || []).forEach(c => this.addBodyFormComponent({ component: c, where: cs.where || 'after' })); }
+  /** @TODO check if deprecated */
+  addDependecyComponents(c) { this.getService().addDependecyComponents(c); }
+  /** @TODO check if superflous */
+  mount(parent, append)     { return super.mount(parent, append).then(() => { GUI.setModal(true); }); }
 
 };
