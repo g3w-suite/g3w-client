@@ -159,6 +159,7 @@ proto.getWMSLayerName = function({ type = 'map' } = {}) {
 };
 
 /**
+ * @param opts
  * @param { 'map' | 'legend' } opts.type 
  */
 proto.getWmsUrl = function({ type = 'map' } = {}) {
@@ -419,7 +420,6 @@ proto.getMapLayer = function(options = {}, extraParams) {
   //get layer url
   const url                 = this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl());
 
-
   if (this.isCached() && 'tms' === cache_service_type) {
     return new XYZLayer({ ...options, extent, url, cache_provider }, method);
   }
@@ -441,7 +441,7 @@ proto.getMapLayer = function(options = {}, extraParams) {
   }
 
   if (this.isExternalWMS() && source && Layer.SourceTypes.WMST === source.type) {
-    return new WMSTLayer({...options, url, cache_provider, cache_params: {} }, extraParams, method);
+    return new WMSTLayer({...options, url, cache_provider }, extraParams, method);
   }
 
   return new WMSLayer({ ...options, url }, extraParams, method);
