@@ -5,42 +5,45 @@
  * @deprecated will be probably removed after v4.x. Use Vue Single File Components (SFC) instead
  */
 
-const G3WObject         = require('core/g3wobject');
-const { base, inherit } = require('utils');
+import G3WObject from 'core/g3w-object';
 
-//class Component Registry (singleton)
+const emitter = new G3WObject();
+
 // store all components added
-function ComponentsRegistry() {
-  this.components = {};
-  this.registerComponent = function(component) {
+const ComponentsRegistry = {
+
+  components: {},
+
+  /** used only by "g3w-catalog" → "_listenToMapVisibility(map_id, component)" */
+  on: emitter.on.bind(emitter),
+
+  registerComponent(component) {
     const id = component.getId();
     if (undefined === this.components[id]) {
       this.components[id] = component;
-      this.emit('componentregistered', component);
+      emitter.emit('componentregistered', component);
     }
-  };
+  },
 
-  this.getComponent = function(id) {
+  getComponent(id) {
     return this.components[id];
-  };
+  },
 
-  this.getComponents = function() {
+  getComponents() {
     return this.components;
-  };
+  },
 
-  this.unregisterComponent = function(id) {
+  unregisterComponent(id) {
     const component = this.components[id];
+    if (component && 'function' === typeof component.destroy) {
+      component.destroy();
+    }
     if (component) {
-      if (typeof component.destroy === 'function') {
-        component.destroy();
-      }
       this.components[id] = null;
     }
     return component;
-  };
-  base(this);
-}
+  },
 
-inherit(ComponentsRegistry, G3WObject);
+};
 
-export default new ComponentsRegistry();
+export default ComponentsRegistry;
