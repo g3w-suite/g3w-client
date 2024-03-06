@@ -204,7 +204,7 @@
       })
     },
 
-    /** @FIXME remove unusued method ? */
+    /** @FIXME remove unused method ? */
     async mounted() {}
 
   };

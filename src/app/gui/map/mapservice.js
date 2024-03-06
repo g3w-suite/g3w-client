@@ -299,7 +299,7 @@ class OlMapViewer {
   };
 
   /**
-   * @TODO double check (unusued and broken code ?)
+   * @TODO double check (unused and broken code ?)
    */
   changeBaseLayer(layerName) {
     this.map.getLayers().insertAt(0, this.getLayerByName(layerName));
@@ -2829,7 +2829,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
 
     vectorLayer           = externalLayer;
     vectorLayer.filter    = { // used by `selection` for query result purpose ?
-      active: false           // UNUSUED - it means not yet implemented?
+      active: false           // UNUSED - it means not yet implemented?
     };
     vectorLayer.selection = {
       active: false,

@@ -14,7 +14,7 @@ const LayersStore = require('core/layers/layersstore');
 const Projections = require('g3w-ol/projection/projections');
 
 /**
- * @FIXME options param appears to be unusued
+ * @FIXME options param appears to be unused
  * 
  * @param config.id
  * @param config.type

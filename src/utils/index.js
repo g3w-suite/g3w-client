@@ -72,14 +72,14 @@ function decimalAdjust(type, value, exp) {
 
 // Decimal round
 if (!Math.round10) {
-  /** @TODO deprecate (unusued code + bad practice) */
+  /** @TODO deprecate (unused code + bad practice) */
   Math.round10 = function(value, exp) {
     return decimalAdjust('round', value, exp);
   };
 }
 // Decimal floor
 if (!Math.floor10) {
-  /** @TODO deprecate (unusued code + bad practice) */
+  /** @TODO deprecate (unused code + bad practice) */
   Math.floor10 = function(value, exp) {
     return decimalAdjust('floor', value, exp);
   };
@@ -87,13 +87,13 @@ if (!Math.floor10) {
 
 // Decimal ceil
 if (!Math.ceil10) {
-  /** @TODO deprecate (unusued code + bad practice) */
+  /** @TODO deprecate (unused code + bad practice) */
   Math.ceil10 = function(value, exp) {
     return decimalAdjust('ceil', value, exp);
   };
 }
 
-/** @TODO deprecate (unusued code + bad practice) */
+/** @TODO deprecate (unused code + bad practice) */
 String.prototype.hashCode = function() {
   let hash = 0, i, chr, len;
   if (this.length === 0) return hash;
@@ -116,11 +116,11 @@ const utils = {
   base,
   noop,
   truefnc() { return true },
-  /** @FIXME broken implementation, maybe unusued? */
+  /** @FIXME broken implementation, maybe unused? */
   falsefnc() { return true }, 
   resolve,
   reject,
-  /** @TODO remove if unusued */
+  /** @TODO remove if unused */
   getValueFromG3WObjectEvent() { },
   getAjaxResponses,
   trimValue,
