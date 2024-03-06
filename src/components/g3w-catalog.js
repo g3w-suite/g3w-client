@@ -117,8 +117,6 @@ export default function(opts = {}) {
   /** @TODO check if deprecated */
   _listenToMapVisibility(opts.mapcomponentid, comp);
 
-  console.log(comp, opts);
-
   return comp;
 };
 
