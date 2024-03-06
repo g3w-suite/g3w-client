@@ -90,7 +90,6 @@ import Relations                                   from './Relations.vue';
 import RelationsPage                               from './RelationsPage.vue';
 import Search                                      from './Search.vue';
 import SearchPanel                                 from './SearchPanel.vue';
-import SearchSelect2                               from './SearchSelect2.vue';
 import Sidebar                                     from './Sidebar.vue';
 import SidebarItem                                 from './SidebarItem.vue';
 import SidebarItemAction                           from './SidebarItemAction.vue';
@@ -204,7 +203,6 @@ export {
   RelationsPage,
   Search,
   SearchPanel,
-  SearchSelect2,
   Sidebar,
   SidebarItem,
   SidebarItemAction,
