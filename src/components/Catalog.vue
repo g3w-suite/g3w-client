@@ -491,7 +491,7 @@ export default {
         case 'TMS':  image = baseLayer.icon ? baseLayer.icon : undefined;  break;
         case 'WMTS': image = baseLayer.icon ? baseLayer.icon : undefined;  break;
       }
-      return baseLayer.icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
+      return (baseLayer || {}).icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
     },
 
     /**
