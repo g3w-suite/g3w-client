@@ -29,7 +29,7 @@ export default function(opts = {}) {
       wms: [],   // added by wms sidebar component
       vector: [] // added to map controls for the moment
     },
-    layerstrees: [],
+    layerstrees: CatalogLayersStoresRegistry.getLayersStores().map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
     layersgroups: [],
     legend: Object.assign(opts.config.legend || {}, { place: ApplicationService.getCurrentProject().getLegendPosition() || 'tab' }),
   };
@@ -96,17 +96,10 @@ export default function(opts = {}) {
   };
 
   // add layers stores to tree
-  CatalogLayersStoresRegistry.getLayersStores().forEach(s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
-  CatalogLayersStoresRegistry.onafter('addLayersStore', s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
-  CatalogLayersStoresRegistry.onafter('removeLayersStore', s => {
-    const i = state.layerstrees.findIndex(t => t.storeid === s.getId());
-    if (-1 !== i) {
-      state.layerstrees.splice(i, 1);
-    }
-  });
-  CatalogLayersStoresRegistry.onafter('removeLayersStores', () => {
-    state.layerstrees.forEach((_, i) => { state.layerstrees.splice(i, 1); });
-  });
+
+  CatalogLayersStoresRegistry.onafter('addLayersStore',      s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
+  CatalogLayersStoresRegistry.onafter('removeLayersStore',   s => { const i = state.layerstrees.findIndex(t => t.storeid === s.getId()); if (-1 !== i) { state.layerstrees.splice(i, 1); } });
+  CatalogLayersStoresRegistry.onafter('removeLayersStores', () => { state.layerstrees.forEach((_, i) => { state.layerstrees.splice(i, 1); }); });
 
   const comp = new Component({
     ...opts,
