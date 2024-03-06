@@ -18,7 +18,7 @@ const proto = WMSTLayer.prototype;
 
 proto._makeOlLayer = function(withLayers) {
   const olLayer = new RasterLayers.TiledWMSLayer({
-    url:               'mapproxy' === this.config.cache_provider ? this.config.url : this.layers[0] && this.layers[0].getWmsUrl ? this.layers[0].getWmsUrl() : this.config.url,
+    url:               ('mapproxy' === this.config.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.config.url : this.layers[0].getWmsUrl(),
     id:                this.config.id,
     projection:        this.config.projection,
     iframe_internal:   this.iframe_internal,
