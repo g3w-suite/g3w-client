@@ -417,33 +417,33 @@ export default {
         const field_values = []; // check if add or not
 
         this.relationsGeometry.forEach(({ layer, father_fields, fields, features }) => {
-            const values = fields.map(f => feature.attributes[f]);
+          const values = fields.map(f => feature.attributes[f]);
 
-            field_values.push(values);
-            
-            let promise;
+          field_values.push(values);
 
-            if (zoom && undefined === features[k]) {
-              promise = DataRouterService
-                .getData('search:features', {
-                  inputs: {
-                    layer,
-                    formatter:       1,
-                    search_endpoint: 'api',
-                    filter: (
-                      father_fields
-                        .reduce((filter, field, index) => {
-                          filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
-                          return filter;
-                        }, '')
-                    ),
-                  },
-                  outputs: false, // just a request not show on result
-                });
-            }
+          let promise;
 
-            promises.push(promise);
-          });
+          if (zoom && undefined === features[k]) {
+            promise = DataRouterService
+              .getData('search:features', {
+                inputs: {
+                  layer,
+                  formatter:       1,
+                  search_endpoint: 'api',
+                  filter: (
+                    father_fields
+                      .reduce((filter, field, index) => {
+                        filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
+                        return filter;
+                      }, '')
+                  ),
+                },
+                outputs: false, // just a request not show on result
+              });
+          }
+
+          promises.push(promise);
+        });
 
         (await Promise.allSettled(promises))
           .forEach(({
@@ -601,7 +601,7 @@ export default {
           })
         }
       });
-      setTimeout(()=> this.reloadLayout(), 0)
+      setTimeout(() => this.reloadLayout(), 0)
     },
 
     async resize() {
@@ -1025,7 +1025,9 @@ export default {
         table.rows.add(data);
         table.draw(false);
         this.createdContentBody();
-        this.isMobile() && hideElements();
+        if (this.isMobile()) {
+          _hideDataTableElements();
+        }
       })
     })
   },
