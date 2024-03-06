@@ -2285,7 +2285,7 @@ QueryResultsService.prototype.setters = {
 
     // whether add external layers to response
     if (true === queryResponse.query.external.add && false === options.add) {
-      const catalogService = GUI.getService('catalog');
+      const catalog = GUI.getService('catalog');
 
       /** @type { boolean | undefined } */
       const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
@@ -2294,7 +2294,7 @@ QueryResultsService.prototype.setters = {
       this._vectorLayers
         .forEach(layer => {
           const id = layer.get('id');
-          const is_selected  = catalogService.isExternalLayerSelected({ id, type: 'vector' });
+          const is_selected  = !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected;
           const is_visible = layer.getVisible(); 
           // TODO: extract this into `layer.isSomething()` ?
           if (is_visible && ((is_selected === FILTER_SELECTED) || (undefined === FILTER_SELECTED))) {

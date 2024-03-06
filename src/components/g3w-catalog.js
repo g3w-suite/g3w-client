@@ -20,10 +20,7 @@ import * as vueComp                from 'components/Catalog.vue';
  */
 export default function(opts = {}) {
 
-  console.log(opts);
-
   const state = {
-    prstate: ProjectsRegistry.state,
     highlightlayers: false,
     external: {  // external layers
       wms: [],   // added by wms sidebar component
@@ -76,16 +73,25 @@ export default function(opts = {}) {
   });
 
   service.state                       = state;
+
+  /** used by the following plugins: "stress" */
   service.createLayersGroup           = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
+  /** used by the following plugins: "stress" */
+  service.addLayersGroup              = g => { state.layersgroups.push(g); };
+  /** used by the following plugins: "processing" */
+  service.getExternalLayers           = ({ type = 'vector' })     => state.external[type];
+
+  /** @TODO check if deprecated */
+  service.getExternalSelectedLayers   = ({ type = 'vector' })     => state.external[type].filter(l => l.selected);
+  /** @TODO check if deprecated */
+  service.getExternalLayerById        = ({ id, type = 'vector' }) => state.external[type].find(l => l.id === id);
+  /** @TODO check if deprecated */
+  service.isExternalLayerSelected     = l => !!(service.getExternalLayerById(l) || {}).selected;
+  /** @TODO check if deprecated */
+  service.addLayersStoreToLayersTrees = s => state.layerstrees.push({tree: s.getLayersTree(), storeid: s.getId()});
   /** @TODO check if deprecated */
   service.getMajorQgisVersion         = () => ProjectsRegistry.getCurrentProject().getQgisVersion({type: 'major'});
-  service.getExternalLayers           = ({ type = 'vector' })     => state.external[type];
-  service.getExternalSelectedLayers   = ({ type = 'vector' })     => state.external[type].filter(l => l.selected);
-  service.getExternalLayerById        = ({ id, type = 'vector' }) => state.external[type].find(l => l.id === id);
-  service.isExternalLayerSelected     = l => !!(service.getExternalLayerById(l) || {}).selected;
-  service.addLayersGroup              = g => { state.layersgroups.push(g); };
   /** @TODO check if deprecated */
-  service.addLayersStoreToLayersTrees = layersStore => state.layerstrees.push({tree: layersStore.getLayersTree(), storeid: layersStore.getId()});
   service.changeMapTheme              = async map_theme => {
     ApplicationService.changeProjectView(true);
     const rootNode = state.layerstrees[0];
@@ -96,7 +102,6 @@ export default function(opts = {}) {
   };
 
   // add layers stores to tree
-
   CatalogLayersStoresRegistry.onafter('addLayersStore',      s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
   CatalogLayersStoresRegistry.onafter('removeLayersStore',   s => { const i = state.layerstrees.findIndex(t => t.storeid === s.getId()); if (-1 !== i) { state.layerstrees.splice(i, 1); } });
   CatalogLayersStoresRegistry.onafter('removeLayersStores', () => { state.layerstrees.forEach((_, i) => { state.layerstrees.splice(i, 1); }); });
@@ -109,7 +114,10 @@ export default function(opts = {}) {
     vueComponentObject: vueComp,
   });
 
+  /** @TODO check if deprecated */
   _listenToMapVisibility(opts.mapcomponentid, comp);
+
+  console.log(comp, opts);
 
   return comp;
 };

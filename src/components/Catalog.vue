@@ -218,7 +218,6 @@ export default {
   name: 'catalog',
 
   data() {
-    console.log(this);
     return {
       state:            this.$options.service.state || {},
       showlegend:       false,
@@ -245,7 +244,7 @@ export default {
     },
 
     project() {
-      return this.state.prstate.currentProject
+      return ProjectsRegistry.state.currentProject
     },
 
     title() {
@@ -444,8 +443,17 @@ export default {
     async changeMapTheme(map_theme) {
       GUI.closeContent();
 
+      // change map theme
+      ApplicationService.changeProjectView(true);
+      this.state.layerstrees[0].checked = true;
+      const changes = (await ProjectsRegistry.getCurrentProject().setLayersTreePropertiesFromMapTheme({
+        map_theme,
+        rootNode:   this.state.layerstrees[0],
+        layerstree: this.state.layerstrees[0].tree[0].nodes
+      })).layers;
+      ApplicationService.changeProjectView(false);
+
       // get all layers with styles
-      const changes = (await this.$options.service.changeMapTheme(map_theme)).layers;
       const layers  = Object.keys(changes).filter(id => changes[id].style);
       const styles  = (await this.project.getMapThemeFromThemeName(map_theme)).styles;
 
@@ -582,7 +590,7 @@ export default {
       }
     },
 
-    'state.prstate.currentProject': {
+    project: {
       async handler(project, oldproject) {
         const activeTab = project.state.catalog_tab || 'layers';
         this.loading = 'baselayers' === activeTab;

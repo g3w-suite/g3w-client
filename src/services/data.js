@@ -735,7 +735,7 @@ class BaseService {
    * @since 3.8.0
    */
   getSelectedExternalLayers({type = 'vector'}) {
-    return GUI.getService('catalog').getExternalSelectedLayers({ type });
+    return GUI.getService('catalog').state.external[type].filter(l => l.selected);
   }
 
   /**
