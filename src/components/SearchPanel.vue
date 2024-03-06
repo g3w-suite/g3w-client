@@ -154,6 +154,8 @@ import resizeMixin                           from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
 
+const SELECTS = [];
+
 export default {
 
   mixins: [resizeMixin],
@@ -168,9 +170,7 @@ export default {
   methods: {
 
     resize() {
-      if (this.select2 && !ApplicationState.ismobile) {
-        this.select2.select2('close');
-      }
+      SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
     },
 
     /**
@@ -229,21 +229,21 @@ export default {
     /**
      * ORIGINAL SOURCE: src/components/SearchDatetime.vue@v3.9.3
      */
-    async initDateTimeField() {
-      if ('datetimefield' !== this.forminput.type) {
+    async initDateTimeField(forminput) {
+      if ('datetimefield' !== forminput.type) {
         return;
       }
 
       await this.$nextTick();
 
-      this.forminput.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(this.forminput.options.format.fieldformat);
-      this.forminput.options.format.displayformat = convertQGISDateTimeFormatToMoment(this.forminput.options.format.displayformat);
+      forminput.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(forminput.options.format.fieldformat);
+      forminput.options.format.displayformat = convertQGISDateTimeFormatToMoment(forminput.options.format.displayformat);
 
       const id = this.$refs.search_datetime.id = this.$refs.search_datetime.id || `search_datetime_${getUniqueDomId()}`;
 
       $('#' + id).datetimepicker({
         defaultDate:       null,
-        format:            this.forminput.options.format.displayformat,
+        format:            forminput.options.format.displayformat,
         ignoreReadonly:    true,
         allowInputToggle:  true,
         toolbarPlacement:  'top',
@@ -253,39 +253,39 @@ export default {
       });
 
       $('#' + id).on("dp.change", () => {
-        const newDate = $(`#${this.forminput.id}`).val();
-        this.forminput.value = _.isEmpty(_.trim(newDate))
+        const newDate = $(`#${forminput.id}`).val();
+        forminput.value = _.isEmpty(_.trim(newDate))
           ? null
-          : moment(newDate, this.forminput.options.format.displayformat).format(this.forminput.options.format.fieldformat);
-        this.changeInput(this.forminput);
+          : moment(newDate, forminput.options.format.displayformat).format(forminput.options.format.fieldformat);
+        this.changeInput(forminput);
       });
 
       if (ApplicationState.ismobile) {
-        setTimeout(()=> { $('#' + this.forminput.id).blur(); });
+        setTimeout(()=> { $('#' + forminput.id).blur(); });
       }
     },
 
     /**
      * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
      */
-    async initSelect2Field() {
-      if (!['selectfield', 'autocompletefield'].includes(this.forminput.type)) {
+    async initSelect2Field(forminput) {
+      if (!['selectfield', 'autocompletefield'].includes(forminput.type)) {
         return;
       }
 
       await this.$nextTick();
 
-      const numdigaut       = this.forminput.options.numdigaut;
-      const is_autocomplete = 'autocompletefield' === this.forminput.type;
+      const numdigaut       = forminput.options.numdigaut;
+      const is_autocomplete = 'autocompletefield' === forminput.type;
       const ajax            = is_autocomplete ? {
         delay: 500,
         transport: async (d, ok, ko) => {
-          try      { ok({ results: await this.$options.service.getUniqueValuesFromField({ output: 'autocomplete', field: this.forminput.attribute, value: d.data.q.value }) }); }
+          try      { ok({ results: await this.$options.service.getUniqueValuesFromField({ output: 'autocomplete', field: forminput.attribute, value: d.data.q.value }) }); }
           catch(e) { ko(e); }
         }
       } : null;
 
-      this.select2 = $(this.$refs.search_select).select2({
+      let select2 = $(this.$refs.search_select).select2({
         ajax,
         width:              '100%',
         dropdownParent:     $('.g3w-search-form:visible'),
@@ -312,7 +312,9 @@ export default {
         },
       });
 
-      this.select2.on('select2:select select2:unselecting', e => {
+      SELECTS.push(select2);
+
+      select2.on('select2:select select2:unselecting', e => {
         if ('select2:unselecting' === e.type && !is_autocomplete) {
           return;
         }
@@ -320,35 +322,34 @@ export default {
           id:        $(e.target).attr('id'),
           attribute: $(e.target).attr('name'),
           value:     e.params.data ? e.params.data.id : SEARCH_ALLVALUE,
-          type:      this.forminput.type
+          type:      forminput.type
         });
+      });
+
+      this.$watch(() => forminput.value, async (value) => {
+        if (value === SEARCH_ALLVALUE) {
+          select2.val(value).trigger('change');
+        }
       });
 
     },
 
   },
 
-  watch: {
-    async 'forminput.value'(value) {
-      await this.$nextTick();
-      if (this.select2 && !['selectfield', 'autocompletefield'].includes(this.forminput.type) && value === SEARCH_ALLVALUE) {
-        this.select2.val(value).trigger('change');
-      }
-    }
-  },
-
   async mounted() {
-    this.initSelect2Field();
-    this.initDateTimeField();
+    for (forminput in this.forminputs) {
+      await this.initSelect2Field(forminput);
+      await  this.initDateTimeField(forminput);
+    }
   },
 
   beforeDestroy() {
     // select2 dom element and remove all events
-    if (this.select2) {
-      this.select2.select2('destroy');
-      this.select2.off();
-      this.select2 = null;
-    }
+    SELECTS.forEach(select2 => {
+      select2.select2('destroy');
+      select2.off();
+      select2 = null;
+    })
   }
 
 };
