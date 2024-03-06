@@ -1,5 +1,5 @@
 /**
- * goole closure library implementation
+ * google closure library implementation
  */
 export function base(me, opt_methodName, var_args) {
   // who call base
