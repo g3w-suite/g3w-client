@@ -46,8 +46,8 @@
       <span
         v-if        = "tool.state.type"  
         @click.stop = "showToolStateMessage"
+        class       = "tool_type"
         :style      = "{ color: ({ alert: 'red', info: 'blue', warning: 'orange'})[tool.state.type] }"
-        style       = "cursor: pointer; vertical-align: center; position:absolute; right: 0; top: 0; padding: 5px"
       >
         <i :class="g3wtemplate.getFontClass(tool.state.type)"></i>
       </span>
@@ -82,5 +82,13 @@ export default {
   }
   .tool_disabled > span {
     color: #777;
+  }
+  .tool_type {
+    cursor: pointer;
+    vertical-align: center;
+    position:absolute;
+    right: 0;
+    top: 0;
+    padding: 5px;
   }
 </style>

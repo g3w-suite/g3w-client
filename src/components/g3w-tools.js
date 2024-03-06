@@ -7,9 +7,12 @@ import Component        from 'core/g3w-component';
 import G3WObject        from 'core/g3w-object';
 import ProjectsRegistry from 'store/projects';
 import GUI              from 'services/gui';
+import noop             from 'utils/noop';
+
 import G3wTool          from 'components/Tool.vue';
 
-const ACTIONS = {}
+/** @TODO check if deprecated */
+const ACTIONS = {};
 
 /**
  * ORIGINAL SOURCE:
@@ -28,35 +31,22 @@ export default function(opts = {}) {
   };
 
   const service = new G3WObject({ setters: {
-    addTool(tool, groupName) {
-      tool.state = tool.state ? tool.state : { type: null, message: null };
-      let group = state.toolsGroups.find(g => g.name === groupName.title);
-      if (!group) {
-        group = { name: groupName.title, tools: [] };
-        state.toolsGroups.splice(groupName.position, 0, group);
-      }
-      if (undefined === tool.action && tool.type) {
-        tool.action = ACTIONS[tool.type] ? ACTIONS[tool.type].bind(null, tool.options) : () => {};
-      }
-      return group.tools.push(tool);
+    addTool(tool, { title, position }) {
+      let group = state.toolsGroups.find(g => g.name === title);
+      if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+      return group.tools.push(Object.assign(tool, {
+        state:  tool.state || ({ type: null, message: null }),
+        action: tool.action || (ACTIONS[tool.type] || noop).bind(null, tool.options)
+      }));
     },
-    addTools(tools, groupName) {
-      tools.forEach(t => this.addTool(t, groupName));
-    },
-    addToolGroup(order, name) {
+    addToolGroup(position, name) {
       let group = state.toolsGroups.find(g => g.name === name);
-      if (!group) {
-        group = { name, tools: [] };
-        state.toolsGroups.splice(order, 0, group);
-      }
-      return group;
+      if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+      return group;  
     },
-    removeToolGroup(name) {
-      state.toolsGroups = state.toolsGroups.filter(g => g.name !== name);
-    },
-    removeTools() {
-      state.toolsGroups.splice(0);
-    },
+    addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
+    removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
+    removeTools()                { state.toolsGroups.splice(0); },
   }});
 
   service.state            = state;
@@ -98,7 +88,7 @@ export default function(opts = {}) {
 <ul class="g3w-tools treeview-menu">
   <bar-loader :loading="state.loading"/>
   <li v-for="g in state.toolsGroups" :key="g.name">
-    <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span style="">{{ g.name }}</span></div>
+    <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
     <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
   </li>
 </ul>`,
