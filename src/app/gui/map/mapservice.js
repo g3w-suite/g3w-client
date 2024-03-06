@@ -1397,11 +1397,11 @@ proto._updateMapControlsLayout = function({width, height}={}) {
       const handleVerticalMapControlDOMElements = () => {
         const mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
         // get bottom controls
-        const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
-        const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top : height;
+        const bottomMapControls =  document.getElementsByClassName(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
+        const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).getBoundingClientRect().top : height;
         const freeSpace =  bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
         if (freeSpace < 10) {
-          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
+          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex + 1;
           changedAndMoreSpace.changed = true;
         } else {
           // check if there enough space to expand map controls
