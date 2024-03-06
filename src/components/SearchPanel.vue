@@ -77,7 +77,7 @@
               :loading = "state.loading[forminput.options.dependance] || forminput.loading"
             />
             <select
-              ref        = "search_select"
+              :ref       = "'search_select_' + forminput.id"
               :name      = "forminput.attribute"
               class      = "form-control"
               :id        = "forminput.id"
@@ -104,7 +104,7 @@
               <span>{{ forminput.label || forminput.attribute }}</span>
               <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
             </label>
-            <div ref="search_datetime" class="input-group date">
+            <div :ref="'search_datetime_' + forminput.id" class="input-group date">
               <input :id="forminput.id" type='text' class="form-control" />
               <span class="input-group-addon skin-color">
                 <span :class="g3wtemplate.getFontClass(forminput.options.format.time ? 'time': 'calendar')"></span>
@@ -239,7 +239,7 @@ export default {
       forminput.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(forminput.options.format.fieldformat);
       forminput.options.format.displayformat = convertQGISDateTimeFormatToMoment(forminput.options.format.displayformat);
 
-      const id = this.$refs.search_datetime.id = this.$refs.search_datetime.id || `search_datetime_${getUniqueDomId()}`;
+      const id = this.$refs['search_datetime_' + forminput.id].id = this.$refs['search_datetime_' + forminput.id].id || `search_datetime_${getUniqueDomId()}`;
 
       $('#' + id).datetimepicker({
         defaultDate:       null,
@@ -285,7 +285,7 @@ export default {
         }
       } : null;
 
-      let select2 = $(this.$refs.search_select).select2({
+      let select2 = $(this.$refs['search_select_'+ forminput.id]).select2({
         ajax,
         width:              '100%',
         dropdownParent:     $('.g3w-search-form:visible'),
