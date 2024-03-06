@@ -16,8 +16,11 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
       addLayersStore(store, idx) {
         const id = store.getId();
         this.stores[id] = store;
-        if (!_.isNil(idx)) this.storesArray.splice(idx, 0, id);
-        else this.storesArray.push(id);
+        if (null !== idx && undefined !== idx) {
+          this.storesArray.splice(idx, 0, id);
+        } else {
+          this.storesArray.push(id);
+        }
       },
 
       removeLayersStore(store) {
@@ -36,13 +39,8 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
     };
   }
 
-  getLayerById(layerId) {
-    let layer;
-    for (const id in this.stores) {
-      layer = this.stores[id].getLayerById(layerId);
-      if (layer) break;
-    }
-    return layer
+  getLayerById(id) {
+    return Object.values(this.stores).map(store => store.getLayerById(id)).find(layer => layer);
   }
 
   getLayers(filter) {
