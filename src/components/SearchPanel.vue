@@ -337,7 +337,7 @@ export default {
   },
 
   async mounted() {
-    for (forminput in this.forminputs) {
+    for (let forminput in this.state.forminputs) {
       await this.initSelect2Field(forminput);
       await  this.initDateTimeField(forminput);
     }
