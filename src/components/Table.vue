@@ -128,16 +128,16 @@ function _createFeatureForSelection(feature) {
 }
 
 function _hideDataTableElements() {
-      $('.dataTables_info, .dataTables_length').hide();
-      $('.dataTables_paginate').css({
-        'display': 'flex',
-        'justify-content': 'space-between',
-        'font-size': '0.8em',
-        'margin-top': '5px'
-      });
-      $('.dataTables_filter').css('float', 'right');
-      $('.dataTables_paginate').css('margin', '0');
-    };
+  $('.dataTables_info, .dataTables_length').hide();
+  $('.dataTables_paginate').css({
+    'display': 'flex',
+    'justify-content': 'space-between',
+    'font-size': '0.8em',
+    'margin-top': '5px'
+  });
+  $('.dataTables_filter').css('float', 'right');
+  $('.dataTables_paginate').css('margin', '0');
+}
 
 /** Data Table */
 let table;
@@ -890,6 +890,11 @@ export default {
    * ORIGINAL SOURCE: src/app/gui/table/tableservice.js@v3.9.3
    */
   async created() {
+
+    this.mapBBoxEventHandlerKey = {
+      key: null,
+      cb: null
+    };
     // table content
     const comp = this.g3wComponent = new Component({
       id: 'openattributetable',
