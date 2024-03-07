@@ -10,18 +10,70 @@
     <div class="tabbable-line">
 
       <!-- TAB MENU (header) -->
-      <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click.capture="onTabClick">
-        <li v-if="hasLayers" role="presentation" :class="{ active: ('layers' === activeTab) }">
-          <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
+      <ul
+        class="nav nav-tabs catalalog-nav-tabs"
+        role="tablist"
+        @click.capture="onTabClick"
+      >
+        <!-- TAB TOC LAYERS -->
+        <li
+          v-if="hasLayers"
+          role="presentation"
+          :class="{ active: ('layers' === activeTab) }"
+        >
+          <a
+            href="#layers"
+            aria-controls="layers"
+            role="tab"
+            data-toggle="tab"
+            data-i18n="tree"
+            v-t="'data'">
+          </a>
         </li>
-        <li v-if="state.external.wms.length" role="presentation" :class="{ active: ('externalwms' === activeTab) }">
-          <a href="#externalwms" aria-controls="externalwms" role="tab" data-toggle="tab" data-i18n="externalwms" v-t="'externalwms'"></a>
+        <!-- TAB EXTERNAL WMS LAYERS -->
+        <li
+          v-if="state.external.wms.length"
+          role="presentation"
+          :class="{ active: ('externalwms' === activeTab) }"
+        >
+          <a
+            href="#externalwms"
+            aria-controls="externalwms"
+            role="tab"
+            data-toggle="tab"
+            data-i18n="externalwms"
+            v-t="'externalwms'">
+          </a>
         </li>
-        <li v-if="hasBaseLayers" role="presentation" :class="{ active: ('baselayers' === activeTab) }" >
-          <a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a>
+        <!-- TAB BASE LAYERS -->
+        <li
+          v-if="hasBaseLayers"
+          role="presentation"
+          :class="{ active: ('baselayers' === activeTab) }"
+        >
+          <a
+            href="#baselayers"
+            aria-controls="baselayers"
+            role="tab"
+            data-toggle="tab"
+            data-i18n="baselayers"
+            v-t="'baselayers'">
+          </a>
         </li>
-        <li v-if="'tab' === state.legend.place && showlegend" role="presentation" :class="{ active: ('legend' === activeTab) }">
-          <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a>
+        <!-- TAB LEGEND LAYERS -->
+        <li
+          v-if="'tab' === state.legend.place && showlegend"
+          role="presentation"
+          :class="{ active: ('legend' === activeTab) }"
+        >
+          <a
+            href="#legend"
+            aria-controls="legend"
+            role="tab"
+            data-toggle="tab"
+            data-i18n="legend"
+            v-t="'legend'">
+          </a>
         </li>
       </ul>
 
@@ -40,7 +92,11 @@
           <helpdiv message="catalog_items.helptext" />
 
           <!-- TOOLBAR -->
-          <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
+          <div
+            v-if="showTocTools"
+            id="g3w-catalog-toc-layers-toolbar"
+            style="margin: 2px;"
+          >
             <catalog-change-map-themes
               :key              = "project.state.gid"
               :map_themes       = "project.state.map_themes"
@@ -69,7 +125,10 @@
           </ul>
 
           <!-- EXTERNAL VECTOR LAYER -->
-          <ul v-if="state.external.vector.length" class="g3w-external_layers-group">
+          <ul
+            v-if="state.external.vector.length"
+            class="g3w-external_layers-group"
+          >
             <catalog-tristate-tree
               v-for           = "vector in state.external.vector"
               :key            = "vector.id"
@@ -81,7 +140,10 @@
 
           <!-- GROUP OF LAYERS -->
           <!-- ORIGINAL SOURCE: src/components/CatalogLayersGroup.vue@v3.9.3 -->
-          <ul v-for="group in state.layersgroups" class="g3w-catalog-layers-group">
+          <ul
+            v-for="group in state.layersgroups"
+            class="g3w-catalog-layers-group"
+          >
             <div>
               <h4>{{ group.title }}</h4>
               <catalog-tristate-tree
@@ -145,7 +207,10 @@
                 class  = "img-responsive img-thumbnail baselayer"
                 :style = "{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
               >
-              <div class="baseselayer-text text-center" v-t="'nobaselayer'"></div>
+              <div
+                class="baseselayer-text text-center"
+                v-t="'nobaselayer'">
+              </div>
             </li>
           </ul>
         </div>
