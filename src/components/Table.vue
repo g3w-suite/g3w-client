@@ -128,16 +128,16 @@ function _createFeatureForSelection(feature) {
 }
 
 function _hideDataTableElements() {
-      $('.dataTables_info, .dataTables_length').hide();
-      $('.dataTables_paginate').css({
-        'display': 'flex',
-        'justify-content': 'space-between',
-        'font-size': '0.8em',
-        'margin-top': '5px'
-      });
-      $('.dataTables_filter').css('float', 'right');
-      $('.dataTables_paginate').css('margin', '0');
-    };
+  $('.dataTables_info, .dataTables_length').hide();
+  $('.dataTables_paginate').css({
+    'display': 'flex',
+    'justify-content': 'space-between',
+    'font-size': '0.8em',
+    'margin-top': '5px'
+  });
+  $('.dataTables_filter').css('float', 'right');
+  $('.dataTables_paginate').css('margin', '0');
+}
 
 /** Data Table */
 let table;
@@ -417,33 +417,33 @@ export default {
         const field_values = []; // check if add or not
 
         this.relationsGeometry.forEach(({ layer, father_fields, fields, features }) => {
-            const values = fields.map(f => feature.attributes[f]);
+          const values = fields.map(f => feature.attributes[f]);
 
-            field_values.push(values);
-            
-            let promise;
+          field_values.push(values);
 
-            if (zoom && undefined === features[k]) {
-              promise = DataRouterService
-                .getData('search:features', {
-                  inputs: {
-                    layer,
-                    formatter:       1,
-                    search_endpoint: 'api',
-                    filter: (
-                      father_fields
-                        .reduce((filter, field, index) => {
-                          filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
-                          return filter;
-                        }, '')
-                    ),
-                  },
-                  outputs: false, // just a request not show on result
-                });
-            }
+          let promise;
 
-            promises.push(promise);
-          });
+          if (zoom && undefined === features[k]) {
+            promise = DataRouterService
+              .getData('search:features', {
+                inputs: {
+                  layer,
+                  formatter:       1,
+                  search_endpoint: 'api',
+                  filter: (
+                    father_fields
+                      .reduce((filter, field, index) => {
+                        filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
+                        return filter;
+                      }, '')
+                  ),
+                },
+                outputs: false, // just a request not show on result
+              });
+          }
+
+          promises.push(promise);
+        });
 
         (await Promise.allSettled(promises))
           .forEach(({
@@ -601,7 +601,7 @@ export default {
           })
         }
       });
-      setTimeout(()=> this.reloadLayout(), 0)
+      setTimeout(() => this.reloadLayout(), 0)
     },
 
     async resize() {
@@ -890,6 +890,11 @@ export default {
    * ORIGINAL SOURCE: src/app/gui/table/tableservice.js@v3.9.3
    */
   async created() {
+
+    this.mapBBoxEventHandlerKey = {
+      key: null,
+      cb: null
+    };
     // table content
     const comp = this.g3wComponent = new Component({
       id: 'openattributetable',
@@ -1025,7 +1030,9 @@ export default {
         table.rows.add(data);
         table.draw(false);
         this.createdContentBody();
-        this.isMobile() && hideElements();
+        if (this.isMobile()) {
+          _hideDataTableElements();
+        }
       })
     })
   },
