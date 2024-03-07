@@ -4,11 +4,11 @@
  */
 
 import ApplicationService from 'services/application';
-import GUI from 'services/gui';
-import { VM } from 'app/eventbus';
+import GUI                from 'services/gui';
+import { VM }             from 'app/eventbus';
 
 const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject         = require('core/g3wobject');
 
 function ControlsRegistry() {
 
