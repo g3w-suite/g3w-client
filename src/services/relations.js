@@ -17,31 +17,33 @@ const {
 }               = require('utils');
 const G3WObject = require('core/g3wobject');
 
-function RelationsService(options={}) {
-  base(this);
+function RelationsService(opts={}) {
+  base(this, opts);
 }
 
 inherit(RelationsService, G3WObject);
 
 const proto = RelationsService.prototype;
 
-proto.createUrl = function(options={}){
+proto.createUrl = function(options={}) {
   const currentProject = ProjectsRegistry.getCurrentProject();
   // type : <editing, data, xls>
   const {layer={}, relation={}, fid, type='data', formatter=1} = options;
   let layerId;
   const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
-  if (father !== undefined) layerId = layer.id === father ? child: father;
-  else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
+  if (father !== undefined) {
+    layerId = layer.id === father ? child: father;
+  } else {
+    layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
+  }
   const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
   const value = sanitizeFidFeature(fid);
   return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=${formatter}`;
 };
 
 proto.getRelations = function(options={}) {
-  const url = this.createUrl(options);
   return XHR.get({
-    url
+    url: this.createUrl(options)
   })
 };
 
@@ -51,9 +53,9 @@ proto.getRelations = function(options={}) {
  * @param features
  * @returns {Promise<[]>}
  */
-proto.getRelationsNM = async function({nmRelation, features=[]}={}){
+proto.getRelationsNM = async function({nmRelation, features=[]}={}) {
   const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
-  let relationsNM = []; // start with empty relations result
+  let relationsNM = []; // start with an empty relations result
   if (features.length) {
     const values = features.map(feature => feature.attributes[referencingField]);
     const responseFids = await DataRouterService.getData('search:features', {
@@ -87,9 +89,8 @@ proto.getRelationsNM = async function({nmRelation, features=[]}={}){
 };
 
 proto.save = function(options={}){
-  const url = this.createUrl(options);
   return XHR.fileDownload({
-    url,
+    url: this.createUrl(options),
     httpMethod: "GET"
   })
 };

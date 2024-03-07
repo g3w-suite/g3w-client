@@ -3,7 +3,7 @@
  * @since v3.7
  */
 const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject         = require('core/g3wobject');
 
 // service sidebar
 function navbaritemsService() {

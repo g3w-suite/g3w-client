@@ -4,10 +4,10 @@
  */
 
 const { base, inherit, reject } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject                 = require('core/g3wobject');
 
 // Class Api Service
-function ApiService(){
+function ApiService() {
   this._config = null;
   this._baseUrl = null;
   this.init = function(config={}) {
@@ -20,15 +20,16 @@ function ApiService(){
     return d.promise();
   };
   let howManyAreLoading = 0;
-  this._incrementLoaders = function(){
+  this._incrementLoaders = function() {
     howManyAreLoading === 0 && this.emit('apiquerystart');
     howManyAreLoading += 1;
   };
 
-  this._decrementLoaders = function(){
+  this._decrementLoaders = function() {
     howManyAreLoading -= 1;
     howManyAreLoading === 0 && this.emit('apiqueryend');
   };
+
   this.get = function(api, options) {
     const apiEndPoint = this._apiEndpoints[api];
     if (apiEndPoint) {
@@ -47,8 +48,9 @@ function ApiService(){
         return error;
       })
       .always(() => this._decrementLoaders());
+    } else {
+      return reject();
     }
-    else return reject();
   };
   base(this);
 }

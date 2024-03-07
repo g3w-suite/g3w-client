@@ -25,8 +25,8 @@ export default new (class SidebarService extends G3WObject {
     };
 
     /**
-     * setter for close sidebarpanel to catch event
-     * of closing panel of the sidebar
+     * setter for close sidebarpanel to catch the event
+     * of a closing panel of the sidebar
      */
     this.setters = {
       closeSidebarPanel() {

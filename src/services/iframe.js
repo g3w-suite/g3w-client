@@ -162,7 +162,7 @@ class IframePluginService {
   };
 
   /**
-   * handle all message from window
+   * handle all messages from window
    */
   async getMessage(evt) {
     if (evt && evt.data) {
@@ -196,12 +196,12 @@ class IframePluginService {
   /**
    * Called when change map or clear
    */
-  clear() {
+  async clear() {
     const serviceNames = Object.keys(this.services);
     for (let i = 0; i < serviceNames.length; i++) {
       this.services[serviceNames[i]].off('response', this.eventResponseServiceHandler)
     }
-    this.stopPendingActions();
+    await this.stopPendingActions();
     window.removeEventListener('message', this.getMessage, false);
   }
 
@@ -389,7 +389,7 @@ class BaseIframeService extends G3WObject {
         i++;
       }
     }
-    // in case of no response zoom too initial extent
+    // in case of no response zoom to an initial extent
     if (!response.found) {
       this.mapService.zoomToProjectInitExtent();
     }
