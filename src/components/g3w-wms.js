@@ -22,25 +22,28 @@ export default function(opts = {}) {
     internalComponent: new (Vue.extend(vueComp))({ wmsurls: opts.wmsurls }),
   });
 
+  const service             = comp.getService();
+  const internalComponent   = comp.getInternalComponent();
+
   comp._setOpen = (b = false) => {
-    comp.internalComponent.state.open = b;
+    internalComponent.state.open = b;
     if (b) {
       GUI.closeContent();
     }
   };
 
   // BACKCOMP v3.x
-  comp._service.state              = comp.internalComponent.state;
-  comp._service.addNewUrl          = comp.internalComponent.addNewUrl;
-  comp._service.deleteWmsUrl       = comp.internalComponent.deleteWmsUrl;
-  comp._service.showWmsLayersPanel = comp.internalComponent._showWmsLayersPanel;
-  comp._service.addWMSlayer        = comp.internalComponent.addWMSlayer;
-  comp._service.getWMSLayers       = comp.internalComponent.getWMSLayers;
-  comp._service.deleteWms          = comp.internalComponent.deleteWms;
-  comp._service.clear              = comp.internalComponent.clear;
-  comp._service.changeLayerData    = comp.internalComponent.changeLayerData;
-  comp._service.getLocalWMSData    = comp.internalComponent.getLocalWMSData;
-  comp._service.updateLocalWMSData = comp.internalComponent.updateLocalWMSData;
+  service.state              = internalComponent.state;
+  service.addNewUrl          = internalComponent.addNewUrl;
+  service.deleteWmsUrl       = internalComponent.deleteWmsUrl;
+  service.showWmsLayersPanel = internalComponent._showWmsLayersPanel;
+  service.addWMSlayer        = internalComponent.addWMSlayer;
+  service.getWMSLayers       = internalComponent.getWMSLayers;
+  service.deleteWms          = internalComponent.deleteWms;
+  service.clear              = internalComponent.clear;
+  service.changeLayerData    = internalComponent.changeLayerData;
+  service.getLocalWMSData    = internalComponent.getLocalWMSData;
+  service.updateLocalWMSData = internalComponent.updateLocalWMSData;
 
   return comp;
 }
