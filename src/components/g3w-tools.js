@@ -85,13 +85,13 @@ export default function(opts = {}) {
     service,
     internalComponent: new (Vue.extend({
       template: /* html */ `
-<ul class="g3w-tools treeview-menu">
-  <bar-loader :loading="state.loading"/>
-  <li v-for="g in state.toolsGroups" :key="g.name">
-    <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
-    <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
-  </li>
-</ul>`,
+        <ul class="g3w-tools treeview-menu">
+          <bar-loader :loading="state.loading"/>
+          <li v-for="g in state.toolsGroups" :key="g.name">
+            <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
+            <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
+          </li>
+        </ul>`,
       components: { G3wTool },
       data: () => ({ state: null }),
       watch: {
