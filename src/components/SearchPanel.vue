@@ -154,6 +154,7 @@ import resizeMixin                           from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
 
+//Contain all select inputs
 const SELECTS = [];
 
 export default {
