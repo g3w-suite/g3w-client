@@ -275,6 +275,7 @@ export default {
       }
 
       await this.$nextTick();
+      console.log('qui')
 
       const numdigaut       = forminput.options.numdigaut;
       const is_autocomplete = 'autocompletefield' === forminput.type;
@@ -286,7 +287,7 @@ export default {
         }
       } : null;
 
-      let select2 = $(this.$refs['search_select_'+ forminput.id]).select2({
+      const select2 = $(this.$refs['search_select_'+ forminput.id]).select2({
         ajax,
         width:              '100%',
         dropdownParent:     $('.g3w-search-form:visible'),
@@ -300,10 +301,10 @@ export default {
          * @param data.text the text that is displayed for the data object
          */
         matcher: (params, data) => {
-            const search = params.term ? params.term.toLowerCase() : params.term;
-            if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
-            if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term 
-            return null;                                                                                 // hide the term
+          const search = params.term ? params.term.toLowerCase() : params.term;
+          if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
+          if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
+          return null;                                                                                 // hide the term
         },
         language: {
           noResults:     () => t("sdk.search.no_results"),
@@ -326,18 +327,24 @@ export default {
         });
       });
 
-      this.$watch(() => forminput.value, async (value) => {
+      this.$watch(() => forminput.value, async (value, _value) => {
+        //in case of null value (initial value) or not change
+        if (value === _value) {
+          return;
+        }
         if (value === SEARCH_ALLVALUE) {
           select2.val(value).trigger('change');
         }
       });
 
+      //set initial value
+      select2.val(forminput.value).trigger('change');
     },
 
   },
 
   async mounted() {
-    for (let forminput of this.state.forminputs) {
+    for (const forminput of this.state.forminputs) {
       await this.initSelect2Field(forminput);
       await this.initDateTimeField(forminput);
     }
