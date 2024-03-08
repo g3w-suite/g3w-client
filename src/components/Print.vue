@@ -39,7 +39,11 @@
               @change    = "changeScale"
               v-model    = "state.scale"
             >
-              <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
+              <option
+                v-for="scale in state.scales"
+                :value="scale.value">
+                {{ scale.label }}
+              </option>
             </select>
 
             <!-- PRINT DPI -->
@@ -72,7 +76,11 @@
               class   = "form-control"
               v-model = "state.format"
             >
-              <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
+              <option
+                v-for="format in state.formats"
+                :value="format.value">
+                {{ format.label }}
+              </option>
             </select>
 
           </template>
@@ -184,7 +192,7 @@ export default {
 
     /**
      * @return { boolean } whether current print has maps (only alphanumerical data)
-     * 
+     *
      * @since 3.9.4
      */
     has_maps() {
@@ -206,7 +214,7 @@ export default {
       this._resolutions = this._resolutions || {};
 
       const print   = ProjectsRegistry.getCurrentProject().getPrint() || [];
-      const visible = print.length > 0; 
+      const visible = print.length > 0;
 
       this.state = Object.assign(this.state || {}, {
         print,
@@ -253,7 +261,7 @@ export default {
 
       const has_previous = this.state.atlas || 0 === this.state.maps.length;
       const print        = this.state.print.find(p => p.name === this.state.template)
-    
+
       Object.assign(this.state, {
         maps:        print.maps,
         atlas:       print.atlas,
@@ -292,7 +300,7 @@ export default {
 
     /**
      * @param extent
-     * 
+     *
      * @returns { string }
      */
     getOverviewExtent(extent={}) {
@@ -324,7 +332,7 @@ export default {
         // disable sidebar
         GUI.disableSideBar(true);
 
-        // ATLAS PRINT 
+        // ATLAS PRINT
         if (has_atlas) {
           download_id = ApplicationService.setDownload(true);
           await downloadFile({
@@ -460,10 +468,10 @@ export default {
       this._moveKey = null;
       GUI.getService('map').stopDrawGreyCover();
     },
-  
+
     /**
      * Set all scales based on max resolution
-     * 
+     *
      * @param maxResolution
      */
     _setScales(maxResolution) {
@@ -486,7 +494,7 @@ export default {
         });
       this.state.scales = scale;
     },
-  
+
     _initPrintConfig() {
       const view = GUI.getService('map').viewer.map.getView();
       if (!this._initialized) {
@@ -565,7 +573,7 @@ export default {
         matcher: (params, data) => {
             const search = params.term ? params.term.toLowerCase() : params.term;
             if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
-            if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term 
+            if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
             return null;                                                                                 // hide the term
         },
         language: {
