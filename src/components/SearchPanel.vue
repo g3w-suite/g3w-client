@@ -282,7 +282,7 @@ export default {
       const ajax            = is_autocomplete ? {
         delay: 500,
         transport: async (d, ok, ko) => {
-          try      { ok({ results: await this.$options.service.getUniqueValuesFromField({ output: 'autocomplete', field: forminput.attribute, value: d.data.q.value }) }); }
+          try      { ok({ results: await this.$options.service.getUniqueValuesFromField({ output: 'autocomplete', field: forminput.attribute, value: d.data.q }) }); }
           catch(e) { ko(e); }
         }
       } : null;
