@@ -275,7 +275,6 @@ export default {
       }
 
       await this.$nextTick();
-      console.log('qui')
 
       const numdigaut       = forminput.options.numdigaut;
       const is_autocomplete = 'autocompletefield' === forminput.type;
