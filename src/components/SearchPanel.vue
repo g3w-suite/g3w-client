@@ -311,7 +311,6 @@ export default {
           inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
         },
       });
-
       SELECTS.push(select2);
 
       select2.on('select2:select select2:unselecting', e => {
@@ -350,6 +349,9 @@ export default {
       select2.off();
       select2 = null;
     })
+
+    //reset SELECTS to empty Array
+    SELECTS.splice(0);
   }
 
 };
