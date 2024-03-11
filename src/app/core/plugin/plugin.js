@@ -1,20 +1,18 @@
+import G3WObject          from 'core/g3w-object';
+import Component          from 'core/g3w-component';
 import PluginsRegistry    from 'store/plugins';
 import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI                from 'services/gui';
+import { toRawType }      from 'utils/toRawType';
 
-const {
-  base,
-  inherit,
-  toRawType
-}                       = require('utils');
-const G3WObject         = require('core/g3wobject');
-const Component         = require('gui/component/component');
 const { addI18nPlugin } = require('core/i18n/i18n.service');
 
 const TIMEOUT = 10000;
 
-const Plugin = function({
+module.exports = class Plugin extends G3WObject {
+  
+  constructor({
     name         = null,
     config       = PluginsRegistry.getPluginConfig(name),
     service      = null,
@@ -24,416 +22,396 @@ const Plugin = function({
     api          = {},
   } = {}) {
   
-  base(this);
+    super();
 
-  this.setName(name);
-  this.setConfig(config);
-  this.setLocale(i18n);
-  this.setService(service);
-  this.setDependencies(dependencies);
-  this.addFontClasses(fontClasses);
-  this.setApi(api);
-  this.setHookService(null);
+    this.setName(name);
+    this.setConfig(config);
+    this.setLocale(i18n);
+    this.setService(service);
+    this.setDependencies(dependencies);
+    this.addFontClasses(fontClasses);
+    this.setApi(api);
+    this.setHookService(null);
 
-  this._ready = false;
+    this._ready = false;
 
-  // List of sidebar services that usually plugin need to interact with (hook = place/name of component)
-  this.hookservices = {
-    'search': GUI.getService('search'),
-    'tools': GUI.getService('tools')
-  };
+    // List of sidebar services that usually plugin need to interact with (hook = place/name of component)
+    this.hookservices = {
+      'search': GUI.getService('search'),
+      'tools': GUI.getService('tools')
+    };
 
-  // Automatically remove the loading plugin indicator after timeout
-  this._timeout = setTimeout(() => {
-    PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
-    this.removeLayout();
-  }, TIMEOUT)
+    // Automatically remove the loading plugin indicator after timeout
+    this._timeout = setTimeout(() => {
+      PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+      this.removeLayout();
+    }, TIMEOUT)
 
-};
-
-inherit(Plugin, G3WObject);
-
-const proto = Plugin.prototype;
-
-/**
- * @FIXME add description
- */
-proto.setName = function(name) {
-  this.name = name;
-};
-
-/**
- * @FIXME add description
- */
-proto.getName = function() {
-  return this.name;
-};
-
-/**
- * @FIXME add description
- */
-proto.setConfig = function(config) {
-  this.config = toRawType(config) === 'Object' ? config : null;
-};
-
-/**
- * @FIXME add description
- */
-proto.getConfig = function(name = this.name) {
-  return this.config || PluginsRegistry.getPluginConfig(name);
-};
-
-/*
- * @FIXME add description
- */
-proto.setLocale = function(i18n) {
-  if (i18n && this.name) {
-    addI18nPlugin({ name: this.name, config: i18n});
   }
-};
 
-/**
- * @FIXME add description
- */
-proto.setService = function(service) {
-  this.service = service;
-  if (service) {
-    service.setPlugin(this);
-  }
-};
-
-/**
- * @FIXME add description
- */
-proto.getService = function() {
-  return this.service
-};
-
-/**
- * @FIXME add description
- */
-proto.setDependencies = function(dependencies) {
-  this.dependencies = dependencies;
-};
-
-/**
- * @FIXME add description
- */
-proto.setApi = function(api = {}) {
-  this._api = api;
   /**
-   * @FIXME useless assignment ?
+   * @FIXME add description
    */
-  api.getConfig = this._api.getConfig; // add alias for "api.getConfig()" method
-};
-
-/**
- * @FIXME add description
- */
-proto.getApi = function() {
-  return this._api;
-};
-
-/**
- * @FIXME add description
- */
-proto.setHookService = function(hook) {
-  this._hook = hook;
-};
-
-/**
- * @FIXME add description
- */
-proto.getHookService = function(hook = "tools") {
-  return this.hookservices[hook];
-};
-
-/**
- * Override plugin's content default layout (eg. default panel width, height, ...)
- * 
- * @see g3wsdk.core.ApplicationState.gui.layout
- */
-proto.setLayout = function(config = ApplicationService.cloneLayout('app')) {
-  ApplicationService.setLayout(this.name, config);
-};
-
-/**
- * @FIXME add description
- * 
- * @see g3wsdk.core.ApplicationState.gui.layout.__current
- */
-proto.setCurrentLayout = function() {
-  ApplicationService.setCurrentLayout(this.name);
-};
-
-/**
- * @FIXME add description
- * 
- * @see g3wsdk.core.ApplicationState.gui.layout
- */
-proto.removeLayout = function() {
-  ApplicationService.removeLayout(this.name)
-};
-
-/**
- * @FIXME add description
- */
-proto.setReady = function(isReady) {
-  this._ready = isReady;
-  if (this._ready) {
-    this.setLayout();
+  setName(name) {
+    this.name = name;
   }
-  this.emit('set-ready', isReady, this.name);
+
   /**
-   * @FIXME empty delay ?
+   * @FIXME add description
    */
-  setTimeout(() => {
-    clearTimeout(this._timeout);
-    PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
-  }, 0 /* 0 = allow any previously "setTimeout" to execute */)
-};
-
-/**
- * @FIXME add description
- */
-proto.isReady = function() {
-  return new Promise((resolve) => {
-    this._ready
-      ? resolve(this._ready)
-      : this.once('set-ready', (isReady) => { this._ready = isReady; resolve(this._ready); })
-  });
-};
-
-/**
- * Check if plugin is compatible with current projectId
- */
-proto.isCurrentProjectCompatible = function(projectId) {
-  return projectId === ProjectsRegistry.getCurrentProject().getGid();
-};
-
-/**
- * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
- */
-proto.registerPlugin = function(projectId) {
-  const iscompatible  = this.isCurrentProjectCompatible(projectId);
-  if (iscompatible) {
-    PluginsRegistry.registerPlugin(this);
-  } else {
-    PluginsRegistry.removeLoadingPlugin(this.name, false);
-    clearTimeout(this._timeout);
+  getName() {
+    return this.name;
   }
-  return iscompatible;
-};
 
-/**
- * @FIXME explain better what it does
- * 
- * Get plugin dependencies 
- */
-proto.getDependencyPlugins = function(pluginsName) {
-  this.dependencies = pluginsName || this.dependencies;
-  return Promise.all(this.dependencies.map(pluginName => this.getDependencyPlugin(pluginName)))
-};
-
-/**
- * @FIXME explain better what it does
- * 
- * Create to not replace above plugin method used by non changed old plugin
- */
-proto.getDependencyPluginsObject = async function(pluginsName) {
-  const pluginsApiObject = {};
-  const promises = await this.getDependencyPlugins(pluginsName);
-  this.dependencies.forEach((pluginName, index) => pluginsApiObject[pluginName] = promises[index]);
-  return pluginsApiObject
-};
-
-/**
- * @FIXME explain better what it does
- * 
- * Get plugin dependency
- */
-proto.getDependencyPlugin = function(pluginName) {
-  if (PluginsRegistry.isTherePlugin(pluginName)) {
-    return new Promise((resolve) => {
-      const plugin = PluginsRegistry.getPlugin(pluginName);
-      /**
-       * @TODO refactor weird shortcircuiting logic
-       */
-      plugin
-      && plugin.isReady().then(() => resolve(plugin.getApi()))
-      || PluginsRegistry.onafter('registerPlugin', plugin => {
-        (plugin.name === pluginName) && plugin.isReady().then(() => {resolve(plugin.getApi())})
-      });
-    })
+  /**
+   * @FIXME add description
+   */
+  setConfig(config) {
+    this.config = toRawType(config) === 'Object' ? config : null;
   }
-  return Promise.reject({ error: 'no plugin' });
-};
 
-/**
- * Handle loading process of a specific hook service (eg. "tools" interface on the left sidebar)
- */
-proto.setHookLoading = function({ hook = "tools", loading = false } = {}) {
-  this.getHookService(hook).setLoading(loading);
-};
+  /**
+   * @FIXME add description
+   */
+  getConfig(name = this.name) {
+    return this.config || PluginsRegistry.getPluginConfig(name);
+  }
 
-/**
- * @FIXME add description
- */
-proto.addToolGroup = function({ hook = "tools", position:order, title:group } = {}) {
-  this.getHookService(hook).addToolGroup(order, group);
-};
-
-/**
- * @FIXME add description
- */
-proto.removeToolGroup = function({ hook, group } = {}) {
-  this.getHookService(hook).removeToolGroup(group.title);
-};
-
-/**
- * @FIXME add description
- */
-proto.addTools = function(
-  {
-    hook = "tools",
-    action,
-    html,
-    offline = true,
-    icon,
-    name,
-    type,
-    options = {},
-    loading = false,
-    disabled = false,
-    state = {
-      type:null,
-      message:null
+  /**
+   * @FIXME add description
+   */
+  setLocale(i18n) {
+    if (i18n && this.name) {
+      addI18nPlugin({ name: this.name, config: i18n});
     }
-  } = {},
-  groupTools
-  ) {
-  if (!action && !type) {
-    this.removeToolGroup({ hook, group: groupTools });
-    return [];
-  } else {
-    this.setHookService(hook);
-    const tools = (this.config.configs || [this.config]).map(config => {
-        return {
-        icon,
-        type,
-        name: config.name || name,
-        html,
-        loading,
-        disabled,
-        options,
-        offline,
-        action: action && action.bind(this, config),
-        state
-      };
+  }
+
+  /**
+   * @FIXME add description
+   */
+  setService(service) {
+    this.service = service;
+    if (service) {
+      service.setPlugin(this);
+    }
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getService() {
+    return this.service
+  }
+
+  /**
+   * @FIXME add description
+   */
+  setDependencies(dependencies) {
+    this.dependencies = dependencies;
+  }
+
+  /**
+   * @FIXME add description
+   */
+  setApi(api = {}) {
+    this._api = api;
+    /**
+     * @FIXME useless assignment ?
+     */
+    api.getConfig = this._api.getConfig; // add alias for "api.getConfig()" method
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getApi() {
+    return this._api;
+  }
+
+  /**
+   * @FIXME add description
+   */
+  setHookService(hook) {
+    this._hook = hook;
+  }
+
+  /**
+   * @FIXME add description
+   */
+  getHookService(hook = "tools") {
+    return this.hookservices[hook];
+  }
+
+  /**
+   * Override plugin's content default layout (eg. default panel width, height, ...)
+   * 
+   * @see g3wsdk.core.ApplicationState.gui.layout
+   */
+  setLayout(config = ApplicationService.cloneLayout('app')) {
+    ApplicationService.setLayout(this.name, config);
+  }
+
+  /**
+   * @FIXME add description
+   * 
+   * @see g3wsdk.core.ApplicationState.gui.layout.__current
+   */
+  setCurrentLayout() {
+    ApplicationService.setCurrentLayout(this.name);
+  }
+
+  /**
+   * @FIXME add description
+   * 
+   * @see g3wsdk.core.ApplicationState.gui.layout
+   */
+  removeLayout() {
+    ApplicationService.removeLayout(this.name)
+  }
+
+  /**
+   * @FIXME add description
+   */
+  setReady(isReady) {
+    this._ready = isReady;
+    if (this._ready) {
+      this.setLayout();
+    }
+    this.emit('set-ready', isReady, this.name);
+    setTimeout(() => {
+      clearTimeout(this._timeout);
+      PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+    }, 0 /* 0 = allow any previously "setTimeout" to execute */)
+  }
+
+  /**
+   * @FIXME add description
+   */
+  isReady() {
+    return new Promise((resolve) => {
+      this._ready
+        ? resolve(this._ready)
+        : this.once('set-ready', (isReady) => { this._ready = isReady; resolve(this._ready); })
     });
-    this.getHookService(hook).addTools(tools, groupTools);
+  }
+
+  /**
+   * @returns whether plugin is compatible with current projectId
+   */
+  isCurrentProjectCompatible(projectId) {
+    return projectId === ProjectsRegistry.getCurrentProject().getGid();
+  }
+
+  /**
+   * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
+   */
+  registerPlugin(projectId) {
+    const iscompatible  = this.isCurrentProjectCompatible(projectId);
+    if (iscompatible) {
+      PluginsRegistry.registerPlugin(this);
+    } else {
+      PluginsRegistry.removeLoadingPlugin(this.name, false);
+      clearTimeout(this._timeout);
+    }
+    return iscompatible;
+  }
+
+  /**
+   * @FIXME explain better what it does
+   * 
+   * Get plugin dependencies 
+   */
+  getDependencyPlugins(pluginsName) {
+    this.dependencies = pluginsName || this.dependencies;
+    return Promise.all(this.dependencies.map(pluginName => this.getDependencyPlugin(pluginName)))
+  }
+
+  /**
+   * @FIXME explain better what it does
+   * 
+   * Create to not replace above plugin method used by non changed old plugin
+   */
+  async getDependencyPluginsObject(pluginsName) {
+    const api = {};
+    const promises = await this.getDependencyPlugins(pluginsName);
+    this.dependencies.forEach((pluginName, index) => api[pluginName] = promises[index]);
+    return api;
+  }
+
+  /**
+   * @FIXME explain better what it does
+   * 
+   * Get plugin dependency
+   */
+  getDependencyPlugin(pluginName) {
+    if (PluginsRegistry.isTherePlugin(pluginName)) {
+      return new Promise((resolve) => {
+        const plugin = PluginsRegistry.getPlugin(pluginName);
+        /**
+         * @TODO refactor weird shortcircuiting logic
+         */
+        plugin
+        && plugin.isReady().then(() => resolve(plugin.getApi()))
+        || PluginsRegistry.onafter('registerPlugin', plugin => {
+          (plugin.name === pluginName) && plugin.isReady().then(() => {resolve(plugin.getApi())})
+        });
+      })
+    }
+    return Promise.reject({ error: 'no plugin' });
+  }
+
+  /**
+   * Handle loading process of a specific hook service (eg. "tools" interface on the left sidebar)
+   */
+  setHookLoading({ hook = "tools", loading = false } = {}) {
+    this.getHookService(hook).setLoading(loading);
+  }
+
+  /**
+   * @FIXME add description
+   */
+  addToolGroup({ hook = "tools", position:order, title:group } = {}) {
+    this.getHookService(hook).addToolGroup(order, group);
+  }
+
+  /**
+   * @FIXME add description
+   */
+  removeToolGroup({ hook, group } = {}) {
+    this.getHookService(hook).removeToolGroup(group.title);
+  }
+
+  /**
+   * @param tool
+   * @param group tools group
+   */
+  addTools(tool, group) {
+    const hook = tool.hook || 'tools';
+    let tools  = [];
+
+    if (!tool.action && !tool.type) {
+      this.removeToolGroup({ hook, group });
+    } else {
+      this.setHookService(hook);
+      tools = (this.config.configs || [this.config]).map(config => {
+          return {
+          icon:     tool.icon,
+          type:     tool.type,
+          name:     config.name || tool.name,
+          html:     tool.html,
+          options:  tool.options || {},
+          action:   tool.action && tool.action.bind(this, config),
+          loading:  undefined !== tool.loading  ? tool.loading  : false,
+          disabled: undefined !== tool.disabled ? tool.disabled : false,
+          offline:  undefined !== tool.offline  ? tool.offline  : true,
+          state:    undefined !== tool.state    ? tool.state    : ({ type: null, message: null })
+        };
+      });
+      this.getHookService(hook).addTools(tools, group);
+    }
+
     return tools;
   }
-};
 
-/**
- * @FIXME add description
- */
-proto.setToolState = function({ id, state = { type:null, message: null } } = {}) {
-  this.hookservices[this._hook].setToolState({ id, state });
-};
-
-/**
- * @FIXME add description
- */
-proto.removeTools = function() {
-  this.hookservices[this._hook].removeTools();
-};
-
-/**
- * Helper method to create and add a custom component item on the left sidebar
- * 
- * @param                      vue                               vue component object (SFC)
- * @param { Object }           opts
- * @param { string }           opts.id
- * @param { string }           opts.title                        textual description on left sidebar (eg. "metadata")
- * @param { boolean }          opts.open                         true = collapsible button; false = button
- * @param { boolean }          opts.collapsible                  whether expand the button when plugin is loaded
- * @param { boolean }          opts.isolate                      whether propagate click event to all sidebar item
- * @param { boolean }          opts.closewhenshowviewportcontent
- * @param { Object }           opts.iconConfig
- * @param { string }           opts.iconConfig.color             color of icon
- * @param { string }           opts.iconConfig.icon              see gui\vue\vueappplugin.js font list
- * @param { Object }           opts.events                       eg. events = { open: { when: 'before', cb: () => { } }
- * @param { Object }           opts.sidebarOptions
- * @param { number | string }  opts.sidebarOptions.position
- * 
- * @returns component
- * 
- * @listens unload
- * 
- */
-proto.createSideBarComponent = function(vue, opts = {}) {
-
-  const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
-
-  opts.vueComponentObject = vue; 
-  opts.collapsible        = çç(opts.collapsible, true);
-  opts.mobile             = çç(opts.mobile, true);
-  opts.isolate            = çç(opts.isolate, false);
-  opts.sidebarOptions     = çç(opts.sidebarOptions, { position: 1 });
-
-  GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);
-
-  this.once('unload', () => GUI.removeComponent(opts.id, 'sidebar', opts.sidebarOptions));
-
-  return GUI.getComponent(opts.id) ;
-};
-
-/**
- * @deprecated since v3.4.
- */
-proto.unload  = function() {
-  if (this.service) {
-    this.service.clearAllEvents();
+  /**
+   * @FIXME add description
+   */
+  setToolState({ id, state = { type:null, message: null } } = {}) {
+    this.hookservices[this._hook].setToolState({ id, state });
   }
-  this.emit('unload');
-  //console.log('UNLOAD can be overwritten by plugin');
-};
 
-/**
- * @deprecated since v3.4.
- */
-proto.load = function() {
-  //console.log('LOAD  need to be overwrite by plugin');
-};
+  /**
+   * @FIXME add description
+   */
+  removeTools() {
+    this.hookservices[this._hook].removeTools();
+  }
 
-/**
- * @TODO it could be depecrated after v3.4 ?
- */
-proto.getProject = function() {
-  return ProjectsRegistry.getCurrentProject();
-};
+  /**
+   * Helper method to create and add a custom component item on the left sidebar
+   * 
+   * @param                      vue                               vue component object (SFC)
+   * @param { Object }           opts
+   * @param { string }           opts.id
+   * @param { string }           opts.title                        textual description on left sidebar (eg. "metadata")
+   * @param { boolean }          opts.open                         true = collapsible button; false = button
+   * @param { boolean }          opts.collapsible                  whether expand the button when plugin is loaded
+   * @param { boolean }          opts.isolate                      whether propagate click event to all sidebar item
+   * @param { boolean }          opts.closewhenshowviewportcontent
+   * @param { Object }           opts.iconConfig
+   * @param { string }           opts.iconConfig.color             color of icon
+   * @param { string }           opts.iconConfig.icon              see gui\vue\vueappplugin.js font list
+   * @param { Object }           opts.events                       eg. events = { open: { when: 'before', cb: () => { } }
+   * @param { Object }           opts.sidebarOptions
+   * @param { number | string }  opts.sidebarOptions.position
+   * 
+   * @returns component
+   * 
+   * @listens unload
+   * 
+   */
+  createSideBarComponent(vue, opts = {}) {
 
-/**
- * @TODO it could be depecrated after v3.4 ?
- */
-proto.addDependency = function(dependency) {
-  this.dependencies.push(dependency);
-};
+    const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
-/**
- * @TODO it could be depecrated after v3.4 ?
- */
-proto.addFontClass = function({ name, className }) {
-  Vue.prototype.g3wtemplate.addFontClass({ name, className });
-};
+    opts.vueComponentObject = vue; 
+    opts.collapsible        = çç(opts.collapsible, true);
+    opts.mobile             = çç(opts.mobile, true);
+    opts.isolate            = çç(opts.isolate, false);
+    opts.sidebarOptions     = çç(opts.sidebarOptions, { position: 1 });
 
-/**
- * @TODO it could be depecrated after v3.4 ?
- */
-proto.addFontClasses = function(fonClasses = []) {
-  fonClasses.forEach(fontClass => this.addFontClass(fontClass));
-};
+    GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);
 
-module.exports = Plugin;
+    this.once('unload', () => GUI.removeComponent(opts.id, 'sidebar', opts.sidebarOptions));
+
+    return GUI.getComponent(opts.id) ;
+  }
+
+  /**
+   * @deprecated since v3.4.
+   * 
+   * @virtual method need to be implemented by subclasses
+   */
+  unload() {
+    if (this.service) {
+      this.service.clearAllEvents();
+    }
+    this.emit('unload');
+  }
+
+  /**
+   * @deprecated since v3.4.
+   * 
+   * @virtual method need to be implemented by subclasses
+   */
+  load() { }
+
+  /**
+   * @TODO it could be depecrated after v3.4 ?
+   */
+  getProject() {
+    return ProjectsRegistry.getCurrentProject();
+  }
+
+  /**
+   * @TODO it could be depecrated after v3.4 ?
+   */
+  addDependency(dependency) {
+    this.dependencies.push(dependency);
+  };
+
+  /**
+   * @TODO it could be depecrated after v3.4 ?
+   */
+  addFontClass({ name, className }) {
+    Vue.prototype.g3wtemplate.addFontClass({ name, className });
+  }
+
+  /**
+   * @TODO it could be depecrated after v3.4 ?
+   */
+  addFontClasses(fonClasses = []) {
+    fonClasses.forEach(fontClass => this.addFontClass(fontClass));
+  }
+
+};
