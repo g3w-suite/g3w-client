@@ -1054,6 +1054,7 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     /**
      * @since 3.8.0
+     * @TODO run this method on iframe
      */
     GUI.openChangeMapMenu = function() {
       const isChangeMapMenuComponent = GUI.getComponent('contents').getComponentById('changemapmenu');
