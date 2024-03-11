@@ -146,11 +146,17 @@
 import {
   FILTER_EXPRESSION_OPERATORS,
   SEARCH_ALLVALUE,
-}                                            from 'app/constant';
-import ApplicationState                      from 'store/application-state';
-import { getUniqueDomId }                    from 'utils/getUniqueDomId';
-import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
-import resizeMixin                           from 'mixins/resize';
+}                                                        from 'app/constant';
+import ApplicationState                                  from 'store/application-state';
+import CatalogLayersStoresRegistry                       from 'store/catalog-layers';
+import DataRouterService                                 from 'services/data';
+import { getUniqueDomId }                                from 'utils/getUniqueDomId';
+import { convertQGISDateTimeFormatToMoment }             from 'utils/convertQGISDateTimeFormatToMoment';
+import { toRawType }                                     from 'utils/toRawType';
+import { createSingleFieldParameter }                    from 'utils/createSingleFieldParameter';
+import { createFieldsDependenciesAutocompleteParameter } from 'utils/createFieldsDependenciesAutocompleteParameter';
+import { createInputsFormFromFilter }                    from 'utils/createInputsFormFromFilter';
+import resizeMixin                                       from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
 
@@ -208,10 +214,10 @@ export default {
         /** @TODO check if has one reason to trim  */
         input.value = ['textfield', 'textField'].includes(input.type) ? input.value : input.value.trim();
 
-        this.$options.service.changeInput({ id: input.id, value: input.value });
+        this.$options.service.state.forminputs.find(i => i.id == input.id).value = input.value;
 
         // change dependency fields
-        const subscribers = this.$options.service.getDependencies(input.attribute);
+        const subscribers = this.$options.service.state.input.dependencies[input.attribute] || []; // get Dependencies
 
         if (subscribers.length) {
           this.$options.service.fillDependencyInputs({ subscribers, field: input.attribute, value: input.value, });
@@ -220,6 +226,167 @@ export default {
         console.warn(e);
       }
       this.state.searching = false;
+    },
+
+    /**
+     * Check the current value of dependance
+     */
+    getDependanceCurrentValue(field) {
+      const dep        = this.$options.service.state.input.dependance;
+      const cache_deps = this.$options.service.state.input.cached_deps;
+      const state      = this.$options.service.state;
+      return dep[field] ? cache_deps[dep[field]]._currentValue : state.forminputs.find(f => f.attribute === field).value;
+    },
+
+    /**
+     * Fill all dependencies inputs based on value
+     */
+    async fillDependencyInputs({field, subscribers=[], value=SEARCH_ALLVALUE}={}) {
+      const dep                       = this.$options.service.state.input.dependance;
+      const cached_deps               = this.$options.service.state.input.cached_deps;
+      const filter                    = this.$options.service.state.filter;
+      const state                     = this.$options.service.state;
+      const isRoot                    = undefined === dep[field];
+      const invalid                   = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
+
+      // loop over dependencies fields inputs
+      subscribers.forEach(s => {
+        const is_autocomplete = 'autocompletefield' === s.type;
+
+        // in the case of autocomplete reset values to an empty array
+        if (is_autocomplete || invalid) {
+          s.options.values.splice(0);
+        }
+
+        // set starting all values
+        if (!is_autocomplete && undefined === s.options._allvalues) {
+          s.options._allvalues = [...s.options.values];
+        }
+
+        // otherwise has to get first __ALL_VALUE
+        if (!is_autocomplete && !invalid) {
+          s.options.values.splice(1);
+        }
+
+        // case of father is set an empty invalid value (all value example)
+        // subscribe has to set all valaues
+        if (!is_autocomplete && invalid) {
+          setTimeout(() => s.options.values = [...s.options._allvalues]);
+        }
+
+        s.value = 'selectfield' !== s.type ? SEARCH_ALLVALUE : null;
+      });
+
+      // check if cache field values are set
+      const cached = cached_deps[field] = cached_deps[field] || {};
+      cached._currentValue = value;
+
+      if (!value || value === SEARCH_ALLVALUE) {
+        subscribers.forEach(s => s.options.disabled = s.options.dependance_strict);
+        return;
+      }
+
+      const dep_value = !isRoot && this.getDependanceCurrentValue(field);
+      const val       = isRoot
+        ? (cached && cached[value])
+        : cached && cached[dep_value] && cached[dep_value][value];
+
+      // val is cached
+      if (undefined !== val) {
+        subscribers.forEach(s => {
+          (val[s.attribute] || []).forEach(v => s.options.values.push(v));
+          s.options.disabled = false;                                      // set disabled dependence field
+        });
+        return;
+      }
+
+      state.loading[field] = true;
+
+      if (isRoot) {
+        cached[value] = cached[value] || {};
+      } else {
+        const _val =  this.getDependanceCurrentValue(field);
+        cached[_val]        = cached[_val] || {};
+        cached[_val][value] = cached[_val][value] || {}
+      }
+
+      // set disable
+      if (!subscribers.some(s => 'autocompletefield' !== s.type)) {
+        subscribers.forEach(s => s.options.dependance_strict && (subscribe.options.disabled = false));
+        return;
+      }
+
+      try {
+        // exclude autocomplete subscribers
+        const no_autocomplete = subscribers.filter(s => 'autocompletefield' !== s.type);
+        // set undefined because if it has a subscribe input with valuerelations widget
+        // needs to extract the value of the field to get filter data from relation layer
+        const data = await state.search_layers[0].getFilterData({
+          formatter: 0, // since v3.x, force to use raw value
+          field: createFieldsDependenciesAutocompleteParameter({ field, value, filter, inputdependance: dep, cachedependencies: cached_deps }),
+        });
+
+        for (let i = 0; i < no_autocomplete.length; i++) {
+          const subscribe = no_autocomplete[i];
+          const _vals = new Set(); // ensure unique values
+
+          let valuemap_values = 'valuemap' === subscribe.widget && [...subscribe.options._values];
+
+          // parent features
+          (data.data[0].features || []).forEach(feat => {
+            const value = feat.get(subscribe.attribute);
+            if (value) { _vals.add('valuemap' === subscribe.widget ? `${value}` : value); } // enforce string value
+          });
+
+          // case value map
+          if ('valuemap' === subscribe.widget) {
+            const valuemap_data = [..._vals];
+            valuemap_values
+              .filter(v =>  -1 !== valuemap_data.indexOf(v.key))
+              .forEach(v => subscribe.options.values.push(v));
+          }
+
+          if ('valuerelation' === subscribe.widget && _vals.size > 0) {
+            try {
+              const layer = CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id);
+              const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
+              const { data = [] } = await DataRouterService.getData('search:features', {
+                inputs: {
+                  layer,
+                  search_endpoint,
+                  filter: createSingleFieldParameter({
+                    layer,
+                    search_endpoint,
+                    field: subscribe.options.value, // since v3.8.x
+                    value:  [..._vals]
+                  }),
+                  ordering: subscribe.options.key, // since v3.8.x
+                },
+                outputs: false,
+              });
+              (data && data[0] && data[0].features || []).forEach(f => { subscribe.options.values.push({ key: f.get(subscribe.options.key), value: f.get(subscribe.options.value) }); });
+            } catch(e) {
+              console.warn(e);
+            }
+          }
+
+          // set key value for select
+          if (!['valuemap', 'valuerelation'].includes(subscribe.widget) && _vals.size) {
+            const select_data = [..._vals].sort();
+            ('Object' !== toRawType(select_data[0]) || [])
+              .map(v => ({ key: v, value: v }))
+              .forEach(v => subscribe.options.values.push(v));
+          }
+
+          cached[isRoot ? value : this.getDependanceCurrentValue(field)][value][subscribe.attribute] = subscribe.options.values.slice(1);
+          subscribe.options.disabled = false;
+        }
+      } catch (e) {
+        console.warn(e);
+        return Promise.reject(e);
+      } finally {
+        state.loading[field] = false;
+      }
     },
 
     doSearch(event) {
@@ -281,7 +448,14 @@ export default {
       const ajax            = is_autocomplete ? {
         delay: 500,
         transport: async (d, ok, ko) => {
-          try      { ok({ results: await this.$options.service.getUniqueValuesFromField({ output: 'autocomplete', field: forminput.attribute, value: d.data.q }) }); }
+          try      {
+            ok({
+              results: await createInputsFormFromFilter({
+                state: this.$options.service.state,
+                fromField: { output: 'autocomplete', field: forminput.attribute, value: d.data.q.value }
+              })
+            });
+          }
           catch(e) { ko(e); }
         }
       } : null;
