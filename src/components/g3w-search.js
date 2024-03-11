@@ -88,9 +88,9 @@ export function SearchPanel(opts = {}, show = false) {
   return new Panel({
     ...opts,
     show,
-    service: opts.service || new SearchService(opts),
-    id: getUniqueDomId(),
-    title: 'search',
+    service:            opts.service   || new SearchService(opts),
+    id:                 opts.id        || getUniqueDomId(),
+    title:              opts.title     || 'search',
     vueComponentObject: opts.component || vueSearchComp,
   });
 }
