@@ -172,7 +172,7 @@ export async function createInputsFormFromFilter({ state, fromField }) {
         }
         _value = getUniqueValuesFromField({ field: field.attribute, })
         } catch (e) {
-          console.warn(err);
+          console.warn(e);
           values.length = 0;
         } finally {
           if (undefined !== _value) {
