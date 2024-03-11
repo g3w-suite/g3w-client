@@ -126,27 +126,27 @@ export async function createInputsFormFromFilter({ state, fromField }) {
         }
 
         // if defined layer_id dependence
-        if (field.options.layer_id) {
+        if (input.options.layer_id) {
           //array of unique values
-          const uniqueValues    = await getUniqueValuesFromField({ field: field.attribute });
+          const uniqueValues    = await getUniqueValuesFromField({ field: input.attribute });
           const filter          = createFilterFormInputs({
-            layer: CatalogLayersStoresRegistry.getLayerById(field.options.layer_id),
+            layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
             search_endpoint,
-            inputs: [{value: uniqueValues, attribute: field.options.value, logicop: "OR", operator: "eq" }]
+            inputs: [{value: uniqueValues, attribute: input.options.value, logicop: "OR", operator: "eq" }]
           });
           // get value relation values
           try {
             const { data = [] } = await DataRouterService.getData('search:features', {
               inputs:{
-                layer: CatalogLayersStoresRegistry.getLayerById(field.options.layer_id),
+                layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
                 search_endpoint,
                 filter,
-                ordering: field.options.key
+                ordering: input.options.key
               },
               outputs: false
             });
             const values = [];
-            (data && data[0] && data[0].features || []).forEach(feature => { values.push({ key: feature.get(field.options.key), value: feature.get(field.options.value) }) });
+            (data && data[0] && data[0].features || []).forEach(feature => { values.push({ key: feature.get(input.options.key), value: feature.get(input.options.value) }) });
             _value = values;
           } catch(e) {
             console.warn(e);
@@ -156,21 +156,21 @@ export async function createInputsFormFromFilter({ state, fromField }) {
         }
 
         // Relation reference
-        if (field.options.relation_reference) {
+        if (input.options.relation_reference) {
           //call filter data with fformatter
-          const response = await searchLayer.getFilterData({ fformatter: field.attribute });
+          const response = await searchLayer.getFilterData({ fformatter: input.attribute });
           //check response
           if (response && response.result && response.data) {
-            field.options.values = response.data.map(([value, key]) => ({ key, value }));
+            input.options.values = response.data.map(([value, key]) => ({ key, value }));
           }
         }
 
         // return mapped values
-        if (field.options.values.length > 0) {
-          _value = field.options.values.filter(value => SEARCH_ALLVALUE !== value);
+        if (input.options.values.length > 0) {
+          _value = input.options.values.filter(value => SEARCH_ALLVALUE !== value);
           return;
         }
-        _value = getUniqueValuesFromField({ field: field.attribute, })
+        _value = getUniqueValuesFromField({ field: input.attribute, })
         } catch (e) {
           console.warn(e);
           values.length = 0;
