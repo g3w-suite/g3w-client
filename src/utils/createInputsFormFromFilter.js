@@ -7,6 +7,7 @@ import { createFilterFormInputs }                        from 'utils/createFilte
 import { createFieldsDependenciesAutocompleteParameter } from 'utils/createFieldsDependenciesAutocompleteParameter';
 import { sortAlphabeticallyArray }                       from 'utils/sortAlphabeticallyArray';
 import { sortNumericArray }                              from 'utils/sortNumericArray';
+import { getUniqueValuesFromField }                      from "utils/getUniqueValuesFromField";
 
 /**
  * Create right search structure for search form
@@ -128,7 +129,7 @@ export async function createInputsFormFromFilter({ state, fromField }) {
         // if defined layer_id dependence
         if (input.options.layer_id) {
           //array of unique values
-          const uniqueValues    = await getUniqueValuesFromField({ field: input.attribute });
+          const uniqueValues    = await getUniqueValuesFromField({ layers: state.search_layers, field: input.attribute });
           const filter          = createFilterFormInputs({
             layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
             search_endpoint,
