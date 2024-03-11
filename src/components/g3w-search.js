@@ -113,7 +113,16 @@ export function SearchPanel(opts = {}, show = false) {
     id:                 opts.id        || getUniqueDomId(),
     title:              opts.title     || 'search',
     vueComponentObject: opts.component || vueSearchComp,
-    service:            opts.service   || Object.assign(new G3WObject(), {
+    service:            opts.service   || Object.assign(new G3WObject({ debounces: {
+      run: {
+        fnc: (...args) => {
+          console.trace(...args, arguments);
+          const [w, h] = GUI.getService('map').getMap().getSize();
+          const hide   = GUI.isMobile() && (0 === w || 0 === h);
+          setTimeout(() => { if (hide) { GUI.hideSidebar(); } panel.getService()._run({...args, state }); }, hide ? 0 : 600);
+        }
+      },
+    }}), {
       state,
       doSearch,
       _run: doSearch,
@@ -126,16 +135,6 @@ export function SearchPanel(opts = {}, show = false) {
         inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
         search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
       }),
-      debounces: {
-        run: {
-          fnc: (...args) => {
-            console.log(arguments);
-            const [w, h] = GUI.getService('map').getMap().getSize();
-            const hide   = GUI.isMobile() && (0 === w || 0 === h);
-            setTimeout(() => { if (hide) { GUI.hideSidebar(); } panel.getService()._run(...args); }, hide ? 0 : 600);
-          }
-        }
-      },
     }),
   });
 
