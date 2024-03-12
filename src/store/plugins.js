@@ -3,11 +3,11 @@
  * @since v3.6
  */
 
-import ProjectsRegistry from 'store/projects';
+import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
 
 const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject         = require('core/g3wobject');
 
 /**
  * 'law' project configuration on project is handle as plugin

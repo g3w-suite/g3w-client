@@ -13,7 +13,9 @@ export default {
       select2_value,
       indexItem, /** @since 3.9.1 */
     } = vnode.data.attrs || {};
-    const isArray = binding.value && Array.isArray(vnode.context[binding.value]); //check if is an array
+    const isArray = binding.value
+      && Array.isArray(vnode.context[binding.value]) // check if is an array
+      && undefined !== indexItem                     // check if indexItem is defined
     $(el)
       .select2({
         width: '100%',
@@ -24,7 +26,9 @@ export default {
       })
       .on('select2:select', (e) => {
         if (binding.value) {
+          //get value
           const value = e.params.data.id;
+          //check is can have multiple value
           if (multiple && (
             (isArray
               ? vnode.context[binding.value][indexItem].value
