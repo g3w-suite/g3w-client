@@ -1,547 +1,528 @@
 export default {
   translation: {
     error_page: {
-      error: "Connection error",
-      at_moment: "At the moment is not possible show map",
-      f5: "Press Ctrl+F5"
+      error: "Błąd połączenia",
+      at_moment: "W tej chwili nie jest możliwe mapa pokazująca",
+      f5: "Naciśnij Ctrl+F5"
     },
     cookie_law: {
-      message: "This website uses cookies to ensure you get the best experience on our website.",
-      buttonText: "Got It!"
+      message: "Ta strona internetowa korzysta z plików cookie, aby uzyskać najlepsze wrażenia na naszej stronie internetowej.",
+      buttonText: "Rozumiem!"
     },
-    default:"default",
-    sign_in: "Sign in",
+    default: "domyślny",
+    sign_in: "Zalogować się",
     layer_selection_filter: {
       tools: {
-        filter: "Enable/Disable filter",
-        nofilter: "Remove Filter",
-        invert: "Invert Selection",
-        clear: "Clear Selection",
-        show_features_on_map: "Show features visible on map",
-        savefilter: "Save Filter",
-        filterName: "Filter Name",
+        filter: "Włącz/wyłącz filtr",
+        nofilter: "Usuń filtr",
+        invert: "Odwróć wybór",
+        clear: "Jasny wybór",
+        show_features_on_map: "Pokaż funkcje widoczne na mapie",
+        savefilter: "Zapisz filtr",
+        filterName: "Nazwa filtru"
       }
     },
     warning: {
-      not_supported_format: "Not supported format"
+      not_supported_format: "Nie obsługiwany format"
     },
     layer_position: {
-      top: 'TOP',
-      bottom: 'BOTTOM',
-      message: "Position relative to layers on TOC"
+      top: "SZCZYT",
+      bottom: "SPÓD",
+      message: "Pozycja względem warstw na TOC"
     },
     sdk: {
       atlas: {
         template_dialog: {
-          title: "Select Template"
+          title: "Wybierz szablon"
         }
       },
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
-        helptext: "Move on map extent, insert name and click Add",
+        title: "Zakładki przestrzenne",
+        helptext: "Poruszaj zasięg mapy, wstaw nazwę i kliknij Dodaj",
         input: {
-          name: "Name"
+          name: "Nazwa"
         },
         sections: {
-          project:{
-            title: "Project Bookmarks"
+          project: {
+            title: "Zakładki projektu"
           },
           user: {
-            title: "User Bookmarks"
+            title: "Zakładki użytkowników"
           }
         }
       },
       search: {
-        all: 'ALL',
-        no_results: "No results",
-        searching: "Searching ...",
-        error_loading: "Error Loading Data",
-        layer_not_searchable: "Layer is not searchable",
-        layer_not_querable: "Layer is not querable",
+        all: "WSZYSTKO",
+        no_results: "Brak wyników",
+        searching: "Poszukiwanie ...",
+        error_loading: "Błąd Dane dotyczące ładowania",
+        layer_not_searchable: "Warstwa nie można przeszukiwać",
+        layer_not_querable: "Warstwa nie jest zapytana",
         autocomplete: {
           inputshort: {
-            pre: "Please enter",
-            post: "or more characters"
+            pre: "Podaj",
+            post: "lub więcej znaków"
           }
         }
       },
       print: {
-        no_layers: 'No Layer to print',
-        template: "Template",
-        labels: "Labels",
-        scale: "Scale",
+        no_layers: "Brak warstwy do wydrukowania",
+        template: "Szablon",
+        labels: "Etykiety",
+        scale: "Skala",
         format: "Format",
-        rotation: "Rotation",
-        download_image: "Download Image",
-        fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
-        fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
-        help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
+        rotation: "Obrót",
+        download_image: "Pobierz obraz",
+        fids_instruction: "Zaakceptowane wartości: od 1 do wartości [maks.]. Możliwe jest wstawienie zasięgu ex. 4-6",
+        fids_example: "Były. 1,4-6 zostanie wydrukowany 1,4,5,6",
+        help: "Warstwy pokazane w druku mogą być warstwy zdefiniowane w projekcie, a nie wyświetlane na mapie"
       },
       querybuilder: {
         search: {
-          run: "Run",
-          info: "Information",
-          delete: "Delete",
-          edit: "Edit"
+          run: "Uruchomić",
+          info: "Informacja",
+          delete: "Usuwać",
+          edit: "Edytować"
         },
         messages: {
-          changed: 'Saved',
-          number_of_features: "Number of features"
+          changed: "Uratowany",
+          number_of_features: "Liczba funkcji"
         },
         panel: {
           button: {
-            all: 'ALL',
-            save: 'SAVE',
-            test: 'TEST',
-            clear: 'CLEAR',
-            run: 'RUN',
-            manual: 'MANUAL'
+            all: "WSZYSTKO",
+            save: "RATOWAĆ",
+            test: "TEST",
+            clear: "JASNE",
+            run: "URUCHOMIĆ",
+            manual: "PODRĘCZNIK"
           },
-          layers: 'LAYERS',
-          fields: 'FIELDS',
-          values: 'VALUES',
-          operators: 'OPERATORS',
-          expression: 'EXPRESSION'
+          layers: "Warstwy",
+          fields: "Pola",
+          values: "Wartości",
+          operators: "Operatorzy",
+          expression: "WYRAŻENIE"
         },
-        error_run: 'An error occurs. Please check the query',
-        error_test: "An error occur during query execution",
-        delete: 'Do you want delete it?',
-        additem: 'Insert the name of the new search'
+        error_run: "Występuje błąd. Sprawdź zapytanie",
+        error_test: "Błąd wystąpił podczas wykonywania zapytania",
+        delete: "Chcesz to usunąć?",
+        additem: "Włóż nazwę nowego wyszukiwania"
       },
       errors: {
         layers: {
-          load: "Some layers are not available"
+          load: "Niektóre warstwy nie są dostępne"
         },
-        unsupported_format: 'Not supported format',
-        add_external_layer: 'Load layer error'
+        unsupported_format: "Nie obsługiwany format",
+        add_external_layer: "Błąd warstwy ładowania"
       },
       metadata: {
-        title: 'Metadata',
+        title: "Metadane",
         groups: {
           general: {
-            title: 'GENERAL',
+            title: "OGÓLNY",
             fields: {
-              title: 'TITLE',
-              name: 'NAME',
-              description: "DESCRIPTION",
-              abstract: "ABSTRACT",
-              keywords: 'KEYWORDS',
-              fees: "FEES",
-              accessconstraints: "ACCESS CONSTRAINT",
-              contactinformation: "CONTACTS",
+              title: "TYTUŁ",
+              name: "NAZWA",
+              description: "OPIS",
+              abstract: "ABSTRAKCYJNY",
+              keywords: "SŁOWA KLUCZOWE",
+              fees: "OPŁATY",
+              accessconstraints: "Ograniczenie dostępu",
+              contactinformation: "ŁĄCZNOŚĆ",
               subfields: {
                 contactinformation: {
-                  contactelectronicmailaddress: "Email",
-                  personprimary: 'References',
-                  contactvoicetelephone: 'Phone',
-                  contactorganization: 'Organization',
-                  ContactOrganization: 'Organization',
-                  contactposition: 'Position',
-                  ContactPosition: 'Position',
-                  contactperson: 'Person',
-                  ContactPerson: 'Person'
+                  contactelectronicmailaddress: "E-mail",
+                  personprimary: "Bibliografia",
+                  contactvoicetelephone: "Telefon",
+                  contactorganization: "Organizacja",
+                  ContactOrganization: "Organizacja",
+                  contactposition: "Pozycja",
+                  ContactPosition: "Pozycja",
+                  contactperson: "Osoba",
+                  ContactPerson: "Osoba"
                 }
               },
               wms_url: "WMS"
             }
           },
-          spatial:{
-            title: 'SPATIAL',
-            fields : {
-              crs: 'EPSG',
-              extent: 'BBOX'
+          spatial: {
+            title: "PRZESTRZENNY",
+            fields: {
+              crs: "EPSG",
+              extent: "Bbox"
             }
           },
           layers: {
-            title: 'LAYERS',
+            title: "Warstwy",
             fields: {
-              layers: 'LAYERS',
+              layers: "Warstwy",
               subfields: {
-                crs: 'EPSG',
-                bbox: 'BBOX',
-                title: "TITLE",
-                name: 'NAME',
-                geometrytype: 'GEOMETRY',
-                source: 'SOURCE',
-                attributes: 'ATTRIBUTES',
-                abstract: 'ABSTRACT',
-                attribution: 'ATTRIBUTION',
-                keywords: "PAROLE CHIAVE",
-                metadataurl:'METADATA URL',
-                dataurl: "DATA URL"
+                crs: "EPSG",
+                bbox: "Bbox",
+                title: "TYTUŁ",
+                name: "NAZWA",
+                geometrytype: "GEOMETRIA",
+                source: "ŹRÓDŁO",
+                attributes: "Atrybuty",
+                abstract: "ABSTRAKCYJNY",
+                attribution: "ATRYBUCJA",
+                keywords: "Chiave zwolnienia warunkowego",
+                metadataurl: "URL METADATA",
+                dataurl: "URL danych"
               }
             },
-            groups : {
-              general: 'GENERAL',
-              spatial: 'SPATIAL'
+            groups: {
+              general: "OGÓLNY",
+              spatial: "PRZESTRZENNY"
             }
           }
         }
       },
       tooltips: {
         relations: {
-          form_to_row: "Row View",
-          row_to_form: "Form View",
-          zoomtogeometry: "Zoom to Geometry",
+          form_to_row: "Widok wiersza",
+          row_to_form: "Widok formularza",
+          zoomtogeometry: "Powiększ geometrię"
         },
-        copy_map_extent_url: 'Copy map view link',
-        download_shapefile: "Download Shapefile",
-        download_gpx: "Download GPX",
-        download_gpkg: "Download GPKG",
-        download_csv: "Download CSV",
-        download_xls: "Download XLS",
-        show_chart: "Show Chart",
-        atlas: "Print Atlas"
+        copy_map_extent_url: "Kopiuj link Widok Mapa",
+        download_shapefile: "Pobierz ShapeFile",
+        download_gpx: "Pobierz GPX",
+        download_gpkg: "Pobierz GPKG",
+        download_csv: "Pobierz CSV",
+        download_xls: "Pobierz XLS",
+        show_chart: "Wykres pokazowy",
+        atlas: "Wydrukuj atlas"
       },
       mapcontrols: {
         query: {
-          tooltip: 'Query layer',
+          tooltip: "Warstwa zapytania",
           actions: {
             add_selection: {
-              hint: "Add/Remove Selection"
+              hint: "Dodaj/usuń wybór"
             },
-            zoom_to_features_extent:{
-              hint: "Zoom to features extent"
+            zoom_to_features_extent: {
+              hint: "Zoom w zakresie funkcji"
             },
             add_features_to_results: {
-              hint: "Add/Remove features to results"
+              hint: "Dodaj/usuń funkcje do wyników"
             },
             remove_feature_from_results: {
-              hint: "Remove feature from results"
+              hint: "Usuń funkcję z wyników"
             },
             zoom_to_feature: {
-              hint: "Zoom to feature"
+              hint: "Zoom do funkcji"
             },
             relations: {
-              hint: "Show Relations"
+              hint: "Pokaż relacje"
             },
             relations_charts: {
-              hint: "Show relations chart"
+              hint: "Pokaż wykres relacji"
             },
-            download_features_shapefile:{
-              hint: 'Download features Shapefile'
+            download_features_shapefile: {
+              hint: "Pobierz funkcje ShapeFile"
             },
             download_shapefile: {
-              hint: 'Download feature Shapefile'
+              hint: "Pobierz funkcję kształtu plik"
             },
             download_features_gpx: {
-              hint: "Download feature GPX"
+              hint: "Pobierz funkcję GPX"
             },
             download_features_gpkg: {
-              hint: "Download features GPKG"
+              hint: "Pobierz funkcje GPKG"
             },
             download_gpx: {
-              hint: "Download feature GPX"
+              hint: "Pobierz funkcję GPX"
             },
             download_gpkg: {
-              hint: "Download feature GPKG"
+              hint: "Pobierz funkcję gpkg"
             },
             download_features_csv: {
-              hint: "Download features CSV"
+              hint: "Pobierz funkcje CSV"
             },
             download_csv: {
-              hint: "Download feature CSV"
+              hint: "Pobierz funkcję CSV"
             },
             download_features_xls: {
-              hint: "Download features XLS"
+              hint: "Pobierz funkcje XLS"
             },
             download_xls: {
-              hint: "Download feature XLS"
+              hint: "Pobierz funkcję XLS"
             },
             atlas: {
-              hint: "Print Atlas"
+              hint: "Wydrukuj atlas"
             },
             copy_zoom_to_fid_url: {
-              hint: "Copy map URL with this geometry feature extension",
-              hint_change: "Copied"
+              hint: "Skopiuj adres URL map z tym rozszerzeniem funkcji geometrii",
+              hint_change: "Skopiowane"
             }
           }
         },
         querybypolygon: {
           download: {
-            title: "Attributes download",
-            choiches:{
+            title: "Pobieranie atrybutów",
+            choiches: {
               feature: {
-                label:"Features only",
+                label: "Tylko funkcje"
               },
               feature_polygon: {
-                label:"Features+Query Polygon",
+                label: "Funkcje+Polygon zapytania"
               }
             }
           },
-          tooltip: 'Query By Polygon',
-          no_geometry: 'No geometry on response',
+          tooltip: "Zapytanie według wielokąta",
+          no_geometry: "Brak geometrii w odpowiedzi",
           help: {
-            title:'Guide - Query By Polygon',
-            message: `
-                <ul>
-                  <li>Select a polygon layer on TOC.</li>
-                  <li>Be sure that layer is visible.</li>
-                  <li>Click on a feature of selected layer.</li>
-                </ul>`
+            title: "Przewodnik - zapytanie według Polygonu",
+            message: "<ul> \n                   <li> Wybierz warstwę wielokąta na Toc. </li> \n                   <li> upewnij się, że warstwa jest widoczna. </li> \n                   <li> Kliknij funkcję wybranej warstwy. </li> \n                 </ul>
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Zapytanie przez Polygon Draw"
         },
         querybybbox: {
-          tooltip: 'Query BBox layer',
-          nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
+          tooltip: "Zapytanie warstwa Bbox",
+          nolayers_visible: "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
           help: {
-            title: 'Guide - Query BBox layer',
-            message:`
-                  <ul>
-                  <li>Draw a square on map to query underlined layers on TOC</li>
-                  </ul>`
+            title: "Przewodnik - zapytanie BBOX Warstwa",
+            message: "<ul> \n                   <li> Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc </li> \n                   </ul>
           }
         },
         addlayer: {
           messages: {
             csv: {
-              warning: "The result in the map is partial due to the presence of the below incorrect records list:"
+              warning: "Wynik na mapie jest częściowy ze względu na obecność poniższej listy błędnych rekordów:"
             }
           },
-          tooltip: 'Add Layer'
+          tooltip: "Dodaj warstwę"
         },
         geolocation: {
-          tooltip: 'Geolocation'
+          tooltip: "Geolokalizację"
         },
         measures: {
           length: {
-            tooltip: "Length",
-            help: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
+            tooltip: "Długość",
+            help: "Kliknij mapę, aby narysować linię. Naciśnij <br> Canc, jeśli chcesz usunąć ostatni wierzchołek"
           },
           area: {
-            tooltip: "Area",
-            help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
+            tooltip: "Obszar",
+            help: "Kliknij, aby narysować Poligon.press <br> Canc Jeśli chcesz usunąć ostatni wierzchołek"
           }
         },
         scale: {
-          no_valid_scale: "Invalid Scale"
+          no_valid_scale: "Nieprawidłowa skala"
         },
         scaleline: {
           units: {
-            metric: 'Meters',
-            nautical: 'Nautical Mile'
+            metric: "Metry",
+            nautical: "Mila morska"
           }
         },
         zoomhistory: {
-          zoom_last: "Zoom Last",
-          zoom_next: "Zoom Next"
+          zoom_last: "Zoom ostatni",
+          zoom_next: "Zoom Dalej"
         }
       },
       relations: {
-        relation_data: 'Relation data',
-        no_relations_found: 'No relations found',
-        back_to_relations: 'Back to relations',
-        list_of_relations_feature: 'List of relations of feature',
-        error_missing_father_field: "Field is missing"
+        relation_data: "Dane dotyczące relacji",
+        no_relations_found: "Nie znaleziono żadnych relacji",
+        back_to_relations: "Powrót do relacji",
+        list_of_relations_feature: "Lista relacji funkcji",
+        error_missing_father_field: "Brakuje pola"
       },
       form: {
-        loading: 'Loading ...',
+        loading: "Ładowanie ...",
         inputs: {
           messages: {
             errors: {
-              picklayer: "No feature selected. Check if layer is on editing or visible at current scale"
+              picklayer: "Brak wybranej funkcji. Sprawdź, czy warstwa jest w edycji lub widoczna w bieżącej skali"
             }
           },
-          tooltips:{
-            picklayer: "Get value from ma layer",
-            lonlat: "Click on map to get coordinates"
+          tooltips: {
+            picklayer: "Uzyskaj wartość z warstwy MA",
+            lonlat: "Kliknij mapę, aby uzyskać współrzędne"
           },
-          input_validation_mutually_exclusive: "Field mutually exclusive with ",
-          input_validation_error: "Mandatory Field or wrong data type",
-          input_validation_min_field: "Value has to be more/equal to field value  ",
-          input_validation_max_field: "Value has to be less/equal to field value ",
-          input_validation_exclude_values: "Value has to be unique",
-          integer: "integer",
-          bigint: "integer",
-          text: "text",
-          varchar: "text",
-          textarea: "text",
-          string: "string",
-          date: "date",
-          datetime: "date",
-          float: "float",
-          table: "table"
+          input_validation_mutually_exclusive: "Pole wzajemnie wykluczające się z",
+          input_validation_error: "Obowiązkowe pole lub niewłaściwy typ danych",
+          input_validation_min_field: "Wartość musi być większa/równa wartości pola",
+          input_validation_max_field: "Wartość musi być mniej/równa wartości pola",
+          input_validation_exclude_values: "Wartość musi być wyjątkowa",
+          integer: "liczba całkowita",
+          bigint: "liczba całkowita",
+          text: "tekst",
+          varchar: "tekst",
+          textarea: "tekst",
+          string: "strunowy",
+          date: "data",
+          datetime: "data",
+          float: "platforma",
+          table: "tabela"
         },
         footer: {
-          "required_fields": "Required fields"
+          required_fields: "Wymagane pola"
         },
         messages: {
-          qgis_input_widget_relation: "Use relation specific form to work with relation"
+          qgis_input_widget_relation: "Użyj relacji konkretna forma do pracy w związku z relacją"
         }
       },
       catalog: {
-        current_map_theme_prefix: "THEME",
-        choose_map_theme: "CHOOSE THEME",
+        current_map_theme_prefix: "TEMAT",
+        choose_map_theme: "Wybierz motyw",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: "Pozycja warstwy",
+          setwmsopacity: "Ustaw krycie",
           wms: {
-            title:"",
-            copy: "Click here to copy url",
-            copied: "Copied"
+            title: "--",
+            copy: "Kliknij tutaj, aby skopiować adres URL",
+            copied: "Skopiowane"
           },
           download: {
-            unknow: 'Download',
-            shp: 'Download Shapefile',
-            gpx: 'Download GPX',
-            gpkg: 'Download GPKG',
-            csv: 'Download CSV',
-            xls: 'Download XLS',
-            geotiff: "Download GEOTIFF",
-            geotiff_map_extent: "Download GEOTIFF(current view extent)"
+            unknow: "Pobierać",
+            shp: "Pobierz ShapeFile",
+            gpx: "Pobierz GPX",
+            gpkg: "Pobierz GPKG",
+            csv: "Pobierz CSV",
+            xls: "Pobierz XLS",
+            geotiff: "Pobierz Geotiff",
+            geotiff_map_extent: "Pobierz Geotiff (Obecny zasięg View)"
           }
         }
       },
       wps: {
-        list_process: "List of process",
-        tooltip: 'Click on map'
+        list_process: "Lista procesu",
+        tooltip: "Kliknij mapę"
       }
     },
     credits: {
-      g3wSuiteFramework: "Application based on OS framework",
-      g3wSuiteDescription: "Publish and manage your QGIS projects on the web",
-      productOf: "Framework developed by",
+      g3wSuiteFramework: "Aplikacja oparta na strukturze systemu operacyjnego",
+      g3wSuiteDescription: "Publikuj i zarządzaj projektami QGIS w Internecie",
+      productOf: "Ramy opracowane przez"
     },
-    toggle_color_scheme: "Toggle color scheme",
-    logout: "Logout",
-    no_other_projects: "No more project for this group",
-    no_other_groups: "No more groups for this Macrogroup",
-    yes: "Yes",
-    no: "No",
-    back: "Back",
-    backto: "Back to ",
-    changemap: "Change Map",
-    change_session: "Change Session",
-    component: "Generic Component",
-    search: "Search",
-    no_results: "No results found",
-    print: "Print",
-    create_print: "Create Print",
-    dosearch: "Search",
-    catalog: "Map",
-    data: "Data",
+    toggle_color_scheme: "Przełącz kolorystykę",
+    logout: "Wyloguj",
+    no_other_projects: "Nigdy więcej projektu dla tej grupy",
+    no_other_groups: "Nigdy więcej grup dla tej makrogrupy",
+    yes: "Tak",
+    no: "NIE",
+    back: "Z powrotem",
+    backto: "Wrócić do",
+    changemap: "Zmień mapę",
+    change_session: "Zmień sesję",
+    component: "Komponent ogólny",
+    search: "Szukaj",
+    no_results: "Nie znaleziono wyników",
+    print: "Wydrukować",
+    create_print: "Utwórz druk",
+    dosearch: "Szukaj",
+    catalog: "Mapa",
+    data: "Dane",
     externalwms: "WMS",
-    baselayers: "Base",
-    tools: "Tools",
-    tree: "Layers",
-    legend: "Legend",
-    nobaselayer: "No basemap",
-    street_search: "Find Address",
-    show: "Show",
-    hide: "Hide",
-    copy_form_data: "Copy data",
-    paste_form_data: "Paste",
-    copy_form_data_from_feature: "Copy data from map",
-    error_map_loading: "Error occurs loading map",
-    check_internet_connection_or_server_admin: "Check internet connection or contact admin",
-    could_not_load_vector_layers: "Connection error: Layers can be loaded",
-    server_saver_error: "Error in server saving",
-    server_error: "Server connection error",
-    save: "Save",
-    cancel: "Cancel",
-    close: "Close",
-    /**
-     * @since 3.8.0
-     */
-    dont_show_again: "Don't show again",
-    enlange_reduce: "Enlarge / Reduce",
-    reset_default: "Default size",
-    add: "Add",
-    exitnosave: "Exit without save",
-    annul: "Cancel",
-    layer_is_added: "Layer with same name already added",
+    baselayers: "Baza",
+    tools: "Narzędzia",
+    tree: "Warstwy",
+    legend: "Legenda",
+    nobaselayer: "Brak mapy bazowej",
+    street_search: "Znajdź adres",
+    show: "Pokazywać",
+    hide: "Ukrywać",
+    copy_form_data: "Skopiuj dane",
+    paste_form_data: "Pasta",
+    copy_form_data_from_feature: "Skopiuj dane z mapy",
+    error_map_loading: "Występuje błąd mapy ładowania",
+    check_internet_connection_or_server_admin: "Sprawdź połączenie internetowe lub skontaktuj się z administratorem",
+    could_not_load_vector_layers: "Błąd połączenia: Warstwy można załadować",
+    server_saver_error: "Błąd zapisywania serwera",
+    server_error: "Błąd połączenia serwera",
+    save: "Ratować",
+    cancel: "Anulować",
+    close: "Zamknąć",
+    dont_show_again: "Nie pokazuj ponownie",
+    enlange_reduce: "Powiększ / zmniejsz",
+    reset_default: "Rozmiar domyślny",
+    add: "Dodać",
+    exitnosave: "Wyjdź bez zapisu",
+    annul: "Anulować",
+    layer_is_added: "Warstwa o tej samej nazwie już dodanej",
     sidebar: {
       wms: {
         panel: {
-          title:'Add WMS Layer',
+          title: "Dodaj warstwę WMS",
           label: {
-            position: "Map Position",
-            name: "Name",
-            projections: 'Projection',
-            layers: 'Layers'
+            position: "Pozycja mapy",
+            name: "Nazwa",
+            projections: "Występ",
+            layers: "Warstwy"
           }
         },
-        add_wms_layer: "Add WMS layer",
-        delete_wms_url: "Delete WMS url",
-        layer_id_already_added: "WMS Layer already added",
-        url_already_added: "WMS URL/Name already added",
-        layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
+        add_wms_layer: "Dodaj warstwę WMS",
+        delete_wms_url: "Usuń adres URL WMS",
+        layer_id_already_added: "Już dodana warstwa WMS",
+        url_already_added: "WMS URL/Nazwa już dodana",
+        layer_add_error: "Warstwa WMS nie dodano. Sprawdź wszystkich parametrów lub adresu URL WMS"
       }
     },
     info: {
-      title: "Results",
-      list_of_relations: "List of Relations",
-      open_link: "Open attached document",
-      server_error: "An error occurred from server",
-      no_results: "No results found for this query/search",
-      link_button: "Open"
+      title: "Wyniki",
+      list_of_relations: "Lista relacji",
+      open_link: "Otwarty załączony dokument",
+      server_error: "Wystąpił błąd z serwera",
+      no_results: "Nie znaleziono wyników dla tego zapytania/wyszukiwania",
+      link_button: "otwarty"
     },
     mapcontrols: {
       geolocations: {
-        error: "Can't get your position"
+        error: "Nie mogę zdobyć swojej pozycji"
       },
       geocoding: {
-        choose_layer: "Choose a layer where to add this feature",
-        placeholder: "Address ...",
-        nolayers: "No editable point layers found on this project",
-        noresults: "No results",
-        notresponseserver: "No response from server"
+        choose_layer: "Wybierz warstwę, gdzie dodać tę funkcję",
+        placeholder: "Adres ...",
+        nolayers: "Brak edytowalnych warstw punktowych w tym projekcie",
+        noresults: "Brak wyników",
+        notresponseserver: "Brak odpowiedzi z serwera"
       },
       add_layer_control: {
-        header: "Add Layer",
-        select_projection: "Select layer projection",
-        select_field_to_show: "Select Field to show on map",
-        select_csv_separator: "Select delimiter",
-        select_csv_x_field: "Select X field",
-        select_csv_y_field: "Select Y field",
-        select_color: "Select Layer Color",
-        drag_layer: "Drag and drop layer here"
+        header: "Dodaj warstwę",
+        select_projection: "Wybierz projekcję warstwy",
+        select_field_to_show: "Wybierz pole, aby pokazać na mapie",
+        select_csv_separator: "Wybierz Selimiter",
+        select_csv_x_field: "Wybierz pole x",
+        select_csv_y_field: "Wybierz pole Y.",
+        select_color: "Wybierz kolor warstwy",
+        drag_layer: "Przeciągnij i upuść warstwę tutaj"
       },
       query: {
-        input_relation: "Click to show relations"
+        input_relation: "Kliknij, aby pokazać relacje"
       },
       length: {
-        tooltip: "Length"
+        tooltip: "Długość"
       },
       area: {
-        tooltip: "Area"
+        tooltip: "Obszar"
       },
       screenshot: {
-        error: "Screenshot error creation",
-        securityError: `  
-        <p><b>Security Error</b>: an external layer is preventing map from being printed. To check, proceed as follows:</p>
-        <ol>
-          <li>remove any manually added external layers (eg. WMS layers)</li>
-          <li>force page reload: <code>CTRL + F5</code></li>
-          <li>print again the map</li>
-        </ol>
-        <p>For more info please contact server administrator about: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
-        `
+        error: "Tworzenie błędów z ekranu",
+        securityError: "<p> <b> Błąd bezpieczeństwa </b>: Warstwa zewnętrzna zapobiega wydrukowaniu mapy. Aby sprawdzić, postępuj w następujący sposób: </p> \n         <l> \n           <li> Usuń wszelkie ręcznie dodane warstwy zewnętrzne (np. WMORY WMS) </li> \n           <li> Przeładowanie strony Siły: <DOD> CTRL + F5 </code> </li> \n           <li> Wydrukuj ponownie mapę </li> \n         </ ol> \n         <p> Aby uzyskać więcej informacji, skontaktuj się z administratorem serwera o: <a href=\" (0 }\" style=\"color: #000! Important ;font-weight: Bold ;\"> &#x2139; &#xfe0f; Bezpieczeństwo i skażone płótna </a> </p>
       }
     },
     catalog_items: {
-      helptext: "Right-click on individual layer to access additional features",
+      helptext: "Kliknij indywidualną warstwę prawym przyciskiem myszy, aby uzyskać dostęp do dodatkowych funkcji",
       contextmenu: {
-        zoomtolayer: "Zoom to Layer",
-        open_attribute_table: "Open Attribute Table",
-        show_metadata: "Metadata",
-        styles: 'Styles',
-        vector_color_menu:"Set/Change Color",
-        layer_opacity: "Opacity",
-        filters: "Filters",
+        zoomtolayer: "Zoom do warstwy",
+        open_attribute_table: "Otwórz tabelę atrybutów",
+        show_metadata: "Metadane",
+        styles: "Style",
+        vector_color_menu: "Ustaw/zmiana kolor",
+        layer_opacity: "Nieprzezroczystość",
+        filters: "Filtry"
       }
     },
     dataTable: {
-      previous: "Previous",
-      next: "Next",
-      lengthMenu: "Show _MENU_",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
-      no_data: "No data",
-      nodatafilterd: "No matching records found",
-      infoFiltered: "(filtered from _MAX_ total records)"
+      previous: "Poprzedni",
+      next: "Następny",
+      lengthMenu: "Pokaż menu_",
+      info: "Pokazanie _start_ do _end_ wpisów _total_",
+      no_data: "Brak danych",
+      nodatafilterd: "nie znaleziono pasujacego wyniku",
+      infoFiltered: "(Filtrowane z _max_ całkowitych rekordów)"
     }
-  },
+  }
 };
