@@ -196,7 +196,7 @@ export default {
      * @since 3.9.4
      */
     has_maps() {
-      return this.state.maps.length > 0;
+      return (this.state.maps || []).length > 0;
     },
 
     has_autocomplete() {
