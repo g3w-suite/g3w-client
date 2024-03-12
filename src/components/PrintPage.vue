@@ -7,44 +7,54 @@
   <div id="print-output">
 
     <transition :duration="500" name="fade">
-      <bar-loader :loading="state.downloading && state.layers"/>
+      <bar-loader :loading="state.loading && state.layers"/>
     </transition>
 
-    <!-- PRINT as PDF -->
-    <iframe
-      v-if  = "'pdf' === state.format"
-      ref   = "out"
-      :src = "state.url"
-    ></iframe>
-  
-    <!-- PRINT as PNG -->
-    <div
-      v-else-if = "'png' === state.format"
-      class     = "g3w-print-png-output"
-    >
-      <div id="g3w-print-header">
-        <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
-          <a :href="state.url" :download="`download.${state.format}`">
-            <button
-              @click             = "downloadImage"
-              class              = "btn skin-button skin-tooltip-left"
-              data-placement     = "left"
-              data-toggle        = "tooltip"
-              data-container     = "body"
-              v-t-tooltip.create = "'sdk.print.download_image'"
-              :class             = "g3wtemplate.getFontClass('download')"
-              role               = "button"
-            ></button>
-          </a>
+    <template v-if="state.layers">
+        <!-- PRINT as PDF -->
+        <iframe
+          v-if  = "'pdf' === state.format"
+          ref   = "out"
+          :src = "state.url"
+        ></iframe>
+
+      <!-- PRINT as PNG -->
+      <div
+        v-else-if = "'png' === state.format"
+        class     = "g3w-print-png-output"
+      >
+        <div id="g3w-print-header">
+          <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
+            <a :href="state.url" :download="`download.${state.format}`">
+              <button
+                @click.stop="downloadImage"
+                class="btn skin-button skin-tooltip-left"
+                data-placement="left"
+                data-toggle="tooltip"
+                data-container="body"
+                v-t-tooltip.create="'sdk.print.download_image'"
+                :class="g3wtemplate.getFontClass('download')"
+                role="button"></button>
+            </a>
+          </div>
+        </div>
+        <div
+          v-if="state.url"
+          class="g3w-print-url"
+        >
+          <img
+            ref="out"
+            :src="state.url"
+          >
         </div>
       </div>
-      <div v-if="state.url" class="g3w-print-url">
-        <img ref="out" :src="state.url">
-      </div>
-    </div>
 
-    <h4 v-if="!state.layers" v-t="'sdk.print.no_layers'"></h4>
-
+    </template>
+    <!---NO PRINT LAYERS-->
+    <h4
+      v-else
+      v-t="'sdk.print.no_layers'">
+    </h4>
   </div>
 </template>
 
@@ -60,7 +70,7 @@ export default {
 
   data() {
     return {
-      state: {} || this.$options.state,
+      state: this.$options.service.state || {},
     }
   },
 
