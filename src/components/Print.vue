@@ -352,6 +352,29 @@ export default {
           this.state.url       = null;
           this.state.layers    = true;
 
+          const output = await print({
+            rotation:             this.state.rotation,
+            dpi:                  this.state.dpi,
+            template:             this.state.template,
+            scale:                this.state.scale,
+            format:               this.state.format,
+            labels:               this.state.labels,
+            is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
+            maps:                 this.state.maps.map(m => ({
+                name:         m.name,
+                preset_theme: m.preset_theme,
+                scale:        m.overview ? m.scale : this.state.scale,
+                extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
+            })),
+          }, ProjectsRegistry.getCurrentProject().getOwsMethod());
+          this.state.url       = output.url;
+          this.state.layers    = output.layers;
+
+          //In case of already print page open, need to close it otherwise is appended on a dom element
+          if (this._page) {
+            GUI.closeContent();
+          }
+
           this._page = new Component({ service: { state: this.state }, vueComponentObject: vueComp });
 
           // set print area after closing content
@@ -366,23 +389,6 @@ export default {
             title: 'print',
             perc: 100
           });
-          const output = await print({
-            rotation:             this.state.rotation,
-            dpi:                  this.state.dpi,
-            template:             this.state.template,
-            scale:                this.state.scale,
-            format:               this.state.format,
-            labels:               this.state.labels,
-            is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
-            maps:                 this.state.maps.map(m => ({
-              name:         m.name,
-              preset_theme: m.preset_theme,
-              scale:        m.overview ? m.scale : this.state.scale,
-              extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
-            })),
-          }, ProjectsRegistry.getCurrentProject().getOwsMethod());
-          this.state.url       = output.url;
-          this.state.layers    = output.layers;
         }
 
       } catch(e) {
