@@ -2,6 +2,46 @@ import ProjectsRegistry             from 'store/projects';
 import ApplicationState             from 'store/application-state';
 import { convertObjectToUrlParams } from 'utils/convertObjectToUrlParams';
 
+const FETCH = {
+  /**
+   * @param { Object } opts
+   * @param opts.url
+   * @param opts.params
+   * @param opts.mime_type
+   * @return {Promise<{mime_type, layers: boolean, url: string}>}
+   */
+  async POST({ url, params, mime_type }) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      body: convertObjectToUrlParams(params),
+    });
+    if (!response.ok) {
+      //@TODO Need to translate
+      throw new Error(500 === response.status ? 'Internal Server Error' : 'Request Failed');
+    }
+    return {
+      mime_type,
+      layers: true,
+      url: URL.createObjectURL(await response.blob()),
+    };
+  },
+  /**
+   * @param { Object } opts
+   * @param opts.url
+   * @param opts.params
+   * @param opts.mime_type
+   * @return {Promise<unknown>}
+   */
+  async GET({url, params, mime_type}) {
+    return {
+      url: `${url}?${convertObjectToUrlParams(params)}`,
+      layers: true,
+      mime_type
+    };
+  },
+};
+
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
   ?MAP=/home/marco/geodaten/projekte/composertest.qgs
@@ -47,7 +87,7 @@ export function print(opts = {}, method = 'GET') {
  const store  = ProjectsRegistry.getCurrentProject().getLayersStore();
  const layers = store.getLayers({ PRINTABLE: { scale: opts.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
 
- // skip when ..
+ // No layers are printable (i.e., no visible layers)
  if (!layers.length) {
    return Promise.resolve({layers: false})
  }
@@ -82,43 +122,3 @@ export function print(opts = {}, method = 'GET') {
    },
  });
 }
-
-const FETCH = {
-  /**
-   * @param { Object } opts
-   * @param opts.url
-   * @param opts.params
-   * @param opts.mime_type
-   * @return {Promise<{mime_type, layers: boolean, url: string}>}
-   */
-  async POST({ url, params, mime_type }) {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body: convertObjectToUrlParams(params),
-    });
-    if (!response.ok) {
-      //@TODO Need to translate
-      throw new Error(500 === response.status ? 'Internal Server Error' : 'Request Failed');
-    }
-    return {
-      mime_type,
-      layers: true,
-      url: URL.createObjectURL(await response.blob()),
-    };
-  },
-  /**
-   * @param { Object } opts
-   * @param opts.url
-   * @param opts.params
-   * @param opts.mime_type
-   * @return {Promise<unknown>}
-   */
-  async GET({url, params, mime_type}) {
-    return {
-      url: `${url}?${convertObjectToUrlParams(params)}`,
-      layers: true,
-      mime_type
-    };
-  },
-};
