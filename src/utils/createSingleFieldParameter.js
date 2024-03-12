@@ -1,5 +1,5 @@
 import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
-import { createFilterFromString } from './createFilterFromString';
+import { createFilterFromString }      from './createFilterFromString';
 
 /**
  * @param { Object } opts
@@ -37,7 +37,7 @@ export function createSingleFieldParameter({
     return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}`;
   }
 
-  //in case of search_endpoint equal to ows
+  //in the case of search_endpoint equal to ows
 
   // store filter string 
   let filter = '';
@@ -59,4 +59,4 @@ export function createSingleFieldParameter({
     filter,
   });
 
-};
+}
