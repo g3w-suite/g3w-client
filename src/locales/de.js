@@ -273,12 +273,7 @@ export default {
           no_geometry: 'Keine Geometrie in der Antwort',
           help: {
             title:'Hilfe - Abfrage nach Polygon',
-            message: `
-                <ul>
-                  <li>Wählen Sie einen Polygon Layer auf TOC.</li>
-                  <li>Stellen Sie sicher, dass der Layer sichtbar ist.</li>
-                  <li>Klicken Sie auf ein Feature des ausgewählten Layers.</li>
-                </ul>`
+            message: "<ul><li>Wählen Sie einen Polygon Layer auf TOC.</li><li>Stellen Sie sicher, dass der Layer sichtbar ist.</li><li>Klicken Sie auf ein Feature des ausgewählten Layers.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -289,10 +284,7 @@ export default {
           nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
           help: {
             title: 'Hilfe - Abfrage des BBox Layers',
-            message:`
-                 <ul>
-                  <li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li>
-                 </ul>`
+            message: "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>"
           }
         },
         addlayer: {

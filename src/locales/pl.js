@@ -273,7 +273,7 @@ export default {
           no_geometry: "Brak geometrii w odpowiedzi",
           help: {
             title: "Przewodnik - zapytanie według Polygonu",
-            message: "<ul> \n                   <li> Wybierz warstwę wielokąta na Toc. </li> \n                   <li> upewnij się, że warstwa jest widoczna. </li> \n                   <li> Kliknij funkcję wybranej warstwy. </li> \n                 </ul>
+            message: "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -284,7 +284,7 @@ export default {
           nolayers_visible: "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
           help: {
             title: "Przewodnik - zapytanie BBOX Warstwa",
-            message: "<ul> \n                   <li> Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc </li> \n                   </ul>
+            message: "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>"
           }
         },
         addlayer: {
@@ -500,7 +500,15 @@ export default {
       },
       screenshot: {
         error: "Tworzenie błędów z ekranu",
-        securityError: "<p> <b> Błąd bezpieczeństwa </b>: Warstwa zewnętrzna zapobiega wydrukowaniu mapy. Aby sprawdzić, postępuj w następujący sposób: </p> \n         <l> \n           <li> Usuń wszelkie ręcznie dodane warstwy zewnętrzne (np. WMORY WMS) </li> \n           <li> Przeładowanie strony Siły: <DOD> CTRL + F5 </code> </li> \n           <li> Wydrukuj ponownie mapę </li> \n         </ ol> \n         <p> Aby uzyskać więcej informacji, skontaktuj się z administratorem serwera o: <a href=\" (0 }\" style=\"color: #000! Important ;font-weight: Bold ;\"> &#x2139; &#xfe0f; Bezpieczeństwo i skażone płótna </a> </p>
+        securityError: `  
+        <p><b>Błąd bezpieczeństwa</b>: Warstwa zewnętrzna zapobiega wydrukowaniu mapy. Aby sprawdzić, postępuj w następujący sposób:</p>
+        <ol>
+          <li>Usuń wszelkie ręcznie dodane warstwy zewnętrzne (np. WMORY WMS)</li>
+          <li>Przeładowanie strony Siły: <code> CTRL + F5</code></li>
+          <li>Wydrukuj ponownie mapę</li>
+        </ol>
+        <p>Aby uzyskać więcej informacji, skontaktuj się z administratorem serwera o: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        `
       }
     },
     catalog_items: {
