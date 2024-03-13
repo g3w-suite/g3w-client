@@ -168,7 +168,7 @@ function ProjectsRegistry() {
     return _
       .sortBy(this.getProjects()
       .filter(project => {
-        if (!_.isNil(project.listable)) {
+        if (null !== project.listable  && undefined !== project.listable) {
           return project.listable;
         }
         if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) {
