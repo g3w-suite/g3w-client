@@ -1044,47 +1044,32 @@ proto._setupControls = function() {
           break;
 
         case 'overview':
-          if (!isMobile.any) {
-            //case no overview map (Panoramic map)
-            if (!this.config.overviewproject) {
-              return;
-            }
-            const overviewProjectGid = this.config.overviewproject.gid;
-            if (overviewProjectGid) {
-
-              ProjectsRegistry.getProject(overviewProjectGid)
-                .then(project => {
-                  const overViewMapLayers = this.getOverviewMapLayers(project);
-                  const viewOptions = this._calculateViewOptions({
-                    width: 200, // at moment hardcoded
-                    height: 150,
-                    project
-                  });
-                  //create a view for overview map
-                  const view = new ol.View(viewOptions);
-                  //get main map View
-                  const mainView = this.getMap().getView();
-                  view.on('change:center', function() {
-                    const currentCenter = this.getCenter();
-                    const center = mainView.constrainCenter(currentCenter);
-                    if (center[0] !== currentCenter[0] || center[1] !== currentCenter[1]) {
-                      view.setCenter(center);
-                    }
-                  });
-                  control = this.createMapControl(controlType, {
-                    add: false,
-                      options: {
-                        position: 'bl',
-                        className: `ol-overviewmap ol-custom-overviewmap ${Object.keys(mapcontrols).find(mc => 'zoomhistory' === mc) ? 'left': ''}`,
-                        collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
-                        label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                        collapsed: false,
-                        layers: overViewMapLayers,
-                        view
-                      }
-                  });
+          if (!isMobile.any && this.config.overviewproject && this.config.overviewproject.gid) {
+            ProjectsRegistry
+              .getProject(this.config.overviewproject.gid)
+              .then(project => {
+                //create a view for overview map
+                const view = new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })); // at moment hardcoded
+                view.on('change:center', function() {
+                  const current = this.getCenter();
+                  const center  = this.getMap().getView().constrainCenter(current);
+                  if (center[0] !== current[0] || center[1] !== current[1]) {
+                    view.setCenter(center);
+                  }
                 });
-            }
+                control = this.createMapControl(controlType, {
+                  add: false,
+                    options: {
+                      view,
+                      position:      'bl',
+                      collapsed:     false,
+                      className:     `ol-overviewmap ol-custom-overviewmap ${Object.keys(mapcontrols).find(mc => 'zoomhistory' === mc) ? 'left': ''}`,
+                      collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                      label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
+                      layers:        this.getOverviewMapLayers(project),
+                    }
+                });
+              });
           }
           break;
 
