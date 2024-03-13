@@ -23,6 +23,7 @@ function ProjectsRegistry() {
   this.initialized         = false;
   this.projectType         = null;
   this.currentProjectGroup = null;
+  //store overview (Panoramic map) project
   this.overviewproject     = undefined;
 
   this.setters = {
