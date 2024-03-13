@@ -214,13 +214,13 @@ export default {
         /** @TODO check if has one reason to trim  */
         input.value = ['textfield', 'textField'].includes(input.type) ? input.value : input.value.trim();
 
-        this.$options.service.state.forminputs.find(i => i.id == input.id).value = input.value;
+        this.state.forminputs.find(i => i.id == input.id).value = input.value;
 
         // change dependency fields
-        const subscribers = this.$options.service.state.input.dependencies[input.attribute] || []; // get Dependencies
+        const subscribers = this.state.input.dependencies[input.attribute] || []; // get Dependencies
 
         if (subscribers.length) {
-          this.$options.service.fillDependencyInputs({ subscribers, field: input.attribute, value: input.value, });
+          this.fillDependencyInputs({ subscribers, field: input.attribute, value: input.value, });
         }
       } catch(e) {
         console.warn(e);
@@ -232,9 +232,9 @@ export default {
      * Check the current value of dependance
      */
     getDependanceCurrentValue(field) {
-      const dep        = this.$options.service.state.input.dependance;
-      const cache_deps = this.$options.service.state.input.cached_deps;
-      const state      = this.$options.service.state;
+      const dep        = this.state.input.dependance;
+      const cache_deps = this.state.input.cached_deps;
+      const state      = this.state;
       return dep[field] ? cache_deps[dep[field]]._currentValue : state.forminputs.find(f => f.attribute === field).value;
     },
 
@@ -242,10 +242,10 @@ export default {
      * Fill all dependencies inputs based on value
      */
     async fillDependencyInputs({field, subscribers=[], value=SEARCH_ALLVALUE}={}) {
-      const dep                       = this.$options.service.state.input.dependance;
-      const cached_deps               = this.$options.service.state.input.cached_deps;
-      const filter                    = this.$options.service.state.filter;
-      const state                     = this.$options.service.state;
+      const dep                       = this.state.input.dependance;
+      const cached_deps               = this.state.input.cached_deps;
+      const filter                    = this.state.filter;
+      const state                     = this.state;
       const isRoot                    = undefined === dep[field];
       const invalid                   = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
 
@@ -319,8 +319,8 @@ export default {
       try {
         // exclude autocomplete subscribers
         const no_autocomplete = subscribers.filter(s => 'autocompletefield' !== s.type);
-        // set undefined because if it has a subscribe input with valuerelations widget
-        // needs to extract the value of the field to get filter data from relation layer
+        // set undefined because if it has a subscribed input with valuerelations widget
+        // needs to extract the value of the field to get filter data from the relation layer
         const data = await state.search_layers[0].getFilterData({
           formatter: 0, // since v3.x, force to use raw value
           field: createFieldsDependenciesAutocompleteParameter({ field, value, filter, inputdependance: dep, cachedependencies: cached_deps }),
@@ -329,8 +329,6 @@ export default {
         for (let i = 0; i < no_autocomplete.length; i++) {
           const subscribe = no_autocomplete[i];
           const _vals = new Set(); // ensure unique values
-
-          let valuemap_values = 'valuemap' === subscribe.widget && [...subscribe.options._values];
 
           // parent features
           (data.data[0].features || []).forEach(feat => {
@@ -341,7 +339,7 @@ export default {
           // case value map
           if ('valuemap' === subscribe.widget) {
             const valuemap_data = [..._vals];
-            valuemap_values
+            [...subscribe.options._values]
               .filter(v =>  -1 !== valuemap_data.indexOf(v.key))
               .forEach(v => subscribe.options.values.push(v));
           }
@@ -377,8 +375,7 @@ export default {
               .map(v => ({ key: v, value: v }))
               .forEach(v => subscribe.options.values.push(v));
           }
-
-          cached[isRoot ? value : this.getDependanceCurrentValue(field)][value][subscribe.attribute] = subscribe.options.values.slice(1);
+          cached[isRoot ? value : this.getDependanceCurrentValue(field)][subscribe.attribute] = subscribe.options.values.slice(1);
           subscribe.options.disabled = false;
         }
       } catch (e) {
@@ -451,7 +448,7 @@ export default {
           try      {
             ok({
               results: await createInputsFormFromFilter({
-                state: this.$options.service.state,
+                state: this.state,
                 fromField: { output: 'autocomplete', field: forminput.attribute, value: d.data.q.value }
               })
             });
