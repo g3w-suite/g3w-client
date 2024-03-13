@@ -1045,37 +1045,45 @@ proto._setupControls = function() {
 
         case 'overview':
           if (!isMobile.any) {
-            if (!this.config.overviewproject) return;
+            //case no overview map (Panoramic map)
+            if (!this.config.overviewproject) {
+              return;
+            }
             const overviewProjectGid = this.config.overviewproject.gid;
             if (overviewProjectGid) {
+
               ProjectsRegistry.getProject(overviewProjectGid)
-              .then(project => {
-                const overViewMapLayers = this.getOverviewMapLayers(project);
-                const viewOptions = this._calculateViewOptions({
-                  width: 200, // at moment hardcoded
-                  height: 150,
-                  project
+                .then(project => {
+                  const overViewMapLayers = this.getOverviewMapLayers(project);
+                  const viewOptions = this._calculateViewOptions({
+                    width: 200, // at moment hardcoded
+                    height: 150,
+                    project
+                  });
+                  //create a view for overview map
+                  const view = new ol.View(viewOptions);
+                  //get main map View
+                  const mainView = this.getMap().getView();
+                  view.on('change:center', function() {
+                    const currentCenter = this.getCenter();
+                    const center = mainView.constrainCenter(currentCenter);
+                    if (center[0] !== currentCenter[0] || center[1] !== currentCenter[1]) {
+                      view.setCenter(center);
+                    }
+                  });
+                  control = this.createMapControl(controlType, {
+                    add: false,
+                      options: {
+                        position: 'bl',
+                        className: `ol-overviewmap ol-custom-overviewmap ${Object.keys(mapcontrols).find(mc => 'zoomhistory' === mc) ? 'left': ''}`,
+                        collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                        label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
+                        collapsed: false,
+                        layers: overViewMapLayers,
+                        view
+                      }
+                  });
                 });
-                const view = new ol.View(viewOptions);
-                const mainView = this.getMap().getView();
-                view.on('change:center', function() {
-                  const currentCenter = this.getCenter();
-                  const center = mainView.constrainCenter(currentCenter);
-                  center[0] !== currentCenter[0] || center[1] !== currentCenter[1] && view.setCenter(center);
-                });
-                control = this.createMapControl(controlType, {
-                  add: false,
-                  options: {
-                    position: 'bl',
-                    className: 'ol-overviewmap ol-custom-overviewmap',
-                    collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
-                    label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                    collapsed: false,
-                    layers: overViewMapLayers,
-                    view
-                  }
-                });
-              });
             }
           }
           break;
@@ -1995,7 +2003,7 @@ proto.createMapLayer = function(layer) {
 
 proto.getOverviewMapLayers = function(project) {
   const WMSLayer = require('core/layers/map/wmslayer');
-  let layers = [];
+  const layers = [];
 
   Object
     .entries(
@@ -2003,13 +2011,13 @@ proto.getOverviewMapLayers = function(project) {
         project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false }),
         layer => layer.getMultiLayerId()
       )
-    ).forEach(([id, layers]) => {
+    ).forEach(([id, _layers]) => {
       const mapLayer = new WMSLayer({
         url:   project.getWmsUrl(),
         id:    'overview_layer_' + id,
-        tiled: layers[0].state.tiled,
+        tiled: _layers[0].state.tiled,
       });
-      layers.reverse().forEach(layer => mapLayer.addLayer(layer));
+      _layers.reverse().forEach(layer => mapLayer.addLayer(layer));
       layers.push(mapLayer.getOLLayer(true));
     });
   return layers.reverse();
@@ -2021,8 +2029,10 @@ proto.getOverviewMapLayers = function(project) {
  * @param options
  */
 proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add g3w_time parameter to force request of map layer from server
-  if (options.force) options.g3w_time = Date.now();
+  // if force adds g3w_time parameter to force request of map layer from server
+  if (options.force) {
+    options.g3w_time = Date.now();
+  }
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
     this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
@@ -2051,7 +2061,7 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   ///
 };
 
-/** Methos to register and unregister map loadmap
+/** Methods to register and unregister load map
  *
  * */
 proto.registerMapLayerLoadingEvents = function(mapLayer) {
@@ -3004,17 +3014,17 @@ function OLControl(type) {
     };
 
     this.layout = function(map) {
-      // skip when ..
+      //No map is passed
       if (!map) {
         return;
       }
       const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
       if (previusControls.length) {
-        const position        =  this.getPosition();
+        const position     =  this.getPosition();
         let previusControl = previusControls.last();
-        const offset = position.left ? previusControl.position().left : previusControl.position().right;
-        const hWhere = position.left ? 'left' : 'right';
-        const hOffset = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+        const offset       = position.left ? previusControl.position().left : previusControl.position().right;
+        const hWhere       = position.left ? 'left' : 'right';
+        const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
         $(this.element).css(hWhere, hOffset+'px');
       }
     };
@@ -3034,7 +3044,8 @@ function OLControl(type) {
       element: this._control.element
     });
 
-  };
+  }
+
   ol.inherits(_ctor, ol.control.Control);
   return _ctor;
 }
