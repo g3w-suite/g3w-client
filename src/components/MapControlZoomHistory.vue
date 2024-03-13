@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="ol-zoom-history ol-unselectable ol-control back">
+  <div class="ol-zoom-history ol-unselectable ol-control">
     
     <!-- STEP BACK -->
     <div v-t-tooltip:top.create = "'sdk.mapcontrols.zoomhistory.zoom_last'">
@@ -92,8 +92,8 @@
 </script>
 
 <style scoped>
-  .back {
-    display: flex;
+  .ol-zoom-history {
+    display: flex !important;
     gap: 5px;
   }
 </style>
