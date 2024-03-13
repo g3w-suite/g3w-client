@@ -703,7 +703,9 @@ proto.getProject = function() {
 proto.getMap = function() {
   try {
     return this.viewer.map;
-  } catch(err) {}
+  } catch(e) {
+    console.warn(e);
+  }
 };
 
 proto.getMapCanvas = function(map) {
@@ -1049,10 +1051,11 @@ proto._setupControls = function() {
               .getProject(this.config.overviewproject.gid)
               .then(project => {
                 //create a view for overview map
+                const map = this.getMap();
                 const view = new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })); // at moment hardcoded
                 view.on('change:center', function() {
-                  const current = this.getCenter();
-                  const center  = this.getMap().getView().constrainCenter(current);
+                  const current = view.getCenter();
+                  const center  = map.getView().constrainCenter(current);
                   if (center[0] !== current[0] || center[1] !== current[1]) {
                     view.setCenter(center);
                   }
