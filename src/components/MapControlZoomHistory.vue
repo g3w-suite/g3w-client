@@ -4,31 +4,29 @@
 -->
 
 <template>
-  <div
-    style="display:flex;gap: 5px; "
-    class="ol-zoom-history ol-unselectable ol-control">
+  <div class="ol-zoom-history ol-unselectable ol-control back">
     
     <!-- STEP BACK -->
     <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_last'">
       <button
-        @click.stop.prevent="last"
-        type="button"
-        v-disabled="history.index === 0">
+        @click.stop.prevent = "last"
+        type                = "button"
+        v-disabled          = "history.index === 0"
+      >
         <i :class="g3wtemplate.getFontClass('reply')"></i>
       </button>
     </div>
 
-
     <!-- STEP FORWARD -->
     <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_next'">
       <button
-        @click.stop.prevent="next"
-        type="button"
-        v-disabled="hasEmptyHistory">
+        @click.stop.prevent = "next"
+        type                = "button"
+        v-disabled          = "hasEmptyHistory"
+      >
         <i :class="g3wtemplate.getFontClass('share')"></i>
       </button>
     </div>
-
 
   </div>
 </template>
@@ -94,5 +92,8 @@
 </script>
 
 <style scoped>
-
+  .back {
+    display: flex;
+    gap: 5px;
+  }
 </style>
