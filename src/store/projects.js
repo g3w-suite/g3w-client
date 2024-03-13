@@ -168,8 +168,12 @@ function ProjectsRegistry() {
     return _
       .sortBy(this.getProjects()
       .filter(project => {
-        if (!_.isNil(project.listable)) return project.listable;
-        if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) return false;
+        if (!_.isNil(project.listable)) {
+          return project.listable;
+        }
+        if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) {
+          return false;
+        }
         return project;
       }), 'title');
   };
