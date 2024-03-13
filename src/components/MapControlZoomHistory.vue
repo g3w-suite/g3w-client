@@ -25,7 +25,6 @@
         @click.stop.prevent="next"
         type="button"
         v-disabled="hasEmptyHistory">
-
         <i :class="g3wtemplate.getFontClass('share')"></i>
       </button>
     </div>
@@ -37,6 +36,7 @@
 
 <script>
   import GUI from 'services/gui';
+
   const { debounce } = require('utils');
 
   export default {
@@ -50,15 +50,15 @@
       }
     },
     methods: {
-      last(){
+      last() {
         this.history.index--;
         this.setMapExtent();
       },
-      next(){
+      next() {
         this.history.index++;
         this.setMapExtent();
       },
-      setMapExtent(){
+      setMapExtent() {
         GUI.getService('map').getMap().getView().fit(this.history.items[this.history.index])
       }
     },
@@ -87,7 +87,7 @@
     },
 
     beforeDestroy() {
-      ol.Object.unByKey(this.changeKeyEvent);
+      ol.Observable.unByKey(this.changeKeyEvent);
     }
     
   }
