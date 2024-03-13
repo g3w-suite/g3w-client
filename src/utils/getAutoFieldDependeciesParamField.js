@@ -1,15 +1,17 @@
-import { getCurrentFieldDependance } from "utils/getCurrentFieldDependance";
+import { getCurrentFieldDependance }                     from "utils/getCurrentFieldDependance";
 import { createFieldsDependenciesAutocompleteParameter } from 'utils/createFieldsDependenciesAutocompleteParameter'
 
 /**
  * @param field
+ * @param inputdependance
+ * @param cachedependencies
  *
  * @returns {*}
  */
-export function getAutoFieldDependeciesParamField (field) {
-  const fieldDependency = getCurrentFieldDependance(field);
+export function getAutoFieldDependeciesParamField ({ field, inputdependance, cachedependencies }) {
+  const fieldDependency = getCurrentFieldDependance({ field, inputdependance, cachedependencies });
   if (fieldDependency) {
     const [field, value] = Object.entries(fieldDependency)[0];
-    return this.createFieldsDependenciesAutocompleteParameter({field, value})
+    return createFieldsDependenciesAutocompleteParameter({field, value, inputdependance, cachedependencies})
   }
-};
+}

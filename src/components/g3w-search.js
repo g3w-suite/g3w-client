@@ -139,4 +139,4 @@ export function SearchPanel(opts = {}, show = false) {
   });
 
   return panel;
-};
+}

@@ -14,8 +14,8 @@ export function createFieldsDependenciesAutocompleteParameter({
   field,
   value,
   filter,
-  inputdependance,
-  cachedependencies,
+  inputdependance = {},
+  cachedependencies = {},
 } = {}) {
   // get current field dependance
   let dep = inputdependance[field];
