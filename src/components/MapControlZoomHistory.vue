@@ -7,7 +7,7 @@
   <div class="ol-zoom-history ol-unselectable ol-control back">
     
     <!-- STEP BACK -->
-    <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_last'">
+    <div v-t-tooltip:top.create = "'sdk.mapcontrols.zoomhistory.zoom_last'">
       <button
         @click.stop.prevent = "last"
         type                = "button"
@@ -18,7 +18,7 @@
     </div>
 
     <!-- STEP FORWARD -->
-    <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_next'">
+    <div v-t-tooltip:top.create = "'sdk.mapcontrols.zoomhistory.zoom_next'">
       <button
         @click.stop.prevent = "next"
         type                = "button"
