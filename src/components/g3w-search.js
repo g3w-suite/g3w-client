@@ -122,7 +122,12 @@ export function SearchPanel(opts = {}, show = false) {
         console.trace(...args, arguments);
         const [w, h] = GUI.getService('map').getMap().getSize();
         const hide   = GUI.isMobile() && (0 === w || 0 === h);
-        setTimeout(() => { if (hide) { GUI.hideSidebar(); } panel.getService()._run({...args, state }); }, hide ? 0 : 600);
+        setTimeout(() => {
+          if (hide) {
+            GUI.hideSidebar();
+          }
+          panel.getService()._run({...args, state });
+        }, hide ? 0 : 600);
       }),
       clear() {
         panel.getService().state = null;
