@@ -211,7 +211,7 @@ export default {
     changeInput(input) {
       this.state.searching = true;
       try {
-        /** @TODO check if has one reason to trim  */
+        /** @TODO check if it has one reason to trim  */
         input.value = ['textfield', 'textField'].includes(input.type) ? input.value : input.value.trim();
 
         this.state.forminputs.find(i => i.id == input.id).value = input.value;
@@ -492,7 +492,7 @@ export default {
         this.changeInput({
           id:        $(e.target).attr('id'),
           attribute: $(e.target).attr('name'),
-          value:     e.params.data ? e.params.data.id : SEARCH_ALLVALUE,
+          value:     e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE,
           type:      forminput.type
         });
       });
