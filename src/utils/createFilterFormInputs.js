@@ -26,7 +26,7 @@ export function createFilterFormInputs({
 
     case 'ows':
       if (isLayerArray) {
-        layer.forEach(layer =>{
+        layer.forEach(layer => {
           const expression = new Expression();
           expression.createExpressionFromFilter(inputs, layer.getWMSLayerName());
           filter = new Filter();
@@ -85,4 +85,4 @@ export function createFilterFormInputs({
   }
 
   return isLayerArray ? filters  : filter;
-};
+}
