@@ -310,14 +310,15 @@ export default {
         cached[_val][value] = cached[_val][value] || {}
       }
 
+      // exclude autocomplete subscribers
+      const no_autocomplete = subscribers.filter(s => 'autocompletefield' !== s.type);
       // set disable
-      if (!subscribers.some(s => 'autocompletefield' !== s.type)) {
-        subscribers.forEach(s => s.options.dependance_strict && (subscribe.options.disabled = false));
+      if (no_autocomplete.length > 0) {
+        no_autocomplete.forEach(s => s.options.dependance_strict && (s.options.disabled = false));
       }
 
       try {
-        // exclude autocomplete subscribers
-        const no_autocomplete = subscribers.filter(s => 'autocompletefield' !== s.type);
+
         // set undefined because if it has a subscribed input with valuerelations widget
         // needs to extract the value of the field to get filter data from the relation layer
         const data = await state.search_layers[0].getFilterData({
