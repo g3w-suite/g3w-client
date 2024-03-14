@@ -15,7 +15,6 @@ import { resolve }                    from 'utils/resolve';
 import { noop }                       from 'utils/noop';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
-import { createInputsFormFromFilter } from 'utils/createInputsFormFromFilter';
 import { doSearch }                   from 'utils/doSearch';
 import { debounce }                   from 'utils/debounce';
 
@@ -105,8 +104,6 @@ export function SearchPanel(opts = {}, show = false) {
       cached_deps: {},
     },
   };
-
-  createInputsFormFromFilter({ state });
 
   const panel = new Panel({
     ...opts,

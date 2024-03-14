@@ -514,6 +514,8 @@ export default {
   },
 
   async mounted() {
+    await createInputsFormFromFilter({ state: this.state });
+
     for (const forminput of this.state.forminputs) {
       await this.initSelect2Field(forminput);
       await this.initDateTimeField(forminput);
