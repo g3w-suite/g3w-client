@@ -115,95 +115,95 @@ export async function createInputsFormFromFilter({ state, fromField }) {
     //In case of select input
     if ('selectfield' ===  input.type) {
       // Request to server value for a specific select field
-       (async function () {
-        // ensure setting values options to empty array when undefined
-        input.loading = true;
+       Promise
+        .resolve()
+        .then(async () => {
+          // ensure setting values options to an empty array when undefined
+          input.loading = true;
 
-        let _values;
+          let _values;
 
-        try {
+          try {
 
-          // in case of dependence load right now
-          if ((dep && dep_strict) || dep_strict) {
-            return;
-          }
+            // in case of dependence load right now
+            if ((dep && dep_strict) || dep_strict) {
+              return;
+            }
 
-          // if defined layer_id dependence
-          if (input.options.layer_id) {
-            //array of unique values
-            const uniqueValues = await getUniqueValuesFromField({
-              layers: state.search_layers,
+            // if defined layer_id dependence
+            if (input.options.layer_id) {
+              //array of unique values
+              const uniqueValues = await getUniqueValuesFromField({
+                layers: state.search_layers,
+                field: input.attribute,
+                inputdependance,
+                cachedependencies,
+              });
+              const filter = createFilterFormInputs({
+                layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
+                search_endpoint,
+                inputs: [{value: uniqueValues, attribute: input.options.value, logicop: "OR", operator: "eq"}]
+              });
+              // get value relation values
+              try {
+                const {data = []} = await DataRouterService.getData('search:features', {
+                  inputs: {
+                    layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
+                    search_endpoint,
+                    filter,
+                    ordering: input.options.key
+                  },
+                  outputs: false
+                });
+                const values = [];
+                (data && data[0] && data[0].features || []).forEach(feature => {
+                  values.push({key: feature.get(input.options.key), value: feature.get(input.options.value)})
+                });
+                _values = values;
+              } catch (e) {
+                console.warn(e);
+                _values = [];
+              }
+              return;
+            }
+
+            // Relation reference
+            if (input.options.relation_reference) {
+              //call filter data with fformatter
+              const response = await searchLayer.getFilterData({fformatter: input.attribute});
+              //check response
+              if (response && response.result && response.data) {
+                input.options.values = response.data.map(([value, key]) => ({key, value}));
+              }
+            }
+
+            // return mapped values
+            if (input.options.values.length > 0) {
+              _values = input.options.values.filter(value => SEARCH_ALLVALUE !== value);
+              return;
+            }
+            _values = await getUniqueValuesFromField({
               field: input.attribute,
+              layers: state.search_layers,
               inputdependance,
               cachedependencies,
-            });
-            const filter = createFilterFormInputs({
-              layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
-              search_endpoint,
-              inputs: [{value: uniqueValues, attribute: input.options.value, logicop: "OR", operator: "eq"}]
-            });
-            // get value relation values
-            try {
-              const {data = []} = await DataRouterService.getData('search:features', {
-                inputs: {
-                  layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
-                  search_endpoint,
-                  filter,
-                  ordering: input.options.key
-                },
-                outputs: false
-              });
-              const values = [];
-              (data && data[0] && data[0].features || []).forEach(feature => {
-                values.push({key: feature.get(input.options.key), value: feature.get(input.options.value)})
-              });
-              _values = values;
-            } catch (e) {
-              console.warn(e);
-              _values = [];
+            })
+          } catch (e) {
+            console.warn(e);
+            values.length = 0;
+          } finally {
+            if (undefined !== _values) {
+              values.splice(0, values.length, ...valuesToKeysValues(_values));
             }
-            return;
-          }
-
-          // Relation reference
-          if (input.options.relation_reference) {
-            //call filter data with fformatter
-            const response = await searchLayer.getFilterData({fformatter: input.attribute});
-            //check response
-            if (response && response.result && response.data) {
-              input.options.values = response.data.map(([value, key]) => ({key, value}));
+            input.loading = false;
+            if (values.length && SEARCH_ALLVALUE !== values[0].value) {
+              values.unshift({value: SEARCH_ALLVALUE});
+            } else {
+              values.push({value: SEARCH_ALLVALUE});
             }
+            input.value = SEARCH_ALLVALUE;
           }
-
-          // return mapped values
-          if (input.options.values.length > 0) {
-            _values = input.options.values.filter(value => SEARCH_ALLVALUE !== value);
-            return;
-          }
-          _values = await getUniqueValuesFromField({
-            field: input.attribute,
-            layers: state.search_layers,
-            inputdependance,
-            cachedependencies,
-          })
-        } catch (e) {
-          console.warn(e);
-          values.length = 0;
-        } finally {
-          if (undefined !== _values) {
-            values.splice(0, values.length, ...valuesToKeysValues(_values));
-          }
-          input.loading = false;
-          if (values.length && SEARCH_ALLVALUE !== values[0].value) {
-            values.unshift({value: SEARCH_ALLVALUE});
-          } else {
-            values.push({value: SEARCH_ALLVALUE});
-          }
-          input.value = SEARCH_ALLVALUE;
-        }
-
-      })();
-
+        });
     }
 
     // there is a dependence
