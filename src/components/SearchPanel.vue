@@ -449,7 +449,7 @@ export default {
             ok({
               results: await createInputsFormFromFilter({
                 state: this.state,
-                fromField: { output: 'autocomplete', field: forminput.attribute, value: d.data.q.value }
+                fromField: { output: 'autocomplete', field: forminput.attribute, value: d.data.q }
               })
             });
           }

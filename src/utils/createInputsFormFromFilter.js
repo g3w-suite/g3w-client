@@ -22,7 +22,8 @@ export async function createInputsFormFromFilter({ state, fromField }) {
 
   // Get unique values from field
   if (fromField) {
-    let { field, value, output } = fromField.field;
+    let { field, value, output } = fromField;
+
     let data = [];
     try {
 
@@ -48,10 +49,9 @@ export async function createInputsFormFromFilter({ state, fromField }) {
       }
 
       const layers = (1 === state.search_layers.length ? [state.search_layers[0]] : state.search_layers);
-
-      // get unique value from each layers
       const response = Array.from(
-        await Promise
+        (
+          await Promise
           .allSettled(layers.map(l => l.getFilterData({
             field:      autoFieldDependecies,
             suggest:    value !== undefined ? `${field}|${value}` : undefined,
@@ -59,6 +59,7 @@ export async function createInputsFormFromFilter({ state, fromField }) {
             ordering:   field,
             fformatter: undefined,
           })))
+        )
           .filter(d => 'fulfilled' === d.status)
           .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
       )
