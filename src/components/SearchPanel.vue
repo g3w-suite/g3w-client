@@ -313,7 +313,6 @@ export default {
       // set disable
       if (!subscribers.some(s => 'autocompletefield' !== s.type)) {
         subscribers.forEach(s => s.options.dependance_strict && (subscribe.options.disabled = false));
-        return;
       }
 
       try {
