@@ -10,10 +10,11 @@ import { sortNumericArray }                              from 'utils/sortNumeric
 import { getUniqueValuesFromField }                      from "utils/getUniqueValuesFromField";
 
 /**
- * Create right search structure for search form
+ * Create the right search structure for search form
  * 
  * @param { Object } opts
- * @param { Array } opts.filter input
+ * @param { Object } opts.state
+ * @param { Object } opts.fromField
  * 
  * @returns { Promise<void> } form input
  */
@@ -25,7 +26,7 @@ export async function createInputsFormFromFilter({ state, fromField }) {
     let data = [];
     try {
 
-      // get current field dependance
+      // get current field dependence
       let dep = state.input.dependance[fromField.field];
       if (dep && (state.input.cached_deps[dep] && SEARCH_ALLVALUE !== state.input.cached_deps[dep]._currentValue)) {
         dep = { [dep]: state.input.cached_deps[dep]._currentValue }; // dependance as value
@@ -64,8 +65,8 @@ export async function createInputsFormFromFilter({ state, fromField }) {
 
       // check if is not an empty array
       switch (response.length && typeof response[0]) {
-        case 'string': data = sortAlphabeticallyArray(response);
-        case 'number': data = sortNumericArray(response);
+        case 'string': data = sortAlphabeticallyArray(response); break;
+        case 'number': data = sortNumericArray(response); break;
         default:       data = response;
       }
 
