@@ -17,6 +17,7 @@ import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { createInputsFormFromFilter } from 'utils/createInputsFormFromFilter';
 import { doSearch }                   from 'utils/doSearch';
+import { debounce }                   from 'utils/debounce';
 
 import * as vueComp                   from 'components/Search.vue';
 import * as vueSearchComp             from 'components/SearchPanel.vue';
@@ -113,19 +114,16 @@ export function SearchPanel(opts = {}, show = false) {
     id:                 opts.id        || getUniqueDomId(),
     title:              opts.title     || 'search',
     vueComponentObject: opts.component || vueSearchComp,
-    service:            opts.service   || Object.assign(new G3WObject({ debounces: {
-      run: {
-        fnc: (...args) => {
-          console.trace(...args, arguments);
-          const [w, h] = GUI.getService('map').getMap().getSize();
-          const hide   = GUI.isMobile() && (0 === w || 0 === h);
-          setTimeout(() => { if (hide) { GUI.hideSidebar(); } panel.getService()._run({...args, state }); }, hide ? 0 : 600);
-        }
-      },
-    }}), {
+    service:            opts.service   || Object.assign(new G3WObject, {
       state,
       doSearch,
       _run: doSearch,
+      run: debounce((...args) => {
+        console.trace(...args, arguments);
+        const [w, h] = GUI.getService('map').getMap().getSize();
+        const hide   = GUI.isMobile() && (0 === w || 0 === h);
+        setTimeout(() => { if (hide) { GUI.hideSidebar(); } panel.getService()._run({...args, state }); }, hide ? 0 : 600);
+      }),
       clear() {
         panel.getService().state = null;
       },
