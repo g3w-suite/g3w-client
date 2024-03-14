@@ -106,7 +106,37 @@ export function SearchPanel(opts = {}, show = false) {
     },
   };
 
-  createInputsFormFromFilter({ state });
+  const service = opts.service || Object.assign(new G3WObject, {
+    state,
+    doSearch,
+    /** @since 3.10.0 init function */
+    init() {
+      createInputsFormFromFilter({ state });
+    },
+    run: debounce((...args) => {
+      const [w, h] = GUI.getService('map').getMap().getSize();
+      const hide   = GUI.isMobile() && (0 === w || 0 === h);
+      setTimeout(() => {
+        if (hide) {
+          GUI.hideSidebar();
+        }
+        panel.getService().doSearch({...args, state });
+      }, hide ? 0 : 600);
+    }),
+    clear() {
+      panel.getService().state = null;
+    },
+    /** @param { 'wms' | 'vector' } search_endpoint api type */
+    createFilter: (search_endpoint) => createFilterFormInputs({
+      layer: state.search_layers,
+      inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+      search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
+    }),
+  });
+
+  if ('function' === typeof service.init) {
+    service.init();
+  }
 
   const panel = new Panel({
     ...opts,
@@ -114,31 +144,7 @@ export function SearchPanel(opts = {}, show = false) {
     id:                 opts.id        || getUniqueDomId(),
     title:              opts.title     || 'search',
     vueComponentObject: opts.component || vueSearchComp,
-    service:            opts.service   || Object.assign(new G3WObject, {
-      state,
-      doSearch,
-      _run: doSearch,
-      run: debounce((...args) => {
-        console.trace(...args, arguments);
-        const [w, h] = GUI.getService('map').getMap().getSize();
-        const hide   = GUI.isMobile() && (0 === w || 0 === h);
-        setTimeout(() => {
-          if (hide) {
-            GUI.hideSidebar();
-          }
-          panel.getService()._run({...args, state });
-        }, hide ? 0 : 600);
-      }),
-      clear() {
-        panel.getService().state = null;
-      },
-      /** @param { 'wms' | 'vector' } search_endpoint api type */
-      createFilter: (search_endpoint) => createFilterFormInputs({
-        layer: state.search_layers,
-        inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
-        search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
-      }),
-    }),
+    service,
   });
 
   return panel;
