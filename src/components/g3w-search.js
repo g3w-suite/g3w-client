@@ -86,17 +86,17 @@ export function SearchComponent(opts = {}) {
  */
 export function SearchPanel(opts = {}, show = false) {
   const state = {
-    forminputs:           [],
-    loading:              {},
-    searching:            false,
+    forminputs:           [], // Array of inputs belongs to form search
+    loading:              {}, // store loading state of each input and each dependency
+    searching:            false, //Boolean. If true, search request from server is starts. False no search
     title:                opts.name,
     /** @type { 'search' | 'search_1n' } */
     type:                 opts.type || 'search',
     queryurl:             (opts.options || {}).queryurl,
     return:               (opts.options || {}).return || 'data',
     filter:               (opts.options || {}).filter,
-    search_endpoint:      opts.search_endpoint,
-    search_1n_relationid: opts.options.search_1n_relationid,
+    search_endpoint:      opts.search_endpoint, //ows, api
+    search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
     search_layers: [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
     input: {
@@ -135,7 +135,7 @@ export function SearchPanel(opts = {}, show = false) {
   });
 
   if ('function' === typeof service.init) {
-    service.init();
+    service.init(); //initialize service, for example, to handle state
   }
 
   const panel = new Panel({
