@@ -155,7 +155,7 @@ import { convertQGISDateTimeFormatToMoment }             from 'utils/convertQGIS
 import { toRawType }                                     from 'utils/toRawType';
 import { createSingleFieldParameter }                    from 'utils/createSingleFieldParameter';
 import { createFieldsDependenciesAutocompleteParameter } from 'utils/createFieldsDependenciesAutocompleteParameter';
-import { createInputsFormFromFilter }                    from 'utils/createInputsFormFromFilter';
+import { getDataForSearchInput }                         from "../utils/getDataForSearchInput";
 import resizeMixin                                       from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
@@ -214,12 +214,14 @@ export default {
         /** @TODO check if it has one reason to trim  */
         input.value = ['textfield', 'textField'].includes(input.type) ? input.value : input.value.trim();
 
+        //get input from forminputs and set value
         this.state.forminputs.find(i => i.id == input.id).value = input.value;
 
-        // change dependency fields
+        // get subscriber input of current inpu
         const subscribers = this.state.input.dependencies[input.attribute] || []; // get Dependencies
 
-        if (subscribers.length) {
+        if (subscribers.length > 0) {
+          //fill data of subscribers inputs based of input value
           this.fillDependencyInputs({ subscribers, field: input.attribute, value: input.value, });
         }
       } catch(e) {
@@ -274,7 +276,7 @@ export default {
           setTimeout(() => s.options.values = [...s.options._allvalues]);
         }
 
-        s.value = 'selectfield' !== s.type ? SEARCH_ALLVALUE : null;
+        s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
       });
 
       // check if cache field values are set
@@ -447,7 +449,7 @@ export default {
         transport: async (d, ok, ko) => {
           try      {
             ok({
-              results: await createInputsFormFromFilter({
+              results: await getDataForSearchInput({
                 state: this.state,
                 fromField: { output: 'autocomplete', field: forminput.attribute, value: d.data.q }
               })
