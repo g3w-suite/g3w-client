@@ -111,7 +111,7 @@ export function SearchPanel(opts = {}, show = false) {
     doSearch,
     /** @since 3.10.0 init function */
     init() {
-      createInputsFormFromFilter({ state });
+      createInputsFormFromFilter(state);
     },
     run: debounce((...args) => {
       const [w, h] = GUI.getService('map').getMap().getSize();

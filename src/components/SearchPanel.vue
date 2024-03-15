@@ -155,8 +155,9 @@ import { convertQGISDateTimeFormatToMoment }             from 'utils/convertQGIS
 import { toRawType }                                     from 'utils/toRawType';
 import { createSingleFieldParameter }                    from 'utils/createSingleFieldParameter';
 import { createFieldsDependenciesAutocompleteParameter } from 'utils/createFieldsDependenciesAutocompleteParameter';
-import { getDataForSearchInput }                         from "../utils/getDataForSearchInput";
 import resizeMixin                                       from 'mixins/resize';
+import { sortAlphabeticallyArray }                       from "utils/sortAlphabeticallyArray";
+import { sortNumericArray }                              from "utils/sortNumericArray";
 
 const { t } = require('core/i18n/i18n.service');
 
@@ -175,6 +176,71 @@ export default {
   },
 
   methods: {
+    /** @since 3.10.0 **/
+    async getDataForSearchInput(opts={}) {
+      // Get unique values from field (case autocomplete)
+      let { field, value, output } = opts;
+
+      let data = [];
+      try {
+
+        // get current field dependence
+        let dep = this.state.input.dependance[field];
+        //check if the current input field has a dependence with another input field
+        //In case true, need to check if
+        if (dep && (this.state.input.cached_deps[dep] && SEARCH_ALLVALUE !== this.state.input.cached_deps[dep]._currentValue)) {
+          // dependence as value
+          dep = { [dep]: this.state.input.cached_deps[dep]._currentValue };
+        } else if (dep) {
+          dep = { [dep]: undefined }; // undefined = so it no adding on list of field dependence
+        }
+
+        let autoFieldDependecies;
+
+        if (dep) {
+          const [field, value] = Object.entries(dep)[0];
+          autoFieldDependecies = createFieldsDependenciesAutocompleteParameter({
+            field,
+            value,
+            filter: this.state.filter,
+            inputdependance: this.state.input.dependance,
+            cachedependencies: this.state.input.cached_deps,
+          })
+        }
+
+        const layers = (1 === this.state.search_layers.length ? [this.state.search_layers[0]] : this.state.search_layers);
+        const response = Array.from(
+          (
+            await Promise
+              .allSettled(layers.map(l => l.getFilterData({
+                field:      autoFieldDependecies,
+                suggest:    value !== undefined ? `${field}|${value}` : undefined,
+                unique:     field,
+                ordering:   field,
+                fformatter: undefined,
+              })))
+          )
+            .filter(d => 'fulfilled' === d.status)
+            .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
+        )
+
+        // check if is not an empty array
+        switch (response.length && typeof response[0]) {
+          case 'string': data = sortAlphabeticallyArray(response); break;
+          case 'number': data = sortNumericArray(response); break;
+          default:       data = response;
+        }
+
+        if ('autocomplete' === output) {
+          data = data.map(d => ({ id: d, text: d }));
+        }
+      } catch(e) {
+        console.warn(e);
+      }
+
+      return data;
+
+    },
 
     resize() {
       SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
@@ -449,10 +515,7 @@ export default {
         transport: async (d, ok, ko) => {
           try      {
             ok({
-              results: await getDataForSearchInput({
-                state: this.state,
-                fromField: { output: 'autocomplete', field: forminput.attribute, value: d.data.q }
-              })
+              results: await this.getDataForSearchInput({ output: 'autocomplete', field: forminput.attribute, value: d.data.q })
             });
           }
           catch(e) { ko(e); }

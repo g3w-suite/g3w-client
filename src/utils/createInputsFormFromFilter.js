@@ -5,18 +5,14 @@ import { toRawType }                                     from 'utils/toRawType';
 import { getUniqueDomId }                                from 'utils/getUniqueDomId';
 import { createFilterFormInputs }                        from 'utils/createFilterFormInputs';
 import { getUniqueValuesFromField }                      from "utils/getUniqueValuesFromField";
-import { getDataForSearchInput }                          from "./getDataForSearchInput";
 
 /**
- * Create the right search structure for search form
+ * Create the right search structure for a search form
  * 
- * @param { Object } opts
- * @param { Object } opts.state
- * @param { Object } opts.fromField {field, value, output}
- * 
- * @returns { Promise<Array|void> } form input
+ * @param { Object } state
+ *
  */
-export async function createInputsFormFromFilter({ state }) {
+export async function createInputsFormFromFilter(state) {
 
   const inputdependance   = state.input.dependance;
   const inputdependencies = state.input.dependencies;
