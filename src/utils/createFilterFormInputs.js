@@ -16,11 +16,11 @@ export function createFilterFormInputs({
   inputs          = [],
 }) {
 
-  //check if is a single layer of array of layers
+  //check if is a single layer of an array of layers
   const isLayerArray = Array.isArray(layer);
 
   let filter;
-  let filters = []; // in case of layer is an array
+  let filters = []; // in the case of layer is an array
 
   switch (search_endpoint) {
 
