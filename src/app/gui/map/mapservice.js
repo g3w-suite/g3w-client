@@ -1066,13 +1066,23 @@ proto._setupControls = function() {
                       view,
                       position:      'bl',
                       collapsed:     false,
-                      className:     `ol-overviewmap ol-custom-overviewmap ${Object.keys(mapcontrols).find(mc => 'zoomhistory' === mc) ? 'left': ''}`,
+                      className:     'ol-overviewmap ol-custom-overviewmap',
                       collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
                       label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
                       layers:        this.getOverviewMapLayers(project),
                     }
                 });
-              });
+                /** @since 3.10.0 Move another bottom left map controls bottom to a left of overview control**/
+                document.querySelector('.g3w-map-controls-left-bottom').style.left = '230px';
+                const observer = new MutationObserver((mutations) => {
+                  mutations.forEach((mutation) => {
+                    if ("class" === mutation.attributeName) {
+                      document.querySelector('.g3w-map-controls-left-bottom').style.left = mutation.target.classList.contains('ol-collapsed') ? '50px' : '230px';
+                    }
+                  });
+                });
+                observer.observe(document.querySelector('.ol-custom-overviewmap'), {attributes: true});
+              })
           }
           break;
 
