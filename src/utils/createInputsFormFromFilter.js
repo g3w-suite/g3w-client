@@ -36,21 +36,17 @@ export async function createInputsFormFromFilter(state) {
       operator:  state.filter[i].op,
       logicop:   i === (state.filter.length - 1) ? null : state.filter[i].logicop,
       id:        state.filter[i].id || getUniqueDomId(),
-      loading:   false,
+      loading:   true,
       widget:    null,
     };
 
-    // In case of select input
-    // Request to server value for a specific select field
-    // ensure setting values options to an empty array when undefined
-    if ('selectfield' ===  input.type) {
-      input.loading = true;
-    }
-
     try {
 
-      // get value relation values
-      // if defined layer_id dependence
+      // In case of select input
+      // Request to server value for a specific select field
+      // ensure setting values options to an empty array when undefined
+
+      // get value-relation values when `layer_id` dependence is defined
       if ('selectfield' ===  input.type && !input.options.dependance_strict && input.options.layer_id) {
         const response = await DataRouterService.getData('search:features', {
           inputs: {
@@ -76,16 +72,16 @@ export async function createInputsFormFromFilter(state) {
           },
           outputs: false
         });
-        input.options.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({key: f.get(input.options.key), value: f.get(input.options.value)}));
+        input.options.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({ key: f.get(input.options.key), value: f.get(input.options.value) }));
       }
 
       // Relation reference
       if ('selectfield' ===  input.type && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference) {
-        //call filter data with fformatter
+        // call filter data with fformatter
         const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
-        //check response
+        // check response
         if (response && response.result && response.data) {
-          input.options.values = response.data.map(([value, key]) => ({ key, value })).filter(v => SEARCH_ALLVALUE !== v);
+          input.options.values = response.data.map(([value, key]) => ({ key, value }));
         }
         if (!input.options.values.length > 0) {
           input.options.values = await getUniqueValuesFromField({
@@ -94,6 +90,10 @@ export async function createInputsFormFromFilter(state) {
             inputdependance:   dep,
             cachedependencies: state.input.cached_deps,
           })
+        }
+        // Set key value for select
+        if ('Object' !== toRawType(input.options.values[0])) {
+          input.options.values = input.options.values.map(value => ({ key: value, value }));
         }
       }
 
@@ -110,27 +110,18 @@ export async function createInputsFormFromFilter(state) {
       input.options.values = [];
     }
 
-    // Set key value for select
-    if ('selectfield' ===  input.type && input.options.values && input.options.values.length && 'Object' !== toRawType(input.options.values[0])) {
-      input.options.values = input.options.values.map(value => ({ key: value, value }));
+    // set `SEARCH_ALLVALUE` as first element of array
+    if ('selectfield' ===  input.type && input.options.values.length) {
+      input.options.values = input.options.values.filter(v => SEARCH_ALLVALUE !== v).unshift({ value: SEARCH_ALLVALUE })
     }
-  
-    if ('selectfield' ===  input.type && input.options.values.length && SEARCH_ALLVALUE !== input.options.values[0].value) {
-      input.options.values.unshift({ value: SEARCH_ALLVALUE });
-    }
-
-    if ('selectfield' ===  input.type && !(input.options.values.length && SEARCH_ALLVALUE !== input.options.values[0].value)) {
-      input.options.values.push({ value: SEARCH_ALLVALUE });
-    }
-  
+    
     if ('selectfield' ===  input.type) {
-      input.value   = SEARCH_ALLVALUE;
-      input.loading = false;;
+      input.value = SEARCH_ALLVALUE;
     }
 
     // there is a dependence
     if (input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type)) {
-      dep[input.attribute]                    = input.options.dependance;        // set dependence of input
+      dep[input.attribute]                        = input.options.dependance;        // set dependence of input
       state.loading[input.options.dependance]     = false;
       input.options.disabled                      = input.options.dependance_strict; // disabled for BACKCOMP
       // set input dependencies
@@ -144,15 +135,15 @@ export async function createInputsFormFromFilter(state) {
       input.options._values = [...input.options.values];
     }
 
-    // Set input widget
+    // set value-relation widget
     if (input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type) && !input.options.values.length && input.options.layer_id) {
       input.widget = 'valuerelation';
     }
 
-    if (!input.options.dependance_strict) {
-      // add form inputs to list of search input
-      state.forminputs.push(input);
-    }
+    input.loading = false;
+
+    // add form inputs to list of search input
+    state.forminputs.push(input);
   }
 
 }
