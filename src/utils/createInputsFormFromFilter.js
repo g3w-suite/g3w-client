@@ -1,12 +1,12 @@
-import { SEARCH_ALLVALUE }                               from 'app/constant';
-import CatalogLayersStoresRegistry                       from 'store/catalog-layers';
-import DataRouterService                                 from 'services/data';
-import { toRawType }                                     from 'utils/toRawType';
-import { getUniqueDomId }                                from 'utils/getUniqueDomId';
-import { createFilterFormInputs }                        from 'utils/createFilterFormInputs';
-import { sortAlphabeticallyArray }                       from 'utils/sortAlphabeticallyArray';
-import { sortNumericArray }                              from 'utils/sortNumericArray';
-import { createFieldsDependenciesAutocompleteParameter } from 'utils/createFieldsDependenciesAutocompleteParameter'
+import { SEARCH_ALLVALUE }            from 'app/constant';
+import CatalogLayersStoresRegistry    from 'store/catalog-layers';
+import DataRouterService              from 'services/data';
+import { toRawType }                  from 'utils/toRawType';
+import { getUniqueDomId }             from 'utils/getUniqueDomId';
+import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
+import { sortAlphabeticallyArray }    from 'utils/sortAlphabeticallyArray';
+import { sortNumericArray }           from 'utils/sortNumericArray';
+import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 
 /**
  * Create the right search structure for a search form
@@ -15,8 +15,6 @@ import { createFieldsDependenciesAutocompleteParameter } from 'utils/createField
  *
  */
 export async function createInputsFormFromFilter(state) {
-
-  console.log(_getUniqueValuesFromField);
 
   const dep             = state.input.dependance;
   const deps            = state.input.dependencies;
@@ -50,7 +48,6 @@ export async function createInputsFormFromFilter(state) {
       // Request to server value for a specific select field
       // ensure setting values options to an empty array when undefined
 
-
       // get value-relation values when `layer_id` dependence is defined
       if ('selectfield' ===  input.type && !input.options.dependance_strict && input.options.layer_id) {
         const response = await DataRouterService.getData('search:features', {
@@ -62,12 +59,7 @@ export async function createInputsFormFromFilter(state) {
               search_endpoint,
               inputs: [{
                 // array of unique values
-                value: await _getUniqueValuesFromField({
-                  layers:            state.search_layers,
-                  field:             input.attribute,
-                  inputdependance:   dep,
-                  cachedependencies: state.input.cached_deps,
-                }),
+                value: await _getUniqueValuesFromField({ state, field: input.attribute }),
                 attribute: input.options.value,
                 logicop: "OR",
                 operator: "eq"
@@ -89,12 +81,7 @@ export async function createInputsFormFromFilter(state) {
           input.options.values = response.data.map(([value, key]) => ({ key, value }));
         }
         if (!input.options.values.length > 0) {
-          input.options.values = await _getUniqueValuesFromField({
-            field:             input.attribute,
-            layers:            state.search_layers,
-            inputdependance:   dep,
-            cachedependencies: state.input.cached_deps,
-          })
+          input.options.values = await _getUniqueValuesFromField({ state, field: input.attribute })
         }
         // Set key value for select
         if ('Object' !== toRawType(input.options.values[0])) {
@@ -153,19 +140,47 @@ export async function createInputsFormFromFilter(state) {
 
 }
 
-async function _getUniqueValuesFromField({
-  layers = [],
-  field,
-  value,
-  output,
-  inputdependance = {},
-  cachedependencies = {},
-}) {
+async function _getUniqueValuesFromField({ state, field }) {
+
   try {
+
+    const layers            = state.search_layers || [];
+    const inputdependance   = state.input.dependance || {};
+    const cachedependencies = state.input.cached_deps || {};
+
+    const createFieldsDeps = ({
+      fields = [],
+      field,
+      value,
+      filter,
+    } = {}) => {
+    
+      // get current field dependance
+      let dep = inputdependance[field];
+      if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
+        dep = ({ [dep]: cachedependencies[dep]._currentValue }); // dependance as value
+      } else if (dep) {
+        dep = ({ [dep]: undefined  });                           // undefined = so it no add on list o field dependance
+      }
+    
+      if (undefined !== value) {
+        fields.push(createSingleFieldParameter({ field, value, operator: filter.find(f =>  f.attribute === field).op }));
+      }
+      if (!dep) {
+        return fields.length && fields.join() || undefined;
+      }
+      const [dfield, dvalue] = Object.entries(dep)[0];
+      // In case of some input dependency is not filled
+      if (undefined !== dvalue) {
+        // need to set to lower a case for api purpose
+        const { op, logicop } = filter.find(f =>  f.attribute === dfield).op;
+        fields.unshift(`${dfield}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
+      }
+      return createFieldsDeps({ fields, dfield /* @FIXME field ? */, filter });
+    }
 
     // check if a field has a dependance
     let dep = inputdependance[field];
-
     if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
       dep = ({ [dep]: cachedependencies[dep]._currentValue }); // dependance as value
     } else if (dep) {
@@ -176,13 +191,8 @@ async function _getUniqueValuesFromField({
     const response = Array.from(
       await Promise
         .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
-          field: createFieldsDependenciesAutocompleteParameter({
-            field: dep,
-            value: Object.entries(dep)[0][1],
-            inputdependance,
-            cachedependencies
-          }),
-          suggest: value !== undefined ? `${field}|${value}` : undefined,
+          field: createFieldsDeps({ field: dep, value: Object.entries(dep)[0][1] }),
+          suggest: undefined,
           unique: field,
           ordering: field,
           // TODO ?
@@ -198,7 +208,7 @@ async function _getUniqueValuesFromField({
       case 'number': response = sortNumericArray(response);
     }
 
-    return response.map(d => 'autocomplete' === output ? ({ id: d, text: d }) : d);
+    return response;
 
   } catch(e) { console.warn(e); }
 
