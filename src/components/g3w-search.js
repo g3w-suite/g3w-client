@@ -106,13 +106,11 @@ export function SearchPanel(opts = {}, show = false) {
     },
   };
 
+  createInputsFormFromFilter(state);
+
   const service = opts.service || Object.assign(new G3WObject, {
     state,
     doSearch,
-    /** @since 3.10.0 init function */
-    init() {
-      createInputsFormFromFilter(state);
-    },
     run: debounce((...args) => {
       const [w, h] = GUI.getService('map').getMap().getSize();
       const hide   = GUI.isMobile() && (0 === w || 0 === h);
@@ -133,10 +131,6 @@ export function SearchPanel(opts = {}, show = false) {
       search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
     }),
   });
-
-  if ('function' === typeof service.init) {
-    service.init(); //initialize service, for example, to handle state
-  }
 
   const panel = new Panel({
     ...opts,
