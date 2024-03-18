@@ -85,22 +85,16 @@ export async function createInputsFormFromFilter(state) {
         const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
         //check response
         if (response && response.result && response.data) {
-          input.options.values = response.data.map(([value, key]) => ({ key, value }));
+          input.options.values = response.data.map(([value, key]) => ({ key, value })).filter(v => SEARCH_ALLVALUE !== v);
         }
-      }
-
-      // return mapped values
-      if ('selectfield' ===  input.type && !input.options.dependance_strict && !input.options.layer_id && input.options.values.length > 0) {
-        input.options.values = input.options.values.filter(v => SEARCH_ALLVALUE !== v);
-      }
-
-      if ('selectfield' ===  input.type && !input.options.dependance_strict && !input.options.layer_id && !input.options.values.length > 0) {
-        input.options.values = await getUniqueValuesFromField({
-          field:             input.attribute,
-          layers:            state.search_layers,
-          inputdependance:   dep,
-          cachedependencies: state.input.cached_deps,
-        })
+        if (!input.options.values.length > 0) {
+          input.options.values = await getUniqueValuesFromField({
+            field:             input.attribute,
+            layers:            state.search_layers,
+            inputdependance:   dep,
+            cachedependencies: state.input.cached_deps,
+          })
+        }
       }
 
     } catch (e) {
@@ -136,7 +130,7 @@ export async function createInputsFormFromFilter(state) {
 
     // there is a dependence
     if (input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type)) {
-      dep[input.attribute]                        = input.options.dependance;        // set dependence of input
+      dep[input.attribute]                    = input.options.dependance;        // set dependence of input
       state.loading[input.options.dependance]     = false;
       input.options.disabled                      = input.options.dependance_strict; // disabled for BACKCOMP
       // set input dependencies
