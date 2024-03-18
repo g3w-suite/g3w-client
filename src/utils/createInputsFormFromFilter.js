@@ -4,7 +4,9 @@ import DataRouterService                                 from 'services/data';
 import { toRawType }                                     from 'utils/toRawType';
 import { getUniqueDomId }                                from 'utils/getUniqueDomId';
 import { createFilterFormInputs }                        from 'utils/createFilterFormInputs';
-import { getUniqueValuesFromField }                      from "utils/getUniqueValuesFromField";
+import { sortAlphabeticallyArray }                       from 'utils/sortAlphabeticallyArray';
+import { sortNumericArray }                              from 'utils/sortNumericArray';
+import { createFieldsDependenciesAutocompleteParameter } from 'utils/createFieldsDependenciesAutocompleteParameter'
 
 /**
  * Create the right search structure for a search form
@@ -13,6 +15,8 @@ import { getUniqueValuesFromField }                      from "utils/getUniqueVa
  *
  */
 export async function createInputsFormFromFilter(state) {
+
+  console.log(_getUniqueValuesFromField);
 
   const dep             = state.input.dependance;
   const deps            = state.input.dependencies;
@@ -46,6 +50,7 @@ export async function createInputsFormFromFilter(state) {
       // Request to server value for a specific select field
       // ensure setting values options to an empty array when undefined
 
+
       // get value-relation values when `layer_id` dependence is defined
       if ('selectfield' ===  input.type && !input.options.dependance_strict && input.options.layer_id) {
         const response = await DataRouterService.getData('search:features', {
@@ -57,7 +62,7 @@ export async function createInputsFormFromFilter(state) {
               search_endpoint,
               inputs: [{
                 // array of unique values
-                value: await getUniqueValuesFromField({
+                value: await _getUniqueValuesFromField({
                   layers:            state.search_layers,
                   field:             input.attribute,
                   inputdependance:   dep,
@@ -84,7 +89,7 @@ export async function createInputsFormFromFilter(state) {
           input.options.values = response.data.map(([value, key]) => ({ key, value }));
         }
         if (!input.options.values.length > 0) {
-          input.options.values = await getUniqueValuesFromField({
+          input.options.values = await _getUniqueValuesFromField({
             field:             input.attribute,
             layers:            state.search_layers,
             inputdependance:   dep,
@@ -146,4 +151,56 @@ export async function createInputsFormFromFilter(state) {
     state.forminputs.push(input);
   }
 
+}
+
+async function _getUniqueValuesFromField({
+  layers = [],
+  field,
+  value,
+  output,
+  inputdependance = {},
+  cachedependencies = {},
+}) {
+  try {
+
+    // check if a field has a dependance
+    const dep = inputdependance[field];
+
+    if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
+      dep = ({ [dep]: cachedependencies[dep]._currentValue }); // dependance as value
+    } else if (dep) {
+      dep = ({ [dep]: undefined  });                           // undefined = so it no add on list o field dependance
+    }
+
+    // get unique value from each layers
+    const response = Array.from(
+      await Promise
+        .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
+          field: createFieldsDependenciesAutocompleteParameter({
+            field: dep,
+            value: Object.entries(dep)[0][1],
+            inputdependance,
+            cachedependencies
+          }),
+          suggest: value !== undefined ? `${field}|${value}` : undefined,
+          unique: field,
+          ordering: field,
+          // TODO ?
+          // fformatter: opts.fformatter 
+        })))
+        .filter(d => 'fulfilled' === d.status)
+        .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
+    )
+
+    // sort array
+    switch (response.length && typeof response[0]) {
+      case 'string': response = sortAlphabeticallyArray(response);
+      case 'number': response = sortNumericArray(response);
+    }
+
+    return response.map(d => 'autocomplete' === output ? ({ id: d, text: d }) : d);
+
+  } catch(e) { console.warn(e); }
+
+  return [];
 }

@@ -26,11 +26,7 @@ export function createFieldsDependenciesAutocompleteParameter({
   }
 
   if (undefined !== value) {
-    fields.push(createSingleFieldParameter({
-      field,
-      value,
-      operator: filter.find(input =>  input.attribute === field).op
-    }));
+    fields.push(createSingleFieldParameter({ field, value, operator: filter.find(f =>  f.attribute === field).op }));
   }
   if (!dep) {
     return fields.length && fields.join() || undefined;
@@ -39,8 +35,8 @@ export function createFieldsDependenciesAutocompleteParameter({
   // In case of some input dependency is not filled
   if (undefined !== dvalue) {
     // need to set to lower a case for api purpose
-    const { op, logicop } = filter.find(input =>  input.attribute === dfield).op;
+    const { op, logicop } = filter.find(f =>  f.attribute === dfield).op;
     fields.unshift(`${dfield}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
   }
-  return createFieldsDependenciesAutocompleteParameter({ fields, dfield, filter, inputdependance, cachedependencies });
+  return createFieldsDependenciesAutocompleteParameter({ fields, dfield /* @FIXME field ? */, filter, inputdependance, cachedependencies });
 }
