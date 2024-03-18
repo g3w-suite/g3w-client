@@ -18,24 +18,24 @@ export async function createInputsFormFromFilter(state) {
   const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
-  (state.filter || []).forEach(async (d, i, a) => {
+  for (let i = 0; i <= (state.filter || []).length - 1; i++) {
     let has_error;
 
     const input = {
-      label:     d.label,
-      attribute: d.attribute,
-      type:      d.input.type || 'textfield',
+      label:     state.filter[i].label,
+      attribute: state.filter[i].attribute,
+      type:      state.filter[i].input.type || 'textfield',
       options:   {
         // check if it has a dependence
         dependance_strict: false,
         dependance: false,
         values: [],
-        ...d.input.options,
+        ...state.filter[i].input.options,
       },
       value:     null,
-      operator:  d.op,
-      logicop:   i === (a.length - 1) ? null : d.logicop,
-      id:        d.id || getUniqueDomId(),
+      operator:  state.filter[i].op,
+      logicop:   i === (state.filter.length - 1) ? null : state.filter[i].logicop,
+      id:        state.filter[i].id || getUniqueDomId(),
       loading:   false,
       widget:    null,
     };
@@ -159,6 +159,6 @@ export async function createInputsFormFromFilter(state) {
       // add form inputs to list of search input
       state.forminputs.push(input);
     }
+  }
 
-  });
 }
