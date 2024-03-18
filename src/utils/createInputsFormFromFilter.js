@@ -164,7 +164,7 @@ async function _getUniqueValuesFromField({
   try {
 
     // check if a field has a dependance
-    const dep = inputdependance[field];
+    let dep = inputdependance[field];
 
     if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
       dep = ({ [dep]: cachedependencies[dep]._currentValue }); // dependance as value
