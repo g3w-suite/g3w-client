@@ -190,6 +190,7 @@ export default {
         download_gpkg: "Ladda GPKG-fil",
         download_csv: "Ladda CSV-fil",
         download_xls: "Ladda XLS-fil",
+        download_pdf: "Ladda PDF-fil",
         show_chart: "Visa diagram", //Tero 9.12.2020
         atlas: "Skriv ut Atlas"
       },
@@ -247,6 +248,9 @@ export default {
             },
             download_xls: {
               hint: "Ladda egenskapens XLS-fil"
+            },
+            download_pdf: {
+              hint: "Ladda egenskapens PDF-fil"
             },
             atlas: {
               hint: "Skriv ut Atlas"

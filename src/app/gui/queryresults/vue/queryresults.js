@@ -1,7 +1,7 @@
 import * as vueComponentOptions from 'components/QueryResults.vue';
 
-const { base, inherit } = require('utils');
-const Component = require('gui/component/component');
+const { base, inherit }   = require('utils');
+const Component           = require('gui/component/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 
 const InternalComponent = Vue.extend(vueComponentOptions);
@@ -19,11 +19,15 @@ function QueryResultsComponent(options={}) {
   };
 
   this.getElement = function() {
-    if (this.internalComponent) return this.internalComponent.$el;
+    if (this.internalComponent) {
+      return this.internalComponent.$el;
+    }
   };
 
   this._service.onafter('setLayersData', async () => {
-    !this.internalComponent && this.setInternalComponent();
+    if (!this.internalComponent) {
+      this.setInternalComponent();
+    }
     await this.internalComponent.$nextTick();
   });
 

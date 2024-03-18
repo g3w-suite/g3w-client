@@ -191,6 +191,7 @@ export default {
         download_gpkg: "Scarica GPKG",
         download_csv: "Scarica CSV",
         download_xls: "Scarica XLS",
+        download_pdf: "Scarica PDF",
         show_chart: "Mostra Grafico",
         atlas: "Stampa Atlas"
       },
@@ -248,6 +249,9 @@ export default {
             },
             download_xls: {
               hint: "Scarica la feature in XLS"
+            },
+            download_pdf: {
+              hint: "Scarica la feature in PDF"
             },
             atlas: {
               hint: "Stampa Atlas"

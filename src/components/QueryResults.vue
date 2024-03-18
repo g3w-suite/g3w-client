@@ -45,34 +45,34 @@
                       <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                     </span>
                     <!--        DOWNLOAD        -->
-                    <template v-if="layer.downloads.length === 1">
+                    <template v-if="1 === getLayerDownloads(layer.downloads).length">
                       <span
                         v-download
                         class="action-button"
-                        :class="{'toggled': layer[layer.downloads[0]].active}"
-                        v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`"
+                        :class="{'toggled': layer.downloadformats.active}"
+                        v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${getLayerDownloads(layer.downloads)[0]}.hint`"
                       >
                         <span
                           class="action-button-icon"
                           :class="g3wtemplate.getFontClass('download')"
-                          @click.stop="saveLayerResult(layer, layer.downloads[0])"
+                          @click.stop="saveLayerResult(layer, getLayerDownloads(layer.downloads)[0])"
                         ></span>
                       </span>
                     </template>
-                    <template v-else-if="layer.downloads.length > 1">
-                    <span
-                      v-download class="action-button"
-                      :class="{'toggled': layer.downloadformats.active}"
-                      v-t-tooltip:left.create="'Downloads'"
-                    >
+                    <template v-else-if="getLayerDownloads(layer.downloads).length > 1">
                       <span
-                        class="action-button-icon"
-                        :class="g3wtemplate.getFontClass('download')"
-                        @click.stop="showLayerDownloadFormats(layer)"
-                      ></span>
-                    </span>
+                        v-download class="action-button"
+                        :class="{'toggled': layer.downloadformats.active}"
+                        v-t-tooltip:left.create="'Downloads'"
+                      >
+                        <span
+                          class="action-button-icon"
+                          :class="g3wtemplate.getFontClass('download')"
+                          @click.stop="showLayerDownloadFormats(layer)"
+                        ></span>
+                      </span>
                     </template>
-                    <!--        DOWNLOAD        -->
+                    <!--        END DOWNLOAD        -->
                   </template>
                   <span
                     v-if="layer.external || (layer.source && layer.source.type !== 'wms')"
@@ -239,7 +239,10 @@
                           :id="`${layer.id}_${index}`"
                           class="featurebox-body"
                         >
-                          <td :colspan="getColSpan(layer)">
+                          <td
+                            :colspan="getColSpan(layer)"
+                            :feature-html-content="`${layer.id}_${index}`"
+                          > <!-- @since v3.10.0  Reference to content of feature html response -->
                             <tabs
                               :fields="getQueryFields(layer, feature)"
                               :layerid="layer.id"
@@ -264,7 +267,10 @@
                 <template v-else>
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class="table" :class="{'mobile': isMobile()}">
-                    <tbody v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
+                    <tbody
+                      v-if="feature.show"
+                      v-for="(feature, index) in layer.features" :key="feature.id"
+                    >
                       <header-feature-actions-body
                         :colspan="getColSpan(layer)"
                         :actions="state.layersactions[layer.id]"
@@ -294,13 +300,16 @@
                       <tr
                         v-if="!hasLayerOneFeature(layer)"
                         style="font-weight: bold; text-align: center" >
-                        <td class="centered" v-for="(attribute, index) in attributesSubset(layer)">
+                        <td
+                          v-for="(attribute) in attributesSubset(layer)"
+                          class="centered"
+                        >
                           {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
                         </td>
                         <td
                           @click.stop="toggleFeatureBoxAndZoom(layer,feature)"
                           class="collapsed"
-                          style="text-align: end"
+                          style="text-align: end;"
                           :class="{noAttributes: attributesSubset(layer).length === 0}">
                             <span
                               class="fa link morelink skin-color"
@@ -327,11 +336,22 @@
                         :getLayerField="getLayerField"/>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                         <td :colspan="getColSpan(layer)">
-                          <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
+                          <component
+                            class="box-body"
+                            :is="component"
+                            :layer="layer"
+                            :feature="feature"/>
                         </td>
                       </tr>
-                      <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
-                        <td :colspan="getColSpan(layer)">
+                      <tr
+                        v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
+                        :id="`${layer.id}_${index}`"
+                        class="featurebox-body"
+                      >
+                        <td
+                          :colspan="getColSpan(layer)"
+                          :feature-html-content="`${layer.id}_${index}`"
+                        ><!--@since v3.10.0  Reference to content of feature html response-->
                           <table class="feature_attributes">
                             <template v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <template v-if="isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
@@ -358,7 +378,11 @@
                       </tr>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
                         <td colspan="getColSpan(layer)">
-                          <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
+                          <component
+                            class="box-body"
+                            :is="component"
+                            :layer="layer"
+                            :feature="feature"/>
                         </td>
                       </tr>
                     </tbody>
@@ -370,7 +394,9 @@
                 v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')"
                 class="box-body"
                 :class="{'mobile': isMobile()}" >
-                <component :is="component" :layer="layer"/>
+                <component
+                  :is="component"
+                  :layer="layer"/>
               </div>
             </div>
           </li>
@@ -490,6 +516,17 @@
 
     },
     methods: {
+
+      /**
+       * @since v3.10.0
+       *
+       * @param { Array.<string> } downloads
+       *
+       * return {Array} return array of download formats enable of layer features
+       */
+      getLayerDownloads(downloads=[]) {
+        return downloads.filter(d => 'pdf' !== d);
+      },
 
       /**
        * @param { Object } layer
@@ -750,8 +787,7 @@
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
-        const container = this.getContainerFromFeatureLayer({layer, index});
-        await this.$options.queryResultsService.trigger(action.id, layer,feature, index, container);
+        await this.$options.queryResultsService.trigger(action.id, layer,feature, index, this.getContainerFromFeatureLayer({layer, index}));
       },
       showFullPhoto(url) {
         this.$options.queryResultsService.showFullPhoto(url);
@@ -772,22 +808,25 @@
     watch: {
       async 'state.layers'(layers) {
         layers.forEach(layer => {
-          if (layer.attributes.length <= MAX_SUBSET_LENGTH && !layer.hasImageField) layer.expandable = false;
-          layer.features.forEach(feature => {
-            this.getLayerFeatureBox(layer, feature);
-           if (feature.attributes.relations) {
-              const relations = feature.attributes.relations;
-              relations.forEach(relation => {
-                const boxid = `${layer.id}_${feature.id}_${relation.name}`;
-                const elements = relation.elements;
-                elements.forEach((element, index) => {
-                  this.state.layersFeaturesBoxes[boxid+index] = {
-                    collapsed: true
-                  };
-                });
-              })
-            }
-          })
+          if (layer.attributes.length <= MAX_SUBSET_LENGTH && !layer.hasImageField) {
+            layer.expandable = false;
+          }
+          layer.features
+            .forEach(feature => {
+              this.getLayerFeatureBox(layer, feature);
+              if (feature.attributes.relations) {
+                const relations = feature.attributes.relations;
+                relations.forEach(relation => {
+                  const boxid = `${layer.id}_${feature.id}_${relation.name}`;
+                  const elements = relation.elements;
+                  elements.forEach((element, index) => {
+                    this.state.layersFeaturesBoxes[boxid+index] = {
+                      collapsed: true
+                    };
+                  });
+                })
+              }
+            })
         });
 
         // check if is a single result layer and if it has one feature

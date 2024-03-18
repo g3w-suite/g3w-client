@@ -2,14 +2,14 @@ const { base, inherit } = require('utils');
 const G3WObject         = require('core/g3wobject');
 
 function MapLayer(config={}) {
-  this.config = config;
-  this.id = config.id;
-  this.iframe_internal = config.iframe_internal || false;
-  this.extent = config.extent;
-  this.projection = config.projection;
-  this.layer = null;
-  this.layers = config.layers || []; // store all enabled layers
-  this.allLayers = []; // store all layers
+  this.config                 = config;
+  this.id                     = config.id;
+  this.iframe_internal        = config.iframe_internal || false;
+  this.extent                 = config.extent;
+  this.projection             = config.projection;
+  this.layer                  = null;
+  this.layers                 = config.layers || []; // store all enabled layers
+  this.allLayers              = []; // store all layers
   this.showSpinnerWhenLoading = true;
   base(this);
 }
@@ -40,7 +40,7 @@ proto.checkLayersDisabled = function(resolution, mapUnits) {
   this.allLayers.forEach(layer => this.checkLayerDisabled(layer, resolution, mapUnits));
 };
 
-proto.setupCustomMapParamsToLegendUrl = function(params={}){
+proto.setupCustomMapParamsToLegendUrl = function(params={}) {
   //to owerwrite for each map layer subclass
 };
 

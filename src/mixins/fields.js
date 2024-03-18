@@ -5,7 +5,7 @@
 
 export default {
   methods: {
-    getFieldService(){
+    getFieldService() {
       if (undefined === this._fieldsService) {
         this._fieldsService = require('gui/fields/fieldsservice');
       }
@@ -14,19 +14,19 @@ export default {
     getFieldType(field) {
       return this.getFieldService().getType(field);
     },
-    isSimple(field){
+    isSimple(field) {
       return this.getFieldService().isSimple(field);
     },
-    isLink(field){
+    isLink(field) {
       return this.getFieldService().isLink(field);
     },
-    isImage(field){
+    isImage(field) {
       return this.getFieldService().isImage(field);
     },
-    isPhoto(field){
+    isPhoto(field) {
       return this.getFieldService().isPhoto(field);
     },
-    isVue(field){
+    isVue(field) {
       return this.getFieldService().isVue(field);
     },
     sanitizeFieldValue(value) {

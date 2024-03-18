@@ -190,6 +190,7 @@ export default {
         download_gpkg: "Descarcă GPKG",
         download_csv: "Descarcă CSV",
         download_xls: "Descarcă XLS",
+        download_pdf: "Descarcă PDF",
         show_chart: "Arată Diagrama",
         atlas: "Tipărire Atlas"
       },
@@ -247,6 +248,9 @@ export default {
             },
             download_xls: {
               hint: "Descarcă entitate în XLS"
+            },
+            download_pdf: {
+              hint: "Descarcă entitate în PDF"
             },
             atlas: {
               hint: "Tipărire Atlas"
