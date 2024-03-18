@@ -191,7 +191,8 @@ export default {
         download_csv: "Descarcă CSV",
         download_xls: "Descarcă XLS",
         show_chart: "Arată Diagrama",
-        atlas: "Tipărire Atlas"
+        atlas: "Tipărire Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {

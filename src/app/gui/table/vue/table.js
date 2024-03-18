@@ -1,21 +1,18 @@
 import Table from 'components/Table.vue';
-import GUI from 'services/gui';
+import GUI   from 'services/gui';
 
-const { t } = require('core/i18n/i18n.service');
+const { t }             = require('core/i18n/i18n.service');
 const { base, inherit } = require('utils');
-const Component = require('gui/component/component');
-const TableService = require('gui/table/tableservice');
+const Component         = require('gui/component/component');
+const TableService      = require('gui/table/tableservice');
 
 const InternalComponent = Vue.extend(Table);
 
 const TableComponent = function(options = {}) {
   base(this);
-  this.id = "openattributetable";
-  const {layer, formatter} = options;
-  const service = options.service || new TableService({
-    layer,
-    formatter
-  });
+  this.id                    = "openattributetable";
+  const { layer, formatter } = options;
+  const service              = options.service || new TableService({ layer, formatter});
 
   this.setService(service);
   const internalComponent = new InternalComponent({
@@ -25,9 +22,7 @@ const TableComponent = function(options = {}) {
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;
 
-  service.on('redraw', ()=>{
-    this.layout();
-  });
+  service.on('redraw', () => this.layout());
 
   this.unmount = function() {
     return base(this, 'unmount')
@@ -57,7 +52,10 @@ proto.show = function(options = {}) {
         title: options.title
       });
     })
-    .catch(err => GUI.notify.error(t("info.server_error")))
+    .catch(err => {
+      GUI.notify.error(t("info.server_error"));
+      console.warn(err);
+    })
     .finally(() => this.emit('show'));
 };
 
@@ -66,7 +64,6 @@ proto.unmount = function() {
     this._service.clear();
   })
 };
-
 
 module.exports = TableComponent;
 

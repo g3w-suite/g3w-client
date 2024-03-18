@@ -4,7 +4,10 @@
 -->
 
 <template>
-  <div id="open_attribute_table" style="margin-top: 5px">
+  <div
+    id="open_attribute_table"
+    style="margin-top: 5px"
+  >
     <table
       v-if="hasHeaders()"
       ref="attribute_table"
@@ -35,7 +38,8 @@
                 :disabled = "state.nofilteredrow || state.features.length === 0">
               <label
                 for   = "attribute_table_select_all_rows"
-                style = "margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
+                style = "margin-bottom:0 !important;"
+                @click.capture.stop.prevent="selectAllRow"
               >
                 <span style="padding:5px"></span>
               </label>
@@ -47,23 +51,30 @@
 
       <table-body
         :headers                  = "state.headers"
-        :filter                   = state.tools.filter
+        :filter                   = "state.tools.filter"
         :features                 = "state.features"
+        :edit                     = "state.edit"
+        :layer_id                 = "state.layer_id"
         :addRemoveSelectedFeature = "addRemoveSelectedFeature"
         :zoomAndHighLightFeature  = "zoomAndHighLightFeature"
       />
 
     </table>
-    <div v-else id="noheaders" v-t="'dataTable.no_data'" ></div>
+    <div
+      v-else
+      id="noheaders"
+      v-t="'dataTable.no_data'" >
+    </div>
   </div>
 </template>
 
 <script>
-import TableBody from 'components/TableBody.vue';
-import SelectRow from 'components/TableSelectRow.vue';
+import TableBody       from 'components/TableBody.vue';
+import SelectRow       from 'components/TableSelectRow.vue';
+import EditTool        from 'components/TableEditingTool.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import Field from 'components/FieldG3W.vue';
-import GUI from 'services/gui';
+import Field           from 'components/FieldG3W.vue';
+import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
 const { debounce } = require('utils');
@@ -80,10 +91,10 @@ export default {
   mixins: [resizeMixin],
   data() {
     return {
-      tableBodyComponent:null,
-      state: null,
-      table: null,
-      selectedRow: null
+      tableBodyComponent : null,
+      state              : null,
+      table              : null,
+      selectedRow        : null,
     }
   },
   components: {
@@ -141,22 +152,27 @@ export default {
           const hasGeometry = !!feature.geometry;
           $(rowElement).addClass('feature_attribute');
           feature.selected && $(rowElement).addClass('selected');
+
           $(rowElement).on('click', () => {
             if (hasGeometry) {
               this.zoomAndHighLightFeature(feature);
             }
           });
+
           $(rowElement).on('mouseover', () => {
             if (hasGeometry) {
               this.zoomAndHighLightFeature(feature, false);
             }
           });
+
           $(rowElement)
             .children()
             .each((index, element) => {
               const header = this.state.headers[index];
               let contentDOM;
-              if (header === null) {
+              if (null === header) {
+                contentDOM = document.createElement('div');
+                contentDOM.style.display = 'flex';
                 const SelectRowClass = Vue.extend(SelectRow);
                 const SelectRowInstance = new SelectRowClass({
                   propsData: {
@@ -166,11 +182,20 @@ export default {
                 SelectRowInstance.$on('selected', feature => this.$options.service.addRemoveSelectedFeature(feature));
                 this.$watch(
                   () => feature.selected,
-                  function (selected) {
+                  (selected) => {
                     selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
                   }
                 );
-                contentDOM = SelectRowInstance.$mount().$el;
+                contentDOM.appendChild(SelectRowInstance.$mount().$el);
+                const editToolClass =  Vue.extend(EditTool);
+                const editToolInstance = new editToolClass({
+                  propsData: {
+                    feature,
+                    edit: this.state.edit,
+                    layer_id: this.state.layer_id
+                  }
+                })
+                contentDOM.appendChild(editToolInstance.$mount().$el);
               } else {
                 const fieldClass = Vue.extend(Field);
                 const fieldInstance = new fieldClass({
@@ -188,16 +213,16 @@ export default {
           })
         }
       });
-      setTimeout(()=> this.reloadLayout(), 0)
+      setTimeout(() => this.reloadLayout(), 0)
     },
     async resize() {
       await this.$nextTick();
-      const tableHeight = $(".content").height();
+      const tableHeight       = $(".content").height();
       const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
       $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
     }
   },
-  beforeCreate(){
+  beforeCreate() {
     this.delayType = 'debounce';
   },
   async mounted() {
@@ -248,11 +273,11 @@ export default {
                 callback(serverData);
                 await this.$nextTick();
                 this.createdContentBody();
-                this.isMobile() && hideElements();
+                if (this.isMobile()) {
+                  hideElements();
+                }
               })
-              .catch(error => {
-                console.log(error)
-              })
+              .catch(error => console.warn(error))
           }, 800),
           "serverSide": true,
           "deferLoading": this.state.allfeatures
@@ -290,12 +315,12 @@ export default {
     const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
     const G3WTableToolbarInstance = new G3WTableToolbarClass({
       propsData: {
-        tools: this.state.tools,
-        geolayer: this.state.geolayer,
-        switchSelection: this.switchSelection,
-        clearAllSelection: this.clearAllSelection,
-        toggleFilterToken: this.toggleFilterToken,
-        getDataFromBBOX: this.getDataFromBBOX
+        tools             : this.state.tools,
+        geolayer          : this.state.geolayer,
+        switchSelection   : this.switchSelection,
+        clearAllSelection : this.clearAllSelection,
+        toggleFilterToken : this.toggleFilterToken,
+        getDataFromBBOX   : this.getDataFromBBOX
       }
     });
 
