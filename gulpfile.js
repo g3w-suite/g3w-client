@@ -64,7 +64,7 @@ function setNODE_ENV() {
   outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
   console.log('[G3W-CLIENT] environment:',    process.env.NODE_ENV);
   console.log('[G3W-CLIENT] output folder:',  outputFolder);
-  console.log(`[G3W-CLIENT] loaded plugins: {\n  ${Object.entries(loaded_plugins).map(([pluginName, p]) => (GREEN__ + pluginName + __RESET + ': '+ p.version())).join('\n  ')}\n}\n`);
+  console.log(`[G3W-CLIENT] loaded plugins: {\n  ${dev_plugins.map(pluginName => (GREEN__ + pluginName + __RESET + ': '+ get_version(pluginName))).join('\n  ')}\n}\n`);
 }
 
 // Retrieve project dependencies ("g3w-client")
@@ -82,12 +82,6 @@ const default_plugins = [
 const dev_plugins = Array.from(
   new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))
 );
-
-// Helper info about locally developed client plugins (Object<pluginName, pluginInfo>)
-const loaded_plugins = Object.fromEntries(dev_plugins.map(pluginName => { return [pluginName, { version: get_version.bind(null, pluginName), hash: get_hash.bind(null, pluginName), branch: get_branch.bind(null, pluginName) }]}));
-
-// List all plugins within the `g3w.pluginsFolder`
-const local_plugins = fs.readdirSync(g3w.pluginsFolder).filter(file => file !== 'client' && file.indexOf('_templates') === -1 && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory() && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile());
 
 /**
  * @param { string } pluginName
@@ -154,7 +148,18 @@ function set_version(pluginName) {
     data.splice(0, 1, pluginName ? `# g3w-client-plugin-${pluginName} v${version}` : `# G3W-CLIENT v${version}`);
     fs.writeFile(`${src}/README.md`, data.join("\n"), 'utf8', (err) => { if (err) return console.log(err); });
   });
-};
+}
+
+/**
+ * @param { string } branchName
+ * 
+ * @returns { boolean } whether is a stable branch (eg. v3.9.x)
+ * 
+ * @since 3.10.0
+ */
+function is_prod_branch(branchName) {
+  return production || ['dev', 'main', 'master'].includes(branchName) || /^v\d+\.\d+\.x$/.test(branchName);
+}
 
 setNODE_ENV();
 
@@ -196,9 +201,9 @@ const browserify_plugin = (pluginName, watch = true) => {
   del([`${src}/plugin.js.map`]);
 
   const rebundle = () => {
-    const version = loaded_plugins[pluginName].version();
-    const hash    = loaded_plugins[pluginName].hash();
-    const branch  = loaded_plugins[pluginName].branch();
+    const version = get_version(pluginName);
+    const hash    = get_hash(pluginName);
+    const branch  = get_branch(pluginName);
 
     return merge(
         gulp
@@ -212,14 +217,15 @@ const browserify_plugin = (pluginName, watch = true) => {
       )
       .pipe(concat('plugin.js'))
       .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
-      .pipe(replace('process.env.g3w_plugin_version', `"${production ? version : version.split('-')[0] + '-' + branch }"`))
+      .pipe(replace('process.env.g3w_plugin_version', `"${is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`))
       .pipe(replace('process.env.g3w_plugin_hash', `"${hash}"`))
       .pipe(replace('process.env.g3w_plugin_branch', `"${branch}"`))
       .pipe(gulpif(production, sourcemaps.init()))
       .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
       .pipe(gulpif(production, sourcemaps.write(src)))
       .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
-      .pipe(gulp.dest(outputFolder)); // put plugin.js to static folder (PROD | DEV env)
+      .pipe(gulp.dest(outputFolder)) // put plugin.js to static folder (PROD | DEV env)
+      .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
   };
 
   return rebundle();
@@ -354,7 +360,11 @@ gulp.task('browserify:app', function() {
   .on('update', ()  => !production && rebundle())
   .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
 
-  const rebundle = () => bundler.bundle()
+  const rebundle = () => {
+    const version = get_version();
+    const branch  = get_branch();
+
+    return bundler.bundle()
     .on('error', err => {
       console.log('ERROR: running gulp task "browserify:app"', err);
       this.emit('end');
@@ -365,7 +375,7 @@ gulp.task('browserify:app', function() {
       // ]).then(() => process.exit());
     })
     .pipe(source('build.js'))
-    .pipe(replace('process.env.g3w_client_rev', `"${ production ? get_version() : get_version().split('-')[0] + '-' + get_branch() }"`))
+    .pipe(replace('process.env.g3w_client_rev', `"${ is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`))
     .pipe(buffer())
     .pipe(gulpif(production, sourcemaps.init()))
     .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
@@ -373,6 +383,7 @@ gulp.task('browserify:app', function() {
     .pipe(gulpif(production, sourcemaps.write('.')))
     .pipe(gulp.dest(outputFolder + '/static/client/js/'))
     .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
+  };
 
   return rebundle();
 });
@@ -652,7 +663,7 @@ gulp.task('test', function() {
  */
 gulp.task('version', function() {
   set_version();                                                                     // client
-  Object.entries(loaded_plugins).forEach(([pluginName]) => set_version(pluginName)); // plugins
+  dev_plugins.forEach(pluginName => set_version(pluginName)); // plugins
 });
 
 /**
