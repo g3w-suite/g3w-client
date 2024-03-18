@@ -223,7 +223,9 @@ function PrintComponentService() {
       maxx: [0, 0],
       maxy: [0, 0]
     };
-    this.state.visible && this.setInitState();
+    if (this.state.visible) {
+      this.setInitState();
+    }
   };
 }
 
@@ -260,30 +262,30 @@ proto.changeTemplate = function() {
   if (!this.state.template) {
     return;
   }
-  const isPreviousAtlas  = this.state.atlas;
-  const {
-    atlas,
-    maps,
-    labels
-  }                      = this.state.print.find(print => print.name === this.state.template);
-  this.state.maps        = maps;
-  this.state.atlas       = atlas;
-  this.state.labels      = labels;
+  const has_previous = this.state.atlas || 0 === this.state.maps.length;
+  const print        = this.state.print.find(p => p.name === this.state.template)
+
+  this.state.maps        = print.maps;
+  this.state.atlas       = print.atlas;
+  this.state.labels      = print.labels;
   this.state.atlasValues = [];
-  this.state.atlas ?
 
-    this._clearPrint() :
-
-    isPreviousAtlas ?
-      this.showPrintArea(true) :
-      this._setPrintArea();
+  if (this.state.atlas) {
+    this._clearPrint();
+  } else if (has_previous) {
+    this.showPrintArea(true);
+  } else {
+    this._setPrintArea();
+  }
 };
 
 /**
  * On change scala set print area
  */
 proto.changeScale = function() {
-  this.state.scala && this._setPrintArea();
+  if (this.state.scala) {
+    this._setPrintArea();
+  }
 };
 
 /**
@@ -372,6 +374,7 @@ proto.print = function() {
   return new Promise((resolve, reject) => {
     //disable sidebar
     GUI.disableSideBar(true);
+    //atlas print
     if (this.state.atlas) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.state.loading = true;
@@ -496,6 +499,11 @@ proto._calculateInternalPrintExtent = function() {
  * @private
  */
 proto._setPrintArea = function() {
+  //No maps set. Only attributes label
+  if (0 === this.state.maps.length) {
+    this._clearPrint();
+    return;
+  }
   this.state.size         = this._map.getSize();
   const resolution        = this._map.getView().getResolution();
   this.state.currentScala = getScaleFromResolution(resolution, this._mapUnits);
