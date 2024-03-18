@@ -28,9 +28,15 @@
         </div>
 
         <helpdiv message="sdk.spatialbookmarks.helptext"/>
-        <div class="container add-bookmark-input" style="padding: 5px; width: 100%">
-          <input-text :state="addbookmarkinput" />
+        <div
+          class="container add-bookmark-input"
+          style="padding: 5px; width: 100%"
+        >
+          <input-text
+            ref="add_bookmark_input"
+            :state="addbookmarkinput" />
         </div>
+
         <div style="margin-top: 5px;">
           <button
             @click.stop="addBookMark"
@@ -79,17 +85,15 @@
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS } from 'app/constant';
-  import GUI from 'services/gui';
-  import ApplicationService from 'services/application';
-  import ProjectsRegistry from 'store/projects';
+  import { LOCAL_ITEM_IDS }   from 'app/constant';
+  import GUI                  from 'services/gui';
+  import ApplicationService   from 'services/application';
+  import ProjectsRegistry     from 'store/projects';
   import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
-  import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
-  import InputText from "components/InputText.vue";
+  import SpatialBookMarkItem  from "components/SpatialBookMarkItem.vue";
+  import InputText            from "components/InputText.vue";
 
   const { uniqueId } = require('utils');
-  const { t } = require('core/i18n/i18n.service');
-
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
@@ -107,7 +111,7 @@
     data() {
       const project = ProjectsRegistry.getCurrentProject();
 
-      if ("undefined" === typeof SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
+      if (undefined === SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
         SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = []
       }
 
@@ -136,7 +140,8 @@
 
         addbookmarkinput: {
           name: 'add-bookmark',
-          label: t('sdk.spatialbookmarks.input.name'),
+          label:'sdk.spatialbookmarks.input.name',
+          i18nLabel: true,
           value: null,
           editable: true,
           type: 'varchar',
@@ -198,13 +203,25 @@
 
     },
 
+    watch: {
+      async showaddform(bool) {
+        if (bool) {
+          await this.$nextTick();
+          //need to remove all class so input is adapted to 100% width
+          for (let i = 0; i < this.$refs.add_bookmark_input.$el.children.length; i++) {
+            this.$refs.add_bookmark_input.$el.children[i].classList.remove('col-sm-12')
+          }
+        }
+      }
+    },
+
     created() {
       this.$on('close', ()=>{
         this.showaddform = false
       })
     },
 
-    /** @FIXME remove unusued method ? */
+    /** @FIXME remove unusued method? */
     async mounted() {}
 
   };
@@ -217,8 +234,5 @@
     padding: 5px;
     border-bottom: 2px solid #ffffff;
     margin-bottom: 5px;
-  }
-  .container.add-bookmark-input p.error-input-message {
-    color: #ffffff;
   }
 </style>

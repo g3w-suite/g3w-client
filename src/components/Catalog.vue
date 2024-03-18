@@ -39,6 +39,7 @@
             <change-map-themes-component
               :key="project.state.gid"
               :map_themes="project.state.map_themes"
+              :layerstrees="state.layerstrees"
               @change-map-theme="changeMapTheme"
             />
           </div>

@@ -1,7 +1,16 @@
 import GUI from 'services/gui';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
+
 let CatalogLayersStores = null;
-const CATALOG_CONTEX_MENU_GEOMETRIES_TYPES = ['Point', 'MultiPoint', 'LinesString', 'MultiLineString', 'Polygon', 'MultiPolygon', '']
+const CATALOG_CONTEX_MENU_GEOMETRIES_TYPES = [
+  'Point',
+  'MultiPoint',
+  'LinesString',
+  'MultiLineString',
+  'Polygon',
+  'MultiPolygon',
+  '',
+]
 
 export function init(gid) {
   CatalogLayersStores = CatalogLayersStoresRegistry.getLayersStore(gid);
@@ -14,12 +23,14 @@ export function getCatalogInfoTree() {
     groups: [],
     layers: []
   };
-  const traverseLayerTrees = nodes=>{
+  const traverseLayerTrees = (nodes) => {
     nodes.forEach(node => {
       if (node.nodes) {
         info.groups.push(node);
         traverseLayerTrees(node.nodes)
-      } else info.layers.push(node);
+      } else {
+        info.layers.push(node);
+      }
     })
   }
   traverseLayerTrees(layersTree.nodes);
@@ -52,10 +63,8 @@ export function testContextMenu() {
   return context_catalog_check
 }
 
-export function getOpenAttributeLayers(){
-  return CatalogLayersStores.getLayers().filter(layer => {
-    return layer.canShowTable();
-  })
+export function getOpenAttributeLayers() {
+  return CatalogLayersStores.getLayers().filter(layer => layer.canShowTable());
 }
 
 export function getDownloadableLayers(){
@@ -65,17 +74,19 @@ export function getDownloadableLayers(){
     shp:[],
     xls:[]
   };
-  CatalogLayersStores.getLayers().forEach(layer => {
-    layer.isCsvDownlodable() && download.csv.push(layer);
-    layer.isShpDownlodable() && download.shp.push(layer);
-    layer.isGpxDownlodable() && download.gpx.push(layer);
-    layer.isXlsDownlodable() && download.xls.push(layer);
-  });
+  CatalogLayersStores
+    .getLayers()
+    .forEach(layer => {
+      layer.isCsvDownlodable() && download.csv.push(layer);
+      layer.isShpDownlodable() && download.shp.push(layer);
+      layer.isGpxDownlodable() && download.gpx.push(layer);
+      layer.isXlsDownlodable() && download.xls.push(layer);
+    });
   return download;
 }
 
 export function getDataTable(layer) {
-  return new Promise((resolve, reject) =>{
+  return new Promise((resolve, reject) => {
     layer.getDataTable()
       .then(response =>resolve(response))
       .fail( err =>reject(err))

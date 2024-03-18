@@ -239,7 +239,7 @@ proto.getLayersTree = function() {
 proto.setLayersTree = function(layerstree=[], name, expanded=true) {
   const [minx, miny, maxx, maxy] = this.getInitExtent();
 
-  // Root group project that contain all layerstree of qgis project
+  // Root group project that contains all layerstree of qgis project
   const rootGroup = {
     title: name || this.config.id,
     root: true,
@@ -264,7 +264,8 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
  * Used by external plugins to build layerstree
  *
  * @param {string}  groupName is a ProjectName
- * @param {unknown} [options.layerstree = null ]
+ * @param options
+ * @param {Object} [options.layerstree = null ]
  * @param {boolean} [options.expanded   = false]
  * @param {boolean} [options.full       = false]
  */
@@ -314,20 +315,22 @@ proto._traverseLightLayersTree = function(nodes, layerstree, tocLayersId) {
     let lightlayer = null;
 
     // case TOC has layer ID
-    if (null !== node.id && "undefined" !== typeof node.id && tocLayersId.find(id => id === node.id)) {
+    if (null !== node.id && undefined !== node.id && tocLayersId.find(id => id === node.id)) {
       lightlayer = ({ ...lightlayer, ...node });
     }
 
     // case group
-    if (null !== node.nodes && "undefined" !== typeof node.nodes) {
+    if (null !== node.nodes && undefined !== node.nodes) {
       lightlayer = ({
         ...lightlayer,
+        name: node.name, /** since 3.10.0 **/
         title: node.name,
         groupId: uniqueId(),
         root: false,
         nodes: [],
         checked: node.checked,
-        mutually_exclusive: node["mutually-exclusive"]
+        mutually_exclusive: node["mutually-exclusive"],
+        'mutually-exclusive': node["mutually-exclusive"], /** @since v3.10.0 */
       });
       this._traverseLightLayersTree(node.nodes, lightlayer.nodes, tocLayersId); // recursion step
     }
@@ -346,14 +349,14 @@ proto._traverseLightLayersTree = function(nodes, layerstree, tocLayersId) {
 proto._traverseLayersTree = function(nodes, parentGroup) {
   nodes.forEach((node, index) => {
     // substitute node layer with layer state
-    if ("undefined" !== typeof node.id) {
+    if (undefined !== node.id) {
       nodes[index] = this.getLayerById(node.id).getState();
     }
     // case of layer substitute node with layer state
-    if ("undefined" !== typeof node.id) {
+    if (undefined !== node.id) {
       nodes[index] = this.getLayerById(node.id).getState();
       // pass bbox and epsg of layer
-      if ("undefined" !== typeof nodes[index].bbox) {
+      if (undefined !== nodes[index].bbox) {
         this._setLayersTreeGroupBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
       }
     }

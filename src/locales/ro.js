@@ -375,6 +375,7 @@ export default {
       catalog: {
         current_map_theme_prefix: "TEMA",
         choose_map_theme: "ALEGE TEMA",
+        choose_map_theme_input_label: 'Numele noii tema',
         menu: {
           layerposition: 'Poziție Strat',
           setwmsopacity: "Alege Opacitatea",
