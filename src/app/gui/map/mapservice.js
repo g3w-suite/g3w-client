@@ -703,7 +703,9 @@ proto.getProject = function() {
 proto.getMap = function() {
   try {
     return this.viewer.map;
-  } catch(err) {}
+  } catch(e) {
+    console.warn(e);
+  }
 };
 
 proto.getMapCanvas = function(map) {
@@ -1044,39 +1046,43 @@ proto._setupControls = function() {
           break;
 
         case 'overview':
-          if (!isMobile.any) {
-            if (!this.config.overviewproject) return;
-            const overviewProjectGid = this.config.overviewproject.gid;
-            if (overviewProjectGid) {
-              ProjectsRegistry.getProject(overviewProjectGid)
+          if (!isMobile.any && this.config.overviewproject && this.config.overviewproject.gid) {
+            ProjectsRegistry
+              .getProject(this.config.overviewproject.gid)
               .then(project => {
-                const overViewMapLayers = this.getOverviewMapLayers(project);
-                const viewOptions = this._calculateViewOptions({
-                  width: 200, // at moment hardcoded
-                  height: 150,
-                  project
-                });
-                const view = new ol.View(viewOptions);
-                const mainView = this.getMap().getView();
+                //create a view for overview map
+                const map = this.getMap();
+                const view = new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })); // at moment hardcoded
                 view.on('change:center', function() {
-                  const currentCenter = this.getCenter();
-                  const center = mainView.constrainCenter(currentCenter);
-                  center[0] !== currentCenter[0] || center[1] !== currentCenter[1] && view.setCenter(center);
+                  const current = view.getCenter();
+                  const center  = map.getView().constrainCenter(current);
+                  if (center[0] !== current[0] || center[1] !== current[1]) {
+                    view.setCenter(center);
+                  }
                 });
                 control = this.createMapControl(controlType, {
                   add: false,
-                  options: {
-                    position: 'bl',
-                    className: 'ol-overviewmap ol-custom-overviewmap',
-                    collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
-                    label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                    collapsed: false,
-                    layers: overViewMapLayers,
-                    view
-                  }
+                    options: {
+                      view,
+                      position:      'bl',
+                      collapsed:     false,
+                      className:     'ol-overviewmap ol-custom-overviewmap',
+                      collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                      label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
+                      layers:        this.getOverviewMapLayers(project),
+                    }
                 });
-              });
-            }
+                /** @since 3.10.0 Move another bottom left map controls bottom to a left of overview control**/
+                document.querySelector('.g3w-map-controls-left-bottom').style.left = '230px';
+                const observer = new MutationObserver((mutations) => {
+                  mutations.forEach((mutation) => {
+                    if ("class" === mutation.attributeName) {
+                      document.querySelector('.g3w-map-controls-left-bottom').style.left = mutation.target.classList.contains('ol-collapsed') ? '50px' : '230px';
+                    }
+                  });
+                });
+                observer.observe(document.querySelector('.ol-custom-overviewmap'), {attributes: true});
+              })
           }
           break;
 
@@ -1995,7 +2001,7 @@ proto.createMapLayer = function(layer) {
 
 proto.getOverviewMapLayers = function(project) {
   const WMSLayer = require('core/layers/map/wmslayer');
-  let layers = [];
+  const layers = [];
 
   Object
     .entries(
@@ -2003,13 +2009,13 @@ proto.getOverviewMapLayers = function(project) {
         project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false }),
         layer => layer.getMultiLayerId()
       )
-    ).forEach(([id, layers]) => {
+    ).forEach(([id, _layers]) => {
       const mapLayer = new WMSLayer({
         url:   project.getWmsUrl(),
         id:    'overview_layer_' + id,
-        tiled: layers[0].state.tiled,
+        tiled: _layers[0].state.tiled,
       });
-      layers.reverse().forEach(layer => mapLayer.addLayer(layer));
+      _layers.reverse().forEach(layer => mapLayer.addLayer(layer));
       layers.push(mapLayer.getOLLayer(true));
     });
   return layers.reverse();
@@ -2021,8 +2027,10 @@ proto.getOverviewMapLayers = function(project) {
  * @param options
  */
 proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add g3w_time parameter to force request of map layer from server
-  if (options.force) options.g3w_time = Date.now();
+  // if force adds g3w_time parameter to force request of map layer from server
+  if (options.force) {
+    options.g3w_time = Date.now();
+  }
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
     this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
@@ -2051,7 +2059,7 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   ///
 };
 
-/** Methos to register and unregister map loadmap
+/** Methods to register and unregister load map
  *
  * */
 proto.registerMapLayerLoadingEvents = function(mapLayer) {
@@ -3004,17 +3012,17 @@ function OLControl(type) {
     };
 
     this.layout = function(map) {
-      // skip when ..
+      //No map is passed
       if (!map) {
         return;
       }
       const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
       if (previusControls.length) {
-        const position        =  this.getPosition();
+        const position     =  this.getPosition();
         let previusControl = previusControls.last();
-        const offset = position.left ? previusControl.position().left : previusControl.position().right;
-        const hWhere = position.left ? 'left' : 'right';
-        const hOffset = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+        const offset       = position.left ? previusControl.position().left : previusControl.position().right;
+        const hWhere       = position.left ? 'left' : 'right';
+        const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
         $(this.element).css(hWhere, hOffset+'px');
       }
     };
@@ -3034,7 +3042,8 @@ function OLControl(type) {
       element: this._control.element
     });
 
-  };
+  }
+
   ol.inherits(_ctor, ol.control.Control);
   return _ctor;
 }

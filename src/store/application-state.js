@@ -60,12 +60,14 @@ const STATE = Vue.observable({
   changeProjectview: false,
 
   /**
-   * @FIXME add description
+   * Store Array of loading plugin name add by ApplicationService.loadingPlugin
+   * Every time a plugin is loaded, plugin name are removed from Array
+   * It used in v-plugins directive
    */
   plugins: [],
 
   /**
-   * @FIXME add description
+   * Store application current user
    */
   user: null,
 
@@ -112,7 +114,7 @@ const STATE = Vue.observable({
   },
 
   /**
-   * @FIXME add description
+   * Sore vendor keys need by application third part script
    */
   keys: {
     vendorkeys: {
@@ -122,7 +124,7 @@ const STATE = Vue.observable({
   },
 
   /**
-   * @FIXME add description
+   * Store tokens, used by server for example to filter features
    */
   tokens: {
     filtertoken: undefined
