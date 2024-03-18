@@ -23,6 +23,7 @@ function ProjectsRegistry() {
   this.initialized         = false;
   this.projectType         = null;
   this.currentProjectGroup = null;
+  //store overview (Panoramic map) project
   this.overviewproject     = undefined;
 
   this.setters = {
@@ -167,13 +168,10 @@ function ProjectsRegistry() {
     return _
       .sortBy(this.getProjects()
       .filter(project => {
-        if (!_.isNil(project.listable)) {
+        if (null !== project.listable  && undefined !== project.listable) {
           return project.listable;
         }
-        if (
-          project.id === currentProjectId
-          || (project.overviewprojectgid && project.gid === project.overviewprojectgid)
-        ) {
+        if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) {
           return false;
         }
         return project;
