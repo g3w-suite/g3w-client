@@ -14,10 +14,9 @@ import { getUniqueValuesFromField }                      from "utils/getUniqueVa
  */
 export async function createInputsFormFromFilter(state) {
 
-  const inputdependance   = state.input.dependance;
-  const inputdependencies = state.input.dependencies;
-  const cachedependencies = state.input.cached_deps;
-  const search_endpoint   = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
+  const dep             = state.input.dependance;
+  const deps            = state.input.dependencies;
+  const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
   (state.filter || []).forEach(async (d, i, a) => {
     let has_error;
@@ -41,7 +40,7 @@ export async function createInputsFormFromFilter(state) {
       widget:    null,
     };
 
-    //In case of select input
+    // In case of select input
     // Request to server value for a specific select field
     // ensure setting values options to an empty array when undefined
     if ('selectfield' ===  input.type) {
@@ -63,10 +62,10 @@ export async function createInputsFormFromFilter(state) {
               inputs: [{
                 // array of unique values
                 value: await getUniqueValuesFromField({
-                  layers: state.search_layers,
-                  field: input.attribute,
-                  inputdependance,
-                  cachedependencies,
+                  layers:            state.search_layers,
+                  field:             input.attribute,
+                  inputdependance:   dep,
+                  cachedependencies: state.input.cached_deps,
                 }),
                 attribute: input.options.value,
                 logicop: "OR",
@@ -97,10 +96,10 @@ export async function createInputsFormFromFilter(state) {
 
       if ('selectfield' ===  input.type && !input.options.dependance_strict && !input.options.layer_id && !input.options.values.length > 0) {
         input.options.values = await getUniqueValuesFromField({
-          field: input.attribute,
-          layers: state.search_layers,
-          inputdependance,
-          cachedependencies,
+          field:             input.attribute,
+          layers:            state.search_layers,
+          inputdependance:   dep,
+          cachedependencies: state.input.cached_deps,
         })
       }
 
@@ -137,12 +136,12 @@ export async function createInputsFormFromFilter(state) {
 
     // there is a dependence
     if (input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type)) {
-      inputdependance[input.attribute] = input.options.dependance;        // set dependence of input
-      state.loading[input.options.dependance]               = false;
-      input.options.disabled           = input.options.dependance_strict; // disabled for BACKCOMP
+      dep[input.attribute]                        = input.options.dependance;        // set dependence of input
+      state.loading[input.options.dependance]     = false;
+      input.options.disabled                      = input.options.dependance_strict; // disabled for BACKCOMP
       // set input dependencies
-      inputdependencies[input.options.dependance] = (undefined !== inputdependencies[input.options.dependance] ? inputdependencies[input.options.dependance] : []);
-      inputdependencies[input.options.dependance].push(input);
+      deps[input.options.dependance]              = (undefined !== deps[input.options.dependance] ? deps[input.options.dependance] : []);
+      deps[input.options.dependance].push(input);
     }
 
     // set a widget type for fill dependency
