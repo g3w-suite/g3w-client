@@ -139,6 +139,9 @@
     <!-- SEARCH FOOTER -->
     <slot name="footer"></slot>
 
+    <!-- Click to open G3W-ADMIN's project layers page -->
+    <div v-if="layers_url" style="padding-top: 5em;"><b><a :href="layers_url" target="_blank">Edit in admin</a></b></div>
+
   </div>
 </template>
 
@@ -149,6 +152,7 @@ import {
 }                                            from 'app/constant';
 import ApplicationState                      from 'store/application-state';
 import CatalogLayersStoresRegistry           from 'store/catalog-layers';
+import ApplicationService                    from 'services/application';
 import DataRouterService                     from 'services/data';
 import { getUniqueDomId }                    from 'utils/getUniqueDomId';
 import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
@@ -170,6 +174,12 @@ export default {
      state: this.$options.service.state,
      allvalue: SEARCH_ALLVALUE,
     }
+  },
+
+  computed: {
+    layers_url() {
+      return ApplicationService.getCurrentProject().getState().layers_url;
+    },
   },
 
   methods: {
