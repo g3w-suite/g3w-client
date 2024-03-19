@@ -276,12 +276,11 @@ export default {
      * Fill all dependencies inputs based on value
      */
     async fillDependencyInputs({field, subscribers=[], value=SEARCH_ALLVALUE}={}) {
-      const dep                       = this.state.input.dependance;
-      const cached_deps               = this.state.input.cached_deps;
-      const filter                    = this.state.filter;
-      const state                     = this.state;
-      const isRoot                    = undefined === dep[field];
-      const invalid                   = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
+      const dep         = this.state.input.dependance;
+      const cached_deps = this.state.input.cached_deps;
+      const state       = this.state;
+      const isRoot      = undefined === dep[field];
+      const invalid     = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
 
       // loop over dependencies fields inputs
       subscribers.forEach(s => {
@@ -471,7 +470,6 @@ export default {
      * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
      */
     async initSelect2Field(forminput) {
-      console.log(this);
       if (!['selectfield', 'autocompletefield'].includes(forminput.type)) {
         return;
       }

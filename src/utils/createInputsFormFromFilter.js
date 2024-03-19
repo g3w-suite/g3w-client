@@ -18,8 +18,6 @@ export async function createInputsFormFromFilter(state) {
   const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
-  console.log(state);
-
   for (let i = 0; i <= (state.filter || []).length - 1; i++) {
     let has_error;
 
@@ -44,17 +42,18 @@ export async function createInputsFormFromFilter(state) {
       widget:    null,
     };
 
-    const value_relation     = 'selectfield' === type && !input.options.dependance_strict && input.options.layer_id;
-    const relation_reference = 'selectfield' === type && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference;
+    const value_relation     = 'selectfield' === type                              && !input.options.dependance_strict && input.options.layer_id;
+    const relation_reference = 'selectfield' === type                              && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference;
+    const chained_select     = ['selectfield', 'autocompletefield'].includes(type) && !input.options.dependance_strict && input.options.dependance; 
 
-    console.log(value_relation, relation_reference);
+    console.log(value_relation, relation_reference, chained_select, input);
 
     try {
 
+      console.log(type);
+
       // In case of select input
       // Request to server value for a specific select field
-      // ensure setting values options to an empty array when undefined
-
       // get value-relation values when `layer_id` dependence is defined
       if (value_relation) {
         const response = await DataRouterService.getData('search:features', {
@@ -65,7 +64,6 @@ export async function createInputsFormFromFilter(state) {
               layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
               search_endpoint,
               inputs: [{
-                // array of unique values
                 value: await getDataForSearchInput({ state, field: input.attribute }),
                 attribute: input.options.value,
                 logicop: "OR",
@@ -79,11 +77,9 @@ export async function createInputsFormFromFilter(state) {
         input.options.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({ key: f.get(input.options.key), value: f.get(input.options.value) }));
       }
 
-      // Relation reference
+      // Relation reference (`fformatter`)
       if (relation_reference) {
-        // call filter data with fformatter
         const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
-        // check response
         if (response && response.result && response.data) {
           input.options.values = response.data.map(([value, key]) => ({ key, value }));
         }
@@ -101,17 +97,15 @@ export async function createInputsFormFromFilter(state) {
       console.warn(e);
     }
 
-    // reset values on error
+    // reset values to empty array on error
     if (has_error && 'selectfield' ===  input.type) {
       input.options.values.splice(0, input.options.values.length);
     }
 
     // set `SEARCH_ALLVALUE` as first element of array
-    if ('selectfield' ===  input.type && input.options.values.length) {
-      input.options.values = input.options.values.filter(v => SEARCH_ALLVALUE !== v).unshift({ value: SEARCH_ALLVALUE })
+    if ('selectfield' === input.type) {
+      input.options.values = (input.options.values || []).filter(v => SEARCH_ALLVALUE !== v).unshift({ value: SEARCH_ALLVALUE })
     }
-
-    const chained_select = input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type); 
 
     // there is a dependence
     if (chained_select) {
@@ -124,7 +118,7 @@ export async function createInputsFormFromFilter(state) {
     }
 
     if (chained_select && input.options.values.length > 0) {
-      input.options._values = [...input.options.values];
+      input.options._values = [...(input.options.values || [])];
     }
 
     // set a widget type for fill dependency

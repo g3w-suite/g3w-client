@@ -4,7 +4,7 @@ import { sortNumericArray }           from 'utils/sortNumericArray';
 import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 
 /**
- * Get unique values from field
+ * @returns { Array } of unique values from field
  */
 export async function getDataForSearchInput({
   state,
