@@ -177,62 +177,6 @@ export default {
   methods: {
 
     /**
-     * Get unique values from field (case autocomplete)
-     * 
-     * @since 3.10.0
-     */
-    async getDataForSearchInput({ field, value, output }) {
-
-      let data = [];
-      try {
-
-        // get current field dependence
-        let dep = this.state.input.dependance[field];
-        let dvalue = undefined;
-
-        // check if the current input field has a dependence with another input field
-        if (dep && (this.state.input.cached_deps[dep] && SEARCH_ALLVALUE !== this.state.input.cached_deps[dep]._currentValue)) {
-          dvalue = this.state.input.cached_deps[dep]._currentValue; // dependence as value
-        }
-
-        const layers   = this.state.search_layers || [];
-        const response = Array.from(
-          (
-            await Promise
-              .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
-                field: this.createFieldsDeps({
-                  field: dep,
-                  fields: undefined !== dvalue ? [createSingleFieldParameter({ field: dep, value: dvalue, operator: this.filter.find(f =>  f.attribute === dep).op })] : [],
-                }),
-                suggest:    value !== undefined ? `${field}|${value}` : undefined,
-                unique:     field,
-                ordering:   field,
-                fformatter: undefined,
-              })))
-          )
-            .filter(d => 'fulfilled' === d.status)
-            .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
-        )
-
-        // check if is not an empty array
-        switch (response.length && typeof response[0]) {
-          case 'string': data = sortAlphabeticallyArray(response); break;
-          case 'number': data = sortNumericArray(response); break;
-          default:       data = response;
-        }
-
-        if ('autocomplete' === output) {
-          data = data.map(d => ({ id: d, text: d }));
-        }
-      } catch(e) {
-        console.warn(e);
-      }
-
-      return data;
-
-    },
-
-    /**
      * @param { Object } opts
      * @param opts.fields
      * @param opts.field
@@ -417,7 +361,7 @@ export default {
           formatter: 0, // since v3.x, force to use raw value
           field: this.createFieldsDeps({
             field,
-            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: this.filter.find(f =>  f.attribute === field).op })] : [],
+            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: state.filter.find(f =>  f.attribute === field).op })] : [],
           }),
         });
 
@@ -542,7 +486,12 @@ export default {
         transport: async (d, ok, ko) => {
           try      {
             ok({
-              results: await this.getDataForSearchInput({ output: 'autocomplete', field: forminput.attribute, value: d.data.q })
+              results: await getDataForSearchInput({
+                state: this.state,
+                output: 'autocomplete',
+                field: forminput.attribute,
+                suggest: `${forminput.attribute}|${d.data.q}`,
+              })
             });
           }
           catch(e) { ko(e); }

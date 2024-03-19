@@ -1,12 +1,10 @@
-import { SEARCH_ALLVALUE }            from 'app/constant';
-import CatalogLayersStoresRegistry    from 'store/catalog-layers';
-import DataRouterService              from 'services/data';
-import { toRawType }                  from 'utils/toRawType';
-import { getUniqueDomId }             from 'utils/getUniqueDomId';
-import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
-import { sortAlphabeticallyArray }    from 'utils/sortAlphabeticallyArray';
-import { sortNumericArray }           from 'utils/sortNumericArray';
-import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
+import { SEARCH_ALLVALUE }         from 'app/constant';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import DataRouterService           from 'services/data';
+import { toRawType }               from 'utils/toRawType';
+import { getUniqueDomId }          from 'utils/getUniqueDomId';
+import { createFilterFormInputs }  from 'utils/createFilterFormInputs';
+import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
 
 /**
  * Create the right search structure for a search form
@@ -59,7 +57,7 @@ export async function createInputsFormFromFilter(state) {
               search_endpoint,
               inputs: [{
                 // array of unique values
-                value: await _getUniqueValuesFromField({ state, field: input.attribute }),
+                value: await getDataForSearchInput({ state, field: input.attribute }),
                 attribute: input.options.value,
                 logicop: "OR",
                 operator: "eq"
@@ -81,7 +79,7 @@ export async function createInputsFormFromFilter(state) {
           input.options.values = response.data.map(([value, key]) => ({ key, value }));
         }
         if (!input.options.values.length > 0) {
-          input.options.values = await _getUniqueValuesFromField({ state, field: input.attribute })
+          input.options.values = await getDataForSearchInput({ state, field: input.attribute })
         }
         // Set key value for select
         if ('Object' !== toRawType(input.options.values[0])) {
@@ -138,75 +136,4 @@ export async function createInputsFormFromFilter(state) {
     state.forminputs.push(input);
   }
 
-}
-
-async function _getUniqueValuesFromField({ state, field }) {
-
-  try {
-
-    const layers            = state.search_layers || [];
-    const inputdependance   = state.input.dependance || {};
-    const cachedependencies = state.input.cached_deps || {};
-    const filter            = state.filter || [];
-
-    const createFieldsDeps = ({ field, fields = [] } = {}) => {
-      let dep = inputdependance[field];
-      let dvalue = undefined;
-
-      if (!dep || !cachedependencies[dep] || SEARCH_ALLVALUE === cachedependencies[dep]._currentValue) {
-        return fields.length && fields.join() || undefined;
-      }
-
-      // get current field dependance
-      if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
-        dvalue = cachedependencies[dep]._currentValue; // dependance as value
-      }
-
-      // In case of some input dependency is not filled
-      if (undefined !== dvalue) {
-        // need to set to lower a case for api purpose
-        const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
-        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
-      }
-
-      return createFieldsDeps({ fields, field: dep });
-    }
-
-    // check if a field has a dependance
-    let dep    = inputdependance[field];
-    let dvalue = undefined;
-
-    if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
-      dvalue = cachedependencies[dep]._currentValue // dependance as value
-    }
-
-    // get unique value from each layers
-    let response = Array.from(
-      await Promise
-        .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
-          field: createFieldsDeps({
-            field: dep,
-            fields: undefined !== dvalue ? [createSingleFieldParameter({ field: dep, value: dvalue, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
-          }),
-          suggest: undefined,
-          unique: field,
-          ordering: field,
-          // TODO ?
-          // fformatter: opts.fformatter 
-        })))
-        .filter(d => 'fulfilled' === d.status)
-        .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
-    )
-
-    // sort array
-    switch (response.length && typeof response[0]) {
-      case 'string': response = sortAlphabeticallyArray(response);
-      case 'number': response = sortNumericArray(response);
-    }
-
-    return response;
-
-  } catch(e) { console.warn(e); }
-
-  return [];
 }
