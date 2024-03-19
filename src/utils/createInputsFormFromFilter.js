@@ -147,51 +147,47 @@ async function _getUniqueValuesFromField({ state, field }) {
     const layers            = state.search_layers || [];
     const inputdependance   = state.input.dependance || {};
     const cachedependencies = state.input.cached_deps || {};
+    const filter            = state.filter || [];
 
-    const createFieldsDeps = ({
-      fields = [],
-      field,
-      value,
-      filter,
-    } = {}) => {
-    
-      // get current field dependance
+    const createFieldsDeps = ({ field, fields = [] } = {}) => {
       let dep = inputdependance[field];
-      if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
-        dep = ({ [dep]: cachedependencies[dep]._currentValue }); // dependance as value
-      } else if (dep) {
-        dep = ({ [dep]: undefined  });                           // undefined = so it no add on list o field dependance
-      }
-    
-      if (undefined !== value) {
-        fields.push(createSingleFieldParameter({ field, value, operator: filter.find(f =>  f.attribute === field).op }));
-      }
-      if (!dep) {
+      let dvalue = undefined;
+
+      if (!dep || !cachedependencies[dep] || SEARCH_ALLVALUE === cachedependencies[dep]._currentValue) {
         return fields.length && fields.join() || undefined;
       }
-      const [dfield, dvalue] = Object.entries(dep)[0];
+
+      // get current field dependance
+      if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
+        dvalue = cachedependencies[dep]._currentValue; // dependance as value
+      }
+
       // In case of some input dependency is not filled
       if (undefined !== dvalue) {
         // need to set to lower a case for api purpose
-        const { op, logicop } = filter.find(f =>  f.attribute === dfield).op;
-        fields.unshift(`${dfield}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
+        const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
+        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
       }
-      return createFieldsDeps({ fields, dfield /* @FIXME field ? */, filter });
+
+      return createFieldsDeps({ fields, field: dep });
     }
 
     // check if a field has a dependance
-    let dep = inputdependance[field];
+    let dep    = inputdependance[field];
+    let dvalue = undefined;
+
     if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
-      dep = ({ [dep]: cachedependencies[dep]._currentValue }); // dependance as value
-    } else if (dep) {
-      dep = ({ [dep]: undefined  });                           // undefined = so it no add on list o field dependance
+      dvalue = cachedependencies[dep]._currentValue // dependance as value
     }
 
     // get unique value from each layers
-    const response = Array.from(
+    let response = Array.from(
       await Promise
         .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
-          field: createFieldsDeps({ field: dep, value: Object.entries(dep)[0][1] }),
+          field: createFieldsDeps({
+            field: dep,
+            fields: undefined !== dvalue ? [createSingleFieldParameter({ field: dep, value: dvalue, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
+          }),
           suggest: undefined,
           unique: field,
           ordering: field,

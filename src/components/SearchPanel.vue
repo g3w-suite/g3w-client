@@ -176,44 +176,34 @@ export default {
 
   methods: {
 
-    /** @since 3.10.0 **/
-    async getDataForSearchInput(opts={}) {
-      // Get unique values from field (case autocomplete)
-      let { field, value, output } = opts;
+    /**
+     * Get unique values from field (case autocomplete)
+     * 
+     * @since 3.10.0
+     */
+    async getDataForSearchInput({ field, value, output }) {
 
       let data = [];
       try {
 
         // get current field dependence
         let dep = this.state.input.dependance[field];
-        //check if the current input field has a dependence with another input field
-        //In case true, need to check if
+        let dvalue = undefined;
+
+        // check if the current input field has a dependence with another input field
         if (dep && (this.state.input.cached_deps[dep] && SEARCH_ALLVALUE !== this.state.input.cached_deps[dep]._currentValue)) {
-          // dependence as value
-          dep = { [dep]: this.state.input.cached_deps[dep]._currentValue };
-        } else if (dep) {
-          dep = { [dep]: undefined }; // undefined = so it no adding on list of field dependence
+          dvalue = this.state.input.cached_deps[dep]._currentValue; // dependence as value
         }
 
-        let autoFieldDependecies;
-
-        if (dep) {
-          const [field, value] = Object.entries(dep)[0];
-          autoFieldDependecies = this.createFieldsDeps({
-            field,
-            value,
-            filter: this.state.filter,
-            inputdependance: this.state.input.dependance,
-            cachedependencies: this.state.input.cached_deps,
-          })
-        }
-
-        const layers = (1 === this.state.search_layers.length ? [this.state.search_layers[0]] : this.state.search_layers);
+        const layers   = this.state.search_layers || [];
         const response = Array.from(
           (
             await Promise
-              .allSettled(layers.map(l => l.getFilterData({
-                field:      autoFieldDependecies,
+              .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
+                field: this.createFieldsDeps({
+                  field: dep,
+                  fields: undefined !== dvalue ? [createSingleFieldParameter({ field: dep, value: dvalue, operator: this.filter.find(f =>  f.attribute === dep).op })] : [],
+                }),
                 suggest:    value !== undefined ? `${field}|${value}` : undefined,
                 unique:     field,
                 ordering:   field,
@@ -250,36 +240,30 @@ export default {
      * 
      * @returns { string | undefined | * }
      */
-    createFieldsDeps({
-      fields = [],
-      field,
-      value,
-      filter,
-      inputdependance = {},
-      cachedependencies = {},
-    } = {}) {
-      // get current field dependance
-      let dep = inputdependance[field];
-      if (dep && (cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue)) {
-        dep = { [dep]: cachedependencies[dep]._currentValue }; // dependance as value
-      } else if(dep) {
-        dep = { [dep]: undefined }; // undefined = so it no add on list o field dependance
-      }
+    createFieldsDeps({ field, fields = [] } = {}) {
+      const inputdependance   = this.state.input.dependance || {};
+      const cachedependencies = this.state.input.cached_deps || {};
+      const filter            = this.state.filter || [];
 
-      if (undefined !== value) {
-        fields.push(createSingleFieldParameter({ field, value, operator: filter.find(f =>  f.attribute === field).op }));
-      }
-      if (!dep) {
+      let dep = inputdependance[field];
+      let dvalue = undefined;
+
+      if (!dep || !cachedependencies[dep] || SEARCH_ALLVALUE === cachedependencies[dep]._currentValue) {
         return fields.length && fields.join() || undefined;
       }
-      const [dfield, dvalue] = Object.entries(dep)[0];
+
+      // get current field dependance
+      if (dep && (cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue)) {
+        dvalue = cachedependencies[dep]._currentValue; // dependance as value
+      }
+
       // In case of some input dependency is not filled
       if (undefined !== dvalue) {
         // need to set to lower a case for api purpose
-        const { op, logicop } = filter.find(f =>  f.attribute === dfield).op;
-        fields.unshift(`${dfield}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
+        const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
+        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
       }
-      return this.createFieldsDeps({ fields, dfield /* @FIXME field ? */, filter, inputdependance, cachedependencies });
+      return this.createFieldsDeps({ fields, field: dep });
     },
 
     resize() {
@@ -431,7 +415,10 @@ export default {
         // needs to extract the value of the field to get filter data from the relation layer
         const data = await state.search_layers[0].getFilterData({
           formatter: 0, // since v3.x, force to use raw value
-          field: this.createFieldsDeps({ field, value, filter, inputdependance: dep, cachedependencies: cached_deps }),
+          field: this.createFieldsDeps({
+            field,
+            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: this.filter.find(f =>  f.attribute === field).op })] : [],
+          }),
         });
 
         for (let i = 0; i < no_autocomplete.length; i++) {
