@@ -18,10 +18,12 @@ export async function createInputsFormFromFilter(state) {
   const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
+  console.log(state);
+
   for (let i = 0; i <= (state.filter || []).length - 1; i++) {
     let has_error;
 
-    const type = state.filter[i].input.type || 'textfield'
+    const type = state.filter[i].input.type || 'textfield';
 
     const input = {
       type,
@@ -42,6 +44,11 @@ export async function createInputsFormFromFilter(state) {
       widget:    null,
     };
 
+    const value_relation     = 'selectfield' === type && !input.options.dependance_strict && input.options.layer_id;
+    const relation_reference = 'selectfield' === type && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference;
+
+    console.log(value_relation, relation_reference);
+
     try {
 
       // In case of select input
@@ -49,7 +56,7 @@ export async function createInputsFormFromFilter(state) {
       // ensure setting values options to an empty array when undefined
 
       // get value-relation values when `layer_id` dependence is defined
-      if ('selectfield' ===  input.type && !input.options.dependance_strict && input.options.layer_id) {
+      if (value_relation) {
         const response = await DataRouterService.getData('search:features', {
           inputs: {
             layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
@@ -73,7 +80,7 @@ export async function createInputsFormFromFilter(state) {
       }
 
       // Relation reference
-      if ('selectfield' ===  input.type && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference) {
+      if (relation_reference) {
         // call filter data with fformatter
         const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
         // check response
@@ -94,6 +101,7 @@ export async function createInputsFormFromFilter(state) {
       console.warn(e);
     }
 
+    // reset values on error
     if (has_error && 'selectfield' ===  input.type) {
       input.options.values.splice(0, input.options.values.length);
     }
