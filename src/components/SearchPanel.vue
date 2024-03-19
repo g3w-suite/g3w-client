@@ -146,17 +146,15 @@
 import {
   FILTER_EXPRESSION_OPERATORS,
   SEARCH_ALLVALUE,
-}                                                        from 'app/constant';
-import ApplicationState                                  from 'store/application-state';
-import CatalogLayersStoresRegistry                       from 'store/catalog-layers';
-import DataRouterService                                 from 'services/data';
-import { getUniqueDomId }                                from 'utils/getUniqueDomId';
-import { convertQGISDateTimeFormatToMoment }             from 'utils/convertQGISDateTimeFormatToMoment';
-import { toRawType }                                     from 'utils/toRawType';
-import { createSingleFieldParameter }                    from 'utils/createSingleFieldParameter';
-import resizeMixin                                       from 'mixins/resize';
-import { sortAlphabeticallyArray }                       from 'utils/sortAlphabeticallyArray';
-import { sortNumericArray }                              from 'utils/sortNumericArray';
+}                                            from 'app/constant';
+import ApplicationState                      from 'store/application-state';
+import CatalogLayersStoresRegistry           from 'store/catalog-layers';
+import DataRouterService                     from 'services/data';
+import { getUniqueDomId }                    from 'utils/getUniqueDomId';
+import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
+import { toRawType }                         from 'utils/toRawType';
+import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
+import resizeMixin                           from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
 
@@ -473,6 +471,7 @@ export default {
      * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
      */
     async initSelect2Field(forminput) {
+      console.log(this);
       if (!['selectfield', 'autocompletefield'].includes(forminput.type)) {
         return;
       }

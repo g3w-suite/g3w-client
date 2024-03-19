@@ -21,10 +21,12 @@ export async function createInputsFormFromFilter(state) {
   for (let i = 0; i <= (state.filter || []).length - 1; i++) {
     let has_error;
 
+    const type = state.filter[i].input.type || 'textfield'
+
     const input = {
+      type,
       label:     state.filter[i].label,
       attribute: state.filter[i].attribute,
-      type:      state.filter[i].input.type || 'textfield',
       options:   {
         // check if it has a dependence
         dependance_strict: false,
@@ -32,7 +34,7 @@ export async function createInputsFormFromFilter(state) {
         values: [],
         ...state.filter[i].input.options,
       },
-      value:     null,
+      value:     'selectfield' ===  type ? SEARCH_ALLVALUE : null,
       operator:  state.filter[i].op,
       logicop:   i === (state.filter.length - 1) ? null : state.filter[i].logicop,
       id:        state.filter[i].id || getUniqueDomId(),
@@ -92,25 +94,19 @@ export async function createInputsFormFromFilter(state) {
       console.warn(e);
     }
 
-    if (has_error && 'selectfield' ===  input.type && !input.options.dependance_strict && !(!input.options.dependance_strict && input.options.layer_id)) {
+    if (has_error && 'selectfield' ===  input.type) {
       input.options.values.splice(0, input.options.values.length);
-    }
-
-    if (has_error && 'selectfield' ===  input.type && !input.options.dependance_strict && input.options.layer_id) {
-      input.options.values = [];
     }
 
     // set `SEARCH_ALLVALUE` as first element of array
     if ('selectfield' ===  input.type && input.options.values.length) {
       input.options.values = input.options.values.filter(v => SEARCH_ALLVALUE !== v).unshift({ value: SEARCH_ALLVALUE })
     }
-    
-    if ('selectfield' ===  input.type) {
-      input.value = SEARCH_ALLVALUE;
-    }
+
+    const chained_select = input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type); 
 
     // there is a dependence
-    if (input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type)) {
+    if (chained_select) {
       dep[input.attribute]                        = input.options.dependance;        // set dependence of input
       state.loading[input.options.dependance]     = false;
       input.options.disabled                      = input.options.dependance_strict; // disabled for BACKCOMP
@@ -119,14 +115,17 @@ export async function createInputsFormFromFilter(state) {
       deps[input.options.dependance].push(input);
     }
 
-    // set a widget type for fill dependency
-    if (input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type) && input.options.values.length > 0) {
-      input.widget          = 'valuemap';
+    if (chained_select && input.options.values.length > 0) {
       input.options._values = [...input.options.values];
     }
 
+    // set a widget type for fill dependency
+    if (chained_select && input.options.values.length > 0) {
+      input.widget = 'valuemap';
+    }
+
     // set value-relation widget
-    if (input.options.dependance && !input.options.dependance_strict && ['selectfield', 'autocompletefield'].includes(input.type) && !input.options.values.length && input.options.layer_id) {
+    if (chained_select && !input.options.values.length && input.options.layer_id) {
       input.widget = 'valuerelation';
     }
 
