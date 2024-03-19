@@ -116,9 +116,8 @@ export async function createInputsFormFromFilter(state) {
       deps[input.options.dependance].push(input);
     }
 
-    if (chained_select && input.options.values.length > 0) {
-      input.options._values = [...(input.options.values || [])];
-    }
+    // save a copy of original values
+    input.options._values = [...(input.options.values || [])];
 
     // set a widget type for fill dependency
     if (chained_select && input.options.values.length > 0) {
