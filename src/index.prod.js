@@ -10,59 +10,60 @@ import './deprecated';
 import './globals';
 
 //import core
-import ApplicationState from 'store/application-state';
+import ApplicationState          from 'store/application-state';
+import ProjectsRegistry          from 'store/projects';
 
 //import services
-import ApplicationService from 'services/application';
-import GUI from 'services/gui';
-import FloatbarService from "services/floatbar";
-import NavbarItemsService from 'services/navbaritems';
-import SidebarService from 'services/sidebar';
-import ViewportService from 'services/viewport';
+import ApplicationService        from 'services/application';
+import GUI                       from 'services/gui';
+import FloatbarService           from "services/floatbar";
+import NavbarItemsService        from 'services/navbaritems';
+import SidebarService            from 'services/sidebar';
+import ViewportService           from 'services/viewport';
 
 // import store
-import ComponentsRegistry from 'store/components';
+import ComponentsRegistry        from 'store/components';
 
 //components
-import App from 'components/App.vue';
-import ImageComponent from 'components/GlobalImage.vue';
-import GalleryImagesComponent from 'components/GlobalGallery.vue';
-import GeospatialComponet from 'components/GlobalGeo.vue';
-import Skeleton from 'components/GlobalSkeleton.vue';
-import BarLoader from 'components/GlobalBarLoader.vue';
-import Progressbar from 'components/GlobalProgressBar.vue';
-import HelpDiv from 'components/GlobalHelpDiv.vue';
-import Resize from 'components/GlobalResize.vue'
-import LayerPositions from 'components/GlobalLayerPositions.vue';
-import DateTime from 'components/GlobalDateTime.vue';
-import Range from 'components/GlobalRange.vue';
-import ResizeIcon from 'components/GlobalResizeIcon.vue';
-import Tabs from 'components/GlobalTabs.vue';
-import Divider from 'components/GlobalDivider.vue';
-import FloatbarComponent from "components/Floatbar.vue";
-import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
+import App                       from 'components/App.vue';
+import ImageComponent            from 'components/GlobalImage.vue';
+import GalleryImagesComponent    from 'components/GlobalGallery.vue';
+import GeospatialComponet        from 'components/GlobalGeo.vue';
+import Skeleton                  from 'components/GlobalSkeleton.vue';
+import BarLoader                 from 'components/GlobalBarLoader.vue';
+import Progressbar               from 'components/GlobalProgressBar.vue';
+import HelpDiv                   from 'components/GlobalHelpDiv.vue';
+import Resize                    from 'components/GlobalResize.vue'
+import LayerPositions            from 'components/GlobalLayerPositions.vue';
+import DateTime                  from 'components/GlobalDateTime.vue';
+import Range                     from 'components/GlobalRange.vue';
+import ResizeIcon                from 'components/GlobalResizeIcon.vue';
+import Tabs                      from 'components/GlobalTabs.vue';
+import Divider                   from 'components/GlobalDivider.vue';
+import FloatbarComponent         from "components/Floatbar.vue";
+import NavbaritemsLeftComponent  from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
-import SidebarComponent from 'components/Sidebar.vue';
-import ViewportComponent from 'components/Viewport.vue';
+import SidebarComponent          from 'components/Sidebar.vue';
+import ViewportComponent         from 'components/Viewport.vue';
 
 //directives
-import vDisabled from 'directives/v-disabled';
-import vChecked from 'directives/v-checked';
-import vSelectedFirst from 'directives/v-selected-first';
-import vSelect2 from 'directives/v-select2';
-import vTToltip from 'directives/v-t-tooltip';
-import vTHtml from 'directives/v-t-html';
-import vTPlaceholder from 'directives/v-t-placeholder';
-import vTTitle from 'directives/v-t-title';
-import vT from "directives/v-t";
-import vTPlugin from 'directives/v-t-plugin';
-import vPlugins from 'directives/v-plugins';
-import vOnline from 'directives/v-online';
-import vDownload from 'directives/v-download';
-import vClickOutside from 'directives/v-click-outside'
+import vDisabled                 from 'directives/v-disabled';
+import vChecked                  from 'directives/v-checked';
+import vSelectedFirst            from 'directives/v-selected-first';
+import vSelect2                  from 'directives/v-select2';
+import vTToltip                  from 'directives/v-t-tooltip';
+import vTHtml                    from 'directives/v-t-html';
+import vTPlaceholder             from 'directives/v-t-placeholder';
+import vTTitle                   from 'directives/v-t-title';
+import vT                        from "directives/v-t";
+import vTPlugin                  from 'directives/v-t-plugin';
+import vPlugins                  from 'directives/v-plugins';
+import vOnline                   from 'directives/v-online';
+import vDownload                 from 'directives/v-download';
+import vClickOutside             from 'directives/v-click-outside'
 
 // constants
-import { FONT_AWESOME_ICONS } from 'app/constant';
+import { FONT_AWESOME_ICONS }    from 'app/constant';
 
 const { base, inherit, toRawType } = require('utils');
 const { t, tPlugin }               = require('core/i18n/i18n.service');
@@ -263,7 +264,8 @@ const ApplicationTemplate = function({ApplicationService}) {
             new PrintComponent({
               id: 'print',
               open: false,
-              collapsible: true, //  it used to manage click event if can run setOpen component method
+              visible: (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+              collapsible: true, //  it used to manage click event if you can run setOpen component method
               icon: GUI.getFontClass('print'),
               mobile: false
             }),

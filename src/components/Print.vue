@@ -217,6 +217,7 @@ export default {
       const visible = print.length > 0;
 
       this.state = Object.assign(this.state || {}, {
+        visible,
         print,
         loading:      false,
         downloading:  false,
