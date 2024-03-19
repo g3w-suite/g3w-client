@@ -1,5 +1,5 @@
 import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
-import { createFilterFromString }      from './createFilterFromString';
+import { createFilterFromString }      from 'utils/createFilterFromString';
 
 /**
  * @param { Object } opts
@@ -10,7 +10,7 @@ import { createFilterFromString }      from './createFilterFromString';
  * @param { string } [opts.logicop='OR']          'OR' as default
  * @param { string } [opts.search_endpoint='api'] 'api' as default
  * 
- * @returns {string}
+ * @returns { string } filter
  * 
  * @since 3.8.7
  */
@@ -22,41 +22,17 @@ export function createSingleFieldParameter({
   logicop         = 'OR',
   search_endpoint = 'api',
 }) {
-  /** Check if search_endpoint is api and value is an array */
-  if ('api' === search_endpoint && Array.isArray(value)) {
-    let filter = '';
-    const valueLenght = value.length;
-    value.forEach((value, index) => {
-      filter += `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `|${logicop},` : ''}`;
-    });
-    return filter
+
+  // API search
+  if ('api' === search_endpoint) {
+    return [].concat(value).map(v => `${field}|${operator.toLowerCase()}|${encodeURIComponent(v)}`).join(`|${logicop},`);
   }
 
-  /** Case search_endpoint is api and value is single value*/
-  if('api' === search_endpoint ) {
-    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}`;
-  }
-
-  //in the case of search_endpoint equal to ows
-
-  // store filter string 
-  let filter = '';
-
-  // value is array of values
-  if (Array.isArray(value)) {
-    const valueLenght = value.length;
-    value.forEach((value, index) => {
-      filter += `"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
-    });
-  } else {
-    //single value
-    filter = `"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
-  }
-
+  // OWS search
   return createFilterFromString({
     layer,
     search_endpoint,
-    filter,
+    filter: [].concat(value).map(v => `"${field}" ${FILTER_EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(v)}' `).join(`${logicop} `),
   });
 
 }
