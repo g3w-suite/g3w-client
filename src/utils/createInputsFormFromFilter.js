@@ -46,15 +46,11 @@ export async function createInputsFormFromFilter(state) {
     const relation_reference = 'selectfield' === type                              && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference;
     const chained_select     = ['selectfield', 'autocompletefield'].includes(type) && !input.options.dependance_strict && input.options.dependance; 
 
-    console.log(value_relation, relation_reference, chained_select, input);
+    console.log(type, value_relation, relation_reference, chained_select, input);
 
     try {
 
-      console.log(type);
-
-      // In case of select input
-      // Request to server value for a specific select field
-      // get value-relation values when `layer_id` dependence is defined
+      // value-relation (select input values from `layer_id`)
       if (value_relation) {
         const response = await DataRouterService.getData('search:features', {
           inputs: {
@@ -79,17 +75,19 @@ export async function createInputsFormFromFilter(state) {
 
       // Relation reference (`fformatter`)
       if (relation_reference) {
-        const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
-        if (response && response.result && response.data) {
-          input.options.values = response.data.map(([value, key]) => ({ key, value }));
-        }
-        if (!input.options.values.length > 0) {
-          input.options.values = await getDataForSearchInput({ state, field: input.attribute })
-        }
-        // Set key value for select
-        if ('Object' !== toRawType(input.options.values[0])) {
-          input.options.values = input.options.values.map(value => ({ key: value, value }));
-        }
+        const response       = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
+        input.options.values = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
+      }
+
+      /** @TODO should we check input.type ? */
+      if (!input.options.values.length > 0) {
+        input.options.values = await getDataForSearchInput({ state, field: input.attribute });
+      }
+
+      /** @TODO should we check input.type ? */
+      // Set key value for select
+      if ('Object' !== toRawType(input.options.values[0])) {
+        input.options.values = input.options.values.map(value => ({ key: value, value }));
       }
 
     } catch (e) {
@@ -104,7 +102,8 @@ export async function createInputsFormFromFilter(state) {
 
     // set `SEARCH_ALLVALUE` as first element of array
     if ('selectfield' === input.type) {
-      input.options.values = (input.options.values || []).filter(v => SEARCH_ALLVALUE !== v).unshift({ value: SEARCH_ALLVALUE })
+      input.options.values = (input.options.values || []).filter(v => SEARCH_ALLVALUE !== v);
+      input.options.values.unshift({ value: SEARCH_ALLVALUE })
     }
 
     // there is a dependence

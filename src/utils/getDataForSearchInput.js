@@ -53,18 +53,20 @@ export async function getDataForSearchInput({
 
     // get unique value from each layers
     let response = Array.from(
-      await Promise
-        .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
-          field: createFieldsDeps({
-            field: dep,
-            fields: undefined !== dvalue ? [createSingleFieldParameter({ field: dep, value: dvalue, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
-          }),
-          suggest,
-          unique: field,
-          ordering: field,
-          // TODO ?
-          // fformatter: opts.fformatter 
-        })))
+      (
+        await Promise
+          .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
+            field: createFieldsDeps({
+              field: dep,
+              fields: undefined !== dvalue ? [createSingleFieldParameter({ field: dep, value: dvalue, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
+            }),
+            suggest,
+            unique: field,
+            ordering: field,
+            // TODO ?
+            // fformatter: opts.fformatter 
+          })))
+      )
         .filter(d => 'fulfilled' === d.status)
         .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
     )
