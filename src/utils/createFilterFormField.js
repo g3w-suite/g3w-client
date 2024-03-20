@@ -16,10 +16,10 @@ export function createFilterFormField({
   let filter;
   switch (search_endpoint) {
     case 'ows':
-      const expression = new Expression();
-      expression.createExpressionFromField({ field, value, operator, layerName: layer.getWMSLayerName() });
+      const e = new Expression();
+      e.createExpressionFromField({ field, value, operator, layerName: layer.getWMSLayerName() });
       filter = new Filter();
-      filter.setExpression(expression.get());
+      filter.setExpression(e.get());
       break;
     case 'api':
       filter = createSingleFieldParameter({ field, value, operator });
