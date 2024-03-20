@@ -29,9 +29,24 @@ export async function createInputsFormFromFilter(state) {
       attribute: state.filter[i].attribute,
       options:   {
         // check if it has a dependence
-        dependance_strict: false,
-        dependance: false,
         values: [],
+        /**
+         * true → initially it is disabled (values = [], ALL value)
+         *        as in the case in which the dependent field will
+         *        return to having ALL value. When a value is set to
+         *        the dependent field, the select will be enabled and
+         *        will contain the filtered values consistent with the
+         *        value of the dependent parent field
+         */
+        dependance_strict: false,
+        /**
+         * true → the select is not disabled and will contain all possible values
+         *        (since at the beginning the parent will have the value ALL).
+         *        When the value of the dependent field changes, the values in the
+         *        select list will be filtered in a manner consistent with the value
+         *        of the parent
+         */
+        dependance: false,
         ...state.filter[i].input.options,
       },
       value:     'selectfield' ===  type ? SEARCH_ALLVALUE : null,
@@ -39,7 +54,6 @@ export async function createInputsFormFromFilter(state) {
       logicop:   i === (state.filter.length - 1) ? null : state.filter[i].logicop,
       id:        state.filter[i].id || getUniqueDomId(),
       loading:   true,
-      widget:    null,
     };
 
     const value_relation     = !!('selectfield' === type                              && !input.options.dependance_strict && input.options.layer_id);
@@ -121,16 +135,6 @@ export async function createInputsFormFromFilter(state) {
 
     // save a copy of original values
     input.options._values = [...(input.options.values || [])];
-
-    // set a widget type for fill dependency
-    if (chained_select && input.options.values.length > 0) {
-      input.widget = 'valuemap';
-    }
-
-    // set value-relation widget
-    if (chained_select && !input.options.values.length && input.options.layer_id) {
-      input.widget = 'valuerelation';
-    }
 
     input.loading = false;
   }

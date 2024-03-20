@@ -359,6 +359,10 @@ export default {
           }),
         });
 
+        const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.options.dependance_strict && s.options.dependance
+        const is_valuemap      = s => !!(has_dependance(s) && s.options.values.length);
+        const is_valuerelation = s => !!(has_dependance(s) && !s.options.values.length && s.options.layer_id);
+
         for (let i = 0; i < no_autocomplete.length; i++) {
           const subscribe = no_autocomplete[i];
           const vals = new Set(); // ensure unique values
@@ -366,17 +370,17 @@ export default {
           // parent features
           (data.data[0].features || []).forEach(feat => {
             const value = feat.get(subscribe.attribute);
-            if (value) { vals.add('valuemap' === subscribe.widget ? `${value}` : value); } // enforce string value
+            if (value) { vals.add(is_valuemap(subscribe) ? `${value}` : value); } // enforce string value
           });
 
           // case value map
-          if ('valuemap' === subscribe.widget) {
+          if (is_valuemap(subscribe)) {
             []
               .concat(subscribe.options._values)
               .forEach(v => vals.has(v.key) && subscribe.options.values.push(v));
           }
 
-          if ('valuerelation' === subscribe.widget && vals.size > 0) {
+          if (is_valuerelation(subscribe) && vals.size > 0) {
             try {
               const { data = [] } = await DataRouterService.getData('search:features', {
                 inputs: {
@@ -401,7 +405,7 @@ export default {
           const sorted = [...vals].sort();
 
           // set key value for select
-          if (!['valuemap', 'valuerelation'].includes(subscribe.widget) && sorted.length) {
+          if (!is_valuemap(subscribe) && !is_valuerelation(subscribe)) {
             sorted.forEach(v => subscribe.options.values.push({ key: v, value: v }));
           }
 
