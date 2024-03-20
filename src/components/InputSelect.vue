@@ -109,7 +109,7 @@ export default {
      * @returns {boolean}
      */
     showNullOption() {
-      return this.state.nullOption === undefined || this.state.nullOption === true;
+      return [undefined, true].includes(this.state.nullOption);
     },
     /**
      *
@@ -442,12 +442,6 @@ export default {
         this.pickLayerInputService = this.showPickLayer && new PickLayerInputService(options);
       } catch(err) {}
     }
-
-    if (this.autocomplete && this.state.value) {
-      this.service.getKeyByValue({
-        search: this.state.value
-      });
-    }
   },
 
   async mounted() {
@@ -460,6 +454,7 @@ export default {
         minimumInputLength: 1,
         dropdownParent,
         allowClear: this.showNullOption,
+        placeholder: '',
         language,
         ajax: {
           delay: 250,
@@ -484,6 +479,19 @@ export default {
             }
           }},
       });
+      if (this.state.value) {
+        //need to reset values otherwise can be repeated;
+        this.state.input.options.values.splice(0);
+        await this.service.getKeyByValue({
+          search: this.state.value
+        });
+        this.select2.val(this.state.value);
+      }
+      if (this.showNullOption) {
+        this.select2.on('select2:unselect', () => {
+          this.changeSelect(null);
+        });
+      }
     } else {
       this.select2 = selectElement.select2({
         language,
