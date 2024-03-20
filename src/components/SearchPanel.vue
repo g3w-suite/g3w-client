@@ -115,7 +115,7 @@
             </div>
           </div>
 
-          <!-- LOGIC OPERATOR -->
+          <!-- LOGIC OPERATOR (AND | OR) -->
           <div
             v-if  = "forminput.logicop"
             class = "search-logicop skin-border-color"
@@ -239,9 +239,9 @@ export default {
       ].reduce((disabled, current=false) => disabled || current , false)
     },
 
-    async onFocus(event) {
+    async onFocus(e) {
       if (this.isMobile()) {
-        const top = $(event.target).position().top - 10 ;
+        const top = $(e.target).position().top - 10 ;
         await this.$nextTick();
         setTimeout(() => $('.sidebar').scrollTop(top), 500);
       }

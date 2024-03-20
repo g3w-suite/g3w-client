@@ -6,31 +6,26 @@ import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 /**
  * @returns { Array } of unique values from field
  */
-export async function getDataForSearchInput({
-  state,
-  field,
-  suggest,
-  output,
-}) {
+export async function getDataForSearchInput({ state, field, suggest, output }) {
 
   try {
 
-    const layers            = state.search_layers || [];
-    const inputdependance   = state.input.dependance || {};
-    const cachedependencies = state.input.cached_deps || {};
-    const filter            = state.filter || [];
+    const layers          = state.search_layers || [];
+    const inputdependance = state.input.dependance || {};
+    const cached          = state.input.cached_deps || {};
+    const filter          = state.filter || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
       let dep = inputdependance[field];
       let dvalue = undefined;
 
-      if (!dep || !cachedependencies[dep] || SEARCH_ALLVALUE === cachedependencies[dep]._currentValue) {
+      if (!dep || !cached[dep] || SEARCH_ALLVALUE === cached[dep]._currentValue) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
-      if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
-        dvalue = cachedependencies[dep]._currentValue; // dependance as value
+      if (dep && cached[dep] && SEARCH_ALLVALUE !== cached[dep]._currentValue) {
+        dvalue = cached[dep]._currentValue; // dependance as value
       }
 
       // In case of some input dependency is not filled
@@ -47,8 +42,8 @@ export async function getDataForSearchInput({
     let dep    = inputdependance[field];
     let dvalue = undefined;
 
-    if (dep && cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue) {
-      dvalue = cachedependencies[dep]._currentValue // dependance as value
+    if (dep && cached[dep] && SEARCH_ALLVALUE !== cached[dep]._currentValue) {
+      dvalue = cached[dep]._currentValue // dependance as value
     }
 
     // get unique value from each layers

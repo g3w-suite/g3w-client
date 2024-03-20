@@ -13,9 +13,7 @@ export function createFilterFromString({
   switch (search_endpoint) {
 
     case 'ows':
-      const e = new Expression({ filter, layerName: layer.getWMSLayerName() });
-      filter = new Filter();
-      filter.setExpression(e.get());
+      filter = (new Filter()).setExpression((new Expression({ filter, layerName: layer.getWMSLayerName() })).get());
       break;
 
     case 'api':
