@@ -18,10 +18,13 @@
     <slot name="form">
       <form class="g3w-search-form">
 
-        <span
+        <div
           v-for = "forminput in state.forminputs"
           :key  = "forminput.id"
         >
+
+          <sub>{{ forminput.type }}</sub>
+          <sub>{{ forminput.widget }}</sub>
 
           <!-- NUMBER FIELD -->
           <div
@@ -120,7 +123,7 @@
             <h4>{{ forminput.logicop }}</h4>
           </div>
 
-        </span>
+        </div>
 
         <!-- SEARCH BUTTON -->
         <div class="form-group">
@@ -275,8 +278,8 @@ export default {
           return;
         }
 
-        const isRoot      = undefined === dep[field];
-        const invalid     = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
+        const isRoot  = undefined === dep[field];
+        const invalid = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
 
         // loop over dependencies fields inputs
         subscribers.forEach(s => {
@@ -340,7 +343,8 @@ export default {
 
         // exclude autocomplete subscribers
         const no_autocomplete = subscribers.filter(s => 'autocompletefield' !== s.type);
-        // set disable
+        
+        // disable no autocomplete subscribers
         if (no_autocomplete.length > 0) {
           no_autocomplete.forEach(s => s.options.dependance_strict && (s.options.disabled = false));
         }
@@ -357,23 +361,22 @@ export default {
 
         for (let i = 0; i < no_autocomplete.length; i++) {
           const subscribe = no_autocomplete[i];
-          const _vals = new Set(); // ensure unique values
+          const vals = new Set(); // ensure unique values
 
           // parent features
           (data.data[0].features || []).forEach(feat => {
             const value = feat.get(subscribe.attribute);
-            if (value) { _vals.add('valuemap' === subscribe.widget ? `${value}` : value); } // enforce string value
+            if (value) { vals.add('valuemap' === subscribe.widget ? `${value}` : value); } // enforce string value
           });
 
           // case value map
           if ('valuemap' === subscribe.widget) {
-            const valuemap_data = [..._vals];
-            [...subscribe.options._values]
-              .filter(v =>  -1 !== valuemap_data.indexOf(v.key))
-              .forEach(v => subscribe.options.values.push(v));
+            []
+              .concat(subscribe.options._values)
+              .forEach(v => vals.has(v.key) && subscribe.options.values.push(v));
           }
 
-          if ('valuerelation' === subscribe.widget && _vals.size > 0) {
+          if ('valuerelation' === subscribe.widget && vals.size > 0) {
             try {
               const { data = [] } = await DataRouterService.getData('search:features', {
                 inputs: {
@@ -383,7 +386,7 @@ export default {
                     layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
                     search_endpoint: state.search_endpoint || state.search_layers[0].getSearchEndPoint(),
                     field: subscribe.options.value, // since v3.8.x
-                    value:  [..._vals]
+                    value:  [...vals]
                   }),
                   ordering: subscribe.options.key, // since v3.8.x
                 },
@@ -395,13 +398,13 @@ export default {
             }
           }
 
+          const sorted = [...vals].sort();
+
           // set key value for select
-          if (!['valuemap', 'valuerelation'].includes(subscribe.widget) && _vals.size) {
-            const select_data = [..._vals].sort();
-            ('Object' !== toRawType(select_data[0]) || [])
-              .map(v => ({ key: v, value: v }))
-              .forEach(v => subscribe.options.values.push(v));
+          if (!['valuemap', 'valuerelation'].includes(subscribe.widget) && sorted.length) {
+            sorted.forEach(v => subscribe.options.values.push({ key: v, value: v }));
           }
+
           cached[isRoot ? value : this.getDependanceCurrentValue(field)][subscribe.attribute] = subscribe.options.values.slice(1);
           subscribe.options.disabled = false;
         }
@@ -423,8 +426,8 @@ export default {
       return dep[field] ? cache_deps[dep[field]]._currentValue : state.forminputs.find(f => f.attribute === field).value;
     },
 
-    doSearch(event) {
-      event.preventDefault();
+    doSearch(e) {
+      e.preventDefault();
       this.$options.service.run();
     },
 
@@ -525,28 +528,24 @@ export default {
       SELECTS.push(select2);
 
       select2.on('select2:select select2:unselecting', e => {
-        if ('select2:unselecting' === e.type && !is_autocomplete) {
-          return;
+        if ('select2:select' === e.type || is_autocomplete) {
+          this.changeInput({
+            id:        $(e.target).attr('id'),
+            attribute: $(e.target).attr('name'),
+            value:     e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE,
+            type:      forminput.type
+          });
         }
-        this.changeInput({
-          id:        $(e.target).attr('id'),
-          attribute: $(e.target).attr('name'),
-          value:     e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE,
-          type:      forminput.type
-        });
       });
 
-      this.$watch(() => forminput.value, async (value, _value) => {
-        //in case of null value (initial value) or not change
-        if (value === _value) {
-          return;
-        }
-        if (value === SEARCH_ALLVALUE) {
+      // trigger select2 change on input value change
+      this.$watch(() => forminput.value, async (value, oldVal) => {
+        if (value !== oldVal && value === SEARCH_ALLVALUE) {
           select2.val(value).trigger('change');
         }
       });
 
-      //set initial value
+      // set initial value
       select2.val(forminput.value).trigger('change');
     },
 
