@@ -18,8 +18,6 @@ export async function createInputsFormFromFilter(state) {
   const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
-  console.log(state);
-
   for (let i = 0; i <= (state.filter || []).length - 1; i++) {
     let has_error;
 
@@ -48,7 +46,8 @@ export async function createInputsFormFromFilter(state) {
     const relation_reference = 'selectfield' === type                              && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference;
     const chained_select     = ['selectfield', 'autocompletefield'].includes(type) && !input.options.dependance_strict && input.options.dependance; 
 
-    console.log(type, value_relation, relation_reference, chained_select, input);
+    // add form inputs to list of search input
+    state.forminputs.push(input);
 
     try {
 
@@ -132,9 +131,6 @@ export async function createInputsFormFromFilter(state) {
     }
 
     input.loading = false;
-
-    // add form inputs to list of search input
-    state.forminputs.push(input);
   }
 
 }
