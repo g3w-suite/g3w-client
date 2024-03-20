@@ -106,7 +106,7 @@ export function SearchPanel(opts = {}, show = false) {
     },
   };
 
-  createInputsFormFromFilter(state);
+  state.mounted = createInputsFormFromFilter(state);
 
   const service = opts.service || Object.assign(new G3WObject, {
     state,

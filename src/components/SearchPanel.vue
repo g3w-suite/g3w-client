@@ -159,7 +159,6 @@ import ApplicationService                    from 'services/application';
 import DataRouterService                     from 'services/data';
 import { getUniqueDomId }                    from 'utils/getUniqueDomId';
 import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
-import { toRawType }                         from 'utils/toRawType';
 import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
 import resizeMixin                           from 'mixins/resize';
 
@@ -556,7 +555,9 @@ export default {
   },
 
   async mounted() {
+    await this.state.mounted;
     for (const forminput of this.state.forminputs) {
+      console.log(forminput);
       await this.initSelect2Field(forminput);
       await this.initDateTimeField(forminput);
     }
