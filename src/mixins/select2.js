@@ -9,7 +9,7 @@ import resizeMixin from 'mixins/resize';
 export default {
   mixins: [resizeMixin],
   methods: {
-    setValue(){
+    setValue() {
       this.select2.val(this.state.value).trigger('change');
     },
     resize() {
