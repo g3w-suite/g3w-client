@@ -472,6 +472,7 @@ export default {
      * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
      */
     async initSelect2Field(forminput) {
+      console.log(forminput);
       if (!['selectfield', 'autocompletefield'].includes(forminput.type)) {
         return;
       }

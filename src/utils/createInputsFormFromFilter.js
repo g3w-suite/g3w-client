@@ -18,6 +18,8 @@ export async function createInputsFormFromFilter(state) {
   const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
+  console.log(state);
+
   for (let i = 0; i <= (state.filter || []).length - 1; i++) {
     let has_error;
 
@@ -97,7 +99,7 @@ export async function createInputsFormFromFilter(state) {
 
     // reset values to empty array on error
     if (has_error && 'selectfield' ===  input.type) {
-      input.options.values.splice(0, input.options.values.length);
+      input.options.values.splice(0);
     }
 
     // set `SEARCH_ALLVALUE` as first element of array
