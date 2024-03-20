@@ -38,8 +38,8 @@
             <input
               type    = "number"
               min     = "0"
-              @change = "changeNumericInput(forminput)"
-              @input  = "changeNumericInput(forminput)"
+              @change = "changeInput(forminput)"
+              @input  = "changeInput(forminput)"
               v-model = "forminput.value"
               class   = "form-control"
               :id     = "forminput.id"
@@ -247,17 +247,11 @@ export default {
       }
     },
 
-    changeNumericInput(input) {
-      input.value = input.value || 0 === input.value ? input.value : null;
-      this.changeInput(input);
-    },
-
     /**
      * Sync `this.state.forminputs` and `this.state.input.dependencies` with `input.value`
      */
     async changeInput(input) {
       const field       = input.attribute;
-      const value       = undefined !== input.value ? input.value : SEARCH_ALLVALUE;
       const dep         = this.state.input.dependance;
       const cached_deps = this.state.input.cached_deps;
       const state       = this.state;
@@ -265,10 +259,22 @@ export default {
       try {
         this.state.searching = true;
 
-        /** @TODO check if it has one reason to trim  */
-        input.value = ['textfield', 'textField'].includes(input.type) ? value : value.trim();
+        const forminput = this.state.forminputs.find(i => i.id == input.id);
 
-        this.state.forminputs.find(i => i.id == input.id).value = input.value;
+        if ('numberfield' === forminput.type) {
+          input.value = input.value || 0 === input.value ? input.value : null;
+        }
+
+        const value  = undefined !== input.value ? input.value : SEARCH_ALLVALUE;
+
+        /** @TODO check if it has one reason to trim  */
+        if (['textfield', 'textField'].includes(input.type)) {
+          input.value = value;
+        } else {
+          input.value = value.trim();
+        }
+
+        forminput.value = input.value;
 
         // get inputs that depends on the current one
         const subscribers = this.state.input.dependencies[input.attribute] || [];
