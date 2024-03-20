@@ -246,7 +246,7 @@ export default {
     },
 
     changeNumericInput(input) {
-      input.value = input.value || input.value === 0 ? input.value : null;
+      input.value = input.value || 0 === input.value ? input.value : null;
       this.changeInput(input);
     },
 
@@ -297,8 +297,7 @@ export default {
             s.options.values.splice(1);
           }
 
-          // case of father is set an empty invalid value (all value example)
-          // subscribe has to set all valaues
+          // father has an empty invalid value (eg. ALL_VALUE) → set all values to subscribe 
           if (!is_autocomplete && invalid) {
             setTimeout(() => s.options.values = [...s.options._allvalues]);
           }
@@ -472,7 +471,6 @@ export default {
      * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
      */
     async initSelect2Field(forminput) {
-      console.log(forminput);
       if (!['selectfield', 'autocompletefield'].includes(forminput.type)) {
         return;
       }
