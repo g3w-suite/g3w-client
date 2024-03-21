@@ -98,7 +98,7 @@ export function SearchPanel(opts = {}, show = false) {
     search_endpoint:      opts.search_endpoint, //ows, api
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers: [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
+    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
     // Array of inputs that belongs to search form
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:        d.id || getUniqueDomId(),
