@@ -314,8 +314,8 @@ export default {
 
         // extract the value of the field to get filter data from the relation layer
         const data = await getDataForSearchInput({
-          state: this.state,
-          search_layers: state.search_layers[0],
+          state,
+          search_layers: [state.search_layers[0]],
           formatter: 0, // since v3.x, force to use raw value
           value,
         })

@@ -53,14 +53,14 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
               ? ({
                 field,
                 fields: undefined !== value
-                  ? [createSingleFieldParameter({ field, value, operator: state.forminputs.find(f =>  f.attribute === field).operator })]
+                  ? [createSingleFieldParameter({ field, value, operator: parent.operator })]
                   : [],
               })
               // this is a child elment ?
               : ({
                 field: dep,
                 fields: cached && ![SEARCH_ALLVALUE, undefined].includes(parent.value)
-                  ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(f =>  f.attribute === dep).operator }) ]
+                  ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(d =>  d.attribute === dep).operator }) ]
                   : [],
               })
             ),
