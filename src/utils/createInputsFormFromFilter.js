@@ -2,7 +2,6 @@ import { SEARCH_ALLVALUE }         from 'app/constant';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService           from 'services/data';
 import { toRawType }               from 'utils/toRawType';
-import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFormInputs }  from 'utils/createFilterFormInputs';
 import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
 
@@ -18,52 +17,19 @@ export async function createInputsFormFromFilter(state) {
   const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
-  for (let i = 0; i <= (state.filter || []).length - 1; i++) {
+  console.log(state);
+
+  for (let i = 0; i <= state.forminputs.length - 1; i++) {
     let has_error;
 
-    const type = state.filter[i].input.type || 'textfield';
-
-    const input = {
-      type,
-      label:     state.filter[i].label,
-      attribute: state.filter[i].attribute,
-      options:   {
-        // check if it has a dependence
-        values: [],
-        /**
-         * true → initially it is disabled (values = [], ALL value)
-         *        as in the case in which the dependent field will
-         *        return to having ALL value. When a value is set to
-         *        the dependent field, the select will be enabled and
-         *        will contain the filtered values consistent with the
-         *        value of the dependent parent field
-         */
-        dependance_strict: false,
-        /**
-         * true → the select is not disabled and will contain all possible values
-         *        (since at the beginning the parent will have the value ALL).
-         *        When the value of the dependent field changes, the values in the
-         *        select list will be filtered in a manner consistent with the value
-         *        of the parent
-         */
-        dependance: false,
-        ...state.filter[i].input.options,
-      },
-      value:     'selectfield' ===  type ? SEARCH_ALLVALUE : null,
-      operator:  state.filter[i].op,
-      logicop:   i === (state.filter.length - 1) ? null : state.filter[i].logicop,
-      id:        state.filter[i].id || getUniqueDomId(),
-      loading:   true,
-    };
+    const input = state.forminputs[i];
+    const type  = input.type;
 
     const value_relation     = !!('selectfield' === type                              && !input.options.dependance_strict && input.options.layer_id);
     const relation_reference = !!('selectfield' === type                              && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference);
     const chained_select     = !!(['selectfield', 'autocompletefield'].includes(type) && !input.options.dependance_strict && input.options.dependance); 
 
     console.log(input, value_relation, relation_reference, chained_select);
-
-    // add form inputs to list of search input
-    state.forminputs.push(input);
 
     try {
 

@@ -18,6 +18,7 @@ import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { createInputsFormFromFilter } from 'utils/createInputsFormFromFilter';
 import { doSearch }                   from 'utils/doSearch';
 import { debounce }                   from 'utils/debounce';
+import { getUniqueDomId }             from 'utils/getUniqueDomId';
 
 import * as vueComp                   from 'components/Search.vue';
 import * as vueSearchComp             from 'components/SearchPanel.vue';
@@ -86,7 +87,6 @@ export function SearchComponent(opts = {}) {
  */
 export function SearchPanel(opts = {}, show = false) {
   const state = {
-    forminputs:           [], // Array of inputs belongs to form search
     loading:              {}, // store loading state of each input and each dependency
     searching:            false, //Boolean. If true, search request from server is starts. False no search
     title:                opts.name,
@@ -94,6 +94,7 @@ export function SearchPanel(opts = {}, show = false) {
     type:                 opts.type || 'search',
     queryurl:             (opts.options || {}).queryurl,
     return:               (opts.options || {}).return || 'data',
+    /** @TODO code dedupe, merge `state.forminputs` and `state.filter` */
     filter:               (opts.options || {}).filter,
     search_endpoint:      opts.search_endpoint, //ows, api
     search_1n_relationid: opts.options.search_1n_relationid, //relations
@@ -104,6 +105,39 @@ export function SearchPanel(opts = {}, show = false) {
       dependencies: {},
       cached_deps: {},
     },
+    // Array of inputs that belongs to search form
+    forminputs:           ((opts.filter || {}).filter || []).map((d, i) => ({
+      type:      d.input.type || 'textfield',
+      label:     d.label,
+      attribute: d.attribute,
+      options:   {
+        // check if it has a dependence
+        values: [],
+        /**
+         * true → initially it is disabled (values = [], ALL value)
+         *        as in the case in which the dependent field will
+         *        return to having ALL value. When a value is set to
+         *        the dependent field, the select will be enabled and
+         *        will contain the filtered values consistent with the
+         *        value of the dependent parent field
+         */
+        dependance_strict: false,
+        /**
+         * true → the select is not disabled and will contain all possible values
+         *        (since at the beginning the parent will have the value ALL).
+         *        When the value of the dependent field changes, the values in the
+         *        select list will be filtered in a manner consistent with the value
+         *        of the parent
+         */
+        dependance: false,
+        ...d.input.options,
+      },
+      value:     'selectfield' ===  d.input.type ? SEARCH_ALLVALUE : null,
+      operator:  d.op,
+      logicop:   i === (opts.options.filter.length - 1) ? null : d.logicop,
+      id:        d.id || getUniqueDomId(),
+      loading:   true,
+    })),
   };
 
   state.mounted = createInputsFormFromFilter(state);
