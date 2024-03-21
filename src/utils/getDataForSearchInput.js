@@ -14,8 +14,8 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
       const parent = state.forminputs.find(d => d.attribute === field);
-      let dep      = parent && parent.options.dependance;
-      const cached = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
+      let dep      = parent && parent.dependance;
+      const cached = dep && state.forminputs.some(d => dep === d.dependance && d.dvalues.length);
 
       if (!cached || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
@@ -34,8 +34,8 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
 
     // check if a field has a dependance
     const parent = state.forminputs.find(d => d.attribute === field);
-    let dep      = parent && parent.options.dependance;
-    const cached = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
+    let dep      = parent && parent.dependance;
+    const cached = dep && state.forminputs.some(d => dep === d.dependance && d.dvalues.length);
 
     // get unique value from each layers
     let response = Array.from(

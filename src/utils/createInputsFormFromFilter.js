@@ -22,8 +22,8 @@ export async function createInputsFormFromFilter(state) {
     const input = state.forminputs[i];
     const type  = input.type;
 
-    const value_relation     = !!('selectfield' === type && !input.options.dependance_strict && input.options.layer_id);
-    const relation_reference = !!('selectfield' === type && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference);
+    const value_relation     = !!('selectfield' === type && !input.dependance_strict && input.options.layer_id);
+    const relation_reference = !!('selectfield' === type && !input.dependance_strict && !input.options.layer_id && input.options.relation_reference);
 
     console.log(input, value_relation, relation_reference);
 
@@ -40,7 +40,7 @@ export async function createInputsFormFromFilter(state) {
               search_endpoint,
               inputs: [{
                 value: await getDataForSearchInput({ state, field: input.attribute }),
-                attribute: input.options.value,
+                attribute: input.value,
                 logicop: 'OR',
                 operator: 'eq'
               }]
@@ -49,44 +49,44 @@ export async function createInputsFormFromFilter(state) {
           },
           outputs: false
         });
-        input.options.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({ key: f.get(input.options.key), value: f.get(input.options.value) }));
+        input.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({ key: f.get(input.options.key), value: f.get(input.value) }));
       }
 
       // Relation reference (`fformatter`)
       if (relation_reference) {
         const response       = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
-        input.options.values = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
+        input.values = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
       }
 
       /** @TODO should we check input.type ? */
-      if (!input.options.dependance && !input.options.values.length > 0) {
-        input.options.values = await getDataForSearchInput({ state, field: input.attribute });
+      if (!input.dependance && !input.values.length > 0) {
+        input.values = await getDataForSearchInput({ state, field: input.attribute });
       }
 
       /** @TODO should we check input.type ? */
       // Set key value for select
-      if ('Object' !== toRawType(input.options.values[0])) {
-        input.options.values = input.options.values.map(value => ({ key: value, value }));
+      if ('Object' !== toRawType(input.values[0])) {
+        input.values = input.values.map(value => ({ key: value, value }));
       }
 
     } catch (e) {
-      input.options.values = []; // reset to empty array on error
+      input.values = []; // reset to empty array on error
       console.warn(e);
     }
 
     // set `SEARCH_ALLVALUE` as first element of array
     if ('selectfield' === input.type) {
-      input.options.values = [{ value: SEARCH_ALLVALUE }].concat(input.options.values.filter(v => SEARCH_ALLVALUE !== v));
+      input.values = [{ value: SEARCH_ALLVALUE }].concat(input.values.filter(v => SEARCH_ALLVALUE !== v));
     }
 
     // there is a dependence
-    if (input.options.dependance) {
-      state.loading[input.options.dependance] = false;
-      input.options.disabled                  = input.options.dependance_strict; // disabled for BACKCOMP
+    if (input.dependance) {
+      state.loading[input.dependance] = false;
+      input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
     }
 
     // save a copy of original values
-    input.options._values = [...input.options.values];
+    input._values = [...input.values];
 
     input.loading = false;
   }

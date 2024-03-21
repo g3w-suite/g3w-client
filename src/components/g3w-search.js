@@ -99,39 +99,40 @@ export function SearchPanel(opts = {}, show = false) {
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
     search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
-    // Array of inputs that belongs to search form
+    /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:        d.id || getUniqueDomId(),
       type:      d.input.type || 'textfield',
       label:     d.label,
       attribute: d.attribute,
-      options:   {
-        // check if it has a dependence
-        values: [],
-        /**
-         * true → initially it is disabled (values = [], ALL value)
-         *        as in the case in which the dependent field will
-         *        return to having ALL value. When a value is set to
-         *        the dependent field, the select will be enabled and
-         *        will contain the filtered values consistent with the
-         *        value of the dependent parent field
-         */
-        dependance_strict: false,
-        /**
-         * true → the select is not disabled and will contain all possible values
-         *        (since at the beginning the parent will have the value ALL).
-         *        When the value of the dependent field changes, the values in the
-         *        select list will be filtered in a manner consistent with the value
-         *        of the parent
-         */
-        dependance: false,
-        ...d.input.options,
-      },
+      value:     d.input.options.value,
+      values:    d.input.options.values || [],
+      /** group values by parent value */
+      dvalues: {},
+      /**
+       * true → initially it is disabled (values = [], ALL value)
+       *        as in the case in which the dependent field will
+       *        return to having ALL value. When a value is set to
+       *        the dependent field, the select will be enabled and
+       *        will contain the filtered values consistent with the
+       *        value of the dependent parent field
+       */
+      dependance_strict: d.input.options.dependance_strict || false,
+      /**
+       * true → the select is not disabled and will contain all possible values
+       *        (since at the beginning the parent will have the value ALL).
+       *        When the value of the dependent field changes, the values in the
+       *        select list will be filtered in a manner consistent with the value
+       *        of the parent
+       */
+      dependance: d.input.options.dependance || false,
       value:     'selectfield' ===  d.input.type ? SEARCH_ALLVALUE : null,
       operator:  d.op,
       logicop:   i === (opts.options.filter.length - 1) ? null : d.logicop,
-      dvalues: {}, // group values by parent value
       loading:   true,
+      disabled:  d.input.options.disabled || false, 
+      /** keep a reference to initial search options (you shouldn't mutate them..) */
+      options:   d.input.options,
     })),
   };
 

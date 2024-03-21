@@ -19,74 +19,74 @@
       <form class="g3w-search-form">
 
         <div
-          v-for = "forminput in state.forminputs"
-          :key  = "forminput.id"
+          v-for = "input in state.forminputs"
+          :key  = "input.id"
         >
 
-          <sub>{{ forminput.type }}</sub>
+          <sub>{{ input.type }}</sub>
 
           <!-- NUMBER FIELD -->
           <div
-            v-if  = "'numberfield' === forminput.type"
+            v-if  = "'numberfield' === input.type"
             class = "form-group numeric"
           >
-            <label :for="forminput.id" class="search-label">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
+            <label :for="input.id" class="search-label">
+              <span>{{ input.label || input.attribute }}</span>
+              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
             <input
               type    = "number"
               min     = "0"
-              @change = "changeInput(forminput)"
-              @input  = "changeInput(forminput)"
-              v-model = "forminput.value"
+              @change = "changeInput(input)"
+              @input  = "changeInput(input)"
+              v-model = "input.value"
               class   = "form-control"
-              :id     = "forminput.id"
+              :id     = "input.id"
             />
           </div>
 
           <!-- TEXT FIELD -->
           <div
-            v-else-if = "['textfield', 'textField'].includes(forminput.type)"
+            v-else-if = "['textfield', 'textField'].includes(input.type)"
             class     = "form-group form-item-search text"
           >
-            <label :for="forminput.id" class="search-label">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
+            <label :for="input.id" class="search-label">
+              <span>{{ input.label || input.attribute }}</span>
+              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
             <input
               @focus  = "onFocus"
               type    = "text"
-              v-model = "forminput.value"
-              @change = "changeInput(forminput)"
+              v-model = "input.value"
+              @change = "changeInput(input)"
               class   = "form-control"
-              :id     = "forminput.id"
+              :id     = "input.id"
             />
           </div>
 
           <!-- AUTOCOMPLETE FIELD -->
           <div
-            v-else-if  = "['selectfield', 'autocompletefield'].includes(forminput.type)"
+            v-else-if  = "['selectfield', 'autocompletefield'].includes(input.type)"
             class      = "form-group text"
-            v-disabled = "isSelectDisabled(forminput)"
+            v-disabled = "isSelectDisabled(input)"
           >
-            <label :for="forminput.id" class="search-label">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
+            <label :for="input.id" class="search-label">
+              <span>{{ input.label || input.attribute }}</span>
+              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
             <bar-loader
-              v-if     = "forminput.options.dependance"
-              :loading = "state.loading[forminput.options.dependance] || forminput.loading"
+              v-if     = "input.dependance"
+              :loading = "state.loading[input.dependance] || input.loading"
             />
             <select
-              :ref       = "'search_select_' + forminput.id"
-              :name      = "forminput.attribute"
+              :ref       = "'search_select_' + input.id"
+              :name      = "input.attribute"
               class      = "form-control"
-              :id        = "forminput.id"
-              v-disabled = "forminput.options.disabled || forminput.loading"
+              :id        = "input.id"
+              v-disabled = "input.disabled || input.loading"
             >
               <option
-                v-for  = "opt in forminput.options.values"
+                v-for  = "opt in input.values"
                 :key   = "opt.value"
                 :value = "opt.value"
               >
@@ -98,28 +98,28 @@
 
           <!-- DATETIME FIELD -->
           <div
-            v-else-if  = "'datetimefield' === forminput.type"
+            v-else-if  = "'datetimefield' === input.type"
             class      = "form-group text"
-            v-disabled = "state.loading[forminput.options.dependance] || false"
+            v-disabled = "state.loading[input.dependance] || false"
           >
-            <label :for="forminput.id" class="search-label">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
+            <label :for="input.id" class="search-label">
+              <span>{{ input.label || input.attribute }}</span>
+              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
-            <div :ref="'search_datetime_' + forminput.id" class="input-group date">
-              <input :id="forminput.id" type='text' class="form-control" />
+            <div :ref="'search_datetime_' + input.id" class="input-group date">
+              <input :id="input.id" type='text' class="form-control" />
               <span class="input-group-addon skin-color">
-                <span :class="g3wtemplate.getFontClass(forminput.options.format.time ? 'time': 'calendar')"></span>
+                <span :class="g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
               </span>
             </div>
           </div>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
           <div
-            v-if  = "forminput.logicop"
+            v-if  = "input.logicop"
             class = "search-logicop skin-border-color"
           >
-            <h4>{{ forminput.logicop }}</h4>
+            <h4>{{ input.logicop }}</h4>
           </div>
 
         </div>
@@ -159,6 +159,7 @@ import DataRouterService                     from 'services/data';
 import { getUniqueDomId }                    from 'utils/getUniqueDomId';
 import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
+import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
 import resizeMixin                           from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
@@ -196,12 +197,8 @@ export default {
       return `[ ${FILTER_EXPRESSION_OPERATORS[operator]} ]`
     },
 
-    isSelectDisabled(forminput) {
-      return [
-        this.state.loading[forminput.options.dependance],
-        forminput.loading,
-        forminput.options.disabled
-      ].reduce((disabled, curr=false) => disabled || curr , false)
+    isSelectDisabled(input) {
+      return this.state.loading[input.dependance] || input.loading || input.disabled;
     },
 
     async onFocus(e) {
@@ -216,9 +213,10 @@ export default {
      * Sync `this.state.forminputs` with `input.value`
      */
     async changeInput(input) {
+      console.log(input);
       const field       = input.attribute;
       const forminput   = this.state.forminputs.find(i => i.id == input.id);
-      const deps        = this.state.forminputs.filter(d => d.options.dependance === field);  // get inputs that depends on the current one
+      const deps        = this.state.forminputs.filter(d => d.dependance === field);  // get inputs that depends on the current one
       const state       = this.state;
       let value         = input.value;
 
@@ -256,22 +254,22 @@ export default {
 
           // in the case of autocomplete reset values to an empty array
           if (is_autocomplete || invalid) {
-            s.options.values.splice(0);
+            s.values.splice(0);
           }
 
           // set starting all values
-          if (!is_autocomplete && undefined === s.options._allvalues) {
-            s.options._allvalues = [...s.options.values];
+          if (!is_autocomplete && undefined === s._allvalues) {
+            s._allvalues = [...s.values];
           }
 
           // otherwise has to get first __ALL_VALUE
           if (!is_autocomplete && !invalid) {
-            s.options.values.splice(1);
+            s.values.splice(1);
           }
 
           // father has an empty invalid value (eg. ALL_VALUE) → set all values to subscribe 
           if (!is_autocomplete && invalid) {
-            setTimeout(() => s.options.values = [...s.options._allvalues]);
+            setTimeout(() => s.values = [...s._allvalues]);
           }
 
           s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
@@ -279,7 +277,7 @@ export default {
 
         if (!value || value === SEARCH_ALLVALUE) {
           console.info('deps for: ', input, deps);
-          deps.forEach(s => s.options.disabled = s.options.dependance_strict);
+          deps.forEach(s => s.disabled = s.dependance_strict);
           return;
         }
 
@@ -290,8 +288,8 @@ export default {
         if (forminput.dependance && forminput.dvalues[parent.value] && undefined !== forminput.dvalues[parent.value][value]) {
           console.info('val for: ', input, forminput.dvalues[parent.value][value]);
           deps.forEach(s => {
-            (forminput.dvalues[parent.value][value][s.attribute] || []).forEach(v => s.options.values.push(v));
-            s.options.disabled = false;                                      // set disabled dependence field
+            (forminput.dvalues[parent.value][value][s.attribute] || []).forEach(v => s.values.push(v));
+            s.disabled = false;                                      // set disabled dependence field
           });
           return;
         }
@@ -300,8 +298,8 @@ export default {
         if (!forminput.dependance && undefined !== forminput.dvalues[value]) {
           console.info('val for: ', input, forminput.dvalues[value]);
           deps.forEach(s => {
-            (forminput.dvalues[value][s.attribute] || []).forEach(v => s.options.values.push(v));
-            s.options.disabled = false;                                      // set disabled dependence field
+            (forminput.dvalues[value][s.attribute] || []).forEach(v => s.values.push(v));
+            s.disabled = false;                                      // set disabled dependence field
           });
           return;
         }
@@ -313,7 +311,7 @@ export default {
         
         // disable no autocomplete subscribers
         if (no_autocomplete.length > 0) {
-          no_autocomplete.forEach(s => s.options.dependance_strict && (s.options.disabled = false));
+          no_autocomplete.forEach(s => s.dependance_strict && (s.disabled = false));
         }
 
         // extract the value of the field to get filter data from the relation layer
@@ -324,9 +322,9 @@ export default {
           value,
         })
 
-        const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.options.dependance_strict && s.options.dependance
-        const is_valuemap      = s => !!(has_dependance(s) && s.options.values.length);
-        const is_valuerelation = s => !!(has_dependance(s) && !s.options.values.length && s.options.layer_id);
+        const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
+        const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
+        const is_valuerelation = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
 
         for (let i = 0; i < no_autocomplete.length; i++) {
           const subscribe = no_autocomplete[i];
@@ -341,8 +339,8 @@ export default {
           // case value map
           if (is_valuemap(subscribe)) {
             []
-              .concat(subscribe.options._values)
-              .forEach(v => vals.has(v.key) && subscribe.options.values.push(v));
+              .concat(subscribe._values)
+              .forEach(v => vals.has(v.key) && subscribe.values.push(v));
           }
 
           if (is_valuerelation(subscribe) && vals.size > 0) {
@@ -354,14 +352,14 @@ export default {
                   filter: createSingleFieldParameter({
                     layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
                     search_endpoint: state.search_endpoint || state.search_layers[0].getSearchEndPoint(),
-                    field: subscribe.options.value, // since v3.8.x
+                    field: subscribe.value, // since v3.8.x
                     value:  [...vals]
                   }),
                   ordering: subscribe.options.key, // since v3.8.x
                 },
                 outputs: false,
               });
-              (data && data[0] && data[0].features || []).forEach(f => { subscribe.options.values.push({ key: f.get(subscribe.options.key), value: f.get(subscribe.options.value) }); });
+              (data && data[0] && data[0].features || []).forEach(f => { subscribe.values.push({ key: f.get(subscribe.options.key), value: f.get(subscribe.value) }); });
             } catch(e) {
               console.warn(e);
             }
@@ -369,10 +367,10 @@ export default {
 
           // set key value for select
           if (!is_valuemap(subscribe) && !is_valuerelation(subscribe)) {
-            [...vals].sort().forEach(v => subscribe.options.values.push({ key: v, value: v }));
+            [...vals].sort().forEach(v => subscribe.values.push({ key: v, value: v }));
           }
 
-          const sliced = subscribe.options.values.slice(1);
+          const sliced = subscribe.values.slice(1);
 
           if (forminput.dependance) {
             forminput.dvalues[parent.value]        = forminput.dvalues[parent.value] || {};
@@ -383,7 +381,7 @@ export default {
             forminput.dvalues[value][subscribe.attribute] = sliced;
           }
 
-          subscribe.options.disabled = false;
+          subscribe.disabled = false;
         }
       } catch(e) {
         console.warn(e);
@@ -520,10 +518,10 @@ export default {
 
   async mounted() {
     await this.state.mounted;
-    for (const forminput of this.state.forminputs) {
-      console.log(forminput);
-      await this.initSelect2Field(forminput);
-      await this.initDateTimeField(forminput);
+    for (const input of this.state.forminputs) {
+      console.log(input);
+      await this.initSelect2Field(input);
+      await this.initDateTimeField(input);
     }
   },
 
