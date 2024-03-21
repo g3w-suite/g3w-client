@@ -250,24 +250,19 @@ export default {
         deps.forEach(s => {
           const is_autocomplete = 'autocompletefield' === s.type;
 
-          // in the case of autocomplete reset values to an empty array
+          // autocomplete → reset values to empty array
           if (is_autocomplete || invalid) {
             s.values.splice(0);
           }
 
-          // set starting all values
-          if (!is_autocomplete && undefined === s._allvalues) {
-            s._allvalues = [...s.values];
-          }
-
-          // otherwise has to get first __ALL_VALUE
+          // no autocomplete → get first value (ALL_VALUE)
           if (!is_autocomplete && !invalid) {
             s.values.splice(1);
           }
 
-          // father has an empty invalid value (eg. ALL_VALUE) → set all values to subscribe 
+          // parent has invalid value (eg. ALL_VALUE) → set all values to subscribe 
           if (!is_autocomplete && invalid) {
-            setTimeout(() => s.values = [...s._allvalues]);
+            setTimeout(() => s.values = [...s._values]);
           }
 
           s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
@@ -304,19 +299,17 @@ export default {
 
         state.loading[field] = true;
 
-        // exclude autocomplete subscribers
-        const no_autocomplete = deps.filter(s => 'autocompletefield' !== s.type);
-        
         // disable no autocomplete subscribers
-        if (no_autocomplete.length > 0) {
-          no_autocomplete.forEach(s => s.dependance_strict && (s.disabled = false));
-        }
+        deps
+          .filter(s => 'autocompletefield' === s.type && s.dependance_strict)
+          .forEach(s => s.disabled = false);
 
         // extract the value of the field to get filter data from the relation layer
         const data = await getDataForSearchInput({
           state,
           search_layers: [state.search_layers[0]],
           formatter: 0, // since v3.x, force to use raw value
+          field,
           value,
         })
 
@@ -324,8 +317,14 @@ export default {
         const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
         const is_valuerelation = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
 
-        for (let i = 0; i < no_autocomplete.length; i++) {
-          const subscribe = no_autocomplete[i];
+        for (let i = 0; i < deps.length; i++) {
+
+          // exclude autocomplete subscribers
+          if('autocompletefield' === deps[i].type) {
+            continue;
+          }
+
+          const subscribe = deps[i];
           const vals = new Set(); // ensure unique values
 
           // parent features
