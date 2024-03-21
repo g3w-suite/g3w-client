@@ -11,7 +11,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
   try {
 
     const layers          = state.search_layers || [];
-    const cached          = state.input.cached_deps || {};
+    const cached          = state.cached_deps || {};
     const filter          = state.filter || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {

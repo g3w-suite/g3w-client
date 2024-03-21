@@ -195,7 +195,7 @@ export default {
      * @returns { string | undefined | * }
      */
     createFieldsDeps({ field, fields = [] } = {}) {
-      const cachedependencies = this.state.input.cached_deps;
+      const cachedependencies = this.state.cached_deps;
       const filter            = this.state.filter;
 
       let dep    = field && filter.find(d => d.attribute === field).input.options.dependance;
@@ -252,8 +252,8 @@ export default {
     async changeInput(input) {
       const field       = input.attribute;
       const is_root     = undefined === this.state.filter.find(d => d.attribute === field).input.options.dependance;
-      const deps        = this.state.input.dependencies[field] || []; // get inputs that depends on the current one
-      const cached_deps = this.state.input.cached_deps;
+      const deps        = this.state.filter.filter(d => d.input.options.dependance === field);  // get inputs that depends on the current one
+      const cached_deps = this.state.cached_deps;
       const state       = this.state;
       let value         = input.value;
 

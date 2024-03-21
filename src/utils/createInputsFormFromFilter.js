@@ -13,7 +13,6 @@ import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
  */
 export async function createInputsFormFromFilter(state) {
 
-  const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
   console.log(state);
@@ -85,9 +84,6 @@ export async function createInputsFormFromFilter(state) {
     if (chained_select) {
       state.loading[input.options.dependance] = false;
       input.options.disabled                  = input.options.dependance_strict; // disabled for BACKCOMP
-      // set input dependencies
-      deps[input.options.dependance]          = (undefined !== deps[input.options.dependance] ? deps[input.options.dependance] : []);
-      deps[input.options.dependance].push(input);
     }
 
     // save a copy of original values
