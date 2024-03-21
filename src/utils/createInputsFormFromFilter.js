@@ -20,7 +20,6 @@ export async function createInputsFormFromFilter(state) {
   console.log(state);
 
   for (let i = 0; i <= state.forminputs.length - 1; i++) {
-    let has_error;
 
     const input = state.forminputs[i];
     const type  = input.type;
@@ -74,18 +73,13 @@ export async function createInputsFormFromFilter(state) {
       }
 
     } catch (e) {
-      has_error = e;
+      input.options.values = []; // reset to empty array on error
       console.warn(e);
-    }
-
-    // reset values to empty array on error
-    if (has_error && 'selectfield' ===  input.type) {
-      input.options.values.splice(0);
     }
 
     // set `SEARCH_ALLVALUE` as first element of array
     if ('selectfield' === input.type) {
-      input.options.values = (input.options.values || []).filter(v => SEARCH_ALLVALUE !== v);
+      input.options.values = input.options.values.filter(v => SEARCH_ALLVALUE !== v);
       input.options.values.unshift({ value: SEARCH_ALLVALUE })
     }
 
@@ -100,7 +94,7 @@ export async function createInputsFormFromFilter(state) {
     }
 
     // save a copy of original values
-    input.options._values = [...(input.options.values || [])];
+    input.options._values = [...input.options.values];
 
     input.loading = false;
   }
