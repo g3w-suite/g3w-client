@@ -252,42 +252,42 @@ export default {
      */
     async changeInput(input) {
       const field       = input.attribute;
+      const is_root     = undefined === this.state.input.dependance[field];
       const dep         = this.state.input.dependance;
+      const deps        = this.state.input.dependencies[field] || []; // get inputs that depends on the current one
       const cached_deps = this.state.input.cached_deps;
       const state       = this.state;
+      let value         = input.value;
+
+      console.log(input.type, input, field);
 
       try {
         this.state.searching = true;
 
-        const forminput = this.state.forminputs.find(i => i.id == input.id);
-
-        if ('numberfield' === forminput.type) {
-          input.value = input.value || 0 === input.value ? input.value : null;
+        if ('numberfield' === input.type) {
+          value = value || 0 === value ? value : null;
         }
 
-        const value  = undefined !== input.value ? input.value : SEARCH_ALLVALUE;
+        if (undefined === value) {
+          value = SEARCH_ALLVALUE;
+        }
 
         /** @TODO check if it has one reason to trim  */
-        if (['textfield', 'textField'].includes(input.type)) {
-          input.value = value;
-        } else {
-          input.value = value.trim();
+        if (!['textfield', 'textField'].includes(input.type)) {
+          value = value.trim();
         }
 
-        forminput.value = input.value;
+        this.state.forminputs.find(i => i.id == input.id).value = input.value = value;
 
-        // get inputs that depends on the current one
-        const subscribers = this.state.input.dependencies[input.attribute] || [];
-
-        if (!subscribers.length) {
+        if (!deps.length) {
+          console.info('no deps for: ', input.label)
           return;
         }
 
-        const isRoot  = undefined === dep[field];
         const invalid = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
 
         // loop over dependencies fields inputs
-        subscribers.forEach(s => {
+        deps.forEach(s => {
           const is_autocomplete = 'autocompletefield' === s.type;
 
           // in the case of autocomplete reset values to an empty array
@@ -318,18 +318,25 @@ export default {
         cached._currentValue = value;
 
         if (!value || value === SEARCH_ALLVALUE) {
-          subscribers.forEach(s => s.options.disabled = s.options.dependance_strict);
+          console.info('deps for: ', input.label, deps);
+          deps.forEach(s => s.options.disabled = s.options.dependance_strict);
           return;
         }
 
-        const dep_value = !isRoot && this.getDependanceCurrentValue(field);
-        const val       = isRoot
-          ? (cached && cached[value])
-          : cached && cached[dep_value] && cached[dep_value][value];
+        // get current dependance value
+        const dep_value = field => dep[field]
+          ? cached_deps[dep[field]]._currentValue
+          : state.forminputs.find(f => f.attribute === field).value;
+
+        const dvalue = !is_root && dep_value(field);
+        const val       = is_root && cached
+          ? cached[value]
+          : cached[dvalue] && cached[dvalue][value];
 
         // val is cached
         if (undefined !== val) {
-          subscribers.forEach(s => {
+          console.info('val for: ', input.label, val);
+          deps.forEach(s => {
             (val[s.attribute] || []).forEach(v => s.options.values.push(v));
             s.options.disabled = false;                                      // set disabled dependence field
           });
@@ -338,16 +345,16 @@ export default {
 
         state.loading[field] = true;
 
-        if (isRoot) {
+        if (is_root) {
           cached[value] = cached[value] || {};
         } else {
-          const _val =  this.getDependanceCurrentValue(field);
+          const _val =  dep_value(field);
           cached[_val]        = cached[_val] || {};
           cached[_val][value] = cached[_val][value] || {}
         }
 
         // exclude autocomplete subscribers
-        const no_autocomplete = subscribers.filter(s => 'autocompletefield' !== s.type);
+        const no_autocomplete = deps.filter(s => 'autocompletefield' !== s.type);
         
         // disable no autocomplete subscribers
         if (no_autocomplete.length > 0) {
@@ -414,7 +421,7 @@ export default {
             sorted.forEach(v => subscribe.options.values.push({ key: v, value: v }));
           }
 
-          cached[isRoot ? value : this.getDependanceCurrentValue(field)][subscribe.attribute] = subscribe.options.values.slice(1);
+          cached[is_root ? value : dep_value(field)][subscribe.attribute] = subscribe.options.values.slice(1);
           subscribe.options.disabled = false;
         }
       } catch(e) {
@@ -423,16 +430,6 @@ export default {
         this.state.loading[field] = false;
         this.state.searching = false;
       }
-    },
-
-    /**
-     * Check the current value of dependance
-     */
-    getDependanceCurrentValue(field) {
-      const dep        = this.state.input.dependance;
-      const cache_deps = this.state.input.cached_deps;
-      const state      = this.state;
-      return dep[field] ? cache_deps[dep[field]]._currentValue : state.forminputs.find(f => f.attribute === field).value;
     },
 
     doSearch(e) {

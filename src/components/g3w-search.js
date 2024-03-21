@@ -106,6 +106,7 @@ export function SearchPanel(opts = {}, show = false) {
     },
     // Array of inputs that belongs to search form
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
+      id:        d.id || getUniqueDomId(),
       type:      d.input.type || 'textfield',
       label:     d.label,
       attribute: d.attribute,
@@ -134,7 +135,6 @@ export function SearchPanel(opts = {}, show = false) {
       value:     'selectfield' ===  d.input.type ? SEARCH_ALLVALUE : null,
       operator:  d.op,
       logicop:   i === (opts.options.filter.length - 1) ? null : d.logicop,
-      id:        d.id || getUniqueDomId(),
       loading:   true,
     })),
   };
