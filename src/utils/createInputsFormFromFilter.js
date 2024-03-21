@@ -22,11 +22,10 @@ export async function createInputsFormFromFilter(state) {
     const input = state.forminputs[i];
     const type  = input.type;
 
-    const value_relation     = !!('selectfield' === type                              && !input.options.dependance_strict && input.options.layer_id);
-    const relation_reference = !!('selectfield' === type                              && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference);
-    const chained_select     = !!(['selectfield', 'autocompletefield'].includes(type) && input.options.dependance); 
+    const value_relation     = !!('selectfield' === type && !input.options.dependance_strict && input.options.layer_id);
+    const relation_reference = !!('selectfield' === type && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference);
 
-    console.log(input, value_relation, relation_reference, chained_select);
+    console.log(input, value_relation, relation_reference);
 
     try {
 
@@ -81,7 +80,7 @@ export async function createInputsFormFromFilter(state) {
     }
 
     // there is a dependence
-    if (chained_select) {
+    if (input.options.dependance) {
       state.loading[input.options.dependance] = false;
       input.options.disabled                  = input.options.dependance_strict; // disabled for BACKCOMP
     }
