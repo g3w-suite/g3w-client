@@ -24,7 +24,6 @@
         >
 
           <sub>{{ forminput.type }}</sub>
-          <sub>{{ forminput.widget }}</sub>
 
           <!-- NUMBER FIELD -->
           <div
@@ -186,33 +185,6 @@ export default {
 
   methods: {
 
-    /**
-     * @param { Object } opts
-     * @param opts.fields
-     * @param opts.field
-     * @param opts.value
-     * 
-     * @returns { string | undefined | * }
-     */
-    createFieldsDeps({ field, fields = [] } = {}) {
-      const parent      = this.state.forminputs.find(d => d.attribute === field);
-      let dep           = parent && parent.options.dependance;
-      const cached_deps = dep && this.state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
-
-      if (!cached_deps || SEARCH_ALLVALUE === parent.value) {
-        return fields.length && fields.join() || undefined;
-      }
-
-      // get current field dependance
-      // In case of some input dependency is not filled
-      if (undefined !== parent.value) {
-        // need to set to lower a case for api purpose
-        const { op, logicop } = this.state.forminputs.find(f =>  f.attribute === dep).operator;
-        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
-      }
-      return this.createFieldsDeps({ fields, field: dep });
-    },
-
     resize() {
       SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
     },
@@ -272,7 +244,7 @@ export default {
         forminput.value = input.value = value;
 
         if (!deps.length) {
-          console.info('no deps for: ', input.label)
+          console.info('no deps for: ', input)
           return;
         }
 
@@ -306,7 +278,7 @@ export default {
         });
 
         if (!value || value === SEARCH_ALLVALUE) {
-          console.info('deps for: ', input.label, deps);
+          console.info('deps for: ', input, deps);
           deps.forEach(s => s.options.disabled = s.options.dependance_strict);
           return;
         }
@@ -316,7 +288,7 @@ export default {
 
         // val is cached
         if (forminput.dependance && forminput.dvalues[parent.value] && undefined !== forminput.dvalues[parent.value][value]) {
-          console.info('val for: ', input.label, forminput.dvalues[parent.value][value]);
+          console.info('val for: ', input, forminput.dvalues[parent.value][value]);
           deps.forEach(s => {
             (forminput.dvalues[parent.value][value][s.attribute] || []).forEach(v => s.options.values.push(v));
             s.options.disabled = false;                                      // set disabled dependence field
@@ -326,7 +298,7 @@ export default {
 
         // val is cached
         if (!forminput.dependance && undefined !== forminput.dvalues[value]) {
-          console.info('val for: ', input.label, forminput.dvalues[value]);
+          console.info('val for: ', input, forminput.dvalues[value]);
           deps.forEach(s => {
             (forminput.dvalues[value][s.attribute] || []).forEach(v => s.options.values.push(v));
             s.options.disabled = false;                                      // set disabled dependence field
@@ -344,15 +316,13 @@ export default {
           no_autocomplete.forEach(s => s.options.dependance_strict && (s.options.disabled = false));
         }
 
-        // set undefined because if it has a subscribed input with valuerelations widget
-        // needs to extract the value of the field to get filter data from the relation layer
-        const data = await state.search_layers[0].getFilterData({
+        // extract the value of the field to get filter data from the relation layer
+        const data = await getDataForSearchInput({
+          state: this.state,
+          search_layers: state.search_layers[0],
           formatter: 0, // since v3.x, force to use raw value
-          field: this.createFieldsDeps({
-            field,
-            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: this.state.forminputs.find(f =>  f.attribute === field).operator })] : [],
-          }),
-        });
+          value,
+        })
 
         const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.options.dependance_strict && s.options.dependance
         const is_valuemap      = s => !!(has_dependance(s) && s.options.values.length);
@@ -397,11 +367,9 @@ export default {
             }
           }
 
-          const sorted = [...vals].sort();
-
           // set key value for select
           if (!is_valuemap(subscribe) && !is_valuerelation(subscribe)) {
-            sorted.forEach(v => subscribe.options.values.push({ key: v, value: v }));
+            [...vals].sort().forEach(v => subscribe.options.values.push({ key: v, value: v }));
           }
 
           const sliced = subscribe.options.values.slice(1);
@@ -487,9 +455,9 @@ export default {
           try      {
             ok({
               results: await getDataForSearchInput({
-                state: this.state,
-                output: 'autocomplete',
-                field: forminput.attribute,
+                state:   this.state,
+                output:  'autocomplete',
+                field:   forminput.attribute,
                 suggest: `${forminput.attribute}|${d.data.q}`,
               })
             });

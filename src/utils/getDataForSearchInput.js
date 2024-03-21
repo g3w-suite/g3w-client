@@ -6,18 +6,18 @@ import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 /**
  * @returns { Array } of unique values from field
  */
-export async function getDataForSearchInput({ state, field, suggest, output }) {
+export async function getDataForSearchInput({ state, field, suggest, output, search_layers, formatter, value }) {
 
   try {
 
-    const layers = state.search_layers || [];
+    const layers = search_layers || state.search_layers || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
-      const parent      = state.forminputs.find(d => d.attribute === field);
-      let dep           = parent && parent.options.dependance;
-      const cached_deps = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
+      const parent = state.forminputs.find(d => d.attribute === field);
+      let dep      = parent && parent.options.dependance;
+      const cached = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
 
-      if (!cached_deps || SEARCH_ALLVALUE === parent.value) {
+      if (!cached || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
       }
 
@@ -33,24 +33,40 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     }
 
     // check if a field has a dependance
-    const parent      = state.forminputs.find(d => d.attribute === field);
-    let dep           = parent && parent.options.dependance;
-    const cached_deps = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
+    const parent = state.forminputs.find(d => d.attribute === field);
+    let dep      = parent && parent.options.dependance;
+    const cached = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
 
     // get unique value from each layers
     let response = Array.from(
       (
         await Promise
           .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
-            field: createFieldsDeps({
-              field: dep,
-              fields: cached_deps && ![SEARCH_ALLVALUE, undefined].includes(parent.value) ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(f =>  f.attribute === dep).operator }) ] : [],
-            }),
             suggest,
+            formatter,
             unique: field,
             ordering: field,
+            field: createFieldsDeps(
+              // set undefined because if it has a subscribed input with valuerelations widget
+              value
+              // this is a parent elment ?
+              ? ({
+                field,
+                fields: undefined !== value
+                  ? [createSingleFieldParameter({ field, value, operator: state.forminputs.find(f =>  f.attribute === field).operator })]
+                  : [],
+              })
+              // this is a child elment ?
+              : ({
+                field: dep,
+                fields: cached && ![SEARCH_ALLVALUE, undefined].includes(parent.value)
+                  ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(f =>  f.attribute === dep).operator }) ]
+                  : [],
+              })
+            ),
             // TODO ?
             // fformatter: opts.fformatter 
+            
           })))
       )
         .filter(d => 'fulfilled' === d.status)
