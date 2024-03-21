@@ -10,21 +10,22 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
 
   try {
 
-    const layers = state.search_layers || [];
-    const cached = state.cached_deps || {};
-    const filter = state.filter || [];
+    const layers      = state.search_layers || [];
+    const cached_deps = state.cached_deps || {};
+    const filter      = state.filter || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
-      let dep = field && filter.find(d => d.attribute === field).input.options.dependance;
-      let dvalue = undefined;
+      const parent = state.forminputs.find(d => d.attribute === field);
+      let dep      = field && filter.find(d => d.attribute === field).input.options.dependance;
+      let dvalue   = undefined;
 
-      if (!dep || !cached[dep] || SEARCH_ALLVALUE === cached[dep]._currentValue) {
+      if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
-      if (dep && cached[dep] && SEARCH_ALLVALUE !== cached[dep]._currentValue) {
-        dvalue = cached[dep]._currentValue; // dependance as value
+      if (dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value) {
+        dvalue = parent.value; // dependance as value
       }
 
       // In case of some input dependency is not filled
@@ -38,11 +39,12 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     }
 
     // check if a field has a dependance
-    let dep    = filter.find(d => d.attribute === field).input.options.dependance;
-    let dvalue = undefined;
+    const parent = state.forminputs.find(d => d.attribute === field);
+    let dep      = filter.find(d => d.attribute === field).input.options.dependance;
+    let dvalue   = undefined;
 
-    if (dep && cached[dep] && SEARCH_ALLVALUE !== cached[dep]._currentValue) {
-      dvalue = cached[dep]._currentValue // dependance as value
+    if (dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value) {
+      dvalue = parent.value; // dependance as value
     }
 
     // get unique value from each layers

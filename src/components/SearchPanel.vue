@@ -196,18 +196,19 @@ export default {
      */
     createFieldsDeps({ field, fields = [] } = {}) {
       const cached_deps = this.state.cached_deps;
-      const filter            = this.state.filter;
+      const filter      = this.state.filter;
 
-      let dep    = field && filter.find(d => d.attribute === field).input.options.dependance;
-      let dvalue = undefined;
+      const parent = this.state.forminputs.find(d => d.attribute === field);
+      let dep      = field && filter.find(d => d.attribute === field).input.options.dependance;
+      let dvalue   = undefined;
 
-      if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === cached_deps[dep]._currentValue) {
+      if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
-      if (dep && (cached_deps[dep] && SEARCH_ALLVALUE !== cached_deps[dep]._currentValue)) {
-        dvalue = cached_deps[dep]._currentValue; // dependance as value
+      if (dep && (cached_deps[dep] && SEARCH_ALLVALUE !== parent.value)) {
+        dvalue = parent.value; // dependance as value
       }
 
       // In case of some input dependency is not filled
@@ -251,7 +252,7 @@ export default {
      */
     async changeInput(input) {
       const field       = input.attribute;
-      const is_root     = undefined === this.state.filter.find(d => d.attribute === field).input.options.dependance;
+      const is_root     = !(this.state.forminputs.find(i => i.id == input.id).dependance);
       const deps        = this.state.forminputs.filter(d => d.options.dependance === field);  // get inputs that depends on the current one
       const cached_deps = this.state.cached_deps;
       const state       = this.state;
@@ -311,20 +312,21 @@ export default {
           s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
         });
 
-        // check if cache field values are set
-        const cached = cached_deps[field] = cached_deps[field] || {};
-        cached._currentValue = value;
-
         if (!value || value === SEARCH_ALLVALUE) {
           console.info('deps for: ', input.label, deps);
           deps.forEach(s => s.options.disabled = s.options.dependance_strict);
           return;
         }
 
+        const parent = this.state.forminputs.find(d => d.attribute === field);
+
+        // check if cache field values are set
+        const cached = cached_deps[field] = cached_deps[field] || {};
+
         const dep = this.state.filter.find(d => d.attribute === field).input.options.dependance
 
         // get current dependance value
-        const dep_value = dep ? cached_deps[dep]._currentValue : state.forminputs.find(f => f.attribute === field).value;
+        const dep_value = dep ? parent.value : state.forminputs.find(f => f.attribute === field).value;
 
         const dvalue = !is_root && dep_value;
         const val    = is_root && cached ? cached[value] : cached[dvalue] && cached[dvalue][value];
