@@ -91,7 +91,9 @@ export function SearchPanel(opts = {}, show = false) {
     title:                opts.name,
     /** @type { 'search' | 'search_1n' } */
     type:                 opts.type || 'search',
+    /** @TODO check if deprecated */
     queryurl:             (opts.options || {}).queryurl,
+    /** @TODO check if deprecated */
     return:               (opts.options || {}).return || 'data',
     search_endpoint:      opts.search_endpoint, //ows, api
     search_1n_relationid: opts.options.search_1n_relationid, //relations
