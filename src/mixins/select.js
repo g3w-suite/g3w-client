@@ -9,8 +9,10 @@ export default {
     getLanguage() {
       return getAppLanguage();
     },
-    changeSelect(value) {
+    async changeSelect(value) {
       this.state.value = 'null' === value ? null : value;
+      //need to be waited in case of autocomplete
+      await this.$nextTick();
       this.change();
     },
     getValue(value) {
