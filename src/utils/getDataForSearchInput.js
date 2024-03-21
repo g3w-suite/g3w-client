@@ -12,26 +12,6 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
 
     const layers = search_layers || state.search_layers || [];
 
-    const createFieldsDeps = ({ field, fields = [] } = {}) => {
-      const parent = state.forminputs.find(d => d.attribute === field);
-      let dep      = parent && parent.dependance;
-      const cached = dep && state.forminputs.some(d => dep === d.dependance && d.dvalues.length);
-
-      if (!cached || SEARCH_ALLVALUE === parent.value) {
-        return fields.length && fields.join() || undefined;
-      }
-
-      // get current field dependance
-      // In case of some input dependency is not filled
-      if (undefined !== parent.value) {
-        // need to set to lower a case for api purpose
-        const { op, logicop } = state.forminputs.find(f =>  f.attribute === dep).operator;
-        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
-      }
-
-      return createFieldsDeps({ fields, field: dep });
-    }
-
     // check if a field has a dependance
     const parent = state.forminputs.find(d => d.attribute === field);
     let dep      = parent && parent.dependance;
@@ -46,11 +26,12 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
             formatter,
             unique: field,
             ordering: field,
-            field: createFieldsDeps(
+            field: _createFieldsDeps(
               // set undefined because if it has a subscribed input with valuerelations widget
               value
               // this is a parent elment ?
               ? ({
+                state,
                 field,
                 fields: undefined !== value
                   ? [createSingleFieldParameter({ field, value, operator: parent.operator })]
@@ -58,18 +39,22 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
               })
               // this is a child elment ?
               : ({
+                state,
                 field: dep,
                 fields: cached && ![SEARCH_ALLVALUE, undefined].includes(parent.value)
                   ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(d =>  d.attribute === dep).operator }) ]
                   : [],
               })
-            ),
+            ).join() || undefined,
             // TODO ?
             // fformatter: opts.fformatter 
             
           })))
       )
-        .filter(d => 'fulfilled' === d.status)
+        .filter(d => {
+          console.log(d);
+          return 'fulfilled' === d.status
+        })
         .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
     )
 
@@ -89,4 +74,27 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
   } catch(e) { console.warn(e); }
 
   return [];
+}
+
+/**
+ * Traverse field dependecies
+ */
+function _createFieldsDeps({ state, field, fields = [] } = {}) {
+  const parent = state.forminputs.find(d => d.attribute === field);
+  let dep      = parent && parent.dependance;
+  const cached = dep && state.forminputs.some(d => dep === d.dependance && d.dvalues.length);
+
+  if (!cached || SEARCH_ALLVALUE === parent.value) {
+    return fields;
+  }
+
+  // get current field dependance
+  // In case of some input dependency is not filled
+  if (undefined !== parent.value) {
+    // need to set to lower a case for api purpose
+    const { op, logicop } = state.forminputs.find(f =>  f.attribute === dep).operator;
+    fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
+  }
+
+  return _createFieldsDeps({ state, fields, field: dep });
 }
