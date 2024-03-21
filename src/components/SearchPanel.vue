@@ -195,7 +195,6 @@ export default {
      * @returns { string | undefined | * }
      */
     createFieldsDeps({ field, fields = [] } = {}) {
-      const filter      = this.state.filter;
       const parent      = this.state.forminputs.find(d => d.attribute === field);
       let dep           = parent && parent.options.dependance;
       const cached_deps = dep && this.state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
@@ -208,7 +207,7 @@ export default {
       // In case of some input dependency is not filled
       if (undefined !== parent.value) {
         // need to set to lower a case for api purpose
-        const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
+        const { op, logicop } = this.state.forminputs.find(f =>  f.attribute === dep).operator;
         fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
       }
       return this.createFieldsDeps({ fields, field: dep });
@@ -351,7 +350,7 @@ export default {
           formatter: 0, // since v3.x, force to use raw value
           field: this.createFieldsDeps({
             field,
-            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: state.filter.find(f =>  f.attribute === field).op })] : [],
+            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: this.state.forminputs.find(f =>  f.attribute === field).operator })] : [],
           }),
         });
 

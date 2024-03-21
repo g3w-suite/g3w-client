@@ -93,8 +93,6 @@ export function SearchPanel(opts = {}, show = false) {
     type:                 opts.type || 'search',
     queryurl:             (opts.options || {}).queryurl,
     return:               (opts.options || {}).return || 'data',
-    /** @TODO code dedupe, merge `state.forminputs` and `state.filter` */
-    filter:               (opts.options || {}).filter || [],
     search_endpoint:      opts.search_endpoint, //ows, api
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */

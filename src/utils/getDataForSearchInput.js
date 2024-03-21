@@ -11,7 +11,6 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
   try {
 
     const layers = state.search_layers || [];
-    const filter = state.filter || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
       const parent      = state.forminputs.find(d => d.attribute === field);
@@ -26,7 +25,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
       // In case of some input dependency is not filled
       if (undefined !== parent.value) {
         // need to set to lower a case for api purpose
-        const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
+        const { op, logicop } = state.forminputs.find(f =>  f.attribute === dep).operator;
         fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
       }
 
@@ -45,7 +44,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
           .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
             field: createFieldsDeps({
               field: dep,
-              fields: cached_deps && ![SEARCH_ALLVALUE, undefined].includes(parent.value) ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
+              fields: cached_deps && ![SEARCH_ALLVALUE, undefined].includes(parent.value) ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(f =>  f.attribute === dep).operator }) ] : [],
             }),
             suggest,
             unique: field,
