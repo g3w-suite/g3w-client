@@ -305,13 +305,15 @@ export default {
           .forEach(s => s.disabled = false);
 
         // extract the value of the field to get filter data from the relation layer
-        const data = await getDataForSearchInput({
-          state,
-          search_layers: [state.search_layers[0]],
-          formatter: 0, // since v3.x, force to use raw value
-          field,
-          value,
-        })
+        // set undefined because if it has a subscribed input with valuerelations widget
+
+        const data = await state.search_layers[0].getFilterData({
+          field: getDataForSearchInput.field({
+            state,
+            field,
+            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
+          }),
+        });
 
         const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
         const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
