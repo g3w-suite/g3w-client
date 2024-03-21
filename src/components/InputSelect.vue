@@ -23,7 +23,8 @@
       <!-- RELATION REFERENCE FILTER FIELDS SECTION @since 3.9.1 -->
       <div
         v-if="filterFields.length > 0 && isFilterFieldsReady"
-        class="g3w-relation-reference-fields-content">
+        class="g3w-relation-reference-fields-content"
+      >
         <template v-for="(rf, index) in filterFields">
           <select
             v-select2="'filterFields'"
@@ -97,9 +98,9 @@ export default {
   mixins: [InputMixin, selectMixin, select2Mixin],
   data() {
     return {
-      showPickLayer: false,
-      picked: false,
-      filterFields: [], // each item is
+      showPickLayer :       false,
+      picked :              false,
+      filterFields :        [], // each item is
       isFilterFieldsReady : false /**{Boolean} @type it is used to show filter_fields select whe ready*/
     }
   },
@@ -132,7 +133,7 @@ export default {
         } else {
           this.picked = true;
           const values = await this.pickLayerInputService.pick();
-          const { value:field }= this.state.input.options;
+          const { value:field } = this.state.input.options;
           const value = values[field];
           this.select2.val(value).trigger('change');
           this.changeSelect(value);
@@ -153,16 +154,17 @@ export default {
     },
     setAndListenSelect2Change() {
       this.select2.on('select2:select', event => {
-        let value = event.params.data.$value ?
-          event.params.data.$value :
-          event.params.data.id;
-        value = this.showNullOption ?
+        let value = event.params.data.$value
+          ? event.params.data.$value
+          : event.params.data.id;
 
-          value === G3W_SELECT2_NULL_VALUE ?
-            null :
-            value.toString() :
+        value = this.showNullOption
+          ? value === G3W_SELECT2_NULL_VALUE
 
-          value.toString();
+            ? null
+            : value.toString()
+
+          : value.toString();
 
         this.changeSelect(value);
       });
@@ -232,7 +234,7 @@ export default {
       //check if it has a value
       if (null !== this.state.value) {
         try {
-          //get single feature used to set values of filter_fields
+          //get a single feature used to set values of filter_fields
           const {data=[]} = await relationLayer.getFilterData({
             formatter: 0,
             field: createSingleFieldParameter({
@@ -244,37 +246,35 @@ export default {
           // ad set values for input
           this.state.input.options.values = (
             (await layer.getFilterData({
-		        fformatter: referencingField[0],
-		        order: referencingField[0],
-            //create a filet with filter fields values (ex. field1|eq|1|AND,field2|eq|test)
-            ffield: filter_fields
-              .map((f, i) => {
-                const value = undefined === data[0].features[0].get(f)
-                  ? `${G3W_SELECT2_NULL_VALUE}`
-                  : data[0].features[0].get(f);
-                //get value of filter_field from feature response
-                //and set as value. Used after to set initial value of filter field of select
-                this.filterFields.push({
-                  id: f, //field name
-                  values: [
-                    {
-                      key: `[${relationLayerFields.find(_f => _f.name === f).label}]`,
-                      value:`${G3W_SELECT2_NULL_VALUE}` //null
-                    }
-                  ], //values
-                  value,
-                  disabled: chain_filters
-                    && i > 0
-                    && `${G3W_SELECT2_NULL_VALUE}` === this.filterFields[filter_fields[i-1]],
-                })
-                return createSingleFieldParameter({
-                  field: f,
-                  value
-                })
-              }).join('|AND,')
-            })).data || []).map(([value, key]) => ({key, value}));
+              fformatter: referencingField[0],
+              order: referencingField[0],
+              //create a filet with filter fields values (ex. field1|eq|1|AND,field2|eq|test)
+              ffield: filter_fields
+                .map((f, i) => {
+                  const value = undefined === data[0].features[0].get(f) ? `${G3W_SELECT2_NULL_VALUE}` : data[0].features[0].get(f);
+                  //get the value of filter_field from feature response
+                  //and set as value. Used after to set initial value of filter field of select
+                  this.filterFields.push({
+                    id: f, //field name
+                    values: [
+                      {
+                        key: `[${relationLayerFields.find(_f => _f.name === f).label}]`,
+                        value:`${G3W_SELECT2_NULL_VALUE}` //null
+                      }
+                    ], //values
+                    value,
+                    disabled: chain_filters
+                      && i > 0
+                      && `${G3W_SELECT2_NULL_VALUE}` === this.filterFields[filter_fields[i-1]],
+                  })
+                  return createSingleFieldParameter({
+                    field: f,
+                    value
+                  })
+                }).join('|AND,')
+              })).data || []).map(([value, key]) => ({key, value}));
 
-					//in case of chain_filters
+					//in the case of chain_filters
           if (chain_filters) {
             //first filter field need to get all value avery time
             (await relationLayer.getFilterData({
@@ -284,20 +284,23 @@ export default {
             })).forEach(v => this.filterFields[0].values.push({key:v, value:v}));
 
             (await Promise.allSettled(
-              filter_fields.slice(1).map((f,i) => {
-                return relationLayer.getFilterData({
-                  unique: filter_fields[i+1],
-		              ordering: filter_fields[i+1],
-                  formatter: 0,
-                  field: this.filterFields.slice(0, i+1)
-                    .filter((f) => 'null' !== f.value)
-                    .map((f) => createSingleFieldParameter({
-                      field: f.id,
-                      value: f.value
-                    })).join('|AND,')
+              filter_fields
+                .slice(1)
+                .map((f,i) => {
+                  return relationLayer.getFilterData({
+                    unique: filter_fields[i+1],
+                    ordering: filter_fields[i+1],
+                    formatter: 0,
+                    field: this.filterFields.slice(0, i+1)
+                      .filter((f) => 'null' !== f.value)
+                      .map((f) => createSingleFieldParameter({
+                        field: f.id,
+                        value: f.value
+                      })).join('|AND,')
+                  })
                 })
-              })
-            )).forEach(({status, value:data}, i) => {
+            ))
+            .forEach(({status, value:data}, i) => {
               if ('fulfilled' === status) {
                 data.forEach(v => this.filterFields[i+1].values.push({key:v, value: v}));
               }
@@ -306,7 +309,8 @@ export default {
             //No chain filters
             (await Promise.allSettled(
               filter_fields.map(f => relationLayer.getFilterData({unique: f, ordering: f, formatter: 0}))
-            )).forEach(({status, value:data}, index) => {
+            ))
+            .forEach(({status, value:data}, index) => {
               if ('fulfilled' === status) {
                 //set values for all filer fields
                 data.forEach(v => this.filterFields[index].values.push({key:v, value:v}));
@@ -339,7 +343,8 @@ export default {
                 ordering: f
               });
             })
-        )).forEach(({status, value:data}, i) => {
+        ))
+        .forEach(({status, value:data}, i) => {
           if ('fulfilled' === status) {
             data.forEach(v => this.filterFields[i].values.push({key:v, value:v}))
           }
@@ -349,16 +354,16 @@ export default {
 			//watch change of value
       this.filterFieldsUnwatches = this.filterFields.map((f, index) => {
         return this.$watch(
-          () => f.value, // listen change of value
+          () => f.value, // listen to change of value
           async (value) => {
             //set loading true
             this.setLoading(true);
-		        // in case of chain_filters
+		        // in the case of chain_filters
             if (chain_filters) {
               //need to be disabled fields in chain after current index
               for (let i = index + 1; i < this.filterFields.length; i++) {
-                this.filterFields[i].value = `${G3W_SELECT2_NULL_VALUE}`;
-                this.filterFields[i].values = [this.filterFields[i].values[0]];
+                this.filterFields[i].value    = `${G3W_SELECT2_NULL_VALUE}`;
+                this.filterFields[i].values   = [this.filterFields[i].values[0]];
                 this.filterFields[i].disabled = `${G3W_SELECT2_NULL_VALUE}` === value;
               }
               try {
@@ -401,7 +406,7 @@ export default {
                   })).join('|AND,')
               })).data ||[]
             ).map(([value, key]) => ({key, value}));
-            //in case of values length
+            //in the case of values length
             if (this.state.input.options.values.length > 0) {
               this.state.value = this.state.input.options.values[0].value;
               this.select2.val(this.state.value).trigger('change');
@@ -460,7 +465,7 @@ export default {
           delay: 250,
           transport: (params, success, failure) => {
             const search = params.data.term;
-            // hide previous result if present
+            // hide a previous result if present
             $('.select2-results__option.loading-results').siblings().hide();
             this.resetValues();
             this.service.getData({
@@ -511,7 +516,7 @@ export default {
       this.unwatch();
       this.unwatch = null;
     }
-    //in case of filter fields need to remove all watch handler
+    //in the case of filter fields need to remove all watch handlers
     if (this.filterFieldsUnwatches) {
       this.filterFieldsUnwatches.forEach(uw => uw());
       this.filterFieldsUnwatches = null;
