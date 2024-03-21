@@ -32,8 +32,8 @@ export async function doSearch({
 
   //get or create request filter
   filter = filter || createFilterFormInputs({
-    layer: state.search_layers,
-    inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+    layer:           state.search_layers,
+    inputs:          state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
     search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
   });
 
@@ -44,7 +44,7 @@ export async function doSearch({
 
   try {
     data = await DataRouterService.getData('search:features', {
-      inputs:{
+      inputs: {
         layer: state.search_layers,
         search_endpoint,
         filter,
@@ -59,53 +59,43 @@ export async function doSearch({
     // parse_search_1n - (show = false → internal request. No output data)
 
     if (!show && ('search_1n' === state.type)) {
-      const features          = (data.data[0] || {}).features || []
-      const project           = ProjectsRegistry.getCurrentProject();
-      const relation          = features.length && project.getRelationById(state.search_1n_relationid); // Search father layer id based on result of child layer
-      // check if it has features on result
+      const features = (data.data[0] || {}).features || []
+      const relation = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
+
+      // no features on result → show empty message
       if (!features.length) {
-        //show empty result output
         DataRouterService.showEmptyOutputs();
         parsed = [];
-      } else if (relation) {
+      }
+
+      if (relation) {
         const inputs = []; //store inputs
 
-        //extract properties from relation object
-        const {
-          referencedLayer, //father layer id
-          fieldRef: {referencingField, referencedField}
-        } = relation; // child and father relation fields
-
-        //Number of relation fields
-        const rFLength = referencingField.length;
-
-        //Just one field
-        if (1 === rFLength) {
-          const uniqueValues = new Set();
-          //loop trough feature child layer
-          features.forEach(feature => {
-            const value = feature.get(referencingField[0]);
-            if (!uniqueValues.has(value)) {
-              uniqueValues.add(value);
-            }
+        // Just one relation field 
+        if (1 === relation.fieldRef.referencingField.length) {
+          inputs.push({
+            attribute: relation.fieldRef.referencedField[0],
+            logicop: "OR",
+            operator: "eq",
+            value: Array.from(new Set(features.map(f => f.get(relation.fieldRef.referencingField[0])))) // get unique values from feature child layer
           })
-          inputs.push({ attribute: referencedField[0], logicop: "OR", operator: "eq", value: Array.from(uniqueValues) })
         } else {
-          const uniqueValues = [];
-          features.forEach(feature => {
-            const values = referencingField.map(rF => feature.get(rF));
-            if (!uniqueValues.find((v) => {
-              return v.reduce((accumulator, value, index) => {
-                return accumulator && values[index] === value;
-              }, true);
-            })) {
+          features.reduce((uniqueValues, f) => {
+            const values = relation.fieldRef.referencingField.map(rF => f.get(rF));
+            if (!uniqueValues.find(v => v.reduce((acc, d, i) => acc && values[i] === d, true))) {
               uniqueValues.push(values);
-              inputs.push({ attribute: referencedField, logicop: "OR", operator: "eq", value: values })
+              inputs.push({
+                attribute: relation.fieldRef.referencedField,
+                logicop: "OR",
+                operator: "eq",
+                value: values
+              });
             }
-          })
+            return uniqueValues;
+          }, []);
         }
 
-        const layer = project.getLayerById(referencedLayer);
+        const layer = ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer); // father layer id
 
         parsed = await DataRouterService.getData('search:features', {
           inputs: {
