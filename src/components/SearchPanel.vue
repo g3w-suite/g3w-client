@@ -247,12 +247,12 @@ export default {
     },
 
     /**
-     * Sync `this.state.forminputs` and `this.state.input.dependencies` with `input.value`
+     * Sync `this.state.forminputs` with `input.value`
      */
     async changeInput(input) {
       const field       = input.attribute;
       const is_root     = undefined === this.state.filter.find(d => d.attribute === field).input.options.dependance;
-      const deps        = this.state.filter.filter(d => d.input.options.dependance === field);  // get inputs that depends on the current one
+      const deps        = this.state.forminputs.filter(d => d.options.dependance === field);  // get inputs that depends on the current one
       const cached_deps = this.state.cached_deps;
       const state       = this.state;
       let value         = input.value;
@@ -327,9 +327,7 @@ export default {
         const dep_value = dep ? cached_deps[dep]._currentValue : state.forminputs.find(f => f.attribute === field).value;
 
         const dvalue = !is_root && dep_value;
-        const val       = is_root && cached
-          ? cached[value]
-          : cached[dvalue] && cached[dvalue][value];
+        const val    = is_root && cached ? cached[value] : cached[dvalue] && cached[dvalue][value];
 
         // val is cached
         if (undefined !== val) {
