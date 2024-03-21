@@ -18,7 +18,6 @@ import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { createInputsFormFromFilter } from 'utils/createInputsFormFromFilter';
 import { doSearch }                   from 'utils/doSearch';
 import { debounce }                   from 'utils/debounce';
-import { getUniqueDomId }             from 'utils/getUniqueDomId';
 
 import * as vueComp                   from 'components/Search.vue';
 import * as vueSearchComp             from 'components/SearchPanel.vue';
