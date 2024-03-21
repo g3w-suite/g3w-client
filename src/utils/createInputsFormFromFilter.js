@@ -27,7 +27,7 @@ export async function createInputsFormFromFilter(state) {
 
     const value_relation     = !!('selectfield' === type                              && !input.options.dependance_strict && input.options.layer_id);
     const relation_reference = !!('selectfield' === type                              && !input.options.dependance_strict && !input.options.layer_id && input.options.relation_reference);
-    const chained_select     = !!(['selectfield', 'autocompletefield'].includes(type) && !input.options.dependance_strict && input.options.dependance); 
+    const chained_select     = !!(['selectfield', 'autocompletefield'].includes(type) && input.options.dependance); 
 
     console.log(input, value_relation, relation_reference, chained_select);
 
