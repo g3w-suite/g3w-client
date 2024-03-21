@@ -488,8 +488,6 @@ export default {
         await this.service.getKeyByValue({
           search: this.state.value
         });
-        //set (trigger) value at the beginning
-        this.select2.val(this.state.value);
       }
       if (this.showNullOption) {
         this.select2.on('select2:unselect', () => {
