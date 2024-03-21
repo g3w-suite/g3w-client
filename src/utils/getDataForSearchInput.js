@@ -10,9 +10,9 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
 
   try {
 
-    const layers          = state.search_layers || [];
-    const cached          = state.cached_deps || {};
-    const filter          = state.filter || [];
+    const layers = state.search_layers || [];
+    const cached = state.cached_deps || {};
+    const filter = state.filter || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
       let dep = field && filter.find(d => d.attribute === field).input.options.dependance;

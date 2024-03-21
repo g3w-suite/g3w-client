@@ -195,19 +195,19 @@ export default {
      * @returns { string | undefined | * }
      */
     createFieldsDeps({ field, fields = [] } = {}) {
-      const cachedependencies = this.state.cached_deps;
+      const cached_deps = this.state.cached_deps;
       const filter            = this.state.filter;
 
       let dep    = field && filter.find(d => d.attribute === field).input.options.dependance;
       let dvalue = undefined;
 
-      if (!dep || !cachedependencies[dep] || SEARCH_ALLVALUE === cachedependencies[dep]._currentValue) {
+      if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === cached_deps[dep]._currentValue) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
-      if (dep && (cachedependencies[dep] && SEARCH_ALLVALUE !== cachedependencies[dep]._currentValue)) {
-        dvalue = cachedependencies[dep]._currentValue; // dependance as value
+      if (dep && (cached_deps[dep] && SEARCH_ALLVALUE !== cached_deps[dep]._currentValue)) {
+        dvalue = cached_deps[dep]._currentValue; // dependance as value
       }
 
       // In case of some input dependency is not filled
