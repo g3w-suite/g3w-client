@@ -274,12 +274,7 @@ export default {
           no_geometry: 'Non contiene la geometria nella risposta',
           help: {
             title: 'Guida - Interrogazione con Poligono',
-            message:`
-                <ul>
-                  <li>Seleziona uno strato poligonale in legenda.</li>
-                  <li>Assicurati che lo strato sia visibile in mappa.</li>
-                  <li>Clicca su una geometria dello strato selezionato.</li>
-                </ul>`
+            message: "<ul><li>Seleziona uno strato poligonale in legenda.</li><li>Assicurati che lo strato sia visibile in mappa.</li><li>Clicca su una geometria dello strato selezionato.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -290,11 +285,7 @@ export default {
           nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
           help: {
             title:'Guida - Interrogazione BBox',
-            message:`
-                  <ul>
-                    <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
-                  </ul>
-            `
+            message: "<ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
           },
         },
         addlayer: {

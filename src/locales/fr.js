@@ -272,12 +272,7 @@ export default {
           no_geometry: 'La réponse ne contient pas de géométrie',
           help: {
             title: 'Aide - Requête par polygone',
-            message:`
-                <ul>
-                  <li>Sélectionnez un layer de polygone dans la légende.</li>
-                  <li>Vérifiez que le layer est visible dans la carte.</li>
-                  <li>Cliquez sur une géométrie du layer sélectionné.</li>
-                </ul>`
+            message: "<ul><li>Sélectionnez un layer de polygone dans la légende.</li><li>Vérifiez que le layer est visible dans la carte.</li><li>Cliquez sur une géométrie du layer sélectionné.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -288,11 +283,7 @@ export default {
           nolayers_visible: "Aucun layer requêtable n'est visible. Assurez-vous qu'au moins un layer wfs est visible pour exécuter la requête",
           help: {
             title:'Aide - Requête BBox',
-            message:`
-                  <ul>
-                    <li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li>
-                 </ul>
-            `
+            message: "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>"
           },
         },
         addlayer: {

@@ -273,12 +273,7 @@ export default {
           no_geometry: 'No geometry on response',
           help: {
             title:'Guide - Query By Polygon',
-            message: `
-                <ul>
-                  <li>Select a polygon layer on TOC.</li>
-                  <li>Be sure that layer is visible.</li>
-                  <li>Click on a feature of selected layer.</li>
-                </ul>`
+            message: "<ul><li>Select a polygon layer on TOC.</li><li>Be sure that layer is visible.</li><li>Click on a feature of selected layer.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -289,10 +284,7 @@ export default {
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
           help: {
             title: 'Guide - Query BBox layer',
-            message:`
-                  <ul>
-                  <li>Draw a square on map to query underlined layers on TOC</li>
-                  </ul>`
+            message: "<ul><li>Draw a square on map to query underlined layers on TOC</li></ul>"
           }
         },
         addlayer: {
