@@ -252,7 +252,8 @@ export default {
      */
     async changeInput(input) {
       const field       = input.attribute;
-      const is_root     = !(this.state.forminputs.find(i => i.id == input.id).dependance);
+      const forminput   = this.state.forminputs.find(i => i.id == input.id);
+      const is_root     = !forminput.dependance;
       const deps        = this.state.forminputs.filter(d => d.options.dependance === field);  // get inputs that depends on the current one
       const cached_deps = this.state.cached_deps;
       const state       = this.state;
@@ -277,7 +278,7 @@ export default {
         }
 
         // sync `this.state.forminputs` with `input.value`
-        this.state.forminputs.find(i => i.id == input.id).value = input.value = value;
+        forminput.value = input.value = value;
 
         if (!deps.length) {
           console.info('no deps for: ', input.label)
