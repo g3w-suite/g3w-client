@@ -276,6 +276,7 @@ export default {
           value = value.trim();
         }
 
+        // sync `this.state.forminputs` with `input.value`
         this.state.forminputs.find(i => i.id == input.id).value = input.value = value;
 
         if (!deps.length) {
@@ -326,10 +327,9 @@ export default {
         const dep = this.state.filter.find(d => d.attribute === field).input.options.dependance
 
         // get current dependance value
-        const dep_value = dep ? parent.value : state.forminputs.find(f => f.attribute === field).value;
+        const dvalue = dep ? parent.value : state.forminputs.find(f => f.attribute === field).value;
 
-        const dvalue = !is_root && dep_value;
-        const val    = is_root && cached ? cached[value] : cached[dvalue] && cached[dvalue][value];
+        const val = is_root && cached ? cached[value] : (cached[dvalue] && cached[dvalue][value]);
 
         // val is cached
         if (undefined !== val) {
@@ -346,8 +346,8 @@ export default {
         if (is_root) {
           cached[value] = cached[value] || {};
         } else {
-          cached[dep_value]        = cached[dep_value] || {};
-          cached[dep_value][value] = cached[dep_value][value] || {}
+          cached[dvalue]        = cached[dvalue] || {};
+          cached[dvalue][value] = cached[dvalue][value] || {}
         }
 
         // exclude autocomplete subscribers
@@ -418,7 +418,7 @@ export default {
             sorted.forEach(v => subscribe.options.values.push({ key: v, value: v }));
           }
 
-          cached[is_root ? value : dep_value][subscribe.attribute] = subscribe.options.values.slice(1);
+          cached[is_root ? value : dvalue][subscribe.attribute] = subscribe.options.values.slice(1);
           subscribe.options.disabled = false;
         }
       } catch(e) {
