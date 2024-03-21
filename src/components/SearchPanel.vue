@@ -215,7 +215,6 @@ export default {
     async changeInput(input) {
       console.log(input);
       const field       = input.attribute;
-      const forminput   = this.state.forminputs.find(i => i.id == input.id);
       const deps        = this.state.forminputs.filter(d => d.dependance === field);  // get inputs that depends on the current one
       const state       = this.state;
       let value         = input.value;
@@ -238,15 +237,14 @@ export default {
           value = value.trim();
         }
 
-        // sync `this.state.forminputs` with `input.value`
-        forminput.value = input.value = value;
+        input.value = value;
 
         if (!deps.length) {
           console.info('no deps for: ', input)
           return;
         }
 
-        const invalid = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // check id inpute father is valid to search on subscribers
+        const invalid = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // whether father input can search on subscribers
 
         // loop over dependencies fields inputs
         deps.forEach(s => {
@@ -285,20 +283,20 @@ export default {
         const parent = this.state.forminputs.find(d => d.attribute === field);
 
         // val is cached
-        if (forminput.dependance && forminput.dvalues[parent.value] && undefined !== forminput.dvalues[parent.value][value]) {
-          console.info('val for: ', input, forminput.dvalues[parent.value][value]);
+        if (input.dependance && input.dvalues[parent.value] && undefined !== input.dvalues[parent.value][value]) {
+          console.info('val for: ', input, input.dvalues[parent.value][value]);
           deps.forEach(s => {
-            (forminput.dvalues[parent.value][value][s.attribute] || []).forEach(v => s.values.push(v));
+            (input.dvalues[parent.value][value][s.attribute] || []).forEach(v => s.values.push(v));
             s.disabled = false;                                      // set disabled dependence field
           });
           return;
         }
 
         // val is cached
-        if (!forminput.dependance && undefined !== forminput.dvalues[value]) {
-          console.info('val for: ', input, forminput.dvalues[value]);
+        if (!input.dependance && undefined !== input.dvalues[value]) {
+          console.info('val for: ', input, input.dvalues[value]);
           deps.forEach(s => {
-            (forminput.dvalues[value][s.attribute] || []).forEach(v => s.values.push(v));
+            (input.dvalues[value][s.attribute] || []).forEach(v => s.values.push(v));
             s.disabled = false;                                      // set disabled dependence field
           });
           return;
@@ -372,13 +370,13 @@ export default {
 
           const sliced = subscribe.values.slice(1);
 
-          if (forminput.dependance) {
-            forminput.dvalues[parent.value]        = forminput.dvalues[parent.value] || {};
-            forminput.dvalues[parent.value][value] = forminput.dvalues[parent.value][value] || {}
-            forminput.dvalues[parent.value][subscribe.attribute] = sliced;
+          if (input.dependance) {
+            input.dvalues[parent.value]        = input.dvalues[parent.value] || {};
+            input.dvalues[parent.value][value] = input.dvalues[parent.value][value] || {}
+            input.dvalues[parent.value][subscribe.attribute] = sliced;
           } else {
-            forminput.dvalues[value] = forminput.dvalues[value] || {};
-            forminput.dvalues[value][subscribe.attribute] = sliced;
+            input.dvalues[value] = input.dvalues[value] || {};
+            input.dvalues[value][subscribe.attribute] = sliced;
           }
 
           subscribe.disabled = false;
@@ -494,7 +492,6 @@ export default {
 
       select2.on('select2:select select2:unselecting', e => {
         if ('select2:select' === e.type || is_autocomplete) {
-          // const input = this.forminputs.find(d => d.id === $(e.target).attr('id'));
           input.value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
           this.changeInput(input);
         }
