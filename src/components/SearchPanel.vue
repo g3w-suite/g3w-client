@@ -195,19 +195,18 @@ export default {
      * @returns { string | undefined | * }
      */
     createFieldsDeps({ field, fields = [] } = {}) {
-      const cached_deps = this.state.cached_deps;
       const filter      = this.state.filter;
+      const parent      = this.state.forminputs.find(d => d.attribute === field);
+      let dep           = parent && parent.options.dependance;
+      const cached_deps = dep && this.state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
 
-      const parent = this.state.forminputs.find(d => d.attribute === field);
-      let dep      = field && filter.find(d => d.attribute === field).input.options.dependance;
-
-      if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === parent.value) {
+      if (!cached_deps || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
       // In case of some input dependency is not filled
-      if (dep && (cached_deps[dep] && SEARCH_ALLVALUE !== parent.value) && undefined !== parent.value) {
+      if (undefined !== parent.value) {
         // need to set to lower a case for api purpose
         const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
         fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
@@ -249,7 +248,6 @@ export default {
       const field       = input.attribute;
       const forminput   = this.state.forminputs.find(i => i.id == input.id);
       const deps        = this.state.forminputs.filter(d => d.options.dependance === field);  // get inputs that depends on the current one
-      const cached_deps = this.state.cached_deps;
       const state       = this.state;
       let value         = input.value;
 
@@ -317,24 +315,21 @@ export default {
         // get current dependance value
         const parent = this.state.forminputs.find(d => d.attribute === field);
 
-        // check if cache field values are set
-        cached_deps[field] = cached_deps[field] || {};
-
         // val is cached
-        if (forminput.dependance && cached_deps[field][parent.value] && undefined !== cached_deps[field][parent.value][value]) {
-          console.info('val for: ', input.label, cached_deps[field][parent.value][value]);
+        if (forminput.dependance && forminput.dvalues[parent.value] && undefined !== forminput.dvalues[parent.value][value]) {
+          console.info('val for: ', input.label, forminput.dvalues[parent.value][value]);
           deps.forEach(s => {
-            (cached_deps[field][parent.value][value][s.attribute] || []).forEach(v => s.options.values.push(v));
+            (forminput.dvalues[parent.value][value][s.attribute] || []).forEach(v => s.options.values.push(v));
             s.options.disabled = false;                                      // set disabled dependence field
           });
           return;
         }
 
         // val is cached
-        if (!forminput.dependance && undefined !== cached_deps[field][value]) {
-          console.info('val for: ', input.label, cached_deps[field][value]);
+        if (!forminput.dependance && undefined !== forminput.dvalues[value]) {
+          console.info('val for: ', input.label, forminput.dvalues[value]);
           deps.forEach(s => {
-            (cached_deps[field][value][s.attribute] || []).forEach(v => s.options.values.push(v));
+            (forminput.dvalues[value][s.attribute] || []).forEach(v => s.options.values.push(v));
             s.options.disabled = false;                                      // set disabled dependence field
           });
           return;
@@ -369,8 +364,8 @@ export default {
           const vals = new Set(); // ensure unique values
 
           // parent features
-          (data.data[0].features || []).forEach(feat => {
-            const value = feat.get(subscribe.attribute);
+          (data.data[0].features || []).forEach(f => {
+            const value = f.get(subscribe.attribute);
             if (value) { vals.add(is_valuemap(subscribe) ? `${value}` : value); } // enforce string value
           });
 
@@ -413,14 +408,12 @@ export default {
           const sliced = subscribe.options.values.slice(1);
 
           if (forminput.dependance) {
-            cached_deps[field][parent.value]        = cached_deps[field][parent.value] || {};
-            cached_deps[field][parent.value][value] = cached_deps[field][parent.value][value] || {}
-            cached_deps[field][parent.value][subscribe.attribute] = sliced;
-          }
-
-          if (!forminput.dependance) {
-            cached_deps[field][value] = cached_deps[field][value] || {};
-            cached_deps[field][value][subscribe.attribute] = sliced;
+            forminput.dvalues[parent.value]        = forminput.dvalues[parent.value] || {};
+            forminput.dvalues[parent.value][value] = forminput.dvalues[parent.value][value] || {}
+            forminput.dvalues[parent.value][subscribe.attribute] = sliced;
+          } else {
+            forminput.dvalues[value] = forminput.dvalues[value] || {};
+            forminput.dvalues[value][subscribe.attribute] = sliced;
           }
 
           subscribe.options.disabled = false;

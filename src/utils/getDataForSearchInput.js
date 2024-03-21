@@ -10,21 +10,21 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
 
   try {
 
-    const layers      = state.search_layers || [];
-    const cached_deps = state.cached_deps || {};
-    const filter      = state.filter || [];
+    const layers = state.search_layers || [];
+    const filter = state.filter || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
-      const parent = state.forminputs.find(d => d.attribute === field);
-      let dep      = field && filter.find(d => d.attribute === field).input.options.dependance;
+      const parent      = state.forminputs.find(d => d.attribute === field);
+      let dep           = parent && parent.options.dependance;
+      const cached_deps = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
 
-      if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === parent.value) {
+      if (!cached_deps || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
       // In case of some input dependency is not filled
-      if (dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value && undefined !== parent.value) {
+      if (undefined !== parent.value) {
         // need to set to lower a case for api purpose
         const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
         fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
@@ -34,8 +34,9 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     }
 
     // check if a field has a dependance
-    const parent = state.forminputs.find(d => d.attribute === field);
-    let dep      = filter.find(d => d.attribute === field).input.options.dependance;
+    const parent      = state.forminputs.find(d => d.attribute === field);
+    let dep           = parent && parent.options.dependance;
+    const cached_deps = dep && state.forminputs.some(d => dep === d.options.dependance && d.dvalues.length);
 
     // get unique value from each layers
     let response = Array.from(
@@ -44,7 +45,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
           .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
             field: createFieldsDeps({
               field: dep,
-              fields: dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value && undefined !== parent.value ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
+              fields: cached_deps && ![SEARCH_ALLVALUE, undefined].includes(parent.value) ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
             }),
             suggest,
             unique: field,

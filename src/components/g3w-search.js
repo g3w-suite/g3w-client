@@ -99,7 +99,6 @@ export function SearchPanel(opts = {}, show = false) {
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
     search_layers: [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
-    cached_deps: {},
     // Array of inputs that belongs to search form
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:        d.id || getUniqueDomId(),
@@ -131,6 +130,7 @@ export function SearchPanel(opts = {}, show = false) {
       value:     'selectfield' ===  d.input.type ? SEARCH_ALLVALUE : null,
       operator:  d.op,
       logicop:   i === (opts.options.filter.length - 1) ? null : d.logicop,
+      dvalues: {}, // group values by parent value
       loading:   true,
     })),
   };
