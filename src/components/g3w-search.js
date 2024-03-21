@@ -106,7 +106,7 @@ export function SearchPanel(opts = {}, show = false) {
       cached_deps: {},
     },
     // Array of inputs that belongs to search form
-    forminputs:           ((opts.filter || {}).filter || []).map((d, i) => ({
+    forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       type:      d.input.type || 'textfield',
       label:     d.label,
       attribute: d.attribute,
