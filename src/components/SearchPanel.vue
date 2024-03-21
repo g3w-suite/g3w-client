@@ -200,22 +200,17 @@ export default {
 
       const parent = this.state.forminputs.find(d => d.attribute === field);
       let dep      = field && filter.find(d => d.attribute === field).input.options.dependance;
-      let dvalue   = undefined;
 
       if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
-      if (dep && (cached_deps[dep] && SEARCH_ALLVALUE !== parent.value)) {
-        dvalue = parent.value; // dependance as value
-      }
-
       // In case of some input dependency is not filled
-      if (undefined !== dvalue) {
+      if (dep && (cached_deps[dep] && SEARCH_ALLVALUE !== parent.value) && undefined !== parent.value) {
         // need to set to lower a case for api purpose
         const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
-        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
+        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
       }
       return this.createFieldsDeps({ fields, field: dep });
     },
@@ -320,23 +315,27 @@ export default {
           return;
         }
 
+        // get current dependance value
         const parent = this.state.forminputs.find(d => d.attribute === field);
 
         // check if cache field values are set
         const cached = cached_deps[field] = cached_deps[field] || {};
 
-        const dep = this.state.filter.find(d => d.attribute === field).input.options.dependance
-
-        // get current dependance value
-        const dvalue = dep ? parent.value : state.forminputs.find(f => f.attribute === field).value;
-
-        const val = is_root && cached ? cached[value] : (cached[dvalue] && cached[dvalue][value]);
+        // val is cached
+        if (is_root && undefined !== cached[value]) {
+          console.info('val for: ', input.label, cached[value]);
+          deps.forEach(s => {
+            (cached[value][s.attribute] || []).forEach(v => s.options.values.push(v));
+            s.options.disabled = false;                                      // set disabled dependence field
+          });
+          return;
+        }
 
         // val is cached
-        if (undefined !== val) {
-          console.info('val for: ', input.label, val);
+        if (!is_root && cached[parent.value] && undefined !== cached[parent.value][value]) {
+          console.info('val for: ', input.label, cached[parent.value][value]);
           deps.forEach(s => {
-            (val[s.attribute] || []).forEach(v => s.options.values.push(v));
+            (cached[parent.value][value][s.attribute] || []).forEach(v => s.options.values.push(v));
             s.options.disabled = false;                                      // set disabled dependence field
           });
           return;
@@ -347,8 +346,8 @@ export default {
         if (is_root) {
           cached[value] = cached[value] || {};
         } else {
-          cached[dvalue]        = cached[dvalue] || {};
-          cached[dvalue][value] = cached[dvalue][value] || {}
+          cached[parent.value]        = cached[parent.value] || {};
+          cached[parent.value][value] = cached[parent.value][value] || {}
         }
 
         // exclude autocomplete subscribers
@@ -419,7 +418,7 @@ export default {
             sorted.forEach(v => subscribe.options.values.push({ key: v, value: v }));
           }
 
-          cached[is_root ? value : dvalue][subscribe.attribute] = subscribe.options.values.slice(1);
+          cached[is_root ? value : parent.value][subscribe.attribute] = subscribe.options.values.slice(1);
           subscribe.options.disabled = false;
         }
       } catch(e) {

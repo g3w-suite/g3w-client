@@ -17,22 +17,17 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
       const parent = state.forminputs.find(d => d.attribute === field);
       let dep      = field && filter.find(d => d.attribute === field).input.options.dependance;
-      let dvalue   = undefined;
 
       if (!dep || !cached_deps[dep] || SEARCH_ALLVALUE === parent.value) {
         return fields.length && fields.join() || undefined;
       }
 
       // get current field dependance
-      if (dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value) {
-        dvalue = parent.value; // dependance as value
-      }
-
       // In case of some input dependency is not filled
-      if (undefined !== dvalue) {
+      if (dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value && undefined !== parent.value) {
         // need to set to lower a case for api purpose
         const { op, logicop } = filter.find(f =>  f.attribute === dep).op;
-        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(dvalue)}|` + (fields.length ? logicop.toLowerCase() : ''));
+        fields.unshift(`${dep}|${op.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop.toLowerCase() : ''));
       }
 
       return createFieldsDeps({ fields, field: dep });
@@ -41,11 +36,6 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     // check if a field has a dependance
     const parent = state.forminputs.find(d => d.attribute === field);
     let dep      = filter.find(d => d.attribute === field).input.options.dependance;
-    let dvalue   = undefined;
-
-    if (dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value) {
-      dvalue = parent.value; // dependance as value
-    }
 
     // get unique value from each layers
     let response = Array.from(
@@ -54,7 +44,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
           .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
             field: createFieldsDeps({
               field: dep,
-              fields: undefined !== dvalue ? [createSingleFieldParameter({ field: dep, value: dvalue, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
+              fields: dep && cached_deps[dep] && SEARCH_ALLVALUE !== parent.value && undefined !== parent.value ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: filter.find(f =>  f.attribute === dep).op }) ] : [],
             }),
             suggest,
             unique: field,
