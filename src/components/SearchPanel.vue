@@ -399,21 +399,21 @@ export default {
     /**
      * ORIGINAL SOURCE: src/components/SearchDatetime.vue@v3.9.3
      */
-    async initDateTimeField(forminput) {
-      if ('datetimefield' !== forminput.type) {
+    async initDateTimeField(input) {
+      if ('datetimefield' !== input.type) {
         return;
       }
 
       await this.$nextTick();
 
-      forminput.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(forminput.options.format.fieldformat);
-      forminput.options.format.displayformat = convertQGISDateTimeFormatToMoment(forminput.options.format.displayformat);
+      input.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(input.options.format.fieldformat);
+      input.options.format.displayformat = convertQGISDateTimeFormatToMoment(input.options.format.displayformat);
 
-      const id = this.$refs['search_datetime_' + forminput.id].id = this.$refs['search_datetime_' + forminput.id].id || `search_datetime_${getUniqueDomId()}`;
+      const id = this.$refs['search_datetime_' + input.id].id = this.$refs['search_datetime_' + input.id].id || `search_datetime_${getUniqueDomId()}`;
 
       $('#' + id).datetimepicker({
         defaultDate:       null,
-        format:            forminput.options.format.displayformat,
+        format:            input.options.format.displayformat,
         ignoreReadonly:    true,
         allowInputToggle:  true,
         toolbarPlacement:  'top',
@@ -423,30 +423,30 @@ export default {
       });
 
       $('#' + id).on("dp.change", () => {
-        const newDate = $(`#${forminput.id}`).val();
-        forminput.value = _.isEmpty(_.trim(newDate))
+        const newDate = $(`#${input.id}`).val();
+        input.value = _.isEmpty(_.trim(newDate))
           ? null
-          : moment(newDate, forminput.options.format.displayformat).format(forminput.options.format.fieldformat);
-        this.changeInput(forminput);
+          : moment(newDate, input.options.format.displayformat).format(input.options.format.fieldformat);
+        this.changeInput(input);
       });
 
       if (ApplicationState.ismobile) {
-        setTimeout(()=> { $('#' + forminput.id).blur(); });
+        setTimeout(()=> { $('#' + input.id).blur(); });
       }
     },
 
     /**
      * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
      */
-    async initSelect2Field(forminput) {
-      if (!['selectfield', 'autocompletefield'].includes(forminput.type)) {
+    async initSelect2Field(input) {
+      if (!['selectfield', 'autocompletefield'].includes(input.type)) {
         return;
       }
 
       await this.$nextTick();
 
-      const numdigaut       = forminput.options.numdigaut;
-      const is_autocomplete = 'autocompletefield' === forminput.type;
+      const numdigaut       = input.options.numdigaut;
+      const is_autocomplete = 'autocompletefield' === input.type;
       const ajax            = is_autocomplete ? {
         delay: 500,
         transport: async (d, ok, ko) => {
@@ -455,8 +455,8 @@ export default {
               results: await getDataForSearchInput({
                 state:   this.state,
                 output:  'autocomplete',
-                field:   forminput.attribute,
-                suggest: `${forminput.attribute}|${d.data.q}`,
+                field:   input.attribute,
+                suggest: `${input.attribute}|${d.data.q}`,
               })
             });
           }
@@ -464,7 +464,7 @@ export default {
         }
       } : null;
 
-      const select2 = $(this.$refs['search_select_'+ forminput.id]).select2({
+      const select2 = $(this.$refs['search_select_'+ input.id]).select2({
         ajax,
         width:              '100%',
         dropdownParent:     $('.g3w-search-form:visible'),
@@ -494,24 +494,21 @@ export default {
 
       select2.on('select2:select select2:unselecting', e => {
         if ('select2:select' === e.type || is_autocomplete) {
-          this.changeInput({
-            id:        $(e.target).attr('id'),
-            attribute: $(e.target).attr('name'),
-            value:     e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE,
-            type:      forminput.type
-          });
+          // const input = this.forminputs.find(d => d.id === $(e.target).attr('id'));
+          input.value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
+          this.changeInput(input);
         }
       });
 
       // trigger select2 change on input value change
-      this.$watch(() => forminput.value, async (value, oldVal) => {
+      this.$watch(() => input.value, async (value, oldVal) => {
         if (value !== oldVal && value === SEARCH_ALLVALUE) {
           select2.val(value).trigger('change');
         }
       });
 
       // set initial value
-      select2.val(forminput.value).trigger('change');
+      select2.val(input.value).trigger('change');
     },
 
   },
