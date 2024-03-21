@@ -195,11 +195,10 @@ export default {
      * @returns { string | undefined | * }
      */
     createFieldsDeps({ field, fields = [] } = {}) {
-      const inputdependance   = this.state.input.dependance || {};
-      const cachedependencies = this.state.input.cached_deps || {};
-      const filter            = this.state.filter || [];
+      const cachedependencies = this.state.input.cached_deps;
+      const filter            = this.state.filter;
 
-      let dep = inputdependance[field];
+      let dep    = field && filter.find(d => d.attribute === field).input.options.dependance;
       let dvalue = undefined;
 
       if (!dep || !cachedependencies[dep] || SEARCH_ALLVALUE === cachedependencies[dep]._currentValue) {
@@ -236,7 +235,7 @@ export default {
         this.state.loading[forminput.options.dependance],
         forminput.loading,
         forminput.options.disabled
-      ].reduce((disabled, current=false) => disabled || current , false)
+      ].reduce((disabled, curr=false) => disabled || curr , false)
     },
 
     async onFocus(e) {
@@ -252,8 +251,7 @@ export default {
      */
     async changeInput(input) {
       const field       = input.attribute;
-      const is_root     = undefined === this.state.input.dependance[field];
-      const dep         = this.state.input.dependance;
+      const is_root     = undefined === this.state.filter.find(d => d.attribute === field).input.options.dependance;
       const deps        = this.state.input.dependencies[field] || []; // get inputs that depends on the current one
       const cached_deps = this.state.input.cached_deps;
       const state       = this.state;
@@ -323,12 +321,12 @@ export default {
           return;
         }
 
-        // get current dependance value
-        const dep_value = field => dep[field]
-          ? cached_deps[dep[field]]._currentValue
-          : state.forminputs.find(f => f.attribute === field).value;
+        const dep = this.state.filter.find(d => d.attribute === field).input.options.dependance
 
-        const dvalue = !is_root && dep_value(field);
+        // get current dependance value
+        const dep_value = dep ? cached_deps[dep]._currentValue : state.forminputs.find(f => f.attribute === field).value;
+
+        const dvalue = !is_root && dep_value;
         const val       = is_root && cached
           ? cached[value]
           : cached[dvalue] && cached[dvalue][value];
@@ -348,9 +346,8 @@ export default {
         if (is_root) {
           cached[value] = cached[value] || {};
         } else {
-          const _val =  dep_value(field);
-          cached[_val]        = cached[_val] || {};
-          cached[_val][value] = cached[_val][value] || {}
+          cached[dep_value]        = cached[dep_value] || {};
+          cached[dep_value][value] = cached[dep_value][value] || {}
         }
 
         // exclude autocomplete subscribers
@@ -421,7 +418,7 @@ export default {
             sorted.forEach(v => subscribe.options.values.push({ key: v, value: v }));
           }
 
-          cached[is_root ? value : dep_value(field)][subscribe.attribute] = subscribe.options.values.slice(1);
+          cached[is_root ? value : dep_value][subscribe.attribute] = subscribe.options.values.slice(1);
           subscribe.options.disabled = false;
         }
       } catch(e) {

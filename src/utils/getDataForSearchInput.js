@@ -11,12 +11,11 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
   try {
 
     const layers          = state.search_layers || [];
-    const inputdependance = state.input.dependance || {};
     const cached          = state.input.cached_deps || {};
     const filter          = state.filter || [];
 
     const createFieldsDeps = ({ field, fields = [] } = {}) => {
-      let dep = inputdependance[field];
+      let dep = field && filter.find(d => d.attribute === field).input.options.dependance;
       let dvalue = undefined;
 
       if (!dep || !cached[dep] || SEARCH_ALLVALUE === cached[dep]._currentValue) {
@@ -39,7 +38,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     }
 
     // check if a field has a dependance
-    let dep    = inputdependance[field];
+    let dep    = filter.find(d => d.attribute === field).input.options.dependance;
     let dvalue = undefined;
 
     if (dep && cached[dep] && SEARCH_ALLVALUE !== cached[dep]._currentValue) {

@@ -13,7 +13,6 @@ import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
  */
 export async function createInputsFormFromFilter(state) {
 
-  const dep             = state.input.dependance;
   const deps            = state.input.dependencies;
   const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
@@ -44,8 +43,8 @@ export async function createInputsFormFromFilter(state) {
               inputs: [{
                 value: await getDataForSearchInput({ state, field: input.attribute }),
                 attribute: input.options.value,
-                logicop: "OR",
-                operator: "eq"
+                logicop: 'OR',
+                operator: 'eq'
               }]
             }),
             ordering: input.options.key
@@ -79,17 +78,15 @@ export async function createInputsFormFromFilter(state) {
 
     // set `SEARCH_ALLVALUE` as first element of array
     if ('selectfield' === input.type) {
-      input.options.values = input.options.values.filter(v => SEARCH_ALLVALUE !== v);
-      input.options.values.unshift({ value: SEARCH_ALLVALUE })
+      input.options.values = [{ value: SEARCH_ALLVALUE }].concat(input.options.values.filter(v => SEARCH_ALLVALUE !== v));
     }
 
     // there is a dependence
     if (chained_select) {
-      dep[input.attribute]                        = input.options.dependance;        // set dependence of input
-      state.loading[input.options.dependance]     = false;
-      input.options.disabled                      = input.options.dependance_strict; // disabled for BACKCOMP
+      state.loading[input.options.dependance] = false;
+      input.options.disabled                  = input.options.dependance_strict; // disabled for BACKCOMP
       // set input dependencies
-      deps[input.options.dependance]              = (undefined !== deps[input.options.dependance] ? deps[input.options.dependance] : []);
+      deps[input.options.dependance]          = (undefined !== deps[input.options.dependance] ? deps[input.options.dependance] : []);
       deps[input.options.dependance].push(input);
     }
 
