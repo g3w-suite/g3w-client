@@ -6,39 +6,39 @@
 <template>
   <baseinput :state="state">
     <span
-      v-if="showPickLayer"
-      slot="label-action"
-      data-placement="top"
-      v-t-tooltip="'sdk.form.inputs.tooltips.picklayer'"
-      v-disabled="disabled"
-      @click.stop="pickLayerValue"
-      :class="g3wtemplate.font['crosshairs']"
-      class="g3w-input-pick-layer skin-color">
+      v-if           = "showPickLayer"
+      slot           = "label-action"
+      data-placement = "top"
+      v-t-tooltip    = "'sdk.form.inputs.tooltips.picklayer'"
+      v-disabled     = "disabled"
+      @click.stop    = "pickLayerValue"
+      :class         = "g3wtemplate.font['crosshairs']"
+      class          ="g3w-input-pick-layer skin-color">
     </span>
     <div
-      slot="body"
-      v-disabled="disabled"
-      :tabIndex="tabIndex"
+      slot       = "body"
+      v-disabled = "disabled"
+      :tabIndex  = "tabIndex"
     >
       <!-- RELATION REFERENCE FILTER FIELDS SECTION @since 3.9.1 -->
       <div
-        v-if="filterFields.length > 0 && isFilterFieldsReady"
-        class="g3w-relation-reference-fields-content"
+        v-if  = "filterFields.length > 0 && isFilterFieldsReady"
+        class = "g3w-relation-reference-fields-content"
       >
         <template v-for="(rf, index) in filterFields">
           <select
-            v-select2="'filterFields'"
-            :select2_value="rf.value"
-            :indexItem="index"
-            :id="rf.id"
-            style="width:100%"
-            class="form-control"
-            :disabled="rf.disabled"
-            :ref="`filterField_${rf.id}`"
+            v-select2      = "'filterFields'"
+            :select2_value = "rf.value"
+            :indexItem     = "index"
+            :id            = "rf.id"
+            style          = "width:100%"
+            class          = "form-control"
+            :disabled      = "rf.disabled"
+            :ref           = "`filterField_${rf.id}`"
           >
             <option
-              v-for="({key, value}) in rf.values"
-              :value="getValue(value)"
+              v-for  = "({key, value}) in rf.values"
+              :value = "getValue(value)"
             >
               {{ key }}
             </option>
@@ -48,27 +48,29 @@
       </div>
       <!-- INPUT SELECT -->
       <select
-        ref="select"
-        style="width:100%"
-        class="form-control"
+        ref   = "select"
+        style = "width:100%"
+        class = "form-control"
       >
+        <!-- NULL OPTION -->
         <option
-          v-if="showNullOption"
-          :value="select2NullValue">
+          v-if   = "showNullOption"
+          :value = "select2NullValue">
         </option>
+
         <option
-          v-for="({key, value}) in state.input.options.values"
-          :key="getValue(value)"
-          :value="getValue(value)">
+          v-for  = "({key, value}) in state.input.options.values"
+          :key   = "getValue(value)"
+          :value = "getValue(value)">
             {{ key }}
         </option>
       </select>
     </div>
     <p
-      v-if="loadingState === 'error'"
-      class="error-input-message"
-      slot="message"
-      v-t="'server_error'">
+      slot  = "message"
+      v-if  = "'error' === loadingState "
+      class = "error-input-message"
+      v-t   = "'server_error'">
     </p>
   </baseinput>
 </template>
@@ -137,10 +139,7 @@ export default {
           const value = values[field];
           this.select2.val(value).trigger('change');
           this.changeSelect(value);
-          GUI.showUserMessage({
-            type: 'success',
-            autoclose: true
-          });
+          GUI.showUserMessage({ type: 'success', autoclose: true });
           this.picked = false;
         }
       } catch(err) {
@@ -152,8 +151,12 @@ export default {
         this.picked = false;
       }
     },
+    /**
+     * Method to handle select2 event
+     */
     setAndListenSelect2Change() {
       this.select2.on('select2:select', event => {
+        //get value from select2 option
         let value = event.params.data.$value
           ? event.params.data.$value
           : event.params.data.id;
@@ -179,20 +182,22 @@ export default {
      */
     async 'state.input.options.values'(values) {
       await this.$nextTick();
-      let changed = false;
-      if (!this.autocomplete) {
-        let value;
-        if (values.length === 0) {
-          value = G3W_SELECT2_NULL_VALUE;
-        } else {
-          const findvalue = values.find(keyvalue => keyvalue.value == this.state.value);
-          value = undefined === findvalue ? G3W_SELECT2_NULL_VALUE : findvalue.value;
-        }
-
-        changed = value != this.state.value;
-        this.state.value = value;
-        this.setValue();
+      if (this.autocomplete) {
+        return;
       }
+
+      let value;
+      if (values.length === 0) {
+        value = G3W_SELECT2_NULL_VALUE;
+      } else {
+        const findvalue = values.find(keyvalue => keyvalue.value == this.state.value);
+        value = undefined === findvalue ? G3W_SELECT2_NULL_VALUE : findvalue.value;
+      }
+
+      const changed = value != this.state.value;
+      this.state.value = value;
+      this.setValue();
+
       if (changed) {
         this.change();
       }
@@ -205,10 +210,10 @@ export default {
     this.filterFieldsUnwatches;
 
     const {
-      filter_fields=[],
-      relation_reference,
+      filter_fields = [],
+      relation_reference = false,
       relation_id,
-      chain_filters=false, /** @type Boolean if true filter_fields select are related ech other*/
+      chain_filters = false, /** @type Boolean if true filter_fields select are related ech other*/
     } = this.state.input.options;
     //In case of relation reference check if filter_fields is set
     if (relation_reference && Array.isArray(filter_fields) && filter_fields.length > 0) {
@@ -220,10 +225,7 @@ export default {
       const {
         referencedLayer,
         referencingLayer,
-        fieldRef:{
-          referencingField,
-          referencedField
-        }
+        fieldRef : { referencingField, referencedField }
       }                               = ProjectsRegistry.getCurrentProject().getRelationById(relation_id);
       //current layer in editing
       const layer                     = CatalogLayersStoresRegistry.getLayerById(referencingLayer)
@@ -235,11 +237,11 @@ export default {
       if (null !== this.state.value) {
         try {
           //get a single feature used to set values of filter_fields
-          const {data=[]} = await relationLayer.getFilterData({
-            formatter: 0,
-            field: createSingleFieldParameter({
-              field: referencedField[0], // field related to relation (in case of relation_reference it is just one field)
-              value: this.state.value //current input value. Is value related to field of relation layer
+          const { data = [] } = await relationLayer.getFilterData({
+            formatter : 0,
+            field : createSingleFieldParameter({
+              field : referencedField[0], // field related to relation (in case of relation_reference it is just one field)
+              value : this.state.value // current input value. Is value related to field of relation layer
             })
           })
 		      //get all data referencing to al filter_fields values in fformatter
@@ -338,13 +340,13 @@ export default {
                 disabled: chain_filters && i > 0,
               })
 		          return relationLayer.getFilterData({
-                unique: f,
-                formatter: 0,
-                ordering: f
+                unique :    f,
+                formatter : 0,
+                ordering :  f
               });
             })
         ))
-        .forEach(({status, value:data}, i) => {
+        .forEach(({ status, value:data }, i) => {
           if ('fulfilled' === status) {
             data.forEach(v => this.filterFields[i].values.push({key:v, value:v}))
           }
@@ -360,7 +362,7 @@ export default {
             this.setLoading(true);
 		        // in the case of chain_filters
             if (chain_filters) {
-              //need to be disabled fields in chain after current index
+              //need to be disabled fields in a chain after current index
               for (let i = index + 1; i < this.filterFields.length; i++) {
                 this.filterFields[i].value    = `${G3W_SELECT2_NULL_VALUE}`;
                 this.filterFields[i].values   = [this.filterFields[i].values[0]];
@@ -375,7 +377,7 @@ export default {
                     value: f.value
                   })).join('|AND,');
 
-                const {data: rdata = []} = await relationLayer.getFilterData({field: filter});
+                const { data: rdata = [] } = await relationLayer.getFilterData({field: filter});
 
                 if (rdata[0] && rdata[0].features) {
                   const filterReferencedFieldValues = [];
@@ -383,10 +385,7 @@ export default {
                     filterReferencedFieldValues.push(f.get(referencedField));
                     if (index < this.filterFields.length - 1) {
                       const value = f.get(this.filterFields[index + 1].id)
-                      this.filterFields[index + 1].values.push({
-                        key: value,
-                        value: value
-                      });
+                      this.filterFields[index + 1].values.push({ key: value, value });
                     }
                   }))
                 }
@@ -396,16 +395,13 @@ export default {
             }
             this.state.input.options.values = (
               (await layer.getFilterData({
-                fformatter: referencingField[0],
-		            ordering: referencingField[0],
-                ffield:  this.filterFields
-                  .filter((f) => `${G3W_SELECT2_NULL_VALUE}` !== f.value)
-                  .map((f) => createSingleFieldParameter({
-                    field: f.id,
-                    value: f.value
-                  })).join('|AND,')
-              })).data ||[]
-            ).map(([value, key]) => ({key, value}));
+                fformatter : referencingField[0],
+		            ordering :   referencingField[0],
+                ffield :     this.filterFields
+                               .filter((f) => `${G3W_SELECT2_NULL_VALUE}` !== f.value)
+                               .map((f) => createSingleFieldParameter({ field: f.id, value: f.value }))
+                               .join('|AND,')
+              })).data || []).map(([value, key]) => ({key, value}));
             //in the case of values length
             if (this.state.input.options.values.length > 0) {
               this.state.value = this.state.input.options.values[0].value;
@@ -423,7 +419,7 @@ export default {
       this.isFilterFieldsReady = true;
     }
 
-    if (this.state.input.type === 'select_autocomplete') {
+    if ('select_autocomplete' === this.state.input.type) {
       const dependencyLayerId = this.state.input.options.layer_id;
       try {
         const dependencyLayer = MapLayersStoresRegistry
@@ -451,15 +447,17 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    const selectElement = $(this.$refs.select);
-    const language =  this.getLanguage();
-    const dropdownParent = this.state.dropdownParent === undefined && $('#g3w-view-content');
+
+    const selectElement  = $(this.$refs.select);
+    const language       =  this.getLanguage();
+    const dropdownParent = undefined === this.state.dropdownParent && $('#g3w-view-content');
+
     if (this.autocomplete) {
       this.select2 = selectElement.select2({
         minimumInputLength: 1,
         dropdownParent,
-        allowClear: this.showNullOption,
-        placeholder: '',
+        allowClear  : this.showNullOption,
+        placeholder : '', // need to set placeholder in case of allowClear, otherwise doesn't work
         language,
         ajax: {
           delay: 250,
@@ -468,9 +466,7 @@ export default {
             // hide a previous result if present
             $('.select2-results__option.loading-results').siblings().hide();
             this.resetValues();
-            this.service.getData({
-              search
-            })
+            this.service.getData({ search })
               .then(values => success(values))
               .catch(err => failure(err))
           },
@@ -484,12 +480,15 @@ export default {
             }
           }},
       });
+      //check if input has a value
       if (this.state.value) {
         //need to reset values otherwise can be repeated;
         this.state.input.options.values.splice(0);
+
         await this.service.getKeyByValue({
           search: this.state.value
         });
+        //set (trigger) value at the beginning
         this.select2.val(this.state.value);
       }
       if (this.showNullOption) {
@@ -501,7 +500,7 @@ export default {
       this.select2 = selectElement.select2({
         language,
         dropdownParent,
-        minimumResultsForSearch: this.isMobile() ? -1 : null
+        minimumResultsForSearch: this.isMobile() ? - 1 : null
       });
     }
     this.setAndListenSelect2Change();
