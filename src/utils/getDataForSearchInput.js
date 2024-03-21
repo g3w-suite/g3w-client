@@ -51,10 +51,7 @@ export async function getDataForSearchInput({ state, field, suggest, output, sea
             
           })))
       )
-        .filter(d => {
-          console.log(d);
-          return 'fulfilled' === d.status
-        })
+        .filter(d => 'fulfilled' === d.status)
         .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
     )
 
