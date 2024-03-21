@@ -63,7 +63,7 @@ export async function createInputsFormFromFilter(state) {
       }
 
       /** @TODO should we check input.type ? */
-      if (!input.options.values.length > 0) {
+      if (!input.options.dependance && !input.options.values.length > 0) {
         input.options.values = await getDataForSearchInput({ state, field: input.attribute });
       }
 

@@ -259,7 +259,7 @@ export default {
       const state       = this.state;
       let value         = input.value;
 
-      console.log(input.type, input, field);
+      console.log(input, deps);
 
       try {
         this.state.searching = true;
