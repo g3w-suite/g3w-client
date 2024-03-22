@@ -21,14 +21,13 @@
         <div
           v-for = "input in state.forminputs"
           :key  = "input.id"
+          class = "form-group"
         >
-
-          <sub>{{ input.type }}</sub>
 
           <!-- NUMBER FIELD -->
           <div
             v-if  = "'numberfield' === input.type"
-            class = "form-group numeric"
+            class = "numeric"
           >
             <label :for="input.id" class="search-label">
               <span>{{ input.label || input.attribute }}</span>
@@ -48,7 +47,7 @@
           <!-- TEXT FIELD -->
           <div
             v-else-if = "['textfield', 'textField'].includes(input.type)"
-            class     = "form-group form-item-search text"
+            class     = "form-item-search text"
           >
             <label :for="input.id" class="search-label">
               <span>{{ input.label || input.attribute }}</span>
@@ -67,7 +66,7 @@
           <!-- AUTOCOMPLETE FIELD -->
           <div
             v-else-if  = "['selectfield', 'autocompletefield'].includes(input.type)"
-            class      = "form-group text"
+            class      = "text"
             v-disabled = "isSelectDisabled(input)"
           >
             <label :for="input.id" class="search-label">
@@ -99,7 +98,7 @@
           <!-- DATETIME FIELD -->
           <div
             v-else-if  = "'datetimefield' === input.type"
-            class      = "form-group text"
+            class      = "text"
             v-disabled = "state.loading[input.dependance] || false"
           >
             <label :for="input.id" class="search-label">
@@ -113,6 +112,8 @@
               </span>
             </div>
           </div>
+
+          <sub>{{ input.type }} | {{ input.widget_type }}</sub>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
           <div

@@ -101,12 +101,13 @@ export function SearchPanel(opts = {}, show = false) {
     search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
-      id:        d.id || getUniqueDomId(),
-      type:      d.input.type || 'textfield',
-      label:     d.label,
-      attribute: d.attribute,
-      value:     d.input.options.value,
-      values:    d.input.options.values || [],
+      id:          d.id || getUniqueDomId(),
+      type:        d.input.type || 'textfield',
+      widget_type: d.input.widget_type,
+      label:       d.label,
+      attribute:   d.attribute,
+      value:       d.input.options.value,
+      values:      d.input.options.values || [],
       /** group values by parent value */
       dvalues: {},
       /**

@@ -20,17 +20,14 @@ export async function createInputsFormFromFilter(state) {
   for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
     const input = state.forminputs[i];
-    const type  = input.type;
 
-    const value_relation     = !!('selectfield' === type && !input.dependance_strict && input.options.layer_id);
-    const relation_reference = !!('selectfield' === type && !input.dependance_strict && !input.options.layer_id && input.options.relation_reference);
-
-    console.log(input, value_relation, relation_reference);
+    console.assert('ValueRelation'     === input.widget_type ? ('selectfield' === type && !input.dependance_strict && input.options.layer_id) : true);
+    console.assert('RelationReference' === input.widget_type ? ('selectfield' === type && !input.dependance_strict && !input.options.layer_id && input.options.relation_reference) : true);
 
     try {
 
       // value-relation (select input values from `layer_id`)
-      if (value_relation) {
+      if ('ValueRelation' === input.widget_type) {
         const response = await DataRouterService.getData('search:features', {
           inputs: {
             layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
@@ -53,7 +50,7 @@ export async function createInputsFormFromFilter(state) {
       }
 
       // Relation reference (`fformatter`)
-      if (relation_reference) {
+      if ('RelationReference' === input.widget_type) {
         const response       = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
         input.values = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
       }
