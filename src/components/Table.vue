@@ -64,19 +64,11 @@
             { 'selected': feature.selected }
           ]">
           <td v-for="(header, i) in state.headers" :tab-index="1">
-            <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
-            <span v-if   = "0 === i">
-              <input
-                type     = "checkbox"
-                :id      = "get_check_id(true)"
-                :checked = "feature.selected"
-                class    = "magic-checkbox"
-              >
-              <label
-                :for                        = "get_check_id(false)"
-                @click.capture.stop.prevent = "addRemoveSelectedFeature(feature)"
-              ><span></span></label>
-            </span>
+            <select-row
+              v-if      = "0 === i"
+              @selected = "addRemoveSelectedFeature"
+              :feature  = "feature"
+            />
             <field
               v-else
               :feature = "feature"
@@ -92,6 +84,7 @@
 </template>
 
 <script>
+import SelectRow                   from 'components/TableSelectRow.vue';
 import G3wTableToolbar             from 'components/TableToolbar.vue';
 import Field                       from 'components/FieldG3W.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -141,12 +134,13 @@ function _hideDataTableElements() {
 
 /** Data Table */
 let table;
-let fieldsComponents = [];
+let V_FIELDS = []; // fields components
 
 export default {
   name: "G3WTable",
   mixins: [resizeMixin],
   components: {
+    SelectRow,
     Field
   },
   data() {
@@ -541,66 +535,50 @@ export default {
     },
 
     createdContentBody() {
-      fieldsComponents = fieldsComponents.filter(fieldComponent => {
-        fieldComponent.$destroy();
-        return false;
-      });
-      const trDomeElements = table.rows().nodes();
+      V_FIELDS = V_FIELDS.filter(comp => { comp.$destroy(); return false; });
       //trDomeElements
-      trDomeElements.each((rowElement, index) => {
-        $(rowElement).css('cursor', 'pointer');
-        if (this.state.features.length) {
-          const feature = this.state.features[index];
-          const hasGeometry = !!feature.geometry;
-          $(rowElement).addClass('feature_attribute');
-          feature.selected && $(rowElement).addClass('selected');
-          $(rowElement).on('click', () => {
-            if (hasGeometry) {
-              this.zoomAndHighLightFeature(feature);
-            }
-          });
-          $(rowElement).on('mouseover', () => {
-            if (hasGeometry) {
-              this.zoomAndHighLightFeature(feature, false);
-            }
-          });
-          $(rowElement)
+      table
+        .rows()
+        .nodes()
+        .each((row, i) => {
+          $(row).css('cursor', 'pointer');
+          if (!this.state.features.length) {
+            return;
+          }
+          const feature = this.state.features[i];
+          $(row).addClass('feature_attribute');
+          feature.selected && $(row).addClass('selected');
+          $(row).on('click',     () => { !!feature.geometry && this.zoomAndHighLightFeature(feature); });
+          $(row).on('mouseover', () => { !!feature.geometry && this.zoomAndHighLightFeature(feature, false); });
+          $(row)
             .children()
-            .each((index, element) => {
-              const header = this.state.headers[index];
-              let contentDOM;
-              if (header === null) {
-                const SelectRowClass = Vue.extend(SelectRow);
-                const SelectRowInstance = new SelectRowClass({
+            .each((j, element) => {
+              const header = this.state.headers[j];
+              let comp;
+              if (null === header) {
+                comp = new (Vue.extend(SelectRow))({
                   propsData: {
                     feature
                   }
                 });
-                SelectRowInstance.$on('selected', feature => this.addRemoveSelectedFeature(feature));
+                comp.$on('selected', feature => this.addRemoveSelectedFeature(feature));
                 this.$watch(
                   () => feature.selected,
-                  function (selected) {
-                    selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
-                  }
+                  (selected) =>selected ? $(row).addClass('selected'): $(row).removeClass('selected')
                 );
-                contentDOM = SelectRowInstance.$mount().$el;
               } else {
-                const fieldClass = Vue.extend(Field);
-                const fieldInstance = new fieldClass({
+                comp = new (Vue.extend(Field))({
                   propsData: {
                     state: {
                       value: feature.attributes[header.name]
                     }
                   }
                 });
-                fieldInstance.$mount();
-                fieldsComponents.push(fieldInstance);
-                contentDOM = fieldInstance.$el
+                V_FIELDS.push(comp);
               }
-              $(element).html(contentDOM);
+              $(element).html(comp.$mount().$el);
           })
-        }
-      });
+        });
       setTimeout(() => this.reloadLayout(), 0)
     },
 
