@@ -113,7 +113,14 @@
             </div>
           </div>
 
-          <sub>{{ input.type }} | {{ input.widget_type }}</sub>
+          <!-- DEBUG INFO -->
+          <sub v-if="is_superuser">
+            {{ input.type }} | {{ input.widget_type }}
+            <template v-if="input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
+            <template v-if="input.options.layer_id"><br>layer_id: "{{ input.options.layer_id }}"</template>
+            <template v-if="input.dependance"><br>depends_on: "{{ input.dependance }}"</template>
+            <template v-if="input.dependance"><br>strict: {{ input.dependance_strict }}</template>
+          </sub>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
           <div
@@ -180,9 +187,15 @@ export default {
   },
 
   computed: {
+
     layers_url() {
       return ApplicationService.getCurrentProject().getState().layers_url;
     },
+
+    is_superuser() {
+      return ApplicationService.getConfig().user.is_superuser;
+    },
+
   },
 
   methods: {
