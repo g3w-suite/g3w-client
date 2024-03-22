@@ -135,8 +135,9 @@ export default {
         } else {
           this.picked = true;
           const values = await this.pickLayerInputService.pick();
+          //check if autocomplete
           if (this.autocomplete) {
-            this.state.input.options.values.push({
+            this.state.input.options.values.splice(0, this.state.input.options.values.length, {
               key: values[this.state.input.options.key],
               value: values[this.state.input.options.value]
             });
@@ -145,7 +146,7 @@ export default {
           const { value:field } = this.state.input.options;
           const value = values[field];
           this.select2.val(value).trigger('change');
-          this.changeSelect(value);
+          await this.changeSelect(value);
           GUI.showUserMessage({ type: 'success', autoclose: true });
           this.picked = false;
         }
@@ -413,7 +414,7 @@ export default {
             if (this.state.input.options.values.length > 0) {
               this.state.value = this.state.input.options.values[0].value;
               this.select2.val(this.state.value).trigger('change');
-              this.changeSelect(this.state.value);
+              await this.changeSelect(this.state.value);
             }
             //stop loading
             this.setLoading(false);
