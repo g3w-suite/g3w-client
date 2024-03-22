@@ -11,7 +11,7 @@ function PickLayerService(options={}) {
   this.fields      = options.fields || [options.value];
   this.layerId     = options.layer_id;
   this.mapService  = GUI.getService('map');
-  this.interaction = this.pick_type === 'map' ? new PickFeatureInteraction({
+  this.interaction = 'map' === this.pick_type  ? new PickFeatureInteraction({
     layers: [this.mapService.getLayerById(this.layerId)]
   }) : new PickCoordinatesInteraction();
 }
@@ -27,7 +27,7 @@ proto.isPicked = function(){
 };
 
 //bind interrupt event
-proto.escKeyUpHandler = function({keyCode, data:{owner}}) {
+proto.escKeyUpHandler = function({ keyCode, data : { owner } }) {
   keyCode === 27 && owner.unpick();
 };
 
@@ -57,7 +57,8 @@ proto.pick = function() {
     const afterPick = feature => {
       if (feature) {
         const attributes = feature.getProperties();
-        this.fields.forEach(field => values[field] = attributes[field]);
+        //filter eventually null or undefined field
+        this.fields.filter(f => f).forEach(field => values[field] = attributes[field]);
         resolve(values);
       } else {
         reject();
@@ -67,11 +68,11 @@ proto.pick = function() {
     };
     GUI.setModal(false);
     this.mapService.addInteraction(this.interaction);
-    this.interaction.once('picked', event => {
-      if (this.pick_type === 'map') {
-        const feature = event.feature;
+    this.interaction.once('picked', (e) => {
+      if ('map' === this.pick_type) {
+        const feature = e.feature;
         afterPick(feature);
-      } else if (this.pick_type === 'wms') {
+      } else if ('wms' === this.pick_type) {
         const layer = MapLayersStoresRegistry.getLayerById(this.layerId);
         if (layer) {
           getQueryLayersPromisesByCoordinates(
@@ -79,9 +80,9 @@ proto.pick = function() {
             {
               map: this.mapService.getMap(),
               feature_count: 1,
-              coordinates: event.coordinate
-            }).then(response => {
-              const {data=[]} = response[0];
+              coordinates: e.coordinate
+            }).then((response) => {
+              const { data=[] } = response[0];
               const feature = data.length && data[0].features[0] || null;
               afterPick(feature);
           })
