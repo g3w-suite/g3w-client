@@ -23,7 +23,6 @@ const PrintPage = function(options={}) {
 
 inherit(PrintPage, Component);
 
-
 module.exports = PrintPage;
 
 
