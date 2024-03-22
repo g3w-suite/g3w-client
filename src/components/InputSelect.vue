@@ -135,6 +135,13 @@ export default {
         } else {
           this.picked = true;
           const values = await this.pickLayerInputService.pick();
+          if (this.autocomplete) {
+            this.state.input.options.values.push({
+              key: values[this.state.input.options.key],
+              value: values[this.state.input.options.value]
+            });
+            await this.$nextTick();
+          }
           const { value:field } = this.state.input.options;
           const value = values[field];
           this.select2.val(value).trigger('change');
@@ -420,27 +427,31 @@ export default {
     }
 
     if ('select_autocomplete' === this.state.input.type) {
+      //get dependency layer id if set
       const dependencyLayerId = this.state.input.options.layer_id;
       try {
         const dependencyLayer = MapLayersStoresRegistry
           .getLayerById(dependencyLayerId)
           .getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
-        this.showPickLayer = dependencyLayer ?
-          dependencyLayer.getType() !== Layer.LayerTypes.TABLE :
-          false;
+        // in case layer is on project, check if is non an alphanumeric layer
+        this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
+        if (this.showPickLayer) {
+          const {
+            key,
+            value,
+            layer_id
+          } = this.state.input.options;
 
-        const {
-          value:field,
-          layer_id
-        } = this.state.input.options;
+          //create pick layer service
+          this.pickLayerInputService = new PickLayerInputService({
+            layer_id,
+            fields :    [value, key], //fields are key, and values
+            //need to check if dependency layer is on editing,
+            // so we can pick vector map layer, otherwise wms request is done
+            pick_type : dependencyLayer.isStarted && dependencyLayer.isStarted() ? 'map' : null
+          });
+        }
 
-        const options = {
-          layer_id,
-          fields: [field],
-          pick_type: dependencyLayer.isStarted && dependencyLayer.isStarted() && 'map' || null
-        };
-
-        this.pickLayerInputService = this.showPickLayer && new PickLayerInputService(options);
       } catch(err) {}
     }
   },
