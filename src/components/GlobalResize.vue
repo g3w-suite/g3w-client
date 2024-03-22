@@ -41,18 +41,23 @@
         type: Function,
         default: evt=> console.log(evt)
       },
+
     },
 
     computed: {
+
       style() {
         return {
-          minWidth: '5px',
+          minWidth:        '5px',
           backgroundColor: '#dddddd',
-          cursor: this.orientation === 'v' ? 'ns-resize' : 'col-resize',
-        }
-      }
+          cursor:          ('v' === this.orientation ? 'ns-resize' : 'col-resize'),
+        };
+      },
+
     },
+
     methods: {
+
       wrapMoveFnc(evt) {
         this.moveFnc(evt);
       },
@@ -66,23 +71,21 @@
         this.domElementMoveListen.removeEventListener('mousemove', this.wrapMoveFnc);
         await this.$nextTick();
         GUI.emit('resize');
-      }
+      },
+
     },
 
     async mounted() {
-      this.domElementMoveListen;
-
       this.domElementMoveListen = (
         'content' === this.where
           ? document.getElementById('g3w-view-content')
           : document
       );
-
     },
 
     destroyed() {
       this.domElementMoveListen = null;
     },
 
-}
+};
 </script>

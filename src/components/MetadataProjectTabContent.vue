@@ -6,16 +6,16 @@
 <template>
   <div class="wrap-content-tab">
     <div class="col-sm-2 metadata-label" v-t="data.label"></div>
-    <div v-if="fieldName == 'keywords'" class="col-sm-10 value">
+    <div v-if="'keywords' == fieldName" class="col-sm-10 value">
       {{ arrayToString }}
     </div>
-    <div v-else-if="fieldName == 'wms_url'" class="col-sm-10 value" style="margin-top:0">
+    <div v-else-if="'wms_url' == fieldName" class="col-sm-10 value" style="margin-top:0">
       <span>{{ data.value }}</span>
     </div>
     <div v-else-if="!isArrayorObject(data.value)" class="col-sm-10 value" style="margin-top:0">
       <span v-html="data.value"></span>
     </div>
-    <div v-else-if="fieldName == 'abstract'" class="col-sm-10 value" style="margin-top:0">
+    <div v-else-if="'abstract' == fieldName" class="col-sm-10 value" style="margin-top:0">
       <span v-html="data.value"></span>
     </div>
     <div v-else class="col-sm-10 value" style="margin-top:0">

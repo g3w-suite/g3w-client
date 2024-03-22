@@ -6,7 +6,8 @@
 <template>
   <tbody id="table_body_attributes" >
     <tr
-      v-for      = "(feature, index) in features" :key="feature.id"
+      v-for      = "(feature, index) in features"
+      :key       = "feature.id"
       role       = "row"
       class      = "feature_attribute"
       style      = "cursor: pointer"
@@ -16,16 +17,20 @@
       :class     = "[
         index %2 == 1 ? 'odd' : 'pair',
         { geometry: !!feature.geometry },
-        { 'selected': feature.selected }
-      ]">
-      <td v-for="(header, hindex) in headers" :tab-index="1">
+        { selected: feature.selected }
+      ]"
+    >
+      <td
+        v-for      = "(header, hindex) in headers"
+        :tab-index = "1"
+      >
         <select-row
           v-if      = "0 === hindex"
           @selected = "addRemoveSelectedFeature"
-          :feature  = "feature"
+          :feature = "feature"
         />
-        <field
-           v-else
+        <g3w-field
+          v-else
           :feature = "feature"
           :state   = "getField(feature, header)"
         />
@@ -35,49 +40,70 @@
 </template>
 
 <script>
-import SelectRow from 'components/TableSelectRow.vue'
-import Field from 'components/FieldG3W.vue';
+import G3WField  from 'components/G3WField.vue';
+import SelectRow from 'components/TableSelectRow.vue';
+
+Object
+    .entries({
+      G3WField,
+      SelectRow,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
+
   name: "table-body",
+
   props: {
+
     headers: {
       required: true,
-      type: Array
+      type: Array,
     },
+
     features: {
       required: true,
-      type: Array
+      type: Array,
     },
+
     zoomAndHighLightFeature: {
-      type: Function
+      type: Function,
     },
+
     addRemoveSelectedFeature: {
-      type: Function
+      type: Function,
     },
+
     filter: {
       type: Object,
       default: {
-        active: false
-      }
-    }
+        active: false,
+      },
+    },
+
   },
+
   data() {
     return {
-      selectedRow: null
-    }
+      selectedRow: null,
+    };
   },
+
   components: {
-    Field,
-    SelectRow
+    'g3w-field': G3WField,
+    SelectRow,
   },
+
   methods: {
+
     getField(feature, header) {
       return {
         value: feature.attributes[header.name],
-        label: undefined // temporary to avoid label
-      }
-    }
-  }
+        label: undefined, // temporary to avoid label
+      };
+    },
+
+  },
+
 };
 </script>

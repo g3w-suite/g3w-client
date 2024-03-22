@@ -81,8 +81,7 @@ import { get_legend_params }                       from 'utils/get_legend_params
 /**
  * Single File Components
  */
-import G3WInput                                    from 'components/InputG3W.vue';
-import G3wFormInputs                               from 'components/InputG3WFormInputs.vue';
+import G3WField                                    from 'components/G3WField.vue';
 import FormBody                                    from 'components/FormBody.vue';
 import FormFooter                                  from 'components/FormFooter.vue';
 import C3XYLine                                    from 'components/C3XYLine.vue';
@@ -152,7 +151,7 @@ const PluginService              = require('core/plugin/pluginservice');
  */
 const Panel                      = require('gui/panel');
 const { ControlFactory }         = require('gui/map/mapservice');
-const FieldsService              = require('gui/fields/fieldsservice');
+const FieldsService              = G3WField.methods.getFieldService();
 const Component                  = require('gui/component/component');
 const MetadataComponent          = require('gui/metadata/vue/metadata');
 const SearchComponent            = require('gui/search/vue/search');
@@ -164,8 +163,8 @@ const ToolsComponent             = require('gui/tools/vue/tools');
 const QueryResultsComponent      = require('gui/queryresults/vue/queryresults');
 const FormComponent              = require('gui/form/vue/form');
 const FormService                = require('gui/form/formservice');
-const InputsComponents           = require('gui/inputs/inputs');
-const Fields                     = require('gui/fields/fields');
+const InputsComponents           = G3WField.components;
+const Fields                     = G3WField.components;
 const SearchPanelService         = require('gui/search/vue/panel/searchservice');
 
 /**
@@ -176,6 +175,20 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction   = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
+
+const deprecate                  = require('util-deprecate');
+
+/**
+ * Test assertions
+ */
+Object
+  .entries({
+    G3WField,
+    InputsComponents,
+    FieldsService,
+    Fields,
+  })
+  .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 const g3wsdk = {
 
@@ -349,17 +362,15 @@ const g3wsdk = {
       MapComponent,
       ToolsComponent,
       QueryResultsComponent,
-      // main Form Component
       FormComponent,
-      // Form Components
       FormComponents: {
         Body: FormBody,
         Footer: FormFooter
       },
       Inputs: {
-        G3wFormInputs,
-        G3WInput,
-        InputsComponents
+        // G3wFormInputs,
+        // G3WInput,
+        // InputsComponents,
       },
       Charts: {
         ChartsFactory: {
@@ -443,7 +454,132 @@ ${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __$
   version: G3W_CONSTANT.APP_VERSION
 };
 
-// BACKOMP v3.x
+console.log(G3WField);
+
+function _alias(vm, props) {
+  return {
+    functional: true,
+    render(h, { data, children }) {
+      return h( vm, { ...data, props: { ...data.props, ...props } }, children);
+    },
+  };
+}
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: g3w-client/src/components/InputG3W.vue@3.8
+ */
+g3wsdk.gui.vue.Inputs.G3WInput = _alias(G3WField, { mode: "input", _type: "legacy" } );
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: g3w-client/src/components/G3WFormInputs.vue@3.8
+ * ref: g3w-client-plugin-billboards/components/panel.vue
+ */
+g3wsdk.gui.vue.Inputs.G3wFormInputs = _alias(FormBody, { _legacy: "form-inputs" } )
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/components/G3WFormInputs.vue@3.8
+ */
+g3wsdk.gui.vue.Inputs.InputsComponents = Object.entries(InputsComponents).reduce((a, [k, v]) => (a[k] = Vue.extend(v), a), {});
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/base-input.js@3.8
+ */
+g3wsdk.gui.vue.Mixins.baseInputMixin = {
+
+  props: ['state'],
+
+  computed: {
+    tabIndex:           deprecate(G3WField.computed.tabIndex,           '[G3W-SDK] baseInputMixin::tabIndex is deprecated'),
+    notvalid:           deprecate(G3WField.computed.notvalid,           '[G3W-SDK] baseInputMixin::notvalid is deprecated'),
+    editable:           deprecate(G3WField.computed.editable,           '[G3W-SDK] baseInputMixin::editable is deprecated'),
+    showhelpicon:       deprecate(G3WField.computed.showhelpicon,       '[G3W-SDK] baseInputMixin::showhelpicon is deprecated'),
+    disabled:           deprecate(G3WField.computed.disabled,           '[G3W-SDK] baseInputMixin::disabled is deprecated'),
+    loadingState:       deprecate(G3WField.computed.loadingState,       '[G3W-SDK] baseInputMixin::loadingState is deprecated'),
+  },
+
+  watch: {
+    'notvalid':         deprecate(G3WField.watch['notvalid'],           '[G3W-SDK] baseInputMixin::watch[\'notvalid\'] is deprecated'),
+    'state.value':      deprecate(G3WField.watch['state.value'],        '[G3W-SDK] baseInputMixin::watch[\'state.value\'] is deprecated'),
+  },
+
+  methods: {
+    showHideHelp:       deprecate(G3WField.methods.showHideHelp,        '[G3W-SDK] baseInputMixin::showHideHelp. is deprecated'),
+    mobileChange:       deprecate(G3WField.methods.mobileChange,        '[G3W-SDK] baseInputMixin::mobileChange is deprecated'),
+    change:             deprecate(G3WField.methods.change,              '[G3W-SDK] baseInputMixin::change is deprecated'),
+    isVisible:          deprecate(G3WField.methods.isVisible,           '[G3W-SDK] baseInputMixin::isVisible is deprecated'),
+    createInputService: deprecate(G3WField.methods.createInputService,  '[G3W-SDK] baseInputMixin::createInputService is deprecated'),
+    getInputService:    deprecate(G3WField.methods.getInputService,     '[G3W-SDK] baseInputMixin::getInputService is deprecated'),
+  },
+
+  created:              deprecate(G3WField.created,                     '[G3W-SDK] baseInputMixin is deprecated'),
+  destroyed:            deprecate(G3WField.destroyed,                   '[G3W-SDK] baseInputMixin is deprecated'),
+};
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/fields.js@3.8
+ */
+g3wsdk.gui.vue.Mixins.fieldsMixin = {
+
+  components: G3WField.components,
+
+  methods: {
+    getType:            deprecate(G3WField.methods.getType,            '[G3W-SDK] fieldsMixin::getType is deprecated'),
+    getFieldService:    deprecate(G3WField.methods.getFieldService,    '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
+    getFieldType:       deprecate(G3WField.methods.getFieldType,       '[G3W-SDK] fieldsMixin::getFieldService is deprecated'),
+    isSimple:           deprecate(G3WField.methods.isSimple,           '[G3W-SDK] fieldsMixin::isSimple is deprecated'),
+    isLink:             deprecate(G3WField.methods.isLink,             '[G3W-SDK] fieldsMixin::isLink is deprecated'),
+    isImage:            deprecate(G3WField.methods.isImage,            '[G3W-SDK] fieldsMixin::isImage is deprecated'),
+    isPhoto:            deprecate(G3WField.methods.isPhoto,            '[G3W-SDK] fieldsMixin::isPhoto is deprecated'),
+    isVue:              deprecate(G3WField.methods.isVue,              '[G3W-SDK] fieldsMixin::isVue is deprecated'),
+    sanitizeFieldValue: deprecate(G3WField.methods.sanitizeFieldValue, '[G3W-SDK] fieldsMixin::sanitizeFieldValue is deprecated'),
+  },
+
+}
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/media.js@3.8
+ */
+g3wsdk.gui.vue.Mixins.mediaMixin = {
+  computed: {
+    filename: deprecate(function() {
+      return this.value ? this.value.split('/').pop() : this.value; }, '[G3W-SDK] mediaMixin::filename is deprecated'),
+  },
+  methods: {
+    isMedia:      deprecate(G3WField.methods.isMedia,                  '[G3W-SDK] mediaMixin::isMedia is deprecated'),
+    getMediaType: deprecate(G3WField.methods.getMediaType,             '[G3W-SDK] mediaMixin::getMediaType is deprecated'),
+  },
+};
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/mixins/geo.js@3.8
+ */
+g3wsdk.gui.vue.Mixins.geoMixin = {
+  methods: {
+    showLayer: deprecate(G3WField.methods._showLayer,                  '[G3W-SDK] geoMixin::showLayer is deprecated'),
+  },
+  created: deprecate(G3WField.created,                                 '[G3W-SDK] geoMixin is deprecated'),
+  created: deprecate(G3WField.beforeDestroy,                           '[G3W-SDK] geoMixin is deprecated'),
+};
+
+/**
+ * BACKCOMP (v3.x)
+ * 
+ * ref: src/utils/geo.js@3.8
+ */
 g3wsdk.core.geometry                       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.core.layer.geometry                 = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.gui.vue.Charts.ChartsFactory.CHARTS = { c3: { lineXY: C3XYLine } };

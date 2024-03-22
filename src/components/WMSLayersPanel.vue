@@ -9,18 +9,18 @@
     <!-- LOADING INDICATOR -->
     <bar-loader :loading="loading" />
 
-    <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
+    <h3 class="skin-color g3w-wms-panel-title">{{ title }}</h3>
 
     <helpdiv
       v-if     = "abstract"
       :message = "abstract"
     />
 
-    <!-- LAYERS NAME   -->
+    <!-- WMS LAYERS -->
     <label
       for = "g3w-wms-layers"
-      v-t = "'sidebar.wms.panel.label.layers'">
-    </label>
+      v-t = "'sidebar.wms.panel.label.layers'"
+    ></label>
     <select
       id        = "g3w-wms-layers"
       :multiple  = "true"
@@ -28,46 +28,46 @@
       v-select2 = "'selectedlayers'"
     >
       <option
-        v-for   = "layer in layers"
-        :key    = "layer.name"
-        :value  = "layer.name"
-      >{{ layer.title }}</option>
+        v-for  = "layer in layers"
+        :value = "layer.name"
+        :key   = "layer.name"
+      >{{layer.title}}</option>
     </select>
 
-    <!-- EPSG PROJECTIONS   -->
+    <!-- WMS PROJECTION -->
     <label
       for = "g3w-wms-projections"
-      v-t = "'sidebar.wms.panel.label.projections'">
-    </label>
+      v-t = "'sidebar.wms.panel.label.projections'"
+    ></label>
     <select
       id        = "g3w-wms-projections"
       v-select2 = "'epsg'"
     >
       <option
-        v-for   = "projection in projections"
-        :key    = "projection"
-        :value  = "projection"
-      >{{ projection }}</option>
+        v-for  = "projection in projections"
+        :key   = "projection"
+        :value = "projection"
+      >{{projection}}</option>
     </select>
 
-    <!-- NAME OF LAYER TO SAVE -->
+    <!-- WMS NAME -->
     <label
       for = "g3w-wms-layer-name"
-      v-t = "'sidebar.wms.panel.label.name'">
-    </label>
+      v-t = "'sidebar.wms.panel.label.name'"
+    ></label>
     <input
-      id      = "g3w-wms-layer-name"
       class   = "form-control"
+      id      = "g3w-wms-layer-name"
       v-model = "name"
     >
 
     <div
       v-if  = "added"
       class = "g3w-wms-external-panel-layer-added-message"
-      v-t   = "'sidebar.wms.layer_id_already_added'">
-    </div>
+      v-t   = "'sidebar.wms.layer_id_already_added'"
+    ></div>
 
-    <!-- CHOOSE LAYER POSITION (TOP | BOTTOM) -->
+    <!-- WMS POSITION -->
     <layerspositions
       @layer-position-change = "position=$event"
       :position              = "position"
@@ -78,10 +78,7 @@
       v-disabled  = "0 === selectedlayers.length"
       class       = "btn wms-add-layer-button sidebar-button skin-button"
     >
-      <i
-        style  = "font-weight: bold;"
-        :class = "g3wtemplate.getFontClass('plus-square')" >
-      </i>
+      <i style="font-weight: bold;" :class="g3wtemplate.getFontClass('plus-square')" ></i>
     </button>
 
   </div>

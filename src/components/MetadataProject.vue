@@ -29,19 +29,15 @@
     </div>
     <div class="col-sm-12 metadata-body tab-content">
       <div id="general" class="tab-pane fade in active">
-        <template>
-          <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
-            <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
-          </div>
-        </template>
+        <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
+          <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
+        </div>
       </div>
       <div id="spatial" class="tab-pane fade">
         <div>
-          <template>
-            <div v-for="(data, key) in state.groups.spatial" class="row row-info">
-              <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
-            </div>
-          </template>
+          <div v-for="(data, key) in state.groups.spatial" class="row row-info">
+            <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
+          </div>
         </div>
       </div>
       <div id="metadata_layers" class="tab-pane fade">

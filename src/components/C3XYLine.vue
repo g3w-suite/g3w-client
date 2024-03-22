@@ -9,16 +9,16 @@
   <div v-for="component in components">
     <span class="divider"></span>
     <component
-      @change-item="changeItem"
-      @change-items="changeItems"
-      @select-item="selectItem"
-      @select-all="selectAll"
-      @unselect-all="unselectAll"
-      @unselect-item="unselectItem"
-      :data="data"
-      :selectitems="selectitems"
-      :size="size"
-      :is="component">
+      @change-item   = "changeItem"
+      @change-items  = "changeItems"
+      @select-item   = "selectItem"
+      @select-all    = "selectAll"
+      @unselect-all  = "unselectAll"
+      @unselect-item = "unselectItem"
+      :data          = "data"
+      :selectitems   = "selectitems"
+      :size          = "size"
+      :is            = "component">
     </component>
   </div>
 </div>

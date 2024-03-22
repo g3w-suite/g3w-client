@@ -22,7 +22,10 @@
 
   export default {
     name: "select2",
-    props: ['forminput','autocompleteRequest'],
+    props: [
+      'forminput',
+      'autocompleteRequest'
+    ],
     mixins: [select2Mixin],
     methods: {
       emitChangeEvent(evt){
@@ -90,7 +93,3 @@
     }
   }
 </script>
-
-<style scoped>
-
-</style>

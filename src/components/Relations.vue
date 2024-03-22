@@ -4,25 +4,28 @@
 -->
 
 <template>
-  <div
-    class = "query-relations"
-  >
-    <div class="header skin-background-color lighten">
+  <div class="query-relations" style="overflow-y:auto">
+    <div
+      class = "header skin-background-color lighten"
+      style = "margin-bottom: 10px; border-radius: 4px; padding: 5px;"
+    >
       <div class="skin-color-dark">
+        <span style="font-size: 1.1em;" v-t:pre="'sdk.relations.list_of_relations_feature'"> </span>
         <span
-          style   = "font-size: 1.1em;"
-          v-t:pre = "'sdk.relations.list_of_relations_feature'"
-        > </span>
-        <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }}</span>
+          v-for = "info in featureInfo()"
+        ><b>{{ info.key }}</b>: {{ info.value }} </span>
       </div>
     </div>
-    <div class="query-relations-content">
+    <div
+      class = "query-relations-content"
+      style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px; grid-row-gap: 5px;"
+    >
       <div
-        v-for       = "relation in relations"
-        @click.stop = "showRelation(relation)"
-        class       = "skin-border-color relation-grid-item"
+        v-for  = "relation in relations"
+        @click = "showRelation(relation)"
+        class  = "skin-border-color relation-grid-item"
       >
-        <span class="skin-color g3w-long-text">{{ relation.name }}</span>
+        <span style="font-weight: bold; padding: 5px;" class="skin-color g3w-long-text">{{ relation.name }}</span>
       </div>
     </div>
   </div>
@@ -30,7 +33,7 @@
 
 <script>
 export default {
-
+  
   /** @since 3.8.6 */
   name: 'relations',
 
@@ -64,7 +67,7 @@ export default {
           }
           /** @FIXME add description */
           if (value && _.isString(value) && -1 === value.indexOf('/')) {
-            infoFeatures.push({ key: key, value: value });
+            infoFeatures.push({ key, value });
             index++;
           }
         });

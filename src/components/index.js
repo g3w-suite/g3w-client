@@ -8,58 +8,23 @@ import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
 import CatalogTristateTree from './CatalogTristateTree.vue';
-import Field from './Field.vue';
-import FieldG3W from './FieldG3W.vue';
-import FieldGallery from './FieldGallery.vue';
-import FieldGeo from './FieldGeo.vue';
-import FieldImage from './FieldImage.vue';
-import FieldLink from './FieldLink.vue';
-import FieldMedia from './FieldMedia.vue';
-import FieldText from './FieldText.vue';
-import FieldVue from './FieldVue.vue';
 import Form from './Form.vue';
 import FormAddon from './FormAddon.vue';
 import FormAddons from './FormAddons.vue';
 import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
+import G3WField from './G3WField.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
-import GlobalDateTime from './GlobalDateTime.vue';
 import GlobalDivider from './GlobalDivider.vue';
-import GlobalGallery from './GlobalGallery.vue';
-import GlobalGeo from './GlobalGeo.vue';
-import GlobalImage from './GlobalImage.vue';
-import GlobalLayerPositions from './GlobalLayerPositions.vue';
 import GlobalProgressBar from './GlobalProgressBar.vue';
-import GlobalRange from './GlobalRange.vue';
 import GlobalResize from './GlobalResize.vue';
 import GlobalResizeIcon from './GlobalResizeIcon.vue';
 import GlobalSkeleton from './GlobalSkeleton.vue';
 import GlobalTabs from './GlobalTabs.vue';
 import GlobalTabsNode from './GlobalTabsNode.vue';
 import HeaderItem from './HeaderItem.vue';
-import InputCheckbox from './InputCheckbox.vue';
-import InputColor from './InputColor.vue';
-import InputDateTimePicker from './InputDateTimePicker.vue';
-import InputFloat from './InputFloat.vue';
-import InputG3W from './InputG3W.vue';
-import InputG3WFormInputs from './InputG3WFormInputs.vue';
-import InputInteger from './InputInteger.vue';
-import InputLonLat from './InputLonLat.vue';
-import InputMedia from './InputMedia.vue';
-import InputPickLayer from './InputPickLayer.vue';
-import InputRadio from './InputRadio.vue';
-import InputRange from './InputRange.vue';
-import InputSelect from './InputSelect.vue';
-import InputSliderRange from './InputSliderRange.vue';
-import InputTable from './InputTable.vue';
-import InputTableBody from './InputTableBody.vue';
-import InputTableHeader from './InputTableHeader.vue';
-import InputText from './InputText.vue';
-import InputTextArea from './InputTextArea.vue';
-import InputHtml from './InputTextHtml.vue';
-import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
@@ -87,9 +52,6 @@ import QueryResultsAction from './QueryResultsAction.vue';
 import QueryResultsActionDownloadFormats from './QueryResultsActionDownloadFormats.vue';
 import QueryResultsActionInfoFormats from './QueryResultsActionInfoFormats.vue';
 import QueryResultsActionQueryPolygonCSVAttributes from './QueryResultsActionQueryPolygonCSVAttributes.vue';
-import QueryResultsActions from './QueryResultsActions.vue';
-import QueryResultsHeaderFeatureBody from './QueryResultsHeaderFeatureBody.vue';
-import QueryResultsAttributeFieldValue from './QueryResultsTableAttributeFieldValue.vue';
 import Relation from './Relation.vue';
 import Relations from './Relations.vue';
 import RelationsPage from './RelationsPage.vue';
@@ -129,62 +91,26 @@ export {
   CatalogLayersGroup,
   CatalogLayersLegendItems,
   CatalogTristateTree,
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   ChangeMapMenu,
-  Field,
-  FieldG3W,
-  FieldGallery,
-  FieldGeo,
-  FieldImage,
-  FieldLink,
-  FieldMedia,
-  FieldText,
-  FieldVue,
   Form,
   FormAddon,
   FormAddons,
   FormBody,
   FormFooter,
   FormHeader,
+  /** @since 3.9.0 */
+  G3WField,
   GlobalHelpDiv,
   GlobalBarLoader,
-  GlobalDateTime,
   GlobalDivider,
-  GlobalGallery,
-  GlobalGeo,
-  GlobalImage,
-  GlobalLayerPositions,
   GlobalProgressBar,
-  GlobalRange,
   GlobalResize,
   GlobalResizeIcon,
   GlobalSkeleton,
   GlobalTabs,
   GlobalTabsNode,
   HeaderItem,
-  InputCheckbox,
-  InputColor,
-  InputDateTimePicker,
-  InputFloat,
-  InputG3W,
-  InputG3WFormInputs,
-  InputInteger,
-  InputLonLat,
-  InputMedia,
-  InputPickLayer,
-  InputRadio,
-  InputRange,
-  InputSelect,
-  InputSliderRange,
-  InputTable,
-  InputTableBody,
-  InputTableHeader,
-  InputText,
-  InputTextArea,
-  InputHtml,
-  InputUnique,
   LayerOpacityPicker,
   Map,
   MapAddLayer,
@@ -211,9 +137,6 @@ export {
   QueryResultsActionDownloadFormats,
   QueryResultsActionInfoFormats,
   QueryResultsActionQueryPolygonCSVAttributes,
-  QueryResultsActions,
-  QueryResultsHeaderFeatureBody,
-  QueryResultsAttributeFieldValue,
   Relation,
   Relations,
   RelationsPage,

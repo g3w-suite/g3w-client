@@ -25,17 +25,11 @@ import ComponentsRegistry from 'store/components';
 
 //components
 import App from 'components/App.vue';
-import ImageComponent from 'components/GlobalImage.vue';
-import GalleryImagesComponent from 'components/GlobalGallery.vue';
-import GeospatialComponet from 'components/GlobalGeo.vue';
 import Skeleton from 'components/GlobalSkeleton.vue';
 import BarLoader from 'components/GlobalBarLoader.vue';
 import Progressbar from 'components/GlobalProgressBar.vue';
 import HelpDiv from 'components/GlobalHelpDiv.vue';
-import Resize from 'components/GlobalResize.vue'
-import LayerPositions from 'components/GlobalLayerPositions.vue';
-import DateTime from 'components/GlobalDateTime.vue';
-import Range from 'components/GlobalRange.vue';
+import Resize from 'components/GlobalResize.vue';
 import ResizeIcon from 'components/GlobalResizeIcon.vue';
 import Tabs from 'components/GlobalTabs.vue';
 import Divider from 'components/GlobalDivider.vue';
@@ -70,23 +64,16 @@ const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
 
-
 /**
  * Install global components
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
  */
-Vue.component(ImageComponent.name, ImageComponent);
-Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
-Vue.component(GeospatialComponet.name, GeospatialComponet);
 Vue.component(BarLoader.name, BarLoader);
 Vue.component(Progressbar.name, Progressbar);
 Vue.component(Skeleton.name, Skeleton);
 Vue.component(HelpDiv.name, HelpDiv);
 Vue.component(Resize.name, Resize);
-Vue.component(LayerPositions.name, LayerPositions);
-Vue.component(DateTime.name, DateTime);
-Vue.component(Range.name, Range);
 Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
@@ -1132,11 +1119,12 @@ ApplicationService.init()
     app.on('ready', () =>  ApplicationService.postBootstrap());
     app.init();
   })
-  .catch(({ error=null, language }) => {
+  .catch((e) => {
+    let { error=null, language } = e;
     if (error) {
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
-    console.error(error);
+    console.error(e || error);
     ApplicationTemplate.fail({ error });
   });

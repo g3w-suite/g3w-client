@@ -59,14 +59,26 @@
 </template>
 
 <script>
-import TableBody from 'components/TableBody.vue';
-import SelectRow from 'components/TableSelectRow.vue';
+import TableBody       from 'components/TableBody.vue';
+import SelectRow       from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import Field from 'components/FieldG3W.vue';
-import GUI from 'services/gui';
+import G3WField        from 'components/G3WField.vue';
+import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
 const { debounce } = require('utils');
+
+Object
+    .entries({
+      TableBody,
+      SelectRow,
+      G3wTableToolbar,
+      G3WField,
+      GUI,
+      resizeMixin,
+      debounce,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 let dataTable;
 let fieldsComponents = [];
@@ -87,6 +99,7 @@ export default {
     }
   },
   components: {
+    'g3w-field': G3WField,
     TableBody
   },
   methods: {
@@ -136,57 +149,47 @@ export default {
       //trDomeElements
       trDomeElements.each((rowElement, index) => {
         $(rowElement).css('cursor', 'pointer');
-        if (this.state.features.length) {
-          const feature = this.state.features[index];
-          const hasGeometry = !!feature.geometry;
-          $(rowElement).addClass('feature_attribute');
-          feature.selected && $(rowElement).addClass('selected');
-          $(rowElement).on('click', () => {
-            if (hasGeometry) {
-              this.zoomAndHighLightFeature(feature);
-            }
-          });
-          $(rowElement).on('mouseover', () => {
-            if (hasGeometry) {
-              this.zoomAndHighLightFeature(feature, false);
-            }
-          });
-          $(rowElement)
-            .children()
-            .each((index, element) => {
-              const header = this.state.headers[index];
-              let contentDOM;
-              if (header === null) {
-                const SelectRowClass = Vue.extend(SelectRow);
-                const SelectRowInstance = new SelectRowClass({
-                  propsData: {
-                    feature
-                  }
-                });
-                SelectRowInstance.$on('selected', feature => this.$options.service.addRemoveSelectedFeature(feature));
-                this.$watch(
-                  () => feature.selected,
-                  function (selected) {
-                    selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
-                  }
-                );
-                contentDOM = SelectRowInstance.$mount().$el;
-              } else {
-                const fieldClass = Vue.extend(Field);
-                const fieldInstance = new fieldClass({
-                  propsData: {
-                    state: {
-                      value: feature.attributes[header.name]
-                    }
-                  }
-                });
-                fieldInstance.$mount();
-                fieldsComponents.push(fieldInstance);
-                contentDOM = fieldInstance.$el
-              }
-              $(element).html(contentDOM);
-          })
+        if (!this.state.features.length) {
+          return;
         }
+        const feature = this.state.features[index];
+        const hasGeometry = !!feature.geometry;
+        $(rowElement).addClass('feature_attribute');
+        feature.selected && $(rowElement).addClass('selected');
+        $(rowElement).on('click',     ()=> hasGeometry && this.zoomAndHighLightFeature(feature));
+        $(rowElement).on('mouseover', () => hasGeometry && this.zoomAndHighLightFeature(feature, false));
+        $(rowElement).children().each((index, element)=> {
+          const header = this.state.headers[index];
+          let contentDOM;
+          if (header === null) {
+            const SelectRowClass = Vue.extend(SelectRow);
+            const SelectRowInstance = new SelectRowClass({
+              propsData: {
+                feature
+              }
+            });
+            SelectRowInstance.$on('selected', feature => this.$options.service.addRemoveSelectedFeature(feature));
+            this.$watch(
+              () => feature.selected,
+              function(selected) {
+                selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
+              }
+            );
+            contentDOM = SelectRowInstance.$mount().$el;
+          } else {
+            const fieldClass = Vue.extend(G3WField);
+            const fieldInstance = new fieldClass({
+              propsData: {
+                state: {
+                  value: feature.attributes[header.name]
+                },
+              }
+            });
+            fieldInstance.$mount();
+            fieldsComponents.push(fieldInstance);
+            contentDOM = fieldInstance.$el
+          }
+        });
       });
       setTimeout(()=> this.reloadLayout(), 0)
     },

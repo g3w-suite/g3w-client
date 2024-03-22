@@ -4,30 +4,36 @@
 -->
 
 <template>
-   <span v-if="show" @contextmenu.prevent.stop=""
-      @click.stop="clickAction(action, layer, feature, featureIndex, $event)"
-      v-download="action.download"
-      :class="{'toggled': action.state && action.state.toggled[featureIndex] }"
-      class="action-button"
-      v-t-tooltip:top.create="action.hint">
-      <span
-        style="padding: 2px;"
-        :style="action.style"
-        :class="`action-button-icon ${action.class}`">
-      </span>
-    </span>
+   <span
+    v-if                      = "show"
+    @contextmenu.prevent.stop = ""
+    @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
+    v-download                = "action.download"
+    :class                    = "{'toggled': action.state && action.state.toggled[featureIndex] }"
+    class                     = "action-button"
+    v-t-tooltip:top.create="action.hint"
+  >
+    <span
+      style  = "padding: 2px;"
+      :style = "action.style"
+      :class = "`action-button-icon ${action.class}`"
+    ></span>
+  </span>
 </template>
 
 <script>
   const { t } = require('core/i18n/i18n.service');
 
   export default {
+
     name: "action",
+
     data() {
       return {
         show: true
       }
     },
+
     props: {
       featureIndex: {
         type: Number
@@ -46,6 +52,7 @@
         required: true
       },
     },
+
     methods: {
       async clickAction(action, layer, feature, featureIndex, event) {
         await this.trigger(action, layer, feature, featureIndex);
@@ -62,14 +69,29 @@
         this.$emit('action-clicked', action)
       }
     },
-    async created(){
-      if (this.action.init){
-        this.action.init({layer: this.layer, feature: this.feature, index:this.featureIndex, action:this.action});
+
+    async created() {
+      if (this.action.init) {
+        this.action.init({
+          layer:   this.layer,
+          feature: this.feature,
+          index:   this.featureIndex,
+          action:  this.action,
+        });
       }
-      if (typeof this.action.condition === 'function') {
-        const show = this.action.condition({layer:this.layer, feature:this.feature});
-        this.show = show instanceof Promise ? await show: show;
+      if ('function' === typeof this.action.condition) {
+        const show = this.action.condition({
+          layer:   this.layer,
+          feature: this.feature,
+        });
+        this.show = show instanceof Promise ? await show : show;
       }
     },
+
+    async mounted() {
+      await this.$nextTick();
+      $('.action-button[data-toggle="tooltip"]').tooltip();
+    },
+
   }
 </script>
