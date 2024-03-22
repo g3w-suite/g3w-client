@@ -1058,4 +1058,7 @@ export default {
     font-weight: bold;
     margin-top: 10px;
   }
+  input.form-control.column-search {
+  font-weight: normal;
+}
 </style>
