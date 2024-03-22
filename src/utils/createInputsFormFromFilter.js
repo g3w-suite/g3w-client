@@ -21,8 +21,8 @@ export async function createInputsFormFromFilter(state) {
 
     const input = state.forminputs[i];
 
-    console.assert('ValueRelation'     === input.widget_type ? ('selectfield' === type && !input.dependance_strict && input.options.layer_id) : true);
-    console.assert('RelationReference' === input.widget_type ? ('selectfield' === type && !input.dependance_strict && !input.options.layer_id && input.options.relation_reference) : true);
+    console.assert('ValueRelation'     === input.widget_type ? ('selectfield' === input.type && !input.dependance_strict && input.options.layer_id) : true, 'Invalid ValueRelation widget');
+    console.assert('RelationReference' === input.widget_type ? ('selectfield' === input.type && !input.dependance_strict && !input.options.layer_id && input.options.relation_reference) : true, 'Invalid RelationReference widget');
 
     try {
 
