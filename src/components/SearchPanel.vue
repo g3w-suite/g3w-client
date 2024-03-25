@@ -105,7 +105,7 @@
               <span>{{ input.label || input.attribute }}</span>
               <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
-            <div :ref="'search_datetime_' + input.id" class="input-group date">
+            <div class="input-group date">
               <input :id="input.id" type='text' class="form-control" />
               <span class="input-group-addon skin-color">
                 <span :class="g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
@@ -164,7 +164,6 @@ import ApplicationState                      from 'store/application-state';
 import CatalogLayersStoresRegistry           from 'store/catalog-layers';
 import ApplicationService                    from 'services/application';
 import DataRouterService                     from 'services/data';
-import { getUniqueDomId }                    from 'utils/getUniqueDomId';
 import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
 import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
@@ -422,9 +421,7 @@ export default {
       input.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(input.options.format.fieldformat);
       input.options.format.displayformat = convertQGISDateTimeFormatToMoment(input.options.format.displayformat);
 
-      const id = this.$refs['search_datetime_' + input.id].id = this.$refs['search_datetime_' + input.id].id || `search_datetime_${getUniqueDomId()}`;
-
-      $('#' + id).datetimepicker({
+      $('#' + input.id).datetimepicker({
         defaultDate:       null,
         format:            input.options.format.displayformat,
         ignoreReadonly:    true,
@@ -435,11 +432,11 @@ export default {
         locale:            ApplicationState.language || 'en',
       });
 
-      $('#' + id).on("dp.change", () => {
+      $('#' + input.id).on("dp.change", () => {
         const newDate = $(`#${input.id}`).val();
-        input.value = _.isEmpty(_.trim(newDate))
-          ? null
-          : moment(newDate, input.options.format.displayformat).format(input.options.format.fieldformat);
+        input.value = newDate.trim()
+          ? moment(newDate, input.options.format.displayformat).format(input.options.format.fieldformat)
+          : null;
         this.changeInput(input);
       });
 
