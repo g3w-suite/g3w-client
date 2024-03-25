@@ -1,4 +1,4 @@
-import { response as ResponseParser } from 'utils/parsers';
+import { ResponseParser } from 'utils/parsers';
 
 
 /**

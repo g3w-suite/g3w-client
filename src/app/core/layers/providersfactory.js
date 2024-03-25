@@ -2,6 +2,7 @@ import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'app/constant';
 import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
+import { ResponseParser }          from 'utils/parsers';
 import { handleQueryResponse }     from 'utils/handleQueryResponse';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
@@ -14,7 +15,6 @@ const {
   toRawType,
   getTimeoutPromise,
 }                                  = require('utils');
-const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
 const Filter                       = require('core/layers/filter/filter');
@@ -91,7 +91,7 @@ class DataProvider extends G3WObject {
     return getTimeoutPromise({
       resolve,
       data: {
-        data: Parsers.response.utils.getTimeoutData(layers),
+        data: [].concat(layers).map(layer => ({ layer, rawdata: 'timeout' })),
         query,
       },
     });
@@ -233,7 +233,7 @@ const Providers = {
 
         if (response.result) {
           return {
-            data: Parsers.response.get('application/json')({
+            data: ResponseParser.get('application/json')({
               layers: [this._layer],
               response: response.vector.data,
               projections: this._projections,
@@ -454,8 +454,7 @@ const Providers = {
           }
           const features = [];
           const lockIds  = featurelocks.map(lock => lock.featureid);
-          Parsers[this._layer.getType()]
-            .get({ type: 'json'})(
+          ResponseParser.get(`g3w-${ this._layer.getType() }/json`)(
               vector.data,
               ('NoGeometry' === vector.geometrytype) ? {} : { crs: this._layer.getCrs(), /*mapCrs: this._layer.getMapCrs()*/ } 
             )
