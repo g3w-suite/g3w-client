@@ -1,8 +1,5 @@
 import { SEARCH_ALLVALUE }         from 'app/constant';
-// import CatalogLayersStoresRegistry from 'store/catalog-layers';
-// import DataRouterService           from 'services/data';
 import { toRawType }               from 'utils/toRawType';
-// import { createFilterFormInputs }  from 'utils/createFilterFormInputs';
 import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
 
 /**
@@ -12,8 +9,6 @@ import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
  *
  */
 export async function createInputsFormFromFilter(state) {
-
-  // const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
   console.log(state);
 
@@ -26,31 +21,8 @@ export async function createInputsFormFromFilter(state) {
 
     try {
 
-      // value-relation (select input values from `layer_id`)
-      // if ('ValueRelation' === input.widget_type) {
-      //   const response = await DataRouterService.getData('search:features', {
-      //     inputs: {
-      //       layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
-      //       search_endpoint,
-      //       filter: createFilterFormInputs({
-      //         layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
-      //         search_endpoint,
-      //         inputs: [{
-      //           value: await getDataForSearchInput({ state, field: input.attribute }),
-      //           attribute: input.value,
-      //           logicop: 'OR',
-      //           operator: 'eq'
-      //         }]
-      //       }),
-      //       ordering: input.options.key
-      //     },
-      //     outputs: false
-      //   });
-      //   input.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({ key: f.get(input.options.key), value: f.get(input.value) }));
-      // }
-
-      // Relation reference (`fformatter`)
-      if ('RelationReference' === input.widget_type || 'ValueRelation' === input.widget_type) {
+      // field is part of a relationship (`fformatter`)
+      if (['RelationReference', 'ValueRelation'].includes(input.widget_type)) {
         const response       = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
         input.values = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
       }
