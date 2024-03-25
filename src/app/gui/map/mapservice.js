@@ -1761,7 +1761,7 @@ proto._setupViewer = function(width, height) {
     x: 1*searchParams.get('x'),
     y: 1*searchParams.get('y')
   };
-  let promise;
+  let promise = Promise.resolve();
   if (zoom_to_fid) {
     promise = this.zoomToFid(zoom_to_fid);
   } else if (zoom_to_features) {
