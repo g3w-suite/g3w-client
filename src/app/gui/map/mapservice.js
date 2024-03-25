@@ -176,18 +176,24 @@ class OlMapViewer {
    * @FIXME add description
    */
   goToRes(coordinates, options = {}) {
-    const view       = this.map.getView();
-    const animate    = options.animate || true;
-    const resolution = options.resolution || view.getResolution();
-    if (animate) {
-      view.animate(
-        { duration: 200, center: coordinates },
-        { duration: 200, resolution }
-      );
-    } else {
-      view.setCenter(coordinates);
-      view.setResolution(resolution);
-    }
+    return new Promise((resolve) => {
+      const view       = this.map.getView();
+      const animate    = options.animate || true;
+      const resolution = options.resolution || view.getResolution();
+      const key = view.on('change:center', () => {
+        ol.Observable.unByKey(key);
+        setTimeout(resolve);
+      });
+      if (animate) {
+        view.animate(
+          { duration: 200, center: coordinates },
+          { duration: 200, resolution }
+        );
+      } else {
+        view.setCenter(coordinates);
+        view.setResolution(resolution);
+      }
+    })
   }
 
   /**
@@ -376,6 +382,16 @@ function MapService(options={}) {
    * Are used to show selection Features and/or highlight Layer feature
    */
   this.defaultsLayers = {
+    mapcenter: new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: new ol.style.Style({
+        image: new ol.style.Icon({
+          opacity: 1,
+          src: '/static/client/images/mapcentermarker.svg',
+          scale: 0.8
+        }),
+      })
+    }),
     _style: {
       highlightLayer: {
         color: undefined
@@ -1199,7 +1215,9 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|') {
       }
     });
     const feature = data[0] && data[0].features[0];
-    feature && this.zoomToFeatures([feature]);
+    if (feature) {
+      this.zoomToFeatures([feature]);
+    }
   }
 };
 
@@ -1691,42 +1709,33 @@ proto._resetView = function() {
   this.viewer.map.setView(view);
 };
 
-proto._calculateViewOptions = function({project, width, height}={}) {
-  const searchParams = new URLSearchParams(location.search);
-  const map_extent = searchParams.get('map_extent');
-  const zoom_to_fid = searchParams.get('zoom_to_fid');
-  const zoom_to_features = searchParams.get('ztf'); // zoom to features
-  const lat_lon = searchParams.get('lat') && searchParams.get('lon') && {
-    lat: 1*searchParams.get('lat'),
-    lon:1*searchParams.get('lon')
-  };
-  const x_y = searchParams.get('x') && searchParams.get('y') && {
-    x: 1*searchParams.get('x'),
-    y: 1*searchParams.get('y')
-  };
-  if (zoom_to_fid) this.zoomToFid(zoom_to_fid);
-  else if (zoom_to_features) this.handleZoomToFeaturesUrlParameter({zoom_to_features});
-  else if (lat_lon && !Number.isNaN(lat_lon.lat) && !Number.isNaN(lat_lon.lon)) {
-    setTimeout(()=>{
-      const geometry = new ol.geom.Point(ol.proj.transform([lat_lon.lon, lat_lon.lat], 'EPSG:4326', this.getEpsg()));
-      if (geometry.getExtent())
-      this.zoomToGeometry(geometry)
-    })
-  } else if (x_y && !Number.isNaN(x_y.x) && !Number.isNaN(x_y.y))
-    setTimeout(()=> {
-      const geometry = new ol.geom.Point([x_y.x, x_y.y]);
-      this.zoomToGeometry(geometry);
-    });
-  const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
-  const projection = this.getProjection();
-  const extent = project.state.extent;
-  const maxxRes = ol.extent.getWidth(extent) / width;
-  const maxyRes = ol.extent.getHeight(extent) / height;
+/**
+ *
+ * @param project
+ * @param width
+ * @param height
+ * @param { Array } map_extent @since 3.10.0 In case of true, use url parameter to set view options
+ * @return {{extent: *, maxResolution: number, center: *, projection: *, resolution: number}}
+ * @private
+ */
+proto._calculateViewOptions = function({
+  project,
+  width,
+  height,
+  map_extent,
+} = {}) {
+
+
+  const initextent    = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
+  const projection    = this.getProjection();
+  const extent        = project.state.extent;
+  const maxxRes       = ol.extent.getWidth(extent) / width;
+  const maxyRes       = ol.extent.getHeight(extent) / height;
   const maxResolution = Math.max(maxxRes,maxyRes);
-  const initxRes = ol.extent.getWidth(initextent) / width;
-  const inityRes = ol.extent.getHeight(initextent) / height;
-  const resolution = Math.max(initxRes,inityRes);
-  const center = ol.extent.getCenter(initextent);
+  const initxRes      = ol.extent.getWidth(initextent) / width;
+  const inityRes      = ol.extent.getHeight(initextent) / height;
+  const resolution    = Math.max(initxRes,inityRes);
+  const center        = ol.extent.getCenter(initextent);
   return {
     projection,
     center,
@@ -1738,12 +1747,62 @@ proto._calculateViewOptions = function({project, width, height}={}) {
 
 // set view based on project config
 proto._setupViewer = function(width, height) {
+  const searchParams     = new URLSearchParams(location.search);
+  const showmarker       = 1*(searchParams.get('showmarker') || 0); /** @since 3.10.0 0 or 1. Show marker on map center*/
+  const iframetype       = (searchParams.get('iframetype')); /** @since 3.10.0 type of iframe: map (only map, no control)*/
+  const map_extent       = searchParams.get('map_extent');
+  const zoom_to_fid      = searchParams.get('zoom_to_fid');
+  const zoom_to_features = searchParams.get('ztf'); // zoom to features
+  const lat_lon = searchParams.get('lat') && searchParams.get('lon') && {
+    lat: 1*searchParams.get('lat'),
+    lon: 1*searchParams.get('lon')
+  };
+  const x_y = searchParams.get('x') && searchParams.get('y') && {
+    x: 1*searchParams.get('x'),
+    y: 1*searchParams.get('y')
+  };
+  let promise;
+  if (zoom_to_fid) {
+    promise = this.zoomToFid(zoom_to_fid);
+  } else if (zoom_to_features) {
+    promise = this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
+  } else if (lat_lon && !Number.isNaN(lat_lon.lat) && !Number.isNaN(lat_lon.lon)) {
+    promise = new Promise((resolve) => {
+      setTimeout(() => {
+        const geometry = new ol.geom.Point(ol.proj.transform([lat_lon.lon, lat_lon.lat], 'EPSG:4326', this.getEpsg()));
+        if (geometry.getExtent()) {
+          this.zoomToGeometry(geometry).then(resolve);
+        }
+      })
+    })
+  } else if (x_y && !Number.isNaN(x_y.x) && !Number.isNaN(x_y.y)) {
+    promise = new Promise((resolve) => {
+      setTimeout(() => {
+        const geometry = new ol.geom.Point([x_y.x, x_y.y]);
+        this.zoomToGeometry(geometry).then(resolve);
+      });
+    })
+  }
+
+  //In the case of show marker, show marker on a map center
+  if (1 === showmarker) {
+    promise.then(() => {
+      this.defaultsLayers.mapcenter.getSource().addFeature(new ol.Feature({ geometry: new ol.geom.Point(this.getCenter()) }))
+    })
+  }
+
+  //in case only map, remove al map controls (empty object)
+  if ('map' === iframetype) {
+    this.config.mapcontrols = {};
+  }
+
   this.viewer = new OlMapViewer({
     id: this.target,
     view: this._calculateViewOptions({
       width,
       height,
-      project: this.project
+      project: this.project,
+      map_extent, /** @since 3.10.0 */
     })
   });
   this._setSettings();
@@ -1912,20 +1971,27 @@ proto._setupVectorLayers = function() {
 };
 
 proto._setUpDefaultLayers = function() {
-  // follow the order that i want
-  this.getMap().addLayer(this.defaultsLayers.highlightLayer);
+  // follow the order that I want
+  this.getMap().addLayer(this.defaultsLayers.mapcenter);
   this.getMap().addLayer(this.defaultsLayers.selectionLayer);
+  this.getMap().addLayer(this.defaultsLayers.highlightLayer);
 };
 
 /**
  * Method to set Default layers (selectionLayer, and highlightLayer)
- * always on top of layers stack of map to be always visible
+ * always on top of layer stack of a map to be always visible
  */
 proto.moveDefaultLayersOnTop = function(zindex) {
+  this.setZIndexLayer({
+    layer: this.defaultsLayers.mapcenter,
+    zindex: zindex + 1
+  });
+
   this.setZIndexLayer({
     layer: this.defaultsLayers.highlightLayer,
     zindex: zindex + 1
   });
+
   this.setZIndexLayer({
     layer: this.defaultsLayers.selectionLayer,
     zindex: zindex + 2
@@ -1933,8 +1999,10 @@ proto.moveDefaultLayersOnTop = function(zindex) {
 };
 
 proto.removeDefaultLayers = function() {
+  this.defaultsLayers.mapcenter.getSource().clear();
   this.defaultsLayers.highlightLayer.getSource().clear();
   this.defaultsLayers.selectionLayer.getSource().clear();
+  this.getMap().removeLayer(this.defaultsLayers.mapcenter);
   this.getMap().removeLayer(this.defaultsLayers.highlightLayer);
   this.getMap().removeLayer(this.defaultsLayers.selectionLayer);
 };
@@ -2162,8 +2230,8 @@ proto.goTo = function(coordinates,zoom) {
   this.viewer.goTo(coordinates, options);
 };
 
-proto.goToRes = function(coordinates, resolution) {
-  this.viewer.goToRes(coordinates, {
+proto.goToRes = async function(coordinates, resolution) {
+  await this.viewer.goToRes(coordinates, {
     resolution
   });
 };
@@ -2219,36 +2287,42 @@ proto.highlightFeatures = function(features, options={}) {
 
 proto.zoomToGeometry = function(geometry, options={highlight: false}) {
   const extent = geometry && geometry.getExtent();
-  const {highlight} = options;
-  if (highlight && extent) options.highLightGeometry = geometry;
-  extent && this.zoomToExtent(extent, options);
+  const { highlight } = options;
+  if (highlight && extent) {
+    options.highLightGeometry = geometry;
+  }
+  return extent ? this.zoomToExtent(extent, options) : Promise.resolve();
 };
 
 proto.zoomToFeatures = function(features, options={highlight: false}) {
   let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
-  if (highlight && extent) options.highLightGeometry = geometry;
-  return extent && this.zoomToExtent(extent, options) || Promise.resolve();
+  if (highlight && extent) {
+    options.highLightGeometry = geometry;
+  }
+  return extent ? this.zoomToExtent(extent, options) : Promise.resolve();
 };
 
 /**
- * @param   { ol.extent }                                          extent
+ * @param   { ol.extet }                                          extent
  * @param   {{ force?: boolean, highLightGeometry?: ol.geometry }} [options={}]
  * @returns { Promise<void> }
  */
 proto.zoomToExtent = function(extent, options={}) {
-  this.goToRes(
-    ol.extent.getCenter(extent),
-    this.getResolutionForZoomToExtent(extent, { force: options.force || false  })
-  );
-  if (options.highLightGeometry) {
-    return this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
-  }
-  return Promise.resolve();
+  return new Promise(async (resolve) => {
+    await this.goToRes(
+      ol.extent.getCenter(extent),
+      this.getResolutionForZoomToExtent(extent, { force: options.force || false  })
+    );
+    if (options.highLightGeometry) {
+      await this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
+    }
+    resolve();
+  })
 };
 
 proto.zoomToProjectInitExtent = function() {
-  this.zoomToExtent(this.project.state.initextent);
+  return this.zoomToExtent(this.project.state.initextent);
 };
 
 /**
@@ -2355,7 +2429,7 @@ proto.setSelectionLayerVisible = function(visible=true) {
 };
 
 proto.highlightGeometry = function(geometryObj, options = {}) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const {color} = options;
     this.clearHighlightGeometry();
     this.setDefaultLayerStyle('highlightLayer', {
@@ -2380,14 +2454,16 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
     const duration = options.duration || ANIMATION.duration;
     let geometry;
-    if (geometryObj instanceof ol.geom.Geometry) geometry = geometryObj;
+    if (geometryObj instanceof ol.geom.Geometry) {
+      geometry = geometryObj;
+    }
     else {
       const format = new ol.format.GeoJSON;
       geometry = format.readGeometry(geometryObj);
     }
     if (zoom) {
       const extent = geometry.getExtent();
-      this.zoomToExtent(extent);
+      await this.zoomToExtent(extent);
     }
     if (highlight) {
       const feature = new ol.Feature({
@@ -2397,9 +2473,11 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       customStyle && highlightLayer.setStyle(customStyle);
       highlightLayer.getSource().addFeature(feature);
       if (hide) {
-        const callback = ()=> {
+        const callback = () => {
           highlightLayer.getSource().clear();
-          customStyle && highlightLayer.setStyle(defaultStyle);
+          if (customStyle) {
+            highlightLayer.setStyle(defaultStyle);
+          }
           resolve();
         };
         hide(callback);
@@ -2408,13 +2486,17 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
           animatingHighlight = true;
           setTimeout(() => {
             highlightLayer.getSource().clear();
-            customStyle && highlightLayer.setStyle(defaultStyle);
+            if (customStyle) {
+              highlightLayer.setStyle(defaultStyle);
+            }
             animatingHighlight = false;
             resolve();
           }, duration)
         }
       }
-    } else resolve()
+    } else {
+      resolve()
+    }
   })
 };
 
