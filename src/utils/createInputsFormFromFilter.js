@@ -16,15 +16,12 @@ export async function createInputsFormFromFilter(state) {
 
     const input = state.forminputs[i];
 
-    console.assert('ValueRelation'     === input.widget_type ? ('selectfield' === input.type && !input.dependance_strict && input.options.layer_id) : true, 'Invalid ValueRelation widget');
-    console.assert('RelationReference' === input.widget_type ? ('selectfield' === input.type && !input.dependance_strict && !input.options.layer_id && input.options.relation_reference) : true, 'Invalid RelationReference widget');
-
     try {
 
       // field is part of a relationship (`fformatter`)
-      if (['RelationReference', 'ValueRelation'].includes(input.widget_type)) {
-        const response       = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
-        input.values = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
+      if (!input.dependance_strict && ['RelationReference', 'ValueRelation'].includes(input.widget_type)) {
+        const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
+        input.values   = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
       }
 
       /** @TODO should we check input.type ? */
