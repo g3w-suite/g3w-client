@@ -13,7 +13,7 @@ import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
  */
 export async function createInputsFormFromFilter(state) {
 
-  const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
+  // const search_endpoint = state.search_endpoint || state.search_layers[0].getSearchEndPoint();
 
   console.log(state);
 
@@ -27,30 +27,30 @@ export async function createInputsFormFromFilter(state) {
     try {
 
       // value-relation (select input values from `layer_id`)
-      if ('ValueRelation' === input.widget_type) {
-        const response = await DataRouterService.getData('search:features', {
-          inputs: {
-            layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
-            search_endpoint,
-            filter: createFilterFormInputs({
-              layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
-              search_endpoint,
-              inputs: [{
-                value: await getDataForSearchInput({ state, field: input.attribute }),
-                attribute: input.value,
-                logicop: 'OR',
-                operator: 'eq'
-              }]
-            }),
-            ordering: input.options.key
-          },
-          outputs: false
-        });
-        input.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({ key: f.get(input.options.key), value: f.get(input.value) }));
-      }
+      // if ('ValueRelation' === input.widget_type) {
+      //   const response = await DataRouterService.getData('search:features', {
+      //     inputs: {
+      //       layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
+      //       search_endpoint,
+      //       filter: createFilterFormInputs({
+      //         layer: CatalogLayersStoresRegistry.getLayerById(input.options.layer_id),
+      //         search_endpoint,
+      //         inputs: [{
+      //           value: await getDataForSearchInput({ state, field: input.attribute }),
+      //           attribute: input.value,
+      //           logicop: 'OR',
+      //           operator: 'eq'
+      //         }]
+      //       }),
+      //       ordering: input.options.key
+      //     },
+      //     outputs: false
+      //   });
+      //   input.values = (response.data && response.data[0] && response.data[0].features || []).map(f => ({ key: f.get(input.options.key), value: f.get(input.value) }));
+      // }
 
       // Relation reference (`fformatter`)
-      if ('RelationReference' === input.widget_type) {
+      if ('RelationReference' === input.widget_type || 'ValueRelation' === input.widget_type) {
         const response       = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
         input.values = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
       }
