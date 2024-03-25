@@ -413,6 +413,7 @@ export default {
     no: "Nu",
     back: "Înapoi",
     backto: "Înapoi la ",
+    help: "Ajutor",
     changemap: "Schimbare Hartă",
     change_session: "Schimbați sesiunea",
     component: "Componentă Generică",

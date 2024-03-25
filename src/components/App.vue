@@ -91,6 +91,14 @@
               @show-custom-modal-content="showCustomModalContent"
             />
 
+            <!-- READ THE DOCS -->
+            <li>
+              <a target="_blank" :href="docs_url">
+                <i :class="g3wtemplate.getFontClass('unknow')" aria-hidden="true"></i>
+                <span v-t="'help'"></span>
+              </a>
+            </li>
+
             <!-- CHANGE MAP -->
             <li v-if="hasRelatedMaps" id="changemaps" class="dropdown user">
               <a href="#" @click="openChangeMapMenu" class="dropdown-toggle" data-toggle="dropdown">
@@ -1162,6 +1170,15 @@ export default {
       const main_title = this.appconfig.main_map_title;
       const group_name = this.appconfig.group.name || this.appconfig.group.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
+    },
+
+    
+    /**
+     * @since 3.10.0
+     */
+     docs_url() {
+      const version = window.initConfig.version.split('-')[0].split('.');
+      return `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`
     },
 
   },

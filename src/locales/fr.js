@@ -412,6 +412,7 @@ export default {
     no: "No",
     back:"Retour",
     backto: "Retour à ",
+    help: "Aide",
     changemap: "Changer de carte",
     change_session: "Changer de séance",
     component: "Composant générique",

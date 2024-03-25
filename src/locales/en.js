@@ -413,6 +413,7 @@ export default {
     no: "No",
     back: "Back",
     backto: "Back to ",
+    help: "Help",
     changemap: "Change Map",
     change_session: "Change Session",
     component: "Generic Component",
