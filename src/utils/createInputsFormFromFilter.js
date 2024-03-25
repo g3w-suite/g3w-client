@@ -1,8 +1,8 @@
 import { SEARCH_ALLVALUE }         from 'app/constant';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import DataRouterService           from 'services/data';
+// import CatalogLayersStoresRegistry from 'store/catalog-layers';
+// import DataRouterService           from 'services/data';
 import { toRawType }               from 'utils/toRawType';
-import { createFilterFormInputs }  from 'utils/createFilterFormInputs';
+// import { createFilterFormInputs }  from 'utils/createFilterFormInputs';
 import { getDataForSearchInput }   from 'utils/getDataForSearchInput';
 
 /**
