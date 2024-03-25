@@ -480,7 +480,7 @@ export default {
       link_button: "Deschide"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Nu te-am putut localiza"
       },
       geocoding: {
