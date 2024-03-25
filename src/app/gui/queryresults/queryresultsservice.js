@@ -1535,7 +1535,7 @@ class QueryResultsService extends G3WObject {
         ({layer, type, data}= {}) => {
           return CatalogLayersStoresRegistry
             .getLayerById(layer.id)
-            .getDownloadFilefromDownloadDataType(type, { data }) ||
+            .downloadAsFile(type, { data }) ||
           Promise.resolve();
         },
         {
@@ -1649,7 +1649,7 @@ class QueryResultsService extends G3WObject {
   downloadGpx({ id: layerId } = {}, feature) {
     CatalogLayersStoresRegistry
       .getLayerById(layerId)
-      .getGpx({ fid: feature ? feature.attributes[G3W_FID] : null })
+      .downloadAsFile('gpx', {data:{ fid: feature ? feature.attributes[G3W_FID] : null }})
       .catch((err) => { GUI.notify.error(t("info.server_error")); })
       .finally(()  => { this.layerMenu.loading.shp = false; this._hideMenu(); })
   }
@@ -1660,7 +1660,8 @@ class QueryResultsService extends G3WObject {
   downloadXls({ id: layerId } = {}, feature) {
     CatalogLayersStoresRegistry
       .getLayerById(layerId)
-      .getXls({ fid: feature ? feature.attributes[G3W_FID] : null })
+      .downloadAsFile('xls',
+        { data: {fid: feature ? feature.attributes[G3W_FID] : null }})
       .catch(err  => { GUI.notify.error(t("info.server_error")); })
       .finally(() => { this.layerMenu.loading.shp = false; this._hideMenu(); })
   }

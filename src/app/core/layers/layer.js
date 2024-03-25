@@ -1,5 +1,6 @@
 import { GEOMETRY_FIELDS as geometryFields } from 'app/constant';
 import ApplicationState                      from 'store/application-state';
+import GUI                                   from 'services/gui';
 import DataRouterService                     from 'services/data';
 import ProjectsRegistry                      from 'store/projects';
 import DownloadMixin                         from 'core/layers/mixins/download';
@@ -358,6 +359,55 @@ proto.getWMSLayerName = function() {
  */
 proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
+};
+
+/**
+ * @TODO error handling
+ *
+ * [FILE DOWNLOAD] Export layer in different formats
+ *
+ * @param { 'shp' | 'shapefile' | 'xls' | 'csv' | 'gpx' | 'gpkg' | 'geotiff' } type
+ * @param { Object } opts
+ * @param opts.data
+ * @param opts.options
+ *
+ * @returns { Promise }
+ *
+ * @listens GUI~before_download_layer           since 3.9.0
+ * @fires   GUI~choose_layer_fields_to_download since 3.9.0
+ */
+proto.downloadAsFile = function(type, {
+  data = {},
+  options,
+} = {}) {
+  return new Promise((resolve, reject) => {
+    GUI.once(
+      'before_download_layer',
+      async (fields) => {
+        data.ftod        = fields.map(field => field.name).join();
+        data.filtertoken = this.getFilterToken(); //from SelectionMixin
+        // alias
+        if ('shapefile' === type) {
+          type = 'shp';
+        }
+        // allowed download types
+        if (['shp', 'xls', 'csv', 'gpx', 'gpkg', 'geotiff'].includes(type)) {
+          resolve(
+            XHR.fileDownload({
+              url: this.getUrl(type),
+              data,
+              httpMethod: "POST",
+            })
+          );
+        }
+      }
+    );
+    GUI.emit(
+      'choose_layer_fields_to_download',
+      this.getTableFields().map(({ name, label }) => ({ name, label, selected: true }))
+    );
+  })
+  .catch(console.warn);
 };
 
 /**
@@ -1371,5 +1421,10 @@ Layer.EDITOPS = {
  * BACKOMP v3.x
  */
 Layer.SELECTION_STATE = SELECTION_STATE;
+
+/**
+ * @deprecated since 3.9.0. Will be deleted in 4.x. Use Layer.downloadAsFile(type, options) instead
+ */
+Layer.prototype.getDownloadFilefromDownloadDataType = deprecate(Layer.prototype.downloadAsFile, '[G3W-CLIENT] Layer::getDownloadFilefromDownloadDataType(type, options) is deprecated');
 
 module.exports = Layer;

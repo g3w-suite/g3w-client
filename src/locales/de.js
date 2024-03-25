@@ -542,6 +542,12 @@ export default {
       no_data: "Keine Daten",
       nodatafilterd: "Keine passenden Datensätze gefunden",
       infoFiltered: "(gefiltert aus _MAX_ Gesamtsätzen)"
-    }
+    },
+    download: {
+      fields: {
+        all: 'All',
+        title: 'Select fields to download'
+      }
+    },
   },
 };

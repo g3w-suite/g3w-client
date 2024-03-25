@@ -542,6 +542,12 @@ export default {
       no_data: "Inga uppgifter",
       nodatafilterd: "Inga motsvarande poster hittades",
       infoFiltered: "(filtered from _MAX_ total records)"
+    },
+    download: {
+      fields: {
+        all: 'All',
+        title: 'Select fields to download'
+      }
     }
   },
 };
