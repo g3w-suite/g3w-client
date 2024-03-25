@@ -438,35 +438,32 @@ DataService.init = async () => {
         ordering,
       }) {
         
-        const promises                = [];
+        let promises                  = [];
         const { layer, ...params }    = options;
         const { raw = false, filter } = options;
         let data                      = [];
-        const layers                  = Array.isArray(layer) ? layer : [layer];                         // check if layer is array
-        params.filter                 = Array.isArray(params.filter) ? params.filter : [params.filter]; // check if filter is array
+        const layers                  = [].concat(layer);         // check if layer is array
+        params.filter                 = [].concat(params.filter); // check if filter is array
     
         // if 'api' or 'ows' search_endpoint
         if ('api' === params.search_endpoint) {
-          layers.forEach((layer, i) => promises.push(layer.searchFeatures({ ...params, filter: params.filter[i] })));
+          promises = layers.map((layer, i) => layer.searchFeatures({ ...params, filter: params.filter[i] }));
         } else {
-          promises
-            .push(new Promise((resolve, reject) => {
-              layers[0]                                                  // get query provider for get one request only
-              .getProvider('search')
-              .query({ ...params, layers, ...layers[0].getSearchParams() /* get search params*/ })
-              .then(data => { resolve({ data })})
-              .fail(reject)
-            }));
+          promises = [new Promise((resolve, reject) => {
+            layers[0]                                                  // get query provider for get one request only
+            .getProvider('search')
+            .query({ ...params, layers, ...layers[0].getSearchParams() /* get search params*/ })
+            .then(data => { resolve(data)})
+            .fail(reject)
+          })];
         }
     
         (await Promise.allSettled(promises))
-          .forEach(({ status, value } = {}) => {
-            // filter only fulfilled response
-            if ('fulfilled' !== status) { 
-              return;
-            }
+          // filter only fulfilled response
+          .filter(d => 'fulfilled' === d.status)
+          .forEach(({ value } = {}) => {
             if (raw) {
-              data.push('api' === params.search_endpoint ? { data: value } : value);
+              data.push({ data: value });
             } else if ('api' !== params.search_endpoint) {
               data = value.data = undefined !== value.data ? value.data : [];
             } else if(Array.isArray(value.data) && value.data.length) {
