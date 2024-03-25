@@ -241,6 +241,7 @@ export default {
           value = value || 0 === value ? value : null;
         }
 
+        // fallback to default value → `SEARCH_ALLVALUE` 
         if (undefined === value) {
           value = SEARCH_ALLVALUE;
         }
@@ -252,6 +253,7 @@ export default {
 
         input.value = value;
 
+        // skip when no dependants
         if (!deps.length) {
           console.info('no deps for: ', input)
           return;
@@ -281,6 +283,7 @@ export default {
           s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
         });
 
+        // value is empty → disable dependants inputs
         if (!value || value === SEARCH_ALLVALUE) {
           console.info('deps for: ', input, deps);
           deps.forEach(s => s.disabled = s.dependance_strict);
