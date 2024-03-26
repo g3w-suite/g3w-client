@@ -1710,11 +1710,10 @@ proto._resetView = function() {
 };
 
 /**
- *
  * @param project
  * @param width
  * @param height
- * @param { Array } map_extent @since 3.10.0 In case of true, use url parameter to set view options
+ * @param { Array } map_extent since 3.10.0: in case of true, use url parameter to set view options
  * @return {{extent: *, maxResolution: number, center: *, projection: *, resolution: number}}
  * @private
  */
@@ -1724,7 +1723,6 @@ proto._calculateViewOptions = function({
   height,
   map_extent,
 } = {}) {
-
 
   const initextent    = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection    = this.getProjection();
@@ -1747,51 +1745,46 @@ proto._calculateViewOptions = function({
 
 // set view based on project config
 proto._setupViewer = function(width, height) {
-  const searchParams     = new URLSearchParams(location.search);
-  const showmarker       = 1*(searchParams.get('showmarker') || 0); /** @since 3.10.0 0 or 1. Show marker on map center*/
-  const iframetype       = (searchParams.get('iframetype')); /** @since 3.10.0 type of iframe: map (only map, no control)*/
-  const map_extent       = searchParams.get('map_extent');
-  const zoom_to_fid      = searchParams.get('zoom_to_fid');
-  const zoom_to_features = searchParams.get('ztf'); // zoom to features
-  const lat_lon = searchParams.get('lat') && searchParams.get('lon') && {
-    lat: 1*searchParams.get('lat'),
-    lon: 1*searchParams.get('lon')
-  };
-  const x_y = searchParams.get('x') && searchParams.get('y') && {
-    x: 1*searchParams.get('x'),
-    y: 1*searchParams.get('y')
-  };
-  let promise = Promise.resolve();
-  if (zoom_to_fid) {
-    promise = this.zoomToFid(zoom_to_fid);
-  } else if (zoom_to_features) {
-    promise = this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
-  } else if (lat_lon && !Number.isNaN(lat_lon.lat) && !Number.isNaN(lat_lon.lon)) {
-    promise = new Promise((resolve) => {
-      setTimeout(() => {
-        const geometry = new ol.geom.Point(ol.proj.transform([lat_lon.lon, lat_lon.lat], 'EPSG:4326', this.getEpsg()));
-        if (geometry.getExtent()) {
-          this.zoomToGeometry(geometry).then(resolve);
-        }
-      })
-    })
-  } else if (x_y && !Number.isNaN(x_y.x) && !Number.isNaN(x_y.y)) {
-    promise = new Promise((resolve) => {
-      setTimeout(() => {
-        const geometry = new ol.geom.Point([x_y.x, x_y.y]);
-        this.zoomToGeometry(geometry).then(resolve);
-      });
-    })
-  }
+  const search           = new URLSearchParams(location.search); // search params
+  const showmarker       = 1 * (search.get('showmarker') || 0);  /** @since 3.10.0 0 or 1. Show marker on map center*/
+  const iframetype       = search.get('iframetype');             /** @since 3.10.0 type of iframe: map (only map, no control)*/
+  const map_extent       = search.get('map_extent');
+  const zoom_to_fid      = search.get('zoom_to_fid');
+  const zoom_to_features = search.get('ztf');                    // zoom to features
+  const coords           = {
+      lat: 1 * search.get('lat'),
+      lon: 1 * search.get('lon'),
+      x: 1 * search.get('x'),
+      y: 1 * search.get('y'),
+    };
 
-  //In the case of show marker, show marker on a map center
-  if (1 === showmarker) {
-    promise.then(() => {
+  (new Promise((resolve) => {
+    setTimeout(async () => {
+      let geom;
+      if (zoom_to_fid) {
+        await this.zoomToFid(zoom_to_fid);
+      } else if (zoom_to_features) {
+        await this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
+      } else if (coords.lat && coords.lon && !Number.isNaN(coords.lat) && !Number.isNaN(coords.lon)) {
+        geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
+      } else if (coords.x && coords.y && !Number.isNaN(coords.x) && !Number.isNaN(coords.y)) {
+        geom = new ol.geom.Point([coords.x, coords.y]);
+      }
+      if (geom && geom.getExtent()) {
+        this.zoomToGeometry(geom).then(resolve);
+      } else {
+        resolve();
+      }
+    });
+  }))
+  .then(() => {
+    // show marker on map center
+    if (1 === showmarker) {
       this.defaultsLayers.mapcenter.getSource().addFeature(new ol.Feature({ geometry: new ol.geom.Point(this.getCenter()) }))
-    })
-  }
+    }
+  });
 
-  //in case only map, remove al map controls (empty object)
+  // iframe → hide map controls (empty object)
   if ('map' === iframetype) {
     this.config.mapcontrols = {};
   }
@@ -1805,9 +1798,10 @@ proto._setupViewer = function(width, height) {
       map_extent, /** @since 3.10.0 */
     })
   });
+
   this._setSettings();
-  this.state.size = this.viewer.map.getSize();
-  //set mapunit
+
+  this.state.size     = this.viewer.map.getSize();
   this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
 
   if (this.config.background_color) {
@@ -1816,13 +1810,9 @@ proto._setupViewer = function(width, height) {
 
   $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
 
-  this.viewer.map.getInteractions().forEach(interaction => this._watchInteraction(interaction));
-
-  this.viewer.map.getInteractions().on('add', interaction => this._watchInteraction(interaction.element));
-
-  this.viewer.map.getInteractions().on('remove', interaction => {
-    //this._onRemoveInteraction(interaction););
-  });
+  this.viewer.map.getInteractions().forEach(     int => this._watchInteraction(int));
+  this.viewer.map.getInteractions().on('add',    int => this._watchInteraction(int.element));
+  this.viewer.map.getInteractions().on('remove', int => { /* this._onRemoveInteraction(int);); */ });
 
   this._marker = new ol.Overlay({
     position: null,
@@ -1833,28 +1823,20 @@ proto._setupViewer = function(width, height) {
 
   this.viewer.map.addOverlay(this._marker);
 
-  /**
-   *
-   * Register map addLayer
-   *
-   */
-  this.viewer.map.getLayers().on('add', evt => {
-    const {element:layer} = evt;
-    const basemap =  layer.get('basemap');
-    const position = layer.get('position');
-    let zindex = basemap && 0;
-    if (position && position === 'bottom') zindex = 0;
-    zindex = this.setLayerZIndex({
-      layer,
-      zindex
-    });
-    this.moveDefaultLayersOnTop(zindex);
+  // Register map addLayer
+  this.viewer.map.getLayers().on('add', e => {
+    this.moveDefaultLayersOnTop(
+      this.setLayerZIndex({
+        layer: e.element,
+        zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
+      })
+    );
   });
 
-  this.viewer.map.getLayers().on('remove', evt => {
-    const {element:layer}= evt;
-    const layerZIndex = layer.getZIndex();
-    if (layerZIndex === this.layersCount) this.layersCount-=1;
+  this.viewer.map.getLayers().on('remove', e => {
+    if (e.element.getZIndex() === this.layersCount) {
+      this.layersCount--;
+    }
   })
 };
 
