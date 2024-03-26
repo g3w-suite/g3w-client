@@ -1768,9 +1768,9 @@ proto._setupViewer = function(width, height) {
         await this.zoomToFid(zoom_to_fid);
       } else if (zoom_to_features) {
         await this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
-      } else if (coords.lat && coords.lon && !Number.isNaN(coords.lat) && !Number.isNaN(coords.lon)) {
+      } else if (!Number.isNaN(parseFloat(coords.lat)) && !isNaN(parseFloat(coords.lon))) {
         geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
-      } else if (coords.x && coords.y && !Number.isNaN(coords.x) && !Number.isNaN(coords.y)) {
+      } else if (!Number.isNaN(parseFloat(coords.x)) && !Number.isNaN(parseFloat(coords.y))) {
         geom = new ol.geom.Point([coords.x, coords.y]);
       }
       if (geom && geom.getExtent()) {
