@@ -2414,10 +2414,10 @@ proto.setSelectionLayerVisible = function(visible=true) {
 proto.highlightGeometry = function(geometryObj, options = {}) {
   const duration  = options.duration || MAP_SETTINGS.ANIMATION.duration;
   const hlayer    = this.defaultsLayers.highlightLayer;
-  const hide      = 'function' === typeof options.hide      ? options.hide : null;
+  const hide      = 'function' === typeof options.hide      ? options.hide      : null;
   const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
-  const zoom      = 'boolean' === typeof options.zoom       ? options.zoom : true;
-  let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj : (new ol.format.GeoJSON()).readGeometry(geometryObj);
+  const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
+  let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
   this.clearHighlightGeometry();
   this.setDefaultLayerStyle('highlightLayer', { color: options.color });
