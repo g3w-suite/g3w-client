@@ -234,6 +234,12 @@ export default {
 
       console.log(input, deps);
 
+      const is_invalid       = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
+      const is_autocomplete  = s => 'autocompletefield' === s.type;
+      const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
+      const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
+      const is_valuerelation = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
+
       try {
         this.state.searching = true;
 
@@ -259,24 +265,21 @@ export default {
           return;
         }
 
-        const invalid = [SEARCH_ALLVALUE, null, undefined].includes(value) || '' === value.toString().trim(); // whether father input can search on subscribers
-
-        // loop over dependencies fields inputs
+        // loop over dependants
         deps.forEach(s => {
-          const is_autocomplete = 'autocompletefield' === s.type;
 
           // autocomplete → reset values to empty array
-          if (is_autocomplete || invalid) {
+          if (is_autocomplete(s) || is_invalid(value)) {
             s.values.splice(0);
           }
 
           // no autocomplete → get first value (ALL_VALUE)
-          if (!is_autocomplete && !invalid) {
+          if (!is_autocomplete(s) && !is_invalid(value)) {
             s.values.splice(1);
           }
 
           // parent has invalid value (eg. ALL_VALUE) → set all values to subscribe 
-          if (!is_autocomplete && invalid) {
+          if (!is_autocomplete(s) && is_invalid(value)) {
             setTimeout(() => s.values = [...s._values]);
           }
 
@@ -329,11 +332,9 @@ export default {
             field,
             fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
           }),
+          // TODO: double check https://github.com/g3w-suite/g3w-client/pull/505/commits/edbe040ccf90b28dbf04afc7d9788f0bb04e557b
+          // formatter: 0,
         });
-
-        const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
-        const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
-        const is_valuerelation = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
 
         for (let i = 0; i < deps.length; i++) {
 
@@ -344,6 +345,8 @@ export default {
 
           const subscribe = deps[i];
           const vals = new Set(); // ensure unique values
+
+          console.log(subscribe, data);
 
           // parent features
           (data.data[0].features || []).forEach(f => {
