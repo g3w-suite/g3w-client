@@ -533,15 +533,17 @@ function MapService(options={}) {
       this.state.hidden = bool;
     },
     setupViewer(width,height) {
-      if (width === 0 || height === 0) return;
+      if (0 === width || 0 === height) {
+        return;
+      }
       if (this.viewer) {
         this.viewer.destroy();
         this.viewer = null;
       }
       this._setupViewer(width, height);
-      this.state.bbox = this.viewer.getBBOX();
+      this.state.bbox       = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
-      this.state.center = this.viewer.getCenter();
+      this.state.center     = this.viewer.getCenter();
       this._setupAllLayers();
       this.setUpMapOlEvents();
       this.emit('viewerset');
@@ -1188,76 +1190,86 @@ proto.getLayerZindex = function(layer) {
 };
 
 proto.getCenter = function() {
-  const map = this.getMap();
-  return map.getView().getCenter();
+  return this.getMap().getView().getCenter();
 };
 
 /**
- *
- *method to zoom to feature
+ * Zoom to Feature ID
  */
-proto.zoomToFid = async function(zoom_to_fid='', separator='|') {
+proto.zoomToFid = async function(zoom_to_fid = '', separator = '|') {
   const [layerId, fid] = zoom_to_fid.split(separator);
-  if (layerId !== undefined && fid !== undefined) {
-    const layer = this.project.getLayerById(layerId);
-    const {data=[]}= await DataRouterService.getData('search:fids', {
-      inputs: {
-        layer,
-        fids:[fid]
-      },
-      outputs: {
-        show: {
-          loading: false,
-          condition({data=[]}={}) {
-            return data[0] && data[0].features.length > 0;
-          }
+
+  if (undefined === layerId && undefined === fid) {
+    return;
+  }
+
+  const { data = [] } = await DataRouterService.getData('search:fids', {
+    inputs: {
+      layer: this.project.getLayerById(layerId),
+      fids: [fid]
+    },
+    outputs: {
+      show: {
+        loading: false,
+        condition({ data = [] } = {}) {
+          return data[0] && data[0].features.length > 0;
         }
       }
-    });
-    const feature = data[0] && data[0].features[0];
-    if (feature) {
-      this.zoomToFeatures([feature]);
     }
+  });
+
+  const feature = data[0] && data[0].features[0];
+
+  if (feature) {
+    this.zoomToFeatures([feature]);
   }
 };
 
 /**
- * Method to handele ztf url parameter
+ * Handle ztf url parameter
+ * 
  * @param zoom_to_feature
  */
-proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', search_endpoint='api'} = {}) {
+proto.handleZoomToFeaturesUrlParameter = async function({
+  zoom_to_features = '',
+  search_endpoint = 'api',
+} = {}) {
   try {
-    const [layerNameorIdorOrigname, fieldsValuesSearch] = zoom_to_features.split(':');
-    if (layerNameorIdorOrigname && fieldsValuesSearch) {
-      const projectLayer = this.project.getLayers().find(layer =>
-        layer.id === layerNameorIdorOrigname ||
-        layer.name === layerNameorIdorOrigname ||
-        layer.origname === layerNameorIdorOrigname
-      );
-      if (projectLayer) {
-        const layer = this.project.getLayerById(projectLayer.id);
-        const filter = createFilterFromString({
-          layer,
-          search_endpoint,
-          filter: fieldsValuesSearch
-        });
-        const {data} = await DataRouterService.getData('search:features', {
-          inputs: {
-            layer,
-            filter,
-            search_endpoint
-          },
-          outputs: {
-            show: {
-              loading: false
-            }
-          }
-        });
-        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features)
-      }
+    const [id, filter] = zoom_to_features.split(':');
+
+    if (!id || !filter) {
+      return;
     }
-  } catch(err) {
-    console.log(err)
+
+    // find project layer
+    const pLayer = this.project.getLayers().find(layer =>
+      id === layer.id ||
+      id === layer.name ||
+      id === layer.origname
+    );
+
+    const layer = pLayer && this.project.getLayerById(pLayer.id);
+
+    const r = pLayer && await DataRouterService.getData('search:features', {
+      inputs: {
+        layer,
+        filter: createFilterFromString({ layer, search_endpoint, filter }),
+        search_endpoint
+      },
+      outputs: {
+        show: {
+          loading: false
+        }
+      }
+    });
+
+    const features = r && r.data && r.data[0] && r.data[0].features;
+
+    if (features) {
+      this.zoomToFeatures(features);
+    }
+  } catch(e) {
+    console.warn(e);
   }
 };
 
