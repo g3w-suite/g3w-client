@@ -1760,10 +1760,10 @@ proto._setupViewer = function(width, height) {
   const zoom_to_fid      = search.get('zoom_to_fid');
   const zoom_to_features = search.get('ztf');                    // zoom to features
   const coords           = {
-      lat: 1 * search.get('lat'),
-      lon: 1 * search.get('lon'),
-      x: 1 * search.get('x'),
-      y: 1 * search.get('y'),
+      lat: parseFloat(search.get('lat')),
+      lon: parseFloat(search.get('lon')),
+      x:   parseFloat(search.get('x')),
+      y:   parseFloat(search.get('y')),
     };
 
   (new Promise((resolve) => {
@@ -1773,9 +1773,9 @@ proto._setupViewer = function(width, height) {
         await this.zoomToFid(zoom_to_fid);
       } else if (zoom_to_features) {
         await this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
-      } else if (!Number.isNaN(parseFloat(coords.lat)) && !Number.isNaN(parseFloat(coords.lon))) {
+      } else if (!isNaN(coords.lat) && !isNaN(coords.lon)) {
         geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
-      } else if (!Number.isNaN(parseFloat(coords.x)) && !Number.isNaN(parseFloat(coords.y))) {
+      } else if (!isNaN(coords.x) && !isNaN(coords.y)) {
         geom = new ol.geom.Point([coords.x, coords.y]);
       }
       if (geom && geom.getExtent()) {
