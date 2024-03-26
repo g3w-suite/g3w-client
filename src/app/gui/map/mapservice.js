@@ -2193,17 +2193,12 @@ proto.zoomTo = function(coordinate, zoom=6) {
   this.viewer.zoomTo(coordinate, zoom);
 };
 
-proto.goTo = function(coordinates,zoom) {
-  const options = {
-    zoom: zoom || 6
-  };
-  this.viewer.goTo(coordinates, options);
+proto.goTo = function(coordinates, zoom) {
+  this.viewer.goTo(coordinates, { zoom: zoom || 6 });
 };
 
 proto.goToRes = async function(coordinates, resolution) {
-  await this.viewer.goToRes(coordinates, {
-    resolution
-  });
+  await this.viewer.goToRes(coordinates, { resolution });
 };
 
 proto.getGeometryAndExtentFromFeatures = function(features=[]) {
