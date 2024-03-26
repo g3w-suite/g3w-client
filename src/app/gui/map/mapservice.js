@@ -1872,7 +1872,11 @@ proto._setupAllLayers = function() {
   this._setupBaseLayers();
   this._setupMapLayers();
   this._setupVectorLayers();
-  this._setUpDefaultLayers();
+  // set default layers order
+  const map = this.getMap();
+  map.addLayer(this.defaultsLayers.mapcenter);
+  map.addLayer(this.defaultsLayers.selectionLayer);
+  map.addLayer(this.defaultsLayers.highlightLayer);
 };
 
 //SETUP BASELAYERS
@@ -1941,13 +1945,6 @@ proto._setupVectorLayers = function() {
   const layers = getMapLayersByFilter({ VECTORLAYER: true });
   this._setMapProjectionToLayers(layers);
   layers.forEach(layer => { this.addLayerToMap(layer.getMapLayer()) })
-};
-
-proto._setUpDefaultLayers = function() {
-  // follow the order that I want
-  this.getMap().addLayer(this.defaultsLayers.mapcenter);
-  this.getMap().addLayer(this.defaultsLayers.selectionLayer);
-  this.getMap().addLayer(this.defaultsLayers.highlightLayer);
 };
 
 /**
