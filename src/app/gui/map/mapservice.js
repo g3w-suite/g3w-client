@@ -180,12 +180,13 @@ class OlMapViewer {
   goToRes(coordinates, options = {}) {
     return new Promise((resolve) => {
       const view       = this.map.getView();
-      const animate    = options.animate || true;
+      const animate    = 'boolean' === typeof options.animate ? options.animate : true;
       const resolution = options.resolution || view.getResolution();
       const key = view.on('change:center', () => {
         ol.Observable.unByKey(key);
         setTimeout(resolve);
       });
+
       if (animate) {
         view.animate(
           { duration: 200, center: coordinates },
@@ -203,19 +204,21 @@ class OlMapViewer {
    */
   fit(geometry, options = {}) {
     const view    = this.map.getView();
-    const animate = options.animate || true;
+    const animate = 'boolean' === typeof options.animate ? options.animate : true;
+
     if (animate) {
       view.animate({ duration: 200, center: view.getCenter() });
       view.animate({ duration: 200, resolution: view.getResolution() });
     }
-    if (options.animate) {
-      delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
-    }
+
+    delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
+
     view.fit(geometry, {
       ...options,
-      constrainResolution: (undefined === options.constrainResolution && true || options.constrainResolution),
+      constrainResolution: (undefined !== options.constrainResolution ? options.constrainResolution : true),
       size:  this.map.getSize()
     });
+
   }
 
   /**
@@ -272,7 +275,7 @@ class OlMapViewer {
       .getLayers()
       .filter((layer) => {
         const props = layer.getProperties();
-        return  (props.visible && true !== props.basemap);
+        return (props.visible && true !== props.basemap);
       });
   };
 
