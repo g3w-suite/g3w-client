@@ -1814,7 +1814,7 @@ proto._setupViewer = function(width, height) {
 
   this.viewer.map.addOverlay(this._marker);
 
-  // Register map addLayer
+  // listen for map "addLayer"
   this.viewer.map.getLayers().on('add', e => {
     this.moveDefaultLayersOnTop(
       this.setLayerZIndex({
