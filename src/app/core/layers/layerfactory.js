@@ -114,7 +114,6 @@ const BASE_LAYERS   = {
         crs,
         grid, /** @since 3.10.0*/
         grid_extent, /** @since 3.10.0 */
-        extent, /** @since 3.10.0 */
         projection, /** @since 3.10.0 */
       } = this.config;
       return BASE.WMTS.get({
@@ -128,7 +127,6 @@ const BASE_LAYERS   = {
         style,
         grid,
         grid_extent,
-        extent,
       });
     }
   },

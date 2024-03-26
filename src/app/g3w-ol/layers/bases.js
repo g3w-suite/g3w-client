@@ -70,7 +70,6 @@ BaseLayers.WMTS = {
       opacity = 0.7,
       grid, /** @since 3.10.0 */
       grid_extent, /** @since 3.10.0 */
-      extent, /** @since 3.10.0 */
     } = {}) {
     if (matrixSet) {
       const projectionExtent = projection.getExtent();
@@ -103,7 +102,7 @@ BaseLayers.WMTS = {
     }
     /** @since 3.10.0 WMTS based on mapproxy*/
     if (grid && grid_extent) {
-      const resolutions = ol.tilegrid.createXYZ({ extent }).getResolutions();
+      const resolutions = ol.tilegrid.createXYZ({ extent: grid_extent }).getResolutions();
       return new ol.layer.Tile({
         source: new ol.source.WMTS({
           url,
