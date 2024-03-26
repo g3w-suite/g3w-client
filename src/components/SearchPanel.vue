@@ -241,7 +241,7 @@ export default {
           value = value || 0 === value ? value : null;
         }
 
-        // fallback to default value → `SEARCH_ALLVALUE` 
+        // fallback to default value → `SEARCH_ALLVALUE`
         if (undefined === value) {
           value = SEARCH_ALLVALUE;
         }
