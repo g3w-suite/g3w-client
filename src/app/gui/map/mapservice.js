@@ -1723,23 +1723,14 @@ proto._calculateViewOptions = function({
   height,
   map_extent,
 } = {}) {
-
-  const initextent    = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
-  const projection    = this.getProjection();
-  const extent        = project.state.extent;
-  const maxxRes       = ol.extent.getWidth(extent) / width;
-  const maxyRes       = ol.extent.getHeight(extent) / height;
-  const maxResolution = Math.max(maxxRes,maxyRes);
-  const initxRes      = ol.extent.getWidth(initextent) / width;
-  const inityRes      = ol.extent.getHeight(initextent) / height;
-  const resolution    = Math.max(initxRes,inityRes);
-  const center        = ol.extent.getCenter(initextent);
+  const initextent = map_extent ? map_extent.split(',').map(coord => 1 * coord) : project.state.initextent;
+  const extent     = project.state.extent;
   return {
-    projection,
-    center,
     extent,
-    maxResolution,
-    resolution
+    projection:    this.getProjection(),
+    center:        ol.extent.getCenter(initextent),
+    maxResolution: Math.max(ol.extent.getWidth(extent) / width,     ol.extent.getHeight(extent) / height),     // max(xRes, yRes)
+    resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
   }
 };
 
