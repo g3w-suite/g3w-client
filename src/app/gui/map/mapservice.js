@@ -157,8 +157,9 @@ class OlMapViewer {
    */
   goTo(coordinates, options = {}) {
     const view    = this.map.getView();
-    const animate = options.animate || true;
+    const animate = 'boolean' === typeof options.animate ? options.animate : true;
     const zoom    = options.zoom || false;
+
     if (animate) {
       view.animate(
         { duration: 300, center: coordinates },
@@ -166,9 +167,10 @@ class OlMapViewer {
       ));
     } else {
       view.setCenter(coordinates);
-      if (zoom) {
-        view.setZoom(zoom);
-      }
+    }
+
+    if (zoom && !animate) {
+      view.setZoom(zoom);
     }
   }
 
@@ -1768,7 +1770,7 @@ proto._setupViewer = function(width, height) {
         await this.zoomToFid(zoom_to_fid);
       } else if (zoom_to_features) {
         await this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
-      } else if (!Number.isNaN(parseFloat(coords.lat)) && !isNaN(parseFloat(coords.lon))) {
+      } else if (!Number.isNaN(parseFloat(coords.lat)) && !Number.isNaN(parseFloat(coords.lon))) {
         geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
       } else if (!Number.isNaN(parseFloat(coords.x)) && !Number.isNaN(parseFloat(coords.y))) {
         geom = new ol.geom.Point([coords.x, coords.y]);
