@@ -2250,40 +2250,45 @@ proto.highlightFeatures = function(features, options={}) {
  * Zoom methods
  */
 
-proto.zoomToGeometry = function(geometry, options={highlight: false}) {
+proto.zoomToGeometry = function(geometry, options = { highlight: false }) {
   const extent = geometry && geometry.getExtent();
-  const { highlight } = options;
-  if (highlight && extent) {
+  if (options.highlight && extent) {
     options.highLightGeometry = geometry;
   }
-  return extent ? this.zoomToExtent(extent, options) : Promise.resolve();
+  return this.zoomToExtent(extent, options);
 };
 
-proto.zoomToFeatures = function(features, options={highlight: false}) {
-  let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
-  const {highlight} = options;
-  if (highlight && extent) {
+proto.zoomToFeatures = function(features, options = { highlight: false }) {
+  let { geometry, extent } = this.getGeometryAndExtentFromFeatures(features);
+  if (options.highlight && extent) {
     options.highLightGeometry = geometry;
   }
-  return extent ? this.zoomToExtent(extent, options) : Promise.resolve();
+  return this.zoomToExtent(extent, options);
 };
 
 /**
- * @param   { ol.extet }                                          extent
- * @param   {{ force?: boolean, highLightGeometry?: ol.geometry }} [options={}]
+ * @param   { ol.extent }   extent
+ * @param   { Object }      options
+ * @param   { boolean }     options.force
+ * @param   { ol.geometry } options.highLightGeometry
+ * 
  * @returns { Promise<void> }
  */
-proto.zoomToExtent = function(extent, options={}) {
-  return new Promise(async (resolve) => {
-    await this.goToRes(
-      ol.extent.getCenter(extent),
-      this.getResolutionForZoomToExtent(extent, { force: options.force || false  })
-    );
-    if (options.highLightGeometry) {
-      await this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
-    }
-    resolve();
-  })
+proto.zoomToExtent = async function(extent, options = {}) {
+
+  if (!extent) {
+    return Promise.resolve();
+  }
+
+  await this.goToRes(
+    ol.extent.getCenter(extent),
+    this.getResolutionForZoomToExtent(extent, { force: options.force || false  })
+  );
+
+  if (options.highLightGeometry) {
+    await this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
+  }
+
 };
 
 proto.zoomToProjectInitExtent = function() {
