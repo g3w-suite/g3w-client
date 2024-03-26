@@ -184,7 +184,7 @@ class OlMapViewer {
       const resolution = options.resolution || view.getResolution();
       const key = view.on('change:center', () => {
         ol.Observable.unByKey(key);
-        setTimeout(resolve);
+        setTimeout(resolve, 500);
       });
 
       if (animate) {
@@ -1226,7 +1226,7 @@ proto.zoomToFid = async function(zoom_to_fid = '', separator = '|') {
   const feature = data[0] && data[0].features[0];
 
   if (feature) {
-    this.zoomToFeatures([feature]);
+    await this.zoomToFeatures([feature]);
   }
 };
 
@@ -1779,10 +1779,9 @@ proto._setupViewer = function(width, height) {
         geom = new ol.geom.Point([coords.x, coords.y]);
       }
       if (geom && geom.getExtent()) {
-        this.zoomToGeometry(geom).then(resolve);
-      } else {
-        resolve();
+        await this.zoomToGeometry(geom);
       }
+      resolve();
     });
   }))
   .then(() => {
