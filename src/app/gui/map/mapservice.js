@@ -1978,13 +1978,17 @@ proto.removeDefaultLayers = function() {
 };
 
 proto.setDefaultLayerStyle = function(type, style={}) {
-  if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = style;
+  if (type && this.defaultsLayers[type]) {
+    this.defaultsLayers._style[type] = style;
+  }
 };
 
 proto.resetDefaultLayerStyle = function(type, style={}) {
-  if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = {
-    color: type === 'highlightLayer' ? undefined : 'red'
-  };
+  if (type && this.defaultsLayers[type]) {
+    this.defaultsLayers._style[type] = {
+      color: 'highlightLayer' === type ? undefined : 'red'
+    };
+  }
 };
 
 proto.removeLayers = function() {
@@ -2365,9 +2369,7 @@ let animatingHighlight = false;
 proto.setSelectionFeatures = function(action='add', options={}) {
   const {feature, color} = options;
   if (color) {
-    this.setDefaultLayerStyle('selectionLayer', {
-      color
-    });
+    this.setDefaultLayerStyle('selectionLayer', { color });
   }
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
@@ -2398,80 +2400,76 @@ proto.setSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 
+/**
+ * 
+ * @param { ol.geom.Geometry | * } geometryObj 
+ * @param { Object } options
+ * @param { boolean } options.zoom
+ * @param { boolean } options.highlight
+ * @param options.style
+ * @param options.color
+ *  
+ * @returns { Promise<any> } 
+ */
 proto.highlightGeometry = function(geometryObj, options = {}) {
-  return new Promise(async (resolve, reject) => {
-    const {color} = options;
-    this.clearHighlightGeometry();
-    this.setDefaultLayerStyle('highlightLayer', {
-      color
-    });
-    let zoom = (typeof options.zoom === 'boolean') ? options.zoom : true;
-    let hide = options.hide;
-    if (hide) hide = typeof hide === 'function' ? hide: null;
-    const customStyle = options.style;
-    const defaultStyle = function(feature) {
-      let styles = [];
-      const geometryType = feature.getGeometry().getType();
-      const style = createSelectedStyle({
-        geometryType,
-        color,
-        fill: false
-      });
-      styles.push(style);
-      return styles;
-    };
-    const {ANIMATION} = MAP_SETTINGS;
-    const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-    const duration = options.duration || ANIMATION.duration;
-    let geometry;
-    if (geometryObj instanceof ol.geom.Geometry) {
-      geometry = geometryObj;
+  const duration = options.duration || MAP_SETTINGS.ANIMATION.duration;
+  const hlayer   = this.defaultsLayers.highlightLayer;
+  const hide     = 'function' === typeof options.hide      ? options.hide : null;
+  let geometry   = geometryObj instanceof ol.geom.Geometry ? geometryObj : (new ol.format.GeoJSON()).readGeometry(geometryObj);
+
+  this.clearHighlightGeometry();
+  this.setDefaultLayerStyle('highlightLayer', { color: options.color });
+
+  return new Promise(async (resolve) => {
+
+    if (options.zoom) {
+      await this.zoomToExtent(geometry.getExtent());
     }
-    else {
-      const format = new ol.format.GeoJSON;
-      geometry = format.readGeometry(geometryObj);
+
+    if (!options.highlight) {
+      return resolve();
     }
-    if (zoom) {
-      const extent = geometry.getExtent();
-      await this.zoomToExtent(extent);
+
+    if (options.style) {
+      hlayer.setStyle(options.style);
     }
-    if (highlight) {
-      const feature = new ol.Feature({
-        geometry
-      });
-      const highlightLayer = this.defaultsLayers.highlightLayer;
-      customStyle && highlightLayer.setStyle(customStyle);
-      highlightLayer.getSource().addFeature(feature);
-      if (hide) {
-        const callback = () => {
-          highlightLayer.getSource().clear();
-          if (customStyle) {
-            highlightLayer.setStyle(defaultStyle);
-          }
-          resolve();
-        };
-        hide(callback);
-      } else if (duration) {
-        if (duration !== Infinity) {
-          animatingHighlight = true;
-          setTimeout(() => {
-            highlightLayer.getSource().clear();
-            if (customStyle) {
-              highlightLayer.setStyle(defaultStyle);
-            }
-            animatingHighlight = false;
-            resolve();
-          }, duration)
-        }
+
+    hlayer.getSource().addFeature(new ol.Feature({ geometry }));
+
+    const cb = () => {
+      hlayer.getSource().clear();
+      // set default style
+      if (options.style) {
+        hlayer.setStyle((feature) => [
+          createSelectedStyle({
+            geometryType: feature.getGeometry().getType(),
+            color: options.color,
+            fill: false
+          })
+        ]);
       }
-    } else {
-      resolve()
+      if (!hide) {
+        animatingHighlight = false;
+      }
+      resolve();
+    };
+
+    if (hide) {
+      hide(cb);
     }
-  })
+
+    if (duration && duration !== Infinity && !hide) {
+      animatingHighlight = true;
+      setTimeout(cb, duration);
+    }
+
+  });
 };
 
 proto.clearHighlightGeometry = function() {
-  !animatingHighlight && this.defaultsLayers.highlightLayer.getSource().clear();
+  if (!animatingHighlight) {
+    this.defaultsLayers.highlightLayer.getSource().clear();
+  }
   this.resetDefaultLayerStyle('highlightLayer');
 };
 
