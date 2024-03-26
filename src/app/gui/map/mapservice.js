@@ -2412,21 +2412,23 @@ proto.setSelectionLayerVisible = function(visible=true) {
  * @returns { Promise<any> } 
  */
 proto.highlightGeometry = function(geometryObj, options = {}) {
-  const duration = options.duration || MAP_SETTINGS.ANIMATION.duration;
-  const hlayer   = this.defaultsLayers.highlightLayer;
-  const hide     = 'function' === typeof options.hide      ? options.hide : null;
-  let geometry   = geometryObj instanceof ol.geom.Geometry ? geometryObj : (new ol.format.GeoJSON()).readGeometry(geometryObj);
+  const duration  = options.duration || MAP_SETTINGS.ANIMATION.duration;
+  const hlayer    = this.defaultsLayers.highlightLayer;
+  const hide      = 'function' === typeof options.hide      ? options.hide : null;
+  const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
+  const zoom      = 'boolean' === typeof options.zoom       ? options.zoom : true;
+  let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
   this.clearHighlightGeometry();
   this.setDefaultLayerStyle('highlightLayer', { color: options.color });
 
   return new Promise(async (resolve) => {
 
-    if (options.zoom) {
+    if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
     }
 
-    if (!options.highlight) {
+    if (!highlight) {
       return resolve();
     }
 
@@ -2440,13 +2442,11 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       hlayer.getSource().clear();
       // set default style
       if (options.style) {
-        hlayer.setStyle((feature) => [
-          createSelectedStyle({
-            geometryType: feature.getGeometry().getType(),
-            color: options.color,
-            fill: false
-          })
-        ]);
+        hlayer.setStyle((feature) => [createSelectedStyle({
+          geometryType: feature.getGeometry().getType(),
+          color: options.color,
+          fill: false
+        })]);
       }
       if (!hide) {
         animatingHighlight = false;
