@@ -234,7 +234,7 @@ export default {
       const state  = this.state;
       let value    = input.value;
 
-      console.log(input, deps);
+      console.log(input, deps, cached);
 
       const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
       const has_autocomplete = s => 'autocompletefield' === s.type;
@@ -261,18 +261,19 @@ export default {
         // loop and update dependants (from cache)
         deps.forEach(s => {
 
+          s.value  = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
           s.values = Array.from(new Set([                                       // ensure uniques values
             ...(!has_autocomplete(s) && !is_empty(value) ? [s.values[0]] : []), // get first value (ALL_VALUE)
             ...(!has_autocomplete(s) && is_empty(value) ? s._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
             ...(input.dependance && cached && cached[s.attribute]       || [])  // get cached values 
           ]));
 
-          s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
-
           // value is empty → disable dependants inputs
           s.disabled = is_empty(value)
             ? s.dependance_strict
-            : !(has_autocomplete(s) && s.dependance_strict) && !(input.dependance && cached);
+            // TODO: double check (superfluous conditions?)
+            // : !(has_autocomplete(s) && s.dependance_strict) && !(input.dependance && cached);
+            : false
 
         });
 
