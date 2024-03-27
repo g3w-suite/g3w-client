@@ -20,7 +20,9 @@ inherit(WMSLayer, MapLayer);
 const proto = WMSLayer.prototype;
 
 proto.getOLLayer = function(withLayers) {
-  if (!this._olLayer) this._olLayer = this._makeOlLayer(withLayers);
+  if (!this._olLayer) {
+    this._olLayer = this._makeOlLayer(withLayers);
+  }
   return this._olLayer;
 };
 
@@ -133,16 +135,20 @@ proto._updateLayers = function(mapState = {}, extraParams = {}) {
   });
 
   this._olLayer.setVisible(true);
-  this._olLayer.getSource().updateParams({
-    ...params,
-    LEGEND_ON,
-    LEGEND_OFF,
-    filtertoken: ApplicationState.tokens.filtertoken,
-    LAYERS:      `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`,
-    STYLES:      STYLES.join(','),
-    /** @since 3.8 */
-    OPACITIES:   OPACITIES.join(','),
-  });
+  //check if a layer source has with updateParams method
+  /** @TODO Check a better way to do this */
+  if (this._olLayer.getSource().updateParams) {
+    this._olLayer.getSource().updateParams({
+      ...params,
+      LEGEND_ON,
+      LEGEND_OFF,
+      filtertoken: ApplicationState.tokens.filtertoken,
+      LAYERS:      `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`,
+      STYLES:      STYLES.join(','),
+      /** @since 3.8 */
+      OPACITIES:   OPACITIES.join(','),
+    });
+  }
 
 };
 
