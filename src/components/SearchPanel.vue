@@ -268,18 +268,12 @@ export default {
         // loop over dependants
         deps.forEach(s => {
 
-          // autocomplete → reset values to empty array
-          if (is_autocomplete(s) || is_invalid(value)) {
-            s.values.splice(0);
-          }
-
+          // autocomplete    → reset values to empty array
           // no autocomplete → get first value (ALL_VALUE)
-          if (!is_autocomplete(s) && !is_invalid(value)) {
-            s.values.splice(1);
-          }
+          s.values.splice(is_autocomplete(s) || is_invalid(value) ? 0 : 1);
 
           // parent has invalid value (eg. ALL_VALUE) → set all values to subscribe 
-          if (!is_autocomplete(s) && is_invalid(value)) {
+          if (is_invalid(value) && !is_autocomplete(s)) {
             setTimeout(() => s.values = [...s._values]);
           }
 
