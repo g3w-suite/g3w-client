@@ -103,16 +103,30 @@ const BASE_LAYERS   = {
   [Layer.ServerTypes.WMTS]: class WMTSLayer extends BaseLayer {
     _makeOlLayer() {
       // use this config to get params
-      const { url, layer, attributions, matrixSet, format, style, requestEncoding, crs } = this.config;
+      const {
+        url,
+        layer,
+        attributions,
+        matrixSet,
+        format,
+        style,
+        requestEncoding,
+        crs,
+        grid, /** @since 3.10.0*/
+        grid_extent, /** @since 3.10.0 */
+        projection, /** @since 3.10.0 */
+      } = this.config;
       return BASE.WMTS.get({
         url,
         layer,
         attributions,
         format,
-        projection: this.getProjectionFromCrs(crs),
+        projection: projection || this.getProjectionFromCrs(crs),
         requestEncoding,
         matrixSet,
         style,
+        grid,
+        grid_extent,
       });
     }
   },
