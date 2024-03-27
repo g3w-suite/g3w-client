@@ -227,14 +227,16 @@ export default {
      */
     async changeInput(input) {
       console.log(input);
-      const field       = input.attribute;
-      const deps        = this.state.forminputs.filter(d => d.dependance === field);  // get inputs that depends on the current one
-      const state       = this.state;
-      let value         = input.value;
+      const field  = input.attribute;
+      const parent = this.state.forminputs.find(d => d.attribute === field);     // current input dependance
+      const deps   = this.state.forminputs.filter(d => d.dependance === field);  // inputs that depends on the current one
+      const cached = parent && undefined !== input.dvalues[parent.value] ? input.dvalues[parent.value][value] : input.dvalues[value]; // cached data
+      const state  = this.state;
+      let value    = input.value;
 
       console.log(input, deps);
 
-      const is_invalid       = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
+      const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
       const is_autocomplete  = s => 'autocompletefield' === s.type;
       const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
       const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
@@ -259,63 +261,30 @@ export default {
 
         input.value = value;
 
-        // skip when no dependants
-        if (!deps.length) {
-          console.info('no deps for: ', input)
-          return;
-        }
-
-        // loop over dependants
+        // loop and update dependants (from cache)
         deps.forEach(s => {
 
-          // autocomplete    → reset values to empty array
-          // no autocomplete → get first value (ALL_VALUE)
-          s.values.splice(is_autocomplete(s) || is_invalid(value) ? 0 : 1);
-
-          // parent has invalid value (eg. ALL_VALUE) → set all values to subscribe 
-          if (is_invalid(value) && !is_autocomplete(s)) {
-            setTimeout(() => s.values = [...s._values]);
-          }
+          s.values = Array.from(new Set([                                      // ensure uniques values
+            ...(!is_autocomplete(s) && !is_empty(value) ? [s.values[0]] : []), // get first value (ALL_VALUE)
+            ...(!is_autocomplete(s) && is_empty(value) ? s._values : []),      // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
+            ...(input.dependance && cached && cached[s.attribute] || [])       // get cached values 
+          ]));
 
           s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
+
+          // value is empty → disable dependants inputs
+          s.disabled = is_empty(value)
+            ? s.dependance_strict
+            : !(is_autocomplete(s) && s.dependance_strict) && !(input.dependance && cached);
+
         });
 
-        // value is empty → disable dependants inputs
-        if (!value || value === SEARCH_ALLVALUE) {
-          console.info('deps for: ', input, deps);
-          deps.forEach(s => s.disabled = s.dependance_strict);
-          return;
-        }
-
-        // get current dependance value
-        const parent = this.state.forminputs.find(d => d.attribute === field);
-
-        // val is cached
-        if (input.dependance && input.dvalues[parent.value] && undefined !== input.dvalues[parent.value][value]) {
-          console.info('val for: ', input, input.dvalues[parent.value][value]);
-          deps.forEach(s => {
-            (input.dvalues[parent.value][value][s.attribute] || []).forEach(v => s.values.push(v));
-            s.disabled = false;                                      // set disabled dependence field
-          });
-          return;
-        }
-
-        // val is cached
-        if (!input.dependance && undefined !== input.dvalues[value]) {
-          console.info('val for: ', input, input.dvalues[value]);
-          deps.forEach(s => {
-            (input.dvalues[value][s.attribute] || []).forEach(v => s.values.push(v));
-            s.disabled = false;                                      // set disabled dependence field
-          });
+        // depentants values are there → no need to perform further server requests
+        if (!deps.length || is_empty(value) || (input.dependance && cached)) {
           return;
         }
 
         state.loading[field] = true;
-
-        // disable no autocomplete subscribers
-        deps
-          .filter(s => 'autocompletefield' === s.type && s.dependance_strict)
-          .forEach(s => s.disabled = false);
 
         // extract the value of the field to get filter data from the relation layer
         // set undefined because if it has a subscribed input with valuerelations widget
@@ -326,7 +295,7 @@ export default {
             field,
             fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
           }),
-          // TODO: double check https://github.com/g3w-suite/g3w-client/pull/505/commits/edbe040ccf90b28dbf04afc7d9788f0bb04e557b
+          // FIXME: https://github.com/g3w-suite/g3w-admin/issues/794
           // formatter: 0,
         });
 
@@ -384,6 +353,7 @@ export default {
 
           const sliced = subscribe.values.slice(1);
 
+          // update cache
           if (input.dependance) {
             input.dvalues[parent.value]        = input.dvalues[parent.value] || {};
             input.dvalues[parent.value][value] = input.dvalues[parent.value][value] || {}
