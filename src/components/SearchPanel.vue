@@ -236,11 +236,11 @@ export default {
 
       console.log(input, deps);
 
-      const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
-      const is_autocomplete  = s => 'autocompletefield' === s.type;
-      const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
-      const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
-      const is_valuerelation = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
+      const is_empty          = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
+      const has_autocomplete  = s => 'autocompletefield' === s.type;
+      const has_dependance    = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
+      const is_valuemap       = s => !!(has_dependance(s) && s.values.length);
+      const is_valuerelation  = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
 
       try {
         this.state.searching = true;
@@ -264,10 +264,10 @@ export default {
         // loop and update dependants (from cache)
         deps.forEach(s => {
 
-          s.values = Array.from(new Set([                                      // ensure uniques values
-            ...(!is_autocomplete(s) && !is_empty(value) ? [s.values[0]] : []), // get first value (ALL_VALUE)
-            ...(!is_autocomplete(s) && is_empty(value) ? s._values : []),      // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
-            ...(input.dependance && cached && cached[s.attribute] || [])       // get cached values 
+          s.values = Array.from(new Set([                                       // ensure uniques values
+            ...(!has_autocomplete(s) && !is_empty(value) ? [s.values[0]] : []), // get first value (ALL_VALUE)
+            ...(!has_autocomplete(s) && is_empty(value) ? s._values : []),      // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
+            ...(input.dependance && cached && cached[s.attribute] || [])        // get cached values 
           ]));
 
           s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
@@ -275,7 +275,7 @@ export default {
           // value is empty → disable dependants inputs
           s.disabled = is_empty(value)
             ? s.dependance_strict
-            : !(is_autocomplete(s) && s.dependance_strict) && !(input.dependance && cached);
+            : !(has_autocomplete(s) && s.dependance_strict) && !(input.dependance && cached);
 
         });
 
@@ -425,9 +425,9 @@ export default {
 
       await this.$nextTick();
 
-      const numdigaut       = input.options.numdigaut;
-      const is_autocomplete = 'autocompletefield' === input.type;
-      const ajax            = is_autocomplete ? {
+      const numdigaut        = input.options.numdigaut;
+      const has_autocomplete = 'autocompletefield' === input.type;
+      const ajax             = has_autocomplete ? {
         delay: 500,
         transport: async (d, ok, ko) => {
           try      {
@@ -448,9 +448,9 @@ export default {
         ajax,
         width:              '100%',
         dropdownParent:     $('.g3w-search-form:visible'),
-        minimumInputLength: is_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
-        allowClear:         is_autocomplete,
-        placeholder:        is_autocomplete ? '' : null,
+        minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
+        allowClear:         has_autocomplete,
+        placeholder:        has_autocomplete ? '' : null,
         /**
          * @param { Object } params
          * @param params.term the term that is used for searching
@@ -473,7 +473,7 @@ export default {
       SELECTS.push(select2);
 
       select2.on('select2:select select2:unselecting', e => {
-        if ('select2:select' === e.type || is_autocomplete) {
+        if ('select2:select' === e.type || has_autocomplete) {
           input.value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
           this.changeInput(input);
         }
