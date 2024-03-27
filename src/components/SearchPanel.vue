@@ -238,9 +238,6 @@ export default {
 
       const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
       const has_autocomplete = s => 'autocompletefield' === s.type;
-      const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
-      const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
-      const is_valuerelation = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
 
       try {
         this.state.searching = true;
@@ -302,29 +299,39 @@ export default {
         for (let i = 0; i < deps.length; i++) {
 
           // exclude autocomplete subscribers
-          if ('autocompletefield' === deps[i].type) {
+          if (has_autocomplete(deps[i])) {
             continue;
           }
 
           const subscribe = deps[i];
-          const vals = new Set(); // ensure unique values
+          const is_multi  = 'selectfield' === subscribe.type && !subscribe.dependance_strict;
+
+          const vals      = Array.from(new Set(            // ensure unique values
+            (data.data[0].features || [])                  // parent features
+              .map(f => f.get(subscribe.attribute))
+              .filter(v => v)                              // skip nullish
+              .map(value => is_multi ? `${value}` : value) // enforce string value
+          )).sort();
 
           console.log(subscribe, data);
 
-          // parent features
-          (data.data[0].features || []).forEach(f => {
-            const value = f.get(subscribe.attribute);
-            if (value) { vals.add(is_valuemap(subscribe) ? `${value}` : value); } // enforce string value
-          });
+          console.log(vals);
 
           // case value map
-          if (is_valuemap(subscribe)) {
-            []
-              .concat(subscribe._values)
-              .forEach(v => vals.has(v.key) && subscribe.values.push(v));
+          if (is_multi) {
+            subscribe._values.push(...subscribe.values);
           }
 
-          if (is_valuerelation(subscribe) && vals.size > 0) {
+          // // field is part of a relationship (`fformatter`)
+          // if (!subscribe.dependance_strict && ['RelationReference', 'ValueRelation'].includes(subscribe.widget_type)) {
+          //   const response = await state.search_layers[0].getFilterData({ fformatter: subscribe.attribute });
+          //   subscribe.values   = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
+          // }
+
+          /** @TODO try to replace with the above request (`fformatter` ?) */
+          // case value relation
+          if (is_multi && !subscribe.values.length && subscribe.options.layer_id && vals.length > 0) {
+            console.info('VALUE RELATION')
             try {
               const { data = [] } = await DataRouterService.getData('search:features', {
                 inputs: {
@@ -334,33 +341,33 @@ export default {
                     layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
                     search_endpoint: state.search_endpoint || state.search_layers[0].getSearchEndPoint(),
                     field: subscribe.value, // since v3.8.x
-                    value:  [...vals]
+                    value: vals
                   }),
                   ordering: subscribe.options.key, // since v3.8.x
                 },
                 outputs: false,
               });
-              (data && data[0] && data[0].features || []).forEach(f => { subscribe.values.push({ key: f.get(subscribe.options.key), value: f.get(subscribe.value) }); });
+              subscribe.values.push((data && data[0] && data[0].features || []).map(f => ({ key: f.get(subscribe.options.key), value: f.get(subscribe.value) })));
             } catch(e) {
               console.warn(e);
             }
           }
 
-          // set key value for select
-          if (!is_valuemap(subscribe) && !is_valuerelation(subscribe)) {
-            [...vals].sort().forEach(v => subscribe.values.push({ key: v, value: v }));
+          /** @TODO try to replace with the above request (`fformatter` ?) */
+          // set key value for select (!valuemap && !valuerelation)
+          if ((!is_multi || !subscribe.values.length) && (!is_multi || subscribe.values.length || !subscribe.options.layer_id)) {
+            console.info('SELECT')
+            subscribe.values.push(...vals.map(v => ({ key: v, value: v })));
           }
-
-          const sliced = subscribe.values.slice(1);
 
           // update cache
           if (input.dependance) {
             input.dvalues[parent.value]        = input.dvalues[parent.value] || {};
             input.dvalues[parent.value][value] = input.dvalues[parent.value][value] || {}
-            input.dvalues[parent.value][subscribe.attribute] = sliced;
+            input.dvalues[parent.value][subscribe.attribute] = subscribe.values.slice(1); // exclude first element (ALL_VALUE)
           } else {
             input.dvalues[value] = input.dvalues[value] || {};
-            input.dvalues[value][subscribe.attribute] = sliced;
+            input.dvalues[value][subscribe.attribute] = subscribe.values.slice(1);        // exclude first element (ALL_VALUE)
           }
 
           subscribe.disabled = false;
