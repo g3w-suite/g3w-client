@@ -236,11 +236,11 @@ export default {
 
       console.log(input, deps);
 
-      const is_empty          = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
-      const has_autocomplete  = s => 'autocompletefield' === s.type;
-      const has_dependance    = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
-      const is_valuemap       = s => !!(has_dependance(s) && s.values.length);
-      const is_valuerelation  = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
+      const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
+      const has_autocomplete = s => 'autocompletefield' === s.type;
+      const has_dependance   = s => ['selectfield', 'autocompletefield'].includes(s.type) && !s.dependance_strict && s.dependance
+      const is_valuemap      = s => !!(has_dependance(s) && s.values.length);
+      const is_valuerelation = s => !!(has_dependance(s) && !s.values.length && s.options.layer_id);
 
       try {
         this.state.searching = true;
@@ -266,8 +266,8 @@ export default {
 
           s.values = Array.from(new Set([                                       // ensure uniques values
             ...(!has_autocomplete(s) && !is_empty(value) ? [s.values[0]] : []), // get first value (ALL_VALUE)
-            ...(!has_autocomplete(s) && is_empty(value) ? s._values : []),      // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
-            ...(input.dependance && cached && cached[s.attribute] || [])        // get cached values 
+            ...(!has_autocomplete(s) && is_empty(value) ? s._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
+            ...(input.dependance && cached && cached[s.attribute]       || [])  // get cached values 
           ]));
 
           s.value = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
@@ -302,7 +302,7 @@ export default {
         for (let i = 0; i < deps.length; i++) {
 
           // exclude autocomplete subscribers
-          if('autocompletefield' === deps[i].type) {
+          if ('autocompletefield' === deps[i].type) {
             continue;
           }
 
