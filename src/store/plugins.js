@@ -59,7 +59,7 @@ function PluginsRegistry() {
    * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).
    * NOW WHEN CHANGE MAP IS TRIGGER, PAGE IS RELOADED.
    */
-  ProjectsRegistry.onafter('setCurrentProject', project =>{
+  ProjectsRegistry.onafter('setCurrentProject', project => {
     this.gidProject = project.getGid();
   });
 
@@ -79,11 +79,10 @@ function PluginsRegistry() {
     this.setPluginsConfig(options.pluginsConfigs);
     Object.keys(this.pluginsConfigs).forEach(name => this._configurationPlugins.push(name)); // filter
     this.addLoadingPlugins();
-    this.otherPluginsConfig = options.otherPluginsConfig; 
-    this.setOtherPlugins();                                                                  // set other plugin on in initConfig.group.plugins (law for example)
+    this.otherPluginsConfig = options.otherPluginsConfig || {};
+    this.setOtherPlugins(); // set another plugin on in initConfig.group.plugins (law for example)
     this.setDependencyPluginConfig();
-    const plugins = await this._loadPlugins();                                               // load plugins
-    return Promise.resolve(plugins);
+    return await this._loadPlugins();  // load plugins
   };
 
   /**
@@ -92,7 +91,7 @@ function PluginsRegistry() {
    * 
    */
   this.addLoadingPlugins = function() {
-    Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
+    Object.keys(this.pluginsConfigs).forEach(p => ApplicationService.loadingPlugin(p));
   };
 
   /**
@@ -138,7 +137,7 @@ function PluginsRegistry() {
     const law = OTHERPLUGINS[0];
     if (this.otherPluginsConfig && this.otherPluginsConfig[law] && this.otherPluginsConfig[law].length) {
       // law plugin
-      this.pluginsConfigs[law] = this.otherPluginsConfig[law];
+      this.pluginsConfigs[law]     = this.otherPluginsConfig[law];
       this.pluginsConfigs[law].gid = this.otherPluginsConfig.gid;
     } else {
       delete this.pluginsConfigs[law];
