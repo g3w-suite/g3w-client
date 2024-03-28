@@ -439,7 +439,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
                 resolve();
               };
               if (this.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
-              else { node => setTimeout(() => setCurrentStyleAndResolvePromise(node))(node) }// case of starting project creation
+              else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
             });
             promises.push(promise);
           }
