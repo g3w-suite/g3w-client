@@ -147,8 +147,8 @@ Vue.use({
           font: this.font
         }
       },
-      addFontClass({name, className}={}) {
-        let added = undefined === this.font[name];
+      addFontClass({ name, className } = {}) {
+        const added = undefined === this.font[name];
         if (added) {
           this.font[name] = className;
         }
@@ -159,7 +159,7 @@ Vue.use({
        */
       getInfoString() {},
       getFontClass(type) {
-        return undefined !== this.font[type] ? this.font[type] : '';
+        return undefined === this.font[type] ? '' : this.font[type];
       }
     };
     // include isMobile() method within all Vue instances
@@ -202,7 +202,7 @@ layout.loading(true);
 /**
  * ORIGINAL SOURCE: src/gui/app/index.js@3.4
  */
-const ApplicationTemplate = function({ApplicationService}) {
+const ApplicationTemplate = function({ ApplicationService }) {
   const appLayoutConfig = ApplicationService.getConfig().layout || {};
   // useful to build a difference layout/component based on mobile or not
   this._isMobile = isMobile.any;
@@ -248,101 +248,88 @@ const ApplicationTemplate = function({ApplicationService}) {
         sidebar: {
           components: [
             new MetadataComponent({
-              id: 'metadata',
-              open: false,
+              id:          'metadata',
+              open:        false,
               collapsible: false,
-              icon: GUI.getFontClass('file'),
-              mobile: true
+              icon:        GUI.getFontClass('file'),
+              mobile:      true,
             }),
             new SpatialBookMarksComponent({
-              id: 'spatialbookmarks',
-              open: false,
+              id:          'spatialbookmarks',
+              open:        false,
               collapsible: true,
-              icon: GUI.getFontClass('bookmark'),
-              mobile: true
+              icon:        GUI.getFontClass('bookmark'),
+              mobile:      true,
             }),
             new PrintComponent({
-              id: 'print',
-              open: false,
-              visible: (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+              id:          'print',
+              open:        false,
+              visible:     (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
               collapsible: true, //  it used to manage click event if you can run setOpen component method
-              icon: GUI.getFontClass('print'),
-              mobile: false
+              icon:        GUI.getFontClass('print'),
+              mobile:      false,
             }),
             new SearchComponent({
-              id: 'search',
-              open: false,
+              id:         'search',
+              open:        false,
               collapsible: true,
-              icon: GUI.getFontClass('search'),
-              actions: [{
-                id:"querybuilder",
-                class: `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
-                tooltip: 'Query Builder',
-                fnc:() => {
-                  GUI.closeContent();
-                  ApplicationTemplate.Services.sidebar.closeOpenComponents();
-                  QueryBuilderUIFactory.show({
-                    type: 'sidebar' // sidebar or modal
-                  });
-                },
-                style: {
-                  color: '#8DC3E3',
-                  padding: '6px',
-                  fontSize: '1.2em',
-                  borderRadius: '3px',
-                  marginRight: '5px'
-                }
+              icon:        GUI.getFontClass('search'),
+              actions:     [
+                {
+                  id:      "querybuilder",
+                  class:   `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
+                  tooltip: 'Query Builder',
+                  fnc:     () => {
+                    GUI.closeContent();
+                    ApplicationTemplate.Services.sidebar.closeOpenComponents();
+                    QueryBuilderUIFactory.show({ type: 'sidebar' });  // sidebar or modal
+                  },
+                  style: {
+                    color:        '#8DC3E3',
+                    padding:      '6px',
+                    fontSize:     '1.2em',
+                    borderRadius: '3px',
+                    marginRight:  '5px'
+                  }
               }],
-              mobile: true
+              mobile: true,
             }),
             // Component that store plugins
             new ToolsComponent({
-              id: 'tools',
-              open: false,
+              id:          'tools',
+              open:        false,
               collapsible: true,
-              icon: GUI.getFontClass('tools'),
-              mobile: true
+              icon:        GUI.getFontClass('tools'),
+              mobile:      true,
             }),
             new WMSComponent({
-              id: 'wms',
-              open: false,
+              id:          'wms',
+              open:        false,
               collapsible: true,
-              icon: GUI.getFontClass('layers'),
-              mobile: true
+              icon:        GUI.getFontClass('layers'),
+              mobile:      true,
             }),
             new CatalogComponent({
               id: 'catalog',
               open: false,
               collapsible: false,
-              isolate: true,
-              icon: GUI.getFontClass('map'),
-              mobile: true,
-              config: {
-                legend: {
-                  config: appLayoutConfig.legend
-                },
-              }
+              isolate:     true,
+              icon:        GUI.getFontClass('map'),
+              mobile:      true,
+              config:      { legend: { config: appLayoutConfig.legend } },
             }),
           ]
         },
-        floatbar:{
-          components: []
-        }
+        floatbar: { components: [] }
       },
       othercomponents: [
-        new QueryResultsComponent({
-          id: 'queryresults'
-        })
+        new QueryResultsComponent({ id: 'queryresults' })
       ],
       viewport: {
         // placeholder of the content (view content). Secondary view (hidden)
         components: {
-          map: new MapComponent({
-            id: 'map'
-          }),
-          content: new ContentsComponent({
-            id: 'contents'
-          })
+          map:     new MapComponent({ id: 'map' }),
+          content: new ContentsComponent({ id: 'contents' })
         }
       }
     }
@@ -427,17 +414,15 @@ const ApplicationTemplate = function({ApplicationService}) {
     !dataTable ? $.extend( true, $.fn.dataTable.defaults, languageOptions) : dataTable.dataTable( {"oLanguage": languageOptions});
   };
 
-  // route setting at beginning (is an example)
+  // route setting at the beginning (is an example)
   this._addRoutes = function() {
-    const RouterService = ApplicationService.getRouterService();
-    const mapService = GUI.getComponent('map').getService();
-    RouterService.addRoute('map/zoomto/{coordinate}/:zoom:', function(coordinate, zoom) {
+    ApplicationService.getRouterService().addRoute('map/zoomto/{coordinate}/:zoom:', function(coordinate, zoom) {
       coordinate = _.map(coordinate.split(','), function(xy) {
         return Number(xy)
       });
       zoom = zoom ? Number(zoom): null;
       if (coordinate.length) {
-        mapService.on('ready', function() {
+        GUI.getService('map').on('ready', function() {
           this.zoomTo(coordinate, zoom);
         })
       }
@@ -446,29 +431,29 @@ const ApplicationTemplate = function({ApplicationService}) {
 
   //register all services
   this._setUpServices = function() {
-    Object.keys(ApplicationTemplate.Services).forEach(element => {
-      const service = ApplicationTemplate.Services[element];
-      ApplicationService.registerService(element, service);
-    });
-    Object.values(GUI.getComponents()).forEach(component => {
-      ApplicationService.registerService(component.id, component.getService());
-    });
-    ApplicationTemplate.Services.viewport.on('resize', ()=>GUI.emit('resize'));
+    Object
+      .keys(ApplicationTemplate.Services)
+      .forEach(element => ApplicationService.registerService(element, ApplicationTemplate.Services[element]));
+
+    Object
+      .values(GUI.getComponents())
+      .forEach(component => ApplicationService.registerService(component.id, component.getService()));
+
+    ApplicationTemplate.Services.viewport.on('resize', () => GUI.emit('resize'));
   };
   // build template function
   this._buildTemplate = function() {
     FloatbarService.init(layout);
-    const placeholdersConfig = this.templateConfig.placeholders;
-    Object.entries(placeholdersConfig).forEach(([placeholder, options]) => {
-      this._addComponents(options.components, placeholder);
-    });
-    //register other compoents
+    Object
+      .entries(this.templateConfig.placeholders)
+      .forEach(([placeholder, options]) => this._addComponents(options.components, placeholder));
+    //register other components
     this._addOtherComponents();
   };
 
   //add component not related to placeholder
   this._addOtherComponents = function() {
-    if (this.templateConfig.othercomponents) this._addComponents(this.templateConfig.othercomponents);
+    if (this.templateConfig.othercomponents) { this._addComponents(this.templateConfig.othercomponents) }
   };
   // viewport setting
   this._setViewport = function(viewportOptions) {
@@ -516,14 +501,15 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
 
   this._removeComponent = function(componentId, placeholder, options) {
-    const component = ComponentsRegistry.unregisterComponent(componentId);
-    placeholder && ApplicationTemplate.Services[placeholder] && ApplicationTemplate.Services[placeholder].removeComponent(component, options);
+    if (placeholder && ApplicationTemplate.Services[placeholder]) {
+      ApplicationTemplate.Services[placeholder].removeComponent(ComponentsRegistry.unregisterComponent(componentId), options);
+    }
   };
 
   this._showModalOverlay = function(bool=false, message) {
     const mapService = GUI.getService('map');
-    if (bool) mapService.startDrawGreyCover(message);
-    else mapService.stopDrawGreyCover();
+    if (bool) { mapService.startDrawGreyCover(message) }
+    else { mapService.stopDrawGreyCover() }
   };
 
   this._isSidebarVisible = function() {
@@ -554,11 +540,11 @@ const ApplicationTemplate = function({ApplicationService}) {
       case 'Object':
         if (error.responseJSON) {
           error = error.responseJSON;
-          if (error.result === false){
-            const {code='', data='', message:msg=''} = error.error;
+          if (error.result === false) {
+            const { code='', data='', message:msg='' } = error.error;
             message = `${code.toUpperCase()} ${data} ${msg}`;
           }
-        } else if (error.responseText){
+        } else if (error.responseText) {
           message = error.responseText;
         }
         break;
@@ -578,37 +564,36 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     /* Common methods */
     GUI.layout = layout;
-    GUI.getSize = ({element, what}) => {
+    GUI.getSize = ({ element, what }) => {
       if (element && what)
         return this.sizes[element][what];
     };
 
-    GUI.addComponent = this._addComponent.bind(this);
+    GUI.addComponent    = this._addComponent.bind(this);
     GUI.removeComponent = this._removeComponent.bind(this);
 
     /* Metodos to define */
-    GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
+    GUI.getResourcesUrl = () => ApplicationService.getConfig().resourcesurl;
 
     //LIST
-    GUI.showList = FloatbarService.showPanel.bind(FloatbarService);
-    GUI.closeList = FloatbarService.closePanel.bind(FloatbarService);
-    GUI.hideList = FloatbarService.hidePanel.bind(FloatbarService);
+    GUI.showList        = FloatbarService.showPanel.bind(FloatbarService);
+    GUI.closeList       = FloatbarService.closePanel.bind(FloatbarService);
+    GUI.hideList        = FloatbarService.hidePanel.bind(FloatbarService);
 
     // TABLE
-    GUI.showTable = function() {};
-    GUI.closeTable = function() {};
+    GUI.showTable       = function() {};
+    GUI.closeTable      = function() {};
 
-    //Function called from DataRouterservice for gui output
     /**
-     *
-     * @param data
+     * Function called from DataRouterservice for gui output
+     * @param dataPromise
      * @param options
      */
-    GUI.outputDataPlace = async function(dataPromise, options={}){
+    GUI.outputDataPlace = async function(dataPromise, options = {}) {
       // show parameter it used to set condition to show result or not
       // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
-      const defaultOutputConfig = {condition:true, add:false, loading:true};
-      const {title='', show=defaultOutputConfig, before, after} = options;
+      const defaultOutputConfig = { condition:true, add:false, loading:true };
+      const { title='', show=defaultOutputConfig, before, after } = options;
       // convert show in an object
       const outputConfig = (toRawType(show) !== 'Object') ?
         {
@@ -622,7 +607,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       const {condition, add, loading} = outputConfig;
       //check if waiting output data
       // in case we stop and substiute with new request data
-      this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
+      if (this.waitingoutputdataplace) { await this.waitingoutputdataplace.stop() }
       let queryResultsService = add ? GUI.getService('queryresults'): loading && this.showContentFactory('query')(title);
       this.waitingoutputdataplace = (() => {
         let stop = false;
@@ -632,11 +617,13 @@ const ApplicationTemplate = function({ApplicationService}) {
             //if set before call method and wait
             before && await before(data);
             // in case of usermessage show user message
-            data.usermessage && GUI.showUserMessage({
-              type: data.usermessage.type,
-              message: data.usermessage.message,
-              autoclose: data.usermessage.autoclose
-            });
+            if (data.usermessage) {
+              GUI.showUserMessage({
+                type:      data.usermessage.type,
+                message:   data.usermessage.message,
+                autoclose: data.usermessage.autoclose
+              });
+            }
             if (!stop) {
               // check condition
               const showResult = (toRawType(condition) === 'Function') ? condition(data) : (toRawType(condition) === 'Boolean') ? condition : true;
@@ -645,26 +632,23 @@ const ApplicationTemplate = function({ApplicationService}) {
                   add
                 });
               }
-              else GUI.closeContent();
+              else  { GUI.closeContent() }
               // call after is set with data
-              after && after(data);
+              if (after) { after(data) }
             }
-          } catch(error) {
-            const message = this.errorToMessage(error);
+          } catch(e) {
             this.showUserMessage({
-              type: 'alert',
-              message,
+              type:        'alert',
+              message:     this.errorToMessage(e),
               textMessage: true
             });
             this.closeContent();
           } finally {
-            if (!stop) this.waitingoutputdataplace = null;
+            if (!stop) { this.waitingoutputdataplace = null }
           }
         })();
         return {
-          stop: async ()=> {
-            stop = true;
-          }
+          stop: async () => stop = true
         }
       })();
     };
@@ -682,22 +666,22 @@ const ApplicationTemplate = function({ApplicationService}) {
       return showPanelContent;
     };
 
-    GUI.showForm = function(options={}) {
-      const {perc, split='h', push, showgoback, crumb} = options;
+    GUI.showForm = function(options = {}) {
+      const { perc, split = 'h', push, showgoback, crumb } = options;
       const FormComponent = require('gui/form/vue/form');
       // new isnstace every time
-      const formComponent = options.formComponent ? new options.formComponent(options) :  new FormComponent(options);
+      const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
       //get service
       const formService = formComponent.getService();
       // parameters : [content, title, push, perc, split, closable, crumb]
       GUI.setContent({
         perc,
-        content: formComponent,
+        content:    formComponent,
         split,
         crumb,
-        push: !!push, //only one( if other delete previous component)
+        push:       !!push, //only one (if other deletes previous component)
         showgoback: !!showgoback,
-        closable: false
+        closable:   false
       });
       // return service
       return formService;
@@ -707,15 +691,16 @@ const ApplicationTemplate = function({ApplicationService}) {
      *
      * @param pop remove or not content or pop
      */
-    GUI.closeForm = function({pop=false}={}) {
+    GUI.closeForm = function({ pop = false } = {}) {
       this.emit('closeform', false);
-      pop ? GUI.popContent() : ViewportService.removeContent();
+      if (pop) { GUI.popContent()}
+      else { ViewportService.removeContent() }
       // force set modal to false
       GUI.setModal(false);
     };
 
     GUI.disableElement = function({element, disable}) {
-      disable && $(element).addClass('g3w-disabled') || $(element).removeClass('g3w-disabled');
+      $(element)[disable ? 'addClass' : 'removeClass']('g3w-disabled');
     };
 
     GUI.disableContent = function(disable) {
@@ -739,28 +724,26 @@ const ApplicationTemplate = function({ApplicationService}) {
       return ViewportService.closeContent();
     };
 
-    GUI.closeOpenSideBarComponent = function(){
+    GUI.closeOpenSideBarComponent = function() {
       ApplicationTemplate.Services.sidebar.closeOpenComponents();
     };
 
     // show results info/search
     GUI.showQueryResults = function(title, results) {
       const queryResultsComponent = GUI.getComponent('queryresults');
-      const queryResultService = queryResultsComponent.getService();
+      const queryResultService    = queryResultsComponent.getService();
       queryResultService.reset();
       if (results) {
         queryResultService.setQueryResponse(results);
       }
       GUI.showContextualContent({
-        content: queryResultsComponent,
-        title: "info.title",
-        crumb: {
-          title: "info.title",
-          trigger: null
-        },
-        push: GUI.getPushContent(),
+        content:    queryResultsComponent,
+        title:      "info.title",
+        crumb:      { title: "info.title", trigger: null },
+        push:       GUI.getPushContent(),
         post_title: title
       });
+
       return queryResultService;
     };
 
@@ -770,17 +753,17 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     GUI.removeNavBarItem = function() {};
 
-    GUI.showPanel = SidebarService.showPanel.bind(SidebarService);
+    GUI.showPanel  = SidebarService.showPanel.bind(SidebarService);
 
     GUI.closePanel = SidebarService.closePanel.bind(SidebarService);
 
     ///
-    GUI.disableApplication = function(bool=false){
+    GUI.disableApplication = function(bool = false) {
       ApplicationService.disableApplication(bool);
     };
 
     //showusermessage
-    GUI.showUserMessage = function(options={}) {
+    GUI.showUserMessage = function(options = {}) {
       return ViewportService.showUserMessage(options);
     };
 
@@ -820,30 +803,30 @@ const ApplicationTemplate = function({ApplicationService}) {
       }
     };
 
-    // proxy  bootbox library
+    // proxy bootbox library
     GUI.dialog = bootbox;
 
     //modal dialog//
-    GUI.showModalDialog = function(options={}) {
+    GUI.showModalDialog = function(options = {}) {
       return GUI.dialog.dialog(options);
     };
 
     /* spinner */
-    GUI.showSpinner = function(options={}){
-      const container = options.container || 'body';
-      const id = options.id || 'loadspinner';
-      const where = options.where || 'prepend'; // append | prepend
-      const style = options.style || '';
+    GUI.showSpinner = function(options = {}) {
+      const container   = options.container || 'body';
+      const id          = options.id || 'loadspinner';
+      const where       = options.where || 'prepend'; // append | prepend
+      const style       = options.style || '';
       const transparent = options.transparent ? 'background-color: transparent' : '';
-      const center = options.center ? 'margin: auto' : '';
-      if (!$("#"+id).length) {
-        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'" style="'+ center+'"></div></div>');
+      const center      = options.center ? 'margin: auto' : '';
+      if (!$(`#${id}`).length) {
+        $(container)[where].call($(container),`<div id="${id}" class="spinner-wrapper ${style}" style="${transparent}"><div class="spinner ${style}" style="${center}"></div></div>`);
       }
     };
 
     //hide spinner
-    GUI.hideSpinner = function(id='loadspinner'){
-      $("#"+id).remove();
+    GUI.hideSpinner = function(id = 'loadspinner') {
+      $(`#${id}`).remove();
     };
 
     /* end spinner*/
@@ -861,12 +844,12 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     // SIDEBAR //
-    GUI.showSidebar = this._showSidebar.bind(this);
-    GUI.hideSidebar = this._hideSidebar.bind(this);
+    GUI.showSidebar      = this._showSidebar.bind(this);
+    GUI.hideSidebar      = this._hideSidebar.bind(this);
     GUI.isSidebarVisible = this._isSidebarVisible.bind(this);
 
     // RELOAD COMPONENTS
-    GUI.reloadComponents = function(){
+    GUI.reloadComponents = function() {
       ApplicationTemplate.Services.sidebar.reloadComponents();
     };
 
@@ -880,7 +863,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       $(element).modal(show ? 'show' : 'hide')
     };
 
-    GUI.disableSideBar = function(bool=true) {
+    GUI.disableSideBar = function(bool = true) {
       ApplicationState.gui.sidebar.disabled = bool;
     };
 
@@ -894,11 +877,8 @@ const ApplicationTemplate = function({ApplicationService}) {
       ViewportService.showMap();
     };
 
-    GUI.showContextualMap = function(perc=30, split) {
-      ViewportService.showContextualMap({
-        perc,
-        split
-      })
+    GUI.showContextualMap = function(perc = 30, split) {
+      ViewportService.showContextualMap({ perc, split });
     };
 
     GUI.setContextualMapComponent = function(mapComponent) {
@@ -910,7 +890,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     //  (100%) content
-    GUI.showContent = (options={}) => {
+    GUI.showContent = (options = {}) => {
       GUI.setLoadingContent(false);
       options.perc = this._isMobile ? 100 : options.perc;
       GUI.setContent(options);
@@ -924,10 +904,10 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     // add component to stack (append)
-    // Differences between pushContent and setContent are :
-    //  - push every componet is added, set is refreshed
+    // Differences between pushContent and setContent are:
+    //  - push every component is added, set is refreshed
     //  - pushContent has a new parameter (backonclose) when is clicked x
-    //  - the contentComponet is close all stack is closed
+    //  - the contentComponent is close all stacks are closed
     GUI.pushContent = (options = {}) => {
       options.perc = this._isMobile ? 100 : options.perc;
       options.push = true;
@@ -944,16 +924,16 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.popContent = function() {
       ViewportService.popContent();
     };
-    //return number of component of stack
+    //return number of a component of stack
     GUI.getContentLength = function() {
       return ViewportService.contentLength();
     };
 
-    GUI.getCurrentContentTitle = function(){
+    GUI.getCurrentContentTitle = function() {
       return ViewportService.getCurrentContentTitle();
     };
 
-    GUI.getCurrentContentId = function(){
+    GUI.getCurrentContentId = function() {
       return ViewportService.getCurrentContentId();
     };
 
@@ -961,7 +941,7 @@ const ApplicationTemplate = function({ApplicationService}) {
      * change current content title
      * @param title
      */
-    GUI.changeCurrentContentTitle = function(title){
+    GUI.changeCurrentContentTitle = function(title) {
       ViewportService.changeCurrentContentTitle(title);
     };
 
@@ -976,19 +956,19 @@ const ApplicationTemplate = function({ApplicationService}) {
     /**
      * Method to get current content
      */
-    GUI.getCurrentContent = function(){
+    GUI.getCurrentContent = function() {
       return ViewportService.getCurrentContent();
     };
 
-    GUI.toggleFullViewContent = function(){
+    GUI.toggleFullViewContent = function() {
       ViewportService.toggleFullViewContent();
     };
 
-    GUI.resetToDefaultContentPercentage = function(){
+    GUI.resetToDefaultContentPercentage = function() {
       ViewportService.resetToDefaultContentPercentage();
     };
 
-    GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
+    GUI.getProjectMenuDOM = function({ projects = [], host, cbk } = {}) {
       const projectVueMenuComponent = new ProjectsMenuComponent({
         projects: projects && Array.isArray(projects) && projects,
         cbk,
@@ -997,12 +977,12 @@ const ApplicationTemplate = function({ApplicationService}) {
       return projectVueMenuComponent.$mount().$el;
     };
 
-    GUI.setCloseUserMessageBeforeSetContent = function(bool=true){
+    GUI.setCloseUserMessageBeforeSetContent = function(bool = true) {
       this._closeUserMessageBeforeSetContent = bool;
     };
 
     GUI._setContent = (options={}) => {
-      this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
+      if (this._closeUserMessageBeforeSetContent) { GUI.closeUserMessage() }
       options.content     = options.content || null;
       options.title       = options.title || "";
       options.push        = _.isBoolean(options.push) ? options.push : false;
@@ -1026,20 +1006,17 @@ const ApplicationTemplate = function({ApplicationService}) {
       return BootstrapVersionClasses
     };
 
-    GUI.getTemplateClass = function({element, type}) {
+    GUI.getTemplateClass = function({ element, type } = {}) {
       return BootstrapVersionClasses[element][type];
     };
 
     GUI.setLoadingContent = function(loading = false) {
       ApplicationTemplate.Services.viewport.setLoadingContent(loading);
-      return loading && new Promise((resolve)=>{
-        setTimeout(resolve, 200)
-      })
+      return loading && new Promise((resolve) => setTimeout(resolve, 200))
     };
 
     GUI.openProjectsMenu = function() {
-      const isProjectMenuComponent = GUI.getComponent('contents').getComponentById('projectsmenu');
-      if (isProjectMenuComponent) {
+      if (GUI.getComponent('contents').getComponentById('projectsmenu')) {
         GUI.closeContent();
         return;
       }
@@ -1050,8 +1027,8 @@ const ApplicationTemplate = function({ApplicationService}) {
       ApplicationTemplate.Services.sidebar.closeOpenComponents();
       GUI.setContent({
         content: new ProjectsMenuComponent(),
-        title: '',
-        perc: 100
+        title:   '',
+        perc:    100
       });
     };
 
@@ -1059,8 +1036,7 @@ const ApplicationTemplate = function({ApplicationService}) {
      * @since 3.8.0
      */
     GUI.openChangeMapMenu = function() {
-      const isChangeMapMenuComponent = GUI.getComponent('contents').getComponentById('changemapmenu');
-      if (isChangeMapMenuComponent) {
+      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
         GUI.closeContent();
         return;
       }
@@ -1094,8 +1070,8 @@ ApplicationTemplate.PLACEHOLDERS = [
 
 // service know by the applications (standard)
 ApplicationTemplate.Services = {
-  navbar: null,
-  sidebar: SidebarService,
+  navbar:   null,
+  sidebar:  SidebarService,
   viewport: ViewportService,
   floatbar: null
 };
@@ -1132,13 +1108,13 @@ ApplicationTemplate.fail = function({ error }) {
 ApplicationService.init()
   .then(() => {
     const app = new ApplicationTemplate({ ApplicationService });
-    app.on('ready', () =>  ApplicationService.postBootstrap());
+    app.on('ready', () => ApplicationService.postBootstrap());
     app.init();
   })
-  .catch(({ error=null, language }) => {
+  .catch(({ error = null, language }) => {
     if (error) {
-      if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
-      else if (error.statusText) error = error.statusText;
+      if (error.responseJSON && error.responseJSON.error.data) { error = error.responseJSON.error.data }
+      else if (error.statusText) { error = error.statusText }
     }
     console.error(error);
     ApplicationTemplate.fail({ error });
