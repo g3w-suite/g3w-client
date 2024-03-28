@@ -33,17 +33,17 @@ function TaskService() {
    * return a Promise that return a task id
    */
   this.runTask = async function(options={}) {
-    let {method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener= () => {}} = options;
+    let { method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener= () => {} } = options;
     try {
-      const response =  method === 'GET' ? await XHR.get({
+      const response = 'GET' === method  ? await XHR.get({
         url,
         params
       }): await XHR.post({
         url,
-        data: params.data || {},
+        data:        params.data || {},
         contentType: params.contentType || "application/json"
       });
-      const {result, task_id} = response;
+      const { result, task_id } = response;
       if (result) {
         const intervalId = setInterval(async () => {
           // check if timeout is defined
@@ -54,8 +54,9 @@ function TaskService() {
               response = await XHR.get({
                 url: `${taskUrl}${task_id}`
               });
-            } catch(error) {
-              response = error;
+            } catch(e) {
+              response = e;
+              console.warn(e);
             }
             listener({
               task_id,
@@ -87,8 +88,8 @@ function TaskService() {
         return Promise.reject(response);
       }
 
-    } catch(err) {
-      return Promise.reject(err);
+    } catch(e) {
+      return Promise.reject(e);
     }
   };
 
@@ -98,7 +99,7 @@ function TaskService() {
    *   taskId: taskId that is running
    * }
    */
-  this.stopTask = function(options={}) {
+  this.stopTask = function(options= {}) {
     const { task_id } = options;
     const task = tasks.find(task => task.task_id === task_id);
     if (task) {
@@ -110,11 +111,7 @@ function TaskService() {
    * clare all task
    */
   this.clear = function() {
-    tasks.forEach(({ taskId }) => {
-      this.stopTask({
-        taskId
-      })
-    });
+    tasks.forEach(({ taskId }) => this.stopTask({ taskId }));
     //reset to empty tasks
     tasks.splice(0);
   }
