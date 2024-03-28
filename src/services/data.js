@@ -27,16 +27,16 @@ const DataService = {
   /**
    * Object contain output function to show results
    * @type {{gui(*=, *=): void, iframe(*=, *=): void}}
-   * dataPromise: is thre promise request for data,
+   * dataPromise: is a promise request for data,
    * options: {
    *   show: method or Boolean to set if show or not the result on output
-   *   before : async function to handle data return from server
-   *   after: method to handle or do some thisn after show data
+   *   before: async function to handle data return from server
+   *   after: method to handle or do some this after show data
    * }
    */
   ouputplaces: {
 
-    async gui(dataPromise, options={}) {
+    async gui(dataPromise, options = {}) {
       GUI.setLoadingContent(true);
       try {
         GUI.outputDataPlace(dataPromise, options);
@@ -47,7 +47,7 @@ const DataService = {
       GUI.setLoadingContent(false);
     },
 
-    async iframe(dataPromise, options={}) {
+    async iframe(dataPromise, options = {}) {
       IFrameRouterService.outputDataPlace(dataPromise, options);
     }
 
@@ -59,14 +59,14 @@ const DataService = {
    * 
    * @returns {Promise<void>}
    */
-  async getData(contextAndMethod, options={}) {
-    const { context, method } = splitContextAndMethod(contextAndMethod);
-    const service             = DataService.getService(context);
+  async getData(contextAndMethod, options = {}) {
+    const { context, method }     = splitContextAndMethod(contextAndMethod);
+    const service                 = DataService.getService(context);
     const {inputs={}, outputs={}} = options;
     //return a promise and not the data
     const dataPromise = service[method](inputs);
     if (outputs) {
-      DataService.currentoutputplaces.forEach(place => DataService.ouputplaces[place](dataPromise, outputs));
+      DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](dataPromise, outputs));
     }
     //return always data
     return await (await dataPromise);
@@ -76,8 +76,7 @@ const DataService = {
    * Force to show empty output data
    */
   showEmptyOutputs() {
-    const dataPromise = Promise.resolve({ data: [] });
-    DataService.currentoutputplaces.forEach(place => DataService.ouputplaces[place](dataPromise));
+    DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](Promise.resolve({ data: [] })));
   },
 
   /**
@@ -119,9 +118,9 @@ const DataService = {
    * method(dataPromise, options={}) {}
    *   }
    */
-  addNewOutputPlace({place, method=()=>{}}={}) {
+  addNewOutputPlace({ place, method = () => {} } = {}) {
     let added = false;
-    if (DataService.ouputplaces[place] === undefined) {
+    if (undefined === DataService.ouputplaces[place] ) {
       DataService.ouputplaces[place] = method;
       added = true;
     }
@@ -149,11 +148,7 @@ DataService.init = async () => {
       constructor() {
         super();
         /** @type {{filtrable: {ows: string}}} */
-        this.condition = {
-          filtrable: {
-            ows: 'WFS'
-          }
-        }    
+        this.condition = { filtrable: { ows: 'WFS' } };
       }
 
       /**
@@ -236,6 +231,9 @@ DataService.init = async () => {
        * @param feature_count
        * @param multilayers
        * @param condition
+       * @param filterConfig
+       * @param excludeSelected
+       * @param addExternal
        * @param layersFilterObject
        * @returns {Promise<unknown>}
        */
@@ -364,45 +362,47 @@ DataService.init = async () => {
       }
 
       /**
-      *
-      * @param request is a Promise(jquery promise at moment
+      * Wrap jQuery request promise with native Promise
+      * @param request is a Promise(jquery promise)
+      * @param query
       * @returns {Promise<unknown>}
       */
-      handleRequest(request, query={}) {
-        return new Promise((resolve, reject) =>{
-          request.then(response => {
-            const results = this.handleResponse(response, query);
-            resolve(results);
-          }).fail(reject)
+      handleRequest(request, query = {}) {
+        return new Promise((resolve, reject) => {
+          request
+            .then(response => {
+              const results = this.handleResponse(response, query);
+              resolve(results);
+            })
+            .fail(reject)
         })
       }
 
       /**
       *
       * @param response
-      * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
+      * @param query
+      * @returns {{result: boolean, data: FlatArray<*[][], 1>[], query: {}, type: string}}
       */
-      handleResponse(response, query={}) {
-        const layersResults = response;
-        const results = {
+      handleResponse(response = [], query = {}) {
+        return {
           query,
-          type: 'ows',
-          data: [],
+          type:   'ows',
+          data:   response.map(({ data = [] }) => data).flat(),
           result: true // set result to true
         };
-        layersResults.forEach(result => result.data && result.data.forEach(data => results.data.push(data)));
-        return results;
+
       }
 
       /**
       * Exception response has user message attribute
       */
-      async returnExceptionResponse({usermessage}) {
+      async returnExceptionResponse({ usermessage }) {
         return {
-          data: [],
+          data:   [],
           usermessage,
           result: true,
-          error: true
+          error:  true
         }
       }
 
@@ -611,7 +611,7 @@ DataService.init = async () => {
        * 
        * @returns { Promise<*> }
        */
-      handleRequest({ url, params={}, contentType='application/json' } = {}) {
+      handleRequest({ url, params = {}, contentType = 'application/json' } = {}) {
         return XHR.post({ url, contentType, data: JSON.stringify(params) });
       }
 
@@ -708,7 +708,7 @@ DataService.init = async () => {
 class BaseService {
 
   constructor() {
-    ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
+    ProjectsRegistry.onbefore('setCurrentProject', project => this.project = project);
     this.project = ProjectsRegistry.getCurrentProject();
   }
   /**
