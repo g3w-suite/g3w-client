@@ -6,12 +6,12 @@ import {
 import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
 import { crsToCrsObject } from 'utils/crsToCrsObject';
+import G3WObject          from 'core/g3wobject';
 
 const { base, inherit, XHR } = require('utils');
-const G3WObject = require('core/g3wobject');
-const LayerFactory = require('core/layers/layerfactory');
-const LayersStore = require('core/layers/layersstore');
-const Projections = require('g3w-ol/projection/projections');
+const LayerFactory           = require('core/layers/layerfactory');
+const LayersStore            = require('core/layers/layersstore');
+const Projections            = require('g3w-ol/projection/projections');
 
 /**
  * @FIXME options param appears to be unused
@@ -41,19 +41,19 @@ const Projections = require('g3w-ol/projection/projections');
  * 
  * @param options
  */
-function Project(config={}, options={}) {
+function Project(config = {}, options={}) {
   /**
    * For future implementation catalog tab actived
    */
-  config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers';
+  config.catalog_tab            = config.toc_tab_default || config._catalog_tab || 'layers';
 
-  config.ows_method = config.ows_method || 'GET';
+  config.ows_method             = config.ows_method || 'GET';
 
   config.toc_layers_init_status = config.toc_layers_init_status || TOC_LAYERS_INIT_STATUS;
   
   config.toc_themes_init_status = config.toc_themes_init_status || TOC_THEMES_INIT_STATUS;
   
-  config.query_point_tolerance = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
+  config.query_point_tolerance  = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
   
   this.state = config;
 
@@ -76,9 +76,9 @@ function Project(config={}, options={}) {
   /**
    * Set the project projection to object crs
    */
-  this.state.crs = crsToCrsObject(this.state.crs);
+  this.state.crs    = crsToCrsObject(this.state.crs);
 
-  this._projection = Projections.get(this.state.crs);
+  this._projection  = Projections.get(this.state.crs);
 
   /**
    * Build a layersstore of the project
@@ -234,29 +234,27 @@ proto._buildLayersStore = function() {
   const overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
 
   layersStore.setOptions({
-    id: this.state.gid,
+    id:         this.state.gid,
     projection: this._projection,
-    extent: this.state.extent,
+    extent:     this.state.extent,
     initextent: this.state.initextent,
-    wmsUrl: this.state.WMSUrl,
-    catalog: this.state.gid !== overviewprojectgid
+    wmsUrl:     this.state.WMSUrl,
+    catalog:    overviewprojectgid !== this.state.gid,
   });
 
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
   
   layers.forEach(layerConfig => {
-    //check and set crs in objectformat
-    layerConfig.crs = crsToCrsObject(layerConfig.crs);
+    //check and set crs in object format
+    layerConfig.crs               = crsToCrsObject(layerConfig.crs);
     // add projection
-    layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
+    layerConfig.projection        = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
     //add ows_method
-    layerConfig.ows_method = this.getOwsMethod();
+    layerConfig.ows_method        = this.getOwsMethod();
     layerConfig.wms_use_layer_ids = this.state.wms_use_layer_ids;
-    const layer = LayerFactory.build(layerConfig, { project: this });
-    if (layer) {
-      layersStore.addLayer(layer);
-    } 
+    const layer                   = LayerFactory.build(layerConfig, { project: this });
+    if (layer) { layersStore.addLayer(layer)}
   });
   
   // create layerstree from layerstore
@@ -281,20 +279,20 @@ proto.getBaseLayers = function() {
 };
 
 /**
- * Get configuration layers array from server config
+ * Get configuration layers an array from server config
  * 
  * @param filter property layer config to filter
  * @returns {*}
  */
-proto.getConfigLayers = function({key}={}) {
-  return key ? this.state.layers.filter(layer => layer[key] !== undefined) : this.state.layers;
+proto.getConfigLayers = function({ key } = {}) {
+  return key ? this.state.layers.filter(layer => undefined !== layer[key] ) : this.state.layers;
 };
 
 /**
  * Legend Position
  */
 
-proto.setLegendPosition = function(legend_position='tab') {
+proto.setLegendPosition = function(legend_position = 'tab') {
   this.state.legend_position = legend_position;
 };
 
@@ -361,7 +359,7 @@ proto.getCrs = function() {
 /**
  * @param {'major' | 'minor' | 'patch' } qgis.type 
  */
-proto.getQgisVersion = function({type}={}) {
+proto.getQgisVersion = function({ type } = {}) {
   const index = ['major', 'minor', 'patch'].indexOf(type);
   return -1 === index ? this.state.qgis_version : +this.state.qgis_version.split('.')[index];
 };
@@ -385,23 +383,24 @@ proto.getLayersStore = function() {
 /// Map Themes
 
 /**
- * Set properties ( checked and visible) from view to layerstree
+ * Set properties (checked and visible) from view to layerstree
  * 
  * @param map_theme map theme name
  * @param layerstree // current layerstree of TOC
  */
-proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstree=this.state.layerstree}) {
+proto.setLayersTreePropertiesFromMapTheme = async function({
+  map_theme,
+  layerstree = this.state.layerstree
+}) {
   /**
    * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
    * plus layerstree of map_theme get from api map theme
    */
   const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
   // extract layerstree
-  const {layerstree:mapThemeLayersTree} = mapThemeConfig;
+  const { layerstree:mapThemeLayersTree } = mapThemeConfig;
   // create a chages need to apply map_theme changes to map and TOC
-  const changes = {
-    layers: {} // key is the layer id and object has style, visibility change (Boolean)
-  };
+  const changes  = {layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
   const promises = [];
   /**
    * Function to traverse current layerstree of toc anche get changes with the new one related to map_theme choose
@@ -409,54 +408,52 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
    * @param layerstree // current layerstree
    */
   const groups = [];
-  const traverse = (mapThemeLayersTree, layerstree, checked) =>{
-    mapThemeLayersTree.forEach((node, index) => {
-      if (node.nodes) { // case of group
-        groups.push({
-          node,
-          group: layerstree[index]
-        });
-        traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
-      } else {
-        // case of layer
-        node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
-        if (layerstree[index].checked !== node.visible) {
-          changes.layers[node.id] = {
-            visibility: true,
-            style: false
-          };
-        }
-        layerstree[index].checked = node.visible;
-        // if has a style settled
-        if (node.style) {
-          const promise = new Promise((resolve, reject) =>{
-            const setCurrentStyleAndResolvePromise = node => {
-              if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                visibility: false,
-                style: false
-              };
-              changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
-              resolve();
-            };
-            if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
-            else // case of starting project creation
-              node => setTimeout(() => {
-                setCurrentStyleAndResolvePromise(node);
-              })(node);
+  const traverse = (mapThemeLayersTree, layerstree, checked) => {
+    mapThemeLayersTree
+      .forEach((node, index) => {
+        if (node.nodes) { // case of a group
+          groups.push({
+            node,
+            group: layerstree[index]
           });
-          promises.push(promise);
+          traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
+        } else {
+          // case of layer
+          node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
+          if (layerstree[index].checked !== node.visible) {
+            changes.layers[node.id] = {
+              visibility: true,
+              style: false
+            };
+          }
+          layerstree[index].checked = node.visible;
+          // if it has a style settled
+          if (node.style) {
+            const promise = new Promise((resolve, reject) =>{
+              const setCurrentStyleAndResolvePromise = node => {
+                if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                  visibility: false,
+                  style: false
+                };
+                changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
+                resolve();
+              };
+              if (this.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
+              else { node => setTimeout(() => setCurrentStyleAndResolvePromise(node))(node) }// case of starting project creation
+            });
+            promises.push(promise);
+          }
         }
-      }
     });
   };
   traverse(mapThemeLayersTree, layerstree);
   await Promise.allSettled(promises);
   // all groups checked after layer checked so is set checked but not visible
-  groups.forEach(({group, node:{checked, expanded}}) => {
+  groups.forEach(({ group, node: { checked, expanded }}) => {
     group.checked = checked;
     group.expanded = expanded;
   });
-  return changes // eventually information about changes (for example style etc..)
+  return changes // eventually, information about changes (for example style etc..)
 };
 
 /**
@@ -465,9 +462,9 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
 proto.getMapThemeFromThemeName = async function(map_theme) {
   // get map theme configuration from map_themes project config
   const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
-  // check if mapThemeConfig exist and if has layerstree (property get from server with a specific api)
+  // check if mapThemeConfig exist and if it has layerstree (property gets from server with a specific api)
   if (mapThemeConfig && undefined === mapThemeConfig.layerstree ) {
-    mapThemeConfig.layerstree =  await this.getMapThemeConfiguration(map_theme);
+    mapThemeConfig.layerstree = await this.getMapThemeConfiguration(map_theme);
   }
   return mapThemeConfig;
 };
@@ -482,9 +479,7 @@ proto.getMapThemeFromThemeName = async function(map_theme) {
 proto.getMapThemeConfiguration = async function(map_theme) {
   try {
     const response = await XHR.get({ url: `${this.urls.map_themes}${map_theme}/` });
-    if (response.result) {
-      return response.data;
-    }
+    if (response.result) { return response.data }
   } catch(err) {
     console.warn('Error while retreiving map theme configuration', err);
   }
