@@ -9,11 +9,11 @@ const G3WObject         = require('core/g3wobject');
 function navbaritemsService() {
   this.state = {
     items: {
-      left:[],
+      left: [],
       right:[]
     }
   };
-  this.addItem = function(item, position='right') {
+  this.addItem = function(item, position = 'right') {
     this.state.items[position].push(item);
   };
 
