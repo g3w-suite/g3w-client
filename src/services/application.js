@@ -31,48 +31,48 @@ const _cloneDeep = require('lodash.clonedeep');
  */
 const ApplicationService = function() {
 
-  this.version = APP_VERSION;
+  this.version              = APP_VERSION;
 
-  ApplicationState.iframe = window.top !== window.self;
+  ApplicationState.iframe   = window.top !== window.self;
 
-  ApplicationState.online = navigator.onLine;
+  ApplicationState.online   = navigator.onLine;
 
-  ApplicationState.ismobile= isMobile.any;
+  ApplicationState.ismobile = isMobile.any;
 
-  this.complete = false;
+  this.complete             = false;
 
   /**
    * set base url
    */
-  this.baseurl = '/'; 
+  this.baseurl              = '/';
 
-  this.download_caller_id = null;
+  this.download_caller_id   = null;
 
   /**
    * store all services sidebar etc..
    */
   this._applicationServices = {};
 
-  this.config = {};
+  this.config               = {};
 
-  this._initConfigUrl = null;
+  this._initConfigUrl       = null;
 
-  this._initConfig = null;
+  this._initConfig          = null;
 
-  this._groupId = null;
+  this._groupId             = null;
 
-  this._gid = null;
+  this._gid                 = null;
 
   this.setters = {
 
-    changeProject({gid, host}={}) {
+    changeProject({ gid, host } = {}) {
       return this._changeProject({gid, host})
     },
 
     /**
      * @since 3.8.0
      */
-    changeMapProject({url, epsg}) {
+    changeMapProject({ url, epsg } = {}) {
       url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
       history.replaceState(null, null, url);
       location.replace(url);
@@ -111,7 +111,7 @@ const ApplicationService = function() {
       return await this.bootstrap();
     } catch(error) {
       const browserLanguage = navigator && navigator.language || 'en';
-      const language = appConfig.supportedLanguages.find(language => browserLanguage.indexOf(language) !== -1);
+      const language        = appConfig.supportedLanguages.find(language => browserLanguage.indexOf(language) !== -1);
       return Promise.reject({ error, language })
     }
   };
@@ -120,10 +120,9 @@ const ApplicationService = function() {
    * Load application translations (i18n languages)
    */
   this.setupI18n = function() {
-    const languageConfig = this._config._i18n;
-    languageConfig.appLanguages = this._config.i18n.map(languageLabel => languageLabel[0]);
-    this.setApplicationLanguage(languageConfig.language);
-    i18ninit(languageConfig);
+    this._config._i18n.appLanguages = (this._config.i18n || []).map(l => l[0]);
+    this.setApplicationLanguage(this._config._i18n.language);
+    i18ninit(this._config._i18n);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set Accept-Language request header based on config language
     $.ajaxSetup({
@@ -139,29 +138,17 @@ const ApplicationService = function() {
   };
 
   /**
+   * Only one caller can set download application to true
    * @param {boolean} bool
-   * @param {string} download_caller_id
+   * @param {string | null} download_caller_id
    * 
-   * @returns {null}
+   * @returns {null | string}
    */
-  this.setDownload = function(bool=false, download_caller_id) {
-    const give_me_a_name_0 = !download_caller_id;
-    const give_me_a_name_1 = !bool && download_caller_id && this.download_caller_id === download_caller_id
-    const give_me_a_name_2 = !give_me_a_name_1 && download_caller_id && bool && this.download_caller_id === null;
-
-    if (give_me_a_name_0) {
-      ApplicationState.download = bool;
-    }
-
-    if (give_me_a_name_1) {
-      ApplicationState.download = false;
-      this.download_caller_id = null;
-    }
-
-    if (give_me_a_name_2) {
-      ApplicationState.download = bool;
-      this.download_caller_id = uniqueId();
-    }
+  this.setDownload = function(bool = false, download_caller_id = null) {
+    //set the current application download state
+    ApplicationState.download = bool;
+    //Set this.download caller id. If download_caller_id is provided, reset to null (start value)
+    this.download_caller_id = download_caller_id ? null : uniqueId();
 
     return this.download_caller_id;
   };
@@ -251,14 +238,14 @@ const ApplicationService = function() {
   /**
    * @FIXME weird parameter name (`bool`)
    */
-  this.disableApplication = function(bool=false) {
+  this.disableApplication = function(bool = false) {
     ApplicationState.gui.app.disabled = bool;
   };
 
   /**
    * @param {string} language 
    */
-  this.setApplicationLanguage = function(language='en') {
+  this.setApplicationLanguage = function(language = 'en') {
     /**
      * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
      */
@@ -292,7 +279,7 @@ const ApplicationService = function() {
 
   this.setLocalItem = function({ id, data } = {}) {
     try { window.localStorage.setItem(id, JSON.stringify(data)); }
-    catch(error) { return error; }
+    catch(e) { console.warn(e); return e; }
   };
 
   /**
@@ -382,7 +369,7 @@ const ApplicationService = function() {
     const config = { ...appConfig };
     try {
 
-      initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
+      initConfig = initConfig ? initConfig : await this.obtainInitConfig({
         initConfigUrl:  `${appConfig.server.urls.initconfig}`
       });
 
@@ -494,10 +481,10 @@ const ApplicationService = function() {
     let groups      = [];
     try {
       macrogroups = await XHR.get({ url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.macrogroups}` })
-    } catch(err) {}
+    } catch(e) { console.warn(e); }
     try {
       groups = await XHR.get({ url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.nomacrogoups}` })
-    } catch(err) {}
+    } catch(e) { console.warn(e); }
     return {
       macrogroups,
       groups
@@ -505,10 +492,10 @@ const ApplicationService = function() {
   };
 
   this.obtainInitConfig = async function({ initConfigUrl, url, host } = {}) {
-    if (!this._initConfigUrl) {
-      this._initConfigUrl = initConfigUrl;
-    } else {
+    if (this._initConfigUrl) {
       this.clearInitConfig();
+    } else {
+      this._initConfigUrl = initConfigUrl;
     }
 
     // if exist a global initConfig
@@ -526,8 +513,8 @@ const ApplicationService = function() {
        * Example http:localhost:3000/?project=3003/qdjango/1
        * is deprecated
        */
-      locationsearch.split('&').forEach(queryTuple => {
-        projectPath = queryTuple.indexOf("project") > -1 ? queryTuple.split("=")[1] : projectPath;
+      locationsearch.split('&').forEach(qt => {
+        projectPath = qt.indexOf("project") > -1 ? qt.split("=")[1] : projectPath;
       });
 
     ///////////////////////////////////////////////////////////////////
@@ -546,8 +533,8 @@ const ApplicationService = function() {
       window.initConfig = this._initConfig;
       this.emit('initconfig', this._initConfig);
       this.setInitVendorKeys(this._initConfig);
-      return Promise.resolve(this._initConfig);
     }
+    return this._initConfig;
   };
 
   // method to get initial application configuration
@@ -620,9 +607,11 @@ const ApplicationService = function() {
           clearTimeout(timeout);
           this.registerOnlineOfflineEvent();
           this.emit('ready');
+
           ApplicationState.ready = this.initialized = true;
-          const project = ProjectsRegistry.getCurrentProject();
-          this._gid = project.getGid();
+          const project          = ProjectsRegistry.getCurrentProject();
+          this._gid              = project.getGid();
+
           this.setEPSGApplication(project);
           if (ApplicationState.iframe) { this.startIFrameService({ project }) }
           DataRouterService.init();
@@ -667,28 +656,28 @@ const ApplicationService = function() {
     iframeService.init({ project });
   };
 
-  this.registerWindowEvent = function({ evt, cb } ={}) {
+  this.registerWindowEvent = function({ evt, cb } = {}) {
     window.addEventListener(evt, cb);
   };
 
-  this.unregisterWindowEvent = function({ evt, cb }={}) {
+  this.unregisterWindowEvent = function({ evt, cb } = {}) {
     window.removeEventListener(evt, cb)
   };
 
-  this.registerService = function(element, service) {
-    this._applicationServices[element] = service;
+  this.registerService = function(el, service) {
+    this._applicationServices[el] = service;
   };
 
-  this.unregisterService = function(element) {
-    delete this._applicationServices[element];
+  this.unregisterService = function(el) {
+    delete this._applicationServices[el];
   };
 
   this.getApplicationService = function(type) {
     return this._applicationServices[type];
   };
 
-  this.getService = function(element) {
-    return this._applicationServices[element];
+  this.getService = function(el) {
+    return this._applicationServices[el];
   };
 
   this.errorHandler = function(error) {};
@@ -712,14 +701,15 @@ const ApplicationService = function() {
   };
 
   this.setVendorKeys = function(keys = {}) {
-    Object.keys(keys).forEach(key => ApplicationState.keys.vendorkeys[key] = keys[key])
+    Object.keys(keys).forEach(k => ApplicationState.keys.vendorkeys[k] = keys[k])
   };
 
   /**
-   * change View 
+   * change View
+   * @param { Boolean } bool
    */
-  this.changeProjectView = function(change) {
-    ApplicationState.changeProjectview = change;
+  this.changeProjectView = function(bool) {
+    ApplicationState.changeProjectview = bool;
   };
 
   this.isProjectViewChanging = function() {
@@ -795,7 +785,7 @@ const ApplicationService = function() {
     if (who) { delete ApplicationState.gui.layout[who] }
   };
 
-  this.setCurrentLayout = function(who='app') {
+  this.setCurrentLayout = function(who = 'app') {
     ApplicationState.gui.layout.__current = who;
   };
 
