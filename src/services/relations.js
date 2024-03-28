@@ -17,7 +17,7 @@ const {
 }               = require('utils');
 const G3WObject = require('core/g3wobject');
 
-function RelationsService(opts={}) {
+function RelationsService(opts = {}) {
   base(this, opts);
 }
 
@@ -25,25 +25,23 @@ inherit(RelationsService, G3WObject);
 
 const proto = RelationsService.prototype;
 
-proto.createUrl = function(options={}) {
+proto.createUrl = function(opts = {}) {
   const currentProject = ProjectsRegistry.getCurrentProject();
   // type : <editing, data, xls>
-  const {layer={}, relation={}, fid, type='data', formatter=1} = options;
+  const {layer = {}, relation = {}, fid, type = 'data', formatter = 1} = opts;
   let layerId;
-  const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
-  if (father !== undefined) {
-    layerId = layer.id === father ? child: father;
-  } else {
+  const { father, child, referencedLayer, referencingLayer, id:relationId } = relation;
+  if (father === undefined) {
     layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
+  } else {
+    layerId = layer.id === father ? child: father;
   }
-  const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
-  const value = sanitizeFidFeature(fid);
-  return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=${formatter}`;
+  return `${currentProject.getLayerById(layerId).getUrl(type)}?relationonetomany=${relationId}|${sanitizeFidFeature(fid)}&formatter=${formatter}`;
 };
 
-proto.getRelations = function(options={}) {
+proto.getRelations = function(opts={}) {
   return XHR.get({
-    url: this.createUrl(options)
+    url: this.createUrl(opts)
   })
 };
 
@@ -53,11 +51,11 @@ proto.getRelations = function(options={}) {
  * @param features
  * @returns {Promise<[]>}
  */
-proto.getRelationsNM = async function({nmRelation, features=[]}={}) {
-  const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
+proto.getRelationsNM = async function({nmRelation, features = [] } = {}) {
+  const { referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
   let relationsNM = []; // start with an empty relations result
   if (features.length) {
-    const values = features.map(feature => feature.attributes[referencingField]);
+    const values = features.map(f => f.attributes[referencingField]);
     const responseFids = await DataRouterService.getData('search:features', {
       inputs: {
         layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
@@ -88,9 +86,9 @@ proto.getRelationsNM = async function({nmRelation, features=[]}={}) {
   return relationsNM;
 };
 
-proto.save = function(options={}){
+proto.save = function(opts = {}){
   return XHR.fileDownload({
-    url: this.createUrl(options),
+    url:        this.createUrl(opts),
     httpMethod: "GET"
   })
 };
