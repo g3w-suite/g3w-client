@@ -147,7 +147,7 @@
             <div>
               <h4>{{ group.title }}</h4>
               <catalog-tristate-tree
-                v-for       = "node in group.nodes"  
+                v-for       = "node in group.nodes"
                 :layerstree = "node"
                 class       = "item"
               />
@@ -199,7 +199,7 @@
                 class       = "img-responsive img-thumbnail baselayer"
                 :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5 }"
               >
-              <div class="baseselayer-text text-center">{{ base.title }}</div>
+              <div class="baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
             </li>
             <li @click.stop="setBaseLayer(null)">
               <img
@@ -208,7 +208,7 @@
                 :style = "{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
               >
               <div
-                class="baseselayer-text text-center"
+                class="baseselayer-text text-center g3w-long-text"
                 v-t="'nobaselayer'">
               </div>
             </li>
@@ -267,10 +267,10 @@ import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
- * 
+ *
  * @param name
  * @param value
- * 
+ *
  * @returns { string | null } a string if value is set or null
  */
  function __(name, value) {
@@ -345,7 +345,7 @@ export default {
 
     /**
      * Get legend src for visible layers
-     * 
+     *
      * @returns {Promise<void>}
      */
     getLegendSrc(change = false) {
@@ -365,7 +365,7 @@ export default {
                 layers.some(l => l.legend.change) ||
                 ProjectsRegistry.getCurrentProject().getContextBaseLegend()
               )
-            ) { 
+            ) {
               layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
             }
             tree.legendurls = await this._getLegendSrc(layers);
@@ -390,7 +390,7 @@ export default {
 
     /**
      * Get legend src for visible layers
-     * 
+     *
      * @returns {Promise<void>}
      */
     async _getLegendSrc(visiblelayers) {
@@ -408,7 +408,7 @@ export default {
         const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
 
         const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
-          all:        !ProjectsRegistry.getCurrentProject().getContextBaseLegend(), // true = dynamic legend 
+          all:        !ProjectsRegistry.getCurrentProject().getContextBaseLegend(), // true = dynamic legend
           format:     'image/png',
           categories: layer.categories
         }) : undefined;
@@ -475,13 +475,13 @@ export default {
           .join('&');
 
           try {
-            obj.url = 'GET' === method 
+            obj.url = 'GET' === method
               ? url + (http[method][url].length ? url_params : '')
               : URL.createObjectURL(await (await fetch(url.split('?')[0], {
                   method:  'POST',
                   headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                  // send encoded params 
-                  body: // new URLSearchParams(url.split('?')[1]) 
+                  // send encoded params
+                  body: // new URLSearchParams(url.split('?')[1])
                     url
                       .split('?')[1]
                       .split('&')

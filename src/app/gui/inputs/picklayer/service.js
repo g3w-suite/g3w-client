@@ -6,35 +6,49 @@ const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinter
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 function PickLayerService(options={}) {
-  this.pick_type = options.pick_type || 'wms';
-  this.ispicked = false;
-  this.fields = options.fields || [options.value];
-  this.layerId = options.layer_id;
-  this.mapService = GUI.getService('map');
-  this.interaction = this.pick_type === 'map' ?  new PickFeatureInteraction({
+  this.pick_type   = options.pick_type || 'wms';
+  this.ispicked    = false;
+  this.fields      = options.fields || [options.value];
+  this.layerId     = options.layer_id;
+  this.mapService  = GUI.getService('map');
+  this.interaction = 'map' === this.pick_type  ? new PickFeatureInteraction({
     layers: [this.mapService.getLayerById(this.layerId)]
   }) : new PickCoordinatesInteraction();
 }
 
 const proto = PickLayerService.prototype;
 
+/**
+ *
+ * @return {boolean|*}
+ */
 proto.isPicked = function(){
   return this.ispicked;
 };
 
 //bind interrupt event
-proto.escKeyUpHandler = function({keyCode, data:{owner}}) {
+proto.escKeyUpHandler = function({ keyCode, data : { owner } }) {
   keyCode === 27 && owner.unpick();
 };
 
+/**
+ *
+ */
 proto.unbindEscKeyUp = function() {
   $(document).unbind('keyup', this.escKeyUpHandler);
 };
 
+/**
+ *
+ */
 proto.bindEscKeyUp = function() {
   $(document).on('keyup', {owner: this}, this.escKeyUpHandler);
 };
 
+/**
+ *
+ * @return {Promise<unknown>}
+ */
 proto.pick = function() {
   return new Promise((resolve, reject) => {
     this.bindEscKeyUp();
@@ -43,21 +57,22 @@ proto.pick = function() {
     const afterPick = feature => {
       if (feature) {
         const attributes = feature.getProperties();
-        this.fields.forEach(field =>{
-          values[field] = attributes[field];
-        });
+        //filter eventually null or undefined field
+        this.fields.filter(f => f).forEach(field => values[field] = attributes[field]);
         resolve(values);
-      } else reject();
+      } else {
+        reject();
+      }
       this.ispicked = false;
       this.unpick();
     };
     GUI.setModal(false);
     this.mapService.addInteraction(this.interaction);
-    this.interaction.once('picked', event => {
-      if (this.pick_type === 'map') {
-        const feature = event.feature;
+    this.interaction.once('picked', (e) => {
+      if ('map' === this.pick_type) {
+        const feature = e.feature;
         afterPick(feature);
-      } else if (this.pick_type === 'wms'){
+      } else if ('wms' === this.pick_type) {
         const layer = MapLayersStoresRegistry.getLayerById(this.layerId);
         if (layer) {
           getQueryLayersPromisesByCoordinates(
@@ -65,9 +80,9 @@ proto.pick = function() {
             {
               map: this.mapService.getMap(),
               feature_count: 1,
-              coordinates: event.coordinate
-            }).then(response => {
-              const {data=[]} = response[0];
+              coordinates: e.coordinate
+            }).then((response) => {
+              const { data=[] } = response[0];
               const feature = data.length && data[0].features[0] || null;
               afterPick(feature);
           })
@@ -77,6 +92,9 @@ proto.pick = function() {
   })
 };
 
+/**
+ *
+ */
 proto.unpick = function() {
   this.mapService.removeInteraction(this.interaction);
   GUI.setModal(true);
@@ -84,8 +102,13 @@ proto.unpick = function() {
   this.ispicked = false;
 };
 
+/**
+ *
+ */
 proto.clear = function() {
-  this.isPicked() && this.unpick();
+  if (this.isPicked()) {
+    this.unpick();
+  }
   this.mapService = this.interaction = this.field = null;
 };
 

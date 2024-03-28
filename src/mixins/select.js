@@ -2,7 +2,6 @@
  * @file
  * @since v3.7
  */
-
 const { getAppLanguage } = require('core/i18n/i18n.service');
 
 export default {
@@ -10,8 +9,10 @@ export default {
     getLanguage() {
       return getAppLanguage();
     },
-    changeSelect(value) {
+    async changeSelect(value) {
       this.state.value = 'null' === value ? null : value;
+      //need to be waited in case of autocomplete
+      await this.$nextTick();
       this.change();
     },
     getValue(value) {
@@ -31,9 +32,7 @@ export default {
     async notvalid(value) {
       await this.$nextTick();
       if (this.select2) {
-        value
-          ? this.select2.data('select2').$container.addClass("input-error-validation")
-          : this.select2.data('select2').$container.removeClass("input-error-validation")
+       this.select2.data('select2').$container[value ? "addClass" : "removeClass"]("input-error-validation")
       }
     }
   }

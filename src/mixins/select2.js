@@ -22,9 +22,9 @@ export default {
     //destroy a select2  dom element
     if (this.select2) {
       this.select2.select2('destroy');
+      // remove all events
+      this.select2.off();
+      this.select2 = null;
     }
-    // remove all events
-    this.select2.off();
-    this.select2 = null;
   }
 };

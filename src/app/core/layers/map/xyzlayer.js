@@ -42,11 +42,12 @@ proto.isVisible = function(){
 
 proto._makeOlLayer = function(){
   this._olLayer = new RasterLayers.XYZLayer({
-    url:             `${this.layer.getCacheUrl()}/{z}/{x}/{y}.png`,
+    url:             this.config.url,
     maxZoom:         20,
     extent:          this.config.extent,
     iframe_internal: this.iframe_internal,
     projection:      this.projection ? this.projection : this.layer.getProjection(),
+    cache_provider:  this.config.cache_provider,
   }, this._method);
 
   this._olLayer.getSource().on('imageloadstart', () => this.emit('loadstart'));
