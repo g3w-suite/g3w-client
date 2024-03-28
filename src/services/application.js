@@ -182,7 +182,7 @@ const ApplicationService = function() {
    */
   this.loadedPlugin = function(plugin) {
     //remove from list loading plugin
-    ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
+    ApplicationState.plugins = ApplicationState.plugins.filter(p => plugin !== p);
   };
 
   /**
@@ -204,10 +204,11 @@ const ApplicationService = function() {
     /**
      * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
      */
-    ApplicationState.lng = language;
+    ApplicationState.lng      = language;
     ApplicationState.language = language;
-    const pathArray = window.location.pathname.split('/');
-    pathArray[1] = language;
+    const pathArray           = window.location.pathname.split('/');
+    pathArray[1]              = language;
+
     history.replaceState(null, null, pathArray.join('/'));
   };
 
@@ -261,7 +262,7 @@ const ApplicationService = function() {
     /**
      * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
      */
-    ApplicationState.lng = language;
+    ApplicationState.lng      = language;
     ApplicationState.language = language;
   };
 
@@ -285,11 +286,11 @@ const ApplicationService = function() {
    * @param {string} id 
    * @param {Object} data 
    */
-  this.setOfflineItem = async function(id, data={}) {
+  this.setOfflineItem = async function(id, data = {}) {
     this.setLocalItem({ id, data });
   };
 
-  this.setLocalItem = function({id, data}={}) {
+  this.setLocalItem = function({ id, data } = {}) {
     try { window.localStorage.setItem(id, JSON.stringify(data)); }
     catch(error) { return error; }
   };
@@ -340,7 +341,7 @@ const ApplicationService = function() {
   /**
    * @param {Object} config 
    */
-  this.setConfig = function(config={}) {
+  this.setConfig = function(config = {}) {
     this._config = config;
   };
 
@@ -408,83 +409,78 @@ const ApplicationService = function() {
       config.server.urls.proxyurl        = initConfig.proxyurl;
       config.server.urls.rasterurl       = initConfig.rasterurl;
       config.server.urls.interfaceowsurl = initConfig.interfaceowsurl;
-      
-      config.main_map_title = initConfig.main_map_title;
-      
-      config.group = initConfig.group;
-      
-      config.user = initConfig.user;
-      
-      config.credits = initConfig.credits;
-      
-      config.i18n = initConfig.i18n;
-      
+      config.main_map_title              = initConfig.main_map_title;
+      config.group                       = initConfig.group;
+      config.user                        = initConfig.user;
+      config.credits                     = initConfig.credits;
+      config.i18n                        = initConfig.i18n;
+
       /**
        * get language from server
        */
-      config._i18n.language = config.user.i18n;
+      config._i18n.language              = config.user.i18n;
       
       /**
        * check if is inside a iframe
        */
-      config.group.layout.iframe = window.top !== window.self;
+      config.group.layout.iframe         = window.top !== window.self;
       
       /**
        * create application configuration
        */
       return  {
-        apptitle: config.apptitle || '',
-        logo_img: config.group.header_logo_img,
-        logo_link: config.group.header_logo_link,
-        terms_of_use_text: config.group.header_terms_of_use_text,
-        terms_of_use_link: config.group.terms_of_use_link,
+        apptitle:            config.apptitle || '',
+        logo_img:            config.group.header_logo_img,
+        logo_link:           config.group.header_logo_link,
+        terms_of_use_text:   config.group.header_terms_of_use_text,
+        terms_of_use_link:   config.group.terms_of_use_link,
         header_custom_links: config.group.header_custom_links,
-        debug: config.client.debug || false,
-        group: config.group,
-        urls: config.server.urls,
-        mediaurl: config.server.urls.mediaurl,
-        resourcesurl: config.server.urls.clienturl,
-        vectorurl:config.server.urls.vectorurl,
-        rasterurl:config.server.urls.rasterurl,
-        interfaceowsurl: config.server.urls.interfaceowsurl,
-        projects: config.group.projects,
-        initproject: config.group.initproject,
-        overviewproject: (config.group.overviewproject && config.group.overviewproject.gid) ? config.group.overviewproject : null,
-        baselayers: config.group.baselayers,
-        mapcontrols: config.group.mapcontrols,
-        background_color: config.group.background_color,
-        crs: config.group.crs,
-        minscale: config.group.minscale,
-        maxscale: config.group.maxscale,
-        main_map_title: config.main_map_title,
-        credits: config.credits,
-        _i18n: config._i18n,
-        i18n: config.i18n,
-        layout: config.group.layout || {},
+        debug:               config.client.debug || false,
+        group:               config.group,
+        urls:                config.server.urls,
+        mediaurl:            config.server.urls.mediaurl,
+        resourcesurl:        config.server.urls.clienturl,
+        vectorurl:           config.server.urls.vectorurl,
+        rasterurl:           config.server.urls.rasterurl,
+        interfaceowsurl:     config.server.urls.interfaceowsurl,
+        projects:            config.group.projects,
+        initproject:         config.group.initproject,
+        overviewproject:     (config.group.overviewproject && config.group.overviewproject.gid) ? config.group.overviewproject : null,
+        baselayers:          config.group.baselayers,
+        mapcontrols:         config.group.mapcontrols,
+        background_color:    config.group.background_color,
+        crs:                 config.group.crs,
+        minscale:            config.group.minscale,
+        maxscale:            config.group.maxscale,
+        main_map_title:      config.main_map_title,
+        credits:             config.credits,
+        _i18n:               config._i18n,
+        i18n:                config.i18n,
+        layout:              config.group.layout || {},
         /**
          * needed by ProjectService
          */
         getWmsUrl(project) {
-          return `${config.server.urls.baseurl+config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
+          return `${config.server.urls.baseurl}${config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
         },
         /**
          * needed by ProjectsRegistry to get information about project configuration
          */
         getProjectConfigUrl(project) {
-          return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
+          return `${config.server.urls.baseurl}${config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
         },
         plugins: config.group.plugins,
-        tools: config.tools,
-        views: config.views || {},
-        user: config.user || null,
+        tools:   config.tools,
+        views:   config.views || {},
+        user:    config.user || null,
         /**
          * @since 3.8.0
          */
         groups,
         macrogroups,
       };
-    } catch(error) {
-      return Promise.reject(error);
+    } catch(e) {
+      return Promise.reject(e);
     }
   };
 
@@ -495,7 +491,7 @@ const ApplicationService = function() {
    */
   this.getMacrogroupsGroups = async function() {
     let macrogroups = [];
-    let groups = [];
+    let groups      = [];
     try {
       macrogroups = await XHR.get({ url: `/${this.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.macrogroups}` })
     } catch(err) {}
@@ -508,7 +504,7 @@ const ApplicationService = function() {
     }
   };
 
-  this.obtainInitConfig = async function({initConfigUrl, url, host}={}) {
+  this.obtainInitConfig = async function({ initConfigUrl, url, host } = {}) {
     if (!this._initConfigUrl) {
       this._initConfigUrl = initConfigUrl;
     } else {
@@ -557,9 +553,8 @@ const ApplicationService = function() {
   // method to get initial application configuration
   this.getInitConfig = function(url) {
     return new Promise((resolve, reject) => {
-      if (this._initConfig) {
-        resolve(this._initConfig);
-      } else {
+      if (this._initConfig) { resolve(this._initConfig) }
+      else {
         XHR.get({url})
           .then(initConfig => resolve(initConfig))
           .catch(error => reject(error));
@@ -629,13 +624,11 @@ const ApplicationService = function() {
           const project = ProjectsRegistry.getCurrentProject();
           this._gid = project.getGid();
           this.setEPSGApplication(project);
-          if (ApplicationState.iframe) {
-            this.startIFrameService({ project });
-          }
+          if (ApplicationState.iframe) { this.startIFrameService({ project }) }
           DataRouterService.init();
           this.initLocalItems();
           resolve(true);
-        }).fail(error => reject(error))
+        }).fail(e => reject(e))
       }
     });
   };
@@ -653,12 +646,12 @@ const ApplicationService = function() {
       try {
         RouterService.init();
         await PluginsRegistry.init({
-          pluginsBaseUrl: this._config.urls.staticurl,
-          pluginsConfigs: this._config.plugins,
+          pluginsBaseUrl:     this._config.urls.staticurl,
+          pluginsConfigs:     this._config.plugins,
           otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
         });
-      } catch(err) {
-        console.warn(err);
+      } catch(e) {
+        console.warn(e);
       } finally {
         this.complete = true;
         this.emit('complete');
@@ -669,16 +662,16 @@ const ApplicationService = function() {
   /**
    * iframeservice 
    */
-  this.startIFrameService = function({project}={}) {
+  this.startIFrameService = function({ project } = {}) {
     const iframeService = require('services/iframe').default;
-    iframeService.init({project});
+    iframeService.init({ project });
   };
 
-  this.registerWindowEvent = function({evt, cb} ={}) {
+  this.registerWindowEvent = function({ evt, cb } ={}) {
     window.addEventListener(evt, cb);
   };
 
-  this.unregisterWindowEvent = function({evt, cb}={}) {
+  this.unregisterWindowEvent = function({ evt, cb }={}) {
     window.removeEventListener(evt, cb)
   };
 
@@ -707,7 +700,7 @@ const ApplicationService = function() {
     window.initConfig = this._initConfig = null;
   };
 
-  this.setInitVendorKeys = function(config={}) {
+  this.setInitVendorKeys = function(config = {}) {
    const vendorkeys = config.group.vendorkeys || {};
    config.group.baselayers
      .forEach(baselayer => {
@@ -718,7 +711,7 @@ const ApplicationService = function() {
    this.setVendorKeys(vendorkeys);
   };
 
-  this.setVendorKeys = function(keys={}) {
+  this.setVendorKeys = function(keys = {}) {
     Object.keys(keys).forEach(key => ApplicationState.keys.vendorkeys[key] = keys[key])
   };
 
@@ -751,11 +744,11 @@ const ApplicationService = function() {
    * 
    * @returns {JQuery.Promise<any, any, any>}
    */
-  this._changeProject = function({gid, host, crs}={}) {
-    const d = $.Deferred();
-    this._gid = gid;
+  this._changeProject = function({ gid, host, crs } = {}) {
+    const d          = $.Deferred();
+    this._gid        = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
-    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
+    const url        = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
     /**
      * @since 3.7.15
      */
@@ -799,9 +792,7 @@ const ApplicationService = function() {
   };
 
   this.removeLayout = function(who) {
-    if (who) {
-      delete ApplicationState.gui.layout[who];
-    }
+    if (who) { delete ApplicationState.gui.layout[who] }
   };
 
   this.setCurrentLayout = function(who='app') {
@@ -832,7 +823,7 @@ const ApplicationService = function() {
   this.initLocalItems = function() {
     Object
       .keys(LOCAL_ITEM_IDS)
-      .forEach(id => { undefined === this.getLocalItem(id) && this.setLocalItem({ id, data: LOCAL_ITEM_IDS[id].value }); })
+      .forEach(id => { if (undefined === this.getLocalItem(id)) { this.setLocalItem({ id, data: LOCAL_ITEM_IDS[id].value }); } })
   };
 };
 
