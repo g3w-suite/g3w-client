@@ -62,14 +62,14 @@ async function _getEpsgFromParam(epsg) {
 class IframePluginService {
 
   constructor() {
-    this.pendingactions = {};
-    this.getMessage = this.getMessage.bind(this);
+    this.pendingactions              = {};
+    this.getMessage                  = this.getMessage.bind(this);
     this.eventResponseServiceHandler = this.eventResponseServiceHandler.bind(this);
   }
 
   /**
    * @param { Object } opts
-   * @param opts.project current project send by application service
+   * @param opts.project current project sends by application service
    */
   async init({
     project,
@@ -78,14 +78,14 @@ class IframePluginService {
     await GUI.isReady();
 
     this.services = {
-      app: new AppService(),
+      app:     new AppService(),
       editing: new EditingService(),
     };
 
     // get layer attributes from project layers state
-    const layers = project.state.layers.map(layer => ({ id: layer.id, name: layer.name }));
+    const layers = project.state.layers.map(l => ({ id: l.id, name: l.name }));
 
-    // initialize all service
+    // initialize all services
     const serviceNames = Object.keys(this.services);
 
     for (let i = 0; i < serviceNames.length; i++) {
@@ -98,10 +98,10 @@ class IframePluginService {
       service.on('response', this.eventResponseServiceHandler);
     }
 
-    // Send post message is ready
+    // Send post-message is ready
     this.postMessage({
-      id: null,
-      action: 'app:ready',
+      id:        null,
+      action:   'app:ready',
       response: { result: true, data: { layers } },
     });
 
@@ -142,12 +142,10 @@ class IframePluginService {
   }
 
   /**
-   * post message to parent
+   * post a message to parent
    */
   postMessage(message = {}) {
-    if (window.parent) {
-      window.parent.postMessage(message, '*');
-    }
+    if (window.parent) { window.parent.postMessage(message, '*') }
   }
 
   async stopPendingActions() {
@@ -162,11 +160,11 @@ class IframePluginService {
   };
 
   /**
-   * handle all messages from window
+   * handle all messages from the window
    */
   async getMessage(evt) {
     if (evt && evt.data) {
-      const { id = uniqueId(), single=true, action, data:params } = evt.data;
+      const { id = uniqueId(), single = true, action, data:params } = evt.data;
       const { context, method } = splitContextAndMethod(action);
       let result = false;
       let data;
@@ -219,7 +217,7 @@ class BaseIframeService extends G3WObject {
     /**
      * @type { boolean }
      */
-    this.ready = false;
+    this.ready      = false;
 
     /**
      * Map service
@@ -229,12 +227,12 @@ class BaseIframeService extends G3WObject {
     /**
      * Current project
      */
-    this.project = ProjectsRegistry.getCurrentProject();
+    this.project    = ProjectsRegistry.getCurrentProject();
 
     /**
      * @type { Array | undefined }
      */
-    this.layers = undefined;
+    this.layers     = undefined;
 
     // common attributes between plugin service
 
@@ -274,13 +272,14 @@ class BaseIframeService extends G3WObject {
       this.setDependencyApi(plugin.getApi());
       this.setReady(true);
     } else {
-      PluginsRegistry.onafter('registerPlugin', async plugin => {
-        await plugin.isReady();
-        if (plugin.getName() === this.pluginName) {
-          this.setDependencyApi(plugin.getApi());
-          this.setReady(true);
-        }
-      })
+      PluginsRegistry
+        .onafter('registerPlugin', async plugin => {
+          await plugin.isReady();
+          if (plugin.getName() === this.pluginName) {
+            this.setDependencyApi(plugin.getApi());
+            this.setReady(true);
+          }
+        })
     }
   }
 
@@ -319,7 +318,7 @@ class BaseIframeService extends G3WObject {
    */
   getQgsLayerId({
     qgs_layer_id,
-    noValue = this.layers.map(layer => layer.id),
+    noValue = this.layers.map(l => l.id),
   }) {
     return qgs_layer_id ? [].concat(qgs_layer_id) : noValue;
   };
@@ -365,8 +364,8 @@ class BaseIframeService extends G3WObject {
     highlight    = false,
   } = {}) {
     const response = {
-      found: false,
-      features: [],
+      found:        false,
+      features:     [],
       qgs_layer_id: null
     };
     let layersCount = qgs_layer_id.length;
@@ -383,11 +382,9 @@ class BaseIframeService extends G3WObject {
         response.features     = features;
         response.qgs_layer_id = qgs_layer_id[i];
         if (zoom) {
-          this.mapService.zoomToFeatures(features, { highlight });
+          await this.mapService.zoomToFeatures(features, { highlight });
         }
-      } catch(err) {
-        i++;
-      }
+      } catch(e) { i++; console.warn(e);}
     }
     // in case of no response zoom to an initial extent
     if (!response.found) {
