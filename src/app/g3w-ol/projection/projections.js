@@ -13,14 +13,10 @@ const Projections = {
     return ol.proj.get(epsg);
   },
 
-  get(crs={}) {
+  get(crs = {}) {
     const cachedProjection = this.isRegistered(crs.epsg);
-    if (cachedProjection) {
-      return cachedProjection;
-    }
-    const projection = new Projection({
-      crs
-    });
+    if (cachedProjection) { return cachedProjection }
+    const projection = new Projection({ crs });
     ol.proj.addProjection(projection);
     ol.proj.proj4.register(proj4);
     return projection;
@@ -37,13 +33,12 @@ const Projections = {
     return new Promise((resolve, reject) => {
       let projection = this.isRegistered(epsg);
       // check if already register
-      if (projection) {
-        resolve(projection);
-      } else {
+      if (projection) { resolve(projection) }
+      else {
         XHR.get({url: `${API_BASE_URLS.CRS}${epsg.split(':')[1]}`})
-          .then(({result, data}) => {
+          .then(({ result, data }) => {
             if (result)  {
-              data.epsg = normalizeEpsg(data.epsg);
+              data.epsg  = normalizeEpsg(data.epsg);
               projection = this.get(data);
               ol.proj.proj4.register(proj4);
               resolve(projection);

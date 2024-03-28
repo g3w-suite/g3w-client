@@ -74,7 +74,7 @@
     />
 
     <button
-      @click.stop = "addWMSlayer"
+      @click.stop = "$emit('add-wms-layer', { url, position, epsg, layers: selectedlayers, name: name && name.trim() || undefined })"
       v-disabled  = "0 === selectedlayers.length"
       class       = "btn wms-add-layer-button sidebar-button skin-button"
     >
@@ -115,43 +115,12 @@ export default {
   methods: {
 
     /**
-     * @returns {Promise<void>}
-     */
-    async addWMSlayer() {
-      const config = {
-        url:      this.url,
-        name:     this.name && this.name.trim() || undefined,
-        layers:   this.selectedlayers,
-        epsg:     this.epsg,
-        position: this.position,
-      };
-
-      this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
-
-      if (this.added) {
-        console.warn('WMS Layer already added');
-        return;
-      }
-
-      this.loading = true;
-
-      try {
-        await this.$options.service.addWMSlayer(config);
-      } catch(err) {
-        console.warn('unexpected error while adding WMS Layer');
-      }
-
-      this.loading = false;
-
-      this.clear();
-    },
-
-    /**
      * @FIXME add description
      */
     clear() {
       this.selectedlayers = [];
       this.name = null;
+      this.loading = false;
     },
 
     /**

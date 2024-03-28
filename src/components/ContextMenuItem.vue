@@ -5,7 +5,10 @@
   @example see components/ContextMenu.vue
 -->
 <template>
-  <li @click="$parent.$emit('select', select)" :style="{ opacity: this.disabled ? '0.5' : '1' }">
+  <li
+    @click.stop="$parent.$emit('select', select)"
+    :style="{ opacity: this.disabled ? '0.5' : '1' }"
+  >
     <slot></slot>
   </li>
 </template>

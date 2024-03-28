@@ -4,19 +4,16 @@
  */
 
 import translations from '../locales';
-const apptitle = "G3W Client";
+
+const apptitle           = "G3W Client";
 const supportedLanguages = ['en', 'it'];
 
 export const plugins = {};
 
-export const tools = {
-  tools:  []
-};
+export const tools = { tools:  [] };
 
-// get message from internationalization
-export const _i18n = {
-  resources: translations
-};
+// get a message from internationalization
+export const _i18n = { resources: translations };
 
 export const client = {
   debug:  true,
@@ -25,19 +22,17 @@ export const client = {
 
 export const server = {
   urls:  {
-    baseurl: '/',
-    ows:  'ows',
-    api:  'api',
+    baseurl:     '/',
+    ows:         'ows',
+    api:         'api',
     initconfig:  'api/initconfig',
-    config:  'api/config'
+    config:      'api/config'
   }
 };
 
 export const utils = {
   merge(type) {
-    if (type) {
-      console.log(CONFIG)
-    }
+    if (type) { console.log(type) }
   }
 };
 

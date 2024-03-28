@@ -13,16 +13,16 @@ const DELAY_TYPE = {
 };
 
 export default {
-  created(){
+  created() {
     const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
     this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
     GUI.on('resize', this.delayResize);
   },
-  async mounted(){
+  async mounted() {
     await this.$nextTick();
-    this.resize && this.resize();
+    if (this.resize) { this.resize(); }
   },
-  beforeDestroy(){
+  beforeDestroy() {
     GUI.off('resize', this.delayResize);
     this.delayResize = null;
     this.delayTime = null;

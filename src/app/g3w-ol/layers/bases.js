@@ -1,21 +1,29 @@
 const RasterLayers = require('g3w-ol/layers/rasters');
+
 const BaseLayers = {};
 
 BaseLayers.OSM = {};
 
-BaseLayers.OSM.get = function({title, id, url}={}){
+BaseLayers.OSM.get = function({ title, id, url } = {}) {
   return new ol.layer.Tile({
-    source: new ol.source.OSM({
-      url
-    }),
-    id: id || 'osm',
-    title: title || 'OSM',
+    source:  new ol.source.OSM({ url }),
+    id:      id || 'osm',
+    title:   title || 'OSM',
     basemap: true
   });
 };
 
 BaseLayers.TMS =  {
-  get({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions, crossOrigin='anonymous'}={}) {
+  get({
+    visible = false,
+    url = null,
+    source_type = "xyz",
+    minZoom,
+    maxZoom,
+    projection,
+    attributions,
+    crossOrigin = 'anonymous' } = {}
+  ) {
     let layer;
     switch(source_type) {
       case 'xyz':
@@ -44,7 +52,14 @@ BaseLayers.TMS =  {
 };
 
 BaseLayers.WMS = {
-  get({url, projection, attributions, layers, singleTile=false, opacity=1}){
+  get({
+    url,
+    projection,
+    attributions,
+    layers,
+    singleTile = false,
+    opacity = 1
+  } = {}) {
     return RasterLayers.WMSLayer({
       url,
       projection,
@@ -73,13 +88,13 @@ BaseLayers.WMTS = {
     } = {}) {
     if (matrixSet) {
       const projectionExtent = projection.getExtent();
-      const resolutions = new Array(14);
-      const size = ol.extent.getWidth(projectionExtent) / 256;
-      const matrixIds = new Array(14);
+      const resolutions      = new Array(14);
+      const size             = ol.extent.getWidth(projectionExtent) / 256;
+      const matrixIds        = new Array(14);
       for (var z = 0; z < 14; ++z) {
         // generate resolutions and matrixIds arrays for this WMTS
         resolutions[z] = size / Math.pow(2, z);
-        matrixIds[z] = z;
+        matrixIds[z]   = z;
       }
       return new ol.layer.Tile({
         opacity,
@@ -125,7 +140,7 @@ BaseLayers.WMTS = {
 
 BaseLayers.BING = {};
 
-BaseLayers.BING.get = (config={})=>{
+BaseLayers.BING.get = ( config = {} ) => {
   const imagerySet = config.imagerySet || 'Aerial'; // 'Road', 'AerialWithLabels', 'Aerial'
   return new ol.layer.Tile({
     name: imagerySet,

@@ -7,7 +7,7 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 
 export default {
   methods: {
-    async autocompleteRequest({layerId, field, value}={}){
+    async autocompleteRequest({ layerId, field, value } = {}) {
       let data = [];
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       try {
@@ -15,11 +15,10 @@ export default {
           suggest: `${field}|${value}`,
           unique: field
         })
-      } catch(error) {}
-      return data.map(value => ({
-        id:value,
-        text:value
-      }))
+      } catch(e) {
+        console.warn(e);
+      }
+      return data.map(value => ({ id:value, text:value }))
     }
   }
 };

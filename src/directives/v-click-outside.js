@@ -6,7 +6,7 @@
 export default  {
   bind(el, binding, vnode) {
     this.event = (event) => {
-      // skip if clicked element is a child of element
+      // skip if a clicked element is a child of element
       if (el === event.target || el.contains(event.target)) {
         return;
       }

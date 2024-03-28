@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import ApplicationState from 'store/application-state';
+import ApplicationState   from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
 
 const attr = 'g3w-v-download-id';

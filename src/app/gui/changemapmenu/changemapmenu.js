@@ -1,23 +1,7 @@
 /**
  * @file
- * @since 3.8.0
+ * @deprecated do not remove prior to https://github.com/g3w-suite/g3w-client/pull/451
  */
 
-import * as vueComponentOptions from 'components/ChangeMapMenu.vue';
-
-const { base, inherit, merge } = require('utils');
-const Component = require('gui/component/component');
-
-const InternalComponent = Vue.extend(vueComponentOptions);
-
-function ChangeMapMenuComponent(options={}) {
-  options.id = 'changemapmenu';
-  base(this, options);
-  this.state.visible = true;
-  merge(this, options);
-  this.internalComponent = new InternalComponent();
-}
-inherit(ChangeMapMenuComponent, Component);
-
-module.exports = ChangeMapMenuComponent;
-
+import vueComp from 'components/g3w-changemapmenu';
+module.exports = vueComp;

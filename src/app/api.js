@@ -166,7 +166,6 @@ const FormComponent              = require('gui/form/vue/form');
 const FormService                = require('gui/form/formservice');
 const InputsComponents           = require('gui/inputs/inputs');
 const Fields                     = require('gui/fields/fields');
-const SearchPanelService         = require('gui/search/vue/panel/searchservice');
 
 /**
  * G3W-OL modules
@@ -376,7 +375,6 @@ const g3wsdk = {
       Fields,
       Mixins,
       services: {
-        SearchPanel: SearchPanelService,
         FormService
       }
     }

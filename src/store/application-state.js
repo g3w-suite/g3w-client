@@ -128,7 +128,15 @@ const STATE = Vue.observable({
    */
   tokens: {
     filtertoken: undefined
-  }
+  },
+
+  /**
+   * @since 3.10.0
+   */
+  querybuilder: {
+    cache: {},
+    searches: JSON.parse(window.localStorage.getItem('QUERYBUILDERSEARCHES') || "{}"),
+  },
 
 });
 

@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import ApplicationState from 'store/application-state';
+import ApplicationState            from 'store/application-state';
 import { watch, unwatch, trigger } from 'directives/utils';
 
 const { t, tPlugin } = require('core/i18n/i18n.service');
@@ -21,7 +21,7 @@ export default {
       _el.setAttribute('data-container',"body");
       $(_el)
         .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true })
-        // hide tooltip on mobile  after click
+        // hide tooltip on mobile after click
         .on('shown.bs.tooltip', () => { ApplicationState.ismobile && setTimeout(()=>$(_el).tooltip('hide'), 600) });
     }
     watch({

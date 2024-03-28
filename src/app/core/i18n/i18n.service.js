@@ -34,8 +34,7 @@ function init(config) {
 
 }
 const getAppLanguage = function() {
-  const config = ApplicationService.getConfig();
-  return config.user.i18n || "en";
+  return ApplicationService.getConfig().user.i18n || "en";
 };
 
 
@@ -50,9 +49,7 @@ const tPlugin = function(text) {
 };
 
 const tPrefix = function(filter) {
-  return function(text) {
-    return i18next.t(`${filter}.${text}`);
-  }
+  return (text) => i18next.t(`${filter}.${text}`);
 };
 
 const addI18nPlugin = function({name, config}) {

@@ -1,28 +1,7 @@
-import * as vueComponentOptions from 'components/SearchPanel.vue';
+/**
+ * @file
+ * @deprecated do not remove prior to https://github.com/g3w-suite/g3w-client/pull/451
+ */
 
-const { base, inherit, uniqueId } = require('utils');
-const Panel = require('gui/panel');
-const Service = require('gui/search/vue/panel/searchservice');
-
-const SearchPanelComponent = Vue.extend(vueComponentOptions);
-
-function SearchPanel(options = {}) {
-  const service = options.service || new Service(options);
-  this.setService(service);
-  this.id = uniqueId();
-  this.title = 'search';
-  const SearchPanel = options.component || SearchPanelComponent;
-  const internalPanel = new SearchPanel({
-    service
-  });
-  this.setInternalPanel(internalPanel);
-  this.unmount = function() {
-    return base(this, 'unmount').then(() => {
-      service.clear()
-    })
-  }
-}
-
-inherit(SearchPanel, Panel);
-
+import { SearchPanel } from 'components/g3w-search';
 module.exports = SearchPanel;

@@ -4,11 +4,11 @@
  */
 
 import CatalogLayersStoresRegistry from './catalog-layers';
-import ComponentsRegistry from './components';
-import ControlsRegistry from './map-controls';
-import LayersStoresRegistry from './map-layers';
-import PluginsRegistry from './plugins';
-import ProjectsRegistry from './projects';
+import ComponentsRegistry          from './components';
+import ControlsRegistry            from './map-controls';
+import LayersStoresRegistry        from './map-layers';
+import PluginsRegistry             from './plugins';
+import ProjectsRegistry            from './projects';
 
 /**
  * @FIXME importing directly from this file breaks application

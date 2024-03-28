@@ -35,7 +35,7 @@
   import ProjectsRegistry from 'store/projects';
 
   export default {
-    name: "changemapthemes",
+    name: "catalog-change-map-themes",
     data(){
       const collapsed = ProjectsRegistry.getCurrentProject().state.toc_themes_init_status === 'collapsed';
       const current_map_theme = this.map_themes.find(map_theme => map_theme.default);

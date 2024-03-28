@@ -4,7 +4,7 @@
  */
 
 const { base,inherit, Base64 } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject                = require('core/g3wobject');
 
 /*
  * RouterService based on  History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
@@ -35,7 +35,7 @@ const G3WObject = require('core/g3wobject');
 crossroads.ignoreState = true;
 crossroads.greedy = true;
 
-const RouterService = function(){
+const RouterService = function() {
 
   this._initialLocationQuery;
   this._routeQuery = '';
@@ -48,6 +48,7 @@ const RouterService = function(){
 
   base(this);
 };
+
 inherit(RouterService, G3WObject);
 
 const proto = RouterService.prototype;
@@ -58,8 +59,8 @@ proto.init = function() {
   this._setRouteQueryFromLocationQuery(query);
 };
 
-proto.addRoute = function(pattern,handler,priority) {
-  return crossroads.addRoute(pattern,handler,priority);
+proto.addRoute = function(pattern, handler, priority) {
+  return crossroads.addRoute(pattern, handler, priority);
 };
 
 proto.removeRoute = function(route) {
@@ -70,11 +71,11 @@ proto.removeAllRoutes = function() {
   return crossroads.removeAllRoutes();
 };
 
-proto.parse = function(request,defaultArgs) {
-  return crossroads.parse(request,defaultArgs);
+proto.parse = function(request, defaultArgs) {
+  return crossroads.parse(request, defaultArgs);
 };
 
-proto.goto = function(routeQuery){
+proto.goto = function(routeQuery) {
   if (!this._initialQuery) {
     this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
   }
@@ -92,13 +93,13 @@ proto.makePermalink = function(routeQuery) {
   return '?'+this._initialLocationQuery + '&q='+this._encodeRouteQuery(routeQuery);
 };
 
-proto.makeQueryString = function(queryParams){};
+proto.makeQueryString = function(queryParams) {};
 
-proto.slicePath = function(path){
+proto.slicePath = function(path) {
   return path.split('?')[0].split('/');
 };
 
-proto.sliceFirst = function(path){
+proto.sliceFirst = function(path) {
   const pathAndQuery = path.split('?');
   const queryString = pathAndQuery[1];
   const pathArr = pathAndQuery[0].split('/');
@@ -114,8 +115,7 @@ proto.getQueryParams = function(query) {
   let queryPairs = [];
   if (query != "" && query.indexOf("&") == -1) {
     queryPairs = [query];
-  }
-  else {
+  } else {
     queryPairs = query.split('&');
   }
   try {

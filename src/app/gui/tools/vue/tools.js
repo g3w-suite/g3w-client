@@ -1,32 +1,7 @@
-import * as vueComponentOptions from 'components/Tools.vue';
-import GUI from 'services/gui';
+/**
+ * @file
+ * @deprecated do not remove prior to https://github.com/g3w-suite/g3w-client/pull/451
+ */
 
-const { base, inherit } = require('utils');
-const Component = require('gui/component/component');
-const ToolsService = require('gui/tools/service');
-
-const InternalComponent = Vue.extend(vueComponentOptions);
-
-function ToolsComponent(options={}) {
-  base(this, options);
-  this._service = new ToolsService(options);
-  this.title = "tools";
-
-  const internalComponent = new InternalComponent({
-    toolsService: this._service
-  });
-
-  internalComponent.state = this._service.state;
-  this.setInternalComponent(internalComponent, {
-    events: [{name: 'visible'}]
-  });
-
-  this._setOpen = function(bool=false) {
-    this.internalComponent.state.open = bool;
-    bool && GUI.closeContent();
-  }
-}
-
-inherit(ToolsComponent, Component);
-
-module.exports = ToolsComponent;
+import vueComp from 'components/g3w-tools';
+module.exports = vueComp;

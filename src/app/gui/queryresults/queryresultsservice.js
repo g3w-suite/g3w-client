@@ -18,6 +18,7 @@ import { createFeatureFromBBOX }                from 'utils/createFeatureFromBBO
 import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoordinates';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
+import { printAtlas }                           from 'utils/printAtlas';
 
 const {
   noop,
@@ -30,13 +31,10 @@ const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const G3WObject                  = require('core/g3wobject');
 const VectorLayer                = require('core/layers/vectorlayer');
-const { PRINT_UTILS }            = require('gui/print/printservice');
 const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const deprecate                  = require('util-deprecate');
-
-const { printAtlas } = PRINT_UTILS;
 
 /**
  * Get and set vue reactivity to QueryResultsService
@@ -56,9 +54,6 @@ class QueryResultsService extends G3WObject {
      */
     this._changeLayerResult = this.setters.changeLayerResult;
     this._addComponent      = this.setters.addComponent;
-
-    /** @deprecated since 3.9.1 will be removed in 4.x */
-    this.printService = PRINT_UTILS;
 
     /**
      * @FIXME add description
@@ -2290,7 +2285,7 @@ QueryResultsService.prototype.setters = {
 
     // whether add external layers to response
     if (true === queryResponse.query.external.add && false === options.add) {
-      const catalogService = GUI.getService('catalog');
+      const catalog = GUI.getService('catalog');
 
       /** @type { boolean | undefined } */
       const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
@@ -2299,7 +2294,7 @@ QueryResultsService.prototype.setters = {
       this._vectorLayers
         .forEach(layer => {
           const id = layer.get('id');
-          const is_selected  = catalogService.isExternalLayerSelected({ id, type: 'vector' });
+          const is_selected  = !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected;
           const is_visible = layer.getVisible(); 
           // TODO: extract this into `layer.isSomething()` ?
           if (is_visible && ((is_selected === FILTER_SELECTED) || (undefined === FILTER_SELECTED))) {

@@ -4,7 +4,7 @@
  */
 
 const { inherit, base, Base64 } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject                 = require('core/g3wobject');
 
 /*
  * HistoryService basato su History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
@@ -32,7 +32,7 @@ const G3WObject = require('core/g3wobject');
  * HistoryService.removeRoute(route);
 */
 
-const HistoryService = function(){
+const HistoryService = function() {
   this._initialLocationQuery;
   this._routeQuery = '';
   this.setters = {
@@ -42,30 +42,29 @@ const HistoryService = function(){
     }
   }
 
-  History.Adapter.bind(window,'statechange',() =>{
-      const state = History.getState();
-      const locationQuery = state.hash;
-      if(state.data && state.data.routequery){
-         this.setRouteQuery(state.data.routequery);
-      }
-      else {
-        this._setRouteQueryFromLocationQuery(locationQuery);
-      }
+  History.Adapter.bind(window,'statechange', () => {
+    const state = History.getState();
+    const locationQuery = state.hash;
+    if (state.data && state.data.routequery) {
+       this.setRouteQuery(state.data.routequery);
+    } else {
+      this._setRouteQueryFromLocationQuery(locationQuery);
+    }
   });
 
   base(this);
 };
-inherit(RouterService,G3WObject);
 
-const proto = RouterService.prototype;
+inherit(HistoryService, G3WObject);
 
-proto.init = function(){
-  const query = window.location.search;
-  this._setRouteQueryFromLocationQuery(query);
+const proto = HistoryService.prototype;
+
+proto.init = function() {
+  this._setRouteQueryFromLocationQuery(window.location.search);
 };
 
-proto.addRoute = function(pattern,handler,priority) {
-  return crossroads.addRoute(pattern,handler,priority);
+proto.addRoute = function(pattern, handler, priority) {
+  return crossroads.addRoute(pattern, handler, priority);
 };
 
 proto.removeRoute = function(route) {
@@ -76,11 +75,11 @@ proto.removeAllRoutes = function() {
   return crossroads.removeAllRoutes();
 };
 
-proto.parse = function(request,defaultArgs) {
-  return crossroads.parse(request,defaultArgs);
+proto.parse = function(request, defaultArgs) {
+  return crossroads.parse(request, defaultArgs);
 };
 
-proto.goto = function(routeQuery){
+proto.goto = function(routeQuery) {
   //var pathb64 = Base64.encode(path);
   //History.pushState({path:path},null,'?p='+pathb64);
   if (!this._initialQuery) {
@@ -95,11 +94,11 @@ proto.goto = function(routeQuery){
 
 proto.makeQueryString = function(queryParams){};
 
-proto.slicePath = function(path){
+proto.slicePath = function(path) {
   return path.split('?')[0].split('/');
 };
 
-proto.sliceFirst = function(path){
+proto.sliceFirst = function(path) {
   const pathAndQuery = path.split('?');
   const queryString = pathAndQuery[1];
   const pathArr = pathAndQuery[0].split('/')
@@ -109,33 +108,30 @@ proto.sliceFirst = function(path){
   return [firstPath,path];
 };
 
-proto.getQueryParams = function(query){
+proto.getQueryParams = function(query) {
   query = query.replace('?','');
   const queryParams = {};
   let queryPairs = [];
   if (query != "" && query.indexOf("&") == -1) {
     queryPairs = [query];
-  }
-  else {
+  } else {
     queryPairs = query.split('&');
   }
   try {
     queryPairs.forEach((queryPair) => {
       const pair = queryPair.split('=');
-      const key = pair[0];
-      const value = pair[1];
-      queryParams[key] = value;
+      queryParams[ pair[0]] = pair[1];
     });
   }
   catch (e) {}
   return queryParams;
 };
 
-proto.getQueryString = function(path){
+proto.getQueryString = function(path) {
   return path.split('?')[1];
 };
 
-proto._getQueryPortion = function(query,queryKey){
+proto._getQueryPortion = function(query,queryKey) {
   let queryPortion;
   try {
     const queryPairs = query.split('&');
@@ -181,7 +177,7 @@ proto._getRouteQueryFromLocationQuery = function(locationQuery) {
 };
 
 proto._stripInitialQuery = function(locationQuery) {
-  const previousQuery = this._getQueryPortion(locationQuery,'q');
+  const previousQuery = this._getQueryPortion(locationQuery, 'q');
   if (previousQuery) {
     const previousQueryLength = previousQuery.length;
     const previousQueryPosition = locationQuery.indexOf(previousQuery);

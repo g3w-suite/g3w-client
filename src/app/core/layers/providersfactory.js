@@ -145,7 +145,7 @@ const Providers = {
     }
 
     /**
-     * @TODO check if deprecated (broken and unusued code ?)
+     * @TODO check if deprecated (broken and unused code ?)
      */
     digestFeaturesForTable() {
       return {

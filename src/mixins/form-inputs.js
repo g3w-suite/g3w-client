@@ -4,19 +4,19 @@
  */
 
 export default {
-  data(){
+  data() {
     return {
       valid: false
     }
   },
   methods: {
-    addToValidate(input){
+    addToValidate(input) {
       this.tovalidate.push(input);
     },
-    changeInput(input){
+    changeInput(input) {
       this.isValid(input)
     },
-    // Every input send to form it valid value that will change the genaral state of form
+    // Every input sends to form it valid value that will change the genaral state of form
     isValid(input) {
       if (input) {
         // check mutually
@@ -56,7 +56,9 @@ export default {
           input.validate.valid = input.validate.min_field ?
             this.tovalidate[input.validate.min_field].validate.empty || 1*input.value > 1*this.tovalidate[input.validate.min_field].value :
             this.tovalidate[input.validate.max_field].validate.empty || 1*input.value < 1*this.tovalidate[input.validate.max_field].value;
-          if (input.validate.valid) this.tovalidate[input_name].validate.valid = true
+          if (input.validate.valid) {
+            this.tovalidate[input_name].validate.valid = true
+          }
         }
       }
       this.valid = Object.values(this.tovalidate).reduce((previous, input) => {

@@ -421,7 +421,7 @@
 
     data() {
       return {
-        state: this.$options.queryResultsService.state,
+        state: this.$options.service.state,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
         headerActionsCellWidth: headerActionsCellWidth,
       }
@@ -550,20 +550,20 @@
         return this.state.layersactions[layer.id].find(action => action.formats);
       },
       addLayerFeaturesToResults(layer) {
-        this.$options.queryResultsService.addLayerFeaturesToResultsAction(layer);
+        this.$options.service.addLayerFeaturesToResultsAction(layer);
       },
       showDownloadAction(evt) {
         const display = evt.target.children[0].style.display;
         evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
       },
       printAtlas(layer) {
-        this.$options.queryResultsService.printAtlas(layer);
+        this.$options.service.printAtlas(layer);
       },
       showLayerDownloadFormats(layer) {
-        this.$options.queryResultsService.showLayerDownloadFormats(layer)
+        this.$options.service.showLayerDownloadFormats(layer)
       },
       saveLayerResult(layer, type="csv") {
-        this.$options.queryResultsService.saveLayerResult({layer, type});
+        this.$options.service.saveLayerResult({layer, type});
       },
       hasLayerOneFeature(layer) {
         return layer.features.length === 1;
@@ -575,10 +575,10 @@
        * @since 3.9.0
        */
       saveFilter(layer) {
-        this.$options.queryResultsService.saveFilter(layer);
+        this.$options.service.saveFilter(layer);
       },
       addRemoveFilter(layer){
-        this.$options.queryResultsService.addRemoveFilter(layer);
+        this.$options.service.addRemoveFilter(layer);
       },
       getContainerFromFeatureLayer({layer, index}={}) {
         return $(`#${layer.id}_${index} > td`);
@@ -593,7 +593,7 @@
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
       selectionFeaturesLayer(layer) {
-        this.$options.queryResultsService.selectionFeaturesLayer(layer);
+        this.$options.service.selectionFeaturesLayer(layer);
       },
       layerHasActions(layer) {
         return this.state.layersactions[layer.id].length > 0;
@@ -707,7 +707,7 @@
               layer,
               index
             });
-            this.$options.queryResultsService.openCloseFeatureResult({
+            this.$options.service.openCloseFeatureResult({
               open:!collapsed,
               layer,
               feature,
@@ -727,14 +727,14 @@
 
       showFeatureInfo(layer, boxid) {
         const box = this.state.layersFeaturesBoxes[boxid];
-        this.$options.queryResultsService.emit('show-query-feature-info', {
+        this.$options.service.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
           show: box ? !box.collapsed : false,
         });
       },
       getBoxId(layer, feature, relation_index) {
-        return this.$options.queryResultsService.getBoxId(layer, feature, relation_index);
+        return this.$options.service.getBoxId(layer, feature, relation_index);
       },
       async toggleFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
@@ -751,10 +751,10 @@
           await this.$nextTick();
         }
         const container = this.getContainerFromFeatureLayer({layer, index});
-        await this.$options.queryResultsService.trigger(action.id, layer,feature, index, container);
+        await this.$options.service.trigger(action.id, layer,feature, index, container);
       },
       showFullPhoto(url) {
-        this.$options.queryResultsService.showFullPhoto(url);
+        this.$options.service.showFullPhoto(url);
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
@@ -795,21 +795,21 @@
           const layer = layers[0];
           const feature = layer.features[0];
           const boxid = this.getBoxId(layer, feature);
-          this.$options.queryResultsService.onceafter('postRender', () => {
+          this.$options.service.onceafter('postRender', () => {
             this.showFeatureInfo(layer, boxid);
           });
         }
-        requestAnimationFrame(() => this.$options.queryResultsService.postRender(this.$el));
+        requestAnimationFrame(() => this.$options.service.postRender(this.$el));
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
+        bool && this.$options.service.highlightFeaturesPermanently(this.state.layers[0]);
       }
     },
     created() {
       //PUT HERE THROTTLED FUNCTION
       this.zoomToLayerFeaturesExtent = throttle(layer => {
-        this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
+        this.$options.service.zoomToLayerFeaturesExtent(layer, {
           highlight: true
         });
       })
@@ -818,7 +818,7 @@
       this.state.zoomToResult = true;
     },
     destroyed() {
-      this.$options.queryResultsService.clear();
+      this.$options.service.clear();
     }
   };
 </script>

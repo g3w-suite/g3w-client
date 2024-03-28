@@ -1,11 +1,6 @@
 import ApiService from './api';
 import ApplicationService from './application';
 import ClipboardService from './clipboard';
-import ExpressionService from './data-expression';
-import OWSService from './data-ows';
-import ProxyService from './data-proxy';
-import QueryService from './data-query';
-import SearchService from './data-search';
 import DataService from './data';
 import ChangesManager from './editing';
 import GUI from './gui';
@@ -26,11 +21,6 @@ export {
   ApiService,
   ApplicationService,
   ClipboardService,
-  ExpressionService,
-  OWSService,
-  ProxyService,
-  QueryService,
-  SearchService,
   DataService,
   ChangesManager,
   GUI,
