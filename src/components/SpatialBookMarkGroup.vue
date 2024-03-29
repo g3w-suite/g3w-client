@@ -5,16 +5,22 @@
 
 <template>
   <li>
-    <div style="font-weight: bold; width: 100%;" :style="{borderBottom: group.expanded ? '2px solid #2c3b41' : 'none'}"
-      @click.stop="group.expanded = !group.expanded">
+    <div
+      style       = "font-weight: bold; width: 100%;"
+      :style      = "{borderBottom: group.expanded ? '2px solid #2c3b41' : 'none'}"
+      @click.stop = "group.expanded = !group.expanded"
+    >
       <span
-        :class="[g3wtemplate.getFontClass(group.expanded ? 'caret-down' : 'caret-right')]"
-        style="margin-right: 5px;"
+        :class = "g3wtemplate.getFontClass(group.expanded ? 'caret-down' : 'caret-right')"
+        style  = "margin-right: 5px;"
       >
       </span>
       <span>{{group.name}}</span>
     </div>
-    <ul style="margin-left: 10px;" v-show="group.expanded">
+    <ul
+      v-show = "group.expanded"
+      style  = "margin-left: 10px;"
+    >
       <spatial-book-mark-item v-for="node in group.nodes" :bookmark="node"/>
     </ul>
   </li>
@@ -44,7 +50,6 @@
       SpatialBookMarkItem
     },
     methods: {},
-    async mounted() {}
   };
 </script>
 
