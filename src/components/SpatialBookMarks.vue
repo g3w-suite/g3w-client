@@ -5,9 +5,9 @@
 
 <template>
   <ul
-    id="g3w-spatial-bookmarks"
-    class="treeview-menu g3w-spatial-bookmarks menu-items"
-    :class="{'g3w-tools': !showaddform}"
+    id     = "g3w-spatial-bookmarks"
+    class  = "treeview-menu g3w-spatial-bookmarks menu-items"
+    :class = "{'g3w-tools': !showaddform}"
   >
 
     <!-- ADD NEW BOOKMARK (FORM) -->
@@ -17,11 +17,11 @@
         <div style="display: flex; justify-content: end">
 
           <span
-            v-t-tooltip:left.create="'close'"
-            @click.stop="showaddform = false"
-            :class="g3wtemplate.getFontClass('close')"
-            class="sidebar-button sidebar-button-icon"
-            style="padding: 5px; margin: 3px;"
+            v-t-tooltip:left.create = "'close'"
+            @click.stop             = "showaddform = false"
+            :class                  = "g3wtemplate.getFontClass('close')"
+            class                   = "sidebar-button sidebar-button-icon"
+            style                   = "padding: 5px; margin: 3px;"
           >
           </span>
 
@@ -33,10 +33,10 @@
         </div>
         <div style="margin-top: 5px;">
           <button
-            @click.stop="addBookMark"
-            class="sidebar-button-run btn btn-block"
-            v-t="'add'"
-            v-disabled="!addbookmarkinput.validate.valid"></button>
+            @click.stop = "addBookMark"
+            class       = "sidebar-button-run btn btn-block"
+            v-t         = "'add'"
+            v-disabled  = "!addbookmarkinput.validate.valid"></button>
         </div>
       </li>
     </template>
@@ -54,41 +54,41 @@
       </template>
 
       <div
-        class="content-bookmarks"
-        style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+        class = "content-bookmarks"
+        style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
 
         <span
-          style="font-weight: bold; color: #ffffff"
-          v-t="'sdk.spatialbookmarks.sections.user.title'">
+          style = "font-weight: bold; color: #ffffff"
+          v-t   = "'sdk.spatialbookmarks.sections.user.title'">
         </span>
 
         <span
-          @click.stop="showAddForm"
-          style="padding: 5px; cursor: pointer;"
-          class="sidebar-button sidebar-button-icon"
-          :class="g3wtemplate.getFontClass('plus')"
+          @click.stop = "showAddForm"
+          style       = "padding: 5px; cursor: pointer;"
+          class       = "sidebar-button sidebar-button-icon"
+          :class      = "g3wtemplate.getFontClass('plus')"
         >
         </span>
       </div>
       <spatial-book-mark-item
-        v-for="bookmark in user.bookmarks"
-        @remove-bookmark="removeBookMark"
-        :bookmark="bookmark"/>
+        v-for             = "bookmark in user.bookmarks"
+        @remove-bookmark = " removeBookMark"
+        :bookmark        = "bookmark"/>
     </template>
   </ul>
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS } from 'app/constant';
-  import GUI from 'services/gui';
-  import ApplicationService from 'services/application';
-  import ProjectsRegistry from 'store/projects';
+  import { LOCAL_ITEM_IDS }   from 'app/constant';
+  import GUI                  from 'services/gui';
+  import ApplicationService   from 'services/application';
+  import ProjectsRegistry     from 'store/projects';
   import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
-  import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
-  import InputText from "components/InputText.vue";
+  import SpatialBookMarkItem  from "components/SpatialBookMarkItem.vue";
+  import InputText            from "components/InputText.vue";
 
   const { uniqueId } = require('utils');
-  const { t } = require('core/i18n/i18n.service');
+  const { t }        = require('core/i18n/i18n.service');
 
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
@@ -107,8 +107,8 @@
     data() {
       const project = ProjectsRegistry.getCurrentProject();
 
-      if ("undefined" === typeof SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
-        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = []
+      if (undefined === SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
+        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = [];
       }
 
       return {
@@ -135,22 +135,15 @@
         },
 
         addbookmarkinput: {
-          name: 'add-bookmark',
-          label: t('sdk.spatialbookmarks.input.name'),
-          value: null,
+          name:     'add-bookmark',
+          label:    t('sdk.spatialbookmarks.input.name'),
+          value:    null,
           editable: true,
-          type: 'varchar',
-          input: {
-            type: 'text',
-            options: {}
-          },
-          visible: true,
-          validate: {
-            valid: false,
-            required: true
-          }
+          type:     'varchar',
+          input:    { type: 'text', options: {} },
+          visible:  true,
+          validate: { valid:    false, required: true }
         }
-
       }
     },
 
@@ -166,20 +159,19 @@
 
       addBookMark() {
         this.user.bookmarks.push({
-          id: uniqueId(),
-          name: this.addbookmarkinput.value,
-          extent: GUI.getService('map').getMapExtent(),
+          id:        uniqueId(),
+          name:      this.addbookmarkinput.value,
+          extent:    GUI.getService('map').getMapExtent(),
           removable: true,
-          crs:{
-            epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1]
-          }
+          crs:       { epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1] }
         });
+
         this.saveUserBookMarks();
         this.showaddform = false;
       },
 
       removeBookMark(id) {
-        this.user.bookmarks = this.user.bookmarks.filter(bookmark => bookmark.id !== id);
+        this.user.bookmarks = this.user.bookmarks.filter(b => id !== b.id);
         this.saveUserBookMarks();
       },
 
@@ -193,19 +185,14 @@
 
       showAddForm() {
         this.addbookmarkinput.value = null;
-        this.showaddform = true;
+        this.showaddform            = true;
       }
 
     },
 
     created() {
-      this.$on('close', ()=>{
-        this.showaddform = false
-      })
+      this.$on('close', () => this.showaddform = false);
     },
-
-    /** @FIXME remove unused method ? */
-    async mounted() {}
 
   };
 </script>
