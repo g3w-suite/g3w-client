@@ -160,10 +160,10 @@
   import { getUniqueDomId }                from 'utils/getUniqueDomId';
   import { isURL }                         from 'utils/isURL';
 
-  import * as vuePanelComp  from 'components/WMSLayersPanel.vue';
+  import * as vuePanelComp                 from 'components/WMSLayersPanel.vue';
 
   /**
-   * Current project id used to store data or get data to current project
+   * Current project id used to store data or get data to a current project
    */
   let PID = ProjectsRegistry.getCurrentProject().getId();
 
@@ -225,7 +225,7 @@
       async addNewUrl(wms) {
         const found  = this.state.localwmsurls.find(l => l.url == wms.url || l.id == wms.id);
         const status = { error: false, added: !!found };
-        // when url is not already added
+        // when url is not yet added
         if (!found) {
           try {
             const response = await this.getWMSLayers(wms.url);
@@ -265,8 +265,8 @@
        */
       deleteWmsUrl(id) {
         this.state.localwmsurls = this.state.localwmsurls.filter(l => id !== l.id);
-        const data = this.getLocalWMSData();
-        data.urls  = this.state.localwmsurls;
+        const data              = this.getLocalWMSData();
+        data.urls               = this.state.localwmsurls;
         this.updateLocalWMSData(data);
       },
 
@@ -381,7 +381,7 @@
        * 
        * @returns { WmsLayersPanel }
        */
-      _showWmsLayersPanel(config={}) {
+      _showWmsLayersPanel(config = {}) {
         panel = new Panel({
           service:       this,
           id:            getUniqueDomId(),
@@ -451,13 +451,15 @@
        */
       changeLayerData(name, attr = {}) {
         const data = this.getLocalWMSData();
-        Object.keys(data.wms).find(url => {
-          const i = data.wms[url].findIndex(l => l.name == name);
-          if (-1 !== i) {
-            data.wms[url][i][attr.key] = attr.value;
-            return true;
-          }
-        });
+        Object
+          .keys(data.wms)
+          .find(url => {
+            const i = data.wms[url].findIndex(l => l.name == name);
+            if (-1 !== i) {
+              data.wms[url][i][attr.key] = attr.value;
+              return true;
+            }
+          });
         this.updateLocalWMSData(data);
       },
 
@@ -467,8 +469,7 @@
        * @returns {*}
        */
       getLocalWMSData() {
-        const item = ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM);
-        return item && item[PID];
+        return (ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {})[PID];
       },
 
       /**
@@ -487,10 +488,11 @@
     // Load WMS urls from local storage
     async mounted() {
       /**@deprecated Will be removed on v4.x **/
-      ProjectsRegistry.onafter('setCurrentProject', async (project) => {
-        this.projectId  = PID = project.getId();
-        this.state.adminwmsurls = project.wmsurls || [];
-      });
+      ProjectsRegistry
+        .onafter('setCurrentProject', async project => {
+          this.projectId          = PID = project.getId();
+          this.state.adminwmsurls = project.wmsurls || [];
+        });
 
       await GUI.isReady();
 
