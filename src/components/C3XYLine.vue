@@ -15,7 +15,7 @@
   <div
     v-for="component in components"
   >
-    <span class="divider"></span>
+    <divider/>
     <component
       @change-item   = "changeItem"
       @change-items  = "changeItems"

@@ -16,7 +16,7 @@
         :state="state"
         :is="type">
       </component>
-      <span class="divider"></span>
+      <divider/>
     </div>
     <div v-else style="border-top: 2px solid" class="skin-border-color field-child">
       <h4 style="font-weight: bold">{{ state.label}}</h4>

@@ -235,7 +235,7 @@
                 @error = "onLegendError(url)"
                 @load  = "onLegendLoad(url)"
               />
-              <span class="divider"></span>
+              <divider/>
             </figure>
           </div>
         </div>
