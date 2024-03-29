@@ -45,20 +45,20 @@
 
 <script>
   import { SidebarEventBus as VM } from 'app/eventbus';
-  import SidebarItemAction from 'components/SidebarItemAction.vue';
+  import SidebarItemAction         from 'components/SidebarItemAction.vue';
 
   export default {
     name: "SidebarItem",
     data() {
       return {
-        info: this.$options.info || { state: null, style: null, class: null },
-        main: true,
-        component: this.$options.component,
-        active: false,
-        title: '',
-        open: false,
-        icon: null,
-        iconColor: null,
+        info:        this.$options.info || { state: null, style: null, class: null },
+        main:        true,
+        component:   this.$options.component,
+        active:      false,
+        title:       '',
+        open:        false,
+        icon:        null,
+        iconColor:   null,
         collapsible: null
       };
     },
@@ -68,19 +68,17 @@
     methods: {
       onClickItem(evt) {
         // force to close
-        this.component.isolate && evt.stopPropagation();
+        if (this.component.isolate) { evt.stopPropagation() }
         if (!this.component.isolate) {
-          // set state of opened component
-          this.$options.service.state.components.forEach(component => {
-            if (component !== this.component) {
-              if (component.getOpen()) {
-                component.click({
-                  open:component.isolate
-                });
+          // set state of an opened component
+          this.$options.service.state.components
+            .forEach(component => {
+              if (component !== this.component && component.getOpen()) {
+                component.click({ open:component.isolate });
               }
-            }
-          });
-          !this.component.collapsible && isMobile.any && VM.$emit('sidebaritemclick');
+           });
+
+          if (!this.component.collapsible && isMobile.any) { VM.$emit('sidebaritemclick') }
         }
         this.component.setOpen(!this.component.state.open);
       }
