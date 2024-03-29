@@ -9,19 +9,32 @@
       <slot>
         <div style="margin:3px; font-weight: bold">
           * <span  v-t="'sdk.form.footer.required_fields'"></span>
-          <div v-if="state.footer.message" :style="[state.footer.style] ">{{ state.footer.message }}</div>
+          <div
+            v-if   = "state.footer.message"
+            :style = "[state.footer.style] "
+          >
+            {{ state.footer.message }}
+          </div>
         </div>
-        <button v-for="button in state.buttons" class="btn " :key="button.id"
-          :class="[button.class]"
-          :update="state.update"
-          :valid="state.valid"
-          @click.stop.prevent="exec(button.cbk)"
-          v-disabled="!btnEnabled(button)" v-t="button.title">
+        <button
+          v-for="button in state.buttons"
+          :key                = "button.id"
+          class               = "btn "
+          :class              = "[button.class]"
+          :update             = "state.update"
+          :valid              = "state.valid"
+          @click.stop.prevent = "exec(button.cbk)"
+          v-disabled          = "!btnEnabled(button)"
+          v-t="button.title">
         </button>
       </slot>
     </template>
     <template v-else>
-      <button v-t="'back'" class="btn skin-button" @click.stop.prevet="backToRoot"></button>
+      <button
+        v-t                = "'back'"
+        class              = "btn skin-button"
+        @click.stop.prevet = "backToRoot">
+      </button>
     </template>
   </div>
 </template>
@@ -41,9 +54,9 @@ export default Vue.extend({
     },
     backToRoot: {
       type: Function,
-      default: ()=>{}
+      default: () => {}
     },
-    isRootComponent:{
+    isRootComponent: {
       type: Function
     }
   },
@@ -56,13 +69,13 @@ export default Vue.extend({
       ...button
     }));
     return {
-      id:"footer",
+      id:     "footer",
       active: true,
-      show: true
+      show:   true,
     }
   },
   computed: {
-    enableSave(){
+    enableSave() {
       return this.state.valid && this.state.update;
     }
   },
@@ -71,7 +84,7 @@ export default Vue.extend({
       cbk instanceof Function ? cbk(this.state.fields): (function() { return this.state.fields})();
     },
     btnEnabled(button) {
-      const {enabled=true, type} = button;
+      const { enabled = true, type } = button;
       return enabled && (type !== 'save' ||  (type === 'save' && this.enableSave));
     },
     isValid() {
@@ -79,7 +92,7 @@ export default Vue.extend({
     },
   },
   watch: {
-    'state.component'(component){
+    'state.component'(component) {
       this.show = this.isRootComponent(component)
     },
     'state.update': {
@@ -92,17 +105,20 @@ export default Vue.extend({
                 ...button,
                 ...button.eventButtons.update[value]
               })
-            } else this.state.buttons.splice(index,1, this.originalbuttons[index]);
+            } else {
+               this.state.buttons.splice(index,1, this.originalbuttons[index]);
+            }
           }
         });
       }
     }
   },
-  activated(){
+  activated() {
     this.active = true;
   },
   deactivated() {
     this.active = false;
   }
 });
+
 </script>
