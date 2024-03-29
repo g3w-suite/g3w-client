@@ -25,7 +25,7 @@
           v-model  = "position"
           :value   = "layerposition"
           :checked = "position === layerposition">
-        <label :for="ids[layerposition]" v-t="`layer_position.${layerposition}`"></label>
+        <label :for = "ids[layerposition]" v-t = "`layer_position.${layerposition}`"></label>
       </div>
     </div>
   </div>
