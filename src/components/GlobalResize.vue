@@ -22,39 +22,39 @@
     props: {
 
       show: {
-        type: Boolean,
+        type:     Boolean,
         required: true,
-        default: true
+        default:  true
       },
 
       orientation: {
-        type: String,
+        type:    String,
         default: 'h'
       },
 
       where: {
-        type: String,
+        type:    String,
         default: 'document'
       },
 
       moveFnc: {
         type: Function,
-        default: evt=> console.log(evt)
+        default: e => console.log(e)
       },
     },
 
     computed: {
       style() {
         return {
-          minWidth: '5px',
+          minWidth:        '5px',
           backgroundColor: '#dddddd',
-          cursor: this.orientation === 'v' ? 'ns-resize' : 'col-resize',
+          cursor:          this.orientation === 'v' ? 'ns-resize' : 'col-resize',
         }
       }
     },
     methods: {
-      wrapMoveFnc(evt) {
-        this.moveFnc(evt);
+      wrapMoveFnc(e) {
+        this.moveFnc(e);
       },
 
       start() {
@@ -70,14 +70,11 @@
     },
 
     async mounted() {
-      this.domElementMoveListen;
-
       this.domElementMoveListen = (
         'content' === this.where
           ? document.getElementById('g3w-view-content')
           : document
       );
-
     },
 
     destroyed() {
