@@ -53,11 +53,11 @@ export default {
     config: {
       type: Object,
       default: {
-        icon: 'pencil',
-        label: 'Choose a Layer',
+        icon:     'pencil',
+        label:    'Choose a Layer',
         nolayers: 'No layers found',
-        layers: [],
-        cbk: () => {},
+        layers:   [],
+        cbk:      () => {},
       }
     },
   },
