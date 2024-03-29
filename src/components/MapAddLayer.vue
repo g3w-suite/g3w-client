@@ -5,11 +5,11 @@
 
 <template>
   <!-- Modal -->
-    <div
-      class = "modal fade"
-      id    = "modal-addlayer"
-      ref   = "modal_addlayer"
-      role  = "dialog"
+  <div
+    class = "modal fade"
+    id    = "modal-addlayer"
+    ref   = "modal_addlayer"
+    role  = "dialog"
     >
       <div class="modal-dialog">
         <!-- Modal content-->
@@ -24,141 +24,141 @@
               v-t   = "'mapcontrols.add_layer_control.header'"
               class = "modal-title"></h4>
           </div>
-            <div class="modal-body">
-              <div class="form-group">
-                <label v-t="'mapcontrols.add_layer_control.select_projection'" for="projection-layer"></label>
-                <select class="form-control" id="projection-layer" v-model="layer.crs">
-                  <option v-for="option in options" :value="option">{{option}}</option>
-                </select>
+          <div class="modal-body">
+            <div class="form-group">
+              <label v-t="'mapcontrols.add_layer_control.select_projection'" for="projection-layer"></label>
+              <select class="form-control" id="projection-layer" v-model="layer.crs">
+                <option v-for="option in options" :value="option">{{option}}</option>
+              </select>
+            </div>
+            <layerspositions @layer-position-change="setLayerMapPosition($event)"/>
+            <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
+            <chrome-picker
+              v-model="layer.color"
+              @input="onChangeColor"
+              style="width:100%; margin:auto"/>
+            <bar-loader :loading="loading"/>
+            <form id="addcustomlayer">
+              <input
+                ref     = "input_file"
+                type    = "file"
+                title   = " "
+                @change = "onAddLayer($event)"
+                :accept = "accepted_extension">
+              <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
+              <h4
+                v-if  = "layer.name"
+                class = "skin-color"
+                style = "font-weight: bold">{{ layer.name }}</h4>
+              <div>
+                <i
+                  :class      = "g3wtemplate.getFontClass('cloud-upload')"
+                  class       = "fa-5x"
+                  aria-hidden = "true">
+                </i>
               </div>
-              <layerspositions @layer-position-change="setLayerMapPosition($event)"/>
-              <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
-              <chrome-picker
-                v-model="layer.color"
-                @input="onChangeColor"
-                style="width:100%; margin:auto"/>
-              <bar-loader :loading="loading"/>
-              <form id="addcustomlayer">
-                <input
-                  ref     = "input_file"
-                  type    = "file"
-                  title   = " "
-                  @change = "onAddLayer($event)"
-                  :accept = "accepted_extension">
-                <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
-                <h4
-                  v-if  = "layer.name"
-                  class = "skin-color"
-                  style = "font-weight: bold">{{ layer.name }}</h4>
-                <div>
-                  <i
-                    :class      = "g3wtemplate.getFontClass('cloud-upload')"
-                    class       = "fa-5x"
-                    aria-hidden = "true">
-                  </i>
-                </div>
-                <p style="font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
-              </form>
-              <div v-if="csv_extension" style="padding: 15px; border: 1px solid grey; border-radius: 3px">
-                <bar-loader :loading="csv.loading"/>
-                <div class="select_field">
-                  <label
-                    v-t = "'mapcontrols.add_layer_control.select_csv_separator'"
-                    for = "g3w-select-field-layer">
-                  </label>
-                  <select
-                    id      = "g3w-select-separator"
-                    class   = "form-control"
-                    v-model = "csv.separator"
+              <p style="font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
+            </form>
+            <div v-if="csv_extension" style="padding: 15px; border: 1px solid grey; border-radius: 3px">
+              <bar-loader :loading="csv.loading"/>
+              <div class="select_field">
+                <label
+                  v-t = "'mapcontrols.add_layer_control.select_csv_separator'"
+                  for = "g3w-select-field-layer">
+                </label>
+                <select
+                  id      = "g3w-select-separator"
+                  class   = "form-control"
+                  v-model = "csv.separator"
+                  >
+                    <option
+                      v-for  = "separator in csv.separators"
+                      :key   = "separator"
+                      :value = "separator">{{ separator }}</option>
+                  </select>
+                  <div
+                    class="select_field"
+                    :class="{'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
+                  >
+                    <label
+                      for = "g3w-select-x-field"
+                      v-t = "'mapcontrols.add_layer_control.select_csv_x_field'">
+                    </label>
+                    <select
+                      class   = "form-control"
+                      id      = "g3w-select-x-field"
+                      v-model = "csv.x"
                     >
-                      <option
-                        v-for  = "separator in csv.separators"
-                        :key   = "separator"
-                        :value = "separator">{{ separator }}</option>
-                    </select>
-                    <div
-                      class="select_field"
-                      :class="{'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
-                    >
-                      <label
-                        for = "g3w-select-x-field"
-                        v-t = "'mapcontrols.add_layer_control.select_csv_x_field'">
-                      </label>
-                      <select
-                        class   = "form-control"
-                        id      = "g3w-select-x-field"
-                        v-model = "csv.x"
-                      >
-                        <option
-                          v-for  = "header in csv.headers"
-                          :key   = "header"
-                          :value = "header">{{ header }}</option>
-                      </select>
-                    </div>
-                    <div
-                      class  = "select_field"
-                      :class = "{ 'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
-                    >
-                      <label
-                        v-t = "'mapcontrols.add_layer_control.select_csv_y_field'"
-                        for = "g3w-select-y-field">
-                      </label>
-                      <select
-                        class   = "form-control"
-                        id      = "g3w-select-y-field"
-                        v-model = "csv.y"
-                      >
                       <option
                         v-for  = "header in csv.headers"
                         :key   = "header"
                         :value = "header">{{ header }}</option>
-                      </select>
-                    </div>
-                </div>
-              </div>
-              <div
-                class="select_field"
-                :class="{ 'g3w-disabled': !fields || 0 === fields.length }"
-              >
-                <label
-                  v-t = "'mapcontrols.add_layer_control.select_field_to_show'"
-                  for = "g3w-select-field-layer">
-                </label>
-                <select
-                  class   = "form-control"
-                  id      = "g3w-select-field-layer"
-                  v-model = "field"
-                >
-                  <option :value="null">---</option>
-                  <option
-                    v-for   = "field in fields"
-                    :key   = "field"
-                    :value = "field">{{ field }}</option>
-                </select>
-              </div>
-              <div
-                v-if  = "error"
-                style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center"
-                v-t   = "error_message">
-              </div>
-              <div class="modal-footer">
-                <button
-                  v-t         = "'add'"
-                  type        = "button"
-                  class       = "btn btn-success pull-left"
-                  @click.stop = "addLayer"
-                  :disabled   = "!add">
-                </button>
-                <button
-                  v-t          = "'close'"
-                  type         = "button"
-                  class        = "btn btn-default"
-                  data-dismiss = "modal">
-                </button>
+                    </select>
+                  </div>
+                  <div
+                    class  = "select_field"
+                    :class = "{ 'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
+                  >
+                    <label
+                      v-t = "'mapcontrols.add_layer_control.select_csv_y_field'"
+                      for = "g3w-select-y-field">
+                    </label>
+                    <select
+                      class   = "form-control"
+                      id      = "g3w-select-y-field"
+                      v-model = "csv.y"
+                    >
+                    <option
+                      v-for  = "header in csv.headers"
+                      :key   = "header"
+                      :value = "header">{{ header }}</option>
+                    </select>
+                  </div>
               </div>
             </div>
+            <div
+              class="select_field"
+              :class="{ 'g3w-disabled': !fields || 0 === fields.length }"
+            >
+              <label
+                v-t = "'mapcontrols.add_layer_control.select_field_to_show'"
+                for = "g3w-select-field-layer">
+              </label>
+              <select
+                class   = "form-control"
+                id      = "g3w-select-field-layer"
+                v-model = "field"
+              >
+                <option :value="null">---</option>
+                <option
+                  v-for   = "field in fields"
+                  :key   = "field"
+                  :value = "field">{{ field }}</option>
+              </select>
+            </div>
+            <div
+              v-if  = "error"
+              style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center"
+              v-t   = "error_message">
+            </div>
+            <div class="modal-footer">
+              <button
+                v-t         = "'add'"
+                type        = "button"
+                class       = "btn btn-success pull-left"
+                @click.stop = "addLayer"
+                :disabled   = "!add">
+              </button>
+              <button
+                v-t          = "'close'"
+                type         = "button"
+                class        = "btn btn-default"
+                data-dismiss = "modal">
+              </button>
+            </div>
+            </div>
         </div>
-        </div>
+      </div>
     </div>
 </template>
 
