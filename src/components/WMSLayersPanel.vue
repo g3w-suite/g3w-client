@@ -23,7 +23,7 @@
     </label>
     <select
       id        = "g3w-wms-layers"
-      :multiple  = "true"
+      :multiple = "true"
       clear     = "true"
       v-select2 = "'selectedlayers'"
     >
@@ -119,8 +119,8 @@ export default {
      */
     clear() {
       this.selectedlayers = [];
-      this.name = null;
-      this.loading = false;
+      this.name           = null;
+      this.loading        = false;
     },
 
     /**
@@ -147,11 +147,11 @@ export default {
     /**
      * Handle selected layers change  
      */
-    selectedlayers(layers) {
-      if (!layers.length) {             // Reset epsg and projections to initial values
+    selectedlayers(layers = []) {
+      if (0 === layers.length) {             // Reset epsg and projections to initial values
         this.epsg        = null;
         this.projections = [];
-      } else if (layers.length === 1) { // take first layer selected supported crss
+      } else if (1 === layers.length) { // take first layer selected supported crss
         this.epsg        = this.layerProjections[layers[0]].crss[0];
         this.projections = this.layerProjections[layers[0]].crss;
       } else {                          // TODO: add description
@@ -183,8 +183,8 @@ export default {
      */
     try {
       this.url = methods.GetMap.urls.find(u => 'Get' === u.type).url;
-    } catch(err) {
-      console.warn(err);
+    } catch(e) {
+      console.warn(e);
       this.url = wmsurl;
     }
 
