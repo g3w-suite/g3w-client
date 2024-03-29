@@ -241,7 +241,7 @@ export default {
   components: {
     'chrome-picker': ChromeComponent
   },
-  computed:{
+  computed: {
 
     /**
      * @returns {boolean} check whether current uploaded file has CSV extension
@@ -277,7 +277,7 @@ export default {
       const reader = new FileReader();
       const name = evt.target.files[0].name;
       let type = evt.target.files[0].name.split('.');
-      type = type[type.length-1].toLowerCase();
+      type = type[type.length - 1].toLowerCase();
       const input_file = $(this.$refs.input_file);
       if (SUPPORTED_FORMAT.includes(type)) {
         this.clearError();
@@ -287,41 +287,41 @@ export default {
         this.layer.id     = name;
         this.layer.type   = type;
         if ('csv' === this.layer.type ) { // in the case of csv
-            reader.onload = evt => {
-                input_file.val(null);
-                const csv_data             = evt.target.result.split(/\r\n|\n/).filter(row => row);
-                const [headers, ...values] = csv_data;
-                const handle_csv_headers = separator => {
-                    let data         = null;
-                    this.csv.loading = true;
-                    const csv_headers = headers.split(separator);
-                    const headers_length = csv_headers.length;
-                    if (headers_length > 1) {
-                        this.csv.headers = csv_headers;
-                        this.fields      = csv_headers;
-                        this.csv.x       = csv_headers[0];
-                        this.csv.y       = csv_headers[1];
-                        data = {
-                            headers: csv_headers,
-                            separator,
-                            x: this.csv.x,
-                            y: this.csv.y,
-                            values
-                        };
-                        this.csv.valid = true;
-                    } else {
-                        this.csv.headers = this.fields = [];
-                        this.vectorLayer = null;
-                        this.csv.valid   = false;
-                        this.fields.splice(0);
-                    }
-                    this.csv.loading = false;
-                    return data;
+          reader.onload = evt => {
+            input_file.val(null);
+            const csv_data             = evt.target.result.split(/\r\n|\n/).filter(row => row);
+            const [headers, ...values] = csv_data;
+            const handle_csv_headers = separator => {
+              let data         = null;
+              this.csv.loading = true;
+              const csv_headers = headers.split(separator);
+              const headers_length = csv_headers.length;
+              if (headers_length > 1) {
+                this.csv.headers = csv_headers;
+                this.fields      = csv_headers;
+                this.csv.x       = csv_headers[0];
+                this.csv.y       = csv_headers[1];
+                data = {
+                  headers: csv_headers,
+                  separator,
+                  x: this.csv.x,
+                  y: this.csv.y,
+                  values
                 };
-                this.layer.data = handle_csv_headers(this.csv.separator);
-                this.$watch('csv.separator', s => this.layer.data = handle_csv_headers(s))
+                this.csv.valid = true;
+              } else {
+                this.csv.headers = this.fields = [];
+                this.vectorLayer = null;
+                this.csv.valid   = false;
+                this.fields.splice(0);
+              }
+              this.csv.loading = false;
+              return data;
             };
-            reader.readAsText(evt.target.files[0]);
+            this.layer.data = handle_csv_headers(this.csv.separator);
+            this.$watch('csv.separator', s => this.layer.data = handle_csv_headers(s))
+          };
+          reader.readAsText(evt.target.files[0]);
         } else {
           const promiseData = new Promise((resolve, reject) => {
             // in case of shapefile (zip file) or kmz (compressed
@@ -345,7 +345,9 @@ export default {
             this.fields = this.vectorLayer.get('_fields');
           } catch(e) { console.warn(e) }
         }
-      } else this.setError('unsupported_format');
+      } else {
+        this.setError('unsupported_format');
+      }
     },
     async createVectorLayer(){
       try {
@@ -354,39 +356,39 @@ export default {
       } catch(e) { console.warn(e); this.setError('add_external_layer'); }
     },
     async addLayer() {
-        if (this.layer.data || this.csv.valid) {
-            const {crs} = this.layer;
-            try {
-                /**
-                 * waiting to register an epsg choice if all go right
-                 */
-                try {
-                    await Projections.registerProjection(crs);
-                } catch(e) {
-                    this.setError(e);
-                    console.warn(e);
-                    return;
-                }
+      if (this.layer.data || this.csv.valid) {
+        const {crs} = this.layer;
+        try {
+          /**
+           * waiting to register an epsg choice if all go right
+           */
+          try {
+            await Projections.registerProjection(crs);
+          } catch(e) {
+            this.setError(e);
+            console.warn(e);
+            return;
+          }
 
-                this.loading     = true;
-                this.vectorLayer = await createVectorLayerFromFile(this.layer);
-                this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
-                    color: this.layer.color,
-                    field: this.field
-                }));
-                await this.service.addExternalLayer(this.vectorLayer, {
-                    crs:      this.layer.crs,
-                    type:     this.layer.type,
-                    position: this.position
-                });
-                $(this.$refs.modal_addlayer).modal('hide');
-                this.clear();
+          this.loading     = true;
+          this.vectorLayer = await createVectorLayerFromFile(this.layer);
+          this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
+            color: this.layer.color,
+            field: this.field
+          }));
+          await this.service.addExternalLayer(this.vectorLayer, {
+            crs:      this.layer.crs,
+            type:     this.layer.type,
+            position: this.position
+          });
+          $(this.$refs.modal_addlayer).modal('hide');
+          this.clear();
 
-            } catch(err) {
-                this.setError('add_external_layer');
-            }
-            this.loading = false
+        } catch(err) {
+          this.setError('add_external_layer');
         }
+        this.loading = false
+      }
     },
 
       /**
