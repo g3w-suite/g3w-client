@@ -27,24 +27,25 @@
           <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
             <a :href="state.url" :download="`download.${state.format}`">
               <button
-                @click.stop="downloadImage"
-                class="btn skin-button skin-tooltip-left"
-                data-placement="left"
-                data-toggle="tooltip"
-                data-container="body"
-                v-t-tooltip.create="'sdk.print.download_image'"
-                :class="g3wtemplate.getFontClass('download')"
-                role="button"></button>
+                @click.stop        = "downloadImage"
+                class              = "btn skin-button skin-tooltip-left"
+                data-placement     = "left"
+                data-toggle        = "tooltip"
+                data-container     = "body"
+                v-t-tooltip.create = "'sdk.print.download_image'"
+                :class             = "g3wtemplate.getFontClass('download')"
+                role               = "button">
+              </button>
             </a>
           </div>
         </div>
         <div
-          v-if="state.url"
-          class="g3w-print-url"
+          v-if  = "state.url"
+          class = "g3w-print-url"
         >
           <img
-            ref="out"
-            :src="state.url"
+            ref  = "out"
+            :src = "state.url"
           >
         </div>
       </div>
