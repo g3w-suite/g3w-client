@@ -96,7 +96,7 @@ import DataRouterService           from 'services/data';
 import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { noop }                    from 'utils/noop';
 import G3WObject                   from 'core/g3w-object';
-import { getUniqueDomId } from 'utils/getUniqueDomId';
+import { getUniqueDomId }          from 'utils/getUniqueDomId';
 
 const { t }                        = require('core/i18n/i18n.service');
 const { SELECTION_STATE }          = require('core/layers/layer');
@@ -112,8 +112,8 @@ function _createFeatureKey(values) {
 
 function _createFeatureForSelection(feature) {
   let geometry;
-  if (feature.attributes) geometry = feature.geometry;
-  if (feature.geometry)   geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
+  if (feature.attributes) { geometry = feature.geometry }
+  if (feature.geometry) { geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates) }
   return {
     attributes: feature.attributes ? feature.attributes : feature.properties,
     geometry,
@@ -144,10 +144,8 @@ export default {
     Field
   },
   data() {
-
     let relationsGeometry = [];
-
-    // layer not has geometry  
+    // layer doesn't have geometry
     if (!this.layer.isGeoLayer()) {
       this.layer
         .getRelations()
@@ -169,32 +167,28 @@ export default {
     }
 
     return {
-      service: this.service || undefined,
-      layer: this.layer || undefined,
-      state: this.service.state,
-      table: null,
-      selectedRow: null,
+      service:             this.service || undefined,
+      layer:               this.layer || undefined,
+      state:               this.service.state,
+      table:               null,
+      selectedRow:         null,
       relationsGeometry,
-      paginationfilter: false,
+      paginationfilter:    false,
       selectedfeaturesfid: this.layer.getSelectionFids(),
-      formatter: 1,
-      allfeaturesnumber: undefined,
+      formatter:           1,
+      allfeaturesnumber:   undefined,
       nopaginationsfilter: [],
       /** Number of pages */
-      currentPage: 0,
+      currentPage:         0,
       /** Pagination filter features */
-      _async: Object.assign({
-        state: false,
-        fnc:   noop
-      }, (this._async || {})),
-      getAll: !this.service.state.pagination,
+      _async:              Object.assign({ state: false, fnc: noop}, (this._async || {})),
+      getAll:              !this.service.state.pagination,
       /** Whether layer has geometry */
-      geolayer: this.layer.isGeoLayer(),
-      paginationParams: {},
+      geolayer:            this.layer.isGeoLayer(),
+      paginationParams:    {},
     }
   },
   methods: {
-
     get_check_id(cache) {
       if (cache) {
         this.get_check_id.cached_id = getUniqueDomId();
@@ -320,7 +314,7 @@ export default {
 
       // filtered
       if (!has_pagination && filter.length) {
-        this.service.state.features.forEach((f, i) =>{
+        this.service.state.features.forEach((f, i) => {
           if (-1 !== filter.indexOf(i)) {
             f.selected = this.service.state.selectAll;
             this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
@@ -398,7 +392,7 @@ export default {
         return;
       }
 
-      // skip when there are no relation features geometry
+      // skip when there is no relation features geometry
       if (!feature.geometry && !this.relationsGeometry.length > 0) {
         return;
       }
@@ -464,7 +458,6 @@ export default {
         } else {
           map.highlightFeatures(features);
         }
-        return;
       }
 
     },
