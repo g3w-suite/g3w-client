@@ -5,26 +5,28 @@
 
 <template>
 <div
-  class="chart_wrapper"
-  style="height: 100%; width: 100%"
+  class = "chart_wrapper"
+  style = "height: 100%; width: 100%"
 >
   <div
-    style="height: 100%; min-height: 200px;  background-color: #ffffff"
-    :id="id">
+    style = "height: 100%; min-height: 200px;  background-color: #ffffff"
+    :id   = "id">
   </div>
-  <div v-for="component in components">
+  <div
+    v-for="component in components"
+  >
     <span class="divider"></span>
     <component
-      @change-item="changeItem"
-      @change-items="changeItems"
-      @select-item="selectItem"
-      @select-all="selectAll"
-      @unselect-all="unselectAll"
-      @unselect-item="unselectItem"
-      :data="data"
-      :selectitems="selectitems"
-      :size="size"
-      :is="component"/>
+      @change-item   = "changeItem"
+      @change-items  = "changeItems"
+      @select-item   = "selectItem"
+      @select-all    = "selectAll"
+      @unselect-all  = "unselectAll"
+      @unselect-item = "unselectItem"
+      :data          = "data"
+      :selectitems   = "selectitems"
+      :size          = "size"
+      :is            = "component"/>
   </div>
 </div>
 </template>
@@ -47,37 +49,27 @@ export default {
   },
   data() {
     return {
-      id: `graphline${getUniqueDomId()}`,
+      id:          `graphline${getUniqueDomId()}`,
       selectitems: [],
-      data: [],
-      components: [],
-      config: {
-        data: {
-          columns: [
-            ['x'],
-            ['y']
-          ]
-        }
-      },
-      size: {
-        width: 0,
-        height: 0
-      }
+      data:        [],
+      components:  [],
+      config:      { data: { columns: [ ['x'],  ['y'] ] } },
+      size:        { width: 0, height: 0 }
     }
   },
   methods: {
     addComponent(component) {
       this.components.push(component);
     },
-    addComponents(components=[]) {
+    addComponents(components = []) {
       components.forEach(component => this.addComponent(component))
     },
-    setConfig(config={}) {
+    setConfig(config = {}) {
       this.config = config;
     },
     setDataOffset(offset, render=false) {
       const data = this.getData();
-      for (let i =0; i < data.length; i++) {
+      for (let i = 0; i < data.length; i++) {
         const item = data[i];
         item.value+=offset;
       }
@@ -94,13 +86,13 @@ export default {
     unselectItem(id) {
       this.chart.unselect(['y'], [id]);
     },
-    selectItems(ids=[]) {
+    selectItems(ids = []) {
       this.chart.select([y], ids);
     },
-    unselectItems(ids=[]) {
+    unselectItems(ids = []) {
       this.chart.unselect(['y'], ids);
     },
-    unselectAll(){
+    unselectAll() {
       this.chart.unselect();
     },
     selectAll() {
@@ -109,10 +101,10 @@ export default {
     getData() {
       return this.data;
     },
-    async resize({width, height}={}) {
+    async resize({ width, height } = {}) {
       await this.$nextTick();
       this.chart.resize({
-        width: width,
+        width:  width,
         height: height || $(`#${this.id}`).height() - 4
       });
     },
@@ -138,19 +130,17 @@ export default {
       this.resize();
     },
     changeItems(items) {
-      if (items.length === 1) {
+      if (1 === items.length) {
         this._setMaxMin(items[0].value);
       } else {
-        const max = Math.max(...items.map(item => +item.value));
-        const min = Math.min(...items.map(item => +item.value));
         this._setMaxMin({
-          max,
-          min
+          max: Math.max(...items.map(item => +item.value)),
+          min: Math.min(...items.map(item => +item.value)),
         })
       }
       this.resize();
     },
-    changeItem({item, render=true}) {
+    changeItem({ item, render = true }) {
       this._setMaxMin({value: item.value});
       if (render) {
         this.resize();
@@ -161,19 +151,18 @@ export default {
     this.$nextTick(() => {
       GUI.on('resize', this.resize);
       const self = this;
-      this.config.data.onselected = function(evt) {
-        const _temp = [...self.selectitems, evt];
-        self.selectitems = _temp;
+      this.config.data.onselected = function(e) {
+        self.selectitems = [...self.selectitems, e];
       };
-      this.config.data.onunselected = function(evt) {
-        self.selectitems = self.selectitems.filter((selectitem) => selectitem.index !== evt.index);
+      this.config.data.onunselected = function(e) {
+        self.selectitems = self.selectitems.filter(i => i.index !== e.index);
       };
       this.chart = c3.generate({
         bindto: `#${this.id}`,
         ...this.config,
       });
       const data = this.chart.data()[0] ? this.chart.data()[0].values : [];
-      data.forEach((item) => this.data.push(item));
+      data.forEach(i => this.data.push(i));
       this._setAllowedSpace();
       // emt event and pass chart
       this.$emit('chart-ready', this.chart);
