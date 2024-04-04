@@ -20,7 +20,7 @@ export async function createInputsFormFromFilter(state) {
     try {
 
       // field is part of a relationship (`fformatter`)
-      if (!input.dependance_strict && ['RelationReference', 'ValueRelation'].includes(input.widget_type) && !has_autocomplete) {
+      if (!input.dependance_strict && !has_autocomplete && ['RelationReference', 'ValueRelation'].includes(input.widget_type)) {
         const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
         input.values   = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
       }
