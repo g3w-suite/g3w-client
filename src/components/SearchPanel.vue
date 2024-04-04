@@ -167,6 +167,7 @@ import DataRouterService                     from 'services/data';
 import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
 import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
+import { toRawType }                         from 'utils/toRawType';
 import resizeMixin                           from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
@@ -258,8 +259,8 @@ export default {
 
         input.value = value;
 
-        // loop and update dependants (from cache)
-        deps.forEach(s => {
+        // loop and update dependants
+        await Promise.allSettled(deps.map(async s => {
 
           s.value  = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
           s.values = Array.from(new Set([                                       // ensure uniques values
@@ -269,110 +270,55 @@ export default {
           ]));
 
           // value is empty → disable dependants inputs
-          s.disabled = is_empty(value)
-            ? s.dependance_strict
-            // TODO: double check (superfluous conditions?)
-            // : !(has_autocomplete(s) && s.dependance_strict) && !(input.dependance && cached);
-            : false
+          s.disabled = is_empty(value) ? s.dependance_strict : false;
 
-        });
-
-        // depentants values are there → no need to perform further server requests
-        if (!deps.length || is_empty(value) || (input.dependance && cached)) {
-          return;
-        }
-
-        state.loading[field] = true;
-
-        // extract the value of the field to get filter data from the relation layer
-        // set undefined because if it has a subscribed input with valuerelations widget
-
-        const data = await state.search_layers[0].getFilterData({
-          field: getDataForSearchInput.field({
-            state,
-            field,
-            fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
-          }),
-          // FIXME: https://github.com/g3w-suite/g3w-admin/issues/794
-          // formatter: 0,
-        });
-
-        for (let i = 0; i < deps.length; i++) {
-
-          // exclude autocomplete subscribers
-          if (has_autocomplete(deps[i])) {
-            continue;
+          // depentants values are there → no need to perform further server requests
+          if (has_autocomplete(s) || is_empty(value) || (input.dependance && cached)) {
+            return;
           }
 
-          const subscribe = deps[i];
-          const is_multi  = 'selectfield' === subscribe.type && !subscribe.dependance_strict;
+          state.loading[field] = true;
 
-          const vals      = Array.from(new Set(            // ensure unique values
-            (data.data[0].features || [])                  // parent features
-              .map(f => f.get(subscribe.attribute))
-              .filter(v => v)                              // skip nullish
-              .map(value => is_multi ? `${value}` : value) // enforce string value
-          )).sort();
+          // extract the value of the field to get filter data from the relation layer
+          // set undefined because if it has a subscribed input with valuerelations widget
+          
+          /** @TODO use `getDataForSearchInput` instead ? */
+          const data = await state.search_layers[0].getFilterData({
+            fformatter: s.attribute,
+            field: getDataForSearchInput.field({
+              state,
+              field,
+              fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
+            }),
+            // FIXME: https://github.com/g3w-suite/g3w-admin/issues/794
+            // formatter: 0,
+          });
 
-          console.log(subscribe, data);
-
-          console.log(vals);
+          console.log('subscribe', s)
 
           // case value map
-          if (is_multi) {
-            subscribe._values.push(...subscribe.values);
+          if (!s.dependance_strict && 'selectfield' === s.type) {
+            s._values.push(...s.values);
           }
 
-          // // field is part of a relationship (`fformatter`)
-          // if (!subscribe.dependance_strict && ['RelationReference', 'ValueRelation'].includes(subscribe.widget_type)) {
-          //   const response = await state.search_layers[0].getFilterData({ fformatter: subscribe.attribute });
-          //   subscribe.values   = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
-          // }
-
-          /** @TODO try to replace with the above request (`fformatter` ?) */
-          // case value relation
-          if (is_multi && !subscribe.values.length && subscribe.options.layer_id && vals.length > 0) {
-            console.info('VALUE RELATION')
-            try {
-              const { data = [] } = await DataRouterService.getData('search:features', {
-                inputs: {
-                  layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
-                  search_endpoint: state.search_endpoint || state.search_layers[0].getSearchEndPoint(),
-                  filter: createSingleFieldParameter({
-                    layer: CatalogLayersStoresRegistry.getLayerById(subscribe.options.layer_id),
-                    search_endpoint: state.search_endpoint || state.search_layers[0].getSearchEndPoint(),
-                    field: subscribe.value, // since v3.8.x
-                    value: vals
-                  }),
-                  ordering: subscribe.options.key, // since v3.8.x
-                },
-                outputs: false,
-              });
-              subscribe.values.push((data && data[0] && data[0].features || []).map(f => ({ key: f.get(subscribe.options.key), value: f.get(subscribe.value) })));
-            } catch(e) {
-              console.warn(e);
-            }
-          }
-
-          /** @TODO try to replace with the above request (`fformatter` ?) */
           // set key value for select (!valuemap && !valuerelation)
-          if ((!is_multi || !subscribe.values.length) && (!is_multi || subscribe.values.length || !subscribe.options.layer_id)) {
-            console.info('SELECT')
-            subscribe.values.push(...vals.map(v => ({ key: v, value: v })));
+          if (1 === s.values.length) {
+            s.values.push(...(data.data || []).map(d => ({ key: d[1], value: d[1] })).sort());
           }
 
           // update cache
           if (input.dependance) {
             input.dvalues[parent.value]        = input.dvalues[parent.value] || {};
             input.dvalues[parent.value][value] = input.dvalues[parent.value][value] || {}
-            input.dvalues[parent.value][subscribe.attribute] = subscribe.values.slice(1); // exclude first element (ALL_VALUE)
+            input.dvalues[parent.value][s.attribute] = s.values.slice(1); // exclude first element (ALL_VALUE)
           } else {
             input.dvalues[value] = input.dvalues[value] || {};
-            input.dvalues[value][subscribe.attribute] = subscribe.values.slice(1);        // exclude first element (ALL_VALUE)
+            input.dvalues[value][s.attribute] = s.values.slice(1);        // exclude first element (ALL_VALUE)
           }
 
-          subscribe.disabled = false;
-        }
+          s.disabled = false;
+
+        }));
       } catch(e) {
         console.warn(e);
       } finally {
