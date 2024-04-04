@@ -15,17 +15,18 @@ export async function createInputsFormFromFilter(state) {
   for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
     const input = state.forminputs[i];
+    const has_autocomplete = 'autocompletefield' === input.type;
 
     try {
 
       // field is part of a relationship (`fformatter`)
-      if (!input.dependance_strict && ['RelationReference', 'ValueRelation'].includes(input.widget_type)) {
+      if (!input.dependance_strict && ['RelationReference', 'ValueRelation'].includes(input.widget_type) && !has_autocomplete) {
         const response = await state.search_layers[0].getFilterData({ fformatter: input.attribute });
         input.values   = ((response && response.result && response.data) || []).map(([value, key]) => ({ key, value }));
       }
 
       /** @TODO should we check input.type ? */
-      if (!input.dependance && !input.values.length > 0) {
+      if (!input.dependance && !has_autocomplete && !input.values.length > 0) {
         input.values = await getDataForSearchInput({ state, field: input.attribute });
       }
 
