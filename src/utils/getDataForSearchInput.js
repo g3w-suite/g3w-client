@@ -16,27 +16,27 @@ export async function getDataForSearchInput({ state, field, suggest }) {
     const cached = dep && state.forminputs.some(d => dep === d.dependance && d.dvalues.length);
 
     // get unique value from each layers
-    let response = Array.from(
-      (
-        await Promise.allSettled(state.search_layers.map(l => l.getFilterData({
-            suggest,
-            unique: field,
-            ordering: field,
-            field: getDataForSearchInput.field({
-              state,
-              field: dep,
-              fields: cached && ![SEARCH_ALLVALUE, undefined].includes(parent.value)
-                ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(d =>  d.attribute === dep).operator }) ]
-                : [],
-            }),
-            // TODO ?
-            // fformatter: opts.fformatter
-          })))
-      )
-        .filter(d => 'fulfilled' === d.status)
-        .reduce((acc, { value = [] }) => new Set([...acc, ...value]), [])
+    let response = (
+      await Promise.allSettled(state.search_layers.map(l => l.getFilterData({
+          suggest,
+          fformatter: field,
+          field: getDataForSearchInput.field({
+            state,
+            field: dep,
+            fields: cached && ![SEARCH_ALLVALUE, undefined].includes(parent.value)
+              ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(d =>  d.attribute === dep).operator }) ]
+              : [],
+          }),
+          // TODO client side ?
+          // unique: field,
+          // ordering: field,
+        })))
     )
+      .filter(d => 'fulfilled' === d.status)
+      .reduce((acc, d) => acc.concat(d.value.data || []), [])
+      .map(([value, key]) => ({ key, value }))
 
+    // FIXME: problably broken
     // sort array
     switch (response.length && typeof response[0]) {
       case 'string': response = sortAlphabeticallyArray(response);
