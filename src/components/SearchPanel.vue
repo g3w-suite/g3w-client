@@ -24,9 +24,10 @@
           class = "form-group"
         >
 
+          <!-- FIXME: https://github.com/g3w-suite/g3w-admin/pull/787#discussion_r1537617143 -->
           <!-- NUMBER FIELD -->
           <div
-            v-if  = "'numberfield' === input.type"
+            v-if  = "'numberfield' === input.type || 'Range' === input.widget_type"
             class = "numeric"
           >
             <label :for="input.id" class="search-label">
@@ -67,7 +68,7 @@
           <div
             v-else-if  = "['selectfield', 'autocompletefield'].includes(input.type)"
             class      = "text"
-            v-disabled = "isSelectDisabled(input)"
+            v-disabled = "state.loading[input.dependance] || input.loading || input.disabled"
           >
             <label :for="input.id" class="search-label">
               <span>{{ input.label || input.attribute }}</span>
@@ -161,18 +162,15 @@ import {
   SEARCH_ALLVALUE,
 }                                            from 'app/constant';
 import ApplicationState                      from 'store/application-state';
-import CatalogLayersStoresRegistry           from 'store/catalog-layers';
 import ApplicationService                    from 'services/application';
-import DataRouterService                     from 'services/data';
 import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
 import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
-import { toRawType }                         from 'utils/toRawType';
 import resizeMixin                           from 'mixins/resize';
 
 const { t } = require('core/i18n/i18n.service');
 
-//Contain all select inputs
+// store all select2 inputs
 const SELECTS = [];
 
 export default {
@@ -209,10 +207,6 @@ export default {
      */
     getLabelOperator(operator) {
       return `[ ${FILTER_EXPRESSION_OPERATORS[operator]} ]`
-    },
-
-    isSelectDisabled(input) {
-      return this.state.loading[input.dependance] || input.loading || input.disabled;
     },
 
     async onFocus(e) {
@@ -290,8 +284,6 @@ export default {
               field,
               fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
             }),
-            // FIXME: https://github.com/g3w-suite/g3w-admin/issues/794
-            // formatter: 0,
           });
 
           console.log('subscribe', s)
@@ -386,12 +378,11 @@ export default {
         transport: async (d, ok, ko) => {
           try      {
             ok({
-              results: await getDataForSearchInput({
+              results: (await getDataForSearchInput({
                 state:   this.state,
-                output:  'autocomplete',
                 field:   input.attribute,
                 suggest: `${input.attribute}|${d.data.q}`,
-              })
+              })).map(d => ({ id: d, text: d }))
             });
           }
           catch(e) { ko(e); }
@@ -456,14 +447,13 @@ export default {
   },
 
   beforeDestroy() {
-    // select2 dom element and remove all events
+    // remove all select2 DOM events
     SELECTS.forEach(select2 => {
       select2.select2('destroy');
       select2.off();
       select2 = null;
     })
-
-    //reset SELECTS to empty Array
+    // reset SELECTS to empty array
     SELECTS.splice(0);
   }
 

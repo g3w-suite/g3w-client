@@ -6,11 +6,9 @@ import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 /**
  * @returns { Array } of unique values from field
  */
-export async function getDataForSearchInput({ state, field, suggest, output }) {
+export async function getDataForSearchInput({ state, field, suggest }) {
 
   try {
-
-    const layers = state.search_layers || [];
 
     // check if a field has a dependance
     const parent = state.forminputs.find(d => d.attribute === field);
@@ -20,8 +18,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     // get unique value from each layers
     let response = Array.from(
       (
-        await Promise
-          .allSettled((1 === layers.length ? [layers[0]] : layers).map(l => l.getFilterData({
+        await Promise.allSettled(state.search_layers.map(l => l.getFilterData({
             suggest,
             unique: field,
             ordering: field,
@@ -33,8 +30,7 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
                 : [],
             }),
             // TODO ?
-            // fformatter: opts.fformatter 
-            
+            // fformatter: opts.fformatter
           })))
       )
         .filter(d => 'fulfilled' === d.status)
@@ -45,11 +41,6 @@ export async function getDataForSearchInput({ state, field, suggest, output }) {
     switch (response.length && typeof response[0]) {
       case 'string': response = sortAlphabeticallyArray(response);
       case 'number': response = sortNumericArray(response);
-    }
-
-    // Get unique values from field (case autocomplete)
-    if ('autocomplete' === output) {
-      response = response.map(d => ({ id: d, text: d }));
     }
 
     return response;
