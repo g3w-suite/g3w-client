@@ -27,7 +27,7 @@
           <!-- FIXME: https://github.com/g3w-suite/g3w-admin/pull/787#discussion_r1537617143 -->
           <!-- NUMBER FIELD -->
           <div
-            v-if  = "'numberfield' === input.type || 'Range' === input.widget_type"
+            v-if  = "'numberfield' === input.type || ('textfield' === input.type && 'Range' === input.widget_type)"
             class = "numeric"
           >
             <label :for="input.id" class="search-label">
