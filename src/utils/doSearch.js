@@ -63,12 +63,11 @@ export async function doSearch({
 
     // parse_search_1n - (show = false → internal request. No output data)
 
-    const search_1n        = !show && ('search_1n' === state.type);
-    const search_by_return = !show && ('search_1n' !== state.type) && 'search' === state.return;
-    const features         = search_1n && (data.data[0] || {}).features || []
-    const relation         = search_1n && features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
-    const layer            = search_1n && relation && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer); // father layer id
-    const inputs           = []; //store inputs
+    const search_1n        = !show           && ('search_1n' === state.type);
+    const search_by_return = !show           && ('search_1n' !== state.type) && 'search' === state.return;
+    const features         = search_1n       && (data.data[0] || {}).features || []
+    const relation         = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
+    const layer            = relation        && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer);      // father layer id
 
     // no features on result → show empty message
     if (search_1n && !features.length) {
@@ -76,41 +75,25 @@ export async function doSearch({
       parsed = [];
     }
 
-    console.log(relation && relation.fieldRef.referencingField)
-
-    // Just one relation field
-    if (relation && 1 === relation.fieldRef.referencingField.length) {
-      inputs.push({
-        attribute: relation.fieldRef.referencedField[0],
-        logicop: "OR",
-        operator: "eq",
-        value: Array.from(new Set(features.map(f => f.get(relation.fieldRef.referencingField[0])))) // get unique values from feature child layer
-      })
-    }
-
-    // Multiple relation fields
-    if (relation && 1 !== relation.fieldRef.referencingField.length) {
-      features.reduce((uniqueValues, f) => {
-        const values = relation.fieldRef.referencingField.map(rF => f.get(rF));
-        if (!uniqueValues.find(v => v.reduce((acc, d, i) => acc && values[i] === d, true))) {
-          uniqueValues.push(values);
-          inputs.push({
-            attribute: relation.fieldRef.referencedField,
-            logicop: "OR",
-            operator: "eq",
-            value: values
-          });
-        }
-        return uniqueValues;
-      }, []);
-    }
-
     if (relation) {
+      const { referencedField, referencingField } = relation.fieldRef;
       parsed = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
           search_endpoint,
-          filter: createFilterFormInputs({ layer, search_endpoint, inputs }),
+          filter: createFilterFormInputs({
+            layer,
+            search_endpoint,
+            inputs: features.map(f => ({
+              attribute: (1 === referencedField.length ? referencedField[0] : referencedField),
+              logicop:   'OR',
+              operator:  'eq',
+              value:     [...new Set((1 === referencingField.length // get unique values
+                ? features.map(f => f.get(referencingField[0]))     // → single field relation
+                : referencingField.map(rf => f.get(rf))             // → multi field relation
+              ))],
+            })),
+          }),
           formatter: 1,
           feature_count
         },
@@ -124,10 +107,6 @@ export async function doSearch({
     if (search_by_return) {
       parsed = data.data[0].data; // in case of api get first response on array
       GUI.closeContent();
-    }
-
-    if (search_by_return && isEmptyObject(parsed)) {
-      DataRouterService.showEmptyOutputs();
     }
 
     if (search_by_return && !isEmptyObject(parsed)) {
