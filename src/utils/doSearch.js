@@ -37,7 +37,7 @@ export async function doSearch({
     search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
   });
 
-  //set searching to true
+  // set searching to true
   state.searching = true;
 
   let data, parsed;
@@ -58,72 +58,75 @@ export async function doSearch({
 
     // parse_search_1n - (show = false → internal request. No output data)
 
-    if (!show && ('search_1n' === state.type)) {
-      const features = (data.data[0] || {}).features || []
-      const relation = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
+    const search_1n        = !show && ('search_1n' === state.type);
+    const search_by_return = !show && ('search_1n' !== state.type) && 'search' === state.return;
+    const features         = search_1n && (data.data[0] || {}).features || []
+    const relation         = search_1n && features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
+    const layer            = search_1n && relation && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer); // father layer id
+    const inputs           = []; //store inputs
 
-      // no features on result → show empty message
-      if (!features.length) {
-        DataRouterService.showEmptyOutputs();
-        parsed = [];
-      }
+    // no features on result → show empty message
+    if (search_1n && !features.length) {
+      DataRouterService.showEmptyOutputs();
+      parsed = [];
+    }
 
-      if (relation) {
-        const inputs = []; //store inputs
+    // Just one relation field
+    if (search_1n && relation && 1 === relation.fieldRef.referencingField.length) {
+      inputs.push({
+        attribute: relation.fieldRef.referencedField[0],
+        logicop: "OR",
+        operator: "eq",
+        value: Array.from(new Set(features.map(f => f.get(relation.fieldRef.referencingField[0])))) // get unique values from feature child layer
+      })
+    }
 
-        // Just one relation field 
-        if (1 === relation.fieldRef.referencingField.length) {
+    // Multiple relation fields
+    if (search_1n && relation && 1 !== relation.fieldRef.referencingField.length) {
+      features.reduce((uniqueValues, f) => {
+        const values = relation.fieldRef.referencingField.map(rF => f.get(rF));
+        if (!uniqueValues.find(v => v.reduce((acc, d, i) => acc && values[i] === d, true))) {
+          uniqueValues.push(values);
           inputs.push({
-            attribute: relation.fieldRef.referencedField[0],
+            attribute: relation.fieldRef.referencedField,
             logicop: "OR",
             operator: "eq",
-            value: Array.from(new Set(features.map(f => f.get(relation.fieldRef.referencingField[0])))) // get unique values from feature child layer
-          })
-        } else {
-          features.reduce((uniqueValues, f) => {
-            const values = relation.fieldRef.referencingField.map(rF => f.get(rF));
-            if (!uniqueValues.find(v => v.reduce((acc, d, i) => acc && values[i] === d, true))) {
-              uniqueValues.push(values);
-              inputs.push({
-                attribute: relation.fieldRef.referencedField,
-                logicop: "OR",
-                operator: "eq",
-                value: values
-              });
-            }
-            return uniqueValues;
-          }, []);
+            value: values
+          });
         }
+        return uniqueValues;
+      }, []);
+    }
 
-        const layer = ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer); // father layer id
-
-        parsed = await DataRouterService.getData('search:features', {
-          inputs: {
-            layer,
-            search_endpoint,
-            filter: createFilterFormInputs({ layer, search_endpoint, inputs }),
-            formatter: 1,
-            feature_count
-          },
-          outputs: {
-            title: state.title
-          }
-        });
-      }
-
+    if (search_1n && relation) {
+      parsed = await DataRouterService.getData('search:features', {
+        inputs: {
+          layer,
+          search_endpoint,
+          filter: createFilterFormInputs({ layer, search_endpoint, inputs }),
+          formatter: 1,
+          feature_count
+        },
+        outputs: {
+          title: state.title
+        }
+      });
     }
 
     // parse search by return type - (show = false → internal request. No output data)
-    if (!show && ('search_1n' !== state.type) && 'search' === state.return) {
+    if (search_by_return) {
       parsed = data.data[0].data; // in case of api get first response on array
       GUI.closeContent();
-      if (isEmptyObject(parsed)) {
-        DataRouterService.showCustomOutputDataPromise(Promise.resolve({}));
-      } else {
-        (new vm.SearchPanel(parsed)).show();
-      }
     }
-    
+
+    if (search_by_return && isEmptyObject(parsed)) {
+      DataRouterService.showCustomOutputDataPromise(Promise.resolve({}));
+    }
+
+    if (search_by_return && !isEmptyObject(parsed)) {
+      (new vm.SearchPanel(parsed)).show();
+    }
+
     if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && 1 === data.data.length) {
       GUI.getService('map').zoomToFeatures(data.data[0].features); // auto zoom_query
     }
@@ -132,7 +135,7 @@ export async function doSearch({
     console.warn(e);
   }
 
-  //set searching false
+  // set searching false
   state.searching = false;
 
   return parsed ? parsed : data;
