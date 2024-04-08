@@ -12,10 +12,9 @@
       :update="state.update"
       :valid="state.valid"
       @resize-form="resizeForm"
-      @clickheader="switchComponent">
-    </g3wformheader>
+      @clickheader="switchComponent"/>
     <div class="g3wform_body" ref="g3wform_body">
-      <component :fields="state.fields" v-for="component in body.components.before" :is="component"></component>
+      <component :fields="state.fields" v-for="component in body.components.before" :is="component"/>
       <keep-alive>
         <component
           :handleRelation="handleRelation"
@@ -27,15 +26,15 @@
           :is="state.component">
         </component>
       </keep-alive>
-      <component :fields="state.fields" v-for="component in body.components.after" :is="component"></component>
+      <component :fields="state.fields" v-for="component in body.components.after" :is="component"/>
     </div>
-    <g3w-form-footer ref="g3w_form_footer" :isRootComponent="isRootComponent" :backToRoot="backToRoot" :state="state"></g3w-form-footer>
+    <g3w-form-footer ref="g3w_form_footer" :isRootComponent="isRootComponent" :backToRoot="backToRoot" :state="state"/>
   </div>
 </template>
 
 <script>
 import HeaderFormComponent from 'components/FormHeader.vue';
-import G3wFormFooter from 'components/FormFooter.vue';
+import G3wFormFooter       from 'components/FormFooter.vue';
 
 export default {
 
@@ -58,7 +57,7 @@ export default {
     g3wformheader: HeaderFormComponent,
     G3wFormFooter
   },
-  transitions: {'addremovetransition': 'showhide'},
+  transitions: { 'addremovetransition': 'showhide' },
   methods: {
     isRootComponent(component){
       return this.$options.service.isRootComponent(component);
@@ -69,7 +68,7 @@ export default {
     handleRelation(relationId){
       this.$options.service.handleRelation(relationId);
     },
-     disableComponent({id, disabled=false}) {
+     disableComponent({ id, disabled = false }) {
        this.$options.service.disableComponent({
          id,
          disabled
@@ -94,27 +93,24 @@ export default {
     // set layout
     reloadLayout() {
       const height = $(this.$el).height();
-      if(!height) return;
-      const footerDOM = $(this.$refs.g3w_form_footer.$el);
-      const bodyFromDOM = $(this.$refs.g3wform_body);
+      if (!height) { return };
+      const footerDOM    = $(this.$refs.g3w_form_footer.$el);
+      const bodyFromDOM  = $(this.$refs.g3wform_body);
       const footerHeight = footerDOM.height() ? footerDOM.height() + 50 : 50;
-      const bodyHeight = height - ($(this.$refs.g3wformheader.$el).height() +  footerHeight);
+      const bodyHeight   = height - ($(this.$refs.g3wformheader.$el).height() +  footerHeight);
       bodyFromDOM.height(bodyHeight);
     },
   },
   async updated() {
     await this.$nextTick();
-    this.switchcomponent && setTimeout(()=> this.switchcomponent = false, 0)
+    if (this.switchcomponent) { setTimeout(() => this.switchcomponent = false, 0) }
   },
   created() {
     this.$options.service.getEventBus().$on('set-main-component', () => {
       this.switchComponent(0);
     });
     this.$options.service.getEventBus().$on('component-validation', ({id, valid}) => {
-      this.$options.service.setValidComponent({
-        id,
-        valid
-      });
+      this.$options.service.setValidComponent({ id, valid });
     });
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
     this.$options.service.getEventBus().$on('disable-component', this.disableComponent);
