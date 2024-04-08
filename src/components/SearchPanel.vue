@@ -24,7 +24,7 @@
           class = "form-group"
         >
 
-          <!-- FIXME: https://github.com/g3w-suite/g3w-admin/pull/787#discussion_r1537617143 -->
+          <!-- FIXME: hotfix for https://github.com/g3w-suite/g3w-admin/pull/787#discussion_r1537617143 -->
           <!-- NUMBER FIELD -->
           <div
             v-if  = "'numberfield' === input.type || ('textfield' === input.type && 'Range' === input.widget_type)"
@@ -283,6 +283,10 @@ export default {
             }),
           });
 
+          data.data = (data.data || [])
+            .sort((a, b) => `${a[1]}`.localeCompare(b[1], undefined, 'number' === typeof a[1] ? { numeric: true } : { sensitivity: 'base' })) // sorted by fformatter
+            .map(([key, value]) => ({ key: value, value }));
+
           // case value map
           if (!s.dependance_strict && 'selectfield' === s.type) {
             s._values.push(...s.values);
@@ -290,7 +294,7 @@ export default {
 
           // set key value for select (!valuemap && !valuerelation)
           if (1 === s.values.length) {
-            s.values.push(...(data.data || []).map(d => ({ key: d[1], value: d[1] })).sort());
+            s.values.push(...data.data);
           }
 
           // update cache

@@ -1,6 +1,4 @@
 import { SEARCH_ALLVALUE }            from 'app/constant';
-import { sortAlphabeticallyArray }    from 'utils/sortAlphabeticallyArray';
-import { sortNumericArray }           from 'utils/sortNumericArray';
 import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 
 /**
@@ -27,21 +25,12 @@ export async function getDataForSearchInput({ state, field, suggest }) {
               ? [createSingleFieldParameter({ field: dep, value: parent.value, operator: state.forminputs.find(d =>  d.attribute === dep).operator }) ]
               : [],
           }),
-          // TODO client side ?
-          // unique: field,
-          // ordering: field,
         })))
     )
       .filter(d => 'fulfilled' === d.status)
-      .reduce((acc, d) => acc.concat(d.value.data || []), [])
-      .map(([value, key]) => ({ key, value }))
-
-    // FIXME: problably broken
-    // sort array
-    switch (response.length && typeof response[0]) {
-      case 'string': response = sortAlphabeticallyArray(response);
-      case 'number': response = sortNumericArray(response);
-    }
+      .reduce((acc, d) => acc.concat(d.value.data || []), [])                                                                           // uniques by fformatter
+      .sort((a, b) => `${a[1]}`.localeCompare(b[1], undefined, 'number' === typeof a[1] ? { numeric: true } : { sensitivity: 'base' })) // sorted by fformatter
+      .map(([value, key]) => ({ key, value }));
 
     return response;
 
