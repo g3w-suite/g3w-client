@@ -56,6 +56,11 @@ export async function doSearch({
       outputs: show && { title: state.title }
     });
 
+    // auto zoom to query
+    if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && 1 === data.data.length) {
+      GUI.getService('map').zoomToFeatures(data.data[0].features);
+    }
+
     // parse_search_1n - (show = false → internal request. No output data)
 
     const search_1n        = !show && ('search_1n' === state.type);
@@ -120,15 +125,11 @@ export async function doSearch({
     }
 
     if (search_by_return && isEmptyObject(parsed)) {
-      DataRouterService.showCustomOutputDataPromise(Promise.resolve({}));
+      DataRouterService.showEmptyOutputs();
     }
 
     if (search_by_return && !isEmptyObject(parsed)) {
       (new vm.SearchPanel(parsed)).show();
-    }
-
-    if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && 1 === data.data.length) {
-      GUI.getService('map').zoomToFeatures(data.data[0].features); // auto zoom_query
     }
 
   } catch(e) {
