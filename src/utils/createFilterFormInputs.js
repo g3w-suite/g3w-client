@@ -35,12 +35,8 @@ export function createFilterFormInputs({
         // multi key relation fields
         if (Array.isArray(attribute)) {
           return attribute
-            .reduce(
-              (acc, attr, j) => acc
-              + createSingleFieldParameter({ field: attr, value: value[j], operator, logicop: null })
-              + (j < attribute.length - 1) ? '|AND,' : (i < inputs.length - 1 ? `|${logicop},` : ''),
-              ''
-            );
+            .map((attr, j) => createSingleFieldParameter({ field: attr, value: value[j], operator, logicop: null }))
+            .join('|AND,') || '';
         }
         // input logic operator 
         return `${i > 0 ? `|${inputs[i-1].logicop},` : ''}${createSingleFieldParameter({ field: attribute, value, operator, logicop })}`
