@@ -221,15 +221,12 @@ export default {
      * Sync `this.state.forminputs` with `input.value`
      */
     async changeInput(input) {
-      console.log(input);
       const field  = input.attribute;
       const parent = this.state.forminputs.find(d => d.attribute === field);     // current input dependance
       const deps   = this.state.forminputs.filter(d => d.dependance === field);  // inputs that depends on the current one
       const cached = parent && undefined !== input.dvalues[parent.value] ? input.dvalues[parent.value][value] : input.dvalues[value]; // cached data
       const state  = this.state;
       let value    = input.value;
-
-      console.log(input, deps, cached);
 
       const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
       const has_autocomplete = s => 'autocompletefield' === s.type;
@@ -285,8 +282,6 @@ export default {
               fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
             }),
           });
-
-          console.log('subscribe', s)
 
           // case value map
           if (!s.dependance_strict && 'selectfield' === s.type) {
@@ -440,7 +435,6 @@ export default {
   async mounted() {
     await this.state.mounted;
     for (const input of this.state.forminputs) {
-      console.log(input);
       await this.initSelect2Field(input);
       await this.initDateTimeField(input);
     }

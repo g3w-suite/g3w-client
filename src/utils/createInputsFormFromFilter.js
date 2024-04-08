@@ -10,8 +10,6 @@ import { getDataForSearchInput } from 'utils/getDataForSearchInput';
  */
 export async function createInputsFormFromFilter(state) {
 
-  console.log(state);
-
   for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
     const input = state.forminputs[i];
