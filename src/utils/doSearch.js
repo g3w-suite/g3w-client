@@ -29,7 +29,6 @@ export async function doSearch({
   queryUrl        = undefined !== queryUrl        ? queryUrl        : state.queryurl;
   show            = undefined !== show            ? show            : 'search' === state.type;
 
-  // set searching to true
   state.searching = true;
 
   let data, parsed;
@@ -53,16 +52,14 @@ export async function doSearch({
     });
 
     // auto zoom to query
-    if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && 1 === data.data.length) {
+    if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && data.data && 1 === data.data.length) {
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
-    // parse search_1n
-
-    const search_1n        = !show           && ('search_1n' === state.type);
-    const features         = search_1n       && (data.data[0] || {}).features || []
-    const relation         = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
-    const layer            = relation        && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer);      // father layer id
+    const search_1n = !show           && ('search_1n' === state.type);
+    const features  = search_1n       && (data.data[0] || {}).features || []
+    const relation  = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
+    const layer     = relation        && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer);      // father layer id
 
     // no features on result → show empty message
     if (search_1n && !features.length) {
@@ -70,6 +67,7 @@ export async function doSearch({
       parsed = [];
     }
 
+    // parse search_1n
     if (relation) {
       const { referencedField, referencingField } = relation.fieldRef;
       parsed = await DataRouterService.getData('search:features', {
@@ -102,7 +100,6 @@ export async function doSearch({
     console.warn(e);
   }
 
-  // set searching false
   state.searching = false;
 
   return parsed ? parsed : data;
