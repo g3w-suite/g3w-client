@@ -13,7 +13,7 @@ import { isEmptyObject }          from 'utils/isEmptyObject';
  * @param opts.search_endpoint
  * @param opts.queryUrl
  * @param opts.feature_count
- * @param opts.show
+ * @param opts.show            - false = internal request (No output data)
  * 
  * @returns { Promise<void|unknown> }
  */
@@ -61,7 +61,7 @@ export async function doSearch({
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
-    // parse_search_1n - (show = false → internal request. No output data)
+    // parse search_1n
 
     const search_1n        = !show           && ('search_1n' === state.type);
     const search_by_return = !show           && ('search_1n' !== state.type) && 'search' === state.return;
@@ -103,9 +103,9 @@ export async function doSearch({
       });
     }
 
-    // parse search by return type - (show = false → internal request. No output data)
+    // parse search by return type
     if (search_by_return) {
-      parsed = data.data[0].data; // in case of api get first response on array
+      parsed = data.data[0].data;
       GUI.closeContent();
     }
 
