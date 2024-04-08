@@ -93,8 +93,6 @@ export function SearchPanel(opts = {}, show = false) {
     type:                 opts.type || 'search',
     /** @TODO check if deprecated */
     queryurl:             (opts.options || {}).queryurl,
-    /** @TODO check if deprecated */
-    return:               (opts.options || {}).return || 'data',
     search_endpoint:      opts.search_endpoint, //ows, api
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
@@ -137,6 +135,8 @@ export function SearchPanel(opts = {}, show = false) {
   };
 
   state.mounted = createInputsFormFromFilter(state);
+
+  console.log(state);
 
   const service = opts.service || Object.assign(new G3WObject, {
     state,

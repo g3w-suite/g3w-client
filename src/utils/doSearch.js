@@ -28,14 +28,7 @@ export async function doSearch({
 
   search_endpoint = undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint());
   queryUrl        = undefined !== queryUrl        ? queryUrl        : state.queryurl;
-  show            = undefined !== show            ? show            : ('data' === state.return && 'search' === state.type);
-
-  //get or create request filter
-  filter = filter || createFilterFormInputs({
-    layer:           state.search_layers,
-    inputs:          state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
-    search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
-  });
+  show            = undefined !== show            ? show            : 'search' === state.type;
 
   // set searching to true
   state.searching = true;
@@ -47,11 +40,15 @@ export async function doSearch({
       inputs: {
         layer: state.search_layers,
         search_endpoint,
-        filter,
+        filter: filter || createFilterFormInputs({
+          layer:           state.search_layers,
+          inputs:          state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+          search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
+        }),
         queryUrl,
         formatter: 1,
         feature_count,
-        raw: ('search' === state.return) // in order to get raw response
+        raw: false // in order to get raw response
       },
       outputs: show && { title: state.title }
     });
@@ -64,7 +61,6 @@ export async function doSearch({
     // parse search_1n
 
     const search_1n        = !show           && ('search_1n' === state.type);
-    const search_by_return = !show           && ('search_1n' !== state.type) && 'search' === state.return;
     const features         = search_1n       && (data.data[0] || {}).features || []
     const relation         = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
     const layer            = relation        && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer);      // father layer id
@@ -101,16 +97,6 @@ export async function doSearch({
           title: state.title
         }
       });
-    }
-
-    // parse search by return type
-    if (search_by_return) {
-      parsed = data.data[0].data;
-      GUI.closeContent();
-    }
-
-    if (search_by_return && !isEmptyObject(parsed)) {
-      (new vm.SearchPanel(parsed)).show();
     }
 
   } catch(e) {
