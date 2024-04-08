@@ -3,7 +3,6 @@ import ProjectsRegistry           from 'store/projects';
 import DataRouterService          from 'services/data';
 import GUI                        from 'services/gui';
 import { createFilterFormInputs } from 'utils/createFilterFormInputs';
-import { isEmptyObject }          from 'utils/isEmptyObject';
 
 /**
  * Perform search
