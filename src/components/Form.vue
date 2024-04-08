@@ -12,10 +12,9 @@
       :update="state.update"
       :valid="state.valid"
       @resize-form="resizeForm"
-      @clickheader="switchComponent">
-    </g3wformheader>
+      @clickheader="switchComponent"/>
     <div class="g3wform_body" ref="g3wform_body">
-      <component :fields="state.fields" v-for="component in body.components.before" :is="component"></component>
+      <component :fields="state.fields" v-for="component in body.components.before" :is="component"/>
       <keep-alive>
         <component
           :handleRelation="handleRelation"
@@ -27,9 +26,9 @@
           :is="state.component">
         </component>
       </keep-alive>
-      <component :fields="state.fields" v-for="component in body.components.after" :is="component"></component>
+      <component :fields="state.fields" v-for="component in body.components.after" :is="component"/>
     </div>
-    <g3w-form-footer ref="g3w_form_footer" :isRootComponent="isRootComponent" :backToRoot="backToRoot" :state="state"></g3w-form-footer>
+    <g3w-form-footer ref="g3w_form_footer" :isRootComponent="isRootComponent" :backToRoot="backToRoot" :state="state"/>
   </div>
 </template>
 
