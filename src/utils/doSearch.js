@@ -76,8 +76,10 @@ export async function doSearch({
       parsed = [];
     }
 
+    console.log(relation && relation.fieldRef.referencingField)
+
     // Just one relation field
-    if (search_1n && relation && 1 === relation.fieldRef.referencingField.length) {
+    if (relation && 1 === relation.fieldRef.referencingField.length) {
       inputs.push({
         attribute: relation.fieldRef.referencedField[0],
         logicop: "OR",
@@ -87,7 +89,7 @@ export async function doSearch({
     }
 
     // Multiple relation fields
-    if (search_1n && relation && 1 !== relation.fieldRef.referencingField.length) {
+    if (relation && 1 !== relation.fieldRef.referencingField.length) {
       features.reduce((uniqueValues, f) => {
         const values = relation.fieldRef.referencingField.map(rF => f.get(rF));
         if (!uniqueValues.find(v => v.reduce((acc, d, i) => acc && values[i] === d, true))) {
@@ -103,7 +105,7 @@ export async function doSearch({
       }, []);
     }
 
-    if (search_1n && relation) {
+    if (relation) {
       parsed = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
