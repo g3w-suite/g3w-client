@@ -65,7 +65,6 @@ proto.getRelationsNM = async function({nmRelation, features = [] } = {}) {
           logicop: 'OR'
         })}`,
         formatter: 1, // set formatter to
-        search_endpoint: 'api'
       },
       outputs: null
     });

@@ -9,7 +9,6 @@ import { createFilterFormInputs } from 'utils/createFilterFormInputs';
  * 
  * @param { Object } opts
  * @param opts.filter
- * @param opts.search_endpoint
  * @param opts.queryUrl
  * @param opts.feature_count
  * @param opts.show            - false = internal request (No output data)
@@ -18,14 +17,12 @@ import { createFilterFormInputs } from 'utils/createFilterFormInputs';
  */
 export async function doSearch({
   filter,
-  search_endpoint,
   queryUrl,
   show,
   feature_count = 10000,
   state
 } = {}) {
 
-  search_endpoint = undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint());
   queryUrl        = undefined !== queryUrl        ? queryUrl        : state.queryurl;
   show            = undefined !== show            ? show            : 'search' === state.type;
 
@@ -37,11 +34,9 @@ export async function doSearch({
     data = await DataRouterService.getData('search:features', {
       inputs: {
         layer: state.search_layers,
-        search_endpoint,
         filter: filter || createFilterFormInputs({
           layer:           state.search_layers,
           inputs:          state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
-          search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
         }),
         queryUrl,
         formatter: 1,
@@ -73,10 +68,8 @@ export async function doSearch({
       parsed = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
-          search_endpoint,
           filter: createFilterFormInputs({
             layer,
-            search_endpoint,
             inputs: features.map(f => ({
               attribute: (1 === referencedField.length ? referencedField[0] : referencedField),
               logicop:   'OR',

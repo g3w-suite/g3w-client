@@ -332,14 +332,12 @@ class BaseIframeService extends G3WObject {
     layer,
     feature,
   }) {
-    const search_endpoint   = this.project.getSearchEndPoint();
     const { field, value }  = feature;
     const DataRouterService = require('services/data').default;
     const { data = [] }     = await DataRouterService.getData('search:features', {
       inputs: {
         layer,
-        search_endpoint,
-        filter: createFilterFormField({ layer, search_endpoint, field, value })
+        filter: createFilterFormField({ layer, field, value })
       },
       outputs: false
     });

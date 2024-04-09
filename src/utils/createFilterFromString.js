@@ -4,9 +4,12 @@ const Filter     = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
 const operators  = Object.entries(FILTER_EXPRESSION_OPERATORS);
 
+/**
+ * @TODO deprecate `search_endpoint = 'ows'`
+ */
 export function createFilterFromString({
   layer,
-  search_endpoint = 'ows',
+  search_endpoint = 'api',
   filter          = '',
 }) {
 

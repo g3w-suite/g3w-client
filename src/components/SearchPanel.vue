@@ -276,6 +276,7 @@ export default {
           /** @TODO use `getDataForSearchInput` instead ? */
           const data = await state.search_layers[0].getFilterData({
             fformatter: s.attribute,
+            ordering: s.attribute,
             field: getDataForSearchInput.field({
               state,
               field,
@@ -283,9 +284,7 @@ export default {
             }),
           });
 
-          data.data = (data.data || [])
-            .sort((a, b) => `${a[1]}`.localeCompare(b[1], undefined, 'number' === typeof a[1] ? { numeric: true } : { sensitivity: 'base' })) // sorted by fformatter
-            .map(([key, value]) => ({ key: value, value }));
+          data.data = (data.data || []).map(([key, value]) => ({ key: value, value }));
 
           // case value map
           if (!s.dependance_strict && 'selectfield' === s.type) {

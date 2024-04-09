@@ -35,7 +35,6 @@ const Projections            = require('g3w-ol/projection/projections');
  * @param config.bookmarks                     array of bookmarks
  * @param { 'POST' | 'GET' }                   config.ows_method
  * @param { boolean }                          config.wms_use_layer_ids
- * @param { 'ows' | 'api' }                    config.search_endpoint 
  * @param { 'tab' | 'toc' }                    config.legend_position 
  * @param { 'layers', 'baselayers', 'legend' } config.catalog_tab
  * 
@@ -119,14 +118,17 @@ proto.getWmsGetmapFormat = function() {
 }
 
 /**
- * Get search end point value (ows or api)
+ * @deprecated since 3.10.0. Will be removed in v.4.x.
  */
 proto.getSearchEndPoint = function() {
-  return this.state.search_endpoint;
+  return 'api';
 };
 
+/**
+ * @deprecated since 3.10.0. Will be removed in v.4.x.
+ */
 proto.setSearchEndPoint = function() {
-  (this.state.search || []).forEach(search => search.search_endpoint = this.state.search_endpoint);
+  (this.state.search || []).forEach(search => search.search_endpoint = 'api');
 };
 
 proto.getAliasUrl = function() {

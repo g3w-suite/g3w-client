@@ -417,7 +417,7 @@ export default {
                 inputs: {
                   layer,
                   formatter:       1,
-                  search_endpoint: 'api',
+
                   filter: (
                     father_fields
                       .reduce((filter, field, index) => {

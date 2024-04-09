@@ -279,13 +279,11 @@ export default {
       try {
         this.loading.test = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id);
-        const search_endpoint = layer.getSearchEndPoint();
         return (
           await DataRouterService.getData('search:features', {
             inputs: {
               layer,
-              filter: createFilterFromString({ layer, search_endpoint, filter: this.filter }),
-              search_endpoint,
+              filter: createFilterFromString({ layer, filter: this.filter }),
               feature_count: 100,
             },
             outputs: showResult,

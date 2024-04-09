@@ -169,12 +169,10 @@ export default {
       search.qbloading = true;
       try {
         const layer = CatalogLayersStoresRegistry.getLayerById(search.layerId);
-        const search_endpoint = layer.getSearchEndPoint();
         await DataRouterService.getData('search:features', {
           inputs: {
             layer,
-            filter: createFilterFromString({ layer, search_endpoint, filter: search.filter }),
-            search_endpoint,
+            filter: createFilterFromString({ layer, filter: search.filter }),
             feature_count: 100,
           },
           outputs: true,

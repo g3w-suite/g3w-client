@@ -18,6 +18,7 @@ export async function getDataForSearchInput({ state, field, suggest }) {
       await Promise.allSettled(state.search_layers.map(l => l.getFilterData({
           suggest,
           fformatter: field,
+          ordering: field,
           field: getDataForSearchInput.field({
             state,
             field: dep,
@@ -28,8 +29,7 @@ export async function getDataForSearchInput({ state, field, suggest }) {
         })))
     )
       .filter(d => 'fulfilled' === d.status)
-      .reduce((acc, d) => acc.concat(d.value.data || []), [])                                                                           // uniques by fformatter
-      .sort((a, b) => `${a[1]}`.localeCompare(b[1], undefined, 'number' === typeof a[1] ? { numeric: true } : { sensitivity: 'base' })) // sorted by fformatter
+      .reduce((acc, d) => acc.concat(d.value.data || []), []) // uniques by fformatter
       .map(([value, key]) => ({ key, value }));
 
     return response;

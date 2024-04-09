@@ -2,7 +2,7 @@ import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
 import { createFilterFromString }      from 'utils/createFilterFromString';
 
 /**
- * @TODO deprecate `search_endpoint = 'ows'` ? 
+ * @TODO deprecate `search_endpoint = 'ows'`
  * 
  * @param { Object } opts
  * @param opts.layer

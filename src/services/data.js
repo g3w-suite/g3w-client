@@ -414,6 +414,8 @@ DataService.init = async () => {
     search: new (class extends BaseService {
 
       /**
+       * @TODO deprecate search_endpoint
+       * 
        * Method to search features
        * 
        * @param options.layer
@@ -438,6 +440,8 @@ DataService.init = async () => {
         ordering,
       }) {
         
+        options.search_endpoint = options.search_endpoint || 'api';
+
         let promises                  = [];
         const { layer, ...params }    = options;
         const { raw = false, filter } = options;

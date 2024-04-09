@@ -1248,8 +1248,7 @@ proto.zoomToFid = async function(zoom_to_fid = '', separator = '|') {
  * @param zoom_to_feature
  */
 proto.handleZoomToFeaturesUrlParameter = async function({
-  zoom_to_features = '',
-  search_endpoint = 'api',
+  zoom_to_features = ''
 } = {}) {
   try {
     const [id, filter] = zoom_to_features.split(':');
@@ -1270,8 +1269,7 @@ proto.handleZoomToFeaturesUrlParameter = async function({
     const r = pLayer && await DataRouterService.getData('search:features', {
       inputs: {
         layer,
-        filter: createFilterFromString({ layer, search_endpoint, filter }),
-        search_endpoint
+        filter: createFilterFromString({ layer, filter }),
       },
       outputs: {
         show: {

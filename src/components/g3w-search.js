@@ -93,7 +93,8 @@ export function SearchPanel(opts = {}, show = false) {
     type:                 opts.type || 'search',
     /** @TODO check if deprecated */
     queryurl:             (opts.options || {}).queryurl,
-    search_endpoint:      opts.search_endpoint, //ows, api
+    /** @deprecated will be removed in v4.x */
+    search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
     search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
@@ -154,11 +155,9 @@ export function SearchPanel(opts = {}, show = false) {
     clear() {
       panel.getService().state = null;
     },
-    /** @param { 'wms' | 'vector' } search_endpoint api type */
-    createFilter: (search_endpoint) => createFilterFormInputs({
+    createFilter: () => createFilterFormInputs({
       layer: state.search_layers,
       inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
-      search_endpoint: undefined !== search_endpoint ? search_endpoint : (state.search_endpoint || state.search_layers[0].getSearchEndPoint()),
     }),
   });
 

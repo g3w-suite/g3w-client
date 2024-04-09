@@ -4,6 +4,8 @@ const Filter     = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
 
 /**
+ * @TODO deprecate `search_endpoint = 'ows'`
+ * 
  * @param layer single layer or an array of layers
  * @param search_endpoint
  * @param inputs
@@ -12,7 +14,7 @@ const Expression = require('core/layers/filter/expression');
  */
 export function createFilterFormInputs({
   layer,
-  search_endpoint = 'ows',
+  search_endpoint = 'api',
   inputs          = [],
 }) {
 
