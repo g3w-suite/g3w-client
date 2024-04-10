@@ -6,29 +6,45 @@
 <template>
   <div class="g3wform_content" style="position: relative">
     <bar-loader :loading="state.loading"/>
-    <g3wformheader ref="g3wformheader"
-      :currentid="state.currentheaderid"
-      :headers="state.headers"
-      :update="state.update"
-      :valid="state.valid"
-      @resize-form="resizeForm"
-      @clickheader="switchComponent"/>
-    <div class="g3wform_body" ref="g3wform_body">
+
+    <!-- FORM HEADER  -->
+    <g3wformheader
+      ref          = "g3wformheader"
+      :currentid   = "state.currentheaderid"
+      :headers     = "state.headers"
+      :update      = "state.update"
+      :valid       = "state.valid"
+      @resize-form = "resizeForm"
+      @clickheader = "switchComponent"/>
+
+    <!-- FORM BODY  -->
+    <div
+      class="g3wform_body"
+      ref="g3wform_body"
+    >
       <component :fields="state.fields" v-for="component in body.components.before" :is="component"/>
       <keep-alive>
         <component
-          :handleRelation="handleRelation"
-          @hook:activated="reloadLayout"
-          @addtovalidate="addToValidate"
-          @removetovalidate="removeToValidate"
-          @changeinput="changeInput"
-          :state="state"
-          :is="state.component">
-        </component>
+          :handleRelation   = "handleRelation"
+          @hook:activated   = "reloadLayout"
+          @addtovalidate    = "addToValidate"
+          @removetovalidate = "removeToValidate"
+          @changeinput      = "changeInput"
+          :state            = "state"
+          :is               = "state.component"/>
       </keep-alive>
-      <component :fields="state.fields" v-for="component in body.components.after" :is="component"/>
+      <component
+        v-for="component in body.components.after"
+        :fields="state.fields"
+        :is="component"/>
     </div>
-    <g3w-form-footer ref="g3w_form_footer" :isRootComponent="isRootComponent" :backToRoot="backToRoot" :state="state"/>
+
+    <!-- FORM FOOTER  -->
+    <g3w-form-footer
+      ref              = "g3w_form_footer"
+      :isRootComponent = "isRootComponent"
+      :backToRoot      = "backToRoot"
+      :state           = "state"/>
   </div>
 </template>
 
