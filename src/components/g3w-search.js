@@ -42,7 +42,7 @@ export function SearchComponent(opts = {}) {
   const project = ProjectsRegistry.getCurrentProject();
 
   const state = {
-    searches: (project.state.search || []).sort((a, b) => a.name > b.name),
+    searches: (project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
     tools: [],
     querybuildersearches: _getSavedSearches()
   };
