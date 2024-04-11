@@ -151,6 +151,10 @@
       }
     },
     watch: {
+      /**@since 3.8.0 need to watch changes of prop value and reflect it to state.value*/
+      'value'(value) {
+        this.state.value = value;
+      },
       'state.value'(value) {
         this.changeBackGround(value);
         if (this.sync) { this.emitChangeValue(value) }
