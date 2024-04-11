@@ -380,7 +380,8 @@ export default {
                 state:   this.state,
                 field:   input.attribute,
                 suggest: `${input.attribute}|${d.data.q}`,
-              })).map(d => ({ id: d.value, text: d.value }))
+              })).map(d => ({ id: d.key, text: d.key })
+              )
             });
           }
           catch(e) { ko(e); }
