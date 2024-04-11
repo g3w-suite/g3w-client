@@ -42,10 +42,12 @@ export function SearchComponent(opts = {}) {
   const project = ProjectsRegistry.getCurrentProject();
 
   const state = {
-    searches: project.state.search || [],
+    searches: (project.state.search || []).sort((a, b) => a.name > b.name),
     tools: [],
     querybuildersearches: _getSavedSearches()
   };
+
+  console.log(state);
 
   const service = opts.service || new G3WObject();
 
