@@ -500,6 +500,37 @@
       </div>
     </li>
 
+    <!-- Click to Copy WFS 3 URL @since 3.10.0 -->
+    <li
+      v-if="canShowWfsUrl(layerMenu.layer.id)"
+    >
+      <div
+        @click.prevent.stop="copyUrl({evt: $event, layerId:layerMenu.layer.id, type:'Wfs3'})"
+        style="display: flex; max-width:300px; align-items: center;"
+        >
+      <span
+        class="menu-icon skin-color-dark"
+        :class="g3wtemplate.getFontClass('map')">
+      </span>
+        <div style="display: inline-flex; justify-content: space-between; width: 100%; align-items: baseline">
+          <span
+            class="item-text catalog-menu-wms skin-tooltip-top"
+            data-toggle="tooltip"
+            data-container="body"
+            v-t-tooltip="'sdk.catalog.menu.wms.copy'"
+          >WFS 3 URL</span>
+          <span
+            class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+            :class="g3wtemplate.getFontClass('eye')"
+            data-placement="top"
+            data-toggle="tooltip"
+            data-container="body"
+            :title="getWfs3Url(layerMenu.layer.id)"
+          ></span>
+        </div>
+        </div>
+    </li>
+
     <!-- Click to open G3W-ADMIN's project layers page -->
     <li v-if="layers_url">
       <div>
@@ -707,7 +738,22 @@
         return CatalogLayersStoresRegistry.getLayerById(layerId).getCatalogWfsUrl();
       },
 
-      copyUrl({evt, layerId, type}={}) {
+      /**
+       * @since 3.10.0
+       * @param layerId
+       * @return { String } wfs3 url
+       */
+      getWfs3Url(layerId) {
+        return CatalogLayersStoresRegistry.getLayerById(layerId).getCatalogWfs3Url();
+      },
+
+      /**
+       *
+        * @param evt
+       * @param layerId
+       * @param { String } type Wms, Wfs, Wfs3
+       */
+      copyUrl({ evt, layerId, type } = {}) {
         const url = this[`get${type}Url`](layerId);
         let ancorEement = document.createElement('a');
         ancorEement.href = url;
