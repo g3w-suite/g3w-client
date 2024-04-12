@@ -181,7 +181,9 @@
     },
     async created() {
       this.unwatch = [];
-      for (const tab of this.tabs) {
+      this.tabs.forEach((tab , i) => {
+
+        this.tabs[i] = Vue.observable(tab);
         if (tab.visibility_expression) {
            if (tab.visible === undefined) {
              this.$set(tab, 'visible', 0);
@@ -209,7 +211,8 @@
           }
         }
         this.ids.push(`tab_${getUniqueDomId()}`);
-      }
+      });
+
       this.root_tabs = [];
       if (!this.group){
         const nodes = [];

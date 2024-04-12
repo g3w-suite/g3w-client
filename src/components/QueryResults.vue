@@ -683,7 +683,7 @@
         return this.relationsAttributesSubset(elements).length;
       },
       getLayerFormStructure(layer) {
-        return layer.formStructure.structure;
+        return layer.formStructure.structure.map(s => _.cloneDeep(s));
       },
       isAttributeOrTab(layer, item) {
         const isField = item.field_name !== undefined;
