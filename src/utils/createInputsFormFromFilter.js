@@ -18,7 +18,7 @@ export async function createInputsFormFromFilter(state) {
     // set key-values for select
     input.values = [
       ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
-      ...(input.dependance_strict || input.dependance || has_autocomplete
+      ...(input.dependance_strict || has_autocomplete
           ? input.values
           : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
         )
