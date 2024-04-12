@@ -237,6 +237,14 @@ proto.getCatalogWfsUrl = function(){
   return `${this.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
 };
 
+/**
+ * Get WFS 3 url (used by Catalog Layer Menu)
+ * @since 3.10.0
+ * @return { String } url
+ */
+proto.getCatalogWfs3Url = function(){
+  return `${this.getWfsUrl()}wfs3/`;
+};
 
 proto.getWfsUrl = function() {
   const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata();
