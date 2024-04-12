@@ -7,26 +7,26 @@
   <div>
     <section style="display: flex; justify-content: space-between; font-weight: bold;">
       <section style="align-self: flex-end">
-        <span class = "min-max-label">{{min}}</span>
-        <span style = "font-weight: bold;">{{unit}}</span>
+        <span class="min-max-label">{{min}}</span>
+        <span style="font-weight: bold;">{{unit}}</span>
       </section>
 
       <div style="display: flex; flex-direction: column; margin: 0 3px">
         <label
-          :for  = "id"
-          style = "display: block"
-          class = "skin-color"
-          v-t   = "label"
+          :for="id"
+          style="display: block"
+          class="skin-color"
+          v-t="label"
         ></label>
         <input
-          type    = "range"
-          ref     = "range-input"
-          @change = "change"
-          v-model = "state.value"
-          :id     = "id"
-          :min    = "min"
-          :max    = "max"
-          :step   = "step"
+          type="range"
+          ref="range-input"
+          @change="change"
+          v-model="value"
+          :id="id"
+          :min="min"
+          :max="max"
+          :step="step"
         >
       </div>
 
@@ -37,7 +37,7 @@
 
     </section>
     <template v-if="showValue">
-      <span>{{state.value}}</span>
+      <span>{{value}}</span>
       <span style="font-weight: bold;">{{unit}}</span>
     </template>
   </div>
@@ -54,15 +54,14 @@
        * ID value for label.
        */
       id: {
-        // type: String,
-        default: undefined,
+        required: true,
       },
 
       /**
        * @TODO find out what changes from the `unit` props
        */
       label: {
-        type:    String,
+        type:"String",
         default: ''
       },
 
@@ -70,7 +69,7 @@
        * Min range slider value.
        */
       min: {
-        type:    Number,
+        type: Number,
         default: 0
       },
 
@@ -78,7 +77,7 @@
        * Max range slider value.
        */
       max: {
-        type:    Number,
+        type: Number,
         default: 10
       },
 
@@ -86,7 +85,7 @@
        * Range slider step.
        */
       step: {
-        type:    Number,
+        type: Number,
         default: 1
       },
 
@@ -106,7 +105,7 @@
        * Whether to emit the `changed` event.
        */
       sync: {
-        type:    Boolean,
+        type: Boolean,
         default: false
       },
 
@@ -114,7 +113,7 @@
        * Whether display current range value.
        */
       showValue: {
-        type:    Boolean,
+        type: Boolean,
         default: false
       },
 
@@ -122,53 +121,49 @@
        * Range unit.
        */
       unit: {
-        type:    String,
+        type: String,
         default: ''
       }
 
     },
-    data() {
-      return {
-        state: { value: this.value }
-      };
+    data(){
+      return {}
     },
-    methods: {
-      changeBackGround(value) {
+    methods:{
+      changeBackGround(value){
         this.$refs['range-input'].style.backgroundSize = `${value ? (value - this.min) * 100 / (this.max - this.min): 0}% 100%`;
       },
-      setValue(value) {
+      setValue(value){
         this.changedValue(value);
       },
-      change(e) {
-        this.changedValue(1*e.target.value);
+      change(evt){
+        const value = 1*evt.target.value;
+        this.changedValue(value);
       },
-      emitChangeValue(value) {
-        this.state.value = value;
+      emitChangeValue(value){
+        this.value = value;
         this.$emit('change-range', {
           id: this.id,
           value
         });
       }
     },
-    watch: {
-      /**@since 3.8.0 need to watch changes of prop value and reflect it to state.value*/
-      'value'(value) {
-        this.state.value = value;
-      },
-      'state.value'(value) {
+    watch:{
+      value(value){
         this.changeBackGround(value);
-        if (this.sync) { this.emitChangeValue(value) }
+        this.sync && this.emitChangeValue(value);
       }
     },
-    created() {
-      this.changedValue =  this.sync ? () => this.$emit('changed') : debounce(value => {
+    created(){
+      this.changedValue =  this.sync ? ()=> this.$emit('changed') : debounce(value => {
         this.emitChangeValue(value)
       })
     },
-    async mounted() {
+    async mounted(){
       await this.$nextTick();
       this.changeBackGround(this.value);
     },
+    beforeDestroy() {}
   }
 </script>
 
