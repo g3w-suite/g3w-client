@@ -114,13 +114,16 @@
             </div>
           </div>
 
+          <sub>{{ input.options.description }}</sub>
+
           <!-- DEBUG INFO -->
           <sub v-if="is_superuser">
-            {{ input.type }} | {{ input.widget_type }}
+            <br v-if="input.options.description">
+            <span class="skin-color">{{ input.type }}</span> | <span class="skin-color">{{ input.widget_type }}</span>
             <template v-if="input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
-            <template v-if="input.options.layer_id"><br>layer_id: "{{ input.options.layer_id }}"</template>
-            <template v-if="input.dependance"><br>depends_on: "{{ input.dependance }}"</template>
-            <template v-if="input.dependance"><br>strict: {{ input.dependance_strict }}</template>
+            <template v-if="input.options.layer_id"><br><span class="skin-color">layer_id:</span> "{{ input.options.layer_id }}"</template>
+            <template v-if="input.dependance"><br><span class="skin-color">depends_on:</span> "{{ input.dependance }}"</template>
+            <template v-if="input.dependance"><br><span class="skin-color">strict:</span> {{ input.dependance_strict }}</template>
           </sub>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
