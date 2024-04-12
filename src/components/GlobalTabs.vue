@@ -182,9 +182,6 @@
     async created() {
       this.unwatch = [];
       this.tabs.forEach((tab , i) => {
-
-        //Nee to set tab object reactive
-        this.tabs[i] = Vue.observable(tab);
         if (tab.visibility_expression) {
            if (tab.visible === undefined) {
              this.$set(tab, 'visible', 0);
