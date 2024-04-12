@@ -44,7 +44,7 @@
 </template>
 
 <script>
-  const { debounce, uniqueId } = require('utils');
+  const { debounce } = require('utils');
 
   export default {
     name: "range",
