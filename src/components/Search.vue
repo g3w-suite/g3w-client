@@ -76,11 +76,11 @@
         <div class="querybuildsearch-info" v-show="search.qbshowinfo">
           <div>
             <span style="font-weight: bold; white-space: pre">LAYER: </span>
-            <span style="white-space: pre-wrap;">{{ querybuildersearch.layerName }}</span>
+            <span style="white-space: pre-wrap;">{{ search.layerName }}</span>
           </div>
           <div>
             <span style="font-weight: bold;">EXPRESSION: </span>
-            <span style="white-space: pre-wrap;">{{ querybuildersearch.filter }}</span>
+            <span style="white-space: pre-wrap;">{{ search.filter }}</span>
           </div>
         </div>
       </div>
