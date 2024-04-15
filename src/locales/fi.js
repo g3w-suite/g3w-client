@@ -376,6 +376,8 @@ export default {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
         choose_map_theme_input_label: 'Uuden teeman nimi',
+        project_map_theme : 'Projektin Themes',
+        user_map_theme: 'Käyttäjä Themes',
         menu: {
           layerposition: 'Layer Position',
           setwmsopacity: "Set Opacity",

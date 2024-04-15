@@ -376,6 +376,8 @@ export default {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "SÉLECTIONNEZ LE THÈME",
         choose_map_theme_input_label: 'Nom du nouveau thème',
+        project_map_theme : 'Thème du projet',
+        user_map_theme: "Thème de l'utilisateur",
         menu: {
           layerposition: 'Layer Position',
           setwmsopacity: "Set Opacity",

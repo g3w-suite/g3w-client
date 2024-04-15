@@ -376,6 +376,8 @@ export default {
         current_map_theme_prefix: "TEMA",
         choose_map_theme: "ALEGE TEMA",
         choose_map_theme_input_label: 'Numele noii tema',
+        project_map_theme : 'Tema de proiect',
+        user_map_theme: "Tema utilizator",
         menu: {
           layerposition: 'Poziție Strat',
           setwmsopacity: "Alege Opacitatea",

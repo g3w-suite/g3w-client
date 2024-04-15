@@ -91,7 +91,7 @@
           <li id="g3w-catalog-views-project">
             <ul style="padding: 0">
               <li>
-                <div style="font-weight: bold; padding: 5px 3px">Temi progetto</div>
+                <div style="font-weight: bold; padding: 5px 3px" v-t="'sdk.catalog.project_map_theme'"></div>
                 <divider/>
               </li>
               <li style="padding: 5px 5px 5px 17px;">
@@ -121,7 +121,7 @@
             <ul style="padding: 0">
               <li>
                 <div style="font-weight: bold; padding: 5px 3px; display: flex; justify-content: space-between">
-                  <span>Temi uente</span>
+                  <span v-t="'sdk.catalog.user_map_theme'"></span>
                   <!-- Add theme button -->
                   <span
                     @click.stop="showSaveMapThemeForm = !showSaveMapThemeForm"
