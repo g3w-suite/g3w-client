@@ -186,7 +186,7 @@ export default {
      * @return {boolean}
      */
     noMaps() {
-      return 0 === this.state.maps.length;
+      return 0 === (this.state.maps || []).length;
     }
   },
   methods: {
