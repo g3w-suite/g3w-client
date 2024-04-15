@@ -157,8 +157,9 @@ class OlMapViewer {
    */
   goTo(coordinates, options = {}) {
     const view    = this.map.getView();
-    const animate = options.animate || true;
+    const animate = 'boolean' === typeof options.animate ? options.animate : true;
     const zoom    = options.zoom || false;
+
     if (animate) {
       view.animate(
         { duration: 300, center: coordinates },
@@ -166,9 +167,10 @@ class OlMapViewer {
       ));
     } else {
       view.setCenter(coordinates);
-      if (zoom) {
-        view.setZoom(zoom);
-      }
+    }
+
+    if (zoom && !animate) {
+      view.setZoom(zoom);
     }
   }
 
@@ -176,18 +178,25 @@ class OlMapViewer {
    * @FIXME add description
    */
   goToRes(coordinates, options = {}) {
-    const view       = this.map.getView();
-    const animate    = options.animate || true;
-    const resolution = options.resolution || view.getResolution();
-    if (animate) {
-      view.animate(
-        { duration: 200, center: coordinates },
-        { duration: 200, resolution }
-      );
-    } else {
-      view.setCenter(coordinates);
-      view.setResolution(resolution);
-    }
+    return new Promise((resolve) => {
+      const view       = this.map.getView();
+      const animate    = 'boolean' === typeof options.animate ? options.animate : true;
+      const resolution = options.resolution || view.getResolution();
+      const key = view.on('change:center', () => {
+        ol.Observable.unByKey(key);
+        setTimeout(resolve, 500);
+      });
+
+      if (animate) {
+        view.animate(
+          { duration: 200, center: coordinates },
+          { duration: 200, resolution }
+        );
+      } else {
+        view.setCenter(coordinates);
+        view.setResolution(resolution);
+      }
+    })
   }
 
   /**
@@ -195,19 +204,21 @@ class OlMapViewer {
    */
   fit(geometry, options = {}) {
     const view    = this.map.getView();
-    const animate = options.animate || true;
+    const animate = 'boolean' === typeof options.animate ? options.animate : true;
+
     if (animate) {
       view.animate({ duration: 200, center: view.getCenter() });
       view.animate({ duration: 200, resolution: view.getResolution() });
     }
-    if (options.animate) {
-      delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
-    }
+
+    delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
+
     view.fit(geometry, {
       ...options,
-      constrainResolution: (undefined === options.constrainResolution && true || options.constrainResolution),
+      constrainResolution: (undefined !== options.constrainResolution ? options.constrainResolution : true),
       size:  this.map.getSize()
     });
+
   }
 
   /**
@@ -264,7 +275,7 @@ class OlMapViewer {
       .getLayers()
       .filter((layer) => {
         const props = layer.getProperties();
-        return  (props.visible && true !== props.basemap);
+        return (props.visible && true !== props.basemap);
       });
   };
 
@@ -376,6 +387,16 @@ function MapService(options={}) {
    * Are used to show selection Features and/or highlight Layer feature
    */
   this.defaultsLayers = {
+    mapcenter: new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: new ol.style.Style({
+        image: new ol.style.Icon({
+          opacity: 1,
+          src: '/static/client/images/mapcentermarker.svg',
+          scale: 0.8
+        }),
+      })
+    }),
     _style: {
       highlightLayer: {
         color: undefined
@@ -517,15 +538,17 @@ function MapService(options={}) {
       this.state.hidden = bool;
     },
     setupViewer(width,height) {
-      if (width === 0 || height === 0) return;
+      if (0 === width || 0 === height) {
+        return;
+      }
       if (this.viewer) {
         this.viewer.destroy();
         this.viewer = null;
       }
       this._setupViewer(width, height);
-      this.state.bbox = this.viewer.getBBOX();
+      this.state.bbox       = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
-      this.state.center = this.viewer.getCenter();
+      this.state.center     = this.viewer.getCenter();
       this._setupAllLayers();
       this.setUpMapOlEvents();
       this.emit('viewerset');
@@ -703,7 +726,9 @@ proto.getProject = function() {
 proto.getMap = function() {
   try {
     return this.viewer.map;
-  } catch(err) {}
+  } catch(e) {
+    console.warn(e);
+  }
 };
 
 proto.getMapCanvas = function(map) {
@@ -1044,39 +1069,43 @@ proto._setupControls = function() {
           break;
 
         case 'overview':
-          if (!isMobile.any) {
-            if (!this.config.overviewproject) return;
-            const overviewProjectGid = this.config.overviewproject.gid;
-            if (overviewProjectGid) {
-              ProjectsRegistry.getProject(overviewProjectGid)
+          if (!isMobile.any && this.config.overviewproject && this.config.overviewproject.gid) {
+            ProjectsRegistry
+              .getProject(this.config.overviewproject.gid)
               .then(project => {
-                const overViewMapLayers = this.getOverviewMapLayers(project);
-                const viewOptions = this._calculateViewOptions({
-                  width: 200, // at moment hardcoded
-                  height: 150,
-                  project
-                });
-                const view = new ol.View(viewOptions);
-                const mainView = this.getMap().getView();
+                //create a view for overview map
+                const map = this.getMap();
+                const view = new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })); // at moment hardcoded
                 view.on('change:center', function() {
-                  const currentCenter = this.getCenter();
-                  const center = mainView.constrainCenter(currentCenter);
-                  center[0] !== currentCenter[0] || center[1] !== currentCenter[1] && view.setCenter(center);
+                  const current = view.getCenter();
+                  const center  = map.getView().constrainCenter(current);
+                  if (center[0] !== current[0] || center[1] !== current[1]) {
+                    view.setCenter(center);
+                  }
                 });
                 control = this.createMapControl(controlType, {
                   add: false,
-                  options: {
-                    position: 'bl',
-                    className: 'ol-overviewmap ol-custom-overviewmap',
-                    collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
-                    label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                    collapsed: false,
-                    layers: overViewMapLayers,
-                    view
-                  }
+                    options: {
+                      view,
+                      position:      'bl',
+                      collapsed:     false,
+                      className:     'ol-overviewmap ol-custom-overviewmap',
+                      collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                      label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
+                      layers:        this.getOverviewMapLayers(project),
+                    }
                 });
-              });
-            }
+                /** @since 3.10.0 Move another bottom left map controls bottom to a left of overview control**/
+                document.querySelector('.g3w-map-controls-left-bottom').style.left = '230px';
+                const observer = new MutationObserver((mutations) => {
+                  mutations.forEach((mutation) => {
+                    if ("class" === mutation.attributeName) {
+                      document.querySelector('.g3w-map-controls-left-bottom').style.left = mutation.target.classList.contains('ol-collapsed') ? '50px' : '230px';
+                    }
+                  });
+                });
+                observer.observe(document.querySelector('.ol-custom-overviewmap'), {attributes: true});
+              })
           }
           break;
 
@@ -1166,74 +1195,86 @@ proto.getLayerZindex = function(layer) {
 };
 
 proto.getCenter = function() {
-  const map = this.getMap();
-  return map.getView().getCenter();
+  return this.getMap().getView().getCenter();
 };
 
 /**
- *
- *method to zoom to feature
+ * Zoom to Feature ID
  */
-proto.zoomToFid = async function(zoom_to_fid='', separator='|') {
+proto.zoomToFid = async function(zoom_to_fid = '', separator = '|') {
   const [layerId, fid] = zoom_to_fid.split(separator);
-  if (layerId !== undefined && fid !== undefined) {
-    const layer = this.project.getLayerById(layerId);
-    const {data=[]}= await DataRouterService.getData('search:fids', {
-      inputs: {
-        layer,
-        fids:[fid]
-      },
-      outputs: {
-        show: {
-          loading: false,
-          condition({data=[]}={}) {
-            return data[0] && data[0].features.length > 0;
-          }
+
+  if (undefined === layerId && undefined === fid) {
+    return;
+  }
+
+  const { data = [] } = await DataRouterService.getData('search:fids', {
+    inputs: {
+      layer: this.project.getLayerById(layerId),
+      fids: [fid]
+    },
+    outputs: {
+      show: {
+        loading: false,
+        condition({ data = [] } = {}) {
+          return data[0] && data[0].features.length > 0;
         }
       }
-    });
-    const feature = data[0] && data[0].features[0];
-    feature && this.zoomToFeatures([feature]);
+    }
+  });
+
+  const feature = data[0] && data[0].features[0];
+
+  if (feature) {
+    await this.zoomToFeatures([feature]);
   }
 };
 
 /**
- * Method to handele ztf url parameter
+ * Handle ztf url parameter
+ * 
  * @param zoom_to_feature
  */
-proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', search_endpoint='api'} = {}) {
+proto.handleZoomToFeaturesUrlParameter = async function({
+  zoom_to_features = '',
+  search_endpoint = 'api',
+} = {}) {
   try {
-    const [layerNameorIdorOrigname, fieldsValuesSearch] = zoom_to_features.split(':');
-    if (layerNameorIdorOrigname && fieldsValuesSearch) {
-      const projectLayer = this.project.getLayers().find(layer =>
-        layer.id === layerNameorIdorOrigname ||
-        layer.name === layerNameorIdorOrigname ||
-        layer.origname === layerNameorIdorOrigname
-      );
-      if (projectLayer) {
-        const layer = this.project.getLayerById(projectLayer.id);
-        const filter = createFilterFromString({
-          layer,
-          search_endpoint,
-          filter: fieldsValuesSearch
-        });
-        const {data} = await DataRouterService.getData('search:features', {
-          inputs: {
-            layer,
-            filter,
-            search_endpoint
-          },
-          outputs: {
-            show: {
-              loading: false
-            }
-          }
-        });
-        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features)
-      }
+    const [id, filter] = zoom_to_features.split(':');
+
+    if (!id || !filter) {
+      return;
     }
-  } catch(err) {
-    console.log(err)
+
+    // find project layer
+    const pLayer = this.project.getLayers().find(layer =>
+      id === layer.id ||
+      id === layer.name ||
+      id === layer.origname
+    );
+
+    const layer = pLayer && this.project.getLayerById(pLayer.id);
+
+    const r = pLayer && await DataRouterService.getData('search:features', {
+      inputs: {
+        layer,
+        filter: createFilterFromString({ layer, search_endpoint, filter }),
+        search_endpoint
+      },
+      outputs: {
+        show: {
+          loading: false
+        }
+      }
+    });
+
+    const features = r && r.data && r.data[0] && r.data[0].features;
+
+    if (features) {
+      this.zoomToFeatures(features);
+    }
+  } catch(e) {
+    console.warn(e);
   }
 };
 
@@ -1685,64 +1726,89 @@ proto._resetView = function() {
   this.viewer.map.setView(view);
 };
 
-proto._calculateViewOptions = function({project, width, height}={}) {
-  const searchParams = new URLSearchParams(location.search);
-  const map_extent = searchParams.get('map_extent');
-  const zoom_to_fid = searchParams.get('zoom_to_fid');
-  const zoom_to_features = searchParams.get('ztf'); // zoom to features
-  const lat_lon = searchParams.get('lat') && searchParams.get('lon') && {
-    lat: 1*searchParams.get('lat'),
-    lon:1*searchParams.get('lon')
-  };
-  const x_y = searchParams.get('x') && searchParams.get('y') && {
-    x: 1*searchParams.get('x'),
-    y: 1*searchParams.get('y')
-  };
-  if (zoom_to_fid) this.zoomToFid(zoom_to_fid);
-  else if (zoom_to_features) this.handleZoomToFeaturesUrlParameter({zoom_to_features});
-  else if (lat_lon && !Number.isNaN(lat_lon.lat) && !Number.isNaN(lat_lon.lon)) {
-    setTimeout(()=>{
-      const geometry = new ol.geom.Point(ol.proj.transform([lat_lon.lon, lat_lon.lat], 'EPSG:4326', this.getEpsg()));
-      if (geometry.getExtent())
-      this.zoomToGeometry(geometry)
-    })
-  } else if (x_y && !Number.isNaN(x_y.x) && !Number.isNaN(x_y.y))
-    setTimeout(()=> {
-      const geometry = new ol.geom.Point([x_y.x, x_y.y]);
-      this.zoomToGeometry(geometry);
-    });
-  const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
-  const projection = this.getProjection();
-  const extent = project.state.extent;
-  const maxxRes = ol.extent.getWidth(extent) / width;
-  const maxyRes = ol.extent.getHeight(extent) / height;
-  const maxResolution = Math.max(maxxRes,maxyRes);
-  const initxRes = ol.extent.getWidth(initextent) / width;
-  const inityRes = ol.extent.getHeight(initextent) / height;
-  const resolution = Math.max(initxRes,inityRes);
-  const center = ol.extent.getCenter(initextent);
+/**
+ * @param project
+ * @param width
+ * @param height
+ * @param { Array } map_extent since 3.10.0: in case of true, use url parameter to set view options
+ * @return {{extent: *, maxResolution: number, center: *, projection: *, resolution: number}}
+ * @private
+ */
+proto._calculateViewOptions = function({
+  project,
+  width,
+  height,
+  map_extent,
+} = {}) {
+  const initextent = map_extent ? map_extent.split(',').map(coord => 1 * coord) : project.state.initextent;
+  const extent     = project.state.extent;
   return {
-    projection,
-    center,
     extent,
-    maxResolution,
-    resolution
+    projection:    this.getProjection(),
+    center:        ol.extent.getCenter(initextent),
+    maxResolution: Math.max(ol.extent.getWidth(extent) / width,     ol.extent.getHeight(extent) / height),     // max(xRes, yRes)
+    resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
   }
 };
 
 // set view based on project config
 proto._setupViewer = function(width, height) {
+  const search           = new URLSearchParams(location.search); // search params
+  const showmarker       = 1 * (search.get('showmarker') || 0);  /** @since 3.10.0 0 or 1. Show marker on map center*/
+  const iframetype       = search.get('iframetype');             /** @since 3.10.0 type of iframe: map (only map, no control)*/
+  const map_extent       = search.get('map_extent');
+  const zoom_to_fid      = search.get('zoom_to_fid');
+  const zoom_to_features = search.get('ztf');                    // zoom to features
+  const coords           = {
+      lat: parseFloat(search.get('lat')),
+      lon: parseFloat(search.get('lon')),
+      x:   parseFloat(search.get('x')),
+      y:   parseFloat(search.get('y')),
+    };
+
+  (new Promise((resolve) => {
+    setTimeout(async () => {
+      let geom;
+      if (zoom_to_fid) {
+        await this.zoomToFid(zoom_to_fid);
+      } else if (zoom_to_features) {
+        await this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
+      } else if (!isNaN(coords.lat) && !isNaN(coords.lon)) {
+        geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
+      } else if (!isNaN(coords.x) && !isNaN(coords.y)) {
+        geom = new ol.geom.Point([coords.x, coords.y]);
+      }
+      if (geom && geom.getExtent()) {
+        await this.zoomToGeometry(geom);
+      }
+      resolve();
+    });
+  }))
+  .then(() => {
+    // show marker on map center
+    if (1 === showmarker) {
+      this.defaultsLayers.mapcenter.getSource().addFeature(new ol.Feature({ geometry: new ol.geom.Point(this.getCenter()) }))
+    }
+  });
+
+  // iframe → hide map controls (empty object)
+  if ('map' === iframetype) {
+    this.config.mapcontrols = {};
+  }
+
   this.viewer = new OlMapViewer({
     id: this.target,
     view: this._calculateViewOptions({
       width,
       height,
-      project: this.project
+      project: this.project,
+      map_extent, /** @since 3.10.0 */
     })
   });
+
   this._setSettings();
-  this.state.size = this.viewer.map.getSize();
-  //set mapunit
+
+  this.state.size     = this.viewer.map.getSize();
   this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
 
   if (this.config.background_color) {
@@ -1751,13 +1817,9 @@ proto._setupViewer = function(width, height) {
 
   $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
 
-  this.viewer.map.getInteractions().forEach(interaction => this._watchInteraction(interaction));
-
-  this.viewer.map.getInteractions().on('add', interaction => this._watchInteraction(interaction.element));
-
-  this.viewer.map.getInteractions().on('remove', interaction => {
-    //this._onRemoveInteraction(interaction););
-  });
+  this.viewer.map.getInteractions().forEach(     int => this._watchInteraction(int));
+  this.viewer.map.getInteractions().on('add',    int => this._watchInteraction(int.element));
+  this.viewer.map.getInteractions().on('remove', int => { /* this._onRemoveInteraction(int);); */ });
 
   this._marker = new ol.Overlay({
     position: null,
@@ -1768,28 +1830,20 @@ proto._setupViewer = function(width, height) {
 
   this.viewer.map.addOverlay(this._marker);
 
-  /**
-   *
-   * Register map addLayer
-   *
-   */
-  this.viewer.map.getLayers().on('add', evt => {
-    const {element:layer} = evt;
-    const basemap =  layer.get('basemap');
-    const position = layer.get('position');
-    let zindex = basemap && 0;
-    if (position && position === 'bottom') zindex = 0;
-    zindex = this.setLayerZIndex({
-      layer,
-      zindex
-    });
-    this.moveDefaultLayersOnTop(zindex);
+  // listen for map "addLayer"
+  this.viewer.map.getLayers().on('add', e => {
+    this.moveDefaultLayersOnTop(
+      this.setLayerZIndex({
+        layer: e.element,
+        zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
+      })
+    );
   });
 
-  this.viewer.map.getLayers().on('remove', evt => {
-    const {element:layer}= evt;
-    const layerZIndex = layer.getZIndex();
-    if (layerZIndex === this.layersCount) this.layersCount-=1;
+  this.viewer.map.getLayers().on('remove', e => {
+    if (e.element.getZIndex() === this.layersCount) {
+      this.layersCount--;
+    }
   })
 };
 
@@ -1834,7 +1888,11 @@ proto._setupAllLayers = function() {
   this._setupBaseLayers();
   this._setupMapLayers();
   this._setupVectorLayers();
-  this._setUpDefaultLayers();
+  // set default layers order
+  const map = this.getMap();
+  map.addLayer(this.defaultsLayers.mapcenter);
+  map.addLayer(this.defaultsLayers.selectionLayer);
+  map.addLayer(this.defaultsLayers.highlightLayer);
 };
 
 //SETUP BASELAYERS
@@ -1905,21 +1963,21 @@ proto._setupVectorLayers = function() {
   layers.forEach(layer => { this.addLayerToMap(layer.getMapLayer()) })
 };
 
-proto._setUpDefaultLayers = function() {
-  // follow the order that i want
-  this.getMap().addLayer(this.defaultsLayers.highlightLayer);
-  this.getMap().addLayer(this.defaultsLayers.selectionLayer);
-};
-
 /**
  * Method to set Default layers (selectionLayer, and highlightLayer)
- * always on top of layers stack of map to be always visible
+ * always on top of layer stack of a map to be always visible
  */
 proto.moveDefaultLayersOnTop = function(zindex) {
+  this.setZIndexLayer({
+    layer: this.defaultsLayers.mapcenter,
+    zindex: zindex + 1
+  });
+
   this.setZIndexLayer({
     layer: this.defaultsLayers.highlightLayer,
     zindex: zindex + 1
   });
+
   this.setZIndexLayer({
     layer: this.defaultsLayers.selectionLayer,
     zindex: zindex + 2
@@ -1927,20 +1985,26 @@ proto.moveDefaultLayersOnTop = function(zindex) {
 };
 
 proto.removeDefaultLayers = function() {
+  this.defaultsLayers.mapcenter.getSource().clear();
   this.defaultsLayers.highlightLayer.getSource().clear();
   this.defaultsLayers.selectionLayer.getSource().clear();
+  this.getMap().removeLayer(this.defaultsLayers.mapcenter);
   this.getMap().removeLayer(this.defaultsLayers.highlightLayer);
   this.getMap().removeLayer(this.defaultsLayers.selectionLayer);
 };
 
 proto.setDefaultLayerStyle = function(type, style={}) {
-  if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = style;
+  if (type && this.defaultsLayers[type]) {
+    this.defaultsLayers._style[type] = style;
+  }
 };
 
 proto.resetDefaultLayerStyle = function(type, style={}) {
-  if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = {
-    color: type === 'highlightLayer' ? undefined : 'red'
-  };
+  if (type && this.defaultsLayers[type]) {
+    this.defaultsLayers._style[type] = {
+      color: 'highlightLayer' === type ? undefined : 'red'
+    };
+  }
 };
 
 proto.removeLayers = function() {
@@ -1995,7 +2059,7 @@ proto.createMapLayer = function(layer) {
 
 proto.getOverviewMapLayers = function(project) {
   const WMSLayer = require('core/layers/map/wmslayer');
-  let layers = [];
+  const layers = [];
 
   Object
     .entries(
@@ -2003,13 +2067,13 @@ proto.getOverviewMapLayers = function(project) {
         project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false }),
         layer => layer.getMultiLayerId()
       )
-    ).forEach(([id, layers]) => {
+    ).forEach(([id, _layers]) => {
       const mapLayer = new WMSLayer({
         url:   project.getWmsUrl(),
         id:    'overview_layer_' + id,
-        tiled: layers[0].state.tiled,
+        tiled: _layers[0].state.tiled,
       });
-      layers.reverse().forEach(layer => mapLayer.addLayer(layer));
+      _layers.reverse().forEach(layer => mapLayer.addLayer(layer));
       layers.push(mapLayer.getOLLayer(true));
     });
   return layers.reverse();
@@ -2021,8 +2085,10 @@ proto.getOverviewMapLayers = function(project) {
  * @param options
  */
 proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add g3w_time parameter to force request of map layer from server
-  if (options.force) options.g3w_time = Date.now();
+  // if force adds g3w_time parameter to force request of map layer from server
+  if (options.force) {
+    options.g3w_time = Date.now();
+  }
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
     this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
@@ -2051,7 +2117,7 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   ///
 };
 
-/** Methos to register and unregister map loadmap
+/** Methods to register and unregister load map
  *
  * */
 proto.registerMapLayerLoadingEvents = function(mapLayer) {
@@ -2147,17 +2213,12 @@ proto.zoomTo = function(coordinate, zoom=6) {
   this.viewer.zoomTo(coordinate, zoom);
 };
 
-proto.goTo = function(coordinates,zoom) {
-  const options = {
-    zoom: zoom || 6
-  };
-  this.viewer.goTo(coordinates, options);
+proto.goTo = function(coordinates, zoom) {
+  this.viewer.goTo(coordinates, { zoom: zoom || 6 });
 };
 
-proto.goToRes = function(coordinates, resolution) {
-  this.viewer.goToRes(coordinates, {
-    resolution
-  });
+proto.goToRes = async function(coordinates, resolution) {
+  await this.viewer.goToRes(coordinates, { resolution });
 };
 
 proto.getGeometryAndExtentFromFeatures = function(features=[]) {
@@ -2209,38 +2270,49 @@ proto.highlightFeatures = function(features, options={}) {
  * Zoom methods
  */
 
-proto.zoomToGeometry = function(geometry, options={highlight: false}) {
+proto.zoomToGeometry = function(geometry, options = { highlight: false }) {
   const extent = geometry && geometry.getExtent();
-  const {highlight} = options;
-  if (highlight && extent) options.highLightGeometry = geometry;
-  extent && this.zoomToExtent(extent, options);
+  if (options.highlight && extent) {
+    options.highLightGeometry = geometry;
+  }
+  return this.zoomToExtent(extent, options);
 };
 
-proto.zoomToFeatures = function(features, options={highlight: false}) {
-  let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
-  const {highlight} = options;
-  if (highlight && extent) options.highLightGeometry = geometry;
-  return extent && this.zoomToExtent(extent, options) || Promise.resolve();
+proto.zoomToFeatures = function(features, options = { highlight: false }) {
+  let { geometry, extent } = this.getGeometryAndExtentFromFeatures(features);
+  if (options.highlight && extent) {
+    options.highLightGeometry = geometry;
+  }
+  return this.zoomToExtent(extent, options);
 };
 
 /**
- * @param   { ol.extent }                                          extent
- * @param   {{ force?: boolean, highLightGeometry?: ol.geometry }} [options={}]
+ * @param   { ol.extent }   extent
+ * @param   { Object }      options
+ * @param   { boolean }     options.force
+ * @param   { ol.geometry } options.highLightGeometry
+ * 
  * @returns { Promise<void> }
  */
-proto.zoomToExtent = function(extent, options={}) {
-  this.goToRes(
+proto.zoomToExtent = async function(extent, options = {}) {
+
+  if (!extent) {
+    return Promise.resolve();
+  }
+
+  await this.goToRes(
     ol.extent.getCenter(extent),
     this.getResolutionForZoomToExtent(extent, { force: options.force || false  })
   );
+
   if (options.highLightGeometry) {
-    return this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
+    await this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
   }
-  return Promise.resolve();
+
 };
 
 proto.zoomToProjectInitExtent = function() {
-  this.zoomToExtent(this.project.state.initextent);
+  return this.zoomToExtent(this.project.state.initextent);
 };
 
 /**
@@ -2313,9 +2385,7 @@ let animatingHighlight = false;
 proto.setSelectionFeatures = function(action='add', options={}) {
   const {feature, color} = options;
   if (color) {
-    this.setDefaultLayerStyle('selectionLayer', {
-      color
-    });
+    this.setDefaultLayerStyle('selectionLayer', { color });
   }
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
@@ -2346,72 +2416,76 @@ proto.setSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 
+/**
+ * 
+ * @param { ol.geom.Geometry | * } geometryObj 
+ * @param { Object } options
+ * @param { boolean } options.zoom
+ * @param { boolean } options.highlight
+ * @param options.style
+ * @param options.color
+ *  
+ * @returns { Promise<any> } 
+ */
 proto.highlightGeometry = function(geometryObj, options = {}) {
-  return new Promise((resolve, reject) => {
-    const {color} = options;
-    this.clearHighlightGeometry();
-    this.setDefaultLayerStyle('highlightLayer', {
-      color
-    });
-    let zoom = (typeof options.zoom === 'boolean') ? options.zoom : true;
-    let hide = options.hide;
-    if (hide) hide = typeof hide === 'function' ? hide: null;
-    const customStyle = options.style;
-    const defaultStyle = function(feature) {
-      let styles = [];
-      const geometryType = feature.getGeometry().getType();
-      const style = createSelectedStyle({
-        geometryType,
-        color,
-        fill: false
-      });
-      styles.push(style);
-      return styles;
-    };
-    const {ANIMATION} = MAP_SETTINGS;
-    const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-    const duration = options.duration || ANIMATION.duration;
-    let geometry;
-    if (geometryObj instanceof ol.geom.Geometry) geometry = geometryObj;
-    else {
-      const format = new ol.format.GeoJSON;
-      geometry = format.readGeometry(geometryObj);
-    }
+  const duration  = options.duration || MAP_SETTINGS.ANIMATION.duration;
+  const hlayer    = this.defaultsLayers.highlightLayer;
+  const hide      = 'function' === typeof options.hide      ? options.hide      : null;
+  const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
+  const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
+  let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
+
+  this.clearHighlightGeometry();
+  this.setDefaultLayerStyle('highlightLayer', { color: options.color });
+
+  return new Promise(async (resolve) => {
+
     if (zoom) {
-      const extent = geometry.getExtent();
-      this.zoomToExtent(extent);
+      await this.zoomToExtent(geometry.getExtent());
     }
-    if (highlight) {
-      const feature = new ol.Feature({
-        geometry
-      });
-      const highlightLayer = this.defaultsLayers.highlightLayer;
-      customStyle && highlightLayer.setStyle(customStyle);
-      highlightLayer.getSource().addFeature(feature);
-      if (hide) {
-        const callback = ()=> {
-          highlightLayer.getSource().clear();
-          customStyle && highlightLayer.setStyle(defaultStyle);
-          resolve();
-        };
-        hide(callback);
-      } else if (duration) {
-        if (duration !== Infinity) {
-          animatingHighlight = true;
-          setTimeout(() => {
-            highlightLayer.getSource().clear();
-            customStyle && highlightLayer.setStyle(defaultStyle);
-            animatingHighlight = false;
-            resolve();
-          }, duration)
-        }
+
+    if (!highlight) {
+      return resolve();
+    }
+
+    if (options.style) {
+      hlayer.setStyle(options.style);
+    }
+
+    hlayer.getSource().addFeature(new ol.Feature({ geometry }));
+
+    const cb = () => {
+      hlayer.getSource().clear();
+      // set default style
+      if (options.style) {
+        hlayer.setStyle((feature) => [createSelectedStyle({
+          geometryType: feature.getGeometry().getType(),
+          color: options.color,
+          fill: false
+        })]);
       }
-    } else resolve()
-  })
+      if (!hide) {
+        animatingHighlight = false;
+      }
+      resolve();
+    };
+
+    if (hide) {
+      hide(cb);
+    }
+
+    if (duration && duration !== Infinity && !hide) {
+      animatingHighlight = true;
+      setTimeout(cb, duration);
+    }
+
+  });
 };
 
 proto.clearHighlightGeometry = function() {
-  !animatingHighlight && this.defaultsLayers.highlightLayer.getSource().clear();
+  if (!animatingHighlight) {
+    this.defaultsLayers.highlightLayer.getSource().clear();
+  }
   this.resetDefaultLayerStyle('highlightLayer');
 };
 
@@ -3004,17 +3078,17 @@ function OLControl(type) {
     };
 
     this.layout = function(map) {
-      // skip when ..
+      //No map is passed
       if (!map) {
         return;
       }
       const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
       if (previusControls.length) {
-        const position        =  this.getPosition();
+        const position     =  this.getPosition();
         let previusControl = previusControls.last();
-        const offset = position.left ? previusControl.position().left : previusControl.position().right;
-        const hWhere = position.left ? 'left' : 'right';
-        const hOffset = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+        const offset       = position.left ? previusControl.position().left : previusControl.position().right;
+        const hWhere       = position.left ? 'left' : 'right';
+        const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
         $(this.element).css(hWhere, hOffset+'px');
       }
     };
@@ -3034,7 +3108,8 @@ function OLControl(type) {
       element: this._control.element
     });
 
-  };
+  }
+
   ol.inherits(_ctor, ol.control.Control);
   return _ctor;
 }

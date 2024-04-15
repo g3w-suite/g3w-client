@@ -32,6 +32,7 @@
 
             <label for="scala" v-t="'sdk.print.scale'"></label>
             <select
+              v-disabled="noMaps"
               id="scala"
               class="form-control"
               @change="onChangeScale"
@@ -45,16 +46,38 @@
             </select>
 
             <label for="dpi">dpi</label>
-            <select class="form-control" @change="onChangeDpi"  v-model="state.dpi" id="dpi" >
-              <option v-for="dpi in state.dpis" >{{ dpi }}</option>
+            <select
+              class="form-control"
+              @change="onChangeDpi"
+              v-model="state.dpi" id="dpi"
+            >
+              <option
+                v-for="dpi in state.dpis"
+              >{{ dpi }}</option>
             </select>
 
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
-            <input min="-360" max="360"  @input="onChangeRotation" v-model="state.rotation" id="rotation" class="form-control" type="number">
+            <input
+              v-disabled="noMaps"
+              min="-360"
+              max="360"
+              @input="onChangeRotation"
+              v-model="state.rotation"
+              id="rotation"
+              class="form-control"
+              type="number"
+            >
             <label for="format" v-t="'sdk.print.format'"></label>
 
-            <select class="form-control" v-model="state.output.format" id="format">
-              <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
+            <select
+              class="form-control"
+              v-model="state.output.format"
+              id="format"
+            >
+              <option
+                v-for="format in state.formats"
+                :value="format.value"
+              >{{ format.label }}</option>
             </select>
 
           </template>
@@ -62,36 +85,55 @@
           <!-- since 3.8.7 -->
           <!-- Needed to recreate a component on change template -->
           <template v-else-if="!templateChanged">
-              <template v-if="state.atlas.field_name">
-                <select-atlas-field-values
-                  @disable-print-button="setDisabledPrintButton"
-                  @set-values="setAtlasValues"
-                  :atlas="state.atlas"
-                  :reset="!state.isShow"/>
-              </template>
+            <template v-if="state.atlas.field_name">
+              <select-atlas-field-values
+                @disable-print-button="setDisabledPrintButton"
+                @set-values="setAtlasValues"
+                :atlas="state.atlas"
+                :reset="!state.isShow"/>
+            </template>
 
-              <template v-else>
-                <fid-atlas-values
-                  @disable-print-button="setDisabledPrintButton"
-                  @set-values="setAtlasValues"
-                  :atlas="state.atlas"
-                  :reset="!state.isShow"/>
-              </template>
+            <template v-else>
+              <fid-atlas-values
+                @disable-print-button="setDisabledPrintButton"
+                @set-values="setAtlasValues"
+                :atlas="state.atlas"
+                :reset="!state.isShow"/>
+            </template>
           </template>
 
           <template v-if="state.labels && state.labels.length">
-            <div class="print-labels-content" style="margin-top: 5px;">
-              <label style="font-weight: bold; font-size: 1.1em; display: block; border-bottom: 2px solid #ffffff; margin-bottom: 5px;" class="skin-color" v-t="'sdk.print.labels'"></label>
-              <div class="labels-input-content" style="max-height: 120px; overflow-y: auto">
-                <span v-for="label in state.labels" :key="label.id">
+            <div
+              class="print-labels-content"
+              style="margin-top: 5px;"
+            >
+              <label
+                style="font-weight: bold; font-size: 1.1em; display: block; border-bottom: 2px solid #ffffff; margin-bottom: 5px;"
+                class="skin-color"
+                v-t="'sdk.print.labels'">
+              </label>
+              <div
+                class="labels-input-content"
+                style="max-height: 120px; overflow-y: auto"
+              >
+                <span
+                  v-for="label in state.labels"
+                  :key="label.id"
+                >
                   <label :for="`g3w_label_id_input_${label.id}`">{{label.id}}</label>
-                  <input :id="`g3w_label_id_input_${label.id}`" class="form-control" v-model="label.text"/>
+                  <input
+                    :id="`g3w_label_id_input_${label.id}`"
+                    class="form-control"
+                    v-model="label.text"/>
                 </span>
               </div>
             </div>
           </template>
         </div>
-        <div class="box-footer" style="background-color: transparent">
+        <div
+          class="box-footer"
+          style="background-color: transparent"
+        >
           <span>
             <button
               id="printbutton"
@@ -99,7 +141,8 @@
               class="sidebar-button-run btn"
               v-disabled="button.disabled"
               @click.stop.prevent="print"
-              v-download v-t="'create_print'">
+              v-download
+              v-t="'create_print'">
             </button>
           </span>
         </div>
@@ -121,10 +164,10 @@ export default {
     return {
       state: null,
       /** @since 3.8.7 **/
-      templateChanged: false,  // useful to redraw component related to change template
+      templateChanged: false,  // useful to a redrawn component related to change template
       button: {
         class: "btn-success",
-        type:"stampa",
+        type :"print",
         disabled: false
       }
     }
@@ -135,14 +178,22 @@ export default {
   },
   computed: {
     disabled() {
-      return this.state.output.loading || (!!this.state.atlas && this.state.atlasValues.length === 0);
+      return this.state.output.loading || (!!this.state.atlas &&  0 === this.state.atlasValues.length);
+    },
+    /**
+     * @since v3.10.0
+     * Check if current print has maps (only alphanumerical data)
+     * @return {boolean}
+     */
+    noMaps() {
+      return 0 === this.state.maps.length;
     }
   },
   methods: {
-    setDisabledPrintButton(bool=false){
+    setDisabledPrintButton(bool=false) {
       this.button.disabled = bool;
     },
-    setAtlasValues(values=[]){
+    setAtlasValues(values=[]) {
       this.state.atlasValues = values;
     },
     async onChangeTemplate() {

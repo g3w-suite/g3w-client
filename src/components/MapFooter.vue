@@ -11,7 +11,7 @@
 
 <script>
   import MapFooterRight from 'components/MapFooterRight.vue';
-  import MapFooterLeft from 'components/MapFooterLeft.vue';
+  import MapFooterLeft  from 'components/MapFooterLeft.vue';
 
   export default {
     name: 'Mapfooter',
