@@ -254,6 +254,9 @@ export default {
       traverse(this.layerstrees[0].tree[0].nodes, params.layerstree);
 
       /** @TODO send to server state of current projects  **/
+
+      console.log(params)
+
     }
   },
   watch: {
