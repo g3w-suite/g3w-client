@@ -243,7 +243,7 @@
     async created() {
       this.unwatch = [];
 
-      for (const tab of this.tabs) {
+      this.tabs.forEach((tab , i) => {
 
         if (tab.visibility_expression && undefined === tab.visible) {
           this.$set(tab, 'visible', 0);
@@ -272,7 +272,7 @@
 
         this.ids.push(`tab_${getUniqueDomId()}`);
 
-      }
+      });
 
       this.root_tabs = [];
 
