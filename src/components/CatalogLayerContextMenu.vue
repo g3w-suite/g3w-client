@@ -552,23 +552,63 @@
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
 
-  import LayerOpacityPicker from "components/LayerOpacityPicker.vue";
+  import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
+  import ChooseLayerFields             from 'components/ChooseLayerFields.vue';
+  import { CatalogEventBus as VM }     from 'app/eventbus';
+  import CatalogLayersStoresRegistry   from 'store/catalog-layers';
+  import ApplicationService            from 'services/application';
+  import GUI                           from 'services/gui';
 
-  import { CatalogEventBus as VM } from 'app/eventbus';
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import ApplicationService from 'services/application';
-  import GUI from 'services/gui';
-
-  const { t }             = require('core/i18n/i18n.service');
-  const shpwrite          = require('shp-write');
-  const TableComponent    = require('gui/table/vue/table');
-  const { downloadFile }  = require('utils');
-
+  const { t }                          = require('core/i18n/i18n.service');
+  const shpwrite                       = require('shp-write');
+  const TableComponent                 = require('gui/table/vue/table');
+  const { downloadFile }               = require('utils');
 
   const OFFSETMENU = {
     top: 50,
     left: 15
   };
+
+  /**
+   * Show ChooseLayerFields modal
+   *
+   * @listens ChooseLayerFields~selected-fields since 3.9.0
+   * @fires GUI~before_download_layer           since 3.9.0
+   */
+  function _choose_layer_fields_to_download(fields = []) {
+
+    /** @TODO error handling */
+    // skip when ..
+    // if (!fields.length) {
+    // GUI.emit('invalid_layer_fields_to_download');
+    // }
+
+    const modal = new (Vue.extend(ChooseLayerFields))({ propsData: { fields }});
+
+    const dialog = GUI.showModalDialog({
+      message: modal.$mount().$el,
+      closeButton: false,
+      buttons: {
+        ok: {
+          label: 'Ok',
+          className: 'btn-success',
+          callback() {
+            GUI.emit('before_download_layer', fields.filter(field => field.selected))
+          }
+        }
+      }
+    });
+
+    /**
+     * @TODO find a better way to set focus.
+     * Once shown, need to be clicked otherwise,
+     * the user need click twice "ok button"
+     * when initial selection is not changed
+     */
+    dialog.on("shown.bs.modal", evt => evt.target.click());
+
+    modal.$on('selected-fields', bool => dialog.find('button.btn-success').prop('disabled', !bool));
+  }
 
   export default {
     name: 'Cataloglayermenu',
@@ -777,86 +817,99 @@
         }, 600);
       },
 
+      /**
+       * @since v3.10.0
+       * @param type
+       * @param layerId
+       * @param options
+       * @private
+       */
+      _downloadFile({type, layerId, options={}}) {
+        const caller_download_id = ApplicationService.setDownload(true);
+        this.layerMenu.loading[type] = true;
+        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        layer.downloadAsFile(type, options)
+          .catch(err => {
+            console.warn(err);
+            GUI.notify.error(t("info.server_error"))
+          })
+          .finally(() => {
+            this.layerMenu.loading[type] = false;
+            ApplicationService.setDownload(false, caller_download_id);
+            this._hideMenu();
+          })
+      },
+
+      /**
+       * @FIXME add description
+       * @param layerId
+       * @param map_extent
+       */
       downloadGeoTIFF(layerId, map_extent=false) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.geotiff = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getGeoTIFF({
-          data:  map_extent ? {
-            map_extent: GUI.getService('map').getMapExtent().toString()
-          } : undefined
+        this._downloadFile({
+          type: 'geotiff',
+          layerId,
+          options: {
+            data: map_extent ? {
+              map_extent: GUI.getService('map').getMapExtent().toString()
+            } : undefined
+          }
         })
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.geotiff = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadShp(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.shp = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getShp()
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.shp = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'shp',
+          layerId,
+        })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadCsv(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.csv = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getCsv()
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.csv = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'csv',
+          layerId,
+        })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadXls(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.xls = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getXls()
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.xls = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'xls',
+          layerId,
+        })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadGpx(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.gpx = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getGpx()
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.gpx = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'gpx',
+          layerId,
+        })
       },
 
+      /**
+       * @FIXME add description
+       * @param layerId
+       */
       downloadGpkg(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
-        this.layerMenu.loading.gpkg = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-        layer.getGpkg()
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.layerMenu.loading.gpkg = false;
-            ApplicationService.setDownload(false, caller_download_id);
-            this._hideMenu();
-          })
+        this._downloadFile({
+          type: 'gpkg',
+          layerId,
+        })
       },
 
       changeLayerMapPosition({position, layer}) {
@@ -1081,7 +1134,9 @@
           menu.maxHeight = height >= maxH ? maxH : null;
           menu.overflowY = height >= maxH ? 'scroll' : null;
           menu.top = (height >= maxH ? contextmenu : menuentry).offset().top;
-          menu.left = this.isMobile() ? 0 :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
+          menu.left = this.isMobile()
+            ? 0
+            :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
           await this.$nextTick();
         }
         menu.show = bool;
@@ -1215,6 +1270,7 @@
     created() {
       VM.$on('show-layer-context-menu', this.onShowLayerContextMenu );
       VM.$on('hide-layer-context-menu', this._hideMenu)
+      GUI.on('choose_layer_fields_to_download', _choose_layer_fields_to_download);
     },
 
   };

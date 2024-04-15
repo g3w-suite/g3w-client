@@ -542,6 +542,12 @@ export default {
       no_data: "Ei tietoja",
       nodatafilterd: "Vastaavia tietueita ei löytynyt",
       infoFiltered: "(filtered from _MAX_ total records)"
-    }
+    },
+    download: {
+      fields: {
+        all: 'All',
+        title: 'Select fields to download'
+      }
+    },
   },
 };

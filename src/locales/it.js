@@ -548,5 +548,11 @@ export default {
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
     },
+    download: {
+      fields: {
+        all: 'Tutti',
+        title: 'Seleziona campi da scaricare'
+      }
+    },
   },
 };
