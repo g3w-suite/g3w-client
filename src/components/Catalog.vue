@@ -112,7 +112,7 @@
                 class="img-responsive img-thumbnail baselayer"
                 :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}"
               >
-              <div class="baseselayer-text text-center">{{ baselayer.title }}</div>
+              <div class="baseselayer-text text-center g3w-long-text">{{ baselayer.title }}</div>
             </li>
             <li @click.stop="setBaseLayer(null)">
               <img
@@ -120,7 +120,7 @@
                 class="img-responsive img-thumbnail baselayer"
                 :style="{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
               >
-              <div class="baseselayer-text text-center" v-t="'nobaselayer'"></div>
+              <div class="baseselayer-text text-center g3w-long-text" v-t="'nobaselayer'"></div>
             </li>
           </ul>
         </div>
