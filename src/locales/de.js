@@ -480,7 +480,7 @@ export default {
       link_button: "Öffnen"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Position kann nicht bestimmt werden"
       },
       geocoding: {
