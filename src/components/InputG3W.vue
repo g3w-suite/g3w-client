@@ -5,36 +5,44 @@
 
 <template>
   <div v-if="state.visible">
-    <div v-if="state.type !== 'child'">
-      <component
-        @changeinput="changeInput"
-        :changeInput="changeInput"
-        @addinput="addToValidate"
-        :addToValidate="addToValidate"
-        @removeinput="removeToValidate"
-        :removeToValidate="removeToValidate"
-        :state="state"
-        :is="type">
-      </component>
-      <span class="divider"></span>
-    </div>
-    <div v-else style="border-top: 2px solid" class="skin-border-color field-child">
-      <h4 style="font-weight: bold">{{ state.label}}</h4>
+    <div v-if = "is_child"
+      style   = "border-top: 2px solid"
+      class   = "skin-border-color field-child"
+    >
+      <h4 style="font-weight: bold"> {{ state.label}} </h4>
       <div> {{ state.description }} </div>
-      <g3w-input v-for="field in state.fields" :key="field.name"
-        :state="field"
-        @changeinput="changeInput"
-        :changeInput="changeInput"
-        @addinput="addToValidate"
-        :addToValidate="addToValidate"
-        @removeinput="removeToValidate"
-        :removeToValidate="removeToValidate">
-      </g3w-input>
+
+      <g3w-input v-for="field in state.fields"
+       :key              = "field.name"
+       :state            = "field"
+       @changeinput      = "changeInput"
+       :changeInput      = "changeInput"
+       @addinput         = "addToValidate"
+       :addToValidate    = "addToValidate"
+       @removeinput      = "removeToValidate"
+       :removeToValidate = "removeToValidate"/>
+
+    </div>
+
+    <div v-else>
+
+      <component
+        @changeinput      = "changeInput"
+        :changeInput      = "changeInput"
+        @addinput         = "addToValidate"
+        :addToValidate    = "addToValidate"
+        @removeinput      = "removeToValidate"
+        :removeToValidate = "removeToValidate"
+        :state            = "state"
+        :is               = "type"/>
+      <span class="divider"></span>
+
     </div>
   </div>
 </template>
 
 <script>
+
 const Inputs = require('gui/inputs/inputs');
 
 export default {
@@ -43,11 +51,11 @@ export default {
     state: {
       required: true
     },
-    addToValidate:{
+    addToValidate: {
       type: Function,
       required: true
     },
-    removeToValidate:{
+    removeToValidate: {
       type: Function,
       required: true
     },
@@ -60,15 +68,23 @@ export default {
     ...Inputs
   },
   computed: {
+    is_child() {
+      return 'child' === this.state.type ;
+    },
     type() {
-      if (this.state.type !== 'child')
-        return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
+      if (!this.is_child) {
+        return this.state.input.type
+          ? `${this.state.input.type}_input`
+          : `${this.state.type}_input`;
+      }
+
     }
   },
   created() {
     //TEMPORARY
-    if (this.state.type !== 'child' && !this.state.input.options)
+    if (!this.is_child && !this.state.input.options)  {
       this.state.input.options = {};
+    }
   }
 };
 </script>

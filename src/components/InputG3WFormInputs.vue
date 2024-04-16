@@ -7,20 +7,27 @@
   <form class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
-          <template v-for="field in state.fields">
-            <g3w-input
-              :state="field"
-              :addToValidate="addToValidate"
-              :changeInput="changeInput"
-              @addToValidate="addToValidate"
-              @changeInput="changeInput">
-            </g3w-input>
-          </template>
+        <g3w-input
+          v-for             = "field in state.fields"
+          :state            = "field"
+          :addToValidate    = "addToValidate"
+          :changeInput      = "changeInput"
+          :removeToValidate = "removeToValidate"
+          @addToValidate    = "addToValidate"
+          @changeInput      = "changeInput"/>
       </div>
-      <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">
+
+      <div
+        v-if="show_required_field_message"
+        id="g3w-for-inputs-required-inputs-message"
+      >
         <span class="hide-cursor-caret-color">*</span>
-        <span class="hide-cursor-caret-color" v-t="'sdk.form.footer.required_fields'"></span>
+        <span
+          class="hide-cursor-caret-color"
+          v-t="'sdk.form.footer.required_fields'">
+        </span>
       </div>
+
     </div>
   </form>
 </template>
@@ -39,6 +46,9 @@ export default {
     },
     addToValidate: {
       type: Function
+    },
+    removeToValidate: {
+      type: Function,
     },
     changeInput: {
       type: Function
