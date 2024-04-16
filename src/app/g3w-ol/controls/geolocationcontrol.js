@@ -83,7 +83,7 @@ proto._showMarker = function({map, coordinates, show=true}) {
 };
 
 /**
- * @since 3.9.0
+ * @since 3.10.0
  */
 proto.geolocate = function() {
   const map = this.getMap();
