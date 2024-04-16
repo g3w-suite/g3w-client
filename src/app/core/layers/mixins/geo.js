@@ -499,7 +499,13 @@ proto.isCached = function() {
 };
 
 proto.getCacheUrl = function() {
-  if (this.isCached()) return this.config.cache_url;
+  // mapproxy provider → cache_url already contains "{z}/{x}/{-y}.png"
+  if (this.isCached() && this.config.cache_provider && 'mapproxy' === this.config.cache_provider) {
+    return this.config.cache_url;
+  }
+  if (this.isCached()) {
+    return `${this.config.cache_url}/{z}/{x}/{y}.png`;
+  }
 };
 
 // return if layer has inverted axis

@@ -357,7 +357,7 @@ export default {
       }
 
       // resize after popping child relation 
-      GUI.on('pop-content', setTimeout(() => this.resize()));
+      GUI.on('pop-content', () => setTimeout(() => this.resize()));
     },
 
     /**
