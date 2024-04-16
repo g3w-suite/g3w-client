@@ -482,8 +482,7 @@ export default {
       link_button: "Ouvrir"
     },
     mapcontrols: {
-      geolocations: {
-        title: "",
+      geolocation: {
         error: "Votre position ne peut être calculée."
       },
       geocoding: {

@@ -481,7 +481,7 @@ export default {
       link_button: "Avaa"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Sijaintiasi ei saada"
       },
       geocoding: {
