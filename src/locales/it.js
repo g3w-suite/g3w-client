@@ -488,9 +488,8 @@ export default {
       link_button: "Apri"
     },
     mapcontrols: {
-      geolocations: {
-        title: "",
-        error: "Non è possibile calcolare la tua posizione."
+      geolocation: {
+        error: "Non è possibile ottenere la tua posizione."
       },
       geocoding: {
         choose_layer: "Scegli un livello in cui aggiungere questa funzionalità",

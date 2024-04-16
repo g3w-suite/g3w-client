@@ -483,7 +483,7 @@ export default {
       link_button: "Open"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Can't get your position"
       },
       geocoding: {

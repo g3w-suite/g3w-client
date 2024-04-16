@@ -483,7 +483,7 @@ export default {
       link_button: "Öppna"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Du kan inte lokaliseras"
       },
       geocoding: {
