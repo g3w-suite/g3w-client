@@ -15,7 +15,7 @@
         ref   = "g3w-map-theme-ancor"
         style = "padding: 0; margin-bottom: 5px;"
       >
-        <section style="display: flex;  flex-wrap: wrap; align-items: center; padding: 5px;">
+        <section style="display: flex; flex-wrap: wrap; align-items: center; padding: 5px;">
           <i
             style  = "padding: 3px;"
             :class = "g3wtemplate.getFontClass('caret-down')">
@@ -59,7 +59,7 @@
                 @click.stop             = "showSaveMapThemeForm = false"
                 :class                  = "g3wtemplate.getFontClass('close')"
                 class                   = "sidebar-button sidebar-button-icon"
-                style                   = "padding: 5px; margin: 3px; cursor: pointer;"
+                style                   = "padding: 2px; margin: 2px;"
               ></span>
             </div>
             <div
@@ -131,7 +131,7 @@
                     @click.stop = "showSaveMapThemeForm = !showSaveMapThemeForm"
                     :class      = "g3wtemplate.getFontClass('plus')"
                     class       = "action sidebar-button sidebar-button-icon"
-                    style       = "margin-left: auto; padding: 5px; cursor:pointer;"
+                    style       = "margin-left: auto; padding: 5px;"
                   >
                   </span>
                 </div>
@@ -161,7 +161,7 @@
                     @click.stop = "deleteTheme(map_theme.theme)"
                     :class      = "g3wtemplate.getFontClass('trash')"
                     class       = "action sidebar-button sidebar-button-icon"
-                    style       = "color: red; padding: 5px; cursor: pointer;"
+                    style       = "color: red; padding: 5px;"
                   ></span>
                 </div>
               </li>
