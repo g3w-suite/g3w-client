@@ -378,6 +378,9 @@ export default {
         choose_map_theme_input_label: 'Numele noii tema',
         project_map_theme : 'Tema de proiect',
         user_map_theme: "Tema utilizator",
+        question_delete_map_theme: "Do you want delete the theme?",
+        delete_map_theme: "Theme deleted successfully",
+        saved_map_theme: "theme saved successfully",
         menu: {
           layerposition: 'Poziție Strat',
           setwmsopacity: "Alege Opacitatea",

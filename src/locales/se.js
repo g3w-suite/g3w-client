@@ -378,6 +378,9 @@ export default {
         choose_map_theme_input_label: 'Namn på det nya temat',
         project_map_theme : 'Temat de proiect',
         user_map_theme: "Temat utilizator",
+        question_delete_map_theme: "Do you want delete the theme?",
+        delete_map_theme: "Theme deleted successfully",
+        saved_map_theme: "theme saved successfully",
         menu: {
           layerposition: 'Layer Position',
           setwmsopacity: "Set Opacity",

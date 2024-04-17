@@ -380,6 +380,9 @@ export default {
         choose_map_theme_input_label: 'Nome del nuovo tema',
         project_map_theme : 'Temi Progetto',
         user_map_theme: 'Temi Utente',
+        question_delete_map_theme: "Vuoi cancellare il tema ?",
+        delete_map_theme: "Tema cancellato con successo",
+        saved_map_theme: "Tema salvato con successo",
         menu: {
           layerposition: 'Posizione Layer',
           setwmsopacity: "Cambia opacità",
