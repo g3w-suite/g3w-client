@@ -92,10 +92,9 @@
             <ul style="padding: 0">
               <li>
                 <div
-                  style = "font-weight: bold; padding: 5px 3px"
+                  style = "font-weight: bold; padding: 3px; border-bottom: 1px solid #ffffff;"
                   v-t   = "'sdk.catalog.project_map_theme'">
                 </div>
-                <divider/>
               </li>
               <li style="padding: 5px 5px 5px 17px;">
                   <div
@@ -124,7 +123,15 @@
           <li id="g3w-catalog-views-user">
             <ul style="padding: 0">
               <li>
-                <div style="font-weight: bold; padding: 5px 3px; display: flex; justify-content: space-between">
+                <div
+                  style="
+                    font-weight: bold;
+                     padding: 5px 3px;
+                     display: flex;
+                     justify-content: space-between;
+                     align-self: baseline;
+                     border-bottom: 1px solid #ffffff;
+                  ">
                   <span v-t="'sdk.catalog.user_map_theme'"></span>
                   <!-- Add theme button -->
                   <span
@@ -135,7 +142,6 @@
                   >
                   </span>
                 </div>
-                <divider/>
               </li>
               <li style="padding: 5px 5px 5px 17px">
                 <div
