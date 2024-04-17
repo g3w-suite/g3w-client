@@ -18,6 +18,7 @@
     <span
        v-if="bookmark.removable"
        @click.stop="$emit('remove-bookmark', bookmark.id)"
+       class="sidebar-button sidebar-button-icon"
        style="color: red; margin: 5px; cursor: pointer">
       <i :class="g3wtemplate.getFontClass('trash')"></i>
     </span>
