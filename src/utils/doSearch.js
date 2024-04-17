@@ -23,8 +23,8 @@ export async function doSearch({
   state
 } = {}) {
 
-  queryUrl        = undefined !== queryUrl        ? queryUrl        : state.queryurl;
-  show            = undefined !== show            ? show            : 'search' === state.type;
+  queryUrl = undefined !== queryUrl ? queryUrl : state.queryurl;
+  show     = undefined !== show     ? show     : 'search' === state.type;
 
   state.searching = true;
 
@@ -35,8 +35,8 @@ export async function doSearch({
       inputs: {
         layer: state.search_layers,
         filter: filter || createFilterFormInputs({
-          layer:           state.search_layers,
-          inputs:          state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+          layer:  state.search_layers,
+          inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
         }),
         queryUrl,
         formatter: 1,
