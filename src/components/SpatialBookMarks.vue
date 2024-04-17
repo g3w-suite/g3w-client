@@ -21,7 +21,7 @@
             @click.stop="showaddform = false"
             :class="g3wtemplate.getFontClass('close')"
             class="sidebar-button sidebar-button-icon"
-            style="padding: 5px; margin: 3px;"
+            style="padding: 2px; margin: 2px;"
           >
           </span>
 
