@@ -312,8 +312,7 @@ function ProjectsRegistry() {
           d.resolve(serverConfig);
           return;
         }
-
-        const map_theme = serverConfig.map_themes.find(({theme}) => theme === options.map_theme);
+        const map_theme = Object.values(serverConfig.map_themes).flat().find(({ theme }) => theme === options.map_theme);
 
         /** @TODO add description */
         if (map_theme) {
