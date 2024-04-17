@@ -99,7 +99,7 @@
               </li>
               <li style="padding: 5px 5px 5px 17px;">
                   <div
-                    v-for = "(map_theme, index) in map_themes"
+                    v-for = "(map_theme, index) in map_themes.project"
                     :key  = "map_theme.theme"
                   >
                     <input
@@ -139,23 +139,30 @@
               </li>
               <li style="padding: 5px 5px 5px 17px">
                 <div
-                  v-for="(map_theme, index) in map_themes"
+                  v-for="(map_theme, index) in map_themes.custom"
                   :key="map_theme.theme"
+                  style = "display: flex; justify-content: space-between;"
                 >
-                  <input
-                    type     = "radio"
-                    name     = "radio"
-                    :id      = "`g3w-map_theme-${index}-user`"
-                    :value   = "map_theme.theme"
-                    v-model  = "current_map_theme"
-                    class    = "magic-radio"
-                    :checked = "map_theme.default">
-                  <label
-                    :for  = "`g3w-map_theme-${index}-user`"
-                    style = "display: flex; justify-content: space-between;"
-                  >
-                    <span class="g3w-long-text">{{ map_theme.theme }}</span>
-                  </label>
+                  <span>
+                    <input
+                      type     = "radio"
+                      name     = "radio"
+                      :id      = "`g3w-map_theme-${index}-user`"
+                      :value   = "map_theme.theme"
+                      v-model  = "current_map_theme"
+                      class    = "magic-radio"
+                      :checked = "map_theme.default">
+                    <label :for = "`g3w-map_theme-${index}-user`">
+                      <span class="g3w-long-text">{{ map_theme.theme }}</span>
+                    </label>
+                  </span>
+
+                  <span
+                    @click.stop = "deleteTheme(map_theme.theme)"
+                    :class      = "g3wtemplate.getFontClass('trash')"
+                    class       = "action sidebar-button sidebar-button-icon"
+                    style       = "color: red; padding: 5px; cursor: pointer;"
+                  ></span>
                 </div>
               </li>
             </ul>
@@ -169,6 +176,9 @@
 <script>
 import ProjectsRegistry from 'store/projects';
 import InputText        from "./InputText.vue";
+import GUI              from "services/gui";
+
+const { t } = require('core/i18n/i18n.service');
 
 /**
  * Attributes to send to server of layerstrees object
@@ -188,15 +198,15 @@ export default {
   },
   props: {
     map_themes: {
-      type: Array,
-      default: []
+      type: Object,
+      default: { project: [], custom: [] }
     },
     layerstrees: {
       type: Array,
     }
   },
   data() {
-    const current_map_theme = this.map_themes.find(mt => mt.default);
+    const current_map_theme = Object.values(this.map_themes).flat().find(mt => mt.default);
     return {
       showSaveMapThemeForm : false,  /**@since 3.10.0 **/
       current_map_theme    : current_map_theme ? current_map_theme.theme : null,
@@ -223,10 +233,7 @@ export default {
      * @since 3.10.0
      */
     save() {
-      const params = {
-        layerstree : [],
-        styles     : {},
-      };
+      const params = { layerstree: [], styles: {} };
       const createTreeItem = (type, node) => {
        return LAYERSTREES_ATTRIBUTES[type]
         .reduce((accumulator, a) => {
@@ -254,8 +261,54 @@ export default {
       traverse(this.layerstrees[0].tree[0].nodes, params.layerstree);
 
       /** @TODO send to server state of current projects  **/
+      ProjectsRegistry.getCurrentProject().saveMapTheme(this.adduserthemeinput.value, params)
+        .then((res) => {
+          if (res.result) {
+            this.map_themes.custom.push({
+             theme: this.adduserthemeinput.value,
+             styles: params.styles
+            });
+            //Show user message success saved map theme
+            GUI.showUserMessage({
+              type: 'success',
+              message: 'sdk.catalog.saved_map_theme',
+              autoclose: true
+            });
 
-      console.log(params)
+            //close dialog
+            this.showSaveMapThemeForm = false;
+
+          }
+        })
+          .catch((e) => {  console.warn(e) })
+
+    },
+    /**
+     * @since 3.10.0
+      * @param theme
+     */
+    deleteTheme(theme) {
+      GUI.dialog.confirm(t('sdk.catalog.question_delete_map_theme'), bool => {
+        if (bool) {
+          ProjectsRegistry.getCurrentProject().deleteMapTheme(theme)
+            .then(res => {
+              if (res.result) {
+                //remove theme from custom map themes
+                this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
+                  //Show user message success delete map theme
+                  GUI.showUserMessage({
+                  type: 'success',
+                  message: 'sdk.catalog.delete_map_theme',
+                  autoclose: true
+                })
+                  //in case of delete current map theme set current_map_theme to null
+                if (theme === this.current_map_theme) { this.current_map_theme = null;}
+              }
+            })
+            .catch(e => console.warn(e))
+        }
+      })
+
 
     }
   },
@@ -267,7 +320,8 @@ export default {
       }
     },
     'adduserthemeinput.value'(name) {
-      this.canSave = name ? name.trim() : false;
+      //can save check if value name is set and is not yet set on custom map_theme
+      this.canSave = name ? !this.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
     },
     async showSaveMapThemeForm(bool) {
       this.adduserthemeinput.value = null;

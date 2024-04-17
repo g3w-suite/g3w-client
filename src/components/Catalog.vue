@@ -190,7 +190,7 @@ export default {
      * @returns {boolean} whether to show group toolbar
      */
     showTocTools() {
-      return (this.project.state.map_themes || []).length > 1;
+      return Object.values((this.project.state.map_themes || { project: [], custom: [] })).flat().length > 1;
     },
 
     project() {
