@@ -33,6 +33,7 @@ const Projections = require('g3w-ol/projection/projections');
  * @param config.query_point_tolerance
  * @param config.wps                           array of wps service
  * @param config.bookmarks                     array of bookmarks
+ * @param config.map_themes                    Object {project:[], custom:[]}
  * @param { 'POST' | 'GET' }                   config.ows_method
  * @param { boolean }                          config.wms_use_layer_ids
  * @param { 'ows' | 'api' }                    config.search_endpoint 
@@ -467,7 +468,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
           };
         }
         layerstree[index].checked = node.visible;
-        // if has a style settled
+        // if it has a style settled
         if (node.style) {
           const promise = new Promise((resolve, reject) =>{
             const setCurrentStyleAndResolvePromise = node => {
@@ -496,7 +497,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
     group.checked = checked;
     group.expanded = expanded;
   });
-  return changes // eventually information about changes (for example style etc..)
+  return changes // eventually, information about changes (for example style etc..)
 };
 
 /**
@@ -504,12 +505,36 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
  */
 proto.getMapThemeFromThemeName = async function(map_theme) {
   // get map theme configuration from map_themes project config
-  const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
-  // check if mapThemeConfig exist and if has layerstree (property get from server with a specific api)
+  const mapThemeConfig = Object.values(this.state.map_themes).flat().find(map_theme_config => map_theme === map_theme_config.theme );
+  // check if mapThemeConfig exist and if it has layerstree (property gets from server with a specific api)
   if (mapThemeConfig && undefined === mapThemeConfig.layerstree ) {
     mapThemeConfig.layerstree =  await this.getMapThemeConfiguration(map_theme);
   }
   return mapThemeConfig;
+};
+
+/**
+ * Save custom user map theme
+ * @since v3.10
+ */
+proto.saveMapTheme = function(theme, params = {}) {
+  //In case of no name provide skip
+  if (!theme) {  return Promise.reject() }
+  return XHR.post({
+    url:         `${this.urls.map_themes}${encodeURIComponent(theme)}/`,
+    contentType: 'application/json',
+    data:        JSON.stringify(params),
+  });
+};
+
+/**
+ * @since v3.10.0
+ * @param theme
+ */
+proto.deleteMapTheme = async function(theme) {
+  //In case of no name provide skip
+  if (!theme) { return Promise.reject() }
+  return XHR.delete({url:`${this.urls.map_themes}${encodeURIComponent(theme)}/`});
 };
 
 /**
