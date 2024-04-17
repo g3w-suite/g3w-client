@@ -75,7 +75,7 @@
                 class       = "sidebar-button-run btn btn-block"
                 v-t         = "'add'"
                 @click.stop = "save"
-                v-disabled  = "!canSave">
+                v-disabled  = "!adduserthemeinput.validate.valid">
               </button>
             </div>
           </li>
@@ -211,7 +211,6 @@ export default {
       showSaveMapThemeForm : false,  /**@since 3.10.0 **/
       current_map_theme    : current_map_theme ? current_map_theme.theme : null,
       collapsed            : 'collapsed' === ProjectsRegistry.getCurrentProject().state.toc_themes_init_status,
-      canSave              :  false, /** @since 3.10.0 */
       adduserthemeinput: {
         name:     'add-user-theme',
         label:    'sdk.catalog.choose_map_theme_input_label',
@@ -301,7 +300,7 @@ export default {
                   message: 'sdk.catalog.delete_map_theme',
                   autoclose: true
                 })
-                  //in case of delete current map theme set current_map_theme to null
+                  //in the case of deleted current map theme set current_map_theme to null
                 if (theme === this.current_map_theme) { this.current_map_theme = null;}
               }
             })
@@ -321,7 +320,10 @@ export default {
     },
     'adduserthemeinput.value'(name) {
       //can save check if value name is set and is not yet set on custom map_theme
-      this.canSave = name ? !this.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
+      setTimeout(() => {
+        this.adduserthemeinput.validate.valid = name ? !this.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
+      }, 200)
+
     },
     async showSaveMapThemeForm(bool) {
       this.adduserthemeinput.value = null;
