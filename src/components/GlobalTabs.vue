@@ -181,7 +181,7 @@
     },
     async created() {
       this.unwatch = [];
-      this.tabs.forEach((tab , i) => {
+      this.tabs.forEach(async (tab , i) => {
         if (tab.visibility_expression) {
           if (undefined === tab.visible) { this.$set(tab, 'visible', 0) }
           await this.setVisibility(tab);
