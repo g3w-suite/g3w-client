@@ -5,44 +5,42 @@
 
 <template>
   <ul
-    id="g3w-spatial-bookmarks"
-    class="treeview-menu g3w-spatial-bookmarks menu-items"
-    :class="{'g3w-tools': !showaddform}"
+    id     = "g3w-spatial-bookmarks"
+    class  = "treeview-menu g3w-spatial-bookmarks menu-items"
+    :class = "{'g3w-tools': !showaddform}"
   >
 
     <!-- ADD NEW BOOKMARK (FORM) -->
     <template v-if="showaddform">
-
       <li>
         <div style="display: flex; justify-content: end">
-
           <span
-            v-t-tooltip:left.create="'close'"
-            @click.stop="showaddform = false"
-            :class="g3wtemplate.getFontClass('close')"
-            class="sidebar-button sidebar-button-icon"
-            style="padding: 2px; margin: 2px;"
-          >
-          </span>
-
+            v-t-tooltip:left.create  = "'close'"
+            @click.stop              = "showaddform = false"
+            :class                   = "g3wtemplate.getFontClass('close')"
+            class                    = "sidebar-button sidebar-button-icon"
+            style                    = "padding: 2px; margin: 2px;"
+          ></span>
         </div>
 
-        <helpdiv message="sdk.spatialbookmarks.helptext"/>
+        <helpdiv message="sdk.spatialbookmarks.helptext" />
+
         <div
-          class="container add-bookmark-input"
-          style="padding: 5px; width: 100%"
+          class = "container add-bookmark-input"
+          style = "padding: 5px; width: 100%"
         >
           <input-text
-            ref="add_bookmark_input"
-            :state="addbookmarkinput" />
+            ref    = "add_bookmark_input"
+            :state = "addbookmarkinput"
+          />
         </div>
-
         <div style="margin-top: 5px;">
           <button
-            @click.stop="addBookMark"
-            class="sidebar-button-run btn btn-block"
-            v-t="'add'"
-            v-disabled="!addbookmarkinput.validate.valid"></button>
+            @click.stop = "addBookMark"
+            class       = "sidebar-button-run btn btn-block"
+            v-t         = "'add'"
+            v-disabled  = "!addbookmarkinput.validate.valid"
+          ></button>
         </div>
       </li>
     </template>
@@ -61,26 +59,28 @@
 
       <div
         class="content-bookmarks"
-        style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
+      >
         <span
-          style="font-weight: bold; color: #ffffff"
-          v-t="'sdk.spatialbookmarks.sections.user.title'">
-        </span>
-
+          style = "font-weight: bold; color: #ffffff"
+          v-t   = "'sdk.spatialbookmarks.sections.user.title'"
+        ></span>
         <span
-          @click.stop="showAddForm"
-          style="padding: 5px; cursor: pointer;"
-          class="sidebar-button sidebar-button-icon"
-          :class="g3wtemplate.getFontClass('plus')"
+          @click.stop = "showAddForm"
+          style       = "padding: 5px; cursor: pointer;"
+          class       = "sidebar-button sidebar-button-icon"
+          :class      = "g3wtemplate.getFontClass('plus')"
         >
         </span>
       </div>
+
       <spatial-book-mark-item
-        v-for="bookmark in user.bookmarks"
-        @remove-bookmark="removeBookMark"
-        :bookmark="bookmark"/>
+        v-for            = "bookmark in user.bookmarks"
+        @remove-bookmark = "removeBookMark"
+        :bookmark        = "bookmark"
+      />
     </template>
+
   </ul>
 </template>
 
