@@ -288,7 +288,7 @@ export default {
     },
 
     'custom_theme.value'(name) {
-      //can save check if value name is set and is not yet set on custom map_theme
+      // can save check if value name is set and is not yet set on custom map_theme
       setTimeout(() => {
         this.custom_theme.validate.valid = name ? !this.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
       }, 200)
@@ -297,12 +297,10 @@ export default {
 
     async show_form(bool) {
       this.custom_theme.value = null;
+      // remove all "col-sm-12" classes so input is adapted to 100% width
       if (bool) {
         await this.$nextTick();
-        //need to remove all class so input is adapted to 100% width
-        for (let i = 0; i < this.$refs.add_map_theme_input.$el.children.length; i++) {
-          this.$refs.add_map_theme_input.$el.children[i].classList.remove('col-sm-12')
-        }
+        Array.from(this.$refs.add_map_theme_input.$el.children).forEach(child => child.classList.remove('col-sm-12'));
       }
     },
 
