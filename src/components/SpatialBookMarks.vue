@@ -66,10 +66,11 @@
           v-t   = "'sdk.spatialbookmarks.sections.user.title'"
         ></span>
         <span
-          @click.stop = "showAddForm"
-          style       = "padding: 5px; cursor: pointer;"
-          class       = "sidebar-button sidebar-button-icon"
-          :class      = "g3wtemplate.getFontClass('plus')"
+          v-t-tooltip:left.create = "'add'"
+          @click.stop             = "showAddForm"
+          style                   = "padding: 5px; cursor: pointer;"
+          class                   = "sidebar-button sidebar-button-icon"
+          :class                  = "g3wtemplate.getFontClass('plus')"
         >
         </span>
       </div>

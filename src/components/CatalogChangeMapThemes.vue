@@ -100,10 +100,11 @@
                 <span v-t="'sdk.catalog.user_map_theme'"></span>
                 <!-- Add theme button -->
                 <span
-                  @click.stop = "show_form = !show_form"
-                  :class      = "g3wtemplate.getFontClass('plus')"
-                  class       = "action sidebar-button sidebar-button-icon"
-                  style       = "margin-left: auto; padding: 5px;"
+                  v-t-tooltip:left.create = "'add'"
+                  @click.stop             = "show_form = !show_form"
+                  :class                  = "g3wtemplate.getFontClass('plus')"
+                  class                   = "action sidebar-button sidebar-button-icon"
+                  style                   = "margin-left: auto; padding: 5px;"
                 >
                 </span>
               </div>
