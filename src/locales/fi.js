@@ -378,12 +378,12 @@ export default {
         choose_map_theme_input_label: 'Uuden teeman nimi',
         project_map_theme : 'Projektin Themes',
         user_map_theme: 'Käyttäjä Themes',
-        question_delete_map_theme: "Do you want delete the theme?",
-        delete_map_theme: "Theme deleted successfully",
-        saved_map_theme: "theme saved successfully",
+        question_delete_map_theme: "Haluatko poistaa teeman?",
+        delete_map_theme: "Teeman poistaminen onnistui",
+        saved_map_theme: "teeman tallennus onnistui",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Kerroksen sijainti',
+          setwmsopacity: "Aseta Opacity",
           wms: {
             title:"",
             copy: "Paina tästä kopioidaksesi url:n.",

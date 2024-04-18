@@ -378,11 +378,11 @@ export default {
         choose_map_theme_input_label: 'Name des neuen Themes',
         project_map_theme : 'Projekt Themes',
         user_map_theme: 'Benutzer Themes',
-        question_delete_map_theme: "Do you want delete the theme?",
-        delete_map_theme: "Theme deleted successfully",
-        saved_map_theme: "theme saved successfully",
+        question_delete_map_theme: "Möchten Sie das Thema löschen??",
+        delete_map_theme: "Theme erfolgreich gelöscht",
+        saved_map_theme: "Thema erfolgreich gespeichert",
         menu: {
-          layerposition: 'Position des Layers',
+          layerposition: 'Position der Ebenen',
           setwmsopacity: "Opazität einstellen",
           wms: {
             title:"",

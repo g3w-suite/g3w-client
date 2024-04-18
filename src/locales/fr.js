@@ -378,12 +378,12 @@ export default {
         choose_map_theme_input_label: 'Nom du nouveau thème',
         project_map_theme : 'Thème du projet',
         user_map_theme: "Thème de l'utilisateur",
-        question_delete_map_theme: "Do you want delete the theme?",
-        delete_map_theme: "Theme deleted successfully",
-        saved_map_theme: "theme saved successfully",
+        question_delete_map_theme: "Voulez-vous supprimer le thème ?",
+        delete_map_theme: "Thème supprimé avec succès",
+        saved_map_theme: "thème enregistré avec succès",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Position du calque',
+          setwmsopacity: "Définir l'opacité",
           wms: {
             title:"",
             copy: "Cliquez ici pour copier l'url",
