@@ -221,9 +221,6 @@
       })
     },
 
-    /** @FIXME remove unusued method? */
-    async mounted() {}
-
   };
 </script>
 
