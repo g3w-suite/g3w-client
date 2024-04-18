@@ -181,9 +181,11 @@ export default {
       return this.state.output.loading || (!!this.state.atlas &&  0 === this.state.atlasValues.length);
     },
     /**
-     * @since v3.10.0
      * Check if current print has maps (only alphanumerical data)
-     * @return {boolean}
+     * 
+     * @returns { boolean }
+     * 
+     * @since v3.10.0
      */
     noMaps() {
       return 0 === this.state.maps.length;

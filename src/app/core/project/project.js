@@ -515,7 +515,8 @@ proto.getMapThemeFromThemeName = async function(map_theme) {
 
 /**
  * Save custom user map theme
- * @since v3.10
+ * 
+ * @since 3.10
  */
 proto.saveMapTheme = function(theme, params = {}) {
   //In case of no name provide skip
@@ -528,8 +529,9 @@ proto.saveMapTheme = function(theme, params = {}) {
 };
 
 /**
- * @since v3.10.0
  * @param theme
+ * 
+ * @since 3.10.0
  */
 proto.deleteMapTheme = async function(theme) {
   //In case of no name provide skip

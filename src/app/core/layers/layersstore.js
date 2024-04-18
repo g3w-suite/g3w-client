@@ -323,14 +323,14 @@ proto._traverseLightLayersTree = function(nodes, layerstree, tocLayersId) {
     if (null !== node.nodes && undefined !== node.nodes) {
       lightlayer = ({
         ...lightlayer,
-        name: node.name, /** since 3.10.0 **/
+        name: node.name, /** @since 3.10.0 **/
         title: node.name,
         groupId: uniqueId(),
         root: false,
         nodes: [],
         checked: node.checked,
         mutually_exclusive: node["mutually-exclusive"],
-        'mutually-exclusive': node["mutually-exclusive"], /** @since v3.10.0 */
+        'mutually-exclusive': node["mutually-exclusive"], /** @since 3.10.0 */
       });
       this._traverseLightLayersTree(node.nodes, lightlayer.nodes, tocLayersId); // recursion step
     }

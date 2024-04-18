@@ -99,10 +99,13 @@ export const XHR = {
   },
   /**
    * Delete request
-   * @since v3.10.0
+   *
    * @param url
    * @param data
-   * @return {Promise<Response>}
+   * 
+   * @returns {Promise<Response>}
+   * 
+   * @since 3.10.0
    */
   async delete({ url, data = {} }) {
     try {
