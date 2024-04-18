@@ -1129,13 +1129,6 @@ proto._setupControls = function() {
         case 'geolocation':
           control = this.createMapControl(controlType);
           control.on('click', throttle(evt => this.showMarker(evt.coordinates)));
-          control.on('error', evt => {
-            GUI.showUserMessage({
-              type: 'warning',
-              message: "mapcontrols.geolocations.error",
-              autoclose: true
-            })
-          });
           break;
 
         case 'addlayers':
