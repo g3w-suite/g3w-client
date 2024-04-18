@@ -41,7 +41,7 @@
         </div>
         <div v-else id="querybuilder-manual" class="margin-between-element" style="display:flex; justify-content: space-between; align-items: stretch">
           <input class="form-control" style="" v-model="manualvalue" style="border: 0;">
-          <span style="cursor: pointer; font-size: 1.2em; background-color: white; color: #000000; padding: 9px;"
+          <span style="cursor: pointer; font-size: 1.2em; background-color: white; color: #000000; padding: 8px;"
                 @click="manualvalue && addToExpression({value: manualvalue, type: 'value'})"
                 :class="g3wtemplate.getFontClass('plus')"></span>
         </div>
