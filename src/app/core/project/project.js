@@ -160,44 +160,43 @@ proto.getQueryFeatureCount = function() {
 };
 
 /**
- *
  * @param mapcontrol
- * @return {*|boolean}
+ * 
+ * @returns { boolean }
  */
 proto.isQueryMultiLayers = function(mapcontrol) {
   return this.state.querymultilayers && -1 !== this.state.querymultilayers.indexOf(mapcontrol);
 };
 
 /**
- *
- * @return {*}
+ * @returns {*}
  */
 proto.getRelations = function() {
   return this.state.relations;
 };
 
 /**
- *
  * @param relationId
- * @return {*}
+ * 
+ * @returns {*}
  */
 proto.getRelationById = function(relationId) {
   return this.state.relations.find(relation => relation.id === relationId);
 };
 
 /**
- *
- * @param layerId
- * @param type
- * @return {*}
+ * @param { Object } opts
+ * @param opts.layerId
+ * @param opts.type
+ * 
+ * @returns {*}
  */
 proto.getRelationsByLayerId = function({layerId, type}={}) {
   return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
 };
 
 /**
- *
- * @return {"POST"|"GET"}
+ * @returns {"POST"|"GET"}
  */
 proto.getOwsMethod = function() {
   return this.state.ows_method;
@@ -309,6 +308,7 @@ proto.getBaseLayers = function() {
  * Get configuration layers array from server config
  * 
  * @param filter property layer config to filter
+ * 
  * @returns {*}
  */
 proto.getConfigLayers = function({key}={}) {
@@ -392,32 +392,28 @@ proto.getQgisVersion = function({type}={}) {
 };
 
 /**
- *
- * @return {*}
+ * @returns {*}
  */
 proto.getProjection = function() {
   return this._projection;
 };
 
 /**
- *
- * @return {*}
+ * @returns {*}
  */
 proto.getWmsUrl = function() {
   return this.state.WMSUrl;
 };
 
 /**
- *
- * @return {string}
+ * @returns {string}
  */
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
 /**
- *
- * @return {*}
+ * @returns {*}
  */
 proto.getLayersStore = function() {
   return this._layersStore;
