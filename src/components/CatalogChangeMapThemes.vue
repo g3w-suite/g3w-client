@@ -8,173 +8,138 @@
     <li
       id    = "g3w-catalog-toc-views"
       class = "treeview sidebaritem skin-border-color"
-      style = "margin-bottom: 5px; border-bottom: 2px solid"
     >
-      <a
-        href  = "#"
-        ref   = "g3w-map-theme-ancor"
-        style = "padding: 0; margin-bottom: 5px;"
-      >
-        <section style="display: flex; flex-wrap: wrap; align-items: center; padding: 5px;">
-          <i
-            style  = "padding: 3px;"
-            :class = "g3wtemplate.getFontClass('caret-down')">
-          </i>
-          <i
-            style  = "padding: 0 0 0 4px;"
-            :class = "g3wtemplate.getFontClass('eye')">
-          </i>
+
+      <a href="#" class="g3w-map-theme-anchor">
+        <section>
+          <i :class="g3wtemplate.getFontClass('caret-down')" style="padding: 3px;"></i>
+          <i :class="g3wtemplate.getFontClass('eye')"        style="padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
           <span
-            v-if  = "current_map_theme"
-            class = "treeview-label g3w-long-text"
-            style = "overflow: hidden; white-space: normal;text-overflow: ellipsis;"
+            v-if  = "active_theme"
+            class = "current_map_theme treeview-label g3w-long-text"
           >
-            <span
-              style   = "color: #cccccc !important;"
-              v-t:pre = "'sdk.catalog.current_map_theme_prefix'"
-            >:</span>
-            <span
-              class = "skin-color"
-              style = "font-size: 1.1em;">{{ current_map_theme }}</span>
+            <span v-t:pre="'sdk.catalog.current_map_theme_prefix'" style="color: #ccc !important;">:</span>
+            <span class="skin-color" style="font-size: 1.1em;">{{ active_theme }}</span>
           </span>
-          <span
-            v-else
-            class = "treeview-label"
-            style = "color: #cccccc !important; font-weight: bold"
-          >
-            <span v-t="'sdk.catalog.choose_map_theme'"></span>
-          </span>
+          <!-- Choose a theme -->
+          <div v-else class="choose_map_theme treeview-label" v-t="'sdk.catalog.choose_map_theme'"></div>
         </section>
       </a>
+
       <!-- ADD NEW MAP THEME (FORM) -->
-      <template v-if="showSaveMapThemeForm">
-        <li
-          style = "border-top: 2px solid; margin: 5px 0"
-          class = "skin-border-color"
-          >
-            <div style="display: flex; justify-content: end; padding-top: 5px;">
-              <span
-                v-t-tooltip:left.create = "'close'"
-                @click.stop             = "showSaveMapThemeForm = false"
-                :class                  = "g3wtemplate.getFontClass('close')"
-                class                   = "sidebar-button sidebar-button-icon"
-                style                   = "padding: 2px; margin: 2px;"
-              ></span>
-            </div>
-            <div
-              class = "container add-map-theme-input"
-              style = "padding: 5px; width: 100%"
-            >
-              <input-text
-                ref    = "add_map_theme_input"
-                :state = "adduserthemeinput" />
-            </div>
-            <div style="margin-top: 5px;">
-              <button
-                class       = "sidebar-button-run btn btn-block"
-                v-t         = "'add'"
-                @click.stop = "save"
-                v-disabled  = "!adduserthemeinput.validate.valid">
-              </button>
-            </div>
-          </li>
-      </template>
-      <template v-else>
-        <ul
-          id     = "g3w-catalog-views"
-          class  = "treeview-menu"
-          :class = "{'menu-open': !collapsed}"
-          :style = "{display: collapsed ? 'none' : 'block'}"
-        >
-          <!-- LIST PROJECT MAP THEME -->
-          <li id="g3w-catalog-views-project">
-            <ul style="padding: 0">
-              <li>
-                <div
-                  style = "font-weight: bold; padding: 3px; border-bottom: 1px solid #ffffff;"
-                  v-t   = "'sdk.catalog.project_map_theme'">
-                </div>
-              </li>
-              <li style="padding: 5px 5px 5px 17px;">
-                  <div
-                    v-for = "(map_theme, index) in map_themes.project"
-                    :key  = "map_theme.theme"
-                  >
-                    <input
-                      type     = "radio"
-                      name     = "radio"
-                      :id      = "`g3w-map_theme-${index}`"
-                      :value   = "map_theme.theme"
-                      v-model  = "current_map_theme"
-                      class    = "magic-radio"
-                      :checked = "map_theme.default">
-                    <label
-                      :for  = "`g3w-map_theme-${index}`"
-                      style = "display: flex; justify-content: space-between;"
-                    >
-                      <span class="g3w-long-text">{{ map_theme.theme }}</span>
-                    </label>
-                  </div>
-              </li>
-              </ul>
-          </li>
-          <!-- LIST USER MAP THEME -->
-          <li id="g3w-catalog-views-user">
-            <ul style="padding: 0">
-              <li>
-                <div
-                  style="
-                    font-weight: bold;
-                     padding: 5px 3px;
-                     display: flex;
-                     justify-content: space-between;
-                     align-self: baseline;
-                     border-bottom: 1px solid #ffffff;
-                  ">
-                  <span v-t="'sdk.catalog.user_map_theme'"></span>
-                  <!-- Add theme button -->
-                  <span
-                    @click.stop = "showSaveMapThemeForm = !showSaveMapThemeForm"
-                    :class      = "g3wtemplate.getFontClass('plus')"
-                    class       = "action sidebar-button sidebar-button-icon"
-                    style       = "margin-left: auto; padding: 5px;"
-                  >
-                  </span>
-                </div>
-              </li>
-              <li style="padding: 5px 5px 5px 17px">
-                <div
-                  v-for="(map_theme, index) in map_themes.custom"
-                  :key="map_theme.theme"
+      <div
+        v-if  = "show_form"
+        class = "add-map-theme skin-border-color"
+      >
+        <div style="display: flex; justify-content: end; padding-top: 5px;">
+          <span
+            v-t-tooltip:left.create = "'close'"
+            @click.stop             = "show_form = false"
+            :class                  = "g3wtemplate.getFontClass('close')"
+            class                   = "sidebar-button sidebar-button-icon"
+            style                   = "padding: 2px; margin: 2px;"
+          ></span>
+        </div>
+        <div class="container add-map-theme-input">
+          <input-text
+            ref    = "add_map_theme_input"
+            :state = "custom_theme"
+          />
+        </div>
+        <div style="margin-top: 5px;">
+          <button
+            class       = "sidebar-button-run btn btn-block"
+            v-t         = "'add'"
+            @click.stop = "save"
+            v-disabled  = "!custom_theme.validate.valid">
+          </button>
+        </div>
+      </div>
+      <ul
+        v-else
+        id     = "g3w-catalog-views"
+        class  = "treeview-menu"
+        :class = "{'menu-open': !collapsed}"
+      >
+        <!-- LIST PROJECT MAP THEME -->
+        <li id="g3w-catalog-views-project">
+          <ul style="padding: 0">
+            <li>
+              <div v-t="'sdk.catalog.project_map_theme'" class="project_map_theme"></div>
+            </li>
+            <li style="padding: 5px 5px 5px 17px;">
+              <div
+                v-for = "(map_theme, i) in map_themes.project"
+                :key  = "map_theme.theme"
+              >
+                <input
+                  type     = "radio"
+                  name     = "radio"
+                  :id      = "`g3w-map_theme-${i}`"
+                  :value   = "map_theme.theme"
+                  v-model  = "active_theme"
+                  class    = "magic-radio"
+                  :checked = "map_theme.default"
+                />
+                <label
+                  :for  = "`g3w-map_theme-${i}`"
                   style = "display: flex; justify-content: space-between;"
                 >
-                  <span>
-                    <input
-                      type     = "radio"
-                      name     = "radio"
-                      :id      = "`g3w-map_theme-${index}-user`"
-                      :value   = "map_theme.theme"
-                      v-model  = "current_map_theme"
-                      class    = "magic-radio"
-                      :checked = "map_theme.default">
-                    <label :for = "`g3w-map_theme-${index}-user`">
-                      <span class="g3w-long-text">{{ map_theme.theme }}</span>
-                    </label>
-                  </span>
-
-                  <span
-                    @click.stop = "deleteTheme(map_theme.theme)"
-                    :class      = "g3wtemplate.getFontClass('trash')"
-                    class       = "action sidebar-button sidebar-button-icon"
-                    style       = "color: red; padding: 5px;"
-                  ></span>
-                </div>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </template>
+                  <span class="g3w-long-text">{{ map_theme.theme }}</span>
+                </label>
+              </div>
+            </li>
+          </ul>
+        </li>
+        <!-- LIST USER MAP THEME -->
+        <li id="g3w-catalog-views-user">
+          <ul style="padding: 0">
+            <li>
+              <div class="user_map_theme">
+                <span v-t="'sdk.catalog.user_map_theme'"></span>
+                <!-- Add theme button -->
+                <span
+                  @click.stop = "show_form = !show_form"
+                  :class      = "g3wtemplate.getFontClass('plus')"
+                  class       = "action sidebar-button sidebar-button-icon"
+                  style       = "margin-left: auto; padding: 5px;"
+                >
+                </span>
+              </div>
+            </li>
+            <!-- DELETE THEME -->
+            <li style="padding: 5px 5px 5px 17px">
+              <div
+                v-for="(map_theme, i) in map_themes.custom"
+                :key="map_theme.theme"
+                style = "display: flex; justify-content: space-between;"
+              >
+                <span>
+                  <input
+                    type     = "radio"
+                    name     = "radio"
+                    :id      = "`g3w-map_theme-${i}-user`"
+                    :value   = "map_theme.theme"
+                    v-model  = "active_theme"
+                    class    = "magic-radio"
+                    :checked = "map_theme.default"
+                  />
+                  <label :for = "`g3w-map_theme-${i}-user`">
+                    <span class="g3w-long-text">{{ map_theme.theme }}</span>
+                  </label>
+                </span>
+                <span
+                  @click.stop = "deleteTheme(map_theme.theme)"
+                  :class      = "g3wtemplate.getFontClass('trash')"
+                  class       = "action sidebar-button sidebar-button-icon"
+                  style       = "color: red; padding: 5px;"
+                ></span>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ul>
     </li>
   </ul>
 </template>
@@ -198,10 +163,13 @@ const LAYERSTREES_ATTRIBUTES = {
 }
 
 export default {
+
   name: "changemapthemes",
+
   components: {
     InputText
   },
+
   props: {
     map_themes: {
       type: Object,
@@ -211,13 +179,14 @@ export default {
       type: Array,
     }
   },
+
   data() {
-    const current_map_theme = Object.values(this.map_themes).flat().find(mt => mt.default);
+    const theme = Object.values(this.map_themes).flat().find(mt => mt.default);
     return {
-      showSaveMapThemeForm : false,  /**@since 3.10.0 **/
-      current_map_theme    : current_map_theme ? current_map_theme.theme : null,
-      collapsed            : 'collapsed' === ProjectsRegistry.getCurrentProject().state.toc_themes_init_status,
-      adduserthemeinput: {
+      active_theme: (theme && theme.theme) || null,
+      collapsed:    'collapsed' === ProjectsRegistry.getCurrentProject().state.toc_themes_init_status,
+      // user themes
+      custom_theme: {
         name:     'add-user-theme',
         label:    'sdk.catalog.choose_map_theme_input_label',
         i18nLabel: true,
@@ -229,110 +198,105 @@ export default {
         //@TODO add info messsage to validation input name text
         //info:   'Info',
         validate: { valid: false, required: true }
-      }
+      },
+      /**@since 3.10.0 whether show add new map theme form **/
+      show_form: false,
     }
   },
+
   methods: {
+
     /**
      * Save current theme (layerstree state)
+     * 
      * @since 3.10.0
      */
-    save() {
-      const params = { layerstree: [], styles: {} };
-      const createTreeItem = (type, node) => {
-       return LAYERSTREES_ATTRIBUTES[type]
-        .reduce((accumulator, a) => {
-          accumulator[a] = node[a];
-          return accumulator
-        }, {} );
-      }
+    async save() {
+      const params   = { layerstree: [], styles: {} };
+      const treeItem = (type, node) => LAYERSTREES_ATTRIBUTES[type].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {});
       const traverse = (nodes, tree) => {
-        //loop through nodes (children)
-        for (let i = 0; i < nodes.length; i++) {
-          const node = nodes[i];
-          //check if layer (node) of folder
-          if (undefined !== node.id) {
-            params.styles[node.id] = node.styles.find(s => s.current).name; //get current layer style
-            tree.push(createTreeItem('node', node));
+        nodes.forEach(node => {
+          if (undefined !== node.id) {                                      // folder node 
+            params.styles[node.id] = node.styles.find(s => s.current).name; // get current layer style
+            tree.push(treeItem('node', node));
           }
           if (Array.isArray(node.nodes)) {
-            const group = createTreeItem('group', node)
+            const group = treeItem('group', node)
             group.nodes = [];
             tree.push(group);
             traverse(node.nodes, group.nodes);
           }
-        }
+        });
       };
+
+      // loop through child nodes
       traverse(this.layerstrees[0].tree[0].nodes, params.layerstree);
 
       /** @TODO send to server state of current projects  **/
-      ProjectsRegistry.getCurrentProject().saveMapTheme(this.adduserthemeinput.value, params)
-        .then((res) => {
-          if (res.result) {
-            this.map_themes.custom.push({
-             theme: this.adduserthemeinput.value,
-             styles: params.styles
-            });
-            //Show user message success saved map theme
-            GUI.showUserMessage({
-              type: 'success',
-              message: 'sdk.catalog.saved_map_theme',
-              autoclose: true
-            });
 
-            //close dialog
-            this.showSaveMapThemeForm = false;
-
-          }
-        })
-          .catch((e) => {  console.warn(e) })
-
+      try {
+        const saved = await ProjectsRegistry.getCurrentProject().saveMapTheme(this.custom_theme.value, params);
+        if (saved.result) {
+          this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
+          // show success message to user
+          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
+          // close dialog
+          this.show_form = false;
+        }        
+      } catch (e) {
+        console.warn(e);
+      }
     },
+
     /**
+     * Remove map theme from custom themes
+     * 
+     * @param theme
+     * 
      * @since 3.10.0
-      * @param theme
      */
     deleteTheme(theme) {
-      GUI.dialog.confirm(t('sdk.catalog.question_delete_map_theme'), bool => {
-        if (bool) {
-          ProjectsRegistry.getCurrentProject().deleteMapTheme(theme)
-            .then(res => {
-              if (res.result) {
-                //remove theme from custom map themes
-                this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
-                  //Show user message success delete map theme
-                  GUI.showUserMessage({
-                  type: 'success',
-                  message: 'sdk.catalog.delete_map_theme',
-                  autoclose: true
-                })
-                  //in the case of deleted current map theme set current_map_theme to null
-                if (theme === this.current_map_theme) { this.current_map_theme = null;}
-              }
-            })
-            .catch(e => console.warn(e))
+      GUI.dialog.confirm(t('sdk.catalog.question_delete_map_theme'), async bool => {
+        // skip when ..
+        if (!bool) {
+          return;
         }
-      })
+        try {
+          const deleted = await ProjectsRegistry.getCurrentProject().deleteMapTheme(theme);
+          if (deleted.result) {
+            this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
+            // show success message to user
+            GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
+            // in the case of deleted current map theme set current theme to null
+            if (theme === this.active_theme) { this.active_theme = null;}
+          }          
+        } catch (e) {
+          console.warn(e)
+        }
+      });
+    },
 
-
-    }
   },
+
   watch: {
-    'current_map_theme': {
+
+    'active_theme': {
       immediate: false,
       handler(map_theme) {
         this.$emit('change-map-theme', map_theme);
       }
     },
-    'adduserthemeinput.value'(name) {
+
+    'custom_theme.value'(name) {
       //can save check if value name is set and is not yet set on custom map_theme
       setTimeout(() => {
-        this.adduserthemeinput.validate.valid = name ? !this.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
+        this.custom_theme.validate.valid = name ? !this.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
       }, 200)
 
     },
-    async showSaveMapThemeForm(bool) {
-      this.adduserthemeinput.value = null;
+
+    async show_form(bool) {
+      this.custom_theme.value = null;
       if (bool) {
         await this.$nextTick();
         //need to remove all class so input is adapted to 100% width
@@ -340,7 +304,62 @@ export default {
           this.$refs.add_map_theme_input.$el.children[i].classList.remove('col-sm-12')
         }
       }
-    }
-  }
+    },
+
+  },
+
 }
 </script>
+
+<style scoped>
+#g3w-catalog-toc-views {
+  margin-bottom: 5px;
+  border-bottom: 2px solid;
+}
+.g3w-map-theme-anchor {
+  padding: 0;
+  margin-bottom: 5px;
+}
+.g3w-map-theme-anchor > section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 5px;
+}
+.add-map-theme {
+  border-top: 2px solid;
+  margin: 5px 0;
+}
+.add-map-theme-input {
+  padding: 5px;
+  width: 100%;
+}
+#g3w-catalog-views {
+  display: none;
+}
+#g3w-catalog-views.menu-open {
+  display: block;
+}
+.current_map_theme {
+  overflow: hidden;
+  white-space: normal;
+  text-overflow: ellipsis;
+}
+.choose_map_theme {
+  color: #ccc !important;
+  font-weight: bold;
+}
+.project_map_theme {
+  font-weight: bold;
+  padding: 3px;
+  border-bottom: 1px solid #fff;
+}
+.user_map_theme {
+  font-weight: bold;
+  padding: 5px 3px;
+  display: flex;
+  justify-content: space-between;
+  align-self: baseline;
+  border-bottom: 1px solid #fff;
+}
+</style>
