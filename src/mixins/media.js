@@ -11,7 +11,9 @@ export default {
   },
   methods: {
     isMedia(value) {
-      if (value && typeof  value === 'object' && value.constructor === Object) return !!value.mime_type;
+      if (value && typeof  value === 'object' && value.constructor === Object) {
+        return !!value.mime_type;
+      }
       return false;
     },
     getMediaType(mime_type) {

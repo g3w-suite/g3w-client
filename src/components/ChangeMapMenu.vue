@@ -8,17 +8,17 @@
     <!-- current node is a child -->
     <template v-if="'root' !== this.current">
       <div
-        style="
+        style = "
           display: flex;
           align-items: center;
           color: #ffffff"
-        class="skin-background-color"
+        class = "skin-background-color"
       >
         <span
-          v-t-tooltip:bottom.create="'change_session'"
-          v-disabled="loading"
-          @click.stop="back"
-          style="
+          v-t-tooltip:bottom.create = "'change_session'"
+          v-disabled                = "loading"
+          @click.stop               = "back"
+          style                     = "
             font-size: 2em;
             margin: 5px;
             cursor: pointer;
@@ -28,14 +28,14 @@
           "
         >
           <i
-            style="color: #FFFFFF"
-            :class="g3wtemplate.getFontClass('reply')">
+            style  = "color: #FFFFFF"
+            :class = "g3wtemplate.getFontClass('reply')">
           </i>
         </span>
 
         <div
-          v-if="parent"
-          style="margin: auto"
+          v-if  = "parent"
+          style = "margin: auto"
         >
           <h3 style="font-weight: bold">
             {{parent.title || parent.name}}
@@ -45,24 +45,24 @@
     </template>
 
     <div
-      v-if="items.length"
-      class="g3w-change-map-menu-container">
+      v-if  = "items.length"
+      class = "g3w-change-map-menu-container">
       <div
-        v-for="item in items"
-        :key="item.name"
-        class="menu-item"
+        v-for = "item in items"
+        :key  = "item.name"
+        class = "menu-item"
       >
 
       <!-- ITEM IMAGE -->
         <div
-          class="menu-item-image"
-          @click.stop="trigger(item)"
+          class       = "menu-item-image"
+          @click.stop = "trigger(item)"
         >
           <img
-            :src="item.thumbnail || item.header_logo_img || item.logo_img"
-            @error="setItemImageSrc({ item, type: 'net_error' })"
-            alt="logo"
-            class="img-responsive"
+            :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
+            @error = "setItemImageSrc({ item, type: 'net_error' })"
+            alt    = "logo"
+            class  = "img-responsive"
           >
         </div>
 
@@ -81,8 +81,8 @@
 
     <template v-else>
       <h3
-        style="font-weight: bold"
-        v-t="`no_other_${current}`">
+        style = "font-weight: bold"
+        v-t   = "` no_other_${current}`">
       </h3>
     </template>
 
@@ -91,6 +91,7 @@
 </template>
 
 <script>
+
 import ApplicationService            from "services/application";
 import ProjectsRegistry              from "store/projects";
 import { API_BASE_URLS, LOGO_GIS3W } from "app/constant";
@@ -121,35 +122,35 @@ export default {
       /**
        * @type {uknown}
        */
-      state: null,
+      state:      null,
 
       /**
        * @type {boolean}
        */
-      loading: false,
+      loading:    false,
 
       /**
        * @type { 'projects' | 'groups' | 'root' }
        */
-      current: 'projects', 
+      current:    'projects',
 
       /**
        * @type {Array}
        */
-      items: [],
+      items:      [],
 
       /**
        * @type {uknown}
        */
-      parent: null,
+      parent:     null,
 
       /**
        * @type { Array } all items from top to bottom
        */
-      steps: [], 
+      steps:      [],
 
       /**
-       * @type { string } ID of current project group 
+       * @type { string } ID of a current project group
        */
       curr_group: null,
  
@@ -164,15 +165,15 @@ export default {
     async back() {
       const last_step   = this.steps.pop();                               // remove last
       const has_steps   = this.steps.length > 0;
-      const item        = has_steps && this.steps[this.steps.length - 1]; //get last step
+      const item        = has_steps && this.steps[this.steps.length - 1]; // get last step
 
       // back to macrogrup
       if (
         (has_steps && undefined !== item.macrogroup_id) ||
-        (!has_steps && undefined === last_step && Array.isArray(this.parent.macrogroup_id) && this.parent.macrogroup_id.length > 0) // no steps done on first time
+        (!has_steps && undefined === last_step && Array.isArray(this.parent.macrogroup_id) && this.parent.macrogroup_id.length > 0) // no steps done the first time
       ) {
         const macrogroup_id = has_steps ? item.macrogroup_id : this.parent.macrogroup_id;
-        const add           = has_steps ? false : true; // false = step it's comping from bottom to top
+        const add           = !has_steps; // false = step it's comping from bottom to top
         return this.showMacroGroups(macrogroup_id, add);
       }
 
@@ -195,20 +196,20 @@ export default {
      * 
      * @since 3.10.0
      */
-    async showMacroGroups(macrogroup_id=[], addStep=true) {
-      // current project belongs to just one macrogroup
+    async showMacroGroups(macrogroup_id = [], addStep = true) {
+      // the current project belongs to just one macrogroup
       if (1 === macrogroup_id.length) {
-        this.parent = this.macrogroups.find(mg => macrogroup_id[0] === mg.id);
+        this.parent = this.macrogroups.find(mg => mg.id === macrogroup_id[0]);
         return await this.showGroups(this.parent);
       }
 
-      // current project belongs to more than one macrogroup
+      // the current project belongs to more than one macrogroup
       this.items   = this.macrogroups.filter(m => macrogroup_id.includes(m.id));
       this.current = 'macrogroups';
       this.parent  = {
         macrogroup_id,
         title: null, // hide title
-        name: null   // hide name
+        name:  null   // hide name
       }
 
       if (addStep) {
@@ -222,7 +223,7 @@ export default {
      * 
      * @returns { Promise<void> }
      */
-    async showGroups(item, addStep=true) {
+    async showGroups(item, addStep = true) {
       try {
         this.loading = true;
         this.parent  = item;
@@ -276,7 +277,7 @@ export default {
     async changeMapProject(item) {
       let url;
       const base_url = ProjectsRegistry.getBaseUrl();
-      const epsg = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
+      const epsg     = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
       await Projections.registerProjection(epsg);
       try {
         new URL(base_url);

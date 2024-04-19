@@ -552,26 +552,22 @@
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
 
-  import LayerOpacityPicker from "components/LayerOpacityPicker.vue";
+  import LayerOpacityPicker          from 'components/LayerOpacityPicker.vue';
 
-  import { CatalogEventBus as VM } from 'app/eventbus';
+  import { CatalogEventBus as VM }   from 'app/eventbus';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import ApplicationService from 'services/application';
-  import GUI from 'services/gui';
+  import ApplicationService          from 'services/application';
+  import GUI                         from 'services/gui';
+  import Table                       from 'components/Table.vue';
+  import { downloadFile }            from 'utils/downloadFile';
 
-  const { t }             = require('core/i18n/i18n.service');
-  const shpwrite          = require('shp-write');
-  const TableComponent    = require('gui/table/vue/table');
-  const { downloadFile }  = require('utils');
+  const { t }                        = require('core/i18n/i18n.service');
+  const shpwrite                     = require('shp-write');
 
-
-  const OFFSETMENU = {
-    top: 50,
-    left: 15
-  };
+  const OFFSETMENU  = { top: 50, left: 15 };
 
   export default {
-    name: 'Cataloglayermenu',
+    name: 'catalog-layer-context-menu',
 
     props: {
       external: {
@@ -967,17 +963,14 @@
       showAttributeTable(layerId) {
         this.layerMenu.loading.data_table = false;
         GUI.closeContent();
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         this.layerMenu.loading.data_table = true;
-        const tableContent = new TableComponent({ layer, formatter: 1 });
-        tableContent.on('show', () => {
-          if (this.isMobile()) {
-            GUI.hideSidebar();
+        new (Vue.extend(Table))({
+          layerId,
+          onShow: () => {
+            this.layerMenu.loading.data_table = false;
+            this._hideMenu();
           }
-          this.layerMenu.loading.data_table = false;
-          this._hideMenu();
         });
-        tableContent.show({ title: layer.getName() });
       },
 
       startEditing() {

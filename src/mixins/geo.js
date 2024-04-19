@@ -14,7 +14,7 @@ export default {
   },
   created() {
     const data = this.data;
-    const mapService = GUI.getComponent('map').getService();
+    const mapService = GUI.getService('map');
     const mapProjection = mapService.getProjection().getCode();
     let style;
     switch (data.type) {
@@ -72,7 +72,6 @@ export default {
     mapService.getMap().addLayer(this.layer);
   },
   beforeDestroy() {
-    const mapService = GUI.getComponent('map').getService();
-    mapService.getMap().removeLayer(this.layer);
+    GUI.getService('map').getMap().removeLayer(this.layer);
   }
 };

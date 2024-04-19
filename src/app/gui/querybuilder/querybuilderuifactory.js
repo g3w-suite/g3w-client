@@ -1,31 +1,7 @@
-const QueryBuilder = require('gui/querybuilder/vue/querybuilder');
-const QueryBuilderPanel = require('gui/querybuilder/vue/panel/querybuilderpanel');
+/**
+ * @file
+ * @deprecated do not remove prior to https://github.com/g3w-suite/g3w-client/pull/451
+ */
 
-const QuerybuilderUIfactory = {
-  type: null,
-  show({type='sidebar', options}={}){
-    let QueryBuilderInstance; 
-    this.type = this.type === null ? type : this.type;
-    if (this.type==='modal') {
-      QueryBuilderInstance = new QueryBuilder({
-        options
-      });
-      const queryBuilderDom = QueryBuilderInstance.$mount().$el;
-      GUI.showModalDialog({
-        title: 'Query Builder',
-        message: queryBuilderDom,
-        className: "modal-background-dark "
-      })
-    } else {
-      const panel = new QueryBuilderPanel({
-        options
-      });
-      QueryBuilderInstance = panel.getInternalPanel();
-      panel.show();
-    }
-    return QueryBuilderInstance;
-  }
-};
-
-module.exports = QuerybuilderUIfactory;
-
+import vueComp from 'components/g3w-querybuilder';
+module.exports = vueComp;

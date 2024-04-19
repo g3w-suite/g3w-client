@@ -76,7 +76,7 @@
       this.history.items.push(view.calculateExtent(map.getSize()));
 
       this.changeKeyEvent = view.on('change' , debounce(evt => {
-        if (this.history.index !== this.history.items.length -1) {
+        if (this.history.index !== this.history.items.length - 1) {
           this.history.items.splice((this.history.index - this.history.items.length) + 1);
         }
         this.history.items.push(evt.target.calculateExtent(map.getSize()));

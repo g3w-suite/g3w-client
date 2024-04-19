@@ -5,25 +5,52 @@
 
 <template>
   <div class="row-info">
-    <h4 @click="showHideInfo" class="layer_header" data-toggle="collapse" :data-target="'#' + state.id">
-      <i class="layer-header-icon action-button nohover" :class="[isSpatial ? g3wtemplate.font['map']: g3wtemplate.font['table']]" aria-hidden="true"></i>
+    <h4
+      @click       = "showHideInfo"
+      class        = "layer_header"
+      data-toggle  = "collapse"
+      :data-target ="`#${state.id}`"
+    >
+      <i
+        class       = "layer-header-icon action-button nohover"
+        :class      = "g3wtemplate.font[isSpatial ? 'map': 'table']"
+        aria-hidden = "true">
+      </i>
       <span class="layer-name">{{ state.name }}</span>
-      <span class="action-button nohover open-close" :class="[show ? g3wtemplate.getFontClass('minus') :g3wtemplate.getFontClass('plus')]"></span>
+      <span
+        class  = "action-button nohover open-close"
+        :class = "g3wtemplate.getFontClass(show ? 'minus': 'plus')"></span>
     </h4>
     <div :id="state.id" class="collapse">
       <ul class="metadata-nav-tabs nav nav-tabs" role="tablist">
         <li role="presentation" class="active spatial-tab">
-          <a v-t="'sdk.metadata.groups.layers.groups.general'" :href="'#layer_general_' + state.id" aria-controls="general" role="tab" data-toggle="tab">
+          <a
+            v-t           = "'sdk.metadata.groups.layers.groups.general'"
+            :href         = "`#layer_general_${state.id}`"
+            aria-controls = "general"
+            role          = "tab"
+            data-toggle   = "tab">
           </a>
         </li>
-        <li v-if="isSpatial" role="presentation" class="spatial-tab">
-          <a v-t="'sdk.metadata.groups.layers.groups.spatial'" :href="'#layer_spatial_' + state.id" aria-controls="profile" role="tab" data-toggle="tab">
+        <li
+          v-if  = "isSpatial"
+          role  = "presentation"
+          class = "spatial-tab">
+          <a
+            v-t           = "'sdk.metadata.groups.layers.groups.spatial'"
+            :href         = "`#layer_spatial_${state.id}`"
+            aria-controls = "profile"
+            role          = "tab"
+            data-toggle   = "tab">
           </a>
         </li>
       </ul>
       <!-- Tab panes -->
       <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" :id="'layer_general_' + state.id">
+        <div
+          role  = "tabpanel"
+          class = "tab-pane active"
+          :id   = "`layer_general_${state.id}`">
           <div class="container-fluid">
             <div v-if="findAttributeFormMetadataAttribute('title')" class="row">
               <div v-t="'sdk.metadata.groups.layers.fields.subfields.title'" class="col-md-2 col-sm-12 metadata-label"></div>
@@ -78,7 +105,11 @@
             </div>
           </div>
         </div>
-        <div role="tabpanel" class="tab-pane" :id="'layer_spatial_'+state.id">
+        <div
+          role="tabpanel"
+          class="tab-pane"
+          :id="`layer_spatial_${state.id}`"
+        >
           <div class="container-fluid">
             <div v-if="findMetadataAttribute('crs')" class="row">
               <div v-t="'sdk.metadata.groups.layers.fields.subfields.crs'" class="col-sm-2 metadata-label"></div>
@@ -128,7 +159,7 @@
     },
     computed: {
       isSpatial() {
-        return this.state.geometrytype != 'NoGeometry'
+        return 'NoGeometry' !== this.state.geometrytype;
       }
     },
     methods: {
