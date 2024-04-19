@@ -213,14 +213,29 @@ export default {
      * @since 3.10.0
      */
     async save() {
-      const params   = { layerstree: [], styles: {} };
+      const params   = { layerstree: [], styles: {}, categories: {} };
       const treeItem = (type, node) => LAYERSTREES_ATTRIBUTES[type].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {});
       const traverse = (nodes, tree) => {
         nodes.forEach(node => {
-          if (undefined !== node.id) {                                      // folder node 
+          //in the case of a layer
+          if (undefined !== node.id) {
             params.styles[node.id] = node.styles.find(s => s.current).name; // get current layer style
+            //if the layer has categories
+            if (node.geolayer && node.categories) {
+              params.categories[node.id] = {
+                nodes: [
+                  { symbols: ProjectsRegistry.getCurrentProject()
+                    .getLayerById(node.id)
+                    .getCategories()
+                    .map(c =>  ({ icon: c.icon, title: c.title, ruleKey: c.ruleKey, checked: c.checked }))
+                  }
+                ]
+              }
+            }
+
             tree.push(treeItem('node', node));
           }
+          //in the case of group
           if (Array.isArray(node.nodes)) {
             const group = treeItem('group', node)
             group.nodes = [];
@@ -239,10 +254,16 @@ export default {
         const saved = await ProjectsRegistry.getCurrentProject().saveMapTheme(this.custom_theme.value, params);
         if (saved.result) {
           this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
-          // show success message to user
+          // show a success message to user
           GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
           // close dialog
           this.show_form = false;
+          //set as current ctive name map theme
+          this.active_theme = this.custom_theme.value;
+          //need to wait watch
+          await this.$nextTick();
+          //set custom map theme value to null. Reset value
+          this.custom_theme.value = null;
         }        
       } catch (e) {
         console.warn(e);
@@ -266,7 +287,7 @@ export default {
           const deleted = await ProjectsRegistry.getCurrentProject().deleteMapTheme(theme);
           if (deleted.result) {
             this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
-            // show success message to user
+            // show a success message to user
             GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
             // in the case of deleted current map theme set current theme to null
             if (theme === this.active_theme) { this.active_theme = null;}
@@ -284,6 +305,9 @@ export default {
     'active_theme': {
       immediate: false,
       handler(map_theme) {
+        //in the case of save new custom map theme, no need to emit event
+        //in case of remove custom map theme at moment se as default
+        if (null === map_theme || map_theme === this.custom_theme.value) { return }
         this.$emit('change-map-theme', map_theme);
       }
     },

@@ -226,7 +226,8 @@ export default {
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
-
+      //check if is custom map theme
+      const custom = undefined !== this.project.state.map_themes.custom.find(({ theme }) => map_theme === theme);
       // get all layers with styles
       const changes = (await this.$options.service.changeMapTheme(map_theme)).layers;
       const layers  = Object.keys(changes).filter(id => changes[id].style);
