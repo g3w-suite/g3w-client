@@ -79,7 +79,6 @@
               :loading = "state.loading[input.dependance] || input.loading"
             />
             <select
-              :ref       = "'search_select_' + input.id"
               :name      = "input.attribute"
               class      = "form-control"
               :id        = "input.id"
@@ -106,11 +105,11 @@
               <span>{{ input.label || input.attribute }}</span>
               <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
-            <div class="input-group date">
+            <div :ref="'date_' + input.id" class="input-group date">
               <input :id="input.id" type='text' class="form-control" />
-              <label :for="input.id" class="input-group-addon skin-color">
+              <span class="input-group-addon skin-color">
                 <span :class="g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
-              </label>
+              </span>
             </div>
           </div>
 
@@ -338,7 +337,7 @@ export default {
       input.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(input.options.format.fieldformat);
       input.options.format.displayformat = convertQGISDateTimeFormatToMoment(input.options.format.displayformat);
 
-      $('#' + input.id).datetimepicker({
+      $(this.$refs['date_' + input.id]).datetimepicker({
         defaultDate:       null,
         format:            input.options.format.displayformat,
         ignoreReadonly:    true,
@@ -349,7 +348,7 @@ export default {
         locale:            ApplicationState.language || 'en',
       });
 
-      $('#' + input.id).on("dp.change", () => {
+      $(this.$refs['date_' + input.id]).on("dp.change", () => {
         const newDate = $(`#${input.id}`).val();
         input.value = newDate.trim()
           ? moment(newDate, input.options.format.displayformat).format(input.options.format.fieldformat)
@@ -391,7 +390,7 @@ export default {
         }
       } : null;
 
-      const select2 = $(this.$refs['search_select_'+ input.id]).select2({
+      const select2 = $('#' + input.id).select2({
         ajax,
         width:              '100%',
         dropdownParent:     $('.g3w-search-form:visible'),
