@@ -93,7 +93,7 @@
           </ul>
         </li>
         <!-- LIST USER MAP THEME -->
-        <li id="g3w-catalog-views-user">
+        <li v-if="logged" id="g3w-catalog-views-user">
           <ul style="padding: 0">
             <li>
               <div class="user_map_theme">
@@ -146,9 +146,11 @@
 </template>
 
 <script>
-import ProjectsRegistry from 'store/projects';
-import InputText        from "./InputText.vue";
-import GUI              from "services/gui";
+import ProjectsRegistry   from 'store/projects';
+import InputText          from "./InputText.vue";
+import GUI                from "services/gui";
+import ApplicationState   from 'store/application-state';
+
 
 const { t } = require('core/i18n/i18n.service');
 
@@ -216,26 +218,13 @@ export default {
      * @since 3.10.0
      */
     async save() {
-      const params   = { layerstree: [], styles: {}, categories: {} };
+      const params   = { layerstree: [], styles: {} };
       const treeItem = (type, node) => LAYERSTREES_ATTRIBUTES[type].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {});
       const traverse = (nodes, tree) => {
         nodes.forEach(node => {
           //in the case of a layer
           if (undefined !== node.id) {
             params.styles[node.id] = node.styles.find(s => s.current).name; // get current layer style
-            //if the layer has categories
-            if (node.geolayer && node.categories) {
-              params.categories[node.id] = {
-                nodes: [
-                  { symbols: ProjectsRegistry.getCurrentProject()
-                    .getLayerById(node.id)
-                    .getCategories()
-                    .map(c =>  ({ icon: c.icon, title: c.title, ruleKey: c.ruleKey, checked: c.checked }))
-                  }
-                ]
-              }
-            }
-
             tree.push(treeItem('node', node));
           }
           //in the case of group
@@ -261,7 +250,7 @@ export default {
           GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
           // close dialog
           this.show_form = false;
-          //set as current ctive name map theme
+          //set as current active name map theme
           this.active_theme = this.custom_theme.value;
           //need to wait watch
           await this.$nextTick();
@@ -333,6 +322,11 @@ export default {
     },
 
   },
+
+  created() {
+    //set legged user.In the case of anonymous user, id is undefined and user can't save a custom map theme
+    this.logged = undefined !== ApplicationState.user.id;
+  }
 
 }
 </script>
