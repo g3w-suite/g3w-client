@@ -27,7 +27,6 @@
           v-t="'sdk.form.footer.required_fields'">
         </span>
       </div>
-
     </div>
   </form>
 </template>
@@ -47,9 +46,6 @@ export default {
     addToValidate: {
       type: Function
     },
-    removeToValidate: {
-      type: Function,
-    },
     changeInput: {
       type: Function
     },
@@ -57,6 +53,9 @@ export default {
       type: Boolean,
       default: false
     },
+    removeToValidate: {
+      type: Function
+    }
 
   },
   components: {

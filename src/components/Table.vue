@@ -64,11 +64,25 @@
             { 'selected': feature.selected }
           ]">
           <td v-for="(header, i) in state.headers" :tab-index="1">
-            <select-row
-              v-if      = "0 === i"
-              @selected = "addRemoveSelectedFeature"
-              :feature  = "feature"
-            />
+            <template  v-if      = "0 === i">
+              <div style="display: flex">
+                <select-row
+                  @selected = "addRemoveSelectedFeature"
+                  :feature  = "feature"
+                />
+                <span
+                  v-if                   = "state.edit"
+                  @click.stop            = "editFeature(feature)"
+                  v-t-tooltip:top.create = "'sdk.tooltips.editing'"
+                >
+                  <i
+                    class  = "action-button skin-color"
+                    :class = "g3wtemplate.getFontClass('pencil')">
+                  </i>
+                </span>
+              </div>
+            </template>
+
             <field
               v-else
               :feature = "feature"
@@ -189,6 +203,16 @@ export default {
     }
   },
   methods: {
+
+    /**
+     * @since 3.10.0
+     * @param feature
+     */
+    editFeature(feature) {
+      GUI
+        .getService('queryresults')
+        .editFeature({ layer: { id: this.layer_id }, feature })
+    },
     get_check_id(cache) {
       if (cache) {
         this.get_check_id.cached_id = getUniqueDomId();
@@ -548,17 +572,32 @@ export default {
             .each((j, element) => {
               const header = this.state.headers[j];
               let comp;
+              let dom;
               if (null === header) {
                 comp = new (Vue.extend(SelectRow))({
-                  propsData: {
-                    feature
-                  }
+                  propsData: { feature }
                 });
                 comp.$on('selected', feature => this.addRemoveSelectedFeature(feature));
                 this.$watch(
                   () => feature.selected,
                   (selected) =>selected ? $(row).addClass('selected'): $(row).removeClass('selected')
                 );
+                dom = comp.$mount().$el;
+                if (this.state.edit) {
+                  const div = document.createElement('div');
+                  div.style.display = 'flex';
+                  div.append(dom);
+                  const edit = new (Vue.extend({
+                    template: `
+                      <span @click.stop = "editFeature" v-t-tooltip:top.create = "'sdk.tooltips.editing'">
+                        <i class  = "action-button skin-color" :class = "g3wtemplate.getFontClass('pencil')"></i>
+                      </span>
+                    `,
+                     methods: { editFeature: this.editFeature.bind(this, feature) }
+                    }))
+                    div.append(edit.$mount().$el)
+                    dom = div;
+                }
               } else {
                 comp = new (Vue.extend(Field))({
                   propsData: {
@@ -568,8 +607,9 @@ export default {
                   }
                 });
                 V_FIELDS.push(comp);
+                dom = comp.$mount().$el;
               }
-              $(element).html(comp.$mount().$el);
+              $(element).html(dom);
           })
         });
       setTimeout(() => this.reloadLayout(), 0)
@@ -851,7 +891,9 @@ export default {
         },
         show:        false,
         filter:      this.layer.state.filter
-      }
+      },
+      edit:          this.layer.isEditable(),     /*@since 3.10.0 */
+      layer_id:      this.layer.getId(),          /*@since 3.10.0*/
     };
   },
 
@@ -874,7 +916,7 @@ export default {
     });
 
     comp.layout = () => { comp.internalComponent.reloadLayout(); };
-    this.service.on('redraw', ()=> { comp.layout(); });
+    this.service.on('redraw', () => { comp.layout(); });
     comp.on('unmount', () => { this.clearService(); })
 
     // bind context on event listeners
@@ -952,7 +994,7 @@ export default {
                 cb(d);
                 await this.$nextTick();
                 this.createdContentBody();
-                this.isMobile() && _hideDataTableElements();
+                if (this.isMobile()) { _hideDataTableElements(); }
               })
               .catch(console.warn)
           }, 800),
