@@ -108,9 +108,9 @@
             </label>
             <div class="input-group date">
               <input :id="input.id" type='text' class="form-control" />
-              <span class="input-group-addon skin-color">
+              <label :for="input.id" class="input-group-addon skin-color">
                 <span :class="g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
-              </span>
+              </label>
             </div>
           </div>
 
