@@ -5,20 +5,25 @@
 
 <template>
   <tr>
-    <td class="attribute" v-for="attribute in attributesSubset(layer)">
+    <td
+      v-for = "attribute in attributesSubset(layer)"
+      class = "attribute"
+    >
       <span
-        v-if="isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class="skin-color"
-        :class="g3wtemplate.getFontClass('link')">
+        v-if   = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
+        class  = "skin-color"
+        :class = "g3wtemplate.getFontClass('link')">
       </span>
 
-      <span v-else-if="isPhoto(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class="skin-color"
-        :class="g3wtemplate.getFontClass('image')"></span>
+      <span
+        v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name}))"
+        class     = "skin-color"
+        :class    = "g3wtemplate.getFontClass('image')"></span>
 
-      <span v-else-if="isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class="skin-color"
-        :class="g3wtemplate.getFontClass('image')"></span>
+      <span
+        v-else-if = "isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
+        class     = "skin-color"
+        :class    = "g3wtemplate.getFontClass('image')"></span>
       <span v-else >{{feature.attributes[attribute.name]}}</span>
 
     </td>
@@ -28,7 +33,7 @@
 </template>
 
 <script>
-  import Actions from 'components/QueryResultsActions.vue';
+  import Actions         from 'components/QueryResultsActions.vue';
   import { fieldsMixin } from 'mixins';
   
   export default {

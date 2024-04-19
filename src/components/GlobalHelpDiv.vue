@@ -15,11 +15,11 @@
     name: "helpdiv",
     props: {
       message: {
-        type: String,
+        type:     String,
         required: true
       },
       type: {
-        type: String,
+        type:    String,
         default: 'info' // alert, warning
       }
     }

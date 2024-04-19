@@ -19,7 +19,7 @@
             @click.stop              = "showaddform = false"
             :class                   = "g3wtemplate.getFontClass('close')"
             class                    = "sidebar-button sidebar-button-icon"
-            style                    = "padding: 2px; margin: 2px;"
+            style                    = "padding: 5px; margin: 3px;"
           ></span>
         </div>
 
@@ -95,6 +95,7 @@
   import InputText            from "components/InputText.vue";
 
   const { uniqueId } = require('utils');
+  const { t }        = require('core/i18n/i18n.service');
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
@@ -113,7 +114,7 @@
       const project = ProjectsRegistry.getCurrentProject();
 
       if (undefined === SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
-        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = []
+        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = [];
       }
 
       return {
@@ -140,23 +141,16 @@
         },
 
         addbookmarkinput: {
-          name: 'add-bookmark',
-          label:'sdk.spatialbookmarks.input.name',
-          i18nLabel: true,
-          value: null,
+          name:     'add-bookmark',
+          label:    t('sdk.spatialbookmarks.input.name'),
+          i18nLabel:true,
+          value:    null,
           editable: true,
-          type: 'varchar',
-          input: {
-            type: 'text',
-            options: {}
-          },
-          visible: true,
-          validate: {
-            valid: false,
-            required: true
-          }
+          type:     'varchar',
+          input:    { type: 'text', options: {} },
+          visible:  true,
+          validate: { valid:    false, required: true }
         }
-
       }
     },
 
@@ -172,20 +166,19 @@
 
       addBookMark() {
         this.user.bookmarks.push({
-          id: uniqueId(),
-          name: this.addbookmarkinput.value,
-          extent: GUI.getService('map').getMapExtent(),
+          id:        uniqueId(),
+          name:      this.addbookmarkinput.value,
+          extent:    GUI.getService('map').getMapExtent(),
           removable: true,
-          crs:{
-            epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1]
-          }
+          crs:       { epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1] }
         });
+
         this.saveUserBookMarks();
         this.showaddform = false;
       },
 
       removeBookMark(id) {
-        this.user.bookmarks = this.user.bookmarks.filter(bookmark => bookmark.id !== id);
+        this.user.bookmarks = this.user.bookmarks.filter(b => id !== b.id);
         this.saveUserBookMarks();
       },
 
@@ -199,7 +192,7 @@
 
       showAddForm() {
         this.addbookmarkinput.value = null;
-        this.showaddform = true;
+        this.showaddform            = true;
       }
 
     },
@@ -217,9 +210,7 @@
     },
 
     created() {
-      this.$on('close', ()=>{
-        this.showaddform = false
-      })
+      this.$on('close', () => this.showaddform = false);
     },
 
   };

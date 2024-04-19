@@ -2,39 +2,38 @@ import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
 
 const Filter     = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
+const operators  = Object.entries(FILTER_EXPRESSION_OPERATORS);
 
+/**
+ * @TODO deprecate `search_endpoint = 'ows'`
+ */
 export function createFilterFromString({
   layer,
-  search_endpoint = 'ows',
+  search_endpoint = 'api',
   filter          = '',
 }) {
-  let stringFilter = filter;
+
   switch (search_endpoint) {
 
     case 'ows':
-      const expression = new Expression({ layerName: layer.getWMSLayerName(), filter:stringFilter });
-      filter = new Filter();
-      filter.setExpression(expression.get());
+      filter = (new Filter()).setExpression((new Expression({ filter, layerName: layer.getWMSLayerName() })).get());
       break;
 
     case 'api':
-      Object
-        .values(FILTER_EXPRESSION_OPERATORS)
-        .forEach(operator => {
-          stringFilter = stringFilter.replace(new RegExp(`\\s+${operator}\\s+`, 'g'), `${operator}`); // remove all blank space between operators
-          stringFilter = stringFilter.replace(new RegExp(`'${operator}`, 'g'), `${operator}`);        // leading single quote
-          stringFilter = stringFilter.replace(new RegExp(`${operator}'`, 'g'), `${operator}`);        // traling single quote
-        });
-      stringFilter = stringFilter.replace(/'$/g, '');
-      filter = stringFilter.replace(/"/g, '');
-
-      Object
-        .entries(FILTER_EXPRESSION_OPERATORS)
-        .forEach(([key, value]) => {
-        filter = filter.replace(new RegExp(value, "g"), value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`);
-      });
-      //encode value
-      filter = filter.split('|').map((value, index) => (0 === (index +1 ) % 3) ? encodeURIComponent(value) : value).join('|');
+      filter = operators
+        .reduce((acc, [_, op]) => acc
+          .replace(new RegExp(`\\s+${op}\\s+`, 'g'), `${op}`) // remove all blank space between operators
+          .replace(new RegExp(`'${op}`, 'g'), `${op}`)        // leading single quote
+          .replace(new RegExp(`${op}'`, 'g'), `${op}`)        // trailing single quote
+        , filter)
+        .replace(/'$/g, '')
+        .replace(/"/g, '');
+      filter = operators
+        .reduce((acc, [k, op]) => acc.replace(new RegExp(op, 'g'), ['AND', 'OR'].includes(op) ? `|${k},` : `|${k}|`), filter)
+        // encode value
+        .split('|')
+        .map((v, i) => (0 === (i+1) % 3) ? encodeURIComponent(v) : v)
+        .join('|');
       break;
 
   }

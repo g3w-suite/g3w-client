@@ -5,12 +5,21 @@
 
 <template>
   <div class="container-fluid">
-    <div  class="row">
-      <div  v-for="(value, index) in values" class="g3w-image col-md-6 col-sm-12">
-        <img class="img-thumbnail" @click="showGallery(index)" :src="getSrc(value)"/>
+    <div class="row">
+      <div
+        v-for="(value, index) in values"
+        class="g3w-image col-md-6 col-sm-12"
+      >
+        <img
+          class       = "img-thumbnail"
+          @click.stop = "showGallery(index)"
+          :src        = "getSrc(value)"/>
       </div>
     </div>
-    <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"/>
+    <g3w-images-gallery
+      :id     = "galleryId"
+      :active = "active"
+      :images = "getGalleryImages()"/>
   </div>
 </template>
 
@@ -24,8 +33,8 @@
     },
     data() {
       return {
-        galleryId: 'gallery_' + Date.now(),
-        active: null
+        galleryId: `gallery_${Date.now()}`,
+        active:     null
       }
     },
     components: {
@@ -48,19 +57,12 @@
         if (typeof this.value === 'object') {
           this.value.active = true;
         }
-        $('#'+this.galleryId).modal('show');
+        $(`#${this.galleryId}`).modal('show');
       },
       getGalleryImages() {
-        const images = [];
-        this.values.forEach((image) => {
-          images.push({
-            src: this.getSrc(image)
-          })
-        });
-        return images
+        return this.values.map(image => ({ src: this.getSrc(image) }));
       }
     },
-    created () {}
   }
 </script>
 

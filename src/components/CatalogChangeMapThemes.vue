@@ -172,13 +172,16 @@ export default {
   },
 
   props: {
+
     map_themes: {
       type: Object,
       default: { project: [], custom: [] }
     },
+
     layerstrees: {
       type: Array,
-    }
+    },
+
   },
 
   data() {
