@@ -47,8 +47,6 @@ export function SearchComponent(opts = {}) {
     querybuildersearches: _getSavedSearches()
   };
 
-  console.log(state);
-
   const service = opts.service || new G3WObject();
 
   const comp = new Component({
@@ -138,8 +136,6 @@ export function SearchPanel(opts = {}, show = false) {
   };
 
   state.mounted = createInputsFormFromFilter(state);
-
-  console.log(state);
 
   const service = opts.service || Object.assign(new G3WObject, {
     state,
