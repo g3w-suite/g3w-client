@@ -53,7 +53,7 @@
   // };
 
   export default {
-    name: 'CatalogProjectmenu',
+    name: 'catalog-project-context-menu',
 
     props: {
       external: {

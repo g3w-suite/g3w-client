@@ -5,8 +5,10 @@
 
 <template>
   <div class="geo-content">
-    <span @click.stop="showLayer()" class="show-hide-geo"
-          :class="[visible ? g3wtemplate.getFontClass('eye-close') : g3wtemplate.getFontClass('eye')]">
+    <span
+      @click.stop = "showLayer"
+      class       = "show-hide-geo"
+      :class      = "g3wtemplate.getFontClass(visible ? 'eye-close': 'eye')">
     </span>
   </div>
 </template>
@@ -19,12 +21,12 @@
     props: {
       data: {},
     },
-    mixins: [geoMixin],
+    mixins: [ geoMixin ],
     data() {
       return {
-        layerId: 'table_layer_' + Date.now(),
+        layerId: `table_layer_${Date.now()}`,
         visible: false,
-        id: 'geo_table_' + Date.now()
+        id:      `geo_table_${Date.now()}`,
       }
     }
   }

@@ -1,170 +1,141 @@
-import { FILTER_EXPRESSION_OPERATORS as OPERATORS } from 'app/constant';
+import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
 
 //Expression
-function Expression(options={}) {
-  this._layerName = options.layerName;
-  const filter = options.filter;
-  this._expression = filter &&  filter ||  '';
-}
-
-const proto = Expression.prototype;
-
-proto.and = function(field, value) {
-  this._expression = this._expression ? this._expression + ' AND ': this._expression;
-  if (field && value) {
-    this.eq(field, value);
+module.exports = class Expression {
+  
+  constructor(options={}) {
+    this._layerName  = options.layerName;
+    this._expression = options.filter || '';
   }
-  return this;
-};
 
-proto.or = function() {
-  if (field && value) {
-    this._expression = this._expression ? this._expression + ' OR ' : this._expression;
-    this.eq(field, value);
+  and(field, value) {
+    this._expression = this._expression ? this._expression + ' AND ': this._expression;
+    if (field && value) {
+      this.eq(field, value);
+    }
+    return this;
   }
-  return this;
-};
 
-proto.eq = function (field, value) {
-  this._expression = this._expression + this._build('eq', field, value);
-  return this;
-};
-
-proto.like = function(field, value) {
-  this._expression = this._expression + this._build('LIKE', field, value);
-  return this;
-};
-
-proto.ilike = function(field, value) {
-  this._expression = this._expression + this._build('ILIKE', field, value);
-  return this;
-};
-
-proto.not = function(field, value) {
-  this._expression = this._expression + this._build('NOT', field, value);
-  return this;
-};
-
-proto.gt = function(field, value) {
-  this._expression = this._expression + this._build('gt', field, value);
-  return this;
-};
-
-proto.gte = function(field, value) {
-  this._expression = this._expression + this._build('gte', field, value);
-  return this;
-};
-
-proto.lt = function(field, value) {
-  this._expression = this._expression + this._build('lt', field, value);
-  return this;
-};
-
-proto.lte = function(field, value) {
-  this._expression = this._expression + this._build('lte', field, value);
-  return this;
-};
-
-proto.clear = function() {
-  this._expression = '';
-  return this;
-};
-
-// get expression method to get the realt value of the expression
-proto.get = function() {
-  return this._layerName ? `${this._layerName}: ${this._expression}`: this._expression;
-};
-
-proto._build = function(operator, field, value) {
-  return [`"${field}"`, OPERATORS[operator], `${value}`].join(' ');
-};
-
-proto.createSingleExpressionElement = function({value, attribute, operator, logicop}={}){
-  let filterElement;
-  const valueExtra = (operator === 'LIKE' || operator === 'ILIKE')  ? "%": "";
-  const filterOp = OPERATORS[operator];
-  const filterLogicOperator = logicop && ` ${logicop} ` || '';
-  if (operator === 'IN') {
-    const _value = Array.isArray(value) ? value : [value];
-    const filterValue = `( ${_value.map(value => `'${value}'`).join(',').replace(/,/g, ' , ')} )`;
-    filterElement = `"${attribute}" ${filterOp} ${filterValue}${filterLogicOperator}`;
-  } else if (
-    (value !== null && value !== undefined)
-    && !(Number.isNaN(value) || !value.toString().trim()) //check if a valid number (not a NaN and not an empty string)
-  ) {
-    const singolequote = Array.isArray(value) ? value :
-      typeof value !== 'number' ? value.split("'") : [];
-    if (singolequote.length > 1) {
-      const _filterElements = [];
-      for (let i = 0; i < singolequote.length; i++) {
-        const value = singolequote[i];
-        if (!value)
-          continue;
-        const filterValue = `%${value}%`.trim();
-        const filterElement = `"${attribute}" ${filterOp} '${filterValue}'`;
-        _filterElements.push(filterElement)
-      }
-      filterElement =  `${_filterElements.join(` ${logicop} `)}${filterLogicOperator}`;
-    } else filterElement = `"${attribute}" ${filterOp} '${valueExtra}${value}${valueExtra}'${filterLogicOperator}`;
+  or(field, value) {
+    if (field && value) {
+      this._expression = this._expression ? this._expression + ' OR ' : this._expression;
+      this.eq(field, value);
+    }
+    return this;
   }
-  return filterElement;
-};
 
-proto.createExpressionFromFilterObject = function(filter={}){
-  let filterElements = [];
-  let rootFilter;
-  for (const operator in filter) {
-    rootFilter = OPERATORS[operator];
-    const inputs = filter[operator];
-    inputs.forEach((input) => {
-      for (const operator in input) {
-        const value = input[operator];
-        if (Array.isArray(value)) {
-          this.createExpressionFromFilterObject(input);
-        } else {
-          const field = input[operator];
-          for (const attribute in field) {
-            const value = field[attribute];
-            const fieldElement = this.createSingleExpressionElement({
-              value,
-              operator,
-              attribute
-            });
-            filterElements.push(fieldElement);
+  eq(field, value) {
+    this._expression = this._expression + this._build('eq', field, value);
+    return this;
+  }
+
+  like(field, value) {
+    this._expression = this._expression + this._build('LIKE', field, value);
+    return this;
+  };
+
+  ilike(field, value) {
+    this._expression = this._expression + this._build('ILIKE', field, value);
+    return this;
+  }
+
+  not(field, value) {
+    this._expression = this._expression + this._build('NOT', field, value);
+    return this;
+  }
+
+  gt(field, value) {
+    this._expression = this._expression + this._build('gt', field, value);
+    return this;
+  }
+
+  gte(field, value) {
+    this._expression = this._expression + this._build('gte', field, value);
+    return this;
+  }
+
+  lt(field, value) {
+    this._expression = this._expression + this._build('lt', field, value);
+    return this;
+  }
+
+  lte(field, value) {
+    this._expression = this._expression + this._build('lte', field, value);
+    return this;
+  }
+
+  clear() {
+    this._expression = '';
+    return this;
+  }
+
+  // get expression method to get the realt value of the expression
+  get() {
+    return this._layerName ? `${this._layerName}: ${this._expression}`: this._expression;
+  }
+
+  _build(operator, field, value) {
+    return [`"${field}"`, FILTER_EXPRESSION_OPERATORS[operator], `${value}`].join(' ');
+  }
+
+  createSingleExpressionElement({ value, attribute, operator, logicop } = {}) {
+    const op    = FILTER_EXPRESSION_OPERATORS[operator];
+    const logic = logicop && ` ${logicop} ` || '';
+    
+    if ('IN' === operator) {
+      return `"${attribute}" ${op} ( ${ [].concat(value).map(v => `'${v}'`).join(',').replace(/,/g, ' , ') } )${logic}`;
+    }
+
+    const is_num = ![null, undefined].includes(value) && !(Number.isNaN(value) || !value.toString().trim()) //check if a valid number (not a NaN and not an empty string)
+    const vals   = (Array.isArray(value) ? value : ('number' !== typeof value ? value.split("'") : []));
+
+    if (is_num && vals.length > 1) {
+      return `${vals.filter(v => v).map(v => `"${attribute}" ${op} '%${v}%'`).join(` ${logicop} `)}${logic}`;
+    }
+
+    if (is_num) {
+      const like = ['LIKE', 'ILIKE'].includes(operator) ? "%": ""
+      return `"${attribute}" ${op} '${like}${value}${like}'${logic}`;
+    }
+  }
+
+  createExpressionFromFilterObject(filter={}) {
+    let filters = [];
+    let rootFilter;
+    for (const operator in filter) {
+      rootFilter = FILTER_EXPRESSION_OPERATORS[operator];
+      filter[operator].forEach((input) => {
+        for (const operator in input) {
+          if (Array.isArray(input[operator])) {
+            this.createExpressionFromFilterObject(input);
+          } else {
+            for (const attribute in input[operator]) {
+              filters.push(this.createSingleExpressionElement({ value: input[operator][attribute], operator, attribute }));
+            }
           }
         }
-      }
-    });
-    rootFilter = (filterElements.length > 0) ? filterElements.join(" "+ rootFilter + " ") : false;
+      });
+      rootFilter = filters.join(' ' + rootFilter + ' ') || false;
+    }
+    return rootFilter;
   }
-  return rootFilter;
-};
 
-proto.createExpressionFromField = function({layerName, field, value, operator='eq'}){
-  const filter = this.createSingleExpressionElement({
-    attribute: field,
-    value,
-    operator
-  });
-  this._expression = `${layerName}:${filter}`;
-  return this;
-};
+  createExpressionFromField({layerName, field, value, operator='eq'}) {
+    this._expression = `${layerName}:${this.createSingleExpressionElement({ attribute: field, value, operator })}`;
+    return this;
+  }
 
-proto.createExpressionFromFilterArray = function(inputs=[]){
-  let filter = '';
-  // set logicop of last element to null
-  const inputsLength = inputs.length ? inputs.length - 1 : inputs.length;
-  inputs.forEach((input, index) => {
-    const filterElement = this.createSingleExpressionElement(input);
-    filter = `${filter}${(input.logicop && index === inputsLength) ? filterElement.substring(0, filterElement.length - (input.logicop.length+1)): filterElement}`;
-  });
-  return filter || undefined;
-};
+  createExpressionFromFilterArray(inputs=[]) {
+    return inputs.reduce((acc, input, i) => {
+      const filter = this.createSingleExpressionElement(input);
+    // set logicop of last element to null
+      return `${acc}${(input.logicop && i === inputs.length - 1) ? filter.substring(0, filter.length - (input.logicop.length + 1)) : filter}`;
+    }, '') || undefined;
+  }
 
-proto.createExpressionFromFilter = function(filter, layerName) {
-  const filterParam = Array.isArray(filter)  ? this.createExpressionFromFilterArray(filter) : this.createExpressionFromFilterObject(filter);
-  if (filterParam) this._expression = `${layerName}:${filterParam}`;
-  return this
+  createExpressionFromFilter(filter, layerName) {
+    const fparam = Array.isArray(filter) ? this.createExpressionFromFilterArray(filter) : this.createExpressionFromFilterObject(filter);
+    if (fparam) this._expression = `${layerName}:${fparam}`;
+    return this
+  }
 };
-
-module.exports = Expression;

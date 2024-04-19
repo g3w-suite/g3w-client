@@ -4,12 +4,12 @@
 
 <template>
   <span
-    @click.stop="triggerAction"
-    v-t-tooltip:left.create="action.tooltip"
-    style="font-weight: bold; padding:3px;"
-    :class="action.class"
-    class="action skin-tooltip-left"
-    :style="action.style"
+    @click.stop             = "triggerAction"
+    v-t-tooltip:left.create = "action.tooltip"
+    style                   = "font-weight: bold; padding:3px;"
+    :class                  = "action.class"
+    class                   = "action skin-tooltip-left"
+    :style                  = "action.style"
   ></span>
 </template>
 
@@ -18,7 +18,7 @@
     name: 'Sidebaritemaction',
     props: {
       action: {
-        type: Object,
+        type:     Object,
         required: true
       },
       component: {
@@ -26,7 +26,7 @@
       }
     },
     methods: {
-      triggerAction(){
+      triggerAction() {
         this.action.fnc(this.component)
       }
     }

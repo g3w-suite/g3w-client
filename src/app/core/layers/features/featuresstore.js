@@ -1,11 +1,11 @@
 const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject         = require('core/g3wobject');
 
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
+const _cloneDeep        = require('lodash.clonedeep');
 
 // Object to store and handle features of layer
-function FeaturesStore(options={}) {
+function FeaturesStore(options = {}) {
   this._features = options.features || [];
   this._provider = options.provider || null;
   this._loadedIds = []; // store locked ids
@@ -13,9 +13,7 @@ function FeaturesStore(options={}) {
   //setters
   this.setters = {
     addFeatures(features) {
-      features.forEach(feature => {
-        this._addFeature(feature);
-      })
+      features.forEach(feature => this._addFeature(feature))
     },
     addFeature(feature) {
       this._addFeature(feature);
@@ -64,9 +62,7 @@ proto.getProvider = function() {
 proto.unlock = function() {
   const d = $.Deferred();
   this._provider.unlock()
-    .then(response => {
-      d.resolve(response)
-    })
+    .then(response => d.resolve(response))
     .fail(err => d.reject(err));
   return d.promise();
 };
@@ -94,13 +90,13 @@ proto._getFeatures = function(options={}) {
 proto._filterFeaturesResponse = function(options={}) {
   /**
    * get features returned from server and feature that are currently locked.
-   * If featurelocks are less that a features, it means that other user is editing these feature
+   * If featurelocks are less than features, it means that another user is editing these features
    * @type {*[]}
    */
-  const {features=[], featurelocks=[]} = options;
+  const { features = [], featurelocks = [] } = options;
 
-  //if no features locks mean all feature request are locked by another user
-  if (featurelocks.length === 0) {
+  //if no features locks mean all feature requests are locked by another user
+  if (0 === featurelocks.length) {
     //if there are feature on response are locked
     if (features.length > 0) {
       this.featuresLockedByOtherUser(features);
@@ -144,7 +140,7 @@ proto._filterFeaturesResponse = function(options={}) {
  * {featureid: "1", lockid: "6bbab1c1c03332fb39b8ffae35e557ba"}
  * @private
  */
-proto._filterLockIds = function(featurelocks=[]) {
+proto._filterLockIds = function(featurelocks = []) {
   const _lockIds = this._lockIds.map(lockid => lockid.featureid);
   const toAddLockId = featurelocks.filter(featurelock => _lockIds.indexOf(featurelock.featureid) === -1);
   this._lockIds = [...this._lockIds, ...toAddLockId];
@@ -177,7 +173,8 @@ proto._commit = function(commitItems) {
   const d = $.Deferred();
   if (commitItems && this._provider) {
     commitItems.lockids = this._lockIds;
-    this._provider.commit(commitItems)
+    this._provider
+      .commit(commitItems)
       .then(response => d.resolve(response))
       .fail(err => d.reject(err))
   } else d.reject();
@@ -186,11 +183,11 @@ proto._commit = function(commitItems) {
 
 // get feature from id
 proto.getFeatureById = function(featureId) {
-  return this._features.find(feature => feature.getId() == featureId);
+  return this._features.find(feature => featureId == feature.getId());
 };
 
 proto.getFeatureByUid = function(uid) {
-  return this._features.find(feature => feature.getUid() === uid);
+  return this._features.find(feature => uid === feature.getUid());
 };
 
 proto._addFeature = function(feature) {

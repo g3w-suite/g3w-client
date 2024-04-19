@@ -7,16 +7,16 @@
   <form class="form-horizontal g3w-form">
     <div class="box-primary">
       <div class="box-body">
-        <g3w-input
-          v-for             = "field in state.fields"
-          :state            = "field"
-          :addToValidate    = "addToValidate"
-          :changeInput      = "changeInput"
-          :removeToValidate = "removeToValidate"
-          @addToValidate    = "addToValidate"
-          @changeInput      = "changeInput"/>
+        <template v-for="field in state.fields">
+          <g3w-input
+            :state="field"
+            :removeToValidate="removeToValidate"
+            :addToValidate="addToValidate"
+            :changeInput="changeInput"
+            @addToValidate="addToValidate"
+            @changeInput="changeInput"/>
+        </template>
       </div>
-
       <div
         v-if="show_required_field_message"
         id="g3w-for-inputs-required-inputs-message"
@@ -56,7 +56,7 @@ export default {
     show_required_field_message: {
       type: Boolean,
       default: false
-    }
+    },
 
   },
   components: {
