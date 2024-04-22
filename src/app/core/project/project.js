@@ -431,18 +431,13 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
   map_theme,
   layerstree = this.state.layerstree
 }) {
-  /**
-   * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
-   * plus layerstree of map_theme get from api map theme
-   */
-  const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
-  // extract layerstree
-  const { layerstree:mapThemeLayersTree } = mapThemeConfig;
+  /** map theme config */
+  const theme = await this.getMapThemeFromThemeName(map_theme);
   // create a chages need to apply map_theme changes to map and TOC
   const changes  = {layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
   const promises = [];
   /**
-   * Function to traverse current layerstree of toc anche get changes with the new one related to map_theme choose
+   * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
    * @param mapThemeLayersTree // new mapLayerTree
    * @param layerstree // current layerstree
    */
@@ -458,7 +453,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
           traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
         } else {
           // case of layer
-          node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
+          node.style = theme.styles[node.id]; // set style from map_theme
           if (layerstree[index].checked !== node.visible) {
             changes.layers[node.id] = {
               visibility: true,
@@ -485,13 +480,16 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
         }
     });
   };
-  traverse(mapThemeLayersTree, layerstree);
+  traverse(theme.layerstree, layerstree);
+
   await Promise.allSettled(promises);
+
   // all groups checked after layer checked so is set checked but not visible
   groups.forEach(({ group, node: { checked, expanded }}) => {
     group.checked = checked;
     group.expanded = expanded;
   });
+
   return changes // eventually, information about changes (for example style etc..)
 };
 
@@ -501,9 +499,8 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
 proto.getMapThemeFromThemeName = async function(theme) {
   // get map theme configuration from map_themes project config
   const config = Object.values(this.state.map_themes).flat().find(c => theme === c.theme );
-  // check if mapThemeConfig exist and if it has layerstree (property gets from server with a specific api)
-  if (config && undefined === config.layerstree ) {
-    config.layerstree =  await this.getMapThemeConfiguration(theme);
+  if (config) {
+    config.layerstree = await this.getMapThemeConfiguration(theme);
   }
   return config;
 };
