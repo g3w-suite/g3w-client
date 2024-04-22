@@ -383,6 +383,7 @@ export default {
         question_delete_map_theme: "Vuoi cancellare il tema ?",
         delete_map_theme: "Tema cancellato con successo",
         saved_map_theme: "Tema salvato con successo",
+        updated_map_theme: "Tema aggiornato con successo",
         menu: {
           layerposition: 'Posizione Layer',
           setwmsopacity: "Cambia opacità",
@@ -453,6 +454,7 @@ export default {
     server_error: "Si è verificato un errore nella richiesta al server",
     save: "Salva",
     cancel: "Cancella",
+    update: "Aggiorna",
     close: "Chiudi",
     /**
      * @since 3.8.0

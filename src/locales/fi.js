@@ -380,7 +380,8 @@ export default {
         user_map_theme: 'Käyttäjä Themes',
         question_delete_map_theme: "Haluatko poistaa teeman?",
         delete_map_theme: "Teeman poistaminen onnistui",
-        saved_map_theme: "teeman tallennus onnistui",
+        saved_map_theme: "Teeman tallennus onnistui",
+        updated_map_theme: "Teeman päivittää onnistui",
         menu: {
           layerposition: 'Kerroksen sijainti',
           setwmsopacity: "Aseta Opacity",
@@ -448,6 +449,7 @@ export default {
     server_error: "Yhteysvirhe palvelimeen",
     save: "Tallenna",
     cancel: "Peruuta",
+    update: "Päivittää",
     close: "Sulje",
     /**
      * @since 3.8.0

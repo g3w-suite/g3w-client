@@ -378,9 +378,10 @@ export default {
         choose_map_theme_input_label: 'Numele noii tema',
         project_map_theme : 'Tema de proiect',
         user_map_theme: "Tema utilizator",
-        question_delete_map_theme: "Voulez-vous supprimer le thème ?",
-        delete_map_theme: "Thème supprimé avec succès",
-        saved_map_theme: "thème enregistré avec succès",
+        question_delete_map_theme: "Doriți să ștergeți tema?",
+        delete_map_theme: "Tema a fost ștearsă cu succes",
+        saved_map_theme: "Tema a fost salvată cu succes",
+        updated_map_theme: "Tema a fost actualizată cu succes",
         menu: {
           layerposition: 'Poziție Strat',
           setwmsopacity: "Alege Opacitatea",
@@ -448,6 +449,7 @@ export default {
     server_error: "Eroare de conexiune la server",
     save: "Salvează",
     cancel: "Anulează",
+    update: "Actualizați",
     close: "Închide",
     /**
      * @since 3.8.0

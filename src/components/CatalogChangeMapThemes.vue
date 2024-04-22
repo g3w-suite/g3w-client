@@ -130,12 +130,33 @@
                     <span class="g3w-long-text">{{ map_theme.theme }}</span>
                   </label>
                 </span>
-                <span
-                  @click.stop = "deleteTheme(map_theme.theme)"
-                  :class      = "g3wtemplate.getFontClass('trash')"
-                  class       = "action sidebar-button sidebar-button-icon"
-                  style       = "color: red; padding: 5px;"
-                ></span>
+                <span class="g3w-custom-map-theme-tools">
+                 <span
+                   @click.stop            = "updateTheme(map_theme.theme)"
+                   class                  = "action sidebar-button sidebar-button-icon"
+                   style                  = "padding: 5px;"
+                   v-t-tooltip:top.create = "'update'"
+                   v-disabled             = "active_theme !== map_theme.theme"
+                 >
+                  <i
+                    :class = "g3wtemplate.getFontClass('save')"
+                    class  = "skin-color"></i>
+
+                 </span>
+                  <span
+                    @click.stop = "deleteTheme(map_theme.theme)"
+
+                    class       = "action sidebar-button sidebar-button-icon"
+                    style       = "padding: 5px;"
+
+                    v-t-tooltip:top.create = "'cancel'"
+                  >
+                    <i
+                      :class = "g3wtemplate.getFontClass('trash')"
+                      style  = "color: red;"></i>
+                  </span>
+                </span>
+
               </div>
             </li>
           </ul>
@@ -205,19 +226,17 @@ export default {
         //info:   'Info',
         validate: { valid: false, required: true }
       },
-      /**@since 3.10.0 whether show add new map theme form **/
+      /**@since 3.10.0 whether show add a new map theme form **/
       show_form: false,
     }
   },
 
   methods: {
-
     /**
-     * Save current theme (layerstree state)
-     * 
-     * @since 3.10.0
+     * Create params for save or update custom map theme
+     * @private
      */
-    async save() {
+    _getMapThemeParams() {
       const params   = { layerstree: [], styles: {} };
       const treeItem = (type, node) => LAYERSTREES_ATTRIBUTES[type].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {});
       const traverse = (nodes, tree) => {
@@ -240,13 +259,21 @@ export default {
       // loop through child nodes
       traverse(this.layerstrees[0].tree[0].nodes, params.layerstree);
 
-      /** @TODO send to server state of current projects  **/
+      return params;
+    },
 
+    /**
+     * Save current theme (layerstree state)
+     * 
+     * @since 3.10.0
+     */
+    async save() {
       try {
+        const params = this._getMapThemeParams();
         const saved = await ProjectsRegistry.getCurrentProject().saveMapTheme(this.custom_theme.value, params);
         if (saved.result) {
           this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
-          // show a success message to user
+          // show a success add custom matp theme message to user
           GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
           // close dialog
           this.show_form = false;
@@ -260,6 +287,20 @@ export default {
       } catch (e) {
         console.warn(e);
       }
+    },
+
+    async updateTheme(theme) {
+      try {
+        const params = this._getMapThemeParams();
+        await ProjectsRegistry.getCurrentProject().saveMapTheme(theme, params);
+        //update custom map theme styles
+        this.map_themes.custom.find(mt => theme === mt.theme).styles = params.styles;
+        // show a success update map theme message to user
+        GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
+      } catch(e) {
+        console.warn(e);
+      }
+
     },
 
     /**

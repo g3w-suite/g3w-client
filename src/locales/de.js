@@ -381,6 +381,7 @@ export default {
         question_delete_map_theme: "Möchten Sie das Thema löschen??",
         delete_map_theme: "Theme erfolgreich gelöscht",
         saved_map_theme: "Thema erfolgreich gespeichert",
+        updated_map_theme: "Thema aktualisieren gespeichert",
         menu: {
           layerposition: 'Position der Ebenen',
           setwmsopacity: "Opazität einstellen",
@@ -448,6 +449,7 @@ export default {
     server_error: "Server-Verbindungsfehler",
     save: "Speichern",
     cancel: "Abbrechen",
+    update: "Aktualisieren",
     close: "Schließen",
     /**
      * @since 3.8.0

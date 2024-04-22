@@ -380,7 +380,8 @@ export default {
         user_map_theme: "Thème de l'utilisateur",
         question_delete_map_theme: "Voulez-vous supprimer le thème ?",
         delete_map_theme: "Thème supprimé avec succès",
-        saved_map_theme: "thème enregistré avec succès",
+        saved_map_theme: "Thème enregistré avec succès",
+        updated_map_theme: "Thème mise à jour avec succès",
         menu: {
           layerposition: 'Position du calque',
           setwmsopacity: "Définir l'opacité",
@@ -447,6 +448,7 @@ export default {
     server_error: "Une erreur s'est produite dans la requête au serveur",
     save: "Sauvegarder",
     cancel: "Supprimer",
+    update: "Mise à jour",
     close: "Fermer",
     /**
      * @since 3.8.0

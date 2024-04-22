@@ -380,7 +380,8 @@ export default {
         user_map_theme: "Temat utilizator",
         question_delete_map_theme: "Vill du ta bort temat?",
         delete_map_theme: "Temat har tagits bort",
-        saved_map_theme: "temat har sparats",
+        saved_map_theme: "Temat har sparats",
+        updated_map_theme: "Temat har uppdaterats",
         menu: {
           layerposition: 'Lagerposition',
           setwmsopacity: "Ställ in Opacitet",
@@ -448,6 +449,7 @@ export default {
     server_error: "Fel på anslutningen till servern",
     save: "Spara",
     cancel: "Ånga",
+    update: "Uppdatering",
     close: "Stäng",
     /**
      * @since 3.8.0
