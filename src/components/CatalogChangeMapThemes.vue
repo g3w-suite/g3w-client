@@ -63,7 +63,7 @@
         :class = "{'menu-open': !collapsed}"
       >
         <!-- LIST PROJECT MAP THEME -->
-        <li id="g3w-catalog-views-project">
+        <li id="g3w-catalog-views-project" v-if="(map_themes.project || []).length > 0">
           <ul style="padding: 0">
             <li>
               <div v-t="'sdk.catalog.project_map_theme'" class="project_map_theme"></div>

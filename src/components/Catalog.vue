@@ -93,7 +93,6 @@
 
           <!-- TOOLBAR -->
           <div
-            v-if  = "showTocTools"
             id    = "g3w-catalog-toc-layers-toolbar"
             style = "margin: 2px;"
           >
@@ -301,13 +300,6 @@ export default {
   },
 
   computed: {
-
-    /**
-     * @returns {boolean} whether to show group toolbar
-     */
-    showTocTools() {
-      return Object.values((this.project.state.map_themes || { project: [], custom: [] })).flat().length > 1;
-    },
 
     project() {
       return ProjectsRegistry.state.currentProject
