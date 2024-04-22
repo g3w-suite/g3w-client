@@ -51,7 +51,7 @@
           <button
             class       = "sidebar-button-run btn btn-block"
             v-t         = "'add'"
-            @click.stop = "save"
+            @click.stop = "saveTheme"
             v-disabled  = "!custom_theme.validate.valid">
           </button>
         </div>
@@ -232,8 +232,10 @@ export default {
   },
 
   methods: {
+
     /**
      * Create params for save or update custom map theme
+     * 
      * @private
      */
     _getMapThemeParams() {
@@ -267,7 +269,7 @@ export default {
      * 
      * @since 3.10.0
      */
-    async save() {
+    async saveTheme() {
       try {
         const params = this._getMapThemeParams();
         const saved = await ProjectsRegistry.getCurrentProject().saveMapTheme(this.custom_theme.value, params);
@@ -293,7 +295,7 @@ export default {
       try {
         const params = this._getMapThemeParams();
         await ProjectsRegistry.getCurrentProject().saveMapTheme(theme, params);
-        //update custom map theme styles
+        // update custom map theme styles
         this.map_themes.custom.find(mt => theme === mt.theme).styles = params.styles;
         // show a success update map theme message to user
         GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
