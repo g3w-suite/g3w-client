@@ -499,7 +499,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
 proto.getMapThemeFromThemeName = async function(theme) {
   // get map theme configuration from map_themes project config
   const config = Object.values(this.state.map_themes).flat().find(c => theme === c.theme );
-  if (config) {
+  if (config && undefined === config.layerstree) {
     config.layerstree = await this.getMapThemeConfiguration(theme);
   }
   return config;
