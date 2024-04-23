@@ -259,6 +259,16 @@ function _isInteger(value) {
 }
 
 /**
+ * @since 3.10.0
+ * @param value
+ * @return {boolean}
+ * @private
+ */
+function _isBigint(value) {
+  return !Number.isNaN(1 * value) && Number.isSafeInteger(1 * value) && (1 * value) <= Number.MAX_SAFE_INTEGER;
+}
+
+/**
  * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
  */
 function _isCheckBox(values, value) {
@@ -314,11 +324,12 @@ class Service {
         'datetimepicker': _isDateTime,
         'checkbox':       _isCheckBox.bind(vOptions.values),
         'integer':        _isInteger,
+        'bigint':         _isBigint,
         'float':          _isFloat,
       })[this.state.type] || truefnc,
     };
 
-    this.setErrorMessage(options.state);
+    this.setErrorMessage();
   }
 
   getState() {
@@ -437,7 +448,7 @@ class Service {
     return this.state.validate.valid;
   }
 
-  setErrorMessage(input) {
+  setErrorMessage() {
     const {
       mutually,
       mutually_valid,
@@ -446,7 +457,14 @@ class Service {
       unique,
       exclude_values,
       required,
-    } = input.validate;
+    } = this.state.validate;
+
+
+    //in vase of
+    if (this.state.validate.error) {
+      this.state.validate.message = t(this.state.validate.error);
+      return;
+    }
 
     let message = this.state.info;
 
@@ -1177,7 +1195,7 @@ const vm = {
 
     'notvalid'(notvalid) {
       if (notvalid) {
-        this.getInputService().setErrorMessage(this.state);
+        this.getInputService().setErrorMessage();
       }
     },
 
@@ -1223,11 +1241,7 @@ const vm = {
 
       service.setEmpty();
       service.setUpdate();
-
-      // validate input if is required or need to be unique
-      if (this.state.validate.required || this.state.validate.unique) {
-        service.validate();
-      }
+      service.validate();
 
       this.$emit('changeinput', this.state);
 
@@ -1261,7 +1275,14 @@ const vm = {
       if (!this.service) {
         this.service = this.createInputService(this.state.input.type, { state: this.state });
 
-        this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
+        this.$watch(() => ApplicationState.language, async () => {
+          if (this.state.visible) {
+            this.state.visible = false;
+            this.service.setErrorMessage();
+            await this.$nextTick();
+            this.state.visible = true;
+          }
+        });
     
         if (this.state.editable && this.state.validate.required) {
           this.service.validate();
