@@ -251,6 +251,16 @@ function _isInteger(value) {
 }
 
 /**
+ * @since 3.10.0
+ * @param value
+ * @return {boolean}
+ * @private
+ */
+function _isBigint(value) {
+  return !Number.isNaN(1 * value) && (1 * value) <=  Number.MAX_SAFE_INTEGER;
+}
+
+/**
  * ORIGINAL SOURCE: src/app/core/utils/validators.js@3.8
  */
 function _isCheckBox(values, value) {
@@ -434,7 +444,7 @@ const vm = {
 
     'notvalid'(notvalid) {
       if (notvalid) {
-        this.getInputService().setErrorMessage(this.state);
+        this.getInputService().setErrorMessage();
       }
     },
 
@@ -480,11 +490,7 @@ const vm = {
 
       service.setEmpty();
       service.setUpdate();
-
-      // validate input if is required or need to be unique
-      if (this.state.validate.required || this.state.validate.unique) {
-        service.validate();
-      }
+      service.validate();
 
       this.$emit('changeinput', this.state);
 
@@ -582,7 +588,7 @@ const vm = {
         validate: truefnc,
       });
 
-      this.setErrorMessage(options.state);
+      this.setErrorMessage();
 
       /**
        * Input Validators
@@ -598,6 +604,7 @@ const vm = {
           'datetimepicker': _isDateTime,
           'checkbox':       _isCheckBox.bind(vOptions.values),
           'integer':        _isInteger,
+          'bigint':         _isBigint,
           'float':          _isFloat,
         })[options.state && options.state.type] || truefnc,
       });
@@ -672,8 +679,15 @@ const vm = {
       if (!this.service) {
         this.service = this.createInputService(this.state.input.type, { state: this.state });
 
-        this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
-    
+        this.$watch(() => ApplicationState.language, async () => {
+          if (this.state.visible) {
+            this.state.visible = false;
+            this.service.setErrorMessage();
+            await this.$nextTick();
+            this.state.visible = true;
+          }
+
+        });
         if (this.state.editable && this.state.validate.required) {
           this.service.validate();
         }
@@ -1018,7 +1032,7 @@ const vm = {
      * 
      * @since 3.9.0
      */
-    setErrorMessage(input = {}) {
+    setErrorMessage() {
       const {
         mutually,
         mutually_valid,
@@ -1027,7 +1041,12 @@ const vm = {
         unique,
         exclude_values,
         required,
-      } = input.validate || {};
+      } = this.state.validate || {};
+
+      if (this.state.validate.error) {
+        this.state.validate.message = t(this.state.validate.error);
+        return;
+      }
 
       let message = this.state.info;
 
