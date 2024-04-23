@@ -382,6 +382,7 @@ export default {
         delete_map_theme: "Thème supprimé avec succès",
         saved_map_theme: "Thème enregistré avec succès",
         updated_map_theme: "Thème mise à jour avec succès",
+        invalid_map_theme_name: "Le nom existe déjà ou est incorrect",
         menu: {
           layerposition: 'Position du calque',
           setwmsopacity: "Définir l'opacité",

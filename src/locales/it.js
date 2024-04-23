@@ -384,6 +384,7 @@ export default {
         delete_map_theme: "Tema cancellato con successo",
         saved_map_theme: "Tema salvato con successo",
         updated_map_theme: "Tema aggiornato con successo",
+        invalid_map_theme_name: "Nome già esistente o non corretto",
         menu: {
           layerposition: 'Posizione Layer',
           setwmsopacity: "Cambia opacità",

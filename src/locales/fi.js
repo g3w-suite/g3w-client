@@ -382,6 +382,7 @@ export default {
         delete_map_theme: "Teeman poistaminen onnistui",
         saved_map_theme: "Teeman tallennus onnistui",
         updated_map_theme: "Teeman päivittää onnistui",
+        invalid_map_theme_name: "Nimi on jo olemassa tai se on virheellinen",
         menu: {
           layerposition: 'Kerroksen sijainti',
           setwmsopacity: "Aseta Opacity",

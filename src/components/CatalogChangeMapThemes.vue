@@ -172,7 +172,6 @@ import InputText          from "./InputText.vue";
 import GUI                from "services/gui";
 import ApplicationState   from 'store/application-state';
 
-
 const { t } = require('core/i18n/i18n.service');
 
 /**
@@ -223,8 +222,11 @@ export default {
         input:    { type: 'text', options: {} },
         visible:  true,
         //@TODO add info messsage to validation input name text
-        //info:   'Info',
-        validate: { valid: false, required: true }
+        validate: {
+          valid:    false,
+          required: true,
+          error: 'sdk.catalog.invalid_map_theme_name',
+        }
       },
       /**@since 3.10.0 whether show add a new map theme form **/
       show_form: false,
@@ -396,7 +398,6 @@ export default {
   margin: 5px 0;
 }
 .add-map-theme-input {
-  padding: 5px;
   width: 100%;
 }
 #g3w-catalog-views {

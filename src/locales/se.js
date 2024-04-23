@@ -382,6 +382,7 @@ export default {
         delete_map_theme: "Temat har tagits bort",
         saved_map_theme: "Temat har sparats",
         updated_map_theme: "Temat har uppdaterats",
+        invalid_map_theme_name: "Namnet finns redan eller är felaktigt",
         menu: {
           layerposition: 'Lagerposition',
           setwmsopacity: "Ställ in Opacitet",

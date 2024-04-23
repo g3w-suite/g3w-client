@@ -382,6 +382,7 @@ export default {
         delete_map_theme: "Theme erfolgreich gelöscht",
         saved_map_theme: "Thema erfolgreich gespeichert",
         updated_map_theme: "Thema aktualisieren gespeichert",
+        invalid_map_theme_name: "Der Name ist bereits vorhanden oder falsch",
         menu: {
           layerposition: 'Position der Ebenen',
           setwmsopacity: "Opazität einstellen",

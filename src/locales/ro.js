@@ -382,6 +382,7 @@ export default {
         delete_map_theme: "Tema a fost ștearsă cu succes",
         saved_map_theme: "Tema a fost salvată cu succes",
         updated_map_theme: "Tema a fost actualizată cu succes",
+        invalid_map_theme_name: "Numele există deja sau este incorect",
         menu: {
           layerposition: 'Poziție Strat',
           setwmsopacity: "Alege Opacitatea",
