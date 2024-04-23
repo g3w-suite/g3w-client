@@ -5,8 +5,69 @@
 
 <template>
   <div id="open_attribute_table" style="margin-top: 5px">
+
+    <!-- TABLE TOOLBAR -->
+    <!-- ORIGINAL SOURCE: src/components/TableToolBar.vue@3.9.7 -->
+    <div
+      v-if  = "state.headers.length"
+      ref   = "table_toolbar"
+      style = "display: flex; justify-content: space-between; padding: 1px;"
+    >
+
+      <!-- FETCH DATA FROM BBOX -->
+      <div
+        v-if               = "layer.isGeoLayer()"
+        class              = "skin-color action-button skin-tooltip-right"
+        data-placement     = "right"
+        v-disabled         = "state.geolayer.active && ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel.height_100"
+        data-toggle        = "tooltip"
+        data-container     = "body"
+        :class             = "[ g3wtemplate.getFontClass('map'), state.geolayer.active ? 'toggled' : '' ]"
+        v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
+        @click.stop        = "getDataFromBBOX"
+      ></div>
+
+      <!-- CLEAR SELECTION -->
+      <div
+        v-show             = "state.show_tools"
+        class              = "skin-color action-button skin-tooltip-right"
+        data-placement     = "right"
+        data-toggle        = "tooltip"
+        data-container     = "body"
+        :class             = "g3wtemplate.getFontClass('clear')"
+        v-t-tooltip.create = "'layer_selection_filter.tools.clear'"
+        @click.stop        = "layer.clearSelectionFids()"
+      ></div>
+
+      <!-- INVERSE SELECTION -->
+      <div
+        v-show             = "state.show_tools"
+        class              = "skin-color action-button skin-tooltip-right"
+        data-placement     = "right"
+        data-toggle        = "tooltip"
+        data-container     = "body"
+        :class             = "[ g3wtemplate.getFontClass('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
+        v-t-tooltip.create = "'layer_selection_filter.tools.invert'"
+        @click.stop        = "inverseSelection"
+      ></div>
+
+      <!-- TOGGLE FILTER -->
+      <div
+        v-show             = "state.show_tools"
+        class              = "skin-color action-button skin-tooltip-right"
+        data-placement     = "right"
+        data-toggle        = "tooltip"
+        data-container     = "body"
+        @click.stop        = "layer.toggleFilterToken()"
+        :class             = "[ g3wtemplate.getFontClass('filter'), layer.state.filter.active ? 'toggled' : '' ]"
+        v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
+      ></div>
+
+    </div>
+
+    <!-- TABLE CONTENT -->
     <table
-      v-if  = "hasHeaders()"
+      v-if  = "state.headers.length"
       ref   = "attribute_table"
       id    = "layer_attribute_table"
       class = "table table-striped row-border compact nowrap"
@@ -38,7 +99,7 @@
               <label
                 for                         = "attribute_table_select_all_rows"
                 style                       = "margin-bottom:0 !important;"
-                @click.capture.stop.prevent = "selectAllRow"
+                @click.capture.stop.prevent = "selectAllRows"
               >
                 <span style="padding:5px"></span>
               </label>
@@ -55,38 +116,35 @@
           role       = "row"
           class      = "feature_attribute"
           style      = "cursor: pointer"
-          @mouseover = "zoomAndHighLightFeature(feature, false)"
-          @click     = "zoomAndHighLightFeature(feature, true)"
+          @mouseover = "highlight(feature, false)"
+          @click     = "highlight(feature, true)"
           :selected  = "selectedRow === i"
           :class     = "[
-            i %2 == 1 ? 'odd' : 'pair',
+            i % 2 == 1 ? 'odd' : 'pair',
             { geometry: !!feature.geometry },
             { 'selected': feature.selected }
           ]">
           <td v-for="(header, i) in state.headers" :tab-index="1">
-            <template  v-if      = "0 === i">
-              <div style="display: flex">
-                <select-row
-                  @selected = "addRemoveSelectedFeature"
-                  :feature  = "feature"
-                />
-                <span
-                  v-if                   = "state.edit"
-                  @click.stop            = "editFeature(feature)"
-                  v-t-tooltip:top.create = "'sdk.tooltips.editing'"
-                >
-                  <i
-                    class  = "action-button skin-color"
-                    :class = "g3wtemplate.getFontClass('pencil')">
-                  </i>
-                </span>
-              </div>
-            </template>
-
+            <div
+              v-if  = "0 === i"
+              style = "display: flex"
+            >
+              <select-row
+                @selected = "select"
+                :feature  = "feature"
+              />
+              <span
+                v-if                   = "layer.isEditable()"
+                @click.stop            = "editFeature(feature)"
+                v-t-tooltip:top.create = "'sdk.tooltips.editing'"
+              >
+                <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
+              </span>
+            </div>
             <field
               v-else
               :feature = "feature"
-              :state   = "getField(feature, header)"
+              :state   = "({ label: undefined, value: feature.attributes[header.name] })"
             />
           </td>
         </tr>
@@ -98,19 +156,20 @@
 </template>
 
 <script>
+import G3WObject                   from 'core/g3w-object';
+import Component                   from 'core/g3w-component';
 import SelectRow                   from 'components/TableSelectRow.vue';
-import G3wTableToolbar             from 'components/TableToolbar.vue';
 import Field                       from 'components/FieldG3W.vue';
+import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI                         from 'services/gui';
+import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
 import { debounce }                from 'utils/debounce';
-import Component                   from 'core/g3w-component';
-import DataRouterService           from 'services/data';
 import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { noop }                    from 'utils/noop';
-import G3WObject                   from 'core/g3w-object';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
+import { promisify }               from 'utils/promisify';
 
 const { t }                        = require('core/i18n/i18n.service');
 const { SELECTION_STATE }          = require('core/layers/layer');
@@ -134,85 +193,101 @@ function _createFeatureForSelection(feature) {
   }
 }
 
-function _hideDataTableElements() {
-  $('.dataTables_info, .dataTables_length').hide();
-  $('.dataTables_paginate').css({
-    'display': 'flex',
-    'justify-content': 'space-between',
-    'font-size': '0.8em',
-    'margin-top': '5px'
-  });
-  $('.dataTables_filter').css('float', 'right');
-  $('.dataTables_paginate').css('margin', '0');
-}
-
 /** Data Table */
 let table;
 let V_FIELDS = []; // fields components
 
 export default {
+
   name: "G3WTable",
+
   mixins: [resizeMixin],
+
   components: {
     SelectRow,
     Field
   },
+
   data() {
+    const layer           = CatalogLayersStoresRegistry.getLayerById(this.$options.layerId);
     let relationsGeometry = [];
+
     // layer doesn't have geometry
-    if (!this.layer.isGeoLayer()) {
-      this.layer
+    if (!layer.isGeoLayer()) {
+      layer
         .getRelations()
         .getArray()
         .forEach(relation => {
-          const layer = CatalogLayersStoresRegistry.getLayerById(relation.getFather()); // get project layer
+          const father = CatalogLayersStoresRegistry.getLayerById(relation.getFather()); // get project layer
           if (
-            this.layer.getId() !== relation.getFather() && // current layer is not child layer of relation
-            layer.isGeoLayer()                             // relation layer has geometry
+            layer.getId() !== relation.getFather() &&   // current layer is not child layer of relation
+            father.isGeoLayer()                         // relation layer has geometry
           ) {
             relationsGeometry.push({
-              layer,
-              father_fields: relation.getFatherField(),    // NB: since g3w-admin@v3.7.0 this is an Array value.
-              fields:        relation.getChildField(),     // NB: since g3w-admin@v3.7.0 this is an Array value.
+              layer:         father,
+              father_fields: relation.getFatherField(), // NB: since g3w-admin@v3.7.0 this is an Array value.
+              fields:        relation.getChildField(),  // NB: since g3w-admin@v3.7.0 this is an Array value.
               features:      {},
             })
           }
         });
     }
 
+    const pagination = true;
+
     return {
-      service:             this.service || undefined,
-      layer:               this.layer || undefined,
-      state:               this.service.state,
+      layer,
+      state: {
+        pagination,
+        features:      [],
+        headers:       [null, ...layer.getTableHeaders()], // first value is `null` for DataTable purpose (used to add a custom input selector)
+        geometry:      true,
+        allfeatures:   0,
+        selectAll:     false,
+        nofilteredrow: false,
+        show_tools:    false,
+        geolayer: {
+          active:    false,
+          in_bbox:   undefined,
+        },
+      },
       table:               null,
       selectedRow:         null,
       relationsGeometry,
       paginationfilter:    false,
-      selectedfeaturesfid: this.layer.getSelectionFids(),
-      formatter:           1,
+      selectedfeaturesfid: layer.getSelectionFids(),
       allfeaturesnumber:   undefined,
       nopaginationsfilter: [],
-      /** Number of pages */
-      currentPage:         0,
       /** Pagination filter features */
       _async:              Object.assign({ state: false, fnc: noop}, (this._async || {})),
-      getAll:              !this.service.state.pagination,
+      getAll:              !pagination,
       /** Whether layer has geometry */
-      geolayer:            this.layer.isGeoLayer(),
+      isGeolayer:          layer.isGeoLayer(),
       paginationParams:    {},
-    }
+    };
   },
+  
+  computed: {
+
+    ApplicationState() {
+      return ApplicationState;
+    },
+
+  },
+
   methods: {
 
     /**
-     * @since 3.10.0
      * @param feature
+     * 
+     * @since 3.10.0
      */
     editFeature(feature) {
       GUI
         .getService('queryresults')
-        .editFeature({ layer: { id: this.layer_id }, feature })
+        .editFeature({ layer: { id: this.layer.getId() }, feature })
     },
+
     get_check_id(cache) {
       if (cache) {
         this.get_check_id.cached_id = getUniqueDomId();
@@ -220,32 +295,25 @@ export default {
       return this.get_check_id.cached_id
     },
 
-    getField(feature, header) {
-      return {
-        value: feature.attributes[header.name],
-        label: undefined // temporary to avoid label
-      }
-    },
-
     async getDataFromBBOX() {
       const map = GUI.getService('map');
 
-      this.service.state.tools.geolayer.active = !this.service.state.tools.geolayer.active;
+      this.state.geolayer.active = !this.state.geolayer.active;
 
-      const is_active = this.service.state.tools.geolayer.active;
+      const is_active = this.state.geolayer.active;
       const listener  = this.mapBBoxEventHandlerKey;
 
-      if (is_active && this.service.state.pagination) {
+      if (is_active && this.state.pagination) {
         listener.cb = () => {
-          this.service.state.tools.geolayer.in_bbox = this.service.state.tools.geolayer.active ? map.getMapBBOX().join(',') : undefined;
+          this.state.geolayer.in_bbox = this.state.geolayer.active ? map.getMapBBOX().join(',') : undefined;
           this.service.emit('ajax-reload');
         };
       }
 
-      if (is_active && !this.service.state.pagination) {
+      if (is_active && !this.state.pagination) {
         listener.cb = async () => {
-          this.service.state.tools.geolayer.in_bbox = this.service.state.tools.geolayer.active ? map.getMapBBOX().join(',') : undefined;
-          this.filterChangeHandler({ type: 'in_bbox' });
+          this.state.geolayer.in_bbox = this.state.geolayer.active ? map.getMapBBOX().join(',') : undefined;
+          this.changeFilter({ type: 'in_bbox' });
         };
       }
 
@@ -262,23 +330,15 @@ export default {
       }
     },
 
-    async toggleFilterToken() {
-      await this.layer.toggleFilterToken();
-    },
-
-    clearAllSelection() {
-      this.layer.clearSelectionFids();
-    },
-
-    async switchSelection() {
-      const has_pagination = this.service.state.pagination;
+    async inverseSelection() {
+      const has_pagination = this.state.pagination;
       const filter         = this.nopaginationsfilter;
       const filtered       = !has_pagination && filter.length ? [] : undefined;
       let selected         = false;
 
       // pagination
       if (has_pagination) {
-        this.service.state.features.forEach(f => {
+        this.state.features.forEach(f => {
           f.selected = !f.selected;
           selected   = f.selected;
         });
@@ -288,11 +348,11 @@ export default {
         await this.getAllFeatures();
       }
 
-      this.service.state.selectAll = (has_pagination && this.paginationfilter) ? selected : this.service.state.selectAll;
+      this.state.selectAll = (has_pagination && this.paginationfilter) ? selected : this.state.selectAll;
 
       // filtered
       if (!has_pagination && filter.length) {
-        this.service.state.features.forEach((f, i) => {
+        this.state.features.forEach((f, i) => {
           if (-1 !== filter.indexOf(i)) {
             filtered.push(f);
           }
@@ -300,12 +360,12 @@ export default {
           this.layer[f.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](f.id);
           selected = selected || f.selected;
         });
-        this.service.state.tools.show = selected;
+        this.state.show_tools = selected;
       }
       
       // no filter
       if (!has_pagination && !filter.length) {
-        this.service.state.features.forEach(f => { f.selected = !f.selected; });
+        this.state.features.forEach(f => { f.selected = !f.selected; });
       }
 
       if (has_pagination || !filter.length) {
@@ -317,7 +377,7 @@ export default {
       }
 
       if (has_pagination || !filter.length) {
-        this.service.state.tools.show = this.selectedfeaturesfid.size > 0;
+        this.state.show_tools = this.selectedfeaturesfid.size > 0;
       }
 
     },
@@ -325,64 +385,64 @@ export default {
     /**
      * Called when a selected feature is checked
      */
-    async selectAllRow() {
+    async selectAllRows() {
       if (!this.state.features.length) {
         return;
       }
       // set inverse of selectAll
-      this.service.state.selectAll = !this.service.state.selectAll;
+      this.state.selectAll = !this.state.selectAll;
 
-      const has_pagination = this.service.state.pagination;
+      const has_pagination = this.state.pagination;
       const filter         = this.nopaginationsfilter;
       let selected         = false;
 
       // filtered
       if (!has_pagination && filter.length) {
-        this.service.state.features.forEach((f, i) => {
+        this.state.features.forEach((f, i) => {
           if (-1 !== filter.indexOf(i)) {
-            f.selected = this.service.state.selectAll;
+            f.selected = this.state.selectAll;
             this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
             selected = selected || f.selected;
           }
         });
-        this.service.state.tools.show = selected;
+        this.state.show_tools = selected;
       }
 
       // no filter
       if (!has_pagination && !filter.length) {
-        this.service.state.tools.show = this.service.state.selectAll;
-        this.layer[this.service.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
-        this.service.state.features.forEach(f => f.selected = this.service.state.selectAll);
+        this.state.show_tools = this.state.selectAll;
+        this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
+        this.state.features.forEach(f => f.selected = this.state.selectAll);
       }
 
       // filtered pagination
-      if (has_pagination && this.paginationfilter && this.service.state.featurescount >= this.service.state.allfeatures) {
-        this.service.state.features.forEach(f => {
-          f.selected = this.service.state.selectAll;
+      if (has_pagination && this.paginationfilter && this.state.featurescount >= this.state.allfeatures) {
+        this.state.features.forEach(f => {
+          f.selected = this.state.selectAll;
           this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
         });
       }
 
-      if (has_pagination && this.paginationfilter && this.service.state.featurescount < this.service.state.allfeatures) {
+      if (has_pagination && this.paginationfilter && this.state.featurescount < this.state.allfeatures) {
         const features = await this.getAllFeatures({
+          formatter: 1,
           search:    this.paginationParams.search,
           ordering:  this.paginationParams.ordering,
-          formatter: this.paginationParams.formatter,
           in_bbox:   this.paginationParams.in_bbox,
         });
         features.forEach(f => {
-          if (!this.getAll && this.geolayer && f.geometry) {
+          if (!this.getAll && this.isGeolayer && f.geometry) {
             this.layer.addOlSelectionFeature({
               id: f.id,
               feature: _createFeatureForSelection(f)
             });
           }
-          this.layer[this.service.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](f.id);
+          this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](f.id);
         })
       }
 
       if (has_pagination) {
-        this.service.state.features.forEach(f => f.selected = this.service.state.selectAll);
+        this.state.features.forEach(f => f.selected = this.state.selectAll);
       }
 
       if (has_pagination && !this.paginationfilter && !this.getAll) {
@@ -390,19 +450,23 @@ export default {
       }
 
       if (has_pagination && !this.paginationfilter) {
-        this.layer[this.service.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
+        this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
       }
 
       if (has_pagination) {
-        this.service.state.tools.show = this.service.state.selectAll || this.selectedfeaturesfid.size > 0;
+        this.state.show_tools = this.state.selectAll || this.selectedfeaturesfid.size > 0;
       }
 
     },
 
-    async zoomAndHighLightFeature(feature, zoom=true) {
+    /**
+     * Highlight or zoom to feature
+     * 
+     * @param {*} feature
+     * @param {*} zoom    - whether zoom to feature
+     */
+    async highlight(feature, zoom=true) {
       const map = GUI.getService('map');
-
-      // this._async = this._async || {};
 
       // async highlight
       if (feature.geometry && this._async.state) {
@@ -440,8 +504,7 @@ export default {
               .getData('search:features', {
                 inputs: {
                   layer,
-                  formatter:       1,
-
+                  formatter: 1,
                   filter: (
                     father_fields
                       .reduce((filter, field, index) => {
@@ -486,24 +549,27 @@ export default {
 
     },
 
-    addRemoveSelectedFeature(feature) {
+    /**
+     * Add or Remove feature to selection
+     */
+    select(feature) {
       feature.selected = !feature.selected;
 
       const selected       = this.selectedfeaturesfid;
       const filter         = this.nopaginationsfilter;
       const count          = this.allfeaturesnumber;
 
-      const select_all     = this.service.state.selectAll;
-      const has_pagination = this.service.state.pagination;
-      const features       = this.service.state.features;
-      const is_active      = this.service.state.tools && this.service.state.tools.filter && this.service.state.tools.filter.active
+      const select_all     = this.state.selectAll;
+      const has_pagination = this.state.pagination;
+      const features       = this.state.features;
+      const is_active      = this.layer && this.layer.state.filter && this.layer.state.filter.active
 
       const is_exclude     = !select_all && selected.has(SELECTION_STATE.EXCLUDE);
       const is_default     = !select_all && !is_exclude;
 
       /** @FIXME add description */
       if (select_all) {
-        this.service.state.selectAll = false;
+        this.state.selectAll = false;
       }
 
       /** @FIXME add description */
@@ -527,7 +593,7 @@ export default {
       }
 
       /** @FIXME add description */
-      this.service.state.tools.show = selected.size > 0;
+      this.state.show_tools = selected.size > 0;
 
       /** @FIXME add description */
       if (
@@ -535,7 +601,7 @@ export default {
         (is_default && selected.size === count) ||
         (!has_pagination && filter.length && filter.length === features.filter(f => f.selected).length)
       ) {
-        this.service.state.selectAll = true;
+        this.state.selectAll = true;
       }
 
     },
@@ -547,13 +613,9 @@ export default {
       }
     },
 
-    hasHeaders() {
-      return !!this.state.headers.length;
-    },
-
     createdContentBody() {
       V_FIELDS = V_FIELDS.filter(comp => { comp.$destroy(); return false; });
-      //trDomeElements
+      // trDomeElements
       table
         .rows()
         .nodes()
@@ -565,40 +627,16 @@ export default {
           const feature = this.state.features[i];
           $(row).addClass('feature_attribute');
           feature.selected && $(row).addClass('selected');
-          $(row).on('click',     () => { !!feature.geometry && this.zoomAndHighLightFeature(feature); });
-          $(row).on('mouseover', () => { !!feature.geometry && this.zoomAndHighLightFeature(feature, false); });
+          $(row).on('click',     () => { !!feature.geometry && this.highlight(feature); });
+          $(row).on('mouseover', () => { !!feature.geometry && this.highlight(feature, false); });
           $(row)
             .children()
             .each((j, element) => {
               const header = this.state.headers[j];
               let comp;
               let dom;
-              if (null === header) {
-                comp = new (Vue.extend(SelectRow))({
-                  propsData: { feature }
-                });
-                comp.$on('selected', feature => this.addRemoveSelectedFeature(feature));
-                this.$watch(
-                  () => feature.selected,
-                  (selected) =>selected ? $(row).addClass('selected'): $(row).removeClass('selected')
-                );
-                dom = comp.$mount().$el;
-                if (this.state.edit) {
-                  const div = document.createElement('div');
-                  div.style.display = 'flex';
-                  div.append(dom);
-                  const edit = new (Vue.extend({
-                    template: `
-                      <span @click.stop = "editFeature" v-t-tooltip:top.create = "'sdk.tooltips.editing'">
-                        <i class  = "action-button skin-color" :class = "g3wtemplate.getFontClass('pencil')"></i>
-                      </span>
-                    `,
-                     methods: { editFeature: this.editFeature.bind(this, feature) }
-                    }))
-                    div.append(edit.$mount().$el)
-                    dom = div;
-                }
-              } else {
+
+              if (null !== header) {
                 comp = new (Vue.extend(Field))({
                   propsData: {
                     state: {
@@ -609,6 +647,34 @@ export default {
                 V_FIELDS.push(comp);
                 dom = comp.$mount().$el;
               }
+
+              if (null === header) {
+                comp = new (Vue.extend(SelectRow))({
+                  propsData: { feature }
+                });
+                comp.$on('selected', feature => this.select(feature));
+                this.$watch(
+                  () => feature.selected,
+                  (selected) =>selected ? $(row).addClass('selected'): $(row).removeClass('selected')
+                );
+                dom = comp.$mount().$el;
+                if (this.layer.isEditable()) {
+                  const div = document.createElement('div');
+                  div.style.display = 'flex';
+                  div.append(dom);
+                  const edit = new (Vue.extend({
+                    template: `
+                      <span @click.stop = "editFeature" v-t-tooltip:top.create = "'sdk.tooltips.editing'">
+                        <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
+                      </span>
+                    `,
+                     methods: { editFeature: this.editFeature.bind(this, feature) }
+                    }))
+                    div.append(edit.$mount().$el)
+                    dom = div;
+                }
+              }
+
               $(element).html(dom);
           })
         });
@@ -617,11 +683,14 @@ export default {
 
     async resize() {
       await this.$nextTick();
-      $('#open_attribute_table div.dataTables_scrollBody').height(
-        $(".content").height()                                               // table height
-        - $('#open_attribute_table div.dataTables_scrollHeadInner').height() // table header height
-        - 130
-      );
+      const table = this.$el.querySelector('div.dataTables_scrollBody');
+      if (table) {
+        table.style.height = (
+            ((document.querySelector('.content')                       || {}).clientHeight || 0) // table height
+          - ((this.$el.querySelector('div.dataTables_scrollHeadInner') || {}).clientHeight || 0) // table header height
+          - 130
+        ) + 'px';
+      }
     },
 
     /**
@@ -634,43 +703,42 @@ export default {
       if (0 === index.length || index.length === this.allfeaturesnumber) {
         this.checkSelectAll();
       } else {
-        this.checkSelectAll(filter.map(i => this.service.state.features[i]));
+        this.checkSelectAll(filter.map(i => this.state.features[i]));
       }
     },
 
     checkSelectAll(features) {
-      features = undefined === features ? this.service.state.features : features;
-      this.service.state.selectAll = (
+      features = undefined === features ? this.state.features : features;
+      this.state.selectAll = (
         this.selectedfeaturesfid.has(SELECTION_STATE.ALL) ||
         (features.length && features.reduce((selectAll, f) => selectAll && f.selected, true))
       );
     },
 
-    getAllFeatures(params) {
-      GUI.setLoadingContent(true);
-      return new Promise((resolve, reject) => {
-        this.layer
-          .getDataTable(params || {})
-          .then(data => {
-            const is_valid = this.geolayer && data.features;
+    async getAllFeatures(params) {
+      try {
+        GUI.setLoadingContent(true);
 
-            if (is_valid && !params) {
-              const loaded_features = this.service.state.features.map(f => f.id);
-              data.features.forEach(f => {
-                if (-1 === loaded_features.indexOf(f.id) && f.geometry) {
-                  this.layer.addOlSelectionFeature({ id: f.id, feature: _createFeatureForSelection(f) });
-                }
-              });
-              this.getAll = true;
-            }
+        const data = await promisify(this.layer.getDataTable(params || {}));
+        const is_valid = this.isGeolayer && data.features;
 
-            if (is_valid) {
-              resolve(data.features);
-            }        
-          })
-          .fail(()   => reject())
-          .always(() => GUI.setLoadingContent(false));
-      });
+        if (is_valid && !params) {
+          const loaded_features = this.state.features.map(f => f.id);
+          data.features
+            .filter(f => f.geometry && -1 === loaded_features.indexOf(f.id))
+            .forEach(f => this.layer.addOlSelectionFeature({ id: f.id, feature: _createFeatureForSelection(f) }));
+          this.getAll = true;
+        }
+
+        if (is_valid) {
+          return data.features;
+        }
+      } catch(e) {
+        console.warn(e);
+        return Promise.reject();
+      } finally {
+        GUI.setLoadingContent(false);
+      }
     },
 
     /**
@@ -685,10 +753,10 @@ export default {
      * 
      * @returns {Promise<{{ data: [], recordsTotal: number, recordsFiltered: number }}>}
      */
-    getData({
+    async getData({
       start     = 0,
       order     = [],
-      length    = this.service.state.pageLength,
+      length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
       columns   = [],
       search    = { value: null },
       firstCall = false,
@@ -699,121 +767,106 @@ export default {
 
       this.layer.setAttributeTablePageLength(length);
 
-      return new Promise((resolve, reject) => {
-
-        // skip when ..
-        if (!this.service.state.headers.length) {
-          resolve({
-            data: [],
-            recordsTotal: 0,
-            recordsFiltered: 0
-          });
-          return;
-        }
-
-        let searchText = search.value && search.value.length > 0 ? search.value : null;
-
-        this.service.state.features.splice(0);
-
-        if (!order.length) {
-          order.push({
-            column: 1,
-            dir: 'asc',
-          });
-        }
-
-        const ordering = ('asc' === order[0].dir ? '' : '-') + this.service.state.headers[order[0].column].name;
-
-        this.currentPage = (start === 0 || (this.service.state.pagination && this.service.state.tools.filter.active)) ? 1 : (start/length) + 1;
-
-        const in_bbox = this.service.state.tools.geolayer.in_bbox;
-
-        const field =  this.service.state.pagination
-          ? columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',')
-          : undefined;
-
-          this.paginationParams = {
-          field:     field || undefined,
-          page:      this.currentPage,
-          page_size: length,
-          search:    searchText,
-          in_bbox,
-          formatter: this.formatter,
-          ordering
+      // skip when ..
+      if (!this.state.headers.length) {
+        return {
+          data: [],
+          recordsTotal: 0,
+          recordsFiltered: 0
         };
+      }
 
-        this.layer
-          .getDataTable(
-            this.service.state.pagination
+      this.state.features.splice(0);
+
+      if (!order.length) {
+        order.push({
+          column: 1,
+          dir: 'asc',
+        });
+      }
+
+      this.paginationParams = {
+        field:     this.state.pagination && columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',') || undefined,
+        page:      (start === 0 || (this.state.pagination && this.layer.state.filter.active)) ? 1 : (start/length) + 1, // get current page
+        page_size: length,
+        search:    search.value && search.value.length > 0 ? search.value : null,
+        in_bbox:   this.state.geolayer.in_bbox,
+        ordering:  ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name,
+      };
+
+      try {
+        const data = await promisify(
+          this.layer.getDataTable(
+            this.state.pagination
               ? this.paginationParams
-              : ({ ordering, in_bbox, formatter: this.formatter })
+              : ({
+                  formatter: 1,
+                  ordering:  this.paginationParams.ordering,
+                  in_bbox:   this.paginationParams.in_bbox,
+                })
           )
-          .then(data => {
-            const { features = [] }  = data;
+        );
+        const { features = [] }  = data;
 
-            this.service.state.allfeatures   = data.count || this.service.state.features.length;
-            this.service.state.featurescount = features.length;
-            this.allfeaturesnumber           = (undefined === this.allfeaturesnumber ? data.count : this.allfeaturesnumber);
-            this.paginationfilter            = (data.count !== this.allfeaturesnumber);
-            this.service.state.pagination    = firstCall
-              ? this.service.state.tools.filter.active || features.length < this.allfeaturesnumber
-              : this.service.state.pagination;
+        this.state.allfeatures   = data.count || this.state.features.length;
+        this.state.featurescount = features.length;
+        this.allfeaturesnumber   = (undefined === this.allfeaturesnumber ? data.count : this.allfeaturesnumber);
+        this.paginationfilter    = (data.count !== this.allfeaturesnumber);
 
-            // add features
-            (features || []).forEach(feature => {
-              const tableFeature = {
-                id:         feature.id,
-                selected:   this.layer.hasSelectionFid(feature.id),
-                attributes: feature.attributes                || feature.properties,
-                geometry:   this.geolayer && feature.geometry || undefined
-              };
+        if (firstCall) {
+          this.state.pagination = this.layer.state.filter.active || features.length < this.allfeaturesnumber;
+        }
 
-              const has_geom  = this.geolayer && feature.geometry;
-              const selection = has_geom && this.layer.getOlSelectionFeature(feature.id);
-
-              if (has_geom && !selection) {
-                this.layer.addOlSelectionFeature({
-                  id:      feature.id,
-                  feature: _createFeatureForSelection(feature)
-                });
-              }
-
-              this.service.state.features.push(tableFeature);
-            });
-
-            this.service.state.tools.show = this.layer.getFilterActive() || this.selectedfeaturesfid.size > 0;
-
-            this.checkSelectAll(); 
-
-            resolve({
-              // DataTable pagination
-              data: this.service.state.features.map(f => {
-                const attrs = f.attributes ? f.attributes : f.properties;
-                const values = [null];
-                this.service.state.headers.filter(h => h).forEach(h => {
-                  h.value = attrs[h.name];
-                  values.push(h.value);
-                });
-                return values;
-              }),
-              recordsFiltered: data.count,
-              recordsTotal:    data.count
-            });
+        // add features
+        this.state.features.push(
+          ...(features || []).map(feature => {
+            const tableFeature = {
+              id:         feature.id,
+              selected:   this.layer.hasSelectionFid(feature.id),
+              attributes: feature.attributes                || feature.properties,
+              geometry:   this.isGeolayer && feature.geometry || undefined
+            };
+            if (this.isGeolayer && feature.geometry && !this.layer.getOlSelectionFeature(feature.id)) {
+              this.layer.addOlSelectionFeature({
+                id:      feature.id,
+                feature: _createFeatureForSelection(feature)
+              });
+            }
+            return tableFeature;
           })
-          .fail(e  => { console.warn(e); GUI.notify.error(t("info.server_error")); reject(e); })
-          .always(() => { GUI.setLoadingContent(false); })
-      });
+        );
+
+        this.state.show_tools = this.layer.getFilterActive() || this.selectedfeaturesfid.size > 0;
+
+        this.checkSelectAll(); 
+
+        return {
+          // DataTable pagination
+          data: this.state.features.map(f => {
+            const attrs = f.attributes ? f.attributes : f.properties;
+            return [null].concat(this.state.headers.filter(h => h).map(h => { h.value = attrs[h.name]; return h.value; }));
+          }),
+          recordsFiltered: data.count,
+          recordsTotal:    data.count
+        };
+      } catch(e) {
+        console.warn(e);
+        GUI.notify.error(t("info.server_error"));
+        return Promise.reject(e);
+      } finally {
+        GUI.setLoadingContent(false);
+      }
     },
 
-    clearAllServiceSelection() {
+    unSelectAll() {
       this.state.features.forEach(f => f.selected = false);
-      this.state.tools.show = false;
+      this.state.show_tools = false;
       this.state.selectAll = false;
     },
 
     clearService() {
-      this.layer.off('unselectionall',    this.clearAllServiceSelection);
-      this.layer.off('filtertokenchange', this.filterChangeHandler);
+      this.layer.off('unselectionall',    this.unSelectAll);
+      this.layer.off('filtertokenchange', this.changeFilter);
 
       this.resetMapBBoxEventHandlerKey();
 
@@ -841,7 +894,7 @@ export default {
      * 
      * @fires redraw when `opts.type` in_bbox filter (or not select all)
      */
-    async filterChangeHandler({ type } = {}) {
+    async changeFilter({ type } = {}) {
       this.allfeaturesnumber = undefined;
 
       if (false === (type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL))) {
@@ -851,9 +904,9 @@ export default {
       let data = [];
 
       // reload data
-      if (!this.service.state.pagination) {
-        this.service.state.features.splice(0);
-        this.service.state.pagination = false;
+      if (!this.state.pagination) {
+        this.state.features.splice(0);
+        this.state.pagination = false;
         data = (await this.getData()).data || [];
       }
 
@@ -865,36 +918,14 @@ export default {
       this._async.state = (100 === options.perc);
     },
 
+    initDataTable() {
+
+    },
+
   },
 
   beforeCreate() {
     this.delayType = 'debounce';
-    this.layer = CatalogLayersStoresRegistry.getLayerById(this.$options.layerId);
-    this.service = new G3WObject();
-    this.service.state = {
-      pageLengths:   PAGELENGTHS,
-      pageLength:    this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
-      features:      [],
-      title:         this.layer.getTitle(),
-      headers:       [null, ...this.layer.getTableHeaders()], // first value is `null` for DataTable purpose (used to add a custom input selector)
-      geometry:      true,
-      loading:       false,
-      allfeatures:   0,
-      pagination:    true,
-      selectAll:     false,
-      nofilteredrow: false,
-      tools: {
-        geolayer: {
-          show:      this.layer.isGeoLayer(),
-          active:    false,
-          in_bbox:   undefined,
-        },
-        show:        false,
-        filter:      this.layer.state.filter
-      },
-      edit:          this.layer.isEditable(),     /*@since 3.10.0 */
-      layer_id:      this.layer.getId(),          /*@since 3.10.0*/
-    };
   },
 
   /**
@@ -904,10 +935,9 @@ export default {
    */
   async created() {
 
-    this.mapBBoxEventHandlerKey = {
-      key: null,
-      cb: null
-    };
+    this.service = new G3WObject();
+    this.service.state = this.state;
+
     // table content
     const comp = this.g3wComponent = new Component({
       id: 'openattributetable',
@@ -919,14 +949,19 @@ export default {
     this.service.on('redraw', () => { comp.layout(); });
     comp.on('unmount', () => { this.clearService(); })
 
-    // bind context on event listeners
-    this.clearAllServiceSelection = this.clearAllServiceSelection.bind(this);
-    this.filterChangeHandler      = this.filterChangeHandler.bind(this);
-    this.onGUIContent             = this.onGUIContent.bind(this)
+    this.mapBBoxEventHandlerKey = {
+      key: null,
+      cb: null
+    };
 
-    GUI.onbefore('setContent', this.onGUIContent);
-    this.layer.on('unselectionall',    this.clearAllServiceSelection);
-    this.layer.on('filtertokenchange', this.filterChangeHandler);
+    // bind context on event listeners
+    this.unSelectAll  = this.unSelectAll.bind(this);
+    this.changeFilter = this.changeFilter.bind(this);
+    this.onGUIContent = this.onGUIContent.bind(this)
+
+    GUI.onbefore('setContent',         this.onGUIContent);
+    this.layer.on('unselectionall',    this.unSelectAll);
+    this.layer.on('filtertokenchange', this.changeFilter);
 
     // overwrite show method
     comp.show = async (opts = {}) => {
@@ -964,8 +999,6 @@ export default {
 
     await this.$nextTick();
 
-    this.first = false;
-
     table = $(this.$refs.attribute_table).DataTable({
       "scrollX": true,
       "processing": false,
@@ -979,24 +1012,23 @@ export default {
         "searchable": false,
         "width": '1%'
       } ],
-      "lengthMenu": this.state.pageLengths,
-      "pageLength": this.state.pageLength,
+      "lengthMenu": PAGELENGTHS,
+      "pageLength": this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
       ...(
         this.state.pagination
         ? {
           "columns": this.state.headers,
-          "ajax": debounce((data, cb) => {
-            //remove listeners
-            $('#open_attribute_table table tr').each(el => { $(el).off('click'); $(el).off('mouseover'); });
-            this
-              .getData(data)
-              .then(async d => {
-                cb(d);
-                await this.$nextTick();
-                this.createdContentBody();
-                if (this.isMobile()) { _hideDataTableElements(); }
-              })
-              .catch(console.warn)
+          "ajax": debounce(async (data, cb) => {
+            try {
+              console.log(data, cb);
+              // remove listeners
+              $('#open_attribute_table table tr').each(el => { $(el).off('click'); $(el).off('mouseover'); });
+              cb(await this.getData(data));
+              await this.$nextTick();
+              this.createdContentBody();
+            } catch(e) {
+              console.warn(e);
+            }
           }, 800),
           "serverSide": true,
           "deferLoading": this.state.allfeatures,
@@ -1021,20 +1053,10 @@ export default {
       }
     });
 
-    if (this.isMobile()) {
-      _hideDataTableElements();
-    }
-
-    $('#g3w-table-toolbar').html((new (Vue.extend(G3wTableToolbar))({
-      propsData: {
-        tools:             this.state.tools,
-        geolayer:          this.state.geolayer,
-        switchSelection:   this.switchSelection,
-        clearAllSelection: this.clearAllSelection,
-        toggleFilterToken: this.toggleFilterToken,
-        getDataFromBBOX:   this.getDataFromBBOX
-      },
-    })).$mount().$el);
+    // move "table_toolbar" DOM element under datatable 
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(this.$refs.table_toolbar);
+    document.getElementById('g3w-table-toolbar').appendChild(fragment);
 
     this.service.on('redraw', data => {
       table.clear();
@@ -1043,9 +1065,6 @@ export default {
         table.rows.add(data);
         table.draw(false);
         this.createdContentBody();
-        if (this.isMobile()) {
-          _hideDataTableElements();
-        }
       })
     })
   },
@@ -1072,6 +1091,28 @@ export default {
     margin-top: 10px;
   }
   input.form-control.column-search {
-  font-weight: normal;
+    font-weight: normal;
+  }
+  #g3w-table-toolbar .action-button {
+    padding: 4px;
+  }
+  #g3w-table-toolbar .action-button.toggled {
+    border: 1px solid #cccccc;
+  }
+</style>
+
+<style>
+.is-mobile .dataTables_info,
+.is-mobile .dataTables_length {
+  display: none;
+}
+.is-mobile .dataTables_paginate {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  margin: 0;
+}
+.is-mobile .dataTables_filter {
+  float: right;
 }
 </style>
