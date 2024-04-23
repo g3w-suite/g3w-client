@@ -29,7 +29,11 @@
 
         <helpdiv message="sdk.spatialbookmarks.helptext"/>
         <div class="container add-bookmark-input" style="padding: 5px; width: 100%">
-          <input-text :state="addbookmarkinput" />
+          <g3w-field
+            :state = "addbookmarkinput"
+            mode   = "input"
+            _type  = "text"
+          />
         </div>
         <div style="margin-top: 5px;">
           <button
@@ -79,17 +83,30 @@
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS } from 'app/constant';
-  import GUI from 'services/gui';
-  import ApplicationService from 'services/application';
-  import ProjectsRegistry from 'store/projects';
-  import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
-  import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
-  import InputText from "components/InputText.vue";
+  import { LOCAL_ITEM_IDS }   from 'app/constant';
+  import GUI                  from 'services/gui';
+  import ApplicationService   from 'services/application';
+  import ProjectsRegistry     from 'store/projects';
+  import G3WField             from 'components/G3WField.vue';
+  import SpatialBookMarkGroup from 'components/SpatialBookMarkGroup.vue';
+  import SpatialBookMarkItem  from 'components/SpatialBookMarkItem.vue';
 
-  const { uniqueId } = require('core/utils/utils');
+  const { uniqueId } = require('utils');
   const { t } = require('core/i18n/i18n.service');
 
+  Object
+    .entries({
+      LOCAL_ITEM_IDS,
+      GUI,
+      ApplicationService,
+      ProjectsRegistry,
+      G3WField,
+      SpatialBookMarkGroup,
+      SpatialBookMarkItem,
+      uniqueId,
+      t,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
@@ -99,9 +116,9 @@
     name: 'spatial-bookmarks',
 
     components: {
+      'g3w-field': G3WField,
       SpatialBookMarkGroup,
       SpatialBookMarkItem,
-      InputText,
     },
 
     data() {

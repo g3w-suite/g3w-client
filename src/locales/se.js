@@ -13,11 +13,13 @@ export default {
     sign_in:"Logga in",
     layer_selection_filter: {
       tools: {
-        filter: "Lägg till/Avlägsna Filtrera",
+        filter: "Aktivera/inaktivera filter",
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan"
+        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        savefilter: "Spara Filter",
+        filterName: "Filternamn",
       }
     },
     warning: {
@@ -179,7 +181,8 @@ export default {
       tooltips: {
         relations: {
           form_to_row: "Radvy",
-          row_to_form: "Tabellvy"
+          row_to_form: "Tabellvy",
+          zoomtogeometry: "Zooma till geometri",
         },
         copy_map_extent_url: 'Kopiera länk till karta',
         download_shapefile: "Ladda SHP-fil",
@@ -334,13 +337,6 @@ export default {
         list_of_relations_feature: 'Lista på egenskapens relationer',
         error_missing_father_field: "Fält saknas"
       },
-      workflow: {
-        steps: {
-          title: 'Skeden'
-        },
-        next: "Nästa",
-
-      },
       form: {
         loading: 'Laddning...',
         inputs: {
@@ -487,8 +483,10 @@ export default {
       geolocations: {
         error: "Du kan inte lokaliseras"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Välj ett lager där du vill lägga till denna funktion",
         placeholder: "Adress ...",
+        nolayers: "Inga redigerbara punktlager hittades i det här projektet",
         noresults: "Inga resultat",
         notresponseserver: "Inget svar från servern"
       },
@@ -532,7 +530,8 @@ export default {
         show_metadata: "Metadata",
         styles: "Stilar",
         vector_color_menu: "Ställ in/ändra färg",
-        layer_opacity: "Opacitet"
+        layer_opacity: "Opacitet",
+        filters: "Filters",
       }
     },
     dataTable: {

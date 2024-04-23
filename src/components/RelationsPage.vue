@@ -24,13 +24,15 @@
 </template>
 
 <script>
-import GUI                                from 'services/gui';
-import RelationsComponent                 from 'components/Relations.vue';
-import RelationComponent                  from 'components/Relation.vue';
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
-import { RelationEventBus as VM }         from 'app/eventbus';
-
-const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
+import GUI                                  from 'services/gui';
+import RelationsComponent                   from 'components/Relations.vue';
+import RelationComponent                    from 'components/Relation.vue';
+import {
+  G3W_FID,
+  LIST_OF_RELATIONS_TITLE,
+}                                           from 'app/constant';
+import { RelationEventBus as VM }           from 'app/eventbus';
+import { getFeaturesFromResponseVectorApi } from "utils/getFeaturesFromResponseVectorApi";
 
 export default {
 

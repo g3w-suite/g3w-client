@@ -1,9 +1,8 @@
-import DataRouterService from 'services/data';
+import DataRouterService           from 'services/data';
+import { convertFeatureToGEOJSON } from 'utils/convertFeatureToGEOJSON';
 
-const { convertFeatureToGEOJSON } = require('core/utils/geo');
-
-const { inherit, base } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+const { inherit, base } = require('utils');
+const G3WObject         = require('core/g3wobject');
 
 function FormService() {
 

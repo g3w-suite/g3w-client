@@ -6,14 +6,8 @@
 // ``` .left-side has been deprecated as of 2.0.0 in favor of .main-sidebar ```
 
 .main-sidebar,
+.sidebar-aside-toggle,
 .left-side {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding-top: 50px;
-  min-height: 100%;
-  width: @sidebar-width;
-  z-index: 810;
   //Using disposable variable to join statements with a comma
   @transition-rule: @transition-speed @transition-fn,
     width @transition-speed @transition-fn;
@@ -34,6 +28,15 @@
       .translate(0, 0);
     }
   }
+}
+
+.left-side {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding-top: 50px;
+  min-height: 100%;
+  z-index: 810;
 }
 
 .sidebar {

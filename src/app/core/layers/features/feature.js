@@ -1,6 +1,6 @@
 import CONSTANT from 'app/constant';
 
-const { uniqueId } = require('core/utils/utils');
+const { uniqueId } = require('utils');
 
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
 
@@ -11,10 +11,12 @@ const Feature = function(options={}) {
   this._geometry = false;
   const {feature, properties} = options;
   if (feature) {
-    // check if has to set only some properties or all feature properties
-    if (properties && Array.isArray(properties))
+    // check if it has to set only some properties or all feature properties
+    if (properties && Array.isArray(properties)) {
       properties.forEach(property => this.set(property, feature.get(property)));
-    else this.setProperties(feature.getProperties());
+    } else {
+      this.setProperties(feature.getProperties());
+    }
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
     const geometry = feature.getGeometry();
@@ -58,11 +60,22 @@ proto.isGeometry = function(){
   return this._geometry;
 };
 
-proto.cloneNew = function(){
+/**
+ * Clone a feature with id and pk new
+ * @param pk field <Object> send pk field
+ * @returns {Feature}
+ */
+proto.cloneNew = function(pk){
   const clone = this.clone();
   const uid = uniqueId();
   clone._setUid(uid);
   clone.setTemporaryId();
+  //in case of send pk field object set temporary new value
+  //to avoid duplicate pk when save clone feature on server
+  if (pk && false === pk.editable) {
+    //need to be set null
+    clone.set(pk.name, null);
+  }
   return clone;
 };
 

@@ -1,7 +1,7 @@
 import ProjectsRegistry from 'store/projects';
 import GUI from 'services/gui';
 
-const { inherit } = require('core/utils/utils');
+const { inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 const ProjectMetadataComponent = require('gui/metadata/vue/components/project/project');
 

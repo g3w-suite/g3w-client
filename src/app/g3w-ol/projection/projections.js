@@ -1,8 +1,8 @@
-import { API_BASE_URLS } from 'constant';
+import { API_BASE_URLS } from 'app/constant';
+import { normalizeEpsg } from 'utils/normalizeEpsg';
 
 const Projection       = require('g3w-ol/projection/projection');
-const { XHR }          = require('core/utils/utils');
-const {normalizeEpsg } = require('core/utils/geo');
+const { XHR }          = require('utils');
 
 const Projections = {
 
@@ -15,7 +15,9 @@ const Projections = {
 
   get(crs={}) {
     const cachedProjection = this.isRegistered(crs.epsg);
-    if (cachedProjection) return cachedProjection;
+    if (cachedProjection) {
+      return cachedProjection;
+    }
     const projection = new Projection({
       crs
     });
@@ -35,8 +37,9 @@ const Projections = {
     return new Promise((resolve, reject) => {
       let projection = this.isRegistered(epsg);
       // check if already register
-      if (projection) resolve(projection);
-      else {
+      if (projection) {
+        resolve(projection);
+      } else {
         XHR.get({url: `${API_BASE_URLS.CRS}${epsg.split(':')[1]}`})
           .then(({result, data}) => {
             if (result)  {

@@ -10,7 +10,7 @@ import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 
 const { t } = require('core/i18n/i18n.service');
-const { uniqueId, createFilterFromString, XHR } = require('core/utils/utils');
+const { uniqueId, createFilterFromString, XHR } = require('utils');
 
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 

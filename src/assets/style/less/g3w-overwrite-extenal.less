@@ -31,6 +31,14 @@ table.dataTable {
   border-bottom: 0;
 }
 
+/**
+* @since 3.9.0
+ */
+
+.dataTables_filter input.search, .dataTables_length select {
+  border-radius: 3px;
+}
+
 .bootbox.dialogFullScreen {
   .modal-dialog {
     width: 90% !important;
@@ -123,4 +131,10 @@ table.dataTable {
 
 .ql-tooltip[data-mode="link"] {
   left: 0 !important;
+}
+
+body {
+  .tooltip .tooltip-inner {
+    max-width: 100% !important;
+  }
 }

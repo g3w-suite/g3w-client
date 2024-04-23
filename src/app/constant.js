@@ -18,7 +18,8 @@ import version from '../version';
 export const APP_VERSION = version;
 
 /**
- * Default editing capabilities 
+ * Default editing capabilities
+ * @deprecated  Will be removed in 4.x. Moved to g3w-client-plugin-editing
  * 
  * @type {string[]}
  */
@@ -434,7 +435,6 @@ export const API_BASE_URLS = {
    * @since v3.8
    */
   CRS: '/crs/',
-
 };
 
 /**
@@ -620,10 +620,28 @@ export const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
  */
 export const SPATIAL_METHODS = ['intersects', 'within'];
 
+/**
+ * DPI96
+ * 
+ * DOTS_PER_INCH = ol.has.DEVICE_PIXEL_RATIO * 96;
+ * 
+ * @since 3.10.0
+ */
+export const DOTS_PER_INCH = 96;
+
+/**
+ * @since 3.10.0
+ */
+export const INCHES_PER_UNIT = {
+  m: 39.37,
+  degrees: 4374754
+};
+
 export default {
   APP_VERSION,
   API_BASE_URLS,
   DEFAULT_EDITING_CAPABILITIES,
+  DOTS_PER_INCH,
   DOWNLOAD_FORMATS,
   FILTER_OPERATORS,
   FILTER_EXPRESSION_OPERATORS,
@@ -631,6 +649,7 @@ export default {
   G3W_FID,
   GEOMETRY_FIELDS,
   GEOMETRY_TYPES,
+  INCHES_PER_UNIT,
   LIST_OF_RELATIONS_TITLE,
   LIST_OF_RELATIONS_ID,
   LOCAL_ITEM_IDS,

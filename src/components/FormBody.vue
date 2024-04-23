@@ -29,7 +29,7 @@
         <form v-else class="form-horizontal g3w-form">
           <div class="box-primary">
             <div class="box-body">
-              <g3w-input
+              <g3w-field
                 v-for              = "field in state.fields"
                 :state             = "field"
                 :addToValidate     = "_addToValidate"
@@ -38,7 +38,8 @@
                 @changeinput       = "_changeInput"
                 @addinput          = "_addToValidate"
                 @removeinput       = "_removeToValidate"
-                _legacy = "g3w-input"
+                mode               = "input"
+                _type              = "legacy"
               />
             </div>
           </div>
@@ -56,7 +57,7 @@
 <form v-else class="form-horizontal g3w-form">
   <div class="box-primary">
     <div class="box-body">
-      <g3w-input
+      <g3w-field
         v-for             = "field in state.fields"
         :state            = "field"
         :addToValidate    = "addToValidate"
@@ -65,7 +66,8 @@
         @changeinput      = "changeInput"
         @addinput         = "addToValidate"
         @removeinput      = "removeToValidate"
-        _legacy           = "g3w-input"
+        mode              = "input"
+        _type             = "legacy"
       />
     </div>
     <div v-if="show_required_field_message" id="g3w-for-inputs-required-inputs-message">
@@ -77,6 +79,9 @@
 </template>
 
 <script>
+import G3WField from 'components/G3WField.vue';
+
+console.assert(undefined !== G3WField, 'G3WField is undefined')
 
 /**
  * @TODO remove "Vue.extend" from module export
@@ -85,6 +90,10 @@ export default Vue.extend({
 
   /** @since 3.8.6 */
   name: 'form-body',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
 
@@ -182,12 +191,12 @@ export default Vue.extend({
     /**
      * Whether this is a InputG3WFormInputs component
      * 
-     * @example <form-body _legacy="g3w-form-inputs" />
+     * @example <form-body _legacy="form-inputs" />
      * 
      * @since 3.9.0
      */
      __hasWrapper() {
-      return 'g3w-form-inputs' !== this._legacy;
+      return 'form-inputs' !== this._legacy;
     },
 
   },

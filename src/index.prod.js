@@ -38,8 +38,6 @@ import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
 import SidebarComponent from 'components/Sidebar.vue';
 import ViewportComponent from 'components/Viewport.vue';
-import G3WInput from 'components/G3WInput.vue';
-import G3WField from 'components/G3WField.vue';
 
 //directives
 import vDisabled from 'directives/v-disabled';
@@ -55,28 +53,16 @@ import vTPlugin from 'directives/v-t-plugin';
 import vPlugins from 'directives/v-plugins';
 import vOnline from 'directives/v-online';
 import vDownload from 'directives/v-download';
+import vClickOutside from 'directives/v-click-outside'
 
 // constants
 import { FONT_AWESOME_ICONS } from 'app/constant';
 
-const { base, inherit, toRawType } = require('core/utils/utils');
+const { base, inherit, toRawType } = require('utils');
 const { t, tPlugin }               = require('core/i18n/i18n.service');
 const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
-
-
-/**
- * BACKCOMP
- */
-function _alias(vm, props) {
-  return {
-    functional: true,
-    render(h, { data, children }) {
-      return h( vm, { ...data, props: { ...data.props, props } }, children);
-    },
-  };
-}
 
 /**
  * Install global components
@@ -91,22 +77,6 @@ Vue.component(Resize.name, Resize);
 Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('layerspositions',    _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'layer_positions' }, _plain: "true" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('datetime',           _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'datetime' }, _plain: "true" }));
-/** @deprecated since 3.9.0. Use "<g3w-input>" instead. **/
-Vue.component('range',              _alias(G3WInput, { _legacy: "g3w-input", state: { visible: true, type: 'range_slider' }, _plain: "true" }));
-/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-image',          _alias(G3WField, { _legacy: "g3w-imagefield" }));
-/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-images-gallery', _alias(G3WField, { _legacy: "g3w-galleryfield" }));
-/** @deprecated since 3.9.0. Use "<g3w-field>" instead. **/
-Vue.component('g3w-geospatial',     _alias(G3WField, { _legacy: "g3w-geofield" }));
-/** @since 3.9.0 **/
-Vue.component(G3WInput.name, G3WInput);
-/** @since 3.9.0 **/
-Vue.component(G3WField.name, G3WField);
 
 /**
  * Install application filters
@@ -134,6 +104,7 @@ Vue.directive("t-plugin", vTPlugin);
 Vue.directive("plugins", vPlugins);
 Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
+Vue.directive("click-outside", vClickOutside);
 
 
 /**
@@ -761,7 +732,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       const queryResultsComponent = GUI.getComponent('queryresults');
       const queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
-      results && queryResultService.setQueryResponse(results);
+      if (results) {
+        queryResultService.setQueryResponse(results);
+      }
       GUI.showContextualContent({
         content: queryResultsComponent,
         title: "info.title",

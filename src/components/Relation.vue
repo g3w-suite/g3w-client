@@ -4,13 +4,11 @@
 -->
 
 <template>
-
   <div
     v-if   = "table"
     class  = "query-relation"
     ref    = "query_relation"
     :class = "isMobile() ? 'mobile' : null"
-    style  = "margin-top: 3px;"
     >
 
     <div
@@ -19,26 +17,30 @@
     >
       <div
         style  = "border-radius: 3px;"
-        :style = "{ fontSize: isMobile() ? '1em' : '1.3em' }"
         class  = "g3w-long-text"
       >
+
+        <!-- BACK BUTTON -->
         <span
           v-if                     = "showrelationslist"
-          style                    = "font-size: 0.8em;"
           v-t-tooltip:right.create = "'sdk.relations.back_to_relations'"
-          class                    = "action-button-icon action-button"
+          class                    = "action-button-icon action-button back-button"
           :class                   = "g3wtemplate.getFontClass('exit')"
           @click.stop              = "back"
         ></span>
+
+        <!-- RELATION NAME -->
         <span class="relation-tile skin-color"> {{ relation.name }}</span>
+
       </div>
       <div
         v-if="table.rows.length"
         class="relations-table-tools"
       >
+
+        <!-- DOWNLOAD BUTTON -->
         <span
           v-if                    = "downloadButton"
-          style                   = "padding: 5px;"
           v-download
           class                   = "action-button-icon action-button"
           :class                  = "[
@@ -76,12 +78,14 @@
         }"
         ref    = "tablecontent"
       >
-        <div v-if="headercomponent" class="relation-header-component">
+        <div
+          v-if  = "headercomponent"
+          class = "relation-header-component"
+        >
           <g3w-field
             :layer  = "downloadLayer.state"
             :config = "downloadLayer.config"
             :_type  = "headercomponent"
-            _legacy = "g3w-field"
           />
         </div>
         <table
@@ -92,9 +96,9 @@
           <thead>
             <tr style="height: 0! important">
               <th
-                v-if   = "table.formStructure || isEditable"
+                v-if   = "showTools"
                 :style = "{
-                    minWidth: `${( (1 * !!table.formStructure) + (1 * isEditable) ) * 30}px`,
+                    minWidth: this.showTools * 30 + 'px',
                     padding: '0 !important'
                 }"
               ></th>
@@ -103,6 +107,7 @@
               >{{ column }}</th>
             </tr>
           </thead>
+
           <tbody>
             <tr
               v-for  = "(row, index) in table.rows"
@@ -113,24 +118,29 @@
 
               <!-- RELATION ACTIONS -->
               <td
-                v-if  = "table.formStructure || isEditable"
+                v-if  = "showTools"
                 class = "relation-actions"
               >
+                <span
+                  v-if                     = "table.features[index].geometry"
+                  @click.stop              = "zoomToGeometry(table.features[index].geometry)"
+                  class                    = "action-button row-form skin-color"
+                  v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
+                  :class                   = "g3wtemplate.getFontClass('marker')"
+                ></span>
                 <span
                   v-if                     = "table.formStructure"
                   @click.stop              = "showFormStructureRow($event, row)"
                   style                    = "cursor: pointer"
-                  :current-tooltip         = "table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                  :current-tooltip         = "`sdk.tooltips.relations.${table.rowFormStructure === row ? 'form_to_row' : 'row_to_form'}`"
                   class                    = "action-button row-form skin-color"
-                  v-t-tooltip:right.create = "table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                  :class="[
-                    table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') : g3wtemplate.getFontClass('table')
-                  ]"
+                  v-t-tooltip:right.create = "`sdk.tooltips.relations.${table.rowFormStructure === row ? 'form_to_row' : 'row_to_form'}`"
+                  :class                   = "g3wtemplate.getFontClass(table.rowFormStructure === row ? 'minus' : 'table')"
                 ></span>
                 <span
                   v-if                     = "isEditable"
                   @click.stop              = "editFeature(index)"
-                  class                    ="action-button row-form skin-color"
+                  class                    = "action-button row-form skin-color"
                   v-t-tooltip:right.create = "'Edit'"
                   :class                   = "g3wtemplate.getFontClass('pencil')"
                 ></span>
@@ -151,17 +161,21 @@
               </td>
 
               <!-- RELATION FIELDS -->
-              <td
-                v-else
-                v-for = "value in row"
-                class = "relation-field"
-              >
-                <g3w-field :state="({ value })" _legacy="g3w-field" />
-              </td>
-
+              <template                 v-else>
+                <td
+                  v-for = "value in row"
+                  class = "relation-field"
+                >
+                  <g3w-field
+                    :state  = "({ value })"
+                  />
+                </td>
+            </template>
             </tr>
           </tbody>
+
         </table>
+
       </div>
       <g3w-resize
         :show    = "chart"
@@ -173,12 +187,7 @@
       <div
         v-show = "chart"
         id     = "chart_content"
-        :style = "{
-          width:         chart ? '30%' : '0',
-          paddingBottom: '5px',
-          marginBottom:  '5px',
-          marginLeft:    '8px'
-        }"
+        :style = "{ width: chart ? '30%' : '0' }"
         ref    = "chartcontent"
       ></div>
     </div>
@@ -186,29 +195,30 @@
     <div
       v-else
       class = "dataTables_scrollBody"
-      style = "font-weight: bold; margin-top: 10px; font-size: 1.1em; display: flex; justify-content: space-between;"
     >
       <span v-t="'sdk.relations.no_relations_found'"></span>
     </div>
 
   </div>
+
 </template>
 
 <script>
 import { G3W_FID }                  from 'app/constant';
+import G3WField                     from 'components/G3WField.vue';
 import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import GUI                          from 'services/gui';
 import { resizeMixin }              from 'mixins';
 import { RelationEventBus as VM }   from 'app/eventbus';
-
-const { throttle } = require('core/utils/utils');
+import { throttle }                 from 'utils/throttle';
 
 let SIDEBARWIDTH;
 
 Object
     .entries({
       G3W_FID,
+      G3WField,
       DownloadFormats,
       CatalogLayersStoresRegistry,
       GUI,
@@ -222,6 +232,10 @@ export default {
 
   /** @since 3.8.6 */
   name: 'relation',
+
+  components: {
+    'g3w-field': G3WField,
+  },
 
   props: {
     table:           {},
@@ -252,12 +266,20 @@ export default {
       },
     };
   },
-  
 
   computed: {
 
+    /**
+     * @returns { number } count of available tools (editing icon, form structure, zoom to feature, ...)
+     * 
+     * @since 3.9.0
+     */
+    showTools() {
+      return [!!this.isEditable, !!this.table.formStructure, !!this.isGeoLayer].filter(Boolean).length;
+    },
+
     showrelationslist() {
-      return 'relations' === this.previousview && !this.relationnoback;
+      return 'relations' === this.previousview  && !this.relationnoback;
     },
 
     one() {
@@ -268,18 +290,39 @@ export default {
 
   methods: {
 
+    /**
+    * @param { Object } geometry 
+    * @param geometry.type        Point, MultiPoint, etc ...
+    * @param geometry.coordinates
+    * 
+    * @since 3.9.0
+    */
+    zoomToGeometry(geometry) {
+      if (geometry) {
+        GUI
+          .getService('map')
+          .zoomToGeometry(new ol.geom[geometry.type](geometry.coordinates), { highlight: true });
+      }
+    },
+
+    /**
+     * @returns { Promise<void> }
+     */
     async createTable() {
       const layer     = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
       this.isEditable =  layer.isEditable() && !layer.isInEditing();
 
-      const downloadformats       = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
-      const downloadformatsLength = downloadformats.length;
+      /** whether feature has geometry. */
+      this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry); // layer.isGeolayer() may return true, but QGIS project is not set to return geometry on response
 
-      if (downloadformatsLength > 0) {
+      const downloadformats       = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
+
+      /** @FIXME add description */
+      if (downloadformats.length > 0) {
         this.downloadButton = {
           toggled: false,
-          tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-          handler: downloadformatsLength > 1
+          tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
+          handler: downloadformats.length > 1
             ? async () => {
               this.downloadButton.toggled         = !this.downloadButton.toggled;
               this.downloadLayer.state            = this.downloadLayer.state || layer.state;
@@ -338,58 +381,78 @@ export default {
             "scrollX":        true,
             "responsive":     true,
             "order":          [ this.table.formStructure ? 1 : 0, 'asc' ],
-            "columnDefs":     [ {"orderable":  !this.table.formStructure, "targets": 0 }]
+            "columnDefs":     [{ "orderable":  this.showTools, targets: 0 }],
+            "autoWidth":      false,
           });
         this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-        //this.resize();
+
       }
 
-      // In case of pop child relation need to resize
-      GUI.on('pop-content', this.resize);
+      // resize after popping child relation 
+      GUI.on('pop-content', () => setTimeout(() => this.resize()));
     },
 
+    /**
+     * @returns { Promise<void> }
+     */
     async resize() {
-      // skep when we are not waiting table
+      // skip when we are not waiting table
       if (!this.$refs.query_relation || this.$refs.query_relation.parentNode.style.display === 'none') {
         return;
       }
-      const tableHeight        = $(".content").height();
-      const datatableBody      = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
 
-      datatableBody.height(
-        tableHeight
+      const table = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
+
+      table.height(
+        $(".content").height()
         - this.tableHeaderHeight
-        - $('.content_breadcrumb').outerHeight()
-        - $('.navbar-header').outerHeight()
-        - $('.close-panel-block').outerHeight()
-        - $(this.$refs['relation-header']).outerHeight()
-        - $('.dataTables_filter').last().outerHeight()
+        - $('.content_breadcrumb')                       .outerHeight()
+        - $('.navbar-header')                            .outerHeight()
+        - $('.close-panel-block')                        .outerHeight()
+        - $(this.$refs['relation-header'])               .outerHeight()
+        - $('.dataTables_filter').last()                 .outerHeight()
         - $('.dataTables_paginate.paging_simple_numbers').outerHeight()
-        - $('.dataTables_scrollHead').last().outerHeight()
+        - $('.dataTables_scrollHead').last()             .outerHeight()
       );
 
+      // layer has form Structure
       if (this.table.rowFormStructure) {
         $('.row-wrap-tabs > .tabs-wrapper').width(
-          datatableBody.width() - $(this.$refs.relationtable).find('tr.selected > td').outerWidth() - 20
+          table.width()
+          - $(this.$refs.relationtable).find('tr.selected > td').outerWidth()
+          - 20
         );
       }
   
       this.reloadLayout();
     },
 
+
+    /**
+     * @param type
+     */
     saveRelation(type) {
       this.$emit('save-relation', type);
       this.downloadButton.toggled = false;
     },
 
-    async showFormStructureRow(evt, row) {
-      this.table.rowFormStructure = (this.table.rowFormStructure === row ? null : row);
-      this.fields = this.getRowFields(row);
+    /**
+     * @param event
+     * @param row
+     *
+     * @returns { Promise<void> }
+     */
+    async showFormStructureRow(event, row) {
+      this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
+      this.fields                 = this.getRowFields(row);
       await this.$nextTick();
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
     },
 
+    /**
+     * @param index
+     */
     editFeature(index) {
       GUI
         .getService('queryresults')
@@ -402,6 +465,11 @@ export default {
         });
     },
 
+    /**
+     * @param row
+     *
+     * @returns {*}
+     */
     getRowFields(row) {
       return this.table.fields.map((field, index) => {
         field.value = row[index];
@@ -411,19 +479,28 @@ export default {
       });
     },
 
+    /**
+     * @FIXME add description
+     */
     reloadLayout() {
       if (this.relationDataTable) {
         this.relationDataTable.columns.adjust();
       }
     },
 
+    /**
+     * @FIXME add description
+     */
     back() {
       this.$parent.setRelationsList();
     },
 
+    /**
+     * @param evt
+     */
     moveFnc(evt) {
-      const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
-      const size = evt.pageX + 2 - sidebarHeaderSize;
+      const sidebarHeaderSize             =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
+      const size                          = evt.pageX + 2 - sidebarHeaderSize;
       this.$refs.tablecontent.style.width = `${size}px`;
       this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
     },
@@ -433,23 +510,29 @@ export default {
   watch: {
 
     /**
-     * in case of show relation directly
+     * When showing a relation directly
      */
     table: {
       immediate: true,
       handler(table) {
         if (table && table.rows.length) {
-         this.createTable();
+          this.createTable();
         }
-      }
+      },
     },
 
-    async chart(){
+    /**
+     * @FIXME add description
+     */
+    async chart() {
       await this.$nextTick();
       this.resize();
     },
 
-    async headercomponent(){
+    /**
+     * @FIXME add description
+     */
+    async headercomponent() {
       await this.$nextTick();
       this.resize();
     },
@@ -460,52 +543,98 @@ export default {
     this.delayType = 'debounce';
   },
 
+  /**
+   * @fires hide-chart
+   */
   async beforeDestroy() {
-    if (this.relationDataTable) {
-      this.relationDataTable.destroy();
-      this.relationDataTable = null;
-      if (this.chartContainer) {
-        this.$emit('hide-chart', this.chartContainer)
-      }
-      this.chartContainer    = null;
-      this.tableHeaderHeight = null;
-      GUI.off('pop-content', this.resize);
+    // skip when ..
+    if (!this.relationDataTable) {
+      return;
     }
+    this.relationDataTable.destroy();
+    this.relationDataTable = null;
+    if (this.chartContainer) {
+      this.$emit('hide-chart', this.chartContainer);
+    }
+    this.chartContainer    = null;
+    this.tableHeaderHeight = null;
+    GUI.off('pop-content', this.resize);
   },
 
 };
 </script>
 
 <style scoped>
-.relation-header {
-  padding: 3px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-.relation-tile {
-  font-weight: bold;
-}
-.relations-table-tools {
-  font-size: 1.1em;
-  margin-bottom: 3px;
-}
-.relation-wrapper {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  margin-top: 3px;
-  height: 95%;
-}
-.relation-header-component {
-  width: 100%;
-  display: flex;
-  margin-left: auto;
-  margin-bottom: 5px;
-  margin-right: 4px;
-}
-.relationtable {
-  width: 100%;
-}
+  .query-relation {
+    margin-top: 3px;
+  }
+  .relation-header {
+    padding: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  .relation-tile {
+    font-weight: bold;
+  }
+  .relations-table-tools {
+    font-size: 1.1em;
+    margin-bottom: 3px;
+  }
+  .relation-wrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    margin-top: 3px;
+    height: 95%;
+  }
+  .relation-header-component {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-bottom: 5px;
+    margin-right: 4px;
+  }
+  .relationtable {
+    width: 100%;
+  }
+  .query-relation > .header > .g3w-long-text {
+    border-radius: 3px;
+    font-size: 1.3em;
+  }
+  .query-relation.mobile > .header > .g3w-long-text {
+    font-size: 1em;
+  }
+  .relations-table-tools > .action-button {
+    padding: 5px;
+  }
+  .back-button {
+    font-size: 0.8em;
+  }
+  .relation-actions {
+    display: flex;
+    justify-content: space-between;
+  }
+  .relationtable .relation-actions .action-button:hover {
+    background-color: transparent;
+  }
+  .relationtable.dataTable tbody tr.selected {
+    background-color: #e4e4e4 !important;
+  }
+  .relationtable.dataTable tbody tr.selected .row-wrap-tabs .tabs-wrapper {
+    background-color: #FFF !important;
+  }
+  #chart_content {
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    margin-left: 8px;
+  }
+  .dataTables_scrollBody {
+    font-weight: bold;
+    margin-top: 10px;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+  }
 </style>

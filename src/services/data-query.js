@@ -3,17 +3,15 @@
  * @since v3.6
  */
 
-import { G3W_FID, QUERY_POINT_TOLERANCE } from 'app/constant';
+import { G3W_FID, QUERY_POINT_TOLERANCE }      from "app/constant";
+import { getQueryLayersPromisesByCoordinates } from "utils/getQueryLayersPromisesByCoordinates";
+import { getQueryLayersPromisesByGeometry }    from "utils/getQueryLayersPromisesByGeometry";
+import { getQueryLayersPromisesByBBOX }        from "utils/getQueryLayersPromisesByBBOX";
+import { getMapLayersByFilter }                from "utils/getMapLayersByFilter";
 
-const { base, inherit } = require('core/utils/utils');
-const { t } = require('core/i18n/i18n.service');
-const BaseService = require('core/data/service');
-const {
-  getQueryLayersPromisesByCoordinates,
-  getQueryLayersPromisesByGeometry,
-  getQueryLayersPromisesByBBOX,
-  getMapLayersByFilter
-} = require('core/utils/geo');
+const { base, inherit } = require('utils');
+const { t }             = require('core/i18n/i18n.service');
+const BaseService       = require('core/data/service');
 
 function QueryService(){
   base(this);

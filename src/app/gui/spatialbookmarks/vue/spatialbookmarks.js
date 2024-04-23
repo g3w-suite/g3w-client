@@ -7,7 +7,7 @@ import * as vueComponentOptions from 'components/SpatialBookMarks.vue';
 
 import GUI from 'services/gui';
 
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base } = require('utils');
 const Component = require('gui/component/component');
 
 const InternalComponent = Vue.extend(vueComponentOptions);

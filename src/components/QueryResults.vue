@@ -34,7 +34,7 @@
       >
         <li
           v-for  = "layer in state.layers"
-          v-show = "(layerHasFeatures(layer) || layer.rawdata) && layer.show"
+          v-show = "showLayer(layer)"
         >
           <bar-loader :loading="layer.loading" />
 
@@ -113,7 +113,7 @@
 
                 <!-- SELECT FEATURES -->
                 <span
-                  v-if                    = "layer.features.length > 1 && (layer.external || (layer.source && 'wms' !== layer.source.type))"
+                  v-if                    = "'__g3w_marker' !== layer.id && layer.features.length > 1 && (layer.external || (layer.source && 'wms' !== layer.source.type))"
                   @click.stop             = "selectionFeaturesLayer(layer)"
                   class                   = "action-button skin-tooltip-left"
                   v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
@@ -124,7 +124,7 @@
 
                 <!-- FILTER (ADD / REMOVE) -->
                 <span
-                  v-show                  = "layer.selection.active && !layer.external"
+                  v-if                    = "layer.selection.active && !layer.external"
                   @click.stop             = "addRemoveFilter(layer)"
                   class                   = "action-button skin-tooltip-left"
                   :class                  = "{ 'toggled': layer.filter.active }"
@@ -133,6 +133,19 @@
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
                 </span>
               </div>
+
+              <!-- NEW FILTER (SAVE) -->
+              <span
+                v-if                      = "layer.filter.active && (null === layer.filter.current || layer.selection.active)"
+                @click.stop               = "saveFilter(layer)"
+                class                     = "action-button skin-tooltip-left"
+                v-t-tooltip:left.create   = "'layer_selection_filter.tools.savefilter'"
+              >
+                <span
+                  class="action-button-icon"
+                  :class="g3wtemplate.getFontClass('save')"
+                ></span>
+              </span>
 
               <!-- COLLAPSE BUTTON -->
               <button class="btn btn-box-tool" data-widget="collapse">
@@ -151,7 +164,6 @@
                 :layer   = "layer"
                 :config  = "state.layeractiontool[layer.id].config"
                 :_type   = "state.layeractiontool[layer.id].component"
-                _legacy  = "g3w-field"
               />
             </div>
 
@@ -159,7 +171,6 @@
               v-for   = "({ component }) in getLayerCustomComponents(layer.id, 'layer', 'before')"
               :layer  = "layer"
               :_type  = "component"
-              _legacy = "g3w-field"
             />
 
             <div
@@ -182,28 +193,6 @@
                 :class = "{ 'mobile': isMobile() }"
               >
 
-                <thead>
-                  <tr>
-                    <th
-                      v-if   = "state.layersactions[layer.id].length"
-                      :style = "{
-                        width:    `${state.layersactions[layer.id].length * 26}px`,
-                        maxWidth: `${state.layersactions[layer.id].length * 26}px`,
-                      }"
-                    ></th>
-                    <th
-                      v-for="(attribute, index) in attributesSubset(layer)"
-                      class="centered"
-                    >
-                      {{attribute.label}}
-                    </th>
-                    <th
-                      v-if="!hasLayerOneFeature(layer)"
-                      class="collapsed"
-                    ></th>
-                  </tr>
-                </thead>
-
                 <!-- HTML SECTIONS: use multiple <tbody> tags when layer has no Form Structure -->
                 <component
                   :is = "hasFormStructure(layer) ? 'tbody' : 'fragment'"
@@ -214,35 +203,88 @@
                     :key  = "hasFormStructure(layer) ? undefined : feature.id"
                   >
                     <template v-if="feature.show">
-                      <header-feature-body
-                        :actions                 = "state.layersactions[layer.id]"
-                        :layer                   = "layer"
-                        :feature                 = "feature"
-                        :index                   = "index"
-                        :onelayerresult          = "onelayerresult"
-                        :trigger                 = "trigger"
-                        :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                        :hasLayerOneFeature      = "hasLayerOneFeature"
-                        :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                        :attributesSubset        = "attributesSubset"
-                        :getLayerField           = "getLayerField"
-                      />
+
+                      <!-- ADDED BY: https://github.com/g3w-suite/g3w-client/pull/505) -->
+                      <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@3.9 -->
+                      <tr
+                        @mouseover = "trigger({ id:'highlightgeometry' }, layer, feature, index)"
+                        @mouseout  = "trigger({ id:'clearHighlightGeometry' }, layer, feature, index)"
+                        class      = "featurebox-header"
+                      >
+
+                        <td
+                          v-if     = "state.layersactions[layer.id].length"
+                          class    = "g3w-feature-actions"
+                          :colspan = "getColSpan(layer)"
+                        >
+                          <action
+                            v-for   = "action in state.layersactions[layer.id]"
+                            :key    = "action.id"
+                            v-bind  = "{
+                              layer:        layer,
+                              featureIndex: index,
+                              trigger:      trigger,
+                              feature:      feature,
+                              actions:      state.layersactions[layer.id]
+                            }"
+                            :action = "action"
+                          />
+                        </td>
+
+                      </tr>
+
                       <tr class="g3w-feature-result-action-tools">
                         <td
                           v-if     = "state.currentactiontools[layer.id][index]"
                           :colspan = "getColSpan(layer)"
                         >
-                          <g3w-field
+                        <g3w-field
                             :colspan      = "getColSpan(layer)"
                             :layer        = "layer"
                             :feature      = "feature"
                             :featureIndex = "index"
                             :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
                             :_type        = "state.currentactiontools[layer.id][index]"
-                            _legacy       = "g3w-field"
                           />
                         </td>
                       </tr>
+
+                      <!-- ADDED BY: https://github.com/g3w-suite/g3w-client/pull/505 -->
+                      <tr
+                        v-if     = "!hasLayerOneFeature(layer)"
+                        style    = "font-weight: bold; text-align: center"
+                      >
+                        <td
+                          v-for = "(attribute, index) in attributesSubset(layer)"
+                          class = "centered"
+                        >
+                          {{ getLayerFeatureBox(layer, feature).collapsed ? attribute.label : '' }}
+                        </td>
+                        <td
+                          @click.stop = "toggleFeatureBoxAndZoom(layer,feature)"
+                          class       = "collapsed"
+                          style       = "text-align: end"
+                          :class      = "{ noAttributes: 0 === attributesSubset(layer).length }"
+                        >
+                          <span
+                            class  = "fa link morelink skin-color"
+                            :class = "[g3wtemplate.font[getLayerFeatureBox(layer, feature).collapsed ? 'plus' : 'minus']]">
+                          </span>
+                        </td>
+                      </tr>
+
+                      <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureBody.vue@3.8 -->
+                      <tr>
+
+                        <td v-for="attr in attributesSubset(layer)" class="attribute">
+                          <span v-if="getIcon({ layer, feature, attr })" class="skin-color" :class="getIcon({ layer, feature, attr })"></span>
+                          <span v-else>{{ feature.attributes[attr.name] }}</span>
+                        </td>
+
+                        <td v-if= "!hasLayerOneFeature(layer)"></td>
+
+                      </tr>
+
                       <tr
                         v-for = "({ component }) in getLayerCustomComponents(layer.id, 'feature', 'before')"
                       >
@@ -254,7 +296,6 @@
                             :layer   = "layer"
                             :feature = "feature"
                             :_type   = "component"
-                            _legacy  = "g3w-field"
                           />
                         </td>
                       </tr>
@@ -278,15 +319,30 @@
                             class="feature_attributes"
                           >
                             <tr v-for="attr in layer.attributes.filter(attr => attr.show)">
-                              <td class="attr-label">{{ attr.label }}</td>
-                              <td class="attr-value" :attribute="attr.name">
-                                <g3w-field
-                                  :layer   = "layer"
-                                  :feature = "feature"
-                                  :state   = "getLayerField({ layer, feature, fieldName: attr.name })"
-                                  _legacy  = "foo"
-                                />
-                              </td>
+
+                              <!-- TODO: simplify, merge into below component: <g3w-field> -->
+                              <!-- ADDED BY: https://github.com/g3w-suite/g3w-client/pull/505 -->
+                              <template v-if="isJSON(getLayerField({ layer, feature, fieldName: attribute.name }))">
+                                <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
+                                <template v-for="(v, k) in getLayerField({ layer, feature, fieldName: attribute.name }).value">
+                                  <tr v-for="(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style="padding-top:10px; padding-bottom:10px;">
+                                    <td class="attr-label">{{ attribute.label }}.<template v-if="('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
+                                    <td class="attr-value">{{ v2 }}</td>
+                                  </tr>
+                                </template>
+                              </template>
+
+                              <template v-else>
+                                <td class="attr-label">{{ attr.label }}</td>
+                                <td class="attr-value" :attribute="attr.name">
+                                  <g3w-field
+                                    :layer   = "layer"
+                                    :feature = "feature"
+                                    :state   = "getLayerField({ layer, feature, fieldName: attr.name })"
+                                  />
+                                </td>
+                              </template>
+
                             </tr>
                           </table>
                         </td>
@@ -297,16 +353,16 @@
                         <td
                           :colspan="getColSpan(layer)"
                         >
-                          <g3w-field
-                            :class   = "{ 'box-body': !hasFormStructure(layer) }"
-                            :layer   = "layer"
-                            :feature = "feature"
-                            :_type   = "component"
-                            _legacy  = "g3w-field"
-                          />
+                        <g3w-field
+                          :class   = "{ 'box-body': !hasFormStructure(layer) }"
+                          :layer   = "layer"
+                          :feature = "feature"
+                          :_type   = "component"
+                        />
                         </td>
                       </tr>
                     </template>
+
                   </component>
                 </component>
 
@@ -321,7 +377,6 @@
               <g3w-field
                 :layer  = "layer"
                 :_type  = "component"
-                _legacy = "g3w-field"
               />
             </div>
           </div>
@@ -333,7 +388,6 @@
           <g3w-field
             @showresults = "showResults()"
             :_type       = "component"
-            _legacy      = "g3w-field"
           />
         </li>
       </ul>
@@ -344,22 +398,34 @@
 </template>
 
 <script>
-  import { Fragment }             from 'vue-fragment'
-  import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
+  import { Fragment }            from 'vue-fragment';
 
-  const { throttle, getFieldType } = require('core/utils/utils');
+  import { toRawType, throttle } from 'utils';
+  import G3WField                from 'components/G3WField.vue';
+  import InfoFormats             from 'components/QueryResultsActionInfoFormats.vue';
+  import QueryResultsAction      from 'components/QueryResultsAction.vue';
+  import { getFieldType }        from 'utils/getFieldType';
 
-  const maxSubsetLength             = 3;
+  const MAX_SUBSET_LENGTH           = 3;
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth      = 10;
-  const HEADERTYPESFIELD            = ['varchar', 'integer', 'float', 'date'];
+  const HEADERTYPESFIELD            = [
+    'varchar',
+    'integer',
+    'float',
+    'bigint', //@since v3.9
+    'date',
+  ];
 
   Object
     .entries({
       Fragment,
+      toRawType,
+      throttle,
+      G3WField,
       InfoFormats,
-      HeaderFeatureBody,
+      QueryResultsAction,
+      getFieldType,
     })
     .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
@@ -379,8 +445,9 @@
 
     components: {
       Fragment,
-      'infoformats':         InfoFormats,
-      'header-feature-body': HeaderFeatureBody,
+      'g3w-field':   G3WField,
+      'infoformats': InfoFormats,
+      'action':      QueryResultsAction,
     },
 
     computed: {
@@ -422,6 +489,7 @@
                 message: `  [${query.bbox.join(' , ')}]`
               };
             case 'polygon':
+            case 'drawpolygon':
               return {
                 icon: 'draw',
                 message: (query.layerName) ?
@@ -443,6 +511,24 @@
     },
 
     methods: {
+
+      /**
+       * @param { Object } layer
+       * 
+       * @return { boolean } whether layer need to be show on query result list
+       * 
+       * @since 3.9.1
+       */
+      showLayer(layer){
+        return (
+          layer.show &&                                                      // check if is set show
+          (
+            this.layerHasFeatures(layer) ||                                  // check if layer has at least one features
+            layer.rawdata ||                                                 // check if layer has rawdata
+            Array.isArray(layer.infoformats) && layer.infoformats.length > 0 // check if it has info formats (eg. external wms layer)
+          )
+        )
+      },
 
       /**
        * @param layerId
@@ -490,11 +576,7 @@
       },
 
       getColSpan(layer) {
-        return (
-          this.attributesSubsetLength(layer)
-          + (this.state.layersactions[layer.id].length ? 1 : 0)
-          + (!this.hasLayerOneFeature(layer) * 1)
-        );
+        return this.attributesSubsetLength(layer) + (!this.hasLayerOneFeature(layer) * 1);
       },
 
       getDownloadActions(layer) {
@@ -529,6 +611,15 @@
         this.$options.queryResultsService.addRemoveFilter(layer);
       },
 
+      /**
+       * @param layer
+       *
+       * @since 3.9.0
+       */
+      saveFilter(layer) {
+        this.$options.queryResultsService.saveFilter(layer);
+      },
+
       getContainerFromFeatureLayer({ layer, index } = {}) {
         return $(`#${layer.id}_${index} > td`);
       },
@@ -542,7 +633,7 @@
       },
 
       layerHasFeatures(layer) {
-        return !!(layer.features && layer.features.length > 0);
+        return Array.isArray(layer.features) && layer.features.length > 0;
       },
 
       selectionFeaturesLayer(layer) {
@@ -591,17 +682,17 @@
             : layer.attributes;
         return attributes
           .filter(attr => attr.show && -1 !== HEADERTYPESFIELD.indexOf(attr.type))
-          .slice(0, Math.min(maxSubsetLength, attributes.length));
+          .slice(0, Math.min(MAX_SUBSET_LENGTH, attributes.length));
       },
 
-      relationsAttributesSubset(relationAttrs) {
+      relationsAttributesSubset(relationAttributes) {
         const attributes = [];
         _.forEach(relationAttrs, function (value, attr) {
           if (!Array.isArray(value)) {
             attributes.push({ label: attr, value })
           }
         });
-        return attributes.slice(0, Math.min(maxSubsetLength, attributes.length));
+        return attributes.slice(0, Math.min(MAX_SUBSET_LENGTH, attributes.length));
       },
 
       relationsAttributes(relationAttrs) {
@@ -616,19 +707,23 @@
         return this.attributesSubset(layer).length;
       },
 
-      cellWidth(index, layer) {
-        const headerLength     = maxSubsetLength + this.state.layersactions[layer.id].length;
+      cellWidth(index,layer) {
+        const headerLength     = MAX_SUBSET_LENGTH + this.state.layersactions[layer.id].length;
         const subsetLength     = this.attributesSubsetLength(layer);
         const diff             = headerLength - subsetLength;
         const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
-        const baseCellWidth    = (100 - headerExpandActionCellWidth - actionsCellWidth) / maxSubsetLength;
+        const baseCellWidth    = (100 - headerExpandActionCellWidth - actionsCellWidth) / MAX_SUBSET_LENGTH;
         return (diff > 0 && index === subsetLength - 1) ? baseCellWidth * (diff + 1) : baseCellWidth;
       },
 
       featureBoxColspan(layer) {
         let colspan = this.attributesSubsetLength(layer);
-        if (layer.expandable) colspan += 1;
-        if (layer.hasgeometry) colspan += 1;
+        if (layer.expandable) {
+          colspan += 1;
+        }
+        if (layer.hasgeometry) {
+          colspan += 1;
+        }
         return colspan;
       },
 
@@ -637,7 +732,8 @@
       },
 
       getLayerFormStructure(layer) {
-        return layer.formStructure.structure;
+        //need to clone structure objects in deep and set reactive with Vue.observable
+        return layer.formStructure.structure.map(n => Vue.observable(structuredClone(n)));
       },
 
       isAttributeOrTab(layer, item) {
@@ -680,8 +776,8 @@
 
       // to CHECK NOT GOOD
       collapsedFeatureBox(layer, feature, relation_index) {
-        const boxid = this.getBoxId(layer, feature, relation_index);
-        return this.state.layersFeaturesBoxes[boxid] ? this.state.layersFeaturesBoxes[boxid].collapsed : true;
+        const box = this.state.layersFeaturesBoxes[this.getBoxId(layer, feature, relation_index)];
+        return box ? box.collapsed : true;
       },
 
       showFeatureInfo(layer, boxid) {
@@ -689,7 +785,7 @@
           .emit('show-query-feature-info', {
             layer,
             tabs: this.hasFormStructure(layer),
-            show: this.state.layersFeaturesBoxes[boxid] ? !this.state.layersFeaturesBoxes[boxid].collapsed : false
+            show: this.state.layersFeaturesBoxes[boxid] ? !this.state.layersFeaturesBoxes[boxid].collapsed : false,
           });
       },
 
@@ -732,6 +828,32 @@
         window.open(link_url, '_blank');
       },
 
+      /**
+       * @since 3.10.0
+       */
+      getIcon({ layer, feature, attr }) {
+
+        const field = this.getLayerField({
+          layer:     layer,
+          feature:   feature,
+          fieldName: attr.name,
+        });
+
+        return this.g3wtemplate.getFontClass(({
+          'link_field':  'link',
+          'image_field': 'image',
+          'photo_field': 'image',
+        })[getFieldType(field)]);
+
+      },
+
+      /**
+       * @since 3.9.0
+       */
+      isJSON(field) {
+        return !this.isVue(field) && this.isSimple(field) && 'Object' === toRawType(field.value);
+      }
+
     },
 
     watch: {
@@ -741,7 +863,7 @@
         layers.forEach(layer => {
 
           if (
-            layer.attributes.length <= maxSubsetLength &&
+            layer.attributes.length <= MAX_SUBSET_LENGTH &&
             !layer.hasImageField
           ) {
             layer.expandable = false;
@@ -762,9 +884,7 @@
 
         });
 
-        // this.onelayerresult = 1 === layers.length;
-
-        // check if is a single result layer and if has one feature
+        // check if is a single result layer and if it has one feature
         if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
           const layer = layers[0];
           const boxid = this.getBoxId(layer, layer.features[0]);
@@ -809,7 +929,6 @@
   margin-bottom: 3px;
   font-size: 1.1em;
 }
-
 .queryresults-container > .query-results-not-found > h4 {
   font-weight: bold;
   text-align: center;
@@ -821,5 +940,13 @@
 
 .g3w-layer-action-tools {
   padding: 5px;
+}
+
+.noAttributes {
+  display: flex;
+  justify-content: flex-end;
+}
+.feature_attributes tr {
+  line-height: 1.8em;
 }
 </style>

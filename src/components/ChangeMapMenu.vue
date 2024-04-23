@@ -5,8 +5,15 @@
 
 <template>
   <div id="g3w-change-map-menu">
-    <template v-if="isChildNode">
-      <div style="display: flex; align-items: center; color: #ffffff" class="skin-background-color">
+    <!-- current node is a child -->
+    <template v-if="'root' !== this.current">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          color: #ffffff"
+        class="skin-background-color"
+      >
         <span
           v-t-tooltip:bottom.create="'change_session'"
           v-disabled="loading"
@@ -20,27 +27,40 @@
             border-radius: 3px;
           "
         >
-          <i style="color: #FFFFFF" :class="g3wtemplate.getFontClass('reply')"></i>
+          <i
+            style="color: #FFFFFF"
+            :class="g3wtemplate.getFontClass('reply')">
+          </i>
         </span>
 
-        <div v-if="parent" style="margin: auto">
-          <h3 style="font-weight: bold">{{parent.title || parent.name}}</h3>
+        <div
+          v-if="parent"
+          style="margin: auto"
+        >
+          <h3 style="font-weight: bold">
+            {{parent.title || parent.name}}
+          </h3>
         </div>
       </div>
     </template>
 
-    <div v-if="items.length" class="g3w-change-map-menu-container">
+    <div
+      v-if="items.length"
+      class="g3w-change-map-menu-container">
       <div
         v-for="item in items"
-        :key="item.title"
+        :key="item.name"
         class="menu-item"
       >
 
       <!-- ITEM IMAGE -->
-        <div class="menu-item-image" @click.stop="trigger(item)">
+        <div
+          class="menu-item-image"
+          @click.stop="trigger(item)"
+        >
           <img
             :src="item.thumbnail || item.header_logo_img || item.logo_img"
-            @error="setFallBackImage(item)"
+            @error="setItemImageSrc({ item, type: 'net_error' })"
             alt="logo"
             class="img-responsive"
           >
@@ -49,7 +69,9 @@
         <!-- ITEM CONTENT -->
         <div class="menu-item-content">
           <div class="menu-item-text">
-            <h4 class="menu-item-title">{{ item.title }}</h4>
+            <h4 class="menu-item-title">
+              {{ item.title }}
+            </h4>
             <div v-html="item.description"></div>
           </div>
         </div>
@@ -58,7 +80,10 @@
     </div>
 
     <template v-else>
-      <h3 style="font-weight: bold" v-t="`no_other_${current}`"></h3>
+      <h3
+        style="font-weight: bold"
+        v-t="`no_other_${current}`">
+      </h3>
     </template>
 
   </div>
@@ -66,12 +91,24 @@
 </template>
 
 <script>
-import ApplicationService from 'services/application';
-import ProjectsRegistry from 'store/projects';
-import { API_BASE_URLS, LOGO_GIS3W } from 'constant';
+import ApplicationService            from "services/application";
+import ProjectsRegistry              from "store/projects";
+import { API_BASE_URLS, LOGO_GIS3W } from "app/constant";
 
 const Projections = require('g3w-ol/projection/projections');
-const { XHR } = require('core/utils/utils');
+const { XHR }     = require('utils');
+
+/** Cached HTTP GET request */
+async function get_macro(id) {
+  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${id}/`) });
+  return get_macro[id];
+}
+
+/** Cached HTTP GET request */
+async function get_group(id) {
+  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
+  return get_group[id];
+}
 
 export default {
 
@@ -107,102 +144,129 @@ export default {
       parent: null,
 
       /**
-       * @type {Array}
+       * @type { Array } all items from top to bottom
        */
-      steps: [],
+      steps: [], 
 
       /**
-       * @type {string}
+       * @type { string } ID of current project group 
        */
-      currentProjectGroupId: null,
+      curr_group: null,
  
     }
-  },
-
-  computed: {
-
-    /**
-     * @returns {boolean} whether current node isn't a "root" element
-     */
-    isChildNode() {
-      return 'root' !== this.current;
-    },
-
   },
 
   methods: {
 
     /**
-     * Set a fallback image on network error.
+     * @returns { Promise<void> }
      */
-     setFallBackImage(item) {
-      const g3w_logo = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
-      if (item.thumbnail || item.logo_img) item.thumbnail       = g3w_logo;
-      else if (item.header_logo_img)       item.header_logo_img = g3w_logo;
+    async back() {
+      const last_step   = this.steps.pop();                               // remove last
+      const has_steps   = this.steps.length > 0;
+      const item        = has_steps && this.steps[this.steps.length - 1]; //get last step
+
+      // back to macrogrup
+      if (
+        (has_steps && undefined !== item.macrogroup_id) ||
+        (!has_steps && undefined === last_step && Array.isArray(this.parent.macrogroup_id) && this.parent.macrogroup_id.length > 0) // no steps done on first time
+      ) {
+        const macrogroup_id = has_steps ? item.macrogroup_id : this.parent.macrogroup_id;
+        const add           = has_steps ? false : true; // false = step it's comping from bottom to top
+        return this.showMacroGroups(macrogroup_id, add);
+      }
+
+      // back to group
+      if (has_steps && undefined === item.macrogroup_id) {
+        return this.showGroups(item, false);
+      }
+
+      // back to root
+      if (!has_steps) {
+        return this.showRoot();
+      }
     },
 
-    back() {
-      if (this.steps.length > 1) {
-        const item = this.steps[0];
-        this.steps = [];
-        this.showGroups(item);
-      } else {
-        this.showRoot();
+    /**
+     * @param { Array } macrogroup_id
+     * @param { boolean } addStep Boolean
+     * 
+     * @returns { Promise<void> }
+     * 
+     * @since 3.10.0
+     */
+    async showMacroGroups(macrogroup_id=[], addStep=true) {
+      // current project belongs to just one macrogroup
+      if (1 === macrogroup_id.length) {
+        this.parent = this.macrogroups.find(mg => macrogroup_id[0] === mg.id);
+        return await this.showGroups(this.parent);
+      }
+
+      // current project belongs to more than one macrogroup
+      this.items   = this.macrogroups.filter(m => macrogroup_id.includes(m.id));
+      this.current = 'macrogroups';
+      this.parent  = {
+        macrogroup_id,
+        title: null, // hide title
+        name: null   // hide name
+      }
+
+      if (addStep) {
+        this.steps.push(this.parent);
+      }
+    },
+
+    /**
+     * @param item
+     * @param { boolean } addStep Boolean
+     * 
+     * @returns { Promise<void> }
+     */
+    async showGroups(item, addStep=true) {
+      try {
+        this.loading = true;
+        this.parent  = item;
+        this.items   = await get_macro(item.id);
+        this.current = 'groups';
+      } catch(e) {
+        console.warn(e);
+        this.items = [];
+      } finally {
+        if (addStep) {
+          this.steps.push(this.parent);
+        }
+        this.loading = false;
+      }
+    },
+
+    /**
+     * @param item
+     * 
+     * @returns { Promise<void> }
+     */
+    async showProjects(item) {
+      try {
+        this.loading = true;
+        this.parent  = item;
+        this.items   = (
+          this.parent.id === this.curr_group
+            ? ProjectsRegistry.getListableProjects()
+            : await get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }))
+        );
+        this.current = 'projects';
+      } catch(e) {
+        console.warn(e);
+        this.items = [];
+      } finally {
+        this.steps.push(this.parent);
+        this.loading = false;
       }
     },
 
     showRoot() {
       this.current = 'root';
-      this.items = this.macrogroupsandgroups;
+      this.items = [...this.macrogroups, ...this.groups];
       this.steps = [];
-    },
-
-    _onChangeRoot(item) {
-      // item is a macrogroup
-      if (undefined === item.srid) {
-        this.showGroups(item)
-      } else {
-        // item is a group
-        this.showProjects(item);
-      }
-    },
-
-    async showGroups(item) {
-      this.loading = true;
-      this.parent = item;
-      try {
-        this.items = await XHR.get({
-          url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${item.id}/`)
-        });
-        this.current = 'groups';
-      } catch(err) {
-        this.items = [];
-      }
-      this.steps.push(this.parent);
-      this.loading = false;
-    },
-
-    async showProjects(item) {
-      this.loading = true;
-      this.parent = item;
-
-      if (this.parent.id === this.currentProjectGroupId) {
-        this.items = ProjectsRegistry.getListableProjects();
-        this.current = 'projects';
-      } else {
-        try {
-          this.items = await XHR.get({
-            url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', item.id)}`)
-          });
-          this.items.forEach(item => this.setItemImageSrc({ item, type: 'project' }));
-          this.current = 'projects';
-        } catch(err) {
-          this.items = [];
-        }
-      }
-
-      this.steps.push(this.parent);
-      this.loading = false;
     },
 
     /**
@@ -217,7 +281,7 @@ export default {
       try {
         new URL(base_url);
         url = `${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
-      } catch(err) {
+      } catch(e) {
         url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       }
       return ApplicationService.changeMapProject({ url, epsg });
@@ -225,10 +289,10 @@ export default {
 
     async trigger(item) {
       switch(this.current) {
-        case 'root':       return this._onChangeRoot(item);
-        case 'macrogroup': return this.showGroups(item);
-        case 'groups':     return await this.showProjects(item);
-        case 'projects':   return await this.changeMapProject(item);
+        case 'root':        return undefined === item.srid ? this.showGroups(item) : this.showProjects(item); // `srid` is undefined when item is a macrogroup
+        case 'macrogroups': return this.showGroups(item);
+        case 'groups':      return await this.showProjects(item);
+        case 'projects':    return await this.changeMapProject(item);
       }
     },
 
@@ -243,6 +307,14 @@ export default {
         case 'project':    item.thumbnail       = this._setSrc(item.thumbnail); break;
         case 'group':      item.header_logo_img = this._setSrc(item.header_logo_img); break;
         case 'macrogroup': item.logo_img        = this._setSrc(item.logo_img); break;
+        // Set a fallback image on network error.
+        case 'net_error':
+          if (item.thumbnail || item.logo_img) {
+            item.thumbnail = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+          } else if (item.header_logo_img) {
+            item.header_logo_img = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+          }
+          break;
       }
     },
 
@@ -272,40 +344,21 @@ export default {
 
   },
 
-  created() {
+  async created() {
 
-    // at start time set item projects
-    this.items = ProjectsRegistry.getListableProjects();
-    this.items.forEach(item => this.setItemImageSrc({ item, type: 'project' }));
-    this.parent = ProjectsRegistry.getCurrentProjectGroup();
-    this.currentProjectGroupId = this.parent.id;
+    const config = ApplicationService.getConfig();
 
-    // get macrogroups
-    this.macrogroups = ApplicationService.getConfig().macrogroups;
-    this.macrogroups.forEach(item => this.setItemImageSrc({ item, type: 'magrocroup' }));
-    
-    // get groups
-    this.groups = ApplicationService.getConfig().groups;
-    this.groups.forEach(item => this.setItemImageSrc({ item, type: 'group' }));
+    // setup items data (macrogrups and groups).
+    this.items       = ProjectsRegistry.getListableProjects();
+    this.parent      = ProjectsRegistry.getCurrentProjectGroup();
+    this.curr_group  = this.parent.id;
+    this.macrogroups = config.macrogroups;
+    this.groups      = config.groups;
 
-    // collect all groups and macrogroups
-    this.macrogroupsandgroups = [...this.macrogroups, ...this.groups];
-
-    // check if group on initConfig is referred to macrogrop
-    const isMacroGroup = this.macrogroups.find(macrogroup => macrogroup.id === this.parent.id);
-    if (isMacroGroup) {
-      // check belong group
-      const findGroup = this.groups.find(group => group.id === this.parent.id);
-      if (findGroup) {
-        this.parent = findGroup;
-        this.currentProjectGroupId = this.parent.id;
-      }
-    }
-  
-    if (0 === this.items.length) {
-      this.showRoot();
-    }
-
+    // setup items images
+    Object
+      .entries({ 'project': this.items, 'magrocroup': this.macrogroups, 'group': this.groups })
+      .forEach(([type, d]) => d.forEach(item => this.setItemImageSrc({ item, type })))
   },
 
 };

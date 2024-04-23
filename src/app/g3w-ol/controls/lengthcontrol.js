@@ -1,6 +1,7 @@
-const utils = require('core/utils/ol');
+import { mergeOptions } from 'utils/mergeOptions';
+
 const LenghtIteraction = require('g3w-ol/interactions/lengthinteraction');
-const MeasureControl = require('g3w-ol/controls/measurecontrol');
+const MeasureControl   = require('g3w-ol/controls/measurecontrol');
 
 const LengthControl = function(options={}) {
   const _options = {
@@ -10,7 +11,7 @@ const LengthControl = function(options={}) {
     interactionClass: LenghtIteraction
   };
 
-  options = utils.merge(options,_options);
+  options = mergeOptions(options,_options);
   MeasureControl.call(this, options);
 };
 

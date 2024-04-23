@@ -31,7 +31,6 @@
         />
         <g3w-field
           v-else
-          _legacy  = "g3w-field"
           :feature = "feature"
           :state   = "getField(feature, header)"
         />
@@ -41,7 +40,15 @@
 </template>
 
 <script>
-import SelectRow from 'components/TableSelectRow.vue'
+import G3WField  from 'components/G3WField.vue';
+import SelectRow from 'components/TableSelectRow.vue';
+
+Object
+    .entries({
+      G3WField,
+      SelectRow,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
@@ -83,6 +90,7 @@ export default {
   },
 
   components: {
+    'g3w-field': G3WField,
     SelectRow,
   },
 

@@ -1,8 +1,8 @@
-import ApplicationState from 'store/application-state';
+import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
 
-const { base, inherit } = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+const { base, inherit } = require('utils');
+const G3WObject         = require('core/g3wobject');
 
 function PluginService(options={}) {
   base(this, options);
@@ -16,8 +16,7 @@ function PluginService(options={}) {
   this.currentLayout = ApplicationService.getCurrentLayoutName();
   this.vm = new Vue();
   this.unwatch = this.vm.$watch(()=> ApplicationState.gui.layout.__current,
-      currentLayoutName => this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout);
-
+    currentLayoutName => this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout);
 }
 
 inherit(PluginService, G3WObject);
@@ -32,21 +31,21 @@ proto.init = function(config={}) {
   this.config = config;
 };
 
-proto.setCurrentLayout = function(){
+proto.setCurrentLayout = function() {
   ApplicationService.setCurrentLayout(this.getPlugin().getName());
 };
 
-proto.resetCurrentLayout = function(){
+proto.resetCurrentLayout = function() {
   ApplicationService.setCurrentLayout(this.currentLayout);
 };
 
 // set owner plugin of the service
-proto.setPlugin = function(plugin){
+proto.setPlugin = function(plugin) {
   this.plugin = plugin;
 };
 
 // return the instance of the plugin owner of the service
-proto.getPlugin = function(){
+proto.getPlugin = function() {
   return this.plugin;
 };
 
@@ -57,12 +56,12 @@ proto.isIframe = function() {
 /**
  * Get Current Project
  */
-proto.getCurrentProject = function(){
+proto.getCurrentProject = function() {
   return ApplicationService.getCurrentProject();
 };
 
-proto.getGid = function(){
-  const {gid} = this.config;
+proto.getGid = function() {
+  const { gid } = this.config;
   return gid && gid.split(':')[1];
 };
 
@@ -135,12 +134,12 @@ proto.clearAllEvents = function() {
 };
 
 // to owerwrite if we need some condition to load or not the plugin
-proto.loadPlugin = function(){
+proto.loadPlugin = function() {
   return true
 };
 
 //Called when plugin is removed to clear events and memory
-proto.clear = function(){
+proto.clear = function() {
   // to overwrite
 };
 

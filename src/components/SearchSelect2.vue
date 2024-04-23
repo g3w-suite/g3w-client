@@ -18,7 +18,7 @@
 
   const autocompleteOptions = require('gui/external/select2/options/autocomplete');
   const { t } = require('core/i18n/i18n.service');
-  const { debounce } = require('core/utils/utils');
+  const { debounce } = require('utils');
 
   export default {
     name: "select2",

@@ -27,7 +27,7 @@
 <script>
 import GUI from 'services/gui';
 
-const { getUniqueDomId } = require('core/utils/utils');
+const { getUniqueDomId } = require('utils');
 
 export default {
   

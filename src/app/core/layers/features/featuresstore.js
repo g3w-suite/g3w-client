@@ -1,4 +1,4 @@
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 
 /** @deprecated */
@@ -10,7 +10,7 @@ function FeaturesStore(options={}) {
   this._provider = options.provider || null;
   this._loadedIds = []; // store locked ids
   this._lockIds = []; // store locked features
-  this.hasFeatureLockByOtherUser = false; // property tath i set to true if some feature are locked by other user
+  //setters
   this.setters = {
     addFeatures(features) {
       features.forEach(feature => {
@@ -36,12 +36,9 @@ function FeaturesStore(options={}) {
       return this._commit(commitItems, featurestore);
     },
     /**
-     * setter to know when some feature are locked
+     * setter to know when some features are locked
      */
-    featuresLockedByOtherUser(){
-      //set to true
-      this.hasFeatureLockByOtherUser = true;
-    }
+    featuresLockedByOtherUser(features=[]) {},
   };
 
   base(this);
@@ -68,8 +65,6 @@ proto.unlock = function() {
   const d = $.Deferred();
   this._provider.unlock()
     .then(response => {
-      // set to false when featuresstore is unlocked
-      this.hasFeatureLockByOtherUser = false;
       d.resolve(response)
     })
     .fail(err => d.reject(err));
@@ -80,38 +75,76 @@ proto.unlock = function() {
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   if (this._provider) {
+    //call provider getFeatures to get features from server
     this._provider.getFeatures(options)
       .then(options => {
+        //get features base on response from server features, featurelockis etc ...
         const features = this._filterFeaturesResponse(options);
         this.addFeatures(features);
         d.resolve(features);
       })
       .fail(err => d.reject(err))
-  } else d.resolve(this._readFeatures());
+  } else {
+    d.resolve(this._readFeatures());
+  }
   return d.promise();
 };
 
 //filter features to add
 proto._filterFeaturesResponse = function(options={}) {
   /**
-   * get features returned from server and feature that are current locked.
+   * get features returned from server and feature that are currently locked.
    * If featurelocks are less that a features, it means that other user is editing these feature
    * @type {*[]}
    */
-  const {features=[], featurelocks=[], count} = options;
+  const {features=[], featurelocks=[]} = options;
+
+  //if no features locks mean all feature request are locked by another user
+  if (featurelocks.length === 0) {
+    //if there are feature on response are locked
+    if (features.length > 0) {
+      this.featuresLockedByOtherUser(features);
+    }
+    return [];
+  }
+
+  this._filterLockIds(featurelocks);
+
+  const lockFeatures = [];
+
   const featuresToAdd = features.filter(feature => {
     const featureId = feature.getId();
-    const added = this._loadedIds.indexOf(featureId) !== -1;
-    if (!added) this._loadedIds.push(featureId);
-    return !added
+    if (featurelocks.find(({featureid}) => featureId == featureid)) {
+      if (this._loadedIds.indexOf(featureId) === -1) {
+        this._loadedIds.push(featureId);
+        return true;
+      }
+    } else {
+      lockFeatures.push(feature);
+    }
   });
-  this._filterLockIds(featurelocks);
-  if (features.length < count && !this.hasFeatureLockByOtherUser) this.featuresLockedByOtherUser();
+
+  //if count features
+  if (featurelocks.length < features.length) {
+    this.featuresLockedByOtherUser(lockFeatures);
+  }
+
   return featuresToAdd;
 };
 
-// method get features locked
-proto._filterLockIds = function(featurelocks) {
+/**
+ *
+ * @param featurelocks Array of lock feature locked by server fo a request
+ * Element of array is
+ * {
+ *   featureid: Is current id of feature locked
+ *   lockid: Is a server unique lock id  number
+ * }
+ * ex.
+ * {featureid: "1", lockid: "6bbab1c1c03332fb39b8ffae35e557ba"}
+ * @private
+ */
+proto._filterLockIds = function(featurelocks=[]) {
   const _lockIds = this._lockIds.map(lockid => lockid.featureid);
   const toAddLockId = featurelocks.filter(featurelock => _lockIds.indexOf(featurelock.featureid) === -1);
   this._lockIds = [...this._lockIds, ...toAddLockId];
@@ -131,6 +164,11 @@ proto.addLockIds = function(lockIds) {
   this._lockIds.forEach(lockId => this._loadedIds.push(lockId.featureid));
 };
 
+/**
+ *
+ * @returns {*|null|[]}
+ * @private
+ */
 proto._readFeatures = function() {
   return this._features;
 };

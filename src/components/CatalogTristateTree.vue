@@ -7,7 +7,7 @@
 
   <li
     class="tree-item"
-    @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
+    @contextmenu.prevent.stop="showContextMenu"
     @click.stop="onTreeItemClick"
     :style="{
       marginLeft: !isGroup ? '5px' : '0'
@@ -15,7 +15,8 @@
     :class="{
       selected: !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
-      disabled: isInGrey, group: isGroup
+      disabled: isInGrey,
+      group: isGroup
     }"
   >
     <!-- GROUP LAYER -->
@@ -24,7 +25,7 @@
       style="padding-right: 2px;"
       :class="[
         { bold : isGroup },
-         g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
+        g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
       @click.stop="expandCollapse"
       class="root collapse-expande-collapse-icon"
@@ -111,42 +112,78 @@
       }"
     >
 
-      <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
+
       <span
-        :class="{
+        :class           = "{
           highlightlayer: isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
-        class="skin-tooltip-top g3w-long-text"
-        data-placement="top"
-        :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        class            = "skin-tooltip-top g3w-long-text"
+        data-placement   = "top"
+        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       >
+        <!-- SHOW CURRENT FILTER  -->
+        <span
+          v-if                        = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :current-tooltip            = "layerstree.filter.current.name"
+          v-t-tooltip:top.create.text = "layerstree.filter.current.name"
+          style                       = "cursor: pointer"
+          @click.stop                 = "removeCurrentFilter"
+        >
+          <span
+            style  = "color: red"
+            :class = "g3wtemplate.getFontClass('filter')">
+          </span>
+        </span>
+        <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
-        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">[{{getFeatureCount}}]</span>
+        <!-- LAYER FEATURES COUNT-->
+        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">
+          [{{getFeatureCount}}]
+        </span>
+
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
       <div v-if="(!isGroup && layerstree.selection)">
 
+        <!-- CLEAR SELECTION -->
         <span
-          v-if="layerstree.selection.active"
-          class="action-button skin-tooltip-left selection-filter-icon"
-          data-placement="left"
-          data-toggle="tooltip"
-          :class="g3wtemplate.getFontClass('success')"
-          @click.caputure.prevent.stop="clearSelection"
-          v-t-tooltip.create="'layer_selection_filter.tools.clear'"
+          v-if                         = "layerstree.selection.active"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          data-container="body"
+          :class                       = "g3wtemplate.getFontClass('clear')"
+          @click.caputure.prevent.stop = "clearSelection"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.clear'"
         ></span>
 
+        <!-- TOGGLE FILTER  -->
         <span
-          v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
-          class="action-button skin-tooltip-left selection-filter-icon"
-          data-placement="left"
-          data-toggle="tooltip"
-          :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']"
-          @click.caputure.prevent.stop="toggleFilterLayer"
-          v-t-tooltip.create="'layer_selection_filter.tools.filter'"
+          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          data-container="body"
+          :class                       = "[
+            g3wtemplate.getFontClass('filter'),
+            layerstree.filter.active  ? 'active' : '',
+          ]"
+          @click.caputure.prevent.stop = "toggleFilterLayer"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.filter'"
+        ></span>
+
+        <!-- SAVE FILTER  -->
+        <span
+          v-if                         = "!layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
+          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          data-placement               = "left"
+          data-toggle                  = "tooltip"
+          :class                       = "g3wtemplate.getFontClass('save')"
+          @click.caputure.prevent.stop = "saveFilter(layerstree)"
+          v-t-tooltip.create           = "'layer_selection_filter.tools.savefilter'"
         ></span>
 
       </div>
@@ -190,13 +227,23 @@
 </template>
 
 <script>
-import LayerLegend from 'components/CatalogLayerLegend.vue';
-import { CatalogEventBus as VM } from 'app/eventbus';
+import LayerLegend                 from 'components/CatalogLayerLegend.vue';
+import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ClickMixin from 'mixins/click';
-import GUI from 'services/gui';
+import ClickMixin                  from 'mixins/click';
+import GUI                         from 'services/gui';
 
-const { downloadFile } = require('core/utils/utils');
+const { downloadFile } = require('utils');
+
+function _setAllLayersVisible(layers) {
+  layers.nodes.forEach(n => {
+    if (undefined === n.id) {
+      _setAllLayersVisible({ nodes: n.nodes, visible: layers.visible && n.checked });
+    } else if (n.parentGroup.checked && n.checked) {
+      CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(layers.visible);
+    }
+  });
+};
 
 export default {
 
@@ -321,18 +368,12 @@ export default {
         true === this.layerstree.tochighlightable
       )
     },
+
   },
 
-  watch:{
+  watch: {
 
-    /**
-     * @FIXME empty function ? 
-     */
-    'layerstree.disabled'(bool) {
-
-    },
-
-    'layerstree.checked'(n, o) {
+    'layerstree.checked'() {
       if (this.isGroup) {
         this.handleGroupChecked(this.layerstree);
       } else {
@@ -345,119 +386,114 @@ export default {
   methods: {
 
     /**
-     * Inizialize layer (disable, visible etc..)
+     * Remove current active filter
+     *
+     * @since 3.9.0
      */
-    init() {
-      if (this.isGroup && !this.layerstree.checked) {
-        this.handleGroupChecked(this.layerstree);
-      }
-      if (this.isGroup && !this.root) {
-        this.layerstree.nodes.forEach(node => {
-          if (node.id && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
-            node.uncheckable = true;
-          }
-        })
-      }
+    removeCurrentFilter() {
+      return CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).deleteFilterToken();
     },
 
     /**
      * Handle change checked property of group
      *
-     * @param group
+     * @param {boolean} group.checked
+     * @param {uknown}  group.parentGroup
+     * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      let { checked, parentGroup, nodes } = group;
-      const setAllLayersVisible = ({nodes, visible}) => {
-        nodes.forEach(node => {
-          if (undefined !== node.id) {
-            if (node.parentGroup.checked && node.checked) {
-              CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(visible);
-            }
-          } else {
-            setAllLayersVisible({ nodes: node.nodes, visible: visible && node.checked });
+      if (!group.checked) {
+        group.nodes.forEach(n => {
+          if (undefined === n.id) {
+            _setAllLayersVisible({ nodes: n.nodes, visible: false });
+          } else if (n.checked) {
+            CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(false);
           }
         });
-      };
-      if (checked) {
-        const visible = parentGroup ? parentGroup.checked : true;
-        if (parentGroup && parentGroup.mutually_exclusive) {
-          parentGroup.nodes.forEach(node => {
-            node.checked = node.groupId === group.groupId;
-            if (node.checked) {
-              setAllLayersVisible({ nodes: node.nodes, visible });
-            }
-          });
-        } else {
-          setAllLayersVisible({ nodes, visible });
-        }
-        while (parentGroup) {
-          parentGroup.checked = parentGroup.root || parentGroup.checked;
-          parentGroup = parentGroup.parentGroup
-        }
-      } else {
-        nodes.forEach(node => {
-          if (undefined !== node.id) {
-            if (node.checked) {
-              CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(false);
-            }
-          } else {
-            setAllLayersVisible({ nodes: node.nodes, visible: false });
+        return; // NB exit early!
+      }
+
+      const visible            = group.parentGroup ? group.parentGroup.checked : true;
+      const mutually_exclusive = group.parentGroup && group.parentGroup.mutually_exclusive;
+
+      if (!mutually_exclusive) {
+        _setAllLayersVisible({ nodes: group.nodes, visible });
+      }
+
+      if (mutually_exclusive) {
+        group.parentGroup.nodes.forEach(n => {
+          n.checked = n.groupId === group.groupId;
+          if (n.checked) {
+            _setAllLayersVisible({ nodes: n.nodes, visible });
           }
         });
+      }
+
+      // traverse parent groups
+      let g = group.parentGroup;
+      while (g) {
+        g.checked = g.root || g.checked;
+        g         = g.parentGroup;
       }
     },
 
     /**
      * Handle changing checked property of layer
      *
-     * @param {{ checked: boolean, id: string, disabled: boolean, projectLayer: boolean, parentGroup: uknown }} layerObject
+     * @param {boolean} layer.checked
+     * @param {string}  layer.id
+     * @param {boolean} layer.disabled
+     * @param {boolean} layer.projectLayer
+     * @param {uknown}  layer.parentGroup
      */
-    handleLayerChecked(layerObject) {
-      let {
-        checked,
-        id,
-        disabled,
-        projectLayer=false,
-        parentGroup
-      } = layerObject;
+    handleLayerChecked(layer) {
 
-      // case external layer (eg. temporary layer through `addlayerscontrol`)
-      if (!projectLayer) {
-        // update `layer.visible` property
-        layerObject.visible = checked;
-        GUI.getService('map').changeLayerVisibility({ id, visible: checked });
+      // external layer (eg. temporary layer through `addlayerscontrol`)
+      if (!layer.projectLayer) {
+        layer.visible = layer.checked;
+        GUI.getService('map').changeLayerVisibility({ id: layer.id, visible: layer.checked });
+        return;  // NB exit early!
       }
 
-      // case project layer (eg. qgis layer)
-      else {
-        const layer = CatalogLayersStoresRegistry.getLayerById(id);
-        if (checked) {
-          const visible = layer.setVisible(!disabled);
-          /**
-           * @TODO is it necessary to emit the `layer-change-style` event here?
-           */
-          // if (visible && 'toc' === this.legendplace) {
-          //  setTimeout(() => VM.$emit('layer-change-style', { layerId: id }));
-          // }
-          if (parentGroup.mutually_exclusive) {
-            parentGroup.nodes.forEach(node => node.checked = node.id === id);
-          }
-          while (parentGroup) {
-            parentGroup.checked = true;
-            parentGroup = parentGroup.parentGroup;
-          }
-        } else {
-          layer.setVisible(false);
-        }
-        VM.$emit('treenodevisible', layer);
+      // project layer (eg. qgis layer)
+      const qlayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const checked = layer.checked;
+
+      qlayer.setVisible(checked ? !layer.disabled : false)
+
+      if (checked && layer.parentGroup.mutually_exclusive) {
+        layer.parentGroup.nodes.forEach(n => n.checked = n.id === layer.id);
       }
 
+      // traverse parent groups
+      let g = layer.parentGroup;
+      while (checked && g) {
+        g.checked = true;
+        g         = g.parentGroup;
+      }
+
+      VM.$emit('treenodevisible', qlayer);
     },
 
+    /**
+     * Save layer filter
+     *
+     * @since 3.9.0
+     */
+    saveFilter(layerstree) {
+      CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();
+    },
+
+    /**
+     * @fires CatalogEventBus~activefiltertokenlayer
+     */
     toggleFilterLayer() {
       VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
+    /**
+     * @fires CatalogEventBus~unselectionlayer
+     */
     clearSelection() {
       VM.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
@@ -477,11 +513,12 @@ export default {
      * @fires CatalogEventBus~treenodeselected
      */
     select() {
-      // skip when `selected === undefined` (unselectable layer, eg. an external WMS layer) 
+      // skip when `selected === undefined` (unselectable layer, eg. an external WMS  added  (no project layer))
       if (undefined === this.layerstree.selected) {
         return;
       }
-      if (this.layerstree.external) {
+      // check if is external and not a project Layer
+      if (this.layerstree.external && false === this.layerstree.projectLayer) {
         VM.$emit('treenodeexternalselected', this.layerstree);
       } else if (!this.isGroup && !this.isTable) {
         VM.$emit('treenodeselected', this.storeid, this.layerstree);
@@ -491,15 +528,17 @@ export default {
     /**
      * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
      *
-     * @since v3.8
+     * @since 3.10.0
      */
-    zoomToLayer(layer) {
-      GUI
-        .getService('map')
-        .goToBBox(
-          [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-          layer.epsg
-        );
+    maybeZoomToLayer(layer) {
+      if (this.canZoom(this.layerstree)) {
+        GUI
+          .getService('map')
+          .goToBBox(
+            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+            layer.epsg
+          );
+      }
     },
 
     /**
@@ -519,10 +558,10 @@ export default {
      *
      * @since v3.8
      */
-     onTreeItemClick() {
+    onTreeItemClick() {
       this.handleClick({
         '1': () => !this.isTable && !this.isGroup && this.select(),
-        '2': () => !this.isTable && this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree)
+        '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree)
       }, this);
     },
 
@@ -542,20 +581,41 @@ export default {
       GUI.getService('map').removeExternalLayer(name, wms);
     },
 
-    showLayerMenu(layerstree, evt) {
+    /**
+     * @param evt
+     * 
+     * @fires CatalogEventBus~hide-layer-context-menu
+     * @fires CatalogEventBus~hide-project-context-menu
+     * @fires CatalogEventBus~show-layer-context-menu
+     * @fires CatalogEventBus~show-project-context-menu
+     * 
+     * @since 3.10.0
+     */
+    showContextMenu(evt) {
       if (
         !this.isGroup &&
         (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
       ) {
-        VM.$emit('showmenulayer', layerstree, evt);
+        VM.$emit('hide-project-context-menu');
+        VM.$emit('show-layer-context-menu', this.layerstree, evt);
+      } else if (this.isGroup && true === this.layerstree.root) {
+        VM.$emit('hide-layer-context-menu');
+        VM.$emit('show-project-context-menu', evt);
       }
-    }
+    },
 
   },
 
+  /**
+   * Inizialize layer (disable, visible etc..)
+   */
   created() {
-    // just firs time
-    this.init();
+    if (this.isGroup && !this.layerstree.checked) {
+      this.handleGroupChecked(this.layerstree);
+    }
+    if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
+      this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
+    }
   },
 
   async mounted() {

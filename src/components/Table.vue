@@ -5,27 +5,56 @@
 
 <template>
   <div id="open_attribute_table" style="margin-top: 5px">
-    <table ref="attribute_table" v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped row-border compact nowrap" style="width:100%">
+    <table
+      v-if="hasHeaders()"
+      ref="attribute_table"
+      id="layer_attribute_table"
+      class="table table-striped row-border compact nowrap"
+      style="width:100%"
+    >
       <thead>
         <tr>
           <th></th>
           <th v-if="index > 0" v-for="(header, index) in state.headers">
-            <input type="text" style="height: 25px; min-width: 40px; padding: 2px;" class="form-control column-search" @keyup="changeColumn($event, index)" :placeholder="header.name"/>
+            <input
+              type         = "text"
+              style        = "height: 25px; min-width: 40px; padding: 2px;"
+              class        = "form-control column-search"
+              @keyup       = "changeColumn($event, index)"
+              :placeholder = "header.name"/>
           </th>
         </tr>
         <tr>
           <th v-for="(header, index) in state.headers">
             <span v-if="index === 0">
-              <input type="checkbox" id="attribute_table_select_all_rows" :checked="state.selectAll" class="magic-checkbox" :disabled="state.nofilteredrow || state.features.length === 0">
-              <label style="margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow" for="attribute_table_select_all_rows"><span style="padding:5px"></span></label>
+              <input
+                type      = "checkbox"
+                id        = "attribute_table_select_all_rows"
+                :checked  = "state.selectAll"
+                class     = "magic-checkbox"
+                :disabled = "state.nofilteredrow || state.features.length === 0">
+              <label
+                for   = "attribute_table_select_all_rows"
+                style = "margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
+              >
+                <span style="padding:5px"></span>
+              </label>
             </span>
             <span v-else>{{ header.label }}</span>
           </th>
         </tr>
       </thead>
-      <table-body :headers="state.headers" :filter=state.tools.filter :features="state.features" :addRemoveSelectedFeature="addRemoveSelectedFeature" :zoomAndHighLightFeature="zoomAndHighLightFeature"></table-body>
+
+      <table-body
+        :headers                  = "state.headers"
+        :filter                   = state.tools.filter
+        :features                 = "state.features"
+        :addRemoveSelectedFeature = "addRemoveSelectedFeature"
+        :zoomAndHighLightFeature  = "zoomAndHighLightFeature"
+      />
+
     </table>
-    <div id="noheaders" v-t="'dataTable.no_data'" v-else></div>
+    <div v-else id="noheaders" v-t="'dataTable.no_data'" ></div>
   </div>
 </template>
 
@@ -37,7 +66,19 @@ import G3WField        from 'components/G3WField.vue';
 import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
-const { debounce } = require('core/utils/utils');
+const { debounce } = require('utils');
+
+Object
+    .entries({
+      TableBody,
+      SelectRow,
+      G3wTableToolbar,
+      G3WField,
+      GUI,
+      resizeMixin,
+      debounce,
+    })
+    .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 let dataTable;
 let fieldsComponents = [];
@@ -58,37 +99,43 @@ export default {
     }
   },
   components: {
+    'g3w-field': G3WField,
     TableBody
   },
   methods: {
-    getDataFromBBOX(){
+    getDataFromBBOX() {
       this.$options.service.getDataFromBBOX();
     },
-    toggleFilterToken(){
+    toggleFilterToken() {
       this.$options.service.toggleFilterToken();
     },
-    clearAllSelection(){
+    clearAllSelection() {
       this.$options.service.clearLayerSelection();
     },
-    switchSelection(){
+    switchSelection() {
       this.$options.service.switchSelection();
     },
-    selectAllRow(){
+    selectAllRow() {
       this.state.features.length && this.$options.service.selectAllFeatures();
     },
     _setLayout() {
       this.$options.service._setLayout();
     },
     async zoomAndHighLightFeature(feature, zoom=true) {
-      if (feature.geometry) this.$options.service.zoomAndHighLightFeature(feature, zoom);
-      else await this.$options.service.zoomAndHighLightGeometryRelationFeatures(feature, zoom);
+      if (feature.geometry) {
+        this.$options.service.zoomAndHighLightFeature(feature, zoom);
+      } else {
+        await this.$options.service.zoomAndHighLightGeometryRelationFeatures(feature, zoom);
+      }
     },
-    addRemoveSelectedFeature(feature){
+    addRemoveSelectedFeature(feature) {
       this.$options.service.addRemoveSelectedFeature(feature);
     },
     async reloadLayout() {
       await this.$nextTick();
-      dataTable && dataTable.columns.adjust();
+      if (dataTable) {
+        dataTable.columns.adjust();
+      }
     },
     hasHeaders() {
       return !!this.state.headers.length;
@@ -102,48 +149,47 @@ export default {
       //trDomeElements
       trDomeElements.each((rowElement, index) => {
         $(rowElement).css('cursor', 'pointer');
-        if (this.state.features.length) {
-          const feature = this.state.features[index];
-          const hasGeometry = !!feature.geometry;
-          $(rowElement).addClass('feature_attribute');
-          feature.selected && $(rowElement).addClass('selected');
-          $(rowElement).on('click', ()=> hasGeometry && this.zoomAndHighLightFeature(feature));
-          $(rowElement).on('mouseover', () => hasGeometry && this.zoomAndHighLightFeature(feature, false));
-          $(rowElement).children().each((index, element)=> {
-            const header = this.state.headers[index];
-            let contentDOM;
-            if (header === null) {
-              const SelectRowClass = Vue.extend(SelectRow);
-              const SelectRowInstance = new SelectRowClass({
-                propsData: {
-                  feature
-                }
-              });
-              SelectRowInstance.$on('selected', feature => this.$options.service.addRemoveSelectedFeature(feature));
-              this.$watch(
-                () => feature.selected,
-                function (selected) {
-                  selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
-                }
-              );
-              contentDOM = SelectRowInstance.$mount().$el;
-            } else {
-              const fieldClass = Vue.extend(G3WField);
-              const fieldInstance = new fieldClass({
-                propsData: {
-                  state: {
-                    value: feature.attributes[header.name]
-                  },
-                  _legacy: "g3w-field",
-                }
-              });
-              fieldInstance.$mount();
-              fieldsComponents.push(fieldInstance);
-              contentDOM = fieldInstance.$el
-            }
-            $(element).html(contentDOM);
-          })
+        if (!this.state.features.length) {
+          return;
         }
+        const feature = this.state.features[index];
+        const hasGeometry = !!feature.geometry;
+        $(rowElement).addClass('feature_attribute');
+        feature.selected && $(rowElement).addClass('selected');
+        $(rowElement).on('click',     ()=> hasGeometry && this.zoomAndHighLightFeature(feature));
+        $(rowElement).on('mouseover', () => hasGeometry && this.zoomAndHighLightFeature(feature, false));
+        $(rowElement).children().each((index, element)=> {
+          const header = this.state.headers[index];
+          let contentDOM;
+          if (header === null) {
+            const SelectRowClass = Vue.extend(SelectRow);
+            const SelectRowInstance = new SelectRowClass({
+              propsData: {
+                feature
+              }
+            });
+            SelectRowInstance.$on('selected', feature => this.$options.service.addRemoveSelectedFeature(feature));
+            this.$watch(
+              () => feature.selected,
+              function(selected) {
+                selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
+              }
+            );
+            contentDOM = SelectRowInstance.$mount().$el;
+          } else {
+            const fieldClass = Vue.extend(G3WField);
+            const fieldInstance = new fieldClass({
+              propsData: {
+                state: {
+                  value: feature.attributes[header.name]
+                },
+              }
+            });
+            fieldInstance.$mount();
+            fieldsComponents.push(fieldInstance);
+            contentDOM = fieldInstance.$el
+          }
+        });
       });
       setTimeout(()=> this.reloadLayout(), 0)
     },
@@ -215,8 +261,11 @@ export default {
           "deferLoading": this.state.allfeatures
         });
       this.$options.service.on('ajax-reload', dataTable.ajax.reload);
-      this.changeColumn = debounce(async (event, index) =>{
-        dataTable.columns(index).search(event.target.value.trim()).draw();
+      this.changeColumn = debounce(async (event, index) => {
+        dataTable
+          .columns(index)
+          .search(event.target.value.trim())
+          .draw();
       });
     } else { // no pagination all data
       dataTable = $(this.$refs.attribute_table).DataTable({
@@ -228,16 +277,18 @@ export default {
       }, 600);
       eventHandlers.nopagination['search.dt'] = debounceSearch;
       dataTable.on('search.dt', debounceSearch);
-      dataTable.on('length.dt', (evt, settings, length)=> {
+      dataTable.on('length.dt', (evt, settings, length) => {
         this.$options.service.setAttributeTablePageLength(length)
       });
-      this.changeColumn = debounce(async (event, index) =>{
+      this.changeColumn = debounce(async (event, index) => {
         dataTable.columns(index).search(event.target.value.trim()).draw();
         this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'})[0]);
       });
     }
 
-    this.isMobile() && hideElements();
+    if (this.isMobile()) {
+      hideElements();
+    }
 
     const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
     const G3WTableToolbarInstance = new G3WTableToolbarClass({
@@ -253,10 +304,10 @@ export default {
 
     $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);
 
-    this.$options.service.on('redraw', data =>{
+    this.$options.service.on('redraw', data => {
       dataTable.clear();
       dataTable.draw(false);
-      setTimeout(()=>{
+      setTimeout(() => {
         dataTable.rows.add(data);
         dataTable.draw(false);
         this.createdContentBody();
@@ -284,4 +335,4 @@ export default {
     font-weight: bold;
     margin-top: 10px;
   }
-  </style>
+</style>

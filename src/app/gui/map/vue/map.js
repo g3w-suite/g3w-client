@@ -1,8 +1,8 @@
 import * as vueComponentOptions from 'components/Map.vue';
 
-const { base, merge, inherit } = require('core/utils/utils');
+const { base, merge, inherit } = require('utils');
 const Component = require('gui/component/component');
-const MapService = require('gui/map/mapservice');
+const { MapService } = require('gui/map/mapservice');
 
 // interanl registration
 const InternalComponent = Vue.extend(vueComponentOptions);

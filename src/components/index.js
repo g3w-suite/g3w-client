@@ -3,6 +3,7 @@ import C3XYLine from './C3XYLine.vue';
 import Catalog from './Catalog.vue';
 import CatalogChangeMapThemes from './CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu from './CatalogLayerContextMenu.vue';
+import CatalogProjectContextMenu from './CatalogProjectContextMenu.vue';
 import CatalogLayerLegend from './CatalogLayerLegend.vue';
 import CatalogLayersGroup from './CatalogLayersGroup.vue';
 import CatalogLayersLegendItems from './CatalogLayersLegendItems.vue';
@@ -14,7 +15,6 @@ import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
 import G3WField from './G3WField.vue';
-import G3WInput from './G3WInput.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
 import GlobalBarLoader from './GlobalBarLoader.vue';
 import GlobalDivider from './GlobalDivider.vue';
@@ -25,32 +25,11 @@ import GlobalSkeleton from './GlobalSkeleton.vue';
 import GlobalTabs from './GlobalTabs.vue';
 import GlobalTabsNode from './GlobalTabsNode.vue';
 import HeaderItem from './HeaderItem.vue';
-import InputCheckbox from './InputCheckbox.vue';
-import InputColor from './InputColor.vue';
-import InputDateTime from './InputDateTime.vue';
-import InputDateTimePicker from './InputDateTimePicker.vue';
-import InputFloat from './InputFloat.vue';
-import InputInteger from './InputInteger.vue';
-import InputLayerPositions from './InputLayerPositions.vue';
-import InputLonLat from './InputLonLat.vue';
-import InputMedia from './InputMedia.vue';
-import InputPickLayer from './InputPickLayer.vue';
-import InputRadio from './InputRadio.vue';
-import InputRange from './InputRange.vue';
-import InputRangeSlider from './InputRangeSlider.vue';
-import InputSelect from './InputSelect.vue';
-import InputSliderRange from './InputSliderRange.vue';
-import InputTable from './InputTable.vue';
-import InputText from './InputText.vue';
-import InputTextArea from './InputTextArea.vue';
-import InputHtml from './InputTextHtml.vue';
-import InputUnique from './InputUnique.vue';
 import LayerOpacityPicker from './LayerOpacityPicker.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
 import MapControlButton from './MapControlButton.js';
-import MapControlGeocoding from './MapControlGeocoding.js';
-import MapControlNominatimResults from './MapControlNominatimResults.js';
+import MapControlGeocoding from './MapControlGeocoding.vue';
 import MapControlZoomHistory from './MapControlZoomHistory.vue';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
@@ -73,8 +52,6 @@ import QueryResultsAction from './QueryResultsAction.vue';
 import QueryResultsActionDownloadFormats from './QueryResultsActionDownloadFormats.vue';
 import QueryResultsActionInfoFormats from './QueryResultsActionInfoFormats.vue';
 import QueryResultsActionQueryPolygonCSVAttributes from './QueryResultsActionQueryPolygonCSVAttributes.vue';
-import QueryResultsActions from './QueryResultsActions.vue';
-import QueryResultsHeaderFeatureBody from './QueryResultsHeaderFeatureBody.vue';
 import Relation from './Relation.vue';
 import Relations from './Relations.vue';
 import RelationsPage from './RelationsPage.vue';
@@ -97,7 +74,6 @@ import Tool from './Tool.vue';
 import Tools from './Tools.vue';
 import UserMessage from './UserMessage.vue';
 import ViewportContentsViewer from './ViewportContentsViewer.vue';
-import UserMessageSteps from './UserMessageSteps.js';
 import WMS from './WMS.vue';
 import WMSLayersPanel from './WMSLayersPanel.vue';
 
@@ -107,6 +83,10 @@ export {
   Catalog,
   CatalogChangeMapThemes,
   CatalogLayerContextMenu,
+  /**
+   * @since 3.10.0
+   */
+  CatalogProjectContextMenu,
   CatalogLayerLegend,
   CatalogLayersGroup,
   CatalogLayersLegendItems,
@@ -121,8 +101,6 @@ export {
   FormHeader,
   /** @since 3.9.0 */
   G3WField,
-  /** @since 3.9.0 */
-  G3WInput,
   GlobalHelpDiv,
   GlobalBarLoader,
   GlobalDivider,
@@ -133,35 +111,11 @@ export {
   GlobalTabs,
   GlobalTabsNode,
   HeaderItem,
-  InputCheckbox,
-  InputColor,
-  /** @since 3.9.0 */
-  InputDateTime,
-  InputDateTimePicker,
-  InputFloat,
-  /** @since 3.9.0 */
-  InputLayerPositions,
-  InputInteger,
-  InputLonLat,
-  InputMedia,
-  InputPickLayer,
-  InputRadio,
-  InputRange,
-  /** @since 3.9.0 */
-  InputRangeSlider,
-  InputSelect,
-  InputSliderRange,
-  InputTable,
-  InputText,
-  InputTextArea,
-  InputHtml,
-  InputUnique,
   LayerOpacityPicker,
   Map,
   MapAddLayer,
   MapControlButton,
   MapControlGeocoding,
-  MapControlNominatimResults,
   MapControlZoomHistory,
   MetadataLayer,
   MetadataProject,
@@ -183,9 +137,6 @@ export {
   QueryResultsActionDownloadFormats,
   QueryResultsActionInfoFormats,
   QueryResultsActionQueryPolygonCSVAttributes,
-  QueryResultsActions,
-  QueryResultsHeaderFeatureBody,
-  QueryResultsAttributeFieldValue,
   Relation,
   Relations,
   RelationsPage,
@@ -208,7 +159,6 @@ export {
   Tools,
   UserMessage,
   ViewportContentsViewer,
-  UserMessageSteps,
   WMS,
   WMSLayersPanel,
 };

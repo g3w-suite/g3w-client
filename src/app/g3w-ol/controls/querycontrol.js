@@ -1,9 +1,9 @@
-import GUI from 'services/gui';
-import ProjectsRegistry from 'store/projects';
+import GUI               from 'services/gui';
+import ProjectsRegistry  from 'store/projects';
 import DataRouterService from 'services/data';
+import { mergeOptions }  from 'utils/mergeOptions';
 
-const { throttle }               = require('core/utils/utils');
-const utils                      = require('core/utils/ol');
+const { throttle }               = require('utils');
 const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
@@ -17,7 +17,7 @@ const QueryControl = function(options = {}){
     interactionClass: PickCoordinatesInteraction,
   };
 
-  options = utils.merge(options, _options);
+  options = mergeOptions(options, _options);
 
   InteractionControl.call(this, options);
 };

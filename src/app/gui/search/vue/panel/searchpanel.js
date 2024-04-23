@@ -1,6 +1,6 @@
 import * as vueComponentOptions from 'components/SearchPanel.vue';
 
-const { base, inherit, uniqueId } = require('core/utils/utils');
+const { base, inherit, uniqueId } = require('utils');
 const Panel = require('gui/panel');
 const Service = require('gui/search/vue/panel/searchservice');
 

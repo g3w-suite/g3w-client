@@ -6,7 +6,7 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry from 'store/map-layers';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit } = require('utils');
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
 
@@ -23,6 +23,7 @@ function ProjectsRegistry() {
   this.initialized         = false;
   this.projectType         = null;
   this.currentProjectGroup = null;
+  //store overview (Panoramic map) project
   this.overviewproject     = undefined;
 
   this.setters = {
@@ -167,8 +168,12 @@ function ProjectsRegistry() {
     return _
       .sortBy(this.getProjects()
       .filter(project => {
-        if (!_.isNil(project.listable)) return project.listable;
-        if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) return false;
+        if (null !== project.listable  && undefined !== project.listable) {
+          return project.listable;
+        }
+        if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) {
+          return false;
+        }
         return project;
       }), 'title');
   };
