@@ -1,6 +1,7 @@
-import ApplicationState  from 'store/application-state';
-import BaseInputComponent from 'components/InputBase.vue'
+import ApplicationState                     from 'store/application-state';
+import BaseInputComponent                   from 'components/InputBase.vue'
 import { baseInputMixin as BaseInputMixin } from 'mixins';
+
 const InputServices = require('./services');
 
 const Input = {
@@ -24,7 +25,16 @@ const Input = {
     this.service = new InputServices[this.state.input.type]({
       state: this.state,
     });
-    this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
+
+    this.$watch(() => ApplicationState.language, async () => {
+      if (this.state.visible) {
+        this.state.visible = false;
+        this.service.setErrorMessage();
+        await this.$nextTick();
+        this.state.visible = true;
+      }
+
+    });
     this.state.editable && this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
     /**

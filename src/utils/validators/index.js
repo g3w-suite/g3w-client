@@ -7,6 +7,7 @@
 const { truefnc } = require('utils');
 
 const InputValidators = {
+
   validators: {
 
     float(options = {}) {
@@ -16,12 +17,23 @@ const InputValidators = {
         return !Number.isNaN(float);
       }
     },
+    /**
+     * @since v3.10.0
+     * @param options
+     */
+    bigint(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        value = 1 * value;
+        return !Number.isNaN(value) ? value <= Number.MAX_SAFE_INTEGER : false;
+      }
+    },
 
     integer(options = {}) {
       this.options = options;
       this.validate = function(value) {
         const integer = 1 * value;
-        return !_.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
+        return !Number.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
       }
     },
 
