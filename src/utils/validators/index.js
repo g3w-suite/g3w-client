@@ -75,7 +75,7 @@ const InputValidators = {
      * @since 3.10.0
      * @param options
      */
-    chart(options) {
+    char(options) {
       this.options = options;
       this.validate = function(value) {
         return value && 1 === `${value}`.length;
