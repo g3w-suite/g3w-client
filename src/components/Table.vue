@@ -1012,6 +1012,8 @@ export default {
           "ajax": debounce(async (data, cb) => {
             try {
               console.log(data, cb);
+              //disable table content to avoid clicking on table during loading of new data
+              GUI.disableContent(true);
               // remove listeners
               $('#open_attribute_table table tr').each(el => { $(el).off('click'); $(el).off('mouseover'); });
               cb(await this.getData(data));
@@ -1020,6 +1022,9 @@ export default {
             } catch(e) {
               console.warn(e);
             }
+            //enable table data content after get data
+            GUI.disableContent(false);
+
           }, 800),
           "serverSide": true,
           "deferLoading": this.state.allfeatures,
