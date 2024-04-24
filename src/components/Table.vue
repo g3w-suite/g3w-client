@@ -115,6 +115,49 @@
 
     </table>
     <div v-else id="noheaders" v-t="'dataTable.no_data'"></div>
+
+    <table ref="hidden_table_body" hidden>
+      <tr
+        v-for       = "(feature, i) in state.features" :key="feature.id"
+        role        = "row"
+        style       =  "cursor: pointer;""
+        @mouseover  = "highlight(feature, false)"
+        @click.stop = "highlight(feature, true)"
+        :class      = "[
+          i % 2 == 1 ? 'odd' : 'pair',
+          'feature_attribute',
+          { geometry: !!feature.geometry },
+          { 'selected': feature.selected }
+        ]">
+        <td v-for="(header, j) in state.headers" :tab-index="1">
+          <div
+            v-if  = "0 === j"
+            style = "display: flex"
+          >
+            <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
+            <input
+              type     = "checkbox"
+              :id      = "get_check_id(true)"
+              :checked = "feature.selected"
+              class    = "magic-checkbox"
+            >
+            <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
+            <span
+              v-if                   = "layer.isEditable()"
+              @click.stop            = "editFeature(feature)"
+              v-t-tooltip:top.create = "'sdk.tooltips.editing'"
+            >
+              <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
+            </span>
+          </div>
+          <field
+            v-else
+            :feature = "feature"
+            :state   = "({ label: undefined, value: feature.attributes[header.name] })"
+          />
+        </td>
+      </tr>
+    </table>
   </div>
 </template>
 
@@ -138,13 +181,6 @@ const { SELECTION_STATE }          = require('core/layers/layer');
 
 //Supported page lengths
 const PAGELENGTHS = [10, 25, 50];
-
-/**
- * Create a unique feature key
- */
-function _createFeatureKey(values) {
-  return values.join('__');
-}
 
 function _createFeatureForSelection(feature) {
   let geometry;
@@ -213,7 +249,6 @@ export default {
           in_bbox:   undefined,
         },
       },
-      table:               null,
       relationsGeometry,
       paginationfilter:    false,
       allfeaturesnumber:   undefined,
@@ -482,7 +517,7 @@ export default {
             if ('fulfilled' === status) {
 
               const relation = this.relationsGeometry[index];
-              const k        = _createFeatureKey(field_values[index]);
+              const k        = field_values[index].join('__'); // create a unique feature key
               const data     = value && value.data[0];
             
               if (undefined === relation.features[k]) {
@@ -570,61 +605,8 @@ export default {
      * Update DataTable content (with a custom html structure)
      */
     updateTableBody() {
-      document
-        .querySelector('#table_body_attributes')
-        .replaceWith((new (Vue.extend({ template: /* html */ `
-          <tbody id="table_body_attributes">
-            <tr
-              v-for       = "(feature, i) in state.features" :key="feature.id"
-              role        = "row"
-              style       =  "cursor: pointer;""
-              @mouseover  = "highlight(feature, false)"
-              @click.stop = "highlight(feature, true)"
-              :class      = "[
-                i % 2 == 1 ? 'odd' : 'pair',
-                'feature_attribute',
-                { geometry: !!feature.geometry },
-                { 'selected': feature.selected }
-              ]">
-              <td v-for="(header, j) in state.headers" :tab-index="1">
-                <div
-                  v-if  = "0 === j"
-                  style = "display: flex"
-                >
-                  <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
-                  <input
-                    type     = "checkbox"
-                    :id      = "get_check_id(true)"
-                    :checked = "feature.selected"
-                    class    = "magic-checkbox"
-                  >
-                  <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
-                  <span
-                    v-if                   = "layer.isEditable()"
-                    @click.stop            = "editFeature(feature)"
-                    v-t-tooltip:top.create = "'sdk.tooltips.editing'"
-                  >
-                    <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
-                  </span>
-                </div>
-                <field
-                  v-else
-                  :feature = "feature"
-                  :state   = "({ label: undefined, value: feature.attributes[header.name] })"
-                />
-              </td>
-            </tr>
-          </tbody>`,
-          components: { Field },
-          data: () => ({ ...this.$data }),
-          methods: {
-            get_check_id: this.get_check_id.bind(this),
-            select:       this.select.bind(this),
-            editFeature:  this.editFeature.bind(this),
-            highlight:    this.highlight.bind(this),
-          }
-        }))()).$mount().$el);
-
+      this.$refs.hidden_table_body.remove();
+      document.querySelector('#table_body_attributes').innerHTML = this.$refs.hidden_table_body.cloneNode(true).innerHTML;
       setTimeout(() => this.reloadLayout(), 0)
     },
 
