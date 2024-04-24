@@ -88,7 +88,8 @@
         </tr>
         <tr>
           <th v-for="(header, i) in state.headers">
-            <span v-if="0 === i">
+            <span v-if="i > 0">{{ header.label }}</span>
+            <span v-else>
               <input
                 type      = "checkbox"
                 id        = "attribute_table_select_all_rows"
@@ -104,49 +105,13 @@
                 <span style="padding:5px"></span>
               </label>
             </span>
-            <span v-else>{{ header.label }}</span>
           </th>
         </tr>
       </thead>
 
       <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
-      <tbody id="table_body_attributes" >
-        <tr
-          v-for       = "(feature, i) in state.features" :key="feature.id"
-          role        = "row"
-          class       = "feature_attribute"
-          style       = "cursor: pointer"
-          @mouseover  = "highlight(feature, false)"
-          @click.stop = "highlight(feature, true)"
-          :class      = "[
-            i % 2 == 1 ? 'odd' : 'pair',
-            { geometry: !!feature.geometry },
-            { 'selected': feature.selected }
-          ]">
-          <td v-for="(header, i) in state.headers" :tab-index="1">
-            <div
-              v-if  = "0 === i"
-              style = "display: flex"
-            >
-              <select-row
-                @selected = "select"
-                :feature  = "feature"
-              />
-              <span
-                v-if                   = "layer.isEditable()"
-                @click.stop            = "editFeature(feature)"
-                v-t-tooltip:top.create = "'sdk.tooltips.editing'"
-              >
-                <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
-              </span>
-            </div>
-            <field
-              v-else
-              :feature = "feature"
-              :state   = "({ label: undefined, value: feature.attributes[header.name] })"
-            />
-          </td>
-        </tr>
+      <tbody id="table_body_attributes">
+        <!-- POPULATED BY DATA TABLE -->
       </tbody>
 
     </table>
@@ -157,7 +122,6 @@
 <script>
 import G3WObject                   from 'core/g3w-object';
 import Component                   from 'core/g3w-component';
-import SelectRow                   from 'components/TableSelectRow.vue';
 import Field                       from 'components/FieldG3W.vue';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -195,7 +159,6 @@ function _createFeatureForSelection(feature) {
 
 /** Data Table */
 let table;
-let V_FIELDS = []; // fields components
 
 export default {
 
@@ -204,7 +167,6 @@ export default {
   mixins: [resizeMixin],
 
   components: {
-    SelectRow,
     Field
   },
 
@@ -605,71 +567,62 @@ export default {
       }
     },
 
-    createdContentBody() {
-      V_FIELDS = V_FIELDS.filter(comp => { comp.$destroy(); return false; });
-      // trDomeElements
-      table
-        .rows()
-        .nodes()
-        .each((row, i) => {
-          $(row).css('cursor', 'pointer');
-          if (!this.state.features.length) {
-            return;
+    updateTableBody() {
+      document
+        .querySelector('#table_body_attributes')
+        .replaceWith((new (Vue.extend({ template: /* html */ `
+          <tbody id="table_body_attributes">
+            <tr
+              v-for       = "(feature, i) in state.features" :key="feature.id"
+              role        = "row"
+              style       =  "cursor: pointer;""
+              @mouseover  = "highlight(feature, false)"
+              @click.stop = "highlight(feature, true)"
+              :class      = "[
+                i % 2 == 1 ? 'odd' : 'pair',
+                'feature_attribute',
+                { geometry: !!feature.geometry },
+                { 'selected': feature.selected }
+              ]">
+              <td v-for="(header, j) in state.headers" :tab-index="1">
+                <div
+                  v-if  = "0 === j"
+                  style = "display: flex"
+                >
+                  <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
+                  <input
+                    type     = "checkbox"
+                    :id      = "get_check_id(true)"
+                    :checked = "feature.selected"
+                    class    = "magic-checkbox"
+                  >
+                  <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
+                  <span
+                    v-if                   = "layer.isEditable()"
+                    @click.stop            = "editFeature(feature)"
+                    v-t-tooltip:top.create = "'sdk.tooltips.editing'"
+                  >
+                    <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
+                  </span>
+                </div>
+                <field
+                  v-else
+                  :feature = "feature"
+                  :state   = "({ label: undefined, value: feature.attributes[header.name] })"
+                />
+              </td>
+            </tr>
+          </tbody>`,
+          components: { Field },
+          data: () => ({ ...this.$data }),
+          methods: {
+            get_check_id: this.get_check_id.bind(this),
+            select: this.select.bind(this),
+            editFeature: this.editFeature.bind(this),
+            highlight: this.highlight.bind(this),
           }
-          const feature = this.state.features[i];
-          $(row).addClass('feature_attribute');
-          feature.selected && $(row).addClass('selected');
-          $(row).on('click',     () => { !!feature.geometry && this.highlight(feature); });
-          $(row).on('mouseover', () => { !!feature.geometry && this.highlight(feature, false); });
-          $(row)
-            .children()
-            .each((j, element) => {
-              const header = this.state.headers[j];
-              let comp;
-              let dom;
+        }))()).$mount().$el);
 
-              if (null !== header) {
-                comp = new (Vue.extend(Field))({
-                  propsData: {
-                    state: {
-                      value: feature.attributes[header.name]
-                    }
-                  }
-                });
-                V_FIELDS.push(comp);
-                dom = comp.$mount().$el;
-              }
-
-              if (null === header) {
-                comp = new (Vue.extend(SelectRow))({
-                  propsData: { feature }
-                });
-                comp.$on('selected', feature => this.select(feature));
-                this.$watch(
-                  () => feature.selected,
-                  (selected) =>selected ? $(row).addClass('selected'): $(row).removeClass('selected')
-                );
-                dom = comp.$mount().$el;
-                if (this.layer.isEditable()) {
-                  const div = document.createElement('div');
-                  div.style.display = 'flex';
-                  div.append(dom);
-                  const edit = new (Vue.extend({
-                    template: `
-                      <span @click.stop = "editFeature" v-t-tooltip:top.create = "'sdk.tooltips.editing'">
-                        <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
-                      </span>
-                    `,
-                     methods: { editFeature: this.editFeature.bind(this, feature) }
-                    }))
-                    div.append(edit.$mount().$el)
-                    dom = div;
-                }
-              }
-
-              $(element).html(dom);
-          })
-        });
       setTimeout(() => this.reloadLayout(), 0)
     },
 
@@ -952,7 +905,7 @@ export default {
     comp.show = async (opts = {}) => {
       try {
         GUI.closeOpenSideBarComponent(); // close other sidebar components
-        await this.getData({ firstCall: true });
+        // await this.getData({ firstCall: true });
         GUI.showContent({
           content: comp,
           perc: 50,
@@ -999,33 +952,25 @@ export default {
       } ],
       "lengthMenu": PAGELENGTHS,
       "pageLength": this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
-      ...(
-        this.state.pagination
-        ? {
-          "columns": this.state.headers,
-          "ajax": debounce(async (data, cb) => {
-            try {
-              console.log(data, cb);
-              //disable table content to avoid clicking on table during loading of new data
-              GUI.disableContent(true);
-              // remove listeners
-              $('#open_attribute_table table tr').each(el => { $(el).off('click'); $(el).off('mouseover'); });
-              cb(await this.getData(data));
-              await this.$nextTick();
-              this.createdContentBody();
-            } catch(e) {
-              console.warn(e);
-            }
-            //enable table data content after get data
-            GUI.disableContent(false);
-
-          }, 800),
-          "serverSide": true,
-          "deferLoading": this.state.allfeatures,
-        } : {
-          "searchDelay": 600,
+      "columns": this.state.headers,
+      "ajax": debounce(async (data, cb) => {
+        try {
+          //disable table content to avoid clicking on table during loading of new data
+          GUI.disableContent(true);
+          // remove listeners
+          $('#open_attribute_table table tr').each(el => { $(el).off('click'); $(el).off('mouseover'); });
+          cb(await this.getData(data));
+          await this.$nextTick();
+          this.updateTableBody();
+        } catch(e) {
+          console.warn(e);
         }
-      )
+        //enable table data content after get data
+        GUI.disableContent(false);
+
+      }, 800),
+      "serverSide": true,
+      "deferLoading": this.state.allfeatures,
     });
 
     // pagination
@@ -1056,7 +1001,9 @@ export default {
         table.draw(false);
         this.createdContentBody();
       })
-    })
+    });
+
+    table.ajax.reload();
   },
 
   beforeDestroy() {
@@ -1092,17 +1039,17 @@ export default {
 </style>
 
 <style>
-.is-mobile .dataTables_info,
-.is-mobile .dataTables_length {
-  display: none;
-}
-.is-mobile .dataTables_paginate {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8em;
-  margin: 0;
-}
-.is-mobile .dataTables_filter {
-  float: right;
-}
+  .is-mobile .dataTables_info,
+  .is-mobile .dataTables_length {
+    display: none;
+  }
+  .is-mobile .dataTables_paginate {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+    margin: 0;
+  }
+  .is-mobile .dataTables_filter {
+    float: right;
+  }
 </style>
