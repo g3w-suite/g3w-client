@@ -273,6 +273,7 @@ export default {
 
       if (this.state.atlas) {
         this._clearPrint();
+        this.initSelect2Field();
       } else if (has_previous) {
         this.showPrintArea(true);
       } else {
@@ -547,15 +548,7 @@ export default {
       }
     },
 
-  },
-
-  watch: {
-
-    async has_autocomplete(b) {
-      if (!b) return;
-
-      await this.$nextTick();
-
+    initSelect2Field() {
       this.select2 = $('#print_atlas_autocomplete').select2({
         width: '100%',
         multiple: true,
@@ -598,6 +591,16 @@ export default {
       });
       this.select2.on('select2:select',   e => { this.atlas_values.push(e.params.data.id); });
       this.select2.on('select2:unselect', e => { this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
+    },
+
+  },
+
+  watch: {
+
+    async has_autocomplete(b) {
+      if (!b) return;
+      await this.$nextTick();
+      this.initSelect2Field();
     },
 
     atlas_values: {
