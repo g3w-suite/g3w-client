@@ -112,13 +112,13 @@
       <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
       <tbody id="table_body_attributes" >
         <tr
-          v-for      = "(feature, i) in state.features" :key="feature.id"
-          role       = "row"
-          class      = "feature_attribute"
-          style      = "cursor: pointer"
-          @mouseover = "highlight(feature, false)"
-          @click     = "highlight(feature, true)"
-          :class     = "[
+          v-for       = "(feature, i) in state.features" :key="feature.id"
+          role        = "row"
+          class       = "feature_attribute"
+          style       = "cursor: pointer"
+          @mouseover  = "highlight(feature, false)"
+          @click.stop = "highlight(feature, true)"
+          :class      = "[
             i % 2 == 1 ? 'odd' : 'pair',
             { geometry: !!feature.geometry },
             { 'selected': feature.selected }
@@ -173,6 +173,7 @@ import { promisify }               from 'utils/promisify';
 const { t }                        = require('core/i18n/i18n.service');
 const { SELECTION_STATE }          = require('core/layers/layer');
 
+//Supported page lengths
 const PAGELENGTHS = [10, 25, 50];
 
 /**
@@ -208,10 +209,11 @@ export default {
   },
 
   data() {
+    //Get layer
     const layer           = CatalogLayersStoresRegistry.getLayerById(this.$options.layerId);
     let relationsGeometry = [];
 
-    // layer doesn't have geometry
+    // In the case of alphanumerical layer
     if (!layer.isGeoLayer()) {
       layer
         .getRelations()
@@ -219,7 +221,7 @@ export default {
         .forEach(relation => {
           const father = CatalogLayersStoresRegistry.getLayerById(relation.getFather()); // get project layer
           if (
-            layer.getId() !== relation.getFather() &&   // current layer is not child layer of relation
+            layer.getId() !== relation.getFather() &&   // the current layer is not child layer of relation
             father.isGeoLayer()                         // relation layer has geometry
           ) {
             relationsGeometry.push({
@@ -460,7 +462,7 @@ export default {
      * @param {*} feature
      * @param {*} zoom    - whether zoom to feature
      */
-    async highlight(feature, zoom=true) {
+    async highlight(feature, zoom = true) {
       const map = GUI.getService('map');
 
       // async highlight
@@ -492,10 +494,8 @@ export default {
 
           field_values.push(values);
 
-          let promise;
-
-          if (zoom && undefined === features[k]) {
-            promise = DataRouterService
+          if (zoom) {
+              promises.push(DataRouterService
               .getData('search:features', {
                 inputs: {
                   layer,
@@ -509,10 +509,8 @@ export default {
                   ),
                 },
                 outputs: false, // just a request not show on result
-              });
+              }));
           }
-
-          promises.push(promise);
         });
 
         (await Promise.allSettled(promises))
@@ -533,13 +531,12 @@ export default {
               relation.features[k].forEach(f => features.push(f));
 
             }
+            if (zoom) {
+              map.zoomToFeatures(features, { highlight: true });
+            } else {
+              map.highlightFeatures(features);
+            }
           });
-
-        if (zoom) {
-          map.zoomToFeatures(features, { highlight: true });
-        } else {
-          map.highlightFeatures(features);
-        }
       }
 
     },
@@ -757,13 +754,13 @@ export default {
       firstCall = false,
     } = {}) {
 
-      // reset features before load
+      // reset features before a load
       GUI.setLoadingContent(true);
 
       this.layer.setAttributeTablePageLength(length);
 
-      // skip when ..
-      if (!this.state.headers.length) {
+      // If no headers are set, exit
+      if (0 === this.state.headers.length) {
         return {
           data: [],
           recordsTotal: 0,
@@ -773,11 +770,8 @@ export default {
 
       this.state.features.splice(0);
 
-      if (!order.length) {
-        order.push({
-          column: 1,
-          dir: 'asc',
-        });
+      if (0 === order.length) {
+        order.push({ column: 1, dir: 'asc', });
       }
 
       this.paginationParams = {
