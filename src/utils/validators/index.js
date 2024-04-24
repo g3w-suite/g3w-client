@@ -6,6 +6,23 @@
 
 const { truefnc } = require('utils');
 
+//List of type inputs from server
+
+// FIELD_TYPE_INTEGER      = 'integer'
+// FIELD_TYPE_BIGINTEGER   = 'bigint'
+// FIELD_TYPE_SMALLINTEGER = 'integer'
+// FIELD_TYPE_FLOAT        = 'float'
+// FIELD_TYPE_STRING       = 'string'
+// FIELD_TYPE_TEXT         = 'text'
+// FIELD_TYPE_BOOLEAN      = 'boolean'
+// FIELD_TYPE_DATE         = 'date'
+// FIELD_TYPE_TIME         = 'time'
+// FIELD_TYPE_DATETIME     = 'datetime'
+// FIELD_TYPE_IMAGE        = 'image'
+// FIELD_TYPE_FILE         = 'file'
+// FIELD_TYPE_VARCHAR      = 'varchar'
+// FIELD_TYPE_CHAR         = 'char'
+
 const InputValidators = {
 
   validators: {
@@ -17,6 +34,7 @@ const InputValidators = {
         return !Number.isNaN(float);
       }
     },
+
     /**
      * @since v3.10.0
      * @param options
@@ -51,6 +69,26 @@ const InputValidators = {
         const fielddatetimeformat = options.fielddatetimeformat;
         return moment(value, fielddatetimeformat, true).isValid();
       }
+    },
+
+    /**
+     * @since 3.10.0
+     * @param options
+     */
+    chart(options) {
+      this.options = options;
+      this.validate = function(value) {
+        return value && 1 === `${value}`.length;
+      }
+    },
+
+    /**
+     * @since 3.10.0
+     * @param options
+     */
+    varchar(options = {}) {
+      this.options = options;
+      this.validate = truefnc;
     },
 
     text(options = {}) {
