@@ -16,7 +16,7 @@ function Service(options = {}) {
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
   // useful for the validator to validate input
   this._validator = Validators.get(type, validatorOptions);
-  this.setErrorMessage(this.state);
+  this.setErrorMessage();
 }
 
 const proto = Service.prototype;
@@ -106,15 +106,14 @@ proto.validate = function() {
         this.state.value = null;
         this.state.validate.empty = true;
         this.state.validate.valid = !this.state.validate.required;
-        return;
-      }
+      } else this.state.validate.valid = this._validator.validate(this.state.value);
     }
     if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
       this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
-      return;
+    } else {
+      this.state.validate.valid = this._validator.validate(this.state.value);
     }
   }
-  this.state.validate.valid = this._validator.validate(this.state.value);
   return this.state.validate.valid;
 };
 
@@ -133,16 +132,18 @@ proto.setErrorMessage = function() {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${this.state.validate.min_field})`;
   } else if (this.state.validate.unique && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-  } else {
+  } else if (this.state.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + this.state.type)} )`;
     if (this.state.info) {
-      message = `${ message }
+      message = `${message}
                  <div>
                   <b>${this.state.info}</b>
                  </div>         
       `;
     }
     this.state.validate.message = this.state.info || message;
+  } else {
+    this.state.validate.message = this.state.info;
   }
 };
 /**
