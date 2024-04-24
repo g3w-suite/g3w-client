@@ -405,6 +405,8 @@ export default {
         console.warn(e);
       }
 
+      this.state.loading = false;
+
       if (download_id) {
         ApplicationService.setDownload(false, download_id);
       }
@@ -606,7 +608,7 @@ export default {
     atlas_values: {
       immediate: true,
       async handler(vals) {
-        if (this._skip_atlas_check || !this.atlas) {
+        if (this._skip_atlas_check || !this.state.atlas) {
           return;
         }
         if (this.has_autocomplete) {
