@@ -118,7 +118,6 @@
           style      = "cursor: pointer"
           @mouseover = "highlight(feature, false)"
           @click     = "highlight(feature, true)"
-          :selected  = "selectedRow === i"
           :class     = "[
             i % 2 == 1 ? 'odd' : 'pair',
             { geometry: !!feature.geometry },
@@ -252,17 +251,13 @@ export default {
         },
       },
       table:               null,
-      selectedRow:         null,
       relationsGeometry,
       paginationfilter:    false,
-      selectedfeaturesfid: layer.getSelectionFids(),
       allfeaturesnumber:   undefined,
       nopaginationsfilter: [],
       /** Pagination filter features */
       _async:              Object.assign({ state: false, fnc: noop}, (this._async || {})),
       getAll:              !pagination,
-      /** Whether layer has geometry */
-      isGeolayer:          layer.isGeoLayer(),
       paginationParams:    {},
     };
   },
@@ -377,7 +372,7 @@ export default {
       }
 
       if (has_pagination || !filter.length) {
-        this.state.show_tools = this.selectedfeaturesfid.size > 0;
+        this.state.show_tools = this.layer.getSelectionFids().size > 0;
       }
 
     },
@@ -431,7 +426,7 @@ export default {
           in_bbox:   this.paginationParams.in_bbox,
         });
         features.forEach(f => {
-          if (!this.getAll && this.isGeolayer && f.geometry) {
+          if (!this.getAll && this.layer.isGeoLayer() && f.geometry) {
             this.layer.addOlSelectionFeature({
               id: f.id,
               feature: _createFeatureForSelection(f)
@@ -454,7 +449,7 @@ export default {
       }
 
       if (has_pagination) {
-        this.state.show_tools = this.state.selectAll || this.selectedfeaturesfid.size > 0;
+        this.state.show_tools = this.state.selectAll || this.layer.getSelectionFids().size > 0;
       }
 
     },
@@ -555,7 +550,7 @@ export default {
     select(feature) {
       feature.selected = !feature.selected;
 
-      const selected       = this.selectedfeaturesfid;
+      const selected       = this.layer.getSelectionFids();
       const filter         = this.nopaginationsfilter;
       const count          = this.allfeaturesnumber;
 
@@ -710,7 +705,7 @@ export default {
     checkSelectAll(features) {
       features = undefined === features ? this.state.features : features;
       this.state.selectAll = (
-        this.selectedfeaturesfid.has(SELECTION_STATE.ALL) ||
+        this.layer.getSelectionFids().has(SELECTION_STATE.ALL) ||
         (features.length && features.reduce((selectAll, f) => selectAll && f.selected, true))
       );
     },
@@ -720,7 +715,7 @@ export default {
         GUI.setLoadingContent(true);
 
         const data = await promisify(this.layer.getDataTable(params || {}));
-        const is_valid = this.isGeolayer && data.features;
+        const is_valid = this.layer.isGeoLayer() && data.features;
 
         if (is_valid && !params) {
           const loaded_features = this.state.features.map(f => f.id);
@@ -823,10 +818,10 @@ export default {
             const tableFeature = {
               id:         feature.id,
               selected:   this.layer.hasSelectionFid(feature.id),
-              attributes: feature.attributes                || feature.properties,
-              geometry:   this.isGeolayer && feature.geometry || undefined
+              attributes: feature.attributes || feature.properties,
+              geometry:   this.layer.isGeoLayer() && feature.geometry || undefined
             };
-            if (this.isGeolayer && feature.geometry && !this.layer.getOlSelectionFeature(feature.id)) {
+            if (this.layer.isGeoLayer() && feature.geometry && !this.layer.getOlSelectionFeature(feature.id)) {
               this.layer.addOlSelectionFeature({
                 id:      feature.id,
                 feature: _createFeatureForSelection(feature)
@@ -836,7 +831,7 @@ export default {
           })
         );
 
-        this.state.show_tools = this.layer.getFilterActive() || this.selectedfeaturesfid.size > 0;
+        this.state.show_tools = this.layer.getFilterActive() || this.layer.getSelectionFids().size > 0;
 
         this.checkSelectAll(); 
 
@@ -897,7 +892,7 @@ export default {
     async changeFilter({ type } = {}) {
       this.allfeaturesnumber = undefined;
 
-      if (false === (type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL))) {
+      if (false === (type === 'in_bbox' || !this.layer.getSelectionFids().has(SELECTION_STATE.ALL))) {
         return;
       }
 
@@ -916,10 +911,6 @@ export default {
     onGUIContent(options) {
       this._async = this._async || {};
       this._async.state = (100 === options.perc);
-    },
-
-    initDataTable() {
-
     },
 
   },
@@ -1049,7 +1040,7 @@ export default {
     this.changeColumn = debounce(async (e, i) => {
       table.columns(i).search(e.target.value.trim()).draw();
       if (!this.state.pagination) {
-        this.setFilteredFeature(table.rows( {search:'applied'})[0]);
+        this.setFilteredFeature(table.rows( { search:'applied' })[0]);
       }
     });
 
