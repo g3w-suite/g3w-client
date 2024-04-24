@@ -109,10 +109,9 @@
         </tr>
       </thead>
 
+      <!-- AJAX CONTENT (TABLE ROWS) -->
       <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
-      <tbody id="table_body_attributes">
-        <!-- POPULATED BY DATA TABLE -->
-      </tbody>
+      <tbody id="table_body_attributes"></tbody>
 
     </table>
     <div v-else id="noheaders" v-t="'dataTable.no_data'"></div>
@@ -567,6 +566,9 @@ export default {
       }
     },
 
+    /**
+     * Update DataTable content (with a custom html structure)
+     */
     updateTableBody() {
       document
         .querySelector('#table_body_attributes')
@@ -617,9 +619,9 @@ export default {
           data: () => ({ ...this.$data }),
           methods: {
             get_check_id: this.get_check_id.bind(this),
-            select: this.select.bind(this),
-            editFeature: this.editFeature.bind(this),
-            highlight: this.highlight.bind(this),
+            select:       this.select.bind(this),
+            editFeature:  this.editFeature.bind(this),
+            highlight:    this.highlight.bind(this),
           }
         }))()).$mount().$el);
 
