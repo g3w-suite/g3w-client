@@ -548,8 +548,8 @@ export default {
       switch (baseLayer && baseLayer.servertype || baseLayer) {
         case 'OSM':  image = 'osm.png';                                    break;
         case 'Bing': image = `bing${baseLayer.source.subtype}.png`;        break;
-        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : undefined;  break;
-        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : undefined;  break;
+        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : image;      break;
+        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : image;      break;
       }
       return (baseLayer || {}).icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
     },
