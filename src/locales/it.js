@@ -544,7 +544,7 @@ export default {
       previous: "Precedente",
       next: "Successivo",
       lengthMenu: "Visualizza _MENU_",
-      info: "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
+      info: "Visualizza da riga _START_ a _END_ su _TOTAL_",
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
     },

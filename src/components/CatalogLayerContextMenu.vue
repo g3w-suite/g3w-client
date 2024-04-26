@@ -964,13 +964,9 @@
         this.layerMenu.loading.data_table = false;
         GUI.closeContent();
         this.layerMenu.loading.data_table = true;
-        new (Vue.extend(Table))({
-          layerId,
-          onShow: () => {
-            this.layerMenu.loading.data_table = false;
-            this._hideMenu();
-          }
-        });
+        new (Vue.extend(Table))({ layerId });
+        this.layerMenu.loading.data_table = false;
+        this._hideMenu();
       },
 
       startEditing() {
