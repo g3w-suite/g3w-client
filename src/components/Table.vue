@@ -49,10 +49,10 @@
       <div
         v-show             = "state.show_tools"
         class              = "skin-color action-button skin-tooltip-right"
-        @click.stop        = "layer.toggleFilterToken()"
         :class             = "[ g3wtemplate.getFontClass('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
         data-placement     = "right"
+        @click.stop        = "layer.toggleFilterToken()"
       ></div>
 
     </div>
