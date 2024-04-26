@@ -85,6 +85,7 @@
               class        = "form-control column-search"
               @keyup       = "changeColumn($event, i)"
               :placeholder = "header.name"
+              :title        = "'search by ' + header.name"
             />
           </th>
         </tr>
