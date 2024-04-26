@@ -101,7 +101,6 @@
         </tr>
       </thead>
 
-      <!-- AJAX CONTENT (TABLE ROWS) -->
       <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
       <tbody id="table_body_attributes" hidden></tbody>
       <tbody ref="table_body">
@@ -173,13 +172,10 @@ const { SELECTION_STATE }          = require('core/layers/layer');
 //Supported page lengths
 const PAGELENGTHS = [10, 25, 50];
 
-function _createFeatureForSelection(feature) {
-  let geometry;
-  if (feature.attributes) { geometry = feature.geometry }
-  if (feature.geometry) { geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates) }
+function _createFeatureForSelection(f) {
   return {
-    attributes: feature.attributes ? feature.attributes : feature.properties,
-    geometry,
+    attributes: f.attributes || f.properties,
+    geometry: (f.attributes && f.geometry) ? coordinatesToGeometry(f.geometry.type, f.geometry.coordinates) : undefined,
   }
 }
 
