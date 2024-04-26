@@ -18,12 +18,10 @@
       <div
         v-if               = "layer.isGeoLayer()"
         class              = "skin-color action-button skin-tooltip-right"
-        data-placement     = "right"
         v-disabled         = "state.geolayer.active && ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel.height_100"
-        data-toggle        = "tooltip"
-        data-container     = "body"
         :class             = "[ g3wtemplate.getFontClass('map'), state.geolayer.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
+        data-placement     = "right"
         @click.stop        = "getDataFromBBOX"
       ></div>
 
@@ -31,11 +29,9 @@
       <div
         v-show             = "state.show_tools"
         class              = "skin-color action-button skin-tooltip-right"
-        data-placement     = "right"
-        data-toggle        = "tooltip"
-        data-container     = "body"
         :class             = "g3wtemplate.getFontClass('clear')"
         v-t-tooltip.create = "'layer_selection_filter.tools.clear'"
+        data-placement     = "right"
         @click.stop        = "layer.clearSelectionFids()"
       ></div>
 
@@ -43,11 +39,9 @@
       <div
         v-show             = "state.show_tools"
         class              = "skin-color action-button skin-tooltip-right"
-        data-placement     = "right"
-        data-toggle        = "tooltip"
-        data-container     = "body"
         :class             = "[ g3wtemplate.getFontClass('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.invert'"
+        data-placement     = "right"
         @click.stop        = "inverseSelection"
       ></div>
 
@@ -55,12 +49,10 @@
       <div
         v-show             = "state.show_tools"
         class              = "skin-color action-button skin-tooltip-right"
-        data-placement     = "right"
-        data-toggle        = "tooltip"
-        data-container     = "body"
         @click.stop        = "layer.toggleFilterToken()"
         :class             = "[ g3wtemplate.getFontClass('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
+        data-placement     = "right"
       ></div>
 
     </div>
@@ -111,53 +103,52 @@
 
       <!-- AJAX CONTENT (TABLE ROWS) -->
       <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
-      <tbody id="table_body_attributes"></tbody>
+      <tbody id="table_body_attributes" hidden></tbody>
+      <tbody ref="table_body">
+        <tr
+          v-for       = "(feature, i) in state.features" :key="feature.id"
+          role        = "row"
+          style       =  "cursor: pointer;"
+          @mouseover  = "highlight(feature, false)"
+          @click.stop = "highlight(feature, true)"
+          :class      = "[
+            i % 2 == 1 ? 'odd' : 'pair',
+            'feature_attribute',
+            { geometry: !!feature.geometry },
+            { 'selected': feature.selected }
+          ]">
+          <td v-for="(header, j) in state.headers" :tab-index="1">
+            <div
+              v-if  = "0 === j"
+              style = "display: flex"
+            >
+              <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
+              <input
+                type     = "checkbox"
+                :id      = "get_check_id(true)"
+                :checked = "feature.selected"
+                class    = "magic-checkbox"
+              >
+              <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
+              <span
+                v-if                   = "layer.isEditable()"
+                @click.stop            = "editFeature(feature)"
+                v-t-tooltip:top.create = "'sdk.tooltips.editing'"
+              >
+                <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
+              </span>
+            </div>
+            <field
+              v-else
+              :feature = "feature"
+              :state   = "({ label: undefined, value: feature.attributes[header.name] })"
+            />
+          </td>
+        </tr>
+      </tbody>
 
     </table>
     <div v-else id="noheaders" v-t="'dataTable.no_data'"></div>
-
-    <table ref="hidden_table_body" hidden>
-      <tr
-        v-for       = "(feature, i) in state.features" :key="feature.id"
-        role        = "row"
-        style       =  "cursor: pointer;""
-        @mouseover  = "highlight(feature, false)"
-        @click.stop = "highlight(feature, true)"
-        :class      = "[
-          i % 2 == 1 ? 'odd' : 'pair',
-          'feature_attribute',
-          { geometry: !!feature.geometry },
-          { 'selected': feature.selected }
-        ]">
-        <td v-for="(header, j) in state.headers" :tab-index="1">
-          <div
-            v-if  = "0 === j"
-            style = "display: flex"
-          >
-            <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
-            <input
-              type     = "checkbox"
-              :id      = "get_check_id(true)"
-              :checked = "feature.selected"
-              class    = "magic-checkbox"
-            >
-            <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
-            <span
-              v-if                   = "layer.isEditable()"
-              @click.stop            = "editFeature(feature)"
-              v-t-tooltip:top.create = "'sdk.tooltips.editing'"
-            >
-              <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
-            </span>
-          </div>
-          <field
-            v-else
-            :feature = "feature"
-            :state   = "({ label: undefined, value: feature.attributes[header.name] })"
-          />
-        </td>
-      </tr>
-    </table>
   </div>
 </template>
 
@@ -206,37 +197,12 @@ export default {
   },
 
   data() {
-    //Get layer
-    const layer           = CatalogLayersStoresRegistry.getLayerById(this.$options.layerId);
-    let relationsGeometry = [];
-
-    // In the case of alphanumerical layer
-    if (!layer.isGeoLayer()) {
-      layer
-        .getRelations()
-        .getArray()
-        .forEach(relation => {
-          const father = CatalogLayersStoresRegistry.getLayerById(relation.getFather()); // get project layer
-          if (
-            layer.getId() !== relation.getFather() &&   // the current layer is not child layer of relation
-            father.isGeoLayer()                         // relation layer has geometry
-          ) {
-            relationsGeometry.push({
-              layer:         father,
-              father_fields: relation.getFatherField(), // NB: since g3w-admin@v3.7.0 this is an Array value.
-              fields:        relation.getChildField(),  // NB: since g3w-admin@v3.7.0 this is an Array value.
-              features:      {},
-            })
-          }
-        });
-    }
-
-    const pagination = true;
+    const layer      = CatalogLayersStoresRegistry.getLayerById(this.$options.layerId);
 
     return {
       layer,
       state: {
-        pagination,
+        pagination:    true,
         features:      [],
         headers:       [null, ...layer.getTableHeaders()], // first value is `null` for DataTable purpose (used to add a custom input selector)
         geometry:      true,
@@ -249,13 +215,22 @@ export default {
           in_bbox:   undefined,
         },
       },
-      relationsGeometry,
+      // when current layer is: alphanumerical + not child of relation + relation has geometry
+      relationsGeometry: (layer.isGeoLayer() ? [] : layer.getRelations().getArray())
+        .map(relation => [relation, CatalogLayersStoresRegistry.getLayerById(relation.getFather())])
+        .filter(([relation, father]) => layer.getId() !== relation.getFather() && father.isGeoLayer())
+        .map(([relation, father]) => ({
+          layer:         father,
+          father_fields: relation.getFatherField(), // NB: since g3w-admin@v3.7.0 this is an Array value.
+          fields:        relation.getChildField(),  // NB: since g3w-admin@v3.7.0 this is an Array value.
+          features:      {},
+        })),
       paginationfilter:    false,
       allfeaturesnumber:   undefined,
       nopaginationsfilter: [],
       /** Pagination filter features */
       _async:              Object.assign({ state: false, fnc: noop}, (this._async || {})),
-      getAll:              !pagination,
+      getAll:              false,
       paginationParams:    {},
     };
   },
@@ -541,6 +516,7 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
+      console.log(feature);
       feature.selected = !feature.selected;
 
       const selected       = this.layer.getSelectionFids();
@@ -599,15 +575,6 @@ export default {
       if (table) {
         table.columns.adjust();
       }
-    },
-
-    /**
-     * Update DataTable content (with a custom html structure)
-     */
-    updateTableBody() {
-      this.$refs.hidden_table_body.remove();
-      document.querySelector('#table_body_attributes').innerHTML = this.$refs.hidden_table_body.cloneNode(true).innerHTML;
-      setTimeout(() => this.reloadLayout(), 0)
     },
 
     async resize() {
@@ -945,7 +912,7 @@ export default {
           $('#open_attribute_table table tr').each(el => { $(el).off('click'); $(el).off('mouseover'); });
           cb(await this.getData(data));
           await this.$nextTick();
-          this.updateTableBody();
+          setTimeout(() => this.reloadLayout(), 0)
         } catch(e) {
           console.warn(e);
         }
@@ -977,13 +944,16 @@ export default {
     fragment.appendChild(this.$refs.table_toolbar);
     document.getElementById('g3w-table-toolbar').appendChild(fragment);
 
+    // show only our custom "table_body" DOM element
+    document.getElementById('table_body_attributes').remove();
+
     this.service.on('redraw', data => {
       table.clear();
       table.draw(false);
       setTimeout(() => {
         table.rows.add(data);
         table.draw(false);
-        this.createdContentBody();
+        setTimeout(() => this.reloadLayout(), 0)
       })
     });
 
