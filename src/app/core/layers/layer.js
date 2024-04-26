@@ -7,6 +7,7 @@ import SelectionMixin                        from 'core/layers/mixins/selection'
 import { SELECTION as SELECTION_STATE }      from 'core/layers/mixins/selection';
 import RelationsMixin                        from 'core/layers/mixins/relations';
 import { parseAttributes }                   from 'utils/parseAttributes';
+import Table                                 from 'components/Table.vue';
 
 const { t }                 = require('core/i18n/i18n.service');
 const {
@@ -1268,6 +1269,13 @@ proto.getFormat = function() {
   return this.config.format ||
     ProjectsRegistry.getCurrentProject().getWmsGetmapFormat() ||
     'image/png'
+};
+
+/**
+ * @since 3.10.0
+ */
+proto.openAttributeTable = function(opts = {}) {
+  new (Vue.extend(Table))({ ...opts, layerId: this.state.id });
 };
 
 /**

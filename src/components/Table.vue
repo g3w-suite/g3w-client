@@ -150,9 +150,10 @@ import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { noop }                    from 'utils/noop';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
+import { SELECTION }               from 'core/layers/mixins/selection';
 
 const { t }                        = require('core/i18n/i18n.service');
-const { SELECTION_STATE }          = require('core/layers/layer');
+
 
 //Supported page lengths
 const PAGELENGTHS = [10, 25, 50];
@@ -506,7 +507,7 @@ export default {
       const features       = this.state.features;
       const is_active      = this.layer && this.layer.state.filter && this.layer.state.filter.active
 
-      const is_exclude     = !select_all && selected.has(SELECTION_STATE.EXCLUDE);
+      const is_exclude     = !select_all && selected.has(SELECTION.EXCLUDE);
       const is_default     = !select_all && !is_exclude;
 
       /** @FIXME add description */
@@ -577,7 +578,7 @@ export default {
     checkSelectAll(features) {
       features = undefined === features ? this.state.features : features;
       this.state.selectAll = (
-        this.layer.getSelectionFids().has(SELECTION_STATE.ALL) ||
+        this.layer.getSelectionFids().has(SELECTION.ALL) ||
         (features.length && features.reduce((selectAll, f) => selectAll && f.selected, true))
       );
     },
@@ -735,7 +736,7 @@ export default {
     async changeFilter({ type } = {}) {
       this.allfeaturesnumber = undefined;
 
-      if (false === (type === 'in_bbox' || !this.layer.getSelectionFids().has(SELECTION_STATE.ALL))) {
+      if (false === (type === 'in_bbox' || !this.layer.getSelectionFids().has(SELECTION.ALL))) {
         return;
       }
 
@@ -780,6 +781,8 @@ export default {
    */
   async created() {
 
+    GUI.closeContent();
+
     this.mapBBoxEventHandlerKey = {
       key: null,
       cb: null
@@ -802,7 +805,7 @@ export default {
         service: { state: this.state },
         internalComponent: this,
       }),
-      perc: 50,
+      perc: undefined !== this.$options.perc ? this.$options.perc : 50,
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getName(),

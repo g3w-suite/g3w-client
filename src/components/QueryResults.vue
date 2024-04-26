@@ -38,7 +38,18 @@
               >
                 <div
                   class  = "box-title query-layer-title"
-                  :style = "{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
+                  :style = "{fontSize: isMobile() && '1em !important'}">
+                  <span
+                    @click.stop             = "openAttributeTable(layer)"
+                    class                   = "action-button"
+                    v-t-tooltip:left.create = "'catalog_items.contextmenu.open_attribute_table'"
+                  >
+                    <span
+                      class  = "action-button-icon"
+                      :class = "g3wtemplate.getFontClass('list')"
+                    ></span>
+                  </span>
+                  {{ layer.title }}
                   <span
                     v-show = "!layer.rawdata"
                     class  = "query-layer-feature-count">({{layer.features.length}})</span>
@@ -451,12 +462,13 @@
 </template>
 
 <script>
-  import { fieldsMixin }            from 'mixins';
-  import TableAttributeFieldValue   from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import InfoFormats                from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody          from 'components/QueryResultsHeaderFeatureBody.vue';
-  import HeaderFeatureActionsBody   from "components/QueryResultsHeaderFeatureActionsBody.vue";
-  import { toRawType, throttle }    from 'utils';
+  import CatalogLayersStoresRegistry from 'store/catalog-layers';
+  import { fieldsMixin }             from 'mixins';
+  import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
+  import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
+  import HeaderFeatureBody           from 'components/QueryResultsHeaderFeatureBody.vue';
+  import HeaderFeatureActionsBody    from "components/QueryResultsHeaderFeatureActionsBody.vue";
+  import { toRawType, throttle }     from 'utils';
 
   const MAX_SUBSET_LENGTH           = 3;
   const headerExpandActionCellWidth = 10;
@@ -815,6 +827,13 @@
        */
        isJSON(field) {
         return !this.isVue(field) && this.isSimple(field) && 'Object' === toRawType(field.value);
+      },
+
+      /**
+       * @since 3.10.0
+       */
+      openAttributeTable(layer) {
+        CatalogLayersStoresRegistry.getLayerById(layer.id).openAttributeTable({ perc: 100 });
       },
 
     },

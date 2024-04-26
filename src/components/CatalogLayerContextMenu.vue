@@ -136,7 +136,6 @@
       v-if                = "canOpenAttributeTable(layerMenu.layer)"
       @click.prevent.stop = "showAttributeTable(layerMenu.layer.id)"
     >
-      <bar-loader :loading="layerMenu.loading.data_table" />
       <span
         class="menu-icon skin-color-dark"
         :class="g3wtemplate.getFontClass('list')"> </span>
@@ -558,7 +557,6 @@
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ApplicationService          from 'services/application';
   import GUI                         from 'services/gui';
-  import Table                       from 'components/Table.vue';
   import { downloadFile }            from 'utils/downloadFile';
 
   const { t }                        = require('core/i18n/i18n.service');
@@ -585,7 +583,6 @@
           name: '',
           layer: null,
           loading: {
-            data_table: false,
             shp: false,
             csv: false,
             gpx: false,
@@ -647,13 +644,11 @@
       },
 
       /**
-       *
        * @private
        */
       _hideMenu() {
         this.layerMenu.show = false;
         this.layerMenu.styles = false;
-        this.layerMenu.loading.data_table = false;
         this.layerMenu.loading.shp = false;
         this.layerMenu.loading.csv = false;
         this.layerMenu.loading.gpx = false;
@@ -961,11 +956,7 @@
       },
 
       showAttributeTable(layerId) {
-        this.layerMenu.loading.data_table = false;
-        GUI.closeContent();
-        this.layerMenu.loading.data_table = true;
-        new (Vue.extend(Table))({ layerId });
-        this.layerMenu.loading.data_table = false;
+        CatalogLayersStoresRegistry.getLayerById(layerId).openAttributeTable();
         this._hideMenu();
       },
 
