@@ -66,14 +66,7 @@
       <thead>
         <tr>
           <th></th>
-          <th v-for="(header, i) in state.headers" v-if="i > 0">
-            <input
-              type         = "text"
-              class        = "form-control column-search"
-              @keyup       = "changeColumn($event, i)"
-              :placeholder = "header.name"
-            />
-          </th>
+          <th v-for="(header, i) in state.headers" v-if="i > 0">{{ header.label }}</th>
         </tr>
         <tr>
           <th>
@@ -86,7 +79,14 @@
             />
             <label for="attribute_table_select_all_rows" @click.capture.stop.prevent="selectAllRows">&nbsp;</label>
           </th>
-          <th v-for="(header, i) in state.headers" v-if="i > 0">{{ header.label }}</th>
+          <th v-for="(header, i) in state.headers" v-if="i > 0">
+            <input
+              type         = "text"
+              class        = "form-control column-search"
+              @keyup       = "changeColumn($event, i)"
+              :placeholder = "header.name"
+            />
+          </th>
         </tr>
       </thead>
 
@@ -854,6 +854,7 @@ export default {
       }, 800),
       "serverSide": true,
       "deferLoading": this.state.allfeatures,
+      "bSortCellsTop": true,
     });
 
     // no pagination all data
@@ -915,6 +916,7 @@ export default {
   }
   input.form-control.column-search {
     font-weight: normal;
+    font-style: italic;
     height: 25px;
     min-width: 40px;
     padding: 2px;
