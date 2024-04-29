@@ -416,16 +416,20 @@ export default {
      */
     async highlight(feature, zoom = true) {
       const map = GUI.getService('map');
+      const cb  = () => {
+        map.clearHighlightGeometry();
+        map.highlightGeometry(feature.geometry, { zoom, duration: Infinity })
+      };
 
       // async highlight
       if (feature.geometry && this._async.state) {
-        this._async.fnc = map.highlightGeometry.bind(map, feature.geometry, { zoom });
+        this._async.fnc = cb;
         return;
       }
 
       // sync highlight
       if (feature.geometry && !this._async.state) {
-        map.highlightGeometry(feature.geometry , { zoom });
+        cb();
         return;
       }
 
