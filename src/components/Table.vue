@@ -17,7 +17,7 @@
       <div
         v-if               = "layer.isGeoLayer()"
         class              = "skin-color action-button skin-tooltip-right"
-        v-disabled         = "state.geolayer.active && ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel.height_100"
+        v-disabled         = "state.geolayer.active && ApplicationService.getCurrentLayout().rightpanel.height_100"
         :class             = "[ g3wtemplate.getFontClass('map'), state.geolayer.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
         data-placement     = "right"
@@ -141,8 +141,8 @@
 <script>
 import Component                   from 'core/g3w-component';
 import Field                       from 'components/FieldG3W.vue';
-import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
@@ -221,8 +221,8 @@ export default {
   
   computed: {
 
-    ApplicationState() {
-      return ApplicationState;
+    ApplicationService() {
+      return ApplicationService;
     },
 
   },
@@ -430,67 +430,45 @@ export default {
       }
 
       // skip when there is no relation features geometry
-      if (!feature.geometry && !this.relationsGeometry.length > 0) {
+      if (feature.geometry || (!feature.geometry && !this.relationsGeometry.length > 0)) {
         return;
       }
 
       // zoom and highlight relation features 
-      if (!feature.geometry) {
+      const features     = [];
+      const field_values = []; // check if add or not
 
-        const features     = [];
-        const promises     = [];
-        const field_values = []; // check if add or not
-
-        this.relationsGeometry.forEach(({ layer, father_fields, fields, features }) => {
-          const values = fields.map(f => feature.attributes[f]);
-
-          field_values.push(values);
-
+      (await Promise.allSettled(this.relationsGeometry.flatMap(({ layer, father_fields, fields }) => {
+        const values = fields.map(f => feature.attributes[f]);
+        field_values.push(values);
+        console.log(fields, father_fields, values, feature.attributes);
+        return zoom
+          ? DataRouterService.getData('search:features', {
+              inputs: {
+                layer,
+                formatter: 1,
+                filter: father_fields.map((field, i) => `${field}|eq|${encodeURIComponent(values[i])}`).join('|AND,'),
+              },
+              outputs: false, // just a request not show on result
+            })
+          : [];
+      })))
+        .forEach((response, index) => {
+          if ('fulfilled' === response.status) {
+            const relation = this.relationsGeometry[index];
+            const k        = field_values[index].join('__'); // create a unique feature key
+            const data     = response.value && response.value.data[0];
+            if (undefined === relation.features[k]) {
+              relation.features[k] = data && data.features || [];
+            }
+            features.push(...relation.features[k]);
+          }
           if (zoom) {
-              promises.push(DataRouterService
-              .getData('search:features', {
-                inputs: {
-                  layer,
-                  formatter: 1,
-                  filter: (
-                    father_fields
-                      .reduce((filter, field, index) => {
-                        filter = `${filter}${index > 0 ? '|AND,' : ''}${field}|eq|${encodeURIComponent(values[index])}`
-                        return filter;
-                      }, '')
-                  ),
-                },
-                outputs: false, // just a request not show on result
-              }));
+            map.zoomToFeatures(features, { highlight: true });
+          } else {
+            map.highlightFeatures(features);
           }
         });
-
-        (await Promise.allSettled(promises))
-          .forEach(({
-            status,
-            value
-          }, index) => {
-            if ('fulfilled' === status) {
-
-              const relation = this.relationsGeometry[index];
-              const k        = field_values[index].join('__'); // create a unique feature key
-              const data     = value && value.data[0];
-            
-              if (undefined === relation.features[k]) {
-                relation.features[k] = data && data.features || [];
-              }        
-
-              relation.features[k].forEach(f => features.push(f));
-
-            }
-            if (zoom) {
-              map.zoomToFeatures(features, { highlight: true });
-            } else {
-              map.highlightFeatures(features);
-            }
-          });
-      }
-
     },
 
     /**
@@ -569,7 +547,7 @@ export default {
      */
     setFilteredFeature(index) {
       const filter = this.nopaginationsfilter = index;
-      if (0 === index.length || index.length === this.allfeaturesnumber) {
+      if ([0, this.allfeaturesnumber].includes(index.length)) {
         this.checkSelectAll();
       } else {
         this.checkSelectAll(filter.map(i => this.state.features[i]));
@@ -799,14 +777,17 @@ export default {
     this.layer.on('filtertokenchange', this.changeFilter);
 
     GUI.closeOpenSideBarComponent(); // close other sidebar components
-    
+
+    /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
+    ApplicationService.getCurrentLayout().rightpanel.height = 60;
+
     GUI.showContent({
       content: new Component({
         id: 'openattributetable',
         service: { state: this.state },
         internalComponent: this,
       }),
-      perc: undefined !== this.$options.perc ? this.$options.perc : 50,
+      // perc: undefined !== this.$options.perc ? this.$options.perc : 60,
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getName(),
@@ -851,7 +832,6 @@ export default {
         }
         //enable table data content after get data
         GUI.disableContent(false);
-
       }, 800),
       "serverSide": true,
       "deferLoading": this.state.allfeatures,
@@ -860,7 +840,7 @@ export default {
 
     // no pagination all data
     if (!this.state.pagination) {
-      table.on('search.dt', debounce(() => { this.setFilteredFeature(table.rows( {search:'applied'} )[0]) }, 600));
+      table.on('search.dt', debounce(() => { this.setFilteredFeature(table.rows( { search:'applied' } )[0]) }, 600));
       table.on('length.dt', (e, opts, len) => { this.layer.setAttributeTablePageLength(len); });
     }
 
