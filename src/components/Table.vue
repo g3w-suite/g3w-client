@@ -925,6 +925,9 @@ export default {
   #layer_attribute_table > tbody > tr {
     cursor: pointer;
   }
+  #layer_attribute_table > tbody > tr:not(.selected):hover {
+    background-color: rgb(255, 255, 0, 0.15);
+  }
   label[for="attribute_table_select_all_rows"] {
     margin-bottom: 0 !important;
   }
