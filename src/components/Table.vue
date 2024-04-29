@@ -93,7 +93,7 @@
 
       <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
       <tbody id="table_body_attributes" hidden></tbody>
-      <tbody ref="table_body">
+      <tbody ref="table_body" @mouseleave="highlight()">
         <tr
           v-for       = "(feature, i) in state.features" :key="feature.id"
           role        = "row"
@@ -416,7 +416,13 @@ export default {
      */
     async highlight(feature, zoom = true) {
       const map = GUI.getService('map');
-      const cb  = () => {
+
+      // no feature → clear highlight
+      if (!feature) {
+        return map.clearHighlightGeometry();
+      }
+
+      const cb = () => {
         map.clearHighlightGeometry();
         map.highlightGeometry(feature.geometry, { zoom, duration: Infinity })
       };
@@ -871,6 +877,7 @@ export default {
     this.layer.off('filtertokenchange', this.changeFilter);
 
     this.resetMapBBoxEventHandlerKey();
+    this.highlight();
 
     this.allfeaturesnumber = null;
 
