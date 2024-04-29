@@ -157,7 +157,7 @@ const { t }                        = require('core/i18n/i18n.service');
 
 
 //Supported page lengths
-const PAGELENGTHS = [10, 25, 50];
+const PAGELENGTHS = [25, 50, 100];
 
 function _createFeatureForSelection(f) {
   return {
@@ -789,7 +789,7 @@ export default {
     GUI.closeOpenSideBarComponent(); // close other sidebar components
 
     /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
-    ApplicationService.getCurrentLayout().rightpanel.height = 50;
+    ApplicationService.getCurrentLayout().rightpanel.height = 55;
 
     GUI.showContent({
       content: new Component({
@@ -797,7 +797,7 @@ export default {
         service: { state: this.state },
         internalComponent: this,
       }),
-      // perc: undefined !== this.$options.perc ? this.$options.perc : 60,
+      // perc: undefined !== this.$options.perc ? this.$options.perc : 55,
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getName(),
