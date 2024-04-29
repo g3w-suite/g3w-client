@@ -399,8 +399,8 @@ const ApplicationTemplate = function({ ApplicationService }) {
         "searchPlaceholder": t("dosearch"),
         "sLengthMenu": t("dataTable.lengthMenu"),
         "paginate": {
-          "previous": t("dataTable.previous"),
-          "next": t("dataTable.next"),
+          "previous": '«',
+          "next": '»',
         },
         "info": t("dataTable.info"),
         "zeroRecords": t("dataTable.nodatafilterd"),

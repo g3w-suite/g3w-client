@@ -548,8 +548,8 @@ export default {
     dataTable: {
       previous: "Précédent",
       next: "Suivant",
-      lengthMenu: "Afficher _MENU_",
-      info: "Afficher _START_ à _END_ sur _TOTAL_ lignes",
+      lengthMenu: "Affiche _MENU_",
+      info: "des _TOTAL_ résultats",
       nodatafilterd: "Aucun résultat trouvé",
       infoFiltered: "(Filtré par _MAX_ rangs totaux)"
     }

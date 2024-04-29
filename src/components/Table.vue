@@ -545,7 +545,7 @@ export default {
         table.style.height = (
             ((document.querySelector('.content')                       || {}).clientHeight || 0) // table height
           - ((this.$el.querySelector('div.dataTables_scrollHeadInner') || {}).clientHeight || 0) // table header height
-          - 130
+          - 100
         ) + 'px';
       }
     },
@@ -789,7 +789,7 @@ export default {
     GUI.closeOpenSideBarComponent(); // close other sidebar components
 
     /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
-    ApplicationService.getCurrentLayout().rightpanel.height = 60;
+    ApplicationService.getCurrentLayout().rightpanel.height = 50;
 
     GUI.showContent({
       content: new Component({
@@ -820,7 +820,7 @@ export default {
       "scrollCollapse": true,
       "sSearch": false,
       "order": [ 1, 'asc' ],
-      "dom": 'l<"#g3w-table-toolbar">frtip',
+      "dom": 'frt<"#g3w-table-toolbar">lip',
       "columnDefs": [ {
         "targets": 0,
         "orderable": false,
@@ -866,6 +866,9 @@ export default {
     fragment.appendChild(this.$refs.table_toolbar);
     document.getElementById('g3w-table-toolbar').appendChild(fragment);
 
+    // move "dataTables_filter" before header action tools
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));  
+
     // hide datatable rows → show only our custom "table_body"
     document.getElementById('table_body_attributes').remove();
 
@@ -891,6 +894,7 @@ export default {
 
     GUI.un('setContent', this.setContentKey);
 
+    document.querySelector('#layer_attribute_table_filter').remove();
     $(this.$refs.attribute_table).DataTable().destroy(true);
   },
 
@@ -906,9 +910,11 @@ export default {
     font-weight: bold;
     margin-top: 10px;
   }
-  input.form-control.column-search {
+  input.form-control.column-search::placeholder{
     font-weight: normal;
     font-style: italic;
+  }
+  input.form-control.column-search {
     height: 25px;
     min-width: 40px;
     padding: 2px;
@@ -944,7 +950,24 @@ export default {
     font-size: 0.8em;
     margin: 0;
   }
-  .is-mobile .dataTables_filter {
-    float: right;
+  #g3w-view-content .dataTables_filter {
+    margin-left: auto;
+    margin-right: 1ch;
+  }
+  #open_attribute_table .paginate_button {
+    background: transparent;
+    color: currentColor !important;
+    box-shadow: none;
+  }
+  #open_attribute_table .paginate_button.disabled {
+    opacity: 0.25;
+  }  
+  #open_attribute_table #layer_attribute_table_info {
+    clear: right;
+    padding-left: 1ch;
+    padding-top: 0.9em;
+  }
+  #open_attribute_table #layer_attribute_table_length {
+    padding-top: 0.755em;
   }
 </style>

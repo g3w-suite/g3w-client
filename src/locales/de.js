@@ -547,8 +547,8 @@ export default {
     dataTable: {
       previous: "Vorherige",
       next: "Weiter",
-      lengthMenu: "_MENÜ_ anzeigen",
-      info: "Anzeige von _START_ bis _END_ der _TOTAL_ Einträge",
+      lengthMenu: "Zeigt _MENÜ_",
+      info: "von _TOTAL_ Ergebnissen",
       no_data: "Keine Daten",
       nodatafilterd: "Keine passenden Datensätze gefunden",
       infoFiltered: "(gefiltert aus _MAX_ Gesamtsätzen)"

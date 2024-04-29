@@ -547,8 +547,8 @@ export default {
     dataTable: {
       previous: "Föregående",
       next: "Nästa",
-      lengthMenu: "Show _MENU_ items",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Visar _MENU_",
+      info: "av _TOTAL_ resultat",
       no_data: "Inga uppgifter",
       nodatafilterd: "Inga motsvarande poster hittades",
       infoFiltered: "(filtered from _MAX_ total records)"

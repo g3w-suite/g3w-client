@@ -547,8 +547,8 @@ export default {
     dataTable: {
       previous: "Anteriorul",
       next: "Următorul",
-      lengthMenu: "Arată _MENU_",
-      info: "Arată _START_ până la _END_ din _TOTAL_ de intrări",
+      lengthMenu: "Afișează _MENU_",
+      info: "din _TOTAL_ rezultate",
       no_data: "Fără date",
       nodatafilterd: "Niciun rezultat",
       infoFiltered: "(filtrat din _MAX_ de rezultate totale)"

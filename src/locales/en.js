@@ -548,7 +548,7 @@ export default {
       previous: "Previous",
       next: "Next",
       lengthMenu: "Show _MENU_",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      info: "of _TOTAL_ entries",
       no_data: "No data",
       nodatafilterd: "No matching records found",
       infoFiltered: "(filtered from _MAX_ total records)"
