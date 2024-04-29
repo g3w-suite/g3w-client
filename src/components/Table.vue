@@ -199,7 +199,7 @@ export default {
         },
       },
       // when current layer is: alphanumerical + not child of relation + relation has geometry
-      relationsGeometry: (layer.isGeoLayer() ? [] : layer.getRelations().getArray())
+      relations: (layer.isGeoLayer() ? [] : layer.getRelations().getArray())
         .map(relation => [relation, CatalogLayersStoresRegistry.getLayerById(relation.getFather())])
         .filter(([relation, father]) => layer.getId() !== relation.getFather() && father.isGeoLayer())
         .map(([relation, father]) => ({
@@ -440,7 +440,7 @@ export default {
       }
 
       // skip when there is no relation features geometry
-      if (feature.geometry || (!feature.geometry && !this.relationsGeometry.length > 0)) {
+      if (feature.geometry || (!feature.geometry && !this.relations.length > 0)) {
         return;
       }
 
@@ -448,7 +448,7 @@ export default {
       const features     = [];
       const field_values = []; // check if add or not
 
-      (await Promise.allSettled(this.relationsGeometry.flatMap(({ layer, father_fields, fields }) => {
+      (await Promise.allSettled(this.relations.flatMap(({ layer, father_fields, fields }) => {
         const values = fields.map(f => feature.attributes[f]);
         field_values.push(values);
         console.log(fields, father_fields, values, feature.attributes);
@@ -465,7 +465,7 @@ export default {
       })))
         .forEach((response, index) => {
           if ('fulfilled' === response.status) {
-            const relation = this.relationsGeometry[index];
+            const relation = this.relations[index];
             const k        = field_values[index].join('__'); // create a unique feature key
             const data     = response.value && response.value.data[0];
             if (undefined === relation.features[k]) {
