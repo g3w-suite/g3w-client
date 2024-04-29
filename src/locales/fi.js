@@ -376,9 +376,17 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Uuden teeman nimi',
+        project_map_theme : 'Projektin Themes',
+        user_map_theme: 'Käyttäjä Themes',
+        question_delete_map_theme: "Haluatko poistaa teeman?",
+        delete_map_theme: "Teeman poistaminen onnistui",
+        saved_map_theme: "Teeman tallennus onnistui",
+        updated_map_theme: "Teeman päivittää onnistui",
+        invalid_map_theme_name: "Nimi on jo olemassa tai se on virheellinen",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Kerroksen sijainti',
+          setwmsopacity: "Aseta Opacity",
           wms: {
             title:"",
             copy: "Paina tästä kopioidaksesi url:n.",
@@ -443,6 +451,7 @@ export default {
     server_error: "Yhteysvirhe palvelimeen",
     save: "Tallenna",
     cancel: "Peruuta",
+    update: "Päivittää",
     close: "Sulje",
     /**
      * @since 3.8.0

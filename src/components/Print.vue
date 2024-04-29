@@ -191,8 +191,8 @@ export default {
   computed: {
 
     /**
-     * @return { boolean } whether current print has maps (only alphanumerical data)
-     *
+     * @returns { boolean } whether current print has maps (only alphanumerical data)
+     * 
      * @since 3.9.4
      */
     has_maps() {
@@ -273,6 +273,7 @@ export default {
 
       if (this.state.atlas) {
         this._clearPrint();
+        this.initSelect2Field();
       } else if (has_previous) {
         this.showPrintArea(true);
       } else {
@@ -340,7 +341,7 @@ export default {
             url: (await printAtlas({
               template: this.state.template,
               field:    this.state.atlas.field_name || '$id',
-              values:   this.state.atlas_values,
+              values:   this.atlas_values,
               download: true
             })).url,
             filename: this.state.template,
@@ -403,6 +404,8 @@ export default {
         this.state.loading = false;
         console.warn(e);
       }
+
+      this.state.loading = false;
 
       if (download_id) {
         ApplicationService.setDownload(false, download_id);
@@ -547,25 +550,17 @@ export default {
       }
     },
 
-  },
-
-  watch: {
-
-    async has_autocomplete(b) {
-      if (!b) return;
-
-      await this.$nextTick();
-
+    initSelect2Field() {
       this.select2 = $('#print_atlas_autocomplete').select2({
         width: '100%',
         multiple: true,
-        dropdownParent: $(this.$refs.print_atlas.$el),
+        dropdownParent: $(this.$refs.print_atlas),
         minimumInputLength: 1,
         ajax: {
           delay: 500,
-          transport: async d => {
+          transport: async (d, ok, ko) => {
             try {
-              d.success({
+              ok({
                 results: (await CatalogLayersStoresRegistry.getLayerById(this.state.atlas.qgs_layer_id).getFilterData({
                   suggest: `${this.state.atlas.field_name}|${d.data.q}`,
                   unique: this.state.atlas.field_name,
@@ -573,7 +568,7 @@ export default {
               });
             } catch(e) {
               console.warn(e);
-              d.failure(e);
+              ko(e);
             }
           }
         },
@@ -600,10 +595,20 @@ export default {
       this.select2.on('select2:unselect', e => { this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
     },
 
+  },
+
+  watch: {
+
+    async has_autocomplete(b) {
+      if (!b) return;
+      await this.$nextTick();
+      this.initSelect2Field();
+    },
+
     atlas_values: {
       immediate: true,
       async handler(vals) {
-        if (this._skip_atlas_check || !this.atlas) {
+        if (this._skip_atlas_check || !this.state.atlas) {
           return;
         }
         if (this.has_autocomplete) {

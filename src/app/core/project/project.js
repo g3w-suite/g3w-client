@@ -33,6 +33,7 @@ const Projections            = require('g3w-ol/projection/projections');
  * @param config.query_point_tolerance
  * @param config.wps                           array of wps service
  * @param config.bookmarks                     array of bookmarks
+ * @param config.map_themes                    Object {project:[], custom:[]}
  * @param { 'POST' | 'GET' }                   config.ows_method
  * @param { boolean }                          config.wms_use_layer_ids
  * @param { 'tab' | 'toc' }                    config.legend_position 
@@ -160,22 +161,45 @@ proto.getQueryFeatureCount = function() {
   return this.state.feature_count || 5;
 };
 
+/**
+ * @param mapcontrol
+ * 
+ * @returns { boolean }
+ */
 proto.isQueryMultiLayers = function(mapcontrol) {
   return this.state.querymultilayers && -1 !== this.state.querymultilayers.indexOf(mapcontrol);
 };
 
+/**
+ * @returns {*}
+ */
 proto.getRelations = function() {
   return this.state.relations;
 };
 
+/**
+ * @param relationId
+ * 
+ * @returns {*}
+ */
 proto.getRelationById = function(relationId) {
   return this.state.relations.find(relation => relation.id === relationId);
 };
 
+/**
+ * @param { Object } opts
+ * @param opts.layerId
+ * @param opts.type
+ * 
+ * @returns {*}
+ */
 proto.getRelationsByLayerId = function({layerId, type}={}) {
   return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
 };
 
+/**
+ * @returns {"POST"|"GET"}
+ */
 proto.getOwsMethod = function() {
   return this.state.ows_method;
 };
@@ -284,6 +308,7 @@ proto.getBaseLayers = function() {
  * Get configuration layers an array from server config
  * 
  * @param filter property layer config to filter
+ * 
  * @returns {*}
  */
 proto.getConfigLayers = function({ key } = {}) {
@@ -366,18 +391,30 @@ proto.getQgisVersion = function({ type } = {}) {
   return -1 === index ? this.state.qgis_version : +this.state.qgis_version.split('.')[index];
 };
 
+/**
+ * @returns {*}
+ */
 proto.getProjection = function() {
   return this._projection;
 };
 
+/**
+ * @returns {*}
+ */
 proto.getWmsUrl = function() {
   return this.state.WMSUrl;
 };
 
+/**
+ * @returns {string}
+ */
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
+/**
+ * @returns {*}
+ */
 proto.getLayersStore = function() {
   return this._layersStore;
 };
@@ -394,18 +431,13 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
   map_theme,
   layerstree = this.state.layerstree
 }) {
-  /**
-   * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
-   * plus layerstree of map_theme get from api map theme
-   */
-  const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
-  // extract layerstree
-  const { layerstree:mapThemeLayersTree } = mapThemeConfig;
+  /** map theme config */
+  const theme = await this.getMapThemeFromThemeName(map_theme);
   // create a chages need to apply map_theme changes to map and TOC
   const changes  = {layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
   const promises = [];
   /**
-   * Function to traverse current layerstree of toc anche get changes with the new one related to map_theme choose
+   * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
    * @param mapThemeLayersTree // new mapLayerTree
    * @param layerstree // current layerstree
    */
@@ -421,7 +453,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
           traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
         } else {
           // case of layer
-          node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
+          node.style = theme.styles[node.id]; // set style from map_theme
           if (layerstree[index].checked !== node.visible) {
             changes.layers[node.id] = {
               visibility: true,
@@ -448,27 +480,55 @@ proto.setLayersTreePropertiesFromMapTheme = async function({
         }
     });
   };
-  traverse(mapThemeLayersTree, layerstree);
+  traverse(theme.layerstree, layerstree);
+
   await Promise.allSettled(promises);
+
   // all groups checked after layer checked so is set checked but not visible
   groups.forEach(({ group, node: { checked, expanded }}) => {
     group.checked = checked;
     group.expanded = expanded;
   });
+
   return changes // eventually, information about changes (for example style etc..)
 };
 
 /**
  * get map Theme_configuration
  */
-proto.getMapThemeFromThemeName = async function(map_theme) {
+proto.getMapThemeFromThemeName = async function(theme) {
   // get map theme configuration from map_themes project config
-  const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
-  // check if mapThemeConfig exist and if it has layerstree (property gets from server with a specific api)
-  if (mapThemeConfig && undefined === mapThemeConfig.layerstree ) {
-    mapThemeConfig.layerstree = await this.getMapThemeConfiguration(map_theme);
+  const config = Object.values(this.state.map_themes).flat().find(c => theme === c.theme );
+  if (config && undefined === config.layerstree) {
+    config.layerstree = await this.getMapThemeConfiguration(theme);
   }
-  return mapThemeConfig;
+  return config;
+};
+
+/**
+ * Save custom user map theme
+ * 
+ * @since 3.10
+ */
+proto.saveMapTheme = function(theme, params = {}) {
+  //In case of no name provide skip
+  if (!theme) {  return Promise.reject() }
+  return XHR.post({
+    url:         `${this.urls.map_themes}${encodeURIComponent(theme)}/`,
+    contentType: 'application/json',
+    data:        JSON.stringify(params),
+  });
+};
+
+/**
+ * @param theme
+ * 
+ * @since 3.10.0
+ */
+proto.deleteMapTheme = async function(theme) {
+  //In case of no name provide skip
+  if (!theme) { return Promise.reject() }
+  return XHR.delete({url:`${this.urls.map_themes}${encodeURIComponent(theme)}/`});
 };
 
 /**

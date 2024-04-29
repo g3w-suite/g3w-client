@@ -428,7 +428,7 @@ export default {
   font-size: 1.2em;
   background-color: white;
   color: #000;
-  padding: 9px;
+  padding: 8px;
 }
 #query_builder_operators {
   margin-top: auto !important;

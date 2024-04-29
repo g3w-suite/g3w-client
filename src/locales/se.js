@@ -376,9 +376,17 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Namn på det nya temat',
+        project_map_theme : 'Temat de proiect',
+        user_map_theme: "Temat utilizator",
+        question_delete_map_theme: "Vill du ta bort temat?",
+        delete_map_theme: "Temat har tagits bort",
+        saved_map_theme: "Temat har sparats",
+        updated_map_theme: "Temat har uppdaterats",
+        invalid_map_theme_name: "Namnet finns redan eller är felaktigt",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Lagerposition',
+          setwmsopacity: "Ställ in Opacitet",
           wms: {
             title:"",
             copy: "Tryck här för att kopiera url.",
@@ -443,6 +451,7 @@ export default {
     server_error: "Fel på anslutningen till servern",
     save: "Spara",
     cancel: "Ånga",
+    update: "Uppdatering",
     close: "Stäng",
     /**
      * @since 3.8.0
