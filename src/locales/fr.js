@@ -375,9 +375,17 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "SÉLECTIONNEZ LE THÈME",
+        choose_map_theme_input_label: 'Nom du nouveau thème',
+        project_map_theme : 'Thème du projet',
+        user_map_theme: "Thème de l'utilisateur",
+        question_delete_map_theme: "Voulez-vous supprimer le thème ?",
+        delete_map_theme: "Thème supprimé avec succès",
+        saved_map_theme: "Thème enregistré avec succès",
+        updated_map_theme: "Thème mise à jour avec succès",
+        invalid_map_theme_name: "Le nom existe déjà ou est incorrect",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Position du calque',
+          setwmsopacity: "Définir l'opacité",
           wms: {
             title:"",
             copy: "Cliquez ici pour copier l'url",
@@ -441,6 +449,7 @@ export default {
     server_error: "Une erreur s'est produite dans la requête au serveur",
     save: "Sauvegarder",
     cancel: "Supprimer",
+    update: "Mise à jour",
     close: "Fermer",
     /**
      * @since 3.8.0

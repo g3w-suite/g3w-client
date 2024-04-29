@@ -12,31 +12,35 @@
 
     <!-- ADD NEW BOOKMARK (FORM) -->
     <template v-if="showaddform">
-
       <li>
         <div style="display: flex; justify-content: end">
-
           <span
-            v-t-tooltip:left.create = "'close'"
-            @click.stop             = "showaddform = false"
-            :class                  = "g3wtemplate.getFontClass('close')"
-            class                   = "sidebar-button sidebar-button-icon"
-            style                   = "padding: 5px; margin: 3px;"
-          >
-          </span>
-
+            v-t-tooltip:left.create  = "'close'"
+            @click.stop              = "showaddform = false"
+            :class                   = "g3wtemplate.getFontClass('close')"
+            class                    = "sidebar-button sidebar-button-icon"
+            style                    = "padding: 5px; margin: 3px;"
+          ></span>
         </div>
 
-        <helpdiv message="sdk.spatialbookmarks.helptext"/>
-        <div class="container add-bookmark-input" style="padding: 5px; width: 100%">
-          <input-text :state="addbookmarkinput" />
+        <helpdiv message="sdk.spatialbookmarks.helptext" />
+
+        <div
+          class = "container add-bookmark-input"
+          style = "padding: 5px; width: 100%"
+        >
+          <input-text
+            ref    = "add_bookmark_input"
+            :state = "addbookmarkinput"
+          />
         </div>
         <div style="margin-top: 5px;">
           <button
             @click.stop = "addBookMark"
             class       = "sidebar-button-run btn btn-block"
             v-t         = "'add'"
-            v-disabled  = "!addbookmarkinput.validate.valid"></button>
+            v-disabled  = "!addbookmarkinput.validate.valid"
+          ></button>
         </div>
       </li>
     </template>
@@ -54,27 +58,30 @@
       </template>
 
       <div
-        class = "content-bookmarks"
-        style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-
+        class="content-bookmarks"
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
+      >
         <span
           style = "font-weight: bold; color: #ffffff"
-          v-t   = "'sdk.spatialbookmarks.sections.user.title'">
-        </span>
-
+          v-t   = "'sdk.spatialbookmarks.sections.user.title'"
+        ></span>
         <span
-          @click.stop = "showAddForm"
-          style       = "padding: 5px; cursor: pointer;"
-          class       = "sidebar-button sidebar-button-icon"
-          :class      = "g3wtemplate.getFontClass('plus')"
+          v-t-tooltip:left.create = "'add'"
+          @click.stop             = "showAddForm"
+          style                   = "padding: 5px; cursor: pointer;"
+          class                   = "sidebar-button sidebar-button-icon"
+          :class                  = "g3wtemplate.getFontClass('plus')"
         >
         </span>
       </div>
+
       <spatial-book-mark-item
-        v-for             = "bookmark in user.bookmarks"
-        @remove-bookmark = " removeBookMark"
-        :bookmark        = "bookmark"/>
+        v-for            = "bookmark in user.bookmarks"
+        @remove-bookmark = "removeBookMark"
+        :bookmark        = "bookmark"
+      />
     </template>
+
   </ul>
 </template>
 
@@ -89,7 +96,6 @@
 
   const { uniqueId } = require('utils');
   const { t }        = require('core/i18n/i18n.service');
-
 
   const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
@@ -137,6 +143,7 @@
         addbookmarkinput: {
           name:     'add-bookmark',
           label:    t('sdk.spatialbookmarks.input.name'),
+          i18nLabel:true,
           value:    null,
           editable: true,
           type:     'varchar',
@@ -190,6 +197,18 @@
 
     },
 
+    watch: {
+      async showaddform(bool) {
+        if (bool) {
+          await this.$nextTick();
+          //need to remove all class so input is adapted to 100% width
+          for (let i = 0; i < this.$refs.add_bookmark_input.$el.children.length; i++) {
+            this.$refs.add_bookmark_input.$el.children[i].classList.remove('col-sm-12')
+          }
+        }
+      }
+    },
+
     created() {
       this.$on('close', () => this.showaddform = false);
     },
@@ -202,10 +221,7 @@
     font-weight: bold;
     color: #ffffff;
     padding: 5px;
-    border-bottom: 2px solid #ffffff;
-    margin-bottom: 5px;
-  }
-  .container.add-bookmark-input p.error-input-message {
-    color: #ffffff;
+    border-bottom: 1px solid #ffffff;
+    margin-bottom: 2px;
   }
 </style>

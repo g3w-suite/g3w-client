@@ -93,13 +93,13 @@
 
           <!-- TOOLBAR -->
           <div
-            v-if="showTocTools"
-            id="g3w-catalog-toc-layers-toolbar"
-            style="margin: 2px;"
+            id    = "g3w-catalog-toc-layers-toolbar"
+            style = "margin: 2px;"
           >
             <catalog-change-map-themes
               :key              = "project.state.gid"
               :map_themes       = "project.state.map_themes"
+              :layerstrees      = "state.layerstrees"
               @change-map-theme = "changeMapTheme"
             />
           </div>
@@ -301,13 +301,6 @@ export default {
 
   computed: {
 
-    /**
-     * @returns {boolean} whether to show group toolbar
-     */
-    showTocTools() {
-      return (this.project.state.map_themes || []).length > 1;
-    },
-
     project() {
       return ProjectsRegistry.state.currentProject
     },
@@ -507,6 +500,8 @@ export default {
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
+      //check if is custom map theme
+      // const custom = undefined !== this.project.state.map_themes.custom.find(({ theme }) => map_theme === theme);
 
       // change map theme
       ApplicationService.changeProjectView(true);
@@ -553,8 +548,8 @@ export default {
       switch (baseLayer && baseLayer.servertype || baseLayer) {
         case 'OSM':  image = 'osm.png';                                    break;
         case 'Bing': image = `bing${baseLayer.source.subtype}.png`;        break;
-        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : undefined;  break;
-        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : undefined;  break;
+        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : image;      break;
+        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : image;      break;
       }
       return (baseLayer || {}).icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
     },

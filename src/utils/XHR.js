@@ -97,4 +97,22 @@ export const XHR = {
         });
     })
   },
+  /**
+   * Delete request
+   *
+   * @param url
+   * @param data
+   * 
+   * @returns {Promise<Response>}
+   * 
+   * @since 3.10.0
+   */
+  async delete({ url, data = {} }) {
+    try {
+      return (await fetch(url, {method: 'DELETE', body: JSON.stringify(data), })).json();
+    } catch(e) {
+      console.warn(e);
+      return Promise.reject(e);
+    }
+  }
 };

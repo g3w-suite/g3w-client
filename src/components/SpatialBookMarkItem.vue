@@ -9,15 +9,13 @@
     class       = "spatial-bookmark"
   >
     <div>
-      <span
-        :class = "g3wtemplate.getFontClass('bookmark')"
-        style  = "margin-right: 5px; font-size: 0.7em;">
-      </span>
+      <span :class="g3wtemplate.getFontClass('bookmark')" style="margin-right: 5px; font-size: 0.7em;"></span>
       <span class="g3w-long-text">{{bookmark.name}}</span>
     </div>
     <span
       v-if        = "bookmark.removable"
       @click.stop = "$emit('remove-bookmark', bookmark.id)"
+      class       = "sidebar-button sidebar-button-icon"
       style       = "color: red; margin: 5px; cursor: pointer"
     >
       <i :class="g3wtemplate.getFontClass('trash')"></i>
@@ -62,7 +60,6 @@
         GUI.getService('map').zoomToExtent(extent, { force: true });
       }
     },
-    async mounted() {}
   };
 </script>
 
@@ -73,5 +70,4 @@
     justify-content: space-between;
     padding: 5px !important;
   }
-
 </style>
