@@ -11,6 +11,7 @@
       href   = "https://g3wsuite.it/"
       style  = "margin-left: 5px; align-self: center; box-shadow: 0 1px 4px 0 rgba(0,0,0,.1), 0 4px 8px 0 rgba(0,0,0,.3);"
       target = "_blank"
+      :title = "version"
     >
       <img
         height = "15"
@@ -22,6 +23,11 @@
 
 <script>
   export default {
-    name: 'Mapfooter'
+    name: 'Mapfooter',
+    computed: {
+      version() {
+        return 'Powered by G3W-SUITE ' + initConfig.version;
+      }
+    }
   };
 </script>
