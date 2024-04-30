@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="field" :style="{fontSize: isMobile() && '0.8em'}">
+  <div class="field">
     <div v-if="state.label" class="col-sm-6  field_label">
       <slot name="label">{{state.label}}</slot>
     </div>
