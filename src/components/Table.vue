@@ -875,6 +875,7 @@ export default {
       "serverSide": true,
       "deferLoading": this.state.allfeatures,
       "bSortCellsTop": true,
+      "responsive": true,
     });
 
     // no pagination all data
