@@ -40,6 +40,7 @@
                   class  = "box-title query-layer-title"
                   :style = "{fontSize: isMobile() && '1em !important'}">
                   <span
+                    v-if                    = "!layer.external"
                     @click.stop             = "openAttributeTable(layer)"
                     class                   = "action-button"
                     v-t-tooltip:left.create = "'catalog_items.contextmenu.open_attribute_table'"
