@@ -180,8 +180,8 @@ export default {
       },
       tooltips: {
         relations: {
-          form_to_row: "Visualizza come lista",
-          row_to_form: "Visualizza come modulo",
+          form_to_row: "Visualizza riga",
+          row_to_form: "Visualizza modulo",
           zoomtogeometry: "Zoom sulla geometria",
         },
         zoom_to_features_extent: "Zoom sulle features",
