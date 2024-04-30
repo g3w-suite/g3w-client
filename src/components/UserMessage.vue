@@ -236,6 +236,7 @@
     min-width: 250px;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 3px 3px;
   }
 
   .usermessage-content.mobile {
@@ -248,6 +249,7 @@
     align-items: baseline;
     justify-content: space-between;
     width: 100%;
+    border-bottom: 2px solid #eeeeee;
   }
 
   .usermessage-header-icontype {
