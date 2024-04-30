@@ -96,7 +96,11 @@ proto.query = function(options={}) {
   const {layers=[this._layer], feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
   const layer = layers[0];
   let url = layer.getQueryUrl();
-  const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
+  //check if query url start with ows.
+  //check if baseurl is set or not equal to / (default value) and get url pathname
+  const METHOD = layer.isExternalWMS() || !/^\/ows/.test((new URL(url, (!window.initConfig.baseurl || '/' === window.initConfig.baseurl) ? window.location.origin : window.initConfig.baseurl)).pathname)
+    ? 'GET'
+    : layer.getOwsMethod();
   const params = this._getRequestParameters({layers, feature_count, coordinates, infoFormat, query_point_tolerance, resolution, size});
   const query = {
     coordinates,
