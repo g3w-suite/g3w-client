@@ -573,8 +573,8 @@ const Providers = {
       } = opts;
 
       const method =  layers[0].isExternalWMS() || !/^\/ows/.test((new URL(layers[0].getQueryUrl(), (!window.initConfig.baseurl || '/' === window.initConfig.baseurl) ? window.location.origin : window.initConfig.baseurl)).pathname)
-          ? 'GET'
-          : layer.getOwsMethod();
+        ? 'GET'
+        : layers[0].getOwsMethod();
       const handleResponse = response => {
         d.resolve({
           data: this.handleQueryResponseFromServer(response, this._projections, layers),
