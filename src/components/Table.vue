@@ -116,6 +116,12 @@
               />
               <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
               <span
+                @click.stop            = "openForm(feature)"
+                v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
+              >
+                <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('table')"></i>
+              </span>
+              <span
                 v-if                   = "layer.isEditable()"
                 @click.stop            = "editFeature(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.editing'"
@@ -235,9 +241,26 @@ export default {
      * @since 3.10.0
      */
     editFeature(feature) {
+      $('.tooltip').remove();
       GUI
         .getService('queryresults')
         .editFeature({ layer: { id: this.layer.getId() }, feature })
+    },
+
+    /**
+     * @param feature
+     * 
+     * @since 3.10.0
+     */
+     openForm(feature) {
+      $('.tooltip').remove();
+      DataRouterService.getData('search:fids', {
+        inputs: {
+          layer: this.layer,
+          fids: [feature.id],
+          formatter: 1
+        }
+      });
     },
 
     get_check_id(cache) {
@@ -770,6 +793,12 @@ export default {
    */
   async created() {
 
+    // disable any previous active map control
+    this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
+    if (this.last_map_control) {
+      this.last_map_control.control.toggle();
+    }
+
     GUI.closeContent();
 
     this.mapBBoxEventHandlerKey = {
@@ -877,6 +906,11 @@ export default {
   },
 
   beforeDestroy() {
+    // restore any previous active map control
+    if (this.last_map_control) {
+      this.last_map_control.control.toggle();
+    }
+
     this.layer.off('unselectionall',    this.unSelectAll);
     this.layer.off('filtertokenchange', this.changeFilter);
 

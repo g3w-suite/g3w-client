@@ -193,7 +193,7 @@ export default {
         download_xls: "Scarica XLS",
         show_chart: "Mostra Grafico",
         atlas: "Stampa Atlas",
-        editing: "Edita",
+        editing: "Modifica",
       },
       mapcontrols: {
         query: {
