@@ -17,7 +17,7 @@ export default {
         nofilter: "Supprimer le filtre ",
         invert: "Sélection inversée ",
         clear: "Effacer la sélection ",
-        show_features_on_map: "Afficher les caractéristiques visibles sur la carte",
+        show_features_on_map: "Mettre à jour les résultats lors du déplacement de la carte",
         savefilter: "Sauver le Filtre",
         filterName: "Nom du Filtre",
       }
@@ -548,8 +548,8 @@ export default {
     dataTable: {
       previous: "Précédent",
       next: "Suivant",
-      lengthMenu: "Affiche _MENU_",
-      info: "des _TOTAL_ résultats",
+      lengthMenu: "Afficher _MENU_ valeurs par page",
+      info: "_TOTAL_ résultats",
       nodatafilterd: "Aucun résultat trouvé",
       infoFiltered: "(Filtré par _MAX_ rangs totaux)"
     }

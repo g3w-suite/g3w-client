@@ -17,7 +17,7 @@ export default {
         nofilter: "Eliminare Filtrare",
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
-        show_features_on_map: "Arată entitățile vizibile în cadrul hărții",
+        show_features_on_map: "Rezultatele se actualizează când harta este deplasată",
         savefilter: "Salvează Filtrul",
         filterName: "Nume Filtru",
       }
@@ -547,8 +547,8 @@ export default {
     dataTable: {
       previous: "Anteriorul",
       next: "Următorul",
-      lengthMenu: "Afișează _MENU_",
-      info: "din _TOTAL_ rezultate",
+      lengthMenu: "Afișați _MENU_ valori pe pagină",
+      info: "_TOTAL_ rezultate",
       no_data: "Fără date",
       nodatafilterd: "Niciun rezultat",
       infoFiltered: "(filtrat din _MAX_ de rezultate totale)"

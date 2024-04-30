@@ -157,7 +157,7 @@ const { t }                        = require('core/i18n/i18n.service');
 
 
 //Supported page lengths
-const PAGELENGTHS = [25, 50, 100];
+const PAGELENGTHS = [10, 25, 50, 100];
 
 function _createFeatureForSelection(f) {
   return {
@@ -542,7 +542,7 @@ export default {
       await this.$nextTick();
       const table = this.$el.querySelector('div.dataTables_scrollBody');
       if (table) {
-        table.style.height = (
+        table.style.height = GUI.isMobile() ? '100%' : (
             ((document.querySelector('.content')                       || {}).clientHeight || 0) // table height
           - ((this.$el.querySelector('div.dataTables_scrollHeadInner') || {}).clientHeight || 0) // table header height
           - 100
@@ -612,7 +612,7 @@ export default {
     async getData({
       start     = 0,
       order     = [],
-      length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
+      length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = [],
       search    = { value: null },
     } = {}) {
@@ -828,7 +828,7 @@ export default {
         "width": '1%'
       } ],
       "lengthMenu": PAGELENGTHS,
-      "pageLength": this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
+      "pageLength": this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       "columns": this.state.headers,
       "ajax": debounce(async (data, cb) => {
         try {
@@ -866,7 +866,8 @@ export default {
     fragment.appendChild(this.$refs.table_toolbar);
     document.getElementById('g3w-table-toolbar').appendChild(fragment);
 
-    // move "dataTables_filter" before header action tools
+    // move "dataTables_info" and "dataTables_filter" before header action tools
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_info'));  
     document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));  
 
     // hide datatable rows → show only our custom "table_body"
@@ -894,7 +895,8 @@ export default {
 
     GUI.un('setContent', this.setContentKey);
 
-    document.querySelector('#layer_attribute_table_filter').remove();
+    document.querySelector('#g3w-view-content .dataTables_info').remove();
+    document.querySelector('#g3w-view-content .dataTables_filter').remove();
     $(this.$refs.attribute_table).DataTable().destroy(true);
   },
 
@@ -927,6 +929,7 @@ export default {
   }
   #layer_attribute_table {
     width: 100%;
+    user-select: none;
   }
   #layer_attribute_table > tbody > tr {
     cursor: pointer;
@@ -940,19 +943,13 @@ export default {
 </style>
 
 <style>
-  .is-mobile .dataTables_info,
-  .is-mobile .dataTables_length {
-    display: none;
-  }
-  .is-mobile .dataTables_paginate {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8em;
-    margin: 0;
-  }
   #g3w-view-content .dataTables_filter {
     margin-left: auto;
     margin-right: 1ch;
+  }
+  #g3w-view-content .dataTables_info {
+    padding-left: .5ch;
+    font-weight: lighter;
   }
   #open_attribute_table .paginate_button {
     background: transparent;
@@ -962,12 +959,7 @@ export default {
   #open_attribute_table .paginate_button.disabled {
     opacity: 0.25;
   }  
-  #open_attribute_table #layer_attribute_table_info {
-    clear: right;
-    padding-left: 1ch;
-    padding-top: 0.9em;
-  }
   #open_attribute_table #layer_attribute_table_length {
-    padding-top: 0.755em;
+    padding-top: .755em;
   }
 </style>

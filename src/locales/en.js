@@ -17,7 +17,7 @@ export default {
         nofilter: "Remove Filter",
         invert: "Invert Selection",
         clear: "Clear Selection",
-        show_features_on_map: "Show features visible on map",
+        show_features_on_map: "Update results when map moves",
         savefilter: "Save Filter",
         filterName: "Filter Name",
       }
@@ -547,8 +547,8 @@ export default {
     dataTable: {
       previous: "Previous",
       next: "Next",
-      lengthMenu: "Show _MENU_",
-      info: "of _TOTAL_ entries",
+      lengthMenu: "Show _MENU_ values per page",
+      info: "_TOTAL_ entries",
       no_data: "No data",
       nodatafilterd: "No matching records found",
       infoFiltered: "(filtered from _MAX_ total records)"

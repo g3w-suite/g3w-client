@@ -17,7 +17,7 @@ export default {
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        show_features_on_map: "Rezultatele se actualizează când harta este deplasată",
         savefilter: "Spara Filter",
         filterName: "Filternamn",
       }
@@ -547,8 +547,8 @@ export default {
     dataTable: {
       previous: "Föregående",
       next: "Nästa",
-      lengthMenu: "Visar _MENU_",
-      info: "av _TOTAL_ resultat",
+      lengthMenu: "Visa _MENU_ värden per sida",
+      info: "_TOTAL_ resultat",
       no_data: "Inga uppgifter",
       nodatafilterd: "Inga motsvarande poster hittades",
       infoFiltered: "(filtered from _MAX_ total records)"

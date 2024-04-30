@@ -17,7 +17,7 @@ export default {
         nofilter: "Rimuovi filtro",
         invert: "Inverti Selezione",
         clear: "Annulla selezione",
-        show_features_on_map: "Mostra features visibili su mappa",
+        show_features_on_map: "Aggiorna i risultati quando si sposta la mappa",
         savefilter: "Salva Filtro",
         filterName: 'Nome Filtro',
       }
@@ -552,8 +552,8 @@ export default {
     dataTable: {
       previous: "Precedente",
       next: "Successivo",
-      lengthMenu: "Mostra _MENU_",
-      info: "di _TOTAL_ elementi",
+      lengthMenu: "Mostra _MENU_ valori per pagina",
+      info: "_TOTAL_ elementi",
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
     },

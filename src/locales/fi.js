@@ -17,7 +17,7 @@ export default {
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
-        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
+        show_features_on_map: "Päivitä tulokset karttaa siirtäessäsi",
         savefilter: "Tallenna suodatin",
         filterName: "Suodattimen Nimi",
       }
@@ -547,7 +547,7 @@ export default {
     dataTable: {
       previous: "Edellinen",
       next: "Seuraava",
-      lengthMenu: "Näyttää _MENU_",
+      lengthMenu: "Näytä _MENU_ arvoa sivulla",
       info: "tulosta _TOTA_:stä",
       no_data: "Ei tietoja",
       nodatafilterd: "Vastaavia tietueita ei löytynyt",
