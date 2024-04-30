@@ -571,7 +571,8 @@ const Providers = {
         resolution,
         query_point_tolerance
       } = opts;
-
+      //check if query url start with ows.
+      //check if baseurl is set or not equal to / (default value) and get url pathname
       const method =  layers[0].isExternalWMS() || !/^\/ows/.test((new URL(layers[0].getQueryUrl(), (!window.initConfig.baseurl || '/' === window.initConfig.baseurl) ? window.location.origin : window.initConfig.baseurl)).pathname)
         ? 'GET'
         : layers[0].getOwsMethod();
