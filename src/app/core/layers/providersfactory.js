@@ -541,17 +541,10 @@ module.exports = {
 
       //check if query url start with ows.
       //check if baseurl is set or not equal to / (default value) and get url pathname
-      const baseurl = window.initConfig.baseurl;
-      const method =  layers[0].isExternalWMS() || !/^\/ows/.test(
-          (
-            new URL(layers[0].getQueryUrl(), (!baseurl || '/' === baseurl) ? window.location.origin : baseurl)
-          ).pathname
-        )
+      const method =  layers[0].isExternalWMS() || !/^\/ows/.test((new URL(layers[0].getQueryUrl(), window.initConfig.baseurl)).pathname)
         ? 'GET'
         : layers[0].getOwsMethod();
       const source = (url || '').split('SOURCE');
-
-      console.log(layers, layers[0].getQueryUrl(), baseurl, new URL(layers[0].getQueryUrl(), (!baseurl || '/' === baseurl) ? window.location.origin : baseurl));
 
       let promise;
 
