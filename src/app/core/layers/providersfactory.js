@@ -6,6 +6,7 @@ import { handleQueryResponse }     from 'utils/handleQueryResponse';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
+import { promisify }               from 'utils/promisify';
 
 const G3WObject                    = require('core/g3wobject');
 const {
@@ -99,7 +100,10 @@ class DataProvider extends G3WObject {
 
 }
 
-const Providers = {
+/**
+ * Providers
+ */
+module.exports = {
 
   /**
    * ORIGINAL SOURCE: src/app/core/layers/providers/geojsonprovider.js@3.8.6
@@ -485,153 +489,97 @@ const Providers = {
 
     constructor(options = {}) {
       super(options);
-      this._name        = 'wms';
-      this._projections = { map: null, layer: null };
+      this._name = 'wms';
     }
 
-    /**
-     * @TODO move into WMSDataProvider::query
-     */
-    _getRequestParameters({
-      layers,
-      feature_count,
-      coordinates,
-      infoFormat,
-      query_point_tolerance = QUERY_POINT_TOLERANCE,
-      resolution,
-      size,
-    }) {
-
-      const layerNames = layers
-        ? layers.map(layer => layer.getWMSInfoLayerName()).join(',')
-        : this._layer.getWMSInfoLayerName();
-
-      const extent = getExtentForViewAndSize(coordinates, resolution, 0, size);
-
-      const is_map_tolerance = ('map' === query_point_tolerance.unit);  
-
-      /**
-       * Add LEGEND_ON and/or LEGEND_OFF in case of layer that has categories
-       * It used to solve issue related to GetFeatureInfo feature layer categories
-       * that are unchecked (not visisble) at QGIS project setting
-       */
-      const LEGEND_PARAMS = {
-        LEGEND_ON: [],
-        LEGEND_OFF: []
-      };
-
-      layers
-        .forEach(layer => {
-          if (layer.getCategories()) {
-            const { LEGEND_ON, LEGEND_OFF } = get_legend_params(layer);
-            if (LEGEND_ON)  LEGEND_PARAMS.LEGEND_ON.push(LEGEND_ON);
-            if (LEGEND_OFF) LEGEND_PARAMS.LEGEND_OFF.push(LEGEND_OFF);
-          }
-      });
-
-      return {
-        SERVICE:              'WMS',
-        VERSION:              '1.3.0',
-        REQUEST:              'GetFeatureInfo',
-        CRS:                  this._projections.map.getCode(),
-        LAYERS:               layerNames,
-        QUERY_LAYERS:         layerNames,
-        filtertoken:          ApplicationState.tokens.filtertoken,
-        INFO_FORMAT:          infoFormat,
-        FEATURE_COUNT:        feature_count,
-        WITH_GEOMETRY:        true,
-        DPI,
-        FILTER_GEOM:          is_map_tolerance ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, query_point_tolerance.value))) : undefined,
-        FI_POINT_TOLERANCE:   is_map_tolerance ? undefined : query_point_tolerance.value,
-        FI_LINE_TOLERANCE:    is_map_tolerance ? undefined : query_point_tolerance.value,
-        FI_POLYGON_TOLERANCE: is_map_tolerance ? undefined : query_point_tolerance.value,
-        G3W_TOLERANCE:        is_map_tolerance ? undefined : query_point_tolerance.value * resolution,
-        I:                    is_map_tolerance ? undefined : Math.floor((coordinates[0] - extent[0]) / resolution), // x
-        J:                    is_map_tolerance ? undefined : Math.floor((extent[3] - coordinates[1]) / resolution), // y
-        WIDTH:                size[0],
-        HEIGHT:               size[1],
-        LEGEND_ON:            LEGEND_PARAMS.LEGEND_ON.length ? LEGEND_PARAMS.LEGEND_ON.join(';') : undefined,
-        LEGEND_OFF:           LEGEND_PARAMS.LEGEND_OFF.length ? LEGEND_PARAMS.LEGEND_OFF.join(';') : undefined,
-        STYLES:               '',
-        BBOX:                 ('ne' === this._projections.map.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
-      };
-    }
-  
     query(opts = {}) {
       const d = $.Deferred();
 
-      const infoFormat      = this._layer.getInfoFormat()    || 'application/vnd.ogc.gml';
-      this._projections.map = this._layer.getMapProjection() || this._layer.getProjection();
+      const projection = this._layer.getMapProjection() || this._layer.getProjection();
 
       const {
         layers        = [this._layer],
-        feature_count = 10,
         size          = GETFEATUREINFO_IMAGE_SIZE,
         coordinates   = [],
         resolution,
-        query_point_tolerance
       } = opts;
-      //check if query url start with ows.
-      //check if baseurl is set or not equal to / (default value) and get url pathname
-      const method =  layers[0].isExternalWMS() || !/^\/ows/.test((new URL(layers[0].getQueryUrl(), (!window.initConfig.baseurl || '/' === window.initConfig.baseurl) ? window.location.origin : window.initConfig.baseurl)).pathname)
-        ? 'GET'
-        : layers[0].getOwsMethod();
-      const handleResponse = response => {
-        d.resolve({
-          data: this.handleQueryResponseFromServer(response, this._projections, layers),
-          query: { coordinates, resolution },
-        })
-      };
+
+      const extent     = getExtentForViewAndSize(coordinates, resolution, 0, size);
+      const tolerance  = undefined !== opts.query_point_tolerance ? opts.query_point_tolerance : QUERY_POINT_TOLERANCE;
+      const url        = layers[0].getQueryUrl();
 
       // base request
-      const base_params = {
-        url: layers[0].getQueryUrl(),
-        params: this._getRequestParameters({
-          layers,
-          feature_count,
-          coordinates,
-          infoFormat,
-          query_point_tolerance,
-          resolution,
-          size,
-        }),
+      const params = {
+        SERVICE:              'WMS',
+        VERSION:              '1.3.0',
+        REQUEST:              'GetFeatureInfo',
+        CRS:                  projection.getCode(),
+        LAYERS:               (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+        QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+        filtertoken:          ApplicationState.tokens.filtertoken,
+        INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
+        FEATURE_COUNT:        undefined !== opts.feature_count ? opts.feature_count : 10,
+        WITH_GEOMETRY:        true,
+        DPI,
+        FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
+        FI_POINT_TOLERANCE:   'map' === tolerance.unit ? undefined : tolerance.value,
+        FI_LINE_TOLERANCE:    'map' === tolerance.unit ? undefined : tolerance.value,
+        FI_POLYGON_TOLERANCE: 'map' === tolerance.unit ? undefined : tolerance.value,
+        G3W_TOLERANCE:        'map' === tolerance.unit ? undefined : tolerance.value * resolution,
+        I:                    'map' === tolerance.unit ? undefined : Math.floor((coordinates[0] - extent[0]) / resolution), // x
+        J:                    'map' === tolerance.unit ? undefined : Math.floor((extent[3] - coordinates[1]) / resolution), // y
+        WIDTH:                size[0],
+        HEIGHT:               size[1],
+        STYLES:               '',
+        BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
+        // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
+        LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
+        LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
       }
 
-      const timeoutKey = this.getQueryResponseTimeoutKey({
-        layers,
-        resolve: d.resolve,
-        query: { coordinates, resolution },
-      });
-      
+      const timer = this.getQueryResponseTimeoutKey({ layers, resolve: d.resolve, query: { coordinates, resolution } });
+
+      //check if query url start with ows.
+      //check if baseurl is set or not equal to / (default value) and get url pathname
+      const baseurl = window.initConfig.baseurl;
+      const method =  layers[0].isExternalWMS() || !/^\/ows/.test(
+          (
+            new URL(layers[0].getQueryUrl(), (!baseurl || '/' === baseurl) ? window.location.origin : baseurl)
+          ).pathname
+        )
+        ? 'GET'
+        : layers[0].getOwsMethod();
+      const source = (url || '').split('SOURCE');
+
+      console.log(layers, layers[0].getQueryUrl(), baseurl, new URL(layers[0].getQueryUrl(), (!baseurl || '/' === baseurl) ? window.location.origin : baseurl));
+
+      let promise;
+
       if (layers[0].useProxy()) {
-        layers[0]
-          .getDataProxyFromServer('wms', { ...base_params, method, headers: { 'Content-Type': infoFormat } })
-          .then(handleResponse);
+        promise = layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
+      } else if ('GET' === method) {
+        promise = XHR.get({ url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : '')) });
+      } else if ('POST' === method) {
+        promise = XHR.post({ url, data: params });
       } else {
-        this[method]({ ...base_params, layers })
-          .then(handleResponse)
-          .catch(err => d.reject(err))
-          .finally(() => clearTimeout(timeoutKey));
+        promise = Promise.resolve();
+        console.warn('unsupported method: ', method);
       }
+
+      promisify(promise)
+        .then(data => d.resolve({
+          data: handleQueryResponse({
+            response: data,
+            projections: { map: projection, layer: null },
+            layers,
+            wms: true,
+          }),
+          query: { coordinates, resolution }
+        }))
+        .catch(err => d.reject(err))
+        .finally(() => !layers[0].useProxy() && clearTimeout(timer))
 
       return d.promise();
-    }
-
-    /**
-     * @TODO deprecate in favour of a global XHR
-     */
-    GET({ url, params } = {}) {
-      const source = url.split('SOURCE');
-      return XHR.get({
-        url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : ''))
-      });
-    }
-
-    /**
-     * @TODO deprecate in favour of a global XHR
-     */
-    POST({ url, params } = {}) {
-      return XHR.post({ url, data: params });
     }
   
   },
@@ -809,192 +757,4 @@ const Providers = {
   
   },
 
-  /**
-   * ORIGINAL SOURCE: src/app/core/layers/providers/kmlprovider.js@3.8.6
-   */
-  // kml: class KMLDataProvider extends DataProvider {
-
-  //   constructor(options = {}) {
-  //     super(options);
-  //     this._name = 'kml';
-  //   }
-  
-  //   getData() {
-  //     return $.Deferred().promise();
-  //   }
-
-  // },
-
-  /**
-   * ORIGINAL SOURCE: src/app/core/layers/providers/xmlprovider.js@3.8.6
-   */
-  // xml: class XMLDataProvider extends DataProvider {
-
-  //   constructor(options = {}) {
-  //     super();
-  //     this._name = 'xml';
-  //   }
-  
-  //   getData() {
-  //     return $.Deferred().promise();
-  //   }
-
-  // },
-
-
 };
-
-class ProviderFactory {
-
-  constructor() {
-
-    this._providers = {
-
-      'QGIS': {
-        'virtual': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-          filtertoken: Providers.qgis,
-        },
-        'postgres': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-          filtertoken: Providers.qgis,
-        },
-        'oracle': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-          filtertoken: Providers.qgis,
-        },
-        'mssql': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-          filtertoken: Providers.qgis,
-        },
-        'spatialite': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-          filtertoken: Providers.qgis,
-        },
-        'ogr': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-          filtertoken: Providers.qgis,
-        },
-        'delimitedtext': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-          filtertoken: Providers.qgis,
-        },
-        'wmst': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        null,
-          search:      null,
-        },
-        'wcs': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        null,
-          search:      null,
-        },
-        'wms': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        null,
-          search:      null,
-        },
-        'wfs': {
-          query:       Providers.wms,
-          filter:      Providers.wfs,
-          data:        Providers.qgis,
-          search:      Providers.qgis,
-        },
-        'gdal': {
-          query:       Providers.wms,
-          filter:      null,
-          data:        null,
-          search:      null,
-        },
-        /** @since 3.9.0 */
-        'postgresraster': {
-          query:       Providers.wms,
-          filter:      null,
-          data:        null,
-          search:      null,
-        },
-        'vector-tile': {
-          query:       Providers.wms,
-          filter:      null,
-          data:        null,
-          search:      null,
-        },
-        'vectortile': {
-          query:       Providers.wms,
-          filter:      null,
-          data:        null,
-          search:      null,
-        },
-        'arcgismapserver': {
-          query:       Providers.wms,
-          filter:      null,
-          data:        null,
-          search:      null,
-        },
-        'mdal': {
-          query:       Providers.wms,
-          filter:      null,
-          data:        null,
-          search:      null,
-        },
-      },
-    
-      'OGC': {
-        'wms': {
-          query:      Providers.wms,
-          filter:     null,
-          data:       null,
-          search:     null,
-        },
-      },
-    
-      'G3WSUITE': {
-        'geojson': {
-          query:      Providers.geojson,
-          filter:     null,
-          data:       Providers.geojson,
-          search:     null,
-        },
-      },
-
-    };
-
-  }
-
-  build(providerType, serverType, sourceType, options) {
-    // return instance of selected provider
-    const providerClass = this.get(providerType, serverType, sourceType);
-    return providerClass ? new providerClass(options) : null;
-  }
-
-  get(providerType, serverType, sourceType) {
-    return this._providers[serverType][sourceType][providerType];
-  }
-
-}
-
-module.exports = new ProviderFactory();

@@ -15,7 +15,7 @@ const {
   XHR,
 }                           = require('utils');
 const G3WObject             = require('core/g3wobject');
-const ProviderFactory       = require('core/layers/providersfactory');
+const Providers             = require('core/layers/providersfactory');
 const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
@@ -197,19 +197,45 @@ function Layer(config={}, options={}) {
       2 - filter
       3 - data -- raw data del layer (editing)
    */
-  const serverType = this.config.servertype;
-  const sourceType = this.config.source ? this.config.source.type : null; // NB: sourceType = source of layer
-
-  if (serverType && sourceType) {
-    //set providers that will take in account to get data from server
-    this.providers = {
-      query:       ProviderFactory.build('query',       serverType, sourceType, { layer: this }),
-      filter:      ProviderFactory.build('filter',      serverType, sourceType, { layer: this }),
-      filtertoken: ProviderFactory.build('filtertoken', serverType, sourceType, { layer: this }),
-      search:      ProviderFactory.build('search',      serverType, sourceType, { layer: this }),
-      data:        ProviderFactory.build('data',        serverType, sourceType, { layer: this })
-    };
+  const provider = (providerType) => {
+    const serverType = this.config.servertype;
+    const sourceType = this.config.source ? this.config.source.type : null; // NB: sourceType = source of layer
+    try {
+      return new ({
+        'QGIS virtual':         { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis, filtertoken: Providers.qgis },
+        'QGIS postgres':        { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis, filtertoken: Providers.qgis },
+        'QGIS oracle':          { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis, filtertoken: Providers.qgis },
+        'QGIS mssql':           { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis, filtertoken: Providers.qgis },
+        'QGIS spatialite':      { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis, filtertoken: Providers.qgis },
+        'QGIS ogr':             { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis, filtertoken: Providers.qgis },
+        'QGIS delimitedtext':   { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis, filtertoken: Providers.qgis },
+        'QGIS wfs':             { query: Providers.wms, filter: Providers.wfs, data: Providers.qgis, search: Providers.qgis },
+        'QGIS wmst':            { query: Providers.wms, filter: Providers.wfs },
+        'QGIS wcs':             { query: Providers.wms, filter: Providers.wfs },
+        'QGIS wms':             { query: Providers.wms, filter: Providers.wfs },
+        'QGIS gdal':            { query: Providers.wms },
+        /** @since 3.9.0 */
+        'QGIS postgresraster':  { query: Providers.wms },
+        'QGIS vector-tile':     { query: Providers.wms },
+        'QGIS vectortile':      { query: Providers.wms },
+        'QGIS arcgismapserver': { query: Providers.wms },
+        'QGIS mdal':            { query: Providers.wms },
+        'OGC wms':              { query: Providers.wms },
+        'G3WSUITE geojson':     { query: Providers.geojson, data: Providers.geojson },
+      })[`${serverType} ${sourceType}`][providerType]({ layer: this });
+    } catch(e) {
+      console.warn(e);
+    }
   }
+
+  // set providers that will take in account to get data from server
+  this.providers = {
+    query:       provider('query'),
+    filter:      provider('filter'),
+    filtertoken: provider('filtertoken'),
+    search:      provider('search'),
+    data:        provider('data'),
+  };
 
   /**
    * Store last proxy params (useful for repeat request info formats for wms external layer)

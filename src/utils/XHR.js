@@ -1,17 +1,13 @@
-import { TIMEOUT } from 'app/constant';
+import { TIMEOUT }   from 'app/constant';
+import { promisify } from 'utils/promisify';
 
 export const XHR = {
 
-  get({url, params={}}={}) {
-    return new Promise((resolve, reject) => {
-      url ?
-        $.get(url, params)
-          .then(response => {
-            resolve(response)
-          })
-          .fail(error => reject(error))
-      : reject('No url')
-    })
+  async get({ url, params={} } = {}) {
+    if (!url) {
+      return Promise.reject('No url');
+    }
+    return promisify($.get(url, params));
   },
 
   post({url, data, formdata = false, contentType} = {}, getResponseStatusHeaders=false) {
