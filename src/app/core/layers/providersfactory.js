@@ -537,13 +537,8 @@ module.exports = {
         LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
       }
 
-      const timer = this.getQueryResponseTimeoutKey({ layers, resolve: d.resolve, query: { coordinates, resolution } });
-
-      //check if query url start with ows.
-      //check if baseurl is set or not equal to / (default value) and get url pathname
-      const method =  layers[0].isExternalWMS() || !/^\/ows/.test((new URL(layers[0].getQueryUrl(), window.initConfig.baseurl)).pathname)
-        ? 'GET'
-        : layers[0].getOwsMethod();
+      const timer  = this.getQueryResponseTimeoutKey({ layers, resolve: d.resolve, query: { coordinates, resolution } });
+      const method =  layers[0].getOwsMethod();
       const source = (url || '').split('SOURCE');
 
       let promise;
@@ -574,7 +569,6 @@ module.exports = {
 
       return d.promise();
     }
-  
   },
 
   /**

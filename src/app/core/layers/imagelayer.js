@@ -467,6 +467,22 @@ proto.getFormat = function() {
   return base(this, 'getFormat');
 };
 
+/**
+ * @override ImageLayer~getOwsMethod
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/issues/616
+ * 
+ * check if query url start with ows.
+ * check if baseurl is set or not equal to / (default value) and get url pathname
+ * 
+ * @since 3.10.0
+ */
+proto.getOwsMethod = function() {
+  return this.isExternalWMS() || !/^\/ows/.test((new URL(this.getQueryUrl(), window.initConfig.baseurl)).pathname)
+    ? 'GET'
+    : this.config.ows_method;
+};
+
 ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.QGIS,
   Layer.ServerTypes.Mapserver,
