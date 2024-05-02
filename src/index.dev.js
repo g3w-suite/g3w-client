@@ -9,6 +9,15 @@ import './deprecated';
 // expose global variables
 import './globals';
 
+// convert relative base URLs to absolute (eg. '/' → 'http://localhost:8080/')
+if (window.initConfig.baseurl) {
+  try {
+    new URL(window.initConfig.baseurl);
+  } catch (error) {
+    window.initConfig.baseurl = (new URL(window.initConfig.baseurl, window.location)).toString();
+  }
+}
+
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();
 
