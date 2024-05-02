@@ -15,8 +15,9 @@
         :for="state.name"
         v-disabled = "!editable"
         class      = "col-sm-12 control-label"
-        v-t        = "state.i18nLabel ? state.label : ''">{{ state.i18nLabel ? '' : state.label }}
-
+      >
+        <span v-if ="state.i18nLabel" v-t="state.label"></span>
+        <span v-else>{{ state.label }}</span>
         <span v-if="state.validate && state.validate.required">*</span>
         <i
           v-if        = "showhelpicon"

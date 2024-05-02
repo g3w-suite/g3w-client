@@ -6,14 +6,14 @@
 <template>
   <baseinput :state="state">
     <span
-      v-if           = "showPickLayer"
-      slot           = "label-action"
-      data-placement = "top"
-      v-t-tooltip    = "'sdk.form.inputs.tooltips.picklayer'"
-      v-disabled     = "disabled"
-      @click.stop    = "pickLayerValue"
-      :class         = "g3wtemplate.font['crosshairs']"
-      class          ="g3w-input-pick-layer skin-color">
+      v-if                      = "showPickLayer"
+      slot                      = "label-action"
+      v-t-tooltip:top.create    = "'sdk.form.inputs.tooltips.picklayer'"
+      v-disabled                = "disabled"
+      @click.stop               = "pickLayerValue"
+      class                     = "g3w-input-pick-layer skin-color"
+    >
+      <i :class = "g3wtemplate.font['crosshairs']"></i>
     </span>
     <div
       slot       = "body"
