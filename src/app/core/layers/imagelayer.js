@@ -472,8 +472,7 @@ proto.getFormat = function() {
  * 
  * @see https://github.com/g3w-suite/g3w-client/issues/616
  * 
- * check if query url start with ows.
- * check if baseurl is set or not equal to / (default value) and get url pathname
+ * forces to `GET` when wms layer is external or query url isn't a qgis server endpoint (ie. doesn't start with `/ows/`).
  * 
  * @since 3.10.0
  */
