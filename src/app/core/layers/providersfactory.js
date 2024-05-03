@@ -72,30 +72,6 @@ class DataProvider extends G3WObject {
     return this._name;
   }
 
-  /**
-   * Transform xml from server to actual queryresult component
-   */
-  handleQueryResponseFromServer(response, projections, layers = [this._layer], wms = true) {
-    return handleQueryResponse({ response, projections, layers, wms });
-  }
-
-  /**
-   * @returns {number} set timeout for query
-   */
-  getQueryResponseTimeoutKey({
-    layers = [this._layer],
-    resolve,
-    query,
-  } = []) {
-    return getTimeoutPromise({
-      resolve,
-      data: {
-        data: Parsers.response.utils.getTimeoutData(layers),
-        query,
-      },
-    });
-  }
-
 }
 
 /**
@@ -531,7 +507,14 @@ module.exports = {
         LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
       }
 
-      const timer  = this.getQueryResponseTimeoutKey({ layers, resolve: d.resolve, query: { coordinates, resolution } });
+      const timer = getTimeoutPromise({
+        resolve: d.resolve,
+        data: {
+          data: Parsers.response.utils.getTimeoutData(layers),
+          query: { coordinates, resolution },
+        },
+      });
+
       const method =  layers[0].getOwsMethod();
       const source = (url || '').split('SOURCE');
 
@@ -598,10 +581,12 @@ module.exports = {
 
       params.MAXFEATURES = feature_count;
 
-      const timeoutKey = this.getQueryResponseTimeoutKey({
-        layers,
+      const timer = getTimeoutPromise({
         resolve: d.resolve,
-        query: {},
+        data: {
+          data: Parsers.response.utils.getTimeoutData(layers),
+          query: {},
+        },
       });
 
       (new Promise((resolve, reject) => {
@@ -696,7 +681,7 @@ module.exports = {
           d.resolve({ data });
         })
         .catch((e)  => { console.warn(e); d.reject(e); })
-        .finally(() => { clearTimeout(timeoutKey); });
+        .finally(() => { clearTimeout(timer); });
 
       return d.promise();
     };
