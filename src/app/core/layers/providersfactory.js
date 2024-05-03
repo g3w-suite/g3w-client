@@ -580,6 +580,8 @@ module.exports = {
 
       const d = $.Deferred();
 
+      opts.filter = opts.filter || new Filter({});
+
       const {
         reproject     = false,
         feature_count = 10,
@@ -596,9 +598,7 @@ module.exports = {
       });
 
       (new Promise((resolve, reject) => {
-  
-        filter  = filter || new Filter({});
-    
+      
         // skip when..
         if (!filter) {
           return reject();
