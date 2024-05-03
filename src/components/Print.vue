@@ -48,14 +48,16 @@
 
             <!-- PRINT DPI -->
             <label for="dpi">dpi</label>
-            <select
-              id      = "dpi"
-              class   = "form-control"
-              v-model = "state.dpi"
-            >
-              <option v-for="dpi in state.dpis">{{ dpi }}</option>
-            </select>
-
+            <div>
+              <select
+                v-select2      = "'state.dpi'"
+                id             = "dpi"
+                class          = "form-control"
+                :createTag     = "true"
+              >
+                <option v-for="dpi in state.dpis">{{ dpi }}</option>
+              </select>
+            </div>
             <!-- PRINT ROTATION -->
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input

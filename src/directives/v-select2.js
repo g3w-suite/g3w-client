@@ -8,21 +8,32 @@ export default {
     const {
       templateResult,
       templateSelection,
-      multiple=false,
-      search=true,
+      multiple  = false,
+      search    = true,
       select2_value,
       indexItem, /** @since 3.9.1 */
+      createTag = false, /**@since v3.10.0 used to create a new value option dynamically */
     } = vnode.data.attrs || {};
     const isArray = binding.value
       && Array.isArray(vnode.context[binding.value]) // check if is an array
       && undefined !== indexItem                     // check if indexItem is defined
     $(el)
       .select2({
-        width: '100%',
+        tags:             createTag,
+        width:            '100%',
         dropdownCssClass: 'skin-color',
         templateResult,
         templateSelection,
-        minimumResultsForSearch: !search ? -1 : undefined
+        minimumResultsForSearch: !search ? -1 : undefined,
+        createTag(params) {
+          const value = params.term.trim();
+          if (!value) { return null; }
+          return {
+            id:     value,
+            text:   value,
+            newTag: true // add additional value
+          }
+        },
       })
       .on('select2:select', (e) => {
         if (binding.value) {
@@ -43,7 +54,10 @@ export default {
             if (isArray) {
               vnode.context[binding.value][indexItem].value = value;
             } else {
-              vnode.context[binding.value] = value;
+              //take in an account text binding value single world or object (e.s state.name)
+              const attrs = `${binding.value}`.split('.');
+              const last = attrs.pop();
+              (attrs.reduce((acc, a) => { acc = acc[a]; return acc; }, vnode.context))[last] = value;
             }
           }
         }
