@@ -48,16 +48,14 @@
 
             <!-- PRINT DPI -->
             <label for="dpi">dpi</label>
-            <div>
-              <select
-                v-select2      = "'state.dpi'"
-                id             = "dpi"
-                class          = "form-control"
-                :createTag     = "true"
-              >
-                <option v-for="dpi in state.dpis">{{ dpi }}</option>
-              </select>
-            </div>
+            <select
+              v-select2      = "'state.dpi'"
+              id             = "dpi"
+              class          = "form-control"
+              :createTag     = "true"
+            >
+              <option v-for="dpi in state.dpis">{{ dpi }}</option>
+            </select>
             <!-- PRINT ROTATION -->
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input
@@ -719,5 +717,10 @@ export default {
 #fids_examples_values {
   margin-top: 3px;
   font-weight: bold;
+}
+</style>
+<style>
+#print.treeview-menu .select2.select2-container {
+  display: block;
 }
 </style>
