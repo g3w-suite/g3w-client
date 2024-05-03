@@ -1,3 +1,4 @@
+import G3WObject                   from 'core/g3wobject';
 import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'app/constant';
@@ -7,14 +8,11 @@ import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
 import { promisify }               from 'utils/promisify';
+import { XHR }                     from 'utils/XHR';
+import { appendParams }            from 'utils/appendParams';
+import { toRawType }               from 'utils/toRawType';
+import { getTimeoutPromise }       from 'utils/getTimeoutPromise';
 
-const G3WObject                    = require('core/g3wobject');
-const {
-  XHR,
-  appendParams,
-  toRawType,
-  getTimeoutPromise,
-}                                  = require('utils');
 const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
