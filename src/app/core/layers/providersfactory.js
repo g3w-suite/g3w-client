@@ -594,10 +594,77 @@ module.exports = {
         resolve: d.resolve,
         query: {},
       });
+
+      (new Promise((resolve, reject) => {
   
-      this
-        ._doRequest(filter, params, layers, reproject)
-        .then(response => {
+        filter  = filter || new Filter({});
+    
+        // skip when..
+        if (!filter) {
+          return reject();
+        }
+
+        const layer = layers ? layers[0] : this._layer;
+
+        params = Object.assign(params, {
+          SERVICE:      'WFS',
+          VERSION:      '1.1.0',
+          REQUEST:      'GetFeature',
+          TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
+          OUTPUTFORMAT: layer.getInfoFormat(),
+          SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
+        });
+
+        let ol_filter;
+
+        switch (filter.getType()) {
+
+          case 'all':
+            return this._post(layer.getQueryUrl(), params);
+
+          case 'bbox':
+            ol_filter = ol.format.filter.bbox('the_geom', filter.get());
+            break;
+
+          case 'geometry':
+            //spatial methods. <inteserct, within>
+            const {spatialMethod = 'intersects'} = filter.getConfig();
+            ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
+            break;
+
+          case 'expression':
+            ol_filter = null;
+            break;
+
+        }
+
+        (
+          'GET' === layer.getOwsMethod() && 'geometry' !== filter.getType()
+            ? this._get
+            : this._post
+        )(
+          layer.getQueryUrl(),
+          {
+            ...params,
+            FILTER: `(${(
+              new ol.format.WFS().writeGetFeature({
+                featureTypes: [layer],
+                filter:       ol_filter,
+              })
+            ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
+          }
+        )
+          .then((r) => resolve(r))
+          .fail((e) => {
+            if (200 === e.status) {
+              resolve(e.responseText);
+            } else {
+              console.warn(e);
+              reject(e);
+            }
+          });
+
+      })).then(response => {
           const data = this.handleQueryResponseFromServer(
             response,
             {
@@ -621,8 +688,8 @@ module.exports = {
           });
           d.resolve({ data });
         })
-        .fail((e)  => { console.warn(e); d.reject(e); })
-        .always(() => { clearTimeout(timeoutKey); });
+        .catch((e)  => { console.warn(e); d.reject(e); })
+        .finally(() => { clearTimeout(timeoutKey); });
 
       return d.promise();
     };
@@ -649,85 +716,6 @@ module.exports = {
       return d.promise();
     };
 
-    /**
-     * @TODO move into WFSDataProvider::query
-     * 
-     * Request to server
-     */
-    _doRequest(filter, params = {}, layers, reproject = true) {
-      const d = $.Deferred();
-
-      filter  = filter || new Filter({});
-
-      // skip when..
-      if (!filter) {
-        d.reject();
-        return d.promise();
-      }
-
-      const layer = layers ? layers[0] : this._layer;
-
-      params = Object.assign(params, {
-        SERVICE:      'WFS',
-        VERSION:      '1.1.0',
-        REQUEST:      'GetFeature',
-        TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
-        OUTPUTFORMAT: layer.getInfoFormat(),
-        SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
-      });
-
-      let ol_filter;
-
-      switch (filter.getType()) {
-
-        case 'all':
-          return this._post(layer.getQueryUrl(), params);
-
-        case 'bbox':
-          ol_filter = ol.format.filter.bbox('the_geom', filter.get());
-          break;
-
-        case 'geometry':
-          //spatial methods. <inteserct, within>
-          const {spatialMethod = 'intersects'} = filter.getConfig();
-          ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
-          break;
-
-        case 'expression':
-          ol_filter = null;
-          break;
-
-      }
-
-      (
-        'GET' === layer.getOwsMethod() && 'geometry' !== filter.getType()
-          ? this._get
-          : this._post
-      )(
-        layer.getQueryUrl(),
-        {
-          ...params,
-          FILTER: `(${(
-            new ol.format.WFS().writeGetFeature({
-              featureTypes: [layer],
-              filter:       ol_filter,
-            })
-          ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
-        }
-      )
-        .then((r) => d.resolve(r))
-        .fail((e) => {
-          if (200 === e.status) {
-            d.resolve(e.responseText);
-          } else {
-            console.warn(e);
-            d.reject(e);
-          }
-        });
-
-      return d.promise()
-    }
-  
   },
 
 };
