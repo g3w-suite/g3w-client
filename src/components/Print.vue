@@ -19,11 +19,11 @@
           <!-- PRINT TEMPLATE -->
           <label for="templates" v-t="'sdk.print.template'"></label>
           <select
-            id      = "templates"
-            class   = "form-control"
-            @change = "changeTemplate"
-            v-model = "state.template"
-            :style  = "{ marginBottom: this.state.atlas && '10px' }"
+            id        = "templates"
+            class     = "form-control"
+            v-select2 = "'state.template'"
+            @change   = "changeTemplate"
+            :style    = "{ marginBottom: this.state.atlas && '10px' }"
           >
             <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
           </select>
@@ -36,8 +36,8 @@
               id         = "scale"
               v-disabled = "!has_maps"
               class      = "form-control"
+              v-select2  = "'state.scale'"
               @change    = "changeScale"
-              v-model    = "state.scale"
             >
               <option
                 v-for="scale in state.scales"
@@ -72,9 +72,9 @@
             <!-- PRINT FORMAT -->
             <label for="format" v-t="'sdk.print.format'"></label>
             <select
-              id      = "format"
-              class   = "form-control"
-              v-model = "state.format"
+              id        = "format"
+              class     = "form-control"
+              v-select2 = "'state.format'"
             >
               <option
                 v-for="format in state.formats"
@@ -245,9 +245,7 @@ export default {
     },
 
     async changeTemplate() {
-      if (!this.state.template) {
-        return;
-      }
+      if (!this.state.template) { return; }
 
       await this.$nextTick();
 
@@ -287,9 +285,7 @@ export default {
      * On scale change set print area
      */
     changeScale() {
-      if (this.state.scale) {
-        this._setPrintArea();
-      }
+      if (this.state.scale) { this._setPrintArea(); }
     },
 
     /**
