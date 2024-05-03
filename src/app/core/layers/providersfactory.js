@@ -303,7 +303,14 @@ module.exports = {
         })
           .then(response => {
             if (opts.raw) { d.resolve(response); }
-            else { d.resolve(this.handleQueryResponseFromServer(response, this._projections, opts.layers)); }
+            else {
+              d.resolve(handleQueryResponse({
+                response,
+                projections: this._projections,
+                layers: undefined !== opts.layers ? opts.layers : [this._layer],
+                wms: true,
+              }));
+            }
           })
           .catch(e => { console.warn(e); d.reject(e); });
       } else {
@@ -665,15 +672,15 @@ module.exports = {
           });
 
       })).then(response => {
-          const data = this.handleQueryResponseFromServer(
+          const data = handleQueryResponse({
             response,
-            {
+            layers,
+            projections: {
               map: this._layer.getMapProjection(),
               layer: (reproject ? this._layer.getProjection() : null)
             },
-            layers,
-            false // wms parameter
-          );
+            wms: false
+          });
           // sanitize in case of nil:true
           data.forEach(layer => {
             (layer.features || [])
