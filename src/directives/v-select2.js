@@ -37,9 +37,7 @@ export default {
         },
       })
       .on('select2:select', (e) => {
-        if (!binding.value) {
-          return;
-        }
+        if (!binding.value) { return; }
         //get value
         const value = e.params.data.id;
         const arr = (isArray ? vnode.context[binding.value][indexItem].value : vnode.context[binding.value]);
@@ -54,17 +52,20 @@ export default {
           const last = attrs.pop();
           (attrs.reduce((acc, a) => { acc = acc[a]; return acc; }, vnode.context))[last] = value;
         }
+        //dispatch change event as base select element change option
+        el.dispatchEvent(new Event("change"))
       })
       .on('select2:unselect', (e) => {
-        if (!binding.value || !multiple) {
-          return;
-        }
+        if (!binding.value || !multiple) { return; }
         if (isArray) {
           vnode.context[binding.value][indexItem].value = vnode.context[binding.value][indexItem].value.filter(d => e.params.data.id !== d);
         } else {
           vnode.context[binding.value] = vnode.context[binding.value].filter(d => e.params.data.id !== d);
         }
+        //dispatch change event as base select element change option
+        el.dispatchEvent(new Event("change"))
       });
+
       if (binding.value && select2_value) {
         $(el).val(select2_value).trigger('change');
       }
