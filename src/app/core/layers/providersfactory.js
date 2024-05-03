@@ -127,15 +127,15 @@ module.exports = {
       const parser = new ol.format.GeoJSON();
       const params = {
         featureProjection: opts.mapProjection,
-        dataProjection: opts.projection || 'EPSG:4326',
+        dataProjection:    opts.projection || 'EPSG:4326',
         // defaultDataProjection: projection // ol v. 4.5
       };
       if (opts.data) {
         d.resolve(parser.readFeatures(opts.data, params))
       } else {
-        $.get({ url: opts.url || this.getLayer().get('source').url })
-          .then((response) => { d.resolve(parser.readFeatures(response.results, params)) })
-          .fail((err)      => { d.reject(err) });
+        XHR.get({ url: opts.url || this.getLayer().get('source').url })
+          .then((r)  => d.resolve(parser.readFeatures(r.results, params)) )
+          .catch((e) => { console.warn(e); d.reject(e) });
       }
       return d.promise();
     }
@@ -143,8 +143,8 @@ module.exports = {
     getDataTable({ page } = {}) {
       const d = $.Deferred();
       this.getFeatures()
-        .then(() => { d.resolve(this._features) })
-        .fail((err) => { d.reject(err) });
+        .then(()  => d.resolve(this._features) )
+        .fail((e) => { console.warn(e); d.reject(e) });
       return d.promise();
     }
 
@@ -152,10 +152,7 @@ module.exports = {
      * @TODO check if deprecated (broken and unused code ?)
      */
     digestFeaturesForTable() {
-      return {
-        headers : [],
-        features: [],
-      };
+      return { headers : [], features: [], };
     }
 
   },
@@ -167,13 +164,13 @@ module.exports = {
 
     constructor(options = {}) {
       super();
-      this._name           = 'qgis';
-      this._layer          = options.layer || {};
-      this._projections    = { map: null, layer: null };
-      this._queryUrl       = this._layer.getUrl('query');       // url referred to query
-      this._filtertokenUrl = this._layer.getUrl('filtertoken'); // filtertokenurl
-      this._layerName      = this._layer.getName() || null;     // get layer name from QGIS layer, because the query is proxied from g3w-server
-      this._infoFormat     = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
+      this._name             = 'qgis';
+      this._layer            = options.layer || {};
+      this._projections      = { map: null, layer: null };
+      this._queryUrl         = this._layer.getUrl('query');       // url referred to query
+      this._filtertokenUrl   = this._layer.getUrl('filtertoken'); // filtertokenurl
+      this._layerName        = this._layer.getName() || null;     // get layer name from QGIS layer, because the query is proxied from g3w-server
+      this._infoFormat       = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 
       /** @since 3.9.0 */
       this.saveFilterToken   = QgsFilterToken.save.bind(null, this._filtertokenUrl);
@@ -227,9 +224,7 @@ module.exports = {
           : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
 
         // vector layer
-        if ('table' !== this._layer.getType()) {
-          this.setProjections();
-        }
+        if ('table' !== this._layer.getType()) { this.setProjections(); }
 
         if (raw)                           return response;
         if (unique && response.result)     return response.data;
@@ -238,14 +233,15 @@ module.exports = {
         if (response.result) {
           return {
             data: Parsers.response.get('application/json')({
-              layers: [this._layer],
-              response: response.vector.data,
+              layers:      [this._layer],
+              response:    response.vector.data,
               projections: this._projections,
             })
           };
         }
 
       } catch(e) {
+        console.warn(e);
         return Promise.reject(e);
       }
       return Promise.reject();
@@ -268,28 +264,26 @@ module.exports = {
      * @param opts.J                         wms request parameter 
      */
     query(opts = {}) {
-      const d = $.Deferred();
+      const d        = $.Deferred();
 
       const is_table = 'table' === this._layer.getType();
 
       // in case not alphanumeric layer set projection
-      if (!is_table) {
-        this.setProjections();
-      }
+      if (!is_table) { this.setProjections(); }
 
       const layers = opts.layers ? opts.layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
 
-      let { filter = null} = opts;
+      let { filter = null } = opts;
       filter = filter && Array.isArray(filter) ? filter : [filter];
 
       // check if geometry filter. If not i have to remove projection layer
-      if (filter && filter[0].getType() !== 'geometry') {
+      if (filter && 'geometry' !== filter[0].getType()) {
         this._projections.layer = null;
       }
 
       if (filter) {
 
-        filter = filter.map(filter => filter.get()).filter(value => value);
+        filter = filter.map(f => f.get()).filter(v => v);
 
         XHR.get({
           url: opts.queryUrl || this._queryUrl,
@@ -310,13 +304,10 @@ module.exports = {
           },
         })
           .then(response => {
-            if (opts.raw) {
-              d.resolve(response);  
-            } else {
-              d.resolve(this.handleQueryResponseFromServer(response, this._projections, opts.layers));
-            }
+            if (opts.raw) { d.resolve(response); }
+            else { d.resolve(this.handleQueryResponseFromServer(response, this._projections, opts.layers)); }
           })
-          .catch(e => d.reject(e));
+          .catch(e => { console.warn(e); d.reject(e); });
       } else {
         d.reject();
       }
@@ -331,9 +322,9 @@ module.exports = {
       const d   = $.Deferred();
       const url = this._layer.getUrl('config');
       if (url) {
-        $.get(url)
+        XHR.get({ url })
           .then(config => d.resolve(config))
-          .fail(e => d.reject(e));
+          .catch(e => { console.warn(e); d.reject(e) });
       } else {
         d.reject('not valid url');
       }
@@ -341,6 +332,7 @@ module.exports = {
     }
 
     getWidgetData(opts = {}) {
+      //@TODO Need to replace with XHR. editing and signaler_iim plugins depend on this method
       return $.get(this._layer.getUrl('widget')[opts.type], { fields: opts.fields });
     };
 
@@ -349,9 +341,9 @@ module.exports = {
      */
     unlock() {
       const d = $.Deferred();
-      $.post(this._layer.getUrl('unlock'))
-        .then(response => d.resolve(response))
-        .fail(e => d.reject(e));
+      XHR.post({ url: this._layer.getUrl('unlock') })
+        .then((r)  => d.resolve(r) )
+        .catch((e) => { console.warn(e); d.reject(e) });
       return d.promise();
     }
 
@@ -360,13 +352,13 @@ module.exports = {
      */
     commit(commitItems) {
       const d = $.Deferred();
-      $.post({
+      XHR.post({
         url:         this._layer.getUrl('commit'),
         data:        JSON.stringify(commitItems),
         contentType: 'application/json',
       })
-        .then(response => d.resolve(response))
-        .fail(e => d.reject(e));
+        .then((r)  => d.resolve(r) )
+        .catch((e) => { console.warn(e); d.reject(e); });
       return d.promise();
     }
 
@@ -389,14 +381,11 @@ module.exports = {
       const urlParams = $.param(params);
 
       if (!options.editing) {
-        $.get({
-          url:         this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
-          contentType: 'application/json',
+        XHR.get({
+          url: this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
         })
-          .then(({ vector }) => {
-            d.resolve({ data:  vector.data, count: vector.count })
-          })
-          .fail(e => d.reject(e))
+          .then(({ vector }) => d.resolve({ data:  vector.data, count: vector.count }) )
+          .catch((e)         => { console.warn(e); d.reject(e); })
 
         return d.promise();
       }
@@ -475,7 +464,7 @@ module.exports = {
             featurelocks,
           });
         })
-        .catch(e => d.reject({ message: t("info.server_error")}));
+        .catch((e) => { console.warn(e); d.reject({ message: t("info.server_error")}) });
 
       return d.promise();
     }
@@ -634,33 +623,31 @@ module.exports = {
           });
           d.resolve({ data });
         })
-        .fail(error => d.reject(error))
+        .fail((e)  => { console.warn(e); d.reject(e); })
         .always(() => { clearTimeout(timeoutKey); });
 
       return d.promise();
     };
 
-    /**
-     * @TODO deprecate in favour of a global XHR
-     */
     _post(url, params) {
       const d = $.Deferred();
-      $.post(url.match(/\/$/) ? url : `${url}/`, params)
-        .then(response => d.resolve(response))
-        .fail(error => d.reject(error));
+      XHR.post({
+        url:  url.match(/\/$/) ? url : `${url}/`,
+        data: params
+      })
+        .then((r) => d.resolve(r))
+        .catch((e) => { console.warn(e); d.reject(e); });
       return d.promise();
     };
 
-    /**
-     * @TODO deprecate in favour of a global XHR
-     * 
-     * get request
-     */
     _get(url, params) {
       const d = $.Deferred();
-      $.get((url.match(/\/$/) ? url : `${url}/`) + '?' + $.param(params)) // transform parameters
-        .then(response => d.resolve(response))
-        .fail(error => d.reject(error));
+      XHR.get({
+        url: (url.match(/\/$/) ? url : `${url}/`) + '?' + $.param(params)
+      }) // transform parameters
+        .then((r) => d.resolve(r))
+        .catch((e) => { console.warn(e); d.reject(e); });
+
       return d.promise();
     };
 
@@ -672,7 +659,7 @@ module.exports = {
     _doRequest(filter, params = {}, layers, reproject = true) {
       const d = $.Deferred();
 
-      filter = filter || new Filter({});
+      filter  = filter || new Filter({});
 
       // skip when..
       if (!filter) {
@@ -703,7 +690,7 @@ module.exports = {
           break;
 
         case 'geometry':
-          //speatial methos. <inteserct, within>
+          //spatial methods. <inteserct, within>
           const {spatialMethod = 'intersects'} = filter.getConfig();
           ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
           break;
@@ -730,12 +717,13 @@ module.exports = {
           ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
         }
       )
-        .then(response => d.resolve(response))
-        .fail(err => {
-          if (err.status === 200) {
-            d.resolve(err.responseText);
+        .then((r) => d.resolve(r))
+        .fail((e) => {
+          if (200 === e.status) {
+            d.resolve(e.responseText);
           } else {
-            d.reject(err)
+            console.warn(e);
+            d.reject(e);
           }
         });
 
