@@ -192,7 +192,7 @@ function Layer(config={}, options={}) {
   const layerType = `${this.config.servertype} ${this.config.source && this.config.source.type}`;
 
   /**
-   * Layer providers used to retrieve data from server
+   * Layer providers used to retrieve layer data from server
    * 
    * 1 - data: raw layer data (editing)
    * 2 - filter
@@ -202,7 +202,7 @@ function Layer(config={}, options={}) {
    */
   this.providers = {
 
-    data: () => {
+    data: (() => {
       if ([
         'QGIS virtual',
         'QGIS postgres',
@@ -218,7 +218,7 @@ function Layer(config={}, options={}) {
       if ('G3WSUITE geojson' === layerType) {
         return new Providers.geojson({ layer: this });
       }
-    },
+    })(),
 
     filter: [
       'QGIS virtual',
@@ -244,7 +244,7 @@ function Layer(config={}, options={}) {
       'QGIS delimitedtext',
     ].includes(layerType) && new Providers.qgis({ layer: this }),
 
-    query: () => {
+    query: (() => {
       if ([
         'QGIS virtual',
         'QGIS postgres',
@@ -271,7 +271,7 @@ function Layer(config={}, options={}) {
       if ('G3WSUITE geojson' === layerType) {
         return new Providers.geojson({ layer: this });
       }
-    },
+    })(),
 
     search: [
       'QGIS virtual',
