@@ -7,10 +7,8 @@ import { handleQueryResponse }     from 'utils/handleQueryResponse';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
-import { promisify }               from 'utils/promisify';
 import { XHR }                     from 'utils/XHR';
 import { appendParams }            from 'utils/appendParams';
-import { toRawType }               from 'utils/toRawType';
 import { getTimeoutPromise }       from 'utils/getTimeoutPromise';
 
 const Parsers                      = require('utils/parsers');
@@ -531,7 +529,7 @@ module.exports = {
         console.warn('unsupported method: ', method);
       }
 
-      promisify(promise)
+      promise
         .then(data => d.resolve({
           data: handleQueryResponse({
             response: data,
@@ -567,19 +565,12 @@ module.exports = {
   
     // query method
     query(opts = {}, params = {}) {
-
       const d = $.Deferred();
 
-      opts.filter = opts.filter || new Filter({});
-
-      const {
-        reproject     = false,
-        feature_count = 10,
-        layers        = [this._layer],
-        filter,
-      } = opts;
-
-      params.MAXFEATURES = feature_count;
+      const filter = opts.filter || new Filter({});
+      const layers = opts.layers || [this._layer];
+      const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
+      const method = layers[0].getOwsMethod();
 
       const timer = getTimeoutPromise({
         resolve: d.resolve,
@@ -589,121 +580,56 @@ module.exports = {
         },
       });
 
-      (new Promise((resolve, reject) => {
-      
-        // skip when..
-        if (!filter) {
-          return reject();
-        }
+      let promise;
 
-        const layer = layers ? layers[0] : this._layer;
+      params = Object.assign(params, {
+        SERVICE:      'WFS',
+        VERSION:      '1.1.0',
+        REQUEST:      'GetFeature',
+        MAXFEATURES:  undefined !== opts.feature_count ? opts.feature_count : 10,
+        TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
+        OUTPUTFORMAT: layers[0].getInfoFormat(),
+        SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
+        FILTER:       'all' !== filter.getType() ? `(${(
+          new ol.format.WFS().writeGetFeature({
+            featureTypes: [layers[0]],
+            filter:       ({
+              'bbox':       ol.format.filter.bbox('the_geom', filter.get()),
+              'geometry':   ol.format.filter[(filter.getConfig() || {}).spatialMethod || 'intersects']('the_geom', filter.get()),
+              'expression': null,
+            })[filter.getType()],
+          })
+        ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
+      });
 
-        params = Object.assign(params, {
-          SERVICE:      'WFS',
-          VERSION:      '1.1.0',
-          REQUEST:      'GetFeature',
-          TYPENAME:     (layers ? layers.map(layer => layer.getWFSLayerName()).join(',') : layer.getWFSLayerName()),
-          OUTPUTFORMAT: layer.getInfoFormat(),
-          SRSNAME:      (reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode()),
+      if ('GET' === method && !['all', 'geometry'].includes(filter.getType())) {
+        promise = XHR.get({ url: url + '?' + $.param(params) });
+      }
+
+      if ('POST' === method || ['all', 'geometry'].includes(filter.getType())) {
+        promise = XHR.post({ url, data: params })
+      }
+
+      (promise || Promise.reject()).then(response => {
+        const data = handleQueryResponse({
+          response,
+          layers,
+          projections: {
+            map: this._layer.getMapProjection(),
+            layer: (opts.reproject ? this._layer.getProjection() : null)
+          },
+          wms: false
         });
-
-        let ol_filter;
-
-        switch (filter.getType()) {
-
-          case 'all':
-            return this._post(layer.getQueryUrl(), params);
-
-          case 'bbox':
-            ol_filter = ol.format.filter.bbox('the_geom', filter.get());
-            break;
-
-          case 'geometry':
-            //spatial methods. <inteserct, within>
-            const {spatialMethod = 'intersects'} = filter.getConfig();
-            ol_filter = ol.format.filter[spatialMethod]('the_geom', filter.get());
-            break;
-
-          case 'expression':
-            ol_filter = null;
-            break;
-
-        }
-
-        (
-          'GET' === layer.getOwsMethod() && 'geometry' !== filter.getType()
-            ? this._get
-            : this._post
-        )(
-          layer.getQueryUrl(),
-          {
-            ...params,
-            FILTER: `(${(
-              new ol.format.WFS().writeGetFeature({
-                featureTypes: [layer],
-                filter:       ol_filter,
-              })
-            ).children[0].innerHTML})`.repeat(layers ? layers.length : 1),
-          }
-        )
-          .then((r) => resolve(r))
-          .fail((e) => {
-            if (200 === e.status) {
-              resolve(e.responseText);
-            } else {
-              console.warn(e);
-              reject(e);
-            }
-          });
-
-      })).then(response => {
-          const data = handleQueryResponse({
-            response,
-            layers,
-            projections: {
-              map: this._layer.getMapProjection(),
-              layer: (reproject ? this._layer.getProjection() : null)
-            },
-            wms: false
-          });
-          // sanitize in case of nil:true
-          data.forEach(layer => {
-            (layer.features || [])
-              .forEach(feature => {
-                Object.entries(feature.getProperties())
-                  .forEach(([ attribute, value ]) => {
-                    if ('Object' === toRawType(value) && value['xsi:nil']){
-                      feature.set(attribute, 'NULL');
-                    }
-                  });
-              });
-          });
-          d.resolve({ data });
-        })
-        .catch((e)  => { console.warn(e); d.reject(e); })
-        .finally(() => { clearTimeout(timer); });
-
-      return d.promise();
-    };
-
-    _post(url, params) {
-      const d = $.Deferred();
-      XHR.post({
-        url:  url.match(/\/$/) ? url : `${url}/`,
-        data: params
+        // sanitize in case of nil:true
+        data
+          .flatMap(layer => layer.features || [])
+          .forEach(feature => Object.entries(feature.getProperties())
+            .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
+          );
+        d.resolve({ data });
       })
-        .then((r) => d.resolve(r))
-        .catch((e) => { console.warn(e); d.reject(e); });
-      return d.promise();
-    };
-
-    _get(url, params) {
-      const d = $.Deferred();
-      XHR.get({
-        url: (url.match(/\/$/) ? url : `${url}/`) + '?' + $.param(params)
-      }) // transform parameters
-        .then((r) => d.resolve(r))
-        .catch((e) => { console.warn(e); d.reject(e); });
+      .catch((e)  => d.reject(e))
+      .finally(() => clearTimeout(timer));
 
       return d.promise();
     };
