@@ -94,28 +94,35 @@
           >
             <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
             <template v-if = "has_autocomplete">
-              <label for="print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
+              <label  for="print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
               <select id="print_atlas_autocomplete" :name="state.atlas.field_name" class="form-control"></select>
             </template>
             <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
             <template v-else>
               <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
               <input class="form-control" v-model="atlas_values" @keydown.space.prevent>
-              <div id="fid-print-atals-instruction">
-                <div id="fids_intruction"      v-t="'sdk.print.fids_instruction'"></div>
-                <div id="fids_examples_values" v-t="'sdk.print.fids_example'"></div>
+              <div id = "fid-print-atals-instruction">
+                <div id = "fids_intruction"      v-t="'sdk.print.fids_instruction'"></div>
+                <div id = "fids_examples_values" v-t="'sdk.print.fids_example'"></div>
               </div>
             </template>
           </div>
 
-          <div v-if="state.labels && state.labels.length" class="print-labels-content">
-            <label class="skin-color" v-t="'sdk.print.labels'"></label>
+          <div
+            v-if  = "state.labels && state.labels.length > 0"
+            class = "print-labels-content"
+            style = "color: white"
+          >
+            <span
+              class = "skin-color"
+              v-t   = "'sdk.print.labels'">
+            </span>
             <div class="labels-input-content">
               <span
                 v-for = "label in state.labels"
                 :key  = "label.id"
               >
-                <label :for="`g3w_label_id_input_${label.id}`">{{ label.id }}</label>
+                <label :for="`g3w_label_id_input_${label.id}`"> {{ label.id }}</label>
                 <input
                   :id     = "`g3w_label_id_input_${label.id}`"
                   class   = "form-control"
@@ -146,6 +153,7 @@
 </template>
 
 <script>
+
 import {
   PRINT_SCALES,
   PRINT_RESOLUTIONS,
@@ -682,7 +690,7 @@ export default {
 .print-labels-content {
   margin-top: 5px;
 }
-.print-labels-content > label.skin-color {
+.print-labels-content > span.skin-color {
   font-weight: bold;
   font-size: 1.1em;
   display: block;
