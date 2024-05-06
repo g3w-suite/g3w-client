@@ -273,13 +273,13 @@
                           </td>
                         </tr>
                         <tr
-                          v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
-                          :id   = "`${layer.id}_${index}`"
-                          class = "featurebox-body"
+                          v-show = "!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
+                          :id    = "`${layer.id}_${index}`"
+                          class  = "featurebox-body"
                         >
                           <td
-                            :colspan="getColSpan(layer)"
-                            :feature-html-content="`${layer.id}_${index}`"
+                            :colspan              = "getColSpan(layer)"
+                            :feature-html-content = "`${layer.id}_${index}`"
                           > <!-- @since v3.10.0  Reference to content of feature html response -->
                             <tabs
                               :fields  = "getQueryFields(layer, feature)"
@@ -383,7 +383,10 @@
                         :id    = "`${layer.id}_${index}`"
                         class  = "featurebox-body"
                       >
-                        <td :colspan="getColSpan(layer)">
+                        <td
+                          :colspan              = "getColSpan(layer)"
+                          :feature-html-content = "`${layer.id}_${index}`"
+                        ><!--@since v3.10.0  Reference to content of feature html response-->
                           <table class="feature_attributes">
                             <template v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <template v-if="isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
