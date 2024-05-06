@@ -20,11 +20,8 @@ const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
-  //DEV CODE
-  config.download_pdf = true;
 
   this.config = config;
-
   // assign some attribute
   config.id        = config.id || 'Layer';
   config.title     = config.title || config.name;
