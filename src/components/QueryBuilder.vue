@@ -10,8 +10,13 @@
     <div id="query_builder_header"></div>
     
     <!-- SEARCH LAYERS -->
-    <div id="query_builder_layers" class="margin-between-element">
-      <label class="querybuilder-title" v-t="'sdk.querybuilder.panel.layers'"></label>
+    <div
+      id    = "query_builder_layers"
+      class = "margin-between-element">
+      <label
+        class = "querybuilder-title"
+        v-t   = "'sdk.querybuilder.panel.layers'">
+      </label>
       <select id="query_builder_layers_select" class="form-control">
         <option
           v-for  = "(layer, i) in layers"
@@ -23,9 +28,19 @@
     </div>
 
     <!-- SEARCH FIELDS -->
-    <div id="query_builder_fields" class="margin-between-element">
-      <div id="query_builder_fields_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.fields'"></div>
-      <div id="query_builder_fields_content" class="querybuilder-content">
+    <div
+      id    = "query_builder_fields"
+      class = "margin-between-element"
+    >
+      <div
+        id    = "query_builder_fields_title"
+        class = "querybuilder-title"
+        v-t   = "'sdk.querybuilder.panel.fields'">
+      </div>
+      <div
+        id    = "query_builder_fields_content"
+        class = "querybuilder-content"
+      >
         <table class="table table-striped content-table">
           <tbody>
             <tr
@@ -44,10 +59,22 @@
     </div>
 
     <!-- SEARCH VALUES -->
-    <div id="query_builder_values" class="margin-between-element">
-      <div id="query_builder_values_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.values'"></div>
-      <div v-if="!manual" id="query_builder_values_content" class="querybuilder-content margin-between-element">
+    <div
+      id    = "query_builder_values"
+      class = "margin-between-element"
+    >
+      <div
+        id    = "query_builder_values_title"
+        class = "querybuilder-title"
+        v-t   = "'sdk.querybuilder.panel.values'">
+      </div>
+      <div
+        v-if  = "!manual"
+        id    = "query_builder_values_content"
+        class = "querybuilder-content margin-between-element"
+      >
         <bar-loader :loading="loading.values"/>
+
         <table class="table table-striped content-table">
           <tbody>
             <tr
@@ -66,14 +93,20 @@
           </tbody>
         </table>
       </div>
-      <div v-else id="querybuilder-manual" class="margin-between-element">
+      <div v-else
+        id    = "querybuilder-manual"
+        class = "margin-between-element"
+      >
         <input class="form-control" v-model="manualvalue">
         <span
           @click = "manualvalue && addToExpression({value: manualvalue, type: 'value'})"
           :class = "g3wtemplate.getFontClass('plus')"
         ></span>
       </div>
-      <div id="query_builder_values_buttons" class="content-end skin-color">
+      <div
+        id    = "query_builder_values_buttons"
+        class = "content-end skin-color"
+      >
         <button
           id        = "query_builder_values_buttons_sample"
           class     = "query_builder_button btn btn-secondary bold"
@@ -93,9 +126,19 @@
     </div>
 
     <!-- SEARCH OPERATORS -->
-    <div id="query_builder_operators" class="margin-between-element">
-      <div id="query_builder_operators_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.operators'"></div>
-      <div id="query_builder_operators_content" class="content-wrap">
+    <div
+      id    = "query_builder_operators"
+      class = "margin-between-element"
+    >
+      <div
+        id    = "query_builder_operators_title"
+        class = "querybuilder-title"
+        v-t   = "'sdk.querybuilder.panel.operators'">
+      </div>
+      <div
+        id    = "query_builder_operators_content"
+        class = "content-wrap"
+      >
         <button
           v-for  = "operator in operators"
           @click = "addToExpression({ value: operator, type: 'operator' })"
@@ -108,12 +151,18 @@
     <!-- SEARCH FOOTER -->
     <div id="query_builder_footer">
       <div id="query_builder_expression">
-        <div id="query_builder_expression_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.expression'"></div>
+        <div
+          id    = "query_builder_expression_title"
+          class = "querybuilder-title"
+          v-t   = "'sdk.querybuilder.panel.expression'"></div>
         <div id="query_builder_expression_content">
-          <textarea v-model="filter"></textarea>
+          <textarea v-model="filter"/>
         </div>
       </div>
-      <div id="query_builder_message" class="margin-between-element">
+      <div
+        id    = "query_builder_message"
+        class = "margin-between-element"
+      >
         <bar-loader :loading="loading.test"/>
         <span
           class  = "bold skin-color"
@@ -122,7 +171,10 @@
         ></span>
         <span class="bold skin-color">{{ message }}</span>
       </div>
-      <div id="query_builder_footer_buttons" class="content-end margin-between-element">
+      <div
+        id    = "query_builder_footer_buttons"
+        class = "content-end margin-between-element"
+      >
         <button
           class     = "query_builder_button btn btn-secondary bold"
           @click    = "test"
@@ -173,16 +225,16 @@ export default {
 
   data() {
     return {
-      edit: undefined !== this.$options.options,
+      edit:         undefined !== this.$options.options,
       currentlayer: null,
-      message: '',
-      filter: (undefined !== this.$options.options ? this.$options.options.filter : ''),
+      message:      '',
+      filter:       (undefined !== this.$options.options ? this.$options.options.filter : ''),
       loading: {
-        test: false,
+        test:   false,
         values: false
       },
-      values: [],
-      manual: true,
+      values:      [],
+      manual:      true,
       manualvalue: null,
       select: {
         field: null,
@@ -354,7 +406,7 @@ export default {
   created() {
 
     this.filterElement = {
-      current: null,
+      current:  null,
       previous: null,
       operator: null
     };
@@ -375,13 +427,13 @@ export default {
             exclude = [...exclude, ...l.getFields().map(field => `${r.customPrefix}${field.name}`)];
           });
         return {
-          id: layer.id,
-          label: layer.name,
+          id:     layer.id,
+          label:  layer.name,
           fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => -1 === exclude.indexOf(f))
         }
       });
 
-    this.operators = Object.values(FILTER_OPERATORS);
+    this.operators    = Object.values(FILTER_OPERATORS);
 
     this.currentlayer = this.edit ? this.layers.find(l => l.id === this.$options.options.layerId) : this.layers[0];
 
