@@ -225,12 +225,17 @@ export const MAP_SETTINGS = {
  */
 export const PRINT_FORMATS = [
   {
+    value: 'png',
+    label: 'PNG'
+  },
+  {
     value: 'pdf',
     label: 'PDF'
   },
+  //@since 3.10.0
   {
-    value: 'png',
-    label: 'PNG'
+    value: 'application/pdf',
+    label: 'GEOPDF'
   }
 ];
 
