@@ -381,7 +381,7 @@ export default {
 
         // add local item
         else {
-          GUI.getComponent('search').getService().addQueryBuilderSearch(query);
+          GUI.getService('search').addQueryBuilderSearch(query);
           if (undefined === searches) {
             searches     = { [id]: [query] };
           } else {
