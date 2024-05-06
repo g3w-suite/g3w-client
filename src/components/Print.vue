@@ -19,11 +19,11 @@
           <!-- PRINT TEMPLATE -->
           <label for="templates" v-t="'sdk.print.template'"></label>
           <select
-            id      = "templates"
-            class   = "form-control"
-            @change = "changeTemplate"
-            v-model = "state.template"
-            :style  = "{ marginBottom: this.state.atlas && '10px' }"
+            id        = "templates"
+            class     = "form-control"
+            v-select2 = "'state.template'"
+            @change   = "changeTemplate"
+            :style    = "{ marginBottom: this.state.atlas && '10px' }"
           >
             <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
           </select>
@@ -36,8 +36,8 @@
               id         = "scale"
               v-disabled = "!has_maps"
               class      = "form-control"
+              v-select2  = "'state.scale'"
               @change    = "changeScale"
-              v-model    = "state.scale"
             >
               <option
                 v-for="scale in state.scales"
@@ -49,13 +49,13 @@
             <!-- PRINT DPI -->
             <label for="dpi">dpi</label>
             <select
-              id      = "dpi"
-              class   = "form-control"
-              v-model = "state.dpi"
+              v-select2      = "'state.dpi'"
+              id             = "dpi"
+              class          = "form-control"
+              :createTag     = "true"
             >
               <option v-for="dpi in state.dpis">{{ dpi }}</option>
             </select>
-
             <!-- PRINT ROTATION -->
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input
@@ -72,9 +72,9 @@
             <!-- PRINT FORMAT -->
             <label for="format" v-t="'sdk.print.format'"></label>
             <select
-              id      = "format"
-              class   = "form-control"
-              v-model = "state.format"
+              id        = "format"
+              class     = "form-control"
+              v-select2 = "'state.format'"
             >
               <option
                 v-for="format in state.formats"
@@ -94,28 +94,35 @@
           >
             <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
             <template v-if = "has_autocomplete">
-              <label for="print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
+              <label  for="print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
               <select id="print_atlas_autocomplete" :name="state.atlas.field_name" class="form-control"></select>
             </template>
             <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
             <template v-else>
               <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
               <input class="form-control" v-model="atlas_values" @keydown.space.prevent>
-              <div id="fid-print-atals-instruction">
-                <div id="fids_intruction"      v-t="'sdk.print.fids_instruction'"></div>
-                <div id="fids_examples_values" v-t="'sdk.print.fids_example'"></div>
+              <div id = "fid-print-atals-instruction">
+                <div id = "fids_intruction"      v-t="'sdk.print.fids_instruction'"></div>
+                <div id = "fids_examples_values" v-t="'sdk.print.fids_example'"></div>
               </div>
             </template>
           </div>
 
-          <div v-if="state.labels && state.labels.length" class="print-labels-content">
-            <label class="skin-color" v-t="'sdk.print.labels'"></label>
+          <div
+            v-if  = "state.labels && state.labels.length > 0"
+            class = "print-labels-content"
+            style = "color: white"
+          >
+            <span
+              class = "skin-color"
+              v-t   = "'sdk.print.labels'">
+            </span>
             <div class="labels-input-content">
               <span
                 v-for = "label in state.labels"
                 :key  = "label.id"
               >
-                <label :for="`g3w_label_id_input_${label.id}`">{{ label.id }}</label>
+                <label :for="`g3w_label_id_input_${label.id}`"> {{ label.id }}</label>
                 <input
                   :id     = "`g3w_label_id_input_${label.id}`"
                   class   = "form-control"
@@ -146,6 +153,7 @@
 </template>
 
 <script>
+
 import {
   PRINT_SCALES,
   PRINT_RESOLUTIONS,
@@ -245,9 +253,7 @@ export default {
     },
 
     async changeTemplate() {
-      if (!this.state.template) {
-        return;
-      }
+      if (!this.state.template) { return; }
 
       await this.$nextTick();
 
@@ -287,9 +293,7 @@ export default {
      * On scale change set print area
      */
     changeScale() {
-      if (this.state.scale) {
-        this._setPrintArea();
-      }
+      if (this.state.scale) { this._setPrintArea(); }
     },
 
     /**
@@ -686,7 +690,7 @@ export default {
 .print-labels-content {
   margin-top: 5px;
 }
-.print-labels-content > label.skin-color {
+.print-labels-content > span.skin-color {
   font-weight: bold;
   font-size: 1.1em;
   display: block;
@@ -717,5 +721,10 @@ export default {
 #fids_examples_values {
   margin-top: 3px;
   font-weight: bold;
+}
+</style>
+<style>
+#print.treeview-menu .select2.select2-container {
+  display: block;
 }
 </style>

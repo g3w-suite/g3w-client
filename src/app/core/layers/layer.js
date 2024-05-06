@@ -16,7 +16,7 @@ const {
   XHR,
 }                           = require('utils');
 const G3WObject             = require('core/g3wobject');
-const ProviderFactory       = require('core/layers/providersfactory');
+const Providers             = require('core/layers/providersfactory');
 const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
@@ -190,27 +190,102 @@ function Layer(config={}, options={}) {
   // referred to (layersstore);
   this._layersstore = config.layersstore || null;
 
-  /*
-    Providers that layer can use
+  const layerType = `${this.config.servertype} ${this.config.source && this.config.source.type}`;
 
-    Three type of provider:
-      1 - query
-      2 - filter
-      3 - data -- raw data del layer (editing)
+  /**
+   * Layer providers used to retrieve layer data from server
+   * 
+   * 1 - data: raw layer data (editing)
+   * 2 - filter
+   * 3 - filtertoken
+   * 4 - query
+   * 5 - search
    */
-  const serverType = this.config.servertype;
-  const sourceType = this.config.source ? this.config.source.type : null; // NB: sourceType = source of layer
+  this.providers = {
 
-  if (serverType && sourceType) {
-    //set providers that will take in account to get data from server
-    this.providers = {
-      query:       ProviderFactory.build('query',       serverType, sourceType, { layer: this }),
-      filter:      ProviderFactory.build('filter',      serverType, sourceType, { layer: this }),
-      filtertoken: ProviderFactory.build('filtertoken', serverType, sourceType, { layer: this }),
-      search:      ProviderFactory.build('search',      serverType, sourceType, { layer: this }),
-      data:        ProviderFactory.build('data',        serverType, sourceType, { layer: this })
-    };
-  }
+    data: (() => {
+      if ([
+        'QGIS virtual',
+        'QGIS postgres',
+        'QGIS oracle',
+        'QGIS mssql',
+        'QGIS spatialite',
+        'QGIS ogr',
+        'QGIS delimitedtext',
+        'QGIS wfs',
+      ].includes(layerType)) {
+        return new Providers.qgis({ layer: this });
+      }
+      if ('G3WSUITE geojson' === layerType) {
+        return new Providers.geojson({ layer: this });
+      }
+    })(),
+
+    filter: [
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+      'QGIS wfs',
+      'QGIS wmst',
+      'QGIS wcs',
+      'QGIS wms',
+    ].includes(layerType) && new Providers.wfs({ layer: this }),
+
+    filtertoken: [
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+    ].includes(layerType) && new Providers.qgis({ layer: this }),
+
+    query: (() => {
+      if ([
+        'QGIS virtual',
+        'QGIS postgres',
+        'QGIS oracle',
+        'QGIS mssql',
+        'QGIS spatialite',
+        'QGIS ogr',
+        'QGIS delimitedtext',
+        'QGIS wfs',
+        'QGIS wmst',
+        'QGIS wcs',
+        'QGIS wms',
+        'QGIS gdal',
+        /** @since 3.9.0 */
+        'QGIS postgresraster',
+        'QGIS vector-tile',
+        'QGIS vectortile',
+        'QGIS arcgismapserver',
+        'QGIS mdal',
+        'OGC wms',
+      ].includes(layerType)) {
+        return new Providers.wms({ layer: this });
+      }
+      if ('G3WSUITE geojson' === layerType) {
+        return new Providers.geojson({ layer: this });
+      }
+    })(),
+
+    search: [
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+      'QGIS wfs',
+    ].includes(layerType) && new Providers.qgis({ layer: this }),
+
+  };
 
   /**
    * Store last proxy params (useful for repeat request info formats for wms external layer)
