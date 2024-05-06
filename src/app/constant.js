@@ -36,27 +36,27 @@ export const DEFAULT_EDITING_CAPABILITIES = [
 export const DOWNLOAD_FORMATS = {
   download: {
     format: 'shapefile',
-    url: 'shp'
+    url:    'shp'
   },
   download_gpkg: {
     format: 'gpkg',
-    url: 'gpkg'
+    url:    'gpkg'
   },
   download_gpx: {
     format: 'gpx',
-    url: 'gpx'
+    url:    'gpx'
   },
   download_csv: {
     format: 'csv',
-    url: 'csv'
+    url:    'csv'
   },
   download_xls: {
     format: 'xls',
-    url: 'xls'
+    url:    'xls'
   },
   download_raster: {
     format: 'geotiff',
-    url: 'geotiff'
+    url:    'geotiff'
   },
   download_pdf: {
     format: 'pdf',
@@ -92,19 +92,19 @@ export const G3W_FID = 'g3w_fid';
  * @type {Object<string, string>}
  * @since v3.5
  */
-export const FILTER_OPERATORS =  {
-  gte: '>=',
-  lte: '<=',
-  NOT: '!=',
-  eq: '=',
-  gt: '>',
-  lt: '<',
-  IN: 'IN',
+export const FILTER_OPERATORS = {
+  gte:      '>=',
+  lte:      '<=',
+  NOT:      '!=',
+  eq:       '=',
+  gt:       '>',
+  lt:       '<',
+  IN:       'IN',
   'NOT IN': 'NOT IN',
-  LIKE: 'LIKE',
-  ILIKE: 'ILIKE',
-  AND: 'AND',
-  OR: 'OR',
+  LIKE:     'LIKE',
+  ILIKE:    'ILIKE',
+  AND:      'AND',
+  OR:       'OR',
 };
 
 /**
@@ -112,10 +112,10 @@ export const FILTER_OPERATORS =  {
  * @since v3.5
  */
 export const FILTER_EXPRESSION_OPERATORS = {
-  lte: '<=',
-  ltgt: '!=',
+  lte:   '<=',
+  ltgt:  '!=',
   ilike: 'ILIKE',
-  like: 'LIKE',
+  like:  'LIKE',
   ...FILTER_OPERATORS,
 };
 
@@ -213,19 +213,12 @@ export const LOCALSTORAGE_EXTERNALWMS_ITEM = 'externalwms';
  * @type {MapSettings}
  */
 export const MAP_SETTINGS = {
-  ZOOM: {
-    maxScale: 1000,
-  },
-  ANIMATION: {
-    duration: 2000
-  },
+  ZOOM: { maxScale: 1000, },
+  ANIMATION: { duration: 2000, },
   LAYER_POSITIONS: {
     default: 'top',
-    getPositions(){
-      return [
-        'top',
-        'bottom'
-      ]
+    getPositions() {
+      return [ 'top', 'bottom' ]
     }
   }
 };
@@ -257,96 +250,96 @@ export const PRINT_RESOLUTIONS = [150, 300];
  */
 export const PRINT_SCALES = [
   {
-    value:100,
-    label:'1:100'
+    value: 100,
+    label: '1:100'
   },
   {
-    value:200,
-    label:'1:200'
+    value: 200,
+    label: '1:200'
   },
   {
-    value:500,
-    label:'1:500'
+    value: 500,
+    label: '1:500'
   },
   {
-    value:1000,
-    label:'1:1.000'
+    value: 1000,
+    label: '1:1.000'
   },
   {
-    value:2000,
-    label:'1:2.000'
+    value: 2000,
+    label: '1:2.000'
   },
   {
-    value:2500,
-    label:'1:2.500'
+    value: 2500,
+    label: '1:2.500'
   },
   {
-    value:5000,
-    label:'1:5.000'
+    value: 5000,
+    label: '1:5.000'
   },
   {
-    value:10000,
-    label:'1:10.000'
+    value: 10000,
+    label: '1:10.000'
   },
   {
-    value:20000,
-    label:'1:20.000'
+    value: 20000,
+    label: '1:20.000'
   },
   {
-    value:25000,
-    label:'1:25.000'
+    value: 25000,
+    label: '1:25.000'
   },
   {
-    value:50000,
-    label:'1:50.000'
+    value: 50000,
+    label: '1:50.000'
   },
   {
-    value:100000,
-    label:'1:100.000'
+    value: 100000,
+    label: '1:100.000'
   },
   {
-    value:250000,
-    label:'1:250.000'
+    value: 250000,
+    label: '1:250.000'
   },
   {
-    value:500000,
-    label:'1:500.000'
+    value: 500000,
+    label: '1:500.000'
   },
   {
-    value:1000000,
-    label:'1:1.000.000'
+    value: 1000000,
+    label: '1:1.000.000'
   },
   {
-    value:2500000,
-    label:'1:2.500.000'
+    value: 2500000,
+    label: '1:2.500.000'
   },
   {
-    value:5000000,
-    label:'1:5.000.000'
+    value: 5000000,
+    label: '1:5.000.000'
   },
   {
-    value:10000000,
-    label:'1:10.000.000'
+    value: 10000000,
+    label: '1:10.000.000'
   },
   {
-    value:20000000,
-    label:'1:20.000.000'
+    value: 20000000,
+    label: '1:20.000.000'
   },
   {
-    value:50000000,
-    label:'1:50.000.000'
+    value: 50000000,
+    label: '1:50.000.000'
   },
   {
-    value:100000000,
-    label:'1:100.000.000'
+    value: 100000000,
+    label: '1:100.000.000'
   },
   {
-    value:250000000,
-    label:'1:250.000.000'
+    value: 250000000,
+    label: '1:250.000.000'
   },
   {
-    value:500000000,
-    label:'1:500.000.000'
+    value: 500000000,
+    label: '1:500.000.000'
   }
 ];
 
@@ -356,7 +349,7 @@ export const PRINT_SCALES = [
  * @type {{unit: string, value: number}}
  */
 export const QUERY_POINT_TOLERANCE = {
-  unit: 'pixel',
+  unit:  'pixel',
   value: 10
 };
 
@@ -408,9 +401,7 @@ export const VIEWPORT = {
  * @type {Object<string, { tool: number }>}
  */
 export const ZINDEXES = {
-  usermessage: {
-    tool: 2
-  }
+  usermessage: { tool: 2 }
 };
 
 /**
@@ -601,12 +592,12 @@ export const FONT_AWESOME_ICONS = {
 export const LOCAL_ITEM_IDS = {
 
   MESSAGES: {
-    id: 'MESSAGES',
+    id:   'MESSAGES',
     value: {}
   },
 
   SPATIALBOOKMARKS: {
-    id: 'SPATIALBOOKMARKS',
+    id:    'SPATIALBOOKMARKS',
     value: {}
   },
 
@@ -637,7 +628,7 @@ export const DOTS_PER_INCH = 96;
  * @since 3.10.0
  */
 export const INCHES_PER_UNIT = {
-  m: 39.37,
+  m:       39.37,
   degrees: 4374754
 };
 

@@ -1,32 +1,7 @@
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
+/**
+ * @file
+ * @deprecated do not remove prior to https://github.com/g3w-suite/g3w-client/pull/451
+ */
 
-const { base, inherit } = require('utils');
-const MenuComponent = require('gui/projectsmenu/menu');
-
-function ProjectsMenuComponent(options={}) {
-  options.id = 'projectsmenu';
-  base(this, options);
-  this.state.menuitems = [];
-  const host = options.host;
-  const projects = options.projects || ProjectsRegistry.getListableProjects();
-  this.state.menuitems = projects.map(project => ({
-    title: project.title,
-    description: project.description,
-    thumbnail: project.thumbnail,
-    gid: project.gid,
-    cbk: options.cbk || function(options={}) {
-      const {gid} = options;
-      return ApplicationService.changeProject({
-        gid,
-        host
-      })
-    }
-  }));
-}
-
-inherit(ProjectsMenuComponent, MenuComponent);
-
-module.exports = ProjectsMenuComponent;
-
-
+import vueComp from 'components/g3w-projectsmenu';
+module.exports = vueComp;

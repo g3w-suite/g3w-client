@@ -379,8 +379,16 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEMA",
         choose_map_theme: "THEMA AUSWÄHLEN",
+        choose_map_theme_input_label: 'Name des neuen Themes',
+        project_map_theme : 'Projekt Themes',
+        user_map_theme: 'Benutzer Themes',
+        question_delete_map_theme: "Möchten Sie das Thema löschen??",
+        delete_map_theme: "Theme erfolgreich gelöscht",
+        saved_map_theme: "Thema erfolgreich gespeichert",
+        updated_map_theme: "Thema aktualisieren gespeichert",
+        invalid_map_theme_name: "Der Name ist bereits vorhanden oder falsch",
         menu: {
-          layerposition: 'Position des Layers',
+          layerposition: 'Position der Ebenen',
           setwmsopacity: "Opazität einstellen",
           wms: {
             title:"",
@@ -446,6 +454,7 @@ export default {
     server_error: "Server-Verbindungsfehler",
     save: "Speichern",
     cancel: "Abbrechen",
+    update: "Aktualisieren",
     close: "Schließen",
     /**
      * @since 3.8.0
@@ -484,7 +493,7 @@ export default {
       link_button: "Öffnen"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Position kann nicht bestimmt werden"
       },
       geocoding: {

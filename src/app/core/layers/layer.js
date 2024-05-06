@@ -42,8 +42,8 @@ function Layer(config={}, options={}) {
     project = ProjectsRegistry.getCurrentProject()
   } = options;
 
-  //get search_end point value (api, ows)
-  this.config.search_endpoint = project.getSearchEndPoint();
+  /** @deprecated since 3.10.0. Will be removed in v.4.x. */
+  this.config.search_endpoint = 'api';
 
   // create relations
   this._relations = this._createRelations(project.getRelations());
@@ -178,12 +178,14 @@ function Layer(config={}, options={}) {
      */
     stylesfeaturecount: config.featurecount && defaultstyle && {
       [defaultstyle]: config.featurecount
-    }
+    },
+    name: config.name, /** since 3.10.0 **/
+    expanded: config.expanded,  /** since 3.10.0 **/
 
   };
 
   /**
-   * Store all selection features `fids`
+   * Store all selections feature `fids`
    */
   this.selectionFids = new Set();
 
@@ -323,12 +325,10 @@ proto.getSearchParams = function() {
 };
 
 /**
- * Return search_endpoint
- *
- * @returns {*}
+ * @deprecated since 3.10.0. Will be removed in v.4.x.
  */
 proto.getSearchEndPoint = function() {
-  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : 'api';
+  return 'api';
 };
 
 /**
@@ -462,6 +462,8 @@ proto.getFeatureByFids = async function({
 };
 
 /**
+ * @TODO deprecate `search_endpoint = 'ows'`
+ *
  * Search Features
  * 
  * @param { Object }        opts

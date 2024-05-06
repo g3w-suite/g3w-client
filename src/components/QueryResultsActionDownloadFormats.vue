@@ -5,35 +5,33 @@
 
 <template>
   <div
-    class="g3w-download-formats-content"
-    style="width: 100%; display: flex;"
-    @click.prevent.stop=""
+    class               = "g3w-download-formats-content"
+    style               = "width: 100%; display: flex"
+    @click.prevent.stop = ""
   >
     <select
-      style="flex-grow: 1;"
-      v-select2="'download_format'"
-      :search="false"
-      class="form-control"
+      style     = "flex-grow: 1"
+      v-select2 = "'download_format'"
+      :search   = "false"
+      class     ="form-control"
     >
       <option
         v-for="download in config.downloads"
-        :key="download.id"
+        :key   = "download.id"
+        :value = "download.format"
         v-download
-        :value="download.format"
       >
-        <span style="font-weight: bold;">
-          {{download.format}}
-        </span>
+        <span style="font-weight: bold">{{download.format}}</span>
       </option>
     </select>
-
     <button
-      style="border-radius: 0 3px 3px 0;"
-      class="btn skin-button"
-      @click.stop=download
+      style       = "border-radius: 0 3px 3px 0;"
+      class       = "btn skin-button"
+      @click.stop = download
       v-download
     >
-      <span :class="g3wtemplate.getFontClass('download')"></span>
+      <span :class="g3wtemplate.getFontClass('download')">
+      </span>
     </button>
   </div>
 </template>
@@ -80,9 +78,7 @@ export default {
            : null
         );
       }
-      catch(err) {
-        console.warn(err);
-      }
+      catch(e) {console.warn(e) }
     }
   }
 }

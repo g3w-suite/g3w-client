@@ -4,25 +4,53 @@
 -->
 
 <template>
-  <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
-    <div v-if="showheader" class="usermessage-header-content">
-      <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
+  <div
+    class  = "usermessage-content"
+    :id    = "id"
+    :style = "style"
+    :class = "{'mobile': addClassMobile()}"
+  >
+    <div
+      v-if="showheader"
+      class="usermessage-header-content"
+    >
+      <i
+        class="usermessage-header-icontype"
+        :class="g3wtemplate.getFontClass(type)">
+      </i>
       <div class="usermessage-header-title">
         <slot name="header">
-          <h4  v-if="title" v-t="title"></h4>
+          <h4
+            v-if = "title"
+            v-t  = "title">
+          </h4>
           <h4  v-else> {{ type.toUpperCase() }}</h4>
-          <h5 class="usermessage-header-subtitle" v-if="subtitle" v-t="subtitle"></h5>
+          <h5
+            v-if="subtitle"
+            class="usermessage-header-subtitle"
+            v-t="subtitle">
+          </h5>
         </slot>
       </div>
       <div class="usermessage-header-right">
-        <div v-if="!autoclose && closable" @click="closeUserMessage">
+        <div
+          v-if   = "!autoclose && closable"
+          @click = "closeUserMessage"
+        >
           <i class="usermessage-header-right-item" :class="g3wtemplate.getFontClass('close')"></i>
         </div>
       </div>
     </div>
     <slot name="body">
-      <div v-if="textMessage" class="usermessage-message">{{ message }}</div>
-      <div v-else class="usermessage-message" v-t="message"></div>
+      <div
+        v-if  = "textMessage"
+        class = "usermessage-message"
+      >{{ message }}</div>
+      <div
+        v-else
+        class = "usermessage-message"
+        v-t   = "message"
+      ></div>
     </slot>
     <slot name="footer"></slot>
   </div>
@@ -30,45 +58,45 @@
 
 <script>
   import { ZINDEXES } from 'app/constant';
-  import GUI from 'services/gui';
+  import GUI          from 'services/gui';
 
   const COLORS = {
     success: {
-      backgroundColor: '#62ac62',
-      color: '#FFFFFF'
+      backgroundColor: "#62ac62",
+      color:           "#FFFFFF"
     },
     info: {
-      backgroundColor: '#44a0bb',
-      color: '#FFFFFF'
+      backgroundColor: "#44a0bb",
+      color:           "#FFFFFF"
     },
     warning: {
-      backgroundColor: '#f29e1d',
-      color: '#FFFFFF'
+      backgroundColor: "#f29e1d",
+      color:           "#FFFFFF"
     },
     alert: {
-      backgroundColor: '#c34943',
-      color: '#FFFFFF'
+      backgroundColor: "#c34943",
+      color:           "#FFFFFF"
     },
     tool: {
-      backgroundColor: '#FFFFFF',
-      color: "#222d32"
+      backgroundColor: "#FFFFFF",
+      color:           "#222d32"
     },
     loading: {
-      backgroundColor: '#FFFFFF',
-      color: "#222d32",
-      fontWeight: "bold"
+      backgroundColor: "#FFFFFF",
+      color:           "#222d32",
+      fontWeight:      "bold"
     },
   };
   /**
-   * Add custom style to handle different type of usermessage
+   * Add custom style to handle a different type of usermessage
    * @type {{alert: {}, success: {}, warning: {}, loading: {}, tool: {"z-index": string}, info: {}}}
    */
   const STYLES = {
     success: {},
-    info: {},
+    info:    {},
     warning: {},
-    alert: {},
-    tool: {
+    alert:   {},
+    tool:    {
       "z-index": ZINDEXES.usermessage.tool,
       left: "40px"
     },
@@ -80,60 +108,60 @@
     props: {
       id:{},
       type: {
-        type: String,
-        default: 'info' // info, warning, alert, tool
+        type:    String,
+        default: "info" // info, warning, alert, tool
       },
       title: {
-        type: String,
+        type:    String,
         default: null,
       },
       subtitle: {
-        type: String,
+        type:    String,
         default: null,
       },
       position: {
-        type: String,
-        default: 'top'
+        type:    String,
+        default: "top"
       },
       size: {
-        type: String, // values [small, medium,fullpage]
-        default: 'fullpage'
+        type:    String, // values [small, medium,fullpage]
+        default: "fullpage"
       },
       message: {
-        type: String,
+        type:    String,
         default: ''
       },
       textMessage: {
-        type: Boolean,
+        type:    Boolean,
         default: false
       },
       autoclose: {
-        type: Boolean,
+        type:    Boolean,
         default: false
       },
       draggable: {
-        type: Boolean,
+        type:    Boolean,
         default: false
       },
       duration: {
-        type: Number,
+        type:    Number,
         default: 2000
       },
       closable: {
-        type: Boolean,
+        type:    Boolean,
         default: true
       }
     },
     computed:{
-      showheader(){
-        return this.type !== 'loading';
+      showheader() {
+        return 'loading'!== this.type ;
       }
     },
     methods: {
-      addClassMobile(){
+      addClassMobile() {
         return this.isMobile() && !GUI.isSidebarVisible();
       },
-      closeUserMessage(){
+      closeUserMessage() {
         this.$emit('close-usermessage')
       },
       hideShow() {}
@@ -152,10 +180,10 @@
         default:
           width = '100%';
       }
-      if (where === 'center')
+      if ('center' === where)
         where = {
-          top: 0,
-          bottom:0,
+          top:       0,
+          bottom:    0,
           maxHeight: '20%'
         };
       else {
@@ -171,8 +199,8 @@
         position.width = '25%';
         switch (alignement) {
           case 'center':
-            position.left = '0';
-            position.right = '0';
+            position.left   = '0';
+            position.right  = '0';
             position.margin = 'auto';
             break;
           case 'right':
@@ -186,10 +214,10 @@
         ...STYLES[this.type]
       }
     },
-    async mounted(){
+    async mounted() {
       if (this.autoclose) {
         await this.$nextTick();
-        const timeout = setTimeout(() =>{
+        const timeout = setTimeout(() => {
           this.closeUserMessage();
           clearTimeout(timeout)
         }, this.duration)

@@ -379,6 +379,14 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Name of new map theme',
+        project_map_theme : 'Project Themes',
+        user_map_theme: 'User Themes',
+        question_delete_map_theme: "Do you want delete the theme?",
+        delete_map_theme: "Theme deleted successfully",
+        saved_map_theme: "Theme saved successfully",
+        updated_map_theme: "Theme updated successfully",
+        invalid_map_theme_name: "Invalid or exiting name",
         menu: {
           layerposition: 'Layer Position',
           setwmsopacity: "Set Opacity",
@@ -446,6 +454,7 @@ export default {
     server_error: "Server connection error",
     save: "Save",
     cancel: "Cancel",
+    update: "Update",
     close: "Close",
     /**
      * @since 3.8.0
@@ -484,7 +493,7 @@ export default {
       link_button: "Open"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Can't get your position"
       },
       geocoding: {

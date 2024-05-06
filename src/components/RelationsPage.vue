@@ -5,16 +5,20 @@
 
 <template>
   <div class="query-relations-page">
-    <component :loading="loading" @save-relation="saveRelations" @show-chart="showChart" @hide-chart="hideChart"
-      :ref="currentview"
-      :previousview="previousview"
-      :is="currentview"
-      :showChartButton="showChartButton"
-      :relations="relations"
-      :relation="relation"
-      :nmRelation="nmRelation"
-      :feature="feature"
-      :table="table"/>
+    <component
+      :loading         = "loading"
+      @save-relation   = "saveRelations"
+      @show-chart      = "showChart"
+      @hide-chart      = "hideChart"
+      :ref             = "currentview"
+      :previousview    = "previousview"
+      :is              = "currentview"
+      :showChartButton = "showChartButton"
+      :relations       = "relations"
+      :relation        = "relation"
+      :nmRelation      = "nmRelation"
+      :feature         = "feature"
+      :table           = "table"/>
   </div>
 </template>
 
@@ -28,6 +32,27 @@ import {
 }                                           from "app/constant";
 import { RelationEventBus as VM }           from "app/eventbus";
 import { getFeaturesFromResponseVectorApi } from "utils/getFeaturesFromResponseVectorApi";
+import RelationsService                     from 'services/relations';
+import ApplicationService                   from 'services/application';
+
+let _options;
+
+function _buildRelationTable(relations = [], id) {
+  relations = relations || [];
+  const layer = ApplicationService.getCurrentProject().getLayerById(id);
+  const attrs = Object.keys(relations[0] ? relations[0].attributes : {});
+  const cols  = layer.getTableHeaders().filter(h => -1 !== attrs.indexOf(h.name));
+  return {
+    columns:          cols.map(c => c.label),
+    rows:             relations.map(r => cols.map(c => r.attributes[c.name])),
+    rows_fid:         relations.map(r => r.attributes[G3W_FID]),
+    features:         relations,
+    fields:           cols.length ? cols : null,
+    formStructure:    layer.getLayerEditingFormStructure(),
+    rowFormStructure: null,
+    layerId:          layer.getId()
+  };
+}
 
 export default {
 
@@ -35,122 +60,119 @@ export default {
   name: 'relation-page',
 
   data() {
-    this.chartRelationIds = this.$options.chartRelationIds || [];
     const {
-      table,
-      relation=null,
-      relations,
+      table =            null,
+      relation =         null,
+      relations =        [],
       nmRelation,
-      feature,
-      currentview,
-      service
+      feature =           null,
+      currentview =      'relations',
+      chartRelationIds = [],
+      layer,
     } = this.$options;
     return {
-      loading: false,
-      state: null,
-      error: false,
-      table: table ? service.buildRelationTable(table) : null,
-      relation,
-      relations,
-      nmRelation,
+      loading:         false,
+      state:           null,
+      error:           false,
+      table:           table ? _buildRelationTable(table) : null,
+      previousview:    currentview,
       showChartButton: false,
       feature,
       currentview,
-      previousview: currentview
+      relation,
+      relations,
+      nmRelation,
+      chartRelationIds,
+      layer,
     }
   },
   provide() {
     return {
-      relationnoback: this.$options.relations.length === 1
+      relationnoback: 1 === this.$options.relations.length
     }
   },
   components: {
     'relations': RelationsComponent,
-    'relation': RelationComponent
+    'relation':  RelationComponent
   },
   methods: {
-    saveRelations(type){
-      this.$options.service.saveRelations(type)
+    async saveRelations(type) {
+      const id = ApplicationService.setDownload(true);
+      try      { await RelationsService.save(Object.assign(_options, { type })) }
+      catch(e) { console.warn(e); GUI.showUserMessage({ type: 'alert', message: e || 'info.server_error', closable: true }); }
+      ApplicationService.setDownload(false, id);
     },
     reloadLayout() {
       VM.$emit('reload');
     },
-    showChart(container, relationData){
-      const relationLayerId = this.relation.referencingLayer;
-      GUI.getService('queryresults').showChart([relationLayerId], container, relationData)
+    showChart(container, relationData) {
+      GUI.getService('queryresults').showChart([this.relation.referencingLayer], container, relationData)
     },
-    hideChart(container){
+    hideChart(container) {
       GUI.getService('queryresults').hideChart(container)
     },
     async showRelation(relation) {
       GUI.setLoadingContent(true);
-      this.loading = true;
-      this.relation = relation;
+      this.loading        = true;
+      this.relation       = relation;
       let relationLayerId = relation.referencingLayer;
-      const fid = this.feature.attributes[G3W_FID];
       try {
-        const response = await this.$options.service.getRelations({
+        _options = {
           layer: this.$options.layer,
+          fid:   this.feature.attributes[G3W_FID],
           relation,
-          fid
-        });
-        let relations = getFeaturesFromResponseVectorApi(response, {
-          type: 'result'
-        });
+        };
+        const response = await RelationsService.getRelations(_options);
+        let relations = getFeaturesFromResponseVectorApi(response, { type: 'result' });
         if (this.nmRelation) {
           relationLayerId = this.nmRelation.referencedLayer;
-          relations = await this.$options.service.getRelationsNM({
+          relations = await RelationsService.getRelationsNM({
             nmRelation: this.nmRelation,
-            features: relations
+            features:   relations
           });
         }
-        this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
-        this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
+        this.showChartButton = !!this.chartRelationIds.find(id => relationLayerId === id);
+        this.table           = _buildRelationTable(relations, relationLayerId);
 
         GUI.changeCurrentContentOptions({
           title: relation.name,
-          crumb: {
-            title: relation.name
-          }
+          crumb: { title: relation.name }
         });
+
         await this.$nextTick();
         this.previousview = this.currentview;
         this.currentview = 'relation';
-      } catch(err){
-        // manage error here
-      }
+      } catch(e) { console.warn(e); }
       GUI.setLoadingContent(false);
       this.loading = true;
     },
     setRelationsList() {
       this.previousview = 'relation';
-      this.currentview = 'relations';
-      GUI.changeCurrentContentOptions({
-        crumb: {
-          title: LIST_OF_RELATIONS_TITLE
-        }
-      });
+      this.currentview  = 'relations';
+      GUI.changeCurrentContentOptions({ crumb: { title: LIST_OF_RELATIONS_TITLE } });
       this.loading = false;
-    }
+    },
   },
   beforeMount() {
-    if (this.currentview === 'relation' || (this.relations.length === 1 && this.relations[0].type === 'ONE')) this.showRelation(this.relations[0])
+    if ('relation' === this.currentview  || (1 === this.relations.length && 'ONE' === this.relations[0].type)) {
+      this.showRelation(this.relations[0])
+    }
   },
   async mounted() {
     /**
      * Order relations by name
      */
-    this.relations.sort(({name:relationName1}, {name:relationName2}) => {
+    this.relations.sort(({ name: relationName1 }, { name: relationName2 }) => {
       if (relationName1 < relationName2) return -1;
       if (relationName1 > relationName2) return 1;
       return 0;
     });
     await this.$nextTick();
-    if (this.error)
-      requestAnimationFrame(() => {
-        GUI.popContent()
-      });
+    if (this.error) { requestAnimationFrame(() => GUI.popContent()) }
     this.error = false;
+  },
+  created() {
+    this.$on('resize-component', this.reloadLayout);
   }
 };
 </script>

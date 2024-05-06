@@ -6,15 +6,15 @@ import {
 import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
 import { crsToCrsObject } from 'utils/crsToCrsObject';
+import G3WObject          from 'core/g3wobject';
 
 const { base, inherit, XHR } = require('utils');
-const G3WObject = require('core/g3wobject');
-const LayerFactory = require('core/layers/layerfactory');
-const LayersStore = require('core/layers/layersstore');
-const Projections = require('g3w-ol/projection/projections');
+const LayerFactory           = require('core/layers/layerfactory');
+const LayersStore            = require('core/layers/layersstore');
+const Projections            = require('g3w-ol/projection/projections');
 
 /**
- * @FIXME options param appears to be unusued
+ * @FIXME options param appears to be unused
  * 
  * @param config.id
  * @param config.type
@@ -33,27 +33,27 @@ const Projections = require('g3w-ol/projection/projections');
  * @param config.query_point_tolerance
  * @param config.wps                           array of wps service
  * @param config.bookmarks                     array of bookmarks
+ * @param config.map_themes                    Object {project:[], custom:[]}
  * @param { 'POST' | 'GET' }                   config.ows_method
  * @param { boolean }                          config.wms_use_layer_ids
- * @param { 'ows' | 'api' }                    config.search_endpoint 
  * @param { 'tab' | 'toc' }                    config.legend_position 
  * @param { 'layers', 'baselayers', 'legend' } config.catalog_tab
  * 
  * @param options
  */
-function Project(config={}, options={}) {
+function Project(config = {}, options={}) {
   /**
    * For future implementation catalog tab actived
    */
-  config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers';
+  config.catalog_tab            = config.toc_tab_default || config._catalog_tab || 'layers';
 
-  config.ows_method = config.ows_method || 'GET';
+  config.ows_method             = config.ows_method || 'GET';
 
   config.toc_layers_init_status = config.toc_layers_init_status || TOC_LAYERS_INIT_STATUS;
   
   config.toc_themes_init_status = config.toc_themes_init_status || TOC_THEMES_INIT_STATUS;
   
-  config.query_point_tolerance = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
+  config.query_point_tolerance  = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
   
   this.state = config;
 
@@ -76,9 +76,9 @@ function Project(config={}, options={}) {
   /**
    * Set the project projection to object crs
    */
-  this.state.crs = crsToCrsObject(this.state.crs);
+  this.state.crs    = crsToCrsObject(this.state.crs);
 
-  this._projection = Projections.get(this.state.crs);
+  this._projection  = Projections.get(this.state.crs);
 
   /**
    * Build a layersstore of the project
@@ -119,14 +119,17 @@ proto.getWmsGetmapFormat = function() {
 }
 
 /**
- * Get search end point value (ows or api)
+ * @deprecated since 3.10.0. Will be removed in v.4.x.
  */
 proto.getSearchEndPoint = function() {
-  return this.state.search_endpoint;
+  return 'api';
 };
 
+/**
+ * @deprecated since 3.10.0. Will be removed in v.4.x.
+ */
 proto.setSearchEndPoint = function() {
-  (this.state.search || []).forEach(search => search.search_endpoint = this.state.search_endpoint);
+  (this.state.search || []).forEach(search => search.search_endpoint = 'api');
 };
 
 proto.getAliasUrl = function() {
@@ -158,22 +161,45 @@ proto.getQueryFeatureCount = function() {
   return this.state.feature_count || 5;
 };
 
+/**
+ * @param mapcontrol
+ * 
+ * @returns { boolean }
+ */
 proto.isQueryMultiLayers = function(mapcontrol) {
   return this.state.querymultilayers && -1 !== this.state.querymultilayers.indexOf(mapcontrol);
 };
 
+/**
+ * @returns {*}
+ */
 proto.getRelations = function() {
   return this.state.relations;
 };
 
+/**
+ * @param relationId
+ * 
+ * @returns {*}
+ */
 proto.getRelationById = function(relationId) {
   return this.state.relations.find(relation => relation.id === relationId);
 };
 
+/**
+ * @param { Object } opts
+ * @param opts.layerId
+ * @param opts.type
+ * 
+ * @returns {*}
+ */
 proto.getRelationsByLayerId = function({layerId, type}={}) {
   return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
 };
 
+/**
+ * @returns {"POST"|"GET"}
+ */
 proto.getOwsMethod = function() {
   return this.state.ows_method;
 };
@@ -234,29 +260,27 @@ proto._buildLayersStore = function() {
   const overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
 
   layersStore.setOptions({
-    id: this.state.gid,
+    id:         this.state.gid,
     projection: this._projection,
-    extent: this.state.extent,
+    extent:     this.state.extent,
     initextent: this.state.initextent,
-    wmsUrl: this.state.WMSUrl,
-    catalog: this.state.gid !== overviewprojectgid
+    wmsUrl:     this.state.WMSUrl,
+    catalog:    overviewprojectgid !== this.state.gid,
   });
 
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
   
   layers.forEach(layerConfig => {
-    //check and set crs in objectformat
-    layerConfig.crs = crsToCrsObject(layerConfig.crs);
+    //check and set crs in object format
+    layerConfig.crs               = crsToCrsObject(layerConfig.crs);
     // add projection
-    layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
+    layerConfig.projection        = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
     //add ows_method
-    layerConfig.ows_method = this.getOwsMethod();
+    layerConfig.ows_method        = this.getOwsMethod();
     layerConfig.wms_use_layer_ids = this.state.wms_use_layer_ids;
-    const layer = LayerFactory.build(layerConfig, { project: this });
-    if (layer) {
-      layersStore.addLayer(layer);
-    } 
+    const layer                   = LayerFactory.build(layerConfig, { project: this });
+    if (layer) { layersStore.addLayer(layer)}
   });
   
   // create layerstree from layerstore
@@ -281,20 +305,21 @@ proto.getBaseLayers = function() {
 };
 
 /**
- * Get configuration layers array from server config
+ * Get configuration layers an array from server config
  * 
  * @param filter property layer config to filter
+ * 
  * @returns {*}
  */
-proto.getConfigLayers = function({key}={}) {
-  return key ? this.state.layers.filter(layer => layer[key] !== undefined) : this.state.layers;
+proto.getConfigLayers = function({ key } = {}) {
+  return key ? this.state.layers.filter(layer => undefined !== layer[key] ) : this.state.layers;
 };
 
 /**
  * Legend Position
  */
 
-proto.setLegendPosition = function(legend_position='tab') {
+proto.setLegendPosition = function(legend_position = 'tab') {
   this.state.legend_position = legend_position;
 };
 
@@ -361,23 +386,35 @@ proto.getCrs = function() {
 /**
  * @param {'major' | 'minor' | 'patch' } qgis.type 
  */
-proto.getQgisVersion = function({type}={}) {
+proto.getQgisVersion = function({ type } = {}) {
   const index = ['major', 'minor', 'patch'].indexOf(type);
   return -1 === index ? this.state.qgis_version : +this.state.qgis_version.split('.')[index];
 };
 
+/**
+ * @returns {*}
+ */
 proto.getProjection = function() {
   return this._projection;
 };
 
+/**
+ * @returns {*}
+ */
 proto.getWmsUrl = function() {
   return this.state.WMSUrl;
 };
 
+/**
+ * @returns {string}
+ */
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
+/**
+ * @returns {*}
+ */
 proto.getLayersStore = function() {
   return this._layersStore;
 };
@@ -385,91 +422,113 @@ proto.getLayersStore = function() {
 /// Map Themes
 
 /**
- * Set properties ( checked and visible) from view to layerstree
+ * Set properties (checked and visible) from view to layerstree
  * 
  * @param map_theme map theme name
  * @param layerstree // current layerstree of TOC
  */
-proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstree=this.state.layerstree}) {
-  /**
-   * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
-   * plus layerstree of map_theme get from api map theme
-   */
-  const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
-  // extract layerstree
-  const {layerstree:mapThemeLayersTree} = mapThemeConfig;
+proto.setLayersTreePropertiesFromMapTheme = async function({
+  map_theme,
+  layerstree = this.state.layerstree
+}) {
+  /** map theme config */
+  const theme = await this.getMapThemeFromThemeName(map_theme);
   // create a chages need to apply map_theme changes to map and TOC
-  const changes = {
-    layers: {} // key is the layer id and object has style, visibility change (Boolean)
-  };
+  const changes  = {layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
   const promises = [];
   /**
-   * Function to traverse current layerstree of toc anche get changes with the new one related to map_theme choose
+   * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
    * @param mapThemeLayersTree // new mapLayerTree
    * @param layerstree // current layerstree
    */
   const groups = [];
-  const traverse = (mapThemeLayersTree, layerstree, checked) =>{
-    mapThemeLayersTree.forEach((node, index) => {
-      if (node.nodes) { // case of group
-        groups.push({
-          node,
-          group: layerstree[index]
-        });
-        traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
-      } else {
-        // case of layer
-        node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
-        if (layerstree[index].checked !== node.visible) {
-          changes.layers[node.id] = {
-            visibility: true,
-            style: false
-          };
-        }
-        layerstree[index].checked = node.visible;
-        // if has a style settled
-        if (node.style) {
-          const promise = new Promise((resolve, reject) =>{
-            const setCurrentStyleAndResolvePromise = node => {
-              if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                visibility: false,
-                style: false
-              };
-              changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
-              resolve();
-            };
-            if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
-            else // case of starting project creation
-              node => setTimeout(() => {
-                setCurrentStyleAndResolvePromise(node);
-              })(node);
+  const traverse = (mapThemeLayersTree, layerstree, checked) => {
+    mapThemeLayersTree
+      .forEach((node, index) => {
+        if (node.nodes) { // case of a group
+          groups.push({
+            node,
+            group: layerstree[index]
           });
-          promises.push(promise);
+          traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
+        } else {
+          // case of layer
+          node.style = theme.styles[node.id]; // set style from map_theme
+          if (layerstree[index].checked !== node.visible) {
+            changes.layers[node.id] = {
+              visibility: true,
+              style: false
+            };
+          }
+          layerstree[index].checked = node.visible;
+          // if it has a style settled
+          if (node.style) {
+            const promise = new Promise((resolve, reject) =>{
+              const setCurrentStyleAndResolvePromise = node => {
+                if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                  visibility: false,
+                  style: false
+                };
+                changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
+                resolve();
+              };
+              if (this.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
+              else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
+            });
+            promises.push(promise);
+          }
         }
-      }
     });
   };
-  traverse(mapThemeLayersTree, layerstree);
+  traverse(theme.layerstree, layerstree);
+
   await Promise.allSettled(promises);
+
   // all groups checked after layer checked so is set checked but not visible
-  groups.forEach(({group, node:{checked, expanded}}) => {
+  groups.forEach(({ group, node: { checked, expanded }}) => {
     group.checked = checked;
     group.expanded = expanded;
   });
-  return changes // eventually information about changes (for example style etc..)
+
+  return changes // eventually, information about changes (for example style etc..)
 };
 
 /**
  * get map Theme_configuration
  */
-proto.getMapThemeFromThemeName = async function(map_theme) {
+proto.getMapThemeFromThemeName = async function(theme) {
   // get map theme configuration from map_themes project config
-  const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
-  // check if mapThemeConfig exist and if has layerstree (property get from server with a specific api)
-  if (mapThemeConfig && undefined === mapThemeConfig.layerstree ) {
-    mapThemeConfig.layerstree =  await this.getMapThemeConfiguration(map_theme);
+  const config = Object.values(this.state.map_themes).flat().find(c => theme === c.theme );
+  if (config && undefined === config.layerstree) {
+    config.layerstree = await this.getMapThemeConfiguration(theme);
   }
-  return mapThemeConfig;
+  return config;
+};
+
+/**
+ * Save custom user map theme
+ * 
+ * @since 3.10
+ */
+proto.saveMapTheme = function(theme, params = {}) {
+  //In case of no name provide skip
+  if (!theme) {  return Promise.reject() }
+  return XHR.post({
+    url:         `${this.urls.map_themes}${encodeURIComponent(theme)}/`,
+    contentType: 'application/json',
+    data:        JSON.stringify(params),
+  });
+};
+
+/**
+ * @param theme
+ * 
+ * @since 3.10.0
+ */
+proto.deleteMapTheme = async function(theme) {
+  //In case of no name provide skip
+  if (!theme) { return Promise.reject() }
+  return XHR.delete({url:`${this.urls.map_themes}${encodeURIComponent(theme)}/`});
 };
 
 /**
@@ -482,9 +541,7 @@ proto.getMapThemeFromThemeName = async function(map_theme) {
 proto.getMapThemeConfiguration = async function(map_theme) {
   try {
     const response = await XHR.get({ url: `${this.urls.map_themes}${map_theme}/` });
-    if (response.result) {
-      return response.data;
-    }
+    if (response.result) { return response.data }
   } catch(err) {
     console.warn('Error while retreiving map theme configuration', err);
   }

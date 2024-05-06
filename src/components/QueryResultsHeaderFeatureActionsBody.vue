@@ -5,21 +5,22 @@
 
 <template>
   <tr
-    @mouseover="trigger({id:'highlightgeometry'}, layer, feature, index)"
-    @mouseout="trigger({id:'clearHighlightGeometry'}, layer, feature, index)"
-    class="featurebox-header">
+    @mouseover = "trigger({id:'highlightgeometry'}, layer, feature, index)"
+    @mouseout  = "trigger({id:'clearHighlightGeometry'}, layer, feature, index)"
+    class      = "featurebox-header"
+  >
     <actions
-      :colspan="colspan"
-      :layer="layer"
-      :featureIndex="index"
-      :trigger="trigger"
-      :feature="feature"
-      :actions="actions"/>
+      :colspan      = "colspan"
+      :layer        = "layer"
+      :featureIndex = "index"
+      :trigger      = "trigger"
+      :feature      = "feature"
+      :actions      = "actions"/>
   </tr>
 </template>
 
 <script>
-  import Actions from 'components/QueryResultsActions.vue';
+  import Actions         from 'components/QueryResultsActions.vue';
   import { fieldsMixin } from 'mixins';
   
   export default {

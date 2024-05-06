@@ -7,7 +7,12 @@
   <div id="menu-projects" class="container">
     <div class="row row-equal">
       <!-- item -->
-      <div v-for="menuitem in state.menuitems"  :key="menuitem.title" @click="trigger(menuitem)" class="col-xs-12 col-sm-4 project-menu">
+      <div
+        v-for  = "menuitem in state.menuitems"
+        :key   = "menuitem.title"
+        @click = "trigger(menuitem)"
+        class  ="col-xs-12 col-sm-4 project-menu"
+      >
         <div class="project-menu-item-image">
           <img :src="logoSrc(menuitem.thumbnail)" class="img-responsive">
         </div>
@@ -27,9 +32,9 @@
 
 <script>
 import ProjectsRegistry from 'store/projects';
-import GUI from 'services/gui';
+import GUI              from 'services/gui';
 
-const {t} = require('core/i18n/i18n.service');
+const { t } = require('core/i18n/i18n.service');
 
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
@@ -40,7 +45,7 @@ export default {
 
   data() {
     return {
-      state: null,
+      state:   null,
       loading: false
     }
   },

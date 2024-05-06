@@ -4,14 +4,20 @@
 -->
 
 <template>
-  <li @click.stop="gotoSpatialBookmark(bookmark)" class="spatial-bookmark">
+  <li
+    @click.stop = "gotoSpatialBookmark(bookmark)"
+    class       = "spatial-bookmark"
+  >
     <div>
       <span :class="g3wtemplate.getFontClass('bookmark')" style="margin-right: 5px; font-size: 0.7em;"></span>
       <span class="g3w-long-text">{{bookmark.name}}</span>
     </div>
-    <span v-if="bookmark.removable"
-       @click.stop="$emit('remove-bookmark', bookmark.id)"
-       style="color: red; margin: 5px; cursor: pointer">
+    <span
+      v-if        = "bookmark.removable"
+      @click.stop = "$emit('remove-bookmark', bookmark.id)"
+      class       = "sidebar-button sidebar-button-icon"
+      style       = "color: red; margin: 5px; cursor: pointer"
+    >
       <i :class="g3wtemplate.getFontClass('trash')"></i>
     </span>
   </li>
@@ -44,9 +50,9 @@
       }
     },
     methods: {
-      removeBookMark(){},
-      async gotoSpatialBookmark({extent, crs}){
-        if (GUI.getService('map').getEpsg().split('EPSG:')[1] !== crs.epsg) {
+      removeBookMark() {},
+      async gotoSpatialBookmark({ extent, crs }) {
+        if (crs.epsg !== GUI.getService('map').getEpsg().split('EPSG:')[1]) {
           const projection = await Projections.registerProjection(`EPSG:${crs.epsg}`);
           extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())
         }
@@ -54,7 +60,6 @@
         GUI.getService('map').zoomToExtent(extent, { force: true });
       }
     },
-    async mounted() {}
   };
 </script>
 
@@ -65,5 +70,4 @@
     justify-content: space-between;
     padding: 5px !important;
   }
-
 </style>

@@ -41,7 +41,7 @@
 
     data() {
       return {
-        show: "undefined" !== typeof this.type,
+        show: undefined !== this.type,
       };
     },
 

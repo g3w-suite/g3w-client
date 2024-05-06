@@ -4,18 +4,20 @@
 -->
 
 <template>
-   <span v-if="show" @contextmenu.prevent.stop=""
-      @click.stop="clickAction(action, layer, feature, featureIndex, $event)"
-      v-download="action.download"
-      :class="{'toggled': action.state && action.state.toggled[featureIndex] }"
-      class="action-button"
-      v-t-tooltip:top.create="action.hint">
-      <span
-        style="padding: 2px;"
-        :style="action.style"
-        :class="`action-button-icon ${action.class}`">
-      </span>
-    </span>
+   <span
+     v-if                      = "show"
+     @contextmenu.prevent.stop = ""
+     @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
+     v-download                = "action.download"
+     :class                    = "{'toggled': action.state && action.state.toggled[featureIndex] }"
+     class                     = "action-button"
+     v-t-tooltip:top.create    = "action.hint">
+     <span
+       style  = "padding: 2px;"
+       :style = "action.style"
+       :class = "`action-button-icon ${action.class}`">
+     </span>
+   </span>
 </template>
 
 <script>
@@ -54,7 +56,7 @@
           const originalDataTitle = element.attr('data-original-title');
           element.attr('data-original-title', t(action.hint_change.hint));
           element.tooltip('show');
-          setTimeout(()=>{
+          setTimeout(() => {
             element.attr('data-original-title', originalDataTitle);
             element.tooltip('show');
           }, action.hint_change.duration || 600)
@@ -67,7 +69,7 @@
         this.action.init({layer: this.layer, feature: this.feature, index:this.featureIndex, action:this.action});
       }
       if (typeof this.action.condition === 'function') {
-        const show = this.action.condition({layer:this.layer, feature:this.feature});
+        const show = this.action.condition({ layer: this.layer, feature: this.feature });
         this.show = show instanceof Promise ? await show: show;
       }
     },

@@ -21,9 +21,6 @@
 <script>
   export default {
     name: "skeleton",
-    mounted() {
-      this.$nextTick(()=>{})
-    }
   }
 </script>
 

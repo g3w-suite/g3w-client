@@ -8,7 +8,7 @@
 -->
 <template>
   <div
-    v-if = "has_providers"
+    v-if   = "has_providers"
     :class = "[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
   >
 
@@ -231,7 +231,7 @@ const LAYER = new ol.layer.Vector({
   name: 'Geocoding',
   source: new ol.source.Vector(),
   style(feature) { // set style function to check if a coordinate search or a search from provider
-    if ('__g3w_marker_coordinates' ===  feature.getId()) {
+    if ('__g3w_marker_coordinates' === feature.getId()) {
       return new ol.style.Style({
         text: new ol.style.Text({
           offsetY: -15, //move marker icon on base point coordinate and not center
@@ -291,7 +291,7 @@ export default {
   props: {
 
     placeholder: {
-      type: String,
+      type:     String,
       required: true,
     },
 
@@ -299,7 +299,7 @@ export default {
      * @since 3.9.0
      */
     noresults: {
-      type: String,
+      type:     String,
       required: true,
     },
 
@@ -307,7 +307,7 @@ export default {
      * @since 3.9.0
      */
     limit: {
-      type: Number,
+      type:     Number,
       required: true,
     },
 
@@ -329,7 +329,7 @@ export default {
      * @since 3.9.0
      */
     providers: {
-      type: Object, // {nominatim: {url:<url>, bing:{url:<url}}}
+      type:     Object, // {nominatim: {url:<url>, bing:{url:<url}}}
       default:  {}
     },
 
@@ -363,7 +363,7 @@ export default {
     },
 
     /**
-     * Get dynamic extent (eg. Bing Places)
+     * Get a dynamic extent (e.g., Bing Places)
      * 
      * @TODO add a checkbox to let user choose whether include searches only from current map extent
      * 
@@ -373,8 +373,11 @@ export default {
      * @since 3.9.0
      */
     extent() {
-      const has_dynamic_extent = Object.keys(this.providers).filter(p => 'nominatim' != p).length > 0
-      return ol.proj.transformExtent(has_dynamic_extent ? GUI.getService('map').getMapExtent() : this.viewbox, this.mapCrs, 'EPSG:4326')
+      return ol.proj.transformExtent(
+        Object.keys(this.providers).filter(p => 'nominatim' != p).length > 0
+          ? GUI.getService('map').getMapExtent()
+          : this.viewbox, this.mapCrs, 'EPSG:4326'
+      )
     },
 
   },
@@ -479,8 +482,8 @@ export default {
             coordinates = ol.proj.transform(coordinates, projection.getCode(), 'EPSG:4326');
             transform = true;
           }
-        } catch (err) {
-          console.warn(err);
+        } catch (e) {
+          console.warn(e);
         }
 
         // request is for a single point (XCoord,YCoord)
@@ -503,7 +506,7 @@ export default {
           });
           //set id
           feature.setId('__g3w_marker_coordinates');
-          //add to layer marker source
+          //add to a layer marker source
           LAYER.getSource().addFeature(feature);
           this._showMarker(coordinates, transform);
           resolve(coordinates);
@@ -551,8 +554,8 @@ export default {
         // heading
         this.$data.results.push({
           __heading: true,
-          provider: p.value.provider,
-          label: this.providers[p.value.provider].label || p.value.label,
+          provider:  p.value.provider,
+          label:     this.providers[p.value.provider].label || p.value.label,
         });
 
         // no results
@@ -591,8 +594,8 @@ export default {
     /**
      * @since 3.9.0
      */
-    onValue(evt) {
-      this.$refs.reset.classList.toggle("gcd-hidden", evt.target.value.trim().length === 0);
+    onValue(e) {
+      this.$refs.reset.classList.toggle("gcd-hidden",0 === e.target.value.trim().length);
     },
 
     /**
@@ -613,18 +616,18 @@ export default {
     _removeItem(uid) {
       const item = (this.$data.results || []).find(r => uid === r.__uid);
 
-      // check if clear markers is running
+      // check if clear markers are running
       if (this.features.length) {
         const source = LAYER.getSource();
         source.removeFeature(source.getFeatureById(uid));
       }
 
-      // check if is open result list
+      // check if is an open result list
       if (item) {
         item.__selected = false;
       }
 
-      // no markers are on map
+      // no markers are on the map
       if (0 === this.features.length) {
         this._hideMarker();
       }
@@ -694,7 +697,7 @@ export default {
         GUI.closeContent();
         return;
       }
-      // check if is already open right panel
+      // check if is already an open right panel
       if (GUI.getCurrentContent()) {
         GUI.closeContent();
       }
@@ -719,13 +722,13 @@ export default {
       this.$data.disabled = true;
       try {
 
-        // get geometry type of target layer
+        // get a geometry type of target layer
         const type = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
 
         // create a new editing feature (Point/MultiPoint + safe alias for keys without `raw_` prefix)
         const _feature = addZValueToOLFeatureGeometry({
           geometryType: type,
-          feature: new ol.Feature({
+          feature:      new ol.Feature({
             ...Object.entries(feature.attributes).reduce((acc, attr) => ({ ...acc, [attr[0].replace(feature.attributes.provider + '_', '').toLowerCase()]: attr[1] }), {}),
             ...feature.attributes,
             geometry: convertSingleMultiGeometry(feature.geometry, type),
@@ -735,8 +738,8 @@ export default {
         // start editing session
         await editing.getApi().addLayerFeature({ layerId: layerId, feature: _feature });
 
-      } catch(err) {
-        console.warn(err);
+      } catch(e) {
+        console.warn(e);
       }
       this.$data.disabled = false;
     },
@@ -797,12 +800,12 @@ export default {
         id: QueryResultsActionChooseLayer.name,
         layer,
         action: {
-          id: 'choose_layer',
-          class: GUI.getFontClass('pencil'),
-          state: queryresults.createActionState({ layer }),
+          id:         'choose_layer',
+          class:      GUI.getFontClass('pencil'),
+          state:      queryresults.createActionState({ layer }),
           toggleable: true,
-          hint: 'Choose a layer',
-          cbk: (layer, feature, action, index) => {
+          hint:       'Choose a layer',
+          cbk:        (layer, feature, action, index) => {
             // skip layer choose when there is only a single editable layer
             if (1 === editablePointLayers.length) {
               this._editItem(editablePointLayers[0].id, feature);
