@@ -234,7 +234,7 @@ export const PRINT_FORMATS = [
   },
   //@since 3.10.0
   {
-    value: 'application/pdf',
+    value: 'geopdf',
     label: 'GEOPDF'
   }
 ];

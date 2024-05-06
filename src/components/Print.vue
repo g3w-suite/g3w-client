@@ -77,9 +77,9 @@
               v-select2 = "'state.format'"
             >
               <option
-                v-for="format in state.formats"
-                :value="format.value">
-                {{ format.label }}
+                v-for  = "format in state.formats"
+                :value = "format.value">
+                  {{ format.label }}
               </option>
             </select>
 
@@ -192,7 +192,8 @@ export default {
       state: this.state || {},
       disabled: false,
       /** @since 3.10.0 */
-      atlas_values: [],
+      atlas_values:   [],
+      format_options: null,
     };
   },
 
@@ -372,6 +373,7 @@ export default {
               template:             this.state.template,
               scale:                this.state.scale,
               format:               this.state.format,
+              format_options:       null,
               labels:               this.state.labels,
               is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
               maps:                 this.state.maps.map(m => ({

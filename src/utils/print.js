@@ -98,16 +98,17 @@ export function print(opts = {}, method = 'GET') {
    url: store.getWmsUrl(),
    mime_type: ({ pdf: 'application/pdf', jpg: 'image/jpeg' })[opts.format],
    params: {
-     SERVICE:     'WMS',
-     VERSION:     '1.3.0',
-     REQUEST:     'GetPrint',
-     TEMPLATE:    opts.template,
-     DPI:         opts.dpi,
-     STYLES:      layers.map(l => l.getStyle()).join(','),
-     LAYERS:      opts.is_maps_preset_theme ? undefined : LAYERS,
-     FORMAT:      opts.format,
-     CRS:         store.getProjection().getCode(),
-     filtertoken: ApplicationState.tokens.filtertoken,
+     SERVICE:       'WMS',
+     VERSION:       '1.3.0',
+     REQUEST:       'GetPrint',
+     TEMPLATE:       opts.template,
+     DPI:            opts.dpi,
+     STYLES:         layers.map(l => l.getStyle()).join(','),
+     LAYERS:         opts.is_maps_preset_theme ? undefined : LAYERS,
+     FORMAT:         ({png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf'})[opts.format],
+     FORMAT_OPTIONS: 'geopdf' === opts.format ? 'WRITE_GEO_PDF:TRUE': undefined, //@since 3.10.0
+     CRS:            store.getProjection().getCode(),
+     filtertoken:    ApplicationState.tokens.filtertoken,
      ...(opts.maps || []).reduce((params, map) => {
        params[map.name + ':SCALE']    = map.scale;
        params[map.name + ':EXTENT']   = map.extent;
