@@ -363,7 +363,7 @@ export default {
 
     this.layers = project
       .getLayers()
-      .filter(l => !l.baselayer && l.geometrytype && l.geometrytype !== 'NoGeometry' && Array.isArray(l.fields))
+      .filter(l => !l.baselayer && Array.isArray(l.fields))
       .map(layer => {
         // exclude join fields
         let exclude = [];
