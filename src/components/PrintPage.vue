@@ -5,27 +5,26 @@
 
 <template>
   <div id="print-output">
-
     <transition :duration="500" name="fade">
       <bar-loader :loading="state.loading && state.layers"/>
     </transition>
 
     <template v-if="state.layers">
-        <!-- PRINT as PDF -->
+        <!-- PRINT as PDF or GEOPDF-->
         <iframe
-          v-if  = "'pdf' === state.format"
+          v-if  = "['pdf', 'geopdf'].includes(format)"
           ref   = "out"
           :src = "state.url"
-        ></iframe>
+        />
 
       <!-- PRINT as PNG -->
       <div
-        v-else-if = "'png' === state.format"
+        v-else-if = "'png' === format"
         class     = "g3w-print-png-output"
       >
         <div id="g3w-print-header">
           <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
-            <a :href="state.url" :download="`download.${state.format}`">
+            <a :href="state.url" :download="`download.${format}`">
               <button
                 @click.stop        = "downloadImage"
                 class              = "btn skin-button skin-tooltip-left"
@@ -71,7 +70,10 @@ export default {
 
   data() {
     return {
-      state: this.$options.service.state || {},
+      state:  this.$options.service.state || {},
+      //need to convert a format not responsive from service
+      //otherwise it reacts on change state.format from Print.vue,
+      format: this.$options.service.state && this.$options.service.state.format,
     }
   },
 
