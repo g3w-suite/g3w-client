@@ -93,8 +93,9 @@ export function print(opts = {}, method = 'GET') {
  }
 
  const LAYERS = layers.map(l => l.getPrintLayerName()).join();
-
- return FETCH[method]({
+ // Need to use GET method becase geopdf format request to qgiserver (QGIS 3.34.6-Prizren 'Prizren' (623828f58c2)
+ // support only this method
+ return FETCH['geopdf' === opts.format ? 'GET' : method]({
    url: store.getWmsUrl(),
    mime_type: ({ pdf: 'application/pdf', jpg: 'image/jpeg' })[opts.format],
    params: {
