@@ -172,6 +172,8 @@ import { getMetersFromDegrees }     from 'utils/getMetersFromDegrees';
 import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
 import { print }                    from 'utils/print';
+import { promisify }                from 'utils/promisify';
+
 
 import resizeMixin                  from 'mixins/resize';
 
@@ -339,6 +341,9 @@ export default {
         // disable sidebar
         GUI.disableSideBar(true);
 
+        //In case of already print page open, need to close it otherwise is appended on a dom element
+        if (this._page) { await promisify(GUI.closeContent()); }
+
         // ATLAS PRINT
         if (has_atlas) {
           download_id = ApplicationService.setDownload(true);
@@ -359,12 +364,14 @@ export default {
           this.state.url       = null;
           this.state.layers    = true;
 
-          //In case of already print page open, need to close it otherwise is appended on a dom element
-          if (this._page) {
-            GUI.closeContent();
-          }
-
           this._page = new Component({ service: { state: this.state }, vueComponentObject: vueComp });
+
+          //show print page with loading state
+          GUI.setContent({
+            content: this._page,
+            title:   'print',
+            perc:    100
+          });
 
           const output = await print(
             {
@@ -384,8 +391,7 @@ export default {
               })),
             },
             ProjectsRegistry.getCurrentProject().getOwsMethod()
-          );
-
+          )
           this.state.url       = output.url;
           this.state.layers    = output.layers;
           //after component mount
@@ -393,21 +399,18 @@ export default {
           // set print area after closing content
           this._page.unmount = () => {
             GUI.getService('map').viewer.map.once('postrender', this._setPrintArea.bind(this));
-            this.state.downloading = false;
-            this.state.loading     = false;
-            return Component.prototype.unmount.call(this._page);
+            const promise = Component.prototype.unmount.call(this._page);
+            this._page = null;
+            return promise;
           };
 
-          GUI.setContent({
-            content: this._page,
-            title: 'print',
-            perc: 100
-          });
         }
 
       } catch(e) {
         err = e;
         this.state.loading = false;
+        // enable sidebar
+        GUI.disableSideBar(false);
         console.warn(e);
       }
 
