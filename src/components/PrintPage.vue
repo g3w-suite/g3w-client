@@ -15,7 +15,7 @@
           v-if  = "['pdf', 'geopdf'].includes(format)"
           ref   = "out"
           :src = "state.url"
-        />
+        ></iframe>
 
       <!-- PRINT as PNG -->
       <div
