@@ -1,20 +1,14 @@
-import { TIMEOUT } from 'app/constant';
+import { TIMEOUT }   from 'app/constant';
+import { promisify } from 'utils/promisify';
 
 export const XHR = {
 
-  get({url, params={}}={}) {
-    return new Promise((resolve, reject) => {
-      url ?
-        $.get(url, params)
-          .then(response => {
-            resolve(response)
-          })
-          .fail(error => reject(error))
-      : reject('No url')
-    })
+  async get({ url, params = {} } = {}) {
+    if (!url) { return Promise.reject('No url'); }
+    return promisify($.get(url, params));
   },
 
-  post({url, data, formdata = false, contentType} = {}, getResponseStatusHeaders=false) {
+  post({ url, data, formdata = false, contentType } = {}, getResponseStatusHeaders = false) {
     return new Promise((resolve, reject) => {
       if (formdata) {
         const formdata = new FormData();
@@ -24,53 +18,30 @@ export const XHR = {
         $.ajax({
           type: 'POST',
           url,
-          data: formdata,
+          data:        formdata,
           processData: false,
           contentType: false
-        }).then((response, status, request) => {
-          getResponseStatusHeaders ? resolve({
-              data: response,
-              status,
-              request
-            }) : resolve(response)
-          })
-          .fail(error => {
-            reject(error);
-          })
+        })
+          .then((response, status, request) => { getResponseStatusHeaders ? resolve({ data: response, status, request }) : resolve(response) })
+          .fail(e => { console.warn(e); reject(e); })
       } else if (contentType) {
         $.ajax({
-          type: 'POST',
           url,
           data,
+          type:        'POST',
           processData: false,
           contentType: contentType || false
-        }).then((response, status, request) => {
-          getResponseStatusHeaders ? resolve({
-            data: response,
-            status,
-            request
-          }) : resolve(response)
-        })
-          .fail(error => {
-            reject(error);
-          })
+        }).then((response, status, request) => getResponseStatusHeaders ? resolve({ data: response, status, request }) : resolve(response))
+          .fail(e => { console.warn(e); reject(e); })
       } else {
         $.post(url, data)
-          .then((response, status, request) => {
-            getResponseStatusHeaders ? resolve({
-              data: response,
-              status,
-              request
-            }) : resolve(response)
-          })
-          .fail(error => {
-            reject(error)
-          })
+          .then((response, status, request) => getResponseStatusHeaders ? resolve({ data: response, status, request }) : resolve(response))
+          .fail(e => { console.warn(e); reject(e) })
       }
     })
   },
 
-  htmlescape(string){
+  htmlescape(string) {
     string = string.replace("&", "&amp;");
     string = string.replace("<", "&lt;");
     string = string.replace(">", "&gt;");
@@ -78,20 +49,17 @@ export const XHR = {
     return string;
   },
 
-  fileDownload({url, data, httpMethod="POST"} = {}) {
+  fileDownload({ url, data, httpMethod = "POST" } = {}) {
     let timeoutId;
     return new Promise((resolve, reject) => {
-      const downloadPromise = $.fileDownload(url, {
-        httpMethod,
-        data
-      });
-      timeoutId = setTimeout(() =>{
+      const promise = $.fileDownload(url, { httpMethod, data });
+      timeoutId = setTimeout(() => {
         reject('Timeout');
-        downloadPromise.abort();
+        promise.abort();
       }, TIMEOUT);
-      downloadPromise
-        .done(resolve)
-        .fail(reject)
+      promise
+        .done(()   => resolve())
+        .fail((e)  => {console.warn(e); reject(e); })
         .always(() => clearTimeout(timeoutId));
     })
   },
@@ -108,9 +76,6 @@ export const XHR = {
   async delete({ url, data = {} }) {
     try {
       return (await fetch(url, {method: 'DELETE', body: JSON.stringify(data), })).json();
-    } catch(e) {
-      console.warn(e);
-      return Promise.reject(e);
-    }
+    } catch(e) { console.warn(e); return Promise.reject(e); }
   }
 };

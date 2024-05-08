@@ -11,10 +11,10 @@
         <div class="box-body">
 
           <transition :duration="500" name="fade">
-            <bar-loader :loading="state.loading"/>
+            <bar-loader :loading="state.loading" />
           </transition>
 
-          <helpdiv message='sdk.print.help'/>
+          <helpdiv message='sdk.print.help' />
 
           <!-- PRINT TEMPLATE -->
           <label for="templates" v-t="'sdk.print.template'"></label>
@@ -39,11 +39,7 @@
               v-select2  = "'state.scale'"
               @change    = "changeScale"
             >
-              <option
-                v-for="scale in state.scales"
-                :value="scale.value">
-                {{ scale.label }}
-              </option>
+              <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
             </select>
 
             <!-- PRINT DPI -->
@@ -56,6 +52,7 @@
             >
               <option v-for="dpi in state.dpis">{{ dpi }}</option>
             </select>
+
             <!-- PRINT ROTATION -->
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input
@@ -76,11 +73,7 @@
               class     = "form-control"
               v-select2 = "'state.format'"
             >
-              <option
-                v-for="format in state.formats"
-                :value="format.value">
-                {{ format.label }}
-              </option>
+              <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
             </select>
 
           </template>
@@ -111,7 +104,6 @@
           <div
             v-if  = "state.labels && state.labels.length > 0"
             class = "print-labels-content"
-            style = "color: white"
           >
             <span
               class = "skin-color"
@@ -172,6 +164,8 @@ import { getMetersFromDegrees }     from 'utils/getMetersFromDegrees';
 import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
 import { print }                    from 'utils/print';
+import { promisify }                from 'utils/promisify';
+
 
 import resizeMixin                  from 'mixins/resize';
 
@@ -192,7 +186,7 @@ export default {
       state: this.state || {},
       disabled: false,
       /** @since 3.10.0 */
-      atlas_values: [],
+      atlas_values:   [],
     };
   },
 
@@ -244,6 +238,10 @@ export default {
         formats:      PRINT_FORMATS,
         format:       PRINT_FORMATS[0].value,
       });
+
+      /**@since v3.10 Store map extent for print in case of already open print page*/
+      this.print_extent = null;
+
     },
 
     resize() {
@@ -319,9 +317,18 @@ export default {
      */
     getPrintExtent() {
       const map          = GUI.getService('map').viewer.map;
-      const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
-      const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
-      return (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+      // Need to check in case di an open print page
+      try {
+        const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
+        const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
+        this.print_extent  = (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+      }
+      catch(e) {
+         //in case of already open content print page
+        console.warn(e);
+      }
+
+      return this.print_extent;
     },
 
     /**
@@ -337,6 +344,11 @@ export default {
 
         // disable sidebar
         GUI.disableSideBar(true);
+
+        // close print page if already open
+        if (this._page) {
+          await promisify(GUI.closeContent());
+        }
 
         // ATLAS PRINT
         if (has_atlas) {
@@ -358,12 +370,14 @@ export default {
           this.state.url       = null;
           this.state.layers    = true;
 
-          //In case of already print page open, need to close it otherwise is appended on a dom element
-          if (this._page) {
-            GUI.closeContent();
-          }
-
           this._page = new Component({ service: { state: this.state }, vueComponentObject: vueComp });
+
+          // show print page with loading state
+          GUI.setContent({
+            content: this._page,
+            title:   'print',
+            perc:    100
+          });
 
           const output = await print(
             {
@@ -382,8 +396,7 @@ export default {
               })),
             },
             ProjectsRegistry.getCurrentProject().getOwsMethod()
-          );
-
+          )
           this.state.url       = output.url;
           this.state.layers    = output.layers;
           //after component mount
@@ -391,21 +404,17 @@ export default {
           // set print area after closing content
           this._page.unmount = () => {
             GUI.getService('map').viewer.map.once('postrender', this._setPrintArea.bind(this));
-            this.state.downloading = false;
-            this.state.loading     = false;
-            return Component.prototype.unmount.call(this._page);
+            const promise     = Component.prototype.unmount.call(this._page);
+            this._page        = null;
+            return promise;
           };
-
-          GUI.setContent({
-            content: this._page,
-            title: 'print',
-            perc: 100
-          });
         }
 
       } catch(e) {
         err = e;
         this.state.loading = false;
+        // enable sidebar
+        GUI.disableSideBar(false);
         console.warn(e);
       }
 
@@ -435,7 +444,7 @@ export default {
       // close content if open
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
-      if (reset)                           { this.atlas_values = []; }
+      if (reset)                           { this.atlas_values = []; this.print_extent = null; }
       if (reset && !this.has_autocomplete) { this.disabled = true }
       GUI
         .closeContent()
@@ -689,6 +698,7 @@ export default {
 <style scoped>
 .print-labels-content {
   margin-top: 5px;
+  color: white;
 }
 .print-labels-content > span.skin-color {
   font-weight: bold;

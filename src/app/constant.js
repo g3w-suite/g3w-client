@@ -229,13 +229,28 @@ export const MAP_SETTINGS = {
  */
 export const PRINT_FORMATS = [
   {
+    value: 'png',
+    label: 'PNG'
+  },
+  /** @since 3.10.0 */
+  {
+    value: 'jpg',
+    label: 'JPG'
+  },
+  /** @since 3.10.0 */
+  {
+    value: 'svg',
+    label: 'SVG'
+  },
+  {
     value: 'pdf',
     label: 'PDF'
   },
+  /** @since 3.10.0 */
   {
-    value: 'png',
-    label: 'PNG'
-  }
+    value: 'geopdf',
+    label: 'GEOPDF'
+  },
 ];
 
 /**
