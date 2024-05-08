@@ -92,33 +92,35 @@ export function print(opts = {}, method = 'GET') {
    return Promise.resolve({layers: false})
  }
 
+  // force GET request for geopdf because qgiserver support only that method [QGIS 3.34.6-Prizren 'Prizren' (623828f58c2)]
+ if ('geopdf' === opts.format) {
+  method = 'GET';
+ }
+
  const LAYERS = layers.map(l => l.getPrintLayerName()).join();
 
  return FETCH[method]({
    url: store.getWmsUrl(),
-   mime_type: ({ pdf: 'application/pdf', jpg: 'image/jpeg' })[opts.format],
+   mime_type: ({ pdf: 'application/pdf', jpg: 'image/jpeg', svg: 'image/svg' })[opts.format] || opts.format,
    params: {
-     SERVICE:     'WMS',
-     VERSION:     '1.3.0',
-     REQUEST:     'GetPrint',
-     TEMPLATE:    opts.template,
-     DPI:         opts.dpi,
-     STYLES:      layers.map(l => l.getStyle()).join(','),
-     LAYERS:      opts.is_maps_preset_theme ? undefined : LAYERS,
-     FORMAT:      opts.format,
-     CRS:         store.getProjection().getCode(),
-     filtertoken: ApplicationState.tokens.filtertoken,
-     ...(opts.maps || []).reduce((params, map) => {
-       params[map.name + ':SCALE']    = map.scale;
-       params[map.name + ':EXTENT']   = map.extent;
-       params[map.name + ':ROTATION'] = opts.rotation;
-       params[map.name + ':LAYERS']   = opts.is_maps_preset_theme && undefined === map.preset_theme ? LAYERS : undefined;
-       return params;
-     }, {}),
-     ...(opts.labels || []).reduce((params, label) => {
-       params[label.id] = label.text;
-       return params;
-     }, {})
+     SERVICE:       'WMS',
+     VERSION:       '1.3.0',
+     REQUEST:       'GetPrint',
+     TEMPLATE:       opts.template,
+     DPI:            opts.dpi,
+     STYLES:         layers.map(l => l.getStyle()).join(','),
+     LAYERS:         opts.is_maps_preset_theme ? undefined : LAYERS,
+     FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[opts.format] || opts.format,
+     FORMAT_OPTIONS: 'geopdf' === opts.format ? 'WRITE_GEO_PDF:TRUE': undefined, //@since 3.10.0
+     CRS:            store.getProjection().getCode(),
+     filtertoken:    ApplicationState.tokens.filtertoken,
+     ...(opts.maps || []).reduce((params, map) => Object.assign(params, {
+        [map.name + ':SCALE']:    map.scale,
+        [map.name + ':EXTENT']:   map.extent,
+        [map.name + ':ROTATION']: opts.rotation,
+        [map.name + ':LAYERS']:   opts.is_maps_preset_theme && undefined === map.preset_theme ? LAYERS : undefined,
+      }), {}),
+     ...(opts.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
    },
  });
 }
