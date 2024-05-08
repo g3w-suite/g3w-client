@@ -5,27 +5,27 @@
 
 <template>
   <div id="print-output">
-
     <transition :duration="500" name="fade">
-      <bar-loader :loading="state.loading && state.layers"/>
+      <bar-loader :loading="state.loading && state.layers" />
     </transition>
 
     <template v-if="state.layers">
-        <!-- PRINT as PDF -->
-        <iframe
-          v-if  = "'pdf' === state.format"
-          ref   = "out"
-          :src = "state.url"
-        ></iframe>
+
+      <!-- PRINT as PDF or GEOPDF-->
+      <iframe
+        v-if  = "['pdf', 'geopdf'].includes(format)"
+        ref   = "out"
+        :src = "state.url"
+      ></iframe>
 
       <!-- PRINT as PNG -->
       <div
-        v-else-if = "'png' === state.format"
+        v-else
         class     = "g3w-print-png-output"
       >
         <div id="g3w-print-header">
           <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
-            <a :href="state.url" :download="`download.${state.format}`">
+            <a :href="state.url" :download="`download.${format}`">
               <button
                 @click.stop        = "downloadImage"
                 class              = "btn skin-button skin-tooltip-left"
@@ -51,11 +51,13 @@
       </div>
 
     </template>
+
     <!---NO PRINT LAYERS-->
     <h4
       v-else
       v-t="'sdk.print.no_layers'">
     </h4>
+
   </div>
 </template>
 
@@ -70,8 +72,11 @@ export default {
   name: 'print-page',
 
   data() {
+    const state = this.$options.service.state || {};
     return {
-      state: this.$options.service.state || {},
+      state,
+      // extract `state.format` so it doesnt' react to Print.vue changes
+      format: state.format,
     }
   },
 
@@ -81,8 +86,8 @@ export default {
       try {
         GUI.disableSideBar(true);
         this.state.downloading = true;
-        if (['jpg', 'png'].includes(this.state.format)) {
-          await imageToDataURL({ src: this.state.url, type: `image/${this.state.format}` });
+        if (['jpg', 'png'].includes(this.format)) {
+          await imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
           setTimeout(() => {
             GUI.disableSideBar(false);
             this.state.downloading = false;
