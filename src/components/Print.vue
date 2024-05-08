@@ -238,6 +238,10 @@ export default {
         formats:      PRINT_FORMATS,
         format:       PRINT_FORMATS[0].value,
       });
+
+      /**@since v3.10 Store map extent for print in case of already open print page*/
+      this.print_extent = null;
+
     },
 
     resize() {
@@ -313,9 +317,18 @@ export default {
      */
     getPrintExtent() {
       const map          = GUI.getService('map').viewer.map;
-      const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
-      const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
-      return (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+      // Need to check in case di an open print page
+      try {
+        const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
+        const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
+        this.print_extent  = (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+      }
+      catch(e) {
+         //in case of already open content print page
+        console.warn(e);
+      }
+
+      return this.print_extent;
     },
 
     /**
@@ -391,11 +404,10 @@ export default {
           // set print area after closing content
           this._page.unmount = () => {
             GUI.getService('map').viewer.map.once('postrender', this._setPrintArea.bind(this));
-            const promise = Component.prototype.unmount.call(this._page);
-            this._page = null;
+            const promise     = Component.prototype.unmount.call(this._page);
+            this._page        = null;
             return promise;
           };
-
         }
 
       } catch(e) {
@@ -432,7 +444,7 @@ export default {
       // close content if open
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
-      if (reset)                           { this.atlas_values = []; }
+      if (reset)                           { this.atlas_values = []; this.print_extent = null; }
       if (reset && !this.has_autocomplete) { this.disabled = true }
       GUI
         .closeContent()
