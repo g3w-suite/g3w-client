@@ -87,6 +87,9 @@ function Layer(config={}, options={}) {
   // dinamic layer values useful for layerstree
   const defaultstyle = config.styles && config.styles.find(style => style.current).name;
 
+  /**
+   * @TODO make it simpler, `this.config` and `this.state` are essentially duplicated data
+   */
   this.state = {
 
     id:                 config.id,
@@ -170,9 +173,27 @@ function Layer(config={}, options={}) {
      * @since 3.8.0
      */
     stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
-    name:               config.name, /** since 3.10.0 **/
-    expanded:           config.expanded,  /** since 3.10.0 **/
-    toc:                'boolean' === typeof config.toc ? config.toc: true, /** @since 3.10.0 true: show layer on TOC; false hide layer on TOC */
+
+    /**
+     * @type { string }
+     * 
+     * @since 3.10.0
+     */
+    name:               config.name,
+
+    /**
+     * @type { boolean }
+     * 
+     * @since 3.10.0
+     */
+    expanded:           config.expanded,
+
+    /**
+     * @type { boolean } whether to show layer on TOC (default: true)
+     * 
+     * @since 3.10.0
+     */
+    toc:                'boolean' === typeof config.toc ? config.toc: true,
 
   };
 
