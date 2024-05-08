@@ -11,10 +11,10 @@
         <div class="box-body">
 
           <transition :duration="500" name="fade">
-            <bar-loader :loading="state.loading"/>
+            <bar-loader :loading="state.loading" />
           </transition>
 
-          <helpdiv message='sdk.print.help'/>
+          <helpdiv message='sdk.print.help' />
 
           <!-- PRINT TEMPLATE -->
           <label for="templates" v-t="'sdk.print.template'"></label>
@@ -39,11 +39,7 @@
               v-select2  = "'state.scale'"
               @change    = "changeScale"
             >
-              <option
-                v-for="scale in state.scales"
-                :value="scale.value">
-                {{ scale.label }}
-              </option>
+              <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
             </select>
 
             <!-- PRINT DPI -->
@@ -56,6 +52,7 @@
             >
               <option v-for="dpi in state.dpis">{{ dpi }}</option>
             </select>
+
             <!-- PRINT ROTATION -->
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input
@@ -76,11 +73,7 @@
               class     = "form-control"
               v-select2 = "'state.format'"
             >
-              <option
-                v-for  = "format in state.formats"
-                :value = "format.value">
-                  {{ format.label }}
-              </option>
+              <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
             </select>
 
           </template>
@@ -111,7 +104,6 @@
           <div
             v-if  = "state.labels && state.labels.length > 0"
             class = "print-labels-content"
-            style = "color: white"
           >
             <span
               class = "skin-color"
@@ -195,7 +187,6 @@ export default {
       disabled: false,
       /** @since 3.10.0 */
       atlas_values:   [],
-      format_options: null,
     };
   },
 
@@ -341,8 +332,10 @@ export default {
         // disable sidebar
         GUI.disableSideBar(true);
 
-        //In case of already print page open, need to close it otherwise is appended on a dom element
-        if (this._page) { await promisify(GUI.closeContent()); }
+        // close print page if already open
+        if (this._page) {
+          await promisify(GUI.closeContent());
+        }
 
         // ATLAS PRINT
         if (has_atlas) {
@@ -366,7 +359,7 @@ export default {
 
           this._page = new Component({ service: { state: this.state }, vueComponentObject: vueComp });
 
-          //show print page with loading state
+          // show print page with loading state
           GUI.setContent({
             content: this._page,
             title:   'print',
@@ -380,7 +373,6 @@ export default {
               template:             this.state.template,
               scale:                this.state.scale,
               format:               this.state.format,
-              format_options:       null,
               labels:               this.state.labels,
               is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
               maps:                 this.state.maps.map(m => ({
@@ -694,6 +686,7 @@ export default {
 <style scoped>
 .print-labels-content {
   margin-top: 5px;
+  color: white;
 }
 .print-labels-content > span.skin-color {
   font-weight: bold;

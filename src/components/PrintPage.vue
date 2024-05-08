@@ -6,20 +6,21 @@
 <template>
   <div id="print-output">
     <transition :duration="500" name="fade">
-      <bar-loader :loading="state.loading && state.layers"/>
+      <bar-loader :loading="state.loading && state.layers" />
     </transition>
 
     <template v-if="state.layers">
-        <!-- PRINT as PDF or GEOPDF-->
-        <iframe
-          v-if  = "['pdf', 'geopdf'].includes(format)"
-          ref   = "out"
-          :src = "state.url"
-        ></iframe>
+
+      <!-- PRINT as PDF or GEOPDF-->
+      <iframe
+        v-if  = "['pdf', 'geopdf'].includes(format)"
+        ref   = "out"
+        :src = "state.url"
+      ></iframe>
 
       <!-- PRINT as PNG -->
       <div
-        v-else-if = "'png' === format"
+        v-else
         class     = "g3w-print-png-output"
       >
         <div id="g3w-print-header">
@@ -50,11 +51,13 @@
       </div>
 
     </template>
+
     <!---NO PRINT LAYERS-->
     <h4
       v-else
       v-t="'sdk.print.no_layers'">
     </h4>
+
   </div>
 </template>
 
@@ -69,11 +72,11 @@ export default {
   name: 'print-page',
 
   data() {
+    const state = this.$options.service.state || {};
     return {
-      state:  this.$options.service.state || {},
-      //need to convert a format not responsive from service
-      //otherwise it reacts on change state.format from Print.vue,
-      format: this.$options.service.state && this.$options.service.state.format,
+      state,
+      // extract `state.format` so it doesnt' react to Print.vue changes
+      format: state.format,
     }
   },
 
@@ -83,8 +86,8 @@ export default {
       try {
         GUI.disableSideBar(true);
         this.state.downloading = true;
-        if (['jpg', 'png'].includes(this.state.format)) {
-          await imageToDataURL({ src: this.state.url, type: `image/${this.state.format}` });
+        if (['jpg', 'png'].includes(this.format)) {
+          await imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
           setTimeout(() => {
             GUI.disableSideBar(false);
             this.state.downloading = false;
