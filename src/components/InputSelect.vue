@@ -152,8 +152,8 @@ export default {
         }
       } catch(err) {
         GUI.showUserMessage({
-          type: "warning",
-          message: 'sdk.form.inputs.messages.errors.picklayer',
+          type:      "warning",
+          message:   'sdk.form.inputs.messages.errors.picklayer',
           autoclose: true
         });
         this.picked = false;

@@ -98,7 +98,7 @@
     alert:   {},
     tool:    {
       "z-index": ZINDEXES.usermessage.tool,
-      left: "40px"
+      left     : "40px"
     },
     loading: {},
   };
@@ -106,7 +106,7 @@
   export default {
     name: "usermessage",
     props: {
-      id:{},
+      id: {},
       type: {
         type:    String,
         default: "info" // info, warning, alert, tool
@@ -289,7 +289,7 @@
 
   .usermessage-message {
     width: 100%;
-    padding: 0 0 3px 10px;
+    padding: 10px;
     max-height: 100px;
     font-size: 1.1em;
     align-self: flex-start;
