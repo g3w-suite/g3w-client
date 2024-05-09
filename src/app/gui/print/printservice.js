@@ -85,27 +85,24 @@ const PRINT_UTILS = {
       url: store.getWmsUrl(),
       mime_type: ({ pdf: 'application/pdf', jpg: 'image/jpeg' })[opts.format],
       params: {
-        SERVICE:     'WMS',
-        VERSION:     '1.3.0',
-        REQUEST:     'GetPrint',
-        TEMPLATE:    opts.template,
-        DPI:         opts.dpi,
-        STYLES:      layers.map(l => l.getStyle()).join(','),
-        LAYERS:      opts.is_maps_preset_theme ? undefined : LAYERS,
-        FORMAT:      opts.format,
-        CRS:         store.getProjection().getCode(),
-        filtertoken: ApplicationState.tokens.filtertoken,
-        ...(opts.maps || []).reduce((params, map) => {
-          params[map.name + ':SCALE']    = map.scale;
-          params[map.name + ':EXTENT']   = map.extent;
-          params[map.name + ':ROTATION'] = opts.rotation;
-          params[map.name + ':LAYERS']   = opts.is_maps_preset_theme && undefined === map.preset_theme ? LAYERS : undefined;
-          return params;
-        }, {}),
-        ...(opts.labels || []).reduce((params, label) => {
-          params[label.id] = label.text;
-          return params;
-        }, {})
+        SERVICE:       'WMS',
+        VERSION:       '1.3.0',
+        REQUEST:       'GetPrint',
+        TEMPLATE:       opts.template,
+        DPI:            opts.dpi,
+        STYLES:         layers.map(l => l.getStyle()).join(','),
+        ...(opts.is_maps_preset_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
+        FORMAT:         opts.format,
+        CRS:            store.getProjection().getCode(),
+        filtertoken:    ApplicationState.tokens.filtertoken,
+        ...(opts.maps || []).reduce((params, map) => Object.assign(params, {
+          [`${map.name}:SCALE`]:    map.scale,
+          [`${map.name}:EXTENT`]:   map.extent,
+          [`${map.name}:ROTATION`]: opts.rotation,
+          //need to specify LAYERS from mapX in case of maps has at least one preset theme set, otherwise get layers from LAYERS param
+          ...(opts.is_maps_preset_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
+        }), {}),
+        ...(opts.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
       },
     });
   },
