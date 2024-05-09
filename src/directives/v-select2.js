@@ -66,9 +66,19 @@ export default {
         el.dispatchEvent(new Event("change"))
       });
 
-      if (binding.value && select2_value) {
+      if (binding.value && undefined !== select2_value) {
         $(el).val(select2_value).trigger('change');
+        /** @since v3.10.0 Need to listen eventually select2_value attribute changes to reflect select2 current value*/
+        vnode.g3w_observer = new MutationObserver((mutations) => {
+          mutations.find((mutation) => {
+            if ("select2_value" === mutation.attributeName) {
+              $(el).val(mutation.target.getAttribute("select2_value")).trigger('change');
+              return true;
+            }
+          })
+        });
+        vnode.g3w_observer.observe(el, {attributes: true});
       }
   },
-  unbind: (el) => { $(el).select2('destroy'); }
+  unbind: (el, vnode) => { (vnode.g3w_observer && vnode.g3w_observer.disconnect()); $(el).select2('destroy'); }
 };

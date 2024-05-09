@@ -19,10 +19,11 @@
           <!-- PRINT TEMPLATE -->
           <label for="templates" v-t="'sdk.print.template'"></label>
           <select
-            id        = "templates"
-            class     = "form-control"
-            v-select2 = "'state.template'"
-            @change   = "changeTemplate"
+            id            = "templates"
+            class         = "form-control"
+            v-select2     = "'state.template'"
+            @change       = "changeTemplate"
+            :select_value = "state.template"
             :style    = "{ marginBottom: this.state.atlas && '10px' }"
           >
             <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
@@ -33,11 +34,12 @@
             <!-- PRINT SCALE -->
             <label for="scale" v-t="'sdk.print.scale'"></label>
             <select
-              id         = "scale"
-              v-disabled = "!has_maps"
-              class      = "form-control"
-              v-select2  = "'state.scale'"
-              @change    = "changeScale"
+              id             = "scale"
+              v-disabled     = "!has_maps"
+              class          = "form-control"
+              v-select2      = "'state.scale'"
+              :select2_value = "state.scale"
+              @change        = "changeScale"
             >
               <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
             </select>
@@ -46,6 +48,7 @@
             <label for="dpi">dpi</label>
             <select
               v-select2      = "'state.dpi'"
+              :select2_value = "state.dpi"
               id             = "dpi"
               class          = "form-control"
               :createTag     = "true"
@@ -69,9 +72,10 @@
             <!-- PRINT FORMAT -->
             <label for="format" v-t="'sdk.print.format'"></label>
             <select
-              id        = "format"
-              class     = "form-control"
-              v-select2 = "'state.format'"
+              id             = "format"
+              class          = "form-control"
+              v-select2      = "'state.format'"
+              :select2_value = "state.format"
             >
               <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
             </select>
@@ -217,7 +221,6 @@ export default {
 
       const print   = ProjectsRegistry.getCurrentProject().getPrint() || [];
       const visible = print.length > 0;
-
       this.state = Object.assign(this.state || {}, {
         visible,
         print,
@@ -231,7 +234,7 @@ export default {
         atlas:        visible ? print[0].atlas  : undefined,
         rotation:     visible ? 0               : undefined,
         inner:        [0, 0, 0, 0],
-        scales:       PRINT_SCALES,
+        scales:       [], // initial set empty
         scale:        visible ? null            : undefined,
         dpis:         PRINT_RESOLUTIONS,
         dpi:          PRINT_RESOLUTIONS[0],
@@ -507,7 +510,7 @@ export default {
       let res        = maxResolution;
       const units    = GUI.getService('map').getMapUnits();
       const mapScale = getScaleFromResolution(res, units);
-      const scales   = this.state.scales.sort((a, b) => b.value - a.value);
+      const scales   = PRINT_SCALES.sort((a, b) => b.value - a.value);
       let scale      = [];
       let first      = true;
       scales
@@ -542,6 +545,7 @@ export default {
           }
         });
     },
+
 
     reload() {
       this.state.print    = ProjectsRegistry.getCurrentProject().state.print || [];
@@ -592,10 +596,10 @@ export default {
          * @param data.text the text that is displayed for the data object
          */
         matcher: (params, data) => {
-            const search = params.term ? params.term.toLowerCase() : params.term;
-            if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
-            if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
-            return null;                                                                                 // hide the term
+          const search = params.term ? params.term.toLowerCase() : params.term;
+          if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
+          if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
+          return null;                                                                                 // hide the term
         },
         language: {
           noResults:     () => t("sdk.search.no_results"),
