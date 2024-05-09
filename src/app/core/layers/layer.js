@@ -79,7 +79,7 @@ function Layer(config={}, options={}) {
     this.config.urls.featurecount = project.getUrl('featurecount');
     
     /**
-     * Custom parameters based on project qgis version
+     * Custom parameters based on a project qgis version
      */
     this.config.searchParams = { I: 0, J: 0 };
   }
@@ -87,57 +87,58 @@ function Layer(config={}, options={}) {
   // dinamic layer values useful for layerstree
   const defaultstyle = config.styles && config.styles.find(style => style.current).name;
 
+  /**
+   * @TODO make it simpler, `this.config` and `this.state` are essentially duplicated data
+   */
   this.state = {
 
-    id: config.id,
+    id:                 config.id,
 
-    title: config.title,
+    title:              config.title,
 
-    selected: config.selected || false,
+    selected:           config.selected || false,
 
-    disabled: config.disabled || false,
+    disabled:           config.disabled || false,
 
-    metadata: config.metadata,
+    metadata:           config.metadata,
 
-    metadata_querable: this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
+    metadata_querable:  this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
 
     openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
 
-    removable: config.removable || false,
+    removable:          config.removable || false,
 
-    downloadable: this.isDownloadable(),
+    downloadable:       this.isDownloadable(),
 
-    source: config.source,
+    source:             config.source,
 
-    styles: config.styles,
+    styles:             config.styles,
 
     defaultstyle,
 
     /**
      * state of if is in editing (setted by editing plugin)
      */
-    inediting: false,
+    inediting:          false,
 
-    infoformat: this.getInfoFormat(),
+    infoformat:         this.getInfoFormat(),
 
-    infoformats: this.config.infoformats || [],
+    infoformats:        this.config.infoformats || [],
 
-    projectLayer: true,
+    projectLayer:       true,
 
-    geolayer: false,
+    geolayer:           false,
 
     /**
      * Reactive selection attribute 
      */
-    selection: {
-      active: false
-    },
+    selection:          { active: false },
 
     /**
      * Reactive filter attribute 
      */
     filter: {
-      active: false,
+      active:  false,
 
       /**
        * @since 3.9.0 whether filter is set from a previously saved filter
@@ -150,34 +151,49 @@ function Layer(config={}, options={}) {
      *
      * @since 3.9.0
      */
-    filters: config.filters || [],
+    filters:            config.filters || [],
 
-    attributetable: {
-      pageLength: null
-    },
+    attributetable:     { pageLength: null },
 
 
-    visible: config.visible || false,
+    visible:            config.visible || false,
 
-    tochighlightable: false,
+    tochighlightable:   false,
 
     /**
      * @type {number}
      * 
      * @since 3.8.0
      */
-    featurecount: config.featurecount,
+    featurecount:       config.featurecount,
 
     /**
      * @type { boolean | Object<number, number> }
      * 
      * @since 3.8.0
      */
-    stylesfeaturecount: config.featurecount && defaultstyle && {
-      [defaultstyle]: config.featurecount
-    },
-    name: config.name, /** since 3.10.0 **/
-    expanded: config.expanded,  /** since 3.10.0 **/
+    stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
+
+    /**
+     * @type { string }
+     * 
+     * @since 3.10.0
+     */
+    name:               config.name,
+
+    /**
+     * @type { boolean }
+     * 
+     * @since 3.10.0
+     */
+    expanded:           config.expanded,
+
+    /**
+     * @type { boolean } whether to show layer on TOC (default: true)
+     * 
+     * @since 3.10.0
+     */
+    toc:                'boolean' === typeof config.toc ? config.toc: true,
 
   };
 
@@ -1016,7 +1032,7 @@ proto.getUrl = function(type) {
  * @param url.type
  * @param url.url
  */
-proto.setUrl = function({type, url}={}) {
+proto.setUrl = function({ type, url } = {}) {
   this.config.urls[type] = url;
 };
 
