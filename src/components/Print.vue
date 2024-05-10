@@ -508,18 +508,16 @@ export default {
       const mapScale = getScaleFromResolution(maxRes, units);
       const scales   = PRINT_SCALES.sort((a, b) => b.value - a.value);
       let scale      = [];
-      let first      = true;
       scales
         .forEach((scala, i) => {
           if (mapScale > scala.value) {
             // get [previous, current] scales if is first to add and not is a maximun scale
-            (first && i > 0 ? [scales[i-1], scala] : [scala]).forEach(s => {
+            (i > 0 ? [scales[i-1], scala] : [scala]).forEach(s => {
               scale.push(s);
               maxRes = getResolutionFromScale(s.value, units);
               this._resolutions[s.value] = maxRes;
             });
             maxRes /= 2;
-            first = false;
           }
         });
       this.state.scales = scale;
