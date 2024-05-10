@@ -508,8 +508,8 @@ export default {
       const mapScale    = getScaleFromResolution(maxRes, units);
       const scales      = PRINT_SCALES.sort((a, b) => b.value - a.value);
       const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
-      const above       = scales.findIndex(s => below[0] === s) - 1;        // first scale above mapScale
-      this.state.scales = (above >= 0 ? [scales[above]] : []).concat(below);
+      const above       = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
+      this.state.scales = (above ? [above] : []).concat(below);
       this.state.scales.forEach(s => this._resolutions[s.value] = getResolutionFromScale(s.value, units))
     },
 
