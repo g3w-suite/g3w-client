@@ -19,12 +19,12 @@
           <!-- PRINT TEMPLATE -->
           <label for="templates" v-t="'sdk.print.template'"></label>
           <select
-            id            = "templates"
-            class         = "form-control"
-            v-select2     = "'state.template'"
-            @change       = "changeTemplate"
-            :select_value = "state.template"
-            :style    = "{ marginBottom: this.state.atlas && '10px' }"
+            id             = "templates"
+            class          = "form-control"
+            v-select2      = "'state.template'"
+            :select2_value = "state.template"
+            :style         = "{ marginBottom: this.state.atlas && '10px' }"
+            @change        = "changeTemplate"
           >
             <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
           </select>
@@ -35,8 +35,8 @@
             <label for="scale" v-t="'sdk.print.scale'"></label>
             <select
               id             = "scale"
-              v-disabled     = "!has_maps"
               class          = "form-control"
+              v-disabled     = "!has_maps"
               v-select2      = "'state.scale'"
               :select2_value = "state.scale"
               @change        = "changeScale"
@@ -47,10 +47,10 @@
             <!-- PRINT DPI -->
             <label for="dpi">dpi</label>
             <select
-              v-select2      = "'state.dpi'"
-              :select2_value = "state.dpi"
               id             = "dpi"
               class          = "form-control"
+              v-select2      = "'state.dpi'"
+              :select2_value = "state.dpi"
               :createTag     = "true"
             >
               <option v-for="dpi in state.dpis">{{ dpi }}</option>
@@ -60,12 +60,12 @@
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input
               id         = "rotation"
+              class      = "form-control"
               v-disabled = "!has_maps"
               min        = "-360"
               max        = "360"
               @input     = "changeRotation"
               v-model    = "state.rotation"
-              class      = "form-control"
               type       = "number"
             />
 
@@ -109,10 +109,7 @@
             v-if  = "state.labels && state.labels.length > 0"
             class = "print-labels-content"
           >
-            <span
-              class = "skin-color"
-              v-t   = "'sdk.print.labels'">
-            </span>
+            <span class="skin-color" v-t="'sdk.print.labels'"></span>
             <div class="labels-input-content">
               <span
                 v-for = "label in state.labels"

@@ -10,6 +10,7 @@ export default {
       templateSelection,
       multiple  = false,
       search    = true,
+      /** @since 3.10.0 listen `select2_value` attribute changes to reflect select2 current value */
       select2_value,
       /** @since 3.9.1 */
       indexItem,
@@ -36,49 +37,66 @@ export default {
           } : null;
         },
       })
-      .on('select2:select', (e) => {
-        if (!binding.value) { return; }
-        //get value
-        const value = e.params.data.id;
-        const arr = (isArray ? vnode.context[binding.value][indexItem].value : vnode.context[binding.value]);
-        // check is can have multiple value
-        if (multiple && arr.every(d => value !== d)) {
-          arr.push(value);
-        } else if (isArray) {
-          vnode.context[binding.value][indexItem].value = value;
-        } else {
-          // take in an account text binding value single world or object (eg. state.name)
-          const attrs = `${binding.value}`.split('.');
-          const last = attrs.pop();
-          (attrs.reduce((acc, a) => { acc = acc[a]; return acc; }, vnode.context))[last] = value;
+      .on('select2:select select2:unselect', e => {
+        if (!binding.value) {
+          return;
         }
-        //dispatch change event as base select element change option
-        el.dispatchEvent(new Event("change"))
-      })
-      .on('select2:unselect', (e) => {
-        if (!binding.value || !multiple) { return; }
-        if (isArray) {
-          vnode.context[binding.value][indexItem].value = vnode.context[binding.value][indexItem].value.filter(d => e.params.data.id !== d);
-        } else {
-          vnode.context[binding.value] = vnode.context[binding.value].filter(d => e.params.data.id !== d);
+
+        const value    = binding.value;
+        const selected = 'select2:select' === e.type;
+        const id       = e.params.data.id;
+        const ctx      = vnode.context;
+
+        // selected
+        /** @TODO reduce nesting level */
+        if (selected) {
+          const arr = (isArray ? ctx[value][indexItem].value : ctx[value]);
+          // check is can have multiple value
+          if (multiple && arr.every(d => id !== d)) {
+            arr.push(id);
+          } else if (isArray) {
+            ctx[value][indexItem].value = id;
+          } else {
+            // take in an account text binding value single world or object (eg. state.name)
+            const attrs = `${value}`.split('.');
+            const last = attrs.pop();
+            (attrs.reduce((acc, a) => { acc = acc[a]; return acc; }, vnode.context))[last] = id;
+          }
         }
-        //dispatch change event as base select element change option
-        el.dispatchEvent(new Event("change"))
+
+        // unselected
+        /** @TODO reduce nesting level */
+        if (!selected && multiple) {
+          if (isArray) {
+            ctx[value][indexItem].value = ctx[value][indexItem].value.filter(d => id !== d);
+          } else {
+            ctx[value] = ctx[value].filter(d => id !== d);
+          }
+        }
+
+        // dispatch "change" event to native <select> element
+        if (selected || multiple) {
+          el.dispatchEvent(new Event("change"));
+        }
+
       });
 
+      // listen `select2_value` attribute changes to reflect select2 current value
       if (binding.value && undefined !== select2_value) {
         $(el).val(select2_value).trigger('change');
-        /** @since v3.10.0 Need to listen eventually select2_value attribute changes to reflect select2 current value*/
-        vnode.g3w_observer = new MutationObserver((mutations) => {
-          mutations.find((mutation) => {
-            if ("select2_value" === mutation.attributeName) {
-              $(el).val(mutation.target.getAttribute("select2_value")).trigger('change');
-              return true;
-            }
-          })
+        vnode.g3w_observer = new MutationObserver(mutations => {
+          const target = (mutations.find(m => "select2_value" === m.attributeName) || {}).target
+          if (target) {
+            $(el).val(target.getAttribute("select2_value")).trigger('change');
+          }
         });
         vnode.g3w_observer.observe(el, {attributes: true});
       }
   },
-  unbind: (el, vnode) => { (vnode.g3w_observer && vnode.g3w_observer.disconnect()); $(el).select2('destroy'); }
+  unbind: (el, vnode) => {
+    if(vnode.g3w_observer) {
+      vnode.g3w_observer.disconnect();
+    }
+    $(el).select2('destroy');
+  }
 };
