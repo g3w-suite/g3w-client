@@ -515,10 +515,9 @@ export default {
           if (mapScale > scala.value) {
             //need to check if a first scale to add and if is not a maximun scale
             //in case need to get previous scale and current
-            const s = first && i > 0 ? [scales[i-1], scala] : [scala];
-            s.forEach(_s => {
-              scale.push(_s);
-              res = getResolutionFromScale(_s.value, units);
+            (first && i > 0 ? [scales[i-1], scala] : [scala]).forEach(s => {
+              scale.push(s);
+              res = getResolutionFromScale(s.value, units);
               this._resolutions[s.value] = res;
             })
             res /= 2;
