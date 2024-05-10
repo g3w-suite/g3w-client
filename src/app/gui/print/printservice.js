@@ -242,7 +242,7 @@ proto.setInitState = function() {
   this.state.inner         = [0, 0, 0, 0];
   this.state.center        = null;
   this.state.size          = null;
-  this.state.scale         = scale;
+  this.state.scale         = [];
   this.state.scala         = null;
   this.state.dpis          = dpis;
   this.state.dpi           = dpis[0];
@@ -528,34 +528,17 @@ proto._clearPrint = function(reset=false) {
 
 /**
  *
- * @param maxResolution
+ * @param maxRes
  * @private
  */
-proto._setAllScalesBasedOnMaxResolution = function(maxResolution) {
-  let resolution             = maxResolution;
-  const mapScala             = getScaleFromResolution(resolution, this._mapUnits);
-  const orderScales          = _.orderBy(this.state.scale, ['value'], ['desc']);
-  let scale                  = [];
-  let addedFirstHighestScale = false;
-  const handleScala = (scala) => {
-    scale.push(scala);
-    resolution = getResolutionFromScale(scala.value, this._mapUnits);
-    this._scalesResolutions[scala.value] = resolution;
-    resolution = resolution / 2;
-  };
-  orderScales
-    .forEach((scala, index) => {
-      if (mapScala > scala.value) {
-        if (!addedFirstHighestScale) {
-          const higherScale = orderScales[index-1];
-          handleScala(higherScale);
-          addedFirstHighestScale = true;
-        }
-        handleScala(scala);
-      }
-    });
-
-  this.state.scale = scale;
+proto._setAllScalesBasedOnMaxResolution = function(maxRes) {
+  const units       = GUI.getService('map').getMapUnits();
+  const mapScale    = getScaleFromResolution(maxRes, units);
+  const scales      = scale.sort((a, b) => b.value - a.value);
+  const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
+  const above       = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
+  this.state.scales = (above ? [above] : []).concat(below);
+  this.state.scales.forEach(s => this._resolutions[s.value] = getResolutionFromScale(s.value, units))
 };
 
 /**
