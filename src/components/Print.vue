@@ -202,6 +202,7 @@ export default {
       return (this.state.maps || []).length > 0;
     },
 
+    //in the case of current template is atlas and has field_name
     has_autocomplete() {
       return !!(this.state.atlas && this.state.atlas.field_name);
     },
@@ -445,7 +446,6 @@ export default {
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
       if (reset)                           { this.atlas_values = []; this.print_extent = null; }
-      if (reset && !this.has_autocomplete) { this.disabled = true }
       GUI
         .closeContent()
         .then(component => {
