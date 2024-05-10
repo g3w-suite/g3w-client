@@ -501,26 +501,24 @@ export default {
     /**
      * Set all scales based on max resolution
      *
-     * @param maxResolution
+     * @param maxRes maximum resolution
      */
-    _setScales(maxResolution) {
-      let res        = maxResolution;
+    _setScales(maxRes) {
       const units    = GUI.getService('map').getMapUnits();
-      const mapScale = getScaleFromResolution(res, units);
+      const mapScale = getScaleFromResolution(maxRes, units);
       const scales   = PRINT_SCALES.sort((a, b) => b.value - a.value);
       let scale      = [];
       let first      = true;
       scales
         .forEach((scala, i) => {
           if (mapScale > scala.value) {
-            //need to check if a first scale to add and if is not a maximun scale
-            //in case need to get previous scale and current
+            // get [previous, current] scales if is first to add and not is a maximun scale
             (first && i > 0 ? [scales[i-1], scala] : [scala]).forEach(s => {
               scale.push(s);
-              res = getResolutionFromScale(s.value, units);
-              this._resolutions[s.value] = res;
-            })
-            res /= 2;
+              maxRes = getResolutionFromScale(s.value, units);
+              this._resolutions[s.value] = maxRes;
+            });
+            maxRes /= 2;
             first = false;
           }
         });
