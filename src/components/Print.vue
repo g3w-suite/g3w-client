@@ -516,12 +516,16 @@ export default {
       scales
         .forEach((scala, i) => {
           if (mapScale > scala.value) {
-            let s = first ? scales[i-1] : scala;
-            first = false;
-            scale.push(s);
-            res = getResolutionFromScale(s.value, units);
-            this._resolutions[s.value] = res;
+            //need to check if a first scale to add and if is not a maximun scale
+            //in case need to get previous scale and current
+            const s = first && i > 0 ? [scales[i-1], scala] : [scala];
+            s.forEach(_s => {
+              scale.push(_s);
+              res = getResolutionFromScale(_s.value, units);
+              this._resolutions[s.value] = res;
+            })
             res /= 2;
+            first = false;
           }
         });
       this.state.scales = scale;
