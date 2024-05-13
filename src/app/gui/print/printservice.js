@@ -537,8 +537,8 @@ proto._setAllScalesBasedOnMaxResolution = function(maxRes) {
   const scales      = scale.sort((a, b) => b.value - a.value);
   const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
   const above       = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
-  this.state.scales = (above ? [above] : []).concat(below);
-  this.state.scales.forEach(s => this._resolutions[s.value] = getResolutionFromScale(s.value, units))
+  this.state.scale = (above ? [above] : []).concat(below);
+  this.state.scale.forEach(s => this._scalesResolutions[s.value] = getResolutionFromScale(s.value, units))
 };
 
 /**
