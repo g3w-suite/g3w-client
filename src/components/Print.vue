@@ -19,11 +19,12 @@
           <!-- PRINT TEMPLATE -->
           <label for="templates" v-t="'sdk.print.template'"></label>
           <select
-            id        = "templates"
-            class     = "form-control"
-            v-select2 = "'state.template'"
-            @change   = "changeTemplate"
-            :style    = "{ marginBottom: this.state.atlas && '10px' }"
+            id             = "templates"
+            class          = "form-control"
+            v-select2      = "'state.template'"
+            :select2_value = "state.template"
+            :style         = "{ marginBottom: this.state.atlas && '10px' }"
+            @change        = "changeTemplate"
           >
             <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
           </select>
@@ -33,11 +34,12 @@
             <!-- PRINT SCALE -->
             <label for="scale" v-t="'sdk.print.scale'"></label>
             <select
-              id         = "scale"
-              v-disabled = "!has_maps"
-              class      = "form-control"
-              v-select2  = "'state.scale'"
-              @change    = "changeScale"
+              id             = "scale"
+              class          = "form-control"
+              v-disabled     = "!has_maps"
+              v-select2      = "'state.scale'"
+              :select2_value = "state.scale"
+              @change        = "changeScale"
             >
               <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
             </select>
@@ -45,9 +47,10 @@
             <!-- PRINT DPI -->
             <label for="dpi">dpi</label>
             <select
-              v-select2      = "'state.dpi'"
               id             = "dpi"
               class          = "form-control"
+              v-select2      = "'state.dpi'"
+              :select2_value = "state.dpi"
               :createTag     = "true"
             >
               <option v-for="dpi in state.dpis">{{ dpi }}</option>
@@ -57,21 +60,22 @@
             <label for="rotation" v-t="'sdk.print.rotation'"></label>
             <input
               id         = "rotation"
+              class      = "form-control"
               v-disabled = "!has_maps"
               min        = "-360"
               max        = "360"
               @input     = "changeRotation"
               v-model    = "state.rotation"
-              class      = "form-control"
               type       = "number"
             />
 
             <!-- PRINT FORMAT -->
             <label for="format" v-t="'sdk.print.format'"></label>
             <select
-              id        = "format"
-              class     = "form-control"
-              v-select2 = "'state.format'"
+              id             = "format"
+              class          = "form-control"
+              v-select2      = "'state.format'"
+              :select2_value = "state.format"
             >
               <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
             </select>
@@ -105,10 +109,7 @@
             v-if  = "state.labels && state.labels.length > 0"
             class = "print-labels-content"
           >
-            <span
-              class = "skin-color"
-              v-t   = "'sdk.print.labels'">
-            </span>
+            <span class="skin-color" v-t="'sdk.print.labels'"></span>
             <div class="labels-input-content">
               <span
                 v-for = "label in state.labels"
@@ -201,6 +202,7 @@ export default {
       return (this.state.maps || []).length > 0;
     },
 
+    //in the case of current template is atlas and has field_name
     has_autocomplete() {
       return !!(this.state.atlas && this.state.atlas.field_name);
     },
@@ -217,7 +219,6 @@ export default {
 
       const print   = ProjectsRegistry.getCurrentProject().getPrint() || [];
       const visible = print.length > 0;
-
       this.state = Object.assign(this.state || {}, {
         visible,
         print,
@@ -231,7 +232,7 @@ export default {
         atlas:        visible ? print[0].atlas  : undefined,
         rotation:     visible ? 0               : undefined,
         inner:        [0, 0, 0, 0],
-        scales:       PRINT_SCALES,
+        scales:       [], // initial set empty
         scale:        visible ? null            : undefined,
         dpis:         PRINT_RESOLUTIONS,
         dpi:          PRINT_RESOLUTIONS[0],
@@ -445,7 +446,6 @@ export default {
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
       if (reset)                           { this.atlas_values = []; this.print_extent = null; }
-      if (reset && !this.has_autocomplete) { this.disabled = true }
       GUI
         .closeContent()
         .then(component => {
@@ -501,27 +501,16 @@ export default {
     /**
      * Set all scales based on max resolution
      *
-     * @param maxResolution
+     * @param maxRes maximum resolution
      */
-    _setScales(maxResolution) {
-      let res        = maxResolution;
-      const units    = GUI.getService('map').getMapUnits();
-      const mapScale = getScaleFromResolution(res, units);
-      const scales   = this.state.scales.sort((a, b) => b.value - a.value);
-      let scale      = [];
-      let first      = true;
-      scales
-        .forEach((scala, i) => {
-          if (mapScale > scala.value) {
-            let s = first ? scales[i-1] : scala;
-            first = false;
-            scale.push(s);
-            res = getResolutionFromScale(s.value, units);
-            this._resolutions[s.value] = res;
-            res /= 2;
-          }
-        });
-      this.state.scales = scale;
+    _setScales(maxRes) {
+      const units       = GUI.getService('map').getMapUnits();
+      const mapScale    = getScaleFromResolution(maxRes, units);
+      const scales      = PRINT_SCALES.sort((a, b) => b.value - a.value);
+      const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
+      const above       = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
+      this.state.scales = (above ? [above] : []).concat(below);
+      this.state.scales.forEach(s => this._resolutions[s.value] = getResolutionFromScale(s.value, units))
     },
 
     _initPrintConfig() {
@@ -542,6 +531,7 @@ export default {
           }
         });
     },
+
 
     reload() {
       this.state.print    = ProjectsRegistry.getCurrentProject().state.print || [];
@@ -592,10 +582,10 @@ export default {
          * @param data.text the text that is displayed for the data object
          */
         matcher: (params, data) => {
-            const search = params.term ? params.term.toLowerCase() : params.term;
-            if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
-            if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
-            return null;                                                                                 // hide the term
+          const search = params.term ? params.term.toLowerCase() : params.term;
+          if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
+          if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
+          return null;                                                                                 // hide the term
         },
         language: {
           noResults:     () => t("sdk.search.no_results"),

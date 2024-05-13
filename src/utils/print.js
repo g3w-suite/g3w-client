@@ -109,16 +109,17 @@ export function print(opts = {}, method = 'GET') {
      TEMPLATE:       opts.template,
      DPI:            opts.dpi,
      STYLES:         layers.map(l => l.getStyle()).join(','),
-     LAYERS:         opts.is_maps_preset_theme ? undefined : LAYERS,
+     ...(opts.is_maps_preset_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
      FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[opts.format] || opts.format,
-     FORMAT_OPTIONS: 'geopdf' === opts.format ? 'WRITE_GEO_PDF:TRUE': undefined, //@since 3.10.0
+     ...('geopdf' === opts.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
      CRS:            store.getProjection().getCode(),
      filtertoken:    ApplicationState.tokens.filtertoken,
      ...(opts.maps || []).reduce((params, map) => Object.assign(params, {
-        [map.name + ':SCALE']:    map.scale,
-        [map.name + ':EXTENT']:   map.extent,
-        [map.name + ':ROTATION']: opts.rotation,
-        [map.name + ':LAYERS']:   opts.is_maps_preset_theme && undefined === map.preset_theme ? LAYERS : undefined,
+        [`${map.name}:SCALE`]:    map.scale,
+        [`${map.name}:EXTENT`]:   map.extent,
+        [`${map.name}:ROTATION`]: opts.rotation,
+        //need to specify LAYERS from mapX in case of maps has at least one preset theme set, otherwise get layers from LAYERS param
+        ...(opts.is_maps_preset_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
       }), {}),
      ...(opts.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
    },
