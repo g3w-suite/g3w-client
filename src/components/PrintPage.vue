@@ -18,10 +18,10 @@
         :src = "state.url"
       ></iframe>
 
-      <!-- PRINT as PNG -->
+      <!-- PRINT as PNG, JPG, SVG -->
       <div
         v-else
-        class     = "g3w-print-png-output"
+        class     = "g3w-print-image-output"
       >
         <div id="g3w-print-header">
           <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
@@ -86,7 +86,7 @@ export default {
       try {
         GUI.disableSideBar(true);
         this.state.downloading = true;
-        if (['jpg', 'png'].includes(this.format)) {
+        if (['jpg', 'png', 'svg'].includes(this.format)) {
           await imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
           setTimeout(() => {
             GUI.disableSideBar(false);
@@ -119,7 +119,7 @@ export default {
   width:100%;
   height:100%;
 }
-.g3w-print-png-output {
+.g3w-print-image-output {
   display: flex;
   flex-direction: column;
   position: relative;
