@@ -5,6 +5,8 @@
  * @since 3.9.0
  */
 import { DOWNLOAD_FORMATS } from 'app/constant';
+import { downloadFile }     from "utils/downloadFile";
+
 const { XHR }               = require('utils');
 
 export default {
@@ -122,10 +124,14 @@ export default {
    */
   getPdf({ data = {} } = {}) {
     data.filtertoken = this.getFilterToken();
-    return XHR.fileDownload({
+    return downloadFile({
       url: this.getUrl('pdf'),
-      data,
-      httpMethod: "POST"
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      data: JSON.stringify(data),
+      mime_type: 'application/pdf',
+      method: 'POST'
     })
   },
 
