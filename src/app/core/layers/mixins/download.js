@@ -18,11 +18,11 @@ export default {
   }) {
     data.filtertoken = this.getFilterToken();
     switch (type) {
-      case 'shapefile': return this.getShp({data, options});
-      case 'xls':       return this.getXls({data, options});
-      case 'csv':       return this.getCsv({data, options});
-      case 'gpx':       return this.getGpx({data, options});
-      case 'gpkg':      return this.getGpkg({data, options});
+      case 'shapefile': return this.getShp({ data, options });
+      case 'xls':       return this.getXls({ data, options });
+      case 'csv':       return this.getCsv({ data, options });
+      case 'gpx':       return this.getGpx({ data, options });
+      case 'gpkg':      return this.getGpkg({ data, options });
       case 'geotiff':   return this.getGeoTIFF({ data, options });
       case 'pdf':       return this.getPdf({ data, options });
     }
@@ -112,7 +112,7 @@ export default {
     })
   },
   /**
-   * Get csv layer format
+   * Get pdf layer format
    * 
    * @param data
    * 
