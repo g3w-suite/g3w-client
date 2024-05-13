@@ -519,7 +519,7 @@ class QueryResultsService extends G3WObject {
       }
 
       // Lookup for layer selection status (active).
-      if (undefined !== layer.selection.active) {
+      if (layer.toc && undefined !== layer.selection.active) {
         this._setActionSelection(layer);
       }
 
@@ -1028,6 +1028,7 @@ class QueryResultsService extends G3WObject {
       atlas:                  this.getAtlasByLayerId(id),
       rawdata:                rawdata ? rawdata : null,
       error:                  error   ? error   : '',
+      toc:                    external || layer.state.toc, //@since v3.10.0
     };
 
     return layerObj;

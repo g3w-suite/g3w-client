@@ -130,6 +130,7 @@
                   </span>
                   <span
                     v-if                    = "
+                      layer.toc &&
                       layer.id !== '__g3w_marker' &&
                       layer.features.length > 1 &&
                       (layer.external || (layer.source && layer.source.type !== 'wms'))
