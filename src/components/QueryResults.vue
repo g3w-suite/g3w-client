@@ -89,18 +89,18 @@
                       </span>
                     </template>
                     <template v-else-if="layer.downloads.length > 1">
-                    <span
-                      class                   = "action-button"
-                      :class                  = "{'toggled': layer.downloadformats.active}"
-                      v-t-tooltip:left.create = "'Downloads'"
-                      v-download
-                    >
                       <span
-                        class       = "action-button-icon"
-                        :class      = "g3wtemplate.getFontClass('download')"
-                        @click.stop = "showLayerDownloadFormats(layer)"
-                      ></span>
-                    </span>
+                        class                   = "action-button"
+                        :class                  = "{'toggled': layer.downloadformats.active}"
+                        v-t-tooltip:left.create = "'Downloads'"
+                        v-download
+                      >
+                        <span
+                          class       = "action-button-icon"
+                          :class      = "g3wtemplate.getFontClass('download')"
+                          @click.stop = "showLayerDownloadFormats(layer)"
+                        ></span>
+                      </span>
                     </template>
                     <!--        END DOWNLOAD        -->
                   </template>
