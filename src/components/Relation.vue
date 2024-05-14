@@ -296,7 +296,7 @@ export default {
       // layer.isGeolayer() may return true, but QGIS project is not set to return geometry on response
       this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry);
 
-      const downloadformats       = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
+      const downloadformats = layer.getDownloadableFormats();
 
       /** @FIXME add description */
       if (downloadformats.length > 0) {

@@ -21,180 +21,104 @@ const deprecate             = require('util-deprecate');
 // Base Class of all Layer
 function Layer(config={}, options={}) {
 
-  this.config = config;
-  // assign some attribute
-  config.id        = config.id || 'Layer';
-  config.title     = config.title || config.name;
-  config.download  = !!config.download;
-  config.geolayer  = false;
-  config.baselayer = !!config.baselayer;
-  config.fields    = config.fields || {};
-  config.urls      = {
-    query: (config.infourl && '' !== config.infourl ? config.infourl : config.wmsUrl),
-    ...(config.urls || {})
-  };
-
   //get current project object
-  const {
-    project = ProjectsRegistry.getCurrentProject()
-  } = options;
+  const project   = options.project || ProjectsRegistry.getCurrentProject();
+  const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
+  const vectorUrl = config.baselayer ? '' : project.getVectorUrl();
+  const rasterUrl = config.baselayer ? '' : project.getRasterUrl();
 
-  /** @deprecated since 3.10.0. Will be removed in v.4.x. */
-  this.config.search_endpoint = 'api';
+  // assign some attributes
+
+  this.config = Object.assign(config, {
+    id:        config.id || 'Layer',
+    title:     config.title || config.name,
+    download:  !!config.download,
+    geolayer:  false,
+    baselayer: !!config.baselayer,
+    fields:    config.fields || {},
+    // URLs to get various type of data
+    urls:      {
+      query: config.infourl || config.wmsUrl,
+      ...(config.urls || {}),
+      ...(config.baselayer ? {} : {
+          filtertoken: `${vectorUrl}filtertoken/${suffixUrl}`,
+          data:        `${vectorUrl}data/${suffixUrl}`,
+          shp:         `${vectorUrl}shp/${suffixUrl}`,
+          csv:         `${vectorUrl}csv/${suffixUrl}`,
+          xls:         `${vectorUrl}xls/${suffixUrl}`,
+          gpx:         `${vectorUrl}gpx/${suffixUrl}`,
+          gpkg:        `${vectorUrl}gpkg/${suffixUrl}`,
+          geotiff:     `${rasterUrl}geotiff/${suffixUrl}`,
+          editing:     `${vectorUrl}editing/${suffixUrl}`,
+          commit:      `${vectorUrl}commit/${suffixUrl}`,
+          config:      `${vectorUrl}config/${suffixUrl}`,
+          unlock:      `${vectorUrl}unlock/${suffixUrl}`,
+          widget:      {
+            unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
+          },
+          /** @since 3.8.0 */
+          featurecount: project.getUrl('featurecount'),
+          /** @since 3.10.0 */
+          pdf:         `/html2pdf/`,
+        })
+    },
+    /** Custom parameters based on a project qgis version */
+    ...(config.baselayer ? {} : { searchParams: { I: 0, J: 0 } }),
+    /** @deprecated since 3.10.0. Will be removed in v.4.x. */
+    search_endpoint: 'api',
+  });
 
   // create relations
   this._relations = this._createRelations(project.getRelations());
 
-  // set URLs to get varios type of data
-  if (!this.isBaseLayer()) {
-    //suffix url
-    const suffixUrl = `${project.getType()}/${project.getId()}/${config.id}/`;
-    //get vector url
-    const vectorUrl = project.getVectorUrl();
-    //get raster url
-    const rasterUrl = project.getRasterUrl();
-
-    this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
-    this.config.urls.data        = `${vectorUrl}data/${suffixUrl}`;
-    this.config.urls.shp         = `${vectorUrl}shp/${suffixUrl}`;
-    this.config.urls.csv         = `${vectorUrl}csv/${suffixUrl}`;
-    this.config.urls.xls         = `${vectorUrl}xls/${suffixUrl}`;
-    this.config.urls.gpx         = `${vectorUrl}gpx/${suffixUrl}`;
-    this.config.urls.gpkg        = `${vectorUrl}gpkg/${suffixUrl}`;
-    this.config.urls.pdf         = `/html2pdf/`; //@since 3.10.0
-    this.config.urls.geotiff     = `${rasterUrl}geotiff/${suffixUrl}`;
-    this.config.urls.editing     = `${vectorUrl}editing/${suffixUrl}`;
-    this.config.urls.commit      = `${vectorUrl}commit/${suffixUrl}`;
-    this.config.urls.config      = `${vectorUrl}config/${suffixUrl}`;
-    this.config.urls.unlock      = `${vectorUrl}unlock/${suffixUrl}`;
-    this.config.urls.widget      = {
-      unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
-    };
-
-    /**
-     * Store feature count url to get features count of a layer
-     *
-     * @since 3.8.0
-     */
-    this.config.urls.featurecount = project.getUrl('featurecount');
-    
-    /**
-     * Custom parameters based on a project qgis version
-     */
-    this.config.searchParams = { I: 0, J: 0 };
-  }
-
   // dinamic layer values useful for layerstree
-  const defaultstyle = config.styles && config.styles.find(style => style.current).name;
+  const defaultstyle = config.styles && config.styles.find(s => s.current).name;
 
   /**
    * @TODO make it simpler, `this.config` and `this.state` are essentially duplicated data
    */
   this.state = {
-
     id:                 config.id,
-
     title:              config.title,
-
     selected:           config.selected || false,
-
     disabled:           config.disabled || false,
-
     metadata:           config.metadata,
-
     metadata_querable:  this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
-
     openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
-
     removable:          config.removable || false,
-
     downloadable:       this.isDownloadable(),
-
     source:             config.source,
-
     styles:             config.styles,
-
     defaultstyle,
-
-    /**
-     * state of if is in editing (setted by editing plugin)
-     */
-    inediting:          false,
-
     infoformat:         this.getInfoFormat(),
-
     infoformats:        this.config.infoformats || [],
-
     projectLayer:       true,
-
     geolayer:           false,
-
-    /**
-     * Reactive selection attribute 
-     */
+    attributetable:     { pageLength: null },
+    visible:            config.visible || false,
+    tochighlightable:   false,
+    /** state of if is in editing (setted by editing plugin) */
+    inediting:          false,
+    /** Reactive selection attribute */
     selection:          { active: false },
-
-    /**
-     * Reactive filter attribute 
-     */
+    /** Reactive filter attribute */
     filter: {
       active:  false,
-
-      /**
-       * @since 3.9.0 whether filter is set from a previously saved filter
-       */
+      /** @since 3.9.0 whether filter is set from a previously saved filter */
       current: null,
     },
-
-    /**
-     * @type { Array<{{ id: string, name: string }}> } array of saved filters
-     *
-     * @since 3.9.0
-     */
+    /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
     filters:            config.filters || [],
-
-    attributetable:     { pageLength: null },
-
-
-    visible:            config.visible || false,
-
-    tochighlightable:   false,
-
-    /**
-     * @type {number}
-     * 
-     * @since 3.8.0
-     */
+    /** @type {number} since 3.8.0 */
     featurecount:       config.featurecount,
-
-    /**
-     * @type { boolean | Object<number, number> }
-     * 
-     * @since 3.8.0
-     */
+    /** @type { boolean | Object<number, number> } since 3.8.0 */
     stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
-
-    /**
-     * @type { string }
-     * 
-     * @since 3.10.0
-     */
+    /** @type { string } since 3.10.0 */
     name:               config.name,
-
-    /**
-     * @type { boolean }
-     * 
-     * @since 3.10.0
-     */
+    /** @type { boolean } since 3.10.0 */
     expanded:           config.expanded,
-
-    /**
-     * @type { boolean } whether to show layer on TOC (default: true)
-     * 
-     * @since 3.10.0
-     */
+    /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
     toc:                'boolean' === typeof config.toc ? config.toc: true,
-
   };
 
   /**
