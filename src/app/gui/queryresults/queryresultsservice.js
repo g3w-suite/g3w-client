@@ -2084,10 +2084,10 @@ class QueryResultsService extends G3WObject {
         state: this.createActionState({layer}),
         class: GUI.getFontClass('download'),
         hint: `sdk.tooltips.download_${format}`,
-        cbk: (layer, feature, action, index) => {
+        cbk: (layer, feature, action, index, container) => {
           action.state.toggled[index] = !action.state.toggled[index];
           if (action.state.toggled[index]) {
-            cbk(layer, feature, action, index);
+            cbk(layer, feature, action, index, ('pdf' === format ? container[0].innerHTML : null));
           } else {
             this.setCurrentActionLayerFeatureTool({ index, action, layer })
           }
