@@ -65,7 +65,7 @@
       }
     },
     async created() {
-      if (this.action.init){
+      if (this.action.init) {
         this.action.init({layer: this.layer, feature: this.feature, index:this.featureIndex, action:this.action});
       }
       if (typeof this.action.condition === 'function') {

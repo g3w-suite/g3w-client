@@ -190,6 +190,7 @@ export default {
         download_gpkg: "Download GPKG",
         download_csv: "Download CSV",
         download_xls: "Download XLS",
+        download_pdf: "Download PDF",
         show_chart: "Show Chart",
         atlas: "Print Atlas"
       },
@@ -247,6 +248,9 @@ export default {
             },
             download_xls: {
               hint: "Download feature XLS"
+            },
+            download_pdf: {
+              hint: "Download feature PDF"
             },
             atlas: {
               hint: "Print Atlas"
