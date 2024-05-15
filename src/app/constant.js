@@ -57,7 +57,11 @@ export const DOWNLOAD_FORMATS = {
   download_raster: {
     format: 'geotiff',
     url:    'geotiff'
-  }
+  },
+  download_pdf: {
+    format: 'pdf',
+    url: 'pdf'
+  },
 };
 
 /**

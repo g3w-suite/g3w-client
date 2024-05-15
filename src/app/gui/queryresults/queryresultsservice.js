@@ -1491,7 +1491,13 @@ class QueryResultsService extends G3WObject {
     this.setLayerActionTool({
       layer,
       component: layer[name].active ? DownloadFormats : null,
-      config: layer[name].active ? this.state.actiontools[name][layer.id] : null
+      config: layer[name].active
+        ? {
+            ...this.state.actiontools[name][layer.id],
+            //for download layer need to filter pdf format because it works only for a single feature
+            downloads: this.state.actiontools[name][layer.id].downloads.filter(d => 'pdf' !== d.format)
+          }
+        : null
     })
   }
 
@@ -1503,8 +1509,9 @@ class QueryResultsService extends G3WObject {
    * @param features
    * @param action
    * @param index
+   * @param html
    */
-  async downloadFeatures(type, layer, features = [], action, index) {
+  async downloadFeatures(type, layer, features = [], action, index, html) {
 
     if (features && !Array.isArray(features)) {
       features = [features];
@@ -1514,6 +1521,11 @@ class QueryResultsService extends G3WObject {
     const data           = {
       fids: features.map(f => f.attributes[G3W_FID]).join(',')
     };
+
+    //In case of pdf type need to add html element
+    if ('pdf' === type) {
+      data.html = html;
+    }
 
     /**
      * A function that che be called in case of querybypolygon
@@ -2072,10 +2084,10 @@ class QueryResultsService extends G3WObject {
         state: this.createActionState({layer}),
         class: GUI.getFontClass('download'),
         hint: `sdk.tooltips.download_${format}`,
-        cbk: (layer, feature, action, index) => {
+        cbk: (layer, feature, action, index, container) => {
           action.state.toggled[index] = !action.state.toggled[index];
           if (action.state.toggled[index]) {
-            cbk(layer, feature, action, index);
+            cbk(layer, feature, action, index, ('pdf' === format ? container[0].innerHTML : null));
           } else {
             this.setCurrentActionLayerFeatureTool({ index, action, layer })
           }
@@ -2097,12 +2109,12 @@ class QueryResultsService extends G3WObject {
           format,
           class: GUI.getFontClass(format),
           hint: `sdk.tooltips.download_${format}`,
-          cbk: (layer, feature, action, index) => {
+          cbk: (layer, feature, action, index, html) => {
             // un-toggle downloads action
-            this.downloadFeatures(format, layer, feature, action, index);
+            this.downloadFeatures(format, layer, feature, action, index, html);
             if ('polygon' !== this.state.query.type) {
               const downloadsaction = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-              downloadsaction.cbk(layer, feature, downloadsaction, index);
+              downloadsaction.cbk(layer, feature, downloadsaction, index, html);
             }
           }
         });

@@ -190,6 +190,7 @@ export default {
         download_gpkg: "Lataa GPKG-tiedosto",
         download_csv: "Lataa CSV-tiedosto",
         download_xls: "Lataa XLS-tiedosto",
+        download_pdf: "Lataa PDF-tiedosto",
         show_chart: "Näytä kaavio",
         atlas: "Tulosta Atlas",
         editing: "Editing",
@@ -248,6 +249,9 @@ export default {
             },
             download_xls: {
               hint: "Lataa ominaisuuden XLS-tiedosto"
+            },
+            download_pdf: {
+              hint: "Lataa ominaisuuden PDF-tiedosto"
             },
             atlas: {
               hint: "Tulosta Atlas"
