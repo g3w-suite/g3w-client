@@ -7,6 +7,7 @@ import SelectionMixin                        from 'core/layers/mixins/selection'
 import { SELECTION as SELECTION_STATE }      from 'core/layers/mixins/selection';
 import RelationsMixin                        from 'core/layers/mixins/relations';
 import { parseAttributes }                   from 'utils/parseAttributes';
+import { promisify, $promisify }             from 'utils/promisify';
 import Table                                 from 'components/Table.vue';
 
 const { t }                 = require('core/i18n/i18n.service');
@@ -417,37 +418,38 @@ proto.getDataTable = function({
   field,
   in_bbox,
 } = {}) {
-  const d = $.Deferred();
-  let provider;
-  const params = {
-    ...custom_params,
-    field,
-    page,
-    page_size,
-    ordering,
-    search,
-    formatter,
-    suggest,
-    in_bbox,
-    filtertoken: ApplicationState.tokens.filtertoken
-  };
-  if (!(this.getProvider('filter') || this.getProvider('data'))) {
-   d.reject();
-  } else {
-    provider = this.getProvider('data');
-    provider.getFeatures({editing: false}, params)
-      .done(response => {
-        const features = response.data.features && response.data.features || [];
-        d.resolve(({
-          headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
-          features,
-          title: this.getTitle(),
-          count: response.count
-        }));
-      })
-      .fail(err => d.reject(err))
-  }
-  return d.promise();
+  return $promisify(async () => {
+
+    // skip when..
+    if (!this.getProvider('filter') && !this.getProvider('data')) {
+      return Promise.reject();
+    }
+
+    const response = await promisify(
+      this
+        .getProvider('data')
+        .getFeatures(
+          { editing: false }, {
+          ...custom_params,
+          field,
+          page,
+          page_size,
+          ordering,
+          search,
+          formatter,
+          suggest,
+          in_bbox,
+          filtertoken: ApplicationState.tokens.filtertoken
+        })
+    );
+    const features = response.data.features && response.data.features || [];
+    return {
+      headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
+      features,
+      title: this.getTitle(),
+      count: response.count
+    };
+  });
 };
 
 /**
