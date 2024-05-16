@@ -836,22 +836,7 @@ export default {
     await this.$nextTick();
 
     const table = $(this.$refs.attribute_table).DataTable({
-      "scrollX": true,
-      "processing": false,
-      "scrollCollapse": true,
-      "sSearch": false,
-      "order": [ 1, 'asc' ],
-      "dom": 'frt<"#g3w-table-toolbar">lip',
-      "columnDefs": [ {
-        "targets": 0,
-        "orderable": false,
-        "searchable": false,
-        "width": '1%'
-      } ],
-      "lengthMenu": PAGELENGTHS,
-      "pageLength": this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
-      "columns": this.state.headers,
-      "ajax": debounce(async (data, cb) => {
+      ajax: debounce(async (data, cb) => {
         try {
           // disable table content to avoid clicking on table during loading of new data
           GUI.disableContent(true);
@@ -864,10 +849,20 @@ export default {
         //enable table data content after get data
         GUI.disableContent(false);
       }, 800),
-      "serverSide": true,
-      "deferLoading": this.state.allfeatures,
-      "bSortCellsTop": true,
-      "responsive": true,
+      bSortCellsTop:  true,
+      columns:        this.state.headers,
+      columnDefs:     [{ orderable: false, searchable: false, targets: 0, width: '1%' }],
+      deferLoading:   this.state.allfeatures,
+      dom:            'frt<"#g3w-table-toolbar">lip',
+      lengthMenu:     PAGELENGTHS,
+      order:          [ 1, 'asc' ],
+      pageLength:     this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
+      processing:     false,
+      responsive:     true,
+      scrollCollapse: true,
+      scrollX:        true,
+      serverSide:     true,
+      sSearch:        false,
     });
 
     // no pagination all data
