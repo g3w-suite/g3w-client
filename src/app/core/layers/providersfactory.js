@@ -10,6 +10,7 @@ import { get_legend_params }       from 'utils/get_legend_params';
 import { XHR }                     from 'utils/XHR';
 import { appendParams }            from 'utils/appendParams';
 import { getTimeoutPromise }       from 'utils/getTimeoutPromise';
+import { promisify, $promisify }   from 'utils/promisify';
 
 const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
@@ -95,29 +96,21 @@ module.exports = {
     }
 
     getFeatures(opts = {}) {
-      const d      = $.Deferred();
-      const parser = new ol.format.GeoJSON();
-      const params = {
-        featureProjection: opts.mapProjection,
-        dataProjection:    opts.projection || 'EPSG:4326',
-        // defaultDataProjection: projection // ol v. 4.5
-      };
-      if (opts.data) {
-        d.resolve(parser.readFeatures(opts.data, params))
-      } else {
-        XHR.get({ url: opts.url || this.getLayer().get('source').url })
-          .then((r)  => d.resolve(parser.readFeatures(r.results, params)) )
-          .catch((e) => { console.warn(e); d.reject(e) });
-      }
-      return d.promise();
+      return $promisify(async() => {
+        return (new ol.format.GeoJSON()).readFeatures(
+          opts.data || (await XHR.get({ url: opts.url || this.getLayer().get('source').url })).results, {
+          featureProjection: opts.mapProjection,
+          dataProjection:    opts.projection || 'EPSG:4326',
+          // defaultDataProjection: projection // ol v. 4.5
+        });
+      });
     }
 
     getDataTable({ page } = {}) {
-      const d = $.Deferred();
-      this.getFeatures()
-        .then(()  => d.resolve(this._features) )
-        .fail((e) => { console.warn(e); d.reject(e) });
-      return d.promise();
+      return $promisify(async() => {
+        await(promisify(this.getFeatures()));
+        return this._features;
+      });
     }
 
     /**
