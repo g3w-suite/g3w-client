@@ -115,19 +115,17 @@
                 class    = "magic-checkbox"
               />
               <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
-              <span
+               <i
                 @click.stop            = "openForm(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
-              >
-                <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('table')"></i>
-              </span>
-              <span
+                :class                 = "'action-button skin-color ' + g3wtemplate.getFontClass('table')"
+              ></i>
+              <i
                 v-if                   = "layer.isEditable()"
                 @click.stop            = "editFeature(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.editing'"
-              >
-                <i :class="'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"></i>
-              </span>
+                :class                 = "'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"
+              ></i>
             </div>
           </td>
           <td v-for="(header, j) in state.headers" v-if="j > 0">
