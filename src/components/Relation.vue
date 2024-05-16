@@ -342,18 +342,18 @@ export default {
 
       if (!this.one) {
         this.relationDataTable = $(this.$refs.relationtable).DataTable({
-          pageLength:     10,
+          autoWidth:      false,
           bLengthChange:  true,
+          dom:            'ltip',
+          columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
+          order:          [ this.showTools ? 1 : 0, 'asc' ],
+          pageLength:     10,
+          responsive:     true,
           scrollResize:   true,
           scrollCollapse: true,
           scrollX:        true,
-          responsive:     true,
-          order:          [ this.showTools ? 1 : 0, 'asc' ],
-          columnDefs:     [{ orderable:  this.showTools, targets: 0 }],
-          autoWidth:      false,
         });
         this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-
       }
 
       // resize after popping child relation 
@@ -620,4 +620,20 @@ export default {
     display: flex;
     justify-content: space-between;
   }
+</style>
+
+<style>
+.relation-wrapper .dataTables_length select {
+  border: 1px solid #ccc;
+  background: #fff;
+  height: 27px;
+}
+.relation-wrapper .paginate_button {
+  background: transparent !important;
+  color: currentColor !important;
+  box-shadow: none !important;
+}
+.relation-wrapper .paginate_button.disabled {
+  opacity: 0.25 !important;
+}
 </style>
