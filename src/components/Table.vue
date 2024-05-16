@@ -220,7 +220,7 @@ export default {
       /** Pagination filter features */
       _async:              Object.assign({ state: false, fnc: noop}, (this._async || {})),
       getAll:              false,
-      paginationParams:    {},
+      searchParams:        {},
       firstCall:           true,
     };
   },
@@ -401,9 +401,9 @@ export default {
       if (has_pagination && this.paginationfilter && this.state.featurescount < this.state.allfeatures) {
         const features = await this.getAllFeatures({
           formatter: 1,
-          search:    this.paginationParams.search,
-          ordering:  this.paginationParams.ordering,
-          in_bbox:   this.paginationParams.in_bbox,
+          search:    this.searchParams.search,
+          ordering:  this.searchParams.ordering,
+          in_bbox:   this.searchParams.in_bbox,
         });
         features.forEach(f => {
           if (!this.getAll && this.layer.isGeoLayer() && f.geometry) {
@@ -474,7 +474,6 @@ export default {
       (await Promise.allSettled(this.relations.flatMap(({ layer, father_fields, fields }) => {
         const values = fields.map(f => feature.attributes[f]);
         field_values.push(values);
-        console.log(fields, father_fields, values, feature.attributes);
         return zoom
           ? DataRouterService.getData('search:features', {
               inputs: {
@@ -660,26 +659,19 @@ export default {
         order.push({ column: 1, dir: 'asc', });
       }
 
-      this.paginationParams = {
-        field:     this.state.pagination && columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',') || undefined,
+      this.searchParams = {
+        field:     columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',') || undefined,
         page:      (start === 0 || (this.state.pagination && this.layer.state.filter.active)) ? 1 : (start/length) + 1, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
         in_bbox:   this.state.geolayer.in_bbox,
         ordering:  ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name,
+        formatter: 1,
       };
 
       try {
         const data = await promisify(
-          this.layer.getDataTable(
-            this.state.pagination
-              ? this.paginationParams
-              : ({
-                  formatter: 1,
-                  ordering:  this.paginationParams.ordering,
-                  in_bbox:   this.paginationParams.in_bbox,
-                })
-          )
+          this.layer.getDataTable(this.searchParams)
         );
 
         this.state.allfeatures   = data.count || this.state.features.length;
