@@ -390,10 +390,7 @@ export default {
 
       // filtered pagination
       if (has_pagination && this.paginationfilter && this.state.featurescount >= this.state.allfeatures) {
-        this.state.features.forEach(f => {
-          f.selected = this.state.selectAll;
-          this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
-        });
+        this.layer[this.state.selectAll ? 'includeSelectionFids': 'excludeSelectionFids'](this.state.features.map(f => { f.selected = this.state.selectAll; return f.id; }));
       }
 
       if (has_pagination && this.paginationfilter && this.state.featurescount < this.state.allfeatures) {
@@ -674,7 +671,7 @@ export default {
 
         this.state.allfeatures   = data.count || this.state.features.length;
         this.state.featurescount = (data.features || []).length;
-        this.allfeaturesnumber   = (undefined === this.allfeaturesnumber ? data.count : this.allfeaturesnumber);
+        this.allfeaturesnumber   = (undefined === this.allfeaturesnumber || data.count > this.allfeaturesnumber) ? data.count : this.allfeaturesnumber;
         this.paginationfilter    = (data.count !== this.allfeaturesnumber);
 
         if (this.firstCall) {
@@ -736,7 +733,6 @@ export default {
      * @fires redraw when `opts.type` in_bbox filter (or not select all)
      */
     async changeFilter({ type } = {}) {
-      this.allfeaturesnumber = undefined;
 
       if (false === (type === 'in_bbox' || !this.layer.getSelectionFids().has(SELECTION.ALL))) {
         return;
@@ -903,7 +899,7 @@ export default {
     this.resetMapBBoxEventHandlerKey();
     this.highlight();
 
-    this.allfeaturesnumber = null;
+    this.allfeaturesnumber = undefined;
 
     if (this._async.state) {
       setTimeout(() => {
