@@ -174,7 +174,8 @@ function TableLayer(config = {}, options = {}) {
           resolve(this);
           this.setReady(true);                             // set ready
         })
-        .fail(err => {
+        .fail(e => {
+          console.warn(e);
           reject(this);
           this.setReady(false);
         })
