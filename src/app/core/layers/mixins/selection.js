@@ -102,6 +102,10 @@ export default {
    */
   setFilter(bool = false) {
     this.state.filter.active = bool;
+    if (this.isGeoLayer()) {
+      bool ? this.hideOlSelectionFeatures() : this.showAllOlSelectionFeatures();
+    }
+
   },
 
   /**
@@ -266,17 +270,8 @@ export default {
       await this.deleteFilterToken();
     }
 
-    const has_selection = this.state.selection.active && this.isGeoLayer();
-
-    // active filter --> hide all selected feature from map (red ones)
-    if (has_selection && this.state.filter.active) {
-      this.hideOlSelectionFeatures();
-    }
-
-    // active filter --> show only current selected feature on map (red ones)
-    if (has_selection && !this.state.filter.active){
-      this.showAllOlSelectionFeatures();
-    }
+    //set to handle select or hide ol
+    this.setFilter(this.state.filter.active);
 
     return this.state.filter.active;
   },
@@ -483,7 +478,7 @@ export default {
     
     /** @TODO add description */
     if (this.isGeoLayer()) {
-    this.setOlSelectionFeatureByFid(fid, 'add');
+      this.setOlSelectionFeatureByFid(fid, 'add');
     }
     
     /** @TODO add description */
