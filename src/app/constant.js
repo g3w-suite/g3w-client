@@ -473,6 +473,8 @@ export const FONT_AWESOME_ICONS = {
   bars: "fas fa-bars",
   uncheck: "far fa-square",
   check: "far fa-check-square",
+  /** @since 3.10.0 */
+  checkmark: "fa fa-check",
   filluncheck: "fas fa-square",
   table: "fas fa-table",
   trash: "fas fa-trash",
@@ -573,22 +575,12 @@ export const FONT_AWESOME_ICONS = {
   crop: "fas fa-crop-alt",
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   bookmark: "fas fa-bookmark",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   reply: "fas fa-reply",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   share: "fas fa-share",
-
 };
 
 /**
