@@ -160,12 +160,14 @@ function TableLayer(config = {}, options = {}) {
           capabilities,
         } = {}) => {
           await _waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait unitil "editing" plugin is loaded
-          this.config.editing.fields       = vector.fields;
-          this.config.editing.format       = vector.format;
-          this.config.editing.constraints  = constraints;
-          this.config.editing.capabilities = capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES; // set default editing capabilities
-          this.config.editing.form = { perc: null };       // set editing form `perc` to null at beginning
-          this.config.editing.style = vector.style;        // get vector layer style
+          Object.assign(this.config.editing, {
+            fields: vector.fields,
+            format: vector.format,
+            constraints,
+            capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
+            form: { perc: null },                                                              // set editing form `perc` to null at beginning
+            style: vector.style,                                                               // get vector layer style
+          })
           if (vector.style) {                              // set vector layer color 
             this.setColor(vector.style.color);
           }
