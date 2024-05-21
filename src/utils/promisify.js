@@ -4,12 +4,12 @@
  * @param promise jquery promise
  */
 export function promisify(promise) {
-  console.assert(undefined !== promise, 'promise is undefined');
-  if (undefined === promise) {
-    console.trace();
-  }
   if (promise instanceof Promise) {
     return promise;
+  }
+  if (!promise || !promise.then) {
+    console.trace(promise);
+    return Promise.reject('not a promise');
   }
   return new Promise((resolve, reject) => {
     promise.then(resolve).fail(reject);
@@ -22,9 +22,9 @@ export function promisify(promise) {
  * @param promise async function or ES6 promise 
  */
 export function $promisify(promise) {
-  console.assert(undefined !== promise, 'promise is undefined');
   if (undefined === promise) {
     console.trace();
+    return $.Deferred(d=> d.reject('not a promise')).promise();
   }
   if (promise.always) {
     return promise;
