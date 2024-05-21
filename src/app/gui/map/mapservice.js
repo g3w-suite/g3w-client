@@ -1880,6 +1880,10 @@ proto._setUpEventsKeysToLayersStore = function(store) {
   const id = store.getId();
   // check if already store a key of events
   this._layersStoresEventKeys[id] = [];
+
+  //In the case of store that has layers @since 3.10.0
+  store.getLayers().forEach(l => 'vector' === l.getType() && this.addLayerToMap(l.getMapLayer()));
+
   this._layersStoresEventKeys[id].push({
     addLayer: store.onafter('addLayer', l => { 'vector' === l.getType() && this.addLayerToMap(l.getMapLayer()) }),
   });
