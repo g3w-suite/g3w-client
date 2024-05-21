@@ -167,11 +167,11 @@ function TableLayer(config = {}, options = {}) {
             capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
             form: { perc: null },                                                              // set editing form `perc` to null at beginning
             style: vector.style,                                                               // get vector layer style
+            geometrytype: vector.geometrytype                                                  // whether is a vector layer
           })
           if (vector.style) {                              // set vector layer color 
             this.setColor(vector.style.color);
           }
-          this._setOtherConfigParameters(vector);
           this._editor = new window.g3wsdk.core.editing.Editor({ layer: this }); // create an instance of editor
           resolve(this);
           this.setReady(true);                             // set ready
@@ -364,10 +364,6 @@ proto.unlock = function() {
     .then(() => d.resolve())
     .fail(d.reject);
   return d.promise();
-};
-
-proto._setOtherConfigParameters = function(config) {
-  // overwrite by vector layer
 };
 
 /**
