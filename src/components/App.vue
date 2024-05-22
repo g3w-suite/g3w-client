@@ -207,10 +207,6 @@
                 data-target="#credits"
                 class="dropdown-toggle"
               >
-                <i
-                  :class="g3wtemplate.getFontClass('credits')"
-                  aria-hidden="true">
-                </i>
                 <span>Credits</span>
               </a>
             </li>

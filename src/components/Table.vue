@@ -258,7 +258,13 @@ export default {
           fids: [feature.id],
           formatter: 1
         }
-      });
+      }).then(() => {
+        //in the case geometry feature
+        if (feature.geometry) {
+          //zoom to feature
+          GUI.getService('map').zoomToGeometry(coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates));
+        }
+      }).catch(e => console.warn(e))
     },
 
     get_check_id(cache) {
