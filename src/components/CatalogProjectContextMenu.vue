@@ -96,9 +96,7 @@
         this._hideMenu();
       },
 
-      showAdminLayers() {
-        console.log('qui')
-      },
+      showAdminLayers() {},
 
       async onShowProjectContextMenu(evt) {
         this._hideMenu();
