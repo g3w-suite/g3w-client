@@ -277,12 +277,7 @@ export default {
           no_geometry: 'No geometry on response',
           help: {
             title: 'Ohje - Kysely monikulmiolla',
-            message: `
-                <ul>
-                  <li>Valitse monikulmiotaso luettelosta.</li>
-                  <li>Tarkista, että taso on näkyvillä.</li>
-                  <li>Valitse ominaisuus valitulla tasolla.</li>
-                </ul>`
+            message: "<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -293,10 +288,7 @@ export default {
           nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
           help: {
             title: 'Ohje - Tasoon kohdistuva BBox-kysely',
-            message:`
-                 <ul>
-                  <li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li>
-                 </ul>`
+            message: "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>"
           }
         },
         addlayer: {
