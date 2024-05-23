@@ -278,12 +278,7 @@ export default {
           no_geometry: 'Nu avem geometrii în răspuns',
           help: {
             title:'Ghid - Interogare După Poligon',
-            message: `
-                <ul>
-                  <li>Selectează un strat poligon din TOC.</li>
-                  <li>Asigură-te că stratul este vizibil.</li>
-                  <li>Click pe o entitate a stratului selectat.</li>
-                </ul>`
+            message: "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -294,10 +289,7 @@ export default {
           nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
           help: {
             title: 'Ghid - Interogare BBox strat',
-            message:`
-                 <ul>
-                  <li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li>
-                 </ul>`
+            message: "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>"
           }
         },
         addlayer: {
