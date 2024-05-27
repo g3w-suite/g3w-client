@@ -21,6 +21,7 @@
                   :href       = "`#${ids[index]}`"
                   :class      = "{'mobile': isMobile(), 'group-title': group}"
                   :style      = "{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
+                  @click      = "group && toggleGroup($event)"
                 >
                  {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span>
                 </a>
@@ -174,7 +175,18 @@
       },
       getField(fieldName) {
         return this.fields.find(f => fieldName === f.name);
-      }
+      },
+
+      /**
+       * Mimics <details> tag behaviour
+       * 
+       * @since 3.10.0 
+       */
+      toggleGroup(e) {
+        const wrapper = e.target.closest('.tabs-wrapper');
+        wrapper.classList.toggle('collapsed');
+      },
+
     },
     components: {
       Node
@@ -265,8 +277,18 @@
   }
   .formquerytabs li a.tab_a.group-title {
     color: inherit !important;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1em !important;
     padding: 0.25em;
+    cursor: pointer;
+  }
+  .tabs-wrapper > .formquerytabs li a.tab_a.group-title:before {
+    content: '▾';
+  }
+  .tabs-wrapper.collapsed > .formquerytabs li a.tab_a.group-title:before {
+    content: '▸';
+  }
+  .tabs-wrapper.collapsed > .formquerytabs + .tab-content {
+    display: none;
   }
 </style>
