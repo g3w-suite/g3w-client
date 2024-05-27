@@ -358,6 +358,8 @@ export default {
 
       // resize after popping child relation 
       GUI.on('pop-content', () => setTimeout(() => this.resize()));
+
+      this.resize();
     },
 
     /**
@@ -635,5 +637,8 @@ export default {
 }
 .relation-wrapper .paginate_button.disabled {
   opacity: 0.25 !important;
+}
+.relation-wrapper .dataTables_scroll {
+  background: #fff;
 }
 </style>
