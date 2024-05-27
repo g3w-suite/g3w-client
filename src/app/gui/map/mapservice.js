@@ -402,31 +402,19 @@ function MapService(options={}) {
     },
     highlightLayer:new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style:(feature) => {
-        let styles = [];
-        const geometryType = feature.getGeometry().getType();
-        const style = createSelectedStyle({
-          geometryType,
-          color: this.defaultsLayers._style.highlightLayer.color,
-          fill: false
-        });
-        styles.push(style);
-        return styles;
-      }
+      style:(feature) => [createSelectedStyle({
+        geometryType: feature.getGeometry().getType(),
+        color:        this.defaultsLayers._style.highlightLayer.color,
+        fill:         true
+      })]
     }),
     selectionLayer: new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style: feature => {
-        let styles = [];
-        const geometryType = feature.getGeometry().getType();
-        const style = createSelectedStyle({
-          geometryType,
-          color: this.defaultsLayers._style.selectionLayer.color,
-          fill: false
-        });
-        styles.push(style);
-        return styles;
-      }
+      style: feature => [createSelectedStyle({
+        geometryType: feature.getGeometry().getType(),
+        color:        this.defaultsLayers._style.selectionLayer.color,
+        fill:         true
+      })]
     })
   };
   this.layersExtraParams = {};
@@ -2483,7 +2471,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
         hlayer.setStyle((feature) => [createSelectedStyle({
           geometryType: feature.getGeometry().getType(),
           color: options.color,
-          fill: false
+          fill: true
         })]);
       }
       if (!hide) {
