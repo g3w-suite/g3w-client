@@ -39,7 +39,9 @@
               v-disabled     = "!has_maps"
               v-select2      = "'state.scale'"
               :select2_value = "state.scale"
+              :createTag     = "true"
               @change        = "changeScale"
+              ref            = "scales"
             >
               <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
             </select>
@@ -292,7 +294,39 @@ export default {
      * On scale change set print area
      */
     changeScale() {
+
+      try {
+        //check if create new tag value with ':' 1:2300
+        if (this.state.scale.indexOf(':') >= 0) {
+          //get value
+          const scale = Number(this.state.scale.split(':')[1].trim());
+          //set options last tag created by user
+          this.$refs.scales.children[this.$refs.scales.children.length -1].value = scale;
+          //set scale
+          this.state.scale = scale;
+
+        }
+      } catch(e) {
+        console.warn(e);
+        this.state.scale = this.state.scales[0].value;
+      }
+
+      //check if a current scale is a number or has a value more than maximum scale permission
+      if (Number.isNaN(Number(this.state.scale)) || (this.state.scale > this.state.scales[0].value)) {
+        this.state.scale = this.state.scales[0].value;
+      }
+
+      //In case of scale negative or less than minimum scale permission
+      if (this.state.scale < 0) {
+        this.state.scale = this.state.scales[this.state.scales.length - 1].value;
+      }
+
+      //set value
+      $(this.$refs.scales).val(this.state.scale).trigger('change');
+
       if (this.state.scale) { this._setPrintArea(); }
+
+
     },
 
     /**
