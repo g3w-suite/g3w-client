@@ -53,7 +53,9 @@
               class          = "form-control"
               v-select2      = "'state.dpi'"
               :select2_value = "state.dpi"
+              @change        = "changeDpi"
               :createTag     = "true"
+              ref            = "dpi"
             >
               <option v-for="dpi in state.dpis">{{ dpi }}</option>
             </select>
@@ -327,6 +329,18 @@ export default {
       if (this.state.scale) { this._setPrintArea(); }
 
 
+    },
+
+    /**
+     * @since 3.10.0
+     */
+    changeDpi() {
+      //check dpi if si a NaN
+      if (Number.isNaN(Number(this.state.dpi))) {
+        this.state.dpi = this.state.dpis[0];
+        //set value
+        $(this.$refs.dpi).val(this.state.dpi).trigger('change');
+      }
     },
 
     /**
