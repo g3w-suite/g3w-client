@@ -48,7 +48,7 @@
     <!-- BOOKMARS LIST -->
     <template v-else>
       <template v-if="hasProjectbookmarks">
-        <div class="content-bookmarks">
+        <div class="content-bookmarks" hidden>
           <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
         </div>
         <template v-for="bookmark in project.bookmarks">

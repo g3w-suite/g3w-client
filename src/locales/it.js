@@ -37,7 +37,7 @@ export default {
         }
       },
       spatialbookmarks: {
-        title: "Segnalibri Spaziali",
+        title: "Segnalibri",
         helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
         input: {
           name: "Nome"
@@ -47,7 +47,7 @@ export default {
             title: "Segnalibri Progetto"
           },
           user: {
-            title: "Segnalibri Utente"
+            title: "Segnalibri personali"
           }
         }
       },
