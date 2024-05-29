@@ -36,3 +36,40 @@ ul.g3w-tools  {
   }
 }
 
+/**
+ * SHOW FIRST TOOL GROUP ELEMENT IN CASE OF SINGLE ELEMENT 
+ */
+
+#tools.single .g3w-tools {
+  display: block;
+}
+
+#tools.single > a,
+#tools.single .g3w-tools .tool-header {
+  display: none !important;
+}
+
+#tools.single .tool i {
+  color: #FFE721;
+}
+
+#tools.single .tool {
+  padding: 12px 5px 12px 12px;
+}
+#tools.single li,
+#tools.single .tool,
+#tools.single .g3w-tools {
+  background-color: transparent;
+}
+
+#tools.single li {
+color: #fff;
+  font-weight: bold;
+  border-left: 3px solid transparent;
+}
+
+#tools.single li:hover {
+  border-left-color: #e99611;  
+  background: #1e282c;
+}
+
