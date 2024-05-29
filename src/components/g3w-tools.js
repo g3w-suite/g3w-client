@@ -98,8 +98,8 @@ export default function(opts = {}) {
         async 'state.toolsGroups'(g) {
           comp.setVisible(g.length > 0);
           this.$emit('visible', g.length > 0);
-          await this.$nextTick();
-          document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length);
+          await GUI.isReady();
+          document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
         }
       },
     }))(),
