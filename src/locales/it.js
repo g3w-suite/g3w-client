@@ -47,7 +47,7 @@ export default {
             title: "Segnalibri Progetto"
           },
           user: {
-            title: "Segnalibri personali"
+            title: "Segnalibri Utente"
           }
         }
       },

@@ -48,8 +48,12 @@
     <!-- BOOKMARS LIST -->
     <template v-else>
       <template v-if="hasProjectbookmarks">
-        <div class="content-bookmarks" hidden>
+        <div v-if="is_staff" class="content-bookmarks">
           <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
+          <a :href="`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`" target="_blank" style="float: right;" title="QGIS Docs">
+
+            <i :class="g3wtemplate.getFontClass('external-link')"></i>
+          </a>
         </div>
         <template v-for="bookmark in project.bookmarks">
           <spatial-book-mark-group v-if="bookmark.nodes" :group="bookmark" />
@@ -87,6 +91,7 @@
 
 <script>
   import { LOCAL_ITEM_IDS }   from 'app/constant';
+  import ApplicationState     from 'store/application-state'
   import GUI                  from 'services/gui';
   import ApplicationService   from 'services/application';
   import ProjectsRegistry     from 'store/projects';
@@ -158,7 +163,17 @@
 
       hasProjectbookmarks() {
         return this.project.bookmarks.length > 0;
-      }
+      },
+
+      /** @since 3.10.0 */
+      is_staff() {
+        return ApplicationService.getConfig().user.is_staff;
+      },
+
+      /** @since 3.10.0  */
+      lang() {
+        return ApplicationState.language;
+      },
 
     },
 

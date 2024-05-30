@@ -116,7 +116,7 @@
           <sub>{{ input.options.description }}</sub>
 
           <!-- DEBUG INFO -->
-          <sub v-if="is_superuser">
+          <sub v-if="is_staff">
             <br v-if="input.options.description">
             <span class="skin-color">{{ input.type }}</span> | <span class="skin-color">{{ input.widget_type }}</span>
             <template v-if="input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
@@ -192,8 +192,8 @@ export default {
       return ApplicationService.getCurrentProject().getState().layers_url;
     },
 
-    is_superuser() {
-      return ApplicationService.getConfig().user.is_superuser;
+    is_staff() {
+      return ApplicationService.getConfig().user.is_staff;
     },
 
   },
