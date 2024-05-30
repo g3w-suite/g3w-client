@@ -26,13 +26,15 @@
         </tr>
         <tr>
           <th v-for="(header, index) in state.headers">
-            <span v-if="index === 0">
+            <span
+              v-if       = "index === 0"
+              v-disabled = "disableSelectAll"
+            >
               <input
                 type      = "checkbox"
                 id        = "attribute_table_select_all_rows"
                 :checked  = "state.selectAll"
-                class     = "magic-checkbox"
-                :disabled = "state.nofilteredrow || state.features.length === 0">
+                class     = "magic-checkbox">
               <label
                 for   = "attribute_table_select_all_rows"
                 style = "margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
@@ -59,31 +61,30 @@
 </template>
 
 <script>
-import TableBody from 'components/TableBody.vue';
-import SelectRow from 'components/TableSelectRow.vue';
+import TableBody       from 'components/TableBody.vue';
+import SelectRow       from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import Field from 'components/FieldG3W.vue';
-import GUI from 'services/gui';
+import Field           from 'components/FieldG3W.vue';
+import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
 const { debounce } = require('utils');
 
 let dataTable;
 let fieldsComponents = [];
-let eventHandlers = {
-  pagination: {},
-  nopagination: {}
-};
+let eventHandlers    = { pagination: {}, nopagination: {} };
 
 export default {
   name: "G3WTable",
   mixins: [resizeMixin],
   data() {
     return {
-      tableBodyComponent:null,
-      state: null,
-      table: null,
-      selectedRow: null
+      tableBodyComponent: null,
+      state:              null,
+      table:              null,
+      selectedRow:        null,
+      features:           [],
+      disableSelectAll:   false, /**@since 3.9.9 */
     }
   },
   components: {
@@ -201,6 +202,7 @@ export default {
     this.delayType = 'debounce';
   },
   async mounted() {
+    this.disableSelectAll = 0 === this.state.features.length;
     this.setContentKey = GUI.onafter('setContent', this.resize);
     const hideElements = () => {
       $('.dataTables_info, .dataTables_length').hide();
@@ -248,7 +250,8 @@ export default {
                 callback(serverData);
                 await this.$nextTick();
                 this.createdContentBody();
-                this.isMobile() && hideElements();
+                this.disableSelectAll = 0 === this.state.features.length;
+                if (this.isMobile()) { hideElements() }
               })
               .catch(error => {
                 console.log(error)
@@ -258,30 +261,30 @@ export default {
           "deferLoading": this.state.allfeatures
         });
       this.$options.service.on('ajax-reload', dataTable.ajax.reload);
-      this.changeColumn = debounce(async (event, index) => {
-        dataTable
-          .columns(index)
-          .search(event.target.value.trim())
-          .draw();
-      });
     } else { // no pagination all data
       dataTable = $(this.$refs.attribute_table).DataTable({
         ...commonDataTableOptions,
         searchDelay: 600
       });
+      //function that filters no pagination table
       const debounceSearch = debounce(() => {
-        this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
+        const filter = dataTable.rows( {search:'applied'} )[0];
+        this.$options.service.setFilteredFeature(filter);
+        this.disableSelectAll = 0 === filter.length;
       }, 600);
-      eventHandlers.nopagination['search.dt'] = debounceSearch;
       dataTable.on('search.dt', debounceSearch);
-      dataTable.on('length.dt', (evt, settings, length) => {
-        this.$options.service.setAttributeTablePageLength(length)
-      });
-      this.changeColumn = debounce(async (event, index) => {
-        dataTable.columns(index).search(event.target.value.trim()).draw();
-        this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'})[0]);
-      });
+
     }
+
+    this.changeColumn = debounce(async (evt, index) => {
+      const value = evt.target.value.trim();
+      dataTable
+        .columns(index)
+        .search(value)
+        .draw();
+      //need to be wait draw
+      dataTable.one('draw', () => this.$options.service.setFilteredFeature(value.length ? dataTable.rows( {search:'applied'})[0] : []))
+    });
 
     if (this.isMobile()) {
       hideElements();
@@ -290,12 +293,12 @@ export default {
     const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
     const G3WTableToolbarInstance = new G3WTableToolbarClass({
       propsData: {
-        tools: this.state.tools,
-        geolayer: this.state.geolayer,
-        switchSelection: this.switchSelection,
+        tools:             this.state.tools,
+        geolayer:          this.state.geolayer,
+        switchSelection:   this.switchSelection,
         clearAllSelection: this.clearAllSelection,
         toggleFilterToken: this.toggleFilterToken,
-        getDataFromBBOX: this.getDataFromBBOX
+        getDataFromBBOX:   this.getDataFromBBOX
       }
     });
 

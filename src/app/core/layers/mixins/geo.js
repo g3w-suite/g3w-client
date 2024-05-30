@@ -154,7 +154,7 @@ proto.clearCategories = function() {
  * Clear all selection Openlayers features
  */
 proto.clearOlSelectionFeatures = function() {
-  this.olSelectionFeatures = null;
+  this.olSelectionFeatures = {};
 };
 
 /**
@@ -196,10 +196,11 @@ proto.updateOlSelectionFeature = function({
  * @param id
  */
 proto.deleteOlSelectionFeature = function(id) {
+  const map = GUI.getService('map');
   const selected = this.getOlSelectionFeature(id);
   if (selected) {
     /** @FIXME undefined variable */
-    mapService.setSelectionFeatures('remove', { feature: selected.feature });
+    map.setSelectionFeatures('remove', { feature: selected.feature });
     delete this.olSelectionFeatures[id];
   }
 };
@@ -214,6 +215,7 @@ proto.deleteOlSelectionFeature = function(id) {
 proto.getOlSelectionFeatures = function() {
   return this.olSelectionFeatures;
 };
+
 
 /**
 * [LAYER SELECTION]
@@ -230,36 +232,36 @@ proto.addOlSelectionFeature = function({
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
     feature: createFeatureFromFeatureObject({ id, feature }),
     added: false,
+    selected: false, /** @since 3.9.9 */
   };
   return this.olSelectionFeatures[id];
 };
 
-/**
- * [LAYER SELECTION]
- * 
- * Set selection layer on map not visible
- */
-proto.hideOlSelectionFeatures = function() {
-  GUI.getService('map').setSelectionLayerVisible(false);
-}
 
 /**
  * [LAYER SELECTION]
  * 
- * Show all selection feature
+ * Show all selection features
  */
-proto.showAllOlSelectionFeatures = function() {
+proto.updateMapOlSelectionFeatures = function() {
   const map = GUI.getService('map');
   // Loop `added` features (selected)
   Object
     .values(this.olSelectionFeatures)
     .forEach(feat => {
-      if (feat.added) {
+      if (feat.selected && !feat.added) {
         map.setSelectionFeatures('add', { feature: feat.feature });
+        feat.added = true;
+      }
+
+      if (!feat.selected && feat.added) {
+        map.setSelectionFeatures('remove', { feature: feat.feature });
+        feat.added = false;
       }
     });
-  // Ensures visibilty of selection layer on map 
-  map.setSelectionLayerVisible(true);
+  // Ensures visibility of selection layer on a map
+  map.setSelectionLayerVisible(Object.values(this.olSelectionFeatures).some(f => f.selected));
+
 };
 
 /**
@@ -288,6 +290,8 @@ proto.setInversionOlSelectionFeatures = function() {
 proto.setOlSelectionFeatureByFid = function(fid, action) {
   const selected = this.getOlSelectionFeature(fid);
   if (selected && selected.feature) {
+    //set selected
+    selected.selected = 'add' === action;
     return this.setOlSelectionFeatures({
       id:      fid,
       feature: selected.feature,
@@ -308,10 +312,9 @@ proto.setOlSelectionFeatures = function(feature, action = 'add') {
 
   // select a single feature
   if (feature) {
-    const feat             = this.getOlSelectionFeature(feature.id) || this.addOlSelectionFeature(feature);
+    const feat             = this.getOlSelectionFeature(feature.id);
     feat.feature.__layerId = ('add' === action && !feat.added) ? this.getId() : undefined; // <-- used when working with selected Layer features
-    map.setSelectionFeatures(action, { feature: feat.feature });
-    feat.added             = ('add' === action && !feat.added);
+    this.updateMapOlSelectionFeatures();
   }
 
   // select all features
@@ -323,11 +326,12 @@ proto.setOlSelectionFeatures = function(feature, action = 'add') {
         if (feat.added) {
           map.setSelectionFeatures('remove', { feature: feat.feature });
         }
-        feat.added = false
+        feat.added    = false;
+        feat.selected = false;
       });
   }
 
-  return undefined === Object.values(this.olSelectionFeatures).find(feat=> feat.added);
+  return undefined === Object.values(this.olSelectionFeatures).find(feat => feat.added);
 };
 
 /**
