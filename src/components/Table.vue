@@ -69,13 +69,13 @@
           <th v-for="(header, i) in state.headers" v-if="i > 0">{{ header.label }}</th>
         </tr>
         <tr>
-          <th>
+          <th v-disabled = "disableSelectAll">
             <input
-              type      = "checkbox"
-              id        = "attribute_table_select_all_rows"
-              :checked  = "state.selectAll"
-              class     = "magic-checkbox"
-              :disabled = "state.nofilteredrow || state.features.length === 0"
+              type       = "checkbox"
+              id         = "attribute_table_select_all_rows"
+              :checked   = "state.selectAll"
+              class      = "magic-checkbox"
+
             />
             <label for="attribute_table_select_all_rows" @click.capture.stop.prevent="selectAllRows">&nbsp;</label>
           </th>
@@ -212,14 +212,14 @@ export default {
           fields:        relation.getChildField(),  // NB: since g3w-admin@v3.7.0 this is an Array value.
           features:      {},
         })),
-      paginationfilter:    false,
       allfeaturesnumber:   undefined,
-      nopaginationsfilter: [],
+      filter:              [],
       /** Pagination filter features */
       _async:              Object.assign({ state: false, fnc: noop}, (this._async || {})),
       getAll:              false,
       searchParams:        {},
       firstCall:           true,
+      disableSelectAll:    false, /**@since 3.10.0 */
     };
   },
   
@@ -311,125 +311,107 @@ export default {
 
     async inverseSelection() {
       const has_pagination = this.state.pagination;
-      const filter         = this.nopaginationsfilter;
-      const filtered       = !has_pagination && filter.length ? [] : undefined;
-      let selected         = false;
+      const filter         = this.filter.length > 0;
 
-      // pagination
-      if (has_pagination) {
-        this.state.features.forEach(f => {
-          f.selected = !f.selected;
-          selected   = f.selected;
-        });
-      }
+      //HAS PAGINATION
 
-      if (has_pagination && !this.getAll) {
+      //if it has a pagination and not yet get all data features,
+      // need to get all data features
+      if (has_pagination && !filter && !this.getAll) {
         await this.getAllFeatures();
       }
 
-      this.state.selectAll = (has_pagination && this.paginationfilter) ? selected : this.state.selectAll;
-
-      // filtered
-      if (!has_pagination && filter.length) {
-        this.state.features.forEach((f, i) => {
-          if (-1 !== filter.indexOf(i)) {
-            filtered.push(f);
-          }
-          f.selected = !f.selected;
-          this.layer[f.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](f.id);
-          selected = selected || f.selected;
-        });
-        this.state.show_tools = selected;
-      }
-      
-      // no filter
-      if (!has_pagination && !filter.length) {
-        this.state.features.forEach(f => { f.selected = !f.selected; });
-      }
-
-      if (has_pagination || !filter.length) {
+      if (has_pagination && !filter) {
         this.layer.invertSelectionFids();
       }
 
-      if (!has_pagination) {
-        this.checkSelectAll(filtered);
+      // pagination
+      if ((has_pagination && filter) || !has_pagination) {
+        //invert selection for each feature, and get features all selection states
+        this.state.features.forEach(f => {
+          f.selected = !f.selected;
+          this.layer[f.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](f.id);
+        });
       }
 
-      if (has_pagination || !filter.length) {
-        this.state.show_tools = this.layer.getSelectionFids().size > 0;
-      }
-
+      //set selectAll checkbox
+      this.checkSelectAll();
+      //show tools base on feature selected at least one feature
+      this.state.show_tools = this.state.features.some(f => f.selected);
     },
 
     /**
      * Called when a selected feature is checked
      */
     async selectAllRows() {
-      if (!this.state.features.length) {
-        return;
-      }
+
       // set inverse of selectAll
       this.state.selectAll = !this.state.selectAll;
 
       const has_pagination = this.state.pagination;
-      const filter         = this.nopaginationsfilter;
-      let selected         = false;
+      const filter         = this.filter.length > 0;
 
-      // filtered
-      if (!has_pagination && filter.length) {
-        this.state.features.forEach((f, i) => {
-          if (-1 !== filter.indexOf(i)) {
-            f.selected = this.state.selectAll;
-            this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
-            selected = selected || f.selected;
-          }
-        });
-        this.state.show_tools = selected;
+      //NO PAGINATION
+
+      if (!has_pagination) {
+        this.state.features
+          .filter((_,i) => filter && this.state.selectAll ? this.filter.includes(i) : true)
+          .forEach(f => {
+            if (this.state.selectAll !== f.selected) {
+              f.selected = this.state.selectAll;
+              this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
+            }
+          });
       }
 
-      // no filter
-      if (!has_pagination && !filter.length) {
-        this.state.show_tools = this.state.selectAll;
-        this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
-        this.state.features.forEach(f => f.selected = this.state.selectAll);
-      }
+      //PAGINATION
 
-      // filtered pagination
-      if (has_pagination && this.paginationfilter && this.state.featurescount >= this.state.allfeatures) {
-        this.layer[this.state.selectAll ? 'includeSelectionFids': 'excludeSelectionFids'](this.state.features.map(f => { f.selected = this.state.selectAll; return f.id; }));
-      }
-
-      if (has_pagination && this.paginationfilter && this.state.featurescount < this.state.allfeatures) {
-        const features = await this.getAllFeatures({
-          formatter: 1,
-          search:    this.searchParams.search,
-          ordering:  this.searchParams.ordering,
-          in_bbox:   this.searchParams.in_bbox,
-        });
-        features.forEach(f => {
-          if (!this.getAll && this.layer.isGeoLayer() && f.geometry) {
-            this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-          }
-          this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](f.id);
-        })
-      }
-
-      if (has_pagination) {
-        this.state.features.forEach(f => f.selected = this.state.selectAll);
-      }
-
-      if (has_pagination && !this.paginationfilter && !this.getAll) {
+      //IN CASE, NO FILTER IS SET AND NOT ALL FEATURES ARE GET
+      if (has_pagination && !filter && !this.getAll) {
         await this.getAllFeatures();
       }
 
-      if (has_pagination && !this.paginationfilter) {
-        this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
+      if (has_pagination && this.getAll && this.state.selectAll && !filter) {
+        this.state.features.forEach(f => f.selected = this.state.selectAll);
+        this.layer.setSelectionFidsAll();
       }
 
-      if (has_pagination) {
-        this.state.show_tools = this.state.selectAll || this.layer.getSelectionFids().size > 0;
+      //in case we got all features
+      if (has_pagination && this.getAll && !this.state.selectAll) {
+        await this.layer.clearSelectionFids();
       }
 
+      if (has_pagination && filter && !this.getAll && !this.state.selectAll) {
+        const features = (this.state.featurescount >= this.state.allfeatures)
+          ? this.state.features
+          : await this.getAllFeatures({
+            search:    this.searchParams.search,
+            ordering:  this.searchParams.ordering,
+            formatter: this.searchParams.formatter,
+            in_bbox:   this.searchParams.in_bbox,
+          });
+        features.forEach(f => {
+          f.selected = false;
+          this.layer.excludeSelectionFid(f.id);
+        });
+      }
+
+      // filtered pagination
+      if (has_pagination && filter && this.state.selectAll) {
+        const features = (this.state.featurescount >= this.state.allfeatures)
+          ? this.state.features
+          : await this.getAllFeatures({
+            search:    this.searchParams.search,
+            ordering:  this.searchParams.ordering,
+            in_bbox:   this.searchParams.in_bbox,
+          });
+        features.forEach(f => {
+          f.selected = true;
+          this.layer.includeSelectionFid(f.id);
+        });
+      }
+
+      this.state.show_tools = this.state.features.some(f => f.selected);
     },
 
     /**
@@ -508,56 +490,15 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
+      //invert selected of feature
       feature.selected = !feature.selected;
 
-      const selected       = this.layer.getSelectionFids();
-      const filter         = this.nopaginationsfilter;
-      const count          = this.allfeaturesnumber;
+      this.state.selectAll = this.state.features.every(f => f.selected);
 
-      const select_all     = this.state.selectAll;
-      const has_pagination = this.state.pagination;
-      const features       = this.state.features;
-      const is_active      = this.layer && this.layer.state.filter && this.layer.state.filter.active
+      this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
 
-      const is_exclude     = !select_all && selected.has(SELECTION.EXCLUDE);
-      const is_default     = !select_all && !is_exclude;
-
-      /** @FIXME add description */
-      if (select_all) {
-        this.state.selectAll = false;
-      }
-
-      /** @FIXME add description */
-      if (select_all) {
-        this.layer.excludeSelectionFid(feature.id, has_pagination);
-      }
-
-      /** @FIXME add description */
-      if (is_exclude || is_default) {
-        this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-      }
-
-      /** @FIXME add description */
-      if (!is_active && ( (is_exclude && 1 === selected.size) || (is_default && selected.size === count)) ) {
-        this.layer.setSelectionFidsAll();
-      }
-
-      /** @FIXME add description */
-      if (is_exclude && 1 !== selected.size && selected.size === features.length + 1) {
-        this.layer.clearSelectionFids();
-      }
-
-      /** @FIXME add description */
-      this.state.show_tools = selected.size > 0;
-
-      /** @FIXME add description */
-      if (
-        (is_exclude && 1 === selected.size) ||
-        (is_default && selected.size === count) ||
-        (!has_pagination && filter.length && filter.length === features.filter(f => f.selected).length)
-      ) {
-        this.state.selectAll = true;
-      }
+      /** Show tools based on selected state */
+      this.state.show_tools = this.layer.getSelectionFids().size > 0;
 
     },
 
@@ -578,9 +519,9 @@ export default {
      * 
      * @param index features index
      */
-    setFilteredFeature(index) {
-      const filter = this.nopaginationsfilter = index;
-      if ([0, this.allfeaturesnumber].includes(index.length)) {
+    setFilteredFeature(filter = []) {
+      this.filter = filter;
+      if (0 === filter.length || filter.length === this.allfeaturesnumber) {
         this.checkSelectAll();
       } else {
         this.checkSelectAll(filter.map(i => this.state.features[i]));
@@ -678,7 +619,6 @@ export default {
         this.state.allfeatures   = data.count || this.state.features.length;
         this.state.featurescount = (data.features || []).length;
         this.allfeaturesnumber   = (undefined === this.allfeaturesnumber || data.count > this.allfeaturesnumber) ? data.count : this.allfeaturesnumber;
-        this.paginationfilter    = (data.count !== this.allfeaturesnumber);
 
         if (this.firstCall) {
           this.state.pagination = this.layer.state.filter.active || this.state.featurescount < this.allfeaturesnumber;
@@ -756,15 +696,12 @@ export default {
       // force redraw
       /** @TODO use "table.ajax.reload()"" instead? */
       const table = $(this.$refs.attribute_table).DataTable();
-      table.clear();
+      //substitute data
+      table.rows.add(data);
+      //redraw
       table.draw(false);
-      setTimeout(async() => {
-        table.rows.add(data);
-        table.draw(false);
-        await this.$nextTick();
-        table.columns.adjust();
-      });
-  
+      //adjust column
+      table.columns.adjust();
     },
 
     onGUIContent(options) {
@@ -803,7 +740,7 @@ export default {
     this.changeFilter = this.changeFilter.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
-    GUI.onbefore('setContent',         this.onGUIContent);
+    GUI.onbefore('setContent',   this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.changeFilter);
 
@@ -831,6 +768,9 @@ export default {
 
   async mounted() {
 
+    //set disabled select All state
+    this.disableSelectAll = 0 === this.state.features.length;
+
     this.setContentKey = GUI.onafter('setContent', this.resize);
 
     await this.$nextTick();
@@ -842,6 +782,7 @@ export default {
           GUI.disableContent(true);
           cb(await this.getData(data));
           await this.$nextTick();
+          this.disableSelectAll = 0 === this.state.features.length;
           table.columns.adjust();
         } catch(e) {
           console.warn(e);
@@ -867,15 +808,17 @@ export default {
 
     // no pagination all data
     if (!this.state.pagination) {
-      table.on('search.dt', debounce(() => { this.setFilteredFeature(table.rows( { search:'applied' } )[0]) }, 600));
-      table.on('length.dt', (e, opts, len) => { this.layer.setAttributeTablePageLength(len); });
+      table.on('search.dt', debounce(() => {
+        const filter = table.rows( {search:'applied'} )[0];
+        this.disableSelectAll = 0 === filter.length;
+        this.setFilteredFeature(filter) ;
+      }, 600));
     }
 
     this.changeColumn = debounce(async (e, i) => {
-      table.columns(i).search(e.target.value.trim()).draw();
-      if (!this.state.pagination) {
-        this.setFilteredFeature(table.rows( { search:'applied' })[0]);
-      }
+      const value = e.target.value.trim();
+      table.columns(i).search(value).draw();
+      table.one('draw', () => this.setFilteredFeature(value.length ? table.rows( {search:'applied'})[0] : []))
     });
 
     // move "table_toolbar" DOM element under datatable 

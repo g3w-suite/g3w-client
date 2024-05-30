@@ -51,11 +51,10 @@ export default {
   async setSelection(bool=false) {
     this.state.selection.active = bool;
 
-    // skip when ..
-    if (bool) {
-      return;
-    }
+    // skip when selection is active
+    if (bool) { return }
 
+    //check if filter is active
     const is_active   = this.state.filter.active;
     const has_current = null !== this.state.filter.current;
 
@@ -103,7 +102,7 @@ export default {
   setFilter(bool = false) {
     this.state.filter.active = bool;
     if (this.isGeoLayer()) {
-      bool ? this.hideOlSelectionFeatures() : this.showAllOlSelectionFeatures();
+      this.updateMapOlSelectionFeatures();
     }
 
   },
@@ -250,7 +249,7 @@ export default {
   async toggleFilterToken() {
 
     // toggle boolean value of filter active
-    this.setFilter(!this.state.filter.active);
+    this.state.filter.active = !this.state.filter.active;
 
     const has_current = this.state.filter.current;
     const is_active   = this.state.filter.active;
@@ -297,7 +296,8 @@ export default {
       }
 
       this.setCurrentFilter(null);      // set current filter set to null
-      this.setFilter(false);            // set active filter to false
+      // set active filter to false
+      if (this.state.filter.active) { this.setFilter(false) }
       this.setFilterToken(filtertoken); // pass `filtertoken` to application
 
     } catch(err) {
@@ -374,7 +374,9 @@ export default {
 
     /** @TODO add description */
     if (this.isGeoLayer()) {
-      this.showAllOlSelectionFeatures();
+      //set all features selected
+      Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = true);
+      this.updateMapOlSelectionFeatures();
     }
 
     /** @TODO add description */
@@ -426,17 +428,13 @@ export default {
   hasSelectionFid(fid) {
     const selection = this.selectionFids;
 
-    /** @TODO add description */
-    if (selection.has(SELECTION.ALL)) {
-      return true;
-    }
+    /** In case contain selection ALL, mean all features selected */
+    if (selection.has(SELECTION.ALL)) { return true }
 
-    /** @TODO add description */
-    if (selection.has(SELECTION.EXCLUDE)) {
-      return !selection.has(fid);
-    }
+    /**In case selection contains exclude value, check if id is not in excluded feature id */
+    if (selection.has(SELECTION.EXCLUDE)) { return !selection.has(fid) }
 
-    /** @TODO add description */
+    /** Check if id is on selection set */
     return selection.has(fid);
   },
 
@@ -456,31 +454,23 @@ export default {
     // whether fid is excluded from selection
     const is_excluded = selection.has(SELECTION.EXCLUDE) && selection.has(fid);
 
-    // remove fid
-    if (is_excluded) {
-      selection.delete(fid);
-    }
+    // remove fid from exclude
+    if (is_excluded) { selection.delete(fid) }
 
-    // if the only one exclude set all selected
-    if (is_excluded && 1 === selection.size) {
-      this.setSelectionFidsAll();
-    }
+    // add to selection fid
+    if (!is_excluded) { selection.add(fid) }
 
-    // add to selction fid
-    if (!is_excluded) {
-      selection.add(fid);
-    }
+    // if the only one exclude Set all selected
+    if (is_excluded && 1 === selection.size) { this.setSelectionFidsAll() }
 
     /** @TODO add description */
-    if (!is_excluded && !this.isSelectionActive()) {
-      this.setSelection(true);
-    }
-    
+    if (!is_excluded && !this.isSelectionActive()) { this.setSelection(true) }
+
     /** @TODO add description */
     if (this.isGeoLayer()) {
-      this.setOlSelectionFeatureByFid(fid, 'add');
+      this.setOlSelectionFeatureByFid(fid, is_excluded ? 'remove' : 'add');
     }
-    
+
     /** @TODO add description */
     if (createToken && this.state.filter.active) {
       await this.createFilterToken();
@@ -500,35 +490,44 @@ export default {
 
     const selection = this.selectionFids;
 
-    /** @TODO add description */
+    /**In case all features are selected or no features are selected */
     if (selection.has(SELECTION.ALL) || 0 === selection.size) {
+      //set an empty selection set
       selection.clear();
+      //add exclude item
       selection.add(SELECTION.EXCLUDE);
     }
 
-    /** @TODO add description */
+
+    /** If has exclude item, mean add fid to exclude */
     if (selection.has(SELECTION.EXCLUDE)) {
+      //add to exclude
       selection.add(fid);
     } else {
+      //remote to exclude
       selection.delete(fid);
     }
 
-    /** @TODO add description */
+    /** If no selection */
+    if (0 === selection.size) { this.clearSelectionFids() }
+
+    /** If contain only exclude fid */
     if (1 === selection.size && selection.has(SELECTION.EXCLUDE)) {
+      //celar selection set
+      selection.clear();
       this.setselectionFidsAll();
     }
 
-    const isLastFeatureSelected  = this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'remove');
 
-    /** @TODO add description */
-    if (createToken && this.state.filter.active) {
-      await this.createFilterToken();
+    if (this.isGeoLayer()) {
+      // whether fid is excluded from selection
+      const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
+      this.setOlSelectionFeatureByFid(fid, is_excluded  ? 'remove' : 'add');
     }
 
-    /** @TODO add description */
-    if (0 === selection.size || isLastFeatureSelected) {
-      selection.clear();
-      this.setSelection(false);
+    /** If there is a filterActive */
+    if (createToken && this.state.filter.active) {
+      await this.createFilterToken();
     }
 
   },
@@ -540,7 +539,7 @@ export default {
    * @returns { Promise<void> }
    */
   async includeSelectionFids(fids = [], createToken = true) {
-    // pass false because eventually token filter creation need to be called after
+    // pass false because eventually token filter creation needs to be called after
     fids.forEach(fid => this.includeSelectionFid(fid, false));
 
     /** @TODO add description */
@@ -572,9 +571,11 @@ export default {
    */
   async clearSelectionFids() {
     this.selectionFids.clear();
-    // remove selected feature on map
+    // remove selected feature on a map
     if (this.isGeoLayer()) {
-      this.setOlSelectionFeatures();
+      //set all features unselected
+      Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = false);
+      this.updateMapOlSelectionFeatures();
     }
     // set selection false
     await this.setSelection(false);
