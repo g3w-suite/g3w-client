@@ -47,18 +47,17 @@
 
     <!-- BOOKMARS LIST -->
     <template v-else>
-      <template v-if="hasProjectbookmarks">
-        <div v-if="is_staff" class="content-bookmarks">
-          <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
-          <a :href="`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`" target="_blank" style="float: right;" title="QGIS Docs">
 
-            <i :class="g3wtemplate.getFontClass('external-link')"></i>
-          </a>
-        </div>
-        <template v-for="bookmark in project.bookmarks">
-          <spatial-book-mark-group v-if="bookmark.nodes" :group="bookmark" />
-          <spatial-book-mark-item v-else :bookmark="bookmark" />
-        </template>
+      <div v-if="is_staff" class="content-bookmarks">
+        <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
+        <a :href="`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`" target="_blank" style="float: right;" title="QGIS Docs">
+          <i :class="g3wtemplate.getFontClass('external-link')"></i>
+        </a>
+      </div>
+
+      <template v-for="bookmark in project.bookmarks">
+        <spatial-book-mark-group v-if="bookmark.nodes" :group="bookmark" />
+        <spatial-book-mark-item v-else :bookmark="bookmark" />
       </template>
 
       <div
@@ -160,10 +159,6 @@
     },
 
     computed: {
-
-      hasProjectbookmarks() {
-        return this.project.bookmarks.length > 0;
-      },
 
       /** @since 3.10.0 */
       is_staff() {
