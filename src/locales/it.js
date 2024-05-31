@@ -110,7 +110,7 @@ export default {
       },
       errors: {
         layers: {
-          load: "Alcuni layers presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
+          load: "Alcuni livelli presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
         },
         unsupported_format: 'Formato non supportato',
         add_external_layer: 'Errore nel caricamento del layer'
