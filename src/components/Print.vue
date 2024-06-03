@@ -742,12 +742,15 @@ export default {
   font-weight: bold;
   font-size: 1.1em;
   display: block;
-  border-bottom: 2px solid #ffffff;
+  border-bottom: 2px solid #fff;
   margin-bottom: 5px;
 }
 .print-labels-content > .labels-input-content {
   max-height: 120px;
   overflow-y: auto
+}
+.g3w-search-form label {
+  color: #fff;
 }
 .g3w-search-form > .box-footer {
   background-color: transparent;

@@ -461,6 +461,34 @@ export default {
 </script>
 
 <style scoped>
+.g3w-search-form label {
+  color: #fff;
+}
+.g3w-search-form .search-logicop {
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+  margin-top: 30px;
+  border-bottom: 1px solid;
+}
+.g3w-search-form .search-logicop h4 {
+  font-weight: bold;
+  position: absolute;
+  padding: 5px;
+  top: -24px;
+  background: #222d32;
+}
+#dosearch {
+  color: #fff;
+  font-weight: bold;
+  margin-top: 15px;
+  background-color: var(--skin-color);
+}
+#dosearch:hover {
+  color: #fff;
+}
 .search-label {
   width: 100%;
   display: flex;

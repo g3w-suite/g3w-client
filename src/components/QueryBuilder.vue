@@ -8,15 +8,18 @@
 
     <!-- SEARCH HEADER -->
     <div id="query_builder_header"></div>
-    
-    <!-- SEARCH LAYERS -->
+
+    <!-- SEARCH LAYER -->
     <div
       id    = "query_builder_layers"
       class = "margin-between-element">
       <label
         class = "querybuilder-title"
-        v-t   = "'sdk.querybuilder.panel.layers'">
+        v-t   = "'sdk.querybuilder.panel.expression'">
       </label>
+      <a :href="`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#search-and-query-builder`" target="_blank" style="float: right;" title="Docs">
+        <i :class="g3wtemplate.getFontClass('external-link')"></i>
+      </a>
       <select id="query_builder_layers_select" class="form-control">
         <option
           v-for  = "(layer, i) in layers"
@@ -27,136 +30,11 @@
       </select>
     </div>
 
-    <!-- SEARCH FIELDS -->
-    <div
-      id    = "query_builder_fields"
-      class = "margin-between-element"
-    >
-      <div
-        id    = "query_builder_fields_title"
-        class = "querybuilder-title"
-        v-t   = "'sdk.querybuilder.panel.fields'">
-      </div>
-      <div
-        id    = "query_builder_fields_content"
-        class = "querybuilder-content"
-      >
-        <table class="table table-striped content-table">
-          <tbody>
-            <tr
-              v-for     = "field in fields"
-              :key      = "field.name"
-              @click    = "select.field = field.name"
-              @dblclick = "addToExpression({ value: field.name, type: 'field' })"
-              :class    = "{ 'skin-background-color lighten': select.field===field.name }"
-              style     = "cursor: pointer"
-            >
-              <th scope="row">{{ field.label }}</th>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- SEARCH VALUES -->
-    <div
-      id    = "query_builder_values"
-      class = "margin-between-element"
-    >
-      <div
-        id    = "query_builder_values_title"
-        class = "querybuilder-title"
-        v-t   = "'sdk.querybuilder.panel.values'">
-      </div>
-      <div
-        v-if  = "!manual"
-        id    = "query_builder_values_content"
-        class = "querybuilder-content margin-between-element"
-      >
-        <bar-loader :loading="loading.values"/>
-
-        <table class="table table-striped content-table">
-          <tbody>
-            <tr
-              v-for     = "value in values"
-              @click    = "select.value = value"
-              :class    = "{ 'skin-background-color lighten': select.value === value }"
-              :key      = "value"
-              @dblclick = "addToExpression({ value: value, type: 'value' })"
-              style     = "cursor: pointer"
-            >
-              <th scope="row">{{ value }}</th>
-            </tr>
-            <tr>
-              <th scope="row"></th>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div v-else
-        id    = "querybuilder-manual"
-        class = "margin-between-element"
-      >
-        <input class="form-control" v-model="manualvalue">
-        <span
-          @click = "manualvalue && addToExpression({value: manualvalue, type: 'value'})"
-          :class = "g3wtemplate.getFontClass('plus')"
-        ></span>
-      </div>
-      <div
-        id    = "query_builder_values_buttons"
-        class = "content-end skin-color"
-      >
-        <button
-          id        = "query_builder_values_buttons_sample"
-          class     = "query_builder_button btn btn-secondary bold"
-          v-t       = "'sdk.querybuilder.panel.button.manual'"
-          @click    = "manual = true"
-          :class    = "{'skin-border-color' : manual}"
-        ></button>
-        <button
-          id        = "query_builder_values_buttons_all"
-          class     = "query_builder_button btn btn-secondary bold"
-          v-t       = "'sdk.querybuilder.panel.button.all'"
-          @click    = "all"
-          :disabled = "select.field === null"
-          :class    = "{'skin-border-color' : !manual}"
-        ></button>
-      </div>
-    </div>
-
-    <!-- SEARCH OPERATORS -->
-    <div
-      id    = "query_builder_operators"
-      class = "margin-between-element"
-    >
-      <div
-        id    = "query_builder_operators_title"
-        class = "querybuilder-title"
-        v-t   = "'sdk.querybuilder.panel.operators'">
-      </div>
-      <div
-        id    = "query_builder_operators_content"
-        class = "content-wrap"
-      >
-        <button
-          v-for  = "operator in operators"
-          @click = "addToExpression({ value: operator, type: 'operator' })"
-          :key   = "operator"
-          class  = "query_builder_button btn btn-secondary skin-color bold"
-          >{{ operator }}</button>
-      </div>
-    </div>
-
-    <!-- SEARCH FOOTER -->
+    <!-- SEARCH EXPRESSION -->
     <div id="query_builder_footer">
       <div id="query_builder_expression">
-        <div
-          id    = "query_builder_expression_title"
-          class = "querybuilder-title"
-          v-t   = "'sdk.querybuilder.panel.expression'"></div>
         <div id="query_builder_expression_content">
-          <textarea v-model="filter"/>
+          <textarea v-model="filter" />
         </div>
       </div>
       <div
@@ -180,24 +58,117 @@
           @click    = "test"
           :disabled = "disabled"
           v-t       = "'sdk.querybuilder.panel.button.test'"
-        ></button>
+        ><i :class="g3wtemplate.getFontClass('info')" style="color: blue;"></i></button>
         <button
           class     = "query_builder_button btn btn-secondary bold"
           @click    = "reset"
           v-t       = "'sdk.querybuilder.panel.button.clear'"
-        ></button>
+        ><i :class="g3wtemplate.getFontClass('clear')"></i></button>
         <button
           class     = "query_builder_button btn btn-secondary bold"
           @click    = "run"
           :disabled = "disabled"
           v-t       = "'sdk.querybuilder.panel.button.run'"
-        ></button>
+        ><i :class="g3wtemplate.getFontClass('run')" style="color: green;"></i></button>
         <button
           class     = "query_builder_button btn btn-secondary bold"
           @click    = "save"
           :disabled = "disabled"
           v-t       = "'sdk.querybuilder.panel.button.save'"
-        ></button>
+        ><i :class="g3wtemplate.getFontClass('save')"></i></button>
+      </div>
+    </div>
+
+    <hr>
+
+    <label v-t="'sdk.querybuilder.panel.fields'"></label>
+
+    <!-- SEARCH FIELDS -->
+    <div
+      id    = "query_builder_fields"
+      class = "margin-between-element"
+    >
+      <div
+        id    = "query_builder_fields_content"
+        class = "querybuilder-content"
+      >
+        <table class="table table-striped content-table">
+          <tbody>
+            <tr
+              v-for     = "field in fields"
+              :key      = "field.name"
+              @click    = "select.field = field.name; addToExpression({ value: field.name, type: 'field' })"
+              :class    = "{ 'skin-background-color lighten': select.field===field.name }"
+              style     = "cursor: pointer"
+            >
+              <th scope="row">{{ field.label }}</th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEARCH OPERATORS -->
+    <div
+      id    = "query_builder_operators"
+      class = "margin-between-element"
+    >
+      <div
+        id    = "query_builder_operators_content"
+        class = "content-wrap"
+      >
+        <button
+          v-for  = "operator in operators"
+          @click = "addToExpression({ value: operator, type: 'operator' })"
+          :key   = "operator"
+          class  = "query_builder_button btn btn-secondary skin-color bold"
+          >{{ operator }}</button>
+      </div>
+    </div>
+
+    <!-- SEARCH VALUES -->
+    <div
+      id    = "query_builder_values"
+      class = "margin-between-element"
+    >
+      <div
+        v-if  = "!manual"
+        id    = "query_builder_values_content"
+        class = "querybuilder-content margin-between-element"
+      >
+        <bar-loader :loading="loading.values"/>
+
+        <table class="table table-striped content-table">
+          <tbody>
+            <tr
+              v-for     = "value in values"
+              @click    = "select.value = value; addToExpression({ value: value, type: 'value' })"
+              :class    = "{ 'skin-background-color lighten': select.value === value }"
+              :key      = "value"
+              style     = "cursor: pointer"
+            >
+              <th scope="row">{{ value }}</th>
+            </tr>
+            <tr>
+              <th scope="row"></th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div
+        id    = "query_builder_values_buttons"
+        class = "content-end skin-color"
+      >
+        <button
+          v-if      = "select.field !== null && !values.length"
+          id        = "query_builder_values_buttons_all"
+          class     = "query_builder_button btn btn-secondary bold"
+          @click    = "all"
+          :class    = "{'skin-border-color' : !manual }"
+        >
+          <i :class = "g3wtemplate.getFontClass('search')"></i>
+          <span v-t="'sdk.querybuilder.panel.button.all'"></span>
+        </button>
       </div>
     </div>
 
@@ -312,6 +283,7 @@ export default {
       this.filterElement.previous = null;
       this.filterElement.current  = null;
       this.filterElement.operator = null;
+      this.select.field           = null;
     },
 
     /**
@@ -367,7 +339,7 @@ export default {
           layerId:   this.currentlayer.id,
           filter:    this.filter,
           layerName: CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id).getName(),
-          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
+          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.prompt(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
           id:        edit_id || getUniqueDomId(),
         };
 
@@ -467,20 +439,49 @@ export default {
 
 <style scoped>
 #query_builder {
-  flex-wrap: nowrap !important;
+  font-family: monospace;
+  margin-bottom: 0;
+  height: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
 }
-#querybuilder-manual {
-  display:flex;
-  justify-content: space-between;
-  align-items: stretch;
-  border: 0;
+#query_builder .select2.select2-container {
+  font-weight: bold;
 }
-#querybuilder-manual > span {
-  cursor: pointer;
-  font-size: 1.2em;
-  background-color: white;
-  color: #000;
-  padding: 8px;
+.querybuilder-title {
+  color: #fff;
+  font-weight: bold;
+}
+.querybuilder-content {
+  max-height: 150px;
+  min-height: 30px;
+  background-color: #fff;
+  overflow-y: auto;
+}
+.querybuilder-content .content-table {
+  background-color: #fff;
+  color: #000000;
+  margin-bottom: 0;
+  user-select: none;
+}
+.query_builder_button {
+  margin: 1px;
+  flex-basis: 78px;
+  flex-grow: 1;
+  color: #000000;
+}
+.content-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+.content-end {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.margin-between-element {
+  margin-bottom: 5px;
 }
 #query_builder_operators {
   margin-top: auto !important;

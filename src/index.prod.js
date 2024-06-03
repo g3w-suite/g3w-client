@@ -278,7 +278,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
                 {
                   id:      "querybuilder",
                   class:   `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
-                  tooltip: 'Query Builder',
+                  tooltip: t('sdk.querybuilder.title'),
                   fnc:     () => {
                     GUI.closeContent();
                     ApplicationTemplate.Services.sidebar.closeOpenComponents();

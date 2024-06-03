@@ -78,6 +78,7 @@ export default {
         help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
       },
       querybuilder: {
+        title: 'Advanced search',
         search: {
           run: "Run",
           info: "Information",
@@ -90,7 +91,7 @@ export default {
         },
         panel: {
           button: {
-            all: 'ALL',
+            all: 'SEARCH A VALUE',
             save: 'SAVE',
             test: 'TEST',
             clear: 'CLEAR',

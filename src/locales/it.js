@@ -78,21 +78,22 @@ export default {
         help: "I layers mostrati nella stampa potrebbero essere quelli definiti sul progetto e non quelli visualizzati sulla mappa"
       },
       querybuilder: {
+        title: 'Ricerca avanzata',
         search: {
-          run: "Lancia ricerca",
+          run: "Esegui",
           info: "Informazioni",
-          delete: "Cancella",
+          delete: "Rimuovi",
           edit: "Modifica"
         },
         messages: {
           changed: 'Salvato correttamente',
-          number_of_features: "Numero di features"
+          number_of_features: "Numero di elementi:"
         },
         panel: {
           button: {
-            all: 'TUTTI',
+            all: 'TROVA UN VALORE',
             save: 'SALVA',
-            test: 'TEST',
+            test: 'VERIFICA',
             clear: 'PULISCI',
             run: 'ESEGUI',
             manual: 'MANUALE'
