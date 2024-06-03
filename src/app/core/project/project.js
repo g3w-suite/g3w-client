@@ -38,6 +38,7 @@ const Projections            = require('g3w-ol/projection/projections');
  * @param { boolean }                          config.wms_use_layer_ids
  * @param { 'tab' | 'toc' }                    config.legend_position 
  * @param { 'layers', 'baselayers', 'legend' } config.catalog_tab
+ * @param show_load_layer_error                @since 3.10.0 show/hide layer load error
  * 
  * @param options
  */

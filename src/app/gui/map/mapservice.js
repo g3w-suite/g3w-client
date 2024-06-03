@@ -2103,7 +2103,8 @@ proto.updateMapLayer = function(mapLayer, options = { force: false }, { showSpin
   }
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
-    this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
+    /** @since 3.10.0 register loading error layer */
+    this[showSpinner && this.project.state.show_load_layer_error ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
   }
   mapLayer.update(this.state, options);
   return mapLayer;
@@ -2118,7 +2119,10 @@ proto.updateMapLayers = function(options={}) {
 
 // register map Layer listeners of creation
 proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
-  this.registerMapLayerLoadingEvents(mapLayer);
+  /** @since 3.10.0 resgister error layer loading */
+  if (this.project.state.show_load_layer_error) {
+    this.registerMapLayerLoadingEvents(mapLayer);
+  }
   //listen change filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers)) {
     mapLayer.layers.forEach(layer => {
