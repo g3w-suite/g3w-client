@@ -868,6 +868,19 @@ export default {
 };
 </script>
 
+<style>
+#g3w-table-toolbar {
+  margin: 0.755em 1ch 0 0;
+  position: relative;
+  bottom: 3px;
+  display: inline-flex;
+  border-radius: 2px;
+  border: 1px solid #d2d6de;
+  background-color: #fff;
+  float: left;
+}
+</style>
+
 <style scoped>
   .geometry {
     cursor: pointer
@@ -885,6 +898,9 @@ export default {
     height: 25px;
     min-width: 40px;
     padding: 2px;
+  }
+  #open_attribute_table .action-button {
+    padding: 5px;
   }
   #g3w-table-toolbar .action-button {
     padding: 4px;

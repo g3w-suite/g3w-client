@@ -75,7 +75,7 @@ export default {
         download_image: "Scarica Immagine",
         fids_instruction: "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
         fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
-        help: "I layers mostrati nella stampa potrebbero essere quelli definiti sul progetto e non quelli visualizzati sulla mappa"
+        help: "I livelli esportati sono definiti dall'amministratore"
       },
       querybuilder: {
         title: 'Ricerca avanzata',
@@ -536,7 +536,7 @@ export default {
     catalog_items: {
       helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
       contextmenu: {
-        zoomtolayer: "Zoom to Layer",
+        zoomtolayer: "Zoom sul Layer",
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stili",

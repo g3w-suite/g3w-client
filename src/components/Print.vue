@@ -6,7 +6,11 @@
 <template>
   <ul id="print" class="treeview-menu">
     <li>
-      <form class="g3w-search-form form-horizonal">
+
+      <form
+        v-if  = "state.print.length"
+        class = "g3w-search-form form-horizonal"
+      >
 
         <div class="box-body">
 
@@ -145,6 +149,13 @@
         </div>
 
       </form>
+
+      <div style="padding: 1em;text-align: center;">
+        <b><a :href="`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`" target="_blank" title="QGIS Docs">
+          <i :class="g3wtemplate.getFontClass('external-link')"></i> Edit in QGIS
+        </a></b>
+      </div>
+
     </li>
   </ul>
 </template>
@@ -209,6 +220,11 @@ export default {
     //in the case of current template is atlas and has field_name
     has_autocomplete() {
       return !!(this.state.atlas && this.state.atlas.field_name);
+    },
+
+    /** @since 3.10.0  */
+    lang() {
+      return ApplicationState.language;
     },
 
   },
@@ -733,6 +749,19 @@ export default {
 };
 </script>
 
+<style>
+#print .select2-container--open {
+  width: 100%;
+}
+#print .select2-container--open input.select2-search__field {
+  color: #555;
+  width: 100%;
+}
+#print.treeview-menu .select2.select2-container {
+  display: block;
+}
+</style>
+
 <style scoped>
 .print-labels-content {
   margin-top: 5px;
@@ -749,18 +778,16 @@ export default {
   max-height: 120px;
   overflow-y: auto
 }
-.g3w-search-form label {
+label {
   color: #fff;
 }
-.g3w-search-form > .box-footer {
+.box-footer {
   background-color: transparent;
 }
 #printbutton {
   width:100%;
   font-weight: bold;
-}
-.form-group > label {
-  display: block;
+  background-color: var(--skin-color);
 }
 #fid-print-atals-instruction {
   margin-top: 5px;
@@ -772,10 +799,5 @@ export default {
 #fids_examples_values {
   margin-top: 3px;
   font-weight: bold;
-}
-</style>
-<style>
-#print.treeview-menu .select2.select2-container {
-  display: block;
 }
 </style>

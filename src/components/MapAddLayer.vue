@@ -446,3 +446,36 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+#addcustomlayer {
+  margin: 10px 0 10px 0px;
+  position: relative;
+  border: 2px dashed #97A1A8;
+}
+
+#addcustomlayer p,
+#addcustomlayer h4 {
+  text-align: center;
+  line-height: 30px;
+  color: #97A1A8;
+  font-family: Arial;
+}
+
+#addcustomlayer div {
+  text-align: center;
+  line-height: 30px;
+  color: #97A1A8;
+}
+
+#addcustomlayer input{
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  opacity: 0;
+  cursor: pointer;
+}
+</style>

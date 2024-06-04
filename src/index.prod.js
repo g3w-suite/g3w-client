@@ -264,7 +264,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
             new PrintComponent({
               id:          'print',
               open:        false,
-              visible:     (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+              visible:     ApplicationService.getConfig().user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
               collapsible: true, //  it used to manage click event if you can run setOpen component method
               icon:        GUI.getFontClass('print'),
               mobile:      false,

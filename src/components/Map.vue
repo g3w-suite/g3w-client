@@ -102,10 +102,44 @@ export default {
 };
 </script>
 <style scoped>
-  .g3w-map-controls-left-bottom {
-    position: absolute;
-    bottom: 75px;
-    left: 10px;
-    z-index: 1;
-  }
+#marker {
+  width: 15px;
+  height: 15px;
+  border: 2px solid yellow;
+  border-radius: 10px;
+  background-color: yellow;
+  opacity: 0.8;
+}
+.g3w-map-controls-left-bottom {
+  position: absolute;
+  bottom: 75px;
+  left: 10px;
+  z-index: 1;
+}
+#g3w-map-info {
+  position: absolute;
+  top: 60px;
+  left: 5px;
+  font-weight: bold;
+  z-index: 100;
+  background: rgba(255,255,255, 0.6);
+  padding: 5px;
+  border-radius: 3px;
+}
+#g3w-maps {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.g3w-map {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.g3w-map.show {
+  display: block;
+}
+.g3w-map.hide {
+  display: none;
+} 
 </style>

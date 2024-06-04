@@ -1323,7 +1323,7 @@ export default {
       if (!state.id) {
         return state.text;
       }
-      return $(`
+      return $(/*html*/`
         <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
           <img src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
           <span style="margin-left: 5px;">${state.text}</span> 
@@ -1551,3 +1551,33 @@ export default {
 
 };
 </script>
+
+<style>
+.g3w-modal-project-message.Info .modal-header     { background-color: #0073b7; }
+.g3w-modal-project-message.Warning .modal-header  { background-color: #e99611; }
+.g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
+.g3w-modal-project-message.Critical .modal-header { background-color: #605ca8; }
+.g3w-modal-project-message h4.modal-title         { color: #FFF !important; }
+</style>
+
+<style scoped>
+.credit-title-logo {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 15px;
+}
+.g3w-credits-block {
+  text-align: center!important;
+  margin-bottom: 20px;
+}
+.g3w-suite-logo {
+  width: 50% !important;
+}
+.customcredits {
+  margin-bottom : 10px;
+  margin-top: 5px;
+}
+#address-credits span {
+  padding-left: 3px;
+}
+</style>

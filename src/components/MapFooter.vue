@@ -26,3 +26,15 @@
     }
   };
 </script>
+
+<style scoped>
+#map_footer {
+  position:absolute;
+  bottom:0;
+  height: 30px;
+  width:100%;
+  display: flex;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+</style>

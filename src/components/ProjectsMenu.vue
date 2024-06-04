@@ -108,3 +108,48 @@ export default {
 
 };
 </script>
+
+<style scoped>
+.project-menu {
+  cursor: pointer;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+.project-menu-item-image {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 50%;
+}
+.project-menu-item-image img {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+.project-menu-item-content {
+  padding: 15px;
+  background: rgba(255,255,255,0.3);
+}
+.project-menu-item-text {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  text-align: justify;
+}
+.project-menu-item-title {
+  text-align: center;
+  font-weight: bold;
+  background: rgba(255,255,255,0.5);
+  padding: 5px;
+}
+#menu-projects {
+  width: 100%;
+  overflow-y: auto;
+}
+#menu-projects .row-equal {
+  display: flex;
+  flex-wrap: wrap;
+}
+</style>

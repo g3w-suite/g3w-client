@@ -5,8 +5,6 @@
   box-shadow: @h @v @blur @color;
 }
 
-@map-spinner-color: white;
-
 .hide-cursor-caret-color {
   caret-color: rgba(0,0,0,0);
 }
@@ -16,40 +14,8 @@ html, body {
   width: 100%;
 }
 
-.color-light-blue {
-  color: @light-blue;
-}
-
-.toast-top-center {
-  top: 60px;
-}
-
-.toast-top-right {
-  top: 60px;
-}
-
 table.dataTable > tbody > tr.child ul.dtr-details > li {
   border-bottom: 0 !important;
-}
-// credits
-.credit-title-logo {
-  font-size: 1.1em;
-  margin-bottom: 15px;
-}
-.g3w-credits-block {
-  text-align: center!important;
-  margin-bottom: 20px;
-}
-.g3w-suite-logo {
-  width: 50% !important;
-}
-.customcredits {
-  margin-bottom : 10px;
-  margin-top: 5px;
-}
-.credit-title-logo {
-  font-weight: bold;
-  font-size: 1.2em;
 }
 
 .g3w-disabled {
@@ -68,39 +34,20 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
   overflow-wrap: break-word;
 }
 
-*:focus {
-  outline: none;
+.g3w-icon-toggled {
+  background-color: var(--skin-color);
 }
 
-//@since 3.8.0
-.g3w-modal-project-message {
+.g3w-mini-relation-icon {
+  color: var(--skin-color);
+}
 
-  &.Info{
-    .modal-header {
-      background-color: @blue;
-    }
-  }
-  &.Warning{
-    .modal-header{
-      background-color: @yellow;
-    }
-  }
+.g3w-panel button.run_button {
+  background-color: var(--skin-color);
+}
 
-  &.Error {
-    .modal-header {
-      background-color: @red;
-    }
-  }
-
-  &.Critical{
-    .modal-header {
-      background-color: @purple;
-    }
-  }
-
-  h4.modal-title {
-    color: #FFFFFF !important;
-  }
+*:focus {
+  outline: none;
 }
 
 // core less styles
@@ -110,46 +57,39 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 @import "g3w-header";
 @import "g3w-sidebar";
 @import "g3w-viewport";
-@import "g3w-map";
-@import "g3w-bottombar";
 @import "g3w-floatbar";
-@import "g3w-catalog";
-@import "g3w-catalog-legend";
-@import "g3w-projectscatalog";
 @import "g3w-tools";
 @import "g3w-mapcontrols";
-@import "g3w-mapmarker";
 @import "g3w-queryresults";
 @import "g3w-form";
 @import "g3w-contents";
-@import "g3w-menu-projects";
 @import "g3w-errors";
 @import "g3w-metadata";
 @import "g3w-overwrite-extenal";
 @import "g3w-error-page";
 @import "g3w-tabs";
-@import "g3w-print";
-@import "g3w-table-attribute";
 //@since v3.9
 @import "g3w-tabs-form-query";
 
 // custom g3w less skin styles
 @import "g3w-skins/g3w-skin";
+
+/* Catalog */
+.skin-blue   .catalog-context-menu li:hover { background: lighten(@light-blue, 10%); }
+.skin-green  .catalog-context-menu li:hover { background: lighten(@green, 10%); }
+.skin-purple .catalog-context-menu li:hover { background: lighten(@purple, 10%); }
+.skin-red    .catalog-context-menu li:hover { background: lighten(@red, 10%); }
+.skin-yellow .catalog-context-menu li:hover { background: lighten(@yellow, 10%); }
+
+
 // blue
 @import "g3w-skins/blue/g3w-skin";
 @import "g3w-skins/blue/g3w-overwrite-external";
 @import "g3w-skins/blue/g3w-mapcontrols";
-@import "g3w-skins/blue/g3w-catalog";
-@import "g3w-skins/blue/g3w-header";
 @import "g3w-skins/blue/g3w-queryresults";
 @import "g3w-skins/blue/g3w-viewport";
-@import "g3w-skins/blue/g3w-spinner";
-@import "g3w-skins/blue/g3w-print";
-@import "g3w-skins/blue/g3w-icon";
 @import "g3w-skins/blue/g3w-form";
-@import "g3w-skins/blue/g3w-metadata";
 @import "g3w-skins/blue/g3w-tabs-form-query";
-@import "g3w-skins/blue/g3w-panel";
 @import "g3w-skins/blue/g3w-tabs";
 @import "g3w-skins/blue/g3w-sidebar";
 
@@ -157,17 +97,10 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 @import "g3w-skins/yellow/g3w-skin";
 @import "g3w-skins/yellow/g3w-overwrite-external";
 @import "g3w-skins/yellow/g3w-mapcontrols";
-@import "g3w-skins/yellow/g3w-catalog";
-@import "g3w-skins/yellow/g3w-header";
 @import "g3w-skins/yellow/g3w-queryresults";
 @import "g3w-skins/yellow/g3w-viewport";
-@import "g3w-skins/yellow/g3w-spinner";
-@import "g3w-skins/yellow/g3w-print";
-@import "g3w-skins/yellow/g3w-icon";
 @import "g3w-skins/yellow/g3w-form";
-@import "g3w-skins/yellow/g3w-metadata";
 @import "g3w-skins/yellow/g3w-tabs-form-query";
-@import "g3w-skins/yellow/g3w-panel";
 @import "g3w-skins/yellow/g3w-tabs";
 @import "g3w-skins/yellow/g3w-sidebar";
 
@@ -175,17 +108,10 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 @import "g3w-skins/red/g3w-skin";
 @import "g3w-skins/red/g3w-overwrite-external";
 @import "g3w-skins/red/g3w-mapcontrols";
-@import "g3w-skins/red/g3w-catalog";
-@import "g3w-skins/red/g3w-header";
 @import "g3w-skins/red/g3w-queryresults";
 @import "g3w-skins/red/g3w-viewport";
-@import "g3w-skins/red/g3w-spinner";
-@import "g3w-skins/red/g3w-print";
-@import "g3w-skins/red/g3w-icon";
 @import "g3w-skins/red/g3w-form";
-@import "g3w-skins/red/g3w-metadata";
 @import "g3w-skins/red/g3w-tabs-form-query";
-@import "g3w-skins/red/g3w-panel";
 @import "g3w-skins/red/g3w-tabs";
 @import "g3w-skins/red/g3w-sidebar";
 
@@ -193,17 +119,10 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 @import "g3w-skins/purple/g3w-skin";
 @import "g3w-skins/purple/g3w-overwrite-external";
 @import "g3w-skins/purple/g3w-mapcontrols";
-@import "g3w-skins/purple/g3w-catalog";
-@import "g3w-skins/purple/g3w-header";
 @import "g3w-skins/purple/g3w-queryresults";
 @import "g3w-skins/purple/g3w-viewport";
-@import "g3w-skins/purple/g3w-spinner";
-@import "g3w-skins/purple/g3w-print";
-@import "g3w-skins/purple/g3w-icon";
 @import "g3w-skins/purple/g3w-form";
-@import "g3w-skins/purple/g3w-metadata";
 @import "g3w-skins/purple/g3w-tabs-form-query";
-@import "g3w-skins/purple/g3w-panel";
 @import "g3w-skins/purple/g3w-tabs";
 @import "g3w-skins/purple/g3w-sidebar";
 
@@ -211,17 +130,10 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 @import "g3w-skins/green/g3w-skin";
 @import "g3w-skins/green/g3w-overwrite-external";
 @import "g3w-skins/green/g3w-mapcontrols";
-@import "g3w-skins/green/g3w-catalog";
-@import "g3w-skins/green/g3w-header";
 @import "g3w-skins/green/g3w-queryresults";
 @import "g3w-skins/green/g3w-viewport";
-@import "g3w-skins/green/g3w-spinner";
-@import "g3w-skins/green/g3w-print";
-@import "g3w-skins/green/g3w-icon";
 @import "g3w-skins/green/g3w-form";
-@import "g3w-skins/green/g3w-metadata";
 @import "g3w-skins/green/g3w-tabs-form-query";
-@import "g3w-skins/green/g3w-panel";
 @import "g3w-skins/green/g3w-tabs";
 @import "g3w-skins/green/g3w-sidebar";
 
