@@ -278,7 +278,8 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 /**************************************************************************************
  * 3. Header
  **************************************************************************************/
-//Navbar toggle button
+
+/*Navbar toggle button*/
 
 header.main-header .container-fluid                            { padding: 0 !important; }
 header.main-header .navbar-header                              { margin-left: 0 !important; }
@@ -580,20 +581,17 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-attribution                                                        { background-color: transparent !important; text-align: left !important; right: auto !important; position: relative !important; top: 5px !important; max-width: 100% !important; }
 .ol-attribution ul                                                     { font-size: 1.0em !important; }
 .ol-attribution.ol-uncollapsible                                       { height: 1.3em !important; }
-.g3w-map-controls                                                      { position: absolute; flex-wrap: wrap; z-index: 1; display: flex; }
-.g3w-map-controls .ol-zoom-extent                                      { top:0; left:0; }
-.g3w-map-controls .ol-control                                          { position:relative; }
-.g3w-map-controls .ol-control button                                   { box-shadow: 0 3px 5px rgba(0,0,0,0.5); }
-.g3w-map-controls .ol-zoom                                             { top:0; left:0; }
+.g3w-map-controls                                                      { position: absolute; flex-wrap: wrap; z-index: 1; display: flex; top: 60px; left: 0; align-items: flex-start; flex-direction: column;}
+.g3w-map-controls.rv                                                   { top: 8px; right: 5px; left: unset; }
+.g3w-map-controls.lv                                                   { top:60px; left: 0; align-items: flex-start; }
 .g3w-map-controls.lh                                                   { top:60px; left: 0; flex-direction: row; }
 .g3w-map-controls.rh                                                   { top:8px; right: 0; flex-direction: row; }
-.controls-inside-v                                                     { flex-direction: column; }
-.controls-inside-v .ol-control                                         { padding: 3px; }
-.controls-inside-v .ol-zoom .ol-zoom-in                                { float: none; margin-bottom: 6px; }
-.g3w-map-controls.lv                                                   { top:60px; left: 0; align-items: flex-start; flex-direction: column; }
-.g3w-map-controls.rv                                                   { top: 8px; right: 5px; align-items: flex-end; flex-direction: column; }
+.g3w-map-controls .ol-control                                          { position:relative; padding: 3px; }
+.g3w-map-controls .ol-control button                                   { box-shadow: 0 3px 5px rgba(0,0,0,0.5); }
+.g3w-map-controls .ol-zoom                                             { top:0; left:0; }
+.g3w-map-controls .ol-zoom .ol-zoom-in                                 { float: none; margin-bottom: 6px; }
+.g3w-map-controls .ol-zoom-extent                                      { top:0; left:0; }
 .info_mapcontrol_button                                                { text-align: center; margin-top: -5px; margin-left: -15px; font-weight: bold; color: #fff; position:absolute; top:0; left:0; width:20px; height:20px; box-shadow: 0 3px 5px rgba(0,0,0,0.5); border: 2px solid #fff; border-radius:50%; cursor: pointer; }
-
 :is(.ol-control, .ol-custom-overviewmap) button                        { background-color: var(--skin-color); color: #fff; }
 :is(.ol-control, .ol-custom-overviewmap) button:is(:hover, :focus)     { background-color: var(--skin-color); }
 .ol-mouse-position-default                                             { background: var(--skin-color); }
