@@ -72,7 +72,6 @@ const { debounce } = require('utils');
 
 let dataTable;
 let fieldsComponents = [];
-let eventHandlers    = { pagination: {}, nopagination: {} };
 
 export default {
   name: "G3WTable",
@@ -216,7 +215,6 @@ export default {
       $('.dataTables_paginate').css('margin', '0');
     };
     await this.$nextTick();
-    this.first = false;
     const commonDataTableOptions = {
       "lengthMenu": this.state.pageLengths,
       "pageLength": this.state.pageLength,
@@ -233,62 +231,55 @@ export default {
         "width": '1%'
       } ]
     };
-    if (this.state.pagination) {
-      //pagination
-      dataTable = $(this.$refs.attribute_table).DataTable({
-          ...commonDataTableOptions,
-          "columns": this.state.headers,
-          "ajax": debounce((data, callback) => {
-            //remove listeners
-            const trDomeElements = $('#open_attribute_table table tr');
-            trDomeElements.each(element => {
-              $(element).off('click');
-              $(element).off('mouseover');
-            });
-            this.$options.service.getData(data)
-              .then(async serverData => {
-                callback(serverData);
-                await this.$nextTick();
-                this.createdContentBody();
-                this.disableSelectAll = 0 === this.state.features.length;
-                if (this.isMobile()) { hideElements() }
-              })
-              .catch(error => {
-                console.log(error)
-              })
-          }, 800),
-          "serverSide": true,
-          "deferLoading": this.state.allfeatures
-        });
-      this.$options.service.on('ajax-reload', dataTable.ajax.reload);
-    } else { // no pagination all data
-      dataTable = $(this.$refs.attribute_table).DataTable({
-        ...commonDataTableOptions,
-        searchDelay: 600
-      });
-      //function that filters no pagination table
-      const debounceSearch = debounce(() => {
-        const filter = dataTable.rows( {search:'applied'} )[0];
-        this.$options.service.setFilteredFeature(filter);
-        this.disableSelectAll = 0 === filter.length;
-      }, 600);
-      dataTable.on('search.dt', debounceSearch);
+    //resolve data from server
+    let pResolve;
+    //store columns index value search
+    let filterColumns = {};
 
-    }
+    dataTable = $(this.$refs.attribute_table).DataTable({
+      ...commonDataTableOptions,
+      "columns": this.state.headers,
+      "ajax": debounce((data, callback) => {
+        //remove listeners
+        const trDomeElements = $('#open_attribute_table table tr');
+        trDomeElements.each(element => {
+          $(element).off('click');
+          $(element).off('mouseover');
+        });
+        this.$options.service.getData(data)
+          .then(async serverData => {
+            callback(serverData);
+            if (pResolve) { pResolve(serverData.filter) }
+            await this.$nextTick();
+            this.createdContentBody();
+            if (this.isMobile()) { hideElements() }
+          })
+          .catch(err => { console.warn(err) })
+      }, 800),
+      "serverSide": true,
+      "deferLoading": this.state.allfeatures
+    });
+    //
+    this.$options.service.on('ajax-reload', dataTable.ajax.reload);
+
 
     this.changeColumn = debounce(async (evt, index) => {
       const value = evt.target.value.trim();
+      dataTable.one('draw', async() => {
+        filterColumns[index] = value;
+        filter = Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [];
+        this.disableSelectAll = 0 === filter.length;
+        this.$options.service.setFilteredFeature(filter)
+      })
       dataTable
         .columns(index)
         .search(value)
         .draw();
       //need to be wait draw
-      dataTable.one('draw', () => this.$options.service.setFilteredFeature(value.length ? dataTable.rows( {search:'applied'})[0] : []))
+
     });
 
-    if (this.isMobile()) {
-      hideElements();
-    }
+    if (this.isMobile()) { hideElements() }
 
     const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
     const G3WTableToolbarInstance = new G3WTableToolbarClass({
@@ -305,14 +296,11 @@ export default {
     $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);
 
     this.$options.service.on('redraw', data => {
-      dataTable.clear();
+      dataTable.rows().clear();
+      dataTable.rows.add(data);
       dataTable.draw(false);
-      setTimeout(() => {
-        dataTable.rows.add(data);
-        dataTable.draw(false);
-        this.createdContentBody();
-        this.isMobile() && hideElements();
-      })
+      this.createdContentBody();
+      this.isMobile() && hideElements();
     })
   },
   beforeDestroy() {
