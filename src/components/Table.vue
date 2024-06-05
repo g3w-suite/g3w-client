@@ -267,9 +267,8 @@ export default {
       const value = evt.target.value.trim();
       dataTable.one('draw', async() => {
         filterColumns[index] = value;
-        filter = Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [];
-        this.disableSelectAll = 0 === filter.length;
-        this.$options.service.setFilteredFeature(filter)
+        this.disableSelectAll = 0 === this.state.features.length
+        this.$options.service.setFilteredFeature(Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [])
       })
       dataTable
         .columns(index)
