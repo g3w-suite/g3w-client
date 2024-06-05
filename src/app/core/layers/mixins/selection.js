@@ -95,13 +95,17 @@ export default {
   },
 
   /**
-   * Set filter Ative to layer
+   * Set filter Active to layer
    * 
    * @param {boolean} bool
    */
   setFilter(bool = false) {
     this.state.filter.active = bool;
-    if (this.isGeoLayer()) {
+    if (this.isGeoLayer() && this.state.filter.active) {
+      this.hideOlSelectionFeatures();
+    }
+
+    if (this.isGeoLayer() && !this.state.filter.active) {
       this.updateMapOlSelectionFeatures();
     }
 
@@ -248,8 +252,8 @@ export default {
    */
   async toggleFilterToken() {
 
-    // toggle boolean value of filter active
-    this.state.filter.active = !this.state.filter.active;
+    //set to handle select or hide ol
+    this.setFilter(!this.state.filter.active);
 
     const has_current = this.state.filter.current;
     const is_active   = this.state.filter.active;
@@ -268,9 +272,6 @@ export default {
     if (!has_current && !is_active) {
       await this.deleteFilterToken();
     }
-
-    //set to handle select or hide ol
-    this.setFilter(this.state.filter.active);
 
     return this.state.filter.active;
   },
@@ -402,17 +403,15 @@ export default {
     /** @TODO add description */
     if (selection.has(SELECTION.EXCLUDE))  { selection.delete(SELECTION.EXCLUDE); }
     else if (selection.has(SELECTION.ALL)) { selection.delete(SELECTION.ALL); }
-    else if (selection.size > 0)                       { selection.add(SELECTION.EXCLUDE); }
+    else if (selection.size > 0)           { selection.add(SELECTION.EXCLUDE); }
 
     /** @TODO add description */
     if (this.isGeoLayer()) {
       this.setInversionOlSelectionFeatures();
     }
 
-    /** @TODO add description */
-    if (this.state.filter.active) {
-      this.createFilterToken();
-    }
+    /** In the case of tocken filter active create */
+    if (this.state.filter.active) { this.createFilterToken() }
 
     this.setSelection(selection.size > 0);
   },

@@ -231,12 +231,20 @@ proto.addOlSelectionFeature = function({
 } = {}) {
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
     feature: createFeatureFromFeatureObject({ id, feature }),
-    added: false,
+    added:    false,
     selected: false, /** @since 3.9.9 */
   };
   return this.olSelectionFeatures[id];
 };
 
+/**
+ * [LAYER SELECTION]
+ *
+ * Set selection layer on map not visible
+ */
+proto.hideOlSelectionFeatures = function() {
+  GUI.getService('map').setSelectionLayerVisible(false);
+}
 
 /**
  * [LAYER SELECTION]
@@ -274,8 +282,17 @@ proto.setInversionOlSelectionFeatures = function() {
   Object
     .values(this.olSelectionFeatures)
     .forEach(feat => {
-      feat.added = !feat.added;
-      map.setSelectionFeatures(feat.added ? 'add' : 'remove', { feature: feat.feature });
+      //invert select state
+      feat.selected = !feat.selected;
+      if (!feat.selected && feat.added) {
+        map.setSelectionFeatures('remove', { feature: feat.feature });
+        feat.added = false;
+      }
+      if (feat.selected && !feat.added) {
+        map.setSelectionFeatures('add', { feature: feat.feature });
+        feat.added = true;
+      }
+
     });
 };
 
