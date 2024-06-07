@@ -101,6 +101,35 @@ class OlMapViewer {
       keyboardEventTarget: document,
       target: opts.id,
     });
+
+    // visual click (sonar effect)
+    this.map.on('click', ({ coordinate }) => {
+      const circle = new ol.layer.Vector({
+        source: new ol.source.Vector({ features: [ new ol.Feature({ geometry: new ol.geom.Point(coordinate) }) ] }),
+        style: new ol.style.Style()
+      });
+      const start    = +new Date();
+      const duration = 1700;
+      const interval = circle.on('postcompose', ({ frameState }) => {
+      const elapsed  = frameState.time - start;
+      const ratio   = ol.easing.easeOut(elapsed / duration);
+      circle.setStyle(
+        new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 40 * ratio, // start = 0, end = 40
+            fill:   new ol.style.Fill({ color: [225, 227, 228, .1] }),
+            stroke: new ol.style.Stroke({ color: [225, 227, 228, 1], width: 1.85 * (1 - ratio) }), // start = 1.85, end = 0
+          })
+        })
+      );
+      if (elapsed > duration) {
+        this.map.removeLayer(circle);
+        ol.Observable.unByKey(interval); // stop the effect
+      }
+    });
+    this.map.addLayer(circle);
+  });
+
   }
 
   /**

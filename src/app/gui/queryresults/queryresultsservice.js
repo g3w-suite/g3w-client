@@ -228,11 +228,10 @@ class QueryResultsService extends G3WObject {
     this.resultsQueryLayer = new ol.layer.Vector({
       source: new ol.source.Vector(),
       style(feature) {
-        const fill   = new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.7)' });
-        const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
+        const stroke = new ol.style.Stroke({ color: 'black' });
         if ('Point' === feature.getGeometry().getType()) {
           return new ol.style.Style({
-            text: new ol.style.Text({ fill, stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
+            text: new ol.style.Text({ fill: stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
           });
         }
         return new ol.style.Style({ stroke });
