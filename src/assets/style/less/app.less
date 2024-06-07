@@ -1027,27 +1027,25 @@ input[type="range"]::-ms-track                                                  
 /**************************************************************************************
  * 15. Tabs
  **************************************************************************************/
+.queryresults-wrapper .table > tbody > tr > td                                                                  { padding: 3px; }
+:is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)                { border-color: transparent !important; }
+:is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)
 :is(.queryresults-wrapper, .g3wform_body, .query-relation) .tabs-wrapper                                        { border-radius: 3px; border: 1px solid; padding: 3px; }
 :is(.queryresults-wrapper, .g3wform_body, .query-relation) .tabs-wrapper .tab-content .field_label              { font-weight: bold; }
 :is(.queryresults-wrapper, .query-relation) .tabs-wrapper .tab-content .tab-node.group .node-row:nth-child(odd) { background-color: #FFF; }
 
-.skin-blue   :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)                                           { border-color: lighten(@light-blue, 30%) !important; }
 .skin-blue   :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .node-row:nth-child(even) { background-color: lighten(@light-blue, 48%) !important; }
 .skin-blue   :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .sub-group                { background-color: lighten(@light-blue, 45%) !important; }
 
-.skin-green  :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)                                           { border-color: #a1e096 !important; }
 .skin-green  :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .node-row:nth-child(even) { background-color: #e4ffcb !important; }
 .skin-green  :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .sub-group                { background-color: #e4ffcb !important; }
 
-.skin-purple :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)                                           { border-color: lighten(@purple, 30%) !important; }
 .skin-purple :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .node-row:nth-child(even) { background-color: lighten(@purple, 48%) !important; }
 .skin-purple :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .sub-group                { background-color: lighten(@purple, 48%) !important; }
 
-.skin-red    :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)                                           { border-color: lighten(@red, 30%) !important; }
 .skin-red    :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .node-row:nth-child(even) { background-color: lighten(@red, 39%) !important; }
 .skin-red    :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .sub-group                { background-color: lighten(@red, 39%) !important; }
 
-.skin-yellow :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)                                           { border-color: lighten(@yellow, 30%) !important; }
 .skin-yellow :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .node-row:nth-child(even) { background-color: lighten(@yellow, 45%) !important; }
 .skin-yellow :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body) .tab-node.group .sub-group                { background-color: lighten(@yellow, 45%) !important; }
 
