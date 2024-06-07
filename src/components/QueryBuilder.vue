@@ -141,10 +141,10 @@
         <table class="table table-striped content-table">
           <tbody>
             <tr
-              v-for     = "value in values"
-              @click    = "select.value = value; addToExpression({ value: value, type: 'value' })"
-              :class    = "{ 'skin-background-color lighten': select.value === value }"
-              :key      = "value"
+              v-for     = "[key, value] in values"
+              @click    = "select.value = key; addToExpression({ value: key, type: 'value' })"
+              :class    = "{ 'skin-background-color lighten': select.value === key }"
+              :key      = "key"
               style     = "cursor: pointer"
             >
               <th scope="row">{{ value }}</th>
@@ -261,7 +261,7 @@ export default {
         } else {
           const response = await XHR.get({
             url: CatalogLayersStoresRegistry.getLayerById(layerId).getUrl('data'),
-            params: { ordering: field, unique: field }
+            params: { ordering: field, formatter: 1, fformatter: field }
           });
           if (response.result) {
             CACHE[layerId][field] = CACHE[layerId][field] || response.data;
