@@ -50,9 +50,9 @@ proto.setup = function(config={}, options={}) {
       url: null,
       loading: false,
       error: false,
-      /**
-       * @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead
-       */
+     /**
+      * @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead
+      */
       show: true,
       change: false, // used for when categories changed (checkbox on TOC) and legend is on TAB
     },
@@ -154,7 +154,7 @@ proto.clearCategories = function() {
  * Clear all selection Openlayers features
  */
 proto.clearOlSelectionFeatures = function() {
-  this.olSelectionFeatures = null;
+  this.olSelectionFeatures = {};
 };
 
 /**
@@ -216,6 +216,7 @@ proto.getOlSelectionFeatures = function() {
   return this.olSelectionFeatures;
 };
 
+
 /**
 * [LAYER SELECTION]
 
@@ -230,17 +231,25 @@ proto.addOlSelectionFeature = function({
 } = {}) {
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
     feature: createFeatureFromFeatureObject({ id, feature }),
-    added: false,
+    added:    false,
     selected: false, /** @since 3.9.9 */
   };
   return this.olSelectionFeatures[id];
 };
 
+/**
+ * [LAYER SELECTION]
+ *
+ * Set selection layer on map not visible
+ */
+proto.hideOlSelectionFeatures = function() {
+  GUI.getService('map').setSelectionLayerVisible(false);
+}
 
 /**
  * [LAYER SELECTION]
  * 
- * Show all selection feature
+ * Show all selection features
  */
 proto.updateMapOlSelectionFeatures = function() {
   const map = GUI.getService('map');
@@ -273,8 +282,17 @@ proto.setInversionOlSelectionFeatures = function() {
   Object
     .values(this.olSelectionFeatures)
     .forEach(feat => {
-      feat.added = !feat.added;
-      map.setSelectionFeatures(feat.added ? 'add' : 'remove', { feature: feat.feature });
+      //invert select state
+      feat.selected = !feat.selected;
+      if (!feat.selected && feat.added) {
+        map.setSelectionFeatures('remove', { feature: feat.feature });
+        feat.added = false;
+      }
+      if (feat.selected && !feat.added) {
+        map.setSelectionFeatures('add', { feature: feat.feature });
+        feat.added = true;
+      }
+
     });
 };
 
