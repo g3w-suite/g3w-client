@@ -7,6 +7,7 @@ import {
 import ProjectsRegistry                   from 'store/projects';
 import DataRouterService                  from 'services/data';
 import CatalogLayersStoresRegistry        from 'store/catalog-layers';
+import ApplicationState                   from "store/application-state";
 import DownloadFormats                    from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 import ApplicationService                 from 'services/application';
@@ -101,6 +102,7 @@ class QueryResultsService extends G3WObject {
      * Set reactive state
      */
     this.state = {
+      logged: undefined !== ApplicationState.user.id,
 
       /**
        * @FIXME add description

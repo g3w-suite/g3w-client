@@ -26,13 +26,15 @@
         </tr>
         <tr>
           <th v-for="(header, index) in state.headers">
-            <span v-if="index === 0">
+            <span
+              v-if       = "index === 0"
+              v-disabled = "disableSelectAll"
+            >
               <input
                 type      = "checkbox"
                 id        = "attribute_table_select_all_rows"
                 :checked  = "state.selectAll"
-                class     = "magic-checkbox"
-                :disabled = "state.nofilteredrow || state.features.length === 0">
+                class     = "magic-checkbox">
               <label
                 for   = "attribute_table_select_all_rows"
                 style = "margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow"
@@ -59,31 +61,29 @@
 </template>
 
 <script>
-import TableBody from 'components/TableBody.vue';
-import SelectRow from 'components/TableSelectRow.vue';
+import TableBody       from 'components/TableBody.vue';
+import SelectRow       from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
-import Field from 'components/FieldG3W.vue';
-import GUI from 'services/gui';
+import Field           from 'components/FieldG3W.vue';
+import GUI             from 'services/gui';
 import { resizeMixin } from 'mixins';
 
 const { debounce } = require('utils');
 
 let dataTable;
 let fieldsComponents = [];
-let eventHandlers = {
-  pagination: {},
-  nopagination: {}
-};
 
 export default {
   name: "G3WTable",
   mixins: [resizeMixin],
   data() {
     return {
-      tableBodyComponent:null,
-      state: null,
-      table: null,
-      selectedRow: null
+      tableBodyComponent: null,
+      state:              null,
+      table:              null,
+      selectedRow:        null,
+      features:           [],
+      disableSelectAll:   false, /**@since 3.9.9 */
     }
   },
   components: {
@@ -201,6 +201,7 @@ export default {
     this.delayType = 'debounce';
   },
   async mounted() {
+    this.disableSelectAll = 0 === this.state.features.length;
     this.setContentKey = GUI.onafter('setContent', this.resize);
     const hideElements = () => {
       $('.dataTables_info, .dataTables_length').hide();
@@ -214,7 +215,6 @@ export default {
       $('.dataTables_paginate').css('margin', '0');
     };
     await this.$nextTick();
-    this.first = false;
     const commonDataTableOptions = {
       "lengthMenu": this.state.pageLengths,
       "pageLength": this.state.pageLength,
@@ -231,85 +231,75 @@ export default {
         "width": '1%'
       } ]
     };
-    if (this.state.pagination) {
-      //pagination
-      dataTable = $(this.$refs.attribute_table).DataTable({
-          ...commonDataTableOptions,
-          "columns": this.state.headers,
-          "ajax": debounce((data, callback) => {
-            //remove listeners
-            const trDomeElements = $('#open_attribute_table table tr');
-            trDomeElements.each(element => {
-              $(element).off('click');
-              $(element).off('mouseover');
-            });
-            this.$options.service.getData(data)
-              .then(async serverData => {
-                callback(serverData);
-                await this.$nextTick();
-                this.createdContentBody();
-                this.isMobile() && hideElements();
-              })
-              .catch(error => {
-                console.log(error)
-              })
-          }, 800),
-          "serverSide": true,
-          "deferLoading": this.state.allfeatures
-        });
-      this.$options.service.on('ajax-reload', dataTable.ajax.reload);
-      this.changeColumn = debounce(async (event, index) => {
-        dataTable
-          .columns(index)
-          .search(event.target.value.trim())
-          .draw();
-      });
-    } else { // no pagination all data
-      dataTable = $(this.$refs.attribute_table).DataTable({
-        ...commonDataTableOptions,
-        searchDelay: 600
-      });
-      const debounceSearch = debounce(() => {
-        this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
-      }, 600);
-      eventHandlers.nopagination['search.dt'] = debounceSearch;
-      dataTable.on('search.dt', debounceSearch);
-      dataTable.on('length.dt', (evt, settings, length) => {
-        this.$options.service.setAttributeTablePageLength(length)
-      });
-      this.changeColumn = debounce(async (event, index) => {
-        dataTable.columns(index).search(event.target.value.trim()).draw();
-        this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'})[0]);
-      });
-    }
+    //resolve data from server
+    let pResolve;
+    //store columns index value search
+    let filterColumns = {};
 
-    if (this.isMobile()) {
-      hideElements();
-    }
+    dataTable = $(this.$refs.attribute_table).DataTable({
+      ...commonDataTableOptions,
+      "columns": this.state.headers,
+      "ajax": debounce((data, callback) => {
+        //remove listeners
+        const trDomeElements = $('#open_attribute_table table tr');
+        trDomeElements.each(element => {
+          $(element).off('click');
+          $(element).off('mouseover');
+        });
+        this.$options.service.getData(data)
+          .then(async serverData => {
+            callback(serverData);
+            if (pResolve) { pResolve(serverData.filter) }
+            await this.$nextTick();
+            this.createdContentBody();
+            if (this.isMobile()) { hideElements() }
+          })
+          .catch(err => { console.warn(err) })
+      }, 800),
+      "serverSide": true,
+      "deferLoading": this.state.allfeatures
+    });
+    //
+    this.$options.service.on('ajax-reload', dataTable.ajax.reload);
+
+
+    this.changeColumn = debounce(async (evt, index) => {
+      const value = evt.target.value.trim();
+      dataTable.one('draw', async() => {
+        filterColumns[index] = value;
+        this.disableSelectAll = 0 === this.state.features.length
+        this.$options.service.setFilteredFeature(Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [])
+      })
+      dataTable
+        .columns(index)
+        .search(value)
+        .draw();
+      //need to be wait draw
+
+    });
+
+    if (this.isMobile()) { hideElements() }
 
     const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
     const G3WTableToolbarInstance = new G3WTableToolbarClass({
       propsData: {
-        tools: this.state.tools,
-        geolayer: this.state.geolayer,
-        switchSelection: this.switchSelection,
+        tools:             this.state.tools,
+        geolayer:          this.state.geolayer,
+        switchSelection:   this.switchSelection,
         clearAllSelection: this.clearAllSelection,
         toggleFilterToken: this.toggleFilterToken,
-        getDataFromBBOX: this.getDataFromBBOX
+        getDataFromBBOX:   this.getDataFromBBOX
       }
     });
 
     $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);
 
     this.$options.service.on('redraw', data => {
-      dataTable.clear();
+      dataTable.rows().clear();
+      dataTable.rows.add(data);
       dataTable.draw(false);
-      setTimeout(() => {
-        dataTable.rows.add(data);
-        dataTable.draw(false);
-        this.createdContentBody();
-        this.isMobile() && hideElements();
-      })
+      this.createdContentBody();
+      this.isMobile() && hideElements();
     })
   },
   beforeDestroy() {

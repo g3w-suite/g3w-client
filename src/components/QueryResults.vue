@@ -117,7 +117,7 @@
                     </span>
                     <!-- @since 3.9 add save -->
                     <span
-                      v-if="layer.filter.active && (null === layer.filter.current || layer.selection.active)"
+                      v-if="state.logged && layer.filter.active && (null === layer.filter.current || layer.selection.active)"
                       @click.stop="saveFilter(layer)"
                       class="action-button skin-tooltip-left"
                       v-t-tooltip:left.create="'layer_selection_filter.tools.savefilter'"

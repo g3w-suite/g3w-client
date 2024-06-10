@@ -25,9 +25,7 @@ const TableComponent = function(options = {}) {
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;
 
-  service.on('redraw', ()=>{
-    this.layout();
-  });
+  service.on('redraw', () => this.layout() );
 
   this.unmount = function() {
     return base(this, 'unmount')
@@ -45,9 +43,9 @@ const proto = TableComponent.prototype;
 // overwrite show method
 proto.show = function(options = {}) {
   const service = this.getService();
-  // close all sidebar open component
+  // close all sidebar open components
   GUI.closeOpenSideBarComponent();
-  service.getData({firstCall: true})
+  service.getData()
     .then(() => {
       GUI.showContent({
         content: this,

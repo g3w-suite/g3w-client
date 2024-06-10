@@ -42,18 +42,14 @@ const TableService = function(options = {}) {
    */
   this.formatter = options.formatter;
 
-  /**
-   * @FIXME add description
-   */
-  this.allfeaturesnumber = undefined;
 
   /**
    * @FIXME add description
    */
-  this.nopaginationsfilter = [];
+  this.filter = [];
 
   /**
-   * @FIXME add description
+   * Get selection fids Set from layer
    */
   this.selectedfeaturesfid = this.layer.getSelectionFids();
 
@@ -81,11 +77,6 @@ const TableService = function(options = {}) {
    * @FIXME add description
    */
   this.getAll = false;
-
-  /**
-   * @FIXME add description
-   */
-  this.paginationfilter = false;
 
   /**
    * @FIXME add description
@@ -188,17 +179,11 @@ proto.clearAllSelection = function() {
 
 /**
  * @since 3.9.0
- * 
- * @param { Object } opts
- * @param { string } opts.type
- * 
+ **
  * @fires redraw when `opts.type` in_bbox filter (or not select all)
  */
-proto.filterChangeHandler = async function ({ type } = {}) {
-  this.allfeaturesnumber = undefined;
-  if (type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL)) {
-    this.emit('redraw', this.state.pagination ? [] : await this.reloadData());
-  }
+proto.filterChangeHandler = async function () {
+  this.emit('ajax-reload');
 };
 
 /**
@@ -240,56 +225,15 @@ proto.setDataForDataTable = function() {
 };
 
 proto.addRemoveSelectedFeature = function(feature) {
+  //invert selected of feature
   feature.selected = !feature.selected;
 
-  const selected       = this.selectedfeaturesfid;
-  const filter         = this.nopaginationsfilter;
-  const count          = this.allfeaturesnumber;
+  this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
 
-  const select_all     = this.state.selectAll;
-  const has_pagination = this.state.pagination;
-  const features       = this.state.features;
-  const is_active      = this.state.tools && this.state.tools.filter && this.state.tools.filter.active
+  this.checkSelectAll();
 
-  const is_exclude     = !select_all && selected.has(SELECTION_STATE.EXCLUDE);
-  const is_default     = !select_all && !is_exclude;
-
-  /** @FIXME add description */
-  if (select_all) {
-    this.state.selectAll = false;
-  }
-
-  /** @FIXME add description */
-  if (select_all) {
-    this.layer.excludeSelectionFid(feature.id, has_pagination);
-  }
-
-  /** @FIXME add description */
-  if (is_exclude || is_default) {
-    this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-  }
-
-  /** @FIXME add description */
-  if (!is_active && ( (is_exclude && 1 === selected.size) || (is_default && selected.size === count)) ) {
-    this.layer.setSelectionFidsAll();
-  }
-
-  /** @FIXME add description */
-  if (is_exclude && 1 !== selected.size && selected.size === features.length + 1) {
-    this.layer.clearSelectionFids();
-  }
-
-  /** @FIXME add description */
-  this.state.tools.show = selected.size > 0;
-
-  /** @FIXME add description */
-  if (
-    (is_exclude && 1 === selected.size) ||
-    (is_default && selected.size === count) ||
-    (!has_pagination && filter.length && filter.length === features.filter(f => f.selected).length)
-  ) {
-    this.state.selectAll = true;
-  }
+  /** Show tools based on selected state */
+  this.state.tools.show = this.state.features.some(f => f.selected);
 
 };
 
@@ -300,6 +244,11 @@ proto.createFeatureForSelection = function(feature) {
   }
 };
 
+/**
+ *
+ * @param params
+ * @return {Promise<unknown>}
+ */
 proto.getAllFeatures = function(params) {
   GUI.setLoadingContent(true);
   return new Promise((resolve, reject) => {
@@ -318,6 +267,7 @@ proto.getAllFeatures = function(params) {
               });
             }
           });
+          //Set true. All Features of layer are get
           this.getAll = true;
         }
 
@@ -330,56 +280,17 @@ proto.getAllFeatures = function(params) {
   });
 };
 
+/**
+ * Switch selection
+ * @return {Promise<void>}
+ */
 proto.switchSelection = async function() {
-  const has_pagination = this.state.pagination;
-  const filter         = this.nopaginationsfilter;
-  const filtered       = !has_pagination && filter.length ? [] : undefined;
-  let selected         = false;
-
-  // pagination
-  if (has_pagination) {
-    this.state.features.forEach(f => {
-      f.selected = !f.selected;
-      selected   = f.selected;
-    });
-  }
-
-  if (has_pagination && !this.getAll) {
-    await this.getAllFeatures();
-  }
-
-  this.state.selectAll = (has_pagination && this.paginationfilter) ? selected : this.state.selectAll;
-
-  // filtered
-  if (!has_pagination && filter.length) {
-    this.state.features.forEach((f, i) => {
-      if (-1 !== filter.indexOf(i)) {
-        filtered.push(f);
-      }
-      f.selected = !f.selected;
-      this.layer[f.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](f.id);
-      selected = selected || f.selected;
-    });
-    this.state.tools.show = selected;
-  }
-  
-  // no filter
-  if (!has_pagination && !filter.length) {
-    this.state.features.forEach(f => { f.selected = !f.selected; });
-  }
-
-  if (has_pagination || !filter.length) {
-    this.layer.invertSelectionFids();
-  }
-
-  if (!has_pagination) {
-    this.checkSelectAll(filtered);
-  }
-
-  if (has_pagination || !filter.length) {
-    this.state.tools.show = this.selectedfeaturesfid.size > 0;
-  }
-
+  //need to get all features
+  if (!this.getAll) { await this.getAllFeatures() }
+  this.state.features.forEach(f => f.selected = !f.selected);
+  this.layer.invertSelectionFids();
+  //set selectAll checkbox
+  this.checkSelectAll();
 };
 
 proto.clearLayerSelection = function() {
@@ -396,85 +307,44 @@ proto.selectAllFeatures = async function() {
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
 
-  const has_pagination = this.state.pagination;
-  const filter         = this.nopaginationsfilter;
-  let selected         = false;
+  const filter         = this.filter.length > 0;
 
-  // filtered
-  if (!has_pagination && filter.length) {
-    this.state.features.forEach((f, i) =>{
-      if (-1 !== filter.indexOf(i)) {
-        f.selected = this.state.selectAll;
-        this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
-        selected = selected || f.selected;
-      }
-    });
-    this.state.tools.show = selected;
+  if (!filter) {
+    if (!this.getAll) await this.getAllFeatures();
+    this.state.features.forEach(f => f.selected = this.state.selectAll)
+    await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids']();
   }
 
-  // no filter
-  if (!has_pagination && !filter.length) {
-    this.state.tools.show = this.state.selectAll;
-    this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
-    this.state.features.forEach(f => f.selected = this.state.selectAll);
-  }
-
-  // filtered pagination
-  if (has_pagination && this.paginationfilter && this.state.featurescount >= this.state.allfeatures) {
-    this.state.features.forEach(f => {
-      f.selected = this.state.selectAll;
-      this.layer[f.selected ? 'includeSelectionFid': 'excludeSelectionFid'](f.id);
-    });
-  }
-
-  if (has_pagination && this.paginationfilter && this.state.featurescount < this.state.allfeatures) {
-    const features = await this.getAllFeatures({
-      search:    this.paginationParams.search,
-      ordering:  this.paginationParams.ordering,
-      formatter: this.paginationParams.formatter,
-      in_bbox:   this.paginationParams.in_bbox,
-    });
-    features.forEach(f => {
-      if (!this.getAll && this.geolayer && f.geometry) {
-        this.layer.addOlSelectionFeature({
-          id: f.id,
-          feature: this.createFeatureForSelection(f)
+  if (filter) {
+    // in case of select all true
+    if (this.state.selectAll) {
+      this.state
+        .features
+        .filter(f => this.filter.includes(f.id))
+        .forEach(f => {
+          f.selected = true;
+          this.layer.includeSelectionFid(f.id);
         });
-      }
-      this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](f.id);
-    })
+
+    } else {
+      this.state.features.forEach(f => f.selected = false);
+      this.layer.clearSelectionFids();
+    }
   }
 
-  if (has_pagination) {
-    this.state.features.forEach(f => f.selected = this.state.selectAll);
-  }
-
-  if (has_pagination && !this.paginationfilter && !this.getAll) {
-    await this.getAllFeatures();
-  }
-
-  if (has_pagination && !this.paginationfilter) {
-    this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
-  }
-
-  if (has_pagination) {
-    this.state.tools.show = this.state.selectAll || this.selectedfeaturesfid.size > 0;
-  }
+  this.state.tools.show = this.state.features.some(f => f.selected);
 
 };
 
 /**
  * Set filtered features
  * 
- * @param index features index
+ * @param filter features an index array
  */
-proto.setFilteredFeature = function(index) {
-  const filter = this.nopaginationsfilter = index;
-  if (0 === index.length || index.length === this.allfeaturesnumber) {
-    this.checkSelectAll();
-  } else {
-    this.checkSelectAll(filter.map(i => this.state.features[i]));
-  }
+proto.setFilteredFeature = function(filter = []) {
+  this.filter = filter;
+  if (filter.length) { this.getAll = false }
+  this.checkSelectAll();
 };
 
 proto.setAttributeTablePageLength = function(length) {
@@ -489,8 +359,7 @@ proto.setAttributeTablePageLength = function(length) {
  * @param data.length
  * @param data.columns
  * @param data.search
- * @param data.firstCall
- * 
+ *
  * @returns {Promise<{{ data: [], recordsTotal: number, recordsFiltered: number }}>}
  */
 proto.getData = function({
@@ -499,17 +368,16 @@ proto.getData = function({
   length    = this.state.pageLength,
   columns   = [],
   search    = { value: null },
-  firstCall = false
 } = {}) {
 
-  // reset features before load
+  // reset features before a load
   GUI.setLoadingContent(true);
 
   this.setAttributeTablePageLength(length);
 
   return new Promise((resolve, reject) => {
 
-    // skip when ..
+    // No headers
     if (!this.state.headers.length) {
       resolve({
         data: [],
@@ -521,6 +389,7 @@ proto.getData = function({
 
     let searchText = search.value && search.value.length > 0 ? search.value : null;
 
+    //reset features
     this.state.features.splice(0);
 
     if (!order.length) {
@@ -532,13 +401,11 @@ proto.getData = function({
 
     const ordering = ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name;
 
-    this.currentPage = (start === 0 || (this.state.pagination && this.state.tools.filter.active)) ? 1 : (start/length) + 1;
+    this.currentPage = (start === 0 || (this.state.tools.filter.active)) ? 1 : (start/length) + 1;
 
     const in_bbox = this.state.tools.geolayer.in_bbox;
 
-    const field =  this.state.pagination
-      ? columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',')
-      : undefined;
+    const field =  columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',')
 
     this.paginationParams = {
       field:     field || undefined,
@@ -551,28 +418,22 @@ proto.getData = function({
     };
 
     this.layer
-      .getDataTable(
-        this.state.pagination
-          ? this.paginationParams
-          : ({ ordering, in_bbox, formatter: this.formatter })
-      )
+      .getDataTable(this.paginationParams)
       .then(data => {
         const { features = [] }  = data;
-
-        this.state.allfeatures   = data.count || this.state.features.length;
+        this.state.allfeatures   = data.count;
+        //get
+        //current feature length
         this.state.featurescount = features.length;
-        this.allfeaturesnumber   = (undefined === this.allfeaturesnumber ? data.count : this.allfeaturesnumber);
-        this.paginationfilter    = (data.count !== this.allfeaturesnumber);
-        this.state.pagination    = firstCall
-          ? this.state.tools.filter.active || features.length < this.allfeaturesnumber
-          : this.state.pagination;
-
+        //add features
         this.addFeatures(features);
+        this.state.selectAll = this.state.tools.filter.active || this.state.features.every(f => f.selected);
 
         resolve({
           data:            this.setDataForDataTable(),
           recordsFiltered: data.count,
-          recordsTotal:    data.count
+          recordsTotal:    data.count,
+          filter:          this.state.features.map(f => f.id)
         });
       })
       .fail(err  => { GUI.notify.error(t("info.server_error")); reject(err); })
@@ -597,37 +458,38 @@ proto.getDataFromBBOX = async function() {
 
   geolayer.active = !geolayer.active;
 
+  //is active geo layer filter (load feature on map only)
   const is_active = geolayer.active;
   const listener  = this.mapBBoxEventHandlerKey;
 
-  if (is_active && this.state.pagination) {
+  //in the case of active bbox filter
+  if (is_active) {
     listener.cb = () => {
       this.setInBBoxParam();
       this.emit('ajax-reload');
     };
   }
 
-  if (is_active && !this.state.pagination) {
-    listener.cb = async () => {
-      this.setInBBoxParam();
-      this.filterChangeHandler({ type: 'in_bbox' });
-    };
-  }
 
   if (is_active) {
     listener.key = this.mapService.getMap().on('moveend', listener.cb);
   }
 
-  if (listener.cb) {
-    listener.cb();
-  }
+
+  if (listener.cb) { listener.cb() }
 
   if (!is_active) {
     this.resetMapBBoxEventHandlerKey();
   }
 };
 
+/**
+ *
+ * @param feature
+ */
 proto.addFeature = function(feature) {
+  // in the case of feature already added, skip
+  if (this.state.features.find(f => feature.id === f.id)) { return }
   const tableFeature = {
     id:         feature.id,
     selected:   this.layer.hasSelectionFid(feature.id),
@@ -638,6 +500,7 @@ proto.addFeature = function(feature) {
   const has_geom  = this.geolayer && feature.geometry;
   const selection = has_geom && this.layer.getOlSelectionFeature(feature.id);
 
+  //if not already add to selection
   if (has_geom && !selection) {
     this.layer.addOlSelectionFeature({
       id:      feature.id,
@@ -650,22 +513,14 @@ proto.addFeature = function(feature) {
 
 proto.checkSelectAll = function(features = this.state.features) {
   this.state.selectAll = (
-    this.selectedfeaturesfid.has(SELECTION_STATE.ALL) ||
-    (features.length && features.reduce((selectAll, f) => selectAll && f.selected, true))
+    this.selectedfeaturesfid.has(SELECTION_STATE.ALL)
+    || (features.length && features.reduce((selectAll, f) => selectAll && f.selected, true))
   );
 };
 
 proto.addFeatures = function(features=[]) {
   features.forEach(f => this.addFeature(f));
   this.state.tools.show = this.layer.getFilterActive() || this.selectedfeaturesfid.size > 0;
-  this.checkSelectAll();
-};
-
-proto.reloadData = async function(pagination=false) {
-  this.state.features.splice(0);
-  this.state.pagination = pagination;
-  const { data = [] }   = await this.getData();
-  return data;
 };
 
 proto._setLayout = function() {
@@ -673,8 +528,8 @@ proto._setLayout = function() {
 };
 
 proto._returnGeometry = function(feature) {
-  if (feature.attributes) return feature.geometry;
-  if (feature.geometry)   return coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
+  if (feature.attributes) { return feature.geometry }
+  if (feature.geometry)   { return coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates) }
 };
 
 proto.zoomAndHighLightFeature = function(feature, zoom = true) {
@@ -771,7 +626,6 @@ proto.clear = function() {
 
   this.resetMapBBoxEventHandlerKey();
 
-  this.allfeaturesnumber = null;
   this.mapService        = null;
 
   if (this._async.state) {
