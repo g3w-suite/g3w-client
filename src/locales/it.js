@@ -553,5 +553,7 @@ export default {
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
     },
+    /**@since 3.10.0 */
+    no_geometry: 'Questo elemento non ha geometria',
   },
 };

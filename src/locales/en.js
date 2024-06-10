@@ -549,6 +549,8 @@ export default {
       no_data: "No data",
       nodatafilterd: "No matching records found",
       infoFiltered: "(filtered from _MAX_ total records)"
-    }
+    },
+    /**@since 3.10.0 */
+    no_geometry: 'This item has no geometry',
   },
 };
