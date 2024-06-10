@@ -111,7 +111,6 @@
       }"
     >
 
-
       <span
         :class           = "{
           highlightlayer: isHighLight,
@@ -176,7 +175,7 @@
 
         <!-- SAVE FILTER  -->
         <span
-          v-if                         = "!layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
+          v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           class                        = "action-button skin-tooltip-left selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
@@ -226,11 +225,12 @@
 </template>
 
 <script>
-import LayerLegend from 'components/CatalogLayerLegend.vue';
-import { CatalogEventBus as VM } from 'app/eventbus';
+import LayerLegend                 from 'components/CatalogLayerLegend.vue';
+import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ClickMixin from 'mixins/click';
-import GUI from 'services/gui';
+import ApplicationState            from "store/application-state";
+import ClickMixin                  from 'mixins/click';
+import GUI                         from 'services/gui';
 
 const { downloadFile } = require('utils');
 
@@ -264,7 +264,8 @@ export default {
       isGroupChecked: true,
       controltoggled: false,
       n_childs:       null,
-      filtered:       false
+      filtered:       false,
+      logged:         undefined !== ApplicationState.user.id, //@since 3.10.0
     }
   },
 
