@@ -87,7 +87,7 @@ export default {
         },
         messages: {
           changed: 'Saved',
-          number_of_features: "Number of features"
+          number_of_features: "Features found:"
         },
         panel: {
           button: {

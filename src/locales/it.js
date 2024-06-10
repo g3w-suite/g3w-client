@@ -87,7 +87,7 @@ export default {
         },
         messages: {
           changed: 'Salvato correttamente',
-          number_of_features: "Numero di elementi:"
+          number_of_features: "Elementi trovati:"
         },
         panel: {
           button: {

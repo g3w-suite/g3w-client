@@ -55,21 +55,15 @@
       >
         <button
           class     = "query_builder_button btn btn-secondary bold"
-          @click    = "test"
+          @click    = "run"
           :disabled = "disabled"
-          v-t       = "'sdk.querybuilder.panel.button.test'"
-        ><i :class="g3wtemplate.getFontClass('info')" style="color: blue;"></i></button>
+          v-t       = "'sdk.querybuilder.panel.button.run'"
+        ><i :class="g3wtemplate.getFontClass('run')" style="color: green;"></i></button>
         <button
           class     = "query_builder_button btn btn-secondary bold"
           @click    = "reset"
           v-t       = "'sdk.querybuilder.panel.button.clear'"
         ><i :class="g3wtemplate.getFontClass('clear')"></i></button>
-        <button
-          class     = "query_builder_button btn btn-secondary bold"
-          @click    = "run"
-          :disabled = "disabled"
-          v-t       = "'sdk.querybuilder.panel.button.run'"
-        ><i :class="g3wtemplate.getFontClass('run')" style="color: green;"></i></button>
         <button
           class     = "query_builder_button btn btn-secondary bold"
           @click    = "save"
@@ -289,36 +283,23 @@ export default {
     /**
      * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
      */
-    async test() {
-      const data      = await this.run(false);
-      const n         = data.length && data[0].features.length; // number of features
-      this.message    = undefined !== n ? ` ${n}` : ''
-      await this.$nextTick();
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
-     */
-    async run(showResult = true) {
+    async run() {
       try {
         this.loading.test = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id);
-        return (
-          await DataRouterService.getData('search:features', {
-            inputs: {
-              layer,
-              filter: createFilterFromString({ layer, filter: this.filter }),
-              feature_count: 100,
-            },
-            outputs: showResult,
-          })
-        ).data;
+        const { data } = await DataRouterService.getData('search:features', {
+          inputs: {
+            layer,
+            filter: createFilterFromString({ layer, filter: this.filter }),
+            feature_count: 100,
+          },
+          outputs: true,
+        });
+        const n         = data.length && data[0].features.length; // number of features
+        this.message    = undefined !== n ? ` ${n}` : '';
+        return data;
       } catch(e) {
         console.warn(e);
-        if (!showResult) {
-          GUI.showUserMessage({ type: 'alert', message: 'sdk.querybuilder.error_run', autoclose: true });
-          this.message = t('sdk.querybuilder.error_test');
-        }
       } finally {
         this.loading.test = false;
       }
