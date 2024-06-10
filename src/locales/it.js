@@ -205,16 +205,16 @@ export default {
               hint: "Aggiungi/Rimuovi Selezione"
             },
             zoom_to_features_extent:{
-              hint: "Zoom sulle features"
+              hint: "Zoom sulle geometrie"
             },
             add_features_to_results: {
-              hint: "Aggiungi features ai risultati"
+              hint: "Aggiungi elementi ai risultati"
             },
             remove_feature_from_results: {
-              hint: "Rimuovi feature dai risultati"
+              hint: "Rimuovi elemento dai risultati"
             },
             zoom_to_feature: {
-              hint: "Zoom sulla feature"
+              hint: "Zoom sulla geometria"
             },
             relations: {
               hint: "Visualizza Relazioni"
@@ -223,44 +223,44 @@ export default {
               hint: "Visualizza grafici relazioni"
             },
             download_features_shapefile:{
-              hint: 'Scarica features in Shapefile'
+              hint: 'Scarica come Shapefile'
             },
             download_shapefile: {
-              hint: 'Scarica feature in Shapefile'
+              hint: 'Scarica come Shapefile'
             },
             download_features_gpx: {
-              hint: "Scarica features in GPX"
+              hint: "Scarica come GPX"
             },
             download_features_gpkg: {
-              hint: "Scarica features in GPKG"
+              hint: "Scarica come GPKG"
             },
             download_gpx: {
-              hint: "Scarica feature in GPX"
+              hint: "Scarica come GPX"
             },
             download_gpkg: {
-              hint: "Scarica feature in GPKG"
+              hint: "Scarica come GPKG"
             },
             download_features_csv: {
-              hint: "Scarica features in CSV"
+              hint: "Scarica come CSV"
             },
             download_csv: {
-              hint: "Scarica feature in CSV"
+              hint: "Scarica come CSV"
             },
             download_features_xls: {
-              hint: "Scarica features in XLS"
+              hint: "Scarica come XLS"
             },
             download_xls: {
-              hint: "Scarica la feature in XLS"
+              hint: "Scarica come XLS"
             },
             download_pdf: {
-              hint: "Scarica la feature in PDF"
+              hint: "Scarica come PDF"
             },
             atlas: {
               hint: "Stampa Atlas"
             },
             copy_zoom_to_fid_url: {
-              hint: "Copia URL mappa con estensione a questa geometria",
-              hint_change: "Copiato"
+              hint: "Condividi tramite link",
+              hint_change: "URL copiato negli appunti"
             }
           }
         },

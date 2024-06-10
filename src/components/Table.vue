@@ -114,6 +114,12 @@
                 class    = "magic-checkbox"
               />
               <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
+              <i
+                v-if                   = "feature.geometry"
+                @click.stop            = "zoomToGeometry(feature)"
+                v-t-tooltip:top.create = "'sdk.mapcontrols.query.actions.zoom_to_feature.hint'"
+                :class                 = "'action-button skin-color ' + g3wtemplate.getFontClass('marker')"
+              ></i>
                <i
                 @click.stop            = "openForm(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
@@ -265,12 +271,20 @@ export default {
             }
           })
         );
-        // zoom to feature
-        if (feature.geometry) {
-          GUI.getService('map').zoomToGeometry(coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates));
-        }
+        this.zoomToGeometry(feature);
       } catch (e) {
        console.warn(e); 
+      }
+    },
+
+    /**
+     * Zoom to feature
+     * 
+     * @since 3.10.0 
+     */
+    zoomToGeometry(feature) {
+      if (feature.geometry) {
+        GUI.getService('map').zoomToGeometry(coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates));
       }
     },
 
@@ -614,6 +628,8 @@ export default {
    * ORIGINAL SOURCE: src/app/gui/table/tableservice.js@v3.9.3
    */
   async created() {
+
+    console.log(this);
 
     // disable any previous active map control
     this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());

@@ -2207,7 +2207,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: 'link_zoom_to_fid',
         download: false,
-        class: GUI.getFontClass('link'),
+        class: GUI.getFontClass('share-alt'),
         hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
         hint_change: {
           hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',

@@ -580,6 +580,8 @@ export const FONT_AWESOME_ICONS = {
   reply: "fas fa-reply",
   /** @since 3.8.0 */
   share: "fas fa-share",
+  /** @since 3.10.0 */
+  'share-alt': 'fa fa-share-alt',
   /**@since 3.10.0 */
   'external-link': "fa fa-external-link-alt",
 };
