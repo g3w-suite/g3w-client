@@ -100,7 +100,6 @@ export const FILTER_OPERATORS = {
   gt:       '>',
   lt:       '<',
   IN:       'IN',
-  'NOT IN': 'NOT IN',
   LIKE:     'LIKE',
   ILIKE:    'ILIKE',
   AND:      'AND',
