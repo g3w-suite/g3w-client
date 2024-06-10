@@ -467,7 +467,7 @@ export default {
     sidebar: {
       wms: {
         panel: {
-          title:'Aggiungi WMS Layer',
+          title:'Aggiunta livello WMS',
           label: {
             position: "Posizione su Mappa",
             name: "Nome",
@@ -475,7 +475,7 @@ export default {
             layers: 'Layers'
           }
         },
-        add_wms_layer: "Aggiungi WMS layer",
+        add_wms_layer: "Aggiungi livello WMS",
         delete_wms_url: "Elimina WMS url",
         layer_id_already_added: "Questo Layer WMS è già stato aggiunto",
         url_already_added: "URL/Nome WMS già aggiunto",

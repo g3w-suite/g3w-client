@@ -13,25 +13,33 @@
 
     <li class="new_wms_item">
 
+      <!-- WMS URL -->
+      <div class="wms_url_input_content">
+        <label for="add_custom_url_wms_input" title="required">
+          <span>URL</span>
+          <i style="font-family: Monospace;color: var(--skin-color);">*</i>
+        </label>
+        <a :href="`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`" target="_blank" style="float: right;" title="Docs">
+          <i :class="g3wtemplate.getFontClass('external-link')"></i>
+        </a>
+        <input
+          id      = "add_custom_url_wms_input"
+          v-model = "url"
+          class   = "form-control"
+          style   = "width: 100%; color:#000000;"
+          placeholder="http://example.org/?&service=WMS&request=GetCapabilities"
+        />
+      </div>
+
       <!-- WMS NAME -->
       <div class="wms_url_input_content">
-        <label
-          for = "add_custom_name_url_wms_input"
-          v-t = "'sidebar.wms.panel.label.name'">
+        <label for = "add_custom_name_url_wms_input" title="required">
+          <span v-t="'sidebar.wms.panel.label.name'"></span>
+          <i style="font-family: Monospace;color: var(--skin-color);">*</i>
         </label>
         <input
           id      = "add_custom_name_url_wms_input"
           v-model = "id"
-          class   = "form-control"
-          style   = "width: 100%; color:#000000;">
-      </div>
-
-      <!-- WMS URL -->
-      <div class="wms_url_input_content">
-        <label for="add_custom_url_wms_input">URL</label>
-        <input
-          id      = "add_custom_url_wms_input"
-          v-model = "url"
           class   = "form-control"
           style   = "width: 100%; color:#000000;">
       </div>
@@ -45,6 +53,7 @@
           class               = "btn btn-block skin-background-color"
         >
           <i :class="g3wtemplate.getFontClass('plus-square')"></i>
+          <span v-t="'add'"></span>
         </button>
       </div>
 
@@ -546,6 +555,13 @@
     color: inherit;
     font-weight: normal;
     display: inline-block;
+  }
+  #add_custom_url_wms_input::placeholder {
+    font-size: 85%;
+    opacity: .5;
+  }
+  .wms_url_input_content input {
+    padding:1ch;
   }
   .wms_url_input_content{
     margin-bottom: 5px;
