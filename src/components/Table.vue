@@ -385,8 +385,8 @@ export default {
     async highlight(feature, zoom = true) {
       const map = GUI.getService('map');
 
-      // no feature → clear highlight
-      if (!feature) {
+      // no feature or no feature geometry → clear highlight
+      if (!feature || !feature.geometry) {
         return map.clearHighlightGeometry();
       }
 
