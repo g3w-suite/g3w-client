@@ -914,4 +914,7 @@
 .feature_attributes tr {
   line-height: 1.8em;
 }
+.featurebox-body + tr {
+  border-top: 2px groove #000;
+}
 </style>
