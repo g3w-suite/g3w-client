@@ -8,6 +8,8 @@ import GUI                               from 'services/gui';
 
 import * as vueComp                      from 'components/WMS.vue';
 
+const { t } = require('core/i18n/i18n.service');
+
 /**
  * ORIGINAL SOURCE:
  * - src/app/gui/wms/vue/wms.js@v3.9.3
@@ -17,7 +19,7 @@ export default function(opts = {}) {
 
   const comp = new Component({
     ...opts,
-    title: 'WMS',
+    title: t('add') + ' WMS',
     service: {},
     internalComponent: new (Vue.extend(vueComp))({ wmsurls: opts.wmsurls }),
   });
