@@ -161,7 +161,8 @@
                     <!-- @since 3.9 add save -->
                     <span
                       v-if                    = "
-                        layer.filter.active
+                        state.logged
+                        && layer.filter.active
                         && (null === layer.filter.current || layer.selection.active)
                       "
                       @click.stop             = "saveFilter(layer)"
