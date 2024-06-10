@@ -605,8 +605,15 @@ export default {
     //   table.columns.adjust(); // adjust column
     // },
 
-    onGUIContent(options) {
-      this.has_map = (100 !== options.perc);
+    onGUIContent(opts) {
+      this.has_map = (100 !== opts.perc);
+    },
+    /**
+     * Reload data from server
+     * @since 3.10.0
+     */
+    filterChangeHandler() {
+      $(this.$refs.attribute_table).DataTable().ajax.reload();
     },
 
   },
@@ -637,7 +644,7 @@ export default {
 
     GUI.onbefore('setContent',   this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
-    // this.layer.on('filtertokenchange', this.changeFilter);
+    this.layer.on('filtertokenchange', this.filterChangeHandler);
 
     GUI.closeOpenSideBarComponent(); // close other sidebar components
 
@@ -735,7 +742,7 @@ export default {
     }
 
     this.layer.off('unselectionall',    this.unSelectAll);
-    // this.layer.off('filtertokenchange', this.changeFilter);
+    this.layer.off('filtertokenchange', this.filterChangeHandler);
 
     // reset bbox event handler
     ol.Observable.unByKey(this.map_bbox.key);
