@@ -275,7 +275,6 @@ export default {
         if (feature.geometry) {
           GUI.getService('map').zoomToGeometry(coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates));
         }
-        this.zoomToGeometry(feature);
       } catch (e) {
        console.warn(e); 
       }
