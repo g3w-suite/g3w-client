@@ -660,7 +660,7 @@ export default {
       // perc: undefined !== this.$options.perc ? this.$options.perc : 55,
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
-      title: this.layer.getName(),
+      title: this.layer.getTitle(),
     });
 
     if (this.isMobile()) {

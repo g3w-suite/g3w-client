@@ -34,7 +34,7 @@
     <div id="query_builder_footer">
       <div id="query_builder_expression">
         <div id="query_builder_expression_content">
-          <textarea v-model="filter" />
+          <textarea v-model="filter"></textarea>
         </div>
       </div>
       <div
@@ -379,9 +379,10 @@ export default {
             r.customPrefix = r.customPrefix === undefined ? `${l.getName()}_` : r.customPrefix;
             exclude = [...exclude, ...l.getFields().map(field => `${r.customPrefix}${field.name}`)];
           });
+          console.log(layer);
         return {
           id:     layer.id,
-          label:  layer.name,
+          label:  layer.title,
           fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => -1 === exclude.indexOf(f))
         }
       });
