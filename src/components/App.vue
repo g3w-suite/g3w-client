@@ -1306,7 +1306,7 @@ export default {
 
     main_title() {
       const main_title = this.appconfig.main_map_title;
-      const group_name = this.appconfig.group.name || this.appconfig.group.slug;
+      const group_name = this.appconfig.group.title || this.appconfig.group.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
 
