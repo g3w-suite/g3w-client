@@ -4,31 +4,35 @@
 -->
 
 <template>
-<div
-  class = "chart_wrapper"
-  style = "height: 100%; width: 100%"
->
   <div
-    style = "height: 100%; min-height: 200px;  background-color: #ffffff"
-    :id   = "id">
-  </div>
-  <div
-    v-for="component in components"
+    class = "chart_wrapper"
+    style = "height: 100%; width: 100%"
   >
-    <divider/>
-    <component
-      @change-item   = "changeItem"
-      @change-items  = "changeItems"
-      @select-item   = "selectItem"
-      @select-all    = "selectAll"
-      @unselect-all  = "unselectAll"
-      @unselect-item = "unselectItem"
-      :data          = "data"
-      :selectitems   = "selectitems"
-      :size          = "size"
-      :is            = "component"/>
+    <div
+      style = "height: 100%; min-height: 200px;  background-color: #ffffff"
+      :id   = "id">
+    </div>
+
+    <div
+      v-for="component in components"
+    >
+      <divider/>
+
+      <component
+        @change-item   = "changeItem"
+        @change-items  = "changeItems"
+        @select-item   = "selectItem"
+        @select-all    = "selectAll"
+        @unselect-all  = "unselectAll"
+        @unselect-item = "unselectItem"
+        :data          = "data"
+        :selectitems   = "selectitems"
+        :size          = "size"
+        :is            = "component"/>
+    </div>
+
   </div>
-</div>
+
 </template>
 
 <script>
@@ -73,9 +77,7 @@ export default {
         const item = data[i];
         item.value+=offset;
       }
-      if (render) {
-        this.resize();
-      }
+      if (render) { this.resize() }
     },
     getSelectedItems() {
       return this.selectitems;
@@ -142,9 +144,7 @@ export default {
     },
     changeItem({ item, render = true }) {
       this._setMaxMin({value: item.value});
-      if (render) {
-        this.resize();
-      }
+      if (render) { this.resize() }
     }
   },
   mounted() {

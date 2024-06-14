@@ -3,9 +3,9 @@
 -->
 
 <template>
-  <div id="map_footer" class="skin-border-color">
+  <div id = "map_footer" class = "skin-border-color">
     <map-footer-left/>
-    <map-footer-right :service="service"/>
+    <map-footer-right :service = "service"/>
   </div>
 </template>
 

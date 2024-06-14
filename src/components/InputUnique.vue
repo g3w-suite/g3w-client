@@ -6,21 +6,26 @@
 <template>
   <baseinput :state="state">
     <select
-      :id="id"
-      slot="body"
-      style="width:100%"
-      :tabIndex="tabIndex"
-      v-disabled="!editable"
-      class="form-control">
-      <option value="null"></option>
-      <option :value="getValue(value)" v-for="value in state.input.options.values" :key="value">{{ getValue(value) }}</option>
+      slot       = "body"
+      :id        = "id"
+      style      = "width:100%"
+      :tabIndex  = "tabIndex"
+      v-disabled = "!editable"
+      class      = "form-control"
+    >
+      <option value = "null"></option>
+      <option
+        v-for  = "value in state.input.options.values"
+        :key   = "value"
+        :value = "getValue(value)" >{{ getValue(value) }}</option>
     </select>
   </baseinput>
 </template>
 
 <script>
 import { selectMixin } from 'mixins';
-const Input = require('gui/inputs/input');
+
+const Input              = require('gui/inputs/input');
 const { getUniqueDomId } = require('utils');
 
 export default {

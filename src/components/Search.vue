@@ -16,12 +16,12 @@
       class       = "menu-item"
       @click.stop = "showPanel(search)"
     >
-      <i :class="g3wtemplate.getFontClass('empty-circle')"></i>
+      <i :class = "g3wtemplate.getFontClass('empty-circle')"></i>
       <span>{{ search.name }}</span>
     </li>
 
-    <li v-for="searchtool in state.tools">
-      <g3w-tool :tool="searchtool" />
+    <li v-for = "searchtool in state.tools">
+      <g3w-tool :tool = "searchtool" />
     </li>
 
     <!-- ORIGINAL SOURCE: src/components/QueryBuilderSearch.vue@v3.9.3 -->
@@ -29,9 +29,9 @@
       v-for = "(search, i) in state.querybuildersearches"
       :key  = "search.id"
     >
-      <div style="position:relative" @click="edit(search)">
-        <bar-loader :loading="search.qbloading"/>
-        <div class="search-tools">
+      <div style = "position:relative" @click = "edit(search)">
+        <bar-loader :loading = "search.qbloading"/>
+        <div class = "search-tools">
           <span
             class          = "search-action skin-tooltip-bottom"
             :class         = "g3wtemplate.getFontClass('trash')"
@@ -39,7 +39,8 @@
             data-toggle    = "tooltip"
             data-container = "body"
             v-t-tooltip    = "'sdk.querybuilder.search.delete'"
-            @click.stop    = "remove(search, i)" style="color: red;margin-right: 5px;"
+            @click.stop    = "remove(search, i)"
+            style          = "color: red;margin-right: 5px;"
           ></span>
           <span>{{ search.name }}</span>
           <div>

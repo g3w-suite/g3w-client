@@ -4,18 +4,18 @@
 -->
 
 <template>
-  <baseinput :state="state">
-    <div v-disabled="!editable" style="height: 20px; margin-top:8px;" slot="body">
+  <baseinput :state = "state">
+    <div v-disabled = "!editable" style = "height: 20px; margin-top:8px;" slot="body">
       <input
-        @change="changeCheckBox"
-        :tabIndex="tabIndex"
-        style="width:100%"
-        :class="{'input-error-validation' : notvalid}"
-        class="magic-checkbox"
-        v-model="value"
-        type="checkbox"
-        :id="id">
-      <label :for="id">{{ label }}</label>
+        @change   = "changeCheckBox"
+        :tabIndex = "tabIndex"
+        style     = "width:100%"
+        :class    = "{'input-error-validation' : notvalid}"
+        class     = "magic-checkbox"
+        v-model   = "value"
+        type      = "checkbox"
+        :id       = "id">
+      <label :for = "id">{{ label }}</label>
     </div>
   </baseinput>
 </template>
@@ -23,7 +23,7 @@
 <script>
 import { widgetMixins } from 'mixins';
 
-const Input = require('gui/inputs/input');
+const Input              = require('gui/inputs/input');
 const { getUniqueDomId } = require('utils');
 
 export default {

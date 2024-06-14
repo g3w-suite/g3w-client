@@ -9,8 +9,8 @@
     class       = "spatial-bookmark"
   >
     <div>
-      <span :class="g3wtemplate.getFontClass('bookmark')" style="margin-right: 5px; font-size: 0.7em;"></span>
-      <span class="g3w-long-text">{{bookmark.name}}</span>
+      <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+      <span class = "g3w-long-text">{{bookmark.name}}</span>
     </div>
     <span
       v-if        = "bookmark.removable"
@@ -18,7 +18,7 @@
       class       = "sidebar-button sidebar-button-icon"
       style       = "color: red; margin: 5px; cursor: pointer"
     >
-      <i :class="g3wtemplate.getFontClass('trash')"></i>
+      <i :class = "g3wtemplate.getFontClass('trash')"></i>
     </span>
   </li>
 </template>

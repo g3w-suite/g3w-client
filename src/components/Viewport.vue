@@ -4,8 +4,8 @@
 -->
 
 <template>
-  <div class="g3w-viewport">
-    <transition name="fade" :duration="{ enter: 500, leave: 500 }">
+  <div class = "g3w-viewport">
+    <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
 
       <user-message
         v-if               = "usermessage.show"
@@ -23,14 +23,14 @@
         :size              = "usermessage.size"
         :type              = "usermessage.type"
       >
-        <template v-if="hooks.header" slot="header">
-          <component :is="hooks.header"/>
+        <template v-if = "hooks.header" slot = "header">
+          <component :is = "hooks.header"/>
         </template>
-        <template v-if="hooks.body" slot="body">
-          <component :is="hooks.body"/>
+        <template v-if = "hooks.body" slot = "body">
+          <component :is = "hooks.body"/>
         </template>
-        <template v-if="hooks.footer" slot="footer">
-          <component :is="usermessage.hooks.footer"/>
+        <template v-if = "hooks.footer" slot = "footer">
+          <component :is = "usermessage.hooks.footer"/>
         </template>
 
       </user-message>
@@ -68,8 +68,8 @@
         class = "content_breadcrumb"
       >
         <span
-          v-for="(crumb, index) in breadcrumb"
-          :key="crumb.title"
+          v-for = "(crumb, index) in breadcrumb"
+          :key  = "crumb.title"
         >
           <span
             class  = "skin-color-dark"
@@ -102,15 +102,15 @@
           </div>
           <div
             v-else
-            @click.stop="gotoPreviousContent()"
-            :class="backOrBackTo"
+            @click.stop = "gotoPreviousContent()"
+            :class      = "backOrBackTo"
           >
             <span
               class  = "action-button"
               :class = "g3wtemplate.getFontClass('back')">
             </span>
-            <span v-t="'backto'"></span>
-            <span v-if="!updatePreviousTitle" v-t="previousTitle"></span>
+            <span v-t = "'backto'"></span>
+            <span v-if = "!updatePreviousTitle" v-t = "previousTitle"></span>
           </div>
         </div>
         <div
@@ -119,45 +119,45 @@
           :style = "[state.content.style.title]"
           :class = "{'mobile': isMobile()}"
         >
-        <span id="contenttitle">
-          <span v-t="contentTitle.title"></span>
-          <span v-t="contentTitle.post_title"></span>
+        <span id = "contenttitle">
+          <span v-t = "contentTitle.title"></span>
+          <span v-t = "contentTitle.post_title"></span>
         </span>
         </div>
         <div
           class = "g3-content-header-action-tools"
           style = "display: flex; align-items: center"
         >
-          <component v-for="tool in state.content.headertools" :is="tool"/>
+          <component v-for = "tool in state.content.headertools" :is = "tool"/>
           <resize-icon
             v-if   = "showresizeicon"
             :type  = "state.split"
             style  = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
             :style = "{marginRight: state.content.closable ? '5px': '0px'}"/>
           <span
-            v-if="state.content.closable && state.content.aside"
+            v-if = "state.content.closable && state.content.aside"
             @click = "closeContent"
             :class = "{'mobile': isMobile()}"
             class  = "action-button"
             style  = "display: flex; justify-content: center "
           >
-          <i class="skin-color-dark" :class="g3wtemplate.getFontClass('close')"></i>
+          <i class = "skin-color-dark" :class = "g3wtemplate.getFontClass('close')"></i>
         </span>
         </div>
       </div>
-      <bar-loader :loading="state.content.loading"/>
+      <bar-loader :loading = "state.content.loading"/>
     </div>
   </div>
 </template>
 
 <script>
-  import userMessage from 'components/UserMessage.vue';
-  import onlineNotify from 'components/NotifyOnline.vue';
-  import downloadNotify from 'components/NotifyDownload.vue';
-  import pluginsNotify from 'components/NotifyPlugins.vue';
+  import userMessage                                   from 'components/UserMessage.vue';
+  import onlineNotify                                  from 'components/NotifyOnline.vue';
+  import downloadNotify                                from 'components/NotifyDownload.vue';
+  import pluginsNotify                                 from 'components/NotifyPlugins.vue';
   import { ZINDEXES, VIEWPORT as viewportConstraints } from 'app/constant';
-  import viewportService from 'services/viewport';
-  import GUI from 'services/gui';
+  import viewportService                               from 'services/viewport';
+  import GUI                                           from 'services/gui';
 
   export default {
     name: "Viewport",

@@ -16,7 +16,7 @@
       ref   = "relation-header"
     >
 
-      <div class="g3w-long-text">
+      <div class = "g3w-long-text">
 
       <!-- BACK BUTTON -->
         <span
@@ -24,11 +24,11 @@
           v-t-tooltip:right.create = "'sdk.relations.back_to_relations'"
           class                    = "action-button-icon action-button back-button"
           :class                   = "g3wtemplate.getFontClass('exit')"
-          @click.stop              = "back"
-        ></span>
+          @click.stop              = "back">
+        </span>
 
         <!-- RELATION NAME -->
-        <b class="relation-tile skin-color"> {{ relation.name }} </b>
+        <b class = "relation-tile skin-color"> {{ relation.name }} </b>
 
       </div>
 
@@ -47,8 +47,8 @@
             { 'toggled-white': downloadButton.toggled },
           ]"
           @click.stop             = "downloadButton.handler"
-          v-t-tooltip:left.create = "downloadButton.tooltip"
-        ></span>
+          v-t-tooltip:left.create = "downloadButton.tooltip">
+        </span>
 
         <!-- SHOW CHART BUTTON -->
         <span
@@ -59,8 +59,8 @@
             chart ? 'toggled-white' : '',
           ]"
           @click.stop               = "showChart"
-          v-t-tooltip:bottom.create = "'sdk.tooltips.show_chart'"
-        ></span>
+          v-t-tooltip:bottom.create = "'sdk.tooltips.show_chart'">
+        </span>
 
       </div>
     </div>
@@ -95,7 +95,7 @@
           class = "hover relationtable table table-striped row-border"
         >
           <thead>
-            <tr style="height: 0! important;">
+            <tr style = "height: 0! important;">
               <th
                 v-if   = "showTools"
                 :style = "{
@@ -103,7 +103,7 @@
                   padding:  '0 !important',
                 }"
               ></th>
-              <th v-for="column in table.columns">{{ column }}</th>
+              <th v-for = "column in table.columns">{{ column }}</th>
             </tr>
           </thead>
 
@@ -156,8 +156,8 @@
               />
             </td>
             <template v-else>
-              <td v-for="value in row">
-                <field :state="{value:value}"/>
+              <td v-for = "value in row">
+                <field :state = "{value:value}"/>
               </td>
             </template>
 
@@ -190,7 +190,7 @@
       v-else
       class = "dataTables_scrollBody"
     >
-      <span v-t="'sdk.relations.no_relations_found'"></span>
+      <span v-t = "'sdk.relations.no_relations_found'"></span>
     </div>
 
   </div>

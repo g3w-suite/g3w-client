@@ -4,9 +4,9 @@
 -->
 
 <template>
-  <div id="g3w-change-map-menu">
+  <div id = "g3w-change-map-menu">
     <!-- current node is a child -->
-    <template v-if="'root' !== this.current">
+    <template v-if = "'root' !== this.current">
       <div
         style = "
           display: flex;
@@ -37,7 +37,7 @@
           v-if  = "parent"
           style = "margin: auto"
         >
-          <h3 style="font-weight: bold">
+          <h3 style = "font-weight: bold">
             {{parent.title || parent.name}}
           </h3>
         </div>
@@ -67,12 +67,10 @@
         </div>
 
         <!-- ITEM CONTENT -->
-        <div class="menu-item-content">
-          <div class="menu-item-text">
-            <h4 class="menu-item-title">
-              {{ item.title }}
-            </h4>
-            <div v-html="item.description"></div>
+        <div class = "menu-item-content">
+          <div class = "menu-item-text">
+            <h4 class = "menu-item-title">{{ item.title }}</h4>
+            <div v-html = "item.description"></div>
           </div>
         </div>
 

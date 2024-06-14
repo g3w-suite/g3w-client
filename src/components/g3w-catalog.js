@@ -138,9 +138,6 @@ function _listenToMapVisibility(map_id, component) {
     ms.onafter('setHidden', () => { component.state.visible = !ms.state.hidden; component.state.expanded = true; });
   };
 
-  if (map) {
-    cb(map);
-  } else {
-    ComponentsRegistry.on('componentregistered', c => map_id === c.getId() && cb(c));
-  }
+  if (map) { cb(map) }
+  else { ComponentsRegistry.on('componentregistered', c => map_id === c.getId() && cb(c)) }
 }

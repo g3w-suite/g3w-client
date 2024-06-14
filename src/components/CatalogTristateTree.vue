@@ -146,7 +146,7 @@
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
-      <div v-if="(!isGroup && layerstree.selection)">
+      <div v-if = "(!isGroup && layerstree.selection)">
 
         <!-- CLEAR SELECTION -->
         <span
@@ -205,7 +205,7 @@
       v-show ="layerstree.expanded"
     >
 
-      <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
+      <span v-for = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId">
 
         <catalog-tristate-tree
           :root                      = "false"
@@ -289,7 +289,7 @@ export default {
      * @since 3.8.0
      */
     showfeaturecount() {
-      return "undefined" !== typeof this.layerstree.featurecount;
+      return undefined !== this.layerstree.featurecount;
     },
 
     showLegendLayer() {

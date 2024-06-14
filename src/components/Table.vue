@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div id="open_attribute_table" style="margin-top: 5px">
+  <div id = "open_attribute_table" style = "margin-top: 5px">
 
     <!-- TABLE TOOLBAR -->
     <!-- ORIGINAL SOURCE: src/components/TableToolBar.vue@3.9.7 -->
@@ -66,7 +66,7 @@
       <thead>
         <tr>
           <th></th>
-          <th v-for="(header, i) in state.headers" v-if="i > 0">{{ header.label }}</th>
+          <th v-for = "(header, i) in state.headers" v-if = "i > 0">{{ header.label }}</th>
         </tr>
         <tr>
           <th v-disabled = "disableSelectAll">
@@ -76,25 +76,25 @@
               :checked   = "state.selectAll"
               class      = "magic-checkbox"
             />
-            <label for="attribute_table_select_all_rows" @click.capture.stop.prevent="selectAllRows">&nbsp;</label>
+            <label for = "attribute_table_select_all_rows" @click.capture.stop.prevent = "selectAllRows">&nbsp;</label>
           </th>
-          <th v-for="(header, i) in state.headers" v-if="i > 0">
+          <th v-for = "(header, i) in state.headers" v-if = "i > 0">
             <input
               type         = "text"
               class        = "form-control column-search"
               @keyup       = "changeColumn($event, i)"
               :placeholder = "header.name"
-              :title        = "'search by ' + header.name"
+              :title       = "'search by ' + header.name"
             />
           </th>
         </tr>
       </thead>
 
       <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
-      <tbody id="table_body_attributes" hidden></tbody>
-      <tbody ref="table_body" @mouseleave="highlight()">
+      <tbody id = "table_body_attributes" hidden></tbody>
+      <tbody ref = "table_body" @mouseleave = "highlight()">
         <tr
-          v-for       = "(feature, i) in state.features" :key="feature.id"
+          v-for       = "(feature, i) in state.features" :key = "feature.id"
           role        = "row"
           @mouseover  = "highlight(feature, false)"
           @click.stop = "highlight(feature, true)"
@@ -106,14 +106,14 @@
           ]">
           <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
           <td>
-            <div style="display: flex">
+            <div style = "display: flex">
               <input
                 type     = "checkbox"
                 :id      = "get_check_id(true)"
                 :checked = "feature.selected"
                 class    = "magic-checkbox"
               />
-              <label :for="get_check_id(false)" @click.capture.stop.prevent="select(feature)"></label>
+              <label :for = "get_check_id(false)" @click.capture.stop.prevent = "select(feature)"></label>
                <i
                 @click.stop            = "openForm(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
@@ -133,7 +133,7 @@
               ></i>
             </div>
           </td>
-          <td v-for="(header, j) in state.headers" v-if="j > 0">
+          <td v-for = "(header, j) in state.headers" v-if="j > 0">
             <field
               :feature = "feature"
               :state   = "({ label: undefined, value: feature.attributes[header.name] })"
@@ -143,7 +143,7 @@
       </tbody>
 
     </table>
-    <div v-else id="noheaders" v-t="'dataTable.no_data'"></div>
+    <div v-else id = "noheaders" v-t = "'dataTable.no_data'"></div>
   </div>
 </template>
 

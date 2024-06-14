@@ -11,10 +11,10 @@
     ref   = "modal_addlayer"
     role  = "dialog"
     >
-      <div class="modal-dialog">
+      <div class = "modal-dialog">
         <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header">
+        <div class = "modal-content">
+          <div class = "modal-header">
             <button
               type         = "button"
               class        = "close"
@@ -24,21 +24,21 @@
               v-t   = "'mapcontrols.add_layer_control.header'"
               class = "modal-title"></h4>
           </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label v-t="'mapcontrols.add_layer_control.select_projection'" for="projection-layer"></label>
-              <select class="form-control" id="projection-layer" v-model="layer.crs">
-                <option v-for="option in options" :value="option">{{option}}</option>
+          <div class = "modal-body">
+            <div class = "form-group">
+              <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
+              <select class = "form-control" id = "projection-layer" v-model = "layer.crs">
+                <option v-for = "option in options" :value = "option">{{option}}</option>
               </select>
             </div>
-            <layerspositions @layer-position-change="setLayerMapPosition($event)"/>
-            <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
+            <layerspositions @layer-position-change = "setLayerMapPosition($event)"/>
+            <p v-t = "'mapcontrols.add_layer_control.select_color'" style = "font-weight: 700;"></p>
             <chrome-picker
-              v-model="layer.color"
-              @input="onChangeColor"
-              style="width:100%; margin:auto"/>
-            <bar-loader :loading="loading"/>
-            <form id="addcustomlayer">
+              v-model = "layer.color"
+              @input  = "onChangeColor"
+              style   ="width:100%; margin:auto"/>
+            <bar-loader :loading = "loading"/>
+            <form id = "addcustomlayer">
               <input
                 ref     = "input_file"
                 type    = "file"
@@ -57,11 +57,11 @@
                   aria-hidden = "true">
                 </i>
               </div>
-              <p style="font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
+              <p style = "font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
             </form>
-            <div v-if="csv_extension" style="padding: 15px; border: 1px solid grey; border-radius: 3px">
-              <bar-loader :loading="csv.loading"/>
-              <div class="select_field">
+            <div v-if = "csv_extension" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
+              <bar-loader :loading = "csv.loading"/>
+              <div class = "select_field">
                 <label
                   v-t = "'mapcontrols.add_layer_control.select_csv_separator'"
                   for = "g3w-select-field-layer">
@@ -117,8 +117,8 @@
               </div>
             </div>
             <div
-              class="select_field"
-              :class="{ 'g3w-disabled': !fields || 0 === fields.length }"
+              class  = "select_field"
+              :class = "{ 'g3w-disabled': !fields || 0 === fields.length }"
             >
               <label
                 v-t = "'mapcontrols.add_layer_control.select_field_to_show'"
@@ -129,9 +129,9 @@
                 id      = "g3w-select-field-layer"
                 v-model = "field"
               >
-                <option :value="null">---</option>
+                <option :value = "null">---</option>
                 <option
-                  v-for   = "field in fields"
+                  v-for  = "field in fields"
                   :key   = "field"
                   :value = "field">{{ field }}</option>
               </select>
@@ -141,7 +141,7 @@
               style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center"
               v-t   = "error_message">
             </div>
-            <div class="modal-footer">
+            <div class = "modal-footer">
               <button
                 v-t         = "'add'"
                 type        = "button"

@@ -4,28 +4,28 @@
 -->
 
 <template>
-  <div class="wrap-content-tab">
-    <div class="col-sm-2 metadata-label" v-t="data.label"></div>
-    <div class="col-sm-10 value" style="margin-top:0">
-      <div v-for="(value, key) in data.value">
-        <div class="row">
-          <div class="col-sm-2 metadata-contact-label">
-            <i class="contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
-            <span v-t="`sdk.metadata.groups.general.fields.subfields.contactinformation.${key}`"></span>
+  <div class = "wrap-content-tab">
+    <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
+    <div class = "col-sm-10 value" style = "margin-top:0">
+      <div v-for = "(value, key) in data.value">
+        <div class = "row">
+          <div class = "col-sm-2 metadata-contact-label">
+            <i class = "contact-icon" :class = "iconsClass[key]" aria-hidden = "true"></i>
+            <span v-t = "`sdk.metadata.groups.general.fields.subfields.contactinformation.${key}`"></span>
           </div>
-          <div class="col-sm-10">
-            <template v-if="'personprimary' === key">
-              <div v-for="(subvalue, key) in value">
+          <div class = "col-sm-10">
+            <template v-if = "'personprimary' === key">
+              <div v-for = "(subvalue, key) in value">
                 <span
-                  v-t="`sdk.metadata.groups.general.fields.subfields.contactinformation.${key}`"
-                  class="metadata-contact-label">
+                  v-t = "`sdk.metadata.groups.general.fields.subfields.contactinformation.${key}`"
+                  class = "metadata-contact-label">
                 </span>
                 <span>{{ subvalue }}</span>
               </div>
             </template>
             <div v-else>
-              <template v-if="'contactelectronicmailaddress' === key ">
-                <a style="font-weight: bold" :href="`mailto: ${sanitizeValue(value)}`">{{sanitizeValue(value)}}</a>
+              <template v-if = "'contactelectronicmailaddress' === key ">
+                <a style = "font-weight: bold" :href = "`mailto: ${sanitizeValue(value)}`">{{sanitizeValue(value)}}</a>
               </template>
               <template v-else>
                 {{ sanitizeValue(value) }}

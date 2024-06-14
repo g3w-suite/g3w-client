@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="tab-node group">
+  <div class = "tab-node group">
     <h5
       v-if   = "showGroupTile"
       class  = "title group-title"
@@ -20,7 +20,7 @@
         v-for = "column in columnNumber"
         style = "padding:2px"
       >
-        <template v-if="getNode(row, column)">
+        <template v-if = "getNode(row, column)">
           <component
             v-if              = "'field' === getNodeType(getNode(row, column))"
             style             = "padding: 5px 3px 5px 3px;"
@@ -48,12 +48,12 @@
                 :style      = "{cursor: showRelationByField && 'pointer'}"
               >
                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
-                <div style="display: flex; align-items: center">
-                  <div  class="query_relation_field">
-                    <i :class="g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
+                <div style = "display: flex; align-items: center">
+                  <div  class = "query_relation_field">
+                    <i :class = "g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
                   </div>
-                  <span class="query_relation_field_message g3w-long-text">
-                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
+                  <span class = "query_relation_field_message g3w-long-text">
+                    <span style = "text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
                   </span>
                 </div>
               </div>

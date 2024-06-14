@@ -9,7 +9,7 @@
     style    = "padding: 3px"
     class    = "g3w-feature-actions"
     :colspan = "colspan">
-    <action v-for="action in actions" :key="action.id" v-bind="$props" :action="action"/>
+    <action v-for = "action in actions" :key = "action.id" v-bind = "$props" :action = "action"/>
   </td>
 </template>
 

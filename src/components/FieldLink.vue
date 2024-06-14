@@ -4,8 +4,14 @@
 -->
 
 <template>
-  <field :state="state">
-    <button slot="field" class="btn skin-button field_link" v-t="'info.link_button'" @click="openLink(value)" :title="value"></button>
+  <field :state = "state">
+    <button
+      slot        = "field"
+      class       = "btn skin-button field_link"
+      v-t         = "'info.link_button'"
+      @click.stop = "openLink(value)"
+      :title      = "value">
+    </button>
   </field>
 </template>
 
@@ -20,7 +26,7 @@ export default {
   props: ['state'],
   data() {
     return {
-      value:null
+      value: null
     }
   },
   components: {

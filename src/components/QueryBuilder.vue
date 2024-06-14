@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div id="query_builder" class="form-group">
+  <div id = "query_builder" class = "form-group">
 
     <!-- SEARCH LAYER -->
     <div
@@ -14,10 +14,15 @@
         class = "querybuilder-title"
         v-t   = "'sdk.querybuilder.panel.expression'">
       </label>
-      <a :href="`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#search-and-query-builder`" target="_blank" style="float: right;" title="Docs">
-        <i :class="g3wtemplate.getFontClass('external-link')"></i>
+      <a
+        :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#search-and-query-builder`"
+        target = "_blank"
+        style  = "float: right;"
+        title  = "Docs"
+      >
+        <i :class = "g3wtemplate.getFontClass('external-link')"></i>
       </a>
-      <select id="query_builder_layers_select" class="form-control">
+      <select id = "query_builder_layers_select" class = "form-control">
         <option
           v-for  = "(layer, i) in layers"
           :key   = "layer.label"
@@ -28,41 +33,41 @@
     </div>
 
     <!-- SEARCH EXPRESSION -->
-    <textarea id="query_builder_expression_content" v-model="filter"></textarea>
+    <textarea id = "query_builder_expression_content" v-model = "filter"></textarea>
 
-    <bar-loader :loading="loading.test"/>
+    <bar-loader :loading = "loading.test"/>
 
     <b
       class   = "skin-color"
       v-show  = "message"
-    ><span v-t="'sdk.querybuilder.messages.number_of_features'"></span>{{ message }}</b>
+    ><span v-t = "'sdk.querybuilder.messages.number_of_features'"></span>{{ message }}</b>
 
-    <div class="content-end">
+    <div class = "content-end">
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "run"
         :disabled = "disabled"
         v-t       = "'sdk.querybuilder.panel.button.run'"
-      ><i :class="g3wtemplate.getFontClass('run')" style="color: green;"></i></button>
+      ><i :class = "g3wtemplate.getFontClass('run')" style = "color: green;"></i></button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "reset"
         v-t       = "'sdk.querybuilder.panel.button.clear'"
-      ><i :class="g3wtemplate.getFontClass('clear')"></i></button>
+      ><i :class = "g3wtemplate.getFontClass('clear')"></i></button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "save"
         :disabled = "disabled"
         v-t       = "'sdk.querybuilder.panel.button.save'"
-      ><i :class="g3wtemplate.getFontClass('save')"></i></button>
+      ><i :class = "g3wtemplate.getFontClass('save')"></i></button>
     </div>
 
     <hr>
 
-    <label v-t="'sdk.querybuilder.panel.fields'"></label>
+    <label v-t = "'sdk.querybuilder.panel.fields'"></label>
 
     <!-- SEARCH FIELDS -->
-    <select ref="search_fields" size="4" class="margin-between-element">
+    <select ref = "search_fields" size = "4" class = "margin-between-element">
       <option selected hidden></option>
       <option
         v-for     = "field in fields"
@@ -72,7 +77,7 @@
     </select>
 
     <!-- SEARCH OPERATORS -->
-    <div class="content-wrap margin-between-element">
+    <div class = "content-wrap margin-between-element">
       <button
         v-for  = "operator in operators"
         @click = "addToExpression({ value: operator, type: 'operator' })"
@@ -81,10 +86,10 @@
       >{{ operator }}</button>
     </div>
 
-    <bar-loader :loading="loading.values" />
+    <bar-loader :loading = "loading.values" />
 
     <!-- SEARCH VALUES -->
-    <select v-if="!manual" ref="search_values" size="4" class="margin-between-element">
+    <select v-if = "!manual" ref = "search_values" size = "4" class = "margin-between-element">
       <option selected hidden></option>
       <option
         v-for     = "[key, value] in values"
@@ -101,7 +106,7 @@
       style     = "color: #000;"
     >
       <i :class = "g3wtemplate.getFontClass('search')"></i>
-      <span v-t="'sdk.querybuilder.panel.button.all'"></span>
+      <span v-t = "'sdk.querybuilder.panel.button.all'"></span>
     </button>
 
   </div>

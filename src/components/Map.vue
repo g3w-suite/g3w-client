@@ -4,55 +4,55 @@
 -->
 
 <template>
-<div :id="maps_container">
+  <div :id = "maps_container">
 
-  <div
-    v-for = "hidemap in hidemaps"
-    :key  = "hidemap.id"
-    :id   = "hidemap.id"
-    class = "g3w-map hidemap"></div>
-
-  <div :id="target" class="g3w-map">
-
-    <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
     <div
-      ref        = "g3w-map-controls"
-      class      = "g3w-map-controls"
-      style      = "display: flex"
-      v-disabled = "disableMapControls"
-      :class     = "mapcontrolsalignement"
-    ></div>
+      v-for = "hidemap in hidemaps"
+      :key  = "hidemap.id"
+      :id   = "hidemap.id"
+      class = "g3w-map hidemap"></div>
 
-    <!-- FIXME: add description -->
-    <div
-      v-if   = "map_info.info"
-      ref    = "g3w-map-info"
-      id     = "g3w-map-info"
-      :style = "map_info.style"
-    >
-      {{map_info.info}}
+    <div :id = "target" class = "g3w-map">
+
+      <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
+      <div
+        ref        = "g3w-map-controls"
+        class      = "g3w-map-controls"
+        style      = "display: flex"
+        v-disabled = "disableMapControls"
+        :class     = "mapcontrolsalignement"
+      ></div>
+
+      <!-- FIXME: add description -->
+      <div
+        v-if   = "map_info.info"
+        ref    = "g3w-map-info"
+        id     = "g3w-map-info"
+        :style = "map_info.style"
+      >
+        {{map_info.info}}
+      </div>
+
+      <!-- DIV that will contain marker on ma-->
+      <div style = "display: none;"><div id = "marker"></div></div>
+
+      <!-- Add layer compnent -->
+      <addlayer :service = "service" />
+
+      <!-- @since 3.8.0   -->
+      <div class="g3w-map-controls-left-bottom"></div>
+
     </div>
 
-    <!-- FIXME: display none ? -->
-    <div style="display: none;"><div id="marker"></div></div>
-
-    <!-- FIXME: add description -->
-    <addlayer :service="service" />
-
-    <!-- @since 3.8.0   -->
-    <div class="g3w-map-controls-left-bottom"></div>
+    <!-- Footer (bottom part) where scale and other component can be set -->
+    <map-footer :service="service"/>
 
   </div>
-
-  <!-- FIXME: add description -->
-  <map-footer :service="service"/>
-
-</div>
 </template>
 
 <script>
 import AddLayerComponent from 'components/MapAddLayer.vue';
-import MapFooter from 'components/MapFooter.vue';
+import MapFooter         from 'components/MapFooter.vue';
 
 export default {
 

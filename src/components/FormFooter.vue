@@ -4,11 +4,11 @@
 -->
 
 <template>
-  <div class="form-group g3wform_footer">
-    <template v-if="show">
+  <div class = "form-group g3wform_footer">
+    <template v-if = "show">
       <slot>
-        <div style="margin:3px; font-weight: bold">
-          * <span  v-t="'sdk.form.footer.required_fields'"></span>
+        <div style = "margin:3px; font-weight: bold">
+          * <span  v-t = "'sdk.form.footer.required_fields'"></span>
           <div
             v-if   = "state.footer.message"
             :style = "[state.footer.style] "
@@ -17,7 +17,7 @@
           </div>
         </div>
         <button
-          v-for="button in state.buttons"
+          v-for               = "button in state.buttons"
           :key                = "button.id"
           class               = "btn "
           :class              = "[button.class]"
@@ -25,7 +25,8 @@
           :valid              = "state.valid"
           @click.stop.prevent = "exec(button.cbk)"
           v-disabled          = "!btnEnabled(button)"
-          v-t="button.title">
+          v-t                 = "button.title"
+        >
         </button>
       </slot>
     </template>

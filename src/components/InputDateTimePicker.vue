@@ -4,12 +4,12 @@
 -->
 
 <template>
-  <baseinput :state="state">
-    <div slot="body" ref="datetimepicker_body">
+  <baseinput :state = "state">
+    <div slot = "body" ref = "datetimepicker_body">
 
       <div
-        ref="datimewidget_container"
-        :style="{
+        ref    = "datimewidget_container"
+        :style = "{
           top: widget_container.top + 'px',
           left: widget_container.left + 'px',
           position: 'fixed',

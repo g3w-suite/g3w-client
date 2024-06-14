@@ -16,12 +16,12 @@
       class     ="form-control"
     >
       <option
-        v-for="download in config.downloads"
+        v-for  = "download in config.downloads"
         :key   = "download.id"
         :value = "download.format"
         v-download
       >
-        <span style="font-weight: bold">{{download.format}}</span>
+        <span style = "font-weight: bold">{{download.format}}</span>
       </option>
     </select>
     <button
@@ -30,7 +30,7 @@
       @click.stop = download
       v-download
     >
-      <span :class="g3wtemplate.getFontClass('download')">
+      <span :class = "g3wtemplate.getFontClass('download')">
       </span>
     </button>
   </div>

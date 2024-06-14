@@ -4,27 +4,27 @@
 -->
 
 <template>
-  <form class="form-horizontal g3w-form">
-    <div class="box-primary">
-      <div class="box-body">
-        <template v-for="field in state.fields">
+  <form class = "form-horizontal g3w-form">
+    <div class = "box-primary">
+      <div class = "box-body">
+        <template v-for = "field in state.fields">
           <g3w-input
-            :state="field"
-            :removeToValidate="removeToValidate"
-            :addToValidate="addToValidate"
-            :changeInput="changeInput"
-            @addToValidate="addToValidate"
-            @changeInput="changeInput"/>
+            :state            = "field"
+            :removeToValidate = "removeToValidate"
+            :addToValidate    = "addToValidate"
+            :changeInput      = "changeInput"
+            @addToValidate    = "addToValidate"
+            @changeInput      = "changeInput"/>
         </template>
       </div>
       <div
-        v-if="show_required_field_message"
-        id="g3w-for-inputs-required-inputs-message"
+        v-if = "show_required_field_message"
+        id   = "g3w-for-inputs-required-inputs-message"
       >
-        <span class="hide-cursor-caret-color">*</span>
+        <span class = "hide-cursor-caret-color">*</span>
         <span
-          class="hide-cursor-caret-color"
-          v-t="'sdk.form.footer.required_fields'">
+          class = "hide-cursor-caret-color"
+          v-t   = "'sdk.form.footer.required_fields'">
         </span>
       </div>
     </div>
@@ -32,36 +32,36 @@
 </template>
 
 <script>
-import G3wInput from 'components/InputG3W.vue';
+  import G3wInput from 'components/InputG3W.vue';
 
-export default {
-  name: "g3w-form-inputs",
-  props: {
-    state: {
-      type: Object,
-      default: {
-        fields: []
+  export default {
+    name: "g3w-form-inputs",
+    props: {
+      state: {
+        type: Object,
+        default: {
+          fields: []
+        }
+      },
+      addToValidate: {
+        type: Function
+      },
+      changeInput: {
+        type: Function
+      },
+      show_required_field_message: {
+        type: Boolean,
+        default: false
+      },
+      removeToValidate: {
+        type: Function
       }
-    },
-    addToValidate: {
-      type: Function
-    },
-    changeInput: {
-      type: Function
-    },
-    show_required_field_message: {
-      type: Boolean,
-      default: false
-    },
-    removeToValidate: {
-      type: Function
-    }
 
-  },
-  components: {
-    G3wInput
-  }
-};
+    },
+    components: {
+      G3wInput
+    }
+  };
 </script>
 
 <style scoped>

@@ -5,12 +5,14 @@
 
 <template>
   <div
-    v-if="show"
-    class="tabs-wrapper">
-    <template v-for="root_tab in root_tabs">
-      <template v-if="Array.isArray(root_tab)">
-        <ul class="formquerytabs nav nav-tabs">
-          <template v-for="(tab, index) in root_tab">
+    v-if  = "show"
+    class = "tabs-wrapper">
+    <template v-for = "root_tab in root_tabs">
+
+      <template v-if = "Array.isArray(root_tab)">
+
+        <ul class = "formquerytabs nav nav-tabs">
+          <template v-for = "(tab, index) in root_tab">
             <li
               v-if   = "tab.visible === undefined || tab.visible"
               :class = "{active: index === 0}"
@@ -23,16 +25,17 @@
                   :style      = "{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
                   @click      = "group && toggleGroup($event)"
                 >
-                 {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span>
+                 {{tab.name}} <span style = "padding-left: 3px; font-size: 1.1em;" v-if = "contenttype === 'editing' && tab.required">*</span>
                 </a>
             </li>
+
           </template>
         </ul>
         <div
-          class="tab-content"
-          :class="{editing: 'editing' === contenttype }"
+          class  = "tab-content"
+          :class = "{editing: 'editing' === contenttype }"
         >
-          <template v-for="(tab, index) in root_tab">
+          <template v-for = "(tab, index) in root_tab">
             <div
               v-if   = "undefined === tab.visible || tab.visible"
               :id    = "ids[index]"

@@ -4,13 +4,15 @@
 -->
 
 <template>
-  <div class="preview" v-if="value">
-    <a :href="value" target="_blank">
-      <div class="previewtype" :class="type">
-        <i class="fa-2x" :class="g3wtemplate.font[type]"></i>
+  <div
+    v-if  = "value"
+    class = "preview" >
+    <a :href = "value" target = "_blank">
+      <div class = "previewtype" :class = "type">
+        <i class = "fa-2x" :class = "g3wtemplate.font[type]"></i>
       </div>
     </a>
-    <div class="filename">{{filename}}</div>
+    <div class = "filename">{{filename}}</div>
     <slot></slot>
   </div>
 </template>

@@ -12,9 +12,9 @@
 -->
 <template>
   <ul
-    ref="menu"
-    class="vue-context-menu-list"
-    :id="dynamicId"
+    ref   = "menu"
+    class = "vue-context-menu-list"
+    :id   = "dynamicId"
   >
     <slot></slot>
   </ul>

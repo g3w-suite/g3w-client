@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="geo-content">
+  <div class = "geo-content">
     <span
       @click.stop = "showLayer"
       class       = "show-hide-geo"

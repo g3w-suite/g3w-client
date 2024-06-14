@@ -4,26 +4,30 @@
 -->
 
 <template>
-  <ul class="sidebar-menu">
+  <ul class = "sidebar-menu">
     <li
       id    = "g3w-catalog-toc-views"
       class = "treeview sidebaritem skin-border-color"
     >
 
-      <a href="#" class="g3w-map-theme-anchor">
+      <a href = "#" class = "g3w-map-theme-anchor">
         <section>
-          <i :class="g3wtemplate.getFontClass('caret-down')" style="padding: 3px;"></i>
-          <i :class="g3wtemplate.getFontClass('eye')"        style="padding: 0 0 0 4px;"></i>
+          <i :class = "g3wtemplate.getFontClass('caret-down')" style = "padding: 3px;"></i>
+          <i :class = "g3wtemplate.getFontClass('eye')"        style = "padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
           <span
             v-if  = "active_theme"
             class = "current_map_theme treeview-label g3w-long-text"
           >
-            <span v-t:pre="'sdk.catalog.current_map_theme_prefix'" style="color: #ccc !important;">:</span>
-            <span class="skin-color" style="font-size: 1.1em;">{{ active_theme }}</span>
+            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'" style = "color: #ccc !important;">:</span>
+            <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
           </span>
           <!-- Choose a theme -->
-          <div v-else class="choose_map_theme treeview-label" v-t="'sdk.catalog.choose_map_theme'"></div>
+          <div
+            v-else
+            class = "choose_map_theme treeview-label"
+            v-t   = "'sdk.catalog.choose_map_theme'">
+          </div>
         </section>
       </a>
 
@@ -41,13 +45,13 @@
             style                   = "padding: 2px; margin: 2px;"
           ></span>
         </div>
-        <div class="container add-map-theme-input">
+        <div class = "container add-map-theme-input">
           <input-text
             ref    = "add_map_theme_input"
             :state = "custom_theme"
           />
         </div>
-        <div style="margin-top: 5px;">
+        <div style = "margin-top: 5px;">
           <button
             class       = "sidebar-button-run btn btn-block"
             v-t         = "'add'"
@@ -63,12 +67,18 @@
         :class = "{'menu-open': !collapsed}"
       >
         <!-- LIST PROJECT MAP THEME -->
-        <li id="g3w-catalog-views-project" v-if="(map_themes.project || []).length > 0">
-          <ul style="padding: 0">
+        <li
+          v-if = "(map_themes.project || []).length > 0"
+          id   = "g3w-catalog-views-project"
+        >
+          <ul style = "padding: 0">
             <li>
-              <div v-t="'sdk.catalog.project_map_theme'" class="project_map_theme"></div>
+              <div
+                v-t   = "'sdk.catalog.project_map_theme'"
+                class = "project_map_theme">
+              </div>
             </li>
-            <li style="padding: 5px 5px 5px 17px;">
+            <li style = "padding: 5px 5px 5px 17px;">
               <div
                 v-for = "(map_theme, i) in map_themes.project"
                 :key  = "map_theme.theme"
@@ -86,18 +96,21 @@
                   :for  = "`g3w-map_theme-${i}`"
                   style = "display: flex; justify-content: space-between;"
                 >
-                  <span class="g3w-long-text">{{ map_theme.theme }}</span>
+                  <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                 </label>
               </div>
             </li>
           </ul>
         </li>
         <!-- LIST USER MAP THEME -->
-        <li v-if="logged" id="g3w-catalog-views-user">
-          <ul style="padding: 0">
+        <li
+          v-if = "logged"
+          id   = "g3w-catalog-views-user"
+        >
+          <ul style = "padding: 0">
             <li>
-              <div class="user_map_theme">
-                <span v-t="'sdk.catalog.user_map_theme'"></span>
+              <div class = "user_map_theme">
+                <span v-t = "'sdk.catalog.user_map_theme'"></span>
                 <!-- Add theme button -->
                 <span
                   v-t-tooltip:left.create = "'add'"
@@ -110,10 +123,10 @@
               </div>
             </li>
             <!-- DELETE THEME -->
-            <li style="padding: 5px 5px 5px 17px">
+            <li style = "padding: 5px 5px 5px 17px">
               <div
-                v-for="(map_theme, i) in map_themes.custom"
-                :key="map_theme.theme"
+                v-for = "(map_theme, i) in map_themes.custom"
+                :key  = "map_theme.theme"
                 style = "display: flex; justify-content: space-between;"
               >
                 <span>
@@ -127,10 +140,10 @@
                     :checked = "map_theme.default"
                   />
                   <label :for = "`g3w-map_theme-${i}-user`">
-                    <span class="g3w-long-text">{{ map_theme.theme }}</span>
+                    <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                   </label>
                 </span>
-                <span class="g3w-custom-map-theme-tools">
+                <span class = "g3w-custom-map-theme-tools">
                  <span
                    @click.stop            = "updateTheme(map_theme.theme)"
                    class                  = "action sidebar-button sidebar-button-icon"
@@ -153,8 +166,10 @@
                   >
                     <i
                       :class = "g3wtemplate.getFontClass('trash')"
-                      style  = "color: red;"></i>
+                      style  = "color: red;">
+                    </i>
                   </span>
+
                 </span>
 
               </div>
@@ -167,6 +182,7 @@
 </template>
 
 <script>
+
 import ProjectsRegistry   from 'store/projects';
 import InputText          from "./InputText.vue";
 import GUI                from "services/gui";
@@ -379,53 +395,53 @@ export default {
 </script>
 
 <style scoped>
-#g3w-catalog-toc-views {
-  margin-bottom: 5px;
-  border-bottom: 2px solid;
-}
-.g3w-map-theme-anchor {
-  padding: 0;
-  margin-bottom: 5px;
-}
-.g3w-map-theme-anchor > section {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  padding: 5px;
-}
-.add-map-theme {
-  border-top: 2px solid;
-  margin: 5px 0;
-}
-.add-map-theme-input {
-  width: 100%;
-}
-#g3w-catalog-views {
-  display: none;
-}
-#g3w-catalog-views.menu-open {
-  display: block;
-}
-.current_map_theme {
-  overflow: hidden;
-  white-space: normal;
-  text-overflow: ellipsis;
-}
-.choose_map_theme {
-  color: #ccc !important;
-  font-weight: bold;
-}
-.project_map_theme {
-  font-weight: bold;
-  padding: 3px;
-  border-bottom: 1px solid #fff;
-}
-.user_map_theme {
-  font-weight: bold;
-  padding: 5px 3px;
-  display: flex;
-  justify-content: space-between;
-  align-self: baseline;
-  border-bottom: 1px solid #fff;
-}
+  #g3w-catalog-toc-views {
+    margin-bottom: 5px;
+    border-bottom: 2px solid;
+  }
+  .g3w-map-theme-anchor {
+    padding: 0;
+    margin-bottom: 5px;
+  }
+  .g3w-map-theme-anchor > section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 5px;
+  }
+  .add-map-theme {
+    border-top: 2px solid;
+    margin: 5px 0;
+  }
+  .add-map-theme-input {
+    width: 100%;
+  }
+  #g3w-catalog-views {
+    display: none;
+  }
+  #g3w-catalog-views.menu-open {
+    display: block;
+  }
+  .current_map_theme {
+    overflow: hidden;
+    white-space: normal;
+    text-overflow: ellipsis;
+  }
+  .choose_map_theme {
+    color: #ccc !important;
+    font-weight: bold;
+  }
+  .project_map_theme {
+    font-weight: bold;
+    padding: 3px;
+    border-bottom: 1px solid #fff;
+  }
+  .user_map_theme {
+    font-weight: bold;
+    padding: 5px 3px;
+    display: flex;
+    justify-content: space-between;
+    align-self: baseline;
+    border-bottom: 1px solid #fff;
+  }
 </style>

@@ -5,20 +5,20 @@
 
 <template>
   <div
-    v-if="state.visible"
-    class="form-group"
+    v-if  = "state.visible"
+    class = "form-group"
   >
     <!-- SLOT LABEL -->
-    <slot name="label">
+    <slot name = "label">
       <!-- @since 3.10.0 -->
       <label
-        :for="state.name"
+        :for       = "state.name"
         v-disabled = "!editable"
         class      = "col-sm-12 control-label"
       >
-        <span v-if ="state.i18nLabel" v-t="state.label"></span>
+        <span v-if = "state.i18nLabel" v-t = "state.label"></span>
         <span v-else>{{ state.label }}</span>
-        <span v-if="state.validate && state.validate.required">*</span>
+        <span v-if = "state.validate && state.validate.required">*</span>
         <i
           v-if        = "showhelpicon"
           :class      = "g3wtemplate.font['info']"
@@ -26,28 +26,28 @@
           style       = "margin-left: 3px; cursor: pointer"
           @click.stop = "showHideHelp">
         </i>
-        <slot name="label-action"></slot>
+        <slot name = "label-action"></slot>
       </label>
     </slot>
 
-    <div class="col-sm-12">
+    <div class = "col-sm-12">
 
       <!-- SLOT LOADING -->
-      <slot name="loading">
+      <slot name = "loading">
         <div
-          v-if = "loadingState === 'loading'"
+          v-if  = "loadingState === 'loading'"
           style = "position:relative; width: 100%"
           slot  = "loading"
         >
-          <bar-loader loading="true"/>
+          <bar-loader loading = "true"/>
         </div>
       </slot>
 
       <!-- SLOT BODY -->
-      <slot name="body"></slot>
+      <slot name = "body"></slot>
 
       <!-- SLOT MESSAGE -->
-      <slot name="message">
+      <slot name = "message">
         <p
           v-if   = "notvalid"
           class  = "g3w-long-text error-input-message"

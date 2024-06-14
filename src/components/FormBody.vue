@@ -5,9 +5,9 @@
 
 <template>
 <div>
-  <form class="form-horizontal g3w-form">
-    <div class="box-primary">
-      <div class="box-body">
+  <form class = "form-horizontal g3w-form">
+    <div class = "box-primary">
+      <div class = "box-body">
         <template v-if="hasFormStructure">
           <tabs
             :layerid          = "state.layerid"

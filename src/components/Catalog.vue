@@ -5,80 +5,86 @@
 
 <template>
   <!-- item template -->
-  <div id="catalog" @contextmenu.prevent.stop="" class="tabbable-panel catalog">
+  <div
+    id                        = "catalog"
+    @contextmenu.prevent.stop = ""
+    class                     = "tabbable-panel catalog"
+  >
 
-    <div class="tabbable-line">
+    <div class = "tabbable-line">
 
       <!-- TAB MENU (header) -->
       <ul
-        class="nav nav-tabs catalalog-nav-tabs"
-        role="tablist"
-        @click.capture="onTabClick"
+        class          = "nav nav-tabs catalalog-nav-tabs"
+        role           = "tablist"
+        @click.capture = "onTabClick"
       >
         <!-- TAB TOC LAYERS -->
         <li
-          v-if="hasLayers"
-          role="presentation"
-          :class="{ active: ('layers' === activeTab) }"
+          v-if   = "hasLayers"
+          role   = "presentation"
+          :class = "{ active: ('layers' === activeTab) }"
         >
           <a
-            href="#layers"
-            aria-controls="layers"
-            role="tab"
-            data-toggle="tab"
-            data-i18n="tree"
-            v-t="'data'">
+            href          = "#layers"
+            aria-controls = "layers"
+            role          = "tab"
+            data-toggle   = "tab"
+            data-i18n     = "tree"
+            v-t           = "'data'">
           </a>
         </li>
         <!-- TAB EXTERNAL WMS LAYERS -->
         <li
-          v-if="state.external.wms.length"
-          role="presentation"
-          :class="{ active: ('externalwms' === activeTab) }"
+          v-if   = "state.external.wms.length"
+          role   = "presentation"
+          :class = "{ active: ('externalwms' === activeTab) }"
         >
           <a
-            href="#externalwms"
-            aria-controls="externalwms"
-            role="tab"
-            data-toggle="tab"
-            data-i18n="externalwms"
-            v-t="'externalwms'">
+            href          = "#externalwms"
+            aria-controls = "externalwms"
+            role          = "tab"
+            data-toggle   = "tab"
+            data-i18n     = "externalwms"
+            v-t           = "'externalwms'">
           </a>
         </li>
         <!-- TAB BASE LAYERS -->
         <li
-          v-if="hasBaseLayers"
-          role="presentation"
-          :class="{ active: ('baselayers' === activeTab) }"
+          v-if   = "hasBaseLayers"
+          role   = "presentation"
+          :class = "{ active: ('baselayers' === activeTab) }"
         >
           <a
-            href="#baselayers"
-            aria-controls="baselayers"
-            role="tab"
-            data-toggle="tab"
-            data-i18n="baselayers"
-            v-t="'baselayers'">
+            href          = "#baselayers"
+            aria-controls = "baselayers"
+            role          = "tab"
+            data-toggle   = "tab"
+            data-i18n     = "baselayers"
+            v-t           = "'baselayers'">
           </a>
         </li>
         <!-- TAB LEGEND LAYERS -->
         <li
-          v-if="'tab' === state.legend.place && showlegend"
-          role="presentation"
-          :class="{ active: ('legend' === activeTab) }"
+          v-if   = "'tab' === state.legend.place && showlegend"
+          role   = "presentation"
+          :class = "{ active: ('legend' === activeTab) }"
         >
           <a
-            href="#legend"
-            aria-controls="legend"
-            role="tab"
-            data-toggle="tab"
-            data-i18n="legend"
-            v-t="'legend'">
+            href          = "#legend"
+            aria-controls = "legend"
+            role          = "tab"
+            data-toggle   = "tab"
+            data-i18n     = "legend"
+            v-t           = "'legend'">
           </a>
+
         </li>
+
       </ul>
 
       <!-- TAB MENU (content) -->
-      <div class="tab-content catalog-tab-content">
+      <div class = "tab-content catalog-tab-content">
 
         <bar-loader :loading="loading" />
 
@@ -89,7 +95,7 @@
           :class = "{ active: ('layers' === activeTab) }"
         >
 
-          <helpdiv message="catalog_items.helptext" />
+          <helpdiv message = "catalog_items.helptext" />
 
           <!-- TOOLBAR -->
           <div
@@ -126,8 +132,8 @@
 
           <!-- EXTERNAL VECTOR LAYER -->
           <ul
-            v-if="state.external.vector.length"
-            class="g3w-external_layers-group"
+            v-if  = "state.external.vector.length"
+            class = "g3w-external_layers-group"
           >
             <catalog-tristate-tree
               v-for           = "vector in state.external.vector"
@@ -141,8 +147,8 @@
           <!-- GROUP OF LAYERS -->
           <!-- ORIGINAL SOURCE: src/components/CatalogLayersGroup.vue@v3.9.3 -->
           <ul
-            v-for="group in state.layersgroups"
-            class="g3w-catalog-layers-group"
+            v-for = "group in state.layersgroups"
+            class = "g3w-catalog-layers-group"
           >
             <div>
               <h4>{{ group.title }}</h4>
@@ -199,8 +205,9 @@
                 class       = "img-responsive img-thumbnail baselayer"
                 :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5 }"
               >
-              <div class="baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
+              <div class = "baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
             </li>
+
             <li @click.stop="setBaseLayer(null)">
               <img
                 :src   = "getSrcBaseLayerImage(null)"
@@ -208,11 +215,14 @@
                 :style = "{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
               >
               <div
-                class="baseselayer-text text-center g3w-long-text"
-                v-t="'nobaselayer'">
+                class = "baseselayer-text text-center g3w-long-text"
+                v-t   = "'nobaselayer'">
               </div>
+
             </li>
+
           </ul>
+
         </div>
 
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
@@ -226,18 +236,23 @@
           class  = "tab-pane"
           :class = "{ active: 'legend' === activeTab }"
         >
-          <div v-for="t in tree.tree" class="legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
-            <figure v-for="url in t.legendurls">
+          <div v-for = "t in tree.tree" class = "legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
+            <figure v-for = "url in t.legendurls">
               <bar-loader :loading="url.loading" />
               <img
                 v-show = "!url.loading && !url.error"
                 :src   = "url.url"
                 @error = "onLegendError(url)"
                 @load  = "onLegendLoad(url)"
+                alt    = ""
               />
+
               <divider/>
+
             </figure>
+
           </div>
+
         </div>
 
       </div>
@@ -328,7 +343,7 @@ export default {
   methods: {
 
     onLegendError(legendurl) {
-      legendurl.error = true;
+      legendurl.error   = true;
       legendurl.loading = false;
     },
 
@@ -343,9 +358,7 @@ export default {
      */
     getLegendSrc(change = false) {
       // skip if not active
-      if ('tab' !== this.state.legend.place) {
-        return;
-      }
+      if ('tab' !== this.state.legend.place) { return }
 
       this.state.layerstrees.forEach(t => {
         let layers = this._traverseVisibleLayers(t.tree);
@@ -408,9 +421,7 @@ export default {
 
 
         // no url is set
-        if (undefined === catalogLayer) {
-          return;
-        }
+        if (undefined === catalogLayer) { return }
 
         if (layer.source && layer.source.url) {
           name[url] = [];
@@ -420,9 +431,7 @@ export default {
         // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
         let prefix = url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
 
-        if (!name[prefix]) {
-          name[prefix] = [];
-        }
+        if (!name[prefix]) { name[prefix] = [] }
 
         name[prefix].unshift({
           layerName:  url.split('LAYER=')[1],
@@ -435,18 +444,18 @@ export default {
       for (const method in http) {
         for (const url in http[method]) {
           const obj = {
-            loading: true,
-            url: null,
-            error: false
+            loading : true,
+            url     : null,
+            error   : false
           };
 
           legendurls.push(obj);
 
           const params = {
-            LAYERS:[],
-            STYLES:[],
-            LEGEND_ON:[],
-            LEGEND_OFF:[]
+            LAYERS     : [],
+            STYLES     : [],
+            LEGEND_ON  : [],
+            LEGEND_OFF : []
           };
 
           (http[method][url] || []).reduce((_, layer) => {
@@ -707,432 +716,432 @@ export default {
 </script>
 
 <style>
-.tabbable-line > .nav-tabs > li.active { border-bottom: 4px solid var(--skin-color); }
-.catalog .tree-item.selected,
-.catalog #legend div.selected          { background-color: var(--skin-color); }
-.catalog-context-menu li.title         { border-bottom-color: var(--skin-color) !important; }
+  .tabbable-line > .nav-tabs > li.active { border-bottom: 4px solid var(--skin-color); }
+  .catalog .tree-item.selected,
+  .catalog #legend div.selected          { background-color: var(--skin-color); }
+  .catalog-context-menu li.title         { border-bottom-color: var(--skin-color) !important; }
 
-.skin-blue .tabbable-line > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #6abbea; }
-.skin-blue .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #6abbea; }
-.skin-blue .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
+  .skin-blue .tabbable-line > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #6abbea; }
+  .skin-blue .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #6abbea; }
+  .skin-blue .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
 
-.skin-green .tabbable-line > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #00FF8E; }
-.skin-green .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #00FF8E; }
-.skin-green .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
+  .skin-green .tabbable-line > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #00FF8E; }
+  .skin-green .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #00FF8E; }
+  .skin-green .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
 
-.skin-purple .tabbable-line > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #A19DFF; }
-.skin-purple .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #A19DFF; }
-.skin-purple .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
+  .skin-purple .tabbable-line > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #A19DFF; }
+  .skin-purple .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #A19DFF; }
+  .skin-purple .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
 
-.skin-red .tabbable-line > .nav-tabs > li:is(.open, :hover)    { border-bottom: 4px solid #FF5542; }
-.skin-red .tabbable-line.tabs-below > .nav-tabs > li:hover     { border-top: 4px solid #FF5542; }
-.skin-red .tabbable-line.tabs-below > .nav-tabs > li.active    { border-top: 4px solid #FF5542; }
+  .skin-red .tabbable-line > .nav-tabs > li:is(.open, :hover)    { border-bottom: 4px solid #FF5542; }
+  .skin-red .tabbable-line.tabs-below > .nav-tabs > li:hover     { border-top: 4px solid #FF5542; }
+  .skin-red .tabbable-line.tabs-below > .nav-tabs > li.active    { border-top: 4px solid #FF5542; }
 
-.skin-yellow .tabbable-line > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #FFDE0D; }
-.skin-yellow .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #FFDE0D; }
-.skin-yellow .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #FFDF12; }
+  .skin-yellow .tabbable-line > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #FFDE0D; }
+  .skin-yellow .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #FFDE0D; }
+  .skin-yellow .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #FFDF12; }
 
-/***
- Bootstrap Line Tabs by @keenthemes
- A component of Metronic Theme - #1 Selling Bootstrap 3 Admin Theme in Themeforest: http://j.mp/metronictheme
- Licensed under MIT
-***/
+  /***
+   Bootstrap Line Tabs by @keenthemes
+   A component of Metronic Theme - #1 Selling Bootstrap 3 Admin Theme in Themeforest: http://j.mp/metronictheme
+   Licensed under MIT
+  ***/
 
-/* Tabs panel */
+  /* Tabs panel */
 
-.tabbable-panel {
-  padding: 10px;
-}
-.tabbable-line > .nav-tabs {
-  border: none;
-  margin: 0px;
-}
-.tabbable-line .nav-tabs ul li {
-  color: #fff;
-}
-.tabbable-line > .nav-tabs > li {
-  margin-right: 2px;
-  border-bottom: 4px solid #21292d;
-}
-.tabbable-line > .nav-tabs > li > a {
-  border: 0;
-  margin-right: 0;
-  color: #fff;
-}
-.tabbable-line > .nav-tabs > li > a > i {
-  color: #a6a6a6;
-}
-.tabbable-line > .nav-tabs > li:is(.open, :hover) > a {
-  border: 0;
-  background: none !important;
-}
-.tabbable-line > .nav-tabs > li:is(.open, :hover) > a > i {
-  color: #a6a6a6;
-}
-.tabbable-line > .nav-tabs > li:is(.open, :hover) .dropdown-menu {
-  margin-top: 0;
-}
-.tabbable-line > .nav-tabs > li.active {
-  position: relative;
-  font-weight: bold;
-}
-.tabbable-line > .nav-tabs > li.active > a {
-  border: 0;
-  color: #fff;
-  background-color: #2c3b41;
-}
-.tabbable-line > .nav-tabs > li.active > a > i {
-  color: #fff;
-}
-.tabbable-line > .tab-content.catalog-tab-content {
-  margin-top: -3px;
-  border: 0;
-  color: #fff;
-  padding: 5px 0 0 0;
-}
-.portlet .tabbable-line > .tab-content {
-  padding-bottom: 0;
-}
+  .tabbable-panel {
+    padding: 10px;
+  }
+  .tabbable-line > .nav-tabs {
+    border: none;
+    margin: 0px;
+  }
+  .tabbable-line .nav-tabs ul li {
+    color: #fff;
+  }
+  .tabbable-line > .nav-tabs > li {
+    margin-right: 2px;
+    border-bottom: 4px solid #21292d;
+  }
+  .tabbable-line > .nav-tabs > li > a {
+    border: 0;
+    margin-right: 0;
+    color: #fff;
+  }
+  .tabbable-line > .nav-tabs > li > a > i {
+    color: #a6a6a6;
+  }
+  .tabbable-line > .nav-tabs > li:is(.open, :hover) > a {
+    border: 0;
+    background: none !important;
+  }
+  .tabbable-line > .nav-tabs > li:is(.open, :hover) > a > i {
+    color: #a6a6a6;
+  }
+  .tabbable-line > .nav-tabs > li:is(.open, :hover) .dropdown-menu {
+    margin-top: 0;
+  }
+  .tabbable-line > .nav-tabs > li.active {
+    position: relative;
+    font-weight: bold;
+  }
+  .tabbable-line > .nav-tabs > li.active > a {
+    border: 0;
+    color: #fff;
+    background-color: #2c3b41;
+  }
+  .tabbable-line > .nav-tabs > li.active > a > i {
+    color: #fff;
+  }
+  .tabbable-line > .tab-content.catalog-tab-content {
+    margin-top: -3px;
+    border: 0;
+    color: #fff;
+    padding: 5px 0 0 0;
+  }
+  .portlet .tabbable-line > .tab-content {
+    padding-bottom: 0;
+  }
 
-/* Below tabs mode */
+  /* Below tabs mode */
 
-.tabbable-line.tabs-below > .nav-tabs > li {
-  border-top: 4px solid transparent;
-}
-.tabbable-line.tabs-below > .nav-tabs > li > a {
-  margin-top: 0;
-}
-.tabbable-line.tabs-below > .nav-tabs > li:hover {
-  border-bottom: 0;
-  color: #fff;
-}
-.tabbable-line.tabs-below > .nav-tabs > li.active {
-  margin-bottom: -2px;
-  border-bottom: 0;
-}
-.tabbable-line.tabs-below > .tab-content {
-  margin-top: -10px;
-  border-top: 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-}
-.nav-tabs > li.active > a,
-.nav-tabs > li.active > a:is(:focus, :hover) {
-  color: #fff;
-  background-color: #2c3b41;
-}
-.catalog > .title {
-  padding: 10px;
-  font-weight: bold;
-}
-.catalog ul {
-  line-height: 1.5em;
-  list-style-type: none;
-}
-.catalog .list-group-item {
-  color: #fff;
-  background-color: #2c3b41;
-}
-.catalog .tree-item.selected ul.layer-categories,
-.catalog #legend div.selected ul.layer-categories {
-  background-color: #222d32;
-}
-.catalog .tree-item div.tree-node-title,
-.catalog #legend div div.tree-node-title {
-  padding-left: 3px;
-  cursor: pointer;
-  width: 80%;
-  display: inline-flex;
-  justify-content: space-between;
-}
-.catalog .tree-item div.tree-node-title.disabled,
-.catalog #legend div div.tree-node-title.disabled {
-  color: #999;
-}
-.catalog .tree-item div.tree-node-title .selection-filter-icon,
-.catalog #legend div div.tree-node-title .selection-filter-icon {
-  box-shadow: rgba(0,0,0,0.3) 0 2px 5px;
-  padding: 5px;
-  border-radius: 3px;
-  margin: 0 3px;
-  font-weight: bold;
-  color: #fff !important;
-}
-.catalog .tree-item div.tree-node-title .selection-filter-icon.active,
-.catalog #legend div div.tree-node-title .selection-filter-icon.active {
-  box-shadow: none;
-  background-color: #384247;
-}
-.catalog .tree-item {
-  cursor: pointer;
-  margin-bottom: 3px;
-}
-.catalog .tree-item.disabled > span {
-  color: #999;
-}
-.catalog .root {
-  padding: 2px 1px 1px 5px;
-}
-.catalog .root .tree-item.group {
-  padding-left: 1px;
-}
-.catalog .root.fa-chevron-right {
-  padding-right: 5px;
-  padding-left: 0;
-}
-.catalog .root-categories.fa-chevron-right {
-  padding-right: 7px;
-}
-.catalog .root-categories.fa-chevron-down {
-  padding-right: 3px;
-}
-.bold {
-  font-weight: bold;
-  color: #fff;
-}
-.highlightlayer {
-  border-bottom: 2px dashed;
-  border-color: #ffb516;
-}
-.catalog {
-  padding: 3px;
-}
-.catalog .tree-root {
-  padding-left: 0;
-}
-.catalog .tree-root li > .root {
-  padding-left: 5px;
-}
-.catalog .tree-root li.tree-item ul.tree-content-items.root {
-  padding-left: 18px;
-}
-.catalog .tree-root li.tree-item ul.tree-content-items.root > .tree-item.group {
-  padding-left: 1px !important;
-}
-.catalog .tree-root li.tree-item ul.tree-content-items {
-  padding-left: 17px;
-  padding-top: 2px;
-}
-.g3w-lendplace-toc {
-  padding-left: 23px;
-}
-.g3w-lendplace-toc.group {
-  padding-left: 17px;
-}
-.g3w-lendplace-toc.root {
-  padding-left: 18px;
-}
-.g3w-lendplace-toc.root > li.itemmarginbottom {
-  margin-left: -13px;
-}
-.g3w-lendplace-toc.root > li.itemmarginbottom div.layer-legend {
-  padding-left: 56px;
-}
-.g3w-lendplace-toc.root > li.itemmarginbottom > span.child {
-  padding-left: 18px !important;
-}
-.catalog .tree-root span.root.collapse-expande-collapse-icon {
-  width: 19px;
-}
-.catalog .tree-root span.root.collapse-expande-collapse-icon.project-root {
-  width: 17px;
-}
-.catalog .tree-root span.collapse-expande-collapse-icon {
-  width: 10px;
-}
-.catalog span.legend-collapse-expande-collapse-icon {
-  font-size: 1.2em;
-}
-.catalog .child-categories {
-  padding: 5px 3px 1px 12px;
-}
-.catalog .layer-legend {
-  padding: 3px 0 0 35px;
-  background-color: #222d32;
-}
-.catalog .catalalog-nav-tabs {
-  display: flex;
-  flex: 1 1 0;
-}
-.catalog .catalalog-nav-tabs > li {
-  font-size: 1em;
-  white-space: initial;
-  display: flex;
-  flex: 1 1 0;
-  align-items: stretch;
-}
-.catalog .catalalog-nav-tabs > li a {
-  padding: 10px 0;
-  text-align: center;
-  height: 100%;
-  width: 100%;
-}
-.catalog .tree {
-  color: #fff;
-}
-.catalog .tree.disabled {
-  color: #999;
-  cursor: not-allowed;
-}
-.catalog .g3w-external_wms_layers-group {
-  padding: 5px;
-}
-.catalog .baselayers .radio {
-  margin: 0;
-}
-.catalog-context-menu {
-  background: #FAFAFA;
-  border: 1px solid #BDBDBD;
-  border-radius: 3px;
-  display: block;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  position: fixed;
-  min-width: 150px;
-  z-index: 999999;
-  color: #000;
-  outline: none;
-}
-.catalog-context-menu li {
-  border-bottom: 1px solid #E0E0E0;
-  margin: 0;
-  padding: 5px 15px;
-}
-.catalog-context-menu li span.menu-icon {
-  padding-right: 3px;
-  margin-right: 3px;
-}
-.catalog-context-menu li .wms-url-tooltip {
-  color: #000000;
-  opacity: 1;
-}
-.catalog-context-menu li .wms-url-tooltip:hover {
-  color: #FFF !important;
-  transform: scale(1.1);
-}
-.catalog-context-menu li.title {
-  background: transparent;
-  font-size: 1.1em;
-  font-weight: bold;
-  border-bottom-width: 3px !important;
-}
-.catalog-context-menu li.title:hover {
-  cursor: default !important;
-  background: transparent !important;
-  color: #000;
-}
-.catalog-context-menu li:last-child {
-  border-bottom: none;
-}
-.catalog-context-menu li:hover {
-  color: #FAFAFA;
-  cursor: pointer;
-}
-.catalog-context-menu li .layer-menu-metadata-info {
-  padding: 5px;
-  max-width: 200px;
-  white-space: normal;
-  overflow-y: auto;
-  max-height: 150px;
-}
-#baselayers-content {
-  display: grid;
-  justify-content: center;
-  grid-gap: 5px;
-  padding: 0;
-  margin: 5px;
-}
-#baselayers-content.mobile {
-  grid-template-columns: repeat(auto-fill,minmax(80px,110px));
-}
-#baselayers-content .baseselayer-text {
-  white-space: pre-line;
-  font-weight: bold;
-}
-#baselayers-content .baselayer {
-  cursor: pointer;
-}
-#baselayers-content .baselayer .baselayer-name {
-  font-weight: bold;
-  white-space: pre-line;
-  text-align: center;
-}
-#catalog #layers ul.g3w-external_layers-group {
-  padding-left: 0 !important;
-}
-#catalog #layers ul.g3w-external_layers-group li {
-  padding-left: 2px !important;
-}
-#catalog #layers .sidebar-menu > li > a {
-  border: 0;
-}
-#catalog .catalog-context-menu .wms-url-tooltip .tooltip-inner {
-  min-width: 200px;
-}
-#catalog .catalog-context-menu .tooltip-inner {
-  word-break: break-all;
-  font-weight: bold;
-}
-#catalog .catalog-context-menu .item-text {
-  margin-left: 3px;
-}
-#catalog #toc_layer_help_text {
-  position: relative;
-  border-radius: 2px;
-  padding: 5px;
-  margin: 0.8em;
-  white-space: pre-line;
-  background-color: rgba(255,255,255,0.1);
-}
-#catalog .info_helptext_button {
-  text-align: center;
-  font-size: 0.7em;
-  margin-top: -5px;
-  margin-left: -5px;
-  background-color: #222d32;
-  font-weight: bold;
-  color: #ffffff;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 15px;
-  height: 15px;
-  box-shadow: 0 3px 5px rgba(0,0,0,0.5);
-  border: 1px solid #fff;
-  border-radius: 50%;
-}
-#catalog > a {
-  display: none !important;
-}
+  .tabbable-line.tabs-below > .nav-tabs > li {
+    border-top: 4px solid transparent;
+  }
+  .tabbable-line.tabs-below > .nav-tabs > li > a {
+    margin-top: 0;
+  }
+  .tabbable-line.tabs-below > .nav-tabs > li:hover {
+    border-bottom: 0;
+    color: #fff;
+  }
+  .tabbable-line.tabs-below > .nav-tabs > li.active {
+    margin-bottom: -2px;
+    border-bottom: 0;
+  }
+  .tabbable-line.tabs-below > .tab-content {
+    margin-top: -10px;
+    border-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+  }
+  .nav-tabs > li.active > a,
+  .nav-tabs > li.active > a:is(:focus, :hover) {
+    color: #fff;
+    background-color: #2c3b41;
+  }
+  .catalog > .title {
+    padding: 10px;
+    font-weight: bold;
+  }
+  .catalog ul {
+    line-height: 1.5em;
+    list-style-type: none;
+  }
+  .catalog .list-group-item {
+    color: #fff;
+    background-color: #2c3b41;
+  }
+  .catalog .tree-item.selected ul.layer-categories,
+  .catalog #legend div.selected ul.layer-categories {
+    background-color: #222d32;
+  }
+  .catalog .tree-item div.tree-node-title,
+  .catalog #legend div div.tree-node-title {
+    padding-left: 3px;
+    cursor: pointer;
+    width: 80%;
+    display: inline-flex;
+    justify-content: space-between;
+  }
+  .catalog .tree-item div.tree-node-title.disabled,
+  .catalog #legend div div.tree-node-title.disabled {
+    color: #999;
+  }
+  .catalog .tree-item div.tree-node-title .selection-filter-icon,
+  .catalog #legend div div.tree-node-title .selection-filter-icon {
+    box-shadow: rgba(0,0,0,0.3) 0 2px 5px;
+    padding: 5px;
+    border-radius: 3px;
+    margin: 0 3px;
+    font-weight: bold;
+    color: #fff !important;
+  }
+  .catalog .tree-item div.tree-node-title .selection-filter-icon.active,
+  .catalog #legend div div.tree-node-title .selection-filter-icon.active {
+    box-shadow: none;
+    background-color: #384247;
+  }
+  .catalog .tree-item {
+    cursor: pointer;
+    margin-bottom: 3px;
+  }
+  .catalog .tree-item.disabled > span {
+    color: #999;
+  }
+  .catalog .root {
+    padding: 2px 1px 1px 5px;
+  }
+  .catalog .root .tree-item.group {
+    padding-left: 1px;
+  }
+  .catalog .root.fa-chevron-right {
+    padding-right: 5px;
+    padding-left: 0;
+  }
+  .catalog .root-categories.fa-chevron-right {
+    padding-right: 7px;
+  }
+  .catalog .root-categories.fa-chevron-down {
+    padding-right: 3px;
+  }
+  .bold {
+    font-weight: bold;
+    color: #fff;
+  }
+  .highlightlayer {
+    border-bottom: 2px dashed;
+    border-color: #ffb516;
+  }
+  .catalog {
+    padding: 3px;
+  }
+  .catalog .tree-root {
+    padding-left: 0;
+  }
+  .catalog .tree-root li > .root {
+    padding-left: 5px;
+  }
+  .catalog .tree-root li.tree-item ul.tree-content-items.root {
+    padding-left: 18px;
+  }
+  .catalog .tree-root li.tree-item ul.tree-content-items.root > .tree-item.group {
+    padding-left: 1px !important;
+  }
+  .catalog .tree-root li.tree-item ul.tree-content-items {
+    padding-left: 17px;
+    padding-top: 2px;
+  }
+  .g3w-lendplace-toc {
+    padding-left: 23px;
+  }
+  .g3w-lendplace-toc.group {
+    padding-left: 17px;
+  }
+  .g3w-lendplace-toc.root {
+    padding-left: 18px;
+  }
+  .g3w-lendplace-toc.root > li.itemmarginbottom {
+    margin-left: -13px;
+  }
+  .g3w-lendplace-toc.root > li.itemmarginbottom div.layer-legend {
+    padding-left: 56px;
+  }
+  .g3w-lendplace-toc.root > li.itemmarginbottom > span.child {
+    padding-left: 18px !important;
+  }
+  .catalog .tree-root span.root.collapse-expande-collapse-icon {
+    width: 19px;
+  }
+  .catalog .tree-root span.root.collapse-expande-collapse-icon.project-root {
+    width: 17px;
+  }
+  .catalog .tree-root span.collapse-expande-collapse-icon {
+    width: 10px;
+  }
+  .catalog span.legend-collapse-expande-collapse-icon {
+    font-size: 1.2em;
+  }
+  .catalog .child-categories {
+    padding: 5px 3px 1px 12px;
+  }
+  .catalog .layer-legend {
+    padding: 3px 0 0 35px;
+    background-color: #222d32;
+  }
+  .catalog .catalalog-nav-tabs {
+    display: flex;
+    flex: 1 1 0;
+  }
+  .catalog .catalalog-nav-tabs > li {
+    font-size: 1em;
+    white-space: initial;
+    display: flex;
+    flex: 1 1 0;
+    align-items: stretch;
+  }
+  .catalog .catalalog-nav-tabs > li a {
+    padding: 10px 0;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+  }
+  .catalog .tree {
+    color: #fff;
+  }
+  .catalog .tree.disabled {
+    color: #999;
+    cursor: not-allowed;
+  }
+  .catalog .g3w-external_wms_layers-group {
+    padding: 5px;
+  }
+  .catalog .baselayers .radio {
+    margin: 0;
+  }
+  .catalog-context-menu {
+    background: #FAFAFA;
+    border: 1px solid #BDBDBD;
+    border-radius: 3px;
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    min-width: 150px;
+    z-index: 999999;
+    color: #000;
+    outline: none;
+  }
+  .catalog-context-menu li {
+    border-bottom: 1px solid #E0E0E0;
+    margin: 0;
+    padding: 5px 15px;
+  }
+  .catalog-context-menu li span.menu-icon {
+    padding-right: 3px;
+    margin-right: 3px;
+  }
+  .catalog-context-menu li .wms-url-tooltip {
+    color: #000000;
+    opacity: 1;
+  }
+  .catalog-context-menu li .wms-url-tooltip:hover {
+    color: #FFF !important;
+    transform: scale(1.1);
+  }
+  .catalog-context-menu li.title {
+    background: transparent;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-bottom-width: 3px !important;
+  }
+  .catalog-context-menu li.title:hover {
+    cursor: default !important;
+    background: transparent !important;
+    color: #000;
+  }
+  .catalog-context-menu li:last-child {
+    border-bottom: none;
+  }
+  .catalog-context-menu li:hover {
+    color: #FAFAFA;
+    cursor: pointer;
+  }
+  .catalog-context-menu li .layer-menu-metadata-info {
+    padding: 5px;
+    max-width: 200px;
+    white-space: normal;
+    overflow-y: auto;
+    max-height: 150px;
+  }
+  #baselayers-content {
+    display: grid;
+    justify-content: center;
+    grid-gap: 5px;
+    padding: 0;
+    margin: 5px;
+  }
+  #baselayers-content.mobile {
+    grid-template-columns: repeat(auto-fill,minmax(80px,110px));
+  }
+  #baselayers-content .baseselayer-text {
+    white-space: pre-line;
+    font-weight: bold;
+  }
+  #baselayers-content .baselayer {
+    cursor: pointer;
+  }
+  #baselayers-content .baselayer .baselayer-name {
+    font-weight: bold;
+    white-space: pre-line;
+    text-align: center;
+  }
+  #catalog #layers ul.g3w-external_layers-group {
+    padding-left: 0 !important;
+  }
+  #catalog #layers ul.g3w-external_layers-group li {
+    padding-left: 2px !important;
+  }
+  #catalog #layers .sidebar-menu > li > a {
+    border: 0;
+  }
+  #catalog .catalog-context-menu .wms-url-tooltip .tooltip-inner {
+    min-width: 200px;
+  }
+  #catalog .catalog-context-menu .tooltip-inner {
+    word-break: break-all;
+    font-weight: bold;
+  }
+  #catalog .catalog-context-menu .item-text {
+    margin-left: 3px;
+  }
+  #catalog #toc_layer_help_text {
+    position: relative;
+    border-radius: 2px;
+    padding: 5px;
+    margin: 0.8em;
+    white-space: pre-line;
+    background-color: rgba(255,255,255,0.1);
+  }
+  #catalog .info_helptext_button {
+    text-align: center;
+    font-size: 0.7em;
+    margin-top: -5px;
+    margin-left: -5px;
+    background-color: #222d32;
+    font-weight: bold;
+    color: #ffffff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 15px;
+    height: 15px;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+    border: 1px solid #fff;
+    border-radius: 50%;
+  }
+  #catalog > a {
+    display: none !important;
+  }
 </style>
 
 <style scoped>
-#legend .divider {
-  display: block;
-  position: relative;
-  padding: 0;
-  margin: 8px auto;
-  height: 0;
-  width: 100%;
-  max-height: 0;
-  font-size: 1px;
-  line-height: 0;
-  clear: both;
-  border: none;
-}
+  #legend .divider {
+    display: block;
+    position: relative;
+    padding: 0;
+    margin: 8px auto;
+    height: 0;
+    width: 100%;
+    max-height: 0;
+    font-size: 1px;
+    line-height: 0;
+    clear: both;
+    border: none;
+  }
 
-.legend-item {
-  width: 100%;
-  position: relative;
-}
- 
-.g3w-catalog-layers-group > div {
-  border: 1px solid #ffffff33;
-  margin: 5px;
-}
-.g3w-catalog-layers-group > div > h4 {
-  margin: 5px;
-  font-weight: bold;
-}
+  .legend-item {
+    width: 100%;
+    position: relative;
+  }
+
+  .g3w-catalog-layers-group > div {
+    border: 1px solid #ffffff33;
+    margin: 5px;
+  }
+  .g3w-catalog-layers-group > div > h4 {
+    margin: 5px;
+    font-weight: bold;
+  }
 </style>

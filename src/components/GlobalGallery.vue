@@ -5,22 +5,23 @@
 
 <template>
   <div
-    class = "modal fade modal-fullscreen force-fullscreen"
+    class           = "modal fade modal-fullscreen force-fullscreen"
     :id             = "id"
     tabindex        = "-1"
     role            = "dialog"
     aria-labelledby = ""
-    aria-hidden     = "true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-body">
+    aria-hidden     = "true"
+  >
+    <div class = "modal-dialog">
+      <div class = "modal-content">
+        <div class = "modal-body">
           <!--begin carousel-->
           <div
             :id           = "carouselId"
             class         = "carousel slide"
             data-interval = "false"
           >
-            <div class="carousel-inner">
+            <div class = "carousel-inner">
               <div
                 v-for  = "(image, index) in images"
                 class  = "item"
@@ -32,13 +33,13 @@
               </div>
             </div>
             <a
-              v-if       ="images.length > 1"
+              v-if       = "images.length > 1"
               class      = "left carousel-control"
               :href      = "`#${carouselId}`"
               role       = "button"
               data-slide = "prev"
             >
-              <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+              <span :class = "g3wtemplate.getFontClass('arrow-left')"></span>
             </a>
             <a
               v-if       = "images.length > 1"
@@ -47,7 +48,7 @@
               role       = "button"
               data-slide = "next"
             >
-              <span :class="g3wtemplate.getFontClass('arrow-left')"></span>
+              <span :class = "g3wtemplate.getFontClass('arrow-left')"></span>
             </a>
           </div>
         </div>

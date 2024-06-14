@@ -7,7 +7,7 @@
     id    = "map_footer_right"
     style ="display: flex;"
   >
-    <div id="scale-control"></div>
+    <div id = "scale-control"></div>
 
     <div
       v-if                   = "mouse.switch_icon && !isMobile()"

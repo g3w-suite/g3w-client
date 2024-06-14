@@ -4,18 +4,20 @@
 -->
 
 <template>
-  <div class="card br">
-    <div class="chart-wrapper">
-      <div class="chart-item br"></div>
-      <div class="chart-item chart-item-80 item-light br"></div>
-      <div class="chart-item br"></div>
-      <div class="chart-item br chart-item-80"></div>
+
+  <div class = "card br">
+    <div class = "chart-wrapper">
+      <div class = "chart-item br"></div>
+      <div class = "chart-item chart-item-80 item-light br"></div>
+      <div class = "chart-item br"></div>
+      <div class = "chart-item br chart-item-80"></div>
     </div>
-    <div class="item br text80"></div>
-    <div class="item item-light br"></div>
-    <div class="item br"></div>
-    <div class="item item-light br text80"></div>
+    <div class = "item br text80"></div>
+    <div class = "item item-light br"></div>
+    <div class = "item br"></div>
+    <div class = "item item-light br text80"></div>
   </div>
+
 </template>
 
 <script>

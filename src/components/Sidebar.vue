@@ -46,8 +46,8 @@
                       v-t-tooltip.create = "'back'"
                       class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                     >
-                      <i :class="g3wtemplate.getFontClass('circle')"     class="fa-stack-1x panel-button"></i>
-                      <i :class="g3wtemplate.getFontClass('arrow-left')" class="fa-stack-1x panel-icon"></i>
+                      <i :class = "g3wtemplate.getFontClass('circle')"     class = "fa-stack-1x panel-button"></i>
+                      <i :class = "g3wtemplate.getFontClass('arrow-left')" class = "fa-stack-1x panel-icon"></i>
                     </span>
                     <span
                       @click             = "closeAllPanels"
@@ -57,8 +57,8 @@
                       v-t-tooltip.create = "'close'"
                       class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                     >
-                      <i :class="g3wtemplate.getFontClass('circle')" class="fa-stack-1x panel-button"></i>
-                      <i :class="g3wtemplate.getFontClass('close')"  class="fa-stack-1x panel-icon"></i>
+                      <i :class = "g3wtemplate.getFontClass('circle')" class = "fa-stack-1x panel-button"></i>
+                      <i :class = "g3wtemplate.getFontClass('close')"  class = "fa-stack-1x panel-icon"></i>
                     </span>
                   </div>
 
@@ -71,7 +71,7 @@
             ></div>
           </div>
 
-          <div id="g3w-sidebarcomponents-content" >
+          <div id = "g3w-sidebarcomponents-content" >
             <ul
               id     = "g3w-sidebarcomponents"
               v-show = "showmainpanel"
@@ -90,7 +90,7 @@
         :class      = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
         :style      = "{zIndex: zIndex}"
         data-toggle = "offcanvas" role="button">
-          <i :class="g3wtemplate.getFontClass('bars')"></i>
+          <i :class = "g3wtemplate.getFontClass('bars')"></i>
       </a>
 
     </aside>

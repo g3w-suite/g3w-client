@@ -11,9 +11,9 @@
   >
 
     <!-- ADD NEW BOOKMARK (FORM) -->
-    <template v-if="showaddform">
+    <template v-if = "showaddform">
       <li>
-        <div style="display: flex; justify-content: end">
+        <div style = "display: flex; justify-content: end">
           <span
             v-t-tooltip:left.create  = "'close'"
             @click.stop              = "showaddform = false"
@@ -23,7 +23,7 @@
           ></span>
         </div>
 
-        <helpdiv message="sdk.spatialbookmarks.helptext" />
+        <helpdiv message = "sdk.spatialbookmarks.helptext" />
 
         <div
           class = "container add-bookmark-input"
@@ -34,7 +34,7 @@
             :state = "addbookmarkinput"
           />
         </div>
-        <div style="margin-top: 5px;">
+        <div style = "margin-top: 5px;">
           <button
             @click.stop = "addBookMark"
             class       = "sidebar-button-run btn btn-block"
@@ -48,21 +48,26 @@
     <!-- BOOKMARS LIST -->
     <template v-else>
 
-      <div v-if="is_staff" class="content-bookmarks">
-        <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
-        <a :href="`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`" target="_blank" style="float: right;" title="QGIS Docs">
-          <i :class="g3wtemplate.getFontClass('external-link')"></i>
+      <div v-if = "is_staff" class = "content-bookmarks">
+        <span v-t = "'sdk.spatialbookmarks.sections.project.title'"></span>
+        <a
+          :href  = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
+          target = "_blank"
+          style  = "float: right;"
+          title  = "QGIS Docs"
+        >
+          <i :class = "g3wtemplate.getFontClass('external-link')"></i>
         </a>
       </div>
 
-      <template v-for="bookmark in project.bookmarks">
-        <spatial-book-mark-group v-if="bookmark.nodes" :group="bookmark" />
-        <spatial-book-mark-item v-else :bookmark="bookmark" />
+      <template v-for = "bookmark in project.bookmarks">
+        <spatial-book-mark-group v-if = "bookmark.nodes" :group = "bookmark" />
+        <spatial-book-mark-item v-else :bookmark = "bookmark" />
       </template>
 
       <div
-        class="content-bookmarks"
-        style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
+        class = "content-bookmarks"
+        style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
         <span
           style = "font-weight: bold; color: #ffffff"
