@@ -4,12 +4,12 @@
 -->
 
 <template>
-  <div v-disabled="loading">
+  <div v-disabled = "loading">
 
     <!-- LOADING INDICATOR -->
-    <bar-loader :loading="loading" />
+    <bar-loader :loading = "loading" />
 
-    <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
+    <h3 class = "skin-color g3w-wms-panel-title">{{title}}</h3>
 
     <helpdiv
       v-if     = "abstract"
