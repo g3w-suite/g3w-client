@@ -11,37 +11,37 @@
     :class = "{'mobile': addClassMobile()}"
   >
     <div
-      v-if="showheader"
-      class="usermessage-header-content"
+      v-if  = "showheader"
+      class = "usermessage-header-content"
     >
       <i
-        class="usermessage-header-icontype"
-        :class="g3wtemplate.getFontClass(type)">
+        class  = "usermessage-header-icontype"
+        :class = "g3wtemplate.getFontClass(type)">
       </i>
-      <div class="usermessage-header-title">
-        <slot name="header">
+      <div class = "usermessage-header-title">
+        <slot name = "header">
           <h4
             v-if = "title"
             v-t  = "title">
           </h4>
           <h4  v-else> {{ type.toUpperCase() }}</h4>
           <h5
-            v-if="subtitle"
-            class="usermessage-header-subtitle"
-            v-t="subtitle">
+            v-if  = "subtitle"
+            class = "usermessage-header-subtitle"
+            v-t   = "subtitle">
           </h5>
         </slot>
       </div>
-      <div class="usermessage-header-right">
+      <div class = "usermessage-header-right">
         <div
           v-if   = "!autoclose && closable"
           @click = "closeUserMessage"
         >
-          <i class="usermessage-header-right-item" :class="g3wtemplate.getFontClass('close')"></i>
+          <i class = "usermessage-header-right-item" :class = "g3wtemplate.getFontClass('close')"></i>
         </div>
       </div>
     </div>
-    <slot name="body">
+    <slot name = "body">
       <div
         v-if  = "textMessage"
         class = "usermessage-message"
@@ -52,7 +52,7 @@
         v-t   = "message"
       ></div>
     </slot>
-    <slot name="footer"></slot>
+    <slot name = "footer"></slot>
   </div>
 </template>
 
