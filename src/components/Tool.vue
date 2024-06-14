@@ -32,16 +32,16 @@
       style  = "position:relative"
     >
 
-      <bar-loader :loading="tool.loading"/>
+      <bar-loader :loading = "tool.loading"/>
 
-      <i :class="g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
+      <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
 
-      <span v-if="tool.html" >
-        <i :class="tool.html.icon"></i>
+      <span v-if = "tool.html" >
+        <i :class = "tool.html.icon"></i>
         {{ tool.html.text || tool.name}}
       </span>
 
-      <span v-else v-t="tool.name"></span>
+      <span v-else v-t = "tool.name"></span>
 
       <span
         v-if        = "tool.state.type"  
@@ -49,7 +49,7 @@
         class       = "tool_type"
         :style      = "{ color: ({ alert: 'red', info: 'blue', warning: 'orange'})[tool.state.type] }"
       >
-        <i :class="g3wtemplate.getFontClass(tool.state.type)"></i>
+        <i :class = "g3wtemplate.getFontClass(tool.state.type)"></i>
       </span>
 
     </div>
@@ -58,7 +58,7 @@
 
 <script>
 import ApplicationService from 'services/application';
-import GUI from 'services/gui';
+import GUI                from 'services/gui';
 
 export default {
   name: "g3w-tool",
