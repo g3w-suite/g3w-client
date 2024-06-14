@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div style="display: flex; justify-content: space-between">
+  <div style = "display: flex; justify-content: space-between">
     <i
       v-if                      = "show"
       :class                    = "g3wtemplate.getFontClass(`resize-${this.type}`)"

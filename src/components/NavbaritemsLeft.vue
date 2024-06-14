@@ -1,6 +1,6 @@
 <template>
-  <ul class="nav navbar-nav navbar-left">
-    <li v-for="item in items" :is="item" :key="item.id"></li>
+  <ul class = "nav navbar-nav navbar-left">
+    <li v-for = "item in items" :is = "item" :key = "item.id"></li>
   </ul>
 </template>
 
@@ -16,7 +16,3 @@
     }
   }
 </script>
-
-<style scoped>
-
-</style>

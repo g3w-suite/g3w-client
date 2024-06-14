@@ -4,13 +4,13 @@
 -->
 
 <template>
-  <div ref="datimecontainer">
+  <div ref = "datimecontainer">
     <label
       :for  = "id"
       style = "display: block"
       v-t   = "label">
     </label>
-    <div class="form-group">
+    <div class = "form-group">
       <div
         class = 'input-group date'
         ref   = "iddatetimepicker">
@@ -20,7 +20,7 @@
           type    = 'text'
           @change = "changeInput"
           class   = "form-control" />
-        <span class="input-group-addon caret">
+        <span class = "input-group-addon caret">
           <span
             class  = "datetimeinput"
             :class = "g3wtemplate.getFontClass('time' === type ? 'time': 'calendar')">

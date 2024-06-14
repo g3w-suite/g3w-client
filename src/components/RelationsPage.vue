@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="query-relations-page">
+  <div class = "query-relations-page">
     <component
       :loading         = "loading"
       @save-relation   = "saveRelations"

@@ -16,12 +16,12 @@
       class       = "menu-item"
       @click.stop = "showPanel(search)"
     >
-      <i :class="g3wtemplate.getFontClass('empty-circle')"></i>
+      <i :class = "g3wtemplate.getFontClass('empty-circle')"></i>
       <span>{{ search.name }}</span>
     </li>
 
-    <li v-for="searchtool in state.tools">
-      <g3w-tool :tool="searchtool" />
+    <li v-for = "searchtool in state.tools">
+      <g3w-tool :tool = "searchtool" />
     </li>
 
     <!-- ORIGINAL SOURCE: src/components/QueryBuilderSearch.vue@v3.9.3 -->
@@ -29,58 +29,31 @@
       v-for = "(search, i) in state.querybuildersearches"
       :key  = "search.id"
     >
-      <div style="position:relative">
-        <bar-loader :loading="search.qbloading"/>
-        <div class="querybuliserch-tools">
-          <i :class="g3wtemplate.getFontClass('filter')"></i>
+      <div style = "position:relative" @click = "edit(search)">
+        <bar-loader :loading = "search.qbloading"/>
+        <div class = "search-tools">
+          <span
+            class          = "search-action skin-tooltip-bottom"
+            :class         = "g3wtemplate.getFontClass('trash')"
+            data-placement = "bottom"
+            data-toggle    = "tooltip"
+            data-container = "body"
+            v-t-tooltip    = "'sdk.querybuilder.search.delete'"
+            @click.stop    = "remove(search, i)"
+            style          = "color: red;margin-right: 5px;"
+          ></span>
           <span>{{ search.name }}</span>
           <div>
             <span
-              class          = "icon-search-action skin-tooltip-bottom"
-              data-placement = "bottom"
-              data-toggle    = "tooltip"
-              data-container = "body"
-              v-t-tooltip    = "'sdk.querybuilder.search.run'"
-            >
-              <i @click.stop="run(search)" style="color: green;" :class="g3wtemplate.getFontClass('run')"></i>
-            </span>
-            <span
-              class          = "icon-search-action skin-tooltip-bottom"
-              data-placement = "bottom"
-              data-toggle    = "tooltip"
-              data-container = "body"
-              v-t-tooltip    = "'sdk.querybuilder.search.info'"
-            >
-              <i @click.stop="search.qbshowinfo=!search.qbshowinfo" style="color: #FFF;" :class="g3wtemplate.getFontClass('info')"></i>
-            </span>
-            <span
-              class          = "icon-search-action skin-tooltip-bottom"
-              data-placement = "bottom"
-              data-toggle    = "tooltip"
-              data-container = "body"
-              v-t-tooltip    = "'sdk.querybuilder.search.edit'"
-            >
-              <i @click.stop="edit(search)" style="color: #307095;" :class="g3wtemplate.getFontClass('pencil')"></i>
-            </span>
-            <span
-              class          = "icon-search-action skin-tooltip-bottom"
-              data-placement = "bottom"
-              data-toggle    = "tooltip"
-              data-container = "body"
-              v-t-tooltip    = "'sdk.querybuilder.search.delete'"
-            >
-              <i @click.stop="remove(search, i)" style="color: red;" :class="g3wtemplate.getFontClass('trash')"></i>
-            </span>
-          </div>
-        </div>
-        <div class="querybuildsearch-info" v-show="search.qbshowinfo">
-          <div>
-            <span style="font-weight: bold; white-space: pre">LAYER: </span>
-            <span style="white-space: pre-wrap;">{{ search.layerName }}</span>
-          </div>
-          <div>
-            <span style="font-weight: bold;">EXPRESSION: </span>
-            <span style="white-space: pre-wrap;">{{ search.filter }}</span>
+            class          = "search-action skin-tooltip-bottom"
+            :class         = "g3wtemplate.getFontClass('run')"
+            data-placement = "bottom"
+            data-toggle    = "tooltip"
+            data-container = "body"
+            v-t-tooltip    = "'sdk.querybuilder.search.run'"
+            @click.stop    = "run(search)"
+            style          = "color: green;"
+          ></span>
           </div>
         </div>
       </div>
@@ -155,10 +128,10 @@ export default {
         name:          search.name,
         layerId:       search.layerId,
         filter:        search.filter,
-        title:         'Query Builder',
+        title:         t('sdk.querybuilder.title'),
         show:          true,
       };
-      opts.internalPanel = new (Vue.extend(vueComp))(opts);
+      opts.internalPanel = new (Vue.extend(vueComp))({ options: opts });
       new Panel(opts);
     },
 
@@ -188,32 +161,35 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    $('.icon-search-action').tooltip();
+    $('.search-action').tooltip();
   },
 
 };
 </script>
 
 <style scoped>
-.querybuliserch-tools {
+li.menu-item {
+  padding-right: 20px !important;
+}
+li.menu-item span {
+  display: inline-flex;
+  white-space: pre-wrap;
+}
+.search-action {
+  text-shadow: 0 2px 5px rgba(0,0,0,.3);
+  padding: 0 4px;
+}
+#g3w-search li i {
+  width: 20px;
+}
+.search-tools {
   display:flex;
   align-items: baseline;
 }
-.querybuliserch-tools > i {
-  margin-right: 14px;
-  margin-left: 1px;
-}
-.querybuliserch-tools > span {
+.search-tools > span {
   white-space: pre-wrap;
 }
-.querybuliserch-tools > div {
+.search-tools > div {
   margin-left: auto;
-}
-.querybuliserch-tools > div i {
-  padding: 3px;
-  font-size: 1.3em;
-}
-.querybuildsearch-info {
-  margin-top: 5px; 
 }
 </style>

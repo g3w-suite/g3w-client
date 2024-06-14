@@ -146,7 +146,7 @@
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
-      <div v-if="(!isGroup && layerstree.selection)">
+      <div v-if = "(!isGroup && layerstree.selection)">
 
         <!-- CLEAR SELECTION -->
         <span
@@ -177,7 +177,7 @@
 
         <!-- SAVE FILTER  -->
         <span
-          v-if                         = "!layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
+          v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           class                        = "action-button skin-tooltip-left selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
@@ -205,7 +205,7 @@
       v-show ="layerstree.expanded"
     >
 
-      <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
+      <span v-for = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId">
 
         <catalog-tristate-tree
           :root                      = "false"
@@ -229,6 +229,7 @@
 <script>
 import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationState            from "store/application-state";
 import GUI                         from 'services/gui';
 import ClickMixin                  from 'mixins/click';
 import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
@@ -275,7 +276,8 @@ export default {
       isGroupChecked: true,
       controltoggled: false,
       n_childs:       null,
-      filtered:       false
+      filtered:       false,
+      logged:         undefined !== ApplicationState.user.id, //@since 3.10.0
     }
   },
 
@@ -287,7 +289,7 @@ export default {
      * @since 3.8.0
      */
     showfeaturecount() {
-      return "undefined" !== typeof this.layerstree.featurecount;
+      return undefined !== this.layerstree.featurecount;
     },
 
     showLegendLayer() {

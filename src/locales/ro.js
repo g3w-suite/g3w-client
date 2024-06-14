@@ -17,7 +17,7 @@ export default {
         nofilter: "Eliminare Filtrare",
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
-        show_features_on_map: "Arată entitățile vizibile în cadrul hărții",
+        show_features_on_map: "Rezultatele se actualizează când harta este deplasată",
         savefilter: "Salvează Filtrul",
         filterName: "Nume Filtru",
       }
@@ -192,7 +192,8 @@ export default {
         download_xls: "Descarcă XLS",
         download_pdf: "Descarcă PDF",
         show_chart: "Arată Diagrama",
-        atlas: "Tipărire Atlas"
+        atlas: "Tipărire Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -542,8 +543,8 @@ export default {
     dataTable: {
       previous: "Anteriorul",
       next: "Următorul",
-      lengthMenu: "Arată _MENU_",
-      info: "Arată _START_ până la _END_ din _TOTAL_ de intrări",
+      lengthMenu: "Afișați _MENU_ valori pe pagină",
+      info: "_TOTAL_ rezultate",
       no_data: "Fără date",
       nodatafilterd: "Niciun rezultat",
       infoFiltered: "(filtrat din _MAX_ de rezultate totale)"

@@ -100,7 +100,6 @@ export const FILTER_OPERATORS = {
   gt:       '>',
   lt:       '<',
   IN:       'IN',
-  'NOT IN': 'NOT IN',
   LIKE:     'LIKE',
   ILIKE:    'ILIKE',
   AND:      'AND',
@@ -140,50 +139,50 @@ export const FILTER_EXPRESSION_OPERATORS = {
  * @type {Object<string, string>}
  */
 export const GEOMETRY_TYPES = {
-  POINT: "Point",
-  POINTZ: "PointZ",
-  POINTM: "PointM",
-  POINTZM: "PointZM",
-  POINT25D: "Point25D",
-  MULTIPOINT: "MultiPoint",
-  MULTIPOINTZ: "MultiPointZ",
-  MULTIPOINTM: "MutliPointM",
-  MULTIPOINTZM: "MultiPointZM",
-  MULTIPOINT25D: "MultiPoint25D",
-  LINESTRING: "LineString", // QGis definition .GeometryType, Line intead di Linestring.
-  LINESTRINGZ: "LineStringZ",
-  LINESTRINGM: "LineStringM",
-  LINESTRINGZM: "LineStringZM",
-  LINESTRING25D: "LineString25D",
-  LINE: "Line",
-  LINEZ: "LineZ",
-  LINEM: "LineM",
-  LINEZM: "LineZM",
-  LINE25D: "Line25D",
-  MULTILINESTRING: "MultiLineString",
-  MULTILINESTRINGZ: "MultiLineStringZ",
-  MULTILINESTRINGM: "MultiLineStringM",
-  MULTILINESTRINGZM: "MultiLineStringZM",
-  MULTILINESTRING25D: "MultiLineString25D",
-  MULTILINE:"MultiLine",
-  MULTILINEZ:"MultiLineZ",
-  MULTILINEM:"MultiLineM",
-  MULTILINEZM:"MultiLineZM",
-  MULTILINE25D:"MultiLine25D",
-  POLYGON: "Polygon",
-  POLYGONZ: "PolygonZ",
-  POLYGONM: "PolygonM",
-  POLYGONZM: "PolygonZM",
-  POLYGON25D: "Polygon25D",
-  MULTIPOLYGON: "MultiPolygon",
-  MULTIPOLYGONZ: "MultiPolygonZ",
-  MULTIPOLYGONM: "MultiPolygonM",
-  MULTIPOLYGONZM: "MultiPolygonZM",
-  MULTIPOLYGON25D: "MultiPolygon25D",
-  GEOMETRYCOLLECTION: "GeometryCollection",
-  GEOMETRYCOLLECTIONZ: "GeometryCollectionZ",
-  GEOMETRYCOLLECTIONM: "GeometryCollectionM",
-  GEOMETRYCOLLECTIONZM: "GeometryCollectionZM",
+  POINT:                 "Point",
+  POINTZ:                "PointZ",
+  POINTM:                "PointM",
+  POINTZM:               "PointZM",
+  POINT25D:              "Point25D",
+  MULTIPOINT:            "MultiPoint",
+  MULTIPOINTZ:           "MultiPointZ",
+  MULTIPOINTM:           "MutliPointM",
+  MULTIPOINTZM:          "MultiPointZM",
+  MULTIPOINT25D:         "MultiPoint25D",
+  LINESTRING:            "LineString", // QGis definition .GeometryType, Line intead di Linestring.
+  LINESTRINGZ:           "LineStringZ",
+  LINESTRINGM:           "LineStringM",
+  LINESTRINGZM:          "LineStringZM",
+  LINESTRING25D:         "LineString25D",
+  LINE:                  "Line",
+  LINEZ:                 "LineZ",
+  LINEM:                 "LineM",
+  LINEZM:                "LineZM",
+  LINE25D:               "Line25D",
+  MULTILINESTRING:       "MultiLineString",
+  MULTILINESTRINGZ:      "MultiLineStringZ",
+  MULTILINESTRINGM:      "MultiLineStringM",
+  MULTILINESTRINGZM:     "MultiLineStringZM",
+  MULTILINESTRING25D:    "MultiLineString25D",
+  MULTILINE:             "MultiLine",
+  MULTILINEZ:            "MultiLineZ",
+  MULTILINEM:            "MultiLineM",
+  MULTILINEZM:           "MultiLineZM",
+  MULTILINE25D:          "MultiLine25D",
+  POLYGON:               "Polygon",
+  POLYGONZ:              "PolygonZ",
+  POLYGONM:              "PolygonM",
+  POLYGONZM:             "PolygonZM",
+  POLYGON25D:            "Polygon25D",
+  MULTIPOLYGON:          "MultiPolygon",
+  MULTIPOLYGONZ:         "MultiPolygonZ",
+  MULTIPOLYGONM:         "MultiPolygonM",
+  MULTIPOLYGONZM:        "MultiPolygonZM",
+  MULTIPOLYGON25D:       "MultiPolygon25D",
+  GEOMETRYCOLLECTION:    "GeometryCollection",
+  GEOMETRYCOLLECTIONZ:   "GeometryCollectionZ",
+  GEOMETRYCOLLECTIONM:   "GeometryCollectionM",
+  GEOMETRYCOLLECTIONZM:  "GeometryCollectionZM",
   GEOMETRYCOLLECTION25D: "GeometryCollection25D"
 };
 
@@ -473,6 +472,8 @@ export const FONT_AWESOME_ICONS = {
   bars: "fas fa-bars",
   uncheck: "far fa-square",
   check: "far fa-check-square",
+  /** @since 3.10.0 */
+  checkmark: "fa fa-check",
   filluncheck: "fas fa-square",
   table: "fas fa-table",
   trash: "fas fa-trash",
@@ -573,22 +574,16 @@ export const FONT_AWESOME_ICONS = {
   crop: "fas fa-crop-alt",
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   bookmark: "fas fa-bookmark",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   reply: "fas fa-reply",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   share: "fas fa-share",
-
+  /** @since 3.10.0 */
+  'share-alt': 'fa fa-share-alt',
+  /**@since 3.10.0 */
+  'external-link': "fa fa-external-link-alt",
 };
 
 /**

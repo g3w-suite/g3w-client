@@ -7,22 +7,22 @@
   <div
     class = "query-relations"
   >
-    <div class="header skin-background-color lighten">
-      <div class="skin-color-dark">
+    <div class = "header skin-background-color lighten">
+      <div class = "skin-color-dark">
         <span
           style   = "font-size: 1.1em;"
           v-t:pre = "'sdk.relations.list_of_relations_feature'"
         > </span>
-        <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }}</span>
+        <span v-for = "info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }}</span>
       </div>
     </div>
-    <div class="query-relations-content">
+    <div class = "query-relations-content">
       <div
         v-for       = "relation in relations"
         @click.stop = "showRelation(relation)"
         class       = "skin-border-color relation-grid-item"
       >
-        <span class="skin-color g3w-long-text">{{ relation.name }}</span>
+        <span class = "skin-color g3w-long-text">{{ relation.name }}</span>
       </div>
     </div>
   </div>

@@ -4,12 +4,12 @@
 -->
 
 <template>
-  <div style="width:100%">
+  <div style = "width:100%">
     <h5
       class = "skin-background-color g3w-polygonattributes-types-title"
       v-t   = "'sdk.mapcontrols.querybypolygon.download.title'">
     </h5>
-    <div class="g3w-polygonattributes-types-content">
+    <div class = "g3w-polygonattributes-types-content">
       <select
         ref       = "g3w_select_feature_featurepolygon"
         style     = "width: 100%"
@@ -30,7 +30,7 @@
         class       = "btn skin-button"
         @click.stop = config.download(type)
       >
-        <span :class="g3wtemplate.getFontClass('download')"></span>
+        <span :class = "g3wtemplate.getFontClass('download')"></span>
       </button>
     </div>
   </div>

@@ -7,6 +7,7 @@ import {
 import ProjectsRegistry                         from 'store/projects';
 import DataRouterService                        from 'services/data';
 import CatalogLayersStoresRegistry              from 'store/catalog-layers';
+import ApplicationState                         from "store/application-state";
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 import ApplicationService                       from 'services/application';
@@ -92,6 +93,7 @@ class QueryResultsService extends G3WObject {
      * Set reactive state
      */
     this.state = {
+      logged: undefined !== ApplicationState.user.id,
 
       /**
        * @FIXME add description
@@ -228,11 +230,10 @@ class QueryResultsService extends G3WObject {
     this.resultsQueryLayer = new ol.layer.Vector({
       source: new ol.source.Vector(),
       style(feature) {
-        const fill   = new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.7)' });
-        const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
+        const stroke = new ol.style.Stroke({ color: 'black' });
         if ('Point' === feature.getGeometry().getType()) {
           return new ol.style.Style({
-            text: new ol.style.Text({ fill, stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
+            text: new ol.style.Text({ fill: stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
           });
         }
         return new ol.style.Style({ stroke });
@@ -2206,7 +2207,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: 'link_zoom_to_fid',
         download: false,
-        class: GUI.getFontClass('link'),
+        class: GUI.getFontClass('share-alt'),
         hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
         hint_change: {
           hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',
@@ -2224,7 +2225,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: 'editing',
         class: GUI.getFontClass('pencil'),
-        hint: 'Editing',
+        hint: 'sdk.tooltips.editing',
         cbk: (layer, feature) => { this.editFeature({ layer, feature }) }
       });
   }

@@ -7,7 +7,7 @@
     id    = "map_footer_right"
     style ="display: flex;"
   >
-    <div id="scale-control"></div>
+    <div id = "scale-control"></div>
 
     <div
       v-if                   = "mouse.switch_icon && !isMobile()"
@@ -54,7 +54,6 @@
     <div
       id                     = "permalink"
       v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
-      style                  = "background-color: #eeeeee"
     >
       <span
         class       = "skin-color-dark"
@@ -120,3 +119,27 @@
     }
   };
 </script>
+
+<style scoped>
+#permalink {
+  font-weight: bold;
+  font-size: 1.2em;
+  padding: 5px;
+  cursor: pointer;
+  background-color: #eee;
+}
+#switch-mouse-coordinate {
+  display: flex;
+  height: 100%;
+  margin-left: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+#switch-mouse-coordinate span {
+  padding: 3px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+#map_footer_right {
+  flex-shrink: 0;
+}
+</style>

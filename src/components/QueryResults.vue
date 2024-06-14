@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div id="search-results" class="queryresults-wrapper">
+  <div id = "search-results" class = "queryresults-wrapper">
     <div
       v-if  = "info.message"
       class = "skin-color"
@@ -17,8 +17,8 @@
       </span>
       <span>{{info.message}}</span>
     </div>
-    <div class="queryresults-container">
-      <template v-if="state.layers.length">
+    <div class = "queryresults-container">
+      <template v-if = "state.layers.length">
         <ul
           v-if  = "hasLayers"
           class = "queryresults"
@@ -26,19 +26,31 @@
           style = "position: relative"
         >
           <li
-            v-show="showLayer(layer)"
-            v-for="layer in state.layers"
+            v-show = "showLayer(layer)"
+            v-for = "layer in state.layers"
           >
-            <bar-loader :loading="layer.loading"/>
-            <div class="box box-primary">
+            <bar-loader :loading = "layer.loading"/>
+            <div class = "box box-primary">
               <div
-                class="box-header with-border"
-                :class="{'mobile': isMobile()}"
-                data-widget="collapse"
+                class       = "box-header with-border"
+                :class      = "{'mobile': isMobile()}"
+                data-widget = "collapse"
               >
                 <div
                   class  = "box-title query-layer-title"
-                  :style = "{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
+                  :style = "{fontSize: isMobile() && '1em !important'}">
+                  <span
+                    v-if                    = "!layer.external"
+                    @click.stop             = "openAttributeTable(layer)"
+                    class                   = "action-button"
+                    v-t-tooltip:left.create = "'catalog_items.contextmenu.open_attribute_table'"
+                  >
+                    <span
+                      class  = "action-button-icon"
+                      :class = "g3wtemplate.getFontClass('list')"
+                    ></span>
+                  </span>
+                  {{ layer.title }}
                   <span
                     v-show = "!layer.rawdata"
                     class  = "query-layer-feature-count">({{layer.features.length}})</span>
@@ -48,8 +60,8 @@
                   @click.stop = ""
                 >
                   <!-- info format layer component -->
-                  <infoformats :layer="layer"/>
-                  <template v-if="layer.features.length > 1">
+                  <infoformats :layer = "layer"/>
+                  <template v-if = "layer.features.length > 1">
                     <span
                       v-if                    = "layer.hasgeometry"
                       @click.stop             = "zoomToLayerFeaturesExtent(layer)"
@@ -74,7 +86,7 @@
                       </span>
                     </span>
                     <!--        DOWNLOAD        -->
-                    <template v-if="1 === getLayerDownloads(layer.downloads).length ">
+                    <template v-if = "1 === getLayerDownloads(layer.downloads).length ">
                       <span
                         class                   = "action-button"
                         :class                  = "{'toggled': layer.downloadformats.active}"
@@ -88,7 +100,7 @@
                         ></span>
                       </span>
                     </template>
-                    <template v-else-if="getLayerDownloads(layer.downloads).length > 1">
+                    <template v-else-if = "getLayerDownloads(layer.downloads).length > 1">
                       <span
                         class                   = "action-button"
                         :class                  = "{'toggled': layer.downloadformats.active}"
@@ -134,7 +146,7 @@
                     ></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-if="!layer.external && layer.selection.active">
+                  <template v-if = "!layer.external && layer.selection.active">
                     <span
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button skin-tooltip-left"
@@ -149,7 +161,8 @@
                     <!-- @since 3.9 add save -->
                     <span
                       v-if                    = "
-                        layer.filter.active
+                        state.logged
+                        && layer.filter.active
                         && (null === layer.filter.current || layer.selection.active)
                       "
                       @click.stop             = "saveFilter(layer)"
@@ -175,7 +188,7 @@
                   </i>
                 </button>
               </div>
-              <template v-if="state.layeractiontool[layer.id].component">
+              <template v-if = "state.layeractiontool[layer.id].component">
                 <div
                   class  = "g3w-layer-action-tools with-border"
                   style  = "padding: 5px"
@@ -192,8 +205,8 @@
                 :is   = "component"
                 :layer = "layer"/>
               <!--   End custom layer component         -->
-              <div class="box-body" :class="{'mobile': isMobile()}">
-                <template v-if="layer.rawdata">
+              <div class = "box-body" :class = "{'mobile': isMobile()}">
+                <template v-if = "layer.rawdata">
                   <div
                     class  = "queryresults-text-html"
                     :class = "{text: layer.infoformat === 'text/plain'}"
@@ -201,10 +214,10 @@
                   </div>
                 </template>
                 <!-- CASE FORM STRUCTURE LAYER-->
-                <template v-else-if="hasFormStructure(layer)">
-                  <table class="table" :class="{'mobile': isMobile()}">
+                <template v-else-if = "hasFormStructure(layer)">
+                  <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody>
-                      <template v-if="feature.show" v-for="(feature, index) in layer.features">
+                      <template v-if = "feature.show" v-for = "(feature, index) in layer.features">
                         <header-feature-actions-body
                           :colspan                 = "getColSpan(layer)"
                           :actions                 = "state.layersactions[layer.id]"
@@ -218,9 +231,9 @@
                           :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
                           :attributesSubset        = "attributesSubset"
                           :getLayerField           = "getLayerField"/>
-                          <tr class="g3w-feature-result-action-tools">
-                            <template v-if="state.currentactiontools[layer.id][index]">
-                              <td :colspan="getColSpan(layer)">
+                          <tr class = "g3w-feature-result-action-tools">
+                            <template v-if = "state.currentactiontools[layer.id][index]">
+                              <td :colspan = "getColSpan(layer)">
                                 <component
                                   :is           = "state.currentactiontools[layer.id][index]"
                                   :colspan      = "getColSpan(layer)"
@@ -236,8 +249,8 @@
                             v-if  = "!hasLayerOneFeature(layer)"
                             style = "font-weight: bold; text-align: center" >
                             <td
-                              v-for="(attribute, index) in attributesSubset(layer)"
-                              class="centered"
+                              v-for = "(attribute, index) in attributesSubset(layer)"
+                              class = "centered"
                             >
                               {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
                             </td>
@@ -253,7 +266,7 @@
                             </td>
                           </tr>
                         <header-feature-body
-                          v-if="!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
+                          v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                           :actions                 = "state.layersactions[layer.id]"
                           :layer                   = "layer"
                           :feature                 = "feature"
@@ -265,8 +278,8 @@
                           :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
                           :attributesSubset        = "attributesSubset"
                           :getLayerField           = "getLayerField"/>
-                        <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
-                          <td :colspan="getColSpan(layer)">
+                        <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
+                          <td :colspan = "getColSpan(layer)">
                             <component
                              :is      = "component"
                              :layer   = "layer"
@@ -290,9 +303,9 @@
                           </td>
                         </tr>
                         <tr
-                          v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')"
+                          v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')"
                         >
-                          <td :colspan="getColSpan(layer)">
+                          <td :colspan = "getColSpan(layer)">
                             <component
                               :is      = "component"
                               :layer   = "layer"
@@ -305,7 +318,7 @@
                 </template>
                 <template v-else>
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
-                  <table class="table" :class="{'mobile': isMobile()}">
+                  <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody
                       v-if  = "feature.show"
                       v-for = "(feature, index) in layer.features"
@@ -324,9 +337,9 @@
                         :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
                         :attributesSubset        = "attributesSubset"
                         :getLayerField           = "getLayerField"/>
-                      <tr class="g3w-feature-result-action-tools">
-                        <template v-if="state.currentactiontools[layer.id][index]">
-                          <td :colspan="getColSpan(layer)">
+                      <tr class = "g3w-feature-result-action-tools">
+                        <template v-if = "state.currentactiontools[layer.id][index]">
+                          <td :colspan = "getColSpan(layer)">
                             <component
                               :is           = "state.currentactiontools[layer.id][index]"
                               :colspan      = "getColSpan(layer)"
@@ -341,8 +354,8 @@
                         v-if  = "!hasLayerOneFeature(layer)"
                         style = "font-weight: bold; text-align: center" >
                         <td
-                          v-for="(attribute, index) in attributesSubset(layer)"
-                          class="centered"
+                          v-for = "(attribute, index) in attributesSubset(layer)"
+                          class = "centered"
                         >
                           {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
                         </td>
@@ -370,8 +383,8 @@
                         :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
                         :attributesSubset        = "attributesSubset"
                         :getLayerField           = "getLayerField"/>
-                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
-                        <td :colspan="getColSpan(layer)">
+                      <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
+                        <td :colspan = "getColSpan(layer)">
                           <component
                             class    = "box-body"
                             :is      = "component"
@@ -388,20 +401,20 @@
                           :colspan              = "getColSpan(layer)"
                           :feature-html-content = "`${layer.id}_${index}`"
                         ><!--@since v3.10.0  Reference to content of feature html response-->
-                          <table class="feature_attributes">
-                            <template v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
-                              <template v-if="isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
+                          <table class = "feature_attributes">
+                            <template v-for = "attribute in layer.attributes.filter(attribute => attribute.show)">
+                              <template v-if = "isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
                                 <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
-                                <template v-for="(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
-                                  <tr v-for="(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style="padding-top:10px; padding-bottom:10px;">
-                                    <td class="attr-label">{{ attribute.label }}.<template v-if="('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
-                                    <td class="attr-value">{{ v2 }}</td>
+                                <template v-for = "(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
+                                  <tr v-for = "(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style = "padding-top:10px; padding-bottom:10px;">
+                                    <td class = "attr-label">{{ attribute.label }}.<template v-if = "('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
+                                    <td class = "attr-value">{{ v2 }}</td>
                                   </tr>
                                 </template>
                               </template>
                               <tr v-else>
-                                <td class="attr-label">{{ attribute.label }}</td>
-                                <td class="attr-value" :attribute="attribute.name">
+                                <td class = "attr-label">{{ attribute.label }}</td>
+                                <td class = "attr-value" :attribute = "attribute.name">
                                   <table-attribute-field-value
                                     :feature = "feature"
                                     :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
@@ -412,8 +425,8 @@
                           </table>
                         </td>
                       </tr>
-                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
-                        <td colspan="getColSpan(layer)">
+                      <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
+                        <td colspan = "getColSpan(layer)">
                           <component
                             class    = "box-body"
                             :is      = "component"
@@ -430,12 +443,12 @@
                 v-for  = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')"
                 class  = "box-body"
                 :class = "{'mobile': isMobile()}" >
-                <component :is="component" :layer="layer"/>
+                <component :is = "component" :layer = "layer"/>
               </div>
             </div>
           </li>
-          <li v-for="component in state.components">
-            <component :is="component" @showresults="showResults()" />
+          <li v-for = "component in state.components">
+            <component :is = "component" @showresults="showResults()" />
           </li>
         </ul>
       </template>
@@ -458,12 +471,13 @@
 </template>
 
 <script>
-  import { fieldsMixin }            from 'mixins';
-  import TableAttributeFieldValue   from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import InfoFormats                from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody          from 'components/QueryResultsHeaderFeatureBody.vue';
-  import HeaderFeatureActionsBody   from "components/QueryResultsHeaderFeatureActionsBody.vue";
-  import { toRawType, throttle }    from 'utils';
+  import CatalogLayersStoresRegistry from 'store/catalog-layers';
+  import { fieldsMixin }             from 'mixins';
+  import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
+  import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
+  import HeaderFeatureBody           from 'components/QueryResultsHeaderFeatureBody.vue';
+  import HeaderFeatureActionsBody    from "components/QueryResultsHeaderFeatureActionsBody.vue";
+  import { toRawType, throttle }     from 'utils';
 
   const MAX_SUBSET_LENGTH           = 3;
   const headerExpandActionCellWidth = 10;
@@ -834,6 +848,13 @@
         return !this.isVue(field) && this.isSimple(field) && 'Object' === toRawType(field.value);
       },
 
+      /**
+       * @since 3.10.0
+       */
+      openAttributeTable(layer) {
+        CatalogLayersStoresRegistry.getLayerById(layer.id).openAttributeTable({ perc: 100 });
+      },
+
     },
 
     watch: {
@@ -892,5 +913,8 @@
 <style scoped>
 .feature_attributes tr {
   line-height: 1.8em;
+}
+.featurebox-body + tr {
+  border-top: 2px groove #000;
 }
 </style>

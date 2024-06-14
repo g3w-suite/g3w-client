@@ -4,20 +4,24 @@
 -->
 
 <template>
-  <ul id="print" class="treeview-menu">
+  <ul id = "print" class = "treeview-menu">
     <li>
-      <form class="g3w-search-form form-horizonal">
 
-        <div class="box-body">
+      <form
+        v-if  = "state.print.length"
+        class = "g3w-search-form form-horizonal"
+      >
 
-          <transition :duration="500" name="fade">
-            <bar-loader :loading="state.loading" />
+        <div class = "box-body">
+
+          <transition :duration = "500" name = "fade">
+            <bar-loader :loading = "state.loading" />
           </transition>
 
-          <helpdiv message='sdk.print.help' />
+          <helpdiv message = 'sdk.print.help' />
 
           <!-- PRINT TEMPLATE -->
-          <label for="templates" v-t="'sdk.print.template'"></label>
+          <label for = "templates" v-t = "'sdk.print.template'"></label>
           <select
             id             = "templates"
             class          = "form-control"
@@ -26,38 +30,42 @@
             :style         = "{ marginBottom: this.state.atlas && '10px' }"
             @change        = "changeTemplate"
           >
-            <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
+            <option v-for = "print in state.print" :value = "print.name">{{ print.name }}</option>
           </select>
 
-          <template v-if="!state.atlas">
+          <template v-if = "!state.atlas">
 
             <!-- PRINT SCALE -->
-            <label for="scale" v-t="'sdk.print.scale'"></label>
+            <label for = "scale" v-t = "'sdk.print.scale'"></label>
             <select
               id             = "scale"
               class          = "form-control"
               v-disabled     = "!has_maps"
               v-select2      = "'state.scale'"
               :select2_value = "state.scale"
+              :createTag     = "true"
               @change        = "changeScale"
+              ref            = "scales"
             >
-              <option v-for="scale in state.scales" :value="scale.value">{{ scale.label }}</option>
+              <option v-for = "scale in state.scales" :value = "scale.value">{{ scale.label }}</option>
             </select>
 
             <!-- PRINT DPI -->
-            <label for="dpi">dpi</label>
+            <label for = "dpi">dpi</label>
             <select
               id             = "dpi"
               class          = "form-control"
               v-select2      = "'state.dpi'"
               :select2_value = "state.dpi"
+              @change        = "changeDpi"
               :createTag     = "true"
+              ref            = "dpi"
             >
-              <option v-for="dpi in state.dpis">{{ dpi }}</option>
+              <option v-for = "dpi in state.dpis">{{ dpi }}</option>
             </select>
 
             <!-- PRINT ROTATION -->
-            <label for="rotation" v-t="'sdk.print.rotation'"></label>
+            <label for = "rotation" v-t = "'sdk.print.rotation'"></label>
             <input
               id         = "rotation"
               class      = "form-control"
@@ -70,14 +78,14 @@
             />
 
             <!-- PRINT FORMAT -->
-            <label for="format" v-t="'sdk.print.format'"></label>
+            <label for = "format" v-t = "'sdk.print.format'"></label>
             <select
               id             = "format"
               class          = "form-control"
               v-select2      = "'state.format'"
               :select2_value = "state.format"
             >
-              <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
+              <option v-for = "format in state.formats" :value = "format.value">{{ format.label }}</option>
             </select>
 
           </template>
@@ -91,16 +99,16 @@
           >
             <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
             <template v-if = "has_autocomplete">
-              <label  for="print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
-              <select id="print_atlas_autocomplete" :name="state.atlas.field_name" class="form-control"></select>
+              <label  for = "print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
+              <select id = "print_atlas_autocomplete" :name = "state.atlas.field_name" class = "form-control"></select>
             </template>
             <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
             <template v-else>
               <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
-              <input class="form-control" v-model="atlas_values" @keydown.space.prevent>
+              <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
               <div id = "fid-print-atals-instruction">
-                <div id = "fids_intruction"      v-t="'sdk.print.fids_instruction'"></div>
-                <div id = "fids_examples_values" v-t="'sdk.print.fids_example'"></div>
+                <div id = "fids_intruction"      v-t = "'sdk.print.fids_instruction'"></div>
+                <div id = "fids_examples_values" v-t = "'sdk.print.fids_example'"></div>
               </div>
             </template>
           </div>
@@ -109,13 +117,13 @@
             v-if  = "state.labels && state.labels.length > 0"
             class = "print-labels-content"
           >
-            <span class="skin-color" v-t="'sdk.print.labels'"></span>
-            <div class="labels-input-content">
+            <span class = "skin-color" v-t = "'sdk.print.labels'"></span>
+            <div class = "labels-input-content">
               <span
                 v-for = "label in state.labels"
                 :key  = "label.id"
               >
-                <label :for="`g3w_label_id_input_${label.id}`"> {{ label.id }}</label>
+                <label :for = "`g3w_label_id_input_${label.id}`"> {{ label.id }}</label>
                 <input
                   :id     = "`g3w_label_id_input_${label.id}`"
                   class   = "form-control"
@@ -127,7 +135,7 @@
 
         </div>
 
-        <div class="box-footer">
+        <div class = "box-footer">
           <span>
             <button
               id                  = "printbutton"
@@ -141,6 +149,16 @@
         </div>
 
       </form>
+
+      <div style = "padding: 1em;text-align: center;">
+        <b><a
+            :href  = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
+            target = "_blank"
+            title  = "QGIS Docs">
+          <i :class = "g3wtemplate.getFontClass('external-link')"></i> Edit in QGIS
+        </a></b>
+      </div>
+
     </li>
   </ul>
 </template>
@@ -205,6 +223,11 @@ export default {
     //in the case of current template is atlas and has field_name
     has_autocomplete() {
       return !!(this.state.atlas && this.state.atlas.field_name);
+    },
+
+    /** @since 3.10.0  */
+    lang() {
+      return ApplicationState.language;
     },
 
   },
@@ -292,7 +315,51 @@ export default {
      * On scale change set print area
      */
     changeScale() {
+
+      try {
+        //check if create new tag value with ':' 1:2300
+        if (this.state.scale.indexOf(':') >= 0) {
+          //get value
+          const scale = Number(this.state.scale.split(':')[1].trim());
+          //set options last tag created by user
+          this.$refs.scales.children[this.$refs.scales.children.length -1].value = scale;
+          //set scale
+          this.state.scale = scale;
+
+        }
+      } catch(e) {
+        console.warn(e);
+        this.state.scale = this.state.scales[0].value;
+      }
+
+      //check if a current scale is a number or has a value more than maximum scale permission
+      if (Number.isNaN(Number(this.state.scale)) || (this.state.scale > this.state.scales[0].value)) {
+        this.state.scale = this.state.scales[0].value;
+      }
+
+      //In case of scale negative or less than minimum scale permission
+      if (this.state.scale < 0) {
+        this.state.scale = this.state.scales[this.state.scales.length - 1].value;
+      }
+
+      //set value
+      $(this.$refs.scales).val(this.state.scale).trigger('change');
+
       if (this.state.scale) { this._setPrintArea(); }
+
+
+    },
+
+    /**
+     * @since 3.10.0
+     */
+    changeDpi() {
+      //check dpi if si a NaN
+      if (Number.isNaN(Number(this.state.dpi))) {
+        this.state.dpi = this.state.dpis[0];
+        //set value
+        $(this.$refs.dpi).val(this.state.dpi).trigger('change');
+      }
     },
 
     /**
@@ -685,6 +752,19 @@ export default {
 };
 </script>
 
+<style>
+#print .select2-container--open {
+  width: 100%;
+}
+#print .select2-container--open input.select2-search__field {
+  color: #555;
+  width: 100%;
+}
+#print.treeview-menu .select2.select2-container {
+  display: block;
+}
+</style>
+
 <style scoped>
 .print-labels-content {
   margin-top: 5px;
@@ -694,22 +774,23 @@ export default {
   font-weight: bold;
   font-size: 1.1em;
   display: block;
-  border-bottom: 2px solid #ffffff;
+  border-bottom: 2px solid #fff;
   margin-bottom: 5px;
 }
 .print-labels-content > .labels-input-content {
   max-height: 120px;
   overflow-y: auto
 }
-.g3w-search-form > .box-footer {
+label {
+  color: #fff;
+}
+.box-footer {
   background-color: transparent;
 }
 #printbutton {
   width:100%;
   font-weight: bold;
-}
-.form-group > label {
-  display: block;
+  background-color: var(--skin-color);
 }
 #fid-print-atals-instruction {
   margin-top: 5px;
@@ -721,10 +802,5 @@ export default {
 #fids_examples_values {
   margin-top: 3px;
   font-weight: bold;
-}
-</style>
-<style>
-#print.treeview-menu .select2.select2-container {
-  display: block;
 }
 </style>

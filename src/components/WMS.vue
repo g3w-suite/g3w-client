@@ -4,34 +4,47 @@
 -->
 
 <template>
-  <ul class="treeview-menu g3w-tools menu-items">
+  <ul class = "treeview-menu g3w-tools menu-items">
 
     <!-- LOADING INDICATOR -->
-    <li v-if="loading">
-      <bar-loader :loading="loading"/>
+    <li v-if = "loading">
+      <bar-loader :loading = "loading"/>
     </li>
 
-    <li class="new_wms_item">
+    <li class = "new_wms_item">
+
+      <!-- WMS URL -->
+      <div class = "wms_url_input_content">
+        <label for = "add_custom_url_wms_input" title = "required">
+          <span>URL</span>
+          <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
+        </label>
+        <a
+          :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
+          target = "_blank"
+          style  = "float: right;"
+          title  = "Docs"
+        >
+          <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+        </a>
+        <input
+          id      = "add_custom_url_wms_input"
+          v-model = "url"
+          class   = "form-control"
+          style   = "width: 100%; color:#000000;"
+          placeholder="http://example.org/?&service=WMS&request=GetCapabilities"
+        />
+      </div>
 
       <!-- WMS NAME -->
-      <div class="wms_url_input_content">
-        <label
-          for = "add_custom_name_url_wms_input"
-          v-t = "'sidebar.wms.panel.label.name'">
+      <div class = "wms_url_input_content">
+        <label for = "add_custom_name_url_wms_input" title = "required">
+          <span v-t = "'sidebar.wms.panel.label.name'"></span>
+          <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
         </label>
         <input
           id      = "add_custom_name_url_wms_input"
           v-model = "id"
-          class   = "form-control"
-          style   = "width: 100%; color:#000000;">
-      </div>
-
-      <!-- WMS URL -->
-      <div class="wms_url_input_content">
-        <label for="add_custom_url_wms_input">URL</label>
-        <input
-          id      = "add_custom_url_wms_input"
-          v-model = "url"
           class   = "form-control"
           style   = "width: 100%; color:#000000;">
       </div>
@@ -44,14 +57,15 @@
           @click.prevent.stop = "addwmsurl"
           class               = "btn btn-block skin-background-color"
         >
-          <i :class="g3wtemplate.getFontClass('plus-square')"></i>
+          <i :class = "g3wtemplate.getFontClass('plus-square')"></i>
+          <span v-t = "'add'"></span>
         </button>
       </div>
 
     </li>
 
     <!-- ERROR NOTICE -->
-    <li v-if="status.error">
+    <li v-if = "status.error">
       <div
         class = "g3w-add-wms-url-message g3w-wmsurl-error"
         v-t   = "'server_error'">
@@ -59,7 +73,7 @@
     </li>
 
     <!-- ERROR NOTICE: "WMS LAYER ALREADY ADDED" -->
-    <li v-else-if="status.added">
+    <li v-else-if = "status.added">
       &#x26A0;&#xFE0F;
       <div
         class = "g3w-add-wms-url-message g3w-wmsurl-already-added"
@@ -67,7 +81,7 @@
       </div>
     </li>
 
-    <li class="skin-border-color" style="background: transparent !important; border-top: 2px solid">
+    <li class = "skin-border-color" style = "background: transparent !important; border-top: 2px solid">
       <div style="max-height: 200px; overflow-y: auto;">
 
         <!-- LIST OF WMS LAYERS (STORED ON SERVER) -->
@@ -104,7 +118,7 @@
           :key  = "id"
           style = "border-bottom: 1px solid #cccccc; padding-bottom: 3px;"
         >
-          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
+          <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
             <!-- WMS NAME -->
             <span
               class = "g3w-long-text"
@@ -546,6 +560,13 @@
     color: inherit;
     font-weight: normal;
     display: inline-block;
+  }
+  #add_custom_url_wms_input::placeholder {
+    font-size: 85%;
+    opacity: .5;
+  }
+  .wms_url_input_content input {
+    padding:1ch;
   }
   .wms_url_input_content{
     margin-bottom: 5px;

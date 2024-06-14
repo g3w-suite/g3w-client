@@ -11,37 +11,37 @@
     :class = "{'mobile': addClassMobile()}"
   >
     <div
-      v-if="showheader"
-      class="usermessage-header-content"
+      v-if  = "showheader"
+      class = "usermessage-header-content"
     >
       <i
-        class="usermessage-header-icontype"
-        :class="g3wtemplate.getFontClass(type)">
+        class  = "usermessage-header-icontype"
+        :class = "g3wtemplate.getFontClass(type)">
       </i>
-      <div class="usermessage-header-title">
-        <slot name="header">
+      <div class = "usermessage-header-title">
+        <slot name = "header">
           <h4
             v-if = "title"
             v-t  = "title">
           </h4>
           <h4  v-else> {{ type.toUpperCase() }}</h4>
           <h5
-            v-if="subtitle"
-            class="usermessage-header-subtitle"
-            v-t="subtitle">
+            v-if  = "subtitle"
+            class = "usermessage-header-subtitle"
+            v-t   = "subtitle">
           </h5>
         </slot>
       </div>
-      <div class="usermessage-header-right">
+      <div class = "usermessage-header-right">
         <div
           v-if   = "!autoclose && closable"
           @click = "closeUserMessage"
         >
-          <i class="usermessage-header-right-item" :class="g3wtemplate.getFontClass('close')"></i>
+          <i class = "usermessage-header-right-item" :class = "g3wtemplate.getFontClass('close')"></i>
         </div>
       </div>
     </div>
-    <slot name="body">
+    <slot name = "body">
       <div
         v-if  = "textMessage"
         class = "usermessage-message"
@@ -52,7 +52,7 @@
         v-t   = "message"
       ></div>
     </slot>
-    <slot name="footer"></slot>
+    <slot name = "footer"></slot>
   </div>
 </template>
 
@@ -98,7 +98,7 @@
     alert:   {},
     tool:    {
       "z-index": ZINDEXES.usermessage.tool,
-      left: "40px"
+      left     : "40px"
     },
     loading: {},
   };
@@ -106,7 +106,7 @@
   export default {
     name: "usermessage",
     props: {
-      id:{},
+      id: {},
       type: {
         type:    String,
         default: "info" // info, warning, alert, tool
@@ -236,6 +236,7 @@
     min-width: 250px;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 3px 3px;
   }
 
   .usermessage-content.mobile {
@@ -248,6 +249,7 @@
     align-items: baseline;
     justify-content: space-between;
     width: 100%;
+    border-bottom: 2px solid #eeeeee;
   }
 
   .usermessage-header-icontype {
@@ -287,7 +289,7 @@
 
   .usermessage-message {
     width: 100%;
-    padding: 0 0 3px 10px;
+    padding: 10px;
     max-height: 100px;
     font-size: 1.1em;
     align-self: flex-start;

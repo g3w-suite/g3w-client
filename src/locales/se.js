@@ -17,7 +17,7 @@ export default {
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        show_features_on_map: "Rezultatele se actualizează când harta este deplasată",
         savefilter: "Spara Filter",
         filterName: "Filternamn",
       }
@@ -192,7 +192,8 @@ export default {
         download_xls: "Ladda XLS-fil",
         download_pdf: "Ladda PDF-fil",
         show_chart: "Visa diagram", //Tero 9.12.2020
-        atlas: "Skriv ut Atlas"
+        atlas: "Skriv ut Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -542,8 +543,8 @@ export default {
     dataTable: {
       previous: "Föregående",
       next: "Nästa",
-      lengthMenu: "Show _MENU_ items",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Visa _MENU_ värden per sida",
+      info: "_TOTAL_ resultat",
       no_data: "Inga uppgifter",
       nodatafilterd: "Inga motsvarande poster hittades",
       infoFiltered: "(filtered from _MAX_ total records)"

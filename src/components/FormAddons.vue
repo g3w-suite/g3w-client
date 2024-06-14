@@ -6,7 +6,7 @@
 <template>
   <span class="form-addons">
     <add-on
-      v-for="addon in addons"
+      v-for      = "addon in addons"
       :key       = "addon.id"
       :id        = "addon.id"
       :title     = "addon.title"

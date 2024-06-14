@@ -6,8 +6,8 @@
 -->
 <template>
   <li
-    @click.stop="$parent.$emit('select', select)"
-    :style="{ opacity: this.disabled ? '0.5' : '1' }"
+    @click.stop = "$parent.$emit('select', select)"
+    :style      = "{ opacity: this.disabled ? '0.5' : '1' }"
   >
     <slot></slot>
   </li>

@@ -3,8 +3,8 @@
   @since 3.9.0
 -->
 <template>
-  <section class="action-choose-layer">
-    <label v-t="config.label"></label>
+  <section class = "action-choose-layer">
+    <label v-t = "config.label"></label>
     <div
       style               = "width: 100%; display: flex"
       @click.prevent.stop = ""
@@ -22,7 +22,7 @@
           :value  = "layer.id">
           <b>{{ layer.name }}</b>
         </option>
-        <option v-if="!has_layers" v-t="config.nolayers"></option>
+        <option v-if = "!has_layers" v-t = "config.nolayers"></option>
       </select>
       <button
         v-if        = "has_layers"
@@ -30,7 +30,7 @@
         class       = "btn skin-button"
         @click.stop = "() => config.cbk(layerId, feature)"
       >
-        <span :class="g3wtemplate.getFontClass(config.icon)"></span>
+        <span :class = "g3wtemplate.getFontClass(config.icon)"></span>
       </button>
     </div>
   </section>

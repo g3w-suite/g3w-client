@@ -167,10 +167,7 @@ For further information about plugin development, see also: [`src/plugins/README
 
 - [ ] Ensure all [milestones](https://github.com/g3w-suite/g3w-client/milestones) issues and pull requests are resolved.
 - [ ] Create or checkout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
-- [ ] Compile local code: `npm run build`
-- [ ] New tag: `git tag v3.5.1`
-- [ ] Push local code to remote: `git push`
-- [ ] Push local tags to remote: `git push --tags`
+- [ ] Compile and create new tag: `npm version v3.5.1`
 - [ ] Draft a new [GitHub Relase](https://github.com/g3w-suite/g3w-client/releases/new)
 
 <details>

@@ -4,11 +4,11 @@
 -->
 
 <template>
-  <div class="container-fluid">
-    <div class="row">
+  <div class = "container-fluid">
+    <div class = "row">
       <div
-        v-for="(value, index) in values"
-        class="g3w-image col-md-6 col-sm-12"
+        v-for = "(value, index) in values"
+        class = "g3w-image col-md-6 col-sm-12"
       >
         <img
           class       = "img-thumbnail"

@@ -17,7 +17,7 @@ export default {
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
-        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
+        show_features_on_map: "Päivitä tulokset karttaa siirtäessäsi",
         savefilter: "Tallenna suodatin",
         filterName: "Suodattimen Nimi",
       }
@@ -192,7 +192,8 @@ export default {
         download_xls: "Lataa XLS-tiedosto",
         download_pdf: "Lataa PDF-tiedosto",
         show_chart: "Näytä kaavio",
-        atlas: "Tulosta Atlas"
+        atlas: "Tulosta Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -542,8 +543,8 @@ export default {
     dataTable: {
       previous: "Edellinen",
       next: "Seuraava",
-      lengthMenu: "Show _MENU_ items",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Näytä _MENU_ arvoa sivulla",
+      info: "tulosta _TOTA_:stä",
       no_data: "Ei tietoja",
       nodatafilterd: "Vastaavia tietueita ei löytynyt",
       infoFiltered: "(filtered from _MAX_ total records)"

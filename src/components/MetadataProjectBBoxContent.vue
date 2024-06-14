@@ -4,11 +4,11 @@
 -->
 
 <template>
-  <div class="wrap-content-tab">
-    <div class="col-sm-2 metadata-label" v-t="data.label"></div>
-      <div class="col-sm-10 value" style="margin-top:0">
-        <div v-for="(value, index) in data.value">
-          <span class="bbox-labels">{{ bboxlabels[index] }}</span> {{ value }}
+  <div class = "wrap-content-tab">
+    <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
+      <div class = "col-sm-10 value" style = "margin-top:0">
+        <div v-for = "(value, index) in data.value">
+          <span class = "bbox-labels">{{ bboxlabels[index] }}</span> {{ value }}
         </div>
     </div>
   </div>

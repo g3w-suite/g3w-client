@@ -555,7 +555,7 @@ proto.hasVisibleLayers = function() {
 proto.addExternalLayerToResult = function() {
   return (
     null === this.getSelectedLayer() ||
-    "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
+    undefined !== this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
   );
 };
 
@@ -567,7 +567,7 @@ proto.addExternalLayerToResult = function() {
 proto.isExternalLayerSelected = function() {
   return (
     null !== this.getSelectedLayer() &&
-    "undefined" !== typeof this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
+    undefined !== this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
   )
 };
 

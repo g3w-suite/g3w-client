@@ -4,9 +4,9 @@
 -->
 
 <template>
-  <div class="help_div_container">
-    <span class="help_icon">i</span>
-    <div v-t="message" class="g3w-help-message-content"></div>
+  <div class = "help_div_container">
+    <span class = "help_icon">i</span>
+    <div v-t = "message" class = "g3w-help-message-content"></div>
   </div>
 </template>
 

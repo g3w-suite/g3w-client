@@ -12,7 +12,7 @@
     :class = "[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
   >
 
-    <div class="gcd-txt-control">
+    <div class = "gcd-txt-control">
 
       <!-- INPUT SEARCH -->
       <input
@@ -90,7 +90,7 @@
         @click.stop   = "() => showMarkerResults(undefined, true)"
         title         = "Toggle sidebar panel"
       >
-      <code :style="{ opacity: $data.results_panel_open ? 0.5 : undefined }">
+      <code :style = "{ opacity: $data.results_panel_open ? 0.5 : undefined }">
         {{ features.length > 99 ? '99+' : features.length }}
       </code>
       </button>
@@ -146,10 +146,19 @@
             height     = "24"
           />
           <!-- TODO: remove outer link (which is used only for styling purposes..) -->
-          <a href="" draggable="false">
-            <div v-if="item.type"         class="gcd-type">{{ item.type }}</div>
-            <div v-if="item.name"         class="gcd-name">{{ item.name }}</div>
-            <div v-if="item.address_name" class="gcd-road">{{ item.address_name }}</div>
+          <a href = "" draggable = "false">
+            <div
+              v-if  = "item.type"
+              class = "gcd-type"
+            >{{ item.type }}</div>
+            <div
+              v-if  = "item.name"
+              class = "gcd-name"
+            >{{ item.name }}</div>
+            <div
+              v-if  = "item.address_name"
+              class = "gcd-road"
+            >{{ item.address_name }}</div>
             <div
               v-if  = "item.address_road || item.address_building || item.address_house_number"
               class = "gcd-road"

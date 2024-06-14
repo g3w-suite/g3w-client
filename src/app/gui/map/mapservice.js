@@ -101,6 +101,35 @@ class OlMapViewer {
       keyboardEventTarget: document,
       target: opts.id,
     });
+
+    // visual click (sonar effect)
+    this.map.on('click', ({ coordinate }) => {
+      const circle = new ol.layer.Vector({
+        source: new ol.source.Vector({ features: [ new ol.Feature({ geometry: new ol.geom.Point(coordinate) }) ] }),
+        style: new ol.style.Style()
+      });
+      const start    = +new Date();
+      const duration = 1700;
+      const interval = circle.on('postcompose', ({ frameState }) => {
+      const elapsed  = frameState.time - start;
+      const ratio   = ol.easing.easeOut(elapsed / duration);
+      circle.setStyle(
+        new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 40 * ratio, // start = 0, end = 40
+            fill:   new ol.style.Fill({ color: [225, 227, 228, .1] }),
+            stroke: new ol.style.Stroke({ color: [225, 227, 228, 1], width: 1.85 * (1 - ratio) }), // start = 1.85, end = 0
+          })
+        })
+      );
+      if (elapsed > duration) {
+        this.map.removeLayer(circle);
+        ol.Observable.unByKey(interval); // stop the effect
+      }
+    });
+    this.map.addLayer(circle);
+  });
+
   }
 
   /**
@@ -356,15 +385,7 @@ function MapService(options={}) {
    * @since 3.8.3
    * internal promise. Resolved when view is set
    */
-  this._ready = new Promise((resolve, reject) => {
-    this.once('viewerset', () => {
-      // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-      MapLayersStoresRegistry.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
-      MapLayersStoresRegistry.onafter('addLayersStore', this._setUpEventsKeysToLayersStore.bind(this));
-      MapLayersStoresRegistry.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
-      resolve();
-    });
-  })
+  this._ready = new Promise(resolve => this.once('viewerset', resolve));
 
   this.viewer = null;
   this.target = options.target || 'map';
@@ -410,31 +431,19 @@ function MapService(options={}) {
     },
     highlightLayer:new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style:(feature) => {
-        let styles = [];
-        const geometryType = feature.getGeometry().getType();
-        const style = createSelectedStyle({
-          geometryType,
-          color: this.defaultsLayers._style.highlightLayer.color,
-          fill: false
-        });
-        styles.push(style);
-        return styles;
-      }
+      style:(feature) => [createSelectedStyle({
+        geometryType: feature.getGeometry().getType(),
+        color:        this.defaultsLayers._style.highlightLayer.color,
+        fill:         true
+      })]
     }),
     selectionLayer: new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style: feature => {
-        let styles = [];
-        const geometryType = feature.getGeometry().getType();
-        const style = createSelectedStyle({
-          geometryType,
-          color: this.defaultsLayers._style.selectionLayer.color,
-          fill: false
-        });
-        styles.push(style);
-        return styles;
-      }
+      style: feature => [createSelectedStyle({
+        geometryType: feature.getGeometry().getType(),
+        color:        this.defaultsLayers._style.selectionLayer.color,
+        fill:         true
+      })]
     })
   };
   this.layersExtraParams = {};
@@ -543,22 +552,122 @@ function MapService(options={}) {
     setHidden(bool) {
       this.state.hidden = bool;
     },
-    setupViewer(width,height) {
+
+    /** Set view based on project config */
+    async setupViewer(width, height) {
       if (0 === width || 0 === height) {
+        console.warn('[G3W-CLIENT] map was hidden during bootstrap');
         return;
       }
+
+      const search = new URLSearchParams(location.search); // search params
+
+      const showmarker       = 1 * (search.get('showmarker') || 0);  /** @since 3.10.0 0 or 1. Show marker on map center*/
+      const iframetype       = search.get('iframetype');             /** @since 3.10.0 type of iframe: map (only map, no control)*/
+      const zoom_to_fid      = search.get('zoom_to_fid');
+      const zoom_to_features = search.get('ztf');                    // zoom to features
+      const coords           = {
+          lat: parseFloat(search.get('lat')),
+          lon: parseFloat(search.get('lon')),
+          x:   parseFloat(search.get('x')),
+          y:   parseFloat(search.get('y')),
+        };
+
       if (this.viewer) {
         this.viewer.destroy();
-        this.viewer = null;
       }
-      this._setupViewer(width, height);
+
+      this.viewer = new OlMapViewer({
+        id: this.target,
+        view: this._calculateViewOptions({
+          width,
+          height,
+          project: this.project,
+          map_extent: search.get('map_extent'), /** @since 3.10.0 */
+        })
+      });
+
+      let geom;
+      if (zoom_to_fid) {
+        await this.zoomToFid(zoom_to_fid);
+      } else if (zoom_to_features) {
+        await this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
+      } else if (!isNaN(coords.lat) && !isNaN(coords.lon)) {
+        geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
+      } else if (!isNaN(coords.x) && !isNaN(coords.y)) {
+        geom = new ol.geom.Point([coords.x, coords.y]);
+      }
+
+      if (geom && geom.getExtent()) {
+        await this.zoomToGeometry(geom);
+      }
+
+      // show marker on map center
+      if (1 === showmarker) {
+        this.defaultsLayers.mapcenter.getSource().addFeature(new ol.Feature({ geometry: new ol.geom.Point(this.getCenter()) }))
+      }
+
+      // iframe → hide map controls (empty object)
+      if ('map' === iframetype) {
+        this.config.mapcontrols = {};
+      }
+
+      this._setSettings();
+
+      this.state.size     = this.viewer.map.getSize();
+      this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
+
+      if (this.config.background_color) {
+        $('#' + this.target).css('background-color', this.config.background_color);
+      }
+
+      $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
+
+      this.viewer.map.getInteractions().forEach(     int => this._watchInteraction(int));
+      this.viewer.map.getInteractions().on('add',    int => this._watchInteraction(int.element));
+      this.viewer.map.getInteractions().on('remove', int => { /* this._onRemoveInteraction(int);); */ });
+
+      this._marker = new ol.Overlay({
+        position:    null,
+        positioning: 'center-center',
+        element:     document.getElementById('marker'),
+        stopEvent:   false,
+      });
+
+      this.viewer.map.addOverlay(this._marker);
+
+      // listen for map "addLayer"
+      this.viewer.map.getLayers().on('add', e => {
+        this.moveDefaultLayersOnTop(
+          this.setLayerZIndex({
+            layer: e.element,
+            zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
+          })
+        );
+      });
+
+      this.viewer.map.getLayers().on('remove', e => {
+        if (e.element.getZIndex() === this.layersCount) {
+          this.layersCount--;
+        }
+      })
+
       this.state.bbox       = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center     = this.viewer.getCenter();
       this._setupAllLayers();
       this.setUpMapOlEvents();
+
+      // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+      MapLayersStoresRegistry.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
+      MapLayersStoresRegistry.onafter('addLayersStore', this._setUpEventsKeysToLayersStore.bind(this));
+      MapLayersStoresRegistry.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
+
       this.emit('viewerset');
+      this.setupControls();
+      this.emit('ready');
     },
+
     controlClick(mapcontrol, info={}) {},
     loadExternalLayer(layer) {}, // used in general to alert external layer is  loaded
     unloadExternalLayer(layer) {}
@@ -1760,102 +1869,6 @@ proto._calculateViewOptions = function({
   }
 };
 
-// set view based on project config
-proto._setupViewer = function(width, height) {
-  const search           = new URLSearchParams(location.search); // search params
-  const showmarker       = 1 * (search.get('showmarker') || 0);  /** @since 3.10.0 0 or 1. Show marker on map center*/
-  const iframetype       = search.get('iframetype');             /** @since 3.10.0 type of iframe: map (only map, no control)*/
-  const map_extent       = search.get('map_extent');
-  const zoom_to_fid      = search.get('zoom_to_fid');
-  const zoom_to_features = search.get('ztf');                    // zoom to features
-  const coords           = {
-      lat: parseFloat(search.get('lat')),
-      lon: parseFloat(search.get('lon')),
-      x:   parseFloat(search.get('x')),
-      y:   parseFloat(search.get('y')),
-    };
-
-  (new Promise((resolve) => {
-    setTimeout(async () => {
-      let geom;
-      if (zoom_to_fid) {
-        await this.zoomToFid(zoom_to_fid);
-      } else if (zoom_to_features) {
-        await this.handleZoomToFeaturesUrlParameter({ zoom_to_features });
-      } else if (!isNaN(coords.lat) && !isNaN(coords.lon)) {
-        geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
-      } else if (!isNaN(coords.x) && !isNaN(coords.y)) {
-        geom = new ol.geom.Point([coords.x, coords.y]);
-      }
-      if (geom && geom.getExtent()) {
-        await this.zoomToGeometry(geom);
-      }
-      resolve();
-    });
-  }))
-  .then(() => {
-    // show marker on map center
-    if (1 === showmarker) {
-      this.defaultsLayers.mapcenter.getSource().addFeature(new ol.Feature({ geometry: new ol.geom.Point(this.getCenter()) }))
-    }
-  });
-
-  // iframe → hide map controls (empty object)
-  if ('map' === iframetype) {
-    this.config.mapcontrols = {};
-  }
-
-  this.viewer = new OlMapViewer({
-    id: this.target,
-    view: this._calculateViewOptions({
-      width,
-      height,
-      project: this.project,
-      map_extent, /** @since 3.10.0 */
-    })
-  });
-
-  this._setSettings();
-
-  this.state.size     = this.viewer.map.getSize();
-  this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
-
-  if (this.config.background_color) {
-    $('#' + this.target).css('background-color', this.config.background_color);
-  }
-
-  $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
-
-  this.viewer.map.getInteractions().forEach(     int => this._watchInteraction(int));
-  this.viewer.map.getInteractions().on('add',    int => this._watchInteraction(int.element));
-  this.viewer.map.getInteractions().on('remove', int => { /* this._onRemoveInteraction(int);); */ });
-
-  this._marker = new ol.Overlay({
-    position: null,
-    positioning: 'center-center',
-    element: document.getElementById('marker'),
-    stopEvent: false
-  });
-
-  this.viewer.map.addOverlay(this._marker);
-
-  // listen for map "addLayer"
-  this.viewer.map.getLayers().on('add', e => {
-    this.moveDefaultLayersOnTop(
-      this.setLayerZIndex({
-        layer: e.element,
-        zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
-      })
-    );
-  });
-
-  this.viewer.map.getLayers().on('remove', e => {
-    if (e.element.getZIndex() === this.layersCount) {
-      this.layersCount--;
-    }
-  })
-};
-
 proto.getMapUnits = function() {
   return this.state.mapUnits;
 };
@@ -1880,6 +1893,10 @@ proto._setUpEventsKeysToLayersStore = function(store) {
   const id = store.getId();
   // check if already store a key of events
   this._layersStoresEventKeys[id] = [];
+
+  //In the case of store that has layers @since 3.10.0
+  store.getLayers().forEach(l => 'vector' === l.getType() && this.addLayerToMap(l.getMapLayer()));
+
   this._layersStoresEventKeys[id].push({
     addLayer: store.onafter('addLayer', l => { 'vector' === l.getType() && this.addLayerToMap(l.getMapLayer()) }),
   });
@@ -2490,7 +2507,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
         hlayer.setStyle((feature) => [createSelectedStyle({
           geometryType: feature.getGeometry().getType(),
           color: options.color,
-          fill: false
+          fill: true
         })]);
       }
       if (!hide) {
@@ -2529,25 +2546,27 @@ proto.refreshMap = function(options={force: true}) {
 // called when layout (window) resizes
 proto.layout = function({ width, height }) {
   const el = document.getElementById(this.target);
+
   if (el) {
     el.style.height = height + 'px';
     el.style.width  = width + 'px';
   }
-  const is_hidden = (width <= 0 || height <= 0);
-  if (!this.viewer) {
-    this.setupViewer(width,height);
-    if (this.viewer) {
-      this.setupControls();
-      this.emit('ready');
-    }
-  } else {
-    if (!is_hidden) {
-      this.getMap().updateSize();
-      this.state.hidemaps.forEach(hidemap => hidemap.map.updateSize());
-      this._updateMapView();
-    }
+
+  const is_hidden  = (width <= 0 || height <= 0);
+  const has_viewer = !!this.viewer;
+
+  if (has_viewer && !is_hidden) {
+    this.getMap().updateSize();
+    this.state.hidemaps.forEach(h => h.map.updateSize());
+    this._updateMapView();
   }
+
+  if (!has_viewer) {
+    this.setupViewer(width, height);
+  }
+
   this.setHidden(is_hidden);
+
   if (this._mapControls.length) {
     this._updateMapControlsLayout({width, height});
   }

@@ -5,13 +5,14 @@
 
 <template>
   <div>
-    <section style="display: flex; justify-content: space-between; font-weight: bold;">
-      <section style="align-self: flex-end">
+    <section style = "display: flex; justify-content: space-between; font-weight: bold;">
+
+      <section style = "align-self: flex-end">
         <span class = "min-max-label">{{min}}</span>
         <span style = "font-weight: bold;">{{unit}}</span>
       </section>
 
-      <div style="display: flex; flex-direction: column; margin: 0 3px">
+      <div style = "display: flex; flex-direction: column; margin: 0 3px">
         <label
           :for  = "id"
           style = "display: block"
@@ -30,15 +31,18 @@
         >
       </div>
 
-      <section style="align-self: flex-end">
-        <span class="min-max-label">{{max}}</span>
-        <span style="font-weight: bold;">{{unit}}</span>
+      <section style = "align-self: flex-end">
+        <span class = "min-max-label">{{max}}</span>
+        <span style = "font-weight: bold;">{{unit}}</span>
       </section>
 
     </section>
+
     <template v-if="showValue">
+
       <span>{{state.value}}</span>
-      <span style="font-weight: bold;">{{unit}}</span>
+      <span style = "font-weight: bold;">{{unit}}</span>
+
     </template>
   </div>
 </template>

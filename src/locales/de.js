@@ -17,7 +17,7 @@ export default {
         nofilter: "Filter entfernen",
         invert: "Auswahl umkehren",
         clear: "Auswahl löschen",
-        show_features_on_map: "Auf der Karte sichtbare Features anzeigen",
+        show_features_on_map: "Aktualisieren Sie die Ergebnisse beim Verschieben der Karte",
         savefilter: "Filter speichern",
         filterName: "Filtername",
       }
@@ -192,7 +192,8 @@ export default {
         download_xls: "XLS herunterladen",
         download_pdf: "PDF herunterladen",
         show_chart: "Diagramm anzeigen",
-        atlas: "Atlas drucken"
+        atlas: "Atlas drucken",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -542,8 +543,8 @@ export default {
     dataTable: {
       previous: "Vorherige",
       next: "Weiter",
-      lengthMenu: "_MENÜ_ anzeigen",
-      info: "Anzeige von _START_ bis _END_ der _TOTAL_ Einträge",
+      lengthMenu: "Zeigen Sie _MENU_ Werte pro Seite an",
+      info: "_TOTAL_ Ergebnissen",
       no_data: "Keine Daten",
       nodatafilterd: "Keine passenden Datensätze gefunden",
       infoFiltered: "(gefiltert aus _MAX_ Gesamtsätzen)"

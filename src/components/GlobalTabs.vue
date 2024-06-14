@@ -5,12 +5,14 @@
 
 <template>
   <div
-    v-if="show"
-    class="tabs-wrapper">
-    <template v-for="root_tab in root_tabs">
-      <template v-if="Array.isArray(root_tab)">
-        <ul class="formquerytabs nav nav-tabs">
-          <template v-for="(tab, index) in root_tab">
+    v-if  = "show"
+    class = "tabs-wrapper">
+    <template v-for = "root_tab in root_tabs">
+
+      <template v-if = "Array.isArray(root_tab)">
+
+        <ul class = "formquerytabs nav nav-tabs">
+          <template v-for = "(tab, index) in root_tab">
             <li
               v-if   = "tab.visible === undefined || tab.visible"
               :class = "{active: index === 0}"
@@ -21,17 +23,19 @@
                   :href       = "`#${ids[index]}`"
                   :class      = "{'mobile': isMobile(), 'group-title': group}"
                   :style      = "{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
+                  @click      = "group && toggleGroup($event)"
                 >
-                 {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span>
+                 {{tab.name}} <span style = "padding-left: 3px; font-size: 1.1em;" v-if = "contenttype === 'editing' && tab.required">*</span>
                 </a>
             </li>
+
           </template>
         </ul>
         <div
-          class="tab-content"
-          :class="{editing: 'editing' === contenttype }"
+          class  = "tab-content"
+          :class = "{editing: 'editing' === contenttype }"
         >
-          <template v-for="(tab, index) in root_tab">
+          <template v-for = "(tab, index) in root_tab">
             <div
               v-if   = "undefined === tab.visible || tab.visible"
               :id    = "ids[index]"
@@ -174,7 +178,18 @@
       },
       getField(fieldName) {
         return this.fields.find(f => fieldName === f.name);
-      }
+      },
+
+      /**
+       * Mimics <details> tag behaviour
+       * 
+       * @since 3.10.0 
+       */
+      toggleGroup(e) {
+        const wrapper = e.target.closest('.tabs-wrapper');
+        wrapper.classList.toggle('collapsed');
+      },
+
     },
     components: {
       Node
@@ -265,8 +280,18 @@
   }
   .formquerytabs li a.tab_a.group-title {
     color: inherit !important;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1em !important;
     padding: 0.25em;
+    cursor: pointer;
+  }
+  .tabs-wrapper > .formquerytabs li a.tab_a.group-title:before {
+    content: '▾';
+  }
+  .tabs-wrapper.collapsed > .formquerytabs li a.tab_a.group-title:before {
+    content: '▸';
+  }
+  .tabs-wrapper.collapsed > .formquerytabs + .tab-content {
+    display: none;
   }
 </style>

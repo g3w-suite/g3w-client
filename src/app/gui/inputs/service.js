@@ -35,7 +35,7 @@ proto.getValue = function() {
  * @returns {void}
  */
 proto.setValue = function(value) {
-  if (null !== value && "undefined" !== typeof value) {
+  if (null !== value && undefined !== value) {
     return;
   }
 

@@ -18,11 +18,11 @@ export function splitFeature({
 
   const geometries = {
     feature: feature.getGeometry(), //geometry of the feature to split
-    split: splitfeature.getGeometry() // geometry of split feature
+    split:   splitfeature.getGeometry() // geometry of split feature
   };
-  // check geometry type of split
+  // check a geometry type of split
   const splitType                 = geometries.split.getType();
-  // check geometry type of feature
+  // check the geometry type of feature
   const featureGeometryType       = geometries.feature.getType();
   // array of split geometries
   const splittedFeatureGeometries = [];
@@ -42,25 +42,25 @@ export function splitFeature({
    * @param feature
    * @param geomClass
    */
-  const addSplittedFeatureGeometries = ({feature, geomClass}) => {
+  const addSplittedFeatureGeometries = ({ feature, geomClass }) => {
     feature
       .forEach(geometry => {
-        splitFeature({
-          splitfeature,
-          feature: new ol.Feature({
-            geometry
-          })
-        }).forEach(geometry => geometry && splittedFeatureGeometries.push(new geomClass([geometry.getCoordinates()])))
+        const splitFeatures = splitFeature({ splitfeature, feature: new ol.Feature({ geometry })})
+        if (splitFeatures.length > 0) {
+          splitFeatures.forEach(geometry => geometry && splittedFeatureGeometries.push(new geomClass([geometry.getCoordinates()])))
+        } else {
+          splittedFeatureGeometries.push(new geomClass([geometry.getCoordinates()]))
+        }
       })
   }
 
   // If geometry is Polygon
   if (is_poly) {
     const polygonFeature = is_multi ? geometries.feature.getPolygons() : geometries.feature;
-    // check if is a MultiPolygon
-    if (Array.isArray(polygonFeature)) {
+    //if is a MultiPolygon
+    if (is_multi) {
       addSplittedFeatureGeometries({
-        feature: polygonFeature,
+        feature:   polygonFeature,
         geomClass: ol.geom.MultiPolygon
       })
     } else {
@@ -75,7 +75,7 @@ export function splitFeature({
 
       if (polygonFeature.getLinearRingCount() > 1) {
         let holeFeaturesGeometry;
-        for (let index=1; index < polygonFeature.getLinearRingCount(); index++) {
+        for (let index = 1; index < polygonFeature.getLinearRingCount(); index++) {
           const holeRing = parser.read(polygonFeature.getLinearRing(index));
           holeFeaturesGeometry = undefined === holeFeaturesGeometry
             ? holeRing
@@ -98,13 +98,14 @@ export function splitFeature({
 
       if (isZType) {
 
-        polygonFeature.getCoordinates()[0]
+        polygonFeature
+          .getCoordinates()[0]
           .forEach((c, i) => externalPolygonFeatureGeometry.getCoordinates()[i].z = c[2]);
 
         splitGeometry.getCoordinates().forEach(coordinate => coordinate.z = 0);
       }
 
-      const union = externalPolygonFeatureGeometry.union(splitGeometry);
+      const union       = externalPolygonFeatureGeometry.union(splitGeometry);
 
       const polygonizer = new jsts.operation.polygonize.Polygonizer();
 
@@ -115,11 +116,10 @@ export function splitFeature({
       if (polygons.length > 1) {
         polygons
           .forEach((polygon) => {
-            if (holePolygons) {
-              polygon = polygon.difference(holePolygons);
-            }
+            if (holePolygons) { polygon = polygon.difference(holePolygons) }
+
             if (polygonFeatureGeometry.intersects(polygon.getInteriorPoint())) {
-              const geometry = parser.write(polygon);
+              const geometry           = parser.write(polygon);
               const polygonCoordinates = polygon.getCoordinates();
 
               if (isZType) {
@@ -138,12 +138,9 @@ export function splitFeature({
               if (is_multi) {
                 splittedFeatureGeometries.push(new ol.geom.MultiPolygon(is_single ? [geometry.getCoordinates()] : geometry.getCoordinates()))
               } else {
-                if (is_single) {
-                  splittedFeatureGeometries.push(geometry);
-                } else {
-                  geometry
-                    .getCoordinates()
-                    .forEach(c => splittedFeatureGeometries.push(new ol.geom.Polygon(c)))
+                if (is_single) { splittedFeatureGeometries.push(geometry) }
+                else {
+                  geometry.getCoordinates().forEach(c => splittedFeatureGeometries.push(new ol.geom.Polygon(c)))
                 }
               }
             }
@@ -156,12 +153,11 @@ export function splitFeature({
   if (is_line) {
     const lineFeatureGeometry = is_multi ? geometries.feature.getLineStrings() : geometries.feature;
 
-    if (Array.isArray(lineFeatureGeometry)) {
+    if (is_multi) {
       addSplittedFeatureGeometries({
-        feature: lineFeatureGeometry,
+        feature:   lineFeatureGeometry,
         geomClass: ol.geom.MultiLineString
       })
-
     } else {
       return splitGeometryLine(geometries.split, geometries.feature);
     }

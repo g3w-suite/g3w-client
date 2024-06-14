@@ -6,54 +6,58 @@
 <template>
 
   <div
-    v-if="show"
-    class="layer-legend"
-    @click.stop.prevent=""
+    v-if                = "show"
+    class               = "layer-legend"
+    @click.stop.prevent = ""
   >
 
     <bar-loader
-      v-if="legend"
-      :loading="legend.loading"
+      v-if     = "legend"
+      :loading = "legend.loading"
     />
 
-    <figure v-if="externallegend">
-      <img :src="getWmsSourceLayerLegendUrl()" >
+    <figure v-if = "externallegend">
+      <img :src = "getWmsSourceLayerLegendUrl()" >
     </figure>
 
     <figure
       v-else
-      v-disabled="loading"
+      v-disabled = "loading"
     >
-      <bar-loader :loading="loading"/>
+      <bar-loader :loading = "loading"/>
 
-      <div v-for="(category, index) in categories"
-        @contextmenu.prevent.stop="showCategoryMenu"
-        style="display: flex; align-items: center; width: 100%"
-        v-disabled="category.disabled"
+      <div
+        v-for                     = "(category, index) in categories"
+        @contextmenu.prevent.stop = "showCategoryMenu"
+        style                     = "display: flex; align-items: center; width: 100%"
+        v-disabled                = "category.disabled"
       >
 
         <span
-          v-if="category.ruleKey"
-          @click.stop.prevent="showHideLayerCategory(index)"
-          style="padding-right: 3px;"
-          :class="g3wtemplate.getFontClass(category.checked ? 'check': 'uncheck')"
+          v-if                = "category.ruleKey"
+          @click.stop.prevent = "showHideLayerCategory(index)"
+          style               = "padding-right: 3px;"
+          :class              = "g3wtemplate.getFontClass(category.checked ? 'check': 'uncheck')"
         ></span>
 
         <img
-          v-if ="('toc' === legendplace)"
-          :src="category.icon && `data:image/png;base64,${category.icon}`"
-          @error="setError()"
-          @load="urlLoaded()"
+          v-if   = "('toc' === legendplace)"
+          :src   = "category.icon && `data:image/png;base64,${category.icon}`"
+          @error = "setError()"
+          @load  = "urlLoaded()"
         >
 
         <span
-          v-if="('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
-          class="g3w-long-text"
-          style="padding-left: 3px;"
-          @click.stop="onCategoryClick"
+          v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
+          class       = "g3w-long-text"
+          style       = "padding-left: 3px;"
+          @click.stop = "onCategoryClick"
         >
           <span>{{category.title}}</span>
-          <span v-if="showfeaturecount && 'undefined' !== typeof category.ruleKey" style="font-weight: bold">
+          <span
+            v-if = "showfeaturecount && 'undefined' !== typeof category.ruleKey"
+            style = "font-weight: bold"
+          >
             [{{layer.stylesfeaturecount[currentstyle][category.ruleKey]}}]
           </span>
         </span>
@@ -172,7 +176,7 @@
   
       getWmsSourceLayerLegendUrl() {
         return this.getProjectLayer().getLegendUrl({
-          width: 16,
+          width:  16,
           height: 16
         });
       },
@@ -196,7 +200,7 @@
       },
 
       setError() {
-        this.legend.error = true;
+        this.legend.error   = true;
         this.legend.loading = false;
       },
 
@@ -236,7 +240,7 @@
       async setLayerCategories(all=false) {
         try {
           const projectLayer = this.getProjectLayer();
-          const categories = projectLayer.getCategories();
+          const categories   = projectLayer.getCategories();
 
           if (all && categories) { // check if exist current layer categories
             this.categories = categories;
@@ -294,12 +298,12 @@
             }
             categories.forEach(category  => {
               const findSymbol = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
-              const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
-              category.disabled = disabled && "undefined" === typeof findSymbol;
+              const disabled = undefined !== category.checked  ? category.checked : true;
+              category.disabled = disabled && undefined === findSymbol;
             });
           })
         } else {
-          categories.forEach(category => category.disabled = ("undefined" !== typeof category.checked ? category.checked : true));
+          categories.forEach(category => category.disabled = (undefined !== category.checked ? category.checked : true));
         }
       },
 

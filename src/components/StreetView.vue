@@ -4,9 +4,9 @@
 -->
 
 <template>
-  <div id="streetview">
-    <div v-if="$options.keyError" id="streetview-error-key">
-      <span class="skin-color">{{ $options.keyError }}</span>
+  <div id = "streetview">
+    <div v-if = "$options.keyError" id = "streetview-error-key">
+      <span class = "skin-color">{{ $options.keyError }}</span>
     </div>
   </div>
 </template>

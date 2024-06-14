@@ -12,7 +12,7 @@
       class = "g3w-layer-positions-info-message"
       v-t   = "`layer_position.message`">
     </div>
-    <div class="g3w-layer-positions-checkboxes">
+    <div class = "g3w-layer-positions-checkboxes">
       <div
         v-for = "layerposition in layerpositions"
         :key  = "layerposition"

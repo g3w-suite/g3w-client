@@ -4,12 +4,12 @@
 -->
 
 <template>
-  <div id="print-output">
-    <transition :duration="500" name="fade">
-      <bar-loader :loading="state.loading && state.layers" />
+  <div id = "print-output">
+    <transition :duration = "500" name = "fade">
+      <bar-loader :loading = "state.loading && state.layers" />
     </transition>
 
-    <template v-if="state.layers">
+    <template v-if = "state.layers">
 
       <!-- PRINT as PDF or GEOPDF-->
       <iframe
@@ -23,9 +23,9 @@
         v-else
         class     = "g3w-print-image-output"
       >
-        <div id="g3w-print-header">
-          <div :class="{ 'g3w-disabled': !!(state.downloading && state.layers) }">
-            <a :href="state.url" :download="`download.${format}`">
+        <div id = "g3w-print-header">
+          <div :class = "{ 'g3w-disabled': !!(state.downloading && state.layers) }">
+            <a :href = "state.url" :download = "`download.${format}`">
               <button
                 @click.stop        = "downloadImage"
                 class              = "btn skin-button skin-tooltip-left"
@@ -55,7 +55,7 @@
     <!---NO PRINT LAYERS-->
     <h4
       v-else
-      v-t="'sdk.print.no_layers'">
+      v-t = "'sdk.print.no_layers'">
     </h4>
 
   </div>

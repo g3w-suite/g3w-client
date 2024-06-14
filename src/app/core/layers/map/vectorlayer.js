@@ -6,21 +6,21 @@ const { inherit }           = require('utils');
 const G3WObject             = require('core/g3wobject');
 
 function VectorLayer(options = {}) {
-  this.mapService = GUI.getComponent('map').getService();
-  this.geometrytype = options.geometrytype || null;
-  this.type = options.type || null;
-  this.crs = options.crs  || null;
-  this.id = options.id;
-  this.name = options.name || "";
-  this.style = options.style;
-  this.color = options.color;
-  this.geometryType = options.geometryType;
+  this.mapService    = GUI.getService('map');
+  this.geometrytype  = options.geometrytype || null;
+  this.type          = options.type || null;
+  this.crs           = options.crs  || null;
+  this.id            = options.id;
+  this.name          = options.name || "";
+  this.style         = options.style;
+  this.color         = options.color;
+  this.geometryType  = options.geometryType;
   this.mapProjection = this.mapService.getProjection().getCode();
-  this.projection = options.projection || this.mapProjection;
-  this.url = options.url;
-  this.provider = options.provider;
-  this._features = options.features || [];
-  this._olLayer = options.olLayer || this.getOLLayer();
+  this.projection    = options.projection || this.mapProjection;
+  this.url           = options.url;
+  this.provider      = options.provider;
+  this._features     = options.features || [];
+  this._olLayer      = options.olLayer || this.getOLLayer();
 }
 
 inherit(VectorLayer, G3WObject);

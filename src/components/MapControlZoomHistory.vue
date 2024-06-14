@@ -4,14 +4,14 @@
 -->
 
 <template>
-  <div class="ol-zoom-history ol-unselectable ol-control">
+  <div class = "ol-zoom-history ol-unselectable ol-control">
     
     <!-- STEP BACK -->
     <div v-t-tooltip:top.create = "'sdk.mapcontrols.zoomhistory.zoom_last'">
       <button
         @click.stop.prevent = "last"
         type                = "button"
-        v-disabled          = "history.index === 0"
+        v-disabled          = "0 === history.index"
       >
         <i :class="g3wtemplate.getFontClass('reply')"></i>
       </button>
@@ -24,7 +24,7 @@
         type                = "button"
         v-disabled          = "hasEmptyHistory"
       >
-        <i :class="g3wtemplate.getFontClass('share')"></i>
+        <i :class = "g3wtemplate.getFontClass('share')"></i>
       </button>
     </div>
 

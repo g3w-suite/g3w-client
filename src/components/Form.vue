@@ -4,7 +4,10 @@
 -->
 
 <template>
-  <div class="g3wform_content" style="position: relative">
+  <div
+    class = "g3wform_content"
+    style = "position: relative"
+  >
     <bar-loader :loading="state.loading"/>
 
     <!-- FORM HEADER  -->
@@ -19,10 +22,10 @@
 
     <!-- FORM BODY  -->
     <div
-      class="g3wform_body"
-      ref="g3wform_body"
+      class = "g3wform_body"
+      ref   = "g3wform_body"
     >
-      <component :fields="state.fields" v-for="component in body.components.before" :is="component"/>
+      <component :fields = "state.fields" v-for = "component in body.components.before" :is = "component"/>
       <keep-alive>
         <component
           :handleRelation   = "handleRelation"
@@ -34,9 +37,9 @@
           :is               = "state.component"/>
       </keep-alive>
       <component
-        v-for="component in body.components.after"
-        :fields="state.fields"
-        :is="component"/>
+        v-for   = "component in body.components.after"
+        :fields = "state.fields"
+        :is     = "component"/>
     </div>
 
     <!-- FORM FOOTER  -->

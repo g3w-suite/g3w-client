@@ -12,11 +12,11 @@
     <h4><b>{{ state.title }}</b></h4>
 
     <!-- SEARCH TOOLS -->
-    <slot name="tools"></slot>
+    <slot name = "tools"></slot>
 
     <!-- SEARCH FORM -->
-    <slot name="form">
-      <form class="g3w-search-form">
+    <slot name = "form">
+      <form class= " g3w-search-form">
 
         <div
           v-for = "input in state.forminputs"
@@ -30,9 +30,9 @@
             v-if  = "'numberfield' === input.type || ('textfield' === input.type && 'Range' === input.widget_type)"
             class = "numeric"
           >
-            <label :for="input.id" class="search-label">
+            <label :for = "input.id" class = "search-label">
               <span>{{ input.label || input.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
+              <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
             <input
               type    = "number"
@@ -50,9 +50,9 @@
             v-else-if = "['textfield', 'textField'].includes(input.type)"
             class     = "form-item-search text"
           >
-            <label :for="input.id" class="search-label">
+            <label :for = "input.id" class = "search-label">
               <span>{{ input.label || input.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
+              <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
             <input
               @focus  = "onFocus"
@@ -70,9 +70,9 @@
             class      = "text"
             v-disabled = "state.loading[input.dependance] || input.loading || input.disabled"
           >
-            <label :for="input.id" class="search-label">
+            <label :for = "input.id" class = "search-label">
               <span>{{ input.label || input.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
+              <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
             <bar-loader
               v-if     = "input.dependance"
@@ -89,7 +89,7 @@
                 :key   = "opt.value"
                 :value = "opt.value"
               >
-                <span v-if="opt.value === allvalue" v-t="'sdk.search.all'"></span>
+                <span v-if = "opt.value === allvalue" v-t = "'sdk.search.all'"></span>
                 <span v-else>{{ opt.key }}</span>
               </option>
             </select>
@@ -101,14 +101,14 @@
             class      = "text"
             v-disabled = "state.loading[input.dependance] || false"
           >
-            <label :for="input.id" class="search-label">
+            <label :for = "input.id" class = "search-label">
               <span>{{ input.label || input.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(input.operator)}}</span>
+              <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
-            <div :ref="'date_' + input.id" class="input-group date">
-              <input :id="input.id" type='text' class="form-control" />
-              <span class="input-group-addon skin-color">
-                <span :class="g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
+            <div :ref = "'date_' + input.id" class = "input-group date">
+              <input :id = "input.id" type = 'text' class = "form-control" />
+              <span class = "input-group-addon skin-color">
+                <span :class = "g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
               </span>
             </div>
           </div>
@@ -116,13 +116,13 @@
           <sub>{{ input.options.description }}</sub>
 
           <!-- DEBUG INFO -->
-          <sub v-if="is_superuser">
-            <br v-if="input.options.description">
-            <span class="skin-color">{{ input.type }}</span> | <span class="skin-color">{{ input.widget_type }}</span>
-            <template v-if="input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
-            <template v-if="input.options.layer_id"><br><span class="skin-color">layer_id:</span> "{{ input.options.layer_id }}"</template>
-            <template v-if="input.dependance"><br><span class="skin-color">depends_on:</span> "{{ input.dependance }}"</template>
-            <template v-if="input.dependance"><br><span class="skin-color">strict:</span> {{ input.dependance_strict }}</template>
+          <sub v-if = "is_staff">
+            <br v-if = "input.options.description">
+            <span class = "skin-color">{{ input.type }}</span> | <span class = "skin-color">{{ input.widget_type }}</span>
+            <template v-if = "input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
+            <template v-if = "input.options.layer_id"><br><span class = "skin-color">layer_id:</span> "{{ input.options.layer_id }}"</template>
+            <template v-if = "input.dependance"><br><span class = "skin-color">depends_on:</span> "{{ input.dependance }}"</template>
+            <template v-if = "input.dependance"><br><span class = "skin-color">strict:</span> {{ input.dependance_strict }}</template>
           </sub>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
@@ -136,7 +136,7 @@
         </div>
 
         <!-- SEARCH BUTTON -->
-        <div class="form-group">
+        <div class = "form-group">
           <button
             id          = "dosearch"
             class       = "sidebar-button-run btn btn-block pull-right"
@@ -150,10 +150,10 @@
     </slot>
 
     <!-- SEARCH FOOTER -->
-    <slot name="footer"></slot>
+    <slot name = "footer"></slot>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
-    <div v-if="layers_url" style="padding-top: 5em;"><b><a :href="layers_url" target="_blank">Edit in admin</a></b></div>
+    <div v-if = "layers_url" style = "padding-top: 5em;"><b><a :href = "layers_url" target = "_blank">Edit in admin</a></b></div>
 
   </div>
 </template>
@@ -192,8 +192,8 @@ export default {
       return ApplicationService.getCurrentProject().getState().layers_url;
     },
 
-    is_superuser() {
-      return ApplicationService.getConfig().user.is_superuser;
+    is_staff() {
+      return ApplicationService.getConfig().user.is_staff;
     },
 
   },
@@ -461,6 +461,34 @@ export default {
 </script>
 
 <style scoped>
+.g3w-search-form label {
+  color: #fff;
+}
+.g3w-search-form .search-logicop {
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+  margin-top: 30px;
+  border-bottom: 1px solid;
+}
+.g3w-search-form .search-logicop h4 {
+  font-weight: bold;
+  position: absolute;
+  padding: 5px;
+  top: -24px;
+  background: #222d32;
+}
+#dosearch {
+  color: #fff;
+  font-weight: bold;
+  margin-top: 15px;
+  background-color: var(--skin-color);
+}
+#dosearch:hover {
+  color: #fff;
+}
 .search-label {
   width: 100%;
   display: flex;

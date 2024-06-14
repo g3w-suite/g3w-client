@@ -129,7 +129,6 @@ async function _createKMZLayer(name, crs, mapCrs, style, data) {
 }
 
 async function _createZIPLayer(name, crs, mapCrs, style, data) {
-  console.log(name)
   try {
     return await new Promise(async (resolve, reject) => {
       shp(await data.arrayBuffer(data))
