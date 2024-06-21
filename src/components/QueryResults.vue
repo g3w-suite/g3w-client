@@ -478,6 +478,7 @@
   import HeaderFeatureBody           from 'components/QueryResultsHeaderFeatureBody.vue';
   import HeaderFeatureActionsBody    from "components/QueryResultsHeaderFeatureActionsBody.vue";
   import { toRawType, throttle }     from 'utils';
+  import GUI                         from 'services/gui';
 
   const MAX_SUBSET_LENGTH           = 3;
   const headerExpandActionCellWidth = 10;
@@ -532,18 +533,20 @@
        */
       info() {
         if (this.state.query) {
-          const query = this.state.query;
+          const query         = this.state.query;
+          //@since 3.8.1 coordinates show only four decimal numbers
+          //In case of map units degrees, show four decimal numbers otherwise, meter, show only two decimal numbers
+          const decimalNumber = 'degrees' === GUI.getService('map').getMapUnits() ? 4 : 2;
           switch (query.type) {
-            //@since 3.8.1 coordinates show only 4 decimal numbers
             case 'coordinates':
               return {
                 icon:    'marker',
-                message: `  ${query.coordinates[0].toFixed(4)}, ${query.coordinates[1].toFixed(4)}`
+                message: `  ${query.coordinates[0].toFixed(decimalNumber)}, ${query.coordinates[1].toFixed(decimalNumber)}`
               };
             case 'bbox':
               return {
                 icon:    'square',
-                message: `  [${query.bbox.map(c => c.toFixed(4)).join(' , ')}]`
+                message: `  [${query.bbox.map(c => c.toFixed(decimalNumber)).join(' , ')}]`
               };
             case 'polygon':
             case 'drawpolygon':

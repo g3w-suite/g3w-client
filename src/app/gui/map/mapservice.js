@@ -7,7 +7,7 @@ import ControlsRegistry              from 'store/map-controls';
 import GUI                           from 'services/gui';
 import MapControlZoomHistory         from 'components/MapControlZoomHistory.vue';
 import MapControlGeocoding           from 'components/MapControlGeocoding.vue';
-import { createVectorLayerFromFile } from 'utils/createVectorLayerFromFile'; 
+import { createVectorLayerFromFile } from 'utils/createVectorLayerFromFile';
 import { createWMSLayer }            from 'utils/createWMSLayer';
 import { createSelectedStyle }       from 'utils/createSelectedStyle';
 import { getMapLayersByFilter }      from 'utils/getMapLayersByFilter';
@@ -1096,19 +1096,21 @@ proto._setupControls = function() {
 
         case 'mouseposition':
           if (!isMobile.any) {
-            const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
+            // @since 3.8.
+            const decimalNumber    = 'degrees' === this.getProjection().getUnits() ? 4 : 2;
+            const coordinateLabels = 'degrees' === this.getProjection().getUnits()  ? ['Lng', 'Lat'] : ['X', 'Y'];
             const crs = this.getCrs();
             control = this.createMapControl(controlType, {
               add: false,
               options: {
                 coordinateFormat(coordinate) {
-                  return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
+                  return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, decimalNumber);
                 },
                 undefinedHTML: false,
                 projection: this.getCrs()
               }
             });
-            if (this.getEpsg() !== 'EPSG:4326') {
+            if ('EPSG:4326' !== this.getEpsg()) {
               const mapEspg = this.getEpsg();
               const coordinateLabels = ['Lng', 'Lat'];
               const crs = this.getCrs();
@@ -1118,7 +1120,7 @@ proto._setupControls = function() {
                   target: 'mouse-position-control-epsg-4326',
                   coordinateFormat(coordinate) {
                     coordinate = ol.proj.transform(coordinate, mapEspg, 'EPSG:4326');
-                    return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
+                    return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, decimalNumber);
                   },
                   undefinedHTML: false,
                   projection: this.getCrs()
