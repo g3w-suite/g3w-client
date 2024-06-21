@@ -534,15 +534,16 @@
         if (this.state.query) {
           const query = this.state.query;
           switch (query.type) {
+            //@since 3.8.1 coordinates show only 4 decimal numbers
             case 'coordinates':
               return {
-                icon: 'marker',
-                message: `  ${query.coordinates[0]}, ${query.coordinates[1]}`
+                icon:    'marker',
+                message: `  ${query.coordinates[0].toFixed(4)}, ${query.coordinates[1].toFixed(4)}`
               };
             case 'bbox':
               return {
-                icon: 'square',
-                message: `  [${query.bbox.join(' , ')}]`
+                icon:    'square',
+                message: `  [${query.bbox.map(c => c.toFixed(4)).join(' , ')}]`
               };
             case 'polygon':
             case 'drawpolygon':
