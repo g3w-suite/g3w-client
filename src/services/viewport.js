@@ -296,15 +296,19 @@ const ViewportService = function() {
 
   this.resetToDefaultContentPercentage = function(){
     const currentRightPanel = this.getCurrentContentLayout();
-    currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}_default`];
-    currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}_100`] = false;
+    currentRightPanel[`${'h' === this.state.split ? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}_default`];
+    currentRightPanel[`${'h' === this.state.split ? 'width' : 'height'}_100`] = false;
     this._layoutComponents();
   };
 
   this.toggleFullViewContent = function(){
     ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
-      .rightpanel[`${this.state.split === 'h' ? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
-      .rightpanel[`${this.state.split === 'h' ? 'width' : 'height'}_100`];
+      .rightpanel[`${'h' === this.state.split ? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${'h' === this.state.split ? 'width' : 'height'}_100`];
+    //need to set 100 or
+    this.state.secondaryPerc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${'h' === this.state.split ? 'width' : 'height'}_100`]
+      ? 100
+      : ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${'h' === this.state.split ? 'width' : 'height'}`];
+
     this._layoutComponents();
   };
 
@@ -427,7 +431,7 @@ const ViewportService = function() {
     this._layout();
   };
 
-  this.showPrimaryView = function(perc=null) {
+  this.showPrimaryView = function(perc = null) {
     if (perc && this.state.secondaryVisible && 100 === this.state.secondaryPerc) {
       this.state.secondaryPerc = 100 - perc;
       this._layout();
@@ -547,7 +551,7 @@ const ViewportService = function() {
   };
 
   //main layout function
-  this._layout = function(event=null) {
+  this._layout = function(event = null) {
     const reducesdSizes = this._getReducedSizes();
     this._setViewSizes(reducesdSizes.reducedWidth, reducesdSizes.reducedHeight);
     if (this._immediateComponentsLayout) {
@@ -566,17 +570,18 @@ const ViewportService = function() {
     let secondaryHeight;
     // percentage of secondary view (content)
     const scale = (this.state.secondaryPerc !== 100 && !this.isFullViewContent() ? this.getContentPercentageFromCurrentLayout(this.state.split) : 100) / 100;
-    if ('h' === this.state.split ) {
+    if ('h' === this.state.split) {
       secondaryWidth  = this.state.secondaryVisible ? Math.max((viewportWidth * scale), this._secondaryViewMinWidth) : 0;
       secondaryHeight = viewportHeight;
-      primaryWidth    = viewportWidth - secondaryWidth;
+      primaryWidth    = viewportWidth;
       primaryHeight   = viewportHeight;
     } else {
       secondaryWidth  = viewportWidth;
       secondaryHeight = this.state.secondaryVisible ? Math.max((viewportHeight * scale),this._secondaryViewMinHeight) : 0;
-      primaryWidth    = this.state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
-      primaryHeight   = viewportHeight - secondaryHeight;
+      primaryWidth    = this.state.secondaryVisible && 1 === scale ? 0 : viewportWidth;
+      primaryHeight   = viewportHeight;
     }
+
     this.state[primaryView].sizes.width    = primaryWidth;
     this.state[primaryView].sizes.height   = primaryHeight;
     this.state[secondaryView].sizes.width  = secondaryWidth;
@@ -585,7 +590,7 @@ const ViewportService = function() {
 
   this.getViewportSize = function(){
     return {
-      width: this._viewportWidth(),
+      width:  this._viewportWidth(),
       height: this._viewportHeight()
     }
   };
@@ -608,7 +613,7 @@ const ViewportService = function() {
    * @param sizes
    * @param perc
    */
-  this.resizeViewComponents = function(type, sizes={}, perc){
+  this.resizeViewComponents = function(type, sizes = {}, perc){
     this.setResized(type, true);
     this.setContentPercentageFromCurrentLayout(type, perc);
     this._layout('resize');

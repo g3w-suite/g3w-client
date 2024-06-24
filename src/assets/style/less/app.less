@@ -405,10 +405,10 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .g3w-viewport #application-notifications                                                       { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 100; font-size: 25px; }
 .g3w-viewport #application-notifications > div                                                 { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; padding: 5px; background-color: #FFF; border-radius: 3px; }
 .g3w-viewport .g3w-view.map                                                                    { line-height: normal; display:inline-block; height:0; width:0; position: relative; }
-.g3w-viewport .g3w-view.map #resize-map-and-content                                            { position: absolute; z-index:4; user-select: none; }
-.g3w-viewport .g3w-view.map #resize-map-and-content:hover                                      { background-color: #ccc !important; }
-.g3w-viewport .g3w-view.map #resize-map-and-content.split-h                                    { width: 8px; height: 100%; cursor: col-resize; right:-7px; }
-.g3w-viewport .g3w-view.map #resize-map-and-content.split-v                                    { height: 8px; width: 100%; cursor: row-resize; bottom:-7px; }
+.g3w-viewport .g3w-view.content #resize-map-and-content                                        { position: absolute; z-index:4; user-select: none; }
+.g3w-viewport .g3w-view.content #resize-map-and-content:hover                                  { background-color: #ccc !important; }
+.g3w-viewport .g3w-view.content #resize-map-and-content.split-h                                { width: 3px; height: 100%; cursor: col-resize; left: 0;}
+.g3w-viewport .g3w-view.content #resize-map-and-content.split-v                                { height: 3px; width: 100%; cursor: row-resize; top: 0; }
 .g3w-viewport .g3w-view.content .preview                                                       { width: 100%; margin-top: 0; display:flex; align-items: center;}
 .g3w-viewport .g3w-view.content .preview .filename                                             { overflow: hidden; margin: 15px; font-weight: bold; }
 .g3w-viewport .g3w-view.content .preview .clearmedia                                           { cursor: pointer; margin-left: auto; }
@@ -435,11 +435,11 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .g3w-viewport .g3w-view.content .action-button.nohover:hover                                   { background-color: transparent; }
 .g3w-viewport .g3w-view.content .action-button-icon.trash                                      { color:red !important; }
 .g3w-viewport .g3w-view.content .action-button-icon                                            { padding-top: 2px; font-weight: bold; text-decoration: none; }
-.g3w-viewport .g3w-view.content                                                                { line-height: normal; float: right; overflow-wrap: break-word; height: 0; width: 0; background-color: @gray-lighter; overflow:hidden; position: relative; } 
+.g3w-viewport .g3w-view.content                                                                { line-height: normal; float: right; overflow-wrap: break-word; height: 0; width: 0; background-color: @gray-lighter; overflow:hidden; position: absolute;}
 .g3w-viewport .g3w-view.content .contents                                                      { height: 100%; padding-left: 0; padding-right: 0; }
 .g3w-viewport .g3w-view.content .contents .content-header-component                            { margin-top: 5px; font-weight: bold; }
-.g3w-viewport .g3w-view.content.split-h                                                        { border-left: 1px solid darken(@gray-lighter, 10%); }
-.g3w-viewport .g3w-view.content.split-v                                                        { border-top: 1px solid darken(@gray-lighter, 10%); }
+.g3w-viewport .g3w-view.content.split-h                                                        { border-left: 1px solid darken(@gray-lighter, 10%); top: 0; right: 0;}
+.g3w-viewport .g3w-view.content.split-v                                                        { border-top: 1px solid darken(@gray-lighter, 10%); bottom: 0; left: 0;}
 .g3w-viewport .g3w-view .close-panel-block                                                     { overflow: hidden; margin-top: 2px; margin-bottom: 2px; font-size: 1.4em; }
 .g3w-viewport .g3w-view .close-panel-block .g3w_contents_back                                  { font-size: 0.8em; }
 .g3w-viewport .g3w-view .close-panel-block .g3w_contents_back :is(.backto, .back)              { display: inline-block; font-weight: bold; }

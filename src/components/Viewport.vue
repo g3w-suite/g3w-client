@@ -42,13 +42,6 @@
       class  = "g3w-view map"
       :style = "styles.map"
     >
-      <g3w-resize
-        id           = "resize-map-and-content"
-        :show        = "showresize"
-        :moveFnc     = "moveFnc"
-        :orientation = "state.split"
-        :style       = "{backgroundColor:'transparent'}"
-        :class       = "`split-${state.split}`"/>
       <div id="application-notifications">
         <online-notify/>
         <download-notify/>
@@ -56,13 +49,22 @@
       </div>
     </div>
     <div
+      v-show     = "styles.content['h' === state.split ? 'width' : 'height'] !== '0px'"
       id         = "g3w-view-content"
       :class     = "`split-${state.split}`"
       class      = "g3w-view content"
       :style     = "styles.content"
       v-disabled = "state.content.disabled"
     >
-      <section
+        <g3w-resize
+          id           = "resize-map-and-content"
+          :show        = "showresize"
+          :moveFnc     = "moveFnc"
+          :orientation = "state.split"
+          :style       = "{backgroundColor:'transparent'}"
+          :class       = "`split-${state.split}`"/>
+
+        <section
         v-if  = "breadcrumb.length > 1"
         :ref  = "breadcrumb"
         class = "content_breadcrumb"
@@ -84,7 +86,7 @@
       <div
         v-if  = "(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)"
         class = "close-panel-block"
-        style = "display: flex; justify-content: space-between"
+        style = "display: flex; justify-content: space-between; padding-top: 5px;"
       >
         <div
           v-if  = "previousTitle"
@@ -130,10 +132,9 @@
         >
           <component v-for = "tool in state.content.headertools" :is = "tool"/>
           <resize-icon
-            v-if   = "showresizeicon"
-            :type  = "state.split"
-            style  = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
-            :style = "{marginRight: state.content.closable ? '5px': '0px'}"/>
+            :type   = "state.split"
+            style   = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
+            :style  = "{marginRight: state.content.closable ? '5px': '0px'}"/>
           <span
             v-if = "state.content.closable && state.content.aside"
             @click = "closeContent"
@@ -181,16 +182,13 @@
     },
     computed: {
       breadcrumb() {
-         return this.state.content.contentsdata
-           .filter(c => c.options.crumb)
-           .map(c => c.options.crumb);
+       return this.state.content.contentsdata
+         .filter(c => c.options.crumb)
+         .map(c => c.options.crumb);
       },
       showresize() {
-        const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
+        const currentPerc = viewportService.getCurrentContentLayout()['h' === this.state.split ? 'width' : 'height'];
         return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
-      },
-      showresizeicon() {
-        return 100 !== this.state.secondaryPerc;
       },
       hooks() {
         return this.usermessage.hooks;
@@ -205,9 +203,6 @@
         }
         return true;
       },
-      showContent() {
-        return this.state.content.show;
-      },
       styles() {
         return {
           map: {
@@ -219,7 +214,6 @@
             height:        `${this.state.content.sizes.height}px`,
             zIndex:        ZINDEXES.usermessage.tool + 1,
             minHeight:     'v' === this.state.split ? `${viewportConstraints.resize.content.min}px` : null,
-            paddingTop:    '8px',
             paddingBottom: '8px',
           }
         }
@@ -230,7 +224,7 @@
           return {title, post_title};
         }
       },
-      backOrBackTo(){
+      backOrBackTo() {
         return (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
           ? !(this.state.content.contentsdata[this.state.content.contentsdata.length - 2].options.title)
             ? 'back'
@@ -263,7 +257,7 @@
         GUI.closeUserMessage();
       },
       moveFnc(evt) {
-        const size = this.state.split === 'h' ? 'width' : 'height';
+        const size = 'h' === this.state.split  ? 'width' : 'height';
         evt.preventDefault();
         const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : viewportService.SIDEBARWIDTH : $('#main-navbar').height();
         const viewPortSize = $(this.$el)[size]();
