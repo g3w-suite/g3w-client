@@ -60,7 +60,7 @@ export const DOWNLOAD_FORMATS = {
   },
   download_pdf: {
     format: 'pdf',
-    url: 'pdf'
+    url:    'pdf'
   },
 };
 
@@ -402,12 +402,8 @@ export const TOC_THEMES_INIT_STATUS = 'collapsed';
  */
 export const VIEWPORT = {
   resize: {
-    map: {
-      min: 200
-    },
-    content: {
-      min: 200
-    }
+    map:     { min: 200 },
+    content: { min: 200 },
   }
 };
 

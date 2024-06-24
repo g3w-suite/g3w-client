@@ -5,16 +5,16 @@ import { baseInputMixin as BaseInputMixin } from 'mixins';
 const InputServices = require('./services');
 
 const Input = {
-  props: ['state'],
-  mixins: [BaseInputMixin],
+  props:      ['state'],
+  mixins:     [BaseInputMixin],
   components: {
     'baseinput': BaseInputComponent
   },
   watch: {
     'notvalid'(notvalid) {
-      notvalid && this.service.setErrorMessage()
+      if (notvalid) { this.service.setErrorMessage() }
     },
-    'state.value'(){
+    'state.value'() {
       if (undefined !== this.state.input.options.default_expression) {
         // need to postpone state.value watch parent that use mixin
         setTimeout(() => this.change());
@@ -22,9 +22,7 @@ const Input = {
     }
   },
   created() {
-    this.service = new InputServices[this.state.input.type]({
-      state: this.state,
-    });
+    this.service = new InputServices[this.state.input.type]({ state: this.state });
 
     this.$watch(
       () => ApplicationState.language,
@@ -63,9 +61,9 @@ const Input = {
       }
      in this case if we start a validation, it fail because default value is a string while input is interger
      */
-    this.state.value_from_default_value && this.$emit('changeinput', this.state);
+    if (this.state.value_from_default_value) { this.$emit('changeinput', this.state) }
   },
-  destroyed(){
+  destroyed() {
     // emit remove input to form (in case for example tab visibility condition)
     this.$emit('removeinput', this.state);
   }

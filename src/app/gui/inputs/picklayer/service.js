@@ -5,7 +5,7 @@ import { getQueryLayersPromisesByCoordinates } from 'utils/getQueryLayersPromise
 const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
-function PickLayerService(options={}) {
+function PickLayerService(options = {}) {
   this.pick_type   = options.pick_type || 'wms';
   this.ispicked    = false;
   this.fields      = options.fields || [options.value];
@@ -22,13 +22,13 @@ const proto = PickLayerService.prototype;
  *
  * @return {boolean|*}
  */
-proto.isPicked = function(){
+proto.isPicked = function() {
   return this.ispicked;
 };
 
 //bind interrupt event
 proto.escKeyUpHandler = function({ keyCode, data : { owner } }) {
-  keyCode === 27 && owner.unpick();
+  if (27 === keyCode) { owner.unpick() }
 };
 
 /**
@@ -68,7 +68,7 @@ proto.pick = function() {
     };
     GUI.setModal(false);
     this.mapService.addInteraction(this.interaction);
-    this.interaction.once('picked', (e) => {
+    this.interaction.once('picked', e => {
       if ('map' === this.pick_type) {
         const feature = e.feature;
         afterPick(feature);
@@ -78,11 +78,11 @@ proto.pick = function() {
           getQueryLayersPromisesByCoordinates(
             [layer],
             {
-              map: this.mapService.getMap(),
+              map:           this.mapService.getMap(),
               feature_count: 1,
-              coordinates: e.coordinate
-            }).then((response) => {
-              const { data=[] } = response[0];
+              coordinates:   e.coordinate
+            }).then(response => {
+              const { data = [] } = response[0];
               const feature = data.length && data[0].features[0] || null;
               afterPick(feature);
           })
@@ -106,9 +106,7 @@ proto.unpick = function() {
  *
  */
 proto.clear = function() {
-  if (this.isPicked()) {
-    this.unpick();
-  }
+  if (this.isPicked()) { this.unpick() }
   this.mapService = this.interaction = this.field = null;
 };
 

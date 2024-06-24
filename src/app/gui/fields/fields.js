@@ -7,13 +7,13 @@ import VueField from 'components/FieldVue.vue';
 
 const Fields = {
   simple_field: Text,
-  text_field: Text,
-  link_field: Link,
-  image_field: Image,
-  geo_field: Geo,
-  photo_field: Image,
-  media_field: Media,
-  vue_field: VueField
+  text_field:   Text,
+  link_field:   Link,
+  image_field:  Image,
+  geo_field:    Geo,
+  photo_field:  Image,
+  media_field:  Media,
+  vue_field:    VueField
 };
 
 module.exports = Fields;

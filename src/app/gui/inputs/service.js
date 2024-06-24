@@ -35,18 +35,15 @@ proto.getValue = function() {
  * @returns {void}
  */
 proto.setValue = function(value) {
-  if (null !== value && undefined !== value) {
-    return;
-  }
+  if (![null, undefined].includes(value)) { return }
 
   const { options }   = this.state.input;
-  let default_value = options.default;
+  let default_value   = options.default;
 
   /** @TODO (maybe need to removed in v3.9.0) double check G3W-ADMIN server configuration. */
   if (Array.isArray(options)) {
-    if (options[0].default) {
-      default_value = options[0].default;
-    } else if (Array.isArray(options.values) && options.values.length > 0) {
+    if (options[0].default) { default_value = options[0].default }
+    else if (Array.isArray(options.values) && options.values.length > 0) {
       default_value = options.values[0] && (options.values[0].value || options.values[0]);
     }
   }
@@ -75,7 +72,7 @@ proto._getValidatorType = function() {
   return this.state.type;
 };
 
-proto.setState = function(state={}) {
+proto.setState = function(state = {}) {
   this.state = _.isObject(state) ? state : {};
 };
 
@@ -95,17 +92,17 @@ proto.setEmpty = function(){
 // the general method to check the value of the state is valid or not
 proto.validate = function() {
   if (this.state.validate.empty) {
-    this.state.validate.empty = true;
-    this.state.value = null;
+    this.state.validate.empty  = true;
+    this.state.value           = null;
     this.state.validate.unique = true;
     // check if you require or check validation
-    this.state.validate.valid = this.state.validate.required ? false : this._validator.validate(this.state.value);
+    this.state.validate.valid  = this.state.validate.required ? false : this._validator.validate(this.state.value);
   } else {
-    if (this.state.input.type === 'integer' || this.state.input.type === 'float') {
+    if (['integer', 'float'].includes(this.state.input.type)) {
       if (+this.state.value < 0) {
-        this.state.value = null;
-        this.state.validate.empty = true;
-        this.state.validate.valid = !this.state.validate.required;
+        this.state.value               = null;
+        this.state.validate.empty      = true;
+        this.state.validate.valid      = !this.state.validate.required;
       } else this.state.validate.valid = this._validator.validate(this.state.value);
     }
     if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
@@ -151,9 +148,9 @@ proto.setErrorMessage = function() {
  */
 proto.setUpdate = function(){
   const {value, _value} = this.state;
-  if (this.state.input.type === 'media' && toRawType(value) !== 'Object' && toRawType(_value) !== 'Object') {
+  if ('media' === this.state.input.type && 'Object' !== toRawType(value) && 'Object' !== toRawType(_value)) {
     this.state.update = value.value != _value.value;
-  } else if (this.state.input.type === "datetimepicker") {
+  } else if ("datetimepicker" === this.state.input.type) {
     //check
     this.state.update = (null !== value ? value.toUpperCase(): value) != (_value ? _value.toUpperCase(): _value);
   } else {
