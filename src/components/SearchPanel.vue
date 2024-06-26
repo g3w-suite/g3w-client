@@ -19,7 +19,7 @@
             <search-panel-label :forminput="forminput"/>
             <input @focus="onFocus" type="text" v-model="forminput.value" @change="changeInput(forminput)" class="form-control" :id="forminput.id" >
           </div>
-          <div v-else-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text" v-disabled="isSelectDisabled(forminput)">
+          <div v-else-if="['selectfield', 'autocompletefield'].includes(forminput.type)" class="form-group text" v-disabled="isSelectDisabled(forminput)">
             <search-panel-label :forminput="forminput"/>
             <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance] || forminput.loading"/>
             <select2 :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"/>
@@ -42,8 +42,8 @@
 </template>
 
 <script>
-import Select2 from 'components/SearchSelect2.vue';
-import SearchDatetime from 'components/SearchDatetime.vue';
+import Select2          from 'components/SearchSelect2.vue';
+import SearchDatetime   from 'components/SearchDatetime.vue';
 import SearchPanelLabel from 'components/SearchPanelLabel.vue';
 
 export default {
