@@ -15,9 +15,9 @@ const { MapService } = require('gui/map/mapservice');
 export default function(opts = {}) {
   const comp = new Component({
     ...opts,
-    id: 'map',
-    title: 'Map Component',
-    service: new MapService(opts),
+    id:                'map',
+    title:             'Map Component',
+    service:            new MapService(opts),
     vueComponentObject: vueComp,
   })
 

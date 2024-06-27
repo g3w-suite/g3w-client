@@ -20,19 +20,19 @@ export default class FormComponent extends Component {
   constructor(opts={}) {
     super({
       ...opts,
-      id: opts.id || 'form',
-      perc: null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc,
-      service: new (opts.service || Service)(),
+      id:                 opts.id || 'form',
+      perc:               null === opts.layer.getFormPercentage() ? opts.perc : opts.layer.getFormPercentage(),
+      service:            new (opts.service || Service)(),
       vueComponentObject: opts.vueComponentObject || vueComp,
     });
 
     // set element of the form
     const components = opts.components || [{
-      id: opts.id,
-      title: opts.title,
-      name: opts.name,
-      root: true,
-      component: BodyFormComp,
+      id:              opts.id,
+      title:           opts.title,
+      name:            opts.name,
+      root:            true,
+      component:       BodyFormComp,
       headerComponent: opts.headerComponent
     }];
 

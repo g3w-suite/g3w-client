@@ -17,11 +17,11 @@ export default function(opts = {}) {
   const stack = new BarStack(); // handles the logic of mounting component on DOM
   const comp  = new Component({
     ...opts,
-    title: 'contents',
+    title:              'contents',
     vueComponentObject: {
-      name: 'viewport-contents-viewer',
+      name:     'viewport-contents-viewer',
       template: `<div id="contents" class="contents"></div>`,
-      data: () => ({ state: null }),
+      data:     () => ({ state: null }),
     },
   });
 
@@ -59,7 +59,7 @@ export default function(opts = {}) {
       return stack.clear();
     },
 
-    // used by  viewport.js, update the content of contentsdata only after stack is updated
+    // used by viewport.js, update the content of contentsdata only after stack is updated
     popContent() {
       return stack.pop().then(() => {
         comp.contentsdata = stack.state.contentsdata;
