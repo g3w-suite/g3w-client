@@ -7,15 +7,15 @@ const URLPattern   = /^(https?:\/\/[^\s]+)/g;
 const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
 
 const FieldType = {
-  SIMPLE:'simple',
-  GEO:'geo',
-  LINK:'link',
-  PHOTO: 'photo',
-  PHOTOLINK: "photolink",
-  IMAGE:'image',
-  POINTLINK:'pointlink',
-  ROUTE: 'route',
-  VUE: 'vue'
+  SIMPLE:    'simple',
+  GEO:       'geo',
+  LINK:      'link',
+  PHOTO:     'photo',
+  PHOTOLINK: 'photolink',
+  IMAGE:     'image',
+  POINTLINK: 'pointlink',
+  ROUTE:     'route',
+  VUE:       'vue'
 };
 
 module.exports  = {
@@ -27,9 +27,9 @@ module.exports  = {
    */
   getType(field) {
     let type = field.type;
-    if (type !== 'vue'){
+    if ('vue' !== type){
       const fieldValue = field.value;
-      const value = fieldValue && toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+      const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
       if (!value) {
         type = FieldType.SIMPLE;
       } else if (value && typeof value == 'object') {
