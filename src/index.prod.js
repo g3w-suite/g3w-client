@@ -363,7 +363,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
         $(document).localize();
         self._setViewport(self.templateConfig.viewport);
         const skinColor = $('.navbar').css('background-color');
-        GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
+        GUI.skinColor   = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
         await this.$nextTick();
         self.emit('ready');
         self.sizes.sidebar.width = $('#g3w-sidebar').width();
@@ -487,10 +487,8 @@ const ApplicationTemplate = function({ ApplicationService }) {
   this._addComponents = function(components, placeholder, options) {
     let register = true;
     if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
-      const placeholderService = ApplicationTemplate.Services[placeholder];
-      if (placeholderService) {
-        register = placeholderService.addComponents(components, options);
-      }
+      const service = ApplicationTemplate.Services[placeholder];
+      if (service) { register = service.addComponents(components, options) }
     }
     Object.entries(components).forEach(([key, component])=> {
       if (register) {
