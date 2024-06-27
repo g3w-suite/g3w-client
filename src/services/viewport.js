@@ -183,10 +183,8 @@ const ViewportService = function() {
           component.mount(`#g3w-view-${viewName}`, true)
             .then(() => {
               this._components[viewName] = component;
-              // check if view name is map
-              if ('map' === viewName) {
-                this._defaultMapComponent = component;
-              } // set de default component to map
+              // check if view name is a map
+              if ('map' === viewName) { this._defaultMapComponent = component } // set de default component to map
             })
             .fail(e => console.warn(e));
         }
@@ -267,10 +265,10 @@ const ViewportService = function() {
    }
    */
 
-  this.showContent = function(options={}) {
-    options.perc = options.perc !== undefined ? options.perc : this.getContentPercentageFromCurrentLayout();
+  this.showContent = function(options = {}) {
+    options.perc          = undefined === options.perc ? this.getContentPercentageFromCurrentLayout() : options.perc;
     // check if push is set
-    options.push = options.push || false;
+    options.push          = options.push || false;
     const evenContentName = options.perc === 100 ? 'show-content-full' : 'show-content';
     // set all content parameters
     this._prepareContentView(options);
@@ -298,13 +296,16 @@ const ViewportService = function() {
     const currentRightPanel = this.getCurrentContentLayout();
     currentRightPanel[`${'h' === this.state.split ? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}_default`];
     currentRightPanel[`${'h' === this.state.split ? 'width' : 'height'}_100`] = false;
+    //set percentage to default
+    this.state.secondaryPerc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${'h' === this.state.split ? 'width' : 'height'}`];
+
     this._layoutComponents();
   };
 
   this.toggleFullViewContent = function(){
     ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
       .rightpanel[`${'h' === this.state.split ? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${'h' === this.state.split ? 'width' : 'height'}_100`];
-    //need to set 100 or
+    //need to set 100 or percentage of content
     this.state.secondaryPerc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${'h' === this.state.split ? 'width' : 'height'}_100`]
       ? 100
       : ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${'h' === this.state.split ? 'width' : 'height'}`];
@@ -394,15 +395,9 @@ const ViewportService = function() {
       this._components.content.removeContent();
       // close secondary view( return a promise)
       this.closeSecondaryView('close-content')
-        .then(() => {
-          //recover default map
-          const mapComponent = this.recoverDefaultMap();
-          d.resolve(mapComponent);
-        });
-    } else {
-      const mapComponent = this.recoverDefaultMap();
-      d.resolve(mapComponent);
-    }
+        .then(() => { d.resolve(this.recoverDefaultMap()) }); //recover default map
+    } else { d.resolve(this.recoverDefaultMap()) }
+
     return d.promise()
   };
 
@@ -440,8 +435,9 @@ const ViewportService = function() {
 
   this.showSecondaryView = function(split = this.state.split, perc = this.state.perc) {
     this.state.secondaryVisible = true;
-    this.state.split = split;
-    this.state.secondaryPerc = perc;
+    this.state.split            = split;
+    this.state.secondaryPerc    = perc;
+
     this._layout();
   };
 
@@ -453,7 +449,7 @@ const ViewportService = function() {
       secondaryViewComponent.clearContents()
         .then(() => {
           this.state.secondaryVisible = false;
-          this.state.secondaryPerc = 0;
+          this.state.secondaryPerc    = 0;
           this._layout(event);
           Vue.nextTick(() => d.resolve());
         });
@@ -487,14 +483,14 @@ const ViewportService = function() {
    * @param options
    * @private
    */
-  this._prepareContentView = function(options={}) {
+  this._prepareContentView = function(options = {}) {
     const {
       title,
-      split          = null,
-      closable    = true,
-      backonclose = true,
-      style = {},
-      showgoback  = true,
+      split         = null,
+      closable      = true,
+      backonclose   = true,
+      style         = {},
+      showgoback    = true,
       headertools   = [],
     } = options;
     this.state.content.title        = title;
@@ -554,9 +550,7 @@ const ViewportService = function() {
   this._layout = function(event = null) {
     const reducesdSizes = this._getReducedSizes();
     this._setViewSizes(reducesdSizes.reducedWidth, reducesdSizes.reducedHeight);
-    if (this._immediateComponentsLayout) {
-      this._layoutComponents(event);
-    }
+    if (this._immediateComponentsLayout) { this._layoutComponents(event) }
   };
 
   this._setViewSizes = function() {
@@ -588,7 +582,7 @@ const ViewportService = function() {
     this.state[secondaryView].sizes.height = secondaryHeight;
   };
 
-  this.getViewportSize = function(){
+  this.getViewportSize = function() {
     return {
       width:  this._viewportWidth(),
       height: this._viewportHeight()
@@ -624,21 +618,21 @@ const ViewportService = function() {
    * @param type
    * @param perc
    */
-  this.setContentPercentageFromCurrentLayout = function(type=this.state.split, perc){
+  this.setContentPercentageFromCurrentLayout = function(type = this.state.split, perc) {
     this.getCurrentContentLayout()['h' === type ? 'width' : 'height'] = perc;
   };
 
-  this.getContentPercentageFromCurrentLayout = function(type= this.state.split){
+  this.getContentPercentageFromCurrentLayout = function(type= this.state.split) {
     return this.getCurrentContentLayout()['h' === type ? 'width': 'height'];
   };
 
-  this.getCurrentContentLayout = function(){
+  this.getCurrentContentLayout = function() {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
   };
 
   // load components of viewport
   // after right size setting
-  this._layoutComponents = function(event=null) {
+  this._layoutComponents = function(event = null) {
     requestAnimationFrame(() => {
       const reducesdSizes = this._getReducedSizes();
       const reducedWidth  = reducesdSizes.reducedWidth || 0;
@@ -650,9 +644,7 @@ const ViewportService = function() {
         const height = this.state[name].sizes.height - reducedHeight;
         component.layout(width, height);
       });
-      if (event) {
-        setTimeout(() => { this.emit(event); GUI.emit(event); })
-      }
+      if (event) { setTimeout(() => { this.emit(event); GUI.emit(event); }) }
     });
   };
 
@@ -703,6 +695,7 @@ const ViewportService = function() {
       });
     });
   };
+
   this._firstLayout();
   base(this);
 };
