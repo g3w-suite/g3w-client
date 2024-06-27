@@ -12,7 +12,7 @@
     >
       <span
         v-if   = "info.icon"
-        class  = "action-button skin-tooltip-bottom"
+        class  = "skin-tooltip-bottom"
         :class = "g3wtemplate.getFontClass(info.icon)">
       </span>
       <span>{{info.message}}</span>
@@ -65,7 +65,7 @@
                     <span
                       v-if                    = "layer.hasgeometry"
                       @click.stop             = "zoomToLayerFeaturesExtent(layer)"
-                       class                  = "action-button"
+                      class                   = "action-button"
                       v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'"
                     >
                       <span
