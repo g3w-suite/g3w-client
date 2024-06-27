@@ -2455,7 +2455,8 @@ proto.layout = function({ width, height }) {
   if (has_viewer && !is_hidden) {
     this.getMap().updateSize();
     this.state.hidemaps.forEach(h => h.map.updateSize());
-    this._updateMapView();
+    //@TODO Remove otherwise call map images every resize?
+    //this._updateMapView();
   }
 
   if (!has_viewer) { this.setupViewer(width, height) }
