@@ -48,8 +48,9 @@
         <plugins-notify/>
       </div>
     </div>
+
     <div
-      v-show     = "styles.content['h' === state.split ? 'width' : 'height'] !== '0px'"
+      v-show     = "state.secondaryPerc > 0"
       id         = "g3w-view-content"
       :class     = "`split-${state.split}`"
       class      = "g3w-view content"
@@ -136,7 +137,7 @@
             style   = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
             :style  = "{marginRight: state.content.closable ? '5px': '0px'}"/>
           <span
-            v-if = "state.content.closable && state.content.aside"
+            v-if   = "state.content.closable && state.content.aside"
             @click = "closeContent"
             :class = "{'mobile': isMobile()}"
             class  = "action-button"
@@ -204,6 +205,8 @@
         return true;
       },
       styles() {
+        //@TODO Find a better way
+        const mapFooterHeight = 30;
         return {
           map: {
             width:         `${this.state.map.sizes.width}px`,
@@ -211,16 +214,18 @@
           },
           content: {
             width:         `${this.state.content.sizes.width}px`,
-            height:        `${this.state.content.sizes.height}px`,
+            height:        `${this.state.content.sizes.height - mapFooterHeight}px`,
             zIndex:        ZINDEXES.usermessage.tool + 1,
             minHeight:     'v' === this.state.split ? `${viewportConstraints.resize.content.min}px` : null,
             paddingBottom: '8px',
+            paddingRight:  '5px',
+            bottom:         'v' === this.state.split ? `${mapFooterHeight}px` : 0,
           }
         }
       },
       contentTitle() {
         if (this.state.content.contentsdata.length) {
-          const {title, post_title} = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
+          const { title, post_title } = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
           return {title, post_title};
         }
       },
