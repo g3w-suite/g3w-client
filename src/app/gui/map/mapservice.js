@@ -1519,18 +1519,19 @@ proto._updateMapControlsLayout = function({ width, height } = {}) {
     // check if is vertical
     if (this.isMapControlsVerticalAlignement()) {
       const handleVerticalMapControlDOMElements = () => {
-        height-=35;
-        //check id content (query/search) is horizontal
-        if (document.getElementById('g3w-view-content').classList.contains('split-h')) {
-          this.state.mapControl.style.right = `${document.getElementById('g3w-view-content').offsetWidth + 5}px`;
-        } else {
-          this.state.mapControl.style.right = `5px`;
-          //calculate the height of the map controls
-          height = height - document.getElementById('g3w-view-content').offsetHeight;
-        }
-        this.state.mapcontrolDOM.css('height', `${height}px`);
+        setTimeout(() => {
+          height-=35;
+          //check id content (query/search) is horizontal
+          if (document.getElementById('g3w-view-content').classList.contains('split-h')) {
+            this.state.mapControl.style.right = `${document.getElementById('g3w-view-content').offsetWidth + 5}px`;
+          } else {
+            this.state.mapControl.style.right = `5px`;
+            //calculate the height of the map controls
+            height = height - document.getElementById('g3w-view-content').offsetHeight;
+          }
+          this.state.mapcontrolDOM.css('height', `${height}px`);
+        })
       }
-
       handleVerticalMapControlDOMElements();
     } else {
       if (isMobile.any) { this.setMapControlsAlignement('rv') }
