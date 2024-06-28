@@ -30,7 +30,6 @@
         const attribute = $(evt.target).attr('name');
         const data      = evt.params.data;
         const value     =  data ?  data.id : ALLVALUE;
-        console.log(value)
         this.$emit('select-change', {
           id,
           attribute,
