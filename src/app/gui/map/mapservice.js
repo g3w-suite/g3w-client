@@ -368,7 +368,7 @@ function MapService(options = {}) {
       currentIndex: 0,
       update:       true,
       disabled:     false,
-      style:        { right : '5px' },
+      style:        { right : '5px' , bottom: '75px'},
     },
     map_info:              {
       info:  null,
@@ -1520,14 +1520,25 @@ proto._updateMapControlsLayout = function({ width, height } = {}) {
     if (this.isMapControlsVerticalAlignement()) {
       const handleVerticalMapControlDOMElements = () => {
         setTimeout(() => {
-          height-=35;
+          height-=40;
+          const contentStyle = {
+            height: document.getElementById('g3w-view-content').offsetHeight,
+            width:  document.getElementById('g3w-view-content').offsetWidth,
+          }
           //check id content (query/search) is horizontal
           if (document.getElementById('g3w-view-content').classList.contains('split-h')) {
-            this.state.mapControl.style.right = `${document.getElementById('g3w-view-content').offsetWidth + 5}px`;
+            this.state.mapControl.style.right = `${ contentStyle.width + 5}px`;
+            document.querySelectorAll('.ol-control-br').forEach(c => c.style.right = this.state.mapControl.style.right);
+            this.state.mapControl.style.bottom = '75px';
           } else {
             this.state.mapControl.style.right = `5px`;
             //calculate the height of the map controls
-            height = height - document.getElementById('g3w-view-content').offsetHeight;
+            height = height - contentStyle.height;
+            this.state.mapControl.style.bottom = `${contentStyle.height + 75}px`;
+            [
+              ...document.querySelectorAll('.ol-control-br'),
+              ...document.querySelectorAll('.ol-control-bl')
+            ].forEach(c => c.style.bottom = `${contentStyle.height + 35}px`)
           }
           this.state.mapcontrolDOM.css('height', `${height}px`);
         })

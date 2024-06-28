@@ -41,7 +41,7 @@
       <addlayer :service = "service" />
 
       <!-- @since 3.8.0   -->
-      <div class = "g3w-map-controls-left-bottom"></div>
+      <div class = "g3w-map-controls-left-bottom" :style="{ bottom: state.mapControl.style.bottom }"></div>
 
     </div>
 
@@ -113,7 +113,6 @@
   }
   .g3w-map-controls-left-bottom {
     position: absolute;
-    bottom: 75px;
     left: 10px;
     z-index: 1;
   }
