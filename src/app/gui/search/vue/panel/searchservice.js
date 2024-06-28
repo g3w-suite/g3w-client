@@ -421,7 +421,9 @@ proto.getLayersFilterData = async function(layers, options = {}) {
   const data = Array.from(
     promisesData
       .filter(({status}) => 'fulfilled' === status)
-      .reduce((accumulator, { value = [] }) => new Set([...accumulator, ...value]), [])
+      .reduce((accumulator, { value = [] }) => {
+        return new Set([...accumulator, ...(value.data ? value.data : value)])
+      }, [])
   )
   //check if is not empty array
   switch (data.length && typeof data[0]) {
@@ -444,16 +446,18 @@ proto.getLayersFilterData = async function(layers, options = {}) {
 proto.getUniqueValuesFromField = async function({field, value, output}) {
   let data = [];
   try {
+    const is_autocomplete = 'autocomplete' === output;
     data = await this.getLayersFilterData(
       (1 === this.searchLayers.length ? [this.searchLayer] : this.searchLayers), {
-      field: this.getAutoFieldDependeciesParamField(field),
-      suggest: value !== undefined ? `${field}|${value}` : undefined,
-      unique: field,
-      ordering: field
+      field:      this.getAutoFieldDependeciesParamField(field),
+      suggest:    value !== undefined ? `${field}|${value}` : undefined,
+      unique:     is_autocomplete ? undefined: field,
+      fformatter: is_autocomplete ? field: undefined,
+      ordering:   field
     });
 
-    if ('autocomplete' === output) {
-      data = data.map(value => ({ id:value, text:value }));
+    if (is_autocomplete) {
+      data = data.map(([value, key]) => ({ id:value, text:key }));
     }
   } catch(e) { console.warn(e); }
 
