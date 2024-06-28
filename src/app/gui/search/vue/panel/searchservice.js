@@ -446,19 +446,16 @@ proto.getLayersFilterData = async function(layers, options = {}) {
 proto.getUniqueValuesFromField = async function({field, value, output}) {
   let data = [];
   try {
-    const is_autocomplete = 'autocomplete' === output;
     data = await this.getLayersFilterData(
       (1 === this.searchLayers.length ? [this.searchLayer] : this.searchLayers), {
       field:      this.getAutoFieldDependeciesParamField(field),
       suggest:    value !== undefined ? `${field}|${value}` : undefined,
-      unique:     is_autocomplete ? undefined: field,
-      fformatter: is_autocomplete ? field: undefined,
-      ordering:   field
+      fformatter: field,
+      ordering:   field,
     });
 
-    if (is_autocomplete) {
-      data = data.map(([value, key]) => ({ id:value, text:key }));
-    }
+    data = (data || []).map(([value, key]) => 'autocomplete' === output ? { id: value, text: key } : {key, value});
+
   } catch(e) { console.warn(e); }
 
   return data;
