@@ -224,19 +224,13 @@
        * Sync `this.state.forminputs` with `input.value`
        */
       async changeInput(input) {
-        //get field name
-        const field  = input.attribute;
-        // get parent eventually -> current input dependance
-        const parent = this.state.forminputs.find(i => input.dependance === i.attribute);
-        // inputs
-        // that depend on the current one
-        const deps   = this.state.forminputs.filter(i => field === i.dependance);
+        const field  = input.attribute;                                           // current field name
+        const deps   = this.state.forminputs.filter(i => field === i.dependance); // inputs that depend on the current one
         const state  = this.state;
         let value    = input.value;
 
         const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
         const has_autocomplete = i => 'autocompletefield' === i.type;
-        const has_select       = i => 'selectfield' === i.type;
 
         try {
           this.state.searching = true;
@@ -259,31 +253,28 @@
 
           // loop and update dependants
           await (Promise.allSettled(deps.map(async d => {
-            //create a filter data
-            //It uses to create filter for server request data and as key to of cache
-            const filter_data = getDataForSearchInput.field({
+
+            // cache server data by filter (eg: "zone|eq|A")
+            const filter = getDataForSearchInput.field({
               state,
               field,
               fields: [SEARCH_ALLVALUE, undefined].includes(value) ? [] : [createSingleFieldParameter({ field, value, operator: input.operator })]
             });
 
-            const cached = d.dvalues[filter_data];
+            const cached = d.dvalues[filter];
 
-            d.value  = has_select(d) ? SEARCH_ALLVALUE : null;
-            d.values = Array.from(new Set([                                 // ensure uniques values
+            d.value  = 'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            d.values = Array.from(new Set([                                       // ensure uniques values
               ...(!has_autocomplete(d) && !is_empty(value) ? [d.values[0]] : []), // get first value (ALL_VALUE)
               ...(!has_autocomplete(d) && is_empty(value) ? d._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
-              ...(cached || []),                                                  //cached
+              ...(cached || []),                                                  // cached
             ]));
 
             // value is empty → disable dependants inputs
             d.disabled = is_empty(value) ? d.dependance_strict : false;
 
-            //Check in deep dependencies
-            if (this.state.forminputs
-              .filter(i => i.dependance === d.attribute && (has_select(i) || has_autocomplete(i)))
-              .length > 0
-            ) {
+            // update nested dependencies
+            if (this.state.forminputs.find(i => i.dependance === d.attribute)) {
               this.changeInput(d);
             }
 
@@ -303,17 +294,23 @@
               const data = await state.search_layers[0].getFilterData({
                 fformatter: d.attribute,
                 ordering:   d.attribute,
-                field: filter_data,
+                field:      filter,
               });
 
               data.data = (data.data || []).map(([key, value]) => ({ key: value, value }));
+
               // case value map
-              if (!d.dependance_strict && 'selectfield' === d.type) { d._values.push(...d.values) }
+              if (!d.dependance_strict && 'selectfield' === d.type) {
+                d._values.push(...d.values);
+              }
 
               // set key value for select (!valuemap && !valuerelation)
-              if (1 === d.values.length) { d.values.push(...data.data) }
+              if (1 === d.values.length) {
+                d.values.push(...data.data);
+              }
 
-              d.dvalues[filter_data]                 = d.values.slice(1);        // exclude first element (ALL_VALUE)
+              // exclude first element (ALL_VALUE)
+              d.dvalues[filter] = d.values.slice(1);
 
 
             } catch(e) {
@@ -339,7 +336,9 @@
        * ORIGINAL SOURCE: src/components/SearchDatetime.vue@v3.9.3
        */
       async initDateTimeField(input) {
-        if ('datetimefield' !== input.type) { return }
+        if ('datetimefield' !== input.type) {
+          return;
+        }
 
         await this.$nextTick();
 

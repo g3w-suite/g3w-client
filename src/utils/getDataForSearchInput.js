@@ -31,19 +31,19 @@ export async function getDataForSearchInput({ state, field, suggest }) {
  * Traverse field dependecies
  */
 getDataForSearchInput.field = ({ state, field, fields = [] } = {}) => {
-  field        = state.forminputs.find(i => i.attribute === field);
-  const parent = state.forminputs.find(i => i.attribute === field.dependance);
+  field        = state.forminputs.find(i => i.attribute === field);            // current input
+  const parent = state.forminputs.find(i => i.attribute === field.dependance); // current input dependance (parent field)
 
+  // get all values (un-filtered)
   if (!parent || SEARCH_ALLVALUE === parent.value) {
     return (fields || []).join() || undefined;
   }
-  // get current field dependance
-  // In case of some input dependency is not filled
+
+  // filter by parent field
   if (undefined !== parent.value) {
-    // need to set to lower a case for api purpose
-    const { operator, logicop } = parent;
-    fields.unshift(`${parent.attribute}|${operator.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? logicop : ''));
+    fields.unshift(`${parent.attribute}|${parent.operator.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? parent.logicop : ''));
   }
 
+  // recursion step
   return getDataForSearchInput.field({ state, fields, field: parent.attribute });
 }
