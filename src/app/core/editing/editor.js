@@ -226,7 +226,7 @@ proto._getFeatures = function(options={}) {
  */
 proto.revert = function() {
   const d = $.Deferred();
-  this._featuresstore.setFeatures(this._cloneFeatures(this._layer.readFeatures()));
+  this.getEditingSource().setFeatures(this._cloneFeatures(this.readFeatures()));
   d.resolve();
   return d.promise();
 };
