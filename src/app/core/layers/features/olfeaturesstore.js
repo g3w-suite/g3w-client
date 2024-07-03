@@ -16,8 +16,12 @@ proto.getLength = function() {
 };
 
 //overwrite
-proto.setFeatures = function(features=[]) {
-  features.forEach(feature => this._features.push(feature));
+proto.setFeatures = function(features = []) {
+  f//remove features
+  this._features.clear();
+  //add new features
+  this.addFeatures(features);
+  this._features.dispatchEvent('change');
 };
 // overwrite
 proto.readFeatures = function() {
