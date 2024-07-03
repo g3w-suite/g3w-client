@@ -17,7 +17,7 @@ proto.getLength = function() {
 
 //overwrite
 proto.setFeatures = function(features = []) {
-  f//remove features
+  //remove features
   this._features.clear();
   //add new features
   this.addFeatures(features);
