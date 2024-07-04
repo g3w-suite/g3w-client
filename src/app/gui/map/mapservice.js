@@ -587,6 +587,19 @@ function MapService(options={}) {
         })
       });
 
+      const map = this.viewer.getMap();
+      let can_drag = false;
+
+      // set mouse cursor (dragging)
+      (new Vue()).$watch(
+        () => this.getCurrentToggledMapControl(),
+        (curr) => { map.getViewport().classList.toggle('ol-grab', !curr); can_drag = !curr; }
+      );
+      map.on(['pointerdrag', 'pointerup'], (e) => {
+        map.getViewport().classList.toggle('ol-grabbing', can_drag && e.type == 'pointerdrag');
+        map.getViewport().classList.toggle('ol-grab', can_drag && e.type == 'pointerup');
+      });
+
       let geom;
       if (zoom_to_fid) {
         await this.zoomToFid(zoom_to_fid);
@@ -770,30 +783,31 @@ proto.getScaleFromExtent = function(extent) {
   return getScaleFromResolution(resolution, this.getMapUnits());
 };
 
+/**
+ * @TODO refactor CDU plugin in order to remove `OlMapViewer` class
+ */
 proto._addHideMap = function({ratio, layers=[], mainview=false} = {}) {
-  const idMap = this.state.hidemaps[this.state.hidemaps.length - 1 ];
-  const view = this.getMap().getView();
-  const view_options = {
-    projection: view.getProjection(),
-    center: view.getCenter(),
-    resolution: this.getResolution()
-  };
-  const viewer = new OlMapViewer({
-    id: idMap.id,
-    view: mainview ? view: view_options
-  });
+  const idMap  = this.state.hidemaps.at(-1);
+  const view   = this.getMap().getView();
+
   // set Map
-  idMap.map = viewer.getMap();
+  idMap.map = (new OlMapViewer({
+    id:   idMap.id,
+    view: mainview ? view : {
+      projection: view.getProjection(),
+      center:     view.getCenter(),
+      resolution: this.getResolution()
+    }
+  })).getMap();
+
   // in case of rate
   if (ratio) {
-    const [width, height] = idMap.map.getSize();
-    idMap.map.setSize([width, width*ratio]);
+    const [w, h] = idMap.map.getSize();
+    idMap.map.setSize([w, w * ratio]);
   }
 
-  for (let i=0; i < layers.length; i++) {
-    const layer = layers[i];
-    idMap.map.addLayer(layer);
-  }
+  (layers || []).forEach(l => idMap.map.addLayer(l));
+
   return idMap.map;
 };
 
@@ -991,7 +1005,9 @@ proto.getQueryLayerPromiseByCoordinates = function({layer, coordinates} = {}) {
  */
 proto.activeMapControl = function(controlName) {
   const control = this._mapControls.find(control => controlName === control.type).control;
-  !control.isToggled() ? control.toggle() : null;
+  if (!control.isToggled()) {
+    control.toggle()
+  }
 };
 
 proto.createMapControl = function(type, {
