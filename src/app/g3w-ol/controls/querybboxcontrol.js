@@ -101,7 +101,13 @@ module.exports = class QueryBBoxControl extends InteractionControl {
     InteractionControl.prototype.setMap.call(this, map);
 
     // set mouse cursor (crosshair)
-    this.on('toggled', ({ toggled }) => map.getViewport().classList.toggle('ol-crosshair', toggled));
+    this.on('toggled', ({ toggled }) => {
+      if (toggled) {
+        setTimeout(() => map.getViewport().classList.toggle('ol-crosshair', true));
+        return;
+      }
+      map.getViewport().classList.toggle('ol-crosshair', toggled);
+    });
 
     this._interaction.on('boxstart',        e => this._startCoordinate = e.coordinate);
     this._interaction.on('boxend', throttle(e => {
