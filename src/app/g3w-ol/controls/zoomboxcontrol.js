@@ -16,12 +16,14 @@ module.exports = class ZoomBoxControl extends InteractionControl {
 
   setMap(map) {
     InteractionControl.prototype.setMap.call(this, map);
+
+    // set mouse cursor (zoom-in)
     let previousCursor;
     this.on('toggled', ({ toggled }) => {
-      console.log(toggled);
-      previousCursor    = toggled ? map.getViewport().style.cursor : previousCursor;  
+      previousCursor                 = toggled ? map.getViewport().style.cursor : previousCursor;  
       map.getViewport().style.cursor = toggled ? 'zoom-in' : previousCursor;
     });
+
     this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
     this._interaction.on('boxend',   e => {
       this.dispatchEvent({
