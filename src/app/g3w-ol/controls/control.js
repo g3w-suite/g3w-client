@@ -211,14 +211,10 @@ module.exports = class Control extends ol.control.Control {
       let cliccked = false;
       controlElement.on('click', async() => {
         // skip when ...
-        if (cliccked) {
-          return;
-        }
+        if (cliccked) { return }
         cliccked = true;
         buttonControl.addClass('g3w-ol-disabled');
-        if (this._onclick) {
-          await this._onclick();
-        }
+        await this._onclick();
         buttonControl.removeClass('g3w-ol-disabled');
         cliccked = false;
       })
