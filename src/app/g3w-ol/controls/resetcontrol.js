@@ -1,25 +1,20 @@
-import { mergeOptions } from 'utils/mergeOptions';
-
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
-const ResetControl = function(options){
-  this._toggled = true;
-  this._startCoordinate = null;
-  const _options = {
-      name: "reset",
+module.exports = class ResetControl extends InteractionControl {
+
+  constructor(options){
+    super({
+      ...options,
+      name:     "reset",
       tipLabel: "Pan",
-      label: "\ue901"
-    };
-  options = mergeOptions(options,_options);
-  InteractionControl.call(this,options);
-};
+      label:    "\ue901"
+    });
+    this._toggled = true;
+    this._startCoordinate = null;
+  }
 
-ol.inherits(ResetControl, InteractionControl);
+  _postRender() {
+    this.toggle(true);
+  }
 
-module.exports = ResetControl;
-
-const proto = ResetControl.prototype;
-
-proto._postRender = function(){
-  this.toggle(true);
-};
+}

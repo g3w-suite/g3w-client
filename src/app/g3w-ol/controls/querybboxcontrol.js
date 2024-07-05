@@ -2,8 +2,8 @@ import { SPATIAL_METHODS } from 'app/constant';
 import GUI                 from 'services/gui';
 import DataRouterService   from 'services/data';
 import ProjectsRegistry    from 'store/projects';
+import { throttle }        from 'utils/throttle';
 
-const { throttle }       = require('utils');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 /**

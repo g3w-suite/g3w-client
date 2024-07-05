@@ -1,34 +1,27 @@
 const Control = require('g3w-ol/controls/control');
 
-function AddLayersControl() {
-  const options = {
-    name: "addlayer",
-    tipLabel: "sdk.mapcontrols.addlayer.tooltip",
-    label: "\ue907"
-  };
-  Control.call(this, options);
-  this._layerstore = null;
+module.exports = class AddLayersControl extends Control {
+
+  constructor() {
+    super({
+      name:     "addlayer",
+      tipLabel: "sdk.mapcontrols.addlayer.tooltip",
+      label:    "\ue907"
+    });
+    this._layerstore = null;
+  }
+
+  setMap(map) {
+    Control.prototype.setMap.call(this,map);
+    $(this.element).on('click', () => this.dispatchEvent('addlayer'));
+  }
+
+  getLayersSore() {
+    return this._layerstore;
+  }
+
+  setLayersStore(layersStore) {
+    this._layerstore = layersStore;
+  }
+
 }
-
-ol.inherits(AddLayersControl, Control);
-
-const proto = AddLayersControl.prototype;
-
-proto.setMap = function(map) {
-  Control.prototype.setMap.call(this,map);
-  $(this.element).on('click', () => this.dispatchEvent('addlayer'));
-};
-
-proto.layout = function(map) {
-  Control.prototype.layout.call(this, map);
-};
-
-proto.getLayersSore = function() {
-  return this._layerstore;
-};
-
-proto.setLayersStore = function(layersStore) {
-  this._layerstore = layersStore;
-};
-
-module.exports = AddLayersControl;

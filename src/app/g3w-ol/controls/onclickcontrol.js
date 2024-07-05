@@ -1,39 +1,37 @@
 const Control = require('g3w-ol/controls/control');
 
-function OnClickControl(options = {}) {
-  this._originalonlick = null;
-  this._onclick = options.onclick;
-  Control.call(this, options);
-}
+module.exports = class OnClickControl extends Control {
 
-ol.inherits(OnClickControl, Control);
+  constructor(options = {}) {
+    super(options);
+    this._originalonlick = null;
+    this._onclick = options.onclick;
+  }
 
-const proto = OnClickControl.prototype;
+  overwriteOnClickEvent(clickHandler){
+    this._originalonlick = this._originalonlick || this._onclick;
+    this._onclick = clickHandler;
+  };
 
-proto.overwriteOnClickEvent = function(clickHandler){
-  this._originalonlick = this._originalonlick || this._onclick;
-  this._onclick = clickHandler;
+  resetOriginalOnClickEvent() {
+    this._onclick = this._originalonlick || this._onclick;
+    this._originalonlick = null;
+  }
+
+  setMap(map) {
+    Control.prototype.setMap.call(this,map);
+    const controlElement = $(this.element);
+    const buttonControl = controlElement.children('button');
+    let cliccked = false;
+    controlElement.on('click', async ()  => {
+      if (!cliccked) {
+        cliccked = true;
+        buttonControl.addClass('g3w-ol-disabled');
+        this._onclick && await this._onclick();
+        buttonControl.removeClass('g3w-ol-disabled');
+        cliccked = false;
+      }
+    })
+  }
+
 };
-
-proto.resetOriginalOnClickEvent = function(){
-  this._onclick = this._originalonlick || this._onclick;
-  this._originalonlick = null;
-};
-
-proto.setMap = function(map) {
-  Control.prototype.setMap.call(this,map);
-  const controlElement = $(this.element);
-  const buttonControl = controlElement.children('button');
-  let cliccked = false;
-  controlElement.on('click', async ()  => {
-    if (!cliccked) {
-      cliccked = true;
-      buttonControl.addClass('g3w-ol-disabled');
-      this._onclick && await this._onclick();
-      buttonControl.removeClass('g3w-ol-disabled');
-      cliccked = false;
-    }
-  })
-};
-
-module.exports = OnClickControl;

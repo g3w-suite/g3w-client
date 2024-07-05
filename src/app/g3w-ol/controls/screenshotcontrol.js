@@ -17,86 +17,85 @@ const OnClickControl = require('g3w-ol/controls/onclickcontrol');
  * 
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
  */
-function ScreenshotControl(options = {}) {
-  options = {
-    name: "maptoimage",
-    tipLabel: "Screenshot",
-    label: "\ue90f",
-    toggled: false,
-    visible: true, // set initial to true
-    layers: [],
-    ...options
-  };
+module.exports = class ScreenshotControl extends OnClickControl {
 
-  this.layers     = options.layers;
+  constructor(options = {}) {
+    options.layers = undefined !== options.layers ? options.layers : []; 
 
-  OnClickControl.call(this, options);
+    super({
+      name: "maptoimage",
+      tipLabel: "Screenshot",
+      label: "\ue90f",
+      toggled: false,
+      visible: true, // set initial to true
+      layers: [],
+      ...options
+    });
 
-  //set visibility based on layers
-  this.setVisible(this.checkVisible(this.layers));
+    this.layers= options.layers;
 
-  //only if is visible (no CORS issue) need to listen add/remove layer
-  if (this.isVisible()) {
-    //listen add/remove External Layer event to check visibility of the control
-    GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
-    GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+    //set visibility based on layers
+    this.setVisible(this.checkVisible(this.layers));
+
+    //only if is visible (no CORS issue) need to listen add/remove layer
+    if (this.isVisible()) {
+      //listen add/remove External Layer event to check visibility of the control
+      GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+      GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+    }
   }
+
+  /**
+   * Called when a new layer is added to Project (eg. wms or vector layer)
+   * 
+   * @since 3.8.3
+   *
+   */
+  _addLayer(layer) {
+    this.layers.push(layer);
+    this.change(this.layers);
+    layer.on('change:visible', () => this.change(this.layers));
+  }
+
+  /**
+   * Called when a layer is removed from Project
+   * 
+   * @since 3.8.3 
+   */
+  _removeLayer(layer) {
+    this.layers = this.layers.filter(l => l !== layer);
+    this.change(this.layers);
+  }
+
+  /**
+   * Called when a layer is added or removed
+   * 
+   * @param layers
+   */
+  change(layers = []) {
+    this.setVisible(this.checkVisible(layers));
+  }
+
+  /**
+   * Check visibility for map control based on layers URLs.
+   * 
+   * Allow to print external WMS layers only when they have
+   * same origin URL of current application in order to avoid
+   * CORS issue while getting map image.
+   * 
+   * Layers that don't have a source URL are excluded (eg. base layers)
+   * 
+   * @param {array} layers
+   * 
+   * @returns {boolean}
+   */
+  checkVisible(layers = []) {
+    //need to be visible. If it was not visible an CORS issue was raise.
+    // Need to reload and remove layer
+    return this.isVisible() && !layers.some(isCrossOrigin);
+  }
+
 }
-
-ol.inherits(ScreenshotControl, OnClickControl);
-
-const proto = ScreenshotControl.prototype;
-
-/**
- * Method call when new layer is add to Project
- * Example wms or vector layer
- * 
- * @since 3.8.3
- *
- */
-proto._addLayer = function(layer) {
-  this.layers.push(layer);
-  this.change(this.layers);
-  layer.on('change:visible', () => this.change(this.layers));
-};
-
-/**
- * Method call when a layer is removed from Project
- * 
- * @since 3.8.3 
- */
-proto._removeLayer = function(layer) {
-  this.layers = this.layers.filter(l => l !== layer);
-  this.change(this.layers);
-};
-
-/**
- * Method call when layer is add/removed to/from project
- * 
- * @param layers
- */
-proto.change = function(layers = []) {
-  this.setVisible(this.checkVisible(layers));
-};
-
-/**
- * Check visibility for map control based on layers URLs.
- * 
- * Allow to print external WMS layers only when they have
- * same origin URL of current application in order to avoid
- * CORS issue while getting map image.
- * 
- * Layers that don't have a source URL are excluded (eg. base layers)
- * 
- * @param {array} layers
- * 
- * @returns {boolean}
- */
-proto.checkVisible = function(layers = []) {
-  //need to be visible. If it was not visible an CORS issue was raise.
-  // Need to reload and remove layer
-  return this.isVisible() && !layers.some(isCrossOrigin);
-};
 
 /**
  * Check if a layer has a Cross Origin source URI
@@ -146,5 +145,3 @@ function isImageLayer(layer) {
 function isExternalImageLayer(layer) {
   return layer.getConfig().source && layer.getConfig().source.external;
 }
-
-module.exports = ScreenshotControl;
