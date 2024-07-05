@@ -593,7 +593,7 @@ function MapService(options={}) {
 
       // set mouse cursor (dragging)
       (new Vue()).$watch(
-        () => [this.getCurrentToggledMapControl(), (PluginsRegistry.getPlugin('editing') && PluginsRegistry.getPlugin('editing').getToolBoxes().filter(t =>t.getActiveTool()).length)],
+        () => [this.getCurrentToggledMapControl(), (PluginsRegistry.getPlugin('editing') && PluginsRegistry.getPlugin('editing').getActiveTool())],
         ([control, activeTool]) => {
           can_drag = !control && !activeTool;
           map.getViewport().classList.toggle('ol-grab', can_drag);
