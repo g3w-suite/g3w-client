@@ -4,6 +4,7 @@ import MapLayersStoresRegistry       from 'store/map-layers';
 import ProjectsRegistry              from 'store/projects';
 import ApplicationService            from 'services/application';
 import ControlsRegistry              from 'store/map-controls';
+import PluginsRegistry               from 'store/plugins';
 import GUI                           from 'services/gui';
 import MapControlZoomHistory         from 'components/MapControlZoomHistory.vue';
 import MapControlGeocoding           from 'components/MapControlGeocoding.vue';
@@ -592,8 +593,11 @@ function MapService(options={}) {
 
       // set mouse cursor (dragging)
       (new Vue()).$watch(
-        () => this.getCurrentToggledMapControl(),
-        (curr) => { map.getViewport().classList.toggle('ol-grab', !curr); can_drag = !curr; }
+        () => [this.getCurrentToggledMapControl(), (PluginsRegistry.getPlugin('editing') && PluginsRegistry.getPlugin('editing').getToolBoxes().filter(t =>t.getActiveTool()).length)],
+        ([control, activeTool]) => {
+          can_drag = !control && !activeTool;
+          map.getViewport().classList.toggle('ol-grab', can_drag);
+        }
       );
       map.on(['pointerdrag', 'pointerup'], (e) => {
         map.getViewport().classList.toggle('ol-grabbing', can_drag && e.type == 'pointerdrag');
