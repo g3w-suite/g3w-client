@@ -37,13 +37,13 @@ const QueryByPolygonControl     = require('g3w-ol/controls/querybypolygoncontrol
 const GeolocationControl        = require('g3w-ol/controls/geolocationcontrol');
 const StreetViewControl         = require('g3w-ol/controls/streetviewcontrol');
 const AddLayersControl          = require('g3w-ol/controls/addlayers');
-const LengthControl             = require('g3w-ol/controls/lengthcontrol');
-const AreaControl               = require('g3w-ol/controls/areacontrol');
+const LenghtIteraction          = require('g3w-ol/interactions/lengthinteraction');
+const AreaIteraction            = require('g3w-ol/interactions/areainteraction');
+const MeasureControl            = require('g3w-ol/controls/measurecontrol');
 const MousePositionControl      = require('g3w-ol/controls/mousepositioncontrol');
 const ScaleControl              = require('g3w-ol/controls/scalecontrol');
 const OnClikControl             = require('g3w-ol/controls/onclickcontrol');
 const ScreenshotControl         = require('g3w-ol/controls/screenshotcontrol');
-const geoScreenshotControl      = require('g3w-ol/controls/geoscreenshotcontrol');
 const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
 const InteractionControl        = require('g3w-ol/controls/interactioncontrol');
 
@@ -63,15 +63,15 @@ const CONTROLS = {
   'geolocation':        GeolocationControl,
   'streetview':         StreetViewControl,
   'addlayers':          AddLayersControl,
-  'length':             LengthControl,
-  'area':               AreaControl,
+  'length':             (opts = {}) => new MeasureControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.length.tooltip', label: '\ue908', clickmap: true, interactionClass: LenghtIteraction }),
+  'area':               (opts = {}) => new MeasureControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.area.tooltip',   label: '\ue909', clickmap: true, interactionClass: AreaIteraction }),
   'mouseposition':      MousePositionControl,
   'scale':              ScaleControl,
   'onclick':            OnClikControl,
   /** @since 3.8.3 */
   'ontoggle':           InteractionControl,
   'screenshot':         ScreenshotControl,
-  'geoscreenshot':      geoScreenshotControl,
+  'geoscreenshot':      (opts = {}) => new ScreenshotControl({ name: 'maptoimagegeo', tipLabel: 'Geo Screenshot', label:' \ue900', ...opts }),
   'querybydrawpolygon': QueryByDrawPolygonControl,
 };
 

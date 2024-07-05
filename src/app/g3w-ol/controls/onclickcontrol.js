@@ -27,7 +27,9 @@ module.exports = class OnClickControl extends Control {
       if (!cliccked) {
         cliccked = true;
         buttonControl.addClass('g3w-ol-disabled');
-        this._onclick && await this._onclick();
+        if (this._onclick) {
+          await this._onclick();
+        }
         buttonControl.removeClass('g3w-ol-disabled');
         cliccked = false;
       }
