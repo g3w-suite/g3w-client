@@ -1,6 +1,5 @@
 import ApplicationState          from 'store/application-state';
 import GUI                       from 'services/gui';
-import { mergeOptions }          from 'utils/mergeOptions';
 import * as vueComp              from 'components/StreetView.vue';
 import Component                 from 'core/g3w-component';
 

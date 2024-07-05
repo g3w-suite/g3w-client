@@ -100,13 +100,22 @@ module.exports = class QueryBBoxControl extends InteractionControl {
   setMap(map) {
     InteractionControl.prototype.setMap.call(this, map);
 
+    /** @FIXME mouse cursor when editing constraint is enabled */
     // set mouse cursor (crosshair)
-    this.on('toggled', ({ toggled }) => {
-      if (toggled) {
-        setTimeout(() => map.getViewport().classList.toggle('ol-crosshair', true));
-        return;
+    // this.on('toggled', ({ toggled }) => {
+    //   if (toggled) {
+    //     setTimeout(() => map.getViewport().classList.toggle('ol-crosshair', true));
+    //     return;
+    //   }
+    //   map.getViewport().classList.toggle('ol-crosshair', toggled);
+    // });
+
+    this._interaction.on('change:active', ({ oldValue }) => {
+      if (oldValue) {
+        map.getViewport().classList.remove('ol-crosshair');
+      } else {
+        setTimeout(() => map.getViewport().classList.add('ol-crosshair'));
       }
-      map.getViewport().classList.toggle('ol-crosshair', toggled);
     });
 
     this._interaction.on('boxstart',        e => this._startCoordinate = e.coordinate);

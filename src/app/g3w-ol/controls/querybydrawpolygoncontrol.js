@@ -2,14 +2,16 @@
  * @file
  * @since v3.8
  */
-import GUI               from 'services/gui';
-import DataRouterService from 'services/data';
-import ProjectsRegistry  from 'store/projects';
-import { throttle }      from 'utils/throttle';
+import { SPATIAL_METHODS }            from 'app/constant';
+import GUI                            from 'services/gui';
+import DataRouterService              from 'services/data';
+import ProjectsRegistry               from 'store/projects';
+import { throttle }                   from 'utils/throttle';
+import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
 
-const BaseQueryPolygonControl = require('g3w-ol/controls/basequerypolygoncontrol');
+const InteractionControl              = require('g3w-ol/controls/interactioncontrol');
 
-module.exports = class QueryByDrawPolygonControl extends BaseQueryPolygonControl {
+module.exports = class QueryByDrawPolygonControl extends InteractionControl {
 
   constructor(options={}) {
 
@@ -22,7 +24,13 @@ module.exports = class QueryByDrawPolygonControl extends BaseQueryPolygonControl
       interactionClass:        ol.interaction.Draw,
       interactionClassOptions: { type: 'Polygon' },
       layers:                  GUI.getService('map').filterableLayersAvailable({ filtrable: { ows: 'WFS' } }) || [],
-      help:                    { title:"sdk.mapcontrols.querybybbox.help.title", message:"sdk.mapcontrols.querybybbox.help.message", }
+      help:                    { title:"sdk.mapcontrols.querybybbox.help.title", message:"sdk.mapcontrols.querybybbox.help.message", },
+      offline:                 false,
+      onSelectlayer:           options.onSelectlayer,
+      spatialMethod:           undefined !== options.spatialMethod ? options.spatialMethod : SPATIAL_METHODS[0],
+      toggledTool:             { type: 'spatialMethod', how: 'toggled' /* or hover */ },
+      onhover:                 true,
+      geometryTypes:           getAllPolygonGeometryTypes()
     });
 
     this.setEnable(this.hasVisibleLayers());
@@ -40,7 +48,7 @@ module.exports = class QueryByDrawPolygonControl extends BaseQueryPolygonControl
    */
   setMap(map) {
 
-    BaseQueryPolygonControl.prototype.setMap.call(this, map);
+    InteractionControl.prototype.setMap.call(this, map);
 
     this._interaction.on('drawend', throttle(evt => {
       this.feature = evt.feature;

@@ -1,13 +1,14 @@
+import { SPATIAL_METHODS }            from 'app/constant';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 import ProjectsRegistry               from 'store/projects';
 import { getMapLayersByFilter }       from 'utils/getMapLayersByFilter';
 import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
 import { isPolygonGeometryType }      from 'utils/isPolygonGeometryType';
+import { throttle }                   from 'utils/throttle';
 
-const { throttle }                       = require('utils');
-const BaseQueryPolygonControl            = require('g3w-ol/controls/basequerypolygoncontrol');
-const PickCoordinatesInteraction         = require('g3w-ol/interactions/pickcoordinatesinteraction');
+const InteractionControl              = require('g3w-ol/controls/interactioncontrol');
+const PickCoordinatesInteraction      = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
@@ -17,12 +18,9 @@ const condition = {
   }
 };
 
-module.exports = class QueryByPolygonControl extends BaseQueryPolygonControl {
+module.exports = class QueryByPolygonControl extends InteractionControl {
 
   constructor(options={}) {
-
-    const controlQuerableLayers  = getMapLayersByFilter({ QUERYABLE: true, SELECTED_OR_ALL: true });
-    const controlFiltrableLayers = GUI.getService('map').filterableLayersAvailable(condition);
 
     super({
       ...options,
@@ -32,8 +30,17 @@ module.exports = class QueryByPolygonControl extends BaseQueryPolygonControl {
       tipLabel:         "sdk.mapcontrols.querybypolygon.tooltip",
       label:            options.label || "\ue903",
       interactionClass: PickCoordinatesInteraction,
-      layers:           controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [],
-      help:             { title: "sdk.mapcontrols.querybypolygon.help.title", message: "sdk.mapcontrols.querybypolygon.help.message", }
+      layers:           [... new Set([
+        ...(GUI.getService('map').filterableLayersAvailable(condition) || []),
+        ...getMapLayersByFilter({ QUERYABLE: true, SELECTED_OR_ALL: true }),
+      ])],
+      help:             { title: "sdk.mapcontrols.querybypolygon.help.title", message: "sdk.mapcontrols.querybypolygon.help.message", },
+      onSelectlayer:    options.onSelectlayer,
+      clickmap:         true,
+      spatialMethod:    undefined !== options.spatialMethod ? options.spatialMethod : SPATIAL_METHODS[0],
+      toggledTool:      { type: 'spatialMethod', how: 'toggled' /* or hover */ },
+      onhover:          true,
+      geometryTypes:    getAllPolygonGeometryTypes()
     });
 
     /**
@@ -89,7 +96,7 @@ module.exports = class QueryByPolygonControl extends BaseQueryPolygonControl {
    */
   setMap(map) {
 
-    BaseQueryPolygonControl.prototype.setMap.call(this, map);
+    InteractionControl.prototype.setMap.call(this, map);
     
     this._interaction
       .on('picked', throttle(async evt => {
