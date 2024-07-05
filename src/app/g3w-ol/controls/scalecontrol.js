@@ -61,9 +61,10 @@ class ScaleControl extends ol.control.Control {
 
     map.on('moveend', function() {
       if (isMapResolutionChanged) {
+        const scale = parseInt(getScaleFromResolution(this.getView().getResolution(), this.getView().getProjection().getUnits()));
         addCustomTag({
           id: scale,
-          text: `1:${parseInt(getScaleFromResolution(this.getView().getResolution(), this.getView().getProjection().getUnits()))}`,
+          text: `1:${scale}`,
           new: true
         });
         isMapResolutionChanged = false;
