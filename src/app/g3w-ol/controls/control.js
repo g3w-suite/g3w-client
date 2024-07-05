@@ -203,7 +203,7 @@ module.exports = class Control extends ol.control.Control {
           if (!cliccked) {
             cliccked = true;
             buttonControl.addClass('g3w-ol-disabled');
-            if (this._onclick) { await this._onclick() }
+            await this._onclick();
             buttonControl.removeClass('g3w-ol-disabled');
             cliccked = false;
           }
