@@ -89,19 +89,18 @@ CONTROLS['nominatim'] = CONTROLS['geocoding'];
 class OlMapViewer {
 
   constructor(opts = {}) {
-    const controls     = ol.control.defaults({ attribution: false, zoom: false });
-    const interactions = ol.interaction.defaults().extend([ new ol.interaction.DragRotate() ]);
-
-    interactions.removeAt(1); // remove douclickzoom
 
     this.map = new ol.Map({
-      controls,
-      interactions,
-      ol3Logo: false,
-      view: opts.view instanceof ol.View ? opts.view : new ol.View(opts.view),
+      controls:            ol.control.defaults({ attribution: false, zoom: false }),
+      interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate() ]),
+      ol3Logo:             false,
+      view:                opts.view instanceof ol.View ? opts.view : new ol.View(opts.view),
       keyboardEventTarget: document,
-      target: opts.id,
+      target:              opts.id,
     });
+
+    // disable douclickzoom
+    this.map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(false);
 
     // visual click (sonar effect)
     this.map.on('click', ({ coordinate }) => {
@@ -597,6 +596,7 @@ function MapService(options={}) {
         ([control, activeTool]) => {
           can_drag = !control && !activeTool;
           map.getViewport().classList.toggle('ol-grab', can_drag);
+          map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(can_drag);
         }
       );
       map.on(['pointerdrag', 'pointerup'], (e) => {
