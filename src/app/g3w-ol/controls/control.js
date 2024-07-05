@@ -210,7 +210,7 @@ module.exports = class Control extends ol.control.Control {
       const buttonControl  = controlElement.children('button');
       let cliccked = false;
       controlElement.on('click', async() => {
-        // skip when ...
+        // skip when already clicked (waiting async _onclick method)
         if (cliccked) { return }
         cliccked = true;
         buttonControl.addClass('g3w-ol-disabled');
