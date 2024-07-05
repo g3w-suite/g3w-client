@@ -66,7 +66,7 @@ const CONTROLS = {
   'area':               (opts = {}) => new MeasureControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.area.tooltip',   label: '\ue909', clickmap: true, interactionClass: AreaIteraction }),
   'mouseposition':      MousePositionControl,
   'scale':              ScaleControl,
-  'onclick':            (opts = {}) => new Control({ ...opts }),
+  'onclick':            Control,
   /** @since 3.8.3 */
   'ontoggle':           InteractionControl,
   'screenshot':         ScreenshotControl,

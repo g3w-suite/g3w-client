@@ -27,8 +27,14 @@ module.exports = class Control extends ol.control.Control {
 
     super(options);
 
-    ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+     */
     this._originalonlick = null;
+
+    /**
+     * custom "onclick" handler
+     */
     this._onclick        = options.onclick; // a method trigger when click on map control button
 
     /**
@@ -190,26 +196,34 @@ module.exports = class Control extends ol.control.Control {
    * @param {ol.Map | null} map instace to be added (null = remove from map)
    */
   setMap(map) {
-    if (map) {
-      this.layout(map);
-      ol.control.Control.prototype.setMap.call(this, map);
-      ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
-      //In case of custom onclick handler
-      if (this._onclick) {
-        const controlElement = $(this.element);
-        const buttonControl  = controlElement.children('button');
-        let cliccked = false;
-        controlElement.on('click', async () => {
-          if (!cliccked) {
-            cliccked = true;
-            buttonControl.addClass('g3w-ol-disabled');
-            await this._onclick();
-            buttonControl.removeClass('g3w-ol-disabled');
-            cliccked = false;
-          }
-        })
-      }
+    if (!map) {
+      return
     }
+
+    this.layout(map);
+
+    ol.control.Control.prototype.setMap.call(this, map);
+
+    /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
+    if (this._onclick) {
+      const controlElement = $(this.element);
+      const buttonControl  = controlElement.children('button');
+      let cliccked = false;
+      controlElement.on('click', async() => {
+        // skip when ...
+        if (cliccked) {
+          return;
+        }
+        cliccked = true;
+        buttonControl.addClass('g3w-ol-disabled');
+        if (this._onclick) {
+          await this._onclick();
+        }
+        buttonControl.removeClass('g3w-ol-disabled');
+        cliccked = false;
+      })
+    }
+
   }
 
   /**
@@ -281,13 +295,21 @@ module.exports = class Control extends ol.control.Control {
    */
   _postRender() {}
 
-  ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+   *
+   * @since 3.10.1
+   */
   overwriteOnClickEvent(clickHandler){
     this._originalonlick = this._originalonlick || this._onclick;
     this._onclick        = clickHandler;
   };
 
-  ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+   *
+   * @since 3.10.1
+   */
   resetOriginalOnClickEvent() {
     this._onclick        = this._originalonlick || this._onclick;
     this._originalonlick = null;
