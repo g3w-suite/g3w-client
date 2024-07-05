@@ -42,7 +42,6 @@ const AreaIteraction            = require('g3w-ol/interactions/areainteraction')
 const MeasureControl            = require('g3w-ol/controls/measurecontrol');
 const MousePositionControl      = require('g3w-ol/controls/mousepositioncontrol');
 const ScaleControl              = require('g3w-ol/controls/scalecontrol');
-const OnClikControl             = require('g3w-ol/controls/onclickcontrol');
 const ScreenshotControl         = require('g3w-ol/controls/screenshotcontrol');
 const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
 const InteractionControl        = require('g3w-ol/controls/interactioncontrol');
@@ -67,7 +66,7 @@ const CONTROLS = {
   'area':               (opts = {}) => new MeasureControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.area.tooltip',   label: '\ue909', clickmap: true, interactionClass: AreaIteraction }),
   'mouseposition':      MousePositionControl,
   'scale':              ScaleControl,
-  'onclick':            OnClikControl,
+  'onclick':            (opts = {}) => new Control({ ...opts }),
   /** @since 3.8.3 */
   'ontoggle':           InteractionControl,
   'screenshot':         ScreenshotControl,

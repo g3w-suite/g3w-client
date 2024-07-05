@@ -1,7 +1,7 @@
 import GUI from 'services/gui';
 
 const { sameOrigin } = require('utils');
-const OnClickControl = require('g3w-ol/controls/onclickcontrol');
+const Control        = require('g3w-ol/controls/control');
 
 /**
  * @FIXME prevent tainted canvas error
@@ -17,7 +17,7 @@ const OnClickControl = require('g3w-ol/controls/onclickcontrol');
  * 
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
  */
-module.exports = class ScreenshotControl extends OnClickControl {
+module.exports = class ScreenshotControl extends Control {
 
   constructor(options = {}) {
     options.layers = undefined !== options.layers ? options.layers : []; 

@@ -7,7 +7,7 @@ module.exports = class Control extends ol.control.Control {
    * @param {string}  options.name
    * @param {boolean} options.enabled 
    */
-  constructor (options={}) {
+  constructor (options ={ }) {
 
     options.name    = undefined !== options.name    ? options.name    : '';
     options.visible = undefined !== options.enabled ? options.enabled : true;
@@ -26,6 +26,10 @@ module.exports = class Control extends ol.control.Control {
     }
 
     super(options);
+
+    ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+    this._originalonlick = null;
+    this._onclick        = options.onclick; // a method trigger when click on map control button
 
     /**
      * @FIXME add description
@@ -189,6 +193,22 @@ module.exports = class Control extends ol.control.Control {
     if (map) {
       this.layout(map);
       ol.control.Control.prototype.setMap.call(this, map);
+      ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+      //In case of custom onclick handler
+      if (this._onclick) {
+        const controlElement = $(this.element);
+        const buttonControl  = controlElement.children('button');
+        let cliccked = false;
+        controlElement.on('click', async () => {
+          if (!cliccked) {
+            cliccked = true;
+            buttonControl.addClass('g3w-ol-disabled');
+            if (this._onclick) { await this._onclick() }
+            buttonControl.removeClass('g3w-ol-disabled');
+            cliccked = false;
+          }
+        })
+      }
     }
   }
 
@@ -259,7 +279,18 @@ module.exports = class Control extends ol.control.Control {
   /**
    * @virtual
    */
-  _postRender() {
+  _postRender() {}
+
+  ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+  overwriteOnClickEvent(clickHandler){
+    this._originalonlick = this._originalonlick || this._onclick;
+    this._onclick        = clickHandler;
+  };
+
+  ///ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+  resetOriginalOnClickEvent() {
+    this._onclick        = this._originalonlick || this._onclick;
+    this._originalonlick = null;
   }
 
 }
