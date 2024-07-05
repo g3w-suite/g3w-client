@@ -27,11 +27,12 @@ module.exports = class ZoomBoxControl extends InteractionControl {
     //   map.getViewport().classList.toggle('ol-crosshair', toggled);
     // });
 
-    this._interaction.on('change:active', ({ oldValue }) => {
-      if (oldValue) {
-        map.getViewport().classList.remove('ol-crosshair');
-      } else {
+    // https://openlayers.org/en/v5.3.0/apidoc/module-ol_Object.ObjectEvent.html to ge new value of the event
+    this._interaction.on('change:active', (e) => {
+      if (e.target.get(e.key)) {
         setTimeout(() => map.getViewport().classList.add('ol-crosshair'));
+      } else {
+        map.getViewport().classList.remove('ol-crosshair');
       }
     });
 
