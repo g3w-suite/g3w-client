@@ -207,7 +207,7 @@ proto._updateFeature = function(feature) {
   });
 };
 
-proto.setFeatures = function(features) {
+proto.setFeatures = function(features = []) {
   this._features = features;
 };
 

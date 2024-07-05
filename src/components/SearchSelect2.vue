@@ -25,11 +25,11 @@
     props: ['forminput','autocompleteRequest'],
     mixins: [select2Mixin],
     methods: {
-      emitChangeEvent(evt){
-        const id = $(evt.target).attr('id');
+      emitChangeEvent(evt) {
+        const id        = $(evt.target).attr('id');
         const attribute = $(evt.target).attr('name');
-        const data = evt.params.data;
-        const value =  data ?  data.id : ALLVALUE;
+        const data      = evt.params.data;
+        const value     =  data ?  data.id : ALLVALUE;
         this.$emit('select-change', {
           id,
           attribute,
@@ -75,13 +75,13 @@
     watch : {
       async 'forminput.value'(value) {
         await this.$nextTick();
-        if (value === ALLVALUE) {
+        if (ALLVALUE === value) {
           this.select2.val(value);
           this.select2.trigger('change');
         }
       }
     },
-    created(){
+    created() {
       this.allvalue = ALLVALUE;
     },
     async mounted() {

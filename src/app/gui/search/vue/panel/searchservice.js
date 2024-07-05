@@ -421,7 +421,9 @@ proto.getLayersFilterData = async function(layers, options = {}) {
   const data = Array.from(
     promisesData
       .filter(({status}) => 'fulfilled' === status)
-      .reduce((accumulator, { value = [] }) => new Set([...accumulator, ...value]), [])
+      .reduce((accumulator, { value = [] }) => {
+        return new Set([...accumulator, ...(value.data ? value.data : value)])
+      }, [])
   )
   //check if is not empty array
   switch (data.length && typeof data[0]) {
@@ -446,15 +448,14 @@ proto.getUniqueValuesFromField = async function({field, value, output}) {
   try {
     data = await this.getLayersFilterData(
       (1 === this.searchLayers.length ? [this.searchLayer] : this.searchLayers), {
-      field: this.getAutoFieldDependeciesParamField(field),
-      suggest: value !== undefined ? `${field}|${value}` : undefined,
-      unique: field,
-      ordering: field
+      field:      this.getAutoFieldDependeciesParamField(field),
+      suggest:    value !== undefined ? `${field}|${value}` : undefined,
+      fformatter: field,
+      ordering:   field,
     });
 
-    if ('autocomplete' === output) {
-      data = data.map(value => ({ id:value, text:value }));
-    }
+    data = (data || []).map(([value, key]) => 'autocomplete' === output ? { id: value, text: key } : {key, value});
+
   } catch(e) { console.warn(e); }
 
   return data;
@@ -643,55 +644,60 @@ proto.getDependanceCurrentValue = function(field) {
  * 
  * Fill all dependencies inputs based on value
  */
-proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
+proto.fillDependencyInputs = function({ field, subscribers = [], value = ALLVALUE } = {}) {
   const isRoot = this.inputdependance[field] === undefined;
   //check id inpute father is valid to search on subscribers
-  const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
+  const invalidValue = ALLVALUE === value || [null, undefined].includes(value) || '' === value.toString().trim() ;
   return new Promise((resolve, reject) => {
     //loop over dependencies fields inputs
     subscribers.forEach(subscribe => {
       // in case of autocomplete reset values to empty array
-      if (subscribe.type === 'autocompletefield') {
-        subscribe.options.values.splice(0);
-      } else {
+      if (subscribe.type === 'autocompletefield') { subscribe.options.values.splice(0) }
+      else {
         //set starting all values
-        if (subscribe.options._allvalues === undefined) {
-          subscribe.options._allvalues = [...subscribe.options.values];
-        }
+        if (undefined === subscribe.options._allvalues) { subscribe.options._allvalues = [...subscribe.options.values] }
         //case of father is set an empty invalid value (all value example)
         if (invalidValue) {
           //subscribe has to set all valaues
           subscribe.options.values.splice(0);
-          setTimeout(()=>subscribe.options.values = [...subscribe.options._allvalues]);
-        } else {
-          subscribe.options.values.splice(1);
-        } //otherwise has to get first __ALL_VALUE
+          setTimeout(() => subscribe.options.values = [...subscribe.options._allvalues]);
+        } else { subscribe.options.values.splice(1) } //otherwise has to get first __ALL_VALUE
       }
-      subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
+      subscribe.value = 'selectfield' === subscribe.type  ? ALLVALUE : null;
+
+      //need to
+      if (['selectfield', 'autocompletefield'].includes(subscribe.type))  {
+        this.fillDependencyInputs({
+          field:       subscribe.attribute,
+          subscribers: this.getDependencies(subscribe.attribute),
+          value:       subscribe.value,
+        })
+      }
+
     });
     // check if cache field values are set
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
-    const notAutocompleteSubscribers = subscribers.filter(subscribe => subscribe.type !== 'autocompletefield');
-    if (value && value !== ALLVALUE) {
+    const notAutocompleteSubscribers = subscribers.filter(s => s.type !== 'autocompletefield');
+    if (value && ALLVALUE !== value) {
       let isCached;
       let rootValues;
       if (isRoot) {
         const cachedValue = this.cachedependencies[field] && this.cachedependencies[field][value];
-        isCached = cachedValue !== undefined;
-        rootValues = isCached && cachedValue;
+        isCached          = undefined !== cachedValue;
+        rootValues        = isCached && cachedValue;
       } else {
         const dependenceCurrentValue = this.getDependanceCurrentValue(field);
-        const cachedValue = this.cachedependencies[field]
+        const cachedValue            = this.cachedependencies[field]
           && this.cachedependencies[field][dependenceCurrentValue]
           && this.cachedependencies[field][dependenceCurrentValue][value];
-        isCached = cachedValue !== undefined;
+        isCached   = cachedValue !== undefined;
         rootValues = isCached && cachedValue;
       }
       if (isCached) {
         for (let i = 0; i < subscribers.length; i++) {
           const subscribe = subscribers[i];
-          const values = rootValues[subscribe.attribute];
+          const values    = rootValues[subscribe.attribute];
           if (values && values.length) {
             for (let i = 0; i < values.length; i++) {
               subscribe.options.values.push(values[i]);
