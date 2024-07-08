@@ -3142,16 +3142,6 @@ proto._handlePrint = async function(controlType) {
 
 proto.getCookie = (name) => Vue.cookie.get(name);
 
-/**
- * Wrapper for native Open Layers controls 
- */
-function OLControl(type) {
-  return (class extends ol.control.Control {
-
-
-  });
-}
-
 module.exports = {
 
   MapService,
