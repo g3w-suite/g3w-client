@@ -418,6 +418,10 @@ export class InteractionControl extends ol.control.Control {
    */
   setMap(map) {
 
+    if (!map) {
+      return
+    }
+
     /** @since 3.11.0 */
     if (this._options.onSetMap) {
       this._options.onSetMap.call(this, { setter: 'before', map });
@@ -426,7 +430,6 @@ export class InteractionControl extends ol.control.Control {
     if (this._control) {
       this.layout(map);
       this._control.setMap(map);
-      return;
     }
 
     if (this._interactionClass) {
@@ -440,31 +443,27 @@ export class InteractionControl extends ol.control.Control {
   
       /** @since 3.8.0 */
       this.dispatchEvent({ type: 'setMap', map });
-
-      return;
     }
 
-    if (!map) {
-      return
-    }
+    if (!this._control && !this._interaction) {
+      this.layout(map);
 
-    this.layout(map);
+      ol.control.Control.prototype.setMap.call(this, map);
 
-    ol.control.Control.prototype.setMap.call(this, map);
-
-    /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
-    if (this._onclick) {
-      const btn = $(this.element).children('button');
-      let loading = false; // whether already clicked (waiting for async "_onclick" method)
-      $(this.element).on('click', async () => {
-        if (!loading) {
-          loading = true;
-          btn.addClass('g3w-ol-disabled');
-          await this._onclick();
-          btn.removeClass('g3w-ol-disabled');
-          loading = false;
-        }
-      });
+      /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
+      if (this._onclick) {
+        const btn = $(this.element).children('button');
+        let loading = false; // whether already clicked (waiting for async "_onclick" method)
+        $(this.element).on('click', async () => {
+          if (!loading) {
+            loading = true;
+            btn.addClass('g3w-ol-disabled');
+            await this._onclick();
+            btn.removeClass('g3w-ol-disabled');
+            loading = false;
+          }
+        });
+      }
     }
 
     /** @since 3.11.0 */

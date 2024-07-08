@@ -73,8 +73,8 @@ const CONTROLS = {
     tipLabel:         'Zoom to box',
     label:            '\ue901',
     interactionClass: ol.interaction.DragBox,
-    onSetMap(e) {
-      if ('after' === e.setter) {
+    onSetMap({ setter, map }) {
+      if ('after' === setter) {
         // set mouse cursor (crosshair)
         this.on('toggled', ({ toggled }) => _toggleClass('ol-crosshair', map.getViewport(), toggled));
         this._interaction.on('change:active', e => _toggleClass('ol-crosshair', map.getViewport(), e.target.get(e.key)));
@@ -97,7 +97,7 @@ const CONTROLS = {
     label:            opts.label || "\uea0f",
     clickmap:         true,
     interactionClass: PickCoordinatesInteraction,
-    onSetMap(e) {
+    onSetMap({ map, setter }) {
       this.runQuery = this.runQuery || (async ({ coordinates }) => {
         GUI.closeOpenSideBarComponent();
         try {
@@ -114,13 +114,13 @@ const CONTROLS = {
           console.warn('Error running spatial query: ', e)
         }
       });
-      if ('before' === e.setter) {
+      if ('before' === setter) {
         let key = null;
         this.on('toggled', ({ toggled }) => {
           if (true !== toggled) {
             ol.Observable.unByKey(key);
             key = null;
-          } else if (null === key && e.map) {
+          } else if (null === key && map) {
             key = this.getInteraction().on('picked', throttle(e => this.runQuery({coordinates: e.coordinate })));
           }
         });
