@@ -74,7 +74,8 @@
               <span>{{ input.label || input.attribute }}</span>
               <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
-            <bar-loader
+
+              <bar-loader
               v-if     = "input.dependance"
               :loading = "state.loading[input.dependance] || input.loading"
             />
@@ -159,339 +160,346 @@
 </template>
 
 <script>
-import {
-  FILTER_EXPRESSION_OPERATORS,
-  SEARCH_ALLVALUE,
-}                                            from 'app/constant';
-import ApplicationState                      from 'store/application-state';
-import ApplicationService                    from 'services/application';
-import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
-import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
-import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
-import resizeMixin                           from 'mixins/resize';
+  import {
+    FILTER_EXPRESSION_OPERATORS,
+    SEARCH_ALLVALUE,
+  }                                            from 'app/constant';
+  import ApplicationState                      from 'store/application-state';
+  import ApplicationService                    from 'services/application';
+  import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
+  import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
+  import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
+  import resizeMixin                           from 'mixins/resize';
 
-const { t } = require('core/i18n/i18n.service');
+  const { t } = require('core/i18n/i18n.service');
 
-// store all select2 inputs
-const SELECTS = [];
+  // store all select2 inputs
+  const SELECTS = [];
 
-export default {
+  export default {
 
-  mixins: [resizeMixin],
+    mixins: [resizeMixin],
 
-  data() {
-    return {
-     state: this.$options.service.state,
-     allvalue: SEARCH_ALLVALUE,
-    }
-  },
-
-  computed: {
-
-    layers_url() {
-      return ApplicationService.getCurrentProject().getState().layers_url;
-    },
-
-    is_staff() {
-      return ApplicationService.getConfig().user.is_staff;
-    },
-
-  },
-
-  methods: {
-
-    resize() {
-      SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/components/SearchPanelLabel.vue@v3.9.3
-     */
-    getLabelOperator(operator) {
-      return `[ ${FILTER_EXPRESSION_OPERATORS[operator]} ]`
-    },
-
-    async onFocus(e) {
-      if (this.isMobile()) {
-        const top = $(e.target).position().top - 10 ;
-        await this.$nextTick();
-        setTimeout(() => $('.sidebar').scrollTop(top), 500);
+    data() {
+      return {
+       state:    this.$options.service.state,
+       allvalue: SEARCH_ALLVALUE,
       }
     },
 
-    /**
-     * Sync `this.state.forminputs` with `input.value`
-     */
-    async changeInput(input) {
-      const field  = input.attribute;
-      const parent = this.state.forminputs.find(d => d.attribute === field);     // current input dependance
-      const deps   = this.state.forminputs.filter(d => d.dependance === field);  // inputs that depends on the current one
-      const cached = parent && undefined !== input.dvalues[parent.value] ? input.dvalues[parent.value][value] : input.dvalues[value]; // cached data
-      const state  = this.state;
-      let value    = input.value;
+    computed: {
 
-      const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
-      const has_autocomplete = s => 'autocompletefield' === s.type;
+      layers_url() {
+        return ApplicationService.getCurrentProject().getState().layers_url;
+      },
 
-      try {
-        this.state.searching = true;
+      is_staff() {
+        return ApplicationService.getConfig().user.is_staff;
+      },
 
-        if ('numberfield' === input.type) {
-          value = value || 0 === value ? value : null;
+    },
+
+    methods: {
+
+      resize() {
+        SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
+      },
+
+      /**
+       * ORIGINAL SOURCE: src/components/SearchPanelLabel.vue@v3.9.3
+       */
+      getLabelOperator(operator) {
+        return `[ ${FILTER_EXPRESSION_OPERATORS[operator]} ]`
+      },
+
+      async onFocus(e) {
+        if (this.isMobile()) {
+          const top = $(e.target).position().top - 10 ;
+          await this.$nextTick();
+          setTimeout(() => $('.sidebar').scrollTop(top), 500);
         }
+      },
 
-        // fallback to default value → `SEARCH_ALLVALUE`
-        if (undefined === value) {
-          value = SEARCH_ALLVALUE;
-        }
+      /**
+       * Sync `this.state.forminputs` with `input.value`
+       */
+      async changeInput(input) {
+        const field  = input.attribute;                                           // current field name
+        const deps   = this.state.forminputs.filter(i => field === i.dependance); // inputs that depend on the current one
+        const state  = this.state;
+        let value    = input.value;
 
-        /** @TODO check if it has one reason to trim  */
-        if (!['textfield', 'textField'].includes(input.type)) {
-          value = value.trim();
-        }
+        const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
+        const has_autocomplete = i => 'autocompletefield' === i.type;
 
-        input.value = value;
+        try {
+          this.state.searching = true;
 
-        // loop and update dependants
-        await Promise.allSettled(deps.map(async s => {
-
-          s.value  = 'selectfield' === s.type ? SEARCH_ALLVALUE : null;
-          s.values = Array.from(new Set([                                       // ensure uniques values
-            ...(!has_autocomplete(s) && !is_empty(value) ? [s.values[0]] : []), // get first value (ALL_VALUE)
-            ...(!has_autocomplete(s) && is_empty(value) ? s._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
-            ...(input.dependance && cached && cached[s.attribute]       || [])  // get cached values 
-          ]));
-
-          // value is empty → disable dependants inputs
-          s.disabled = is_empty(value) ? s.dependance_strict : false;
-
-          // depentants values are there → no need to perform further server requests
-          if (has_autocomplete(s) || is_empty(value) || (input.dependance && cached)) {
-            return;
+          if ('numberfield' === input.type) {
+            value = value || 0 === value ? value : null;
           }
 
-          state.loading[field] = true;
+          // fallback to default value → `SEARCH_ALLVALUE`
+          if (undefined === value) {
+            value = SEARCH_ALLVALUE;
+          }
 
-          // extract the value of the field to get filter data from the relation layer
-          // set undefined because if it has a subscribed input with valuerelations widget
-          
-          /** @TODO use `getDataForSearchInput` instead ? */
-          const data = await state.search_layers[0].getFilterData({
-            fformatter: s.attribute,
-            ordering: s.attribute,
-            field: getDataForSearchInput.field({
+          /** @TODO check if it has one reason to trim  */
+          if (!['textfield', 'textField'].includes(input.type)) {
+            value = value.trim();
+          }
+
+          input.value = value;
+
+          // loop and update dependants
+          await (Promise.allSettled(deps.map(async d => {
+
+            // cache server data by filter (eg: "zone|eq|A")
+            const filter = getDataForSearchInput.field({
               state,
               field,
-              fields: undefined !== value ? [createSingleFieldParameter({ field, value, operator: parent.operator })] : []
-            }),
-          });
-
-          data.data = (data.data || []).map(([key, value]) => ({ key: value, value }));
-
-          // case value map
-          if (!s.dependance_strict && 'selectfield' === s.type) {
-            s._values.push(...s.values);
-          }
-
-          // set key value for select (!valuemap && !valuerelation)
-          if (1 === s.values.length) {
-            s.values.push(...data.data);
-          }
-
-          // update cache
-          if (input.dependance) {
-            input.dvalues[parent.value]        = input.dvalues[parent.value] || {};
-            input.dvalues[parent.value][value] = input.dvalues[parent.value][value] || {}
-            input.dvalues[parent.value][s.attribute] = s.values.slice(1); // exclude first element (ALL_VALUE)
-          } else {
-            input.dvalues[value] = input.dvalues[value] || {};
-            input.dvalues[value][s.attribute] = s.values.slice(1);        // exclude first element (ALL_VALUE)
-          }
-
-          s.disabled = false;
-
-        }));
-      } catch(e) {
-        console.warn(e);
-      } finally {
-        this.state.loading[field] = false;
-        this.state.searching = false;
-      }
-    },
-
-    doSearch(e) {
-      e.preventDefault();
-      this.$options.service.run();
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/components/SearchDatetime.vue@v3.9.3
-     */
-    async initDateTimeField(input) {
-      if ('datetimefield' !== input.type) {
-        return;
-      }
-
-      await this.$nextTick();
-
-      input.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(input.options.format.fieldformat);
-      input.options.format.displayformat = convertQGISDateTimeFormatToMoment(input.options.format.displayformat);
-
-      $(this.$refs['date_' + input.id]).datetimepicker({
-        defaultDate:       null,
-        format:            input.options.format.displayformat,
-        ignoreReadonly:    true,
-        allowInputToggle:  true,
-        toolbarPlacement:  'top',
-        widgetPositioning: { vertical: 'bottom', horizontal: 'left' },
-        showClose:         true,
-        locale:            ApplicationState.language || 'en',
-      });
-
-      $(this.$refs['date_' + input.id]).on("dp.change", () => {
-        const newDate = $(`#${input.id}`).val();
-        input.value = newDate.trim()
-          ? moment(newDate, input.options.format.displayformat).format(input.options.format.fieldformat)
-          : null;
-        this.changeInput(input);
-      });
-
-      if (ApplicationState.ismobile) {
-        setTimeout(()=> { $('#' + input.id).blur(); });
-      }
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
-     */
-    async initSelect2Field(input) {
-      if (!['selectfield', 'autocompletefield'].includes(input.type)) {
-        return;
-      }
-
-      await this.$nextTick();
-
-      const numdigaut        = input.options.numdigaut;
-      const has_autocomplete = 'autocompletefield' === input.type;
-      const ajax             = has_autocomplete ? {
-        delay: 500,
-        transport: async (d, ok, ko) => {
-          try      {
-            ok({
-              results: (await getDataForSearchInput({
-                state:   this.state,
-                field:   input.attribute,
-                suggest: `${input.attribute}|${d.data.q}`,
-              })).map(d => ({ id: d.value, text: d.key })
-              )
+              fields: [SEARCH_ALLVALUE, undefined].includes(value) ? [] : [createSingleFieldParameter({ field, value, operator: input.operator })]
             });
-          }
-          catch(e) { ko(e); }
+
+            const cached = d.dvalues[filter];
+
+            d.value  = 'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            d.values = Array.from(new Set([                                       // ensure uniques values
+              ...(!has_autocomplete(d) && !is_empty(value) ? [d.values[0]] : []), // get first value (ALL_VALUE)
+              ...(!has_autocomplete(d) && is_empty(value) ? d._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
+              ...(cached || []),                                                  // cached
+            ]));
+
+            // value is empty → disable dependants inputs
+            d.disabled = is_empty(value) ? d.dependance_strict : false;
+
+            // update nested dependencies
+            if (this.state.forminputs.find(i => i.dependance === d.attribute)) {
+              this.changeInput(d);
+            }
+
+            // dependents values are there → no need to perform further server requests
+            if (has_autocomplete(d) || is_empty(value) || cached) {
+              return;
+            }
+
+            state.loading[d.attribute] = true;
+
+            // extract the value of the field to get filter data from the relation layer
+            // set undefined because if it has a subscribed input with valuerelations widget
+
+            /** @TODO use `getDataForSearchInput` instead ? */
+
+            try {
+              const data = await state.search_layers[0].getFilterData({
+                fformatter: d.attribute,
+                ordering:   d.attribute,
+                field:      filter,
+              });
+
+              data.data = (data.data || []).map(([key, value]) => ({ key: value, value }));
+
+              // case value map
+              if (!d.dependance_strict && 'selectfield' === d.type) {
+                d._values.push(...d.values);
+              }
+
+              // set key value for select (!valuemap && !valuerelation)
+              if (1 === d.values.length) {
+                d.values.push(...data.data);
+              }
+
+              // exclude first element (ALL_VALUE)
+              d.dvalues[filter] = d.values.slice(1);
+
+
+            } catch(e) {
+              console.warn(e);
+            } finally {
+              d.disabled                      = false;
+              this.state.loading[d.attribute] = false;
+            }
+          })));
+        } catch(e) {
+          console.warn(e);
+        } finally {
+          this.state.searching            = false;
         }
-      } : null;
+      },
 
-      const select2 = $('#' + input.id).select2({
-        ajax,
-        width:              '100%',
-        dropdownParent:     $('.g3w-search-form:visible'),
-        minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
-        allowClear:         has_autocomplete,
-        placeholder:        has_autocomplete ? '' : null,
-        /**
-         * @param { Object } params
-         * @param params.term the term that is used for searching
-         * @param { Object } data
-         * @param data.text the text that is displayed for the data object
-         */
-        matcher: (params, data) => {
-          const search = params.term ? params.term.toLowerCase() : params.term;
-          if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
-          if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
-          return null;                                                                                 // hide the term
-        },
-        language: {
-          noResults:     () => t("sdk.search.no_results"),
-          errorLoading:  () => t("sdk.search.error_loading"),
-          searching:     () => t("sdk.search.searching"),
-          inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
-        },
-      });
-      SELECTS.push(select2);
+      doSearch(e) {
+        e.preventDefault();
+        this.$options.service.run();
+      },
 
-      select2.on('select2:select select2:unselecting', e => {
-        if ('select2:select' === e.type || has_autocomplete) {
-          input.value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
+      /**
+       * ORIGINAL SOURCE: src/components/SearchDatetime.vue@v3.9.3
+       */
+      async initDateTimeField(input) {
+        if ('datetimefield' !== input.type) {
+          return;
+        }
+
+        await this.$nextTick();
+
+        input.options.format.fieldformat   = convertQGISDateTimeFormatToMoment(input.options.format.fieldformat);
+        input.options.format.displayformat = convertQGISDateTimeFormatToMoment(input.options.format.displayformat);
+
+        $(this.$refs[`date_${input.id}`]).datetimepicker({
+          defaultDate:       null,
+          format:            input.options.format.displayformat,
+          ignoreReadonly:    true,
+          allowInputToggle:  true,
+          toolbarPlacement:  'top',
+          widgetPositioning: { vertical: 'bottom', horizontal: 'left' },
+          showClose:         true,
+          locale:            ApplicationState.language || 'en',
+        });
+
+        $(this.$refs[`date_${input.id}`]).on("dp.change", () => {
+          const newDate = $(`#${input.id}`).val();
+          input.value = newDate.trim()
+            ? moment(newDate, input.options.format.displayformat).format(input.options.format.fieldformat)
+            : null;
           this.changeInput(input);
-        }
-      });
+        });
 
-      // trigger select2 change on input value change
-      this.$watch(() => input.value, async (value, oldVal) => {
-        if (value !== oldVal && value === SEARCH_ALLVALUE) {
-          select2.val(value).trigger('change');
+        if (ApplicationState.ismobile) {
+          setTimeout(() => { $('#' + input.id).blur(); });
         }
-      });
+      },
 
-      // set initial value
-      select2.val(input.value).trigger('change');
+      /**
+       * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
+       */
+      async initSelect2Field(input) {
+        if (!['selectfield', 'autocompletefield'].includes(input.type)) {
+          return;
+        }
+
+        await this.$nextTick();
+
+        const numdigaut        = input.options.numdigaut;
+        const has_autocomplete = 'autocompletefield' === input.type;
+        const ajax             = has_autocomplete ? {
+          delay: 500,
+          transport: async (d, ok, ko) => {
+            try      {
+              ok({
+                results: (await getDataForSearchInput({
+                  state:    this.state,
+                  field:    input.attribute,
+                  suggest: `${input.attribute}|${d.data.q}`,
+                })).map(d => ({ id: d.value, text: d.key })
+                )
+              });
+            }
+            catch(e) { ko(e); }
+          }
+        } : null;
+
+        const select2 = $('#' + input.id).select2({
+          ajax,
+          width:              '100%',
+          dropdownParent:     $('.g3w-search-form:visible'),
+          minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
+          allowClear:         has_autocomplete,
+          placeholder:        has_autocomplete ? '' : null,
+          /**
+           * @param { Object } params
+           * @param params.term the term that is used for searching
+           * @param { Object } data
+           * @param data.text the text that is displayed for the data object
+           */
+          matcher: (params, data) => {
+            const search = params.term ? params.term.toLowerCase() : params.term;
+            if ('' === (search || '').toString().trim())                             { return data }        // no search terms → get all of the data
+            if (data.text.toLowerCase().includes(search) && undefined !== data.text) { return { ...data } } // the searched term
+            return null;                                                                                    // hide the term
+          },
+          language: {
+            noResults:     () => t("sdk.search.no_results"),
+            errorLoading:  () => t("sdk.search.error_loading"),
+            searching:     () => t("sdk.search.searching"),
+            inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
+          },
+        });
+        SELECTS.push(select2);
+
+        select2.on('select2:select select2:unselecting', e => {
+          if ('select2:select' === e.type || has_autocomplete) {
+            input.value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
+            this.changeInput(input);
+          }
+        });
+
+        // trigger select2 change on input value change
+        this.$watch(() => input.value, async (value, oldVal) => {
+          if (value !== oldVal && SEARCH_ALLVALUE === value) {
+            select2.val(value).trigger('change');
+          }
+        });
+
+        // set initial value
+        select2.val(input.value).trigger('change');
+      },
+
     },
 
-  },
+    async mounted() {
+      await this.state.mounted;
+      for (const input of this.state.forminputs) {
+        await this.initSelect2Field(input);
+        await this.initDateTimeField(input);
+      }
+    },
 
-  async mounted() {
-    await this.state.mounted;
-    for (const input of this.state.forminputs) {
-      await this.initSelect2Field(input);
-      await this.initDateTimeField(input);
+    beforeDestroy() {
+      // remove all select2 DOM events
+      SELECTS.forEach(select2 => {
+        select2.select2('destroy');
+        select2.off();
+        select2 = null;
+      })
+      // reset SELECTS to empty array
+      SELECTS.splice(0);
     }
-  },
 
-  beforeDestroy() {
-    // remove all select2 DOM events
-    SELECTS.forEach(select2 => {
-      select2.select2('destroy');
-      select2.off();
-      select2 = null;
-    })
-    // reset SELECTS to empty array
-    SELECTS.splice(0);
-  }
-
-};
+  };
 </script>
 
 <style scoped>
-.g3w-search-form label {
-  color: #fff;
-}
-.g3w-search-form .search-logicop {
-  width: 100%;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 15px;
-  margin-top: 30px;
-  border-bottom: 1px solid;
-}
-.g3w-search-form .search-logicop h4 {
-  font-weight: bold;
-  position: absolute;
-  padding: 5px;
-  top: -24px;
-  background: #222d32;
-}
-#dosearch {
-  color: #fff;
-  font-weight: bold;
-  margin-top: 15px;
-  background-color: var(--skin-color);
-}
-#dosearch:hover {
-  color: #fff;
-}
-.search-label {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-}
+  .g3w-search-form label {
+    color: #fff;
+  }
+  .g3w-search-form .search-logicop {
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    margin-top: 30px;
+    border-bottom: 1px solid;
+  }
+  .g3w-search-form .search-logicop h4 {
+    font-weight: bold;
+    position: absolute;
+    padding: 5px;
+    top: -24px;
+    background: #222d32;
+  }
+  #dosearch {
+    color: #fff;
+    font-weight: bold;
+    margin-top: 15px;
+    background-color: var(--skin-color);
+  }
+  #dosearch:hover {
+    color: #fff;
+  }
+  .search-label {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
 </style>
