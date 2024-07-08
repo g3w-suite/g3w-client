@@ -24,22 +24,31 @@ import { throttle }                  from 'utils/throttle';
 import { createFilterFromString }    from 'utils/createFilterFromString';
 import { InteractionControl }        from 'g3w-ol/controls/interactioncontrol';
 
-const BaseLayers                = require('g3w-ol/layers/bases');
-const VectorLayer               = require('core/layers/vectorlayer');
+const BaseLayers                 = require('g3w-ol/layers/bases');
+const VectorLayer                = require('core/layers/vectorlayer');
 
+const QueryBBoxControl           = require('g3w-ol/controls/querybboxcontrol');
+const QueryByPolygonControl      = require('g3w-ol/controls/querybypolygoncontrol');
+const GeolocationControl         = require('g3w-ol/controls/geolocationcontrol');
+const StreetViewControl          = require('g3w-ol/controls/streetviewcontrol');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+const LenghtIteraction           = require('g3w-ol/interactions/lengthinteraction');
+const AreaIteraction             = require('g3w-ol/interactions/areainteraction');
+const ScaleControl               = require('g3w-ol/controls/scalecontrol');
+const ScreenshotControl          = require('g3w-ol/controls/screenshotcontrol');
+const QueryByDrawPolygonControl  = require('g3w-ol/controls/querybydrawpolygoncontrol');
 
-const QueryControl              = require('g3w-ol/controls/querycontrol');
-const ZoomBoxControl            = require('g3w-ol/controls/zoomboxcontrol');
-const QueryBBoxControl          = require('g3w-ol/controls/querybboxcontrol');
-const QueryByPolygonControl     = require('g3w-ol/controls/querybypolygoncontrol');
-const GeolocationControl        = require('g3w-ol/controls/geolocationcontrol');
-const StreetViewControl         = require('g3w-ol/controls/streetviewcontrol');
-const AddLayersControl          = require('g3w-ol/controls/addlayers');
-const LenghtIteraction          = require('g3w-ol/interactions/lengthinteraction');
-const AreaIteraction            = require('g3w-ol/interactions/areainteraction');
-const ScaleControl              = require('g3w-ol/controls/scalecontrol');
-const ScreenshotControl         = require('g3w-ol/controls/screenshotcontrol');
-const QueryByDrawPolygonControl = require('g3w-ol/controls/querybydrawpolygoncontrol');
+/**
+ * Toogle a CSS class in a vue "friendly" way
+ *  
+ * @param { string }      className 
+ * @param { HTMLElement } el 
+ * @param { boolean }     toggled 
+ */
+function _toggleClass(className, el, toggled) {
+  if (toggled) { setTimeout(() => el.classList.add(className));
+  } else { el.classList.remove(className); }
+}
 
 const CONTROLS = {
   'zoomtoextent':       (opts = {}) => new InteractionControl({ ...opts, ol: new ol.control.ZoomToExtent(opts) }),
@@ -51,27 +60,84 @@ const CONTROLS = {
   'geocoding':          (opts = {}) => new InteractionControl({ element: (new (Vue.extend(MapControlGeocoding))({
     propsData: {
       ...opts.config, // pass configuration from server
-      placeholder:    opts.placeholder || "mapcontrols.geocoding.placeholder",
-      noresults:      opts.noresults   || "mapcontrols.geocoding.noresults",
+      placeholder:    opts.placeholder || 'mapcontrols.geocoding.placeholder',
+      noresults:      opts.noresults   || 'mapcontrols.geocoding.noresults',
       limit:          opts.limit       || 5,
       viewbox:        opts.bbox        || (GUI.getService('map').getProject().state.initextent || GUI.getService('map').getProject().state.extent),
       mapCrs:         opts.mapCrs      || GUI.getService('map').getProject().state.crs.epsg,
     }
   })).$mount().$el, offline: false}),
-  'zoombox':            ZoomBoxControl,
-  'query':              QueryControl,
+  'zoombox':            (opts = {}) => new InteractionControl({
+    ...opts,
+    name:             'zoombox',
+    tipLabel:         'Zoom to box',
+    label:            '\ue901',
+    interactionClass: ol.interaction.DragBox,
+    onSetMap(e) {
+      if ('after' === e.setter) {
+        // set mouse cursor (crosshair)
+        this.on('toggled', ({ toggled }) => _toggleClass('ol-crosshair', map.getViewport(), toggled));
+        this._interaction.on('change:active', e => _toggleClass('ol-crosshair', map.getViewport(), e.target.get(e.key)));
+        // zoom box
+        this._startCoordinate = null;
+        this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
+        this._interaction.on('boxend',   e => {
+          this.dispatchEvent({ type: 'zoomend', extent: ol.extent.boundingExtent([this._startCoordinate, e.coordinate]) });
+          this._startCoordinate = null;
+          if (this._autountoggle) { this.toggle(); }
+        });
+      }
+    }
+  }),
+  'query':              (opts = {}) => new InteractionControl({
+    ...opts,
+    offline:          false,
+    name:             "querylayer",
+    tipLabel:         "sdk.mapcontrols.query.tooltip",
+    label:            opts.label || "\uea0f",
+    clickmap:         true,
+    interactionClass: PickCoordinatesInteraction,
+    onSetMap(e) {
+      this.runQuery = this.runQuery || (async ({ coordinates }) => {
+        GUI.closeOpenSideBarComponent();
+        try {
+          const project = ProjectsRegistry.getCurrentProject();
+          await DataRouterService.getData('query:coordinates', {
+            inputs: {
+              coordinates,
+              feature_count: project.getQueryFeatureCount(),
+              query_point_tolerance: project.getQueryPointTolerance(),
+              multilayers: project.isQueryMultiLayers(this.name),
+            }
+          });
+        } catch(e) {
+          console.warn('Error running spatial query: ', e)
+        }
+      });
+      if ('before' === e.setter) {
+        let key = null;
+        this.on('toggled', ({ toggled }) => {
+          if (true !== toggled) {
+            ol.Observable.unByKey(key);
+            key = null;
+          } else if (null === key && e.map) {
+            key = this.getInteraction().on('picked', throttle(e => this.runQuery({coordinates: e.coordinate })));
+          }
+        });
+        this.setEventKey({ eventType: 'picked', eventKey: this.on('picked', this.runQuery) });
+      }
+    }
+  }),
   'querybbox':          QueryBBoxControl,
   'querybypolygon':     QueryByPolygonControl,
   'geolocation':        GeolocationControl,
   'streetview':         StreetViewControl,
-  'addlayers':          AddLayersControl,
+  'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip",        label: "\ue907", name: 'addlayer', setMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
   'length':             (opts = {}) => new InteractionControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.length.tooltip', label: '\ue908', clickmap: true, interactionClass: LenghtIteraction, onToggled() { if (!this.isToggled() && this.getInteraction()) this.getInteraction().clear(); } }),
   'area':               (opts = {}) => new InteractionControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.area.tooltip',   label: '\ue909', clickmap: true, interactionClass: AreaIteraction,   onToggled() { if (!this.isToggled() && this.getInteraction()) this.getInteraction().clear(); } }),
   'mouseposition':      (opts = {}) => Object.assign((new ol.control.MousePosition({ ...opts, target: opts.target || 'mouse-position-control' })), { offline: true }),
   'scale':              ScaleControl,
   'onclick':            InteractionControl,
-  /** @since 3.8.3 */
-  'ontoggle':           InteractionControl,
   'screenshot':         ScreenshotControl,
   'geoscreenshot':      (opts = {}) => new ScreenshotControl({ name: 'maptoimagegeo', tipLabel: 'Geo Screenshot', label:' \ue900', ...opts }),
   'querybydrawpolygon': QueryByDrawPolygonControl,
@@ -81,6 +147,7 @@ const CONTROLS = {
  * BACKCOMP v3.x
  */
 CONTROLS['nominatim'] = CONTROLS['geocoding'];
+CONTROLS['ontoggle']  = CONTROLS['onclick'];
 
 /**
  * @FIXME add description

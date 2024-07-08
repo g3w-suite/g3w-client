@@ -31,8 +31,6 @@ export class InteractionControl extends ol.control.Control {
     
     options.visible = undefined !== options.visible ? options.visible : true;
 
-    options.buttonClickHandler = e => this._handleClick(e);
-
     const name = (options.name || '').split(' ').join('-').toLowerCase();
 
     if (!options.element) {
@@ -117,7 +115,7 @@ export class InteractionControl extends ol.control.Control {
      *
      * button click handler
      */
-    $(options.element).on('click', options.buttonClickHandler);
+    $(options.element).on('click', e => this._handleClick(e));
 
     this.setVisible(options.visible);
 
@@ -420,6 +418,11 @@ export class InteractionControl extends ol.control.Control {
    */
   setMap(map) {
 
+    /** @since 3.11.0 */
+    if (this._options.onSetMap) {
+      this._options.onSetMap.call(this, { setter: 'before', map });
+    }
+
     if (this._control) {
       this.layout(map);
       this._control.setMap(map);
@@ -462,6 +465,11 @@ export class InteractionControl extends ol.control.Control {
           loading = false;
         }
       });
+    }
+
+    /** @since 3.11.0 */
+    if (this._options.onSetMap) {
+      this._options.onSetMap.call(this, { setter: 'after', map });
     }
 
   }
