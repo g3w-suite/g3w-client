@@ -58,7 +58,6 @@ const CONTROLS = {
       mapCrs:         opts.mapCrs      || GUI.getService('map').getProject().state.crs.epsg,
     }
   })).$mount().$el, offline: false}),
-  'reset':              (opts = {}) => new InteractionControl({ ...opts, name: 'reset', tipLabel: 'Pan', label: '\ue901', toggled: true, postRender() { this.toggle(true); } }),
   'zoombox':            ZoomBoxControl,
   'query':              QueryControl,
   'querybbox':          QueryBBoxControl,
@@ -1082,16 +1081,6 @@ proto._setupControls = function() {
       switch (controlType) {
 
         case 'reset':
-          if (!isMobile.any) {
-            control = new InteractionControl({
-              type: 'reset',
-              name: 'reset',
-              tipLabel: 'Pan',
-              label: '\ue901',
-              toggled: true,
-              postRender() { this.toggle(true); }
-            });
-          }
           this.addControl(controlType, control, false);
           break;
 

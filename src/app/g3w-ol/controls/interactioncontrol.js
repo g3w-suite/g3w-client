@@ -163,7 +163,7 @@ export class InteractionControl extends ol.control.Control {
 
     this._visible = visible;
 
-    this._toggled = undefined !== options.toggled ? options.toggled : false;
+    this._toggled = false;
 
     /**
      * Check if interact with map
