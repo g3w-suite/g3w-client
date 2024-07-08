@@ -403,15 +403,18 @@ export class InteractionControl extends ol.control.Control {
    */
   setMap(map) {
 
-    //in case of already set ol control as zoom in, zoom out
-    if (this._control) {
-      this._control.setMap(map);
-      return;
-    }
-
     /** @since 3.11.0 */
     if (this._options.onSetMap) {
       this._options.onSetMap.call(this, { setter: 'before', map });
+    }
+
+    // update GUI
+    this.layout(map);
+
+    if (this._control) {
+      this._control.setMap(map);
+    } else {
+      super.setMap(map);
     }
 
     if (!this._interaction && this._interactionClass) {
@@ -435,18 +438,13 @@ export class InteractionControl extends ol.control.Control {
       });
     }
 
+    /** @since 3.8.0 */
+    this.dispatchEvent({ type: 'setMap', map });
+
     /** @since 3.11.0 */
     if (this._options.onSetMap) {
       this._options.onSetMap.call(this, { setter: 'after', map });
     }
-
-    //set control UI
-    this.layout(map);
-    //call super
-    super.setMap(map);
-    /** @since 3.8.0 */
-    this.dispatchEvent({ type: 'setMap', map });
-
   }
 
   /**
