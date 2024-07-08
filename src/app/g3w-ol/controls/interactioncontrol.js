@@ -13,8 +13,7 @@ export class InteractionControl extends ol.control.Control {
    * @param {string}  options.name
    * @param {boolean} options.enabled 
    */
-  constructor(options={}) {
-
+  constructor(options = {}) {
     // wrapper for native ol controls
     if (options.ol) {
       super({ element: options.ol.element });
@@ -364,34 +363,21 @@ export class InteractionControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * ORIGINAL SOURCE: src/app/gui/map/mapservice.js#3152@v3.10.0
    *
    * layout handler
    *
    * @since 3.11.0
    */
   layout(map) {
-
-    if (this._control) {
-      //No map is passed
-      if (!map) {
-        return;
-      }
-      const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
-      if (previusControls.length) {
-        const position     =  this.getPosition();
-        let previusControl = previusControls.last();
-        const offset       = position.left ? previusControl.position().left : previusControl.position().right;
-        const hWhere       = position.left ? 'left' : 'right';
-        const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
-        $(this.element).css(hWhere, hOffset+'px');
-      }
-      return;
-    }
-
-    if (map) {
-      const position =  this.getPosition();
-      const element = $(this.element);
+    const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
+    if (previusControls.length) {
+      const position     =  this.getPosition();
+      let previusControl = previusControls.last();
+      const offset       = position.left ? previusControl.position().left : previusControl.position().right;
+      const hWhere       = position.left ? 'left' : 'right';
+      const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+      $(this.element).css(hWhere, hOffset+'px');
     }
   }
 
@@ -402,8 +388,7 @@ export class InteractionControl extends ol.control.Control {
    *
    * @since 3.11.0
    */
-  changelayout(map) {
-  }
+  changelayout(map) {}
 
   /**
    * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
@@ -418,39 +403,22 @@ export class InteractionControl extends ol.control.Control {
    */
   setMap(map) {
 
+    //in case of already set ol control as zoom in, zoom out
+    if (this._control) {
+      this._control.setMap(map);
+      return;
+    }
+
     /** @since 3.11.0 */
     if (this._options.onSetMap) {
       this._options.onSetMap.call(this, { setter: 'before', map });
     }
 
-    if (this._control) {
-      this.layout(map);
-      this._control.setMap(map);
-      return;
+    if (!this._interaction && this._interactionClass) {
+      this._interaction = new this._interactionClass(this._interactionClassOptions);
+      map.addInteraction(this._interaction);
+      this._interaction.setActive(false);
     }
-
-    if (this._interactionClass) {
-      ol.control.Control.prototype.setMap.call(this, map);
-
-      if (!this._interaction && this._interactionClass) {
-        this._interaction = new this._interactionClass(this._interactionClassOptions);
-        map.addInteraction(this._interaction);
-        this._interaction.setActive(false);
-      }
-  
-      /** @since 3.8.0 */
-      this.dispatchEvent({ type: 'setMap', map });
-
-      return;
-    }
-
-    if (!map) {
-      return
-    }
-
-    this.layout(map);
-
-    ol.control.Control.prototype.setMap.call(this, map);
 
     /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
     if (this._onclick) {
@@ -471,6 +439,13 @@ export class InteractionControl extends ol.control.Control {
     if (this._options.onSetMap) {
       this._options.onSetMap.call(this, { setter: 'after', map });
     }
+
+    //set control UI
+    this.layout(map);
+    //call super
+    super.setMap(map);
+    /** @since 3.8.0 */
+    this.dispatchEvent({ type: 'setMap', map });
 
   }
 
