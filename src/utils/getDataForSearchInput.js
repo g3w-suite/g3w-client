@@ -14,7 +14,9 @@ export async function getDataForSearchInput({ state, field, suggest }) {
         ordering:   field,
         field: getDataForSearchInput.field({
           state,
-          field: (state.forminputs.find(i => i.attribute === field) || {}).dependance || field,
+          //in the case of suggest parameter set (case autocomplete field), need to use current field
+          field: suggest ? field : (state.forminputs.find(i => i.attribute === field) || {}).dependance || field,
+          fields: []
         }),
       })))
     )
