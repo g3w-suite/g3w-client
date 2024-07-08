@@ -1,6 +1,6 @@
-const Control = require('g3w-ol/controls/control');
+import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
-module.exports = class AddLayersControl extends Control {
+module.exports = class AddLayersControl extends InteractionControl {
 
   constructor() {
     super({
@@ -12,7 +12,7 @@ module.exports = class AddLayersControl extends Control {
   }
 
   setMap(map) {
-    Control.prototype.setMap.call(this,map);
+    InteractionControl.prototype.setMap.call(this,map);
     $(this.element).on('click', () => this.dispatchEvent('addlayer'));
   }
 

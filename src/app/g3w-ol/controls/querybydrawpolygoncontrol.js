@@ -8,8 +8,7 @@ import DataRouterService              from 'services/data';
 import ProjectsRegistry               from 'store/projects';
 import { throttle }                   from 'utils/throttle';
 import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
-
-const InteractionControl              = require('g3w-ol/controls/interactioncontrol');
+import { InteractionControl }         from 'g3w-ol/controls/interactioncontrol';
 
 module.exports = class QueryByDrawPolygonControl extends InteractionControl {
 
@@ -88,17 +87,21 @@ module.exports = class QueryByDrawPolygonControl extends InteractionControl {
     this.unwatches.splice(0);
     this.layers.forEach(layer => {
       this.unwatches.push(
-        this.watchLayer(() => layer.state.visible, visible => {
-          // check if a selectedLayer i set
-          if (null === this.getSelectedLayer()) {
-            this.setEnable(this.hasVisibleLayers());
-          } else {
-            // enable control only if current changed visible layer is true or
-            // if at least one layer (not selected) is visible
-            this.setEnable(this.isSelectedLayerVisible());
+        this.watchLayer(
+          () => layer.state.visible,
+          () => {
+            // check if a selectedLayer i set
+            if (null === this.getSelectedLayer()) {
+              this.setEnable(this.hasVisibleLayers());
+            } else {
+              // enable control only if current changed visible layer is true or
+              // if at least one layer (not selected) is visible
+              this.setEnable(this.isSelectedLayerVisible());
+            }
+            this.toggle(this.isToggled() && this.getEnable())
           }
-          this.toggle(this.isToggled() && this.getEnable())
-        }));
+        )
+      );
     });
   };
 

@@ -2,9 +2,9 @@ import ApplicationState          from 'store/application-state';
 import GUI                       from 'services/gui';
 import * as vueComp              from 'components/StreetView.vue';
 import Component                 from 'core/g3w-component';
+import { XHR }                   from 'utils/XHR';
+import { InteractionControl }    from 'g3w-ol/controls/interactioncontrol';
 
-const { XHR }                    = require('utils');
-const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;

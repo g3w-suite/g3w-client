@@ -6,8 +6,8 @@ import { getMapLayersByFilter }       from 'utils/getMapLayersByFilter';
 import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
 import { isPolygonGeometryType }      from 'utils/isPolygonGeometryType';
 import { throttle }                   from 'utils/throttle';
+import { InteractionControl }         from 'g3w-ol/controls/interactioncontrol';
 
-const InteractionControl              = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction      = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
@@ -98,17 +98,15 @@ module.exports = class QueryByPolygonControl extends InteractionControl {
 
     InteractionControl.prototype.setMap.call(this, map);
     
-    this._interaction
-      .on('picked', throttle(async evt => {
-        this.data.coordinates = evt.coordinate;
+    this._interaction.on('picked', throttle(async e => {
+      this.data.coordinates = e.coordinate;
 
-        this.dispatchEvent({ type: 'picked', coordinates: this.data.coordinates });
+      this.dispatchEvent({ type: 'picked', coordinates: this.data.coordinates });
 
-        if (this._autountoggle) {
-          this.toggle();
-        }
-
-      }));
+      if (this._autountoggle) {
+        this.toggle();
+      }
+    }));
 
     this.setEventKey({
       eventType: 'picked',

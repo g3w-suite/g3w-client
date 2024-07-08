@@ -2,13 +2,134 @@ import { SPATIAL_METHODS } from 'app/constant';
 import { VM }              from 'app/eventbus';
 import GUI                 from 'services/gui';
 import ControlsRegistry    from 'store/map-controls'
+import MapControlButton    from 'components/MapControlButton';
 
 const { t }   = require('core/i18n/i18n.service');
-const Control = require('g3w-ol/controls/control');
 
-module.exports = class InteractionControl extends Control {
+export class InteractionControl extends ol.control.Control {
 
+  /**
+   * @param {Object}  options 
+   * @param {string}  options.name
+   * @param {boolean} options.enabled 
+   */
   constructor(options={}) {
+
+    // wrapper for native ol controls
+    if (options.ol) {
+      super({ element: options.ol.element });
+      this._options     = options;
+      this._control     = options.ol;
+      this.positionCode = options.position || 'tl';
+      $(this._control.element).addClass("ol-control-" + this.positionCode);
+      this.offline = true;
+      return this;
+    }
+
+    /** @TODO simplify */
+    options.enabled = undefined !== options.enabled ? options.enabled : !!options.interactionClass;
+    
+    options.visible = undefined !== options.visible ? options.visible : true;
+
+    options.buttonClickHandler = e => this._handleClick(e);
+
+    const name = (options.name || '').split(' ').join('-').toLowerCase();
+
+    if (!options.element) {
+      options.element = (new (Vue.extend(MapControlButton({
+        className:   "ol-" + name,
+        customClass: options.customClass,
+        tipLabel:    options.tipLabel || name,
+        label:       options.label    || '',
+      })))()).$mount().$el;
+    }
+
+    super(options);
+
+    this._options = options;
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+     */
+    this._originalonlick = null;
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * custom "onclick" handler
+     */
+    this._onclick        = options.onclick; // a method trigger when click on map control button
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * @FIXME add description
+     */
+    this._enabled = options.enabled;
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * @FIXME add description
+     */
+    this.offline = undefined !== options.offline ? options.offline : true;
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * @FIXME add description
+     */
+    this.name = name;
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * @FIXME add description
+     */
+    this.id = this.name + '_' + (Math.floor(Math.random() * 1000000));
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * store eventKey and original havenHandler
+     */
+    this.eventKeys = {};
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * tl: top-left
+     * tr: top-right
+     * bl: bottom-left
+     * bt: bottom-right
+     */
+    this.positionCode = options.position || 'tl';
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * @FIXME add description
+     */
+    this.priority = options.priority || 0;
+
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * button click handler
+     */
+    $(options.element).on('click', options.buttonClickHandler);
+
+    this.setVisible(options.visible);
+
+    this._postRender();
+
+    /** @since 3.11.0 */
+    if (options.interactionClass) {
+      this.initInteraction(options);
+    }
+  }
+
+  initInteraction(options) {
 
     const {
       visible=true,
@@ -26,10 +147,6 @@ module.exports = class InteractionControl extends Control {
       spatialMethod
     } = options;
 
-    options.buttonClickHandler = (e) => this._handleClick(e);
-
-    super(options);
-
     /**
      * Project layers dependencies
      * 
@@ -46,7 +163,7 @@ module.exports = class InteractionControl extends Control {
 
     this._visible = visible;
 
-    this._toggled = false;
+    this._toggled = undefined !== options.toggled ? options.toggled : false;
 
     /**
      * Check if interact with map
@@ -112,6 +229,363 @@ module.exports = class InteractionControl extends Control {
 
   }
 
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @returns { boolean } whether is clickmap
+   *
+   * @since 3.11.0
+   */
+  isClickMap() {
+    return this.clickmap;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @FIXME add description
+   *
+   * @since 3.11.0
+   */
+  isToggled() {
+    return this._toggled;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @FIXME add description
+   *
+   * @since 3.11.0
+   */
+  setEventKey({ eventType, eventKey }){
+    this.eventKeys[eventType] = {
+      eventKey,
+      originalHandler: eventKey.listener
+    };
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * Reset original handler method of control event.
+   * 
+   * @param { string } eventType
+   *
+   * @since 3.11.0
+   */
+  resetOriginalHandlerEvent(eventType) {
+    if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
+      ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
+      this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * Override original handler method of control event.
+   * 
+   * @param {string} eventType
+   * @param {() => {}} handler
+   *
+   * @since 3.11.0
+   */
+  overwriteEventHandler({eventType, handler}) {
+    if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
+      ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
+      this.eventKeys[eventType].eventKey = this.on(eventType, handler);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @param pos position code
+   *
+   * @since 3.11.0
+   */
+  getPosition(pos) {
+    pos = pos || this.positionCode;
+    return {
+      top:    pos.includes('t'),
+      left:   pos.includes('l'),
+      bottom: pos.includes('b'),
+      right:  pos.includes('r'),
+    };
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * Handle toggle of map controls
+   * 
+   * @param event
+   *
+   * @since 3.11.0
+   */
+  _handleClick(event) {
+
+    if (this._interactionClass && this._enabled) {
+      this.toggle();
+    }
+
+    event.preventDefault();
+    const map = this.getMap();
+
+    let resetControl = null;
+
+    // remove all the other, eventually toggled, interactioncontrols
+    const controls = map.getControls();
+
+    this._toggled && controls.forEach(control => {
+      if (control.id && control.toggle && (control.id !== this.id)) {
+        control.toggle(false);
+        if (control.name === 'reset') {
+          resetControl = control;
+        }
+      }
+    });
+
+    if (!this._toggled && resetControl) {
+      resetControl.toggle(true);
+    }
+
+    this.dispatchEvent('controlclick');
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * shift control's position
+   *
+   * @since 3.11.0
+   */
+  shiftPosition(position) {
+    $(this.element).css(hWhere, position+'px');
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * layout handler
+   *
+   * @since 3.11.0
+   */
+  layout(map) {
+
+    if (this._control) {
+      //No map is passed
+      if (!map) {
+        return;
+      }
+      const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
+      if (previusControls.length) {
+        const position     =  this.getPosition();
+        let previusControl = previusControls.last();
+        const offset       = position.left ? previusControl.position().left : previusControl.position().right;
+        const hWhere       = position.left ? 'left' : 'right';
+        const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
+        $(this.element).css(hWhere, hOffset+'px');
+      }
+      return;
+    }
+
+    if (map) {
+      const position =  this.getPosition();
+      const element = $(this.element);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @virtual change layout of controls
+   *
+   * @since 3.11.0
+   */
+  changelayout(map) {
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * Called when a control is added ore removed to map
+   * 
+   * @param {ol.Map | null} map instace to be added (null = remove from map)
+   * 
+   * @fires setMap event
+   *
+   * @since 3.11.0
+   */
+  setMap(map) {
+
+    if (this._control) {
+      this.layout(map);
+      this._control.setMap(map);
+      return;
+    }
+
+    if (this._interactionClass) {
+      ol.control.Control.prototype.setMap.call(this, map);
+
+      if (!this._interaction && this._interactionClass) {
+        this._interaction = new this._interactionClass(this._interactionClassOptions);
+        map.addInteraction(this._interaction);
+        this._interaction.setActive(false);
+      }
+  
+      /** @since 3.8.0 */
+      this.dispatchEvent({ type: 'setMap', map });
+
+      return;
+    }
+
+    if (!map) {
+      return
+    }
+
+    this.layout(map);
+
+    ol.control.Control.prototype.setMap.call(this, map);
+
+    /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
+    if (this._onclick) {
+      const btn = $(this.element).children('button');
+      let loading = false; // whether already clicked (waiting for async "_onclick" method)
+      $(this.element).on('click', async () => {
+        if (!loading) {
+          loading = true;
+          btn.addClass('g3w-ol-disabled');
+          await this._onclick();
+          btn.removeClass('g3w-ol-disabled');
+          loading = false;
+        }
+      });
+    }
+
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @FIXME add description
+   *
+   * @since 3.11.0
+   */
+  showControl() {
+    $(this.element).show();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * Hide control and move all controls that sit on his right position
+   *
+   * @since 3.11.0
+   */
+  hideControl() {
+    let position = $(this.element).position().left;
+    let controlWidth = $(this.element).outerWidth();
+    let newPosition = position;
+    const controls = $(this.element).siblings('.ol-control-tl');
+    controls.each(function() {
+      if ($(this).position().left > position) {
+        newPosition = $(this).position().left;
+        if (controlWidth > $(this).outerWidth()) {
+          position = position + (controlWidth - $(this).outerWidth())
+        }
+        $(this).css('left', position+'px');
+        position = newPosition;
+        controlWidth = $(this).outerWidth();
+      }
+    });
+    $(this.element).hide();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * Toggle pointer events and `g3w-ol-disabled` class on map control button
+   * 
+   * @param {boolean} enabled wheter the map control button is clickable
+   *
+   * @since 3.11.0
+   */
+  setEnable(enabled) {
+    $(this.element).find('button').first().toggleClass('g3w-ol-disabled', !enabled);
+    if(!enabled && this._interaction) {
+      this._interaction.setActive(false);
+    }
+    this._enabled = enabled;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @FIXME add description
+   *
+   * @since 3.11.0
+   */
+  getEnable() {
+    return this._enabled;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @FIXME add description
+   *
+   * @since 3.11.0
+   */
+  setVisible(visible=true) {
+    this._visible = visible;
+    $(this.element)[visible ? 'show': 'hide']();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @FIXME add description
+   *
+   * @since 3.11.0
+   */
+  isVisible() {
+    return this._visible;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   *
+   * @virtual
+   *
+   * @since 3.11.0
+   */
+  _postRender() {
+    if (this._options.postRender) {
+      this._options.postRender.call(this);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+   *
+   * @since 3.11.0
+   */
+  overwriteOnClickEvent(clickHandler){
+    this._originalonlick = this._originalonlick || this._onclick;
+    this._onclick        = clickHandler;
+  };
+
+  /**
+   * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+   *
+   * @since 3.11.0
+   */
+  resetOriginalOnClickEvent() {
+    this._onclick        = this._originalonlick || this._onclick;
+    this._originalonlick = null;
+  }
 
   /**
    * @virtual method need to be implemented by subclasses
@@ -194,10 +668,6 @@ module.exports = class InteractionControl extends Control {
     this.setVisible(visible);
     this.setEnable(false);
     this.listenLayersVisibilityChange();
-  }
-
-  isClickMap() {
-    return this.clickmap;
   }
 
   /**
@@ -318,10 +788,6 @@ module.exports = class InteractionControl extends Control {
     return this._geometryTypes;
   };
 
-  isToggled() {
-    return this._toggled;
-  }
-
   /**
    * Get dom bottom
    * 
@@ -332,13 +798,11 @@ module.exports = class InteractionControl extends Control {
   }
 
   addClassToControlBottom(className='') {
-    const controlButton = this.getControlBottom();
-    controlButton.addClass(className);
+    this.getControlBottom().addClass(className);
   }
 
   removeClassToControlBottom(className='') {
-    const controlButton = this.getControlBottom();
-    controlButton.removeClass(className);
+    this.getControlBottom().removeClass(className);
   }
 
   /**
@@ -376,6 +840,10 @@ module.exports = class InteractionControl extends Control {
 
     this.dispatchEvent({ type: 'toggled', toggled });
 
+    if (this._options.onToggled) {
+      this._options.onToggled();
+    }
+
   }
 
   getGeometryTypes() {
@@ -384,33 +852,6 @@ module.exports = class InteractionControl extends Control {
 
   setGeometryTypes(types) {
     this._geometryTypes = types;
-  }
-
-  /**
-   * @param {ol.Map} map
-   * 
-   * @fires setMap event
-   */
-  setMap(map) {
-
-    Control.prototype.setMap.call(this, map);
-
-    if (!this._interaction && this._interactionClass) {
-      this._interaction = new this._interactionClass(this._interactionClassOptions);
-      map.addInteraction(this._interaction);
-      this._interaction.setActive(false);
-    }
-
-    /** @since 3.8.0 */
-    this.dispatchEvent({ type: 'setMap', map });
-
-  }
-
-  _handleClick(evt) {
-    if (this._enabled) {
-      this.toggle();
-      Control.prototype._handleClick.call(this, evt);
-    }
   }
 
   getInteraction() {
@@ -555,6 +996,24 @@ module.exports = class InteractionControl extends Control {
       null !== this.getSelectedLayer() &&
       undefined !== this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
     )
+  }
+
+  /**
+   * @returns { ol.control }
+   * 
+   * @since 3.11.0
+   */
+  getOlControl() {
+    return this._control;
+  }
+
+  /**
+   * @since 3.11.0
+   */
+  showHide() {
+    if (this.element) {
+      $(this.element).toggle();
+    }
   }
 
 }

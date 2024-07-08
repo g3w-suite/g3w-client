@@ -1,10 +1,9 @@
-import { SPATIAL_METHODS } from 'app/constant';
-import GUI                 from 'services/gui';
-import DataRouterService   from 'services/data';
-import ProjectsRegistry    from 'store/projects';
-import { throttle }        from 'utils/throttle';
-
-const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+import { SPATIAL_METHODS }    from 'app/constant';
+import GUI                    from 'services/gui';
+import DataRouterService      from 'services/data';
+import ProjectsRegistry       from 'store/projects';
+import { throttle }           from 'utils/throttle';
+import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
 /**
  * Catalog layers (TOC) properties that need to be satisfied
@@ -37,7 +36,7 @@ module.exports = class QueryBBoxControl extends InteractionControl {
      * @FIXME add description
      */
     const layers = GUI.getService('map').filterableLayersAvailable(condition) || [];
-    layers.forEach(layer => layer.setTocHighlightable(true));
+    layers.forEach(l => l.setTocHighlightable(true));
 
     super({
       ...options,

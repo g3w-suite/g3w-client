@@ -1,6 +1,5 @@
-import GUI from 'services/gui';
-
-const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+import GUI                    from 'services/gui';
+import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
 module.exports = class GeolocationControl extends InteractionControl {
 

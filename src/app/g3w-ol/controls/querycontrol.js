@@ -1,9 +1,9 @@
-import GUI               from 'services/gui';
-import ProjectsRegistry  from 'store/projects';
-import DataRouterService from 'services/data';
-import { throttle }      from 'utils/throttle';
+import GUI                    from 'services/gui';
+import ProjectsRegistry       from 'store/projects';
+import DataRouterService      from 'services/data';
+import { throttle }           from 'utils/throttle';
+import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
-const InteractionControl         = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 module.exports = class QueryControl extends InteractionControl {
@@ -63,8 +63,8 @@ module.exports = class QueryControl extends InteractionControl {
           multilayers: project.isQueryMultiLayers(this.name),
         }
       });
-    } catch(err) {
-      console.warn('Error running spatial query: ', err)
+    } catch(e) {
+      console.warn('Error running spatial query: ', e)
     }
   }
 }

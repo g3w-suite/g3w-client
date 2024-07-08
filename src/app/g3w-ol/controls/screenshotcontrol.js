@@ -1,7 +1,6 @@
-import GUI from 'services/gui';
-
-const { sameOrigin } = require('utils');
-const Control        = require('g3w-ol/controls/control');
+import GUI                    from 'services/gui';
+import { sameOrigin }         from 'utils/sameOrigin';
+import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
 /**
  * @FIXME prevent tainted canvas error
@@ -17,7 +16,7 @@ const Control        = require('g3w-ol/controls/control');
  * 
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
  */
-module.exports = class ScreenshotControl extends Control {
+module.exports = class ScreenshotControl extends InteractionControl {
 
   constructor(options = {}) {
     options.layers = undefined !== options.layers ? options.layers : []; 

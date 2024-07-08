@@ -1,4 +1,4 @@
-const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
 function _setMouseCursor(map, toggled) {
   if (toggled) {
@@ -19,7 +19,6 @@ module.exports = class ZoomBoxControl extends InteractionControl {
         interactionClass: ol.interaction.DragBox
       })
     );
-    this._startCoordinate = null;
   }
 
   setMap(map) {
@@ -28,6 +27,8 @@ module.exports = class ZoomBoxControl extends InteractionControl {
     // set mouse cursor (crosshair)
     this.on('toggled', ({ toggled }) => _setMouseCursor(map, toggled));
     this._interaction.on('change:active', e => _setMouseCursor(map, e.target.get(e.key)));
+
+    this._startCoordinate = null;
 
     this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
     this._interaction.on('boxend',   e => {
