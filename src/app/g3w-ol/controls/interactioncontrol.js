@@ -677,27 +677,16 @@ export class InteractionControl extends ol.control.Control {
       case 'spatialMethod':
         const method = this.getSpatialMethod();
         this.toggledTool = {
-          data() {
-            this.methods = SPATIAL_METHODS;
-            return {
-              method
-            }
-          },
           template: `
             <div style="width: 100%; padding: 5px;">
               <select ref="select" style="width: 100%"  :search="false" v-select2="'method'">
                 <option v-for="method in methods">{{method}}</option>
               </select>
             </div>`,
-          watch: {
-            'method': method => this.setSpatialMethod(method)
-          },
-          created() {
-            GUI.setCloseUserMessageBeforeSetContent(false);
-          },
-          beforeDestroy() {
-            GUI.setCloseUserMessageBeforeSetContent(true);
-          }
+          data()          { this.methods = SPATIAL_METHODS; return { method }; },
+          watch:          { 'method': method => this.setSpatialMethod(method) },
+          created()       { GUI.setCloseUserMessageBeforeSetContent(false); },
+          beforeDestroy() { GUI.setCloseUserMessageBeforeSetContent(true); }
         };
         break;
       case 'custom':

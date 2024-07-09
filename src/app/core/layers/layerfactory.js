@@ -5,7 +5,7 @@ const TableLayer   = require('core/layers/tablelayer');
 const VectorLayer  = require('core/layers/vectorlayer');
 const ImageLayer   = require('core/layers/imagelayer');
 const BaseLayer    = require('core/layers/baselayer');
-const BASE         = require('g3w-ol/layers/bases');
+const RasterLayers = require('g3w-ol/layers/rasters');
 const GeojsonLayer = require('core/layers/geojson');
 
 const WITH_GEOMETRY = [
@@ -41,10 +41,11 @@ const BASE_LAYERS   = {
    */
   [Layer.ServerTypes.OSM]: class OSMLayer extends BaseLayer {
     _makeOlLayer() {
-      return BASE.OSM.get({
-        id:    this.config.name,
-        title: this.config.title,
-        url:   this.config.url,
+      return new ol.layer.Tile({
+        source:  new ol.source.OSM({ url: this.config.url }),
+        id:      this.config.name  || 'osm',
+        title:   this.config.title || 'OSM',
+        basemap: true
       });
     }
   },
@@ -54,13 +55,18 @@ const BASE_LAYERS   = {
    */
   [Layer.ServerTypes.BING]: class BingLayer extends BaseLayer {
     _makeOlLayer() {
-      const key = ApplicationState.keys.vendorkeys.bing;
-      switch(this.config.source ? this.config.source.subtype : null) {
-        case 'streets':          return BASE.BING.get({ key, imagerySet: 'Road' });
-        case 'aerial':           return BASE.BING.get({ key, imagerySet: 'Aerial' });
-        case 'aerialwithlabels': return BASE.BING.get({ key, imagerySet: 'AerialWithLabels' });
-        default:                 return BASE.BING.get({ key, imagerySet: 'Aerial' });
-      }
+      const name = ({
+        streets:          'Road',
+        aerial:           'Aerial',
+        aerialwithlabels: 'AerialWithLabels'
+      })[this.config.source && this.config.source.subtype] || 'Aerial';
+      return new ol.layer.Tile({
+        name,
+        visible: false,
+        preload: Infinity,
+        source: new ol.source.BingMaps({ imagerySet: name, key: ApplicationState.keys.vendorkeys.bing }),
+        basemap: true,
+      });
     }
   },
 
@@ -69,14 +75,14 @@ const BASE_LAYERS   = {
    */
   [Layer.ServerTypes.TMS]: class TMSLayer extends BaseLayer {
     _makeOlLayer() {
-      // configuration to create TMS
-      const { url, attributions, minZoom, maxZoom, crs } = this.config;
-      return BASE.TMS.get({
-        url,
-        minZoom,
-        maxZoom,
-        attributions,
-        projection: this.getProjectionFromCrs(crs),
+      return RasterLayers.XYZLayer({
+        visible:      false,
+        url:          undefined !== this.config.url ? this.config.url : null,
+        minZoom:      this.config.minZoom,
+        maxZoom:      this.config.maxZoom,
+        attributions: this.config.attributions,
+        projection:   this.getProjectionFromCrs(this.config.crs),
+        crossOrigin: 'anonymous',
       });
     }
   },
@@ -86,13 +92,11 @@ const BASE_LAYERS   = {
    */
   [Layer.ServerTypes.ARCGISMAPSERVER]: class ARCGISMAPSERVERLayer extends BaseLayer {
     _makeOlLayer() {
-      // configuration to create TMS
-      const { url, attributions, crs } = this.config;
-      return BASE.TMS.get({
-        url,
-        source_type: 'arcgismapserver',
-        projection: this.getProjectionFromCrs(crs),
-        attributions,
+      return RasterLayers.TiledArgisMapServer({
+        visible:      false,
+        url:          undefined !== this.config.url ? this.config.url : null,
+        projection:   this.getProjectionFromCrs(this.config.crs),
+        attributions: this.config.attributions,
       });
     }
   },
@@ -108,26 +112,59 @@ const BASE_LAYERS   = {
         layer,
         attributions,
         matrixSet,
-        format,
-        style,
+        format='image/png',
+        style='default',
         requestEncoding,
-        crs,
         grid, /** @since 3.10.0*/
         grid_extent, /** @since 3.10.0 */
-        projection, /** @since 3.10.0 */
       } = this.config;
-      return BASE.WMTS.get({
-        url,
-        layer,
-        attributions,
-        format,
-        projection: projection || this.getProjectionFromCrs(crs),
-        requestEncoding,
-        matrixSet,
-        style,
-        grid,
-        grid_extent,
-      });
+
+      /** @since 3.10.0 */
+      let projection = this.config.projection || this.getProjectionFromCrs(this.config.crs);
+
+      if (matrixSet) {
+        const size = ol.extent.getWidth(projection.getExtent()) / 256;
+        return new ol.layer.Tile({
+          opacity: .7,
+          source: new ol.source.WMTS({
+            url,
+            projection,
+            layer,
+            matrixSet,
+            requestEncoding,
+            format,
+            attributions,
+            tileGrid: new ol.tilegrid.WMTS({
+              origin:      ol.extent.getTopLeft(projection.getExtent()),
+              resolutions: Array.from({ length: 14 }, (_, z) => size / Math.pow(2, z)),
+              matrixIds:   Array.from({ length: 14 }, (_, z) => z),
+            }),
+            style
+          })
+        });
+      }
+
+      /** @since 3.10.0 WMTS based on mapproxy*/
+      if (grid && grid_extent) {
+        const resolutions = ol.tilegrid.createXYZ({ extent: grid_extent }).getResolutions();
+        return new ol.layer.Tile({
+          source: new ol.source.WMTS({
+            url,
+            layer,
+            projection,
+            matrixSet: grid,
+            format: format || 'png',
+            tileGrid: new ol.tilegrid.WMTS({
+              origin: ol.extent.getTopLeft(grid_extent),
+              resolutions,
+              matrixIds: resolutions.map((_, z) => z),
+            }),
+            style,
+            transparent: false,
+          })
+        });
+      }
+
     }
   },
 
@@ -136,15 +173,13 @@ const BASE_LAYERS   = {
    */
   [Layer.ServerTypes.WMS]: class WMSLayer extends BaseLayer {
     _makeOlLayer() {
-      // use this config to get params
-      const { url, layers, singleTile, attributions, crs, opacity } = this.config;
-      return BASE.WMS.get({
-        url,
-        layers,
-        singleTile,
-        attributions,
-        projection: this.getProjectionFromCrs(crs),
-        opacity,
+      return RasterLayers.WMSLayer({
+        url:          this.config.url,
+        projection:   this.getProjectionFromCrs(this.config.crs),
+        attributions: this.config.attributions,
+        layers:       this.config.layers,
+        tiled:        undefined !== this.config.singleTile ? this.config.singleTile : false,
+        opacity:      undefined !== this.config.opacity ? this.config.opacity : 1,
       });
     }
   },

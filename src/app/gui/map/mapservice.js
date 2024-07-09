@@ -24,7 +24,6 @@ import { throttle }                  from 'utils/throttle';
 import { createFilterFromString }    from 'utils/createFilterFromString';
 import { InteractionControl }        from 'g3w-ol/controls/interactioncontrol';
 
-const BaseLayers                 = require('g3w-ol/layers/bases');
 const VectorLayer                = require('core/layers/vectorlayer');
 
 const QueryBBoxControl           = require('g3w-ol/controls/querybboxcontrol');
@@ -399,13 +398,6 @@ class OlMapViewer {
       .getLayers()
       .filter(layer => !layer.getProperties().basemap);
   }
-
-  /**
-   * @FIXME add description
-   */
-  addBaseLayer(type) {
-    this.map.addLayer(type ? BaseLayers[type] : BaseLayers.BING.Aerial);
-  };
 
   /**
    * @TODO double check (unused and broken code ?)
