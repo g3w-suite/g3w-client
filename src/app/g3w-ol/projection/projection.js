@@ -1,29 +1,38 @@
-const Projection = function(options = {}) {
-  if (!options.crs) { return null }
-  // structure of information crs from server set on each layer and base layer
-  const { epsg, proj4:proj4def, geographic = false, axisinverted = false, extent } = options.crs;
-  if (proj4def) { proj4.defs(epsg, proj4def) }
-  this._axisOrientation = axisinverted ? 'neu' : 'enu';
-  ol.proj.Projection.call(this, {
-    code: epsg,
-    extent,
-    axisOrientation: this._axisOrientation,
-    units: geographic ? 'degrees' : 'm'
-  });
+module.exports = class Projection extends ol.proj.Projection {
+  constructor(opts = {}) {
+    super(opts);
+    if (!opts.crs) { return null }
+    // structure of information crs from server set on each layer and base layer
+    const {
+      epsg,
+      extent,
+      proj4: proj4def,
+      geographic   = false,
+      axisinverted = false,
+    } = opts.crs;
+
+    if (proj4def) { proj4.defs(epsg, proj4def) }
+
+    const axisOrientation = axisinverted ? 'neu' : 'enu';
+
+    super({
+      code: epsg,
+      extent,
+      axisOrientation,
+      units: geographic ? 'degrees' : 'm'
+    });
+
+    this._axisOrientation = axisOrientation;
+  }
+
+  getOlProjection() {}
+
+  isInvertedAxisOrientation() {
+    return 'neu' === this._axisOrientation;
+  }
+
+  getAxisOrientation() {
+    return this._axisOrientation;
+  }
+
 };
-
-ol.inherits(Projection, ol.proj.Projection);
-
-const proto = Projection.prototype;
-
-proto.getAxisOrientation = function() {
-  return this._axisOrientation;
-};
-
-proto.isInvertedAxisOrientation = function() {
-  return 'neu' === this._axisOrientation;
-};
-
-proto.getOlProjection = function() {};
-
-module.exports = Projection;

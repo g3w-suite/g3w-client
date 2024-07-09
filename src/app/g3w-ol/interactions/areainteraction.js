@@ -1,11 +1,8 @@
 const MeasureInteraction = require('g3w-ol/interactions/measureinteraction');
 
-// Area
-const AreaIteraction = function(options={}) {
-  options.geometryType = "Polygon";
-  MeasureInteraction.call(this, options);
+module.exports = class AreaIteraction extends MeasureInteraction {
+  constructor(opts = {}) {
+    opts.geometryType = "Polygon";
+    super(opts);
+  }
 };
-
-ol.inherits(AreaIteraction, MeasureInteraction);
-
-module.exports = AreaIteraction;
