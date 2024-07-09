@@ -132,7 +132,7 @@ const CONTROLS = {
   'querybypolygon':     QueryByPolygonControl,
   'geolocation':        GeolocationControl,
   'streetview':         StreetViewControl,
-  'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip",        label: "\ue907", name: 'addlayer', setMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
+  'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip",        label: "\ue907", name: 'addlayer', onSetMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
   'length':             (opts = {}) => new InteractionControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.length.tooltip', label: '\ue908', clickmap: true, interactionClass: LenghtIteraction, onToggled() { if (!this.isToggled() && this.getInteraction()) this.getInteraction().clear(); } }),
   'area':               (opts = {}) => new InteractionControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.area.tooltip',   label: '\ue909', clickmap: true, interactionClass: AreaIteraction,   onToggled() { if (!this.isToggled() && this.getInteraction()) this.getInteraction().clear(); } }),
   'mouseposition':      (opts = {}) => Object.assign((new ol.control.MousePosition({ ...opts, target: opts.target || 'mouse-position-control' })), { offline: true }),
