@@ -129,18 +129,18 @@ export class InteractionControl extends ol.control.Control {
   initInteraction(options) {
 
     const {
-      visible=true,
-      enabled=true,
-      toggled=false,
-      clickmap=false,
-      interactionClass=null,
-      autountoggle=false,
-      geometryTypes=[],
-      onhover=false,
-      help=null,
+      visible                 = true,
+      enabled                 = true,
+      toggled                 = false,
+      clickmap                = false,
+      interactionClass        = null,
+      autountoggle            = false,
+      geometryTypes           = [],
+      onhover                 = false,
+      help                    = null,
       toggledTool,
-      interactionClassOptions={},
-      layers=[],
+      interactionClassOptions = {},
+      layers                  = [],
       spatialMethod
     } = options;
 
