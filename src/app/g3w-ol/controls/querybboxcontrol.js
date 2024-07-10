@@ -20,14 +20,6 @@ const condition = {
   }
 };
 
-function _setMouseCursor(map, toggled) {
-  if (toggled) {
-    setTimeout(() => map.getViewport().classList.add('ol-crosshair'));
-  } else {
-    map.getViewport().classList.remove('ol-crosshair');
-  }
-}
-
 module.exports = class QueryBBoxControl extends InteractionControl {
 
   constructor(options = {}) {
@@ -50,7 +42,8 @@ module.exports = class QueryBBoxControl extends InteractionControl {
       onhover:          true,
       toggledTool:      { type: 'spatialMethod', how: 'toggled' /* or hover */ },
       spatialMethod:    undefined !== options.spatialMethod ? options.spatialMethod : SPATIAL_METHODS[0],
-      help:             { title: "sdk.mapcontrols.querybybbox.help.title", message:"sdk.mapcontrols.querybybbox.help.message" }
+      help:             { title: "sdk.mapcontrols.querybybbox.help.title", message:"sdk.mapcontrols.querybybbox.help.message" },
+      cursorClass:      'ol-crosshair',
     });
 
     /**
@@ -106,10 +99,6 @@ module.exports = class QueryBBoxControl extends InteractionControl {
    */
   setMap(map) {
     InteractionControl.prototype.setMap.call(this, map);
-
-    // set mouse cursor (crosshair)
-    this.on('toggled', ({ toggled }) => _setMouseCursor(map, toggled));
-    this._interaction.on('change:active', e => _setMouseCursor(map, e.target.get(e.key)));
 
     this._interaction.on('boxstart',        e => this._startCoordinate = e.coordinate);
     this._interaction.on('boxend', throttle(e => {

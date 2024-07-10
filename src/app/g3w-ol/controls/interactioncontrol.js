@@ -46,6 +46,9 @@ export class InteractionControl extends ol.control.Control {
 
     this._options = options;
 
+    //@since v3.11.0
+    this.cursorClass = options.cursorClass;
+
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
      */
@@ -125,6 +128,18 @@ export class InteractionControl extends ol.control.Control {
 
     /** @since 3.11.0 */
     if (options.interactionClass) { this.initInteraction(options) }
+  }
+
+  /**
+   * @since 3.11.0
+   * @param toggled
+   */
+  setMouseCursor(toggled) {
+    if (toggled) {
+      setTimeout(() => this.getMap().getViewport().classList.add(this.cursorClass));
+    } else {
+      this.getMap().getViewport().classList.remove(this.cursorClass);
+    }
   }
 
   initInteraction(options) {
@@ -401,6 +416,10 @@ export class InteractionControl extends ol.control.Control {
       this._interaction = new this._interactionClass(this._interactionClassOptions);
       map.addInteraction(this._interaction);
       this._interaction.setActive(false);
+    }
+
+    if (this.cursorClass) {
+      this._interaction.on('change:active', e => this.setMouseCursor(e.target.get(e.key)));
     }
 
     /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
@@ -769,6 +788,8 @@ export class InteractionControl extends ol.control.Control {
     }
 
     this._toggled = toggled;
+
+    if (this.cursorClass) { this.setMouseCursor(toggled)}
 
     // TODO: simplify this by removing all that short circuiting logic
     if (toggled) {

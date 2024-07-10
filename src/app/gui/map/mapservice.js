@@ -35,18 +35,6 @@ const ScreenshotControl          = require('g3w-ol/controls/screenshotcontrol');
 const QueryByDrawPolygonControl  = require('g3w-ol/controls/querybydrawpolygoncontrol');
 const MeasureControl             = require('g3w-ol/controls/measurecontrol');
 
-/**
- * Toogle a CSS class in a vue "friendly" way
- *  
- * @param { string }      className 
- * @param { HTMLElement } el 
- * @param { boolean }     toggled 
- */
-function _toggleClass(className, el, toggled) {
-  if (toggled) { setTimeout(() => el.classList.add(className));
-  } else { el.classList.remove(className); }
-}
-
 const CONTROLS = {
   'zoomtoextent':       (opts = {}) => new InteractionControl({ ...opts, ol: new ol.control.ZoomToExtent(opts) }),
   'zoom':               (opts = {}) => new InteractionControl({ ...opts, ol: new ol.control.Zoom(opts) }),
@@ -70,11 +58,9 @@ const CONTROLS = {
     tipLabel:         'Zoom to box',
     label:            '\ue901',
     interactionClass: ol.interaction.DragBox,
+    cursorClass:      'ol-crosshair',
     onSetMap({ setter, map }) {
       if ('after' === setter) {
-        // set mouse cursor (crosshair)
-        this.on('toggled', ({ toggled }) => _toggleClass('ol-crosshair', map.getViewport(), toggled));
-        this._interaction.on('change:active', e => _toggleClass('ol-crosshair', map.getViewport(), e.target.get(e.key)));
         // zoom box
         this._startCoordinate = null;
         this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
@@ -94,9 +80,7 @@ const CONTROLS = {
     label:            opts.label || "\uea0f",
     clickmap:         true,
     interactionClass: PickCoordinatesInteraction,
-    interactionClassOptions: {
-      cursor: 'ol-help' 
-    },
+    cursorClass:      'ol-help',
     onSetMap({ map, setter }) {
       this.runQuery = this.runQuery || (async ({ coordinates }) => {
         GUI.closeOpenSideBarComponent();
