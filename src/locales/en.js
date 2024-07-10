@@ -315,6 +315,12 @@ export default {
             help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
           }
         },
+        screenshot: {
+          title: 'Screen capture',
+          screenshot: "PNG",
+          geoscreenshot: "GeoTIFF",
+          download: 'Generate'
+        },
         scale: {
           no_valid_scale: "Invalid Scale"
         },

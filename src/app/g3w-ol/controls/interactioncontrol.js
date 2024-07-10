@@ -640,38 +640,37 @@ export class InteractionControl extends ol.control.Control {
   }
 
   /**
-   * @param {{ type: {'spatialMethod' | 'custom'}, component: unknown, how: {'toggled' | 'hover'} }} toggledTool 
+   * @param { Object }                     toggledTool
+   * @param { 'spatialMethod' | 'custom' } toggledTool.type
+   * @param { 'toggled' | 'hover' }        toggledTool.how      "toggled" => (show tools when control is toggled); "hover" => (show button tool as info help)
+   * @param                                toggledTool.component vue component
    */
   createControlTool(toggledTool = {}) {
-    /**
-     * how can be {
-     *  'toggled'(default) => show tools when control is toggled
-     *  'hover' =>  (show button tool as info help)
-     * }
-     */
-    const {type, component, how = "toggled" } = toggledTool;
-    switch(type) {
+
+    switch(toggledTool.type) {
+
       case 'spatialMethod':
-        const method = this.getSpatialMethod();
         this.toggledTool = {
-          template: `
+          template: /*html */ `
             <div style="width: 100%; padding: 5px;">
-              <select ref="select" style="width: 100%"  :search="false" v-select2="'method'">
-                <option v-for="method in methods">{{method}}</option>
+              <select ref="select" style="width: 100%" :search="false" v-select2="'method'">
+                <option v-for="method in methods">{{ method }}</option>
               </select>
             </div>`,
-          data()          { this.methods = SPATIAL_METHODS; return { method }; },
-          watch:          { 'method': method => this.setSpatialMethod(method) },
+          data:           () => ({ methods: SPATIAL_METHODS, method: this.getSpatialMethod() }),
+          watch:          { method: m => this.setSpatialMethod(m) },
           created()       { GUI.setCloseUserMessageBeforeSetContent(false); },
           beforeDestroy() { GUI.setCloseUserMessageBeforeSetContent(true); }
         };
         break;
+
       case 'custom':
-        this.toggledTool = component;
+        this.toggledTool = toggledTool.component;
         break;
-      // if we want to create a button (as info on hover)
+
     }
-    switch (how) {
+
+    switch (toggledTool.how) {
       case 'hover':
         this._createToolOnHoverButton();
         break;

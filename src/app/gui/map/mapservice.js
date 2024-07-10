@@ -13,7 +13,6 @@ import { createVectorLayerFromFile } from 'utils/createVectorLayerFromFile';
 import { createWMSLayer }            from 'utils/createWMSLayer';
 import { createSelectedStyle }       from 'utils/createSelectedStyle';
 import { getMapLayersByFilter }      from 'utils/getMapLayersByFilter';
-import { getGeoTIFFfromServer }      from 'utils/getGeoTIFFfromServer';
 import { getScaleFromResolution }    from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }    from 'utils/getResolutionFromScale';
 import { inherit }                   from 'utils/inherit';
@@ -31,8 +30,6 @@ const QueryByPolygonControl      = require('g3w-ol/controls/querybypolygoncontro
 const GeolocationControl         = require('g3w-ol/controls/geolocationcontrol');
 const StreetViewControl          = require('g3w-ol/controls/streetviewcontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
-const LenghtIteraction           = require('g3w-ol/interactions/lengthinteraction');
-const AreaIteraction             = require('g3w-ol/interactions/areainteraction');
 const ScaleControl               = require('g3w-ol/controls/scalecontrol');
 const ScreenshotControl          = require('g3w-ol/controls/screenshotcontrol');
 const QueryByDrawPolygonControl  = require('g3w-ol/controls/querybydrawpolygoncontrol');
@@ -138,7 +135,6 @@ const CONTROLS = {
   'scale':              ScaleControl,
   'onclick':            InteractionControl,
   'screenshot':         ScreenshotControl,
-  'geoscreenshot':      (opts = {}) => new ScreenshotControl({ name: 'maptoimagegeo', tipLabel: 'Geo Screenshot', label:' \ue900', ...opts }),
   'querybydrawpolygon': QueryByDrawPolygonControl,
 };
 
@@ -1195,12 +1191,16 @@ proto._setupControls = function() {
         case 'screenshot':
         case 'geoscreenshot':
           if (!isMobile.any ) {
-            this.createMapControl(type, {
-              options: {
-                layers:  [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
-                onclick: this._handlePrint.bind(this, type)
-              }
-            });
+            if (this.getMapControlByType( { type: 'screenshot' })) {
+              this.getMapControlByType( { type: 'screenshot' }).addType(type)
+            } else {
+              this.createMapControl(type, {
+                options: {
+                  types:   [type],
+                  layers:  [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
+                }
+              });
+            }
           }
           break;
 
@@ -1306,24 +1306,24 @@ proto._setupControls = function() {
             this.createMapControl(type, {}).on('addlayer', () => this.emit('addexternallayer'));
           }
           break;
+
         case 'length':
         case 'area':
           if (!isMobile.any) {
-            if (this.getMapControlByType( {type: 'measure' })) {
-              this.getMapControlByType( {type: 'measure' }).addType(type)
+            if (this.getMapControlByType( { type: 'measure' })) {
+              this.getMapControlByType( { type: 'measure' }).addType(type)
             } else {
               this.createMapControl('measure', {
                 options: {
-                  tipLabel:'sdk.mapcontrols.measures.title',
+                  tipLabel: 'sdk.mapcontrols.measures.title',
                   types: [type],
                   interactionClassOptions: {
                     projection: this.getProjection(),
-                    help: 'sdk.mapcontrols.measures.area.help'
+                    help:       `sdk.mapcontrols.measures.${type}.help`
                   }
                 }
               });
             }
-
           }
           break;
 
@@ -3121,44 +3121,6 @@ proto.setExternalLayerStyle = function(color, field) {
     const func = feature.getStyleFunction();
     return func ? func.call(feature, resolution) : defaultStyle[feature.getGeometry().getType()];
   };
-};
-
-/**
- * @since 3.8.3
- */
-proto._handlePrint = async function(controlType) {
-  // Start download
-  const download_id = ApplicationService.setDownload(true);
-  try {
-    const blobImage = await this.createMapImage();
-    if ('screenshot' === controlType) {
-      saveAs(blobImage, `map_${Date.now()}.png`);
-    } else {
-      // GeoTIFF
-      saveAs(
-        await getGeoTIFFfromServer({
-          url: `/${this.project.getType()}/api/asgeotiff/${this.project.getId()}/`,
-          method: "POST",
-          params: {
-            image: blobImage,
-            csrfmiddlewaretoken: this.getCookie('csrftoken'),
-            bbox: this.getMapBBOX().toString()
-          },
-        }),
-        `map_${Date.now()}.tif`
-      );
-    }
-  } catch (err) {
-    GUI.showUserMessage({
-      type: 'SecurityError' === err.name ? 'warning' : 'alert',
-      message: 'SecurityError' === err.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
-      autoclose: false
-    });
-    console.warn(err);
-  }
-  // End download
-  ApplicationService.setDownload(false, download_id);
-  return true;
 };
 
 proto.getCookie = (name) => Vue.cookie.get(name);

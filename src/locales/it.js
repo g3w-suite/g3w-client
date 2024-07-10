@@ -316,6 +316,12 @@ export default {
             help: "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
           }
         },
+        screenshot: {
+          title: 'Cattura schermata',
+          screenshot: "PNG",
+          geoscreenshot: "GeoTIFF",
+          download: 'Genera'
+        },
         scale: {
           no_valid_scale: "Scala non valida"
         },

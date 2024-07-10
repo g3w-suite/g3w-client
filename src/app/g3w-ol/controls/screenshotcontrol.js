@@ -1,6 +1,9 @@
-import GUI                    from 'services/gui';
-import { sameOrigin }         from 'utils/sameOrigin';
-import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
+import ApplicationService       from 'services/application';
+import GUI                      from 'services/gui';
+import { sameOrigin }           from 'utils/sameOrigin';
+import { getGeoTIFFfromServer } from 'utils/getGeoTIFFfromServer';
+import { InteractionControl }   from 'g3w-ol/controls/interactioncontrol';
+
 
 /**
  * @FIXME prevent tainted canvas error
@@ -25,11 +28,15 @@ module.exports = class ScreenshotControl extends InteractionControl {
       name: "maptoimage",
       tipLabel: "Screenshot",
       label: "\ue90f",
-      toggled: false,
-      visible: true, // set initial to true
+      clickmap: true,
+      enabled:  true,
       layers: [],
       ...options
     });
+
+    this.types = [];
+
+    (options.types || []).forEach(type => this.addType(type));
 
     this.layers= options.layers;
 
@@ -42,6 +49,78 @@ module.exports = class ScreenshotControl extends InteractionControl {
       GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
       GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
     }
+  }
+
+  /**
+   * @param { 'screenshot' | 'geoscreenshot' } type
+   *
+   * @since 3.11.0
+   */
+  addType(type) {
+    this.types.push(type);
+
+    if (/*this.types.length > 1 &&*/ !this.toggledTool) {
+      this.createControlTool();
+    }
+  }
+
+  createControlTool() {
+    return super.createControlTool({
+      type: 'custom',
+      component: {
+        __title: 'sdk.mapcontrols.screenshot.title',
+        data: () => ({ types: this.types, type: this.types[0] }),
+        template: /* html */ `
+          <div style="width: 100%; padding: 5px;">
+            <select ref="select" style="width: 100%" :search="false" v-select2="'type'">
+              <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
+            </select>
+            <button class="btn btn-block btn-success" @click="download" v-t="'sdk.mapcontrols.screenshot.download'"></button>
+          </div>`,
+        methods: {
+          async download(e) {
+            const map = GUI.getService('map');
+            // Start download
+            const download_id = ApplicationService.setDownload(true);
+            e.target.disabled = true;
+            try {
+              const blobImage = await map.createMapImage();
+              // PNG
+              if ('screenshot' === this.type) {
+                window.saveAs(blobImage, `map_${Date.now()}.png`);
+              } else {
+                // GeoTIFF
+                window.saveAs(
+                  await getGeoTIFFfromServer({
+                    url: `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
+                    method: "POST",
+                    params: {
+                      image: blobImage,
+                      csrfmiddlewaretoken: map.getCookie('csrftoken'),
+                      bbox: map.getMapBBOX().toString()
+                    },
+                  }),
+                  `map_${Date.now()}.tif`
+                );
+              }
+            } catch (err) {
+              GUI.showUserMessage({
+                type:    'SecurityError' === err.name ? 'warning' : 'alert',
+                message: 'SecurityError' === err.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
+                autoclose: false
+              });
+              console.warn(err);
+            }
+            // End download
+            ApplicationService.setDownload(false, download_id);
+            e.target.disabled = false;
+            return true;
+          }
+        },
+        created()       { GUI.setCloseUserMessageBeforeSetContent(false); },
+        beforeDestroy() { GUI.setCloseUserMessageBeforeSetContent(true); }
+      }
+    });
   }
 
   /**
