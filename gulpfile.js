@@ -402,6 +402,17 @@ gulp.task('images', function () {
 });
 
 /**
+ * Deploy client cursors
+ */
+gulp.task('cursors', function () {
+  return gulp.src([
+    `${g3w.assetsFolder}/cursors/**/*`,
+  ])
+  .pipe(flatten())
+  .pipe(gulp.dest(`${outputFolder}/static/client/cursors/`))
+});
+
+/**
  * Deploy datatables images (src/assets/vendors/datatables)
  */
 gulp.task('datatable-images', function () {
@@ -504,6 +515,7 @@ gulp.task('browser-sync', function() {
   //
 
   gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/cursors/**'],      () => runSequence('cursors','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
   gulp.watch(g3w.pluginsFolder + '/_version.js',      () => dev_plugins.forEach(p => browserify_plugin(p, false)));
@@ -573,7 +585,7 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'html'], done)
+   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'cursors', 'images', 'less', 'datatable-images', 'html'], done)
    : done;
 });
 

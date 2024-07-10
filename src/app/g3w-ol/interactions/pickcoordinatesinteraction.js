@@ -22,7 +22,8 @@ module.exports = class PickCoordinatesInteraction extends ol.interaction.Pointer
         return false;
       },
       handleMoveEvent(e) {
-        e.map.getTargetElement().style.cursor = 'pointer';
+        // e.map.getTargetElement().style.cursor = 'pointer';
+        e.map.getViewport().classList.add('ol-help');
         return true;
       },
       ...opts
@@ -36,14 +37,18 @@ module.exports = class PickCoordinatesInteraction extends ol.interaction.Pointer
   setActive(bool) {
     const map = this.getMap();
     if (map) {
-      const elem        = map.getTargetElement();
-      elem.style.cursor = '';
+      // const elem        = map.getTargetElement();
+      // elem.style.cursor = '';
+      map.getViewport().classList.remove('ol-help');
     }
     super.setActive(bool);
   };
 
   setMap(map) {
-    if (!map) { this.getMap().getTargetElement().style.cursor = '' }
+    if (!map) {
+      map.getViewport().classList.remove('ol-help');
+      // this.getMap().getTargetElement().style.cursor = ''
+    }
     super.setMap(map);
   }
 
