@@ -12,7 +12,7 @@ module.exports = class MeasureControl extends InteractionControl {
     super({
       ...opts,
       clickmap: true,
-      label:    "\ue908",
+      label:    "\ue909",
       enabled:  true,
       onToggled() {
         //active or deactive current iteraction

@@ -2,7 +2,6 @@ import { SPATIAL_METHODS } from 'app/constant';
 import { VM }              from 'app/eventbus';
 import GUI                 from 'services/gui';
 import ControlsRegistry    from 'store/map-controls'
-import MapControlButton    from 'components/MapControlButton';
 
 const { t }   = require('core/i18n/i18n.service');
 
@@ -32,13 +31,12 @@ export class InteractionControl extends ol.control.Control {
 
     const name = (options.name || '').split(' ').join('-').toLowerCase();
 
+    /** ORIGINAL SOURCE: src/components/MapControlButton.js@v3.10.0 */
     if (!options.element) {
-      options.element = (new (Vue.extend(MapControlButton({
-        className:   "ol-" + name,
-        customClass: options.customClass,
-        tipLabel:    options.tipLabel || name,
-        label:       options.label    || '',
-      })))()).$mount().$el;
+      const icon                = `${ options.label || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }`
+      options.element           = document.createElement('div');
+      options.element.className = `ol-${name} ol-unselectable ol-control`;
+      options.element.innerHTML = /*html*/ `<button type="button" v-t-tooltip="'${options.tipLabel || name}'">${ icon }</button>`;
     }
 
     super(options);

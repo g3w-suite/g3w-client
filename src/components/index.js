@@ -61,7 +61,6 @@ import InputUnique                                 from './InputUnique.vue';
 import LayerOpacityPicker                          from './LayerOpacityPicker.vue';
 import Map                                         from './Map.vue';
 import MapAddLayer                                 from './MapAddLayer.vue';
-import MapControlButton                            from './MapControlButton.js';
 import MapControlGeocoding                         from './MapControlGeocoding.vue';
 import MapControlZoomHistory                       from './MapControlZoomHistory.vue';
 import MetadataLayer                               from './MetadataLayer.vue';
@@ -175,7 +174,6 @@ export {
   LayerOpacityPicker,
   Map,
   MapAddLayer,
-  MapControlButton,
   MapControlGeocoding,
   MapControlZoomHistory,
   MetadataLayer,
