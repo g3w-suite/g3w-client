@@ -323,30 +323,9 @@ export class InteractionControl extends ol.control.Control {
 
     if (this._enabled) {
       this.toggle();
+      event.preventDefault();
+      this.dispatchEvent('controlclick');
     }
-
-    event.preventDefault();
-    const map = this.getMap();
-
-    let resetControl = null;
-
-    // remove all the other, eventually toggled, interactioncontrols
-    const controls = map.getControls();
-
-    this._toggled && controls.forEach(control => {
-      if (control.id && control.toggle && (control.id !== this.id)) {
-        control.toggle(false);
-        if (control.name === 'reset') {
-          resetControl = control;
-        }
-      }
-    });
-
-    if (!this._toggled && resetControl) {
-      resetControl.toggle(true);
-    }
-
-    this.dispatchEvent('controlclick');
   }
 
   /**
@@ -791,6 +770,12 @@ export class InteractionControl extends ol.control.Control {
 
     // TODO: simplify this by removing all that short circuiting logic
     if (toggled) {
+
+      //toggle other toggleable control
+      this.getMap().getControls().forEach(c => {
+        if (c.id && c.toggle && (c.id !== this.id)) { c.toggle(false) }
+      });
+
       this._interaction && this._interaction.setActive(true);
       this.addClassToControlBottom('g3w-ol-toggled');
       this._toolButton && this._toolButton.show();
