@@ -306,6 +306,7 @@ export default {
           tooltip: 'Geolocalizzazione'
         },
         measures: {
+          title: 'Misura',
           length: {
             tooltip: "Lunghezza",
             help: "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito",

@@ -83,7 +83,7 @@ export class InteractionControl extends ol.control.Control {
      *
      * @FIXME add description
      */
-    this.id = this.name + '_' + (Math.floor(Math.random() * 1000000));
+    this.id = `${this.name}_${(Math.floor(Math.random() * 1000000))}`;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
@@ -120,10 +120,10 @@ export class InteractionControl extends ol.control.Control {
 
     this._postRender();
 
+    this._interactionClassOptions = options.interactionClassOptions;
+
     /** @since 3.11.0 */
-    if (options.interactionClass) {
-      this.initInteraction(options);
-    }
+    if (options.interactionClass) { this.initInteraction(options) }
   }
 
   initInteraction(options) {
@@ -323,7 +323,7 @@ export class InteractionControl extends ol.control.Control {
    */
   _handleClick(event) {
 
-    if (this._interactionClass && this._enabled) {
+    if (this._enabled) {
       this.toggle();
     }
 
@@ -665,14 +665,14 @@ export class InteractionControl extends ol.control.Control {
   /**
    * @param {{ type: {'spatialMethod' | 'custom'}, component: unknown, how: {'toggled' | 'hover'} }} toggledTool 
    */
-  createControlTool(toggledTool={}) {
+  createControlTool(toggledTool = {}) {
     /**
      * how can be {
      *  'toggled'(default) => show tools when control is toggled
      *  'hover' =>  (show button tool as info help)
      * }
      */
-    const {type, component, how="toggled"} = toggledTool;
+    const {type, component, how = "toggled" } = toggledTool;
     switch(type) {
       case 'spatialMethod':
         const method = this.getSpatialMethod();
@@ -714,10 +714,10 @@ export class InteractionControl extends ol.control.Control {
     }
   }
 
-  showToggledTool(show=true) {
+  showToggledTool(show = true) {
     if (show) {
       GUI.showUserMessage({
-        title: '',
+        title: this.toggledTool.__title,
         type: 'tool',
         size: 'small',
         closable: this._toolButton ? true : false,
@@ -725,7 +725,7 @@ export class InteractionControl extends ol.control.Control {
           body: this.toggledTool
         }
       });
-    } else GUI.closeUserMessage();
+    } else { GUI.closeUserMessage() }
   }
 
   /**
