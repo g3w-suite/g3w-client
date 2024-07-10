@@ -33,10 +33,13 @@ export class InteractionControl extends ol.control.Control {
 
     /** ORIGINAL SOURCE: src/components/MapControlButton.js@v3.10.0 */
     if (!options.element) {
-      const icon                = `${ options.label || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }`
-      options.element           = document.createElement('div');
-      options.element.className = `ol-${name} ol-unselectable ol-control`;
-      options.element.innerHTML = /*html*/ `<button type="button" v-t-tooltip="'${options.tipLabel || name}'">${ icon }</button>`;
+      options.element = (new (Vue.extend({
+        template: /* html */ `<div class="ol-${name} ol-unselectable ol-control">
+          <button type="button" v-t-tooltip="'${options.tipLabel || name}'">
+            ${ options.label || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }
+          </button>
+        </div>`,
+      }))()).$mount().$el;
     }
 
     super(options);
