@@ -20,7 +20,7 @@ module.exports = class WMSTLayer extends WMSLayer {
       id:                this.config.id,
       projection:        this.config.projection,
       iframe_internal:   this.iframe_internal,
-      layers:            (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
+      layers:            (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
       cache_provider:    this.config.cache_provider, /** @since 3.10.0 **/
       cache_type:        this.config.cache_type, /** @since 3.10.0  tms, wms**/
       cache_layer:       this.config.cache_layer,

@@ -75,14 +75,31 @@ const BASE_LAYERS   = {
    */
   [Layer.ServerTypes.TMS]: class TMSLayer extends BaseLayer {
     _makeOlLayer() {
-      return RasterLayers.XYZLayer({
-        visible:      false,
-        url:          undefined !== this.config.url ? this.config.url : null,
-        minZoom:      this.config.minZoom,
-        maxZoom:      this.config.maxZoom,
-        attributions: this.config.attributions,
-        projection:   this.getProjectionFromCrs(this.config.crs),
-        crossOrigin: 'anonymous',
+      const url        = undefined !== this.config.url ? this.config.url : null;
+      const projection = url && this.getProjectionFromCrs(this.config.crs);
+      if (!url) {
+        return;
+      }
+      return new ol.layer.Tile({
+        visible:    false,
+        projection,
+        source:     new ol.source.XYZ({
+          url,
+          maxZoom:     this.config.maxZoom,
+          minZoom:     this.config.minZoom,
+          projection,
+          crossOrigin: 'anonymous',
+          // tileLoadFunction:  undefined,
+          /** @since 3.10.0 - Map Proxy cache_provider **/
+          tileGrid:    'degrees' === projection.getUnits() ? new ol.tilegrid.TileGrid({
+            // Need to remove the first resolution because in this version of ol createXYZ doesn't accept maxResolution options.
+            // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculated
+            // by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
+            // we need to calculate to Math.min instead, so we have to remove the first resolution
+            resolutions: ol.tilegrid.createXYZ({ extent: projection.getExtent(), maxZoom: this.config.maxZoom }).getResolutions().slice(1),
+            extent:      projection.getExtent(),
+          }) : undefined,
+        })
       });
     }
   },

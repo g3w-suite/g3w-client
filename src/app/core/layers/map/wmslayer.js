@@ -84,7 +84,7 @@ module.exports = class WMSLayer extends MapLayer {
         id:              this.config.id,
         projection:      this.config.projection,
         iframe_internal: this.iframe_internal,
-        layers:          (withLayers) ? this.layers.map(layer => layer.getWMSLayerName()) : this.layers,
+        layers:          (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
         /** @since 3.9.1 */
         format:          this.config.format,
       },
