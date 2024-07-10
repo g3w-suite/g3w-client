@@ -92,11 +92,15 @@ const BASE_LAYERS   = {
    */
   [Layer.ServerTypes.ARCGISMAPSERVER]: class ARCGISMAPSERVERLayer extends BaseLayer {
     _makeOlLayer() {
-      return RasterLayers.TiledArgisMapServer({
-        visible:      false,
-        url:          undefined !== this.config.url ? this.config.url : null,
-        projection:   this.getProjectionFromCrs(this.config.crs),
-        attributions: this.config.attributions,
+      return new ol.layer.Tile({
+        // extent: opts.extent,
+        visible: false,
+        source: new ol.source.TileArcGISRest({
+          url:          undefined !== this.config.url ? this.config.url : null,
+          projection:   this.getProjectionFromCrs(this.config.crs),
+          attributions: this.config.attributions,
+          // crossOrigin:  opts.crossOrigin,
+        }),
       });
     }
   },
@@ -174,13 +178,15 @@ const BASE_LAYERS   = {
   [Layer.ServerTypes.WMS]: class WMSLayer extends BaseLayer {
     _makeOlLayer() {
       return RasterLayers.WMSLayer({
-        url:          this.config.url,
-        projection:   this.getProjectionFromCrs(this.config.crs),
-        attributions: this.config.attributions,
-        layers:       this.config.layers,
-        tiled:        undefined !== this.config.singleTile ? this.config.singleTile : false,
-        opacity:      undefined !== this.config.opacity ? this.config.opacity : 1,
-      });
+        layerObj: {
+          url:          this.config.url,
+          projection:   this.getProjectionFromCrs(this.config.crs),
+          attributions: this.config.attributions,
+          layers:       this.config.layers,
+          tiled:        undefined !== this.config.singleTile ? this.config.singleTile : false,
+          opacity:      undefined !== this.config.opacity ? this.config.opacity : 1,
+        },
+    });
     }
   },
 

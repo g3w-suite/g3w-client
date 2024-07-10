@@ -1,26 +1,24 @@
-const { inherit, base } = require('utils');
-const WMSLAYER          = require('core/layers/map/wmslayer');
-const RasterLayers      = require('g3w-ol/layers/rasters');
+const WMSLAYER = require('core/layers/map/wmslayer');
 
-function ARCGISMAPSERVERLayer(options={}, extraParams={}) {
-  base(this, options, extraParams);
-}
+module.exports = class ARCGISMAPSERVERLayer extends WMSLAYER {
 
-inherit(ARCGISMAPSERVERLayer, WMSLAYER);
+  _makeOlLayer() {
+    const olLayer = new ol.layer.Tile({
+      // extent: opts.extent,
+      visible: true,
+      source: new ol.source.TileArcGISRest({
+        url:          this.config.url,
+        projection:   this.config.projection,
+        // attributions: opts.attributions,
+        // crossOrigin:  opts.crossOrigin,
+      }),
+    })
 
-const proto = ARCGISMAPSERVERLayer.prototype;
+    olLayer.getSource().on('imageloadstart', () => { this.emit('loadstart'); });
+    olLayer.getSource().on('imageloadend',   () => { this.emit('loadend'); });
+    olLayer.getSource().on('imageloaderror', () => { this.emit('loaderror'); });
 
-proto._makeOlLayer = function() {
-  const olLayer = new RasterLayers.TiledArgisMapServer({
-    url:        this.config.url,
-    id:         this.config.id,
-    projection: this.config.projection,
-    format:     this.config.format,
-  });
-  olLayer.getSource().on('imageloadstart', () => { this.emit('loadstart'); });
-  olLayer.getSource().on('imageloadend',   () => { this.emit('loadend'); });
-  olLayer.getSource().on('imageloaderror', () => { this.emit('loaderror'); });
-  return olLayer
+    return olLayer
+  }
+
 };
-
-module.exports = ARCGISMAPSERVERLayer;

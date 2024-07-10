@@ -1,12 +1,11 @@
-const { inherit, base } = require('utils');
-const VectorLayer       = require('core/layers/map/vectorlayer');
+const VectorLayer = require('core/layers/map/vectorlayer');
 
-function GeojsonLayer(options = {}) {
-  this.setProvider(options.provider);
-  base(this, options);
-  this.getFeatures({ url: options.url, mapProjection: this.mapProjection });
-}
+module.exports = class GeojsonLayer extends VectorLayer {
 
-inherit(GeojsonLayer, VectorLayer);
+  constructor(options = {}) {
+    super(options);
+    this.setProvider(options.provider);
+    this.getFeatures({ url: options.url, mapProjection: this.mapProjection });
+  }
 
-module.exports = GeojsonLayer;
+};
