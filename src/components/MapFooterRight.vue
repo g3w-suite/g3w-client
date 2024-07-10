@@ -10,7 +10,7 @@
     <div id = "scale-control"></div>
 
     <div
-      v-if                   = "mouse.switch_icon && !isMobile()"
+      v-if                   = "mouse.visible && mouse.switch_icon && !isMobile()"
       id                     = "switch-mouse-coordinate"
       v-t-tooltip:top.create = "mouse.tooltip"
       @click.stop.prevent    = "switchMapsCoordinateTo4326"
@@ -22,13 +22,8 @@
     </div>
 
     <div
-      v-show = "!mouse.epsg_4326"
+      v-show = "mouse.visible"
       id     = "mouse-position-control">
-    </div>
-
-    <div
-      v-show = "mouse.epsg_4326"
-      id     = "mouse-position-control-epsg-4326">
     </div>
 
     <div
@@ -82,6 +77,7 @@
     data() {
       return {
         mouse: {
+          visible:     true,
           switch_icon: false,
           epsg_4326:   false,
           tooltip:     null
@@ -100,6 +96,10 @@
       },
       switchMapsCoordinateTo4326() {
         this.mouse.epsg_4326 = !this.mouse.epsg_4326;
+        this.service.getMapControlByType({ type: 'mouseposition'}).dispatchEvent({
+          type: 'change:epsg',
+          epsg: this.mouse.epsg_4326 ? 'EPSG:4326' : this.service.getEpsg(),
+        })
       },
     },
     watch: {
@@ -110,11 +110,16 @@
     },
     async mounted() {
       this.service.once('ready', () => {
-        this.mouse.switch_icon = (
-          this.service.getMapControlByType({ type: 'mouseposition'})
-          && 'EPSG:4326' !== this.service.getEpsg()
-        );
-        this.mouse.tooltip = `ESPG ${this.service.getCrs().split(':')[1]} <--> WGS84`;
+        if (this.service.getMapControlByType({ type: 'mouseposition'})) {
+          this.mouse.switch_icon = (
+            this.service.getMapControlByType({ type: 'mouseposition'})
+            && 'EPSG:4326' !== this.service.getEpsg()
+          );
+          this.mouse.tooltip = `ESPG ${this.service.getCrs().split(':')[1]} <--> WGS84`;
+        } else {
+          this.mouse.visible = false;
+        }
+
       });
     }
   };
