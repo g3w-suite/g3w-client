@@ -141,8 +141,11 @@ const CONTROLS = {
 /**
  * BACKCOMP v3.x
  */
-CONTROLS['nominatim'] = CONTROLS['geocoding'];
-CONTROLS['ontoggle']  = CONTROLS['onclick'];
+CONTROLS['nominatim']     = CONTROLS['geocoding'];
+CONTROLS['ontoggle']      = CONTROLS['onclick'];
+CONTROLS['area']          = CONTROLS['measure'];
+CONTROLS['length']        = CONTROLS['measure'];
+CONTROLS['geoscreenshot'] = CONTROLS['screenshot'];
 
 /**
  * @FIXME add description

@@ -10,6 +10,7 @@ const WMSTLayer                           = require('core/layers/map/wmstlayer')
 const ARCGISMAPSERVERLayer                = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                            = require('core/layers/map/xyzlayer');
 const GeoLayerMixin                       = require('core/layers/mixins/geo');
+const Projections                         = require('g3w-ol/projection/projections');
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -68,6 +69,22 @@ function ImageLayer(config={}, options={}) {
   this.customParams     = {};
 
   this.setup(config, options);
+
+  /**
+   * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+   * 
+   * @since 3.11.0
+   */
+  if (this._makeOlLayer && this.isWMS()) {
+    this._mapLayer = new WMSLayer({
+      url:   this.getWmsUrl(),
+      id:    this.state.id,
+      tiled: this.state.tiled,
+    });
+    this._mapLayer.addLayer(this);
+  } else if(this._makeOlLayer) {
+    this._mapLayer = this;
+  }
 }
 
 inherit(ImageLayer, Layer);
@@ -414,6 +431,16 @@ proto.getWfsCapabilities = function() {
 };
 
 proto.getMapLayer = function(options = {}, extraParams) {
+
+  /**
+   * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+   * 
+   * @since 3.11.0
+   */
+  if (this._mapLayer) {
+    return this._mapLayer;
+  }
+
   options.iframe_internal   = ApplicationService.isIframe() && !this.isExternalWMS();
   const method              = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
   const extent              = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
@@ -481,6 +508,71 @@ proto.getOwsMethod = function() {
     ? 'GET'
     : this.config.ows_method;
 };
+
+/**
+ * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+ * 
+ * @since 3.11.0
+ */
+proto.update = function(mapState, extraParams) {
+  if (this.isWMS()) {
+    this._mapLayer.update(mapState, extraParams)
+  }
+};
+
+/**
+ * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+ * 
+ * @since 3.11.0
+ */
+proto.setVisible = function(bool) {
+  if (this._mapLayer) {
+    return this.getOLLayer().setVisible(bool)
+  }
+  return Layer.prototype.setVisible.call(this, bool);
+}
+
+/**
+ * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+ * 
+ * @since 3.11.0
+ */
+proto.getSource = function() {
+  if (this._mapLayer) {
+    return this.getOLLayer().getSource();
+  }
+
+  return Layer.prototype.getSource.call(this);
+}
+
+/**
+ * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+ * 
+ * @since 3.11.0
+ */
+proto.getProjectionFromCrs = function(crs = {}) {
+  crs.epsg = crs.epsg ? crs.epsg : 'EPSG:3857';
+  return Projections.get(crs);
+};
+
+/**
+ * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+ * 
+ * @since 3.11.0
+ */
+proto.getOLLayer = function() {
+  if (!this._olLayer && this._makeOlLayer) {
+    this._olLayer = this._makeOlLayer();
+    // register loading event
+    this._olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
+    this._olLayer.getSource().on('imageloadend',   () => this.emit("loadend"));
+    if (this._mapLayer.config.attributions) {
+      this._olLayer.getSource().setAttributions(this._mapLayer.config.attributions);
+    }
+    this._olLayer.setVisible(this._mapLayer.state.visible)
+  }
+  return this._olLayer;
+}
 
 ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.QGIS,

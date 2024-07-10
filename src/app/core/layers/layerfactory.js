@@ -4,8 +4,7 @@ const Layer        = require('core/layers/layer');
 const TableLayer   = require('core/layers/tablelayer');
 const VectorLayer  = require('core/layers/vectorlayer');
 const ImageLayer   = require('core/layers/imagelayer');
-const BaseLayer    = require('core/layers/baselayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
+const WMSLayer     = require('core/layers/map/wmslayer');
 const GeojsonLayer = require('core/layers/geojson');
 
 const WITH_GEOMETRY = [
@@ -39,7 +38,7 @@ const BASE_LAYERS   = {
   /**
    * ORIGINAL SOURCE: src/core/layers/baselayers/osmlayer.js@3.8.6
    */
-  [Layer.ServerTypes.OSM]: class OSMLayer extends BaseLayer {
+  [Layer.ServerTypes.OSM]: class extends ImageLayer {
     _makeOlLayer() {
       return new ol.layer.Tile({
         source:  new ol.source.OSM({ url: this.config.url }),
@@ -53,7 +52,7 @@ const BASE_LAYERS   = {
   /**
    * ORIGINAL SOURCE: core/layers/baselayers/binglayer.js@3.8.6
    */
-  [Layer.ServerTypes.BING]: class BingLayer extends BaseLayer {
+  [Layer.ServerTypes.BING]: class extends ImageLayer {
     _makeOlLayer() {
       const name = ({
         streets:          'Road',
@@ -73,7 +72,7 @@ const BASE_LAYERS   = {
   /**
    * ORIGINAL SOURCE: src/core/layers/baselayers/tmslayer.js@3.8.6
    */
-  [Layer.ServerTypes.TMS]: class TMSLayer extends BaseLayer {
+  [Layer.ServerTypes.TMS]: class extends ImageLayer {
     _makeOlLayer() {
       const url        = undefined !== this.config.url ? this.config.url : null;
       const projection = url && this.getProjectionFromCrs(this.config.crs);
@@ -107,7 +106,7 @@ const BASE_LAYERS   = {
   /**
    * ORIGINAL SOURCE: src/require('core/layers/baselayers/arcgislayer.js@3.8.6
    */
-  [Layer.ServerTypes.ARCGISMAPSERVER]: class ARCGISMAPSERVERLayer extends BaseLayer {
+  [Layer.ServerTypes.ARCGISMAPSERVER]: class extends ImageLayer {
     _makeOlLayer() {
       return new ol.layer.Tile({
         // extent: opts.extent,
@@ -125,7 +124,7 @@ const BASE_LAYERS   = {
   /**
    * ORIGINAL SOURCE: src/require('core/layers/baselayers/wmtslayer.js@3.8.6
    */
-  [Layer.ServerTypes.WMTS]: class WMTSLayer extends BaseLayer {
+  [Layer.ServerTypes.WMTS]: class extends ImageLayer {
     _makeOlLayer() {
       // use this config to get params
       const {
@@ -192,9 +191,9 @@ const BASE_LAYERS   = {
   /**
    * ORIGINAL SOURCE: src/require('core/layers/baselayers/wmslayer.js@3.8.6
    */
-  [Layer.ServerTypes.WMS]: class WMSLayer extends BaseLayer {
+  [Layer.ServerTypes.WMS]: class extends ImageLayer {
     _makeOlLayer() {
-      return RasterLayers.WMSLayer({
+      return WMSLayer._makeOlLayer({
         layerObj: {
           url:          this.config.url,
           projection:   this.getProjectionFromCrs(this.config.crs),

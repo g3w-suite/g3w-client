@@ -1,5 +1,4 @@
 const WMSLayer     = require('core/layers/map/wmslayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
 
 module.exports = class WMSTLayer extends WMSLayer {
 
@@ -49,7 +48,7 @@ module.exports = class WMSTLayer extends WMSLayer {
           transparent: false,
         })
       })
-      : RasterLayers.WMSLayer({
+      : WMSLayer._makeOlLayer({
         layerObj,
         extraParams: this.extraParams || {},
         tiled: true

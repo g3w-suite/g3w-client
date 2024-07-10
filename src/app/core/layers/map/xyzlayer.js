@@ -1,5 +1,4 @@
-const MapLayer     = require('core/layers/map/maplayer');
-const RasterLayers = require('g3w-ol/layers/rasters');
+const MapLayer = require('core/layers/map/maplayer');
 
 module.exports = class XYZLayer extends MapLayer {
 
