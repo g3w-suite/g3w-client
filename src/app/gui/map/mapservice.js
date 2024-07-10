@@ -37,6 +37,7 @@ const AreaIteraction             = require('g3w-ol/interactions/areainteraction'
 const ScaleControl               = require('g3w-ol/controls/scalecontrol');
 const ScreenshotControl          = require('g3w-ol/controls/screenshotcontrol');
 const QueryByDrawPolygonControl  = require('g3w-ol/controls/querybydrawpolygoncontrol');
+const MeasureControl             = require('g3w-ol/controls/measurecontrol');
 
 /**
  * Toogle a CSS class in a vue "friendly" way
@@ -133,8 +134,7 @@ const CONTROLS = {
   'geolocation':        GeolocationControl,
   'streetview':         StreetViewControl,
   'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip",        label: "\ue907", name: 'addlayer', onSetMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
-  'length':             (opts = {}) => new InteractionControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.length.tooltip', label: '\ue908', clickmap: true, interactionClass: LenghtIteraction, onToggled() { if (!this.isToggled() && this.getInteraction()) this.getInteraction().clear(); } }),
-  'area':               (opts = {}) => new InteractionControl({ ...opts, tipLabel: 'sdk.mapcontrols.measures.area.tooltip',   label: '\ue909', clickmap: true, interactionClass: AreaIteraction,   onToggled() { if (!this.isToggled() && this.getInteraction()) this.getInteraction().clear(); } }),
+  'measure':            MeasureControl,
   'mouseposition':      (opts = {}) => Object.assign((new ol.control.MousePosition({ ...opts, target: opts.target || 'mouse-position-control' })), { offline: true }),
   'scale':              ScaleControl,
   'onclick':            InteractionControl,
@@ -1143,18 +1143,12 @@ proto._setupControls = function() {
 
   Object
     .entries(mapcontrols)
-    .forEach(([controlType, config={}]) => {
-      let control;
-      switch (controlType) {
-
-        case 'reset':
-          this.addControl(controlType, control, false);
-          break;
-
+    .forEach(([type, config = {}]) => {
+      switch (type) {
         case 'zoom':
-          control = this.createMapControl(controlType, {
+          this.createMapControl(type, {
             options: {
-              zoomInLabel: "\ue98a",
+              zoomInLabel:  "\ue98a",
               zoomOutLabel: "\ue98b"
             }
           });
@@ -1162,15 +1156,12 @@ proto._setupControls = function() {
 
         case 'zoombox':
           if (!isMobile.any) {
-            control = this.createMapControl(controlType, {});
-            control.on('zoomend', (e) => {
-              this.viewer.fit(e.extent);
-            });
+            this.createMapControl(type, {}).on('zoomend', (e) => this.viewer.fit(e.extent) );
           }
           break;
 
         case 'zoomtoextent':
-          control = this.createMapControl(controlType, {
+          this.createMapControl(type, {
             options: {
               label: "\ue98c",
               extent: this.project.state.initextent
@@ -1182,33 +1173,28 @@ proto._setupControls = function() {
           if (!isMobile.any) {
             // @since 3.8.
             const decimalNumber    = 'degrees' === this.getProjection().getUnits() ? 4 : 2;
-            const coordinateLabels = 'degrees' === this.getProjection().getUnits()  ? ['Lng', 'Lat'] : ['X', 'Y'];
-            const crs = this.getCrs();
-            control = this.createMapControl(controlType, {
+            const coordinateLabels = 'degrees' === this.getProjection().getUnits() ? ['Lng', 'Lat'] : ['X', 'Y'];
+            const mapEspg = this.getEpsg();
+            const coordinateFormats = {
+              'EPSG:4326'(coordinate) {
+                return ol.coordinate.format(ol.proj.transform(coordinate, mapEspg, 'EPSG:4326'), `\u00A0Lng: {x}, Lat: {y}\u00A0\u00A0 [EPSG:4326]\u00A0`, 4);
+              },
+              [mapEspg](coordinate) {
+                return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${mapEspg}]\u00A0`, decimalNumber);
+              }
+            };
+
+            const control = this.createMapControl(type, {
               add: false,
               options: {
-                coordinateFormat(coordinate) {
-                  return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, decimalNumber);
-                },
-                undefinedHTML: false,
-                projection: this.getCrs()
+                coordinateFormat: coordinateFormats[mapEspg],
+                undefinedHTML:    false,
+                projection:       this.getCrs()
               }
             });
             if ('EPSG:4326' !== this.getEpsg()) {
-              const mapEspg = this.getEpsg();
-              const coordinateLabels = ['Lng', 'Lat'];
-              const crs = this.getCrs();
-              control = this.createMapControl(controlType, {
-                add: false,
-                options: {
-                  target: 'mouse-position-control-epsg-4326',
-                  coordinateFormat(coordinate) {
-                    coordinate = ol.proj.transform(coordinate, mapEspg, 'EPSG:4326');
-                    return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, decimalNumber);
-                  },
-                  undefinedHTML: false,
-                  projection: this.getCrs()
-                }
+              control.on('change:epsg', function(e) {
+                this.setCoordinateFormat(coordinateFormats[e.epsg]);
               })
             }
           }
@@ -1217,28 +1203,28 @@ proto._setupControls = function() {
         case 'screenshot':
         case 'geoscreenshot':
           if (!isMobile.any ) {
-            control = this.createMapControl(controlType, {
+            this.createMapControl(type, {
               options: {
-                layers: [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
-                onclick: this._handlePrint.bind(this, controlType)
+                layers:  [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
+                onclick: this._handlePrint.bind(this, type)
               }
             });
           }
           break;
 
         case 'scale':
-          control = this.createMapControl(controlType, {
+          this.createMapControl(type, {
             add: false,
             options: {
               coordinateFormat: ol.coordinate.createStringXY(4),
-              projection: this.getCrs(),
-              isMobile: isMobile.any
+              projection:       this.getCrs(),
+              isMobile:         isMobile.any
             }
           });
           break;
 
         case 'query':
-          control = this.createMapControl(controlType, {
+          this.createMapControl(type, {
             add: true,
             toggled: true
           });
@@ -1248,7 +1234,7 @@ proto._setupControls = function() {
         case 'querybbox':
         case 'querybydrawpolygon':
           if (!isMobile.any) {
-            control = this.createMapControl(controlType, {
+            this.createMapControl(type, {
               options: {
                 spatialMethod: 'intersects'
               }
@@ -1258,11 +1244,11 @@ proto._setupControls = function() {
 
         case 'streetview':
           // streetview
-          control = this.createMapControl(controlType, {});
+          this.createMapControl(type, {});
           break;
 
         case 'scaleline':
-          control = this.createMapControl(controlType, {
+          this.createMapControl(type, {
             add: false,
             options: {
               position: 'br'
@@ -1285,7 +1271,7 @@ proto._setupControls = function() {
                     view.setCenter(center);
                   }
                 });
-                control = this.createMapControl(controlType, {
+                this.createMapControl(type, {
                   add: false,
                     options: {
                       view,
@@ -1313,51 +1299,39 @@ proto._setupControls = function() {
 
         case 'geocoding':
         case 'nominatim':
-          control = this.createMapControl(controlType, {
+          this.createMapControl(type, {
             add: false,
-            options: {
-              config
-            }
+            options: { config }
           });
           break;
 
         case 'geolocation':
-          control = this.createMapControl(controlType);
-          control.on('click', throttle(evt => this.showMarker(evt.coordinates)));
+          this.createMapControl(type).on('click', throttle(evt => this.showMarker(evt.coordinates)));
           break;
 
         case 'addlayers':
           if (!isMobile.any) {
-            control = this.createMapControl(controlType, {});
-            control.on('addlayer', () => this.emit('addexternallayer'));
+            this.createMapControl(type, {}).on('addlayer', () => this.emit('addexternallayer'));
           }
           break;
-
         case 'length':
-          if (!isMobile.any) {
-            control = this.createMapControl(controlType, {
-              options: {
-                tipLabel: 'sdk.mapcontrols.measures.length.tooltip',
-                interactionClassOptions: {
-                  projection: this.getProjection(),
-                  help: 'sdk.mapcontrols.measures.length.help'
-                }
-              }
-            });
-          }
-          break;
-
         case 'area':
           if (!isMobile.any) {
-            control = this.createMapControl(controlType, {
-              options: {
-                tipLabel:'sdk.mapcontrols.measures.area.tooltip',
-                interactionClassOptions: {
-                  projection: this.getProjection(),
-                  help: 'sdk.mapcontrols.measures.area.help'
+            if (this.getMapControlByType( {type: 'measure' })) {
+              this.getMapControlByType( {type: 'measure' }).addType(type)
+            } else {
+              this.createMapControl('measure', {
+                options: {
+                  tipLabel:'sdk.mapcontrols.measures.title',
+                  types: [type],
+                  interactionClassOptions: {
+                    projection: this.getProjection(),
+                    help: 'sdk.mapcontrols.measures.area.help'
+                  }
                 }
-              }
-            });
+              });
+            }
+
           }
           break;
 
@@ -1365,8 +1339,7 @@ proto._setupControls = function() {
          * @since 3.8.0
          */
         case 'zoomhistory':
-          control = this.createMapControl(controlType, { add: false });
-          this._addControlToMapControlsLeftBottom(control);
+          this._addControlToMapControlsLeftBottom(this.createMapControl(type, { add: false }));
           break;
 
       }

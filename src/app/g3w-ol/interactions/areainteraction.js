@@ -1,6 +1,6 @@
-const MeasureInteraction = require('g3w-ol/interactions/measureinteraction');
+import MeasureInteraction from 'g3w-ol/interactions/measureinteraction';
 
-module.exports = class AreaIteraction extends MeasureInteraction {
+export default class AreaIteraction extends MeasureInteraction {
   constructor(opts = {}) {
     opts.geometryType = "Polygon";
     super(opts);

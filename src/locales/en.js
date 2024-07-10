@@ -305,6 +305,7 @@ export default {
           tooltip: 'Geolocation'
         },
         measures: {
+          title: 'Measure',
           length: {
             tooltip: "Length",
             help: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",

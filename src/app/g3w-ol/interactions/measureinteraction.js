@@ -6,7 +6,7 @@ import { needUseSphereMethods }    from 'utils/needUseSphereMethods';
 const { t }                        = require('core/i18n/i18n.service');
 
 
-module.exports = class MeasureIteraction extends ol.interaction.Draw {
+export default class MeasureIteraction extends ol.interaction.Draw {
   constructor(opts) {
     const drawColor        = opts.drawColor || 'rgba(0, 0, 0, 0.5)';
     const useSphereMethods = needUseSphereMethods(opts.projection);
