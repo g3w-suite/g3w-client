@@ -199,7 +199,7 @@ export default {
       },
       mapcontrols: {
         query: {
-          tooltip: 'Interroga un punto',
+          tooltip: 'Interroga Layer',
           actions: {
             add_selection: {
               hint: "Aggiungi/Rimuovi Selezione"
@@ -263,9 +263,6 @@ export default {
               hint_change: "URL copiato negli appunti"
             }
           }
-        },
-        queryby: {
-          title: 'Interroga un area'
         },
         querybypolygon: {
           download: {

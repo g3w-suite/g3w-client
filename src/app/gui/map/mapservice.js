@@ -23,7 +23,6 @@ import { InteractionControl }        from 'g3w-ol/controls/interactioncontrol';
 
 const VectorLayer                = require('core/layers/vectorlayer');
 
-const QueryBy                    = require('g3w-ol/controls/queryby');
 const QueryBBoxControl           = require('g3w-ol/controls/querybboxcontrol');
 const QueryByPolygonControl      = require('g3w-ol/controls/querybypolygoncontrol');
 const GeolocationControl         = require('g3w-ol/controls/geolocationcontrol');
@@ -114,7 +113,6 @@ const CONTROLS = {
       }
     }
   }),
-  'queryby':            QueryBy,
   'querybbox':          QueryBBoxControl,
   'querybydrawpolygon': QueryByDrawPolygonControl,
   'querybypolygon':     QueryByPolygonControl,
@@ -1122,7 +1120,7 @@ class MapService extends G3WObject {
   }
 
   changeScaleLineUnit(unit) {
-    const scalelinecontrol = this.getMapControlByType('scaleline');
+    const scalelinecontrol = this.getMapControlByType({ type: 'scaleline' });
     if (scalelinecontrol) {
       scalelinecontrol.getOlControl().setUnits(unit);
     }
@@ -1211,10 +1209,10 @@ class MapService extends G3WObject {
           case 'screenshot':
           case 'geoscreenshot':
             if (!isMobile.any ) {
-              if (this.getMapControlByType('screenshot')) {
-                this.getMapControlByType('screenshot').addType(type)
+              if (this.getMapControlByType( { type: 'screenshot' })) {
+                this.getMapControlByType( { type: 'screenshot' }).addType(type)
               } else {
-                this.createMapControl('screenshot', {
+                this.createMapControl(type, {
                   options: {
                     types:   [type],
                     layers:  [...MapLayersStoresRegistry.getLayers(), ...this._externalLayers],
@@ -1251,15 +1249,6 @@ class MapService extends G3WObject {
                   spatialMethod: 'intersects'
                 }
               });
-              if (this.getMapControlByType('queryby')) {
-                this.getMapControlByType('queryby').addType(type)
-              } else {
-                this.createMapControl('queryby', {
-                  options: {
-                    types:   [type],
-                  }
-                });
-              }
             }
             break;
 
@@ -1339,8 +1328,8 @@ class MapService extends G3WObject {
           case 'length':
           case 'area':
             if (!isMobile.any) {
-              if (this.getMapControlByType('measure')) {
-                this.getMapControlByType('measure').addType(type)
+              if (this.getMapControlByType( { type: 'measure' })) {
+                this.getMapControlByType( { type: 'measure' }).addType(type)
               } else {
                 this.createMapControl('measure', {
                   options: {
@@ -1681,12 +1670,8 @@ class MapService extends G3WObject {
     $('.g3w-map-controls-left-bottom').append(control.element);
   }
 
-  getMapControlByType(type) {
-    // BACKOMP v3.x
-    if ("string" !== typeof type) {
-      type = type.type;
-    }
-    const mapControl = this._mapControls.find(control => type === control.type);
+  getMapControlByType({type}={}) {
+    const mapControl = this._mapControls.find(mapControl => type === mapControl.type);
     return mapControl && mapControl.control;
   }
 

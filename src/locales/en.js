@@ -198,7 +198,7 @@ export default {
       },
       mapcontrols: {
         query: {
-          tooltip: 'Query point',
+          tooltip: 'Query layer',
           actions: {
             add_selection: {
               hint: "Add/Remove Selection"
@@ -262,18 +262,6 @@ export default {
               hint_change: "Copied"
             }
           }
-        },
-        queryby: {
-          title: 'Query area',
-          querybypolygon: {
-            tooltip: 'By Layer'
-          },
-          querybydrawpolygon: {
-            tooltip: 'By Polygon'
-          },
-          querybbox: {
-            tooltip: 'By Rectangle'
-          },
         },
         querybypolygon: {
           download: {

@@ -44,7 +44,6 @@ module.exports = class QueryBBoxControl extends InteractionControl {
       spatialMethod:    undefined !== options.spatialMethod ? options.spatialMethod : SPATIAL_METHODS[0],
       help:             { title: "sdk.mapcontrols.querybybbox.help.title", message:"sdk.mapcontrols.querybybbox.help.message" },
       cursorClass:      'ol-crosshair',
-      visible:          false,
     });
 
     /**
