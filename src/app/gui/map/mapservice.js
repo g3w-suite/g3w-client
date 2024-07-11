@@ -80,6 +80,7 @@ const CONTROLS = {
     label:            opts.label || "\uea0f",
     clickmap:         true,
     interactionClass: PickCoordinatesInteraction,
+    interactionClassOptions: { cursor: 'ol-help' }, //set
     cursorClass:      'ol-help',
     onSetMap({ map, setter }) {
       this.runQuery = this.runQuery || (async ({ coordinates }) => {

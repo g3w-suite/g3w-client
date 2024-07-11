@@ -22,7 +22,7 @@ module.exports = class PickCoordinatesInteraction extends ol.interaction.Pointer
         return false;
       },
       handleMoveEvent(e) {
-        e.map.getViewport().classList.add(opts.cursor);
+        e.map.getViewport().classList.add(this._cursor);
         return true;
       },
       ...opts
