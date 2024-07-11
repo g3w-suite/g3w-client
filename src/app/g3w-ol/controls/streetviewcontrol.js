@@ -20,7 +20,9 @@ module.exports = class StreetViewControl extends InteractionControl {
       tipLabel:         "StreetView",
       clickmap:         true,
       label:            "\ue905",
-      interactionClass: PickCoordinatesInteraction
+      interactionClass: PickCoordinatesInteraction,
+      interactionClassOptions: { cursor: 'ol-streetview' },
+      cursorClass:      'ol-streetview',
     });
 
     /**
