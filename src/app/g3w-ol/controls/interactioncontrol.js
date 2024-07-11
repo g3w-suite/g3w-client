@@ -124,7 +124,7 @@ export class InteractionControl extends ol.control.Control {
 
     this._postRender();
 
-    this._interactionClassOptions = options.interactionClassOptions;
+    this._interactionClassOptions = options.interactionClassOptions || {};
 
     /** @since 3.11.0 */
     if (options.interactionClass) { this.initInteraction(options) }
@@ -222,9 +222,17 @@ export class InteractionControl extends ol.control.Control {
       this.on('setMap', () => this.toggle(toggled));
     }
 
-    // create an help message
+    // create modal help message
     if (this._help) {
-      this._createModalHelp();
+      this._helpButton = $('<span class="info_mapcontrol_button">i</span>');
+      $(this.element).prepend(this._helpButton);
+      this._helpButton.on('click', event => {
+        event.stopPropagation();
+        GUI.showModalDialog({
+          title: t(this._help.title),
+          message: t(this._help.message),
+        });
+      });
     }
 
     // create tool
@@ -692,15 +700,8 @@ export class InteractionControl extends ol.control.Control {
 
     }
 
-    switch (toggledTool.how) {
-      case 'hover':
-        this._createToolOnHoverButton();
-        break;
-    }
-  }
-
-  _createToolOnHoverButton() {
-    if (this._onhover) {
+    // create tool on hover button
+    if (this._onhover && 'hover' === toggledTool.how) {
       this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
       $(this.element).prepend(this._toolButton);
       this._toolButton.on('click', event => {
@@ -710,6 +711,7 @@ export class InteractionControl extends ol.control.Control {
       $(this.element).hover(() => this._toggled && this._toolButton.show());
       $(this.element).mouseleave(() => this._toolButton.hide());
     }
+
   }
 
   showToggledTool(show = true) {
@@ -724,32 +726,6 @@ export class InteractionControl extends ol.control.Control {
         }
       });
     } else { GUI.closeUserMessage() }
-  }
-
-  /**
-   * Show help message
-   */
-  _showModalHelp() {
-    GUI.showModalDialog({
-      title: t(this._help.title),
-      message: t(this._help.message),
-    });
-  }
-
-  /**
-   * Create modal help
-   */
-  _createModalHelp() {
-    if (this._onhover) {
-      this._helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
-      $(this.element).prepend(this._helpButton);
-      this._helpButton.on('click', event => {
-        event.stopPropagation();
-        this._showModalHelp();
-      });
-      $(this.element).hover(() => this._helpButton.show());
-      $(this.element).mouseleave(() => this._helpButton.hide());
-    }
   }
 
   getGeometryTypes() {
@@ -803,7 +779,6 @@ export class InteractionControl extends ol.control.Control {
       this.addClassToControlBottom('g3w-ol-toggled');
       this._toolButton && this._toolButton.show();
     } else {
-      this._help && this._helpButton.hide();
       this._interaction && this._interaction.setActive(false);
       this.removeClassToControlBottom('g3w-ol-toggled');
       this._toolButton && this._toolButton.hide();

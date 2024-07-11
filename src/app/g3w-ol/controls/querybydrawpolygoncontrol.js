@@ -29,7 +29,8 @@ module.exports = class QueryByDrawPolygonControl extends InteractionControl {
       spatialMethod:           undefined !== options.spatialMethod ? options.spatialMethod : SPATIAL_METHODS[0],
       toggledTool:             { type: 'spatialMethod', how: 'toggled' /* or hover */ },
       onhover:                 true,
-      geometryTypes:           getAllPolygonGeometryTypes()
+      geometryTypes:           getAllPolygonGeometryTypes(),
+      visible:                 false,
     });
 
     this.setEnable(this.hasVisibleLayers());
