@@ -1333,6 +1333,7 @@ class MapService extends G3WObject {
               } else {
                 this.createMapControl('measure', {
                   options: {
+                    name: "measure",
                     tipLabel: 'sdk.mapcontrols.measures.title',
                     types: [type],
                     interactionClassOptions: {
