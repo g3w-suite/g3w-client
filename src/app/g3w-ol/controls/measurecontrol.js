@@ -66,7 +66,7 @@ module.exports = class MeasureControl extends InteractionControl {
     if (this.types.length > 1 && !this.toggledTool) {
       this.createControlTool();
     }
-  };
+  }
 
   createControlTool() {
     return super.createControlTool({
