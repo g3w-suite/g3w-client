@@ -89,9 +89,9 @@ const CONTROLS = {
           await DataRouterService.getData('query:coordinates', {
             inputs: {
               coordinates,
-              feature_count: project.getQueryFeatureCount(),
+              feature_count:         project.getQueryFeatureCount(),
               query_point_tolerance: project.getQueryPointTolerance(),
-              multilayers: project.isQueryMultiLayers(this.name),
+              multilayers:           project.isQueryMultiLayers(this.name),
             }
           });
         } catch(e) {
