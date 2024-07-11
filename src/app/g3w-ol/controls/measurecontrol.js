@@ -1,7 +1,8 @@
 import GUI                    from 'services/gui';
 import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
-import AreaIteraction         from 'g3w-ol/interactions/areainteraction';
-import LengthInteraction      from 'g3w-ol/interactions/lengthinteraction';
+
+const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
+const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
 
 module.exports = class MeasureControl extends InteractionControl {
 
@@ -52,7 +53,7 @@ module.exports = class MeasureControl extends InteractionControl {
     this.types.push(type);
 
     this.interactions[type] = new ({
-      area:   AreaIteraction,
+      area:   AreaInteraction,
       length: LengthInteraction,
     })[type](this._interactionClassOptions);
 
