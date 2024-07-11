@@ -1159,12 +1159,7 @@ class MapService extends G3WObject {
       .forEach(([type, config = {}]) => {
         switch (type) {
           case 'zoom':
-            this.createMapControl(type, {
-              options: {
-                zoomInLabel:  "\ue98a",
-                zoomOutLabel: "\ue98b"
-              }
-            });
+            this.createMapControl(type);
             break;
 
           case 'zoombox':
