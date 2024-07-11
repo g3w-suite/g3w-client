@@ -24,14 +24,11 @@ import { InteractionControl }        from 'g3w-ol/controls/interactioncontrol';
 const VectorLayer                = require('core/layers/vectorlayer');
 
 const QueryBy                    = require('g3w-ol/controls/queryby');
-const QueryBBoxControl           = require('g3w-ol/controls/querybboxcontrol');
-const QueryByPolygonControl      = require('g3w-ol/controls/querybypolygoncontrol');
 const GeolocationControl         = require('g3w-ol/controls/geolocationcontrol');
 const StreetViewControl          = require('g3w-ol/controls/streetviewcontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 const ScaleControl               = require('g3w-ol/controls/scalecontrol');
 const ScreenshotControl          = require('g3w-ol/controls/screenshotcontrol');
-const QueryByDrawPolygonControl  = require('g3w-ol/controls/querybydrawpolygoncontrol');
 const MeasureControl             = require('g3w-ol/controls/measurecontrol');
 
 let animatingHighlight = false;
@@ -115,9 +112,6 @@ const CONTROLS = {
     }
   }),
   'queryby':            QueryBy,
-  'querybbox':          QueryBBoxControl,
-  'querybydrawpolygon': QueryByDrawPolygonControl,
-  'querybypolygon':     QueryByPolygonControl,
   'geolocation':        GeolocationControl,
   'streetview':         StreetViewControl,
   'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip",        label: "\ue907", name: 'addlayer', onSetMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
@@ -1251,17 +1245,13 @@ class MapService extends G3WObject {
           case 'querybbox':
           case 'querybydrawpolygon':
             if (!isMobile.any) {
-              this.createMapControl(type, {
-                options: {
-                  spatialMethod: 'intersects'
-                }
-              });
-              if (this.getMapControlByType('queryby')) {
-                this.getMapControlByType('queryby').addType(type)
+              if (this.getMapControlByType( {type: 'queryby' })) {
+                this.getMapControlByType({type: 'queryby'}).addType(type)
               } else {
                 this.createMapControl('queryby', {
                   options: {
-                    types:   [type],
+                    spatialMethod: 'intersects',
+                    types:         [type],
                   }
                 });
               }
