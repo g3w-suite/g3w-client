@@ -43,7 +43,7 @@ getDataForSearchInput.field = ({ state, field, fields = [] } = {}) => {
 
   // filter by parent field
   if (undefined !== parent.value) {
-    fields.unshift(`${parent.attribute}|${parent.operator.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? parent.logicop : ''));
+    fields.unshift(`${parent.attribute}|${parent.operator.toLowerCase()}|${encodeURI(parent.value)}` + (fields.length ? `|${parent.logicop}` : ''));
   }
 
   // recursion step
