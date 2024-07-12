@@ -2262,8 +2262,7 @@ class MapService extends G3WObject {
   }
 
   getCurrentToggledMapControl() {
-    const mapControl = this._mapControls.find(({control}) => control && control.isToggled && control.isToggled());
-    return mapControl && mapControl.control;
+    return (this._mapControls.find(({control}) => control && control.isToggled && control.isToggled()) || {}).control;
   }
 
   /**
