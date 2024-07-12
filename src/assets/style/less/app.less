@@ -544,14 +544,25 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-viewport.ol-grab                                                   { cursor: grab; }
 
 .ol-control button:is(.ol-zoom-in, .ol-zoom-out),
-.ol-control:is(.ol-zoombox, .ol-zoom-extent, .ol-querylayer) button    { position: relative; font-size: 0; }
-.ol-control                button.ol-zoom-in::before                   { background: url(../images/mActionZoomIn.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control                button.ol-zoom-out::before                  { background: url(../images/mActionZoomOut.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-zoombox     button::before                              { background: url(../images/mActionZoomToArea.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-zoom-extent button::before                              { background: url(../images/mActionZoomFullExtent.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querylayer  button::before                              { background: url(../images/mActionIdentify.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-measure     button::before                              { background: url(../images/mActionMeasure.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-streetview  button                                      { color: #fdbf2d; text-shadow: 0 1px 0 #505050, 0 -1px 0 #505050, 1px 0 0 #505050, -1px 0px 0 #505050; }
+.ol-control:is(
+  .ol-zoombox,
+  .ol-zoom-extent,
+  .ol-querylayer,
+  .ol-querybbox,
+  .ol-querybypolygon,
+  .ol-querybydrawpolygon
+)                                 button                               { position: relative; font-size: 0; }
+.ol-control                       button.ol-zoom-in::before            { background: url(../images/mActionZoomIn.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control                       button.ol-zoom-out::before           { background: url(../images/mActionZoomOut.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-zoombox            button::before                       { background: url(../images/mActionZoomToArea.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-zoom-extent        button::before                       { background: url(../images/mActionZoomFullExtent.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querylayer         button::before                       { background: url(../images/mActionIdentify.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querylayer         button::before                       { background: url(../images/mActionIdentify.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybbox          button::before                       { background: url(../images/mActionIdentifyByRectangle.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybypolygon     button::before                       { background: url(../images/mActionIdentifyByPolygon.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybydrawpolygon button::before                       { background: url(../images/mActionIdentifyByFreehand.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-measure            button::before                       { background: url(../images/mActionMeasure.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-streetview         button                               { color: #fdbf2d; text-shadow: 0 1px 0 #505050, 0 -1px 0 #505050, 1px 0 0 #505050, -1px 0px 0 #505050; }
 
 .ol-control, .ol-custom-overviewmap                                    { background-color: transparent; border-radius: 0; padding: 0; }
 :is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border: none; border-radius: 3px; font-size: 25px; font-family: icomoon; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 2px solid rgba(0,0,0,0.2); background-clip: padding-box; box-shadow: none !important; border-radius: 4px; }
