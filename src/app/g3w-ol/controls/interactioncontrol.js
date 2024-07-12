@@ -818,7 +818,7 @@ export class InteractionControl extends ol.control.Control {
     this.dispatchEvent({ type: 'toggled', toggled });
 
     if (this._options.onToggled) {
-      this._options.onToggled.call(this);
+      this._options.onToggled.call(this, toggled);
     }
 
   }

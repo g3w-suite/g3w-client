@@ -11,17 +11,14 @@ module.exports = class MeasureControl extends InteractionControl {
       ...opts,
       clickmap: true,
       enabled:  true,
-      onToggled() {
+      onToggled(toggled) {
         // toggle current iteraction
         this._interaction.setActive(this.isToggled());
-        const toggled = this.isToggled();
         // when not toggled
-        if (!toggled) {
-          this._interaction.clear();
-        }
+        if (!toggled) { this._interaction.clear() }
         // check if first interaction is current interaction
         if (!toggled && this.interactions[this.types[0]] !== this._interaction) {
-          //reomve current interaction from map
+          //remove current interaction from the map
           this.getMap().removeInteraction(this._interaction);
           this._interaction = this.interactions[this.types[0]];
           //add first interaction
