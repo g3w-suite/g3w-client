@@ -551,7 +551,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-control.ol-measure button::before                                  { background: url(../images/mActionMeasure.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
 
 .ol-control, .ol-custom-overviewmap                                    { background-color: transparent; border-radius: 0; padding: 0; }
-:is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border: none; border-radius: 3px; font-size: 25px; font-family: icomoon; font-weight: 300; float:left; }
+:is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border: none; border-radius: 3px; font-size: 25px; font-family: icomoon; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 2px solid rgba(0,0,0,0.2); background-clip: padding-box; box-shadow: none !important; border-radius: 4px; }
 :is(.ol-control, .ol-custom-overviewmap) button:hover                  { text-decoration: none; }
 :is(.ol-control, .ol-custom-overviewmap) button:focus                  { text-decoration: none; outline: none; }
 .ol-overviewmap:not(.ol-collapsed) button                              { bottom: 5px; }
@@ -607,8 +607,8 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3w-map-controls .ol-zoom .ol-zoom-in                                 { float: none; margin-bottom: 6px; }
 .g3w-map-controls .ol-zoom-extent                                      { top:0; left:0; }
 .info_mapcontrol_button                                                { text-align: center; margin-top: -5px; margin-left: -15px; font-weight: bold; color: #fff; position:absolute; top:0; left:0; width:20px; height:20px; box-shadow: 0 3px 5px rgba(0,0,0,0.5); border: 2px solid #fff; border-radius:50%; cursor: pointer; }
-:is(.ol-control, .ol-custom-overviewmap) button                        { background-color: var(--skin-color); color: #fff; }
-:is(.ol-control, .ol-custom-overviewmap) button:is(:hover, :focus)     { background-color: var(--skin-color); }
+:is(.ol-control, .ol-custom-overviewmap) button:is:hover               { background-color:var(--skin-color); }
+:is(.ol-control, .ol-custom-overviewmap) button:focus                  { background-color:#e5e5e5; }
 .ol-mouse-position-default                                             { background: var(--skin-color); }
 .ol-custom-overviewmap                                                 { border: 2px solid var(--skin-color); }
 .ol-custom-overviewmap .ol-overviewmap-box                             { border: 2px solid var(--skin-color); }
@@ -623,37 +623,34 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .controls-toggle                                                       { background-color: var(--skin-color); border-bottom: 1px solid var(--skin-color); }
 .info_mapcontrol_button,
 .tool_mapcontrol_button                                                { background-color: var(--skin-color); }
+.g3w-ol-toggled                                                        { background-color: var(--skin-color) !important; }
 
 .skin-blue   .ol-mouse-position                                        { color: darken(@light-blue, 20%); }
-.skin-blue   .g3w-ol-toggled                                           { background-color: darken(@light-blue, 20%) !important; }
+
 .skin-blue   .ol-attribution li a                                      { color: darken(@light-blue, 20%); }
 .skin-blue   #scale-control .select2-selection__rendered               { color: darken(@light-blue, 20%) !important; }
 .skin-blue   #scale-control .select2-selection__arrow b                { border-top-color: darken(@light-blue, 20%) !important; }
 .skin-blue   #scale-control .select2-container--default.select2-container--open .select2-selection__arrow b { border-bottom-color: darken(@light-blue, 20%) !important; }
 
 .skin-green  .ol-mouse-position                                        { color: darken(@green, 20%); }
-.skin-green  .g3w-ol-toggled                                           { background-color: darken(@green, 20%) !important; }
 .skin-green  .ol-attribution li a                                      { color: darken(@green, 20%); }
 .skin-green  #scale-control .select2-selection__rendered               { color: darken(@green, 20%) !important; }
 .skin-green  #scale-control .select2-selection__arrow b                { border-top-color: darken(@green, 20%) !important; }
 .skin-green  #scale-control .select2-container--default.select2-container--open .select2-selection__arrow b { border-bottom-color: darken(@green, 20%) !important; }
 
 .skin-purple .ol-mouse-position                                        { color: darken(@purple, 20%); }
-.skin-purple .g3w-ol-toggled                                           { background-color: darken(@purple, 20%) !important; }
 .skin-purple .ol-attribution li a                                      { color: darken(@purple, 20%); }
 .skin-purple #scale-control .select2-selection__rendered               { color: darken(@purple, 20%) !important; }
 .skin-purple #scale-control .select2-selection__arrow b                { border-top-color: darken(@purple, 20%) !important; }
 .skin-purple #scale-control .select2-container--default.select2-container--open .select2-selection__arrow b { border-bottom-color: darken(@purple, 20%) !important; }
 
 .skin-red    .ol-mouse-position                                        { color: darken(@red, 20%); }
-.skin-red    .g3w-ol-toggled                                           { background-color: darken(@red, 20%) !important; }
 .skin-red    .ol-attribution li a                                      { color: darken(@red, 20%); }
 .skin-red    #scale-control .select2-selection__rendered               { color: darken(@red, 20%) !important; }
 .skin-red    #scale-control .select2-selection__arrow b                { border-top-color: darken(@red, 20%) !important; }
 .skin-red    #scale-control .select2-container--default.select2-container--open .select2-selection__arrow b { border-bottom-color: darken(@red, 20%) !important; }
 
 .skin-yellow .ol-mouse-position                                        { color: darken(@yellow, 20%); }
-.skin-yellow .g3w-ol-toggled                                           { background-color: darken(@yellow, 20%) !important; }
 .skin-yellow .ol-attribution li a                                      { color: darken(@yellow, 20%); }
 .skin-yellow #scale-control .select2-selection__rendered               { color: darken(@yellow, 20%) !important; }
 .skin-yellow #scale-control .select2-selection__arrow b                { border-top-color: darken(@yellow, 20%) !important; }
