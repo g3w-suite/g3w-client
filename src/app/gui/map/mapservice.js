@@ -145,8 +145,12 @@ class OlMapViewer {
   constructor(opts = {}) {
 
     this.map = new ol.Map({
-      controls:            ol.control.defaults({ attribution: false, zoom: false }),
-      interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate() ]),
+      controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
+      interactions:        ol.interaction.defaults().extend([
+          new ol.interaction.DragRotate({
+            condition: ol.events.condition.platformModifierKeyOnly,
+          })
+       ]),
       ol3Logo:             false,
       view:                opts.view instanceof ol.View ? opts.view : new ol.View(opts.view),
       keyboardEventTarget: document,
