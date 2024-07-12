@@ -395,6 +395,7 @@ gulp.task('images', function () {
   return gulp.src([
     `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
     `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**/`,
     '!./src/**/node_modules/**/'
   ])
   .pipe(flatten())
@@ -430,6 +431,7 @@ gulp.task('datatable-images', function () {
     `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
     `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
     `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**`,
     '!./src/**/node_modules/**/'
   ])
   .pipe(flatten())
