@@ -124,10 +124,8 @@ export class InteractionControl extends ol.control.Control {
 
     this._postRender();
 
-    this._interactionClassOptions = options.interactionClassOptions;
-
     /** @since 3.11.0 */
-    if (options.interactionClass) { this.initInteraction(options) }
+    this.initInteraction(options);
   }
 
   /**
@@ -143,7 +141,7 @@ export class InteractionControl extends ol.control.Control {
     }
   }
 
-  initInteraction(options) {
+  initInteraction(options = {}) {
 
     const {
       visible                 = true,
@@ -182,22 +180,22 @@ export class InteractionControl extends ol.control.Control {
     /**
      * Check if interact with map
      */
-    this.clickmap = clickmap;
+    this.clickmap          = clickmap;
 
     this._interactionClass = interactionClass;
 
-    this._interaction = null;
+    this._interaction       = null;
 
-    this._autountoggle = autountoggle;
+    this._autountoggle      = autountoggle;
 
     /**
      * Array of types geometries
      */
-    this._geometryTypes = geometryTypes;
+    this._geometryTypes    = geometryTypes;
 
-    this._onhover = onhover;
+    this._onhover          = onhover;
 
-    this._help = help;
+    this._help             = help;
 
     /**
      * Used to show help info button
