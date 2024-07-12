@@ -649,20 +649,23 @@ class MapService extends G3WObject {
         });
 
         const map = this.viewer.getMap();
+        let currentControl;
         let can_drag = false;
 
         // set mouse cursor (dragging)
         (new Vue()).$watch(
           () => [this.getCurrentToggledMapControl(), (PluginsRegistry.getPlugin('editing') && PluginsRegistry.getPlugin('editing').getActiveTool())],
           ([control, activeTool]) => {
+            currentControl = control
             can_drag = !control && !activeTool;
             map.getViewport().classList.toggle('ol-grab', can_drag);
             map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(can_drag);
           }
         );
         map.on(['pointerdrag', 'pointerup'], (e) => {
-          map.getViewport().classList.toggle('ol-grabbing', can_drag && e.type == 'pointerdrag');
-          map.getViewport().classList.toggle('ol-grab', can_drag && e.type == 'pointerup');
+          /** @TODO disable default interaction "shift+zoom" ? */
+          map.getViewport().classList.toggle('ol-grabbing', e.type == 'pointerdrag' && (!currentControl || !(currentControl.getInteraction() instanceof ol.interaction.DragBox)));
+          map.getViewport().classList.toggle('ol-grab',     e.type == 'pointerup' && can_drag);
         });
 
         let geom;

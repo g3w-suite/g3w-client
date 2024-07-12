@@ -135,10 +135,11 @@ export class InteractionControl extends ol.control.Control {
    * @param toggled
    */
   setMouseCursor(toggled) {
+    const map = this.getMap().getViewport()
     if (toggled) {
-      setTimeout(() => this.getMap().getViewport().classList.add(this.cursorClass));
+      setTimeout(() => map.classList.add(this.cursorClass));
     } else {
-      this.getMap().getViewport().classList.remove(this.cursorClass);
+      map.classList.remove(this.cursorClass);
     }
   }
 
