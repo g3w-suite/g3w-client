@@ -124,8 +124,12 @@ export class InteractionControl extends ol.control.Control {
 
     this._postRender();
 
+    this._toggled = false;
+
+    this._interactionClassOptions = options.interactionClassOptions;
+
     /** @since 3.11.0 */
-    this.initInteraction(options);
+    if (options.interactionClass) { this.initInteraction(options) }
   }
 
   /**
@@ -174,9 +178,6 @@ export class InteractionControl extends ol.control.Control {
     this.listenLayersVisibilityChange();
 
     this._visible = visible;
-
-    this._toggled = false;
-
     /**
      * Check if interact with map
      */
