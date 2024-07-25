@@ -5,8 +5,8 @@
 
 <template>
   <div class = "g3w-viewport">
-    <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
 
+    <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
       <user-message
         v-if               = "usermessage.show"
         @close-usermessage = "closeUserMessage"
@@ -23,19 +23,12 @@
         :size              = "usermessage.size"
         :type              = "usermessage.type"
       >
-        <template v-if = "hooks.header" slot = "header">
-          <component :is = "hooks.header"/>
-        </template>
-        <template v-if = "hooks.body" slot = "body">
-          <component :is = "hooks.body"/>
-        </template>
-        <template v-if = "hooks.footer" slot = "footer">
-          <component :is = "usermessage.hooks.footer"/>
-        </template>
-
+        <template v-if="hooks.header"   slot="header"><component :is="hooks.header" /></template>
+        <template v-if="hooks.body"     slot="body"><component   :is="hooks.body" /></template>
+        <template v-if = "hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
       </user-message>
-
     </transition>
+
     <div
       id     = "g3w-view-map"
       :class = "`split-${state.split}`"

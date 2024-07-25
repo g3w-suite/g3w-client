@@ -272,18 +272,16 @@ export default {
           tooltip: "Zapytanie według wielokąta",
           no_geometry: "Brak geometrii w odpowiedzi",
           help: {
-            title: "Przewodnik - zapytanie według Polygonu",
             message: "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Zapytanie przez Polygon Draw"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: "Zapytanie warstwa Bbox",
           nolayers_visible: "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
           help: {
-            title: "Przewodnik - zapytanie BBOX Warstwa",
             message: "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>"
           }
         },

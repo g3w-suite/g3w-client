@@ -48,12 +48,12 @@ module.exports = class XYZLayer extends MapLayer {
 
     this._olLayer = new ol.layer.Tile({
       visible:    true,
-      projection: opts.projection,
+      projection,
       source:     new ol.source.XYZ({
         url,
         maxZoom:          20,
         minZoom:          undefined,
-        projection:       projection,
+        projection,
         crossOrigin:      undefined,
         tileLoadFunction: (this.iframe_internal) ? (tile, url) => {
           fetch('POST' === method ? (url || '').split('?')[0] : url, {

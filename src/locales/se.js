@@ -277,18 +277,16 @@ export default {
           tooltip: 'Förfrågan med polygon',
           no_geometry: 'No geometry on response',
           help: {
-            title: 'Ohje - Förfrågan med polygon',
             message: "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Fråga efter ritpolygon"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'BBox-förfrågan som riktar sig till en nivå',
           nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
           help: {
-            title: 'Ohje - BBox-förfrågan som riktar sig till nivån',
             message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
           }
         },

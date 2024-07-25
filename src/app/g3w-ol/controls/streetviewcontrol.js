@@ -9,7 +9,7 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 
 const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
 
-module.exports = class StreetViewControl extends InteractionControl {
+export class StreetViewControl extends InteractionControl {
   constructor(options={}) {
 
     super({
@@ -20,7 +20,9 @@ module.exports = class StreetViewControl extends InteractionControl {
       tipLabel:         "StreetView",
       clickmap:         true,
       label:            "\ue905",
-      interactionClass: PickCoordinatesInteraction
+      interactionClass: PickCoordinatesInteraction,
+      interactionClassOptions: { cursor: 'ol-streetview' },
+      cursorClass:      'ol-streetview',
     });
 
     /**

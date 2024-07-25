@@ -4,10 +4,11 @@ import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 
 const { t } = require('core/i18n/i18n.service');
 
-class ScaleControl extends ol.control.Control {
+export class ScaleControl extends ol.control.Control {
 
   constructor(options= {}) {
     options.target = 'scale-control';
+    options.offline = true;
     super(options);
     this.isMobile = options.isMobile || false;
   }
@@ -135,7 +136,3 @@ class ScaleControl extends ol.control.Control {
   }
 
 }
-
-ScaleControl.prototype.offline = true;
-
-module.exports = ScaleControl;

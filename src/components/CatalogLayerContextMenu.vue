@@ -563,6 +563,7 @@
 
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
 
+  import { MAP_SETTINGS }              from 'app/constant';
   import { CatalogEventBus as VM }     from 'app/eventbus';
   import CatalogLayersStoresRegistry   from 'store/catalog-layers';
   import ApplicationService            from 'services/application';
@@ -687,9 +688,9 @@
       },
 
       onChangeColor(val) {
-        const mapService           = GUI.getService('map');
+        const map                  = GUI.getService('map');
         this.layerMenu.layer.color = val;
-        const layer                = mapService.getLayerByName(this.layerMenu.name);
+        const layer                = map.getLayerByName(this.layerMenu.name);
         const style                = layer.getStyle();
         style._g3w_options.color   = val;
 
@@ -863,16 +864,30 @@
 
       changeLayerMapPosition({position, layer}) {
         const changed = layer.position !== position;
-        if (changed) {
-          layer.position = position;
-          GUI.getService('map').changeLayerMapPosition({ id: layer.id, position });
-          this._hideMenu();
+        if (!changed) {
+          return;
         }
+        layer.position = position;
+        position = undefined !== position ? position : MAP_SETTINGS.LAYER_POSITIONS.default;
+        const map = GUI.getService('map');
+        switch(position) {
+          case 'top':    layer.setZIndex(map.layersCount); break;
+          case 'bottom': layer.setZIndex(0); break
+        }
+        map.emit('change-layer-position-map', { id, position });
+        this._hideMenu();
       },
 
       setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}) {
+        id = undefined !== id ? id : this.layerMenu.layer.id;
+        opacity = undefined !== opacity ? opacity : 1;
         this.layerMenu.layer.opacity = opacity;
-        GUI.getService('map').changeLayerOpacity({ id, opacity });
+        const map = GUI.getService('map');
+        const layer = map.getLayerById(id);
+        if (layer) {
+          layer.setOpacity(opacity);
+          map.emit('change-layer-opacity', { id, opacity });
+        }
       },
 
       /**

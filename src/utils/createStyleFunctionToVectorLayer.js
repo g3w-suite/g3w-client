@@ -1,22 +1,24 @@
 import { getDefaultLayerStyle } from 'utils/getDefaultLayerStyle';
 
-export function createStyleFunctionToVectorLayer(options = {}) {
-  const styleFunction = (feature, resolution) => {
-    let { color, field } = options;
-    color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
-    const style = getDefaultLayerStyle(feature.getGeometry().getType(), { color });
-    if (field) {
-      style.setText(new ol.style.Text({
-        text: `${feature.get(field)}`,
-        font: 'bold',
-        scale: 2,
-        offsetY: 15,
-        fill: new ol.style.Fill({ color }),
-        stroke: new ol.style.Stroke(({ color: '#FFF', width: 2 })),
-      }));
-    }
-    return style;
-  };
-  styleFunction._g3w_options = options;
-  return styleFunction;
+/**
+ * @returns style function 
+ */
+export function createStyleFunctionToVectorLayer(opts = {}) {
+  return Object.assign(
+    (feat, res) => {
+      opts.color = opts.color.rgba ? 'rgba(' + [opts.color.rgba.r, opts.color.rgba.g, opts.color.rgba.b, opts.color.rgba.a].join() + ')' : opts.color;
+      const style = getDefaultLayerStyle(feat.getGeometry().getType(), { color: opts.color });
+      if (opts.field) {
+        style.setText(new ol.style.Text({
+          text: `${feat.get(opts.field)}`,
+          font: 'bold',
+          scale: 2,
+          offsetY: 15,
+          fill: new ol.style.Fill({ color: opts.color }),
+          stroke: new ol.style.Stroke(({ color: '#FFF', width: 2 })),
+        }));
+      }
+      return style;
+    }, { _g3w_options: opts }
+  );
 };

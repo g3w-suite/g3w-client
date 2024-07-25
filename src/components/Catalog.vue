@@ -271,7 +271,6 @@
 import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
-import ControlsRegistry            from 'store/map-controls';
 import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 
@@ -599,51 +598,8 @@ export default {
      *
      * @since 3.10.0
      */
-    onTreeNodeSelected(storeid, node) {
-      let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
-      // emit signal of select layer from catalog
-      if (!layer.isSelected()) {
-        GUI.getService('catalog').setSelectedExternalLayer({ layer: null, type: 'vector', selected: false });
-      }
-      setTimeout(() => {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
-        // emit signal of select layer from catalog
-        GUI.getService('map').emit('cataloglayerselected', layer);
-      });
-    },
-
-    /**
-     * Handle temporary external layer add
-     *
-     * @since 3.10.0
-     */
-    onTreeNodeExternalSelected(layer) {
-      GUI
-        .getService('catalog')
-        .setSelectedExternalLayer({ layer, type: 'vector', selected: !layer.selected})
-        // Loop all layersstores and unselect them all (`selected = false`)
-        .then(() => {
-          if (layer.selected) {
-            CatalogLayersStoresRegistry.getLayersStores().forEach(layer => { layer.selectLayer(null, false); });
-          }
-        });
-    },
-
-    /**
-     * @TODO add description
-     *
-     * @listens ol.interaction~propertychange
-     *
-     * @since 3.10.0
-     */
-    onRegisterControl(id, control) {
-      if ('querybbox' === id) {
-        control.getInteraction().on('propertychange', e => {
-          if ('active' === e.key) {
-            this.state.highlightlayers = !e.oldValue;
-          }
-        })
-      }
+    onTreeNodeSelected(node) {
+      GUI.getService('map').selectLayer(node.id);
     },
 
   },
@@ -685,17 +641,13 @@ export default {
    * @listens CatalogEventBus~activefiltertokenlayer
    * @listens CatalogEventBus~treenodevisible
    * @listens CatalogEventBus~treenodeselected
-   * @listens CatalogEventBus~treenodeexternalselected
-   * @listens ControlsRegistry~registerControl
    */
   created() {
-    VM.$on('unselectionlayer',                  this.onUnSelectionLayer);
-    VM.$on('activefiltertokenlayer',            this.onActiveFilterTokenLayer);
-    VM.$on('treenodevisible',                   this.onTreeNodeVisible);
-    VM.$on('treenodeselected',                  this.onTreeNodeSelected);
-    VM.$on('treenodeexternalselected',          this.onTreeNodeExternalSelected);
-    VM.$on('layer-change-style',                this.getLegendSrc);
-    ControlsRegistry.onafter('registerControl', this.onRegisterControl);
+    VM.$on('unselectionlayer',                       this.onUnSelectionLayer);
+    VM.$on('activefiltertokenlayer',                 this.onActiveFilterTokenLayer);
+    VM.$on('treenodevisible',                        this.onTreeNodeVisible);
+    VM.$on('treenodeselected',                       this.onTreeNodeSelected);
+    VM.$on('layer-change-style',                     this.getLegendSrc);
   },
 
   beforeMount() {

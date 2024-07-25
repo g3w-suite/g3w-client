@@ -93,7 +93,6 @@ import C3XYLine                                    from 'components/C3XYLine.vue
 import CatalogLayersStoresRegistry                 from 'store/catalog-layers';
 import DataRouterService                           from 'services/data';
 import IFrameRouterService                         from 'services/iframe';
-import MapLayersStoresRegistry                     from 'store/map-layers';
 import PluginsRegistry                             from 'store/plugins';
 import ProjectsRegistry                            from 'store/projects';
 import RelationsService                            from 'services/relations';
@@ -151,7 +150,10 @@ const PluginService              = require('core/plugin/pluginservice');
  * GUI modules
  */
 const Panel                      = require('gui/panel');
-const { ControlFactory }         = require('gui/map/mapservice');
+const {
+  ControlFactory,
+  MapLayersStoresRegistry,
+}                                = require('gui/map/mapservice');
 const FieldsService              = require('gui/fields/fieldsservice');
 const Component                  = require('gui/component/component');
 const MetadataComponent          = require('gui/metadata/vue/metadata');

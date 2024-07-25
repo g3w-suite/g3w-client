@@ -7,7 +7,6 @@ import G3WObject                   from 'core/g3w-object';
 import Component                   from 'core/g3w-component';
 import ComponentsRegistry          from 'store/components';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry            from 'store/projects';
 import GUI                         from 'services/gui';
 import ApplicationService          from 'services/application';
 
@@ -72,34 +71,14 @@ export default function(opts = {}) {
     }
   });
 
-  service.state                       = state;
+  service.state             = state;
 
   /** used by the following plugins: "stress" */
-  service.createLayersGroup           = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
+  service.createLayersGroup = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
   /** used by the following plugins: "stress" */
-  service.addLayersGroup              = g => { state.layersgroups.push(g); };
+  service.addLayersGroup    = g => { state.layersgroups.push(g); };
   /** used by the following plugins: "processing" */
-  service.getExternalLayers           = ({ type = 'vector' })     => state.external[type];
-
-  /** @TODO check if deprecated */
-  service.getExternalSelectedLayers   = ({ type = 'vector' })     => state.external[type].filter(l => l.selected);
-  /** @TODO check if deprecated */
-  service.getExternalLayerById        = ({ id, type = 'vector' }) => state.external[type].find(l => l.id === id);
-  /** @TODO check if deprecated */
-  service.isExternalLayerSelected     = l => !!(service.getExternalLayerById(l) || {}).selected;
-  /** @TODO check if deprecated */
-  service.addLayersStoreToLayersTrees = s => state.layerstrees.push({tree: s.getLayersTree(), storeid: s.getId()});
-  /** @TODO check if deprecated */
-  service.getMajorQgisVersion         = () => ProjectsRegistry.getCurrentProject().getQgisVersion({type: 'major'});
-  /** @TODO check if deprecated */
-  service.changeMapTheme              = async map_theme => {
-    ApplicationService.changeProjectView(true);
-    const rootNode = state.layerstrees[0];
-    rootNode.checked = true;
-    const changes = await ProjectsRegistry.getCurrentProject().setLayersTreePropertiesFromMapTheme({ map_theme, rootNode, layerstree: rootNode.tree[0].nodes });
-    ApplicationService.changeProjectView(false);
-    return changes;
-  };
+  service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
 
   // add layers stores to tree
   CatalogLayersStoresRegistry.onafter('addLayersStore',      s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });

@@ -49,13 +49,12 @@
     <div
       id                     = "permalink"
       v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
-    >
-      <span
         class       = "skin-color-dark"
-        :class      = "g3wtemplate.getFontClass('link')"
+        :class      = "{
+          [g3wtemplate.getFontClass('link')]: !urlCopied,
+          [g3wtemplate.getFontClass('success')]: urlCopied,
+        }"
         @click.stop = "createCopyMapExtentUrl">
-      </span>
-
     </div>
 
   </div>
@@ -63,6 +62,7 @@
 
 <script>
   import ApplicationState from 'store/application-state';
+  import { copyUrl }      from 'utils/copyUrl';
 
   export default {
 
@@ -80,8 +80,9 @@
           visible:     true,
           switch_icon: false,
           epsg_4326:   false,
-          tooltip:     null
+          tooltip:     null,
         },
+        urlCopied: false,
         mapunit: ApplicationState.map.unit,
       }
     },
@@ -92,7 +93,11 @@
     },
     methods: {
       createCopyMapExtentUrl() {
-        this.service.createCopyMapExtentUrl();
+        const url = new URL(location.href);
+        url.searchParams.set('map_extent', this.service.getMapExtent().toString());
+        copyUrl(url.toString());
+        this.urlCopied = !this.urlCopied;
+        setTimeout(() => this.urlCopied = false, 5000);
       },
       switchMapsCoordinateTo4326() {
         this.mouse.epsg_4326 = !this.mouse.epsg_4326;
@@ -115,7 +120,7 @@
             this.service.getMapControlByType('mouseposition')
             && 'EPSG:4326' !== this.service.getEpsg()
           );
-          this.mouse.tooltip = `ESPG ${this.service.getCrs().split(':')[1]} <--> WGS84`;
+          this.mouse.tooltip = `ESPG ${this.service.getCrs().split(':')[1]} ↔ WGS84`;
         } else {
           this.mouse.visible = false;
         }

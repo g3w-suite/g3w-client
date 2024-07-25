@@ -1,9 +1,10 @@
 import GUI                    from 'services/gui';
 import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
-import AreaIteraction         from 'g3w-ol/interactions/areainteraction';
-import LengthInteraction      from 'g3w-ol/interactions/lengthinteraction';
 
-module.exports = class MeasureControl extends InteractionControl {
+const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
+const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
+
+export class MeasureControl extends InteractionControl {
 
   constructor(opts = {}) {
     super({
@@ -11,17 +12,14 @@ module.exports = class MeasureControl extends InteractionControl {
       clickmap: true,
       label:    "\ue909",
       enabled:  true,
-      onToggled() {
+      onToggled(toggled) {
         // toggle current iteraction
         this._interaction.setActive(this.isToggled());
-        const toggled = this.isToggled();
         // when not toggled
-        if (!toggled) {
-          this._interaction.clear();
-        }
+        if (!toggled) { this._interaction.clear() }
         // check if first interaction is current interaction
         if (!toggled && this.interactions[this.types[0]] !== this._interaction) {
-          //reomve current interaction from map
+          //remove current interaction from the map
           this.getMap().removeInteraction(this._interaction);
           this._interaction = this.interactions[this.types[0]];
           //add first interaction
@@ -53,7 +51,7 @@ module.exports = class MeasureControl extends InteractionControl {
     this.types.push(type);
 
     this.interactions[type] = new ({
-      area:   AreaIteraction,
+      area:   AreaInteraction,
       length: LengthInteraction,
     })[type](this._interactionClassOptions);
 

@@ -77,7 +77,6 @@
 
 <script>
   import CatalogLayersStoresRegistry    from 'store/catalog-layers';
-  import MapLayersStoresRegistry        from 'store/map-layers';
   import GUI                            from 'services/gui';
   import ProjectsRegistry               from 'store/projects';
   import {
@@ -431,8 +430,8 @@
         //get dependency layer id if set
         const dependencyLayerId = this.state.input.options.layer_id;
         try {
-          const dependencyLayer = MapLayersStoresRegistry
-            .getLayerById(dependencyLayerId)
+          const dependencyLayer = GUI.getService('map')
+            .getProjectLayer(dependencyLayerId)
             .getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
           // in case layer is on project, check if is non an alphanumeric layer
           this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();

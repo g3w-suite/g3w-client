@@ -285,6 +285,44 @@
       },
 
       /**
+       * Add external WMS layer to map
+       * 
+       * @param { Object } wms
+       * @param { string } wms.url
+       * @param { string } wms.name
+       * @param wms.epsg
+       * @param wms.position
+       * @param wms.opacity
+       * @param wms.visible
+       * @param wms.layers
+       *
+       * @returns {Promise<unknown>}
+       */
+      _addExternalWMSLayer({
+        url,
+        layers,
+        name,
+        epsg = GUI.getService('map').getEpsg(),
+        position = MAP_SETTINGS.LAYER_POSITIONS.default,
+        opacity,
+        visible=true
+      } = {}) {
+        const map        = GUI.getService('map');
+        const WMSLayer   = require('core/layers/map/wmslayer');
+        const projection = ol.proj.get(epsg);
+
+        const promise = new Promise((res, rej) => {
+          const wmslayer = new WMSLayer({ id: name || getUniqueDomId(), layers, projection, url });
+          const olLayer  = wmslayer.getOLLayer();
+          olLayer.getSource().once('imageloadend', res);
+          olLayer.getSource().once('imageloaderror', rej);
+          map.addExternalLayer(wmslayer, { position, opacity, visible });
+        });
+      
+        return promise;
+      },
+
+      /**
        * Check if a layer is already added to map
        * 
        * @param { Object } wms
@@ -336,7 +374,8 @@
           this.updateLocalWMSData(data);
 
           try {
-            await GUI.getService('map').addExternalWMSLayer(config);
+            await this._addExternalWMSLayer(config);
+            console.log('done');
           } catch(e) {
             console.warn(e);
             GUI.getService('map').removeExternalLayer(name);
@@ -442,13 +481,13 @@
       deleteWms(name) {
         const data = this.getLocalWMSData();
         Object.keys(data.wms).find(url => {
-          const index = data.wms[url].findIndex(w => w.name == name);
+          const i = data.wms[url].findIndex(w => w.name == name);
           /** @TODO add description */
-          if (-1 !== index) {
-            data.wms[url].splice(index, 1);
+          if (-1 !== i) {
+            data.wms[url].splice(i, 1);
           }
           /** @TODO add description */
-          if (-1 !== index && 0 == data.wms[url].length) {
+          if (-1 !== i && 0 == data.wms[url].length) {
             delete data.wms[url];
           }
           return true;
@@ -534,7 +573,7 @@
         map.on('change-layer-visibility',   ({ id: name, visible } = {})  => this.changeLayerData(name, { key: 'visible',  value: visible }));
 
         // load eventually data
-        Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => map.addExternalWMSLayer({ url, ...d })); });
+        Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
       });
 
       this.state.localwmsurls = data.urls;

@@ -1,7 +1,6 @@
 import { SPATIAL_METHODS } from 'app/constant';
 import { VM }              from 'app/eventbus';
 import GUI                 from 'services/gui';
-import ControlsRegistry    from 'store/map-controls'
 
 const { t }   = require('core/i18n/i18n.service');
 
@@ -122,27 +121,40 @@ export class InteractionControl extends ol.control.Control {
 
     this.setVisible(options.visible);
 
-    this._postRender();
+    /**
+     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+     *
+     * @since 3.11.0
+     */
+    if (this._options.postRender) {
+      this._options.postRender.call(this);
+    }
+
+    this._toggled = false;
 
     this._interactionClassOptions = options.interactionClassOptions || {};
 
     /** @since 3.11.0 */
-    if (options.interactionClass) { this.initInteraction(options) }
-  }
-
-  /**
-   * @since 3.11.0
-   * @param toggled
-   */
-  setMouseCursor(toggled) {
-    if (toggled) {
-      setTimeout(() => this.getMap().getViewport().classList.add(this.cursorClass));
-    } else {
-      this.getMap().getViewport().classList.remove(this.cursorClass);
+    if (options.interactionClass) {
+      this.initInteraction(options);
     }
   }
 
-  initInteraction(options) {
+  /**
+   * @param toggled
+   *
+   * @since 3.11.0
+   */
+  setMouseCursor(toggled, className = this.cursorClass) {
+    const map = this.getMap().getViewport()
+    if (toggled) {
+      setTimeout(() => map.classList.add(className));
+    } else {
+      map.classList.remove(className);
+    }
+  }
+
+  initInteraction(options = {}) {
 
     const {
       visible                 = true,
@@ -175,28 +187,25 @@ export class InteractionControl extends ol.control.Control {
     this.listenLayersVisibilityChange();
 
     this._visible = visible;
-
-    this._toggled = false;
-
     /**
      * Check if interact with map
      */
-    this.clickmap = clickmap;
+    this.clickmap          = clickmap;
 
     this._interactionClass = interactionClass;
 
-    this._interaction = null;
+    this._interaction       = null;
 
-    this._autountoggle = autountoggle;
+    this._autountoggle      = autountoggle;
 
     /**
      * Array of types geometries
      */
-    this._geometryTypes = geometryTypes;
+    this._geometryTypes    = geometryTypes;
 
-    this._onhover = onhover;
+    this._onhover          = onhover;
 
-    this._help = help;
+    this._help             = help;
 
     /**
      * Used to show help info button
@@ -243,9 +252,21 @@ export class InteractionControl extends ol.control.Control {
     // set enabled
     this.setEnable(enabled);
 
-    // check if spatial method is set
+    // handle change of spatial method
     if (this.spatialMethod) {
-      this.handleChangeSpatialMethod(this.spatialMethod);
+      const spatialMethod = this.spatialMethod;
+      let eventKey = null;
+      this.on('toggled', ({toggled}) => {
+        if (true === toggled) {
+          eventKey = this.on('change-spatial-method', this.runSpatialQuery);
+        } else if (null !== eventKey) {
+          ol.Observable.unByKey(eventKey);
+          eventKey = null;
+          // reset to default
+          this.setSpatialMethod(spatialMethod);
+          this.clear();
+        }
+      })
     }
 
   }
@@ -346,23 +367,11 @@ export class InteractionControl extends ol.control.Control {
    * @since 3.11.0
    */
   _handleClick(event) {
-
     if (this._enabled) {
       this.toggle();
       event.preventDefault();
       this.dispatchEvent('controlclick');
     }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * shift control's position
-   *
-   * @since 3.11.0
-   */
-  shiftPosition(position) {
-    $(this.element).css(hWhere, position+'px');
   }
 
   /**
@@ -383,15 +392,6 @@ export class InteractionControl extends ol.control.Control {
       $(this.element).css(hWhere, hOffset+'px');
     }
   }
-
-  /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * @virtual change layout of controls
-   *
-   * @since 3.11.0
-   */
-  changelayout(map) {}
 
   /**
    * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
@@ -452,17 +452,6 @@ export class InteractionControl extends ol.control.Control {
     if (this._options.onSetMap) {
       this._options.onSetMap.call(this, { setter: 'after', map });
     }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * @FIXME add description
-   *
-   * @since 3.11.0
-   */
-  showControl() {
-    $(this.element).show();
   }
 
   /**
@@ -543,19 +532,6 @@ export class InteractionControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * @virtual
-   *
-   * @since 3.11.0
-   */
-  _postRender() {
-    if (this._options.postRender) {
-      this._options.postRender.call(this);
-    }
-  }
-
-  /**
    * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
    *
    * @since 3.11.0
@@ -609,22 +585,6 @@ export class InteractionControl extends ol.control.Control {
    * @since 3.8.0
    */
   onRemoveExternalLayer(layer) {}
-
-  /**
-   * @virtual method need to be implemented by subclasses
-   *
-   * @since 3.8.0
-   */
-  handleSelectedLayer(event) {}
-
-  /**
-   * @virtual method need to be implemented by subclasses
-   * 
-   * @param {{ type: {string}, data: any}} layer event
-   * 
-   * @since 3.8.0
-   */
-  handleExternalSelectedLayer(layer) {}
 
   /**
    * @virtual method need to be implemented by subclasses
@@ -728,10 +688,6 @@ export class InteractionControl extends ol.control.Control {
     } else { GUI.closeUserMessage() }
   }
 
-  getGeometryTypes() {
-    return this._geometryTypes;
-  };
-
   /**
    * Get dom bottom
    * 
@@ -756,7 +712,9 @@ export class InteractionControl extends ol.control.Control {
    * 
    * @fires toggled event
    */
-  toggle(toggled = !this._toggled) {
+  toggle(toggled = !this._toggled, opts = {}) {
+
+    opts.parent = undefined !== opts.parent ? opts.parent : false; 
 
     // skip if button is already toggled or un-toggled
     if (this._toggled === toggled) {
@@ -765,26 +723,43 @@ export class InteractionControl extends ol.control.Control {
 
     this._toggled = toggled;
 
-    if (this.cursorClass) { this.setMouseCursor(toggled)}
-
-    // TODO: simplify this by removing all that short circuiting logic
-    if (toggled) {
-
-      //toggle other toggleable control
-      this.getMap().getControls().forEach(c => {
-        if (c.id && c.toggle && (c.id !== this.id)) { c.toggle(false) }
-      });
-
-      this._interaction && this._interaction.setActive(true);
-      this.addClassToControlBottom('g3w-ol-toggled');
-      this._toolButton && this._toolButton.show();
-    } else {
-      this._interaction && this._interaction.setActive(false);
-      this.removeClassToControlBottom('g3w-ol-toggled');
-      this._toolButton && this._toolButton.hide();
-      this.toggledTool && this.showToggledTool(false);
+    if (this.cursorClass) {
+      this.setMouseCursor(toggled);
     }
 
+    // toggle other toggleable control
+    if (toggled) {
+      this.getMap().getControls().forEach(c => {
+        if (c.id && c.toggle && (c.id !== this.id) && c.id !== opts.parent) {
+          c.toggle(false)
+        }
+      });
+    }
+
+    if (this._interaction) {
+      this._interaction.setActive(toggled);
+    }
+
+    /** @FIXME add description */
+    if (toggled) {
+      this.addClassToControlBottom('g3w-ol-toggled');
+    } else {
+      this.removeClassToControlBottom('g3w-ol-toggled');
+    }
+
+    /** @FIXME add description */
+    if (toggled && this._toolButton) {
+      this._toolButton.show();
+    } else if(!toggled && this._toolButton) {
+      this._toolButton.hide();
+    }
+
+    /** @FIXME add description */
+    if (!toggled && this.toggledTool) {
+      this.showToggledTool(false);
+    }
+
+    /** @FIXME add description */
     if (undefined === this._toolButton && this.toggledTool) {
       this.showToggledTool(this._toggled);
     }
@@ -792,7 +767,7 @@ export class InteractionControl extends ol.control.Control {
     this.dispatchEvent({ type: 'toggled', toggled });
 
     if (this._options.onToggled) {
-      this._options.onToggled.call(this);
+      this._options.onToggled.call(this, toggled);
     }
 
   }
@@ -826,127 +801,6 @@ export class InteractionControl extends ol.control.Control {
 
   setLayers(layers=[]) {
     this.layers = layers;
-  }
-
-  /**
-   * @param { unknown | null } layer
-   *
-   * @since 3.8.0
-   */
-  setSelectedLayer(layer) {
-    ControlsRegistry.setSelectedLayer(layer);
-  }
-
-  /**
-   * @since 3.8.0
-   */
-  getSelectedLayer() {
-    return ControlsRegistry.getSelectedLayer();
-  }
-
-  /**
-   * @since 3.8.0
-   */
-  getExternalLayers() {
-    return ControlsRegistry.getExternalLayers();
-  }
-
-  /**
-   * @param { 'intersects' | 'within' } spatialMethod
-   * 
-   * @listens change-spatial-method
-   * 
-   * @since 3.8.0
-   */
-  handleChangeSpatialMethod(spatialMethod) {
-    let eventKey = null;
-
-    const unlistenSpatialMethodChange = () => {
-      ol.Observable.unByKey(eventKey);
-      eventKey = null;
-    };
-
-    this.on('toggled', ({toggled}) => {
-      if (true === toggled) {
-        eventKey = this.on('change-spatial-method', this.runSpatialQuery);
-      } else if (null !== eventKey) {
-        unlistenSpatialMethodChange();
-        // reset to default
-        this.setSpatialMethod(spatialMethod);
-        this.clear();
-      }
-    })
-  }
-
-  /**
-   * @since 3.8.0
-   */
-  watchLayer(expOrFn, callback) {
-    return VM.$watch(expOrFn, callback)
-  }
-
-  /**
-   * @returns {boolean}
-   *
-   * @since 3.8.0
-   */
-  isSelectedLayerVisible() {
-    return (
-      'function' === typeof this.getSelectedLayer().isVisible
-        ? this.getSelectedLayer().isVisible()                 // in case of a project project
-        : this.getSelectedLayer().visible                     // in case of external layer
-    )
-  }
-
-  /**
-   * @returns {boolean} whether at least one of stored `this.layers` is visible
-   *
-   * @since 3.8.0
-   */
-  hasVisibleProjectLayer() {
-    return !!((this.layers.length > 0) && this.layers.find(layer => layer.isVisible()));
-  }
-
-  /**
-   * @returns {boolean} whether at least one of stored `this.getExternalLayers()` is visible
-   *
-   * @since 3.8.0
-   */
-  hasVisibleExternalLayer() {
-    return !!(this.getExternalLayers().find(layer => layer !== this.layer && true === layer.visible));
-  }
-
-  /**
-   * @returns {boolean} whether at least one of stored `this.layers` or `this.getExternalLayers()` is visible
-   * 
-   * @since 3.8.0
-   */
-  hasVisibleLayers() {
-    return !!(this.hasVisibleProjectLayer() || this.hasVisibleExternalLayer());
-  }
-
-  /**
-   * @returns {boolean} whether selectedLayer is not external
-   * 
-   * @since 3.8.0
-   */
-  addExternalLayerToResult() {
-    return (
-      null === this.getSelectedLayer() ||
-      undefined !== this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
-    );
-  }
-
-  /**
-   * @returns {boolean}
-   * 
-   * @since 3.8.0
-   */
-  isExternalLayerSelected() {
-    return (
-      null !== this.getSelectedLayer() &&
-      undefined !== this.getExternalLayers().find(layer => layer === this.getSelectedLayer())
-    )
   }
 
   /**

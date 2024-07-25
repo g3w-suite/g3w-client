@@ -1,7 +1,7 @@
 import GUI                    from 'services/gui';
 import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
-module.exports = class GeolocationControl extends InteractionControl {
+export class GeolocationControl extends InteractionControl {
 
   constructor() {
 

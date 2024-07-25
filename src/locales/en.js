@@ -37,7 +37,7 @@ export default {
         }
       },
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
+        title: "Bookmarks",
         helptext: "Move on map extent, insert name and click Add",
         input: {
           name: "Name"
@@ -265,14 +265,22 @@ export default {
         },
         queryby: {
           title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
           querybypolygon: {
-            tooltip: 'By Layer'
+            tooltip: 'select a polygon'
           },
           querybydrawpolygon: {
-            tooltip: 'By Polygon'
+            tooltip: 'draw a polygon'
           },
           querybbox: {
-            tooltip: 'By Rectangle'
+            tooltip: 'draw a rectangle'
           },
         },
         querybypolygon: {
@@ -290,19 +298,20 @@ export default {
           tooltip: 'Query By Polygon',
           no_geometry: 'No geometry on response',
           help: {
-            title:'Guide - Query By Polygon',
-            message: "<ul><li>Select a polygon layer on TOC.</li><li>Be sure that layer is visible.</li><li>Click on a feature of selected layer.</li></ul>"
+            message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Query by Draw Polygon ",
+          help: {
+            message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers (underlined in yellow in legend)</li></ul>"
+          }
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'Query BBox layer',
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
           help: {
-            title: 'Guide - Query BBox layer',
-            message: "<ul><li>Draw a square on map to query underlined layers on TOC</li></ul>"
+            message: "<ul><li>Drag the mouse to draw a rectangle and query layers (underlined in yellow in legend)</li></ul>"
           }
         },
         addlayer: {

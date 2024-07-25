@@ -1778,7 +1778,10 @@ class QueryResultsService extends G3WObject {
   addQueryResultsLayerToMap({ feature }) {
     this.removeQueryResultLayerFromMap();
     this.addQueryResultLayerToMap(feature);
-    this.mapService.setZIndexLayer({ layer: this.resultsQueryLayer }); // make sure that layer is on top of other map.
+    // make sure that layer is on top of others.
+    if (this.resultsQueryLayer) {
+      this.resultsQueryLayer.setZIndex(this.mapService.getMap().getLayers().getLength());
+    }
   }
 
   /**

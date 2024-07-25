@@ -1,6 +1,7 @@
-import { TIMEOUT }                        from "constant";
+import { TIMEOUT }                      from "constant";
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import ProjectsRegistry                 from 'store/projects';
+import { waitFor }                      from 'utils/waitFor';
 
 const { base, inherit }                 = require('utils');
 const Layer                             = require('core/layers/layer');
@@ -9,29 +10,6 @@ const Feature                           = require('core/layers/features/feature'
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
-
-/**
- * Function to wait for predicates.
- * 
- * @param { () => Boolean } predicate - A function that returns a bool
- * @param { number }        [timeout] - Optional maximum waiting time in ms after rejected
- * 
- * @see https://gist.github.com/chrisjhoughton/7890239?permalink_comment_id=4411125#gistcomment-4411125
- */
-function _waitFor(predicate, timeout) {
-  return new Promise((resolve, reject) => {
-    const check = () => {
-      if (!predicate()) return;
-      clearInterval(interval);
-      resolve();
-    };
-    const interval = setInterval(check, 100);
-    check();
-    if (timeout) {
-      setTimeout(() => { clearInterval(interval); reject(); }, timeout);
-    }
-  });
-}
 
 function _createAttributesFromFields(fields) {
   const attributes = {};
@@ -159,7 +137,7 @@ function TableLayer(config = {}, options = {}) {
           constraints = {},
           capabilities,
         } = {}) => {
-          await _waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait unitil "editing" plugin is loaded
+          await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait unitil "editing" plugin is loaded
           Object.assign(this.config.editing, {
             fields: vector.fields,
             format: vector.format,

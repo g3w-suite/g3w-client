@@ -580,6 +580,8 @@ export const FONT_AWESOME_ICONS = {
   'share-alt': 'fa fa-share-alt',
   /**@since 3.10.0 */
   'external-link': "fa fa-external-link-alt",
+  /** @since 3.11.0 */
+  'pointer': 'fa fa-hand-pointer',
 };
 
 /**

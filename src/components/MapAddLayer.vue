@@ -31,7 +31,7 @@
                 <option v-for = "option in options" :value = "option">{{option}}</option>
               </select>
             </div>
-            <layerspositions @layer-position-change = "setLayerMapPosition($event)"/>
+            <layerspositions @layer-position-change = "onChangePosition($event)"/>
             <p v-t = "'mapcontrols.add_layer_control.select_color'" style = "font-weight: 700;"></p>
             <chrome-picker
               v-model = "layer.color"
@@ -43,7 +43,7 @@
                 ref     = "input_file"
                 type    = "file"
                 title   = " "
-                @change = "onAddLayer($event)"
+                @change = "onChangeFile($event)"
                 :accept = "accepted_extension">
               <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
               <h4
@@ -137,7 +137,7 @@
               </select>
             </div>
             <div
-              v-if  = "error"
+              v-if  = "error_message"
               style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center"
               v-t   = "error_message">
             </div>
@@ -167,7 +167,6 @@ import { Chrome as ChromeComponent }        from 'vue-color';
 
 import { EPSG }                             from 'app/constant';
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
-import { createStyleFunctionToVectorLayer } from 'utils/createStyleFunctionToVectorLayer';
 
 const Projections = require('g3w-ol/projection/projections');
 
@@ -193,14 +192,16 @@ export default {
 
   props: ['service'],
   data() {
-    //add map crs if not present
-    const MAPEPSG = this.service.getCrs();
-    EPSG.find(epsg => MAPEPSG === epsg ) === undefined && EPSG.unshift(MAPEPSG);
+
+    // add map crs if not present
+    if (!EPSG.includes(this.service.getCrs())) {
+      EPSG.unshift(this.service.getCrs())
+    }
+
     return {
       vectorLayer:        null,
       options:            EPSG,
-      error:              false,
-      error_message:      null,
+      error_message:      '',
       position:           null,
       loading:            false,
       fields:             [],
@@ -258,192 +259,191 @@ export default {
     }
 
   },
+
   methods: {
-    setLayerMapPosition(position) {
+
+    onChangePosition(position) {
       this.position = position;
     },
-    setError(type) {
-      this.error_message = `sdk.errors.${type}`;
-      this.error = true;
-    },
-    clearError() {
-      this.error = false;
-      this.error_message = null;
-    },
+
     onChangeColor(val) {
       this.layer.color = val;
     },
-    async onAddLayer(evt) {
-      const reader = new FileReader();
-      const name = evt.target.files[0].name;
-      let type = evt.target.files[0].name.split('.');
-      type = type[type.length - 1].toLowerCase();
+
+    async onChangeFile(evt) {
+      const reader     = new FileReader();
+      const name       = evt.target.files[0].name;
+      let type         = name.split('.').at(-1).toLowerCase();
       const input_file = $(this.$refs.input_file);
-      if (SUPPORTED_FORMAT.includes(type)) {
-        this.clearError();
-        this.layer.mapCrs = this.service.getEpsg();
-        this.layer.name   = name;
-        this.layer.title  = name;
-        this.layer.id     = name;
-        this.layer.type   = type;
-        if ('csv' === this.layer.type ) { // in the case of csv
-          reader.onload = evt => {
+
+      if (!SUPPORTED_FORMAT.includes(type)) {
+        this.error_message = 'sdk.errors.unsupported_format';
+        return;
+      }
+
+      this.error_message = '';
+
+      this.layer.mapCrs = this.service.getEpsg();
+      this.layer.name   = name;
+      this.layer.title  = name;
+      this.layer.id     = name;
+      this.layer.type   = type;
+      this.layer.data   = await (new Promise((resolve) => {
+
+        // ZIP / KMZ file
+        if ( ['zip', 'kmz'].includes(this.layer.type)) {
+          const data = evt.target.files[0];
+          input_file.val(null);
+          return resolve(data);
+        }
+
+        reader.onload = evt => {
+
+          // CSV file
+          if ('csv' === this.layer.type) {
             input_file.val(null);
-            const csv_data             = evt.target.result.split(/\r\n|\n/).filter(row => row);
-            const [headers, ...values] = csv_data;
+            const [headers, ...values] = evt.target.result.split(/\r\n|\n/).filter(row => row);
             const handle_csv_headers = separator => {
-              let data         = null;
               this.csv.loading = true;
               const csv_headers = headers.split(separator);
-              const headers_length = csv_headers.length;
-              if (headers_length > 1) {
-                this.csv.headers = csv_headers;
-                this.fields      = csv_headers;
-                this.csv.x       = csv_headers[0];
-                this.csv.y       = csv_headers[1];
-                data = {
-                  headers: csv_headers,
-                  separator,
-                  x: this.csv.x,
-                  y: this.csv.y,
-                  values
-                };
-                this.csv.valid = true;
-              } else {
-                this.csv.headers = this.fields = [];
-                this.vectorLayer = null;
-                this.csv.valid   = false;
+              const len = csv_headers.length;
+              this.csv.headers = len > 1 ? csv_headers      : [];
+              this.csv.fields  = len > 1 ? csv_headers      : [];
+              this.csv.x       = len > 1 ? csv_headers[0]   : this.csv.x;
+              this.csv.y       = len > 1 ? csv_headers[1]   : this.csv.y;
+              this.vectorLayer = len > 1 ? this.vectorLayer : null;
+              this.csv.valid   = len > 1;
+              if (len <= 1) {
                 this.fields.splice(0);
               }
               this.csv.loading = false;
-              return data;
+              return len > 1 ? {
+                headers: csv_headers,
+                separator,
+                x: this.csv.x,
+                y: this.csv.y,
+                values
+              } : null;
             };
-            this.layer.data = handle_csv_headers(this.csv.separator);
             this.$watch('csv.separator', s => this.layer.data = handle_csv_headers(s))
-          };
-          reader.readAsText(evt.target.files[0]);
-        } else {
-          const promiseData = new Promise((resolve, reject) => {
-            // in case of shapefile (zip file) or kmz (compressed
-            if ( ['zip', 'kmz'].includes(this.layer.type)) {
-              const data = evt.target.files[0];
-              input_file.val(null);
-              resolve(data);
-            } else {
-              reader.onload = evt => {
-                const data = evt.target.result;
-                input_file.val(null);
-                resolve(data);
-              };
-              reader.readAsText(evt.target.files[0]);
-            }
-          });
-          this.layer.data = await promiseData;
-          try {
-            this.fields.splice(0); //eventually reset the fields
-            await this.createVectorLayer();
-            this.fields = this.vectorLayer.get('_fields');
-          } catch(e) { console.warn(e) }
-        }
-      } else {
-        this.setError('unsupported_format');
+            return resolve(handle_csv_headers(this.csv.separator));
+          }
+
+          // OTHER FORMATS
+          const data = evt.target.result;
+          input_file.val(null);
+          resolve(data);
+        };
+        reader.readAsText(evt.target.files[0]);
+      }));
+
+      // skip when ..
+      if ('csv' === this.layer.type ) {
+        return;
       }
-    },
-    async createVectorLayer(){
+
+      (this.fields || []).splice(0); // reset fields
+
       try {
         this.vectorLayer = await createVectorLayerFromFile(this.layer);
         await this.$nextTick();
-      } catch(e) { console.warn(e); this.setError('add_external_layer'); }
-    },
-    async addLayer() {
-      if (this.layer.data || this.csv.valid) {
-        const {crs} = this.layer;
-        try {
-          /**
-           * waiting to register an epsg choice if all go right
-           */
-          try {
-            await Projections.registerProjection(crs);
-          } catch(e) {
-            this.setError(e);
-            console.warn(e);
-            return;
-          }
-
-          this.loading     = true;
-          this.vectorLayer = await createVectorLayerFromFile(this.layer);
-          this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
-            color: this.layer.color,
-            field: this.field
-          }));
-          await this.service.addExternalLayer(this.vectorLayer, {
-            crs:      this.layer.crs,
-            type:     this.layer.type,
-            position: this.position
-          });
-          $(this.$refs.modal_addlayer).modal('hide');
-          this.clear();
-
-        } catch(err) {
-          this.setError('add_external_layer');
-        }
-        this.loading = false
+      } catch(e) {
+        console.warn(e);
+        this.error_message = 'sdk.errors.add_external_layer';
       }
+      
+      if (this.vectorLayer) {
+        this.fields = this.vectorLayer.get('_fields');
+      }
+
     },
 
-      /**
-       * @since 3.8.0
-       */
-    clear() {
-      this.clearError();
-      this.loading     = false;
-      this.layer.name  = null;
-      this.layer.title = null;
-      this.layer.id    = null;
-      this.layer.type  = null;
-      this.layer.crs   = this.service.getCrs();
-      this.layer.color = {
-        hex: '#194d33',
-        rgba: { r: 25, g: 77, b: 51, a: 1 },
-        a: 1
-      };
-      this.layer.data  = null;
-      this.vectorLayer = null;
-      this.fields      = [];
-      this.field       = null;
-      this.csv.valid   = false;
+    async addLayer() {
+
+      // skip when ..
+      if (!(this.layer.data || this.csv.valid)) {
+        return;
+      }
+
+      // register EPSG
+      try {
+        await Projections.registerProjection(this.layer.crs);
+      } catch(e) {
+        this.error_message = `sdk.errors.${e}`;
+        console.warn(e);
+        return;
+      }
+
+      this.loading = true;
+
+      try {
+        this.vectorLayer = await createVectorLayerFromFile(this.layer);
+        await this.service.addExternalLayer(this.vectorLayer, {
+          crs:      this.layer.crs,
+          type:     this.layer.type,
+          position: this.position,
+          color:    this.layer.color,
+          field:    this.field,
+        });
+        $(this.$refs.modal_addlayer).modal('hide');
+        this.clear();
+      } catch(e) {
+        this.error_message = 'sdk.errors.add_external_layer';
+      }
+
+      this.loading = false
     },
 
     /**
-     * @deprecated since v3.8.0. Will be removed in v3.9. Use `clear()` method instead.
+     * @since 3.8.0
      */
-    clearLayer() {
-      this.clear();
-    }
+    clear() {
+      this.error_message = '';
+      this.loading       = false;
+      this.layer.name    = null;
+      this.layer.title   = null;
+      this.layer.id      = null;
+      this.layer.type    = null;
+      this.layer.crs     = this.service.getCrs();
+      this.layer.color   = { hex: '#194d33', rgba: { r: 25, g: 77, b: 51, a: 1 }, a: 1 };
+      this.layer.data    = null;
+      this.vectorLayer   = null;
+      this.fields        = [];
+      this.field         = null;
+      this.csv.valid     = false;
+    },
 
   },
+
   watch: {
+
     'csv.x'(value) {
       if (![undefined, null].includes(value)) { this.layer.data.x = value }
     },
+
     'csv.y'(value) {
       if (![undefined, null].includes(value)) { this.layer.data.y = value }
-    }
+    },
+
   },
+
   created() {
     this.layer.crs = this.service.getCrs();
     this.service.on('addexternallayer', () => this.modal.modal('show'));
   },
+
   async mounted() {
     await this.$nextTick();
     this.modal = $('#modal-addlayer').modal('hide');
     this.modal.on('hide.bs.modal',  () => this.clear() );
   },
+
   beforeDestroy() {
     this.clear();
     this.modal.modal('hide');
     this.modal.remove();
-  }
+  },
+
 };
 </script>
 

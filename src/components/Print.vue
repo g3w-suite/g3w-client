@@ -371,13 +371,20 @@ export default {
     },
 
     /**
+     * @since 3.11.0
+     */
+    isAxisOrientationInverted() {
+      return 'neu' === GUI.getService('map').getProjection().getAxisOrientation();
+    },
+
+    /**
      * @param extent
      *
      * @returns { string }
      */
     getOverviewExtent(extent={}) {
       const { xmin, xmax, ymin, ymax } = extent;
-      return (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+      return (this.isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
     },
 
     /**
@@ -389,7 +396,7 @@ export default {
       try {
         const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
         const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
-        this.print_extent  = (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+        this.print_extent  = (this.isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
       }
       catch(e) {
          //in case of already open content print page

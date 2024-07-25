@@ -329,7 +329,22 @@ export default {
     },
 
     isHighLight() {
-      return (this._isHighLightProjectLayer || this._isHighLightExternalLayer);
+      return (
+        // project layer
+        (
+          this.highlightlayers &&
+          !this.isGroup &&
+          CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() &&
+          this.layerstree.visible
+        ) ||
+        // external layer
+          (
+          this.layerstree.external &&
+          this.layerstree.visible &&
+          "vector" /* <-- what the heck? */ && this.layerstree._type &&
+          true === this.layerstree.tochighlightable
+        )
+      );
     },
 
     isInGrey() {
@@ -341,34 +356,6 @@ export default {
      */
     getFeatureCount() {
       return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) => total + 1 * categoryFeatureCount, 0);
-    },
-
-    /**
-     * @TODO double check the name of this function (ie. matches its purpose?)
-     *
-     * @since 3.8.0
-     */
-     _isHighLightProjectLayer() {
-      return (
-        this.highlightlayers &&
-        !this.isGroup &&
-        CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() &&
-        this.layerstree.visible
-      );
-    },
-
-    /**
-     * @TODO double check the name of this function (ie. matches its purpose?)
-     *
-     * @since 3.8.0
-     */
-    _isHighLightExternalLayer() {
-      return (
-        this.layerstree.external &&
-        this.layerstree.visible &&
-        "vector" /* <-- what the heck? */ && this.layerstree._type &&
-        true === this.layerstree.tochighlightable
-      )
     },
 
   },
@@ -450,10 +437,13 @@ export default {
      */
     handleLayerChecked(layer) {
 
+      const map = GUI.getService('map'); 
+
       // external layer (eg. temporary layer through `addlayerscontrol`)
       if (!layer.projectLayer) {
         layer.visible = layer.checked;
-        GUI.getService('map').changeLayerVisibility({ id: layer.id, visible: layer.checked });
+        layer.setVisible(layer.checked);
+        map.emit('change-layer-visibility', { id: layer.id, visible: layer.checked });
         return;  // NB exit early!
       }
 
@@ -473,6 +463,8 @@ export default {
         g.checked = true;
         g         = g.parentGroup;
       }
+
+      map.updateMapLayers();
 
       VM.$emit('treenodevisible', qlayer);
     },
@@ -511,19 +503,15 @@ export default {
     /**
      * Select legend item
      *
-     * @fires CatalogEventBus~treenodeexternalselected
      * @fires CatalogEventBus~treenodeselected
      */
     select() {
-      // skip when `selected === undefined` (unselectable layer, eg. an external WMS  added  (no project layer))
-      if (undefined === this.layerstree.selected) {
-        return;
-      }
-      // check if is external and not a project Layer
-      if (this.layerstree.external && false === this.layerstree.projectLayer) {
-        VM.$emit('treenodeexternalselected', this.layerstree);
-      } else if (!this.isGroup && !this.isTable) {
-        VM.$emit('treenodeselected', this.storeid, this.layerstree);
+      // `undefined === selected` means unselectable layer (eg. external/temporary  WMS)
+      if (
+        undefined !== this.layerstree.selected &&
+        ((!this.isGroup && !this.isTable) || (this.layerstree.external && false === this.layerstree.projectLayer))
+      ) {
+        VM.$emit('treenodeselected', this.layerstree);
       }
     },
 
@@ -579,8 +567,8 @@ export default {
       }
     },
 
-    removeExternalLayer(name, type) {
-      GUI.getService('map').removeExternalLayer(name, wms);
+    removeExternalLayer(name) {
+      GUI.getService('map').removeExternalLayer(name);
     },
 
     /**

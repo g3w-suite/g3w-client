@@ -4,7 +4,6 @@
  */
 
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import MapLayersStoresRegistry     from 'store/map-layers';
 
 const { base, inherit } = require('utils');
 const G3WObject         = require('core/g3wobject');
@@ -33,6 +32,8 @@ function ProjectsRegistry() {
     },
 
     setCurrentProject(project) {
+
+      const { MapLayersStoresRegistry } = require('gui/map/mapservice');
 
       if (project !== this.state.currentProject ) {
         CatalogLayersStoresRegistry.removeLayersStores();

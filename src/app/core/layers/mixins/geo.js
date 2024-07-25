@@ -243,7 +243,7 @@ proto.addOlSelectionFeature = function({
  * Set selection layer on map not visible
  */
 proto.hideOlSelectionFeatures = function() {
-  GUI.getService('map').setSelectionLayerVisible(false);
+  GUI.getService('map').toggleSelection(false);
 }
 
 /**
@@ -268,7 +268,7 @@ proto.updateMapOlSelectionFeatures = function() {
       }
     });
   // Ensures visibility of selection layer on a map
-  map.setSelectionLayerVisible(Object.values(this.olSelectionFeatures).some(f => f.selected));
+  map.toggleSelection(Object.values(this.olSelectionFeatures).some(f => f.selected));
 
 };
 
