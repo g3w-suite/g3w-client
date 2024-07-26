@@ -24,7 +24,8 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
   // DBTM Multiscala
   const url  = "http://www502.regione.toscana.it/geoscopio_qg/cgi-bin/qgis_mapserv?map=dbtm_rt.qgs&"
   const wms = JSON.parse(localStorage.getItem('externalwms') || '{}');
-  wms[pid] = {
+  wms[pid]  = wms[pid] || { urls: [], wms: {} };
+  wms[pid]  = {
     urls: wms[pid].urls.length ? wms[pid].urls : [{ url, id: "DBTM" }],
     wms: Object.keys(wms[pid].wms).length ? wms[pid].wms : { [url]: [{
       url,
