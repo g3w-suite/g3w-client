@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.10.0
+# G3W-CLIENT v3.11.0-alpha.0
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
