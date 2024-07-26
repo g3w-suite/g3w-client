@@ -67,11 +67,15 @@
   function dragElement(el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
     el.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        x1 = e.clientX;
-        y1 = e.clientY;
-        document.addEventListener('mouseup', mouseUp);
-        document.addEventListener('mousemove', mouseMove);
+      // skip dragging on form elements
+      if (['.select2-container', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i))) {
+        return;
+      }
+      e.preventDefault();
+      x1 = e.clientX;
+      y1 = e.clientY;
+      document.addEventListener('mouseup', mouseUp);
+      document.addEventListener('mousemove', mouseMove);
     });
     function mouseUp() {
       document.removeEventListener('mouseup', mouseUp);
