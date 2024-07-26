@@ -225,7 +225,7 @@ function ProjectsRegistry() {
         // add to project
         d.resolve((new Project(projectConfig)));
       })
-      .fail(error => d.reject(e))
+      .fail(d.reject)
     return d.promise();
   };
 
