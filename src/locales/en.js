@@ -185,7 +185,7 @@ export default {
           row_to_form: "Form View",
           zoomtogeometry: "Zoom to Geometry",
         },
-        copy_map_extent_url: 'Copy map view link',
+        copy_map_extent_url: 'Copy share URL',
         download_shapefile: "Download Shapefile",
         download_gpx: "Download GPX",
         download_gpkg: "Download GPKG",
@@ -258,7 +258,7 @@ export default {
               hint: "Print Atlas"
             },
             copy_zoom_to_fid_url: {
-              hint: "Copy map URL with this geometry feature extension",
+              hint: "Share via link",
               hint_change: "Copied"
             }
           }
