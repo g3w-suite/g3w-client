@@ -614,11 +614,11 @@ class MapService extends G3WObject {
           getResolution: () => this.viewer.map.getView().getResolution(),
           getCenter:     () => this.viewer.map.getView().getCenter(),
           destroy:       () => { if (this.viewer.map) { this.viewer.map.dispose(); this.viewer.map = null } },
-          zoomTo:        this.zoomTo,
-          goTo:          this.goTo,
-          fit:           this._fit,
+          zoomTo:        this.zoomTo.bind(this),
+          goTo:          this.goTo.bind(this),
+          fit:           this._fit.bind(this),
           /** @TODO check if deprecated */
-          changeBaseLayer: (name) => this.map.getLayers().insertAt(0, this.map.getLayers().find(l => name === l.get('name'))),
+          changeBaseLayer: name => this.map.getLayers().insertAt(0, this.map.getLayers().find(l => name === l.get('name'))),
         };
 
         const map = this.viewer.getMap();
