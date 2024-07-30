@@ -218,6 +218,7 @@ class QueryResultsService extends G3WObject {
     this._asyncFnc = {
       todo:                      noop,
       zoomToLayerFeaturesExtent: { async: false },
+      highLightLayerFeatures:    { async: false },
       goToGeometry:              { async: false },
     };
 
@@ -279,7 +280,8 @@ class QueryResultsService extends G3WObject {
       this.mapService = this.mapService || ApplicationService.getApplicationService('map');
       if (100 === options.perc && GUI.isMobile()) {
         this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
-        this._asyncFnc.goToGeometry.async = true;
+        this._asyncFnc.highLightLayerFeatures.async    = true;
+        this._asyncFnc.goToGeometry.async              = true;
       }
     });
 
@@ -689,6 +691,7 @@ class QueryResultsService extends G3WObject {
     this._asyncFnc = {
       todo:                      noop,
       zoomToLayerFeaturesExtent: { async: false },
+      highLightLayerFeatures:    { async: false },
       goToGeometry:              { async: false },
     };
     this.clearState();
@@ -868,6 +871,22 @@ class QueryResultsService extends G3WObject {
       this.mapService.zoomToFeatures(this._getLayerFeatures(layer), options);
     }
   }
+
+  /**
+   * @FIXME add description
+   *
+   * @param layer
+   * @param options
+   */
+  highLightLayerFeatures(layer, options = {}) {
+    if (this._asyncFnc.highLightLayerFeatures.async) {
+      this._asyncFnc.todo = this.mapService.highlightFeatures.bind(this.mapService, this._getLayerFeatures(layer), options);
+    } else {
+      this.mapService.highlightFeatures(this._getLayerFeatures(layer), options);
+    }
+  }
+
+
 
   /**
    * Reset internal state
