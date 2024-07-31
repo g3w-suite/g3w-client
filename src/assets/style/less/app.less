@@ -392,8 +392,9 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 
 :root {
   @media (max-width: 767px) {
-    a.sidebar-aside-toggle                          { display: none !important; }
-    .main-sidebar, .main-sidebar-mobile, .left-side { transform: translate(-100%, 0); width: 100%; }
+    a.sidebar-aside-toggle                                           { display: none !important; }
+    .main-sidebar, .main-sidebar-mobile, .left-side                  { transform: translate(-100%, 0); width: 100%; }
+    .sidebar-open .main-sidebar, .sidebar-open .sidebar-aside-toggle { transform: translate(0, 0) }
   }
 }
 
