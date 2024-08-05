@@ -374,14 +374,10 @@ export class QueryBy extends InteractionControl {
       }
       if (['querybbox', 'querybydrawpolygon'].includes(type)) {
         GUI.getService('catalog').state.highlightlayers = e.target.get(e.key); // highlight layers in legend
-      }      
+      }
     });
 
-    this.listenLayersVisibilityChange();
-
-  }
-
-  listenLayersVisibilityChange() {
+    // listen for layers visibility change
     this.unwatches = this.unwatches || [];
     this.unwatches.forEach(unwatch => unwatch());
     this.unwatches.splice(0);
@@ -402,6 +398,7 @@ export class QueryBy extends InteractionControl {
         )
       })
     );
+
   }
 
   /**

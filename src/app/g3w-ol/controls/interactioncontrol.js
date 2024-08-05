@@ -184,8 +184,6 @@ export class InteractionControl extends ol.control.Control {
      */
     this.unwatches = [];
 
-    this.listenLayersVisibilityChange();
-
     this._visible = visible;
     /**
      * Check if interact with map
@@ -596,26 +594,6 @@ export class InteractionControl extends ol.control.Control {
    */
   checkVisibile(layers) {
     return true;
-  }
-
-  /**
-   * @virtual method need to be implemented by subclasses
-   *
-   * @since v3.8.0
-   */
-  listenLayersVisibilityChange() {}
-
-  /**
-   * @virtual method need to be implemented by subclasses
-   *
-   * @since 3.8.0
-   */
-  change(layers=[]) {
-    this.layers = layers;
-    const visible = this.checkVisibile(layers);
-    this.setVisible(visible);
-    this.setEnable(false);
-    this.listenLayersVisibilityChange();
   }
 
   /**
