@@ -18,14 +18,14 @@ function FormService() {
    */
   this.force = {
     update: false,
-    valid: false // NOT USED FOR THE MOMENT
+    valid:  false // NOT USED FOR THE MOMENT
   };
 
   this.layer;
 
   this.setters = {
 
-    setInitForm(options={}) {
+    setInitForm(options = {}) {
       this._setInitForm(options);
     },
 
@@ -33,7 +33,7 @@ function FormService() {
       this.state.formstructure = formStructure;
     },
 
-    setFormFields(fields=[]) {
+    setFormFields(fields = []) {
       this.state.fields = fields;
       this.handleFieldsWithExpression(fields);
     },
@@ -56,14 +56,13 @@ function FormService() {
 
     postRender(element) {
       // hook for listener to chenge DOM
-
     }
 
   };
 
   base(this);
 
-  this.init = function(options={}) {
+  this.init = function(options = {}) {
     this._setInitForm(options);
   };
 
@@ -91,19 +90,19 @@ function FormService() {
     /**
      * Cloned feature
      */
-    this.feature = feature.clone();
+    this.feature         = feature.clone();
 
-    this.title = title;
+    this.title           = title;
 
-    this.formId = formId;
+    this.formId          = formId;
 
-    this.name = name;
+    this.name            = name;
 
-    this.buttons = buttons;
+    this.buttons         = buttons;
 
-    this.context_inputs = context_inputs;
+    this.context_inputs  = context_inputs;
 
-    this.parentData = parentData;
+    this.parentData      = parentData;
 
     this.headerComponent = headerComponent;
 
@@ -112,25 +111,25 @@ function FormService() {
      * (eg. setted on a child to parent form service relation)
      */
     this.state = {
-      layerid: layer.getId(),
-      loading:false,
-      components: [],
-      disabledcomponents: [],
-      component: null,
-      headers: [],
-      currentheaderid: null,
-      fields: null,
-      buttons: this.buttons,
-      disabled: false,
+      layerid:              layer.getId(),
+      loading:              false,
+      components:           [],
+      disabledcomponents:   [],
+      component:            null,
+      headers:              [],
+      currentheaderid:      null,
+      fields:               null,
+      buttons:              this.buttons,
+      disabled:             false,
       isnew,
-      valid: true, // global form validation state. True at beginning
-      update: feature.isNew(), // set update in case or not is a new feature
+      valid:                true, // global form validation state. True at beginning
+      update:               feature.isNew(), // set update in case or not is a new feature
       // when input change will be update
-      tovalidate: {},
+      tovalidate:           {},
       feature,
       componentstovalidate: {},
       footer,
-      ready: false
+      ready:                false
     };
   
     this.force.update = feature.isNew();
@@ -164,14 +163,14 @@ function FormService() {
     }
 
   };
-  this.eventBus.$on('set-loading-form', (bool=false) => this.state.loading = bool);
+  this.eventBus.$on('set-loading-form', (bool = false) => this.state.loading = bool);
 }
 
 inherit(FormService, G3WObject);
 
 const proto = FormService.prototype;
 
-proto.setReady = function(bool=false) {
+proto.setReady = function(bool = false) {
   this.state.ready = bool;
 };
 
@@ -208,7 +207,7 @@ proto.isUpdated = function(input) {
 /**
  *
  */
-proto.setUpdate = function(bool=false, options={}) {
+proto.setUpdate = function(bool = false, options = {}) {
   const { force = false } = options;
   this.force.update = force;
   this.state.update = this.force.update || bool;
@@ -223,16 +222,16 @@ proto.setUpdate = function(bool=false, options={}) {
  * 
  * @param input
  */
-proto.evaluateDefaultExpressionFields = function(input={}) {
+proto.evaluateDefaultExpressionFields = function(input = {}) {
   const filter = this.default_expression_fields_dependencies[input.name];
   if (filter) {
     this.feature.set(input.name, input.value);
-    filter.forEach(dependency_field =>{
+    filter.forEach(dependency_field => {
       FormService._getDefaultExpression({
-        parentData: this.parentData,
+        parentData:   this.parentData,
         qgs_layer_id: this.layer.getId(),
-        field: this._getField(dependency_field),
-        feature: this.feature,
+        field:        this._getField(dependency_field),
+        feature:      this.feature,
       })
     })
   }
@@ -243,21 +242,19 @@ proto.evaluateDefaultExpressionFields = function(input={}) {
  * 
  * @param input
  */
-proto.evaluateFilterExpressionFields = function(input={}) {
+proto.evaluateFilterExpressionFields = function(input = {}) {
   const filter = this.filter_expression_fields_dependencies[input.name];
   if (filter) {
     // on form service inititalization `filter_expression` option has
     // `referencing_fields` or `referenced_columns` from another layer
     const fieldForm = this._getField(input.name);
-    if (fieldForm) {
-     this.feature.set(fieldForm.name, fieldForm.value);
-    }
+    if (fieldForm) { this.feature.set(fieldForm.name, fieldForm.value) }
     filter.forEach(dependency_field => {
       FormService._getFilterExpression({
-        parentData: this.parentData,
+        parentData:   this.parentData,
         qgs_layer_id: this.layer.getId(),
-        field: this._getField(dependency_field),
-        feature: this.feature,
+        field:        this._getField(dependency_field),
+        feature:      this.feature,
       })
     })
   }
@@ -269,9 +266,7 @@ proto.evaluateFilterExpressionFields = function(input={}) {
  * @since 3.8.0
  */
 proto._handleFieldWithFilterExpression = function(field, filter_expression) {
-  if (!filter_expression) {
-    return;
-  }
+  if (!filter_expression) { return }
 
   const {
     referencing_fields = [],
@@ -296,10 +291,10 @@ proto._handleFieldWithFilterExpression = function(field, filter_expression) {
 
   // Call input service if a field has a `filter_expression` every time we open a form
   FormService._getFilterExpression({
-    parentData: this.parentData,
+    parentData:   this.parentData,
     qgs_layer_id: this.layer.getId(),
+    feature:      this.feature,
     field,
-    feature: this.feature
   });
 };
 
@@ -313,13 +308,11 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
     const {
       referencing_fields = [],
       referenced_columns = [],
-      apply_on_update = false,
+      apply_on_update    = false,
     } = default_expression;
 
     // Skip if not apply_on_update (listen dependencies change only for new Feature)
-    if (!apply_on_update && !this.state.isnew) {
-      return;
-    }
+    if (!apply_on_update && !this.state.isnew) { return }
 
     const dependency_fields = new Set();
 
@@ -349,9 +342,9 @@ proto._handleFieldWithDefaultExpression = function(field, default_expression) {
     if (this.state.isnew) {
       FormService._getDefaultExpression({
         field,
-        feature: this.feature,
+        feature:      this.feature,
         qgs_layer_id: this.layer.getId(),
-        parentData: this.parentData,
+        parentData:   this.parentData,
       });
     }
   }
@@ -379,7 +372,7 @@ proto.setCurrentFormPercentage = function(perc) {
   this.layer.setFormPercentage(perc)
 };
 
-proto.setLoading = function(bool=false) {
+proto.setLoading = function(bool = false) {
   this.state.loading = bool;
 };
 
@@ -412,14 +405,14 @@ proto.isValid = function(input) {
       let filled = [];
       for (let i = input.validate.mutually.length; i--;) {
         const input_name = input.validate.mutually[i];
-        if (!this.state.tovalidate[input_name].validate.empty) {
-          filled.push(input_name) ;
-        }
+
+        if (!this.state.tovalidate[input_name].validate.empty) { filled.push(input_name)  }
+
       }
       if (filled.length < 2) {
         filled.forEach((input_name) => {
           this.state.tovalidate[input_name].validate.mutually_valid = true;
-          this.state.tovalidate[input_name].validate.valid = true;
+          this.state.tovalidate[input_name].validate.valid          = true;
           setTimeout(() => {
             this.state.tovalidate[input_name].validate.valid = this.state.tovalidate[input_name].validate._valid;
             this.state.valid = this.state.valid && this.state.tovalidate[input_name].validate.valid;
@@ -435,14 +428,12 @@ proto.isValid = function(input) {
             ? this.state.tovalidate[input.validate.min_field].validate.empty || 1 * input.value > 1 * this.state.tovalidate[input.validate.min_field].value
             : this.state.tovalidate[input.validate.max_field].validate.empty || 1 * input.value < 1 * this.state.tovalidate[input.validate.max_field].value
           );
-        if (input.validate.valid) {
-          this.state.tovalidate[input_name].validate.valid = true;
-        }
+        if (input.validate.valid) { this.state.tovalidate[input_name].validate.valid = true }
     }
   }
   this.state.valid = (
-    Object.values(this.state.tovalidate).reduce((previous, input) => previous && input.validate.valid, true) &&
-    Object.values(this.state.componentstovalidate).reduce((previous, valid) => previous && valid, true)
+    Object.values(this.state.tovalidate).reduce((previous, input) => previous && input.validate.valid, true)
+    && Object.values(this.state.componentstovalidate).reduce((previous, valid) => previous && valid, true)
   );
 };
 
@@ -453,8 +444,9 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
-  const {id, title, name, icon, valid, headerComponent, header=true} = component;
-  if (valid !== undefined) {
+  if (!component) { return }
+  const { id, title, name, icon, valid, headerComponent, header = true } = component;
+  if (undefined !== valid) {
     this.state.componentstovalidate[id] = valid;
     this.state.valid = this.state.valid && valid;
     this.eventBus.$emit('add-component-validate', {
@@ -471,20 +463,19 @@ proto.addComponent = function(component) {
   this.state.components.push(component);
 };
 
-proto.replaceComponent = function({id, component}={}) {
-  const index = this.state.components.findIndex(component => component.id === id);
-  this.state.components.splice(index, 1, component);
+proto.replaceComponent = function({ id, component } = {}) {
+  this.state.components.splice(this.state.components.findIndex(c => id === c.id), 1, component);
 };
 
 proto.disableComponent = function({id, disabled}) {
-  if (disabled) this.state.disabledcomponents.push(id);
-  else this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => disabledId !== id);
+  if (disabled) { this.state.disabledcomponents.push(id) }
+  else { this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => id !== disabledId) }
 };
 
 proto.setCurrentComponentById = function(id) {
-  if (this.state.disabledcomponents.indexOf(id) === -1) {
+  if (-1 === this.state.disabledcomponents.indexOf(id)) {
     this.setIdHeader(id);
-    this.state.component = this.state.components.find(component => component.id === id).component;
+    this.state.component = this.state.components.find(c => id === c.id).component;
     return this.state.component;
   }
 };
@@ -493,19 +484,19 @@ proto.setCurrentComponentById = function(id) {
  * setRootComponent (is form)
  */
 proto.setRootComponent = function() {
-  this.state.component = this.state.components.find(component => component.root).component;
+  this.state.component = this.state.components.find(c => c.root).component;
 };
 
 proto.getRootComponent = function() {
-  return this.state.components.find(component => component.root).component;
+  return this.state.components.find(c => c.root).component;
 };
 
 proto.isRootComponent = function(component) {
-  return this.getRootComponent() == component;
+  return component == this.getRootComponent();
 };
 
 proto.getComponentById = function(id) {
-  return this.state.components.find(component => component.id === id);
+  return this.state.components.find(c => id === c.id);
 };
 
 proto.setComponent = function(component) {
@@ -518,10 +509,8 @@ proto.addedComponentTo = function(formcomponent = 'body') {
 
 proto.addToValidate = function(input) {
   this.state.tovalidate[input.name] = input;
-  // check if is mounted on form gui otherwise leave form component to run is Valid whe form is mounted on dom
-  if (this.state.ready) {
-   this.isValid(input);
-  }
+  // check if is mounted on form gui otherwise leave form component to run is Valid when form is mounted on dom
+  if (this.state.ready) { this.isValid(input) }
 };
 
 proto.removeToValidate = function(input) {
@@ -529,7 +518,7 @@ proto.removeToValidate = function(input) {
   this.isValid();
 };
 
-proto.getState = function () {
+proto.getState = function() {
   return this.state;
 };
 
@@ -542,7 +531,7 @@ proto.getFields = function() {
 };
 
 proto._getField = function(fieldName) {
-  return this.state.fields.find(field => field.name === fieldName);
+  return this.state.fields.find(f => fieldName === f.name);
 };
 
 proto.getEventBus = function() {
@@ -590,17 +579,14 @@ proto.clearAll = function() {
  * @since 3.8.0
  */
 proto.saveDefaultExpressionFieldsNotDependencies = async function() {
-  if (0 === this.default_expression_fields_on_update.length) {
-    return;
-  }
+  if (0 === this.default_expression_fields_on_update.length) { return }
 
   // disable listen changeInput
-  this.listenChangeInput = false;
-
-  // Array contain field name already resolved with server default_expression request
+  this.listenChangeInput      = false;
+  // Array contains field name already resolved with server default_expression request
   const requested_expressions = [];
   // array of defaultExpressionPromises request
-  const pending_expressions = [];
+  const pending_expressions   = [];
 
   // loop through default_expression_fields
   for (let i = 0; i < this.default_expression_fields_on_update.length; i++) {
@@ -611,7 +597,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
         return (
           // check if dependency field is field on update
           this.default_expression_fields_on_update.find(({name}) => name === field) &&
-          // if has bind current field
+          // if it has bind current field
           this.default_expression_fields_dependencies[field].find(fieldName => fieldName === this.default_expression_fields_on_update[i].name)
         )
       });
@@ -620,43 +606,43 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
     // need to evaluate its value and after evaluate field value expression
     for (let i = 0; i < dFs.length; i++) {
       // in case already done a default_expression request evaluation from server
-      if ("undefined" !== typeof requested_expressions.find(name => name === dFs[i])) {
+      if (undefined !== requested_expressions.find(name => dFs[i] === name)) {
         continue;
       }
       // get value. Need to wait response
       try {
         const value = await FormService._getDefaultExpression({
-          field: this._getField(dFs[i]),
-          feature: this.feature,
+          field:        this._getField(dFs[i]),
+          feature:      this.feature,
           qgs_layer_id: this.layer.getId(),
-          parentData: this.parentData
+          parentData:   this.parentData
         });
         // update field with evaluated value to feature
         this.feature.set(dFs[i], value);
         // add to array
         requested_expressions.push(dFs[i]);
-      } catch(err) {
-        console.warn(err);
+      } catch(e) {
+        console.warn(e);
       }
     }
 
   }
 
   this.default_expression_fields_on_update.forEach(field => {
-    if ("undefined" === typeof requested_expressions.find(name => name === field.name)) {
+    if (undefined === requested_expressions.find(name => field.name === name)) {
       pending_expressions.push(FormService._getDefaultExpression({
         field,
-        feature: this.feature,
+        feature:      this.feature,
         qgs_layer_id: this.layer.getId(),
-        parentData: this.parentData
+        parentData:   this.parentData
       }))
     }
   });
 
   try {
     await Promise.allSettled(pending_expressions);
-  } catch(err) {
-    console.warn(err);
+  } catch(e) {
+    console.warn(e);
   }
 
   // enable listen changeInput
@@ -693,9 +679,7 @@ FormService._getFilterExpression = async function({
  /**
   * @FIXME should return Promise.reject('some error message') ?
   */
- if (!filter_expression) {
-   return;
- }
+ if (!filter_expression) { return }
 
  loading.state = 'loading';
 
@@ -708,11 +692,11 @@ FormService._getFilterExpression = async function({
        qgs_layer_id,
        form_data: convertFeatureToGEOJSON(feature),
        parent: parentData && ({
-         form_data: convertFeatureToGEOJSON(parentData.feature),
+         form_data:    convertFeatureToGEOJSON(parentData.feature),
          qgs_layer_id: parentData.qgs_layer_id,
-         formatter: 0,
+         formatter:    0,
        }),
-       formatter: 0,
+       formatter:  0,
        expression: filter_expression.expression,
      },
      outputs: false,
@@ -724,7 +708,7 @@ FormService._getFilterExpression = async function({
      const values = [];
      for (let i = 0; i < features.length; i++) {
        values.push({
-         key: features[i].properties[key],
+         key:   features[i].properties[key],
          value: features[i].properties[value]
        })
      }
@@ -742,8 +726,9 @@ FormService._getFilterExpression = async function({
 
    return features;
 
- } catch(err) {
-   return Promise.reject(err);
+ } catch(e) {
+   console.warn(e);
+   return Promise.reject(e);
  } finally {
    loading.state = 'ready';
  }
@@ -779,9 +764,7 @@ FormService._getDefaultExpression = async function({
   /**
    * @FIXME should return Promise.reject('some error message') ?
    */
-  if (!default_expression) {
-    return;
-  }
+  if (!default_expression) { return }
 
   loading.state = 'loading';
 
@@ -793,13 +776,13 @@ FormService._getDefaultExpression = async function({
         field_name: field.name,
         layer_id, //
         qgs_layer_id, //layer id owner of the data
-        form_data: convertFeatureToGEOJSON(feature),
-        formatter: 0,
+        form_data:  convertFeatureToGEOJSON(feature),
+        formatter:  0,
         expression: default_expression.expression,
         parent: parentData && {
-          form_data: convertFeatureToGEOJSON(parentData.feature),
+          form_data:    convertFeatureToGEOJSON(parentData.feature),
           qgs_layer_id: parentData.qgs_layer_id,
-          formatter: 0
+          formatter:    0
         }
       },
       outputs: false
@@ -809,11 +792,10 @@ FormService._getDefaultExpression = async function({
 
     return value;
 
-  } catch(err) {
-    if ("undefined" !== typeof default_value) {
-      field.value = default_value
-    }
-    return Promise.reject(err);
+  } catch(e) {
+    if (undefined !== default_value) { field.value = default_value }
+    console.warn(e);
+    return Promise.reject(e);
   } finally {
     loading.state = 'ready';
   }

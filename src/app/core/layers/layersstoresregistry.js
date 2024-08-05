@@ -1,70 +1,62 @@
-const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
+import G3WObject from 'core/g3w-object';
 
 // Registy Layers
-function LayersStoresRegistry() {
-  this.stores = {};
-  this.storesArray = [];
-  // to react some application components that are binding to Layerstore
-  this.setters = {
-    addLayersStore: this._addLayersStore.bind(this),
-    removeLayersStore: this._removeLayersStore.bind(this),
-    removeLayersStores: this._removeLayersStores.bind(this),
-  };
+module.exports = (class LayersStoresRegistry extends G3WObject {
 
-  base(this);
-}
+  constructor() {
+    super();
 
-inherit(LayersStoresRegistry, G3WObject);
+    this.stores = {};
 
-const proto = LayersStoresRegistry.prototype;
+    this.storesArray = [];
 
-proto.getLayerById = function(layerId) {
-  let layer;
-  for (const storeId in this.stores) {
-    const layerStore = this.stores[storeId];
-    layer = layerStore.getLayerById(layerId);
-    if (layer) break;
+    // to react some application components that are binding to Layerstore
+    this.setters = {
+
+      addLayersStore(store, idx) {
+        const id = store.getId();
+        this.stores[id] = store;
+        if (null !== idx && undefined !== idx) {
+          this.storesArray.splice(idx, 0, id);
+        } else {
+          this.storesArray.push(id);
+        }
+      },
+
+      removeLayersStore(store) {
+        if (store) {
+          const id = store.getId();
+          this.storesArray = this.storesArray.filter(i => i != id);
+          delete this.stores[id];
+        }
+      },
+
+      removeLayersStores() {
+        this.storesArray = [];
+        this.stores = {};
+      },
+
+    };
   }
-  return layer
-};
 
-proto.getLayers = function(filter) {
-  return Object.values(this.stores).flatMap(store => store.getLayers(filter));
-};
-
-proto.getQuerableLayersStores = function() {
-  return this.getLayersStores().filter(store => store.isQueryable());
-};
-
-proto.getLayersStore = function(id) {
-  return this.stores[id];
-};
-
-proto.getLayersStores = function() {
-  return this.storesArray.map(storeId => this.stores[storeId]);
-};
-
-proto._addLayersStore = function(layersStore, idx) {
-  const storeId = layersStore.getId();
-  this.stores[storeId] = layersStore;
-  if (!_.isNil(idx)) this.storesArray.splice(idx,0, storeId);
-  else this.storesArray.push(storeId);
-
-};
-
-proto._removeLayersStore = function(layerStore) {
-  if (layerStore) {
-    const storeId = layerStore.getId();
-    this.storesArray = this.storesArray.filter((_storeId) => _storeId != storeId);
-    delete this.stores[storeId];
+  getLayerById(id) {
+    return Object.values(this.stores).map(store => store.getLayerById(id)).find(layer => layer);
   }
-};
 
-proto._removeLayersStores = function() {
-  this.storesArray = [];
-  this.stores = {};
-};
+  getLayers(filter) {
+    return Object.values(this.stores).flatMap(store => store.getLayers(filter));
+  }
 
+  getQuerableLayersStores() {
+    return this.getLayersStores().filter(store => store.isQueryable());
+  }
 
-module.exports = LayersStoresRegistry;
+  getLayersStore(id) {
+    return this.stores[id];
+  }
+
+  getLayersStores() {
+    return this.storesArray.map(id => this.stores[id]);
+  }
+
+});

@@ -27,10 +27,6 @@ proto.resetEditingSource = function(features=[]){
   this.getMapLayer().resetSource(features)
 };
 
-proto._setOtherConfigParameters = function(config) {
-  this.config.editing.geometrytype = config.geometrytype;
-};
-
 proto.getEditingGeometryType = function() {
   return this.config.editing.geometrytype;
 };

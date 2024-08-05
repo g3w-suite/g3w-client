@@ -6,44 +6,46 @@
 <template>
 
   <li
-    class="tree-item"
-    @contextmenu.prevent.stop="showContextMenu"
-    @click.stop="onTreeItemClick"
+    v-if                      = "isGroup || !layerstree.projectLayer || layerstree.toc"
+    class                     = "tree-item"
+    @contextmenu.prevent.stop = "showContextMenu"
+    @click.stop               = "onTreeItemClick"
     :style="{
       marginLeft: !isGroup ? '5px' : '0'
     }"
-    :class="{
+    :class                    = "{
       selected: !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
-      disabled: isInGrey, group: isGroup
+      disabled: isInGrey,
+      group: isGroup
     }"
   >
     <!-- GROUP LAYER -->
     <span
-      v-if="isGroup"
-      style="padding-right: 2px;"
-      :class="[
+      v-if        = "isGroup"
+      style       = "padding-right: 2px;"
+      :class      = "[
         { bold : isGroup },
         g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
-      @click.stop="expandCollapse"
-      class="root collapse-expande-collapse-icon"
+      @click.stop = "expandCollapse"
+      class       = "root collapse-expande-collapse-icon"
     ></span>
 
     <!-- GROUP LAYER -->
     <span
-      v-if="isGroup"
-      @click.stop="toggle()"
-      style="color: #ffffff"
-      :class="[triClass()]"
+      v-if        = "isGroup"
+      @click.stop = "toggle()"
+      style       = "color: #ffffff"
+      :class      = "[triClass()]"
     ></span>
 
     <!-- TABLE LAYER -->
     <span
-      v-else-if="isTable"
-      v-show="!layerstree.hidden"
-      style="padding-left: 18px"
-      :class="[
+      v-else-if = "isTable"
+      v-show    = "!layerstree.hidden"
+      style     = "padding-left: 18px"
+      :class    = "[
         parentFolder ? 'child' : 'root',
         g3wtemplate.getFontClass('table')
       ]"
@@ -53,36 +55,36 @@
 
       <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
       <span
-        v-if="layerstree.external && layerstree.removable"
-        style="color: red; padding-left: 1px;"
-        :class="g3wtemplate.getFontClass('trash')"
-        @click.stop="removeExternalLayer(layerstree.name, layerstree._type)"
+        v-if        = "layerstree.external && layerstree.removable"
+        style       = "color: red; padding-left: 1px;"
+        :class      = "g3wtemplate.getFontClass('trash')"
+        @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
       <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
       <span
-        v-if="layerstree.external && layerstree.download"
-        style="color: #ffffff; margin-left: 5px;"
-        :class="g3wtemplate.getFontClass('download')"
-        @click="downloadExternalLayer(layerstree.download)"
+        v-if   = "layerstree.external && layerstree.download"
+        style  = "color: #ffffff; margin-left: 5px;"
+        :class = "g3wtemplate.getFontClass('download')"
+        @click = "downloadExternalLayer(layerstree.download)"
       ></span>
 
       <!-- HIDDEN NODE (LAYER) -->
       <span
-        v-show="!layerstree.hidden"
-        class="checkbox-layer"
-        :class="parentFolder ? 'child' : 'root'"
+        v-show = "!layerstree.hidden"
+        class  = "checkbox-layer"
+        :class = "parentFolder ? 'child' : 'root'"
       >
         <span
-          v-if="'toc' === legendlayerposition || !isGroup && layerstree.categories"
-          @click.self.stop="expandCollapse"
-          class="collapse-expande-collapse-icon"
-          :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
+          v-if             = "'toc' === legendlayerposition || !isGroup && layerstree.categories"
+          @click.self.stop = "expandCollapse"
+          class            = "collapse-expande-collapse-icon"
+          :class           = "g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
         ></span>
 
         <span
-          @click.stop="toggle()"
-          :style="{
+          @click.stop = "toggle()"
+          :style      = "{
             paddingLeft: ('toc' === legendlayerposition)
               ? '5px'
               : !isGroup && layerstree.categories
@@ -91,7 +93,7 @@
                   ? '1px'
                   : '18px'
           }"
-          :class="[
+          :class      = "[
             g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'),
             { 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }
           ]"
@@ -103,14 +105,13 @@
 
     <!-- VISIBLE NODE (LAYER or GROUP) -->
     <div
-      v-show="!layerstree.hidden || isGroup"
-      class="tree-node-title"
-      :class="{
+      v-show = "!layerstree.hidden || isGroup"
+      class  = "tree-node-title"
+      :class = "{
         disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)),
         bold: isGroup
       }"
     >
-
 
       <span
         :class           = "{
@@ -145,7 +146,7 @@
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
-      <div v-if="(!isGroup && layerstree.selection)">
+      <div v-if = "(!isGroup && layerstree.selection)">
 
         <!-- CLEAR SELECTION -->
         <span
@@ -176,7 +177,7 @@
 
         <!-- SAVE FILTER  -->
         <span
-          v-if                         = "!layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
+          v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           class                        = "action-button skin-tooltip-left selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
@@ -190,32 +191,32 @@
     </div>
 
     <!-- NODE LEGEND (LAYER) -->
-    <layerlegend
-      v-if="showLayerTocLegend"
-      :legendplace="legendplace"
-      :layer="layerstree"
+    <catalog-layer-legend
+      v-if         = "showLayerTocLegend"
+      :legendplace = "legendplace"
+      :layer       = "layerstree"
     />
 
     <!-- CHILD NODES (GROUP) -->
     <ul
-      v-if="isGroup"
-      class="tree-content-items group"
-      :class="[`g3w-lendplace-${legendplace}`]"
-      v-show="layerstree.expanded"
+      v-if   = "isGroup"
+      class  = "tree-content-items group"
+      :class = "[`g3w-lendplace-${legendplace}`]"
+      v-show ="layerstree.expanded"
     >
 
-      <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
+      <span v-for = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId">
 
-        <tristate-tree
-          :root="false"
-          :legendConfig="legend"
-          :legendplace="legendplace"
-          :highlightlayers="highlightlayers"
-          :parentFolder="isGroup"
-          :layerstree="_layerstree"
-          :storeid="storeid"
-          :parent="layerstree"
-          :parent_mutually_exclusive="!!layerstree.mutually_exclusive"
+        <catalog-tristate-tree
+          :root                      = "false"
+          :legendConfig              = "legend"
+          :legendplace               = "legendplace"
+          :highlightlayers           = "highlightlayers"
+          :parentFolder              = "isGroup"
+          :layerstree                = "_layerstree"
+          :storeid                   = "storeid"
+          :parent                    = "layerstree"
+          :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
         />
 
       </span>
@@ -226,13 +227,24 @@
 </template>
 
 <script>
-import LayerLegend                 from 'components/CatalogLayerLegend.vue';
 import { CatalogEventBus as VM }   from 'app/eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ClickMixin                  from 'mixins/click';
+import ApplicationState            from "store/application-state";
 import GUI                         from 'services/gui';
+import ClickMixin                  from 'mixins/click';
+import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
 
 const { downloadFile } = require('utils');
+
+function _setAllLayersVisible(layers) {
+  layers.nodes.forEach(n => {
+    if (undefined === n.id) {
+      _setAllLayersVisible({ nodes: n.nodes, visible: layers.visible && n.checked });
+    } else if (n.parentGroup.checked && n.checked) {
+      CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(layers.visible);
+    }
+  });
+};
 
 export default {
 
@@ -253,7 +265,7 @@ export default {
   ],
 
   components: {
-    'layerlegend': LayerLegend
+    CatalogLayerLegend
   },
 
   mixins: [ClickMixin],
@@ -264,7 +276,8 @@ export default {
       isGroupChecked: true,
       controltoggled: false,
       n_childs:       null,
-      filtered:       false
+      filtered:       false,
+      logged:         undefined !== ApplicationState.user.id, //@since 3.10.0
     }
   },
 
@@ -276,7 +289,7 @@ export default {
      * @since 3.8.0
      */
     showfeaturecount() {
-      return "undefined" !== typeof this.layerstree.featurecount;
+      return undefined !== this.layerstree.featurecount;
     },
 
     showLegendLayer() {
@@ -360,16 +373,9 @@ export default {
 
   },
 
-  watch:{
+  watch: {
 
-    /**
-     * @FIXME empty function ? 
-     */
-    'layerstree.disabled'(bool) {
-
-    },
-
-    'layerstree.checked'(n, o) {
+    'layerstree.checked'() {
       if (this.isGroup) {
         this.handleGroupChecked(this.layerstree);
       } else {
@@ -386,31 +392,9 @@ export default {
      *
      * @since 3.9.0
      */
-    async removeCurrentFilter() {
-      await CatalogLayersStoresRegistry
-        .getLayerById(this.layerstree.id)
-        .deleteFilterToken();
+    removeCurrentFilter() {
+      return CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).deleteFilterToken();
     },
-
-    /**
-     * Inizialize layer (disable, visible etc..)
-     */
-    init() {
-      if (this.isGroup && !this.layerstree.checked) {
-        this.handleGroupChecked(this.layerstree);
-      }
-      if (this.isGroup && !this.root) {
-        this.layerstree.nodes.forEach(node => {
-          if (node.id && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
-            node.uncheckable = true;
-          }
-        })
-      }
-    },
-
-  },
-
-  methods: {
 
     /**
      * Handle change checked property of group
@@ -420,49 +404,39 @@ export default {
      * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      let {
-        checked,
-        parentGroup,
-        nodes
-      } = group;
-    
-      const setAllLayersVisible = ({nodes, visible}) => {
-        nodes.forEach(node => {
-          if (undefined === node.id) {
-            setAllLayersVisible({ nodes: node.nodes, visible: visible && node.checked });
-          } else if (node.parentGroup.checked && node.checked) {
-            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(visible);
-          }
-        });
-      };
-
-      if (!checked) {
-        nodes.forEach(node => {
-          if (undefined === node.id) {
-            setAllLayersVisible({ nodes: node.nodes, visible: false });
-          } else if (node.checked) {
-            CatalogLayersStoresRegistry.getLayerById(node.id).setVisible(false);
+      if (!group.checked) {
+        group.nodes.forEach(n => {
+          if (undefined === n.id) {
+            _setAllLayersVisible({ nodes: n.nodes, visible: false });
+          } else if (n.checked) {
+            CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(false);
           }
         });
         return; // NB exit early!
       }
 
-      const visible = parentGroup ? parentGroup.checked : true;
-      if (false === (parentGroup && parentGroup.mutually_exclusive)) {
-        setAllLayersVisible({ nodes, visible });
-      } else {
-        parentGroup.nodes.forEach(node => {
-          node.checked = node.groupId === group.groupId;
-          if (node.checked) {
-            setAllLayersVisible({ nodes: node.nodes, visible });
+      const visible            = group.parentGroup ? group.parentGroup.checked : true;
+      const mutually_exclusive = group.parentGroup && group.parentGroup.mutually_exclusive;
+
+      if (!mutually_exclusive) {
+        _setAllLayersVisible({ nodes: group.nodes, visible });
+      }
+
+      if (mutually_exclusive) {
+        group.parentGroup.nodes.forEach(n => {
+          n.checked = n.groupId === group.groupId;
+          if (n.checked) {
+            _setAllLayersVisible({ nodes: n.nodes, visible });
           }
         });
       }
-      while (parentGroup) {
-        parentGroup.checked = parentGroup.root || parentGroup.checked;
-        parentGroup = parentGroup.parentGroup
-      }
 
+      // traverse parent groups
+      let g = group.parentGroup;
+      while (g) {
+        g.checked = g.root || g.checked;
+        g         = g.parentGroup;
+      }
     },
 
     /**
@@ -475,44 +449,32 @@ export default {
      * @param {uknown}  layer.parentGroup
      */
     handleLayerChecked(layer) {
-      let {
-        checked,
-        id,
-        // disabled,
-        projectLayer=false,
-        parentGroup
-      } = layer;
 
-      // case external layer (eg. temporary layer through `addlayerscontrol`)
-      if (!projectLayer) {
-        // update `layer.visible` property
-        layer.visible = checked;
-        GUI.getService('map').changeLayerVisibility({ id, visible: checked });
+      // external layer (eg. temporary layer through `addlayerscontrol`)
+      if (!layer.projectLayer) {
+        layer.visible = layer.checked;
+        GUI.getService('map').changeLayerVisibility({ id: layer.id, visible: layer.checked });
         return;  // NB exit early!
       }
 
-      // case project layer (eg. qgis layer)
-      layer = CatalogLayersStoresRegistry.getLayerById(id);
-      if (checked) {
-        // const visible = layer.setVisible(!disabled);
-        /**
-         * @TODO is it necessary to emit the `layer-change-style` event here?
-         */
-        // if (visible && 'toc' === this.legendplace) {
-        //  setTimeout(() => VM.$emit('layer-change-style', { layerId: id }));
-        // }
-        if (parentGroup.mutually_exclusive) {
-          parentGroup.nodes.forEach(node => node.checked = node.id === id);
-        }
-        while (parentGroup) {
-          parentGroup.checked = true;
-          parentGroup = parentGroup.parentGroup;
-        }
-      } else {
-        layer.setVisible(false);
-      }
-      VM.$emit('treenodevisible', layer);
+      // project layer (eg. qgis layer)
+      const qlayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const checked = layer.checked;
 
+      qlayer.setVisible(checked ? !layer.disabled : false)
+
+      if (checked && layer.parentGroup.mutually_exclusive) {
+        layer.parentGroup.nodes.forEach(n => n.checked = n.id === layer.id);
+      }
+
+      // traverse parent groups
+      let g = layer.parentGroup;
+      while (checked && g) {
+        g.checked = true;
+        g         = g.parentGroup;
+      }
+
+      VM.$emit('treenodevisible', qlayer);
     },
 
     /**
@@ -598,7 +560,7 @@ export default {
      *
      * @since v3.8
      */
-     onTreeItemClick() {
+    onTreeItemClick() {
       this.handleClick({
         '1': () => !this.isTable && !this.isGroup && this.select(),
         '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree)

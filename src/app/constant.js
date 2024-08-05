@@ -36,28 +36,32 @@ export const DEFAULT_EDITING_CAPABILITIES = [
 export const DOWNLOAD_FORMATS = {
   download: {
     format: 'shapefile',
-    url: 'shp'
+    url:    'shp'
   },
   download_gpkg: {
     format: 'gpkg',
-    url: 'gpkg'
+    url:    'gpkg'
   },
   download_gpx: {
     format: 'gpx',
-    url: 'gpx'
+    url:    'gpx'
   },
   download_csv: {
     format: 'csv',
-    url: 'csv'
+    url:    'csv'
   },
   download_xls: {
     format: 'xls',
-    url: 'xls'
+    url:    'xls'
   },
   download_raster: {
     format: 'geotiff',
-    url: 'geotiff'
-  }
+    url:    'geotiff'
+  },
+  download_pdf: {
+    format: 'pdf',
+    url:    'pdf'
+  },
 };
 
 /**
@@ -88,19 +92,18 @@ export const G3W_FID = 'g3w_fid';
  * @type {Object<string, string>}
  * @since v3.5
  */
-export const FILTER_OPERATORS =  {
-  gte: '>=',
-  lte: '<=',
-  NOT: '!=',
-  eq: '=',
-  gt: '>',
-  lt: '<',
-  IN: 'IN',
-  'NOT IN': 'NOT IN',
-  LIKE: 'LIKE',
-  ILIKE: 'ILIKE',
-  AND: 'AND',
-  OR: 'OR',
+export const FILTER_OPERATORS = {
+  gte:      '>=',
+  lte:      '<=',
+  NOT:      '!=',
+  eq:       '=',
+  gt:       '>',
+  lt:       '<',
+  IN:       'IN',
+  LIKE:     'LIKE',
+  ILIKE:    'ILIKE',
+  AND:      'AND',
+  OR:       'OR',
 };
 
 /**
@@ -108,10 +111,10 @@ export const FILTER_OPERATORS =  {
  * @since v3.5
  */
 export const FILTER_EXPRESSION_OPERATORS = {
-  lte: '<=',
-  ltgt: '!=',
+  lte:   '<=',
+  ltgt:  '!=',
   ilike: 'ILIKE',
-  like: 'LIKE',
+  like:  'LIKE',
   ...FILTER_OPERATORS,
 };
 
@@ -136,50 +139,50 @@ export const FILTER_EXPRESSION_OPERATORS = {
  * @type {Object<string, string>}
  */
 export const GEOMETRY_TYPES = {
-  POINT: "Point",
-  POINTZ: "PointZ",
-  POINTM: "PointM",
-  POINTZM: "PointZM",
-  POINT25D: "Point25D",
-  MULTIPOINT: "MultiPoint",
-  MULTIPOINTZ: "MultiPointZ",
-  MULTIPOINTM: "MutliPointM",
-  MULTIPOINTZM: "MultiPointZM",
-  MULTIPOINT25D: "MultiPoint25D",
-  LINESTRING: "LineString", // QGis definition .GeometryType, Line intead di Linestring.
-  LINESTRINGZ: "LineStringZ",
-  LINESTRINGM: "LineStringM",
-  LINESTRINGZM: "LineStringZM",
-  LINESTRING25D: "LineString25D",
-  LINE: "Line",
-  LINEZ: "LineZ",
-  LINEM: "LineM",
-  LINEZM: "LineZM",
-  LINE25D: "Line25D",
-  MULTILINESTRING: "MultiLineString",
-  MULTILINESTRINGZ: "MultiLineStringZ",
-  MULTILINESTRINGM: "MultiLineStringM",
-  MULTILINESTRINGZM: "MultiLineStringZM",
-  MULTILINESTRING25D: "MultiLineString25D",
-  MULTILINE:"MultiLine",
-  MULTILINEZ:"MultiLineZ",
-  MULTILINEM:"MultiLineM",
-  MULTILINEZM:"MultiLineZM",
-  MULTILINE25D:"MultiLine25D",
-  POLYGON: "Polygon",
-  POLYGONZ: "PolygonZ",
-  POLYGONM: "PolygonM",
-  POLYGONZM: "PolygonZM",
-  POLYGON25D: "Polygon25D",
-  MULTIPOLYGON: "MultiPolygon",
-  MULTIPOLYGONZ: "MultiPolygonZ",
-  MULTIPOLYGONM: "MultiPolygonM",
-  MULTIPOLYGONZM: "MultiPolygonZM",
-  MULTIPOLYGON25D: "MultiPolygon25D",
-  GEOMETRYCOLLECTION: "GeometryCollection",
-  GEOMETRYCOLLECTIONZ: "GeometryCollectionZ",
-  GEOMETRYCOLLECTIONM: "GeometryCollectionM",
-  GEOMETRYCOLLECTIONZM: "GeometryCollectionZM",
+  POINT:                 "Point",
+  POINTZ:                "PointZ",
+  POINTM:                "PointM",
+  POINTZM:               "PointZM",
+  POINT25D:              "Point25D",
+  MULTIPOINT:            "MultiPoint",
+  MULTIPOINTZ:           "MultiPointZ",
+  MULTIPOINTM:           "MutliPointM",
+  MULTIPOINTZM:          "MultiPointZM",
+  MULTIPOINT25D:         "MultiPoint25D",
+  LINESTRING:            "LineString", // QGis definition .GeometryType, Line intead di Linestring.
+  LINESTRINGZ:           "LineStringZ",
+  LINESTRINGM:           "LineStringM",
+  LINESTRINGZM:          "LineStringZM",
+  LINESTRING25D:         "LineString25D",
+  LINE:                  "Line",
+  LINEZ:                 "LineZ",
+  LINEM:                 "LineM",
+  LINEZM:                "LineZM",
+  LINE25D:               "Line25D",
+  MULTILINESTRING:       "MultiLineString",
+  MULTILINESTRINGZ:      "MultiLineStringZ",
+  MULTILINESTRINGM:      "MultiLineStringM",
+  MULTILINESTRINGZM:     "MultiLineStringZM",
+  MULTILINESTRING25D:    "MultiLineString25D",
+  MULTILINE:             "MultiLine",
+  MULTILINEZ:            "MultiLineZ",
+  MULTILINEM:            "MultiLineM",
+  MULTILINEZM:           "MultiLineZM",
+  MULTILINE25D:          "MultiLine25D",
+  POLYGON:               "Polygon",
+  POLYGONZ:              "PolygonZ",
+  POLYGONM:              "PolygonM",
+  POLYGONZM:             "PolygonZM",
+  POLYGON25D:            "Polygon25D",
+  MULTIPOLYGON:          "MultiPolygon",
+  MULTIPOLYGONZ:         "MultiPolygonZ",
+  MULTIPOLYGONM:         "MultiPolygonM",
+  MULTIPOLYGONZM:        "MultiPolygonZM",
+  MULTIPOLYGON25D:       "MultiPolygon25D",
+  GEOMETRYCOLLECTION:    "GeometryCollection",
+  GEOMETRYCOLLECTIONZ:   "GeometryCollectionZ",
+  GEOMETRYCOLLECTIONM:   "GeometryCollectionM",
+  GEOMETRYCOLLECTIONZM:  "GeometryCollectionZM",
   GEOMETRYCOLLECTION25D: "GeometryCollection25D"
 };
 
@@ -209,19 +212,12 @@ export const LOCALSTORAGE_EXTERNALWMS_ITEM = 'externalwms';
  * @type {MapSettings}
  */
 export const MAP_SETTINGS = {
-  ZOOM: {
-    maxScale: 1000,
-  },
-  ANIMATION: {
-    duration: 2000
-  },
+  ZOOM: { maxScale: 1000, },
+  ANIMATION: { duration: 2000, },
   LAYER_POSITIONS: {
     default: 'top',
-    getPositions(){
-      return [
-        'top',
-        'bottom'
-      ]
+    getPositions() {
+      return [ 'top', 'bottom' ]
     }
   }
 };
@@ -232,13 +228,28 @@ export const MAP_SETTINGS = {
  */
 export const PRINT_FORMATS = [
   {
+    value: 'png',
+    label: 'PNG'
+  },
+  /** @since 3.10.0 */
+  {
+    value: 'jpg',
+    label: 'JPG'
+  },
+  /** @since 3.10.0 */
+  {
+    value: 'svg',
+    label: 'SVG'
+  },
+  {
     value: 'pdf',
     label: 'PDF'
   },
+  /** @since 3.10.0 */
   {
-    value: 'png',
-    label: 'PNG'
-  }
+    value: 'geopdf',
+    label: 'GEOPDF'
+  },
 ];
 
 /**
@@ -253,96 +264,96 @@ export const PRINT_RESOLUTIONS = [150, 300];
  */
 export const PRINT_SCALES = [
   {
-    value:100,
-    label:'1:100'
+    value: 100,
+    label: '1:100'
   },
   {
-    value:200,
-    label:'1:200'
+    value: 200,
+    label: '1:200'
   },
   {
-    value:500,
-    label:'1:500'
+    value: 500,
+    label: '1:500'
   },
   {
-    value:1000,
-    label:'1:1.000'
+    value: 1000,
+    label: '1:1.000'
   },
   {
-    value:2000,
-    label:'1:2.000'
+    value: 2000,
+    label: '1:2.000'
   },
   {
-    value:2500,
-    label:'1:2.500'
+    value: 2500,
+    label: '1:2.500'
   },
   {
-    value:5000,
-    label:'1:5.000'
+    value: 5000,
+    label: '1:5.000'
   },
   {
-    value:10000,
-    label:'1:10.000'
+    value: 10000,
+    label: '1:10.000'
   },
   {
-    value:20000,
-    label:'1:20.000'
+    value: 20000,
+    label: '1:20.000'
   },
   {
-    value:25000,
-    label:'1:25.000'
+    value: 25000,
+    label: '1:25.000'
   },
   {
-    value:50000,
-    label:'1:50.000'
+    value: 50000,
+    label: '1:50.000'
   },
   {
-    value:100000,
-    label:'1:100.000'
+    value: 100000,
+    label: '1:100.000'
   },
   {
-    value:250000,
-    label:'1:250.000'
+    value: 250000,
+    label: '1:250.000'
   },
   {
-    value:500000,
-    label:'1:500.000'
+    value: 500000,
+    label: '1:500.000'
   },
   {
-    value:1000000,
-    label:'1:1.000.000'
+    value: 1000000,
+    label: '1:1.000.000'
   },
   {
-    value:2500000,
-    label:'1:2.500.000'
+    value: 2500000,
+    label: '1:2.500.000'
   },
   {
-    value:5000000,
-    label:'1:5.000.000'
+    value: 5000000,
+    label: '1:5.000.000'
   },
   {
-    value:10000000,
-    label:'1:10.000.000'
+    value: 10000000,
+    label: '1:10.000.000'
   },
   {
-    value:20000000,
-    label:'1:20.000.000'
+    value: 20000000,
+    label: '1:20.000.000'
   },
   {
-    value:50000000,
-    label:'1:50.000.000'
+    value: 50000000,
+    label: '1:50.000.000'
   },
   {
-    value:100000000,
-    label:'1:100.000.000'
+    value: 100000000,
+    label: '1:100.000.000'
   },
   {
-    value:250000000,
-    label:'1:250.000.000'
+    value: 250000000,
+    label: '1:250.000.000'
   },
   {
-    value:500000000,
-    label:'1:500.000.000'
+    value: 500000000,
+    label: '1:500.000.000'
   }
 ];
 
@@ -352,7 +363,7 @@ export const PRINT_SCALES = [
  * @type {{unit: string, value: number}}
  */
 export const QUERY_POINT_TOLERANCE = {
-  unit: 'pixel',
+  unit:  'pixel',
   value: 10
 };
 
@@ -391,12 +402,8 @@ export const TOC_THEMES_INIT_STATUS = 'collapsed';
  */
 export const VIEWPORT = {
   resize: {
-    map: {
-      min: 200
-    },
-    content: {
-      min: 200
-    }
+    map:     { min: 200 },
+    content: { min: 200 },
   }
 };
 
@@ -404,9 +411,7 @@ export const VIEWPORT = {
  * @type {Object<string, { tool: number }>}
  */
 export const ZINDEXES = {
-  usermessage: {
-    tool: 2
-  }
+  usermessage: { tool: 2 }
 };
 
 /**
@@ -463,6 +468,8 @@ export const FONT_AWESOME_ICONS = {
   bars: "fas fa-bars",
   uncheck: "far fa-square",
   check: "far fa-check-square",
+  /** @since 3.10.0 */
+  checkmark: "fa fa-check",
   filluncheck: "fas fa-square",
   table: "fas fa-table",
   trash: "fas fa-trash",
@@ -563,22 +570,16 @@ export const FONT_AWESOME_ICONS = {
   crop: "fas fa-crop-alt",
   exit: "fas fa-door-open",
   slider: "fas fa-sliders-h",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   bookmark: "fas fa-bookmark",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   reply: "fas fa-reply",
-
-  /**
-   * @since 3.8.0
-   */
+  /** @since 3.8.0 */
   share: "fas fa-share",
-
+  /** @since 3.10.0 */
+  'share-alt': 'fa fa-share-alt',
+  /**@since 3.10.0 */
+  'external-link': "fa fa-external-link-alt",
 };
 
 /**
@@ -597,12 +598,12 @@ export const FONT_AWESOME_ICONS = {
 export const LOCAL_ITEM_IDS = {
 
   MESSAGES: {
-    id: 'MESSAGES',
+    id:   'MESSAGES',
     value: {}
   },
 
   SPATIALBOOKMARKS: {
-    id: 'SPATIALBOOKMARKS',
+    id:    'SPATIALBOOKMARKS',
     value: {}
   },
 
@@ -633,7 +634,7 @@ export const DOTS_PER_INCH = 96;
  * @since 3.10.0
  */
 export const INCHES_PER_UNIT = {
-  m: 39.37,
+  m:       39.37,
   degrees: 4374754
 };
 

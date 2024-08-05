@@ -4,32 +4,33 @@
 -->
 
 <template>
-  <baseinput :state="state">
+  <baseinput :state = "state">
     <textarea
-      @keydown.stop=""
-      :placeholder="state.default"
-      @input="change"
-      @change="change"
-      slot="body"
-      style="max-width: 100%; min-width: 100%"
-      rows="3"
-      :tabIndex="tabIndex"
-      v-disabled="!editable"
-      :class="{'input-error-validation' : notvalid}"
-      v-model="state.value"></textarea>
+      slot          = "body"
+      @keydown.stop = ""
+      :placeholder = "state.default"
+      @input       = "change"
+      @change      = "change"
+      style        = "max-width: 100%; min-width: 100%"
+      rows         = "3"
+      :tabIndex    = "tabIndex"
+      v-disabled   = "!editable"
+      :class       = "{'input-error-validation' : notvalid}"
+      v-model      = "state.value">
+    </textarea>
   </baseinput>
 </template>
 
 <script>
-const Input = require('gui/inputs/input');
+  const Input = require('gui/inputs/input');
 
-export default {
+  export default {
 
-  /** @since 3.8.6 */
-  name: "input-textarea",
+    /** @since 3.8.6 */
+    name: "input-textarea",
 
-  mixins: [Input],
-};
+    mixins: [Input],
+  };
 </script>
 
 <style scoped>

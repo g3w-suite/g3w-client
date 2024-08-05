@@ -17,7 +17,7 @@ export default {
         nofilter: "Remove Filter",
         invert: "Invert Selection",
         clear: "Clear Selection",
-        show_features_on_map: "Show features visible on map",
+        show_features_on_map: "Update results when map moves",
         savefilter: "Save Filter",
         filterName: "Filter Name",
       }
@@ -78,6 +78,7 @@ export default {
         help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
       },
       querybuilder: {
+        title: 'Advanced search',
         search: {
           run: "Run",
           info: "Information",
@@ -86,11 +87,11 @@ export default {
         },
         messages: {
           changed: 'Saved',
-          number_of_features: "Number of features"
+          number_of_features: "Features found:"
         },
         panel: {
           button: {
-            all: 'ALL',
+            all: 'SEARCH A VALUE',
             save: 'SAVE',
             test: 'TEST',
             clear: 'CLEAR',
@@ -190,8 +191,10 @@ export default {
         download_gpkg: "Download GPKG",
         download_csv: "Download CSV",
         download_xls: "Download XLS",
+        download_pdf: "Download PDF",
         show_chart: "Show Chart",
-        atlas: "Print Atlas"
+        atlas: "Print Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -248,6 +251,9 @@ export default {
             download_xls: {
               hint: "Download feature XLS"
             },
+            download_pdf: {
+              hint: "Download feature PDF"
+            },
             atlas: {
               hint: "Print Atlas"
             },
@@ -273,12 +279,7 @@ export default {
           no_geometry: 'No geometry on response',
           help: {
             title:'Guide - Query By Polygon',
-            message: `
-                <ul>
-                  <li>Select a polygon layer on TOC.</li>
-                  <li>Be sure that layer is visible.</li>
-                  <li>Click on a feature of selected layer.</li>
-                </ul>`
+            message: "<ul><li>Select a polygon layer on TOC.</li><li>Be sure that layer is visible.</li><li>Click on a feature of selected layer.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -289,10 +290,7 @@ export default {
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
           help: {
             title: 'Guide - Query BBox layer',
-            message:`
-                  <ul>
-                  <li>Draw a square on map to query underlined layers on TOC</li>
-                  </ul>`
+            message: "<ul><li>Draw a square on map to query underlined layers on TOC</li></ul>"
           }
         },
         addlayer: {
@@ -375,6 +373,14 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Name of new map theme',
+        project_map_theme : 'Project Themes',
+        user_map_theme: 'User Themes',
+        question_delete_map_theme: "Do you want delete the theme?",
+        delete_map_theme: "Theme deleted successfully",
+        saved_map_theme: "Theme saved successfully",
+        updated_map_theme: "Theme updated successfully",
+        invalid_map_theme_name: "Invalid or exiting name",
         menu: {
           layerposition: 'Layer Position',
           setwmsopacity: "Set Opacity",
@@ -442,6 +448,7 @@ export default {
     server_error: "Server connection error",
     save: "Save",
     cancel: "Cancel",
+    update: "Update",
     close: "Close",
     /**
      * @since 3.8.0
@@ -480,7 +487,7 @@ export default {
       link_button: "Open"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Can't get your position"
       },
       geocoding: {
@@ -537,11 +544,13 @@ export default {
     dataTable: {
       previous: "Previous",
       next: "Next",
-      lengthMenu: "Show _MENU_",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Show _MENU_ values per page",
+      info: "_TOTAL_ entries",
       no_data: "No data",
       nodatafilterd: "No matching records found",
       infoFiltered: "(filtered from _MAX_ total records)"
-    }
+    },
+    /**@since 3.10.0 */
+    no_geometry: 'This item has no geometry',
   },
 };

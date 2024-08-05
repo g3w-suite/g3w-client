@@ -4,11 +4,11 @@
  */
 
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import MapLayersStoresRegistry from 'store/map-layers';
+import MapLayersStoresRegistry     from 'store/map-layers';
 
 const { base, inherit } = require('utils');
-const G3WObject = require('core/g3wobject');
-const Project = require('core/project/project');
+const G3WObject         = require('core/g3wobject');
+const Project           = require('core/project/project');
 
 /* service
     setup: init method
@@ -23,6 +23,7 @@ function ProjectsRegistry() {
   this.initialized         = false;
   this.projectType         = null;
   this.currentProjectGroup = null;
+  //store overview (Panoramic map) project
   this.overviewproject     = undefined;
 
   this.setters = {
@@ -33,7 +34,7 @@ function ProjectsRegistry() {
 
     setCurrentProject(project) {
 
-      if (this.state.currentProject !== project) {
+      if (project !== this.state.currentProject ) {
         CatalogLayersStoresRegistry.removeLayersStores();
         MapLayersStoresRegistry.removeLayersStores();
       }
@@ -66,7 +67,7 @@ function ProjectsRegistry() {
   this._groupProjects  = [];
   this._projectConfigs = {};
 
-  //Inizialize configuration for all project belong to group
+  //Inizialize configuration for all projects belongs to group
   this.init = function(config = {}) {
     const d = $.Deferred();
 
@@ -93,7 +94,7 @@ function ProjectsRegistry() {
         this.initialized = true;
         d.resolve(project);
       })
-      .fail(error => d.reject(error));
+      .fail(e => d.reject(e));
 
     return d.promise();
   };
@@ -167,8 +168,12 @@ function ProjectsRegistry() {
     return _
       .sortBy(this.getProjects()
       .filter(project => {
-        if (!_.isNil(project.listable)) return project.listable;
-        if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) return false;
+        if (null !== project.listable  && undefined !== project.listable) {
+          return project.listable;
+        }
+        if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) {
+          return false;
+        }
         return project;
       }), 'title');
   };
@@ -179,16 +184,17 @@ function ProjectsRegistry() {
 
   /**
    * Get project configuration
-   *  
-   * @param {unknown} projectGid 
+   *
+   * @param {unknown} projectGid
+   * @param options
    * @param {unknown} options.map_theme
    * @param {boolean} [options.reload = false] `true` = force to get project configuration from server
    */
-  this.getProject = function(projectGid, options = { reload:false}) {
+  this.getProject = function(projectGid, options = { reload : false}) {
     const d = $.Deferred();
     const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
 
-    // skipe if project doesn't exist
+    // skip if a project doesn't exist
     if (!pendingProject) {
       d.reject("Project doesn't exist");
       return d.promise();
@@ -218,16 +224,13 @@ function ProjectsRegistry() {
         // add to project
         d.resolve((new Project(projectConfig)));
       })
-      .fail(error => d.reject(error))
+      .fail(error => d.reject(e))
     return d.promise();
   };
 
   this._setProjectRelations = function(projectConfig) {
     projectConfig.relations = (projectConfig.relations ? projectConfig.relations : [])
-      .map(relation => {
-        relation = this._updateRelation(projectConfig, relation);
-        return relation;
-      });
+      .map(r => this._updateRelation(projectConfig, r));
     return projectConfig.relations;
   };
 
@@ -285,17 +288,18 @@ function ProjectsRegistry() {
   /**
    * @since 3.8.0
    */
-  this.getBaseUrl = function(){
+  this.getBaseUrl = function() {
     return this.config.urls.baseurl;
   };
 
   /**
    * Fetch project configuration from remote server 
    * 
-   * @param config project base config 
+   * @param config project base config
+   * @param { Object } options
    * @param options.map_theme
    */
-  this._getProjectFullConfig = function(config, options={}) {
+  this._getProjectFullConfig = function(config, options = {}) {
     const d = $.Deferred();
 
     $
@@ -307,8 +311,7 @@ function ProjectsRegistry() {
           d.resolve(serverConfig);
           return;
         }
-
-        const map_theme = serverConfig.map_themes.find(({theme}) => theme === options.map_theme);
+        const map_theme = Object.values(serverConfig.map_themes).flat().find(({ theme }) => theme === options.map_theme);
 
         /** @TODO add description */
         if (map_theme) {
@@ -325,7 +328,7 @@ function ProjectsRegistry() {
         }
 
       })
-      .fail(error => d.reject(error));
+      .fail(e => d.reject(e));
 
     return d.promise();
   };
@@ -333,7 +336,7 @@ function ProjectsRegistry() {
   /**
    * @since 3.8.0
    */
-  this.getCurrentProjectGroup = function(){
+  this.getCurrentProjectGroup = function() {
     return this.currentProjectGroup;
   };
 

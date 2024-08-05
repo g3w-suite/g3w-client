@@ -4,9 +4,9 @@
 -->
 
 <template>
-  <div id="streetview">
-    <div id="streetview-error-key" v-if="$options.keyError">
-      <span class="skin-color"> {{ $options.keyError }}</span>
+  <div id = "streetview">
+    <div v-if = "$options.keyError" id = "streetview-error-key">
+      <span class = "skin-color">{{ $options.keyError }}</span>
     </div>
   </div>
 </template>
@@ -24,6 +24,7 @@ export default {
   }
 };
 </script>
+
 <style scoped>
   #streetview-error-key {
     display: flex;

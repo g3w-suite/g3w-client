@@ -1,9 +1,9 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 
 const { inherit, base } = require('utils');
-const Service = require('gui/inputs/service');
+const Service           = require('gui/inputs/service');
 
-function SelectService(options={}) {
+function SelectService(options = {}) {
   base(this, options);
   this.layer = null;
 }
@@ -20,42 +20,57 @@ proto.addValue = function(value) {
   this.state.input.options.values.push(value);
 };
 
-proto.getKeyByValue = function({search}={}) {
-  const options = this.state.input.options;
-  const {value, key} = options;
-  this.getData({
-    key:value,
-    value: key,
-    search
-  }).then(arrayValues => {
-    const [_value] = arrayValues;
-    const {$value : key, text: value} = _value;
-    this.addValue({
-      key,
-      value
-    })
-  }).catch(err => console.log(err));
+proto.getKeyByValue = function({ search }={}) {
+  const { value, key } = this.state.input.options;
+  return new Promise((resolve, reject) => {
+    this.getData({
+      key:   value,
+      value: key,
+      search
+    }).then(arrayValues => {
+      const [_value] = arrayValues;
+      const {$value : key, text: value} = _value;
+      this.addValue({
+        key,
+        value
+      })
+      resolve(this.state.input.options.values)
+    }).catch(e => {
+      console.warn(e);
+      reject(e);
+    });
+  })
 };
 
-proto.getData = function({layer_id= this.state.input.options.layer_id, key=this.state.input.options.key, value=this.state.input.options.value, search} = {}) {
+/**
+ *
+ * @param layer_id
+ * @param key
+ * @param value
+ * @param search
+ * @return {Promise<unknown>}
+ */
+proto.getData = function({
+  layer_id = this.state.input.options.layer_id,
+  key      = this.state.input.options.key,
+  value    = this.state.input.options.value,
+  search,
+} = {}) {
   const search_value = `${key}|${search}`.trim();
   return new Promise((resolve, reject) => {
-    if (!this._layer) this._layer = this._getLayerById(layer_id);
+    if (!this._layer) { this._layer = this._getLayerById(layer_id) }
+
     this._layer.getDataTable({
-      suggest: search_value,
+      suggest:  search_value,
       ordering: key
     }).then(response => {
-      const values = [];
-      const features = response.features;
-      for (let i=0; i < features.length; i++) {
-        values.push({
-          text:features[i].properties[key],
-          id: i,
-          $value: features[i].properties[value]
-        })
-      }
+      const values = response.features.map(f =>({
+        text:   f.properties[key],
+        id:     f.properties[value],
+        $value: f.properties[value]
+      }))
       resolve(values);
-    }).fail(err => reject(err));
+    }).fail(e => { console.warn(e); reject(e) });
   });
 };
 

@@ -17,7 +17,7 @@ export default {
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        show_features_on_map: "Rezultatele se actualizează când harta este deplasată",
         savefilter: "Spara Filter",
         filterName: "Filternamn",
       }
@@ -190,8 +190,10 @@ export default {
         download_gpkg: "Ladda GPKG-fil",
         download_csv: "Ladda CSV-fil",
         download_xls: "Ladda XLS-fil",
+        download_pdf: "Ladda PDF-fil",
         show_chart: "Visa diagram", //Tero 9.12.2020
-        atlas: "Skriv ut Atlas"
+        atlas: "Skriv ut Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -248,6 +250,9 @@ export default {
             download_xls: {
               hint: "Ladda egenskapens XLS-fil"
             },
+            download_pdf: {
+              hint: "Ladda egenskapens PDF-fil"
+            },
             atlas: {
               hint: "Skriv ut Atlas"
             },
@@ -273,12 +278,7 @@ export default {
           no_geometry: 'No geometry on response',
           help: {
             title: 'Ohje - Förfrågan med polygon',
-            message:`
-                <ul>
-                  <li>Välj polygonnivå i listan.</li>
-                  <li>Kontrollera att nivån är synlig.</li>
-                  <li>Välj egenskap på önskad nivå.</li>
-                </ul>`
+            message: "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -289,10 +289,7 @@ export default {
           nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
           help: {
             title: 'Ohje - BBox-förfrågan som riktar sig till nivån',
-            message:`
-                 <ul>
-                  <li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li>
-                 </ul>`
+            message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
           }
         },
         addlayer: {
@@ -375,9 +372,17 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Namn på det nya temat',
+        project_map_theme : 'Temat de proiect',
+        user_map_theme: "Temat utilizator",
+        question_delete_map_theme: "Vill du ta bort temat?",
+        delete_map_theme: "Temat har tagits bort",
+        saved_map_theme: "Temat har sparats",
+        updated_map_theme: "Temat har uppdaterats",
+        invalid_map_theme_name: "Namnet finns redan eller är felaktigt",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Lagerposition',
+          setwmsopacity: "Ställ in Opacitet",
           wms: {
             title:"",
             copy: "Tryck här för att kopiera url.",
@@ -442,6 +447,7 @@ export default {
     server_error: "Fel på anslutningen till servern",
     save: "Spara",
     cancel: "Ånga",
+    update: "Uppdatering",
     close: "Stäng",
     /**
      * @since 3.8.0
@@ -480,7 +486,7 @@ export default {
       link_button: "Öppna"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Du kan inte lokaliseras"
       },
       geocoding: {
@@ -537,8 +543,8 @@ export default {
     dataTable: {
       previous: "Föregående",
       next: "Nästa",
-      lengthMenu: "Show _MENU_ items",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Visa _MENU_ värden per sida",
+      info: "_TOTAL_ resultat",
       no_data: "Inga uppgifter",
       nodatafilterd: "Inga motsvarande poster hittades",
       infoFiltered: "(filtered from _MAX_ total records)"

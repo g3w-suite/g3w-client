@@ -17,7 +17,7 @@ export default {
         nofilter: "Supprimer le filtre ",
         invert: "Sélection inversée ",
         clear: "Effacer la sélection ",
-        show_features_on_map: "Afficher les caractéristiques visibles sur la carte",
+        show_features_on_map: "Mettre à jour les résultats lors du déplacement de la carte",
         savefilter: "Sauver le Filtre",
         filterName: "Nom du Filtre",
       }
@@ -189,8 +189,10 @@ export default {
         download_gpkg: "Télécharger GPKG",
         download_csv: "Télécharger CSV",
         download_xls: "Télécharger XLS",
+        download_pdf: "Télécharger PDF",
         show_chart: "Montrer graphique",
-        atlas: "Imprimer l'Atlas"
+        atlas: "Imprimer l'Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -247,6 +249,9 @@ export default {
             download_xls: {
               hint: "Télécharger le XLS"
             },
+            download_pdf: {
+              hint: "Télécharger le PDF"
+            },
             atlas: {
               hint: "Imprimer l'Atlas"
             },
@@ -272,12 +277,7 @@ export default {
           no_geometry: 'La réponse ne contient pas de géométrie',
           help: {
             title: 'Aide - Requête par polygone',
-            message:`
-                <ul>
-                  <li>Sélectionnez un layer de polygone dans la légende.</li>
-                  <li>Vérifiez que le layer est visible dans la carte.</li>
-                  <li>Cliquez sur une géométrie du layer sélectionné.</li>
-                </ul>`
+            message: "<ul><li>Sélectionnez un layer de polygone dans la légende.</li><li>Vérifiez que le layer est visible dans la carte.</li><li>Cliquez sur une géométrie du layer sélectionné.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -288,11 +288,7 @@ export default {
           nolayers_visible: "Aucun layer requêtable n'est visible. Assurez-vous qu'au moins un layer wfs est visible pour exécuter la requête",
           help: {
             title:'Aide - Requête BBox',
-            message:`
-                  <ul>
-                    <li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li>
-                 </ul>
-            `
+            message: "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>"
           },
         },
         addlayer: {
@@ -375,9 +371,17 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "SÉLECTIONNEZ LE THÈME",
+        choose_map_theme_input_label: 'Nom du nouveau thème',
+        project_map_theme : 'Thème du projet',
+        user_map_theme: "Thème de l'utilisateur",
+        question_delete_map_theme: "Voulez-vous supprimer le thème ?",
+        delete_map_theme: "Thème supprimé avec succès",
+        saved_map_theme: "Thème enregistré avec succès",
+        updated_map_theme: "Thème mise à jour avec succès",
+        invalid_map_theme_name: "Le nom existe déjà ou est incorrect",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Position du calque',
+          setwmsopacity: "Définir l'opacité",
           wms: {
             title:"",
             copy: "Cliquez ici pour copier l'url",
@@ -441,6 +445,7 @@ export default {
     server_error: "Une erreur s'est produite dans la requête au serveur",
     save: "Sauvegarder",
     cancel: "Supprimer",
+    update: "Mise à jour",
     close: "Fermer",
     /**
      * @since 3.8.0
@@ -481,8 +486,7 @@ export default {
       link_button: "Ouvrir"
     },
     mapcontrols: {
-      geolocations: {
-        title: "",
+      geolocation: {
         error: "Votre position ne peut être calculée."
       },
       geocoding: {
@@ -539,8 +543,8 @@ export default {
     dataTable: {
       previous: "Précédent",
       next: "Suivant",
-      lengthMenu: "Afficher _MENU_",
-      info: "Afficher _START_ à _END_ sur _TOTAL_ lignes",
+      lengthMenu: "Afficher _MENU_ valeurs par page",
+      info: "_TOTAL_ résultats",
       nodatafilterd: "Aucun résultat trouvé",
       infoFiltered: "(Filtré par _MAX_ rangs totaux)"
     }

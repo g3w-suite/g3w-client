@@ -7,6 +7,8 @@ import SelectionMixin                        from 'core/layers/mixins/selection'
 import { SELECTION as SELECTION_STATE }      from 'core/layers/mixins/selection';
 import RelationsMixin                        from 'core/layers/mixins/relations';
 import { parseAttributes }                   from 'utils/parseAttributes';
+import { promisify, $promisify }             from 'utils/promisify';
+import Table                                 from 'components/Table.vue';
 
 const { t }                 = require('core/i18n/i18n.service');
 const {
@@ -15,199 +17,216 @@ const {
   XHR,
 }                           = require('utils');
 const G3WObject             = require('core/g3wobject');
-const ProviderFactory       = require('core/layers/providersfactory');
+const Providers             = require('core/layers/providersfactory');
 const deprecate             = require('util-deprecate');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
 
-  this.config = config;
-
-  // assign some attribute
-  config.id        = config.id || 'Layer';
-  config.title     = config.title || config.name;
-  config.download  = !!config.download;
-  config.geolayer  = false;
-  config.baselayer = !!config.baselayer;
-  config.fields    = config.fields || {};
-  config.urls      = {
-    query: (config.infourl && '' !== config.infourl ? config.infourl : config.wmsUrl),
-    ...(config.urls || {})
-  };
-
   //get current project object
-  const {
-    project = ProjectsRegistry.getCurrentProject()
-  } = options;
+  const project   = options.project || ProjectsRegistry.getCurrentProject();
+  const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
+  const vectorUrl = config.baselayer ? '' : project.getVectorUrl();
+  const rasterUrl = config.baselayer ? '' : project.getRasterUrl();
 
-  //get search_end point value (api, ows)
-  this.config.search_endpoint = project.getSearchEndPoint();
+  // assign some attributes
+
+  this.config = Object.assign(config, {
+    id:        config.id || 'Layer',
+    title:     config.title || config.name,
+    download:  !!config.download,
+    geolayer:  false,
+    baselayer: !!config.baselayer,
+    fields:    config.fields || {},
+    // URLs to get various type of data
+    urls:      {
+      query: config.infourl || config.wmsUrl,
+      ...(config.urls || {}),
+      ...(config.baselayer ? {} : {
+          filtertoken: `${vectorUrl}filtertoken/${suffixUrl}`,
+          data:        `${vectorUrl}data/${suffixUrl}`,
+          shp:         `${vectorUrl}shp/${suffixUrl}`,
+          csv:         `${vectorUrl}csv/${suffixUrl}`,
+          xls:         `${vectorUrl}xls/${suffixUrl}`,
+          gpx:         `${vectorUrl}gpx/${suffixUrl}`,
+          gpkg:        `${vectorUrl}gpkg/${suffixUrl}`,
+          geotiff:     `${rasterUrl}geotiff/${suffixUrl}`,
+          editing:     `${vectorUrl}editing/${suffixUrl}`,
+          commit:      `${vectorUrl}commit/${suffixUrl}`,
+          config:      `${vectorUrl}config/${suffixUrl}`,
+          unlock:      `${vectorUrl}unlock/${suffixUrl}`,
+          widget:      {
+            unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
+          },
+          /** @since 3.8.0 */
+          featurecount: project.getUrl('featurecount'),
+          /** @since 3.10.0 */
+          pdf:         `/html2pdf/`,
+        })
+    },
+    /** Custom parameters based on a project qgis version */
+    ...(config.baselayer ? {} : { searchParams: { I: 0, J: 0 } }),
+    /** @deprecated since 3.10.0. Will be removed in v.4.x. */
+    search_endpoint: 'api',
+  });
 
   // create relations
   this._relations = this._createRelations(project.getRelations());
 
-  // set URLs to get varios type of data
-  if (!this.isBaseLayer()) {
-    //suffix url
-    const suffixUrl = `${project.getType()}/${project.getId()}/${config.id}/`;
-    //get vector url
-    const vectorUrl = project.getVectorUrl();
-    //get raster url
-    const rasterUrl = project.getRasterUrl();
-
-    this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
-    this.config.urls.data        = `${vectorUrl}data/${suffixUrl}`;
-    this.config.urls.shp         = `${vectorUrl}shp/${suffixUrl}`;
-    this.config.urls.csv         = `${vectorUrl}csv/${suffixUrl}`;
-    this.config.urls.xls         = `${vectorUrl}xls/${suffixUrl}`;
-    this.config.urls.gpx         = `${vectorUrl}gpx/${suffixUrl}`;
-    this.config.urls.gpkg        = `${vectorUrl}gpkg/${suffixUrl}`;
-    this.config.urls.geotiff     = `${rasterUrl}geotiff/${suffixUrl}`;
-    this.config.urls.editing     = `${vectorUrl}editing/${suffixUrl}`;
-    this.config.urls.commit      = `${vectorUrl}commit/${suffixUrl}`;
-    this.config.urls.config      = `${vectorUrl}config/${suffixUrl}`;
-    this.config.urls.unlock      = `${vectorUrl}unlock/${suffixUrl}`;
-    this.config.urls.widget      = {
-      unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
-    };
-
-    /**
-     * Store feature count url to get features count of a layer
-     *
-     * @since 3.8.0
-     */
-    this.config.urls.featurecount = project.getUrl('featurecount');
-    
-    /**
-     * Custom parameters based on project qgis version
-     */
-    this.config.searchParams = { I: 0, J: 0 };
-  }
-
   // dinamic layer values useful for layerstree
-  const defaultstyle = config.styles && config.styles.find(style => style.current).name;
+  const defaultstyle = config.styles && config.styles.find(s => s.current).name;
 
+  /**
+   * @TODO make it simpler, `this.config` and `this.state` are essentially duplicated data
+   */
   this.state = {
-
-    id: config.id,
-
-    title: config.title,
-
-    selected: config.selected || false,
-
-    disabled: config.disabled || false,
-
-    metadata: config.metadata,
-
-    metadata_querable: this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
-
+    id:                 config.id,
+    title:              config.title,
+    selected:           config.selected || false,
+    disabled:           config.disabled || false,
+    metadata:           config.metadata,
+    metadata_querable:  this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
     openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
-
-    removable: config.removable || false,
-
-    downloadable: this.isDownloadable(),
-
-    source: config.source,
-
-    styles: config.styles,
-
+    removable:          config.removable || false,
+    downloadable:       this.isDownloadable(),
+    source:             config.source,
+    styles:             config.styles,
     defaultstyle,
-
-    /**
-     * state of if is in editing (setted by editing plugin)
-     */
-    inediting: false,
-
-    infoformat: this.getInfoFormat(),
-
-    infoformats: this.config.infoformats || [],
-
-    projectLayer: true,
-
-    geolayer: false,
-
-    /**
-     * Reactive selection attribute 
-     */
-    selection: {
-      active: false
-    },
-
-    /**
-     * Reactive filter attribute 
-     */
+    infoformat:         this.getInfoFormat(),
+    infoformats:        this.config.infoformats || [],
+    projectLayer:       true,
+    geolayer:           false,
+    attributetable:     { pageLength: null },
+    visible:            config.visible || false,
+    tochighlightable:   false,
+    /** state of if is in editing (setted by editing plugin) */
+    inediting:          false,
+    /** Reactive selection attribute */
+    selection:          { active: false },
+    /** Reactive filter attribute */
     filter: {
-      active: false,
-
-      /**
-       * @since 3.9.0 whether filter is set from a previously saved filter
-       */
+      active:  false,
+      /** @since 3.9.0 whether filter is set from a previously saved filter */
       current: null,
     },
-
-    /**
-     * @type { Array<{{ id: string, name: string }}> } array of saved filters
-     *
-     * @since 3.9.0
-     */
-    filters: config.filters || [],
-
-    attributetable: {
-      pageLength: null
-    },
-
-
-    visible: config.visible || false,
-
-    tochighlightable: false,
-
-    /**
-     * @type {number}
-     * 
-     * @since 3.8.0
-     */
-    featurecount: config.featurecount,
-
-    /**
-     * @type { boolean | Object<number, number> }
-     * 
-     * @since 3.8.0
-     */
-    stylesfeaturecount: config.featurecount && defaultstyle && {
-      [defaultstyle]: config.featurecount
-    }
-
+    /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
+    filters:            config.filters || [],
+    /** @type {number} since 3.8.0 */
+    featurecount:       config.featurecount,
+    /** @type { boolean | Object<number, number> } since 3.8.0 */
+    stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
+    /** @type { string } since 3.10.0 */
+    name:               config.name,
+    /** @type { boolean } since 3.10.0 */
+    expanded:           config.expanded,
+    /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
+    toc:                'boolean' === typeof config.toc ? config.toc: true,
   };
 
   /**
-   * Store all selection features `fids`
+   * Store all selections feature `fids`
    */
   this.selectionFids = new Set();
 
   // referred to (layersstore);
   this._layersstore = config.layersstore || null;
 
-  /*
-    Providers that layer can use
+  const layerType = `${this.config.servertype} ${this.config.source && this.config.source.type}`;
 
-    Three type of provider:
-      1 - query
-      2 - filter
-      3 - data -- raw data del layer (editing)
+  /**
+   * Layer providers used to retrieve layer data from server
+   * 
+   * 1 - data: raw layer data (editing)
+   * 2 - filter
+   * 3 - filtertoken
+   * 4 - query
+   * 5 - search
    */
-  const serverType = this.config.servertype;
-  const sourceType = this.config.source ? this.config.source.type : null; // NB: sourceType = source of layer
+  this.providers = {
 
-  if (serverType && sourceType) {
-    //set providers that will take in account to get data from server
-    this.providers = {
-      query:       ProviderFactory.build('query',       serverType, sourceType, { layer: this }),
-      filter:      ProviderFactory.build('filter',      serverType, sourceType, { layer: this }),
-      filtertoken: ProviderFactory.build('filtertoken', serverType, sourceType, { layer: this }),
-      search:      ProviderFactory.build('search',      serverType, sourceType, { layer: this }),
-      data:        ProviderFactory.build('data',        serverType, sourceType, { layer: this })
-    };
-  }
+    data: (() => {
+      if ([
+        'QGIS virtual',
+        'QGIS postgres',
+        'QGIS oracle',
+        'QGIS mssql',
+        'QGIS spatialite',
+        'QGIS ogr',
+        'QGIS delimitedtext',
+        'QGIS wfs',
+      ].includes(layerType)) {
+        return new Providers.qgis({ layer: this });
+      }
+      if ('G3WSUITE geojson' === layerType) {
+        return new Providers.geojson({ layer: this });
+      }
+    })(),
+
+    filter: [
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+      'QGIS wfs',
+      'QGIS wmst',
+      'QGIS wcs',
+      'QGIS wms',
+    ].includes(layerType) && new Providers.wfs({ layer: this }),
+
+    filtertoken: [
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+    ].includes(layerType) && new Providers.qgis({ layer: this }),
+
+    query: (() => {
+      if ([
+        'QGIS virtual',
+        'QGIS postgres',
+        'QGIS oracle',
+        'QGIS mssql',
+        'QGIS spatialite',
+        'QGIS ogr',
+        'QGIS delimitedtext',
+        'QGIS wfs',
+        'QGIS wmst',
+        'QGIS wcs',
+        'QGIS wms',
+        'QGIS gdal',
+        /** @since 3.9.0 */
+        'QGIS postgresraster',
+        'QGIS vector-tile',
+        'QGIS vectortile',
+        'QGIS arcgismapserver',
+        'QGIS mdal',
+        'OGC wms',
+      ].includes(layerType)) {
+        return new Providers.wms({ layer: this });
+      }
+      if ('G3WSUITE geojson' === layerType) {
+        return new Providers.geojson({ layer: this });
+      }
+    })(),
+
+    search: [
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+      'QGIS wfs',
+    ].includes(layerType) && new Providers.qgis({ layer: this }),
+
+  };
 
   /**
    * Store last proxy params (useful for repeat request info formats for wms external layer)
@@ -320,12 +339,10 @@ proto.getSearchParams = function() {
 };
 
 /**
- * Return search_endpoint
- *
- * @returns {*}
+ * @deprecated since 3.10.0. Will be removed in v.4.x.
  */
 proto.getSearchEndPoint = function() {
-  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : 'api';
+  return 'api';
 };
 
 /**
@@ -401,37 +418,38 @@ proto.getDataTable = function({
   field,
   in_bbox,
 } = {}) {
-  const d = $.Deferred();
-  let provider;
-  const params = {
-    ...custom_params,
-    field,
-    page,
-    page_size,
-    ordering,
-    search,
-    formatter,
-    suggest,
-    in_bbox,
-    filtertoken: ApplicationState.tokens.filtertoken
-  };
-  if (!(this.getProvider('filter') || this.getProvider('data'))) {
-   d.reject();
-  } else {
-    provider = this.getProvider('data');
-    provider.getFeatures({editing: false}, params)
-      .done(response => {
-        const features = response.data.features && response.data.features || [];
-        d.resolve(({
-          headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
-          features,
-          title: this.getTitle(),
-          count: response.count
-        }));
-      })
-      .fail(err => d.reject(err))
-  }
-  return d.promise();
+  return $promisify(async () => {
+
+    // skip when..
+    if (!this.getProvider('filter') && !this.getProvider('data')) {
+      return Promise.reject();
+    }
+
+    const response = await promisify(
+      this
+        .getProvider('data')
+        .getFeatures(
+          { editing: false }, {
+          ...custom_params,
+          field,
+          page,
+          page_size,
+          ordering,
+          search,
+          formatter,
+          suggest,
+          in_bbox,
+          filtertoken: ApplicationState.tokens.filtertoken
+        })
+    );
+    const features = response.data.features && response.data.features || [];
+    return {
+      headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
+      features,
+      title: this.getTitle(),
+      count: response.count
+    };
+  });
 };
 
 /**
@@ -459,6 +477,8 @@ proto.getFeatureByFids = async function({
 };
 
 /**
+ * @TODO deprecate `search_endpoint = 'ows'`
+ *
  * Search Features
  * 
  * @param { Object }        opts
@@ -939,7 +959,7 @@ proto.getUrl = function(type) {
  * @param url.type
  * @param url.url
  */
-proto.setUrl = function({type, url}={}) {
+proto.setUrl = function({ type, url } = {}) {
   this.config.urls[type] = url;
 };
 
@@ -1268,6 +1288,13 @@ proto.getFormat = function() {
   return this.config.format ||
     ProjectsRegistry.getCurrentProject().getWmsGetmapFormat() ||
     'image/png'
+};
+
+/**
+ * @since 3.10.0
+ */
+proto.openAttributeTable = function(opts = {}) {
+  new (Vue.extend(Table))({ ...opts, layerId: this.state.id });
 };
 
 /**

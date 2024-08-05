@@ -5,11 +5,11 @@
 
 <template>
   <select
-    v-if="hasInfo"
-    class="skin-color"
-    v-select2="'infoformat'"
-    :select2_value="infoformat"
-    :search="false"
+    v-if           = "hasInfo"
+    class          = "skin-color"
+    v-select2      = "'infoformat'"
+    :select2_value = "infoformat"
+    :search        = "false"
   >
     <option
       v-for  = "infoformat in infoformats"
@@ -32,7 +32,7 @@ export default {
 
   props: {
     layer: {
-      type: Object,
+      type:     Object,
       required: true
     }
   },
@@ -68,7 +68,7 @@ export default {
       try {
         const response = await this.projectLayer.changeProxyDataAndReloadFromServer('wms', {
           headers: { 'Content-Type': contenttype },
-          params: { INFO_FORMAT: contenttype }
+          params:  { INFO_FORMAT: contenttype }
         });
         this.layer.infoformat = contenttype;
         this.projectLayer.setInfoFormat(this.layer.infoformat);
@@ -78,8 +78,8 @@ export default {
         } else {
           this.__parserawdata(data);
         }
-      } catch (err) {
-        console.log(err);
+      } catch (e) {
+        console.warn(e);
       }
       this.layer.loading = false;
       // enable select during get data from server
@@ -100,10 +100,10 @@ export default {
           properties:attributes
         } = queryService.getFeaturePropertiesAndGeometry(feature);
 
-        // in case of starting raw data (html) need to sett attributes to visualized on result
+        // in the case of starting raw data (html) need to sett attributes to visualize on a result
         if (0 === this.layer.attributes.length) {
           this.layer.hasgeometry = !!geometry;
-          // need to setActionsForLayers to visualize eventually actions
+          // need to setActionsForLayers to visualize eventual actions
           queryService.setActionsForLayers([this.layer]);
           getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
             this.layer.attributes.push({

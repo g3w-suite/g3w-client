@@ -27,11 +27,11 @@ DeleteInteraction.handleEvent_ = function(mapBrowserEvent) {
     if(this.features_.getArray().length && mapBrowserEvent.originalEvent.keyCode == 46) {
       // an event can be string or an object with attribute type
       this.dispatchEvent(
-          new DeleteInteractionEvent(
-              'deleteend',
-              this.layer_,
-              this.features_,
-              event.coordinate));
+        new DeleteInteractionEvent(
+          'deleteend',
+          this.layer_,
+          this.features_,
+          event.coordinate));
       return true;
     }
   }
@@ -45,50 +45,45 @@ DeleteInteraction.handleDownEvent_ = function(event) {
   if (this.lastFeature_) {
     DeleteInteraction.handleMoveEvent_.call(this, event);
     this.dispatchEvent(
-            new DeleteInteractionEvent(
-                'deleteend',
-                this.layer_,
-                this.features_,
-                event.coordinate));
+      new DeleteInteractionEvent(
+        'deleteend',
+        this.layer_,
+        this.features_,
+        event.coordinate));
     return true;
   }
   return false;
 };
 
 DeleteInteraction.handleMoveEvent_ = function(event) {
-  this.map_ = event.map;
+  this.map_  = event.map;
   const elem = this.map_.getTargetElement();
-  if (this.startCursor_ === undefined) {
-    this.startCursor_ = elem.style.cursor;
-  }
+  if (undefined === this.startCursor_) { this.startCursor_ = elem.style.cursor }
   const intersectingFeature = this.map_.forEachFeatureAtPixel(event.pixel, (feature, layer) =>  {
-        ///check if is the same layero of editing
-        feature = (layer == this.layer_) ? feature : null;
-        return feature;
-      });
+    ///check if is the same layer of editing
+    feature = (layer == this.layer_) ? feature : null;
+    return feature;
+  });
   if (intersectingFeature) {
     this.previousCursor_ = elem.style.cursor;
-    elem.style.cursor =  'pointer';
+    elem.style.cursor    =  'pointer';
 
   } else {
-    elem.style.cursor = this.previousCursor_ !== undefined ?
-        this.previousCursor_ : '';
+    elem.style.cursor = undefined !== this.previousCursor_
+      ? this.previousCursor_
+      : '';
     this.previousCursor_ = undefined;
   }
 };
 
 DeleteInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
   let found = null;
-  const intersectingFeature = map.forEachFeatureAtPixel(pixel, (feature) => {
-    return feature;
-  });
-  if (this.features_ &&
-     _.includes(this.features_.getArray(), intersectingFeature)) {
+  const intersectingFeature = map.forEachFeatureAtPixel(pixel, feature => feature);
+  if (this.features_ && this.features_.getArray().includes(intersectingFeature)) {
     found = intersectingFeature;
   }
   return found;
 };
-
 
 DeleteInteraction.prototype.clear = function() {
   let elem;
@@ -97,6 +92,5 @@ DeleteInteraction.prototype.clear = function() {
     elem.style.cursor = this.startCursor_;
   }
 };
-
 
 module.exports = DeleteInteraction;

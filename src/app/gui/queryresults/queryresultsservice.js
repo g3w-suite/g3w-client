@@ -7,6 +7,7 @@ import {
 import ProjectsRegistry                         from 'store/projects';
 import DataRouterService                        from 'services/data';
 import CatalogLayersStoresRegistry              from 'store/catalog-layers';
+import ApplicationState                         from "store/application-state";
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 import ApplicationService                       from 'services/application';
@@ -18,6 +19,7 @@ import { createFeatureFromBBOX }                from 'utils/createFeatureFromBBO
 import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoordinates';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
+import { printAtlas }                           from 'utils/printAtlas';
 
 const {
   noop,
@@ -30,13 +32,10 @@ const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const G3WObject                  = require('core/g3wobject');
 const VectorLayer                = require('core/layers/vectorlayer');
-const { PRINT_UTILS }            = require('gui/print/printservice');
 const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const deprecate                  = require('util-deprecate');
-
-const { printAtlas } = PRINT_UTILS;
 
 /**
  * Get and set vue reactivity to QueryResultsService
@@ -56,9 +55,6 @@ class QueryResultsService extends G3WObject {
      */
     this._changeLayerResult = this.setters.changeLayerResult;
     this._addComponent      = this.setters.addComponent;
-
-    /** @deprecated since 3.9.1 will be removed in 4.x */
-    this.printService = PRINT_UTILS;
 
     /**
      * @FIXME add description
@@ -97,6 +93,7 @@ class QueryResultsService extends G3WObject {
      * Set reactive state
      */
     this.state = {
+      logged: undefined !== ApplicationState.user.id,
 
       /**
        * @FIXME add description
@@ -233,11 +230,10 @@ class QueryResultsService extends G3WObject {
     this.resultsQueryLayer = new ol.layer.Vector({
       source: new ol.source.Vector(),
       style(feature) {
-        const fill   = new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.7)' });
-        const stroke = new ol.style.Stroke({ color: 'blue', width: 3 });
+        const stroke = new ol.style.Stroke({ color: 'black' });
         if ('Point' === feature.getGeometry().getType()) {
           return new ol.style.Style({
-            text: new ol.style.Text({ fill, stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
+            text: new ol.style.Text({ fill: stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
           });
         }
         return new ol.style.Style({ stroke });
@@ -524,7 +520,7 @@ class QueryResultsService extends G3WObject {
       }
 
       // Lookup for layer selection status (active).
-      if (undefined !== layer.selection.active) {
+      if (layer.toc && undefined !== layer.selection.active) {
         this._setActionSelection(layer);
       }
 
@@ -1033,6 +1029,7 @@ class QueryResultsService extends G3WObject {
       atlas:                  this.getAtlasByLayerId(id),
       rawdata:                rawdata ? rawdata : null,
       error:                  error   ? error   : '',
+      toc:                    external || layer.state.toc, //@since v3.10.0
     };
 
     return layerObj;
@@ -1495,7 +1492,13 @@ class QueryResultsService extends G3WObject {
     this.setLayerActionTool({
       layer,
       component: layer[name].active ? DownloadFormats : null,
-      config: layer[name].active ? this.state.actiontools[name][layer.id] : null
+      config: layer[name].active
+        ? {
+            ...this.state.actiontools[name][layer.id],
+            //for download layer need to filter pdf format because it works only for a single feature
+            downloads: this.state.actiontools[name][layer.id].downloads.filter(d => 'pdf' !== d.format)
+          }
+        : null
     })
   }
 
@@ -1507,8 +1510,9 @@ class QueryResultsService extends G3WObject {
    * @param features
    * @param action
    * @param index
+   * @param html
    */
-  async downloadFeatures(type, layer, features = [], action, index) {
+  async downloadFeatures(type, layer, features = [], action, index, html) {
 
     if (features && !Array.isArray(features)) {
       features = [features];
@@ -1518,6 +1522,11 @@ class QueryResultsService extends G3WObject {
     const data           = {
       fids: features.map(f => f.attributes[G3W_FID]).join(',')
     };
+
+    //In case of pdf type need to add html element
+    if ('pdf' === type) {
+      data.html = html;
+    }
 
     /**
      * A function that che be called in case of querybypolygon
@@ -2076,10 +2085,10 @@ class QueryResultsService extends G3WObject {
         state: this.createActionState({layer}),
         class: GUI.getFontClass('download'),
         hint: `sdk.tooltips.download_${format}`,
-        cbk: (layer, feature, action, index) => {
+        cbk: (layer, feature, action, index, container) => {
           action.state.toggled[index] = !action.state.toggled[index];
           if (action.state.toggled[index]) {
-            cbk(layer, feature, action, index);
+            cbk(layer, feature, action, index, ('pdf' === format ? container[0].innerHTML : null));
           } else {
             this.setCurrentActionLayerFeatureTool({ index, action, layer })
           }
@@ -2101,12 +2110,12 @@ class QueryResultsService extends G3WObject {
           format,
           class: GUI.getFontClass(format),
           hint: `sdk.tooltips.download_${format}`,
-          cbk: (layer, feature, action, index) => {
+          cbk: (layer, feature, action, index, html) => {
             // un-toggle downloads action
-            this.downloadFeatures(format, layer, feature, action, index);
+            this.downloadFeatures(format, layer, feature, action, index, html);
             if ('polygon' !== this.state.query.type) {
               const downloadsaction = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-              downloadsaction.cbk(layer, feature, downloadsaction, index);
+              downloadsaction.cbk(layer, feature, downloadsaction, index, html);
             }
           }
         });
@@ -2198,7 +2207,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: 'link_zoom_to_fid',
         download: false,
-        class: GUI.getFontClass('link'),
+        class: GUI.getFontClass('share-alt'),
         hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
         hint_change: {
           hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',
@@ -2216,7 +2225,7 @@ class QueryResultsService extends G3WObject {
       .push({
         id: 'editing',
         class: GUI.getFontClass('pencil'),
-        hint: 'Editing',
+        hint: 'sdk.tooltips.editing',
         cbk: (layer, feature) => { this.editFeature({ layer, feature }) }
       });
   }
@@ -2290,7 +2299,7 @@ QueryResultsService.prototype.setters = {
 
     // whether add external layers to response
     if (true === queryResponse.query.external.add && false === options.add) {
-      const catalogService = GUI.getService('catalog');
+      const catalog = GUI.getService('catalog');
 
       /** @type { boolean | undefined } */
       const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
@@ -2299,7 +2308,7 @@ QueryResultsService.prototype.setters = {
       this._vectorLayers
         .forEach(layer => {
           const id = layer.get('id');
-          const is_selected  = catalogService.isExternalLayerSelected({ id, type: 'vector' });
+          const is_selected  = !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected;
           const is_visible = layer.getVisible(); 
           // TODO: extract this into `layer.isSomething()` ?
           if (is_visible && ((is_selected === FILTER_SELECTED) || (undefined === FILTER_SELECTED))) {

@@ -5,6 +5,8 @@
  * @since 3.9.0
  */
 import { DOWNLOAD_FORMATS } from 'app/constant';
+import { downloadFile }     from "utils/downloadFile";
+
 const { XHR }               = require('utils');
 
 export default {
@@ -12,19 +14,24 @@ export default {
   /** 
    * @returns promise
    */
-  getDownloadFilefromDownloadDataType(type, {
-    data = {},
-    options,
-  }) {
+  getDownloadFilefromDownloadDataType(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
-    switch (type) {
-      case 'shapefile': return this.getShp({data, options});
-      case 'xls':       return this.getXls({data, options});
-      case 'csv':       return this.getCsv({data, options});
-      case 'gpx':       return this.getGpx({data, options});
-      case 'gpkg':      return this.getGpkg({data, options});
-      case 'geotiff':   return this.getGeoTIFF({ data, options });
+
+    if ('pdf' === type) {
+      return downloadFile({
+        url: this.getUrl('pdf'),
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        data: JSON.stringify(data),
+        mime_type: 'application/pdf',
+        method: 'POST'
+      });
     }
+
+    return XHR.fileDownload({
+      url: this.getUrl('shapefile' === type ? 'shp' : type),
+      data,
+      httpMethod: "POST"
+    });
   },
 
   /**
@@ -33,12 +40,7 @@ export default {
    * @returns {Promise | Promise<unknown>}
    */
   getGeoTIFF({ data = {} } = {}) {
-    data.filtertoken = this.getFilterToken();
-    return XHR.fileDownload({
-      url: this.getUrl('geotiff'),
-      data,
-      httpMethod: "POST"
-    })
+    return this.getDownloadFilefromDownloadDataType('geotiff', { data });
   },
 
   /**
@@ -47,12 +49,7 @@ export default {
    * @returns {Promise | Promise<unknown>}
    */
   getXls({ data = {} } = {}) {
-    data.filtertoken = this.getFilterToken();
-    return XHR.fileDownload({
-      url: this.getUrl('xls'),
-      data,
-      httpMethod: "POST"
-    })
+    return this.getDownloadFilefromDownloadDataType('xls', { data });
   },
 
   /**
@@ -61,12 +58,7 @@ export default {
    * @returns {Promise | Promise<unknown>}
    */
   getShp({ data = {} } = {}) {
-    data.filtertoken = this.getFilterToken();
-    return XHR.fileDownload({
-      url: this.getUrl('shp'),
-      data,
-      httpMethod: "POST"
-    })
+    return this.getDownloadFilefromDownloadDataType('shapefile', { data });
   },
 
   /**
@@ -75,12 +67,7 @@ export default {
    * @returns {Promise | Promise<unknown>}
    */
   getGpx({ data = {} } = {}) {
-    data.filtertoken = this.getFilterToken();
-    return XHR.fileDownload({
-      url: this.getUrl('gpx'),
-      data,
-      httpMethod: "POST"
-    })
+    return this.getDownloadFilefromDownloadDataType('gpx', { data });
   },
 
   /**
@@ -89,12 +76,7 @@ export default {
    * @returns {Promise | Promise<unknown>}
    */
   getGpkg({ data = {} } = {}) {
-    data.filtertoken = this.getFilterToken();
-    return XHR.fileDownload({
-      url: this.getUrl('gpkg'),
-      data,
-      httpMethod: "POST"
-    })
+    return this.getDownloadFilefromDownloadDataType('gpkg', { data });
   },
 
   /**
@@ -103,12 +85,7 @@ export default {
    * @returns {Promise | Promise<unknown>}
    */
   getCsv({ data = {} } = {}) {
-    data.filtertoken = this.getFilterToken();
-    return XHR.fileDownload({
-      url: this.getUrl('csv'),
-      data,
-      httpMethod: "POST"
-    })
+    return this.getDownloadFilefromDownloadDataType('csv', { data });
   },
 
   /**
@@ -116,13 +93,7 @@ export default {
    * @returns {*}
    */
   isDownloadable() {
-    return (
-      this.isShpDownlodable()  ||
-      this.isXlsDownlodable()  ||
-      this.isGpxDownlodable()  ||
-      this.isGpkgDownlodable() ||
-      this.isCsvDownlodable()
-    );
+    return !!(this.getDownloadableFormats().length);
   },
 
   /**

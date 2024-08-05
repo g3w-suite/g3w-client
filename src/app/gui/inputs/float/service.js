@@ -1,7 +1,7 @@
 const { base, inherit } = require('utils');
-const Service = require('gui/inputs/service');
+const Service           = require('gui/inputs/service');
 
-function FloatService(options={}) {
+function FloatService(options = {}) {
   base(this, options);
 }
 

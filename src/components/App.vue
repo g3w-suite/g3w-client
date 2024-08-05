@@ -4,267 +4,455 @@
 -->
 
 <template>
-<div class="wrapper" v-disabled="app.disabled">
+  <div
+    class      = "wrapper"
+    v-disabled = "app.disabled"
+  >
 
-  <cookie-law theme="dark-lime" :buttonText="cookie_law_buttonText">
-    <div slot="message" v-t="'cookie_law.message'">
-    </div>
-  </cookie-law>
+    <cookie-law
+      theme       = "dark-lime"
+      :buttonText = "cookie_law_buttonText"
+    >
+      <div
+        slot="message"
+        v-t="'cookie_law.message'">
+      </div>
 
-  <header v-if="!isIframe" class="main-header">
+    </cookie-law>
 
-    <!-- NAVBAR TOP (MAIN MENU) -->
-    <!-- TODO: extract/refactor into sub-components or move into a dedicated single file component -->
-    <!-- NB: additional styles can be found in `header.less` -->
-    <nav ref="navbar" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <header
+      v-if  = "!isIframe"
+      class = "main-header"
+    >
 
-      <div class="container-fluid">
+      <!-- NAVBAR TOP (MAIN MENU) -->
+      <!-- TODO: extract/refactor into sub-components or move into a dedicated single file component -->
+      <!-- NB: additional styles can be found in `header.less` -->
+      <nav
+        ref   = "navbar"
+        class = "navbar navbar-inverse navbar-fixed-top"
+        role  = "navigation"
+      >
 
-        <div class="navbar-header">
+        <div class="container-fluid">
 
-          <!-- ELLIPSIS BUTTON (MAIN MENU) -->
-          <button
-            ref='navbar_toggle'
-            type="button"
-            class="navbar-toggle"
-            data-toggle="collapse"
-            data-target="#main-navbar"
-          >
-            <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('ellips-v')"></i>
-          </button>
+          <div class="navbar-header">
 
-          <!-- HAMBURGER BUTTON (SIDEBAR MENU) -->
-          <a id="g3w-small-screen-hamburger-sidebar" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-            <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('bars')"></i>
-          </a>
-
-          <!-- LOGO -->
-          <div class="logo-wrapper" :class="{'mobile': isMobile()}">
-            <a
-              v-if="logo_url"
-              :href="logo_link"
-              :target="logo_link_target"
-              class="project_logo_link"
+            <!-- ELLIPSIS BUTTON (MAIN MENU) -->
+            <button
+              ref         = 'navbar_toggle'
+              type        = "button"
+              class       = "navbar-toggle"
+              data-toggle = "collapse"
+              data-target = "#main-navbar"
             >
-              <img class="img-responsive" style="max-width: 250px;" ref="img_logo" :src="logo_url">
+              <i
+                style  = "font-size: 1.3em;"
+                :class = "g3wtemplate.getFontClass('ellips-v')">
+              </i>
+            </button>
+
+            <!-- HAMBURGER BUTTON (SIDEBAR MENU) -->
+            <a
+              id          = "g3w-small-screen-hamburger-sidebar"
+              href        = "#"
+              class       = "sidebar-toggle"
+              data-toggle = "offcanvas"
+              role        = "button"
+            >
+              <i
+                style  = "font-size: 1.3em;"
+                :class = "g3wtemplate.getFontClass('bars')">
+              </i>
             </a>
-            <div ref="main_title_project_title" class="project_title_content">
-              <div class="main_title">{{ main_title }}</div>
-              <div class="sub_title">{{project_title}}</div>
+
+            <!-- LOGO -->
+            <div
+              class  = "logo-wrapper"
+              :class = "{'mobile': isMobile()}"
+            >
+              <a
+                v-if    = "logo_url"
+                :href   = "logo_link"
+                :target = "logo_link_target"
+                class   = "project_logo_link"
+              >
+                <img
+                  class = "img-responsive"
+                  style = "max-width: 250px;"
+                  ref   = "img_logo"
+                  alt   = ""
+                  :src  = "logo_url">
+              </a>
+
+              <div
+                ref   = "main_title_project_title"
+                class = "project_title_content"
+              >
+                <div class = "main_title">{{ main_title }}</div>
+                <div class = "sub_title">{{ project_title }}</div>
+              </div>
             </div>
+
           </div>
 
-        </div>
-
-        <!-- TODO: add description -->
-        <div
-          ref="mainnavbar"
-          id="main-navbar"
-          class="collapse navbar-collapse"
-          style="text-align: center; overflow: hidden; margin: 0 0;"
-        >
-
           <!-- TODO: add description -->
-          <navbarleftitems />
-
-          <!-- TODO: add description -->
-          <navbarrightitems />
-
-          <ul
-            ref="app-navbar-nav"
-            class="nav navbar-nav navbar-right app-navbar-nav"
+          <div
+            ref   = "mainnavbar"
+            id    = "main-navbar"
+            class = "collapse navbar-collapse"
+            style = "text-align: center; overflow: hidden; margin: 0 0;"
           >
 
-            <!-- LOGIN -->
-            <li v-if="!user" class="dropdown user user-menu">
-              <a :href="login_url">
-                <i :class="g3wtemplate.getFontClass('sign-in')" aria-hidden="true"></i>
-                <span v-t="'sign_in'"></span>
-              </a>
-            </li>
+            <!-- TODO: add description -->
+            <navbarleftitems />
 
             <!-- TODO: add description -->
-            <header-item
-              v-for="state in custom_header_items_position[0]"
-              :key="state.id"
-              :state="state"
-              @show-custom-modal-content="showCustomModalContent"
-            />
+            <navbarrightitems />
 
-            <!-- CHANGE MAP -->
-            <li v-if="hasRelatedMaps" id="changemaps" class="dropdown user">
-              <a href="#" @click="openChangeMapMenu" class="dropdown-toggle" data-toggle="dropdown">
-                <i :class="g3wtemplate.getFontClass('change-map')" aria-hidden="true"></i>
-                <span v-t="'changemap'"></span>
-              </a>
-            </li>
+            <ul
+              ref   = "app-navbar-nav"
+              class = "nav navbar-nav navbar-right app-navbar-nav"
+            >
 
-            <!-- TODO: add description -->
-            <header-item
-              v-for="state in custom_header_items_position[1]"
-              :key="state.id"
-              :state="state"
-              @show-custom-modal-content="showCustomModalContent"
-            />
-
-            <!-- ADMIN / LOGOUT -->
-            <li v-if="user" class="dropdown user user-menu">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <i :class="g3wtemplate.getFontClass('user')"></i>
-                <span class="hidden-xs">{{ user.username }}</span>
-              </a>
-              <ul class="dropdown-menu">
-                <li class="user-header">
-                  <p>
-                    {{ user.first_name }} {{ user.last_name }}
-                  </p>
-                </li>
-                <li class="user-footer">
-                  <div class="pull-left" v-if="user.admin_url">
-                    <a :href="user.admin_url" class="btn btn-default btn-flat skin-color bold" >
-                      <i :class="g3wtemplate.getFontClass('folder')"></i> Admin
-                    </a>
-                  </div>
-                  <div class="pull-right">
-                    <a :href="user.logout_url" class="btn btn-default btn-flat skin-color bold" v-t="'logout'">
-                      <i :class="g3wtemplate.getFontClass('sign-out')" style="margin-right: 2px;"></i>
-                    </a>
-                  </div>
-                </li>
-              </ul>
-            </li>
-
-            <!-- TODO: add description -->
-            <header-item
-              v-for="state in custom_header_items_position[2]"
-              :key="state.id"
-              :state="state"
-              @show-custom-modal-content="showCustomModalContent"
-            />
-
-            <!-- CREDITS -->
-            <li class="dropdown user user-menu">
-              <a href="#" data-toggle="modal" data-target="#credits" class="dropdown-toggle">
-                <i :class="g3wtemplate.getFontClass('credits')" aria-hidden="true"></i>
-                <span>Credits</span>
-              </a>
-            </li>
-
-            <!-- TODO: add description -->
-            <header-item
-              v-for="state in custom_header_items_position[3]"
-              :key="state.id"
-              :state="state"
-              @show-custom-modal-content="showCustomModalContent"
-            />
-
-            <!-- LANGUAGE SWITCHER -->
-            <li v-if="languages" class="g3w-languages">
-              <select
-                v-select2="'language'"
-                class="form-control"
-                :templateSelection="templateResultLanguages"
-                :templateResult="templateResultLanguages"
-                v-model="language"
-                style="cursor:pointer; width: 130px;"
+              <!-- LOGIN -->
+              <li
+                v-if  = "!user"
+                class = "dropdown user user-menu"
               >
-                <option
-                  v-for="lang in languages"
-                  :key="lang[0]"
-                  :value="lang[0]"
-                  :selected="lang[0] === language && 'selected'"
+                <a :href="login_url">
+                  <i
+                    :class      = "g3wtemplate.getFontClass('sign-in')"
+                    aria-hidden = "true">
+                  </i>
+                  <span v-t = "'sign_in'"></span>
+                </a>
+              </li>
+
+              <!-- TODO: add description -->
+              <header-item
+                v-for                      = "state in custom_header_items_position[0]"
+                :key                       = "state.id"
+                :state                     = "state"
+                @show-custom-modal-content = "showCustomModalContent"
+              />
+
+              <!-- CHANGE MAP -->
+              <li
+                v-if  = "hasRelatedMaps"
+                id    = "changemaps"
+                class = "dropdown user"
+              >
+                <a
+                  href        = "#"
+                  @click.stop = "openChangeMapMenu"
+                  class       = "dropdown-toggle"
+                  data-toggle = "dropdown"
                 >
-                  {{ lang[1] }}
-                </option>
-              </select>
-            </li>
-
-            <!-- HOME PAGE -->
-            <li v-if="frontendurl" class="dropdown">
-              <a :href="frontendurl">
-                <span><i :class="g3wtemplate.getFontClass('home')"></i> Home</span>
-              </a>
-            </li>
-
-            <!-- TODO: add description -->
-            <header-item
-              v-for="state in custom_header_items_position[4]"
-              :key="state.id"
-              :state="state"
-              @show-custom-modal-content="showCustomModalContent"
-            />
-
-          </ul>
-
-        </div>
-
-      </div>
-    </nav>
-  </header>
-
-  <!-- Left side column. contains the logo and sidebar -->
-  <sidebar></sidebar>
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper" :style="{paddingTop: isIframe ? 0 : null}">
-    <viewport :appState="appState"></viewport>
-  </div>
-  <!-- /.content-wrapper -->
-  <!-- Control Sidebar -->
-  <floatbar></floatbar>
-  <!-- /.control-sidebar -->
-  <!-- Add the sidebar's background. This div must be placed
-       immediately after the control sidebar -->
-  <div class="control-sidebar-bg"></div>
-  <!--full screen modal element-->
-  <div class="modal fade modal-fullscreen force-fullscreen" id="full-screen-modal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-labelledby="full-screen-modal" aria-hidden="true"></div>
-  <!---->
-  <div id="credits" class="modal fade">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-            style="color: #ffffff; font-weight: bold; opacity: 1; position: absolute; right: 25px; top: 20px">
-            <span aria-hidden="true">&times;</span>
-          </button>
-          <div style="display: flex; flex-direction: column; justify-content: space-around; justify-items: center; align-items: center">
-            <div class="customcredits" v-if="!!customcredits" v-html="customcredits"></div>
-            <div v-if="powered_by">
-              <div class="g3w-credits-block">
-                <div v-t="'credits.g3wSuiteFramework'" style="background-color: #95ad36; padding: 5px; border-radius:3px; color: #ffffff" class="credit-title-logo"></div>
-                <a target="_blank" href="https://g3wsuite.it/">
-                  <img class="g3w-suite-logo" :src="g3w_suite_logo" alt="">
+                  <i
+                    :class      = "g3wtemplate.getFontClass('change-map')"
+                    aria-hidden = "true">
+                  </i>
+                  <span v-t="'changemap'"></span>
                 </a>
-                <div v-t="'credits.g3wSuiteDescription'" style="margin-top: 10px;"></div>
-              </div>
-              <div v-t:pre ="'credits.productOf'" class="credit-title-logo g3w-credits-block" style="font-size: 1em; display: flex; justify-content: center">
-                <a style="text-align: center!important;" href="http://www.gis3w.it" target="_blank">
-                  <img width="60" style="margin-left: 5px" :src="credits_logo" class="img-responsive center-block" alt="">
+              </li>
+
+              <!-- TODO: add description -->
+              <header-item
+                v-for                      = "state in custom_header_items_position[1]"
+                :key                       = "state.id"
+                :state                     = "state"
+                @show-custom-modal-content = "showCustomModalContent"
+              />
+
+              <!-- ADMIN / LOGOUT -->
+              <li
+                v-if  = "user"
+                class = "dropdown user user-menu"
+              >
+                <a
+                  href        = "#"
+                  class       = "dropdown-toggle"
+                  data-toggle = "dropdown"
+                >
+                  <i :class = "g3wtemplate.getFontClass('user')"></i>
+                  <span class = "hidden-xs">{{ user.username }}</span>
                 </a>
-              </div>
-              <address id="address-credits"  style="line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center">
-                <span style="padding: 2px">
-                  <span style="color: #95ad36; font-weight: bold" :class="g3wtemplate.getFontClass('marker')" aria-hidden="true"></span> Montecatini Terme - Italy
-                </span>
-                <span style="padding: 2px">
-                  <span style="color: #95ad36" :class="g3wtemplate.getFontClass('mobile')" aria-hidden="true"></span>  +39 393 8534336
-                </span>
-                <span style="padding: 2px">
-                  <span style="color: #95ad36" :class="g3wtemplate.getFontClass('mail')" aria-hidden="true"></span>
-                  <a href="mailto:info@gis3w.it" style="color:#000000"> info@gis3w.it</a>
-                </span>
-              </address>
-            </div>
+
+                <ul class = "dropdown-menu">
+                  <li class = "user-header">
+                    <p>
+                      {{ user.first_name }} {{ user.last_name }}
+                    </p>
+                  </li>
+                  <li class = "user-footer">
+                    <div
+                      v-if  = "user.admin_url"
+                      class = "pull-left"
+                    >
+                      <a
+                        :href = "user.admin_url"
+                        class = "btn btn-default btn-flat skin-color bold"
+                      >
+                        <i :class="g3wtemplate.getFontClass('folder')"></i> Admin
+                      </a>
+                    </div>
+                    <div class="pull-right">
+                      <a
+                        :href = "user.logout_url"
+                        class = "btn btn-default btn-flat skin-color bold"
+                        v-t   = "'logout'"
+                      >
+                        <i
+                          :class = "g3wtemplate.getFontClass('sign-out')"
+                          style  = "margin-right: 2px;">
+                        </i>
+                      </a>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- TODO: add description -->
+              <header-item
+                v-for                      = "state in custom_header_items_position[2]"
+                :key                       = "state.id"
+                :state                     = "state"
+                @show-custom-modal-content = "showCustomModalContent"
+              />
+
+              <!-- CREDITS -->
+              <li class="dropdown user user-menu">
+                <a
+                  href        = "#"
+                  data-toggle = "modal"
+                  data-target = "#credits"
+                  class       = "dropdown-toggle"
+                >
+                  <span>Credits</span>
+                </a>
+              </li>
+
+              <!-- TODO: add description -->
+              <header-item
+                v-for                      = "state in custom_header_items_position[3]"
+                :key                       = "state.id"
+                :state                     = "state"
+                @show-custom-modal-content = "showCustomModalContent"
+              />
+
+              <!-- LANGUAGE SWITCHER -->
+              <li v-if="languages" class="g3w-languages">
+                <select
+                  v-select2          = "'language'"
+                  class              = "form-control"
+                  :templateSelection = "templateResultLanguages"
+                  :templateResult    = "templateResultLanguages"
+                  v-model            = "language"
+                  style              = "cursor:pointer; width: 130px;"
+                >
+                  <option
+                    v-for     = "lang in languages"
+                    :key      = "lang[0]"
+                    :value    = "lang[0]"
+                    :selected = "lang[0] === language && 'selected'"
+                  >
+                    {{ lang[1] }}
+                  </option>
+                </select>
+              </li>
+
+              <!-- HOME PAGE -->
+              <li
+                v-if  = "frontendurl"
+                class = "dropdown"
+              >
+                <a :href="frontendurl">
+                  <span>
+                    <i :class="g3wtemplate.getFontClass('home')">
+                    </i> Home
+                  </span>
+                </a>
+              </li>
+
+              <!-- TODO: add description -->
+              <header-item
+                v-for                      = "state in custom_header_items_position[4]"
+                :key                       = "state.id"
+                :state                     = "state"
+                @show-custom-modal-content = "showCustomModalContent"
+              />
+
+            </ul>
+
           </div>
+
         </div>
+      </nav>
+    </header>
+
+    <!-- Left side column. contains the logo and sidebar -->
+    <sidebar></sidebar>
+    <!-- Content Wrapper. Contains page content -->
+    <div
+      class  = "content-wrapper"
+      :style = "{paddingTop: isIframe ? 0 : null}"
+    >
+      <viewport :appState="appState"/>
+    </div>
+    <!-- /.content-wrapper -->
+    <!-- Control Sidebar -->
+    <floatbar/>
+    <!-- /.control-sidebar -->
+    <!-- Add the sidebar's background. This div must be placed
+         immediately after the control sidebar -->
+    <div class="control-sidebar-bg"></div>
+    <!--full screen modal element-->
+    <div
+      class           = "modal fade modal-fullscreen force-fullscreen"
+      id              = "full-screen-modal"
+      tabindex        = "-1"
+      role            = "dialog"
+      data-backdrop   = "static"
+      data-keyboard   = "false"
+      aria-labelledby = "full-screen-modal"
+      aria-hidden     = "true">
+    </div>
+    <!---->
+    <div
+      id    = "credits"
+      class = "modal fade"
+    >
+      <div
+        class = "modal-dialog"
+        role  = "document"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <button
+              type         = "button"
+              class        = "close"
+              data-dismiss = "modal"
+              aria-label   = "Close"
+              style        = "color: #ffffff; font-weight: bold; opacity: 1; position: absolute; right: 25px; top: 20px"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <div style="display: flex; flex-direction: column; justify-content: space-around; justify-items: center; align-items: center">
+              <div
+                v-if   = "!!customcredits"
+                class  = "customcredits"
+                v-html = "customcredits"
+              >
+              </div>
+
+              <div
+                v-if="powered_by"
+              >
+                <div class="g3w-credits-block">
+                  <div
+                    v-t   = "'credits.g3wSuiteFramework'"
+                    style = "background-color: #95ad36; padding: 5px; border-radius:3px; color: #ffffff"
+                    class = "credit-title-logo">
+                  </div>
+                  <a
+                    target = "_blank"
+                    href   = "https://g3wsuite.it/"
+                  >
+                    <img
+                      class = "g3w-suite-logo"
+                      :src  = "g3w_suite_logo"
+                      alt   = "">
+                  </a>
+                  <div
+                    v-t  = "'credits.g3wSuiteDescription'"
+                    style = "margin-top: 10px;">
+                  </div>
+                </div>
+                <div
+                  v-t:pre = "'credits.productOf'"
+                  class   = "credit-title-logo g3w-credits-block"
+                  style   = "font-size: 1em; display: flex; justify-content: center"
+                >
+                  <a
+                    style  = "text-align: center!important;"
+                    href   = "http://www.gis3w.it"
+                    target = "_blank"
+                  >
+                    <img
+                      width = "60"
+                      style = "margin-left: 5px"
+                      :src  = "credits_logo"
+                      class = "img-responsive center-block"
+                      alt   = "">
+                  </a>
+                </div>
+
+                <address
+                  id    = "address-credits"
+                  style = "line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center"
+                >
+                  <span style="padding: 2px">
+                    <span
+                      style       = "color: #95ad36; font-weight: bold"
+                      :class      = "g3wtemplate.getFontClass('marker')"
+                      aria-hidden = "true"
+                    >
+                    </span> Montecatini Terme - Italy
+                  </span>
+
+                  <span style="padding: 2px">
+                    <span
+                      style       = "color: #95ad36"
+                      :class      = "g3wtemplate.getFontClass('mobile')"
+                      aria-hidden = "true">
+                    </span>  +39 393 8534336
+                  </span>
+
+                  <span style="padding: 2px">
+                    <span
+                      style       = "color: #95ad36"
+                      :class      = "g3wtemplate.getFontClass('mail')"
+                      aria-hidden = "true">
+                    </span>
+                    <a
+                      href  = "mailto:info@gis3w.it"
+                      style = "color:#000000"
+                    > info@gis3w.it</a>
+                  </span>
+
+                </address>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
+
     </div>
-  </div>
-  <div id="custom_modal" class="modal fade">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content" v-html="current_custom_modal_content"></div>
+
+    <div
+      id    = "custom_modal"
+      class = "modal fade"
+    >
+      <div
+        class = "modal-dialog"
+        role  = "document"
+      >
+        <div
+          class  = "modal-content"
+          v-html = "current_custom_modal_content">
+        </div>
+
+      </div>
+
     </div>
+
   </div>
-</div>
 </template>
 
 <script>
@@ -436,8 +624,9 @@ $.LayoutManager = $.LayoutManager || {
           //Fix for the control sidebar height
           const controlSidebar = $($.LayoutManager.options.controlSidebarOptions.selector);
           if (typeof controlSidebar !== "undefined") {
-            if (controlSidebar.height() > postSetWidth)
+            if (controlSidebar.height() > postSetWidth) {
               $(".content-wrapper, .right-side").css('min-height', controlSidebar.height());
+            }
           }
 
         }
@@ -789,7 +978,7 @@ $.LayoutManager = $.LayoutManager || {
    * @type plugin
    * @usage $("#box-widget").boxRefresh( options );
    */
-  addRefreshButton: function () {
+  addRefreshButton() {
     "use strict";
 
     $.fn.boxRefresh = function (options) {
@@ -866,7 +1055,7 @@ $.LayoutManager = $.LayoutManager || {
    * @type plugin
    * @usage $("#box-widget").activateBox();
    */
-  activateBox: function () {
+  activateBox() {
     'use strict';
 
     $.fn.activateBox = function () {
@@ -884,7 +1073,7 @@ $.LayoutManager = $.LayoutManager || {
    * @type plugin
    * @usage $("#todo-widget").todolist( options );
    */
-  listCustomPlugin: function () {
+  listCustomPlugin() {
     'use strict';
 
     $.fn.todolist = function (options) {
@@ -937,7 +1126,7 @@ $.LayoutManager = $.LayoutManager || {
    * functions and plugins as specified by the
    * options above.
    */
-  setup: function () {
+  setup() {
     "use strict";
 
     //Fix for IE page transitions
@@ -1019,7 +1208,7 @@ $.LayoutManager = $.LayoutManager || {
       .listCustomPlugin();
   },
 
-  loading: function(start) {
+  loading(start) {
     $('#initerror').remove();
     start = _.isBoolean(start) ? start : true;
     if (start) {
@@ -1047,11 +1236,11 @@ export default {
 
   data() {
     return {
-      customcredits: false,
-      appState: ApplicationService.getState(),
-      current_custom_modal_content: null,
-      language: null,
-      cookie_law_buttonText: t('cookie_law.buttonText')
+      customcredits                : false,
+      appState                     : ApplicationService.getState(),
+      current_custom_modal_content : null,
+      language                     : null,
+      cookie_law_buttonText        : t('cookie_law.buttonText')
     }
   },
 
@@ -1069,7 +1258,7 @@ export default {
     languages() {
 
       /***
-       * check if is length of languages is more than one
+       * check if the length of languages is more than one
        */
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
       return languages.length > 1 && languages;
@@ -1160,7 +1349,7 @@ export default {
 
     main_title() {
       const main_title = this.appconfig.main_map_title;
-      const group_name = this.appconfig.group.name || this.appconfig.group.slug;
+      const group_name = this.appconfig.group.title || this.appconfig.group.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
 
@@ -1174,10 +1363,8 @@ export default {
      * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
      */
     templateResultLanguages(state) {
-      if (!state.id) {
-        return state.text;
-      }
-      return $(`
+      if (!state.id) { return state.text }
+      return $(/*html*/`
         <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
           <img src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
           <span style="margin-left: 5px;">${state.text}</span> 
@@ -1195,7 +1382,7 @@ export default {
     },
 
     showCustomModalContent(id) {
-      const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
+      const { content } = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
 
@@ -1215,7 +1402,7 @@ export default {
     },
 
     /**
-     * Display dialog messages on first page load (on app bootstrap).
+     * Display dialog messages on a first page load (on app bootstrap).
      * 
      * @since 3.8.0
      */
@@ -1233,14 +1420,10 @@ export default {
         const message = messages.items[i];
         const data    = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.MESSAGES.id) || LOCAL_ITEM_IDS.MESSAGES.value;
 
-        if (undefined === data[projectId]) {
-          data[projectId] = [];
-        }
+        if (undefined === data[projectId]) { data[projectId] = [] }
 
-        // check if current project has already messages stored
-        if (undefined !== data[projectId].find(id => id === message.id)) {
-          continue;
-        }
+        // check if a current project has already messages stored
+        if (undefined !== data[projectId].find(id => id === message.id)) { continue }
 
         // create "Do Not Show Again" component
         const doNotShowAgainVueComponent = new (Vue.extend({
@@ -1263,7 +1446,7 @@ export default {
         // append input don't show again checkbox vue component
         content.append(doNotShowAgainVueComponent.$mount().$el);
 
-        // show modal window
+        // show a modal window
         await new Promise((resolve) => {
           GUI.showModalDialog({
             title: message.title,
@@ -1287,9 +1470,7 @@ export default {
             }
           })
         })
-
       }
-
     },
 
     /**
@@ -1303,9 +1484,9 @@ export default {
 
   watch: {
 
-    'language'(language, currentlanguage) {
-      if (currentlanguage) {
-        ApplicationService.changeLanguage(language);
+    'language'(l, cl) {
+      if (cl) {
+        ApplicationService.changeLanguage(l);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     }
@@ -1318,8 +1499,8 @@ export default {
   },
 
   created() {
-    this.language = this.appconfig._i18n.language;
-    this.custom_modals = [];
+    this.language                     = this.appconfig._i18n.language;
+    this.custom_modals                = [];
     this.custom_header_items_position = {
       0: [],
       1: [],
@@ -1327,22 +1508,25 @@ export default {
       3: [],
       4: []
     };
-    this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter(customitem => {
-      if (customitem !== null) {
-        const id = customitem.id = uniqueId();
-        customitem.type === 'modal' && this.custom_modals.push({
-          id,
-          content: customitem.content
-        });
-        let position = 1*(customitem.position || 0);
-        position = position > 4 ? 4 : position < 0 || Number.isNaN(position)? 0 : position;
-        this.custom_header_items_position[position].push(customitem);
-        return true
-      }
-      return false;
-    }): [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
+    this.customlinks = Array.isArray(this.appconfig.header_custom_links)
+      ? this.appconfig.header_custom_links
+        .filter(customitem => {
+          if (customitem !== null) {
+            const id = customitem.id = uniqueId();
+            customitem.type === 'modal' && this.custom_modals.push({ id, content: customitem.content });
+            let position = 1*(customitem.position || 0);
+            position = position > 4 ? 4 : position < 0 || Number.isNaN(position)? 0 : position;
+            this.custom_header_items_position[position].push(customitem);
+            return true
+          }
+          return false;
+        })
+      : [];
+
+    if (!!this.appconfig.credits) {
+      $.get(this.appconfig.credits).then(c => this.customcredits = c !== 'None' && c);
+    }
   },
 
   async mounted() {
@@ -1368,7 +1552,7 @@ export default {
 
     await this.$nextTick();
 
-    // add some marging to logo
+    // add some marging to the logo
     if (!this.isIframe) {
       this.$refs.img_logo.addEventListener('load', () => {
         this.logoWidth = this.$refs.img_logo.offsetWidth + 15;
@@ -1402,3 +1586,36 @@ export default {
 
 };
 </script>
+
+<style>
+  .g3w-modal-project-message.Info .modal-header     { background-color: #0073b7; }
+  .g3w-modal-project-message.Warning .modal-header  { background-color: #e99611; }
+  .g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
+  .g3w-modal-project-message.Critical .modal-header { background-color: #605ca8; }
+  .g3w-modal-project-message h4.modal-title         { color: #FFF !important; }
+</style>
+
+<style scoped>
+  .credit-title-logo {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+  }
+  .g3w-credits-block {
+    text-align: center!important;
+    margin-bottom: 20px;
+  }
+  .g3w-suite-logo {
+    width: 50% !important;
+  }
+  .customcredits {
+    margin-bottom : 10px;
+    margin-top: 5px;
+  }
+  #address-credits span {
+    padding-left: 3px;
+  }
+  .g3w-languages {
+    min-width: 125px;
+  }
+</style>

@@ -4,56 +4,56 @@
 -->
 
 <template>
-  <div class="tab-node group">
+  <div class = "tab-node group">
     <h5
-      v-if="showGroupTile"
-      class="title group-title"
-      :class="{'mobile': isMobile()}"
-      :style="{fontSize: isMobile() ? '1em' : '1.1em'}">{{ node.name }}
+      v-if   = "showGroupTile"
+      class  = "title group-title"
+      :class = "{'mobile': isMobile()}"
+      :style = "{fontSize: isMobile() ? '1em' : '1.1em'}">{{ node.name }}
     </h5>
     <div
-      v-for="row in rows"
-      class="node-row"
-      :class="{'mobile': isMobile()}"
+      v-for  = "row in rows"
+      class  = "node-row"
+      :class = "{'mobile': isMobile()}"
     >
       <template
-        v-for="column in columnNumber"
-        style="padding:2px"
+        v-for = "column in columnNumber"
+        style = "padding:2px"
       >
-        <template v-if="getNode(row, column)">
+        <template v-if = "getNode(row, column)">
           <component
-            v-if="getNodeType(getNode(row, column)) === 'field'"
-            style="padding: 5px 3px 5px 3px;"
-            :state="getField(getNode(row, column))"
-            @changeinput="changeInput"
-            @addinput="addToValidate"
-            @removeinput="removeToValidate"
-            :changeInput="changeInput"
-            :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
-            :feature="feature"
-            :is="getComponent(getField(getNode(row, column)))"/>
+            v-if              = "'field' === getNodeType(getNode(row, column))"
+            style             = "padding: 5px 3px 5px 3px;"
+            :state            = "getField(getNode(row, column))"
+            @changeinput      = "changeInput"
+            @addinput         = "addToValidate"
+            @removeinput      = "removeToValidate"
+            :changeInput      = "changeInput"
+            :addToValidate    = "addToValidate"
+            :removeToValidate = "removeToValidate"
+            :feature          = "feature"
+            :is               = "getComponent(getField(getNode(row, column)))"/>
           <template v-else>
             <tabs
-              v-if="getNodeType(getNode(row, column)) === 'group'"
-              class="sub-group" style="width: 100% !important"
-              :group="true"
-              :tabs="[getNode(row, column)]"
-              v-bind="$props"/>
+              v-if   = "'group' === getNodeType(getNode(row, column))"
+              class  = "sub-group" style="width: 100% !important"
+              :group = "true"
+              :tabs  = "[getNode(row, column)]"
+              v-bind = "$props"/>
             <template v-else>
               <div
-                v-if="showRelationByField"
-                v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading"
-                @click.stop="handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})"
-                :style="{cursor: showRelationByField && 'pointer'}"
+                v-if        = "showRelationByField"
+                v-disabled  = "isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading"
+                @click.stop = "handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})"
+                :style      = "{cursor: showRelationByField && 'pointer'}"
               >
                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
-                <div style="display: flex; align-items: center">
-                  <div  class="query_relation_field">
-                    <i :class="g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
+                <div style = "display: flex; align-items: center">
+                  <div  class = "query_relation_field">
+                    <i :class = "g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
                   </div>
-                  <span class="query_relation_field_message g3w-long-text">
-                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
+                  <span class = "query_relation_field_message g3w-long-text">
+                    <span style = "text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
                   </span>
                 </div>
               </div>
@@ -66,7 +66,7 @@
 </template>
 
 <script>
-  import G3wInput from 'components/InputG3W.vue';
+  import G3wInput         from 'components/InputG3W.vue';
   import ProjectsRegistry from 'store/projects';
 
   const Fields = require('gui/fields/fields');
@@ -92,7 +92,7 @@
     },
     data() {
       return {
-        context: this.contenttype,
+        context:          this.contenttype,
         editing_required: false
       }
     },
@@ -103,15 +103,13 @@
        */
       filterNodes() {
         const filterNodes = this.node.nodes && this.node.nodes.filter(node => {
-          if (this.getNodeType(node) === 'group') {
-            return true
-          } else if (!node.nodes && node.name && this.getNodeType(node) != 'group') {
+          if ('group' === this.getNodeType(node) ) { return true }
+          else if (!node.nodes && node.name && 'group' != this.getNodeType(node)) {
             node.relation = true;
             return true
           } else {
             return !!this.fields.find(field => {
-              const field_name = node.field_name ? node.field_name.replace(/ /g,"_") :  node.field_name;
-              return field.name === field_name || node.relation;
+              return (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === field.name  || node.relation;
             })
           }
         });
@@ -130,11 +128,10 @@
        */
       rows() {
         let rowCount = 1;
-        if (this.nodesLength === 0) {
+        if (0 === this.nodesLength ) {
           rowCount = 0;
         } else if (this.columnNumber  <= this.nodesLength) {
-          const rest = this.nodesLength  % this.columnNumber;
-          rowCount = Math.floor(this.nodesLength / this.columnNumber) + rest;
+          rowCount = Math.floor(this.nodesLength / this.columnNumber) + (this.nodesLength % this.columnNumber);
         }
         return rowCount;
       },
@@ -172,7 +169,7 @@
        */
       isRelationDisabled(relation){
         return this.getRelationName(relation.name) === undefined ||
-          (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
+          ('editing' === this.contenttype  && this.isRelationChildLayerNotEditable(relation));
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
       /**
@@ -192,10 +189,10 @@
       isRelationChildLayerNotEditable(relation){
         const {nmRelationId, name} = relation;
         ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
-        const currentProject = ProjectsRegistry.getCurrentProject();
+        const currentProject  = ProjectsRegistry.getCurrentProject();
         const projectRelation = currentProject.getRelationById(name);
         const relationLayerId = projectRelation.referencingLayer;
-        const relationLayer = currentProject.getLayerById(relationLayerId);
+        const relationLayer   = currentProject.getLayerById(relationLayerId);
         // check if is editable. In case of nmRelation layer need to be table to be editable
         return !relationLayer.isEditable();
         // if (nmRelationId) return true;
@@ -239,11 +236,8 @@
        * @returns {{relation}|*}
        */
       getField(node) {
-        if (node.relation) return node;
-        return this.fields.find((field) => {
-          const field_name = node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name;
-          return field.name === field_name;
-        });
+        if (node.relation) { return node }
+        return this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
       },
       /**
        *
@@ -254,19 +248,15 @@
         const type = (node.groupbox || node.nodes) ?
           'group' :
           node.relation ? 'relation': 'field';
-        if (type === 'field' && (node.alias === undefined || node.alias === '')) {
+        if ('field' === type && [undefined, ''].includes(node.alias)) {
           node.alias = node.field_name;
         }
         return type;
       },
       getComponent(field) {
-        if (field.relation) {
-          return;
-        } else if (field.query) {
-          return field.input.type;
-        } else {
-          return 'g3w-input';
-        }
+        if (field.relation) { return }
+        else if (field.query) { return field.input.type }
+        else { return 'g3w-input' }
       }
     }
   }

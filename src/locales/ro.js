@@ -17,7 +17,7 @@ export default {
         nofilter: "Eliminare Filtrare",
         invert: "Inversare Selecție",
         clear: "Elimină Selecția",
-        show_features_on_map: "Arată entitățile vizibile în cadrul hărții",
+        show_features_on_map: "Rezultatele se actualizează când harta este deplasată",
         savefilter: "Salvează Filtrul",
         filterName: "Nume Filtru",
       }
@@ -190,8 +190,10 @@ export default {
         download_gpkg: "Descarcă GPKG",
         download_csv: "Descarcă CSV",
         download_xls: "Descarcă XLS",
+        download_pdf: "Descarcă PDF",
         show_chart: "Arată Diagrama",
-        atlas: "Tipărire Atlas"
+        atlas: "Tipărire Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -248,6 +250,9 @@ export default {
             download_xls: {
               hint: "Descarcă entitate în XLS"
             },
+            download_pdf: {
+              hint: "Descarcă entitate în PDF"
+            },
             atlas: {
               hint: "Tipărire Atlas"
             },
@@ -273,12 +278,7 @@ export default {
           no_geometry: 'Nu avem geometrii în răspuns',
           help: {
             title:'Ghid - Interogare După Poligon',
-            message: `
-                <ul>
-                  <li>Selectează un strat poligon din TOC.</li>
-                  <li>Asigură-te că stratul este vizibil.</li>
-                  <li>Click pe o entitate a stratului selectat.</li>
-                </ul>`
+            message: "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -289,10 +289,7 @@ export default {
           nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
           help: {
             title: 'Ghid - Interogare BBox strat',
-            message:`
-                 <ul>
-                  <li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li>
-                 </ul>`
+            message: "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>"
           }
         },
         addlayer: {
@@ -375,6 +372,14 @@ export default {
       catalog: {
         current_map_theme_prefix: "TEMA",
         choose_map_theme: "ALEGE TEMA",
+        choose_map_theme_input_label: 'Numele noii tema',
+        project_map_theme : 'Tema de proiect',
+        user_map_theme: "Tema utilizator",
+        question_delete_map_theme: "Doriți să ștergeți tema?",
+        delete_map_theme: "Tema a fost ștearsă cu succes",
+        saved_map_theme: "Tema a fost salvată cu succes",
+        updated_map_theme: "Tema a fost actualizată cu succes",
+        invalid_map_theme_name: "Numele există deja sau este incorect",
         menu: {
           layerposition: 'Poziție Strat',
           setwmsopacity: "Alege Opacitatea",
@@ -442,6 +447,7 @@ export default {
     server_error: "Eroare de conexiune la server",
     save: "Salvează",
     cancel: "Anulează",
+    update: "Actualizați",
     close: "Închide",
     /**
      * @since 3.8.0
@@ -480,7 +486,7 @@ export default {
       link_button: "Deschide"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Nu te-am putut localiza"
       },
       geocoding: {
@@ -537,8 +543,8 @@ export default {
     dataTable: {
       previous: "Anteriorul",
       next: "Următorul",
-      lengthMenu: "Arată _MENU_",
-      info: "Arată _START_ până la _END_ din _TOTAL_ de intrări",
+      lengthMenu: "Afișați _MENU_ valori pe pagină",
+      info: "_TOTAL_ rezultate",
       no_data: "Fără date",
       nodatafilterd: "Niciun rezultat",
       infoFiltered: "(filtrat din _MAX_ de rezultate totale)"

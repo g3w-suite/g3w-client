@@ -17,7 +17,7 @@ export default {
         nofilter: "Rimuovi filtro",
         invert: "Inverti Selezione",
         clear: "Annulla selezione",
-        show_features_on_map: "Mostra features visibili su mappa",
+        show_features_on_map: "Aggiorna i risultati quando si sposta la mappa",
         savefilter: "Salva Filtro",
         filterName: 'Nome Filtro',
       }
@@ -37,7 +37,7 @@ export default {
         }
       },
       spatialbookmarks: {
-        title: "Segnalibri Spaziali",
+        title: "Segnalibri",
         helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
         input: {
           name: "Nome"
@@ -75,24 +75,25 @@ export default {
         download_image: "Scarica Immagine",
         fids_instruction: "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
         fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
-        help: "I layers mostrati nella stampa potrebbero essere quelli definiti sul progetto e non quelli visualizzati sulla mappa"
+        help: "I livelli esportati sono definiti dall'amministratore"
       },
       querybuilder: {
+        title: 'Ricerca avanzata',
         search: {
-          run: "Lancia ricerca",
+          run: "Esegui",
           info: "Informazioni",
-          delete: "Cancella",
+          delete: "Rimuovi",
           edit: "Modifica"
         },
         messages: {
           changed: 'Salvato correttamente',
-          number_of_features: "Numero di features"
+          number_of_features: "Elementi trovati:"
         },
         panel: {
           button: {
-            all: 'TUTTI',
+            all: 'TROVA UN VALORE',
             save: 'SALVA',
-            test: 'TEST',
+            test: 'VERIFICA',
             clear: 'PULISCI',
             run: 'ESEGUI',
             manual: 'MANUALE'
@@ -110,7 +111,7 @@ export default {
       },
       errors: {
         layers: {
-          load: "Alcuni layers presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
+          load: "Alcuni livelli presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
         },
         unsupported_format: 'Formato non supportato',
         add_external_layer: 'Errore nel caricamento del layer'
@@ -180,8 +181,8 @@ export default {
       },
       tooltips: {
         relations: {
-          form_to_row: "Visualizza formato Riga",
-          row_to_form: "Visualizza formato Form",
+          form_to_row: "Visualizza riga",
+          row_to_form: "Visualizza modulo",
           zoomtogeometry: "Zoom sulla geometria",
         },
         zoom_to_features_extent: "Zoom sulle features",
@@ -191,8 +192,10 @@ export default {
         download_gpkg: "Scarica GPKG",
         download_csv: "Scarica CSV",
         download_xls: "Scarica XLS",
+        download_pdf: "Scarica PDF",
         show_chart: "Mostra Grafico",
-        atlas: "Stampa Atlas"
+        atlas: "Stampa Atlas",
+        editing: "Modifica",
       },
       mapcontrols: {
         query: {
@@ -202,16 +205,16 @@ export default {
               hint: "Aggiungi/Rimuovi Selezione"
             },
             zoom_to_features_extent:{
-              hint: "Zoom sulle features"
+              hint: "Zoom sulle geometrie"
             },
             add_features_to_results: {
-              hint: "Aggiungi features ai risultati"
+              hint: "Aggiungi elementi ai risultati"
             },
             remove_feature_from_results: {
-              hint: "Rimuovi feature dai risultati"
+              hint: "Rimuovi elemento dai risultati"
             },
             zoom_to_feature: {
-              hint: "Zoom sulla feature"
+              hint: "Zoom sulla geometria"
             },
             relations: {
               hint: "Visualizza Relazioni"
@@ -220,41 +223,44 @@ export default {
               hint: "Visualizza grafici relazioni"
             },
             download_features_shapefile:{
-              hint: 'Scarica features in Shapefile'
+              hint: 'Scarica come Shapefile'
             },
             download_shapefile: {
-              hint: 'Scarica feature in Shapefile'
+              hint: 'Scarica come Shapefile'
             },
             download_features_gpx: {
-              hint: "Scarica features in GPX"
+              hint: "Scarica come GPX"
             },
             download_features_gpkg: {
-              hint: "Scarica features in GPKG"
+              hint: "Scarica come GPKG"
             },
             download_gpx: {
-              hint: "Scarica feature in GPX"
+              hint: "Scarica come GPX"
             },
             download_gpkg: {
-              hint: "Scarica feature in GPKG"
+              hint: "Scarica come GPKG"
             },
             download_features_csv: {
-              hint: "Scarica features in CSV"
+              hint: "Scarica come CSV"
             },
             download_csv: {
-              hint: "Scarica feature in CSV"
+              hint: "Scarica come CSV"
             },
             download_features_xls: {
-              hint: "Scarica features in XLS"
+              hint: "Scarica come XLS"
             },
             download_xls: {
-              hint: "Scarica la feature in XLS"
+              hint: "Scarica come XLS"
+            },
+            download_pdf: {
+              hint: "Scarica come PDF"
             },
             atlas: {
               hint: "Stampa Atlas"
             },
             copy_zoom_to_fid_url: {
-              hint: "Copia URL mappa con estensione a questa geometria",
-              hint_change: "Copiato"
+              hint: "Condividi tramite link",
+              hint_change: "URL copiato negli appunti"
             }
           }
         },
@@ -274,12 +280,7 @@ export default {
           no_geometry: 'Non contiene la geometria nella risposta',
           help: {
             title: 'Guida - Interrogazione con Poligono',
-            message:`
-                <ul>
-                  <li>Seleziona uno strato poligonale in legenda.</li>
-                  <li>Assicurati che lo strato sia visibile in mappa.</li>
-                  <li>Clicca su una geometria dello strato selezionato.</li>
-                </ul>`
+            message: "<ul><li>Seleziona uno strato poligonale in legenda.</li><li>Assicurati che lo strato sia visibile in mappa.</li><li>Clicca su una geometria dello strato selezionato.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -290,11 +291,7 @@ export default {
           nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
           help: {
             title:'Guida - Interrogazione BBox',
-            message:`
-                  <ul>
-                    <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
-                  </ul>
-            `
+            message: "<ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
           },
         },
         addlayer: {
@@ -377,6 +374,14 @@ export default {
       catalog: {
         current_map_theme_prefix: "TEMA",
         choose_map_theme: "SCEGLI TEMA",
+        choose_map_theme_input_label: 'Nome del nuovo tema',
+        project_map_theme : 'Temi Progetto',
+        user_map_theme: 'Temi Utente',
+        question_delete_map_theme: "Vuoi cancellare il tema ?",
+        delete_map_theme: "Tema cancellato con successo",
+        saved_map_theme: "Tema salvato con successo",
+        updated_map_theme: "Tema aggiornato con successo",
+        invalid_map_theme_name: "Nome già esistente o non corretto",
         menu: {
           layerposition: 'Posizione Layer',
           setwmsopacity: "Cambia opacità",
@@ -447,6 +452,7 @@ export default {
     server_error: "Si è verificato un errore nella richiesta al server",
     save: "Salva",
     cancel: "Cancella",
+    update: "Aggiorna",
     close: "Chiudi",
     /**
      * @since 3.8.0
@@ -461,7 +467,7 @@ export default {
     sidebar: {
       wms: {
         panel: {
-          title:'Aggiungi WMS Layer',
+          title:'Aggiunta livello WMS',
           label: {
             position: "Posizione su Mappa",
             name: "Nome",
@@ -469,7 +475,7 @@ export default {
             layers: 'Layers'
           }
         },
-        add_wms_layer: "Aggiungi WMS layer",
+        add_wms_layer: "Aggiungi livello WMS",
         delete_wms_url: "Elimina WMS url",
         layer_id_already_added: "Questo Layer WMS è già stato aggiunto",
         url_already_added: "URL/Nome WMS già aggiunto",
@@ -485,9 +491,8 @@ export default {
       link_button: "Apri"
     },
     mapcontrols: {
-      geolocations: {
-        title: "",
-        error: "Non è possibile calcolare la tua posizione."
+      geolocation: {
+        error: "Non è possibile ottenere la tua posizione."
       },
       geocoding: {
         choose_layer: "Scegli un livello in cui aggiungere questa funzionalità",
@@ -531,7 +536,7 @@ export default {
     catalog_items: {
       helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
       contextmenu: {
-        zoomtolayer: "Zoom to Layer",
+        zoomtolayer: "Zoom sul Layer",
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stili",
@@ -543,10 +548,12 @@ export default {
     dataTable: {
       previous: "Precedente",
       next: "Successivo",
-      lengthMenu: "Visualizza _MENU_",
-      info: "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
+      lengthMenu: "Mostra _MENU_ valori per pagina",
+      info: "_TOTAL_ elementi",
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
     },
+    /**@since 3.10.0 */
+    no_geometry: 'Questo elemento non ha geometria',
   },
 };

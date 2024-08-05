@@ -36,6 +36,7 @@ function __(name, value) {
  * @param config.bbox
  * @param config.capabilities
  * @param config.cache_url
+ * @param { string } config.cache_provider since 3.10.0 (eg. "mapproxy")
  * @param config.baselayer
  * @param config.geometrytype
  * @param config.editops
@@ -158,6 +159,7 @@ proto.getWMSLayerName = function({ type = 'map' } = {}) {
 };
 
 /**
+ * @param opts
  * @param { 'map' | 'legend' } opts.type 
  */
 proto.getWmsUrl = function({ type = 'map' } = {}) {
@@ -235,6 +237,14 @@ proto.getCatalogWfsUrl = function(){
   return `${this.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
 };
 
+/**
+ * Get WFS 3 url (used by Catalog Layer Menu)
+ * @since 3.10.0
+ * @return { String } url
+ */
+proto.getCatalogWfs3Url = function(){
+  return `${this.getWfsUrl()}wfs3/`;
+};
 
 proto.getWfsUrl = function() {
   const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata();
@@ -404,14 +414,34 @@ proto.getWfsCapabilities = function() {
 };
 
 proto.getMapLayer = function(options = {}, extraParams) {
-  options.iframe_internal = ApplicationService.isIframe() && !this.isExternalWMS();
-  const method            = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
-  const extent            = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
-  const url               = options.url || this.getWmsUrl();
-  const source            = this.config.source;
+  options.iframe_internal   = ApplicationService.isIframe() && !this.isExternalWMS();
+  const method              = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
+  const extent              = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
+  const source              = this.config.source;
+  /** @since  3.10.0 Cache info **/
+  const cache_provider      = this.config.cache_provider;
+  const cache_service_type  = this.config.cache_service_type || 'tms'; //default tile
+  const cache_layer         = this.config.cache_layer;
+  const cache_extent        = this.config.cache_extent;
+  const cache_grid          = this.config.cache_grid;
+  const cache_grid_extent   = this.config.cache_grid_extent;
+  //get layer url
+  const url                 = this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl());
 
-  if (this.isCached()) {
-    return new XYZLayer({ ...options, extent }, method);
+  if (this.isCached() && 'tms' === cache_service_type) {
+    return new XYZLayer({ ...options, extent, url, cache_provider }, method);
+  }
+
+  if (this.isCached() && 'wmts' === cache_service_type) {
+    return new WMSTLayer({
+      ...options,
+      url,
+      cache_provider,
+      cache_layer,
+      cache_extent,
+      cache_grid,
+      cache_grid_extent
+    }, extraParams, method);
   }
 
   if (this.isExternalWMS() && source && Layer.SourceTypes.ARCGISMAPSERVER === source.type) {
@@ -419,7 +449,7 @@ proto.getMapLayer = function(options = {}, extraParams) {
   }
 
   if (this.isExternalWMS() && source && Layer.SourceTypes.WMST === source.type) {
-    return new WMSTLayer({...options, url }, extraParams, method);
+    return new WMSTLayer({...options, url, cache_provider }, extraParams, method);
   }
 
   return new WMSLayer({ ...options, url }, extraParams, method);
@@ -435,6 +465,21 @@ proto.getFormat = function() {
     return this.getSource().format;
   }
   return base(this, 'getFormat');
+};
+
+/**
+ * @override ImageLayer~getOwsMethod
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/issues/616
+ * 
+ * forces to `GET` when wms layer is external or query url isn't a qgis server endpoint (ie. doesn't start with `/ows/`).
+ * 
+ * @since 3.10.0
+ */
+proto.getOwsMethod = function() {
+  return this.isExternalWMS() || !/^\/ows/.test((new URL(this.getQueryUrl(), window.initConfig.baseurl)).pathname)
+    ? 'GET'
+    : this.config.ows_method;
 };
 
 ImageLayer.WMSServerTypes = [

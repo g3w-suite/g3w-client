@@ -4,9 +4,12 @@
 -->
 
 <template>
-  <field :state="state">
-    <div slot="field">
-      <component :feature="feature" :value="state.value" :is="state.vueoptions.component"></component>
+  <field :state = "state">
+    <div slot = "field">
+      <component
+        :feature = "feature"
+        :value   = "state.value"
+        :is      = "state.vueoptions.component"/>
     </div>
   </field>
 </template>
@@ -35,7 +38,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

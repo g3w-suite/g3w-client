@@ -4,10 +4,16 @@
 -->
 
 <template>
-  <field :state="state">
-    <div slot="field" style="text-align: left">
-      <img v-for="(value, index) in values" class="img-responsive" style="max-height:50px" @click="showGallery(index)" :src="getSrc(value)"/>
-      <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"/>
+  <field :state = "state">
+    <div slot = "field" style = "text-align: left">
+      <img
+        v-for       = "(value, index) in values"
+        class       = "img-responsive"
+        style       = "max-height:50px"
+        alt         = ""
+        @click.stop = "showGallery(index)"
+        :src        = "getSrc(value)"/>
+      <g3w-images-gallery :id = "galleryId" :active = "active" :images = "getGalleryImages()"/>
     </div>
   </field>
 </template>
@@ -26,8 +32,8 @@ export default {
   data() {
     return {
       galleryId: `gallery_${Date.now()}`,
-      active: null,
-      value: this.state.value.mime_type !== undefined ? this.state.value.value : this.state.value
+      active:     null,
+      value:      this.state.value.mime_type !== undefined ? this.state.value.value : this.state.value
     }
   },
   components: {

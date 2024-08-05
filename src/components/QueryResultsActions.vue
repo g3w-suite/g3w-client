@@ -5,11 +5,11 @@
 
 <template>
   <td
-    v-if="actions.length"
-    style="padding: 3px"
-    class="g3w-feature-actions skin-background-color lighten"
-    :colspan="colspan">
-    <action v-for="action in actions" :key="action.id" v-bind="$props" :action="action"/>
+    v-if     = "actions.length"
+    style    = "padding: 3px"
+    class    = "g3w-feature-actions"
+    :colspan = "colspan">
+    <action v-for = "action in actions" :key = "action.id" v-bind = "$props" :action = "action"/>
   </td>
 </template>
 
@@ -32,7 +32,7 @@
         type: Function
       },
       actions: {
-        type: Array,
+        type:    Array,
         default: []
       },
       colspan: {
@@ -48,6 +48,6 @@
 <style scoped>
   .g3w-feature-actions {
     padding: 3px;
-
+    background-color: rgba(34, 45, 50, 0.1) !important;
   }
 </style>

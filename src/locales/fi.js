@@ -17,7 +17,7 @@ export default {
         nofilter: "Poista Suodattaa",
         invert: "Käänteinen Valinta",
         clear: "Peruuttaa Valinta",
-        show_features_on_map: "Näytä kartalla näkyvät ominaisuudet",
+        show_features_on_map: "Päivitä tulokset karttaa siirtäessäsi",
         savefilter: "Tallenna suodatin",
         filterName: "Suodattimen Nimi",
       }
@@ -190,8 +190,10 @@ export default {
         download_gpkg: "Lataa GPKG-tiedosto",
         download_csv: "Lataa CSV-tiedosto",
         download_xls: "Lataa XLS-tiedosto",
+        download_pdf: "Lataa PDF-tiedosto",
         show_chart: "Näytä kaavio",
-        atlas: "Tulosta Atlas"
+        atlas: "Tulosta Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -248,6 +250,9 @@ export default {
             download_xls: {
               hint: "Lataa ominaisuuden XLS-tiedosto"
             },
+            download_pdf: {
+              hint: "Lataa ominaisuuden PDF-tiedosto"
+            },
             atlas: {
               hint: "Tulosta Atlas"
             },
@@ -273,12 +278,7 @@ export default {
           no_geometry: 'No geometry on response',
           help: {
             title: 'Ohje - Kysely monikulmiolla',
-            message: `
-                <ul>
-                  <li>Valitse monikulmiotaso luettelosta.</li>
-                  <li>Tarkista, että taso on näkyvillä.</li>
-                  <li>Valitse ominaisuus valitulla tasolla.</li>
-                </ul>`
+            message: "<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>"
           }
         },
         querybydrawpolygon: {
@@ -289,10 +289,7 @@ export default {
           nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
           help: {
             title: 'Ohje - Tasoon kohdistuva BBox-kysely',
-            message:`
-                 <ul>
-                  <li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li>
-                 </ul>`
+            message: "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>"
           }
         },
         addlayer: {
@@ -375,9 +372,17 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Uuden teeman nimi',
+        project_map_theme : 'Projektin Themes',
+        user_map_theme: 'Käyttäjä Themes',
+        question_delete_map_theme: "Haluatko poistaa teeman?",
+        delete_map_theme: "Teeman poistaminen onnistui",
+        saved_map_theme: "Teeman tallennus onnistui",
+        updated_map_theme: "Teeman päivittää onnistui",
+        invalid_map_theme_name: "Nimi on jo olemassa tai se on virheellinen",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Kerroksen sijainti',
+          setwmsopacity: "Aseta Opacity",
           wms: {
             title:"",
             copy: "Paina tästä kopioidaksesi url:n.",
@@ -442,6 +447,7 @@ export default {
     server_error: "Yhteysvirhe palvelimeen",
     save: "Tallenna",
     cancel: "Peruuta",
+    update: "Päivittää",
     close: "Sulje",
     /**
      * @since 3.8.0
@@ -480,7 +486,7 @@ export default {
       link_button: "Avaa"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Sijaintiasi ei saada"
       },
       geocoding: {
@@ -537,8 +543,8 @@ export default {
     dataTable: {
       previous: "Edellinen",
       next: "Seuraava",
-      lengthMenu: "Show _MENU_ items",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Näytä _MENU_ arvoa sivulla",
+      info: "tulosta _TOTA_:stä",
       no_data: "Ei tietoja",
       nodatafilterd: "Vastaavia tietueita ei löytynyt",
       infoFiltered: "(filtered from _MAX_ total records)"

@@ -1,5 +1,5 @@
 const { inherit, base } = require('utils');
-const FeaturesStore = require('core/layers/features/featuresstore');
+const FeaturesStore     = require('core/layers/features/featuresstore');
 
 // Storage of the feature in vector layer
 function OlFeaturesStore(options={}) {
@@ -16,8 +16,12 @@ proto.getLength = function() {
 };
 
 //overwrite
-proto.setFeatures = function(features=[]) {
-  features.forEach(feature => this._features.push(feature));
+proto.setFeatures = function(features = []) {
+  //remove features
+  this._features.clear();
+  //add new features
+  this.addFeatures(features);
+  this._features.dispatchEvent('change');
 };
 // overwrite
 proto.readFeatures = function() {
@@ -29,11 +33,11 @@ proto.getFeaturesCollection = function() {
 };
 
 proto.getFeatureById = function(featureId) {
-  return this._features.getArray().find(feature => feature.getId() == featureId);
+  return this._features.getArray().find(feature => featureId == feature.getId());
 };
 
 proto.getFeatureByUid = function(uid) {
-  return this._features.getArray().find(feature => feature.getUid() === uid);
+  return this._features.getArray().find(feature => uid === feature.getUid());
 };
 
 proto._addFeature = function(feature) {
@@ -42,7 +46,7 @@ proto._addFeature = function(feature) {
   this._features.dispatchEvent('change')
 };
 
-//sobtitute the feature after modify
+//substitute the feature after modifying
 proto._updateFeature = function(feature) {
   // set index at -1
   let index = -1;

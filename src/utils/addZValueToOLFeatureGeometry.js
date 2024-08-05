@@ -2,6 +2,18 @@ import { GEOMETRY_TYPES } from 'app/constant';
 import { is3DGeometry }   from 'utils/is3DGeometry';
 
 /**
+ * @since 3.10.0 Add a 3d coordinate eventually, if coordinates are 2 (x, y)
+ * @param coords
+ * @return {*}
+ */
+function add3DCoordinate(coords) {
+  if (2 === coords.length) {
+    coords.push(0);
+  }
+  return coords;
+}
+
+/**
  * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
  */
 export function addZValueToOLFeatureGeometry({
@@ -24,8 +36,7 @@ export function addZValueToOLFeatureGeometry({
     case GEOMETRY_TYPES.POINTM:
     case GEOMETRY_TYPES.POINTZM:
     case GEOMETRY_TYPES.POINT25D:
-      coords.push(0);
-      feature.getGeometry().setCoordinates(coords);
+      feature.getGeometry().setCoordinates(add3DCoordinate(coords));
       break;
 
     // MULTIPOINT: [ [x1, y1], [x2, y2] ]
@@ -42,7 +53,7 @@ export function addZValueToOLFeatureGeometry({
     case GEOMETRY_TYPES.LINEM:
     case GEOMETRY_TYPES.LINEZM:
     case GEOMETRY_TYPES.LINE25D:
-      coords.forEach(c => c.push(0));
+      coords.forEach(c => add3DCoordinate(c));
       feature.getGeometry().setCoordinates(coords);
       break;
 
@@ -58,7 +69,7 @@ export function addZValueToOLFeatureGeometry({
     case GEOMETRY_TYPES.MULTILINEM:
     case GEOMETRY_TYPES.MULTILINEZM:
     case GEOMETRY_TYPES.MULTILINE25D:
-      coords.forEach(line => line.forEach(c => c.push(0)));
+      coords.forEach(l => l.forEach(c => add3DCoordinate(c)));
       feature.getGeometry().setCoordinates(coords);
       break;
 
@@ -69,7 +80,7 @@ export function addZValueToOLFeatureGeometry({
     case GEOMETRY_TYPES.POLYGONM:
     case GEOMETRY_TYPES.POLYGONZM:
     case GEOMETRY_TYPES.POLYGON25D:
-      coords[0].forEach(c => c.push(0));
+      coords[0].forEach(c => add3DCoordinate(c));
       feature.getGeometry().setCoordinates(coords);
       break;
 
@@ -81,7 +92,7 @@ export function addZValueToOLFeatureGeometry({
     case GEOMETRY_TYPES.MULTIPOLYGONM:
     case GEOMETRY_TYPES.MULTIPOLYGOZM:
     case GEOMETRY_TYPES.MULTIPOLYGON25D:
-      coords.forEach(poly => poly[0].forEach(c => c.push(0)));
+      coords.forEach(poly => poly[0].forEach(c => add3DCoordinate(c)));
       feature.getGeometry().setCoordinates(coords);
       break;
 
@@ -91,4 +102,4 @@ export function addZValueToOLFeatureGeometry({
   }
 
   return feature;
-};
+}

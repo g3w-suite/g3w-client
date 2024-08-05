@@ -1,9 +1,9 @@
 const { inherit, base } = require('utils');
-const Service = require('gui/inputs/service');
-const Validators = require('utils/validators');
+const Service           = require('gui/inputs/service');
+const Validators        = require('utils/validators');
 
-function RangeService(options={}) {
-  const {min, max} = options.state.input.options.values[0];
+function RangeService(options = {}) {
+  const { min, max } = options.state.input.options.values[0];
   options.state.info = `[MIN: ${min} - MAX: ${max}]`;
   base(this, options);
   const validator = Validators.get('range', {
