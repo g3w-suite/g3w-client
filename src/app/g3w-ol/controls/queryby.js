@@ -148,6 +148,7 @@ export class QueryBy extends InteractionControl {
               reset() {
                 /** @FIXME use v-t="help" */
                 this.$refs.help.innerHTML = t(this.help);
+                this.layers.splice(0);
                 // reset autorun options
                 this.types.filter(t => t !== this.type).forEach(t => {
                   if ('querybbox' === t)          { QUERY.bbox     = null; }
@@ -164,7 +165,7 @@ export class QueryBy extends InteractionControl {
                 }
                 // set queryable layers (select2)
                 setTimeout(() => {
-                  this.layers = CONTROLS[this.type].layers;
+                  this.layers.push(...this.queryable);
                   // ensure selected layer can be used for current control
                   if (!this.layers.find(l => l.getId() === this.selectedLayer)) {
                     this.clearSelectedLayer();
@@ -443,7 +444,7 @@ export class QueryBy extends InteractionControl {
     this.types.forEach(t => {
       const control = CONTROLS[t];
 
-      control.layers.splice(0, control.layers.length, ..._getAvailableLayers(t));
+      control.layers = _getAvailableLayers(t);
 
       // set layer property
       if ('querybbox' === t) {
@@ -468,9 +469,15 @@ export class QueryBy extends InteractionControl {
   onRemoveExternalLayer(layer) {
     this.types.forEach(t => {
       const control = CONTROLS[t];
-      control.layers.splice(0, control.layers.length, ..._getAvailableLayers(t).filter(l => l.getId() !== layer.getId()));
+      control.layers = _getAvailableLayers(t).filter(l => l.getId() !== layer.getId());
       control.setEnable(control.isToggled() && _hasVisible(CONTROLS[t]));
       control._interaction.setActive(control.getEnable());
+    });
+    /** @TODO find a better way to update "layers" list (select2) within vue component */
+    setTimeout(() => {
+      if (this.usermessage) {
+        this.usermessage.reset();
+      }
     });
   }
 
