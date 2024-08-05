@@ -448,13 +448,12 @@ export default {
       if (!layer.projectLayer) {
         layer.visible = layer.checked;
         layer.setVisible(layer.checked);
-        map.updateMapLayers();
         map.emit('change-layer-visibility', { id: layer.id, visible: layer.checked });
         return;  // NB exit early!
       }
 
       // project layer (eg. qgis layer)
-      const qlayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const qlayer  = CatalogLayersStoresRegistry.getLayerById(layer.id);
       const checked = layer.checked;
 
       qlayer.setVisible(checked ? !layer.disabled : false)
