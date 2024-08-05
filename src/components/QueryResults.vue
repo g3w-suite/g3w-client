@@ -862,13 +862,14 @@
       },
 
       /**
-       * @since v3.11.0
        * Highlight all features of layer
+       *
        * @param layers
        * @param opts
+       *
+       * @since 3.11.0
        */
       highLightLayerFeatures(layer, opts = { highlight: true }) {
-        //in case of geometry layer and has more than one features on a result
         if (layer.hasgeometry && layer.features.length > 1) {
           this.$options.service.highLightLayerFeatures(layer, opts);
         }
