@@ -391,6 +391,8 @@ export default {
      * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
+      const map = GUI.getService('map');
+
       if (!group.checked) {
         group.nodes.forEach(n => {
           if (undefined === n.id) {
@@ -399,6 +401,7 @@ export default {
             CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(false);
           }
         });
+        map.updateMapLayers();
         return; // NB exit early!
       }
 
@@ -424,6 +427,8 @@ export default {
         g.checked = g.root || g.checked;
         g         = g.parentGroup;
       }
+
+      map.updateMapLayers();
     },
 
     /**
@@ -443,6 +448,7 @@ export default {
       if (!layer.projectLayer) {
         layer.visible = layer.checked;
         layer.setVisible(layer.checked);
+        map.updateMapLayers();
         map.emit('change-layer-visibility', { id: layer.id, visible: layer.checked });
         return;  // NB exit early!
       }
