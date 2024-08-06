@@ -527,7 +527,7 @@ proto.update = function(mapState, extraParams) {
  */
 proto.setVisible = function(bool) {
   if (this._mapLayer) {
-    return this.getOLLayer().setVisible(bool)
+    this.getOLLayer().setVisible(bool)
   }
   return Layer.prototype.setVisible.call(this, bool);
 }

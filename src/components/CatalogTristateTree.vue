@@ -401,7 +401,6 @@ export default {
             CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(false);
           }
         });
-        map.updateMapLayers();
         return; // NB exit early!
       }
 
@@ -427,8 +426,6 @@ export default {
         g.checked = g.root || g.checked;
         g         = g.parentGroup;
       }
-
-      map.updateMapLayers();
     },
 
     /**
@@ -468,8 +465,6 @@ export default {
         g.checked = true;
         g         = g.parentGroup;
       }
-
-      map.updateMapLayers();
 
       VM.$emit('treenodevisible', qlayer);
     },
