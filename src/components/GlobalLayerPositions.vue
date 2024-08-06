@@ -16,6 +16,7 @@
       <div
         v-for = "layerposition in layerpositions"
         :key  = "layerposition"
+        style = "margin: 0 5px;"
       >
         <input
           @change  = "change"
@@ -54,7 +55,7 @@
         this.$emit('layer-position-change', this.position)
       }
     },
-    created(){
+    created() {
       this.ids = {
         layerpositions: getUniqueDomId(),
       };
@@ -70,7 +71,7 @@
     flex-direction: column;
     margin: 5px 0 5px 0;
   }
-  .g3w-layer-positions-info-message{
+  .g3w-layer-positions-info-message {
     margin-bottom: 5px;
     font-weight: bold;
   }
