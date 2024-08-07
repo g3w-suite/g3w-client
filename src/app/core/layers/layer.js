@@ -199,8 +199,7 @@ class Layer extends G3WObject {
       selected:           config.selected || false,
       disabled:           config.disabled || false,
       metadata:           config.metadata,
-      metadata_querable:  this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
-      openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
+      openattributetable: this.canShowTable(),
       removable:          config.removable || false,
       downloadable:       this.isDownloadable(),
       source:             config.source,
@@ -1522,7 +1521,7 @@ class Layer extends G3WObject {
   /**
    * Get state layer
    *
-   * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), tochighlightable: boolean, featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), metadata_querable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
+   * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), tochighlightable: boolean, featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
    */
   getState() {
     return this.state;
@@ -1683,16 +1682,8 @@ class Layer extends G3WObject {
    * @param { Object } param
    * @param param.map check if request from map point of view or just a capabilities info layer
    */
-  isQueryable({ onMap } = { onMap: false }) {
-    let queryEnabled = false;
-    const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
-    if (!onMap) return queryableForCababilities;
-    // if querable check if is visible or disabled
-    if (queryableForCababilities) {
-      queryEnabled = this.isVisible() && !this.isDisabled();
-      if (this.config.infowhennotvisible !== undefined && this.config.infowhennotvisible === true) queryEnabled = true;
-    }
-    return queryEnabled;
+  isQueryable() {
+    return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
   }
 
   /**
@@ -1904,7 +1895,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getAttributeLabel(name) {
-    const field = this.getAttributes().find(field=> field.name === name);
+    const field = this.getAttributes().find(a => a.name === name);
     return field && field.label;
   }
 
@@ -1952,7 +1943,7 @@ class Layer extends G3WObject {
    * @returns {boolean}
    */
   canShowTable() {
-    if (this.config.not_show_attributes_table) {
+    if (this.config.not_show_attributes_table || this.isBaseLayer()) {
       return false;
     }
 
