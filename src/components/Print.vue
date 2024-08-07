@@ -748,15 +748,18 @@ export default {
     }
 
   },
+
   /**
    * @since 3.10.2
    */
   async mounted() {
     await this.$nextTick();
-    //In the case of first tamplate is atlas, need to create a select2 field
+
+    // when default print template is "atlas" → initialize select2
     if (this.state.atlas) {
       this.initSelect2Field();
     }
+
   }
 
 };
