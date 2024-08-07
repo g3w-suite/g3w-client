@@ -2,7 +2,7 @@ import G3WObject                   from 'core/g3wobject';
 import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'app/constant';
-import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
+import { QgsFilterToken }          from 'utils/QgsFilterToken';
 import { handleQueryResponse }     from 'utils/handleQueryResponse';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';

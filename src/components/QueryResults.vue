@@ -137,7 +137,7 @@
                       layer.features.length > 1 &&
                       (layer.external || (layer.source && layer.source.type !== 'wms'))
                     "
-                    @click.stop             = "selectionFeaturesLayer(layer)"
+                    @click.stop             = "addToSelection(layer)"
                     class                   = "action-button skin-tooltip-left"
                     v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
                     :class                  = "{'toggled': layer.selection.active}"
@@ -684,8 +684,8 @@
       layerHasFeatures(layer) {
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
-      selectionFeaturesLayer(layer) {
-        this.$options.service.selectionFeaturesLayer(layer);
+      addToSelection(layer) {
+        this.$options.service.addToSelection(layer);
       },
       layerHasActions(layer) {
         return this.state.layersactions[layer.id].length > 0;

@@ -1,5 +1,3 @@
-import { createFeatureFromGeometry } from 'utils/createFeatureFromGeometry';
-
 /**
   * @param { Object } opts
   * @param opts.id
@@ -18,11 +16,12 @@ import { createFeatureFromGeometry } from 'utils/createFeatureFromGeometry';
   */
 export function createFeatureFromFeatureObject({ id, feature = {} }) {
   //extract geometry and attributes from feature Object
-  const {geometry, attributes} = feature;
+  const { attributes } = feature;
   //create a new ol feature
-  feature = createFeatureFromGeometry({ id, geometry });
-  Object
-    .keys(attributes)
-    .forEach(attr => feature.set(attr, attributes[attr]));
+  if (feature.geometry) {
+    feature = new ol.Feature(feature.geometry);
+    feature.setId(id);
+  }
+  Object.keys(attributes).forEach(attr => feature.set(attr, attributes[attr]));
   return feature;
 }
