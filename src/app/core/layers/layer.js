@@ -1603,7 +1603,6 @@ class Layer extends G3WObject {
    * @returns {*} type
    */
   getType() {
-    console.log(this);
     return this.type;
   }
 
