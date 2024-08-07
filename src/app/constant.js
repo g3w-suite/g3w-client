@@ -640,6 +640,16 @@ export const INCHES_PER_UNIT = {
   degrees: 4374754
 };
 
+/**
+ * Selection state 
+ * 
+ * @since 3.11.0
+ */
+export const SELECTION = {
+  ALL:     '__ALL__',
+  EXCLUDE: '__EXCLUDE__'
+};
+
 export default {
   APP_VERSION,
   API_BASE_URLS,

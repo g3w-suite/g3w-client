@@ -148,6 +148,7 @@
 </template>
 
 <script>
+import { SELECTION }               from 'app/constant';
 import Component                   from 'core/g3w-component';
 import Field                       from 'components/FieldG3W.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -160,7 +161,6 @@ import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { noop }                    from 'utils/noop';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
-import { SELECTION }               from 'core/layers/mixins/selection';
 
 const { t }                        = require('core/i18n/i18n.service');
 
