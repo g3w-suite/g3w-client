@@ -748,59 +748,69 @@ export default {
     }
 
   },
+  /**
+   * @since 3.10.2
+   */
+  async mounted() {
+    await this.$nextTick();
+    //In the case of first tamplate is atlas, need to create a select2 field
+    if (this.state.atlas) {
+      this.initSelect2Field();
+    }
+  }
 
 };
 </script>
 
 <style>
-#print .select2-container--open {
-  width: 100%;
-}
-#print .select2-container--open input.select2-search__field {
-  color: #555;
-  width: 100%;
-}
-#print.treeview-menu .select2.select2-container {
-  display: block;
-}
-</style>
+  #print .select2-container--open {
+    width: 100%;
+  }
+  #print .select2-container--open input.select2-search__field {
+    color: #555;
+    width: 100%;
+  }
+  #print.treeview-menu .select2.select2-container {
+    display: block;
+  }
+  </style>
 
-<style scoped>
-.print-labels-content {
-  margin-top: 5px;
-  color: white;
-}
-.print-labels-content > span.skin-color {
-  font-weight: bold;
-  font-size: 1.1em;
-  display: block;
-  border-bottom: 2px solid #fff;
-  margin-bottom: 5px;
-}
-.print-labels-content > .labels-input-content {
-  max-height: 120px;
-  overflow-y: auto
-}
-label {
-  color: #fff;
-}
-.box-footer {
-  background-color: transparent;
-}
-#printbutton {
-  width:100%;
-  font-weight: bold;
-  background-color: var(--skin-color);
-}
-#fid-print-atals-instruction {
-  margin-top: 5px;
-  color: #fff;
-}
-#fids_intruction {
-  white-space: pre-line;
-}
-#fids_examples_values {
-  margin-top: 3px;
-  font-weight: bold;
-}
+  <style scoped>
+  .print-labels-content {
+    margin-top: 5px;
+    color: white;
+  }
+  .print-labels-content > span.skin-color {
+    font-weight: bold;
+    font-size: 1.1em;
+    display: block;
+    border-bottom: 2px solid #fff;
+    margin-bottom: 5px;
+  }
+  .print-labels-content > .labels-input-content {
+    max-height: 120px;
+    overflow-y: auto
+  }
+  label {
+    color: #fff;
+  }
+  .box-footer {
+    background-color: transparent;
+  }
+  #printbutton {
+    width:100%;
+    font-weight: bold;
+    background-color: var(--skin-color);
+  }
+  #fid-print-atals-instruction {
+    margin-top: 5px;
+    color: #fff;
+  }
+  #fids_intruction {
+    white-space: pre-line;
+  }
+  #fids_examples_values {
+    margin-top: 3px;
+    font-weight: bold;
+  }
 </style>
