@@ -1,8 +1,8 @@
 import GUI                    from 'services/gui';
 import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
 
-const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
-const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
+const AreaInteraction         = require('g3w-ol/interactions/areainteraction');
+const LengthInteraction       = require('g3w-ol/interactions/lengthinteraction');
 
 export class MeasureControl extends InteractionControl {
 
@@ -10,7 +10,6 @@ export class MeasureControl extends InteractionControl {
     super({
       ...opts,
       clickmap: true,
-      label:    "\ue909",
       enabled:  true,
       onToggled(toggled) {
         // toggle current iteraction

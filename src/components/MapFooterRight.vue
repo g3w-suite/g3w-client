@@ -101,7 +101,7 @@
       },
       switchMapsCoordinateTo4326() {
         this.mouse.epsg_4326 = !this.mouse.epsg_4326;
-        this.service.getMapControlByType('mouseposition').dispatchEvent({
+        this.service.getMapControlByType({ type: 'mouseposition'}).dispatchEvent({
           type: 'change:epsg',
           epsg: this.mouse.epsg_4326 ? 'EPSG:4326' : this.service.getEpsg(),
         })
@@ -115,9 +115,9 @@
     },
     async mounted() {
       this.service.once('ready', () => {
-        if (this.service.getMapControlByType('mouseposition')) {
+        if (this.service.getMapControlByType({ type: 'mouseposition'})) {
           this.mouse.switch_icon = (
-            this.service.getMapControlByType('mouseposition')
+            this.service.getMapControlByType({ type: 'mouseposition'})
             && 'EPSG:4326' !== this.service.getEpsg()
           );
           this.mouse.tooltip = `ESPG ${this.service.getCrs().split(':')[1]} ↔ WGS84`;

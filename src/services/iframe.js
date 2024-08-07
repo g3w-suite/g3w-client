@@ -458,7 +458,7 @@ class AppService extends BaseIframeService {
       this.mapService.once('ready', () => {
         this._map                           = this.mapService.getMap();
         this._mapCrs                        = this.mapService.getCrs();
-        this.mapControls.screenshot.control = this.mapService.getMapControlByType('screenshot');
+        this.mapControls.screenshot.control = this.mapService.getMapControlByType({ type: 'screenshot' });
         this.setReady(true);
         resolve();
       });

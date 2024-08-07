@@ -34,6 +34,8 @@
               <div
                 class       = "box-header with-border"
                 :class      = "{'mobile': isMobile()}"
+                @mouseover  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout  =  "highLightLayerFeatures(layer, { highlight: false })"
                 data-widget = "collapse"
               >
                 <div
@@ -859,6 +861,20 @@
         CatalogLayersStoresRegistry.getLayerById(layer.id).openAttributeTable({ perc: 100 });
       },
 
+      /**
+       * Highlight all features of layer
+       *
+       * @param layers
+       * @param opts
+       *
+       * @since 3.11.0
+       */
+      highLightLayerFeatures(layer, opts = { highlight: true }) {
+        if (layer.hasgeometry && layer.features.length > 1) {
+          this.$options.service.highLightLayerFeatures(layer, opts);
+        }
+      }
+
     },
 
     watch: {
@@ -900,9 +916,7 @@
     created() {
       //PUT HERE THROTTLED FUNCTION
       this.zoomToLayerFeaturesExtent = throttle(layer => {
-        this.$options.service.zoomToLayerFeaturesExtent(layer, {
-          highlight: true
-        });
+        this.$options.service.zoomToLayerFeaturesExtent(layer);
       })
     },
     beforeDestroy() {

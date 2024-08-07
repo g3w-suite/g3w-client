@@ -132,7 +132,9 @@ export class InteractionControl extends ol.control.Control {
 
     this._toggled = false;
 
-    this._interactionClassOptions = options.interactionClassOptions || {};
+    this._toggled = false;
+
+    this._interactionClassOptions = options.interactionClassOptions;
 
     /** @since 3.11.0 */
     if (options.interactionClass) {
@@ -229,17 +231,9 @@ export class InteractionControl extends ol.control.Control {
       this.on('setMap', () => this.toggle(toggled));
     }
 
-    // create modal help message
+    // create an help message
     if (this._help) {
-      this._helpButton = $('<span class="info_mapcontrol_button">i</span>');
-      $(this.element).prepend(this._helpButton);
-      this._helpButton.on('click', event => {
-        event.stopPropagation();
-        GUI.showModalDialog({
-          title: t(this._help.title),
-          message: t(this._help.message),
-        });
-      });
+      this._createModalHelp();
     }
 
     // create tool
@@ -638,8 +632,15 @@ export class InteractionControl extends ol.control.Control {
 
     }
 
-    // create tool on hover button
-    if (this._onhover && 'hover' === toggledTool.how) {
+    switch (toggledTool.how) {
+      case 'hover':
+        this._createToolOnHoverButton();
+        break;
+    }
+  }
+
+  _createToolOnHoverButton() {
+    if (this._onhover) {
       this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
       $(this.element).prepend(this._toolButton);
       this._toolButton.on('click', event => {
@@ -649,7 +650,6 @@ export class InteractionControl extends ol.control.Control {
       $(this.element).hover(() => this._toggled && this._toolButton.show());
       $(this.element).mouseleave(() => this._toolButton.hide());
     }
-
   }
 
   showToggledTool(show = true) {

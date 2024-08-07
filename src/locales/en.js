@@ -198,7 +198,7 @@ export default {
       },
       mapcontrols: {
         query: {
-          tooltip: 'Query point',
+          tooltip: 'Query layer',
           actions: {
             add_selection: {
               hint: "Add/Remove Selection"

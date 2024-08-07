@@ -199,7 +199,7 @@ export default {
       },
       mapcontrols: {
         query: {
-          tooltip: 'Interroga un punto',
+          tooltip: 'Interroga Layer',
           actions: {
             add_selection: {
               hint: "Aggiungi/Rimuovi Selezione"
