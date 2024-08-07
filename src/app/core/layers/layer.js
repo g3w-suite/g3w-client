@@ -249,7 +249,7 @@ class Layer extends G3WObject {
    *****************************************************************************************/
 
   /** 
-   * @returns promise
+   * @returns { Promise }
    */
   getDownloadFilefromDownloadDataType(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
@@ -271,66 +271,17 @@ class Layer extends G3WObject {
     });
   }
 
-  /**
-   * @param data
-   * 
-   * @returns {Promise | Promise<unknown>} Getotiff layer format
-   */
-  getGeoTIFF({ data = {} } = {}) {
-    return this.getDownloadFilefromDownloadDataType('geotiff', { data });
-  }
+  getGeoTIFF({ data = {} } = {}) { return this.getDownloadFilefromDownloadDataType('geotiff',   { data }); }
+  getXls({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('xls',       { data }); }
+  getShp({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('shapefile', { data }); }
+  getGpx({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('gpx',       { data }); }
+  getGpkg({ data = {} } = {})    { return this.getDownloadFilefromDownloadDataType('gpkg',      { data }); }
+  getCsv({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('csv',       { data }); }
 
   /**
-   * @param data
-   * 
-   * @returns {Promise | Promise<unknown>} Xls layer format
+   * @returns { string[] } download formats
    */
-  getXls({ data = {} } = {}) {
-    return this.getDownloadFilefromDownloadDataType('xls', { data });
-  }
-
-  /**
-   * @param data
-   * 
-   * @returns {Promise | Promise<unknown>} shapefile layer format
-   */
-  getShp({ data = {} } = {}) {
-    return this.getDownloadFilefromDownloadDataType('shapefile', { data });
-  }
-
-  /**
-   * @param data
-   * 
-   * @returns {Promise | Promise<unknown>} gpx layer format
-   */
-  getGpx({ data = {} } = {}) {
-    return this.getDownloadFilefromDownloadDataType('gpx', { data });
-  }
-
-  /**
-   * @param data
-   * 
-   * @returns {Promise | Promise<unknown>} gpkg layer format
-   */
-  getGpkg({ data = {} } = {}) {
-    return this.getDownloadFilefromDownloadDataType('gpkg', { data });
-  }
-
-  /**
-   * @param data
-   * 
-   * @returns {Promise | Promise<unknown>} csv layer format
-   */
-  getCsv({ data = {} } = {}) {
-    return this.getDownloadFilefromDownloadDataType('csv', { data });
-  }
-
-  /**
-   * @returns { string[] } downlaod formats
-   */
-  getDownloadableFormats() {
-    return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format);
-  }
+  getDownloadableFormats() { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
 
   /**
    * @param download url
