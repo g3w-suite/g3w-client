@@ -749,6 +749,17 @@ export default {
 
   },
 
+  /**
+   * @since 3.10.2
+   */
+  async mounted() {
+    await this.$nextTick();
+    // when default print template is "atlas" → initialize select2
+    if (this.state.atlas) {
+      this.initSelect2Field();
+    }
+  }
+
 };
 </script>
 
