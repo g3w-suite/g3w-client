@@ -266,12 +266,10 @@ proto.getLayerForEditing = async function({
     this.setProjectType(project_type);
   }
 
-  this.setEditingUrl();
-
   try {
     return await this.clone().layerForEditing; // cloned editable layer
-  } catch(err) {
-    return err;
+  } catch(e) {
+    return e;
   }
 
 };

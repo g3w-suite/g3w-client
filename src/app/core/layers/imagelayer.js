@@ -186,7 +186,8 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   getWFSLayerName() {
-    return this.getQueryLayerName().replace(/\s/g, '_').replaceAll( ':', '-' );
+    const name = ((this.config.infolayer && this.config.infolayer !== '') ? this.config.infolayer : this.getName());
+    return name.replace(/\s/g, '_').replaceAll( ':', '-' );
   }
 
   useProxy(){

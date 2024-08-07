@@ -1496,15 +1496,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @TODO Add description
-   *
-   * @returns {*|*[]}
-   */
-  getFieldsOutOfFormStructure() {
-    return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => structure.field_name) : []
-  }
-
-  /**
    * @returns { boolean } whether it has form structure
    */
   hasFormStructure() {
@@ -1567,13 +1558,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @returns {boolean} whether it was modified (by editing)
-   */
-  isModified() {
-    return this.state.modified;
-  }
-
-  /**
    * @returns {*|string} id
    */
   getId() {
@@ -1609,31 +1593,20 @@ class Layer extends G3WObject {
   }
 
   /**
-   * Get Server type
-   *
-   * @returns {*|string|{wmst: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, virtual: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, oracle: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, delimitedtext: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wfs: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider}, wcs: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, arcgismapserver: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, mdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, vectortile: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, "vector-tile": {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, gdal: {filter: null, search: null, data: null, query: Providers.WMSDataProvider}, ogr: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, wms: {filter: Providers.WFSDataProvider, search: null, data: null, query: Providers.WMSDataProvider}, postgres: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, mssql: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}, spatialite: {filter: Providers.WFSDataProvider, search: Providers.QGISProvider, data: Providers.QGISProvider, query: Providers.WMSDataProvider, filtertoken: Providers.QGISProvider}}}
+   * @returns { string } Server type
    */
   getServerType() {
-    return (this.config.servertype && this.config.servertype !== '') ?
-      this.config.servertype :
-      ServerTypes.QGIS;
+    return this.config.servertype || Layer.ServerTypes.QGIS;
   }
 
   /**
    * @returns {*} type
    */
   getType() {
+    console.log(this);
     return this.type;
   }
 
-  /**
-   * Set Type
-   *
-   * @param type
-   */
-  setType(type) {
-    this.type = type;
-  }
 
   /**
    * Check if layer is a type passed
@@ -1684,15 +1657,6 @@ class Layer extends G3WObject {
    */
   isQueryable() {
     return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
-  }
-
-  /**
-   * @TODO Add description
-   *
-   * @returns {string|string|*}
-   */
-  getOws() {
-    return this.config.ows;
   }
 
   /**
@@ -1771,40 +1735,10 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @returns config.urls
-   */
-  getUrls() {
-    return this.config.urls;
-  }
-
-  /**
-   * Set editing url
-   */
-  setEditingUrl(url) {
-    this.config.urls.editing = url || this.config.urls.editing;
-  }
-
-  /**
    * @returns {*} query url
    */
   getQueryUrl() {
     return this.config.urls.query;
-  }
-
-  /**
-   * Set query url
-   *
-   * @param queryUrl
-   */
-  setQueryUrl(queryUrl) {
-    this.config.urls.query = queryUrl;
-  }
-
-  /**
-   * @returns {*}
-   */
-  getQueryLayerName() {
-    return (this.config.infolayer && this.config.infolayer !== '') ? this.config.infolayer : this.getName();
   }
 
   /**
@@ -2142,18 +2076,18 @@ Layer.LayerTypes = {
  * Server Types
  */
 Layer.ServerTypes = {
-  OGC: "OGC",
-  QGIS: "QGIS",
-  Mapserver: "Mapserver",
-  Geoserver: "Geoserver",
+  OGC:             "OGC",
+  QGIS:            "QGIS",
+  Mapserver:       "Mapserver",
+  Geoserver:       "Geoserver",
   ARCGISMAPSERVER: "ARCGISMAPSERVER",
-  OSM: "OSM",
-  BING: "Bing",
-  LOCAL: "Local",
-  TMS: "TMS",
-  WMS: "WMS",
-  WMTS: "WMTS",
-  G3WSUITE: "G3WSUITE"
+  OSM:             "OSM",
+  BING:            "Bing",
+  LOCAL:           "Local",
+  TMS:             "TMS",
+  WMS:             "WMS",
+  WMTS:            "WMTS",
+  G3WSUITE:        "G3WSUITE"
   /** 
    * ADD ALSO TO PROVIDER FACTORY (@TODO or already done?) 
    */
