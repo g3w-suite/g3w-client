@@ -43,10 +43,11 @@ export default {
     // called when input value change
     change() {
       this.service.setEmpty();
-      this.service.setUpdate();
       // validate input every time on change
-      // becase can be insert a text where state.input.type (widget) is text but state.type is integer
+      // because can be inserted a text where state.input.type (widget) is text but state.type is integer
       this.service.validate();
+      //after check if is valid need to set update
+      this.service.setUpdate();
       // emit change input
       this.$emit('changeinput', this.state);
     },

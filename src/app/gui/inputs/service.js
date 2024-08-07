@@ -85,7 +85,7 @@ proto.setValidator = function(validator) {
   this._validator = validator;
 };
 
-proto.setEmpty = function(){
+proto.setEmpty = function() {
   this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value)));
 };
 
@@ -146,8 +146,8 @@ proto.setErrorMessage = function() {
 /**
  * Method to set update
  */
-proto.setUpdate = function(){
-  const {value, _value} = this.state;
+proto.setUpdate = function() {
+  const { value, _value } = this.state;
   if ('media' === this.state.input.type && 'Object' !== toRawType(value) && 'Object' !== toRawType(_value)) {
     this.state.update = value.value != _value.value;
   } else if ("datetimepicker" === this.state.input.type) {
