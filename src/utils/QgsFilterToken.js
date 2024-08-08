@@ -3,7 +3,7 @@
  * @since 3.9.0
  */
 
-import { XHR } from 'utils';
+import { XHR } from 'utils/XHR';
 
 export const QgsFilterToken = {
 
