@@ -1,6 +1,6 @@
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-const WMSLayer     = require('core/layers/map/wmslayer');
+const { WMSLayer } = require('core/layers/imagelayer');
 
 /**
  * @param { Object } wms 

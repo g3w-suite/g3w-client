@@ -4,6 +4,7 @@ import {
   LIST_OF_RELATIONS_TITLE,
   LIST_OF_RELATIONS_ID,
 }                                               from 'app/constant';
+import G3WObject                                from 'core/g3w-object';
 import ProjectsRegistry                         from 'store/projects';
 import DataRouterService                        from 'services/data';
 import CatalogLayersStoresRegistry              from 'store/catalog-layers';
@@ -18,18 +19,15 @@ import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoo
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { printAtlas }                           from 'utils/printAtlas';
+import { noop }                                 from 'utils/noop';
+import { downloadFile }                         from 'utils/downloadFile';
+import { throttle }                             from 'utils/throttle';
+import { getUniqueDomId }                       from 'utils/getUniqueDomId';
+import { copyUrl }                              from 'utils/copyUrl';
 
-const {
-  noop,
-  downloadFile,
-  throttle,
-  getUniqueDomId,
-  copyUrl,
-}                                = require('utils');
 const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
-const G3WObject                  = require('core/g3wobject');
-const VectorLayer                = require('core/layers/vectorlayer');
+const { VectorLayer }            = require('core/layers/vectorlayer');
 const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 

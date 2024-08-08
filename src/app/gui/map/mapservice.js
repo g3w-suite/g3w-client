@@ -25,7 +25,7 @@ import { ScaleControl }                     from 'g3w-ol/controls/scalecontrol';
 import { ScreenshotControl }                from 'g3w-ol/controls/screenshotcontrol';
 import { MeasureControl }                   from 'g3w-ol/controls/measurecontrol';
 
-const VectorLayer                = require('core/layers/vectorlayer');
+const { VectorLayer }            = require('core/layers/vectorlayer');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 /**
@@ -477,7 +477,8 @@ class MapService extends G3WObject {
                                 l => l.getMultiLayerId()
                               )
                             ) || []).map(([id, layers]) => {
-                              const mapLayer = new (require('core/layers/map/wmslayer'))({
+                              const { WMSLayer } = require('core/layers/imagelayer');
+                              const mapLayer = new WMSLayer({
                                 url:   project.getWmsUrl(),
                                 id:    'overview_layer_' + id,
                                 tiled: layers[0].state.tiled,
@@ -1391,7 +1392,7 @@ class MapService extends G3WObject {
   }
 
   getMapLayerByLayerId(layerId) {
-    return this.getMapLayers().find(mapLayer => mapLayer.getLayerConfigs().find(layer => layerId === layer.getId()))
+    return this.getMapLayers().find(l => l.getLayerConfigs().find(layer => layerId === layer.getId()))
   }
 
   getMapLayers() {

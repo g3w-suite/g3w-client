@@ -1,11 +1,11 @@
 import ApplicationState from 'store/application-state'
 
-const Layer          = require('core/layers/layer');
-const TableLayer     = require('core/layers/tablelayer');
-const VectorLayer    = require('core/layers/vectorlayer');
-const ImageLayer     = require('core/layers/imagelayer');
-const WMSLayer       = require('core/layers/map/wmslayer');
-const VectorMapLayer = require('core/layers/map/vectorlayer');
+const Layer              = require('core/layers/layer');
+const TableLayer         = require('core/layers/tablelayer');
+const { VectorLayer }    = require('core/layers/vectorlayer');
+const { VectorMapLayer } = require('core/layers/vectorlayer');
+const { ImageLayer }     = require('core/layers/imagelayer');
+const { WMSLayer }       = require('core/layers/imagelayer');
 
 const WITH_GEOMETRY = [
   Layer.SourceTypes.VIRTUAL,
@@ -210,6 +210,9 @@ const BASE_LAYERS   = {
 
 /**
  * @TODO replace "GeojsonLayer" class with a "VectorLayer" instance
+ * 
+ * ORIGINAL SOURCE: src/app/core/layers/map/geojson.js@v3.10.1
+ * ORIGINAL SOURCE: src/app/core/layers/geojson.js@v3.10.1
  */
 class GeojsonLayer extends VectorLayer {
   

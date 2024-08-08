@@ -133,11 +133,8 @@ const LayersStore                = require('core/layers/layersstore');
 const Layer                      = require('core/layers/layer');
 const LayerFactory               = require('core/layers/layerfactory');
 const TableLayer                 = require('core/layers/tablelayer');
-const VectorLayer                = require('core/layers/vectorlayer');
-const ImageLayer                 = require('core/layers/imagelayer');
-const WmsLayer                   = require('core/layers/map/wmslayer');
-const XYZLayer                   = require('core/layers/map/xyzlayer');
-const MapLayer                   = require('core/layers/map/maplayer');
+const { VectorLayer }            = require('core/layers/vectorlayer');
+const { ImageLayer }             = require('core/layers/imagelayer');
 const Feature                    = require('core/layers/features/feature');
 const FeaturesStore              = require('core/layers/features/featuresstore');
 const OlFeaturesStore            = require('core/layers/features/olfeaturesstore');
@@ -297,9 +294,6 @@ const g3wsdk = {
       TableLayer,
       VectorLayer,
       ImageLayer,
-      WmsLayer,
-      XYZLayer,
-      MapLayer,
       features: {
         Feature,
         FeaturesStore,

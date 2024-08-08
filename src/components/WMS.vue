@@ -307,9 +307,9 @@
         opacity,
         visible=true
       } = {}) {
-        const map        = GUI.getService('map');
-        const WMSLayer   = require('core/layers/map/wmslayer');
-        const projection = ol.proj.get(epsg);
+        const map          = GUI.getService('map');
+        const { WMSLayer } = require('core/layers/imagelayer');
+        const projection   = ol.proj.get(epsg);
 
         const promise = new Promise((res, rej) => {
           const wmslayer = new WMSLayer({ id: name || getUniqueDomId(), layers, projection, url });
