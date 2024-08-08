@@ -17,7 +17,6 @@ import { prompt }                from 'utils/prompt';
 import Table                     from 'components/Table.vue';
 
 const { t }                      = require('core/i18n/i18n.service');
-const Relation                   = require('core/relations/relation');
 const Providers                  = require('core/layers/providersfactory');
 const deprecate                  = require('util-deprecate');
 
@@ -86,13 +85,61 @@ class Layer extends G3WObject {
     this._relations = {
 
       /**
+       * ORIGINAL SOURCE: src/app/core/relations/relation.js@v3.10.1
+       * 
        * Relations store
        * 
        * @type { Relation[] }
        */
-      _relations: (relations || []).reduce((relations, conf) => {
-        const r = new Relation(conf);
-        relations[r.getId()] = r;
+      _relations: (relations || []).reduce((relations, config = {}) => {
+        const suffix = Date.now();
+        /** relation state */
+        const state = {
+          /** @type { boolean } loading state (for editing purpose) */
+          loading:     false,
+          /** @type { string } relation id */ 
+          id:          config.id       || `id_${suffix}`,
+          /** @type { string } relation name */ 
+          name:        config.name     || `name_${suffix}`,
+          origname:    config.origname || `origname_${suffix}`,
+          /** @type { string[] } layerId of father relation */
+          father:      config.referencedLayer,
+          /** @type { string[] } layerId of child relation */
+          child:       config.referencingLayer,
+          /** @type { 'MANY' | ONE' | string } relation type */
+          type:        config.type,
+          /** @since 3.9.0 */
+          editable:    config.editable || false,
+          /** @type { string } relation prefix (for Relation 1:1) @since 3.9.0 */
+          prefix:      config.prefix,
+          /** BACKCOMP (g3w-admin < v.3.7.0) - father relation field name */
+          fatherField: [].concat(config.fieldRef.referencedField),
+          /** BACKCOMP (g3w-admin < v.3.7.0) - child relation layer field name */
+          childField:  [].concat(config.fieldRef.referencingField),
+        }
+        relations[state.id] = Object.assign(new G3WObject(config), {
+          state,
+          getId:          () => state.id,
+          setId:          id => state.id = id,
+          getName:        () => state.name,
+          setName:        n   => state.name = n,
+          getChild:       () => state.child,
+          getFather:      () => state.father,
+          getState:       () => state,
+          getType:        () => state.type,
+          getFatherField: () => state.fatherField,
+          getChildField:  () => state.childField,
+          setLoading:     b  => state.loading = !!b,
+          isLoading:      () => state.loading,
+          isEditable:     () => state.editable,
+          getPrefix:      () => state.prefix,
+          /** @returns {{ father, child }} relation fields */
+          getFields:      () => ({ father: state.fatherField, child: state.childField, }),
+          /** @FIXME `state.title` is not defined */
+          getTitle:       () => state.title,
+          /** @FIXME `state.title` is not defined */
+          setTitle:       t => state.title = t,
+        });
         return relations;
       }, {}),
 
@@ -172,8 +219,6 @@ class Layer extends G3WObject {
       getRelationById(id)                        { return this._relations[id]; },
       getArray()                                 { return Object.entries(this._relations).map(r => r[1]); },
       getRelationByFatherChildren(father, child) { return this.getRelationById(this._relationsInfo.father_child[father + child]); },
-      addRelation(r)                             { if (r instanceof Relation) { this._relations[r.getId()] = r;    this._reloadRelationsInfo(); } },
-      removeRelation(r)                          { if (r instanceof Relation) { delete this._relations[r.getId()]; this._reloadRelationsInfo(); } },
       isChild(id)                                { return !!this._relationsInfo.children[id]; },
       isFather(id)                               { return !!this._relationsInfo.fathers[id]; },
       hasChildren(layer_id)                      { return (this.getChildren(layer_id) || []).length > 0; },
