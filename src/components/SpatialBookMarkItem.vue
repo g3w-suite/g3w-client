@@ -24,9 +24,8 @@
 </template>
 
 <script>
-  import GUI from 'services/gui';
-
-  const Projections = require('g3w-ol/projection/projections');
+  import GUI         from 'services/gui';
+  import Projections from 'store/projections';
 
   export default {
 

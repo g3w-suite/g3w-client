@@ -7,12 +7,11 @@
 
 import GUI                                from 'services/gui';
 import ApplicationService                 from 'services/application';
+import Projections                        from 'store/projections';
 import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
 import { getScaleFromResolution }         from 'utils/getScaleFromResolution';
 import { XHR }                            from 'utils/XHR';
 import { sanitizeUrl }                    from 'utils/sanitizeUrl';
-
-const Projections                         = require('g3w-ol/projection/projections');
 
 /**
  * ES6 mixin

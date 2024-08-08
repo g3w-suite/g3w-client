@@ -88,7 +88,7 @@
 </template>
 
 <script>
-const Projections = require('g3w-ol/projection/projections');
+import Projections from 'store/projections';
 
 export default {
 

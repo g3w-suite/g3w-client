@@ -1,8 +1,5 @@
 import { SPATIAL_METHODS } from 'app/constant';
-import { VM }              from 'app/eventbus';
 import GUI                 from 'services/gui';
-
-const { t }   = require('core/i18n/i18n.service');
 
 export class InteractionControl extends ol.control.Control {
 

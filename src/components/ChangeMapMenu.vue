@@ -90,12 +90,12 @@
 
 <script>
 
-import ApplicationService            from "services/application";
+import ApplicationService            from 'services/application';
 import ProjectsRegistry              from "store/projects";
-import { API_BASE_URLS, LOGO_GIS3W } from "app/constant";
+import Projections                   from 'store/projections';
+import { API_BASE_URLS, LOGO_GIS3W } from 'app/constant';
+import { XHR }                       from 'utils/XHR';
 
-const Projections = require('g3w-ol/projection/projections');
-const { XHR }     = require('utils');
 
 /** Cached HTTP GET request */
 async function get_macro(id) {

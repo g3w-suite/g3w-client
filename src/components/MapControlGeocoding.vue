@@ -185,13 +185,12 @@ import ApplicationState                 from 'store/application-state';
 import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChooseLayer.vue';
 import { PluginsRegistry }              from "store";
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
+import Projections                      from 'store/projections';
 import { toRawType, uniqueId }          from 'utils';
 import { flattenObject }                from 'utils/flattenObject';
 import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
 import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
-
-const Projections                   = require('g3w-ol/projection/projections');
 
 /**
  * Provider definitions.

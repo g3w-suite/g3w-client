@@ -4,6 +4,7 @@ import {
   TOC_THEMES_INIT_STATUS,
 }                         from 'app/constant';
 import ApplicationState   from 'store/application-state';
+import Projections        from 'store/projections';
 import ApplicationService from 'services/application';
 import { crsToCrsObject } from 'utils/crsToCrsObject';
 import G3WObject          from 'core/g3wobject';
@@ -11,7 +12,6 @@ import G3WObject          from 'core/g3wobject';
 const { base, inherit, XHR } = require('utils');
 const LayerFactory           = require('core/layers/layerfactory');
 const LayersStore            = require('core/layers/layersstore');
-const Projections            = require('g3w-ol/projection/projections');
 
 /**
  * @FIXME options param appears to be unused

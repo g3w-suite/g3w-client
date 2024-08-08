@@ -1,6 +1,7 @@
 import { DOTS_PER_INCH }      from 'constant';
 import G3WObject              from 'core/g3w-object';
 import ApplicationState       from 'store/application-state';
+import Projections            from 'store/projections';
 import ProjectsRegistry       from 'store/projects';
 import ApplicationService     from 'services/application';
 import { get_legend_params }  from 'utils/get_legend_params';
@@ -8,7 +9,6 @@ import GeoLayerMixin          from 'core/layers/mixins/geo';
 
 const Layer                   = require('core/layers/layer');
 const { VectorLayer }         = require('core/layers/vectorlayer');
-const Projections             = require('g3w-ol/projection/projections');
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)

@@ -12,7 +12,7 @@ const TableLayer     = require('core/layers/tablelayer');
  * 
  * ORIGINAL SOURCE: src/app/core/layers/map/vectorlayer.js@v3.10.1
  */
-class VectorMapLayer extends G3WObject{
+class VectorMapLayer extends G3WObject {
 
   constructor(options = {}) {
     super(options);

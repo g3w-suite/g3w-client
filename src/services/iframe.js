@@ -3,18 +3,17 @@
  * @since v3.6
  */
 
+import G3WObject         from 'core/g3w-object';
 import GUI               from 'services/gui';
 import ProjectsRegistry  from 'store/projects';
 import PluginsRegistry   from 'store/plugins';
+import Projections       from 'store/projections';
 import { normalizeEpsg } from 'utils/normalizeEpsg';
 import {
   splitContextAndMethod,
   uniqueId,
   createFilterFormField,
 }                        from 'utils';
-
-const Projections        = require('g3w-ol/projection/projections');
-const G3WObject          = require('core/g3wobject');
 
 /**
  * @param epsg: Number Code of epsg Ex.4326

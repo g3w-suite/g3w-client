@@ -166,9 +166,8 @@
 import { Chrome as ChromeComponent }        from 'vue-color';
 
 import { EPSG }                             from 'app/constant';
+import Projections                          from 'store/projections';
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
-
-const Projections = require('g3w-ol/projection/projections');
 
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS   = [',', ';'];
