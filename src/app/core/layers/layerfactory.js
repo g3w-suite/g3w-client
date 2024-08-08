@@ -208,56 +208,12 @@ const BASE_LAYERS   = {
 
 };
 
-/**
- * @TODO replace "GeojsonLayer" class with a "VectorLayer" instance
- * 
- * ORIGINAL SOURCE: src/app/core/layers/map/geojson.js@v3.10.1
- * ORIGINAL SOURCE: src/app/core/layers/geojson.js@v3.10.1
- */
-class GeojsonLayer extends VectorLayer {
-  
-  constructor(config, options) {
-    super(config, options);
-    this.config.style = config.style;
-    this.setup(config)
-  }
-
-  getMapLayer() {
-    if (!this._mapLayer) {
-      this._mapLayer = new VectorMapLayer({
-        url:        this.get('source').url,
-        projection: this.getProjection().getCode(),
-        id:         this.getId(),
-        name:       this.getName(),
-        style:      this.get('style'),
-        provider:   this.getProvider('data')
-      });
-      this._mapLayer.setProvider(this.getProvider('data'));
-      this._mapLayer.getFeatures({
-        url:           this.get('source').url,
-        mapProjection: this._mapLayer.mapProjection 
-      });
-    }
-    return this._mapLayer;
-  }
-
-};
-
-// Class to build layer based on configuration
-class LayerFactory {
+module.exports = {
 
   /**
-   * @returns layer instance
+   * @returns layer instance based on configuration
    */
-  build(config, options) {
-    const layerClass = this.get(config);
-    return layerClass ? new layerClass(config, options) : null
-  }
-
-  /**
-   * @returns layer class
-   */
-  get(config = {}) {
+  build(config, options = {}) {
 
     if (!config.servertype) {
       console.warn('Undefined layer server type');
@@ -290,20 +246,57 @@ class LayerFactory {
     const is_vector_layer  = is_local || is_wfs || (is_g3w && !is_geojson);
     const is_geojson_layer = is_geojson;
 
-    // Return Layer Class
-    if (is_table_layer)   return TableLayer;
-    if (is_image_layer)   return ImageLayer;
-    if (is_vector_layer)  return VectorLayer;
-    if (is_base_layer)    return BASE_LAYERS[config.servertype];
-    if (is_geojson_layer) return GeojsonLayer;
+    /**
+     * TABLE LAYERS
+     */
+    if (is_table_layer)   return new TableLayer(config, options);
+
+    /**
+     * RASTER LAYERS
+     */
+    if (is_image_layer)   return new ImageLayer(config, options);
+    if (is_base_layer)    return new BASE_LAYERS[config.servertype](config, options);
+
+    /**
+     * VECTOR LAYERS
+     */
+    if (is_vector_layer)  {
+      return new VectorLayer(config, options);
+    }
+
+    /**
+     * GEOJSON LAYER
+     * 
+     * ORIGINAL SOURCE: src/app/core/layers/map/geojson.js@v3.10.1
+     * ORIGINAL SOURCE: src/app/core/layers/geojson.js@v3.10.1
+     */
+    if (is_geojson_layer) {
+      const geojson = new VectorLayer(config, options);
+      geojson.config.style = config.style;
+      geojson.getMapLayer  = function() {
+        if (!this._mapLayer) {
+          this._mapLayer = new VectorMapLayer({
+            url:        this.get('source').url,
+            projection: this.getProjection().getCode(),
+            id:         this.getId(),
+            name:       this.getName(),
+            style:      this.get('style'),
+            provider:   this.getProvider('data')
+          });
+          this._mapLayer.setProvider(this.getProvider('data'));
+          this._mapLayer.getFeatures({
+            url:           this.get('source').url,
+            mapProjection: this._mapLayer.mapProjection 
+          });
+        }
+        return this._mapLayer;
+      };
+      geojson.setup(config);
+      return geojson;
+    }
 
     console.warn('Uknown layer server type', config);
 
-    // return BaseLayers[config.source.type.toUpperCase()];
-    // return ImageLayer;
-
   }
 
-}
-
-module.exports = new LayerFactory();
+};

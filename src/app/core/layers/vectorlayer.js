@@ -8,9 +8,11 @@ const Layer          = require('core/layers/layer');
 const TableLayer     = require('core/layers/tablelayer');
 
 /**
+ * @TODO merge "VectorMapLayer" class into "VectorLayer"
+ * 
  * ORIGINAL SOURCE: src/app/core/layers/map/vectorlayer.js@v3.10.1
  */
-class VectorMapLayer extends  G3WObject{
+class VectorMapLayer extends G3WObject{
 
   constructor(options = {}) {
     super(options);
