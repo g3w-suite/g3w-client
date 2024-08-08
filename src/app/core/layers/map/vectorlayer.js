@@ -3,7 +3,7 @@ import GUI                  from 'services/gui';
 import { createOlLayer }    from 'utils/createOlLayer';
 import { createLayerStyle } from 'utils/createLayerStyle';
 
-module.exports = class VectorLayer extends  G3WObject{
+module.exports = class VectorLayer extends  G3WObject {
 
   constructor(options = {}) {
     super(options);

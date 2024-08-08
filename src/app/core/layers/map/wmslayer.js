@@ -13,8 +13,13 @@ class WMSLayer extends MapLayer {
       LAYER: 'layer',
       MULTILAYER: 'multilayer'
     };
+
     this.extraParams = extraParams;
-    this._method = method;
+
+    this._method     = method;
+
+    /** @since 3.11.0 */
+    this._options = options; 
   }
 
   getOLLayer(withLayers) {
@@ -78,22 +83,85 @@ class WMSLayer extends MapLayer {
    * @listens ol.source.ImageWMS~imageloaderror
    */
   _makeOlLayer(withLayers) {
-    const olLayer = WMSLayer._makeOlLayer({
-      layerObj: {
-        url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
-        id:              this.config.id,
-        projection:      this.config.projection,
-        iframe_internal: this.iframe_internal,
-        layers:          (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
-        /** @since 3.9.1 */
-        format:          this.config.format,
-      },
-      extraParams: this.extraParams,
-    }, this._method);
+    let olLayer;
 
-    olLayer.getSource().on('imageloadstart', () => this.emit('loadstart'));
-    olLayer.getSource().on('imageloadend',   () => this.emit('loadend'));
-    olLayer.getSource().on('imageloaderror', () => this.emit('loaderror'));
+    /** @type { 'image' | 'tile' } */
+    let image = 'image';
+    
+    // ARCGIS LAYER
+    if ('ARCGISMAPSERVER' === this._options.type) {
+      olLayer = new ol.layer.Tile({
+        visible: true,
+        source: new ol.source.TileArcGISRest({
+          url:          this.config.url,
+          projection:   this.config.projection,
+        }),
+      });
+    }
+
+    // WMTS LAYER
+    else if ('WMTS' === this._options.type) {
+      image = 'tile';
+      const layerObj = {
+        url:               ('mapproxy' === this.config.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.config.url : this.layers[0].getWmsUrl(),
+        id:                this.config.id,
+        projection:        this.config.projection,
+        iframe_internal:   this.iframe_internal,
+        layers:            (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
+        cache_provider:    this.config.cache_provider, /** @since 3.10.0 **/
+        cache_type:        this.config.cache_type, /** @since 3.10.0  tms, wms**/
+        cache_layer:       this.config.cache_layer,
+        cache_extent:      this.config.cache_extent,
+        cache_grid:        this.config.cache_grid,
+        cache_grid_extent: this.config.cache_grid_extent,
+      };
+  
+      /** @since 3.10.0 - MapProxy WMTS layer **/
+      const resolutions = 'mapproxy' === layerObj.cache_provider && ol.tilegrid.createXYZ({ extent: opts.cache_grid_extent }).getResolutions();
+  
+      olLayer = resolutions
+        ? new ol.layer.Tile({
+          source: new ol.source.WMTS({
+            url:         layerObj.url,
+            layer:       layerObj.cache_layer,
+            matrixSet:   layerObj.cache_grid,
+            format:      layerObj.cache_format || 'png',
+            projection:  layerObj.layers[0].getProjection(),
+            tileGrid: new ol.tilegrid.WMTS({
+              resolutions,
+              origin:    ol.extent.getTopLeft(layerObj.cache_grid_extent),
+              matrixIds: resolutions.map((_, i) => i),
+            }),
+            style:       layerObj.style || '',
+            transparent: false,
+          })
+        })
+        : WMSLayer._makeOlLayer({
+          layerObj,
+          extraParams: this.extraParams || {},
+          tiled: true
+        }); 
+    }
+
+    // WMS LAYER
+    else {
+      olLayer = WMSLayer._makeOlLayer({
+        layerObj: {
+          url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
+          id:              this.config.id,
+          projection:      this.config.projection,
+          iframe_internal: this.iframe_internal,
+          layers:          (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
+          /** @since 3.9.1 */
+          format:          this.config.format,
+        },
+        extraParams: this.extraParams,
+      }, this._method);
+    }
+
+    olLayer.getSource().on(`${image}loadstart`, () => this.emit('loadstart'));
+    olLayer.getSource().on(`${image}loadend`,   () => this.emit('loadend'));
+    olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
 
     return olLayer
   }

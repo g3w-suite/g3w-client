@@ -1,11 +1,11 @@
 import ApplicationState from 'store/application-state'
 
-const Layer        = require('core/layers/layer');
-const TableLayer   = require('core/layers/tablelayer');
-const VectorLayer  = require('core/layers/vectorlayer');
-const ImageLayer   = require('core/layers/imagelayer');
-const WMSLayer     = require('core/layers/map/wmslayer');
-const GeojsonLayer = require('core/layers/geojson');
+const Layer          = require('core/layers/layer');
+const TableLayer     = require('core/layers/tablelayer');
+const VectorLayer    = require('core/layers/vectorlayer');
+const ImageLayer     = require('core/layers/imagelayer');
+const WMSLayer       = require('core/layers/map/wmslayer');
+const VectorMapLayer = require('core/layers/map/vectorlayer');
 
 const WITH_GEOMETRY = [
   Layer.SourceTypes.VIRTUAL,
@@ -205,6 +205,38 @@ const BASE_LAYERS   = {
     });
     }
   },
+
+};
+
+/**
+ * @TODO replace "GeojsonLayer" class with a "VectorLayer" instance
+ */
+class GeojsonLayer extends VectorLayer {
+  
+  constructor(config, options) {
+    super(config, options);
+    this.config.style = config.style;
+    this.setup(config)
+  }
+
+  getMapLayer() {
+    if (!this._mapLayer) {
+      this._mapLayer = new VectorMapLayer({
+        url:        this.get('source').url,
+        projection: this.getProjection().getCode(),
+        id:         this.getId(),
+        name:       this.getName(),
+        style:      this.get('style'),
+        provider:   this.getProvider('data')
+      });
+      this._mapLayer.setProvider(this.getProvider('data'));
+      this._mapLayer.getFeatures({
+        url:           this.get('source').url,
+        mapProjection: this._mapLayer.mapProjection 
+      });
+    }
+    return this._mapLayer;
+  }
 
 };
 

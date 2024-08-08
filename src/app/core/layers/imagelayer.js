@@ -6,8 +6,6 @@ import GeoLayerMixin          from 'core/layers/mixins/geo';
 const Layer                   = require('core/layers/layer');
 const VectorLayer             = require('core/layers/vectorlayer');
 const WMSLayer                = require('core/layers/map/wmslayer');
-const WMSTLayer               = require('core/layers/map/wmstlayer');
-const ARCGISMAPSERVERLayer    = require('core/layers/map/arcgismapserverlayer');
 const XYZLayer                = require('core/layers/map/xyzlayer');
 const Projections             = require('g3w-ol/projection/projections');
 
@@ -454,24 +452,25 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       return new XYZLayer({ ...options, extent, url, cache_provider }, method);
     }
 
+    if (this.isExternalWMS() && source && Layer.SourceTypes.ARCGISMAPSERVER === source.type) {
+      return new WMSLayer({ ...options, ...source }, extraParams)
+    }
+
     if (this.isCached() && 'wmts' === cache_service_type) {
-      return new WMSTLayer({
+      return new WMSLayer({
         ...options,
         url,
         cache_provider,
         cache_layer,
         cache_extent,
         cache_grid,
-        cache_grid_extent
+        cache_grid_extent,
+        type: 'WMTS',
       }, extraParams, method);
     }
 
-    if (this.isExternalWMS() && source && Layer.SourceTypes.ARCGISMAPSERVER === source.type) {
-      return new ARCGISMAPSERVERLayer({ ...options, ...source }, extraParams)
-    }
-
     if (this.isExternalWMS() && source && Layer.SourceTypes.WMST === source.type) {
-      return new WMSTLayer({...options, url, cache_provider }, extraParams, method);
+      return new WMSLayer({...options, url, cache_provider, type: 'WMTS', }, extraParams, method);
     }
 
     return new WMSLayer({ ...options, url }, extraParams, method);
