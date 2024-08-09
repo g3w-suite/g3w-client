@@ -221,14 +221,6 @@ module.exports = class TableLayer extends Layer {
     return this._featuresstore.clone();
   }
 
-  setVectorUrl(url) {
-    this.vectorUrl = url;
-  }
-
-  setProjectType(projectType) {
-    this.projectType = projectType;
-  }
-
   getColor() {
     return this._color;
   }
@@ -251,11 +243,11 @@ module.exports = class TableLayer extends Layer {
   } = {}) {
 
     if (vectorurl) {
-      this.setVectorUrl(vectorurl);
+      this.vectorUrl = vectorurl;
     }
 
     if (project_type) {
-      this.setProjectType(project_type);
+      this.projectType = project_type;
     }
 
     try {
