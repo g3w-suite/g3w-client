@@ -6,7 +6,7 @@ import { removeMeasureTooltip }    from 'utils/removeMeasureTooltip';
 
 const { t }                        = require('core/i18n/i18n.service');
 
-class MeasureInteraction extends ol.interaction.Draw {
+export class MeasureInteraction extends ol.interaction.Draw {
 
   constructor(opts) {
     const measureStyle     = new ol.style.Style({

@@ -100,6 +100,7 @@ import TaskService                                 from 'services/tasks';
 import ApiService                                  from 'services/api';
 import RouterService                               from 'services/router';
 import GUI                                         from 'services/gui';
+import { MeasureInteraction }                      from 'g3w-ol/controls/measurecontrol';
 
 //MIXINS
 import Mixins                                      from 'mixins';
@@ -451,5 +452,9 @@ g3wsdk.gui.ComponentsFactory.buildSidebar  = ({ vueComponentObject }, options={}
   GUI.addComponent(component, 'sidebar', çç(options.sidebarOptions, { position: 1 }));
   return component;
 };
+
+g3wsdk.ol.interactions.measure                   = {};
+g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
+g3wsdk.ol.interactions.measure.LengthInteraction = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "LineString"; super(opts); } },
 
 module.exports = g3wsdk;
