@@ -309,7 +309,7 @@ export default {
     },
 
     showscalevisibilityclass() {
-      return !this.isGroup && this.layerstree.scalebasedvisibility
+      return !this.isGroup && this.layerstree.scalebasedvisibility;
     },
 
     showScaleVisibilityToolip() {
