@@ -161,7 +161,6 @@ export class QueryBy extends InteractionControl {
                 // show highlight class
                 if ('querybbox' === this.type) {
                   this.control.layers.forEach(l => l.setTocHighlightable(true));
-                  GUI.getService('map').getLegacyExternalLayers().forEach(l => l.tochighlightable = true);
                 }
                 // set queryable layers (select2)
                 setTimeout(() => {
@@ -234,7 +233,11 @@ export class QueryBy extends InteractionControl {
               this.types.forEach(t => {
                 CONTROLS[t].toggle(false);
                 CONTROLS[t].autorun = false;
-                CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.types[0])
+                CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.types[0]);
+                //In case of t (type) is a querybbox, set hightlighable to false
+                if ('querybbox' === t) {
+                  CONTROLS[t].layers.forEach(l => l.setTocHighlightable(false));
+                }
               });
               GUI.getService('map').selectLayer();
             }
@@ -388,7 +391,7 @@ export class QueryBy extends InteractionControl {
           () => layer.state.visible,
           () => {
             // toggle "eye" / "eye-close" icon
-            if(this.usermessage) {
+            if (this.usermessage) {
               $(this.usermessage.$refs.layer).trigger('change');
             }
             // toggle control interaction

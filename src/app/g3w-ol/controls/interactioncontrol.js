@@ -632,8 +632,8 @@ export class InteractionControl extends ol.control.Control {
     if ('how' === toggledTool.how && this._onhover) {
       this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
       $(this.element).prepend(this._toolButton);
-      this._toolButton.on('click', event => {
-        event.stopPropagation();
+      this._toolButton.on('click', e => {
+        e.stopPropagation();
         this.showToggledTool(true);
       });
       $(this.element).hover(() => this._toggled && this._toolButton.show());
@@ -684,7 +684,7 @@ export class InteractionControl extends ol.control.Control {
     opts.parent = undefined !== opts.parent ? opts.parent : false; 
 
     // skip if button is already toggled or un-toggled
-    if (this._toggled === toggled) {
+    if (toggled === this._toggled ) {
       return;
     }
 
@@ -717,7 +717,7 @@ export class InteractionControl extends ol.control.Control {
     /** @FIXME add description */
     if (toggled && this._toolButton) {
       this._toolButton.show();
-    } else if(!toggled && this._toolButton) {
+    } else if (!toggled && this._toolButton) {
       this._toolButton.hide();
     }
 
