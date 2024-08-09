@@ -43,7 +43,7 @@ const MAP = {
     removeLayersStore:       store  => { if (store) { delete MAP.layers.stores[store.getId()]; } },
     removeLayersStores:      ()     => { MAP.stores = {}; },
   }}), {
-    getLayerById:            id     => Object.values(MAP.stores).map(s => s.getLayerById(id)).find(l => layer),
+    getLayerById:            id     => Object.values(MAP.stores).map(s => s.getLayerById(id)).find(l => l),
     getLayers:               filter => Object.values(MAP.stores).flatMap(s => s.getLayers(filter)),
     getQuerableLayersStores: ()     => Object.values(MAP.stores).filter(s => s.isQueryable()),
     getLayersStore:          id     => MAP.stores[id],
