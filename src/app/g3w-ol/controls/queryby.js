@@ -234,10 +234,7 @@ export class QueryBy extends InteractionControl {
                 CONTROLS[t].toggle(false);
                 CONTROLS[t].autorun = false;
                 CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.types[0]);
-                //In case of t (type) is a querybbox, set hightlighable to false
-                if ('querybbox' === t) {
-                  CONTROLS[t].layers.forEach(l => l.setTocHighlightable(false));
-                }
+                CONTROLS[t].layers.forEach(l => l.setTocHighlightable(false));
               });
               GUI.getService('map').selectLayer();
             }
