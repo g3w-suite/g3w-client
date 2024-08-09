@@ -172,8 +172,6 @@ const Fields                     = require('gui/fields/fields');
 const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 const DeleteFeatureInteraction   = require('g3w-ol/interactions/deletefeatureinteraction');
-const AreaInteraction            = require('g3w-ol/interactions/areainteraction');
-const LengthInteraction          = require('g3w-ol/interactions/lengthinteraction');
 
 const g3wsdk = {
 
@@ -382,10 +380,6 @@ const g3wsdk = {
       PickFeatureInteraction,
       PickCoordinatesInteraction,
       DeleteFeatureInteraction,
-      measure: {
-        AreaInteraction,
-        LengthInteraction
-      }
     },
     controls: {},
     utils: {

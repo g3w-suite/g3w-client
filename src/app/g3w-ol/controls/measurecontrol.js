@@ -1,8 +1,144 @@
-import GUI                    from 'services/gui';
-import { InteractionControl } from 'g3w-ol/controls/interactioncontrol';
+import GUI                         from 'services/gui';
+import { InteractionControl }      from 'g3w-ol/controls/interactioncontrol';
+import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
+import { setMeasureTooltipStatic } from 'utils/setMeasureTooltipStatic';
+import { removeMeasureTooltip }    from 'utils/removeMeasureTooltip';
 
-const AreaInteraction         = require('g3w-ol/interactions/areainteraction');
-const LengthInteraction       = require('g3w-ol/interactions/lengthinteraction');
+const { t }                        = require('core/i18n/i18n.service');
+
+class MeasureInteraction extends ol.interaction.Draw {
+
+  constructor(opts) {
+    const measureStyle     = new ol.style.Style({
+      fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' }),
+      stroke: new ol.style.Stroke({ color: opts.drawColor || 'rgba(0, 0, 0, 0.5)', lineDash: [10, 10], width: 3 }),
+      image:  new ol.style.Circle({
+        radius: 5,
+        stroke: new ol.style.Stroke({ color: 'rgba(0, 0, 0, 0.7)' }),
+        fill: new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
+      }),
+    });
+    const source       = new ol.source.Vector();
+
+    super({
+      source,
+      type:  opts.geometryType || 'LineString',
+      style: measureStyle
+    });
+
+    this._helpTooltip;
+    this._measureTooltipElement;
+    this._measureTooltip;
+    this._featureGeometryChangelistener;
+    this._poinOnMapMoveListener;
+    this._helpTooltipElement;
+
+    this._helpMsg      = opts.help;
+    this._projection   = opts.projection;
+    this.feature       = opts.feature;
+    this._map          = null;
+    this._feature      = null;
+    this._layer        = new ol.layer.Vector({
+      source,
+      style() {
+        return [
+          new ol.style.Style({
+            stroke: new ol.style.Stroke({ lineDash: [10, 10], width: 3 }),
+            fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
+          })
+        ];
+      }
+    });
+
+    this.set('beforeRemove', this.clear);
+    this.set('layer',        this._layer);
+    // register event on two action
+    this.on('drawstart',     this._drawStart);
+    this.on('drawend',       this._drawEnd);
+  }
+
+  clear() {
+    this._layer.getSource().clear();
+    this._clearMessagesAndListeners();
+    if (this._map) {
+      removeMeasureTooltip({
+        map: this._map,
+        ...this.measureTooltip
+      });
+      this.measureTooltip = null;
+      this._map.removeLayer(this._layer);
+    }
+  }
+
+  _clearMessagesAndListeners() {
+    this._feature = null;
+    // unset tooltip so that a new one can be created
+    if (this._map) {
+      this._measureTooltipElement        = null;
+      this._helpTooltipElement.innerHTML = '';
+
+      this._helpTooltipElement.classList.add('hidden');
+
+      ol.Observable.unByKey(this._featureGeometryChangelistener);
+      ol.Observable.unByKey(this._poinOnMapMoveListener);
+
+      $(document).off('keydown', this._keyDownEventHandler);
+    }
+  }
+
+  //drawStart function
+  _drawStart(e) {
+    this._map = this.getMap();
+    this._map.removeLayer(this._layer);
+    this._feature = e.feature;
+    if (this.feature) { this._feature.setGeometry(this.feature.getGeometry()) }
+    // remove last point
+    this._keyDownEventHandler = e => {
+      const geom = this._feature.getGeometry();
+      if (46 === e.keyCode) {
+        if ( geom instanceof ol.geom.Polygon && geom.getCoordinates()[0].length > 2) {
+          this.removeLastPoint();
+        } else if (geom instanceof ol.geom.LineString && geom.getCoordinates().length > 1) {
+          this.removeLastPoint();
+        }
+      }
+    };
+    $(document).on('keydown', this._keyDownEventHandler);
+    this._layer.getSource().clear();
+    this._poinOnMapMoveListener = this._map.on('pointermove', e => {
+      if (e.dragging) { return }
+      if (this._feature && this._helpMsg) {
+        const helpMsg = t(this._helpMsg);
+        this._helpTooltipElement.innerHTML = helpMsg;
+        this._helpTooltip.setPosition(e.coordinate);
+        this._helpTooltipElement.classList.remove('hidden');
+      }
+    });
+    // create help tooltip
+    if (this._helpTooltipElement) { this._helpTooltipElement.parentNode.removeChild(this._helpTooltipElement) }
+    if (this._helpTooltip) { this._map.removeOverlay(this._helpTooltip) }
+    this._helpTooltipElement           = document.createElement('div');
+    this._helpTooltipElement.className = 'mtooltip hidden';
+    this._helpTooltip                  = new ol.Overlay({
+      element: this._helpTooltipElement,
+      offset: [15, 0],
+      positioning: 'center-left'
+    });
+
+    this._map.addOverlay(this._helpTooltip);
+
+    // create measure tooltip
+    if (this.measureTooltip) { removeMeasureTooltip({ ...this.measureTooltip, map: this._map }) }
+    this.measureTooltip = createMeasureTooltip({ map: this._map, feature: this._feature });
+  }
+
+  _drawEnd() {
+    setMeasureTooltipStatic(this.measureTooltip.tooltip);
+    this._clearMessagesAndListeners();
+    this._map.addLayer(this._layer);
+  }
+};
+
 
 export class MeasureControl extends InteractionControl {
 
@@ -49,10 +185,9 @@ export class MeasureControl extends InteractionControl {
   addType(type) {
     this.types.push(type);
 
-    this.interactions[type] = new ({
-      area:   AreaInteraction,
-      length: LengthInteraction,
-    })[type](this._interactionClassOptions);
+    this._interactionClassOptions.geometryType = ({ area: 'Polygon', length: 'LineString' })[type];
+
+    this.interactions[type] = new MeasureInteraction(this._interactionClassOptions);
 
     this.interactions[type].setActive(false);
 
