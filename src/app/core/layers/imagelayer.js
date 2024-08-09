@@ -398,7 +398,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
         tiled: this.state.tiled,
       });
       this._mapLayer.addLayer(this);
-    } else if(this._makeOlLayer) {
+    } else if (this._makeOlLayer) {
       this._mapLayer = this;
     }
   }
@@ -424,6 +424,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       this.setEditingLayer(layerForEditing);
       return layerForEditing;
     } catch(e) {
+      console.warn(e);
       return Promise.reject(e);
     }
 
