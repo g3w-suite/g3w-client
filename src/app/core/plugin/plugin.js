@@ -43,7 +43,7 @@ module.exports = class Plugin extends G3WObject {
 
     // Automatically remove the loading plugin indicator after timeout
     this._timeout = setTimeout(() => {
-      PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+      ApplicationService.loadedPlugin(this.name, this._ready); // remove loading plugin
       this.removeLayout();
     }, TIMEOUT)
 
@@ -180,7 +180,7 @@ module.exports = class Plugin extends G3WObject {
     this.emit('set-ready', isReady, this.name);
     setTimeout(() => {
       clearTimeout(this._timeout);
-      PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+      ApplicationService.loadedPlugin(this.name, this._ready); // remove loading plugin
     }, 0 /* 0 = allow any previously "setTimeout" to execute */)
   }
 
@@ -210,7 +210,7 @@ module.exports = class Plugin extends G3WObject {
     if (iscompatible) {
       PluginsRegistry.registerPlugin(this);
     } else {
-      PluginsRegistry.removeLoadingPlugin(this.name, false);
+      ApplicationService.loadedPlugin(this.name, false); // remove loading plugin
       clearTimeout(this._timeout);
     }
     return iscompatible;
