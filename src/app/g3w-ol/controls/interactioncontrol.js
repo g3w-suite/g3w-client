@@ -629,15 +629,7 @@ export class InteractionControl extends ol.control.Control {
 
     }
 
-    switch (toggledTool.how) {
-      case 'hover':
-        this._createToolOnHoverButton();
-        break;
-    }
-  }
-
-  _createToolOnHoverButton() {
-    if (this._onhover) {
+    if ('how' === toggledTool.how && this._onhover) {
       this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
       $(this.element).prepend(this._toolButton);
       this._toolButton.on('click', event => {
