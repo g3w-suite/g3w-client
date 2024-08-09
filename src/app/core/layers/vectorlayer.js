@@ -30,12 +30,9 @@ class VectorMapLayer extends G3WObject {
     this.projection    = options.projection || this.mapProjection;
     this.url           = options.url;
     this.provider      = options.provider;
+    this._provider     = options.provider;
     this._features     = options.features || [];
     this._olLayer      = options.olLayer || this.getOLLayer();
-  }
-
-  setProvider(provider) {
-    this._provider = provider;
   }
 
   getProvider() {

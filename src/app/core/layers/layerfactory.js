@@ -283,7 +283,6 @@ module.exports = {
             style:      this.get('style'),
             provider:   this.getProvider('data')
           });
-          this._mapLayer.setProvider(this.getProvider('data'));
           this._mapLayer.getFeatures({
             url:           this.get('source').url,
             mapProjection: this._mapLayer.mapProjection 

@@ -74,8 +74,26 @@ module.exports = class TableLayer extends Layer {
           .then(promise => {
             promise
               .then(response => {
-                if(response) {
-                  response.result && this.syncSelectionFilterFeatures(commitItems);
+                // sync selection filter features
+                if (response && response.result) {
+                  try {
+                    const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
+                    //if layer has geometry
+                    if (layer.isGeoLayer()) {
+                      commitItems.update.forEach(({ id, geometry } = {}) => {
+                        if (layer.getOlSelectionFeature(id)) {
+                          layer.updateOlSelectionFeature({id, geometry});
+                        }
+                      });
+                    }
+                    commitItems.delete.forEach(id => {
+                      if (layer.hasSelectionFid(id)) {
+                        layer.excludeSelectionFid(id);
+                      }
+                    })
+                  } catch(e) {
+                    console.warn(e);
+                  }
                 }
                 d.resolve(response)
               })
@@ -179,30 +197,6 @@ module.exports = class TableLayer extends Layer {
      */
     this._featuresstore = new FeaturesStore({ provider: this.providers.data });
 
-  }
-
-  /**
-   * sync selection
-   *
-   * @param {*} commitItems
-   */
-  syncSelectionFilterFeatures(commitItems) {
-    try {
-      const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
-      //if layer has geometry
-      if (layer.isGeoLayer()) {
-        commitItems.update.forEach(({ id, geometry } = {}) => {
-          if (layer.getOlSelectionFeature(id)) {
-            layer.updateOlSelectionFeature({id, geometry});
-          }
-        });
-      }
-      commitItems.delete.forEach(id => {
-        if (layer.hasSelectionFid(id)) {
-          layer.excludeSelectionFid(id);
-        }
-      })
-    } catch(err) {}
   }
 
   setFormPercentage(perc) {
@@ -337,15 +331,6 @@ module.exports = class TableLayer extends Layer {
       fields = fields.filter(f => f.editable);
     }
     return fields;
-  }
-
-  /**
-   * Return pk field
-   * 
-   * @since 3.9.0
-   */
-  getPkField() {
-    return this.getEditingFields().find(f => f.pk);
   }
 
   /**
