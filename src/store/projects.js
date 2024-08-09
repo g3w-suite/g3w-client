@@ -163,12 +163,11 @@ export default new (class ProjectsRegistry extends G3WObject {
   /**
    * Get project configuration
    *
-   * @param {unknown} projectGid
+   * @param { string } projectGid
    * @param options
-   * @param {unknown} options.map_theme
-   * @param {boolean} [options.reload = false] `true` = force to get project configuration from server
+   * @param { string } options.map_theme
    */
-  getProject(projectGid, options = { reload : false}) {
+  getProject(projectGid, options) {
     return $promisify(async () => {
 
       const pendingProject = this._groupProjects.find(p => p.gid === projectGid);
@@ -178,11 +177,11 @@ export default new (class ProjectsRegistry extends G3WObject {
         return Promise.reject("Project doesn't exist");
       }
 
-      const projectConfig = !options.reload && this._projectConfigs[projectGid];
+      let project = this._projectConfigs[projectGid];
 
       /** @TODO add description */
-      if (projectConfig) {
-        return new Project(projectConfig);
+      if (project) {
+        return new Project(project);
       }
 
       // fetch project configuration from remote server
@@ -199,7 +198,7 @@ export default new (class ProjectsRegistry extends G3WObject {
         }
       }
 
-      const project = Object.assign(pendingProject, config);
+      project = Object.assign(pendingProject, config);
 
       project.WMSUrl = this.config.getWmsUrl(project);
 
