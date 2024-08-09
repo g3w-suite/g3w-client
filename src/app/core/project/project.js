@@ -74,16 +74,14 @@ module.exports = class Project extends G3WObject {
     const traverse = nodes => {
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
-        let layer_name_originale;
         //check if layer (node) of folder
         if (undefined !== node.id) {
-          this.state.layers.forEach(layer => {
-            layer_name_originale = layer.name;
-            if (node.id === layer.id) {
-              node.name = layer.name;
-              layer.wmsUrl = this.getWmsUrl();
-              layer.project = this;
-              node[i] = Object.assign(layer, node);
+          this.state.layers.forEach(l => {
+            if (node.id === l.id) {
+              node.name = l.name;
+              l.wmsUrl = this.getWmsUrl();
+              l.project = this;
+              node[i] = Object.assign(l, node);
               return false
             }
           });
