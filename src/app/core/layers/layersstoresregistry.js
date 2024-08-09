@@ -6,7 +6,7 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
   constructor() {
     super();
 
-    this.stores = {};
+    this.stores      = {};
 
     this.storesArray = [];
 
@@ -14,7 +14,7 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
     this.setters = {
 
       addLayersStore(store, idx) {
-        const id = store.getId();
+        const id        = store.getId();
         this.stores[id] = store;
         if (null !== idx && undefined !== idx) {
           this.storesArray.splice(idx, 0, id);
@@ -33,22 +33,22 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
 
       removeLayersStores() {
         this.storesArray = [];
-        this.stores = {};
+        this.stores      = {};
       },
 
     };
   }
 
   getLayerById(id) {
-    return Object.values(this.stores).map(store => store.getLayerById(id)).find(layer => layer);
+    return Object.values(this.stores).map(s => s.getLayerById(id)).find(layer => layer);
   }
 
   getLayers(filter) {
-    return Object.values(this.stores).flatMap(store => store.getLayers(filter));
+    return Object.values(this.stores).flatMap(s => s.getLayers(filter));
   }
 
   getQuerableLayersStores() {
-    return this.getLayersStores().filter(store => store.isQueryable());
+    return this.getLayersStores().filter(s => s.isQueryable());
   }
 
   getLayersStore(id) {
