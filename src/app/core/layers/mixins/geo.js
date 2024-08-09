@@ -459,10 +459,16 @@ export default BaseClass => class extends BaseClass {
         setVisible = setVisible && parentGroup.checked;
         parentGroup = parentGroup.parentGroup;
       }
-      setVisible && this.setVisible(!this.state.disabled);
+      if (setVisible) {
+        this.setVisible(!this.state.disabled);
+      }
       // change toc highlight property based on disabled otr not
-      this.isFilterable() && this.setTocHighlightable(!this.state.disabled);
-    } else this.state.disabled = false;
+      if (this.isFilterable()) {
+        this.setTocHighlightable(!this.state.disabled);
+      }
+    } else {
+      this.state.disabled = false;
+    }
   }
   
   getMultiLayerId() {
