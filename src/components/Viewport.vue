@@ -255,28 +255,19 @@
       closeUserMessage() {
         GUI.closeUserMessage();
       },
-      moveFnc(evt) {
-        const size = this.state.split === 'h' ? 'width' : 'height';
-        evt.preventDefault();
-        const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : viewportService.SIDEBARWIDTH : $('#main-navbar').height();
+      moveFnc(e) {
+        e.preventDefault();
+        const size         = 'h' === this.state.split ? 'width' : 'height';
+        const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : viewportService.SIDEBARWIDTH : $('#main-navbar').height();
         const viewPortSize = $(this.$el)[size]();
-        let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
-        if (mapSize > viewPortSize - viewportConstraints.resize.content.min) {
-          mapSize = viewPortSize -  viewportConstraints.resize.content.min;
-        } else if ( mapSize < viewportConstraints.resize.map.min) {
-          mapSize = viewportConstraints.resize.map.min;
+        let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
+        const { content, map } = viewportConstraints.resize;
+        if (mapSize > viewPortSize - content.min) {
+          mapSize = viewPortSize -  content.min;
+        } else if ( mapSize < map.min) {
+          mapSize = map.min;
         }
-        const contentSize             = viewPortSize - mapSize;
-        const resizePercentageMap     = Math.round((mapSize / viewPortSize) * 100);
-        const resizePercentageContent = 100 - resizePercentageMap;
-        viewportService.resizeViewComponents(this.state.split, {
-          map: {
-            [size]: mapSize
-          },
-          content: {
-            [size]: contentSize
-          }
-        }, resizePercentageContent);
+        viewportService.resizeViewComponents(this.state.split, { }, 100 - Math.round((mapSize / viewPortSize) * 100));
       }
     },
     async mounted() {
