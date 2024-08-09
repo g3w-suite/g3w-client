@@ -86,8 +86,9 @@
               </a>
 
               <div
-                ref   = "main_title_project_title"
-                class = "project_title_content"
+                ref    = "main_title_project_title"
+                class  = "project_title_content"
+                :class = "{'mobile': isMobile()}"
               >
                 <div class = "main_title">{{ main_title }}</div>
                 <div class = "sub_title">{{ project_title }}</div>
@@ -1588,6 +1589,11 @@ export default {
 </script>
 
 <style>
+  @keyframes sk-bounce                              { 0%, 100% { transform: scale(0.0); } 50% { transform: scale(1.0); } }
+  #startingspinner                                  { position: fixed; z-index: 100000; height: 10em; width: 10em; overflow: show; margin: auto; inset: 0; }
+  #startingspinner .double-bounce1,
+  #startingspinner .double-bounce2                  { width: 100%; height: 100%; border-radius: 50%; background-color: var(--skin-color); opacity: .6; position: absolute; top: 0; left: 0; animation: sk-bounce 2.0s infinite ease-in-out; }
+  #startingspinner .double-bounce2                  { animation-delay: -1.0s; }
   .g3w-modal-project-message.Info .modal-header     { background-color: #0073b7; }
   .g3w-modal-project-message.Warning .modal-header  { background-color: #e99611; }
   .g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
@@ -1596,6 +1602,23 @@ export default {
 </style>
 
 <style scoped>
+  .logo-wrapper                                    { display: flex; max-height: 50px; height: 50px; font-weight: bold; align-items: center; color: white; }
+  .logo-wrapper a.project_logo_link                { height: 46px; padding: 2px; }
+  .logo-wrapper a.project_logo_link img            { height: 100%; }
+  .project_title_content                           { display:flex; flex-direction: column; justify-content: center; height: 100%; }
+  .project_title_content > div                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .project_title_content .main_title               { font-size: 1.6em; }
+  .project_title_content .sub_title                { font-size: 1.3em; }
+
+  /* TODO: remove isMobile(), use only css @media queries */
+  @media (max-width: 767px)                        { .logo-wrapper { padding-left: 5px; } }
+  .logo-wrapper.mobile                             { padding: 5px; }
+  .logo-wrapper.mobile img                         { height: 23px; max-width: 150px !important; padding-left: 0; margin-right: 5px; }
+  .logo-wrapper.mobile .main_title                 { font-size: 1.1em; }
+  .logo-wrapper.mobile .sub_title                  { font-size: 1em; }
+  .project_title_content.mobile                    { margin-top: 2px; }
+  .project_title_content.mobile .sub_title         { height: auto; }
+
   .credit-title-logo {
     font-weight: bold;
     font-size: 1.2em;
@@ -1617,5 +1640,8 @@ export default {
   }
   .g3w-languages {
     min-width: 125px;
+  }
+  @media (max-width: 767px) {
+    #g3w-small-screen-hamburger-sidebar { display: block; }
   }
 </style>

@@ -21,10 +21,7 @@
             v-show = "panelsinstack"
             class = "g3w-sidebarpanel"
           >
-            <div
-              id    = "g3w-sidebarpanel-header-placeholder"
-              style = "overflow: hidden; line-height: 14px;font-size:1.5em"
-              >
+            <div id="g3w-sidebarpanel-header-placeholder">
                 <div
                   style  = "display: flex;"
                   :style = "{ justifyContent: state.gui.title ? 'space-between' : 'flex-end' }"
@@ -172,5 +169,20 @@
 </script>
 
 <style scoped>
-
+#g3w-sidebarpanel-header-placeholder {
+  overflow: hidden;
+  line-height: 14px;
+  font-size: 1.5em;
+  min-height: 35px;
+  border-bottom: 1px solid #FFF;
+  margin-bottom: 5px;
+}
+#disable-sidebar {
+  display: none;
+  position: absolute;
+  background-color: rgba(0,0,0,.3);
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+}
 </style>
