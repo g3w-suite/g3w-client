@@ -97,17 +97,17 @@ module.exports = class Project extends G3WObject {
     };
 
     traverse(this.state.layerstree);
+
     const baseLayerId = ApplicationService.getBaseLayerId();
 
     // Remove bing base layer when no vendor API Key is provided
-    this.state.baselayers = this.state.baselayers.filter(baselayer => (baselayer.servertype === 'Bing' ? ApplicationState.keys.vendorkeys.bing : true));
+    this.state.baselayers = this.state.baselayers.filter(l => ('Bing' === l.servertype ? ApplicationState.keys.vendorkeys.bing : true));
 
-    for (let i=0; i < this.state.baselayers.length; i++) {
-      const baseLayerConfig = this.state.baselayers[i];
-      const baseLayerVisibleId = (null !== baseLayerId) ? baseLayerId : this.state.initbaselayer;
-      baseLayerConfig.visible = baseLayerVisibleId && (baseLayerConfig.id === baseLayerVisibleId) || !!baseLayerConfig.fixed;
-      baseLayerConfig.baselayer = true;
-    }
+    this.state.baselayers.forEach(l => {
+      const visible = (null !== baseLayerId) ? baseLayerId : this.state.initbaselayer;
+      l.visible = visible && (l.id === visible) || !!l.fixed;
+      l.baselayer = true;
+    });
 
     /**
      * Set the project projection to object crs
