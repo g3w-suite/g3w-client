@@ -12,13 +12,13 @@ const _cloneDeep = require('lodash.clonedeep');
 
 function _createAttributesFromFields(fields) {
   const attributes = {};
-  fields.forEach(field => {
-    if ('child' === field.type) {
-      attributes[field.name] = _createAttributesFromFields(field.fields);
-    } else if ('null' === field.value) {
-      field.value = null;
+  fields.forEach(f => {
+    if ('child' === f.type) {
+      attributes[f.name] = _createAttributesFromFields(f.fields);
+    } else if ('null' === f.value) {
+      f.value = null;
     }
-    attributes[field.name] = field.value;
+    attributes[f.name] = f.value;
   });
   return attributes;
 }
@@ -60,9 +60,9 @@ module.exports = class TableLayer extends Layer {
                 this.emit('getFeatures', features);
                 return d.resolve(features);
               })
-              .fail(d.reject)
+              .fail(e => { console.warn(e); d.reject(e) })
           })
-          .fail(d.reject);
+          .fail(e => { console.warn(e); d.reject(e) });
 
         return d.promise();
       },
@@ -97,9 +97,9 @@ module.exports = class TableLayer extends Layer {
                 }
                 d.resolve(response)
               })
-              .fail(d.reject)
+              .fail(e => { console.warn(e); d.reject(e) })
           })
-          .fail(d.reject);
+          .fail(e => { console.warn(e); d.reject(e) });
         return d.promise();
       },
 
@@ -247,6 +247,7 @@ module.exports = class TableLayer extends Layer {
     try {
       return await this.clone().layerForEditing; // cloned editable layer
     } catch(e) {
+      console.warn(e);
       return e;
     }
 
@@ -279,10 +280,6 @@ module.exports = class TableLayer extends Layer {
     return !!this.config.editing;
   }
 
-  getEditingStyle() {
-    return this.config.editing.style;
-  }
-
   setEditingStyle(style={}) {
     this.config.editing.style = style;
   }
@@ -296,14 +293,7 @@ module.exports = class TableLayer extends Layer {
   }
 
   isFieldRequired(fieldName) {
-    let required = false;
-    this.getEditingFields().forEach(field => {
-      if (fieldName === field.name) {
-        required = !!field.validate.required;
-        return false;
-      }
-    });
-    return required;
+    return (this.getEditingFields().find(f => fieldName === f.name) || { validate: { required: false } }).validate.required;
   }
 
   /**
@@ -315,8 +305,8 @@ module.exports = class TableLayer extends Layer {
     const d = $.Deferred();
     this._featuresstore
       .unlock()
-      .then(() => d.resolve())
-      .fail(d.reject);
+      .then(d.resolve)
+      .fail(e => { console.warn(e); d.reject(e) });
     return d.promise();
   }
 
@@ -339,13 +329,11 @@ module.exports = class TableLayer extends Layer {
    * @returns {boolean} whether field is a Primary Key
    */
   isPkField(field) {
-    const find_field = this.getEditingFields().find(f => f.name === field);
-    return find_field && find_field.pk;
+    return (this.getEditingFields().find(f => field === f.name) || {}).pk;
   }
 
   isEditingFieldEditable(field) {
-    const find_field = this.getEditingFields().find(f => f.name === field);
-    return find_field ? find_field.editable : false;
+    return (this.getEditingFields().find(f => f.name === field) || { editable: false }).editable;
   }
 
   getEditingNotEditableFields() {
@@ -357,9 +345,7 @@ module.exports = class TableLayer extends Layer {
   }
 
   getFieldsLabel() {
-    const labels = [];
-    this.getEditingFields().forEach(f => labels.push(f.label));
-    return labels;
+    return this.getEditingFields().map(f => f.label);
   }
 
   getDataFormat() {
@@ -394,7 +380,7 @@ module.exports = class TableLayer extends Layer {
       .getProvider('data')
       .getConfig(options)
       .then(d.resolve)
-      .fail(d.reject);
+      .fail(e => { console.warn(e); d.reject(e) });
     return d.promise();
   }
 
@@ -413,7 +399,7 @@ module.exports = class TableLayer extends Layer {
       .getProvider('data')
       .getWidgetData(options)
       .then(d.resolve)
-      .fail(d.reject);
+      .fail(e => { console.warn(e); d.reject(e) });
     return d.promise()
   }
 
