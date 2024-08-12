@@ -33,11 +33,11 @@ proto.getFeaturesCollection = function() {
 };
 
 proto.getFeatureById = function(featureId) {
-  return this._features.getArray().find(feature => featureId == feature.getId());
+  return this._features.getArray().find(f => featureId == f.getId());
 };
 
 proto.getFeatureByUid = function(uid) {
-  return this._features.getArray().find(feature => uid === feature.getUid());
+  return this._features.getArray().find(f => uid === f.getUid());
 };
 
 proto._addFeature = function(feature) {
@@ -75,14 +75,16 @@ proto._removeFeature = function(feature) {
       break;
     }
   }
-  this._features.dispatchEvent('change')
+  this._features.dispatchEvent('change');
 };
 
 
 proto._clearFeatures = function() {
   try {
     this._features.clear();
-  } catch(err){}
+  } catch(e) {
+    console.warn(e);
+  }
   this._features = null;
   this._features = new ol.Collection([]);
 };

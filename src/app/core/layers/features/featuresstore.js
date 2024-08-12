@@ -6,14 +6,14 @@ const _cloneDeep        = require('lodash.clonedeep');
 
 // Object to store and handle features of layer
 function FeaturesStore(options = {}) {
-  this._features = options.features || [];
-  this._provider = options.provider || null;
-  this._loadedIds = []; // store locked ids
-  this._lockIds = []; // store locked features
+  this._features  = options.features || [];
+  this._provider  = options.provider || null;
+  this._loadedIds = []; // store features id load by current user
+  this._lockIds   = []; // store locked features
   //setters
   this.setters = {
-    addFeatures(features) {
-      features.forEach(feature => this._addFeature(feature))
+    addFeatures(features = []) {
+      features.forEach(f => this._addFeature(f))
     },
     addFeature(feature) {
       this._addFeature(feature);
@@ -27,16 +27,22 @@ function FeaturesStore(options = {}) {
     clear() {
       this._clearFeatures();
     },
-    getFeatures(options={}) {
+    getFeatures(options = {}) {
       return this._getFeatures(options);
     },
+    /**
+     *
+     * @param commitItems
+     * @param featurestore Its is used????
+     * @return {*}
+     */
     commit(commitItems, featurestore) {
       return this._commit(commitItems, featurestore);
     },
     /**
      * setter to know when some features are locked
      */
-    featuresLockedByOtherUser(features=[]) {},
+    featuresLockedByOtherUser(features = []) {},
   };
 
   base(this);
@@ -63,92 +69,103 @@ proto.unlock = function() {
   const d = $.Deferred();
   this._provider.unlock()
     .then(response => d.resolve(response))
-    .fail(err => d.reject(err));
+    .fail(e => { console.warn(e); d.reject(e) });
   return d.promise();
 };
 
-// method get all features from server or attribute _features
-proto._getFeatures = function(options={}) {
+/*
+ * Gets all features from server or attribute _features
+ */
+proto._getFeatures = function(options = {}) {
   const d = $.Deferred();
   if (this._provider) {
     //call provider getFeatures to get features from server
     this._provider.getFeatures(options)
       .then(options => {
-        //get features base on response from server features, featurelockis etc ...
+        //get the features base on response from server features, featurelockis etc ...
         const features = this._filterFeaturesResponse(options);
         this.addFeatures(features);
         d.resolve(features);
       })
-      .fail(err => d.reject(err))
+      .fail(e => { console.warn(e); d.reject(e) })
   } else {
     d.resolve(this._readFeatures());
   }
   return d.promise();
 };
 
-//filter features to add
-proto._filterFeaturesResponse = function(options={}) {
+/**
+ * Filter features to add
+ * @param options
+ * @private
+ * @return Array of features to add
+ */
+proto._filterFeaturesResponse = function(options = {}) {
   /**
-   * get features returned from server and feature that are currently locked.
+   * features uis array of feature returned from server and feature that are currently locked.
+   * featurelocks is array of the feature that can be locker by current client request (not locked by another user)
+   * featurelocks array item
+   * {
+   *   featureid: Is current id of feature locked
+   *   lockid: Is a server unique lock id number
+   * }
+   * ex.
+   * {featureid: "1", lockid: "6bbab1c1c03332fb39b8ffae35e557ba"}
+   *
    * If featurelocks are less than features, it means that another user is editing these features
+   *
+   *
    * @type {*[]}
    */
   const { features = [], featurelocks = [] } = options;
 
-  //if no features locks mean all feature requests are locked by another user
+  //if no features locks mean another user locks all feature requests
   if (0 === featurelocks.length) {
-    //if there are feature on response are locked
+    //if there are features on response
     if (features.length > 0) {
+      //It means that another user locks these features
       this.featuresLockedByOtherUser(features);
     }
     return [];
   }
 
-  this._filterLockIds(featurelocks);
+  //get already loaded feature id locked by current user
+  const fids = this._lockIds.map(({ featureid }) => featureid);
+  featurelocks
+    .filter(({ featureid }) => !fids.includes(featureid)) //exclude features already locked by current user
+    .forEach(fl => this._lockIds.push(fl)) //update lockIds based on a featurelocks array from response
 
+  //store features locked by another user
   const lockFeatures = [];
 
-  const featuresToAdd = features.filter(feature => {
-    const featureId = feature.getId();
-    if (featurelocks.find(({featureid}) => featureId == featureid)) {
+  //Store features to add to layers source
+  const featuresToAdd = features.filter(f => {
+    //get feature id
+    const featureId = f.getId();
+    //check if feature id is locked features
+    //it means that is not locked by another user.
+    if (featurelocks.find(({ featureid }) => featureId == featureid)) {
+      //check if feature is not yet added for the current user
       if (this._loadedIds.indexOf(featureId) === -1) {
         this._loadedIds.push(featureId);
         return true;
+      } else {
+        return false; //feature locked by the current user
       }
     } else {
-      lockFeatures.push(feature);
+      lockFeatures.push(f);
+      return false; //feature locked by another user
     }
   });
 
-  //if count features
+  //if features locks are less than features get from server,
+  // it means that another user locks some features
   if (featurelocks.length < features.length) {
     this.featuresLockedByOtherUser(lockFeatures);
   }
 
   return featuresToAdd;
-};
-
-/**
- *
- * @param featurelocks Array of lock feature locked by server fo a request
- * Element of array is
- * {
- *   featureid: Is current id of feature locked
- *   lockid: Is a server unique lock id  number
- * }
- * ex.
- * {featureid: "1", lockid: "6bbab1c1c03332fb39b8ffae35e557ba"}
- * @private
- */
-proto._filterLockIds = function(featurelocks = []) {
-  const _lockIds = this._lockIds.map(lockid => lockid.featureid);
-  const toAddLockId = featurelocks.filter(featurelock => _lockIds.indexOf(featurelock.featureid) === -1);
-  this._lockIds = [...this._lockIds, ...toAddLockId];
-};
-
-proto.addLoadedIds = function(id) {
-  this._loadedIds.push(id);
-};
+}
 
 proto.getLockIds = function() {
   return this._lockIds;
@@ -176,18 +193,20 @@ proto._commit = function(commitItems) {
     this._provider
       .commit(commitItems)
       .then(response => d.resolve(response))
-      .fail(err => d.reject(err))
-  } else d.reject();
+      .fail(e => { console.warn(e); d.reject(e) })
+  } else {
+    d.reject();
+  }
   return d.promise();
 };
 
 // get feature from id
 proto.getFeatureById = function(featureId) {
-  return this._features.find(feature => featureId == feature.getId());
+  return this._features.find(f => featureId == f.getId());
 };
 
 proto.getFeatureByUid = function(uid) {
-  return this._features.find(feature => uid === feature.getUid());
+  return this._features.find(f => uid === f.getUid());
 };
 
 proto._addFeature = function(feature) {
@@ -197,7 +216,7 @@ proto._addFeature = function(feature) {
 //substitute feature after update
 proto._updateFeature = function(feature) {
   this._features.find((feat, idx) => {
-    if (feat.getUid() === feature.getUid()) {
+    if (feature.getUid() === feat.getUid() ) {
       this._features[idx] = feature;
       return true;
     }
@@ -209,13 +228,13 @@ proto.setFeatures = function(features = []) {
 };
 
 proto._removeFeature = function(feature) {
-  this._features = this._features.filter(feat => feature.getUid() !== feat.getUid());
+  this._features = this._features.filter(f => feature.getUid() !== f.getUid());
 };
 
 proto._clearFeatures = function() {
-  this._features = null;
-  this._features = [];
-  this._lockIds = [];
+  this._features  = null;
+  this._features  = [];
+  this._lockIds   = [];
   this._loadedIds = [];
 };
 
