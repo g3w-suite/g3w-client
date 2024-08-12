@@ -427,17 +427,6 @@ module.exports = class TableLayer extends Layer {
   }
 
   /**
-   * Set data url
-   */
-  setDataUrl(url) {
-    this.config.urls.data = url;
-  }
-
-  getDataUrl() {
-    return this.config.urls.data;
-  }
-
-  /**
    * @returns url to get config layer
    */
   getConfigUrl() {
