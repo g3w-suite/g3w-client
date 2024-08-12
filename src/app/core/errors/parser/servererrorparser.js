@@ -1,41 +1,52 @@
 const { t } = require('core/i18n/i18n.service');
 
-const serverErrorParser = function(options={}) {
-  this._error = options.error;
+const serverErrorParser = function(opts = {}) {
+  this._error = opts.error;
 };
 
 const proto = serverErrorParser.prototype;
 
-proto.parse = function({type='responseJSON'}={}) {
+proto.parse = function({ type = 'responseJSON' } = {}) {
   let error_message = "server_saver_error";
-  function traverseErrorMessage(errorObject) {
+  function traverse(errorObject) {
     const entries = Object.entries(errorObject);
-    const entry = entries.find(([key, value]) => key === 'fields');
+    const entry = entries.find(([key, _]) => 'fields' === key);
     if (entry) {
       const [, value] = entry;
       try {
         if (typeof value === 'string') {
-          const [field] = entries.find(([key, value]) => key !== 'fields');
+          const [field] = entries.find(([key, _]) => 'fields' !== key);
           error_message = `[${field}] ${value}`;
         } else {
           error_message = '';
-          Object.entries(value).forEach(([field, error]) => {
-            error_message = `${error_message}${field} ${Array.isArray(error)? error[0] : error} \n`;
-          });
+          Object
+            .entries(value)
+            .forEach(([field, error]) => error_message = `${error_message}${field} ${Array.isArray(error)? error[0] : error} \n`);
         }
-      } catch(err){}
+      } catch(e) {
+        console.warn(e);
+      }
       return error_message.replace(/\:|\./g, '');
     } else {
       const [, value] = entries[0];
-      if (!Array.isArray(value) && typeof value === 'object' ) return traverseErrorMessage(value)
+      if (!Array.isArray(value) && typeof value === 'object' ) {
+        return traverse(value)
+      }
     }
   }
-  if (type === 'responseJSON') {
-    if (this._error && this._error.responseJSON && this._error.responseJSON.error.message) return this._error.responseJSON.error.message
-    else if (this._error && this._error.errors)return traverseErrorMessage(this._error.errors);
-  } else if (type === 'String') {
-    if (typeof this._error === 'string') return this._error;
-    else return traverseErrorMessage(this._error);
+  if ('responseJSON' === type) {
+    if (this._error && this._error.responseJSON && this._error.responseJSON.error.message) {
+      return this._error.responseJSON.error.message
+    }
+    else if (this._error && this._error.errors) {
+      return traverse(this._error.errors);
+    }
+  } else if ('String' === type) {
+    if (typeof this._error === 'string') {
+      return this._error
+    } else {
+      return traverse(this._error)
+    }
   }
   return t("server_saver_error");
 };
