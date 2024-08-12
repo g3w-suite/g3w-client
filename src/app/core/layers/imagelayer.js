@@ -435,7 +435,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   isWMS() {
-    return ImageLayer.WMSServerTypes.indexOf(this.config.servertype) > -1;
+    return ImageLayer.WMSServerTypes.includes(this.config.servertype);
   }
 
   isLayerProjectionASMapProjection() {
@@ -451,7 +451,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   isArcgisMapserver() {
-    return this.isExternalWMS() && this.config.source.type === Layer.SourceTypes.ARCGISMAPSERVER;
+    return this.isExternalWMS() && Layer.SourceTypes.ARCGISMAPSERVER === this.config.source.type;
   }
 
   _getBaseLayerName() {
@@ -506,7 +506,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     return name.replace(/\s/g, '_').replaceAll( ':', '-' );
   }
 
-  useProxy(){
+  useProxy() {
     return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats();
   }
 
@@ -571,7 +571,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
    * @since 3.10.0
    * @return { String } url
    */
-  getCatalogWfs3Url(){
+  getCatalogWfs3Url() {
     return `${this.getWfsUrl()}wfs3/`;
   }
 
