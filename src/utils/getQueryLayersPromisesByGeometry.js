@@ -42,7 +42,7 @@ export function getQueryLayersPromisesByGeometry(layers, { multilayers = false, 
       provider
         .query({ filter, layers, feature_count })
         .then(response => queryResponses.push(response))
-        .fail(error => queryErrors.push(error))
+        .fail(e => { console.warn(e); queryErrors.push(e) })
         .always(() => {
           layersLength -= 1;
           if (0 === layersLength) {
