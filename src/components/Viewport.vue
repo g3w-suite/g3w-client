@@ -289,4 +289,21 @@
     padding: 0 3px;
     border-radius: 3px;
   }
+  .close-panel-block {
+    overflow: hidden;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 1.4em;
+  }
+  .g3w_contents_back {
+    font-size: 0.8em;
+  }
+  .g3w_contents_back :is(.backto, .back) {
+    display: inline-block;
+    font-weight: bold;
+  }
+  .g3w_contents_back .backto {
+    margin-top: 5px;
+    cursor: pointer;
+  }
 </style>

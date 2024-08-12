@@ -1602,6 +1602,8 @@ export default {
 </style>
 
 <style scoped>
+  #g3w-small-screen-hamburger-sidebar              { display: none; }
+
   .logo-wrapper                                    { display: flex; max-height: 50px; height: 50px; font-weight: bold; align-items: center; color: white; }
   .logo-wrapper a.project_logo_link                { height: 46px; padding: 2px; }
   .logo-wrapper a.project_logo_link img            { height: 100%; }
