@@ -52,7 +52,7 @@ class VectorMapLayer extends G3WObject {
     })
   }
 
-  _makeStyle(styleConfig) {
+  _makeStyle(styleConfig={}) {
     let style;
     const styles = {};
     if (styleConfig) {
@@ -75,7 +75,7 @@ class VectorMapLayer extends G3WObject {
         this.addFeatures(features);
         d.resolve(features);
       })
-      .fail(err => d.reject(err));
+      .fail(e => { console.warn(e); d.reject(e) });
     return d.promise()
   }
 
@@ -122,7 +122,7 @@ class VectorMapLayer extends G3WObject {
     this._olLayer.setStyle(style);
   }
 
-  getFeatureById(fid){
+  getFeatureById(fid) {
     return fid ? this._olLayer.getSource().getFeatureById(fid) : null;
   }
 
@@ -142,7 +142,7 @@ class VectorMapLayer extends G3WObject {
     map.addLayer(this._olLayer);
   }
 
-};
+}
 
 class VectorLayer extends GeoLayerMixin(TableLayer) {
   
@@ -181,7 +181,7 @@ class VectorLayer extends GeoLayerMixin(TableLayer) {
     return this._mapLayer;
   }
 
-};
+}
 
 module.exports = {
   VectorLayer,
