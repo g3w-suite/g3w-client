@@ -452,12 +452,12 @@ module.exports = class TableLayer extends Layer {
     return this._editor;
   }
 
-  isStarted() {
-    return this.getEditor().isStarted()
-  }
-
   setEditor(editor) {
     this._editor = editor;
+  }
+
+  isStarted() {
+    return this.getEditor().isStarted()
   }
 
   getFeaturesStore() {
