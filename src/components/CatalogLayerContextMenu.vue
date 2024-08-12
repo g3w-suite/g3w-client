@@ -986,6 +986,9 @@
         this._hideMenu();
       },
 
+      /**
+       * @TODO Check if it used otherwise remove if
+       */
       startEditing() {
         let layer;
         CatalogLayersStoresRegistry.getLayersStores().forEach(layerStore => {
