@@ -40,7 +40,11 @@ module.exports = class TableLayer extends Layer {
        */
       clearFeatures()        { this._featuresstore.clearFeatures(); },
       addFeature(feature)    { this._featuresstore.addFeature(feature); },
-      updateFeature()        {},
+      /**
+       * @TODO it used ????
+       * @param feature
+       */
+      updateFeature(feature) { this._featuresstore.updateFeature(feature);},
       setFeatures(features)  { this._featuresstore.setFeatures(features); },
       setColor(color)        { this._color = color; },
 
