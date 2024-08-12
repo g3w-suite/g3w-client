@@ -1,33 +1,31 @@
 const { base, inherit, uniqueId } = require('utils');
-const G3WObject = require('core/g3wobject');
+const G3WObject                   = require('core/g3wobject');
 
 // Interface for Layers
-function LayersStore(config={}) {
+function LayersStore(config = {}) {
   this.config = {
-    id: config.id || Date.now(),
+    id:         config.id || Date.now(),
     projection: config.projection,
-    extent: config.extent,
+    extent:     config.extent,
     initextent: config.initextent,
-    wmsUrl: config.wmsUrl,
+    wmsUrl:     config.wmsUrl,
     //set catalogable property
-    catalog: _.isBoolean(config.catalog) ? config.catalog : true
+    catalog:    _.isBoolean(config.catalog) ? config.catalog : true
   };
   this.state = {
     //useful to build layerstree
     layerstree: [],
-    relations: null // useful to build tree of relations
+    relations:  null // useful to build tree of relations
   };
   this._isQueryable = _.isBoolean(config.queryable) ? config.queryable : true;
   this._layers = this.config.layers || {};
+
   this.setters = {
-    setLayerSelection({layerId, selection}){
-      const layer = this.getLayerById(layerId);
-    },
     setLayerSelected(layerId, selected) {
       this.getLayers().forEach(layer => layer.state.selected = (layerId === layer.getId()) ? selected : false);
     },
     addLayers(layers) {
-      layers.forEach(layer => this.addLayer(layer))
+      layers.forEach(l => this.addLayer(l))
     },
     addLayer(layer) {
       this._addLayer(layer);
@@ -56,7 +54,7 @@ proto.showOnCatalog = function() {
   return this.config.catalog;
 };
 
-proto.setOptions = function(config) {
+proto.setOptions = function(config = {}) {
   this.config = config;
 };
 
@@ -69,14 +67,13 @@ proto._addLayer = function(layer) {
 };
 
 proto._removeLayer = function(layer) {
-  const layerId = layer.getId();
-  delete this._layers[layerId];
+  delete this._layers[layer.getId()];
 };
 
 proto.removeLayers = function() {
-  Object.entries(this._layers).forEach(([layerId, layer]) => {
-    this.removeLayer(layer)
-  })
+  Object
+    .entries(this._layers)
+    .forEach(([_, layer]) => this.removeLayer(layer))
 };
 
 proto.getLayersDict = function(filter = {}, options = {}) {
@@ -144,9 +141,7 @@ proto.getLayers = function(filter = {}, options = {}) {
 };
 
 proto.getBaseLayers = function() {
-  return this.getLayersDict({
-    BASELAYER: true
-  });
+  return this.getLayersDict({ BASELAYER: true });
 };
 
 proto.getLayerById = function(layerId) {
@@ -154,31 +149,27 @@ proto.getLayerById = function(layerId) {
 };
 
 proto.getLayerByName = function(name) {
-  return this._layers.find((layer) => {
-    return layer.getName() === name;
-  });
+  return this._layers.find(l => name === l.getName());
 };
 
-proto.getLayerAttributes = function(layerId){
+proto.getLayerAttributes = function(layerId) {
   return this.getLayerById(layerId).getAttributes();
 };
 
-proto.getLayerAttributeLabel = function(layerId,name){
+proto.getLayerAttributeLabel = function(layerId, name) {
   return this.getLayerById(layerId).getAttributeLabel(name);
 };
 
 proto.getGeoLayers = function() {
-  return this.getLayers({
-    GEOLAYER: true
-  })
+  return this.getLayers({ GEOLAYER: true })
 };
 
 proto._getAllSiblingsChildrenLayersId = function(layerstree) {
   let nodeIds = [];
   let traverse = layerstree => {
-    layerstree.nodes.forEach(node => {
-      if (node.id) nodeIds.push(node.id);
-      else traverse(node);
+    layerstree.nodes.forEach(n => {
+      if (n.id) { nodeIds.push(n.id) }
+      else { traverse(n) }
     });
   };
   traverse(layerstree);
@@ -188,20 +179,19 @@ proto._getAllSiblingsChildrenLayersId = function(layerstree) {
 proto._getAllParentLayersId = function(layerstree, node) {
   let nodeIds = [];
   let traverse = layerstree => {
-    layerstree.nodes.forEach(node => {
-      if (node.id) nodeIds.push(node.id);
-      //else traverse(node);
+    layerstree.nodes.forEach(n => {
+      if (n.id) {
+        nodeIds.push(n.id);
+      }
     });
   };
 
-  traverse({
-    nodes: layerstree.nodes.filter(_node => _node !== node)
-  });
+  traverse({ nodes: layerstree.nodes.filter(n => node !== n) });
 
   return nodeIds;
 };
 
-proto.selectLayer = function(layerId, selected){
+proto.selectLayer = function(layerId, selected) {
   this.setLayerSelected(layerId, selected);
 };
 
@@ -241,20 +231,20 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
 
   // Root group project that contains all layerstree of qgis project
   const rootGroup = {
-    title: name || this.config.id,
-    root: true,
+    title:       name || this.config.id,
+    root:        true,
     parentGroup: null,
     expanded,
-    disabled: false,
-    checked: true,
+    disabled:    false,
+    checked:     true,
     /**
      * @since 3.8.0
      */
-    bbox: { minx, miny, maxx, maxy },
-    nodes: layerstree
+    bbox:        { minx, miny, maxx, maxy },
+    nodes:       layerstree,
   };
 
-  if (layerstree.length) {
+  if (layerstree.length > 0) {
     this._traverseLayersTree(layerstree, rootGroup);
     this.state.layerstree.splice(0, 0, rootGroup); // at the end
   }
@@ -273,8 +263,8 @@ proto.createLayersTree = function(
   groupName,
   options = {
     layerstree: null,
-    expanded: false,
-    full: false
+    expanded:   false,
+    full:       false
   }
   ) {
 
@@ -287,18 +277,18 @@ proto.createLayersTree = function(
 
   // compare all layer ids from server config with all layer nodes on layerstree server property
   if (options.layerstree && true !== options.full) {
-    const tocLayersId = this.getLayers({ BASELAYER: false }).map(layer=>layer.getId())
+    const tocLayersId = this.getLayers({ BASELAYER: false }).map(l => l.getId())
     this._traverseLightLayersTree(options.layerstree, layerstree, tocLayersId);
   }
 
   // retrieve all project layers that have geometry
   if (!options.layerstree) {
     layerstree = this.getGeoLayers()
-      .map(layer => ({
-        id: layer.getId(),
-        name: layer.getName(),
-        title: layer.getTitle(),
-        visible: layer.isVisible() || false
+      .map(l => ({
+        id:      l.getId(),
+        name:    l.getName(),
+        title:   l.getTitle(),
+        visible: l.isVisible() || false
       })
     )
   }
@@ -311,33 +301,33 @@ proto.createLayersTree = function(
  * @since 3.8.0
  */
 proto._traverseLightLayersTree = function(nodes, layerstree, tocLayersId) {
-  nodes.forEach(node => {
+  nodes.forEach(n => {
     let lightlayer = null;
 
     // case TOC has layer ID
-    if (null !== node.id && undefined !== node.id && tocLayersId.find(id => id === node.id)) {
-      lightlayer = ({ ...lightlayer, ...node });
+    if (null !== n.id && undefined !== n.id && tocLayersId.find(id => n.id === id)) {
+      lightlayer = ({ ...lightlayer, ...n });
     }
 
     // case group
-    if (null !== node.nodes && undefined !== node.nodes) {
+    if (null !== n.nodes && undefined !== n.nodes) {
       lightlayer = ({
         ...lightlayer,
-        name: node.name, /** @since 3.10.0 **/
-        title: node.name,
-        groupId: uniqueId(),
-        root: false,
-        nodes: [],
-        checked: node.checked,
-        mutually_exclusive: node["mutually-exclusive"],
-        'mutually-exclusive': node["mutually-exclusive"], /** @since 3.10.0 */
+        name:                 n.name, /** @since 3.10.0 **/
+        title:                n.name,
+        groupId:              uniqueId(),
+        root:                 false,
+        nodes:                [],
+        checked:              n.checked,
+        mutually_exclusive:   n["mutually-exclusive"],
+        'mutually-exclusive': n["mutually-exclusive"], /** @since 3.10.0 */
       });
-      this._traverseLightLayersTree(node.nodes, lightlayer.nodes, tocLayersId); // recursion step
+      this._traverseLightLayersTree(n.nodes, lightlayer.nodes, tocLayersId); // recursion step
     }
 
     // check if lightlayer is not null
     if (null !== lightlayer) {
-      lightlayer.expanded = node.expanded; // expand legend item (TOC)
+      lightlayer.expanded = n.expanded; // expand legend item (TOC)
       layerstree.push(lightlayer);
     }
   });
@@ -361,7 +351,7 @@ proto._traverseLayersTree = function(nodes, parentGroup) {
       }
     }
     if (Array.isArray(node.nodes)) {
-      node.nodes.forEach(node => node.parentGroup = parentGroup);
+      node.nodes.forEach(n => n.parentGroup = parentGroup);
       this._traverseLayersTree(node.nodes, node);
     }
     //SET PARENT GROUP
@@ -382,7 +372,7 @@ proto._setLayersTreeGroupBBox = function(group, { bbox, epsg } = {}) {
     bbox = { minx, miny, maxx, maxy }
   }
 
-  // get current bbox or compute bbox from ol extent
+  // get current bbox or compute bbox from an ol extent
   if (undefined === group.bbox) { 
     group.bbox = bbox
   } else {
