@@ -130,6 +130,50 @@
 </script>
 
 <style scoped>
+  #project-catalog {
+    background: transparent;
+  }
+
+  #project-catalog-container.mobile .metadata-nav-bar li a.metadata-item-tab {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+  }
+  
+  .metadata-nav-bar {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .metadata-nav-bar li {
+    background-color: #e4e4e4;
+    border-radius: 3px;
+    padding: 0;
+    width: 100%;
+    margin:1px;
+  }
+
+  .metadata-nav-bar li.active {
+    background-color: #FFF;
+  }
+
+  .metadata-nav-bar li.active a.metadata-item-tab {
+    border-bottom-color: #222d32 !important;
+    border-bottom-width: 4px;
+    background-color: transparent !important;
+    color: #2c3b41 !important;
+  }
+
+  .metadata-nav-bar li a.metadata-item-tab {
+    height: 100%;
+    margin:0;
+    font-size: 1.1em;
+    border-top: 0;
+    border-right: 0;
+    border-left: 0;
+    border-bottom: 4px solid #e2e2e2;
+  }
+
   .metadata-nav-bar li a {
     text-align: center;
   }
@@ -145,6 +189,10 @@
   }
 
   .metadata-body {
+    background: #FFF;
+    margin-top: 5px;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     overflow-y: auto;
     overflow-x: hidden;
     padding-left: 0;

@@ -120,7 +120,7 @@ export class QueryBy extends InteractionControl {
                   </select>
                 </div>
                 <!-- HELP TEXT -->
-                <div class="queryby-control-help-message" ref="help" v-t-html="help"></div>
+                <div ref="help" v-t-html="help" style="padding-left: 23px;"></div>
                 <!-- CLEAR SELECTION -->
                 <button class="clear-selected-layer btn btn-block btn-warning" :class="{ 'hidden': !selectedLayer }" @click="clearSelectedLayer"><i :class = "g3wtemplate.getFontClass('clear')"></i> <span v-t="'layer_selection_filter.tools.clear'"></span></button>
               </div>`,
