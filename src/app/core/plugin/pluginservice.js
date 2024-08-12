@@ -8,15 +8,15 @@ module.exports = class PluginService extends G3WObject {
     super(options);
     this.plugin;
     this._api = {
-      own: null,
+      own:          null,
       dependencies: {}
     };
     this._pluginEvents = {};
-    this._appEvents = [];
+    this._appEvents    = [];
     this.currentLayout = ApplicationService.getCurrentLayoutName();
     this.vm = new Vue();
     this.unwatch = this.vm.$watch(
-      ()=> ApplicationState.gui.layout.__current,
+      () => ApplicationState.gui.layout.__current,
       layoutName => this.currentLayout = layoutName !== this.getPlugin().getName() ? layoutName : this.currentLayout
     );
   }
@@ -26,7 +26,7 @@ module.exports = class PluginService extends G3WObject {
    * 
    * @virtual method need to be implemented by subclasses
    */
-  init(config={}) {
+  init(config = {}) {
     this.config = config;
   }
 
@@ -69,11 +69,11 @@ module.exports = class PluginService extends G3WObject {
   }
 
   setApi({dependency, api} = {}) {
-    if (!dependency) this._api.own = api;
-    else this._api.dependencies[dependency] = api;
+    if (!dependency) { this._api.own = api }
+    else { this._api.dependencies[dependency] = api }
   }
 
-  getApi({dependency} = {}) {
+  getApi({ dependency } = {}) {
     return dependency && this._api.dependencies[dependency] || this._api.own;
   }
 
@@ -83,16 +83,16 @@ module.exports = class PluginService extends G3WObject {
     }
   }
 
-  registerWindowEvent({evt, cb}={}) {
+  registerWindowEvent({ evt, cb } = {}) {
     ApplicationService.registerWindowEvent({ evt, cb });
   }
 
-  unregisterWindowEvent({evt, cb}) {
+  unregisterWindowEvent({ evt, cb }) {
     ApplicationService.unregisterWindowEvent({ evt, cb });
   }
 
-  subscribeEvent({name, once=false, owner, listener}) {
-    this._pluginEvents[name] = this._pluginEvents[name] ? this._pluginEvents[name] : {};
+  subscribeEvent({ name, once=false, owner, listener }) {
+    this._pluginEvents[name]        = this._pluginEvents[name] ? this._pluginEvents[name] : {};
     this._pluginEvents[name][owner] = listener;
     if (once) {
       this.once(name, listener);
@@ -101,11 +101,11 @@ module.exports = class PluginService extends G3WObject {
     }
   }
 
-  triggerEvent({name, params={}}) {
+  triggerEvent({ name, params = {} }) {
     this.emit(name, params);
   }
 
-  unsubscribeEvent({name, owner}) {
+  unsubscribeEvent({ name, owner }) {
     this.removeEvent(name, this._pluginEvents[name][owner]);
     delete this._pluginEvents[name][owner];
   }
@@ -120,7 +120,7 @@ module.exports = class PluginService extends G3WObject {
   clearAllEvents() {
     this.unsubscribeAllEvents();
     this.unwatch();
-    this.vm = null;
+    this.vm            = null;
     this._pluginEvents = null
   }
 
