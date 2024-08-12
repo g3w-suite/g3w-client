@@ -1,4 +1,4 @@
-@import "./admin-lte2-less/main";
+@import "./admin-lte2-less/main.less";
 
 @import "./admin-lte2-less/skins/skin-blue.less";
 @import "./admin-lte2-less/skins/skin-blue-light.less";
@@ -54,7 +54,11 @@ table.dataTable > tbody > tr.child ul.dtr-details > li { border-bottom: 0 !impor
  **************************************************************************************/
 @font-face {
   font-family: 'icomoon';
-  src: url('../fonts/iconmoon.svg?fcb3cj#icomoon') format('svg');
+  src:
+    url('../fonts/iconmoon.ttf?fcb3cj') format('truetype'),
+    url('../fonts/iconmoon.woff?fcb3cj') format('woff'), 
+    url('../fonts/iconmoon.svg?fcb3cj#icomoon') format('svg');
+  
   font-weight: normal;
   font-style: normal;
 }
