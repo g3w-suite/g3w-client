@@ -6,14 +6,14 @@ const _cloneDeep        = require('lodash.clonedeep');
 
 // Object to store and handle features of layer
 function FeaturesStore(options = {}) {
-  this._features = options.features || [];
-  this._provider = options.provider || null;
+  this._features  = options.features || [];
+  this._provider  = options.provider || null;
   this._loadedIds = []; // store locked ids
-  this._lockIds = []; // store locked features
+  this._lockIds   = []; // store locked features
   //setters
   this.setters = {
-    addFeatures(features) {
-      features.forEach(feature => this._addFeature(feature))
+    addFeatures(features=[]) {
+      features.forEach(f => this._addFeature(f))
     },
     addFeature(feature) {
       this._addFeature(feature);
@@ -63,11 +63,13 @@ proto.unlock = function() {
   const d = $.Deferred();
   this._provider.unlock()
     .then(response => d.resolve(response))
-    .fail(err => d.reject(err));
+    .fail(e => { console.warn(e); d.reject(e) });
   return d.promise();
 };
 
-// method get all features from server or attribute _features
+/*
+ * Gets all features from server or attribute _features
+ */
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   if (this._provider) {
@@ -79,7 +81,7 @@ proto._getFeatures = function(options={}) {
         this.addFeatures(features);
         d.resolve(features);
       })
-      .fail(err => d.reject(err))
+      .fail(e => { console.warn(e); d.reject(e) })
   } else {
     d.resolve(this._readFeatures());
   }
@@ -108,15 +110,15 @@ proto._filterFeaturesResponse = function(options={}) {
 
   const lockFeatures = [];
 
-  const featuresToAdd = features.filter(feature => {
-    const featureId = feature.getId();
-    if (featurelocks.find(({featureid}) => featureId == featureid)) {
+  const featuresToAdd = features.filter(f => {
+    const featureId = f.getId();
+    if (featurelocks.find(({ featureid }) => featureId == featureid)) {
       if (this._loadedIds.indexOf(featureId) === -1) {
         this._loadedIds.push(featureId);
         return true;
       }
     } else {
-      lockFeatures.push(feature);
+      lockFeatures.push(f);
     }
   });
 
@@ -131,7 +133,7 @@ proto._filterFeaturesResponse = function(options={}) {
 /**
  *
  * @param featurelocks Array of lock feature locked by server fo a request
- * Element of array is
+ * Element of an array is
  * {
  *   featureid: Is current id of feature locked
  *   lockid: Is a server unique lock id  number
@@ -141,9 +143,10 @@ proto._filterFeaturesResponse = function(options={}) {
  * @private
  */
 proto._filterLockIds = function(featurelocks = []) {
-  const _lockIds = this._lockIds.map(lockid => lockid.featureid);
-  const toAddLockId = featurelocks.filter(featurelock => _lockIds.indexOf(featurelock.featureid) === -1);
-  this._lockIds = [...this._lockIds, ...toAddLockId];
+  this._lockIds = [
+    ...this._lockIds,
+    ...(featurelocks.filter(fl => this._lockIds.map(({ featureid }) => featureid).indexOf(fl.featureid) === -1))
+  ];
 };
 
 proto.addLoadedIds = function(id) {
@@ -176,18 +179,20 @@ proto._commit = function(commitItems) {
     this._provider
       .commit(commitItems)
       .then(response => d.resolve(response))
-      .fail(err => d.reject(err))
-  } else d.reject();
+      .fail(e => { console.warn(e); d.reject(e) })
+  } else {
+    d.reject();
+  }
   return d.promise();
 };
 
 // get feature from id
 proto.getFeatureById = function(featureId) {
-  return this._features.find(feature => featureId == feature.getId());
+  return this._features.find(f => featureId == f.getId());
 };
 
 proto.getFeatureByUid = function(uid) {
-  return this._features.find(feature => uid === feature.getUid());
+  return this._features.find(f => uid === f.getUid());
 };
 
 proto._addFeature = function(feature) {
@@ -209,13 +214,13 @@ proto.setFeatures = function(features = []) {
 };
 
 proto._removeFeature = function(feature) {
-  this._features = this._features.filter(feat => feature.getUid() !== feat.getUid());
+  this._features = this._features.filter(f => feature.getUid() !== f.getUid());
 };
 
 proto._clearFeatures = function() {
-  this._features = null;
-  this._features = [];
-  this._lockIds = [];
+  this._features  = null;
+  this._features  = [];
+  this._lockIds   = [];
   this._loadedIds = [];
 };
 
