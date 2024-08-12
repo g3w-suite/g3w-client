@@ -35,10 +35,11 @@ module.exports = class TableLayer extends Layer {
      * Hook setters methods
      */
     this.setters = {
-
+      /**
+       * Clear all features of the layer
+       */
       clearFeatures()        { this._featuresstore.clearFeatures(); },
       addFeature(feature)    { this._featuresstore.addFeature(feature); },
-      deleteFeature(feature) { return feature.getId(); },
       updateFeature()        {},
       setFeatures(features)  { this._featuresstore.setFeatures(features); },
       setColor(color)        { this._color = color; },
@@ -184,9 +185,9 @@ module.exports = class TableLayer extends Layer {
       this.state = {
         ...this.state,
         editing: {
-          started: false,
+          started:  false,
           modified: false,
-          ready: false
+          ready:    false
         }
       };
     }
