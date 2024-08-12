@@ -43,7 +43,7 @@ export class BarStack extends G3WObject {
   pop() {
     const d = $.Deferred();
     const data = this.state.contentsdata;
-    if (data.length) {
+    if (data.length > 0) {
       this._unmount(data.slice(-1)[0].content).then(() => { d.resolve(data.pop()) });
     } else {
       d.resolve();
@@ -100,8 +100,8 @@ export class BarStack extends G3WObject {
 
     // Vue element
     else if (content.mount && 'function' === typeof content.mount) {
-      // Check duplicate element by component id (if already exist)
-      let id = data.findIndex(d => d.content.getId && (d.content.getId() === content.getId()));
+      // Check a duplicate element by component id (if already exist)
+      let id = data.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
       if (-1 !== id) {
         data[id].content.unmount().then(() => data.splice(id, 1));
       }
@@ -156,7 +156,7 @@ export class BarStack extends G3WObject {
    * @since 3.10.0
    */
   getComponentById(id) {
-    return (this.getContentData().find(d => d.content.id == id) || {}).content;
+    return (this.getContentData().find(d => id == d.content.id) || {}).content;
   }
 
 }
