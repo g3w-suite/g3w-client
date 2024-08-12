@@ -11,16 +11,15 @@ const Feature                           = require('core/layers/features/feature'
 const _cloneDeep = require('lodash.clonedeep');
 
 function _createAttributesFromFields(fields) {
-  const attributes = {};
-  fields.forEach(f => {
+  return fields.reduce((acc, f) => {
     if ('child' === f.type) {
-      attributes[f.name] = _createAttributesFromFields(f.fields);
+      acc[f.name] = _createAttributesFromFields(f.fields);
     } else if ('null' === f.value) {
       f.value = null;
     }
-    attributes[f.name] = f.value;
-  });
-  return attributes;
+    acc[f.name] = f.value;
+    return acc;
+  }, {});
 }
 
 /**
