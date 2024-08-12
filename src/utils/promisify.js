@@ -24,13 +24,13 @@ export function promisify(promise) {
 export function $promisify(promise) {
   if (undefined === promise) {
     console.trace();
-    return $.Deferred(d=> d.reject('not a promise')).promise();
+    return $.Deferred(d => d.reject('not a promise')).promise();
   }
   if (promise.always) {
     return promise;
   }
   return $.Deferred(async d => {
     try { d.resolve(await (promise instanceof Promise ? promise : promise())); }
-    catch (e) { d.reject(e); }
+    catch (e) { console.warn(e); d.reject(e); }
   }).promise();
 }
