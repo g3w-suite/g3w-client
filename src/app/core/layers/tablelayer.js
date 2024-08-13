@@ -1,6 +1,5 @@
 import { TIMEOUT }                      from "constant";
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
-import ProjectsRegistry                 from 'store/projects';
 import { waitFor }                      from 'utils/waitFor';
 
 const Layer                             = require('core/layers/layer');
@@ -32,6 +31,7 @@ module.exports = class TableLayer extends Layer {
     super(config, options);
 
     /**
+     * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
      * Hook setters methods
      */
     this.setters = {
@@ -52,12 +52,12 @@ module.exports = class TableLayer extends Layer {
        * get data from every sources (server, wms, etc..)
        * through provider related to featuresstore
        *
-       * @param {*} options
+       * @param {*} opts
        */
-      getFeatures(options = {}) {
+      getFeatures(opts = {}) {
         const d = $.Deferred();
         this._featuresstore
-          .getFeatures(options)
+          .getFeatures(opts)
           .then(promise => {
             promise
               .then(features => {
@@ -121,36 +121,14 @@ module.exports = class TableLayer extends Layer {
      */
     this._color = null;
 
-    options.project = options.project || ProjectsRegistry.getCurrentProject();
-
     /**
      * @FIXME add description
      */
     this.layerId = config.id;
 
-    /**
-     * add urls
-     */
-    config.urls = config.urls || {};
-
-    /**
-     * add editing configurations
-     */
-    config.editing = {
-      fields: [] // editing fields
-    };
-
-    /**
-     * @FIXME set a default value
-     *
-     * get configuration from server if is editable
-     */
-    this._editatbleLayer;
-
-    const is_editable = this.isEditable();
-
+    // @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
     // editable layer -- > update layer config info
-    if (is_editable) {
+    if (this.isEditable()) {
       this.layerForEditing = new Promise((resolve, reject) => {
         this
           .getEditingConfig()                                // get editing layer config
@@ -159,19 +137,24 @@ module.exports = class TableLayer extends Layer {
             constraints = {},
             capabilities,
           } = {}) => {
-            await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait unitil "editing" plugin is loaded
-            Object.assign(this.config.editing, {
-              fields: vector.fields,
-              format: vector.format,
+            await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
+            /**
+             * add editing configurations
+             */
+            this.config.editing =  {
+              fields:       vector.fields,
+              format:       vector.format,
               constraints,
               capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
-              form: { perc: null },                                                              // set editing form `perc` to null at beginning
-              style: vector.style,                                                               // get vector layer style
+              form:         { perc: null },                                                              // set editing form `perc` to null at beginning
+              style:        vector.style,                                                               // get vector layer style
               geometrytype: vector.geometrytype                                                  // whether is a vector layer
-            })
+            }
+
             if (vector.style) {                              // set vector layer color 
               this.setColor(vector.style.color);
             }
+
             this._editor = new window.g3wsdk.core.editing.Editor({ layer: this }); // create an instance of editor
             resolve(this);
             this.setReady(true);                             // set ready
@@ -184,8 +167,9 @@ module.exports = class TableLayer extends Layer {
       });
     }
 
+    // @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
     // editable layer --> add editing state info
-    if (is_editable) {
+    if (this.isEditable()) {
       this.state = {
         ...this.state,
         editing: {
@@ -203,6 +187,10 @@ module.exports = class TableLayer extends Layer {
 
   }
 
+  /**
+   *
+   * @param perc
+   */
   setFormPercentage(perc) {
     this.config.editing.form.perc = perc;
   }
@@ -228,6 +216,7 @@ module.exports = class TableLayer extends Layer {
   }
 
   /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * Get editing layer
    *
    * @param vectorurl
@@ -241,10 +230,12 @@ module.exports = class TableLayer extends Layer {
   } = {}) {
 
     if (vectorurl) {
+      //@TODO Check if it used otherwise delete it
       this.vectorUrl = vectorurl;
     }
 
     if (project_type) {
+      //@TODO Check if it used otherwise delete it
       this.projectType = project_type;
     }
 
@@ -258,7 +249,7 @@ module.exports = class TableLayer extends Layer {
   }
 
   /**
-   *
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @returns return ol source of features
    */
   getEditingSource() {
@@ -266,41 +257,64 @@ module.exports = class TableLayer extends Layer {
   }
 
   /**
-   *
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @returns Array of features
    */
   readEditingFeatures() {
     return this._editor.readEditingFeatures();
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {TableLayer}
+   */
   getEditingLayer() {
     return this;
   }
 
   /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @returns whether editingLayer is useful to get editingstyle
    */
   isEditingLayer() {
     return !!this.config.editing;
   }
 
-  setEditingStyle(style={}) {
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param style
+   */
+  setEditingStyle(style = {}) {
     this.config.editing.style = style;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {{}}
+   */
   getEditingConstrains() {
     return this.config.editing.constraints;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {*|string[]}
+   */
   getEditingCapabilities() {
     return this.config.editing.capabilities;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param fieldName
+   * @return {boolean}
+   */
   isFieldRequired(fieldName) {
     return (this.getEditingFields().find(f => fieldName === f.name) || { validate: { required: false } }).validate.required;
   }
 
   /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * Unlock editing features
    *
    * @returns jQuery Promise
@@ -315,6 +329,7 @@ module.exports = class TableLayer extends Layer {
   }
 
   /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @returns layer fields
    */
   getEditingFields(editable = false) {
@@ -328,6 +343,7 @@ module.exports = class TableLayer extends Layer {
   }
 
   /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @param field
    *
    * @returns {boolean} whether field is a Primary Key
@@ -336,58 +352,97 @@ module.exports = class TableLayer extends Layer {
     return (this.getEditingFields().find(f => field === f.name) || {}).pk;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param field
+   * @return {boolean}
+   */
   isEditingFieldEditable(field) {
     return (this.getEditingFields().find(f => f.name === field) || { editable: false }).editable;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {*}
+   */
   getEditingNotEditableFields() {
     return this.config.editing.fields.filter(f => !f.editable).map(f => f.name);
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param options
+   * @return {*}
+   */
   getEditingMediaFields(options = null) {
     return this.config.editing.fields.filter(f => f.input.type === 'media').map(f => f.name);
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {*[]}
+   */
   getFieldsLabel() {
     return this.getEditingFields().map(f => f.label);
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {*}
+   */
   getDataFormat() {
     return this.config.editing.format;
   }
 
   /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @returns raw data
    */
   getEditingFormat() {
     return this.config.editing.format;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {boolean}
+   */
   isReady() {
     return this.state.editing.ready;
   };
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param bool
+   */
   setReady(bool=false) {
     this.state.editing.ready = bool;
   }
 
   /**
    * Get configuration from server
+   * @TODO Move it on https://github.com/g3w-suite/g3w-client-plugin-editing
    *
-   * @param {*} options
+   * @param {*} opts
    *
    * @returns jQuery Promise
    */
-  getEditingConfig(options={}) {
+  getEditingConfig(opts = {}) {
     const d = $.Deferred();
     this
       .getProvider('data')
-      .getConfig(options)
+      .getConfig(opts)
       .then(d.resolve)
       .fail(e => { console.warn(e); d.reject(e) });
     return d.promise();
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param field
+   * @param key
+   * @param value
+   * @return {*}
+   */
   addEditingConfigFieldOption({
     field,
     key,
@@ -397,32 +452,52 @@ module.exports = class TableLayer extends Layer {
     return field.input.options[key];
   }
 
-  getWidgetData(options) {
+  getWidgetData(opts = {}) {
     const d = $.Deferred();
     this
       .getProvider('data')
-      .getWidgetData(options)
+      .getWidgetData(opts)
       .then(d.resolve)
       .fail(e => { console.warn(e); d.reject(e) });
     return d.promise()
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {string}
+   */
   getCommitUrl() {
     return this.config.urls.commit;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param url
+   */
   setCommitUrl(url) {
     this.config.urls.commit = url;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {string}
+   */
   getEditingUrl() {
     return this.config.urls.editing;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {(function(): *)|(function(): *)|*|string|(function(): *)|(() => void)}
+   */
   getUnlockUrl() {
     return this.config.url.unlock;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param url
+   */
   setUnlockUrl(url) {
     this.config.urls.unlock = url;
   }
@@ -442,14 +517,26 @@ module.exports = class TableLayer extends Layer {
     this.config.urls.index = url;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {*}
+   */
   getEditor() {
     return this._editor;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param editor
+   */
   setEditor(editor) {
     this._editor = editor;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {*}
+   */
   isStarted() {
     return this.getEditor().isStarted()
   }
@@ -471,6 +558,7 @@ module.exports = class TableLayer extends Layer {
   }
 
   /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @returns editing style
    */
   getEditingStyle() {
@@ -481,6 +569,10 @@ module.exports = class TableLayer extends Layer {
     features.forEach(f => this.addFeature(f));
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param lockIds
+   */
   addLockIds(lockIds) {
     this._featuresstore.addLockIds(lockIds);
   }
@@ -491,6 +583,12 @@ module.exports = class TableLayer extends Layer {
     return attributes;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param obj
+   * @param options
+   * @return {*}
+   */
   getFieldsWithValues(obj, options = {}) {
     const {
       exclude = [],
@@ -547,6 +645,10 @@ module.exports = class TableLayer extends Layer {
     return fields;
   }
 
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @return {Feature}
+   */
   createNewFeature() {
     let feature      = new ol.Feature();
     const properties = {};
