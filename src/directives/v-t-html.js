@@ -21,5 +21,10 @@ export default {
       ]
     });
   },
+  update(el, binding) {
+    if (binding.value !== binding.oldValue) {
+      el.innerHTML = `${t(binding.value)}`;
+    }
+  },
   unbind: (el) => unwatch({ el, attr })
 };

@@ -146,8 +146,6 @@ export class QueryBy extends InteractionControl {
             },
             methods: {
               reset() {
-                /** @FIXME use v-t="help" */
-                this.$refs.help.innerHTML = t(this.help);
                 this.layers.splice(0);
                 // reset autorun options
                 this.types.filter(t => t !== this.type).forEach(t => {
@@ -329,7 +327,7 @@ export class QueryBy extends InteractionControl {
           // get polygon feature from coordinates
           this.setEventKey({
             eventType: 'picked',
-            eventKey: this.on('picked', async () => {
+            eventKey:  this.on('picked', async () => {
 
               GUI.closeOpenSideBarComponent();
           
@@ -338,7 +336,7 @@ export class QueryBy extends InteractionControl {
                 const { data = [] } = await DataRouterService.getData('query:coordinates', {
                   inputs: {
                     feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
-                    coordinates: QUERY.coordinates
+                    coordinates:   QUERY.coordinates
                   },
                   outputs: {
                     // whether to show picked coordinates on map
