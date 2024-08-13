@@ -24,6 +24,7 @@ const LayersStore         = require('core/layers/layersstore');
  * @param config.layers
  * @param config.layerstree
  * @param config.overviewprojectgid
+ * @param config.querymultilayers
  * @param config.baselayers
  * @param config.initbaselayer
  * @param config.filtertoken
@@ -148,7 +149,7 @@ module.exports = class Project extends G3WObject {
     // create layerstree from layerstore
     this._layersStore.createLayersTree(this.state.name, {
       layerstree: this.state.layerstree,
-      expanded: 'not_collapsed' === this.state.toc_layers_init_status // config to show layerstrees toc expanded or not
+      expanded:   'not_collapsed' === this.state.toc_layers_init_status // config to show layerstrees toc expanded or not
     });
 
     /**
@@ -156,9 +157,9 @@ module.exports = class Project extends G3WObject {
      */
     this.setters = {
       setBaseLayer(id) {
-        this.state.baselayers.forEach(baseLayer => {
-          this._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id === id);
-          baseLayer.visible = (baseLayer.id === id);
+        this.state.baselayers.forEach(l => {
+          this._layersStore.getLayerById(l.id).setVisible(id === l.id);
+          l.visible = (id === l.id);
         })
       },
     };
@@ -214,12 +215,14 @@ module.exports = class Project extends G3WObject {
   }
 
   /**
+   * Return a boolean value is a map control is set multilayer on g3w-admin
+   *
    * @param mapcontrol
    * 
    * @returns { boolean }
    */
   isQueryMultiLayers(mapcontrol) {
-    return this.state.querymultilayers && -1 !== this.state.querymultilayers.indexOf(mapcontrol);
+    return Array.isArray(this.state.querymultilayers) && this.state.querymultilayers.includes(mapcontrol);
   }
 
   /**
@@ -235,7 +238,7 @@ module.exports = class Project extends G3WObject {
    * @returns {*}
    */
   getRelationById(relationId) {
-    return this.state.relations.find(relation => relation.id === relationId);
+    return this.state.relations.find(r => relationId === r.id);
   }
 
   /**
@@ -245,8 +248,8 @@ module.exports = class Project extends G3WObject {
    * 
    * @returns {*}
    */
-  getRelationsByLayerId({layerId, type}={}) {
-    return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
+  getRelationsByLayerId({ layerId, type } = {}) {
+    return this.state.relations.filter(r => layerId === r.referencedLayer && (type ? type === r.type : true))
   }
 
   /**
@@ -274,7 +277,7 @@ module.exports = class Project extends G3WObject {
    * @returns { Array } configuration layers (from server config)
    */
   getConfigLayers({ key } = {}) {
-    return key ? this.state.layers.filter(layer => undefined !== layer[key] ) : this.state.layers;
+    return key ? this.state.layers.filter(l => undefined !== l[key] ) : this.state.layers;
   }
 
   /**
@@ -333,7 +336,7 @@ module.exports = class Project extends G3WObject {
   }
 
   getOverviewProjectGid() {
-    return this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
+    return this.state.overviewprojectgid || null;
   }
 
   getCrs() {
@@ -391,7 +394,7 @@ module.exports = class Project extends G3WObject {
     /** map theme config */
     const theme = await this.getMapThemeFromThemeName(map_theme);
     // create a chages need to apply map_theme changes to map and TOC
-    const changes  = {layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
+    const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
     const promises = [];
     /**
      * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
@@ -414,7 +417,7 @@ module.exports = class Project extends G3WObject {
             if (layerstree[index].checked !== node.visible) {
               changes.layers[node.id] = {
                 visibility: true,
-                style: false
+                style:      false
               };
             }
             layerstree[index].checked = node.visible;
@@ -424,7 +427,7 @@ module.exports = class Project extends G3WObject {
                 const setCurrentStyleAndResolvePromise = node => {
                   if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
                     visibility: false,
-                    style: false
+                    style:      false
                   };
                   changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
                   resolve();
@@ -443,7 +446,7 @@ module.exports = class Project extends G3WObject {
 
     // all groups checked after layer checked so is set checked but not visible
     groups.forEach(({ group, node: { checked, expanded }}) => {
-      group.checked = checked;
+      group.checked  = checked;
       group.expanded = expanded;
     });
 
@@ -499,8 +502,8 @@ module.exports = class Project extends G3WObject {
     try {
       const response = await XHR.get({ url: `${this.urls.map_themes}${map_theme}/` });
       if (response.result) { return response.data }
-    } catch(err) {
-      console.warn('Error while retreiving map theme configuration', err);
+    } catch(e) {
+      console.warn('Error while retreiving map theme configuration', e);
     }
   }
 
