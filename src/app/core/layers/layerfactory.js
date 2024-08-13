@@ -213,7 +213,7 @@ module.exports = {
   /**
    * @returns layer instance based on configuration
    */
-  build(config, options = {}) {
+  build(config = {}, options = {}) {
 
     if (!config.servertype) {
       console.warn('Undefined layer server type');
