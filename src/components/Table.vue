@@ -459,6 +459,8 @@ export default {
           - 100
         ) + 'px';
       }
+      // adjust columns when resize
+      $(this.$refs.attribute_table).DataTable().columns.adjust();
     },
 
     async getFeatures(params) {
