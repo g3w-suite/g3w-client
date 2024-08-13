@@ -25,7 +25,7 @@ const deprecate                  = require('util-deprecate');
  */
 class Layer extends G3WObject {
   
-  constructor(config={}, options={}) {
+  constructor(config = {}, options = {}) {
 
     super();
 
