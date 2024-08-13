@@ -403,6 +403,18 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     }
   }
 
+  /**
+   *
+   * Used by the following plugins: "plugin"
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   *
+   *
+   * @param force
+   * @param vectorurl
+   * @param project_type
+   * @param project
+   * @return {Promise<any|null>}
+   */
   async getLayerForEditing({
     force = false,
     vectorurl,
