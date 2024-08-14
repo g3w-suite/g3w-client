@@ -36,6 +36,13 @@ const QUERY = {
   coordinates:   null,
 };
 
+/**
+ * Return current layer id selected or __ALL__ (no layer selected)
+ * @return {string}
+ */
+function getSelectedLayerId() {
+  return (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId();
+}
 
 /**
  * ORIGINAL SOURCE: src/app/g3w-ol/controls/querybybboxcontrol.js@v3.9.10
@@ -67,6 +74,8 @@ export class QueryBy extends InteractionControl {
 
     CONTROLS['queryby'] = this;
 
+    this.selectedLayer = '__ALL__';
+
     // toolbox (options)
     this.on('toggled', ({ toggled }) => {
       if (!toggled) {
@@ -85,7 +94,7 @@ export class QueryBy extends InteractionControl {
               methods:       SPATIAL_METHODS,
               method:        this.getSpatialMethod(),
               layers:        [],
-              selectedLayer: GUI.getService('map').getSelectedLayer(),
+              selectedLayer: getSelectedLayerId(),
             }),
             template: /* html */ `
               <div style="width: 100%;">
@@ -113,16 +122,16 @@ export class QueryBy extends InteractionControl {
                 <!-- SELECTED LAYER -->
                 <div style="padding: 5px;">
                   <label v-t="'sdk.mapcontrols.queryby.layer'"></label>
-                  <select ref="layer" v-select2="'selectedLayer'" @change="selectLayer" :templateSelection="templateLayer" :templateResult="templateLayer">
-                    <option v-t="all" :value="'__ALL__'"></option>
-                    <option v-for="layer in layers" :value="layer.getId()" :selected="layer.getId() === selectedLayer">{{ layer.get('name') }}</option>
+                  <select ref="layer" :select2_value = "selectedLayer" v-select2="'selectedLayer'" :templateSelection="templateLayer" :templateResult="templateLayer">
+                    <option v-t="all" :value ="'__ALL__'"></option>
+                    <option v-for="layer in layers" :value="layer.getId()" :selected="selectedLayer === layer.getId()">{{ layer.get('name') }}</option>
                     <option :value="'__NEW__'" v-t="'sdk.mapcontrols.queryby.new'"></option>
                   </select>
                 </div>
                 <!-- HELP TEXT -->
                 <div ref="help" v-t-html="help" style="padding-left: 23px;"></div>
                 <!-- CLEAR SELECTION -->
-                <button class="clear-selected-layer btn btn-block btn-warning" :class="{ 'hidden': !selectedLayer }" @click="clearSelectedLayer"><i :class = "g3wtemplate.getFontClass('clear')"></i> <span v-t="'layer_selection_filter.tools.clear'"></span></button>
+                <button v-if = "!['__ALL__', '__NEW__'].includes(selectedLayer)" class="clear-selected-layer btn btn-block btn-warning"  @click.stop="selectedLayer = '__ALL__'"><i :class = "g3wtemplate.getFontClass('clear')"></i> <span v-t="'layer_selection_filter.tools.clear'"></span></button>
               </div>`,
             computed: {
               control()   { return CONTROLS[this.type]; },
@@ -133,19 +142,67 @@ export class QueryBy extends InteractionControl {
             },
             watch: {
               method()  { this.reset(); },
-              type()    { this.reset(); },
+              type()    {
+                //after a change type needs to check, is all being updated to change select2 option text
+                this.reset().then( () => this.update__ALL__Text())
+              },
               control() { this.types.forEach(t => CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.type)); },
+              layers() {
+                this.selectedLayerNotQuerable();
+              },
               // see: https://forums.select2.org/t/cannot-rename-selected-option/154/2
-              no_layers() {
-                if (this.no_layers) { $(this.$refs.layer).val('__ALL__'); }
+              all() {
+                this.update__ALL__Text();
+              },
+              selectedLayer: {
+                immediate: true,
+                handler(value, oldValue) {
+                  this.selectedLayerNotQuerable();
+                  //It means that it is mounted. No value before
+                  if (undefined === oldValue) {
+                    return;
+                  }
+                  const map = GUI.getService('map');
+                  // auto selects added layer
+                  if ('__NEW__' === value) {
+                    const listener = map.onafter('loadExternalLayer', l => {
+                      map.selectLayer(l.get('id'));
+                      this.reset();
+                    });
+                    $('#modal-addlayer').one('hidden.bs.modal', () => map.un('loadExternalLayer', listener));
+                    map.showAddLayerModal();
+                  }
+
+                  if (!['__ALL__', '__NEW__'].includes(value) && value !== getSelectedLayerId() ) {
+                    map.selectLayer(value);
+                  }
+                  //reset selection if a selection is done by TOC catalog
+                  if (['__ALL__', '__NEW__'].includes(value) && '__ALL__' !== getSelectedLayerId()) {
+                    map.selectLayer();
+                  }
+                }
+              },
+            },
+            methods: {
+              /**
+               * Update selects2 the __ALL__ option text as to select all change text
+               */
+              update__ALL__Text() {
                 $(this.$refs.layer).select2('close');
                 $(this.$refs.layer).find('option[value="__ALL__"]').text(t(this.all));
                 $(this.$refs.layer).select2('data')[0].text = t(this.all);
                 $(this.$refs.layer).trigger('change');
               },
-            },
-            methods: {
-              reset() {
+              selectedLayerNotQuerable() {
+                //In the case of selection of layer (by TOC) that not belong to a layer list,
+                // set the value of selectedLayer __ALL__
+                if (
+                  !['__ALL__', '__NEW__'].includes(this.selectedLayer)
+                  && this.layers.length
+                  && !this.layers.map(l => l.getId()).includes(this.selectedLayer)
+                ) { this.selectedLayer = '__ALL__'; }
+              },
+              async reset() {
                 this.layers.splice(0);
                 // reset autorun options
                 this.types.filter(t => t !== this.type).forEach(t => {
@@ -154,20 +211,15 @@ export class QueryBy extends InteractionControl {
                   if ('querybydrawpolygon' === t) { QUERY.dfeature = null; }
                   CONTROLS[t].autorun = false;
                 });
+                //set spatial method
                 this.control.spatialMethod = this.method;
                 this.control.toggle(true, { parent: CONTROLS['queryby'].id });
-                // show highlight class
-                if ('querybbox' === this.type) {
-                  this.control.layers.forEach(l => l.setTocHighlightable(true));
-                }
+                // show highlight class only if 'querybbox' or 'querybydrawpolygon' type control
+                this.control.layers.forEach(l => l.setTocHighlightable(['querybbox', 'querybydrawpolygon'].includes(this.type)));
+                await this.$nextTick();
                 // set queryable layers (select2)
-                setTimeout(() => {
-                  this.layers.push(...this.queryable);
-                  // ensure selected layer can be used for current control
-                  if (!this.layers.find(l => l.getId() === this.selectedLayer)) {
-                    this.clearSelectedLayer();
-                  }
-                });
+                this.layers.push(...this.queryable);
+
                 if ('querybypolygon' === this.type) {
                   this.control.setEnable(false);
                 }
@@ -175,34 +227,6 @@ export class QueryBy extends InteractionControl {
                 if (this.control.autorun) {
                   CONTROLS['queryby'].runSpatialQuery(this.type);  
                 }
-              },
-              selectLayer(id) {
-                const map = GUI.getService('map'); 
-                if ('string' === typeof id) {
-                  this.selectedLayer = id;
-                }
-                // auto select added layer
-                if ('__NEW__' === this.selectedLayer) {
-                  const listener = map.onafter('loadExternalLayer', l => {
-                    map.selectLayer(l.get('id'));
-                    this.reset();
-                  });
-                  $('#modal-addlayer').one('hidden.bs.modal', () => map.un('loadExternalLayer', listener));
-                  map.showAddLayerModal();
-                }
-                if (['__ALL__', '__NEW__'].includes(this.selectedLayer)) {
-                  this.selectedLayer = false;
-                }
-                if (id instanceof Event) {
-                  GUI.getService('map').selectLayer(this.selectedLayer);
-                } else {
-                  $(this.$refs.layer).val(id).trigger('change');
-                }
-              },
-              clearSelectedLayer() {
-                this.selectedLayer = false;
-                $(this.$refs.layer).val('__ALL__').trigger('change');
-                GUI.getService('map').selectLayer();
               },
               templateType(state) {
                 if (!state.id) { return state.text }
@@ -234,7 +258,6 @@ export class QueryBy extends InteractionControl {
                 CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.types[0]);
                 CONTROLS[t].layers.forEach(l => l.setTocHighlightable(false));
               });
-              GUI.getService('map').selectLayer();
             }
           }
         }
@@ -296,7 +319,7 @@ export class QueryBy extends InteractionControl {
           }));
           this.setEventKey({
             eventType: 'bboxend',
-            eventKey: this.on('bboxend', () => CONTROLS['queryby'].runSpatialQuery('querybbox'))
+            eventKey:  this.on('bboxend', () => CONTROLS['queryby'].runSpatialQuery('querybbox'))
           });
         }
 
@@ -404,20 +427,19 @@ export class QueryBy extends InteractionControl {
    */
   onSelectLayer(layer) {
 
-    /** @FIXME handle "selectedLayer" within usermessage */
     const btn = document.querySelector('.usermessage-content .clear-selected-layer');
     if (btn) {
       btn.classList.toggle('hidden', !layer);
     }
 
     if (this.usermessage) {
-      this.usermessage.selectLayer(layer ? layer.getId() : '__ALL__'); 
+      this.usermessage.selectedLayer = layer ? layer.getId() : '__ALL__';
     }
 
     this.types.forEach(t => {
       const control = CONTROLS[t];
 
-      const selected = layer && control.layers.find(l => l === layer);
+      const selected  = layer && control.layers.find(l => l === layer);
       const queryable = layer && layer.isQueryable() && (control.getGeometryTypes() || []).includes(layer.getGeometryType());
 
       if (['querybbox', 'querybydrawpolygon'].includes(t)) {
@@ -557,7 +579,7 @@ function _hasVisible(control) {
   // whether one layer is visible (and not selected)
   if ('querybypolygon' === control.name) {
     return !!(
-      // check if current selected layer is visible
+      // check if the current selected layer is visible
       selected && selected.isVisible() &&
       // check if at least one layer is visible (project or external layer)
       (
