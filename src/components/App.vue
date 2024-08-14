@@ -994,19 +994,12 @@ export default {
       }
     });
 
-    //Enable expand on hover for sidebar mini
-    if ($('body').hasClass('fixed') && $('body').hasClass('sidebar-mini')) {
-      //Expand sidebar on hover
-      $('.main-sidebar').hover(function () {
-        if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > 767) {
-          $("body").removeClass('sidebar-collapse').addClass('sidebar-expanded-on-hover');
-        }
-      }, function () {
-        if ($('body').hasClass('sidebar-mini') && $('body').hasClass('sidebar-expanded-on-hover') && $(window).width() > 767) {
-          $('body').removeClass('sidebar-expanded-on-hover').addClass('sidebar-collapse');
-        }
-      });
-    }
+    // Expand on click for sidebar mini
+    $('.main-sidebar').on('click', function() {
+      if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > 767) {
+        $("body").removeClass('sidebar-collapse');
+      }
+    });
 
     //Activate box widget
     $(document).on('click', '[data-widget="collapse"]', function (e) {
@@ -1047,16 +1040,6 @@ export default {
     });
 
     // fix right sidebar and boxed layout 
-    // Expand sidebar on hover
-    $('.main-sidebar').hover(function () {
-      if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > 767) {
-        $("body").removeClass('sidebar-collapse').addClass('sidebar-expanded-on-hover');
-      }
-    }, function () {
-      if ($('body').hasClass('sidebar-mini') && $('body').hasClass('sidebar-expanded-on-hover') && $(window).width() > 767) {
-        $('body').removeClass('sidebar-expanded-on-hover').addClass('sidebar-collapse');
-      }
-    });
     _fix($(".control-sidebar-bg"));
     _fix($(".control-sidebar"));
 

@@ -1264,8 +1264,8 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
     //Apply the new margining to the main content and footer
     .sidebar-mini.sidebar-collapse .content-wrapper,
     .sidebar-mini.sidebar-collapse .right-side,
-    .sidebar-mini.sidebar-collapse .main-footer                                 { margin-left: 50px!important; z-index: 840; }
-    .sidebar-mini.sidebar-collapse .main-sidebar                                { transform: translate(0, 0); width: 50px!important; z-index: 850; }
+    .sidebar-mini.sidebar-collapse .main-footer                                 { margin-left: 40px!important; z-index: 840; }
+    .sidebar-mini.sidebar-collapse .main-sidebar                                { transform: translate(0, 0); width: 35px !important; z-index: 850; }
     .sidebar-mini.sidebar-collapse .sidebar-menu > li                           { position: relative; }
     .sidebar-mini.sidebar-collapse .sidebar-menu > li > a                       { margin-right: 0; }
     .sidebar-mini.sidebar-collapse .sidebar-menu > li > a > span                { border-top-right-radius: 4px; }
@@ -1290,6 +1290,11 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
     .sidebar-mini.sidebar-collapse .main-header .logo > .logo-lg               { display: none; }
   }
 }
+
+.sidebar-mini.sidebar-collapse #catalog > * { display: none; }
+.sidebar-mini.sidebar-collapse #catalog > a { display: block !important; }
+.sidebar-mini.sidebar-collapse #g3w-sidebarcomponents-content { padding-top: 50px; overflow: hidden; }
+.sidebar-mini.sidebar-collapse .ol-geocoder { left: 10px; }
 
 /**************************************************************************************
  * 5. Viewport
