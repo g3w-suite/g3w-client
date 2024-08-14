@@ -203,7 +203,7 @@
                 :src        = "getSrcBaseLayerImage(base)"
                 @click.stop = "setBaseLayer(base.id)"
                 class       = "img-responsive img-thumbnail baselayer"
-                :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5 }"
+                :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5, height: baselayers.length > 4 ? '108px' : null  }"
               >
               <div class = "baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
             </li>
