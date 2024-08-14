@@ -97,7 +97,6 @@ import SpatialBookMarkItem                         from './SpatialBookMarkItem.v
 import SpatialBookMarks                            from './SpatialBookMarks.vue';
 import StreetView                                  from './StreetView.vue';
 import Table                                       from './Table.vue';
-import TableToolbar                                from './TableToolbar.vue';
 import Tool                                        from './Tool.vue';
 import UserMessage                                 from './UserMessage.vue';
 import WMS                                         from './WMS.vue';
@@ -209,7 +208,6 @@ export {
   SpatialBookMarks,
   StreetView,
   Table,
-  TableToolbar,
   Tool,
   UserMessage,
   WMS,
