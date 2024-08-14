@@ -12,7 +12,7 @@ const service = {
 
   init(layout) {
     this.layout        = layout;
-    this.sidebarEl     = $(this.layout.options.controlSidebarOptions.selector);
+    this.sidebarEl     = $(".control-sidebar");
     this._zindex       = this.sidebarEl.css("z-index");
     this._modalOverlay = null;
     this._modal        = false;
@@ -24,12 +24,12 @@ const service = {
   },
 
   open() {
-    this.layout.floatBar.open(this.sidebarEl,true);
+    this.sidebarEl.addClass('control-sidebar-open');
     this._isopen = true;
   },
 
   close() {
-    this.layout.floatBar.close(this.sidebarEl,true);
+    this.sidebarEl.removeClass('control-sidebar-open');
     this._isopen = false;
   },
 
