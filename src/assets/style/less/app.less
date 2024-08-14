@@ -1109,8 +1109,8 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
  **************************************************************************************/
 
 /* clear fix */
-.control-sidebar-menu > li > a:before, .control-sidebar-menu > li > a:after { content: " "; display: table; }
-.control-sidebar-menu > li > a:after                                        { clear: both; }
+.control-sidebar-menu > li > a:before, .control-sidebar-menu > li > a:after  { content: " "; display: table; }
+.control-sidebar-menu > li > a:after                                         { clear: both; }
 
 .control-sidebar-bg                                                          { position: fixed; z-index: 1000; bottom: 0; }
 .control-sidebar-bg,
@@ -1142,25 +1142,6 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .control-sidebar-menu .menu-info > .control-sidebar-subheading               { margin: 0; }
 .control-sidebar-menu .menu-info > p                                         { margin: 0; font-size: 11px; }
 .control-sidebar-menu .progress                                              { margin: 0; }
-.control-sidebar-dark                                                        { color: lighten(@sidebar-dark-bg, 60%); }
-.control-sidebar-dark + .control-sidebar-bg                                  { background: @sidebar-dark-bg; }
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs                         { border-bottom: darken(@sidebar-dark-bg, 3%); }
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a                { background: darken(@sidebar-dark-bg, 5%); color: lighten(@sidebar-dark-bg, 60%); }
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a,
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover,
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:focus          { border-left-color: darken(@sidebar-dark-bg, 7%); border-bottom-color: darken(@sidebar-dark-bg, 7%);           }
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover,
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:focus,
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:active         { background: darken(@sidebar-dark-bg, 3%); }
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover          { color: #fff; }
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a,
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a:hover,
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a:focus,
-.control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a:active  { background: @sidebar-dark-bg; color: #fff; }
-.control-sidebar-dark .control-sidebar-heading,
-.control-sidebar-dark .control-sidebar-subheading                            { color: #fff; }
-.control-sidebar-dark .control-sidebar-menu > li > a:hover                   { background: darken(@sidebar-dark-bg, 2%); }
-.control-sidebar-dark .control-sidebar-menu > li > a .menu-info > p          { color: lighten(@sidebar-dark-bg, 60%); }
 .control-sidebar-light                                                       { color: lighten(#444, 10%); }
 .control-sidebar-light,
 .control-sidebar-light + .control-sidebar-bg                                 { background: #f9fafc; border-left: 1px solid @gray; }
@@ -1189,11 +1170,11 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .expand-transition                                                  { transition: all .3s ease; }
 .expand-enter,
 .expand-leave                                                       { opacity: 0; }
-.control-sidebar .floatbar-aside-toggle                             { position:absolute; right: 450px; top: @navbar-height; background-color: @light-blue; color: white; background-image: none; font-size: 20px; line-height: 20px; padding: 12.5px 15px 12.5px 17px; font-family: fontAwesome; }
-.control-sidebar .floatbar-aside-toggle:before                      { content: "\f100"; }
-.control-sidebar .floatbar-aside-toggle:is(:focus,:hover)           { color: #fff; }
-.control-sidebar .floatbar-aside-toggle .icon-bar                   { display: none; }
-.control-sidebar.control-sidebar-open .floatbar-aside-toggle:before { content: "\f101"; }
+.floatbar-aside-toggle                                              { position:absolute; right: 450px; top: @navbar-height; background-color: @light-blue; color: white; background-image: none; font-size: 20px; line-height: 20px; padding: 12.5px 15px 12.5px 17px; font-family: fontAwesome; }
+.floatbar-aside-toggle:before                                       { content: "\f100"; }
+.floatbar-aside-toggle:is(:focus,:hover)                            { color: #fff; }
+.floatbar-aside-toggle .icon-bar                                    { display: none; }
+.control-sidebar-open .floatbar-aside-toggle:before                 { content: "\f101"; }
 
 :root {
   @media (max-width: 768px) {
