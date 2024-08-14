@@ -17,7 +17,7 @@
     >
       <i
         class  = "usermessage-header-icontype"
-        :class = "g3wtemplate.getFontClass(type)">
+        :class = "g3wtemplate.getFontClass(iconClass || type)">
       </i>
       <div class = "usermessage-header-title">
         <slot name = "header">
@@ -58,8 +58,7 @@
 </template>
 
 <script>
-  import { ZINDEXES } from 'app/constant';
-  import GUI          from 'services/gui';
+  import GUI from 'services/gui';
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
@@ -141,9 +140,14 @@
       closable: {
         type:    Boolean,
         default: true
+      },
+      //@since 3.11.0
+      iconClass: {
+        type: String,
+        default: null
       }
     },
-    computed:{
+    computed: {
       showheader() {
         return 'loading'!== this.type ;
       }
@@ -170,8 +174,8 @@
           'right': { right:  0 },
         }[alignement] || {}),
         width: ({
-          'small': '325px',
-          'medium': '50%',
+          'small':    '325px',
+          'medium':   '50%',
           'fullpage': '100%'
         })[alignement ? 'small' : this.size] || '100%',
         /**
@@ -184,7 +188,7 @@
           tool:    {
             backgroundColor: "#FFF",
             color:           "#222d32",
-            "z-index":       100, // ZINDEXES.usermessage.tool,
+            "z-index":       100,
             marginLeft:      "40px",
           },
           loading: {

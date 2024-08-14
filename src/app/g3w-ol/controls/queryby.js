@@ -85,6 +85,7 @@ export class QueryBy extends InteractionControl {
         title: 'sdk.mapcontrols.queryby.title',
         type: 'tool',
         size: 'small',
+        iconClass: 'info',
         closable: false,
         hooks: {
           body: {

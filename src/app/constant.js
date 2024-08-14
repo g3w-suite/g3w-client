@@ -582,6 +582,8 @@ export const FONT_AWESOME_ICONS = {
   'external-link': "fa fa-external-link-alt",
   /** @since 3.11.0 */
   'pointer': 'fa fa-hand-pointer',
+  /** @since 3.11.0 */
+  camera: 'fas fa-camera-retro',
 };
 
 /**
