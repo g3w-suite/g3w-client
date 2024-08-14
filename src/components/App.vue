@@ -515,10 +515,6 @@ export default {
     },
 
     languages() {
-
-      /***
-       * check if the length of languages is more than one
-       */
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
       return languages.length > 1 && languages;
     },
@@ -587,13 +583,6 @@ export default {
     },
 
     /**
-     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `hasRelatedMaps` instead
-     */
-    numberOfProjectsInGroup() {
-      return this.appconfig.projects.length;
-    },
-
-    /**
      * @returns {boolean} whether it should list any related projects or maps.
      *
      * @since 3.8.0
@@ -641,8 +630,7 @@ export default {
     },
 
     showCustomModalContent(id) {
-      const { content } = this.custom_modals.find(custommodal => custommodal.id === id);
-      this.current_custom_modal_content = content;
+      this.current_custom_modal_content = this.custom_modals.find(m => m.id === id).content;
     },
 
     closePanel() {
@@ -651,13 +639,6 @@ export default {
 
     getLogoLink() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
-    },
-
-    /**
-     * @deprecated since 3.8.0. will be removed in 3.9.0. Use `openChangeMapMenu` instead.
-     */
-    openProjectsMenu() {
-      GUI.openProjectsMenu();
     },
 
     /**
