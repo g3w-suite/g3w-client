@@ -19,7 +19,7 @@ export default function(opts = {}) {
 
   const comp = new Component({
     ...opts,
-    title: t('add') + ' WMS',
+    title: 'sidebar.wms.add_wms_layer',
     service: {},
     internalComponent: new (Vue.extend(vueComp))({ wmsurls: opts.wmsurls }),
   });
