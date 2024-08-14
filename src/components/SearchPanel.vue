@@ -90,7 +90,7 @@
                 :key   = "opt.value"
                 :value = "opt.value"
               >
-                <span v-if = "opt.value === allvalue" v-t = "'sdk.search.all'"></span>
+                <span v-if = "allvalue === opt.value" v-t = "'sdk.search.all'"></span>
                 <span v-else>{{ opt.key }}</span>
               </option>
             </select>
@@ -398,7 +398,7 @@
           }
         } : null;
 
-        const select2 = $('#' + input.id).select2({
+        const select2 = $(`#${input.id}`).select2({
           ajax,
           width:              '100%',
           dropdownParent:     $('.g3w-search-form:visible'),
@@ -424,6 +424,7 @@
             inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
           },
         });
+
         SELECTS.push(select2);
 
         select2.on('select2:select select2:unselecting', e => {
@@ -440,9 +441,27 @@
           }
         });
 
+        // recreate select2 value when language change
+        const unwatch = this.$watch(() => ApplicationState.language, () => {
+          unwatch();
+          this.clearSelect2();
+          this.initSelect2Field(input);
+        });
+
         // set initial value
         select2.val(input.value).trigger('change');
       },
+
+      clearSelect2() {
+        // remove all select2 DOM events
+        SELECTS.forEach(select2 => {
+          select2.select2('destroy');
+          select2.off();
+          select2 = null;
+        })
+        // reset SELECTS to an empty array
+        SELECTS.splice(0);
+      }
 
     },
 
@@ -455,14 +474,7 @@
     },
 
     beforeDestroy() {
-      // remove all select2 DOM events
-      SELECTS.forEach(select2 => {
-        select2.select2('destroy');
-        select2.off();
-        select2 = null;
-      })
-      // reset SELECTS to empty array
-      SELECTS.splice(0);
+      this.clearSelect2();
     }
 
   };
