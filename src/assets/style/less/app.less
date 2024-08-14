@@ -163,8 +163,6 @@ table.dataTable > tbody > tr.child ul.dtr-details > li { border-bottom: 0 !impor
  **************************************************************************************/
 html,
 body               { min-height: 100%; }
-.layout-boxed html,
-.layout-boxed body { height: 100%; }
 
 body {
   -webkit-font-smoothing: antialiased;
@@ -182,8 +180,6 @@ body {
 .wrapper:after                  { clear: both; }
 
 .wrapper               { min-height: 100%; position: static; overflow: hidden; }
-.layout-boxed .wrapper { max-width: 1250px; margin: 0 auto; min-height: 100%; box-shadow: 0 0 8px rgba(0,0,0,0.5); position: relative; }
-.layout-boxed          { background: url('../img/boxed-bg.jpg') repeat fixed; }
 
 /*
  * Content Wrapper - contains the main content
@@ -887,7 +883,6 @@ table.text-center :is(td, th)                        { text-align: center; }
 .main-header          { top: 0; right: 0; left: 0; }
 .content-wrapper,
 .right-side           { padding-top: 50px; }
-.layout-boxed .wrapper { max-width: 100%; }
 
  /* Content */
 .content {

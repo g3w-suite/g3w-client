@@ -814,9 +814,7 @@ export default {
     fix();
     $(window, ".wrapper").resize(fix);
 
-    //Enable sidebar tree view controls
-
-    //click event
+    // toggle sidebar tree items on click
     $(document).on('click', '.sidebar li a', function (e) {
 
       // Expand on click for sidebar mini
@@ -864,7 +862,6 @@ export default {
     });
 
     //Enable control sidebar
-    //Get the sidebar
     var sidebar = $(".control-sidebar");
 
     //Listen to the click event
@@ -876,18 +873,6 @@ export default {
         sidebar.removeClass('control-sidebar-open');
       }
     });
-
-    //If the body has a boxed layout, fix the sidebar bg position
-    const _fix = function(sidebar) {
-      if ($("body").hasClass('layout-boxed')) {
-        sidebar.css('position', 'absolute');
-        sidebar.height($(".wrapper").height());
-        $(window).resize(() => _fix(sidebar));
-      } else {
-        sidebar.css({ 'position': 'fixed', 'height': 'auto' });
-      }
-    };
-    _fix($(".control-sidebar-bg"));
 
     //If the body has a fixed layout, make the control sidebar fixed
     sidebar.css({ 'position': 'fixed', 'max-height': '100%', 'padding-bottom': '50px' });
@@ -939,13 +924,10 @@ export default {
       $(this).parents(".box").first().slideUp('fast');
     });
 
-    //Activate fast click
+    // Activate fast click
     FastClick.attach(document.body);
 
-    /*
-    * INITIALIZE BUTTON TOGGLE
-    * ------------------------
-    */
+    // INITIALIZE BUTTON TOGGLE 
     $('.btn-group[data-toggle="btn-toggle"]').each(function () {
       var group = $(this);
       $(this).find(".btn").on('click', function (e) {
@@ -956,8 +938,8 @@ export default {
     });
 
     // fix right sidebar and boxed layout 
-    _fix($(".control-sidebar-bg"));
-    _fix($(".control-sidebar"));
+    $(".control-sidebar-bg").css({ 'position': 'fixed', 'height': 'auto' });
+    $(".control-sidebar")   .css({ 'position': 'fixed', 'height': 'auto' });
 
     $(".control-sidebar") .css('max-height', $(window).innerHeight());
     $('.g3w-sidebarpanel').css('height',     $(window).height() - $("#main-navbar").height());
