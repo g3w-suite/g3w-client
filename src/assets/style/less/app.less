@@ -881,13 +881,13 @@ table.text-center :is(td, th)                        { text-align: center; }
 .main-footer { background: #fff; padding: 15px; color: #444; border-top: 1px solid @gray; }
 
  /* Fixed layout */
-.fixed .main-header,
-.fixed .main-sidebar,
-.fixed .left-side            { position: fixed; }
-.fixed .main-header          { top: 0; right: 0; left: 0; }
-.fixed .content-wrapper,
-.fixed .right-side           { padding-top: 50px; }
-.fixed.layout-boxed .wrapper { max-width: 100%; }
+.main-header,
+.main-sidebar,
+.left-side            { position: fixed; }
+.main-header          { top: 0; right: 0; left: 0; }
+.content-wrapper,
+.right-side           { padding-top: 50px; }
+.layout-boxed .wrapper { max-width: 100%; }
 
  /* Content */
 .content {
@@ -1042,7 +1042,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 .user-panel > .info, > .info > a,
 .main-header .navbar .sidebar-toggle                           { color: #fff; }
 
-.main-header .navbar:hover                                     { color: #f6f6f6; background: rgba(0, 0, 0, 0.1); }
 .main-header .navbar .sidebar-toggle:hover                     { background-color: var(--skin-d5); }
 
 .skin-blue.layout-top-nav .main-header > .logo                 { background-color: @light-blue; color: #fff; border-bottom: 0 solid transparent; }
@@ -2010,8 +2009,8 @@ input[type="range"]::-ms-thumb:hover                                            
   .content-wrapper,
   .right-side,
   .main-footer                              { margin-left: 0!important; min-height: 0!important; transform: translate(0,0)!important; }
-  .fixed .content-wrapper,
-  .fixed .right-side                        { padding-top: 0!important; }
+  .content-wrapper,
+  .right-side                               { padding-top: 0!important; }
   .invoice                                  { width: 100%; border: 0; margin: 0; padding: 0; }
   .invoice-col                              { float: left; width: 33.3333333%; }
   .table-responsive                         { overflow: auto; }

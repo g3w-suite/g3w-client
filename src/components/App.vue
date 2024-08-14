@@ -803,52 +803,12 @@ export default {
     // start to render LayoutManager layout
     layout.loading(false);
 
-    //Set up the object
-
-    //Activate the layout maker
-
-    /* Layout
-    * ======
-    * Fixes the layout height in case min-height fails.
-    *
-    * @type Object
-    * @usage $.LayoutManager.layout.activate()
-    */
+    // Fixes the layout height in case min-height fails.
     const fix = function() {
-      //Get window height and the wrapper height
-      const neg = $('.main-header').outerHeight() + $('.main-footer').outerHeight();
-      const window_height = $(window).height();
-      const sidebar_height = $(".sidebar").height();
-      //Set the min-height of the content and sidebar based on the
-      //the height of the document.
-      if ($("body").hasClass("fixed")) {
-        $(".content-wrapper, .right-side").css('min-height', window_height - $('.main-footer').outerHeight());
-        $(".content-wrapper, .right-side").css('height', window_height - $('.main-footer').outerHeight());
-      } else {
-        let postSetWidth;
-        if (window_height >= sidebar_height) {
-          $(".content-wrapper, .right-side").css('min-height', window_height - neg);
-          postSetWidth = window_height - neg;
-        } else {
-          $(".content-wrapper, .right-side").css('min-height', sidebar_height);
-          postSetWidth = sidebar_height;
-        }
-        //Fix for the control sidebar height
-        const controlSidebar = $(".control-sidebar");
-        if (typeof controlSidebar !== "undefined") {
-          if (controlSidebar.height() > postSetWidth) {
-            $(".content-wrapper, .right-side").css('min-height', controlSidebar.height());
-          }
-        }
-
-      }
-      //Make sure the body tag has the .fixed class
-      if (!$("body").hasClass("fixed")) {
-        $(".sidebar").slimScroll({ destroy: true }).height("auto");
-      } else {
-        $(".sidebar").css({'height': ($(window).height() - $(".navbar-header").height()) + "px"});
-        $(".sidebar").css('overflow-y', 'auto');
-      }
+      //Set the min-height of the content and sidebar based on the height of the document.
+      $(".content-wrapper, .right-side").css('min-height', $(window).height() - $('.main-footer').outerHeight());
+      $(".content-wrapper, .right-side").css('height',     $(window).height() - $('.main-footer').outerHeight());
+      $(".sidebar")                     .css({'height':    ($(window).height() - $(".navbar-header").height()) + "px", 'overflow-y': 'auto'});
     };
 
     fix();
@@ -856,74 +816,49 @@ export default {
 
     //Enable sidebar tree view controls
 
-    //click event //
+    //click event
     $(document).on('click', '.sidebar li a', function (e) {
+
+      // Expand on click for sidebar mini
+      if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > 767) {
+        $("body").removeClass('sidebar-collapse');
+      }
+
       //Get the clicked link and the next element
       const $this = $(this);
-      //is the content of the "accordion" ul //
-      const checkElement = $this.next();
+      //is the content of the "accordion" ul
+      const next = $this.next();
 
       //Check if the next element is a menu and is visible
-      if ((checkElement.is('.treeview-menu')) && (checkElement.is(':visible'))) {
+      if ((next.is('.treeview-menu')) && (next.is(':visible'))) {
         //Close the menu
-        checkElement.slideUp('fast', function () {
-          checkElement.parent("li.treeview").removeClass("active");
-          checkElement.removeClass('menu-open');
+        next.slideUp('fast', function () {
+          next.parent("li.treeview").removeClass("active");
+          next.removeClass('menu-open');
         });
-
       }
       //If the menu is not visible
-      else if ((checkElement.is('.treeview-menu')) && (!checkElement.is(':visible'))) {
+      else if ((next.is('.treeview-menu')) && (!next.is(':visible'))) {
         //Get the parent menu
         var parent = $this.parents('ul').first();
-        var parent_li = $this.parent("li");
-        var parent_find_active;
-        var treeviewHeight = parent_li.outerHeight();
-        parent_li.siblings().not('.header').each((i, el) => treeviewHeight += $(el).find('a').outerHeight());
         //Close all open menus within the parent
-        var ul = parent.find('ul.treeview-menu:visible').slideUp('fast');
         //Remove the menu-open class from the parent
-        ul.removeClass('menu-open');
+        parent.find('ul.treeview-menu:visible').slideUp('fast').removeClass('menu-open');
         //Get the parent li
         //Open the target menu and add the menu-open class
-        checkElement.slideDown('fast', function () {
+        next.slideDown('fast', function () {
           //Add the class active to the parent li
-          checkElement.addClass('menu-open');
-          parent_find_active = parent.find('li.treeview.active');
-          parent_find_active.removeClass('active');
-          parent_li.addClass('active');
+          next.addClass('menu-open');
+          parent.find('li.treeview.active').removeClass('active');
+          $this.parent("li").addClass('active');
           //Fix the layout in case the sidebar stretches over the height of the window
-          //Get window height and the wrapper height
-          const neg = $('.main-header').outerHeight() + $('.main-footer').outerHeight();
-          const window_height = $(window).height();
-          const sidebar_height = $(".sidebar").height();
-          //Set the min-height of the content and sidebar based on the
-          //the height of the document.
-          if ($("body").hasClass("fixed")) {
-            $(".content-wrapper, .right-side").css('min-height', window_height - $('.main-footer').outerHeight());
-            $(".content-wrapper, .right-side").css('height', window_height - $('.main-footer').outerHeight());
-          } else {
-            let postSetWidth;
-            if (window_height >= sidebar_height) {
-              $(".content-wrapper, .right-side").css('min-height', window_height - neg);
-              postSetWidth = window_height - neg;
-            } else {
-              $(".content-wrapper, .right-side").css('min-height', sidebar_height);
-              postSetWidth = sidebar_height;
-            }
-            //Fix for the control sidebar height
-            const controlSidebar = $(".control-sidebar");
-            if (typeof controlSidebar !== "undefined") {
-              if (controlSidebar.height() > postSetWidth) {
-                $(".content-wrapper, .right-side").css('min-height', controlSidebar.height());
-              }
-            }
-
-          }
+          //Set the min-height of the content and sidebar based on the height of the document.
+          $(".content-wrapper, .right-side").css('min-height', $(window).height() - $('.main-footer').outerHeight());
+          $(".content-wrapper, .right-side").css('height',     $(window).height() - $('.main-footer').outerHeight());
         });
       }
       //if this isn't a link, prevent the page from being redirected
-      if (checkElement.is('.treeview-menu')) {
+      if (next.is('.treeview-menu')) {
         e.preventDefault();
       }
     });
@@ -955,23 +890,11 @@ export default {
     _fix($(".control-sidebar-bg"));
 
     //If the body has a fixed layout, make the control sidebar fixed
-    if ($('body').hasClass('fixed')) {
-      sidebar.css({ 'position': 'fixed', 'max-height': '100%', 'padding-bottom': '50px' });
-    } else {
-      //If the content height is less than the sidebar's height, force max height
-      if ($('.content-wrapper, .right-side').height() < sidebar.height()) {
-        $(".content-wrapper, .right-side").css('min-height', sidebar.height());
-      }
-    }
+    sidebar.css({ 'position': 'fixed', 'max-height': '100%', 'padding-bottom': '50px' });
 
     //Add slimscroll to navbar dropdown
-    $(".navbar .menu").slimscroll({
-      height: "200px",
-      alwaysVisible: false,
-      size: "0px"
-    }).css("width", "100%");
+    $(".navbar .menu").slimscroll({ height: "200px", alwaysVisible: false, size: "0"}).css("width", "100%");
 
-    //Activate sidebar push menu
     //Enable sidebar toggle
     $("[data-toggle='offcanvas']").on('click', function (e) {
       e.preventDefault();
@@ -991,13 +914,6 @@ export default {
         } else {
           $("body").addClass('sidebar-open').trigger('expanded.pushMenu');
         }
-      }
-    });
-
-    // Expand on click for sidebar mini
-    $('.main-sidebar').on('click', function() {
-      if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > 767) {
-        $("body").removeClass('sidebar-collapse');
       }
     });
 
