@@ -1359,8 +1359,8 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 
 .control-sidebar-bg                                                          { position: fixed; z-index: 1000; bottom: 0; }
 .control-sidebar-bg,
-.control-sidebar                                                             { top: 0; right: -450px; width: 450px; transition: right .3s ease-in-out; }
-.control-sidebar                                                             { position: absolute; padding-top: @navbar-height; z-index: 1010; }
+.control-sidebar                                                             { top: 0; right: -450px; width: 450px; transition: right .3s ease-in-out; position: fixed; height: auto; }
+.control-sidebar                                                             { padding-top: @navbar-height; z-index: 1010; position: fixed; height: auto; max-height: 100%; padding-bottom: 50px; }
 .control-sidebar > .tab-content                                              { padding: 10px 15px; }
 .control-sidebar.control-sidebar-open,
 .control-sidebar.control-sidebar-open + .control-sidebar-bg,

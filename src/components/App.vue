@@ -804,15 +804,18 @@ export default {
     layout.loading(false);
 
     // Fixes the layout height in case min-height fails.
-    const fix = function() {
+    const resize = function() {
       //Set the min-height of the content and sidebar based on the height of the document.
       $(".content-wrapper, .right-side").css('min-height', $(window).height() - $('.main-footer').outerHeight());
       $(".content-wrapper, .right-side").css('height',     $(window).height() - $('.main-footer').outerHeight());
       $(".sidebar")                     .css({'height':    ($(window).height() - $(".navbar-header").height()) + "px", 'overflow-y': 'auto'});
+      $(".control-sidebar")             .css('max-height', $(window).innerHeight());
+      $('.g3w-sidebarpanel')            .css('height',     $(window).height() - $("#main-navbar").height());
+      $('#g3w-modal-overlay')           .css('height',     $(window).height());
     };
 
-    fix();
-    $(window, ".wrapper").resize(fix);
+    resize();
+    $(window, ".wrapper").resize(resize);
 
     // toggle sidebar tree items on click
     $(document).on('click', '.sidebar li a', function (e) {
@@ -862,7 +865,7 @@ export default {
     });
 
     //Enable control sidebar
-    var sidebar = $(".control-sidebar");
+    const sidebar = $(".control-sidebar");
 
     //Listen to the click event
     $("[data-toggle='control-sidebar']").on('click', function (e) {
@@ -873,12 +876,6 @@ export default {
         sidebar.removeClass('control-sidebar-open');
       }
     });
-
-    //If the body has a fixed layout, make the control sidebar fixed
-    sidebar.css({ 'position': 'fixed', 'max-height': '100%', 'padding-bottom': '50px' });
-
-    //Add slimscroll to navbar dropdown
-    $(".navbar .menu").slimscroll({ height: "200px", alwaysVisible: false, size: "0"}).css("width", "100%");
 
     //Enable sidebar toggle
     $("[data-toggle='offcanvas']").on('click', function (e) {
@@ -924,9 +921,6 @@ export default {
       $(this).parents(".box").first().slideUp('fast');
     });
 
-    // Activate fast click
-    FastClick.attach(document.body);
-
     // INITIALIZE BUTTON TOGGLE 
     $('.btn-group[data-toggle="btn-toggle"]').each(function () {
       var group = $(this);
@@ -935,19 +929,6 @@ export default {
         $(this).addClass("active");
         e.preventDefault();
       });
-    });
-
-    // fix right sidebar and boxed layout 
-    $(".control-sidebar-bg").css({ 'position': 'fixed', 'height': 'auto' });
-    $(".control-sidebar")   .css({ 'position': 'fixed', 'height': 'auto' });
-
-    $(".control-sidebar") .css('max-height', $(window).innerHeight());
-    $('.g3w-sidebarpanel').css('height',     $(window).height() - $("#main-navbar").height());
-
-    $(window).resize(() => {
-      $(".control-sidebar")  .css('max-height', $(window).innerHeight());
-      $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
-      $('#g3w-modal-overlay').css('height',     $(window).height());
     });
 
     document.body.classList.toggle('is-mobile', this.isMobile());
