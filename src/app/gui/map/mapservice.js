@@ -2474,7 +2474,7 @@ class MapService extends G3WObject {
       id = null;
     }
 
-    layer = catalog.getLayerById(id) || this.getLegacyExternalLayers().find(l => l.getId() === id);
+    layer = catalog.getLayerById(id) || this.getLegacyExternalLayers().find(l => id === l.getId());
 
     // select layer by id
     catalog.getLayers().concat(this.getLegacyExternalLayers()).forEach(l => l.setSelected(l.getId() === id));
