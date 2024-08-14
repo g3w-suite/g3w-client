@@ -986,20 +986,6 @@
         this._hideMenu();
       },
 
-      /**
-       * @TODO Check if it used otherwise remove if
-       */
-      startEditing() {
-        let layer;
-        CatalogLayersStoresRegistry.getLayersStores().forEach(layerStore => {
-          layer = layerStore.getLayerById(this.layerMenu.layer.id);
-          if (layer) {
-            layer.getLayerForEditing();
-            return false;
-          }
-        });
-      },
-
       setCurrentLayerStyle(index) {
         let changed = false;
         this.layerMenu.layer.styles.forEach((style, idx) => {

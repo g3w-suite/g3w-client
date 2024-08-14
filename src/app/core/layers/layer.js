@@ -25,7 +25,7 @@ const deprecate                  = require('util-deprecate');
  */
 class Layer extends G3WObject {
   
-  constructor(config={}, options={}) {
+  constructor(config = {}, options = {}) {
 
     super();
 
@@ -77,7 +77,7 @@ class Layer extends G3WObject {
     });
     
 
-    const relations = project.getRelations().filter(r => -1 !== [r.referencedLayer, r.referencingLayer].indexOf(this.getId()));
+    const relations = project.getRelations().filter(r => [r.referencedLayer, r.referencingLayer].includes(this.getId()));
 
     /**
      * Layer relations
@@ -407,11 +407,11 @@ class Layer extends G3WObject {
 
     if ('pdf' === type) {
       return downloadFile({
-        url: this.getUrl('pdf'),
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        data: JSON.stringify(data),
+        url:        this.getUrl('pdf'),
+        headers:    { 'Content-Type': 'application/json; charset=utf-8' },
+        data:       JSON.stringify(data),
         mime_type: 'application/pdf',
-        method: 'POST'
+        method:    'POST'
       });
     }
 
@@ -440,8 +440,7 @@ class Layer extends G3WObject {
    * @returns { string }
    */
   getDownloadUrl(format) {
-    const find = Object.values(DOWNLOAD_FORMATS).find(d => d.format === format);
-    return find && find.url;
+    return (Object.values(DOWNLOAD_FORMATS).find(d => d.format === format) || {}).url;
   }
 
   /**
@@ -463,7 +462,7 @@ class Layer extends G3WObject {
    * @returns {*} relations
    */
   getRelations() {
-    return this._relations
+    return this._relations;
   }
 
   /**
@@ -472,7 +471,7 @@ class Layer extends G3WObject {
    * @returns {*} relation by id
    */
   getRelationById(id) {
-    return this._relations.getArray().find(r => r.getId() === id);
+    return this._relations.getArray().find(r => id === r.getId());
   }
 
   /**
@@ -481,7 +480,7 @@ class Layer extends G3WObject {
    * @returns { * | Array } relation fields
    */
   getRelationAttributes(relationName) {
-    const relation = this._relations.find(r => r.name === relationName);
+    const relation = this._relations.find(r => relationName === r.name);
     return relation ? relation.fields : [];
   }
 
@@ -740,12 +739,12 @@ class Layer extends G3WObject {
           return;
         }
       
-        let filter = layer.state.filters.find(f => f.fid === data.fid);
+        let filter = layer.state.filters.find(f => data.fid === f.fid);
       
         // add saved filter to filters array
         if (undefined === filter) {
           filter = {
-            fid: data.fid, //get fid
+            fid:  data.fid, //get fid
             name: data.name //get name
           }
           layer.state.filters.push(filter);
@@ -756,7 +755,7 @@ class Layer extends G3WObject {
         layer.getSelection().active = false; // reset selection to false
         layer.selectionFids.clear();         // clear current fids
       
-        //in case of geolayer
+        //in the case of geolayer
         if (layer.isGeoLayer()) {
           //remove selection feature from map
           layer.setOlSelectionFeatures();
@@ -824,8 +823,8 @@ class Layer extends G3WObject {
       if (this.state.filter.active) { this.setFilter(false) }
       this.setFilterToken(filtertoken); // pass `filtertoken` to application
 
-    } catch(err) {
-      console.log('Error deleteing filtertoken', err);
+    } catch(e) {
+      console.warn(e);
     }
   }
 
@@ -875,8 +874,8 @@ class Layer extends G3WObject {
       // include some features in selection
       this.setFilterToken( await provider.getFilterToken({ fidsin: fids.join(',') }) );
 
-    } catch(err) {
-      console.log('Error create update token', err);
+    } catch(e) {
+      console.warn(e);
     }
   }
 
@@ -1078,7 +1077,7 @@ class Layer extends G3WObject {
    * @returns { Promise<void> }
    */
   async excludeSelectionFids(fids = [], createToken = true) {
-    //pass false because eventually token filter creation need to be called after
+    //pass false because eventually token filter creation needs to be called after
     fids.forEach(fid => this.excludeSelectionFid(fid, false));
 
     /** @TODO add description */
@@ -1143,13 +1142,13 @@ class Layer extends G3WObject {
   async getDataProxyFromServer(type = 'wms', proxyParams = {}) {
     try {
       const { response, data } = await DataRouterService.getData(`proxy:${type}`, {
-        inputs: proxyParams,
+        inputs:  proxyParams,
         outputs: false,
       });
       this.setProxyData(type, JSON.parse(data));
       return response;
-    } catch(err) {
-      console.warn(err);
+    } catch(e) {
+      console.warn(e);
     }
   }
 
@@ -1162,9 +1161,9 @@ class Layer extends G3WObject {
    * @returns {Promise<*>}
    */
   changeProxyDataAndReloadFromServer(type = 'wms', changes = {}) {
-    Object.keys(changes).forEach(changeParam => {
-      Object.keys(changes[changeParam]).forEach(param => {
-        this.proxyData[type][changeParam][param] = changes[changeParam][param];
+    Object.keys(changes).forEach(c => {
+      Object.keys(changes[c]).forEach(p => {
+        this.proxyData[type][c][p] = changes[c][p];
       })
     });
     return this.getDataProxyFromServer(type, this.proxyData[type]);
@@ -1333,7 +1332,9 @@ class Layer extends G3WObject {
       if (response && response.result && response.vector && response.vector.data) {
         return response.vector.data.features;
       }
-    } catch(err) {}
+    } catch(e) {
+      console.warn(e);
+    }
   }
 
   /**
@@ -1366,7 +1367,7 @@ class Layer extends G3WObject {
           this
             .search(options, params)
             .then(results => { resolve(({ data: results })); })
-            .fail(reject);
+            .fail(e => { console.warn(e); reject(e) });
           break;
 
         case 'api':
@@ -1383,8 +1384,9 @@ class Layer extends G3WObject {
                 formatter: undefined !== options.formatter ? options.formatter : 1,
               })
             );
-          } catch(err) {
-            reject(err);
+          } catch(e) {
+            console.warn(e);
+            reject(e);
           }
           break;
       }
@@ -1448,7 +1450,7 @@ class Layer extends G3WObject {
     if (provider) {
       provider.query(options)
         .done(response => d.resolve(response))
-        .fail(err => d.reject(err));
+        .fail(e => { console.warn(e); d.reject(e) });
     } else {
       d.reject(t('sdk.search.layer_not_searchable'));
     }
@@ -1464,7 +1466,7 @@ class Layer extends G3WObject {
     if (provider) {
       provider.query(options)
         .done(response => d.resolve(response))
-        .fail(err => d.reject(err));
+        .fail(e => { console.warn(e); d.reject(e) });
     } else {
       d.reject(t('sdk.search.layer_not_querable'));
     }
@@ -1493,7 +1495,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getFieldByName(fieldName) {
-    return this.getFields().find(field => field.name === fieldName)
+    return this.getFields().find(f => fieldName === f.name)
   }
 
   /**
@@ -1507,14 +1509,14 @@ class Layer extends G3WObject {
    * @returns { Array } only show fields
    */
   getTableFields() {
-    return (this.config.fields || []).filter(field => field.show);
+    return (this.config.fields || []).filter(f => f.show);
   }
 
   /**
    * @returns { Array } table fields exclude geometry field
    */
   getTableHeaders() {
-    return this.getTableFields().filter(field => -1 === GEOMETRY_FIELDS.indexOf(field.name));
+    return this.getTableFields().filter(f => !GEOMETRY_FIELDS.includes(f.name));
   }
 
   /**
@@ -1532,11 +1534,10 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @param fields
    *
    * @returns { Array } form structure to show on form editing
    */
-  getLayerEditingFormStructure(fields) {
+  getLayerEditingFormStructure() {
     return this.config.editor_form_structure;
   }
 
@@ -1660,7 +1661,7 @@ class Layer extends G3WObject {
    * @returns {boolean}
    */
   isType(type) {
-    return this.getType() === type;
+    return type === this.getType();
   }
 
   /**
@@ -1731,7 +1732,7 @@ class Layer extends G3WObject {
         const layer_config_value = this.get(attribute);
         const condition_attribute_values = conditions[attribute];
         return bool && Array.isArray(layer_config_value) ?
-          layer_config_value.indexOf(condition_attribute_values) !== -1 :
+          layer_config_value.includes(condition_attribute_values) :
           condition_attribute_values === layer_config_value;
       }, true);
       isFiltrable = isFiltrable && conditionalFiltrable;
@@ -1791,7 +1792,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getQueryLayerOrigName() {
-    return this.state.infolayer && this.config.infolayer !== '' ? this.config.infolayer :  this.config.origname;
+    return this.state.infolayer && '' !== this.config.infolayer ? this.config.infolayer :  this.config.origname;
   }
 
   /**
@@ -1802,8 +1803,8 @@ class Layer extends G3WObject {
    * @returns { default.watch.infoformat | * | string }
    */
   getInfoFormat(ogcService) {
-    // In case of NETCDF (qtime series)
-    if (this.config.qtimeseries === true || this.getSourceType() === 'gdal') {
+    // In the case of NETCDF (qtime series)
+    if (true === this.config.qtimeseries || 'gdal' === this.getSourceType()) {
       return 'application/json';
     }
     if (this.config.infoformat && '' !== this.config.infoformat  && 'wfs' !== ogcService) {
@@ -1858,7 +1859,7 @@ class Layer extends G3WObject {
   changeAttribute(attribute, type, options) {
     for (const field of this.config.fields) {
       if (field.name === attribute) {
-        field.type = type;
+        field.type    = type;
         field.options = options;
         break;
       }
@@ -1873,8 +1874,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getAttributeLabel(name) {
-    const field = this.getAttributes().find(a => a.name === name);
-    return field && field.label;
+    return (this.getAttributes().find(a => name === a.name) || {}).label;
   }
 
   /**
@@ -1925,22 +1925,26 @@ class Layer extends G3WObject {
       return false;
     }
 
-    if (this.getServerType() === Layer.ServerTypes.QGIS && ([
+    if (
+      Layer.ServerTypes.QGIS === this.getServerType()
+      && ([
         Layer.SourceTypes.POSTGIS,
         Layer.SourceTypes.ORACLE,
         Layer.SourceTypes.WFS,
         Layer.SourceTypes.OGR,
         Layer.SourceTypes.MSSQL,
         Layer.SourceTypes.SPATIALITE
-      ].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
+      ].includes(this.config.source.type))
+      && this.isQueryable()
+    ) {
       return this.getTableFields().length > 0;
     }
     
-    if (this.getServerType() === Layer.ServerTypes.G3WSUITE && "geojson" === this.get('source').type) {
+    if (Layer.ServerTypes.G3WSUITE === this.getServerType() && "geojson" === this.get('source').type) {
       return true
     }
 
-    if (this.getServerType() !== Layer.ServerTypes.G3WSUITE && this.isFilterable()) {
+    if (Layer.ServerTypes.G3WSUITE !== this.getServerType() && this.isFilterable()) {
       return true;
     }
 
@@ -1964,7 +1968,7 @@ class Layer extends G3WObject {
     options = {},
     reset   = false,
   } = {}) {
-    const field = this.getFields().find(field => field.name === name);
+    const field = this.getFields().find(f => name === f.name);
     
     if (field && reset) {
       field.type = field._type;
@@ -1974,8 +1978,8 @@ class Layer extends G3WObject {
     }
 
     if (field && !reset) {
-      field._type = field.type;
-      field.type = type;
+      field._type             = field.type;
+      field.type              = type;
       field[`${type}options`] = options;
       return field._type;
     }
@@ -2007,7 +2011,7 @@ class Layer extends G3WObject {
    *
    * @param name
    */
-  resetConfigField({name}) {
+  resetConfigField({ name }) {
     this.changeConfigFieldType({ name, reset: true });
   }
 
@@ -2020,14 +2024,14 @@ class Layer extends G3WObject {
    * @returns {boolean} whether is a vector layer
    */
   isVector() {
-    return this.getType() === Layer.LayerTypes.VECTOR;
+    return Layer.LayerTypes.VECTOR === this.getType();
   }
 
   /**
    * @returns {boolean} whether is a table layer
    */
   isTable() {
-    return this.getType() === Layer.LayerTypes.TABLE;
+    return Layer.LayerTypes.TABLE === this.getType();
   }
 
   /**
@@ -2052,12 +2056,13 @@ class Layer extends G3WObject {
     if (undefined === this.state.stylesfeaturecount[style]) {
       try {
         const { result, data } = await XHR.post({
-          url: `${this.config.urls.featurecount}${this.getId()}/`,
-          data: JSON.stringify({ style }),
+          url:          `${this.config.urls.featurecount}${this.getId()}/`,
+          data:         JSON.stringify({ style }),
           contentType: 'application/json'
         });
         this.state.stylesfeaturecount[style] = (true === result ? data : {});
-      } catch(err) {
+      } catch(e) {
+        cansole.warn(e);
         this.state.stylesfeaturecount[style] = {};
       }
     }
@@ -2070,9 +2075,9 @@ class Layer extends G3WObject {
    * @since 3.9.1
    */
   getFormat() {
-    return this.config.format ||
-      ProjectsRegistry.getCurrentProject().getWmsGetmapFormat() ||
-      'image/png'
+    return this.config.format
+      || ProjectsRegistry.getCurrentProject().getWmsGetmapFormat()
+      || 'image/png'
   }
 
   /**
@@ -2111,8 +2116,8 @@ Layer.prototype.getEditorFormStructure = deprecate(Layer.prototype.getLayerEditi
  * Layer Types
  */
 Layer.LayerTypes = {
-  TABLE: "table",
-  IMAGE: "image",
+  TABLE:  "table",
+  IMAGE:  "image",
   VECTOR: "vector"
 };
 
@@ -2141,25 +2146,25 @@ Layer.ServerTypes = {
  * Source Types
  */
 Layer.SourceTypes = {
-  VIRTUAL:'virtual',
-  POSTGIS: 'postgres',
-  SPATIALITE: 'spatialite',
-  ORACLE: 'oracle',
-  MSSQL: 'mssql',
-  CSV: 'delimitedtext',
-  OGR: 'ogr',
-  GDAL: 'gdal',
-  WMS: 'wms',
-  WMST: "wmst",
-  WFS: 'wfs',
-  WCS: "wcs",
-  MDAL: "mdal",
-  "VECTOR-TILE": "vector-tile",
-  VECTORTILE: "vectortile",
-  ARCGISMAPSERVER: 'arcgismapserver',
-  GEOJSON: "geojson",
+  VIRTUAL:         "virtual",
+  POSTGIS:         "postgres",
+  SPATIALITE:      "spatialite",
+  ORACLE:          "oracle",
+  MSSQL:           "mssql",
+  CSV:             "delimitedtext",
+  OGR:             "ogr",
+  GDAL:            "gdal",
+  WMS:             "wms",
+  WMST:            "wmst",
+  WFS:             "wfs",
+  WCS:             "wcs",
+  MDAL:            "mdal",
+  'VECTOR-TILE':   "vector-tile",
+  VECTORTILE:      "vectortile",
+  ARCGISMAPSERVER: "arcgismapserver",
+  GEOJSON:         "geojson",
   /** @since 3.9.0 */
-  POSTGRESRASTER: 'postgresraster',
+  POSTGRESRASTER:  "postgresraster",
   /**
    * ADD TO PROVIDER FACTORY (@TODO or already done?)
    */
@@ -2169,9 +2174,9 @@ Layer.SourceTypes = {
  * Layer Capabilities
  */
 Layer.CAPABILITIES = {
-  QUERYABLE: 1,
+  QUERYABLE:  1,
   FILTERABLE: 2,
-  EDITABLE: 4
+  EDITABLE:   4,
 };
 
 /**
@@ -2180,7 +2185,7 @@ Layer.CAPABILITIES = {
 Layer.EDITOPS = {
   INSERT: 1,
   UPDATE: 2,
-  DELETE: 4
+  DELETE: 4,
 };
 
 /**

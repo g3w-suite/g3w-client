@@ -38,7 +38,7 @@ module.exports = class Plugin extends G3WObject {
     // List of sidebar services that usually plugin need to interact with (hook = place/name of component)
     this.hookservices = {
       'search': GUI.getService('search'),
-      'tools': GUI.getService('tools')
+      'tools':  GUI.getService('tools')
     };
 
     // Automatically remove the loading plugin indicator after timeout
@@ -223,7 +223,7 @@ module.exports = class Plugin extends G3WObject {
    */
   getDependencyPlugins(pluginsName) {
     this.dependencies = pluginsName || this.dependencies;
-    return Promise.all(this.dependencies.map(pluginName => this.getDependencyPlugin(pluginName)))
+    return Promise.all(this.dependencies.map(name => this.getDependencyPlugin(name)))
   }
 
   /**
@@ -232,9 +232,9 @@ module.exports = class Plugin extends G3WObject {
    * Create to not replace above plugin method used by non changed old plugin
    */
   async getDependencyPluginsObject(pluginsName) {
-    const api = {};
+    const api      = {};
     const promises = await this.getDependencyPlugins(pluginsName);
-    this.dependencies.forEach((pluginName, index) => api[pluginName] = promises[index]);
+    this.dependencies.forEach((name, index) => api[name] = promises[index]);
     return api;
   }
 

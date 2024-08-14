@@ -30,8 +30,7 @@ const InputValidators = {
     float(options = {}) {
       this.options = options;
       this.validate = function(value) {
-        const float = Number(1 * value);
-        return !Number.isNaN(float);
+        return !Number.isNaN(Number(1 * value));
       }
     },
 
@@ -58,16 +57,14 @@ const InputValidators = {
     checkbox(options = {}) {
       this.options = options;
       this.validate = function(value) {
-        const values = this.options.values || [];
-        return values.indexOf(value) !== -1;
+        return (this.options.values || []).includes(value);
       }
     },
 
     datetimepicker(options = {}) {
       this.options = options;
       this.validate = function(value, options) {
-        const fielddatetimeformat = options.fielddatetimeformat;
-        return moment(value, fielddatetimeformat, true).isValid();
+        return moment(value, options.fielddatetimeformat, true).isValid();
       }
     },
 
@@ -87,27 +84,27 @@ const InputValidators = {
      * @param options
      */
     varchar(options = {}) {
-      this.options = options;
+      this.options  = options;
       this.validate = truefnc;
     },
 
     text(options = {}) {
-      this.options = options;
+      this.options  = options;
       this.validate = truefnc;
     },
 
     string(options = {}) {
-      this.options = options;
+      this.options  = options;
       this.validate = truefnc;
     },
 
     radio(options = {}) {
-      this.options = options;
+      this.options  = options;
       this.validate = truefnc;
     },
 
     default(options = {}) {
-      this.options = options;
+      this.options  = options;
       this.validate = truefnc;
     },
 
@@ -121,9 +118,8 @@ const InputValidators = {
 
   },
 
-  get(type, options={}) {
-    const Validator = this.validators[type] || this.validators.default;
-    return new Validator(options);
+  get(type, options = {}) {
+    return new (this.validators[type] || this.validators.default)(options);
   }
 
 };

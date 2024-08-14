@@ -1,5 +1,6 @@
 /**
  * Migrate your consumer code away from jQuery promises.
+ * Covert a jQuery promise into an ES6 Promise
  * 
  * @param promise jquery promise
  */
@@ -18,6 +19,7 @@ export function promisify(promise) {
 
 /**
  * Migrate your consumer code away from jQuery promises.
+ * Convert ES6 Promise into jQuery
  * 
  * @param promise async function or ES6 promise 
  */

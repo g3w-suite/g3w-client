@@ -157,7 +157,7 @@ export default new (class ProjectsRegistry extends G3WObject {
   }
 
   getProjectConfigByGid(gid) {
-    return this._groupProjects.find(project => project.gid === gid);
+    return this._groupProjects.find(p => gid === p.gid);
   }
   
   /**
@@ -167,10 +167,10 @@ export default new (class ProjectsRegistry extends G3WObject {
    * @param options
    * @param { string } options.map_theme
    */
-  getProject(projectGid, options) {
+  getProject(projectGid, options = {}) {
     return $promisify(async () => {
 
-      const pendingProject = this._groupProjects.find(p => p.gid === projectGid);
+      const pendingProject = this._groupProjects.find(p => projectGid === p.gid);
 
       // skip if a project doesn't exist
       if (!pendingProject) {
@@ -233,10 +233,8 @@ export default new (class ProjectsRegistry extends G3WObject {
    * @param alias.host
    */
   setProjectAliasUrl(alias) {
-    const project = this.config.projects.find(project => project.gid === alias.gid);
-    if (project) {
-      project.url = project && `${alias.host || ''}${alias.url}`;
-    }
+    const project = this.config.projects.find(p => alias.gid === p.gid);
+    if (project) { project.url = `${alias.host || ''}${alias.url}` }
   }
 
   /**
@@ -250,7 +248,8 @@ export default new (class ProjectsRegistry extends G3WObject {
     const url           = projectConfig.url;
     try {
       return `${(new URL(baseurl))}${url}`;
-    } catch(err) {
+    } catch(e) {
+      console.warn(e);
       return `${location.origin}${baseurl}${url}`;
     }
   }

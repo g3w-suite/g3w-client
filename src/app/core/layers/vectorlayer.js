@@ -146,11 +146,11 @@ class VectorMapLayer extends G3WObject {
 
 class VectorLayer extends GeoLayerMixin(TableLayer) {
   
-  constructor(config={}, options) {
+  constructor(config = {}, options = {}) {
     super(config, options);
     this._mapLayer = null; // later tah will be added to map
     this.type = Layer.LayerTypes.VECTOR;
-    // need a ol layer for add to map
+    // need an ol layer for adding to map
     this.setup(config, options);
     this.onafter('setColor', color => {});
   }
@@ -169,7 +169,7 @@ class VectorLayer extends GeoLayerMixin(TableLayer) {
 
   getMapLayer() {
     if (!this._mapLayer) {
-        this._mapLayer = new VectorMapLayer({
+      this._mapLayer = new VectorMapLayer({
         id:           this.getId(),
         geometryType: this.getGeometryType(),
         color:        this.getColor(),

@@ -90,9 +90,7 @@ module.exports = {
     }
 
     query(options = {}) {
-      const d = $.Deferred();
-      d.resolve([]);
-      return d.promise();
+      return $promisify(Promise.resolve([]));
     }
 
     getFeatures(opts = {}) {
@@ -229,78 +227,78 @@ module.exports = {
      * @param opts.J                         wms request parameter 
      */
     query(opts = {}) {
-      const d        = $.Deferred();
+      return $promisify(new Promise((resolve, reject) => {
+        const is_table = 'table' === this._layer.getType();
 
-      const is_table = 'table' === this._layer.getType();
+        // in case not alphanumeric layer set projection
+        if (!is_table) { this.setProjections(); }
 
-      // in case not alphanumeric layer set projection
-      if (!is_table) { this.setProjections(); }
+        const layers = opts.layers ? opts.layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
 
-      const layers = opts.layers ? opts.layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+        let { filter = null } = opts;
+        filter = filter && Array.isArray(filter) ? filter : [filter];
 
-      let { filter = null } = opts;
-      filter = filter && Array.isArray(filter) ? filter : [filter];
+        // check if geometry filter. If not i have to remove projection layer
+        if (filter && 'geometry' !== filter[0].getType()) {
+          this._projections.layer = null;
+        }
 
-      // check if geometry filter. If not i have to remove projection layer
-      if (filter && 'geometry' !== filter[0].getType()) {
-        this._projections.layer = null;
-      }
+        if (filter) {
 
-      if (filter) {
+          filter = filter.map(f => f.get()).filter(v => v);
 
-        filter = filter.map(f => f.get()).filter(v => v);
-
-        XHR.get({
-          url: opts.queryUrl || this._queryUrl,
-          params: {
-            SERVICE:       'WMS',
-            VERSION:       '1.3.0',
-            REQUEST:       'GetFeatureInfo',
-            filtertoken:   ApplicationState.tokens.filtertoken,
-            LAYERS:        layers,
-            QUERY_LAYERS:  layers,
-            INFO_FORMAT:   this._infoFormat,
-            FEATURE_COUNT: opts.feature_count || 10,
-            CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
-            I:             opts.I,
-            J:             opts.J,
-            FILTER:        filter.length ? filter.join(';') : undefined,
-            WITH_GEOMETRY: !is_table,
-          },
-        })
-          .then(response => {
-            if (opts.raw) { d.resolve(response); }
-            else {
-              d.resolve(handleQueryResponse({
-                response,
-                projections: this._projections,
-                layers: undefined !== opts.layers ? opts.layers : [this._layer],
-                wms: true,
-              }));
-            }
+          XHR.get({
+            url: opts.queryUrl || this._queryUrl,
+            params: {
+              SERVICE:       'WMS',
+              VERSION:       '1.3.0',
+              REQUEST:       'GetFeatureInfo',
+              filtertoken:   ApplicationState.tokens.filtertoken,
+              LAYERS:        layers,
+              QUERY_LAYERS:  layers,
+              INFO_FORMAT:   this._infoFormat,
+              FEATURE_COUNT: opts.feature_count || 10,
+              CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
+              I:             opts.I,
+              J:             opts.J,
+              FILTER:        filter.length ? filter.join(';') : undefined,
+              WITH_GEOMETRY: !is_table,
+            },
           })
-          .catch(e => { console.warn(e); d.reject(e); });
-      } else {
-        d.reject();
-      }
+            .then(response => {
+              if (opts.raw) { resolve(response); }
+              else {
+                resolve(handleQueryResponse({
+                  response,
+                  projections: this._projections,
+                  layers: undefined !== opts.layers ? opts.layers : [this._layer],
+                  wms: true,
+                }));
+              }
+            })
+            .catch(e => { console.warn(e); reject(e); });
+        } else {
+          reject();
+        }
+      }))
 
-      return d.promise();
     }
 
     /**
      * get layer config
      */
     getConfig() {
-      const d   = $.Deferred();
-      const url = this._layer.getUrl('config');
-      if (url) {
-        XHR.get({ url })
-          .then(config => d.resolve(config))
-          .catch(e => { console.warn(e); d.reject(e) });
-      } else {
-        d.reject('not valid url');
-      }
-      return d.promise();
+      return $promisify(new Promise((resolve, reject) => {
+        const url = this._layer.getUrl('config');
+        if (url) {
+          XHR.get({ url })
+            .then(config => resolve(config))
+            .catch(e => { console.warn(e); reject(e) });
+        } else {
+          reject('not valid url');
+        }
+      }))
+
     }
 
     getWidgetData(opts = {}) {
@@ -312,33 +310,32 @@ module.exports = {
      * unlock feature
      */
     unlock() {
-      const d = $.Deferred();
-      XHR.post({ url: this._layer.getUrl('unlock') })
-        .then((r)  => d.resolve(r) )
-        .catch((e) => { console.warn(e); d.reject(e) });
-      return d.promise();
+      return $promisify(new Promise((resolve, reject) => {
+        XHR.post({ url: this._layer.getUrl('unlock') })
+          .then(r  => resolve(r) )
+          .catch(e => { console.warn(e); reject(e) });
+      }))
     }
 
     /**
      * commit function (checks for editing) 
      */
     commit(commitItems) {
-      const d = $.Deferred();
-      XHR.post({
-        url:         this._layer.getUrl('commit'),
-        data:        JSON.stringify(commitItems),
-        contentType: 'application/json',
-      })
-        .then((r)  => d.resolve(r) )
-        .catch((e) => { console.warn(e); d.reject(e); });
-      return d.promise();
+      return $promisify(new Promise((resolve, reject) => {
+        XHR.post({
+          url:         this._layer.getUrl('commit'),
+          data:        JSON.stringify(commitItems),
+          contentType: 'application/json',
+        })
+          .then((r)  => resolve(r) )
+          .catch(e => { console.warn(e); reject(e); });
+      }))
     }
 
     /**
      * Load editing features (Read / Write)
      */
     getFeatures(options = {}, params = {}) {
-      const d = $.Deferred();
 
       // filter null values
       Object
@@ -353,92 +350,94 @@ module.exports = {
       const urlParams = $.param(params);
 
       if (!options.editing) {
-        XHR.get({
-          url: this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
-        })
-          .then(({ vector }) => d.resolve({ data:  vector.data, count: vector.count }) )
-          .catch((e)         => { console.warn(e); d.reject(e); })
-
-        return d.promise();
-      }
-      // check if data are requested in read or write mode;
-      let url;
-      // editing mode
-      let promise;
-      url = this._layer.getUrl('editing');
-      if (!url) {
-        d.reject('Url not valid');
-        return;
-      }
-      url +=  urlParams ? '?' + urlParams : '';
-      const filter = options.filter || null;
-
-      if (!filter) {
-        promise = XHR.post({
-          url,
-          contentType: 'application/json',
-        });
-      } else if (is_defined(filter.bbox)) { // bbox filter
-        promise = XHR.post({
-          url,
-          data: JSON.stringify({
-            in_bbox:     filter.bbox.join(','),
-            filtertoken: ApplicationState.tokens.filtertoken
-          }),
-          contentType: 'application/json',
-        })
-      } else if (is_defined(filter.fid)) { // fid filter
-        promise = RelationsService.getRelations(filter.fid);
-      } else if (filter.field) {
-        promise = XHR.post({
-          url,
-          data: JSON.stringify(filter),
-          contentType: 'application/json',
-        })
-      } else if (is_defined(filter.fids)) {
-        promise = XHR.get({
-          url,
-          params: filter
-        })
-      } else if (is_defined(filter.nofeatures)) {
-        promise = XHR.post({
-          url,
-          data: JSON.stringify({
-            field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
-          }),
-          contentType: 'application/json'
-        })
+        return $promisify(new Promise((resolve, reject) => {
+          XHR.get({
+            url: this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
+          })
+            .then(({ vector }) => resolve({ data:  vector.data, count: vector.count }) )
+            .catch((e)         => { console.warn(e); reject(e); })
+        }))
       }
 
-      promise
-        .then(({ vector, result, featurelocks }) => {
-          // skip when server responde with false result (error)
-          if (false === result) {
-            d.reject({ message: t("info.server_error") });
-            return;
-          }
-          const features = [];
-          const lockIds  = featurelocks.map(lock => lock.featureid);
-          Parsers[this._layer.getType()]
-            .get({ type: 'json'})(
-              vector.data,
-              ('NoGeometry' === vector.geometrytype) ? {} : { crs: this._layer.getCrs(), /*mapCrs: this._layer.getMapCrs()*/ } 
-            )
-            .forEach(feature => {
-              if (lockIds.indexOf(`${feature.getId()}`) > -1) {
-                features.push(new Feature({ feature }));
-              }
-            });
-          // resolves with features locked and requested
-          d.resolve({
-            count: vector.count, // real number of features that request will return
-            features,
-            featurelocks,
+      return $promisify(new Promise((resolve, reject) => {
+        // check if data are requested in read or write mode;
+        let url;
+        // editing mode
+        let promise;
+        url = this._layer.getUrl('editing');
+        if (!url) {
+          reject('Url not valid');
+          return;
+        }
+        url +=  urlParams ? '?' + urlParams : '';
+        const filter = options.filter || null;
+
+        if (!filter) {
+          promise = XHR.post({
+            url,
+            contentType: 'application/json',
           });
-        })
-        .catch((e) => { console.warn(e); d.reject({ message: t("info.server_error")}) });
+        } else if (is_defined(filter.bbox)) { // bbox filter
+          promise = XHR.post({
+            url,
+            data: JSON.stringify({
+              in_bbox:     filter.bbox.join(','),
+              filtertoken: ApplicationState.tokens.filtertoken
+            }),
+            contentType: 'application/json',
+          })
+        } else if (is_defined(filter.fid)) { // fid filter
+          promise = RelationsService.getRelations(filter.fid);
+        } else if (filter.field) {
+          promise = XHR.post({
+            url,
+            data: JSON.stringify(filter),
+            contentType: 'application/json',
+          })
+        } else if (is_defined(filter.fids)) {
+          promise = XHR.get({
+            url,
+            params: filter
+          })
+        } else if (is_defined(filter.nofeatures)) {
+          promise = XHR.post({
+            url,
+            data: JSON.stringify({
+              field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
+            }),
+            contentType: 'application/json'
+          })
+        }
 
-      return d.promise();
+        promise
+          .then(({ vector, result, featurelocks }) => {
+            // skip when server responde with false result (error)
+            if (false === result) {
+              reject({ message: t("info.server_error") });
+              return;
+            }
+            const features = [];
+            const lockIds  = featurelocks.map(lock => lock.featureid);
+            Parsers[this._layer.getType()]
+              .get({ type: 'json'})(
+                vector.data,
+                ('NoGeometry' === vector.geometrytype) ? {} : { crs: this._layer.getCrs(), /*mapCrs: this._layer.getMapCrs()*/ }
+              )
+              .forEach(feature => {
+                if (lockIds.indexOf(`${feature.getId()}`) > -1) {
+                  features.push(new Feature({ feature }));
+                }
+              });
+            // resolves with features locked and requested
+            resolve({
+              count: vector.count, // real number of features that request will return
+              features,
+              featurelocks,
+            });
+          })
+          .catch(e => { console.warn(e); reject({ message: t("info.server_error")}) });
+      }))
+
     }
 
   },
@@ -454,88 +453,94 @@ module.exports = {
     }
 
     query(opts = {}) {
-      const d = $.Deferred();
+      return $promisify(new Promise(async(resolve, reject) => {
+        const projection = this._layer.getMapProjection() || this._layer.getProjection();
 
-      const projection = this._layer.getMapProjection() || this._layer.getProjection();
+        const {
+          layers        = [this._layer],
+          size          = GETFEATUREINFO_IMAGE_SIZE,
+          coordinates   = [],
+          resolution,
+        } = opts;
 
-      const {
-        layers        = [this._layer],
-        size          = GETFEATUREINFO_IMAGE_SIZE,
-        coordinates   = [],
-        resolution,
-      } = opts;
+        const extent     = getExtentForViewAndSize(coordinates, resolution, 0, size);
+        const tolerance  = undefined !== opts.query_point_tolerance ? opts.query_point_tolerance : QUERY_POINT_TOLERANCE;
+        const url        = layers[0].getQueryUrl();
 
-      const extent     = getExtentForViewAndSize(coordinates, resolution, 0, size);
-      const tolerance  = undefined !== opts.query_point_tolerance ? opts.query_point_tolerance : QUERY_POINT_TOLERANCE;
-      const url        = layers[0].getQueryUrl();
+        // base request
+        const params = {
+          SERVICE:              'WMS',
+          VERSION:              '1.3.0',
+          REQUEST:              'GetFeatureInfo',
+          CRS:                  projection.getCode(),
+          LAYERS:               (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+          QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+          filtertoken:          ApplicationState.tokens.filtertoken,
+          INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
+          FEATURE_COUNT:        undefined !== opts.feature_count ? opts.feature_count : 10,
+          WITH_GEOMETRY:        true,
+          DPI,
+          FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
+          FI_POINT_TOLERANCE:   'map' === tolerance.unit ? undefined : tolerance.value,
+          FI_LINE_TOLERANCE:    'map' === tolerance.unit ? undefined : tolerance.value,
+          FI_POLYGON_TOLERANCE: 'map' === tolerance.unit ? undefined : tolerance.value,
+          G3W_TOLERANCE:        'map' === tolerance.unit ? undefined : tolerance.value * resolution,
+          I:                    'map' === tolerance.unit ? undefined : Math.floor((coordinates[0] - extent[0]) / resolution), // x
+          J:                    'map' === tolerance.unit ? undefined : Math.floor((extent[3] - coordinates[1]) / resolution), // y
+          WIDTH:                size[0],
+          HEIGHT:               size[1],
+          STYLES:               '',
+          BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
+          // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
+          LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
+          LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
+        }
 
-      // base request
-      const params = {
-        SERVICE:              'WMS',
-        VERSION:              '1.3.0',
-        REQUEST:              'GetFeatureInfo',
-        CRS:                  projection.getCode(),
-        LAYERS:               (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
-        QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
-        filtertoken:          ApplicationState.tokens.filtertoken,
-        INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
-        FEATURE_COUNT:        undefined !== opts.feature_count ? opts.feature_count : 10,
-        WITH_GEOMETRY:        true,
-        DPI,
-        FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
-        FI_POINT_TOLERANCE:   'map' === tolerance.unit ? undefined : tolerance.value,
-        FI_LINE_TOLERANCE:    'map' === tolerance.unit ? undefined : tolerance.value,
-        FI_POLYGON_TOLERANCE: 'map' === tolerance.unit ? undefined : tolerance.value,
-        G3W_TOLERANCE:        'map' === tolerance.unit ? undefined : tolerance.value * resolution,
-        I:                    'map' === tolerance.unit ? undefined : Math.floor((coordinates[0] - extent[0]) / resolution), // x
-        J:                    'map' === tolerance.unit ? undefined : Math.floor((extent[3] - coordinates[1]) / resolution), // y
-        WIDTH:                size[0],
-        HEIGHT:               size[1],
-        STYLES:               '',
-        BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
-        // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
-        LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
-        LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
-      }
+        const timer = getTimeoutPromise({
+          resolve,
+          data: {
+            data: Parsers.response.utils.getTimeoutData(layers),
+            query: { coordinates, resolution },
+          },
+        });
 
-      const timer = getTimeoutPromise({
-        resolve: d.resolve,
-        data: {
-          data: Parsers.response.utils.getTimeoutData(layers),
-          query: { coordinates, resolution },
-        },
-      });
+        const method =  layers[0].getOwsMethod();
+        const source = (url || '').split('SOURCE');
 
-      const method =  layers[0].getOwsMethod();
-      const source = (url || '').split('SOURCE');
+        let promise;
 
-      let promise;
+        if (layers[0].useProxy()) {
+          promise = layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
+        } else if ('GET' === method) {
+          promise = XHR.get({ url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : '')) });
+        } else if ('POST' === method) {
+          promise = XHR.post({ url, data: params });
+        } else {
+          promise = Promise.resolve();
+          console.warn('unsupported method: ', method);
+        }
 
-      if (layers[0].useProxy()) {
-        promise = layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
-      } else if ('GET' === method) {
-        promise = XHR.get({ url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : '')) });
-      } else if ('POST' === method) {
-        promise = XHR.post({ url, data: params });
-      } else {
-        promise = Promise.resolve();
-        console.warn('unsupported method: ', method);
-      }
+        try {
+          const data = await promise;
+          resolve({
+            data: handleQueryResponse({
+              response: data,
+              projections: { map: projection, layer: null },
+              layers,
+              wms: true,
+            }),
+            query: { coordinates, resolution }
+          })
+        } catch(e) {
+          console.warn(e);
+          reject(e);
+        } finally {
+          if (!layers[0].useProxy()) {
+            clearTimeout(timer)
+          }
+        }
+      }))
 
-      promise
-        .then(data => d.resolve({
-          data: handleQueryResponse({
-            response: data,
-            projections: { map: projection, layer: null },
-            layers,
-            wms: true,
-          }),
-          query: { coordinates, resolution }
-        }))
-        .catch(err => d.reject(err))
-        .finally(() => !layers[0].useProxy() && clearTimeout(timer))
-
-      return d.promise();
     }
   },
 
@@ -544,8 +549,8 @@ module.exports = {
    */
   wfs: class WFSDataProvider extends DataProvider {
 
-    constructor(options = {}) {
-      super(options);
+    constructor(opts = {}) {
+      super(opts);
       this._name = 'wfs';
     }
 
@@ -553,78 +558,78 @@ module.exports = {
      * @TODO check if deprecated
      */
     getData() {
-      return $.Deferred().promise();
+      return $promisify(new Promise((resolve, reject) => {}));
     }
   
     // query method
     query(opts = {}, params = {}) {
-      const d = $.Deferred();
+      return $promisify(new Promise(async (resolve, reject) => {
+        const filter = opts.filter || new Filter({});
+        const layers = opts.layers || [this._layer];
+        const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
+        const method = layers[0].getOwsMethod();
 
-      const filter = opts.filter || new Filter({});
-      const layers = opts.layers || [this._layer];
-      const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
-      const method = layers[0].getOwsMethod();
-
-      const timer = getTimeoutPromise({
-        resolve: d.resolve,
-        data: {
-          data: Parsers.response.utils.getTimeoutData(layers),
-          query: {},
-        },
-      });
-
-      let promise;
-
-      params = Object.assign(params, {
-        SERVICE:      'WFS',
-        VERSION:      '1.1.0',
-        REQUEST:      'GetFeature',
-        MAXFEATURES:  undefined !== opts.feature_count ? opts.feature_count : 10,
-        TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
-        OUTPUTFORMAT: layers[0].getInfoFormat(),
-        SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
-        FILTER:       'all' !== filter.getType() ? `(${(
-          new ol.format.WFS().writeGetFeature({
-            featureTypes: [layers[0]],
-            filter:       ({
-              'bbox':       ol.format.filter.bbox('the_geom', filter.get()),
-              'geometry':   ol.format.filter[(filter.getConfig() || {}).spatialMethod || 'intersects']('the_geom', filter.get()),
-              'expression': null,
-            })[filter.getType()],
-          })
-        ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
-      });
-
-      if ('GET' === method && !['all', 'geometry'].includes(filter.getType())) {
-        promise = XHR.get({ url: url + '?' + $.param(params) });
-      }
-
-      if ('POST' === method || ['all', 'geometry'].includes(filter.getType())) {
-        promise = XHR.post({ url, data: params })
-      }
-
-      (promise || Promise.reject()).then(response => {
-        const data = handleQueryResponse({
-          response,
-          layers,
-          projections: {
-            map: this._layer.getMapProjection(),
-            layer: (opts.reproject ? this._layer.getProjection() : null)
+        const timer = getTimeoutPromise({
+          resolve,
+          data: {
+            data: Parsers.response.utils.getTimeoutData(layers),
+            query: {},
           },
-          wms: false
         });
-        // sanitize in case of nil:true
-        data
-          .flatMap(layer => layer.features || [])
-          .forEach(feature => Object.entries(feature.getProperties())
-            .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
-          );
-        d.resolve({ data });
-      })
-      .catch((e)  => d.reject(e))
-      .finally(() => clearTimeout(timer));
 
-      return d.promise();
+        let promise;
+
+        params = Object.assign(params, {
+          SERVICE:      'WFS',
+          VERSION:      '1.1.0',
+          REQUEST:      'GetFeature',
+          MAXFEATURES:  undefined !== opts.feature_count ? opts.feature_count : 10,
+          TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
+          OUTPUTFORMAT: layers[0].getInfoFormat(),
+          SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
+          FILTER:       'all' !== filter.getType() ? `(${(
+            new ol.format.WFS().writeGetFeature({
+              featureTypes: [layers[0]],
+              filter:       ({
+                'bbox':       ol.format.filter.bbox('the_geom', filter.get()),
+                'geometry':   ol.format.filter[(filter.getConfig() || {}).spatialMethod || 'intersects']('the_geom', filter.get()),
+                'expression': null,
+              })[filter.getType()],
+            })
+          ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
+        });
+
+        if ('GET' === method && !['all', 'geometry'].includes(filter.getType())) {
+          promise = XHR.get({ url: url + '?' + $.param(params) });
+        }
+
+        if ('POST' === method || ['all', 'geometry'].includes(filter.getType())) {
+          promise = XHR.post({ url, data: params })
+        }
+
+        (promise || Promise.reject())
+          .then(response => {
+            const data = handleQueryResponse({
+              response,
+              layers,
+              projections: {
+                map:   this._layer.getMapProjection(),
+                layer: (opts.reproject ? this._layer.getProjection() : null)
+              },
+              wms: false
+            });
+            // sanitize in case of nil:true
+            data
+              .flatMap(layer => layer.features || [])
+              .forEach(feature => Object.entries(feature.getProperties())
+                .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
+              );
+            resolve({ data });
+          })
+          .catch(e  => { console.warn(e); reject(e) } )
+          .finally(() => clearTimeout(timer));
+      }))
+
     };
 
   },

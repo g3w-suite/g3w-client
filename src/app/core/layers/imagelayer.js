@@ -33,7 +33,7 @@ function __(name, value) {
  */
 class RasterLayer extends G3WObject {
 
-  constructor(config={}, extraParams={}, method='GET') {
+  constructor(config = {}, extraParams = {}, method = 'GET') {
     super();
 
     this.config                 = config;
@@ -48,7 +48,7 @@ class RasterLayer extends G3WObject {
 
     if ('XYZ' !== this.config.type) {
       this.LAYERTYPE = {
-        LAYER: 'layer',
+        LAYER:      'layer',
         MULTILAYER: 'multilayer'
       };
       this.getInfoFormat = () => 'application/vnd.ogc.gml';
@@ -92,7 +92,7 @@ class RasterLayer extends G3WObject {
   }
 
   removeLayer(layer) {
-    this.layers = this.layers.filter(l => l !== layer);
+    this.layers = this.layers.filter(l => layer !== l);
   }
 
   isVisible() {
@@ -170,7 +170,7 @@ class RasterLayer extends G3WObject {
     }
 
     // XYZ LAYER
-    else if('XYZ' === this.config.type) {
+    else if ('XYZ' === this.config.type) {
       const projection = this.config.url && this.projection ? this.projection : this.layer.getProjection();
 
       this._olLayer = new ol.layer.Tile({
@@ -232,7 +232,7 @@ class RasterLayer extends G3WObject {
   update(mapState = {}, extraParams = {}) {
     let { force, ...params } = extraParams;
 
-    // check which layers has to be disabled
+    // check which layers have to be disabled
     if (!force) {
       const { resolution, mapUnits } = mapState;
       this.allLayers.forEach(l => { l.setDisabled(resolution, mapUnits); return l.isDisabled(); });
@@ -260,9 +260,9 @@ class RasterLayer extends G3WObject {
       const { LEGEND_ON: on, LEGEND_OFF: off } = get_legend_params(layer);
       STYLES.push(layer.getStyle());
       OPACITIES.push(parseInt((layer.getOpacity() / 100) * 255));
-      if (on)  LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}`;
-      if (off) LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}`;
-    });
+      if (on)  { LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}` }
+      if (off) { LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}` }
+    })
 
     this._olLayer.setVisible(true);
     //check if a layer source has with updateParams method
@@ -371,7 +371,7 @@ RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
  */
 class ImageLayer extends GeoLayerMixin(Layer) {
   
-  constructor(config={}, options={}) {
+  constructor(config = {}, options = {}) {
 
     super(config, options);
 
@@ -403,6 +403,18 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     }
   }
 
+  /**
+   *
+   * Used by the following plugins: "plugin"
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   *
+   *
+   * @param force
+   * @param vectorurl
+   * @param project_type
+   * @param project
+   * @return {Promise<any|null>}
+   */
   async getLayerForEditing({
     force = false,
     vectorurl,

@@ -7,10 +7,10 @@ const { uniqueId } = require('utils');
 /**
  * Internal state
  */
-const vm = new Vue();
+const vm         = new Vue();
 const directives = {};
 
-export const watch = ({el, attr, watcher}) => {
+export const watch = ({ el, attr, watcher } = {}) => {
   const unique_attr_id = uniqueId();
   el.setAttribute(attr, unique_attr_id);
   const dir = directives[unique_attr_id] = {};
@@ -21,7 +21,7 @@ export const watch = ({el, attr, watcher}) => {
   return unique_attr_id;
 };
 
-export const unwatch = ({el, attr}) => {
+export const unwatch = ({ el, attr } = {}) => {
   const unique_attr_id = el.getAttribute(attr);
   if (unique_attr_id) {
     directives[unique_attr_id].unwatch();
