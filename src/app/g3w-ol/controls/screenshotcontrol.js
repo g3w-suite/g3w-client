@@ -69,6 +69,7 @@ export class ScreenshotControl extends InteractionControl {
       type: 'custom',
       component: {
         __title: 'sdk.mapcontrols.screenshot.title',
+        __iconClass: 'camera',
         data: () => ({ types: this.types, type: this.types[0] }),
         template: /* html */ `
           <div style="width: 100%; padding: 5px;">
@@ -103,13 +104,13 @@ export class ScreenshotControl extends InteractionControl {
                   `map_${Date.now()}.tif`
                 );
               }
-            } catch (err) {
+            } catch (e) {
               GUI.showUserMessage({
                 type:    'SecurityError' === err.name ? 'warning' : 'alert',
                 message: 'SecurityError' === err.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
                 autoclose: false
               });
-              console.warn(err);
+              console.warn(e);
             }
             // End download
             ApplicationService.setDownload(false, download_id);

@@ -22,6 +22,7 @@
         :textMessage       = "usermessage.textMessage"
         :size              = "usermessage.size"
         :type              = "usermessage.type"
+        :icon-class        = "usermessage.iconClass"
       >
         <template v-if="hooks.header"   slot="header"><component :is="hooks.header" /></template>
         <template v-if="hooks.body"     slot="body"><component   :is="hooks.body" /></template>

@@ -114,7 +114,8 @@ const ViewportService = function() {
     textMessage = false,
     closable,
     autoclose,
-    hooks = {}
+    hooks = {},
+    iconClass = null, //@since 3.11.0
   } = {}) {
     this.closeUserMessage();
     setTimeout(() => {
@@ -135,6 +136,7 @@ const ViewportService = function() {
       this.state.usermessage.hooks.header = hooks.header; // has to be a vue component or vue object
       this.state.usermessage.hooks.body   = hooks.body; // has to be a vue component or vue object
       this.state.usermessage.hooks.footer = hooks.footer; // has to be a vue component or vue object
+      this.state.usermessage.iconClass    = iconClass;
     });
     return this.state.usermessage;
   };

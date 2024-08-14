@@ -644,13 +644,12 @@ export class InteractionControl extends ol.control.Control {
   showToggledTool(show = true) {
     if (show) {
       GUI.showUserMessage({
-        title: this.toggledTool.__title,
-        type: 'tool',
-        size: 'small',
-        closable: this._toolButton ? true : false,
-        hooks: {
-          body: this.toggledTool
-        }
+        title:     this.toggledTool.__title,
+        type:      'tool',
+        size:      'small',
+        iconClass: this.toggledTool.__iconClass,
+        closable:  this._toolButton ? true : false,
+        hooks:     { body: this.toggledTool }
       });
     } else { GUI.closeUserMessage() }
   }
