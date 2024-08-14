@@ -239,14 +239,6 @@
   .nav-tabs {
     border-bottom: 0 none;
   }
-  .nav-stacked {
-    font-size: 1.2em;
-    font-weight: 700;
-    padding: 10px 0;
-  }
-  .nav-stacked li a {
-    color: #ffffff;
-  }
 
   .left-vertical-tabs {
     padding-left: 0 !important;
