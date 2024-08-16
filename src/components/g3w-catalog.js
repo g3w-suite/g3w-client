@@ -52,7 +52,7 @@ export default function(opts = {}) {
        */
       removeExternalLayer({ name, type='vector' } = {}) {
         state.external[type].filter((l, i) => {
-          if (l.name === name) {
+          if (name === l.name) {
             state.external[type].splice(i, 1);
             return true;
           }
@@ -103,7 +103,7 @@ export default function(opts = {}) {
  * @TODO check if deprecated
  */
 function _listenToMapVisibility(map_id, component) {
-  if(!map_id) {
+  if (!map_id) {
     return;
   }
 
