@@ -30,18 +30,17 @@
  * 3. Header
  * 4. Sidebar
  * 5. Viewport
- * 6. Floatbar
- * 7. Tools
- * 8. Map Controls
- * 9. Query Results
- * 10. Form
- * 11. Contents
- * 12. Errors
- * 13. Metadata
- * 14. Externals
- * 15. Tabs
- * 16. Skin colors
- * 17. Print
+ * 6. Tools
+ * 7. Map Controls
+ * 8. Query Results
+ * 9. Form
+ * 10. Contents
+ * 11. Errors
+ * 12. Metadata
+ * 13. Externals
+ * 14. Tabs
+ * 15. Skin colors
+ * 16. Print
  **************************************************************************************/
 
 .skin-blue   { --skin-color: @light-blue; --skin-d5: darken(@light-blue, 5%); --skin-d6: darken(@light-blue, 6%);  --skin-d10: darken(@light-blue, 10%); --skin-d20: darken(@light-blue, 20%); --skin-l10: lighten(@light-blue, 10%); --skin-l20: lighten(@light-blue, 20%); --skin-l30: lighten(@light-blue, 30%); --skin-l40: lighten(@light-blue, 40%);  --skin-l45: lighten(@light-blue, 45%);  --skin-l48: lighten(@light-blue, 48%); }
@@ -967,66 +966,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 #g3w-view-content #layer_attribute_table tbody tr.feature_attribute[selected="selected"] td { background: var(--skin-l30) !important; }
 
 /**************************************************************************************
- * 6. Floatbar
- **************************************************************************************/
-
-/* clear fix */
-.control-sidebar-menu > li > a:before, .control-sidebar-menu > li > a:after  { content: " "; display: table; }
-.control-sidebar-menu > li > a:after                                         { clear: both; }
-
-.control-sidebar-bg                                                          { position: fixed; z-index: 1000; bottom: 0; }
-.control-sidebar-bg,
-.control-sidebar                                                             { top: 0; right: -450px; width: 450px; transition: right .3s ease-in-out; position: fixed; height: auto; }
-.control-sidebar                                                             { padding-top: @navbar-height; z-index: 1010; position: fixed; height: auto; max-height: 100%; padding-bottom: 50px; }
-.control-sidebar > .tab-content                                              { padding: 10px 15px; }
-.control-sidebar.control-sidebar-open,
-.control-sidebar.control-sidebar-open + .control-sidebar-bg,
-.control-sidebar-open .control-sidebar-bg,
-.control-sidebar-open .control-sidebar { right: 0; }
-.control-sidebar-menu                                                        { list-style: none; padding: 0; margin: 0 -15px; }
-.control-sidebar-menu > li > a                                               { display: block; padding: 10px 15px; }
-.control-sidebar-menu .menu-icon                                             { float: left; width: 35px; height: 35px; border-radius: 50%; text-align: center; line-height: 35px; }
-.control-sidebar-menu .menu-info                                             { margin-left: 45px; margin-top: 3px; }
-.control-sidebar-menu .menu-info > p                                         { margin: 0; font-size: 11px; }
-.control-sidebar-menu .progress                                              { margin: 0; }
-.control-sidebar-light                                                       { color: lighten(#444, 10%); }
-.control-sidebar-light,
-.control-sidebar-light + .control-sidebar-bg                                 { background: #f9fafc; border-left: 1px solid @gray; }
-.control-sidebar-light .control-sidebar-menu                                 { margin-left: -14px; }
-.control-sidebar-light .control-sidebar-menu > li > a:hover                  { background: lighten(#f0f0f1, 1.5%); }
-.control-sidebar-light .control-sidebar-menu > li > a .menu-info > p         { color: lighten(#444, 10%); }
-
-.control-sidebar                                                    { border: 0 !important; }
-.control-sidebar .g3w-sidebarpanel                                  { background: #f9fafc; border-left: 1px solid #d2d6de; padding: 0 10px 10px 10px; overflow-y: auto; overflow-x: hidden; }
-.control-sidebar .g3w-sidebarpanel .g3w-floatbarpanel-name          { font-weight: bold }
-.control-sidebar-bg-shadow                                          { box-shadow: -1px,0,15px,rgba(0,0,0,.7); }
-.expand-transition                                                  { transition: all .3s ease; }
-.expand-enter,
-.expand-leave                                                       { opacity: 0; }
-.floatbar-aside-toggle                                              { position:absolute; right: 450px; top: @navbar-height; background-color: @light-blue; color: white; background-image: none; font-size: 20px; line-height: 20px; padding: 12.5px 15px 12.5px 17px; font-family: fontAwesome; }
-.floatbar-aside-toggle:before                                       { content: "\f100"; }
-.floatbar-aside-toggle:is(:focus,:hover)                            { color: #fff; }
-.floatbar-aside-toggle .icon-bar                                    { display: none; }
-.control-sidebar-open .floatbar-aside-toggle:before                 { content: "\f101"; }
-
-:root {
-  @media (max-width: 768px) {
-    .control-sidebar                   { padding-top: @navbar-height + 50; }
-  }
-  
-  @media (min-width: 768px) {
-    .control-sidebar-open .content-wrapper { margin-right: 450px; }
-  }
-
-  @media (max-width: 767px) {
-    .control-sidebar .floatbar-aside-toggle { right: 300px; }
-    .control-sidebar { padding-top: 50px; width: 300px; }
-    .control-sidebar-bg { width: 300px; }
-  }
-}
-
-/**************************************************************************************
- * 7. Tools
+ * 6. Tools
  **************************************************************************************/
 ul.g3w-tools                          { padding-left: 0; line-height: 1.5em; list-style-type: none; }
 ul.g3w-tools > li                     { color: white; background-color: #2c3b41; margin: 0 10px 0 5px; }
@@ -1049,7 +989,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 #tools.single li:hover                { border-left-color: #e99611;   background: #1e282c; }
 
 /**************************************************************************************
- * 8. Map Controls
+ * 7. Map Controls
  **************************************************************************************/
 .ol-viewport.ol-pointer                                                { cursor: pointer; }
 .ol-viewport.ol-zoom-in                                                { cursor: url('../cursors/mZoomIn.svg'), zoom-in }
@@ -1177,7 +1117,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 }
 
 /**************************************************************************************
- * 9. Query Results
+ * 8. Query Results
  **************************************************************************************/
 .query_relation_field                                                                      { display: inline-block; cursor: pointer; color: white; margin: 5px; width: 30px; height: 30px; text-align: center; border-radius: 3px; box-shadow: 0 3px 5px rgba(0,0,0,0.5); }
 .query_relation_field i                                                                    { padding: 6px; }
@@ -1288,7 +1228,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 }
 
 /**************************************************************************************
- * 10. Form
+ * 9. Form
  **************************************************************************************/
 
 .form-control                                            { border-radius: 0; box-shadow: none; border-color: @gray; }
@@ -1395,7 +1335,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3wform_body .bootstrap-filestyle label.btn-primary:hover              { background-color: var(--skin-d20); }
 
 /**************************************************************************************
- * 11. Contents
+ * 10. Contents
  **************************************************************************************/
 .contents                            { padding: 0 10px; height: 100%; }
 .contents > div                      { height: 100%; }
@@ -1409,7 +1349,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .contents .thumbnail img             { width: 100%; }
 
 /**************************************************************************************
- * 12. Errors
+ * 11. Errors
  **************************************************************************************/
 #initerror                 { position: fixed; z-index: 100000; margin: auto; inset: 0; width: 400px; height: 200px; }
 .initial_error_text        { text-transform: uppercase; }
@@ -1419,7 +1359,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .error-initial-page .f5    { font-weight: bold; }
 
 /**************************************************************************************
- * 13. Metadata
+ * 12. Metadata
  **************************************************************************************/
 .metadata-nav-bar li a.metadata-item-tab.general { color: @light-blue; }
 .metadata-nav-bar li a.metadata-item-tab.layers  { color: @yellow; }
@@ -1429,7 +1369,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .metadata-nav-tabs > li > a::after               { background: var(--skin-color); }
 
 /**************************************************************************************
- * 14. Externals
+ * 13. Externals
  **************************************************************************************/
 
 .select2-container--default.select2-container--focus,
@@ -1518,7 +1458,7 @@ input[type="range"]::-ms-thumb:hover                                            
 .select2-container--default .select2-results__option[aria-selected=true]            { background-color: var(--skin-l20); }
 
 /**************************************************************************************
- * 15. Tabs
+ * 14. Tabs
  **************************************************************************************/
 :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)
 :is(.queryresults-wrapper, .g3wform_body, .query-relation) .tabs-wrapper                                        { border-radius: 3px; border: 1px solid; padding: 3px; }
@@ -1548,7 +1488,7 @@ input[type="range"]::-ms-thumb:hover                                            
 .skin-yellow .formquerytabs.nav-tabs li:not(.active) > a    { background-color: lighten(@yellow, 50%) !important; border: 1px solid lighten(@yellow, 40%); }
 
 /**************************************************************************************
- * 16. Skin colors
+ * 15. Skin colors
  **************************************************************************************/
 
 .skin-button.bordered,
@@ -1571,7 +1511,7 @@ input[type="range"]::-ms-thumb:hover                                            
 .tooltip .tooltip-inner             { font-weight: 700; font-size: 1.25rem; padding: 8px; background-color: #222; }
 
 /**************************************************************************************
- * 17. Print
+ * 16. Print
  **************************************************************************************/
 
 @media print {

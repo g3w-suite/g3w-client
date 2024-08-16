@@ -16,7 +16,6 @@ import ProjectsRegistry          from 'store/projects';
 //import services
 import ApplicationService        from 'services/application';
 import GUI                       from 'services/gui';
-import FloatbarService           from "services/floatbar";
 import NavbarItemsService        from 'services/navbaritems';
 import SidebarService            from 'services/sidebar';
 import ViewportService           from 'services/viewport';
@@ -315,7 +314,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
             }),
           ]
         },
-        floatbar: { components: [] }
       },
       othercomponents: [
         new QueryResultsComponent({ id: 'queryresults' })
@@ -431,7 +429,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
   };
   // build template function
   this._buildTemplate = function() {
-    FloatbarService.init(layout);
     Object
       .entries(this.templateConfig.placeholders)
       .forEach(([placeholder, options]) => this._addComponents(options.components, placeholder));
@@ -562,11 +559,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
 
     /* Metodos to define */
     GUI.getResourcesUrl = () => ApplicationService.getConfig().resourcesurl;
-
-    //LIST
-    GUI.showList        = FloatbarService.showPanel.bind(FloatbarService);
-    GUI.closeList       = FloatbarService.closePanel.bind(FloatbarService);
-    GUI.hideList        = FloatbarService.hidePanel.bind(FloatbarService);
 
     // TABLE
     GUI.showTable       = function() {};
@@ -822,15 +814,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
 
     /*  */
 
-    // FLOATBAR //
-    GUI.showFloatbar = function() {
-      FloatbarService.open();
-    };
-
-    GUI.hideFloatbar = function() {
-      FloatbarService.close();
-    };
-
     // SIDEBAR //
     GUI.showSidebar      = this._showSidebar.bind(this);
     GUI.hideSidebar      = this._hideSidebar.bind(this);
@@ -1053,7 +1036,6 @@ ApplicationTemplate.PLACEHOLDERS = [
   'navbar',
   'sidebar',
   'viewport',
-  'floatbar'
 ];
 
 // service know by the applications (standard)
@@ -1061,7 +1043,6 @@ ApplicationTemplate.Services = {
   navbar:   null,
   sidebar:  SidebarService,
   viewport: ViewportService,
-  floatbar: null
 };
 
 ApplicationTemplate.fail = function({ error }) {

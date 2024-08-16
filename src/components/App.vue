@@ -310,11 +310,6 @@
         :class = "{ iframe: iframe, 'g3w-disabled': disabled }"
       >
         <!-- SIDEBAR CONTENT -->
-        <!-- <div
-          id     = "g3w-sidebar"
-          class  = "sidebar"
-          :class = "{ 'g3w-disabled': disabled }"
-        > -->
           <div id="disable-sidebar"></div>
 
           <div
@@ -374,8 +369,6 @@
             class  = "sidebar-menu"
             :class = "{ 'g3w-disabled': sstate.disabled }"
           ></ul>
-
-        <!-- </div> -->
 
       </div>
       <!-- TOGGLE BUTTON (desktop only) -->
@@ -546,31 +539,6 @@
         </div>
     </div>
 
-    <!-- ORIGINAL SOURCE: src/components/Floatbar.vue@v3.10.1 -->
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-light" >
-      <a v-show="fpanelsinstack" href="#" class="floatbar-aside-toggle" data-toggle="control-sidebar" role="button">
-        <span class="sr-only">Expand</span>
-      </a>
-      <div id="floatbar-spinner" style="position:absolute"></div>
-      <div v-show="fpanelsinstack" class="g3w-sidebarpanel">
-        <div v-if="closable" class="row">
-          <div class="col-xs-12 col-sm-12 col-md-12">
-            <button :class="g3wtemplate.getFontClass('close')" class="pull-right close-panel-button" @click="fclosePanel"></button>
-          </div>
-        </div>
-        <div v-if="fpanelname">
-          <h4 class="g3w-floatbarpanel-name">{{ fpanelname }}</h4>
-        </div>
-        <div id="g3w-floatbarpanel-placeholder" class="g3w-floatbarpanel-placeholder"></div>
-      </div>
-      <catalog-layer-context-menu />
-      <catalog-project-context-menu />
-    </aside>
-
-    <!-- Sidebar's background, must be placed immediately after the control sidebar -->
-    <div class="control-sidebar-bg"></div>
-
     <!-- MODAL (FULL SCREEN) -->
     <div
       class           = "modal fade modal-fullscreen force-fullscreen"
@@ -735,7 +703,6 @@ import ApplicationService        from "services/application";
 import GUI                       from "services/gui";
 import viewportService           from 'services/viewport';
 import sidebarService            from 'services/sidebar';
-import floatbarService           from 'services/floatbar';
 import NavbarItemsService        from 'services/navbaritems';
 import { resizeMixin }           from "mixins";
 
@@ -791,8 +758,6 @@ export default {
       sstate:                       sidebarService.state,
       /** @since 3.9.0 */
       zIndex:                       ZINDEXES.usermessage.tool + 2,
-
-      stack:                        floatbarService.stack.state,
 
       NavbarItemsService,
       
@@ -1000,23 +965,6 @@ export default {
       return this.panels.length ? this.panels.slice(-1)[0].content.getTitle() : '';
     },
 
-    // active panels on stack
-    fpanelsinstack(){
-      return this.stack.contentsdata.length>0;
-    },
-    
-    fpanelname(){
-      let name;
-      if (this.stack.contentsdata.length){
-        name = this.stack.contentsdata.slice(-1)[0].content.getTitle();
-      }
-      return name;
-    },
-    
-    closable() {
-      return floatbarService.closable;
-    },
-
   },
 
   methods: {
@@ -1175,10 +1123,6 @@ export default {
       sidebarService.closeAllPanels();
     },
 
-    fclosePanel(){
-      floatbarService.closePanel();
-    }
-
   },
 
   watch: {
@@ -1188,14 +1132,6 @@ export default {
         ApplicationService.changeLanguage(l);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
-    },
-
-    "stack.contentsdata"() {
-      const children = $("#g3w-floatbarpanel-placeholder").children();
-      children.forEach((child, index) => {
-        if (index == children.length-1) $(child).show();
-        else $(child).hide();
-      })
     },
 
   },
@@ -1273,7 +1209,6 @@ export default {
     // Fixes the layout height in case min-height fails.
     const resize = function() {
       $(".main-sidebar")      .css('height',    ($(window).height() - $(".navbar-header").height()) + "px");
-      $(".control-sidebar")  .css('max-height', $(window).innerHeight());
       $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
       $('#g3w-modal-overlay').css('height',     $(window).height());
     };
@@ -1321,19 +1256,6 @@ export default {
       //if this isn't a link, prevent the page from being redirected
       if (next.is('.treeview-menu')) {
         e.preventDefault();
-      }
-    });
-
-    //Enable control sidebar
-    const sidebar = $(".control-sidebar");
-
-    //Listen to the click event
-    $("[data-toggle='control-sidebar']").on('click', function (e) {
-      e.preventDefault();
-      if (!sidebar.hasClass('control-sidebar-open') && !$('body').hasClass('control-sidebar-open')) {
-        sidebar.addClass('control-sidebar-open');
-      } else {
-        sidebar.removeClass('control-sidebar-open');
       }
     });
 
