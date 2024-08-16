@@ -403,9 +403,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
   // route setting at the beginning (is an example)
   this._addRoutes = function() {
     ApplicationService.getRouterService().addRoute('map/zoomto/{coordinate}/:zoom:', function(coordinate, zoom) {
-      coordinate = _.map(coordinate.split(','), function(xy) {
-        return Number(xy)
-      });
+      coordinate = coordinate.split(',').map(xy => Number(xy));
       zoom = zoom ? Number(zoom): null;
       if (coordinate.length) {
         GUI.getService('map').on('ready', function() {
@@ -956,11 +954,11 @@ const ApplicationTemplate = function({ ApplicationService }) {
       if (this._closeUserMessageBeforeSetContent) { GUI.closeUserMessage() }
       options.content     = options.content || null;
       options.title       = options.title || "";
-      options.push        = _.isBoolean(options.push) ? options.push : false;
+      options.push        = (true === options.push || false === options.push) ? options.push : false;
       options.perc        = this._isMobile ? 100 : options.perc;
       options.split       = options.split || 'h';
-      options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
-      options.showtitle   = _.isBoolean(options.showtitle) ? options.showtitle : true;
+      options.backonclose = (true === options.backonclose || false === options.backonclose) ? options.backonclose : false;
+      options.showtitle   = (true === options.showtitle || false === options.showtitle) ? options.showtitle : true;
       ViewportService.showContent(options);
     };
 
