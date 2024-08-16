@@ -538,7 +538,10 @@
           <bar-loader :loading = "state.content.loading"/>
         </div>
     </div>
-
+    <!-- Right Click on Project Title - Context Project Menu -->
+    <catalog-project-context-menu />
+    <!-- Right Click on TOC - Context layer Menu -->
+    <catalog-layer-context-menu />
     <!-- MODAL (FULL SCREEN) -->
     <div
       class           = "modal fade modal-fullscreen force-fullscreen"
