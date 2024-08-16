@@ -98,7 +98,6 @@ import ProjectsRegistry                            from 'store/projects';
 import RelationsService                            from 'services/relations';
 import TaskService                                 from 'services/tasks';
 import ApiService                                  from 'services/api';
-import RouterService                               from 'services/router';
 import GUI                                         from 'services/gui';
 import { MeasureInteraction }                      from 'g3w-ol/controls/measurecontrol';
 
@@ -259,7 +258,6 @@ const g3wsdk = {
     ApplicationService,
     ApplicationState,
     ApiService,
-    Router: RouterService,
     i18n,
     task: {
       TaskService

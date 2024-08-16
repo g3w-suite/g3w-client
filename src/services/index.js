@@ -5,7 +5,6 @@ import GUI                 from './gui';
 import IframeService       from './iframe';
 import NavbaritemsService  from './navbaritems';
 import RelationsService    from './relations';
-import RouterService       from './router';
 import SidebarService      from './sidebar';
 import TaskService         from './tasks';
 import ViewportService     from './viewport';
@@ -22,7 +21,6 @@ export {
   IframeService,
   NavbaritemsService,
   RelationsService,
-  RouterService,
   SidebarService,
   TaskService,
   ViewportService

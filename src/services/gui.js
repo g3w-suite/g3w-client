@@ -1,5 +1,4 @@
 import ApplicationService from 'services/application';
-import RouterService      from 'services/router';
 import ComponentsRegistry from 'store/components';
 
 const {
@@ -63,10 +62,6 @@ function GUI() {
   };
   this.getComponents = function() {
     return ComponentsRegistry.getComponents();
-  };
-
-  this.goto = function(url) {
-    RouterService.goto(url);
   };
   this.ready = function() {
     this.emit('ready');

@@ -15,7 +15,6 @@ import DataRouterService from 'services/data';
 import PluginsRegistry   from 'store/plugins';
 import ProjectsRegistry  from 'store/projects';
 import ApiService        from 'services/api';
-import RouterService     from 'services/router';
 import GUI               from 'services/gui';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
@@ -332,13 +331,6 @@ const ApplicationService = function() {
   };
 
   /**
-   * router service
-   */
-  this.getRouterService = function() {
-    return RouterService;
-  };
-
-  /**
    * @returns {string} application proxy url 
    */
   this.getProxyUrl = function() {
@@ -618,14 +610,12 @@ const ApplicationService = function() {
    * Run the following tasks after boostrap:
    * 
    * 1 - check for `this.complete`
-   * 2 - initialize RouterService (once)
    * 3 - initialize PluginsRegistry (once and after ProjectsRegistry and ApiService are initialized)
    * 4 - trigger 'complete' event
    */
   this.postBootstrap = async function() {
     if (!this.complete) {
       try {
-        RouterService.init();
         await PluginsRegistry.init({
           pluginsBaseUrl:     this._config.urls.staticurl,
           pluginsConfigs:     this._config.plugins,
