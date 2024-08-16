@@ -520,6 +520,8 @@ export default {
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
       if (reset)                           { this.atlas_values = []; this.print_extent = null; }
+      // @since 3.11.0 In case of no print set, exit
+      if (0 === this.state.print.length)   { return; }
       GUI
         .closeContent()
         .then(component => {
@@ -560,8 +562,8 @@ export default {
       const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
       this.state.inner = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
       GUI.getService('map').setInnerGreyCoverBBox({
-        type: 'pixel',
-        inner: this.state.inner,
+        type:     'pixel',
+        inner:    this.state.inner,
         rotation: this.state.rotation
       });
     },
@@ -657,8 +659,8 @@ export default {
          */
         matcher: (params, data) => {
           const search = params.term ? params.term.toLowerCase() : params.term;
-          if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
-          if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
+          if ('' === (search || '').toString().trim())                             { return data; }        // no search terms → get all of the data
+          if (data.text.toLowerCase().includes(search) && undefined !== data.text) { return { ...data }; } // the searched term
           return null;                                                                                 // hide the term
         },
         language: {
