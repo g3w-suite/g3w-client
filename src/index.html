@@ -19,9 +19,7 @@
   {% if SETTINGS.SENTRY_JS %}
     {{ SETTINGS.SENTRY_JS | safe }}
   {% endif %}
-  <div id="app">
-    <app></app>
-  </div>
+  <app id="app"></app>
   <script src="{% with client_default|add:"/js/vendor.min.js" as vendor_js %}{% static vendor_js %}{% endwith %}"></script>
   <script>{{ group_config | safe }}</script>
   <script src="{% with client_default|add:"/js/app.min.js" as app_js %}{% static app_js %}{% endwith %}"></script>
