@@ -1,17 +1,16 @@
-import ApiService from './api';
-import ApplicationService from './application';
-import ClipboardService from './clipboard';
-import DataService from './data';
-import ChangesManager from './editing';
-import GUI from './gui';
-import HistoryService from './history';
-import AppService from './iframe-app';
-import EditingService from './iframe-editing';
-import IframeService from './iframe';
-import QueryBuilderService from './querybuilder';
-import RelationsService from './relations';
-import RouterService from './router';
-import TaskService from './tasks';
+import ApiService          from './api';
+import ApplicationService  from './application';
+import ClipboardService    from './clipboard';
+import DataService         from './data';
+import GUI                 from './gui';
+import HistoryService      from './history';
+import IframeService       from './iframe';
+import NavbaritemsService  from './navbaritems';
+import RelationsService    from './relations';
+import RouterService       from './router';
+import SidebarService      from './sidebar';
+import TaskService         from './tasks';
+import ViewportService     from './viewport';
 
 /**
  * @FIXME importing directly from this file breaks application
@@ -22,14 +21,13 @@ export {
   ApplicationService,
   ClipboardService,
   DataService,
-  ChangesManager,
   GUI,
   HistoryService,
-  AppService,
-  EditingService,
   IframeService,
-  QueryBuilderService,
+  NavbaritemsService,
   RelationsService,
   RouterService,
+  SidebarService,
   TaskService,
+  ViewportService
 };
