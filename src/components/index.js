@@ -68,9 +68,6 @@ import MetadataProject                             from './MetadataProject.vue';
 import MetadataProjectBBoxContent                  from './MetadataProjectBBoxContent.vue';
 import MetadataProjectContactsContent              from './MetadataProjectContactsContent.vue';
 import MetadataProjectTabContent                   from './MetadataProjectTabContent.vue';
-import NotifyDownload                              from './NotifyDownload.vue';
-import NotifyOnline                                from './NotifyOnline.vue';
-import NotifyPlugins                               from './NotifyPlugins.vue';
 import Print                                       from './Print.vue';
 import PrintPage                                   from './PrintPage.vue';
 import ChangeMapMenu                               from "./ChangeMapMenu.vue";
@@ -179,9 +176,6 @@ export {
   MetadataProjectBBoxContent,
   MetadataProjectContactsContent,
   MetadataProjectTabContent,
-  NotifyDownload,
-  NotifyOnline,
-  NotifyPlugins,
   Print,
   PrintPage,
   ProjectsMenu,

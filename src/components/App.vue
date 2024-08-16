@@ -429,18 +429,31 @@
           class  = "g3w-view map"
           :style = "styles.map"
         >
+
           <g3w-resize
             id           = "resize-map-and-content"
             :show        = "showresize"
             :moveFnc     = "moveFnc"
             :orientation = "state.split"
             :style       = "{backgroundColor:'transparent'}"
-            :class       = "`split-${state.split}`"/>
+            :class       = "`split-${state.split}`"
+          />
+
           <div id="application-notifications">
-            <online-notify/>
-            <download-notify/>
-            <plugins-notify/>
+            <div id = "offline_notification" v-online:hide style = "color: #999">
+              <i :class = "g3wtemplate.getFontClass('wifi')"></i>
+              <div style = "font-weight: bold; font-size:0.4em">offline</div>
+            </div>
+            <div id = "download_notification" v-download.show title = "DOWNLOAD" class = "skin-color">
+              <bar-loader loading = "true"/>
+              <i style = "padding:3px" :class = "g3wtemplate.getFontClass('download')"></i>
+            </div>
+            <div id = "plugins_notification" v-plugins style = "color: #994b10">
+              <bar-loader loading = "true"/>
+              <i :class = "g3wtemplate.getFontClass('plugin')"></i>
+            </div>
           </div>
+
         </div>
         <div
           id         = "g3w-view-content"
@@ -729,9 +742,6 @@ import { resizeMixin }           from "mixins";
 
 import HeaderItem                from "components/HeaderItem.vue";
 import userMessage               from 'components/UserMessage.vue';
-import onlineNotify              from 'components/NotifyOnline.vue';
-import downloadNotify            from 'components/NotifyDownload.vue';
-import pluginsNotify             from 'components/NotifyPlugins.vue';
 import getUniqueDomId            from 'utils/getUniqueDomId';
 
 const { t }        = require('core/i18n/i18n.service');
@@ -792,9 +802,6 @@ export default {
     HeaderItem,
     CookieLaw,
     userMessage,
-    onlineNotify,
-    downloadNotify,
-    pluginsNotify
   },
 
   computed: {
