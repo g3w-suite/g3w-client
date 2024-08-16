@@ -584,6 +584,7 @@ export const FONT_AWESOME_ICONS = {
   'pointer': 'fa fa-hand-pointer',
   /** @since 3.11.0 */
   camera: 'fas fa-camera-retro',
+  measure: 'fas fa-ruler-horizontal',
 };
 
 /**

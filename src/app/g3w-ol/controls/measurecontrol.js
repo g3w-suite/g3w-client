@@ -204,7 +204,8 @@ export class MeasureControl extends InteractionControl {
     return super.createControlTool({
       type: 'custom',
       component: {
-        __title: 'sdk.mapcontrols.measures.title',
+        __title:      'sdk.mapcontrols.measures.title',
+        __iconClass:  'measure', //@since v3.11.0
         data: () => ({ types: this.types, type: this.types[0] }),
         template: /* html */ `
           <div style="width: 100%; padding: 5px;">
