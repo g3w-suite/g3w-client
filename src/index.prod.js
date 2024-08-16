@@ -40,11 +40,8 @@ import Range                     from 'components/GlobalRange.vue';
 import ResizeIcon                from 'components/GlobalResizeIcon.vue';
 import Tabs                      from 'components/GlobalTabs.vue';
 import Divider                   from 'components/GlobalDivider.vue';
-import FloatbarComponent         from "components/Floatbar.vue";
 import NavbaritemsLeftComponent  from 'components/NavbaritemsLeft.vue';
 import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
-import SidebarComponent          from 'components/Sidebar.vue';
-import ViewportComponent         from 'components/Viewport.vue';
 
 //directives
 import vDisabled                 from 'directives/v-disabled';
@@ -382,12 +379,9 @@ const ApplicationTemplate = function({ ApplicationService }) {
       "}</style>").appendTo("head");
     }
     // Inizialization of the components of the application
-    Vue.component('sidebar', SidebarComponent);
     //Navbar custom items
     Vue.component('navbarleftitems', NavbaritemsLeftComponent);
     Vue.component('navbarrightitems', NavbaritemsRightComponent);
-    Vue.component('viewport', ViewportComponent);
-    Vue.component('floatbar', FloatbarComponent);
     Vue.component('app', App);
   };
 

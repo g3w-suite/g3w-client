@@ -26,8 +26,6 @@
     >
 
       <!-- NAVBAR TOP (MAIN MENU) -->
-      <!-- TODO: extract/refactor into sub-components or move into a dedicated single file component -->
-      <!-- NB: additional styles can be found in `header.less` -->
       <nav
         ref   = "navbar"
         class = "navbar navbar-inverse navbar-fixed-top"
@@ -292,18 +290,259 @@
       </nav>
     </header>
 
+    <!-- ORIGINAL SOURCE: src/components/Sidebar.vue@v3.10.1 -->
     <!-- Left side column. contains the logo and sidebar -->
-    <sidebar></sidebar>
+    <aside>
+      <div
+        class  = "main-sidebar"
+        :class = "{ iframe: iframe}"
+      >
+        <!-- SIDEBAR CONTENT -->
+        <div
+          id     = "g3w-sidebar"
+          class  = "sidebar"
+          :class = "{ 'g3w-disabled': disabled }"
+        >
+          <div id="disable-sidebar"></div>
+
+          <div
+            v-show = "panelsinstack"
+            class = "g3w-sidebarpanel"
+          >
+            <div id="g3w-sidebarpanel-header-placeholder">
+                <div
+                  style  = "display: flex;"
+                  :style = "{ justifyContent: sstate.gui.title ? 'space-between' : 'flex-end' }"
+                >
+
+                  <h4
+                    v-if  = "title"
+                    style = "display: inline-block; font-weight: bold"
+                    v-t   = "title"
+                  ></h4>
+
+                  <div>
+                    <span
+                      v-if               = "panels.length > 1"
+                      @click             = "closePanel"
+                      data-placement     = "left"
+                      data-toggle        = "tooltip"
+                      data-container     = "body"
+                      v-t-tooltip.create = "'back'"
+                      class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                    >
+                      <i :class = "g3wtemplate.getFontClass('circle')"     class = "fa-stack-1x panel-button"></i>
+                      <i :class = "g3wtemplate.getFontClass('arrow-left')" class = "fa-stack-1x panel-icon"></i>
+                    </span>
+                    <span
+                      @click             = "closeAllPanels"
+                      data-placement     = "left"
+                      data-toggle        = "tooltip"
+                      data-container     = "body"
+                      v-t-tooltip.create = "'close'"
+                      class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                    >
+                      <i :class = "g3wtemplate.getFontClass('circle')" class = "fa-stack-1x panel-button"></i>
+                      <i :class = "g3wtemplate.getFontClass('close')"  class = "fa-stack-1x panel-icon"></i>
+                    </span>
+                  </div>
+
+                </div>
+            </div>
+
+            <div
+              id    = "g3w-sidebarpanel-placeholder"
+              class = "g3w-sidebarpanel-placeholder"
+            ></div>
+          </div>
+
+          <div id = "g3w-sidebarcomponents-content" >
+            <ul
+              id     = "g3w-sidebarcomponents"
+              v-show = "showmainpanel"
+              class  = "sidebar-menu"
+              :class = "{ 'g3w-disabled': sstate.disabled }"
+            ></ul>
+          </div>
+
+        </div>
+
+      </div>
+      <!-- TOGGLE BUTTON (desktop only) -->
+      <a
+        href        = "#"
+        class       = "sidebar-aside-toggle"
+        :class      = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
+        :style      = "{zIndex: zIndex}"
+        data-toggle = "offcanvas" role="button">
+          <i :class = "g3wtemplate.getFontClass('bars')"></i>
+      </a>
+
+    </aside>
+
+    <!-- ORIGINAL SOURCE: src/components/Viewport.vue@v3.10.1 -->
     <!-- Content Wrapper. Contains page content -->
-    <div
-      class  = "content-wrapper"
-      :style = "{paddingTop: isIframe ? 0 : null}"
-    >
-      <viewport :appState="appState"/>
+    <div class="content-wrapper">
+      <div class = "g3w-viewport">
+
+        <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
+          <user-message
+            v-if               = "usermessage.show"
+            @close-usermessage = "closeUserMessage"
+            :title             = "usermessage.title"
+            :subtitle          = "usermessage.subtitle"
+            :id                = "usermessage.id"
+            :message           = "usermessage.message"
+            :draggable         = "usermessage.draggable"
+            :closable          = "usermessage.closable"
+            :duration          = "usermessage.duration"
+            :position          = "usermessage.position"
+            :autoclose         = "usermessage.autoclose"
+            :textMessage       = "usermessage.textMessage"
+            :size              = "usermessage.size"
+            :type              = "usermessage.type"
+            :icon-class        = "usermessage.iconClass"
+          >
+            <template v-if="hooks.header"   slot="header"><component :is="hooks.header" /></template>
+            <template v-if="hooks.body"     slot="body"><component   :is="hooks.body" /></template>
+            <template v-if = "hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
+          </user-message>
+        </transition>
+
+        <div
+          id     = "g3w-view-map"
+          :class = "`split-${state.split}`"
+          class  = "g3w-view map"
+          :style = "styles.map"
+        >
+          <g3w-resize
+            id           = "resize-map-and-content"
+            :show        = "showresize"
+            :moveFnc     = "moveFnc"
+            :orientation = "state.split"
+            :style       = "{backgroundColor:'transparent'}"
+            :class       = "`split-${state.split}`"/>
+          <div id="application-notifications">
+            <online-notify/>
+            <download-notify/>
+            <plugins-notify/>
+          </div>
+        </div>
+        <div
+          id         = "g3w-view-content"
+          :class     = "`split-${state.split}`"
+          class      = "g3w-view content"
+          :style     = "styles.content"
+          v-disabled = "state.content.disabled"
+        >
+          <section
+            v-if  = "breadcrumb.length > 1"
+            :ref  = "breadcrumb"
+            class = "content_breadcrumb"
+          >
+            <span
+              v-for = "(crumb, index) in breadcrumb"
+              :key  = "crumb.title"
+            >
+              <span
+                class  = "skin-color-dark"
+                :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
+                v-t    = "crumb.title" >
+              </span>
+              <span
+                v-if  = "isNotLastCrumb(index)"
+                style = "font-weight: bold; margin: 3px 0">/</span>
+            </span>
+          </section>
+          <div
+            v-if  = "(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)"
+            class = "close-panel-block"
+            style = "display: flex; justify-content: space-between"
+          >
+            <div
+              v-if  = "previousTitle"
+              class = "g3w_contents_back g3w-long-text"
+            >
+              <div
+                v-if   = "'back' === backOrBackTo "
+                :class = "backOrBackTo"
+              >
+                <span
+                  class  = "action-button"
+                  :class = "g3wtemplate.getFontClass('back')">
+                </span>
+                <span v-t="'back'"></span>
+              </div>
+              <div
+                v-else
+                @click.stop = "gotoPreviousContent()"
+                :class      = "backOrBackTo"
+              >
+                <span
+                  class  = "action-button"
+                  :class = "g3wtemplate.getFontClass('back')">
+                </span>
+                <span v-t = "'backto'"></span>
+                <span v-if = "!updatePreviousTitle" v-t = "previousTitle"></span>
+              </div>
+            </div>
+            <div
+              v-if   = "!previousTitle && showtitle && contentTitle"
+              class  = "panel-title"
+              :style = "[state.content.style.title]"
+              :class = "{'mobile': isMobile()}"
+            >
+            <span id = "contenttitle">
+              <span v-t = "contentTitle.title"></span>
+              <span v-t = "contentTitle.post_title"></span>
+            </span>
+            </div>
+            <div
+              class = "g3-content-header-action-tools"
+              style = "display: flex; align-items: center"
+            >
+              <component v-for = "tool in state.content.headertools" :is = "tool"/>
+              <resize-icon
+                v-if   = "showresizeicon"
+                :type  = "state.split"
+                style  = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
+                :style = "{marginRight: state.content.closable ? '5px': '0px'}"/>
+              <span
+                v-if = "state.content.closable && state.content.aside"
+                @click = "closeContent"
+                :class = "{'mobile': isMobile()}"
+                class  = "action-button"
+                style  = "display: flex; justify-content: center "
+              >
+              <i class = "skin-color-dark" :class = "g3wtemplate.getFontClass('close')"></i>
+            </span>
+            </div>
+          </div>
+          <bar-loader :loading = "state.content.loading"/>
+        </div>
+        </div>
     </div>
-    <!-- /.content-wrapper -->
+
+    <!-- ORIGINAL SOURCE: src/components/Floatbar.vue@v3.10.1 -->
     <!-- Control Sidebar -->
-    <floatbar/>
+    <aside class="control-sidebar control-sidebar-light" >
+      <a v-show="fpanelsinstack" href="#" class="floatbar-aside-toggle" data-toggle="control-sidebar" role="button">
+        <span class="sr-only">Expand</span>
+      </a>
+      <div id="floatbar-spinner" style="position:absolute"></div>
+      <div v-show="fpanelsinstack" class="g3w-sidebarpanel">
+        <div v-if="closable" class="row">
+          <div class="col-xs-12 col-sm-12 col-md-12">
+            <button :class="g3wtemplate.getFontClass('close')" class="pull-right close-panel-button" @click="fclosePanel"></button>
+          </div>
+        </div>
+        <div v-if="fpanelname">
+          <h4 class="g3w-floatbarpanel-name">{{ fpanelname }}</h4>
+        </div>
+        <div id="g3w-floatbarpanel-placeholder" class="g3w-floatbarpanel-placeholder"></div>
+      </div>
+    </aside>
+
     <!-- /.control-sidebar -->
     <!-- Add the sidebar's background. This div must be placed
          immediately after the control sidebar -->
@@ -458,14 +697,29 @@
 
 <script>
 import CookieLaw          from "vue-cookie-law";
-import HeaderItem         from "components/HeaderItem.vue";
-import ProjectsRegistry   from "store/projects";
-import ApplicationService from "services/application";
-import GUI                from "services/gui";
-import { resizeMixin }    from "mixins";
-import { LOCAL_ITEM_IDS } from "app/constant";
 
-const { uniqueId } = require('utils');
+import {
+  LOCAL_ITEM_IDS,
+  ZINDEXES,
+  VIEWPORT as viewportConstraints
+}                                from 'app/constant';
+import { SidebarEventBus as VM } from 'app/eventbus';
+import ApplicationState          from 'store/application-state';
+import ProjectsRegistry          from "store/projects";
+import ApplicationService        from "services/application";
+import GUI                       from "services/gui";
+import viewportService           from 'services/viewport';
+import sidebarService            from 'services/sidebar';
+import floatbarService           from 'services/floatbar';
+import { resizeMixin }           from "mixins";
+
+import HeaderItem                from "components/HeaderItem.vue";
+import userMessage               from 'components/UserMessage.vue';
+import onlineNotify              from 'components/NotifyOnline.vue';
+import downloadNotify            from 'components/NotifyDownload.vue';
+import pluginsNotify             from 'components/NotifyPlugins.vue';
+import getUniqueDomId            from 'utils/getUniqueDomId';
+
 const { t }        = require('core/i18n/i18n.service');
 
 /**
@@ -495,17 +749,35 @@ export default {
 
   data() {
     return {
-      customcredits                : false,
-      appState                     : ApplicationService.getState(),
-      current_custom_modal_content : null,
-      language                     : null,
-      cookie_law_buttonText        : t('cookie_law.buttonText')
+      customcredits:                false,
+      appState:                     ApplicationService.getState(),
+      current_custom_modal_content: null,
+      language:                     null,
+      cookie_law_buttonText:        t('cookie_law.buttonText'),
+      state:                        viewportService.state,
+      updatePreviousTitle:          false,
+      media:                        { matches: true },
+
+      components:                   sidebarService.state.components,
+      panels:                       sidebarService.stack.state.contentsdata,
+      bOpen:                        true,
+      bPageMode:                    false,
+      header:                       t('main navigation'),
+      sstate:                       sidebarService.state,
+      /** @since 3.9.0 */
+      zIndex:                       ZINDEXES.usermessage.tool + 2,
+
+      stack:                        floatbarService.stack.state,
     }
   },
 
   components: {
     HeaderItem,
-    CookieLaw
+    CookieLaw,
+    userMessage,
+    onlineNotify,
+    downloadNotify,
+    pluginsNotify
   },
 
   computed: {
@@ -601,6 +873,123 @@ export default {
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
 
+    breadcrumb() {
+        return this.state.content.contentsdata
+          .filter(c => c.options.crumb)
+          .map(c => c.options.crumb);
+    },
+
+    showresize() {
+      const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
+      return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
+    },
+
+    showresizeicon() {
+      return 100 !== this.state.secondaryPerc;
+    },
+
+    hooks() {
+      return this.usermessage.hooks;
+    },
+
+    usermessage() {
+      return this.state.usermessage;
+    },
+
+    showtitle() {
+      if (this.state.content.contentsdata.length) {
+        const options = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
+        if (_.isBoolean(options.showtitle)) { return options.showtitle }
+      }
+      return true;
+    },
+
+    showContent() {
+      return this.state.content.show;
+    },
+
+    styles() {
+      return {
+        map: {
+          width:         `${this.state.map.sizes.width}px`,
+          height:        `${this.state.map.sizes.height}px`,
+        },
+        content: {
+          width:         `${this.state.content.sizes.width}px`,
+          height:        `${this.state.content.sizes.height}px`,
+          zIndex:        ZINDEXES.usermessage.tool + 1,
+          minHeight:     'v' === this.state.split ? `${viewportConstraints.resize.content.min}px` : null,
+          paddingTop:    '8px',
+          paddingBottom: '8px',
+        }
+      }
+    },
+
+    contentTitle() {
+      if (this.state.content.contentsdata.length) {
+        const {title, post_title} = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
+        return {title, post_title};
+      }
+    },
+
+    backOrBackTo(){
+      return (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
+        ? !(this.state.content.contentsdata[this.state.content.contentsdata.length - 2].options.title)
+          ? 'back'
+          : 'backto'
+        : false;
+    },
+
+    previousTitle() {
+      const title = (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
+        ? this.state.content.contentsdata[this.state.content.contentsdata.length - 2].options.title
+        : null;
+      this.updatePreviousTitle = true;
+      this.$nextTick(() => this.updatePreviousTitle = false);
+      return title;
+    },
+
+    title() {
+      return this.sstate.gui.title;
+    },
+
+    disabled() {
+      return ApplicationState.gui.sidebar.disabled;
+    },
+
+    panelsinstack() {
+      return this.panels.length > 0;
+    },
+
+    showmainpanel() {
+      return this.components.length>0 && !this.panelsinstack;
+    },
+
+    componentname() {
+      return this.components.length ? this.components.slice(-1)[0].getTitle(): '';
+    },
+
+    panelname() {
+      return this.panels.length ? this.panels.slice(-1)[0].content.getTitle() : '';
+    },
+
+    // active panels on stack
+    fpanelsinstack(){
+      return this.stack.contentsdata.length>0;
+    },
+    
+    fpanelname(){
+      let name;
+      if (this.stack.contentsdata.length){
+        name = this.stack.contentsdata.slice(-1)[0].content.getTitle();
+      }
+      return name;
+    },
+    
+    closable() {
+      return floatbarService.closable;
+    }
+
   },
 
   methods: {
@@ -633,10 +1022,6 @@ export default {
       this.current_custom_modal_content = this.custom_modals.find(m => m.id === id).content;
     },
 
-    closePanel() {
-      sidebarService.closePanel();
-    },
-
     getLogoLink() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
     },
@@ -667,7 +1052,7 @@ export default {
 
         // create "Do Not Show Again" component
         const doNotShowAgainVueComponent = new (Vue.extend({
-          data: () => ({ id: uniqueId(), checked: false }),
+          data: () => ({ id: getUniqueDomId(), checked: false }),
           template: `
             <div style="display: flex; margin-top: 10px;">
               <input :id="id"
@@ -720,6 +1105,53 @@ export default {
       GUI.openChangeMapMenu();
     },
 
+    isNotLastCrumb(index) {
+      return index < this.breadcrumb.length - 1;
+    },
+
+    closeContent() {
+      GUI.closeContent();
+    },
+
+    closeMap() {
+      viewportService.closeMap();
+    },
+
+    gotoPreviousContent() {
+      GUI.popContent();
+    },
+
+    closeUserMessage() {
+      GUI.closeUserMessage();
+    },
+
+    moveFnc(e) {
+      e.preventDefault();
+      const size         = 'h' === this.state.split ? 'width' : 'height';
+      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : viewportService.SIDEBARWIDTH : $('#main-navbar').height();
+      const viewPortSize = $(this.$el)[size]();
+      let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
+      const { content, map } = viewportConstraints.resize;
+      if (mapSize > viewPortSize - content.min) {
+        mapSize = viewPortSize -  content.min;
+      } else if ( mapSize < map.min) {
+        mapSize = map.min;
+      }
+      viewportService.resizeViewComponents(this.state.split, { }, 100 - Math.round((mapSize / viewPortSize) * 100));
+    },
+
+    closePanel() {
+      sidebarService.closePanel();
+    },
+
+    closeAllPanels() {
+      sidebarService.closeAllPanels();
+    },
+
+    fclosePanel(){
+      floatbarService.closePanel();
+    }
+
   },
 
   watch: {
@@ -729,7 +1161,15 @@ export default {
         ApplicationService.changeLanguage(l);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
-    }
+    },
+
+    "stack.contentsdata"() {
+      const children = $("#g3w-floatbarpanel-placeholder").children();
+      children.forEach((child, index) => {
+        if (index == children.length-1) $(child).show();
+        else $(child).hide();
+      })
+    },
 
   },
 
@@ -753,7 +1193,7 @@ export default {
       ? this.appconfig.header_custom_links
         .filter(customitem => {
           if (customitem !== null) {
-            const id = customitem.id = uniqueId();
+            const id = customitem.id = getUniqueDomId();
             customitem.type === 'modal' && this.custom_modals.push({ id, content: customitem.content });
             let position = 1*(customitem.position || 0);
             position = position > 4 ? 4 : position < 0 || Number.isNaN(position)? 0 : position;
@@ -806,12 +1246,12 @@ export default {
     // Fixes the layout height in case min-height fails.
     const resize = function() {
       //Set the min-height of the content and sidebar based on the height of the document.
-      $(".content-wrapper, .right-side").css('min-height', $(window).height() - $('.main-footer').outerHeight());
-      $(".content-wrapper, .right-side").css('height',     $(window).height() - $('.main-footer').outerHeight());
-      $(".sidebar")                     .css({'height':    ($(window).height() - $(".navbar-header").height()) + "px", 'overflow-y': 'auto'});
-      $(".control-sidebar")             .css('max-height', $(window).innerHeight());
-      $('.g3w-sidebarpanel')            .css('height',     $(window).height() - $("#main-navbar").height());
-      $('#g3w-modal-overlay')           .css('height',     $(window).height());
+      $(".content-wrapper")  .css('min-height', $(window).height() - $('.main-footer').outerHeight());
+      $(".content-wrapper")  .css('height',     $(window).height() - $('.main-footer').outerHeight());
+      $(".sidebar")          .css({'height':    ($(window).height() - $(".navbar-header").height()) + "px", 'overflow-y': 'auto'});
+      $(".control-sidebar")  .css('max-height', $(window).innerHeight());
+      $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
+      $('#g3w-modal-overlay').css('height',     $(window).height());
     };
 
     resize();
@@ -933,6 +1373,18 @@ export default {
 
     document.body.classList.toggle('is-mobile', this.isMobile());
 
+    this.iframe = ApplicationState.iframe;
+    VM.$on('sidebaritemclick', () => $('.sidebar-toggle').click())
+
+    const handleResizeViewport = () => this.state.resized.start = true;
+    await this.$nextTick();
+    const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
+    this.media.matches = mediaQueryEventMobile.matches;
+    mediaQueryEventMobile.addListener(e => {
+      if (e.type === 'change') { this.media.matches = e.currentTarget.matches }
+    });
+    handleResizeViewport();
+
   },
 
 };
@@ -992,6 +1444,44 @@ export default {
   }
   .g3w-languages {
     min-width: 125px;
+  }
+  #g3w-sidebarpanel-header-placeholder {
+    overflow: hidden;
+    line-height: 14px;
+    font-size: 1.5em;
+    min-height: 35px;
+    border-bottom: 1px solid #FFF;
+    margin-bottom: 5px;
+  }
+  #disable-sidebar {
+    display: none;
+    position: absolute;
+    background-color: rgba(0,0,0,.3);
+    height: 100%;
+    width: 100%;
+    z-index: 10;
+  }
+  .content_breadcrumb {
+    font-size: 1.2em;
+    padding: 0 3px;
+    border-radius: 3px;
+  }
+  .close-panel-block {
+    overflow: hidden;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 1.4em;
+  }
+  .g3w_contents_back {
+    font-size: 0.8em;
+  }
+  .g3w_contents_back :is(.backto, .back) {
+    display: inline-block;
+    font-weight: bold;
+  }
+  .g3w_contents_back .backto {
+    margin-top: 5px;
+    cursor: pointer;
   }
   @media (max-width: 767px) {
     #g3w-small-screen-hamburger-sidebar { display: block; }

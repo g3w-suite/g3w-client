@@ -89,7 +89,6 @@ import Relations                                   from './Relations.vue';
 import RelationsPage                               from './RelationsPage.vue';
 import Search                                      from './Search.vue';
 import SearchPanel                                 from './SearchPanel.vue';
-import Sidebar                                     from './Sidebar.vue';
 import SidebarItem                                 from './SidebarItem.vue';
 import SidebarItemAction                           from './SidebarItemAction.vue';
 import SpatialBookMarkGroup                        from './SpatialBookMarkGroup.vue';
