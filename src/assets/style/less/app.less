@@ -188,8 +188,7 @@ body {
 
 :root {
   @media (max-width: 767px) {
-    .content-wrapper { margin-left: 0; }
-
+    .content-wrapper               { margin-left: 0; }
     //When opening the sidebar on small screens
     .sidebar-open .content-wrapper { transform: translate(@sidebar-width, 0); }
   }
@@ -640,12 +639,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 .main-header                                                              { position: relative; max-height: 100px; z-index: 1030; }
 .main-header > .navbar                                                    { transition: margin-left .3s ease-in-out; margin-bottom: 0; margin-left: 0; border: none; min-height: @navbar-height; border-radius: 0; }
 .layout-top-nav .main-header > .navbar                                    { margin-left: 0; }
-.main-header #navbar-search-input.form-control                            { background: rgba(255,255,255,.2); border-color: transparent; }
-.main-header #navbar-search-input.form-control:focus,
-.main-header #navbar-search-input.form-control:active                     { border-color: rgba(0,0,0,.1); background: rgba(255,255,255,.9); }
-.main-header #navbar-search-input.form-control::-moz-placeholder          { color: #ccc; opacity: 1; }
-.main-header #navbar-search-input.form-control:-ms-input-placeholder      { color: #ccc; }
-.main-header #navbar-search-input.form-control::-webkit-input-placeholder { color: #ccc; }
 .main-header .navbar-custom-menu,
 .main-header .navbar-right                                                { float: right; }
 .main-header .navbar-custom-menu li,
@@ -680,13 +673,10 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 
 .navbar-nav > .user-menu > .dropdown-menu > .user-body:before,
 .navbar-nav > .user-menu > .dropdown-menu > .user-body:after,
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a:before,
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a:after,
 .navbar-nav > .user-menu > .dropdown-menu > .user-footer:before,
 .navbar-nav > .user-menu > .dropdown-menu > .user-footer:after { content: " "; display: table; }
 
 .navbar-nav > .user-menu > .dropdown-menu > .user-body:after,
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a:after,
 .navbar-nav > .user-menu > .dropdown-menu > .user-footer:after { clear: both; }
 
 .dropdown-menu                                                                                                 { box-shadow: none; border-color: #eee; }
@@ -694,24 +684,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 .dropdown-menu > li > a > :is(.glyphicon,.fa, .ion)                                                            { margin-right: 10px; }
 .dropdown-menu > li > a:hover                                                                                  { background-color: lighten(@gray, 5%); color: #333; }
 .dropdown-menu > .divider                                                                                      { background-color: #eee; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu                           { width: 280px; padding: 0 0 0 0; margin: 0; top: 100%; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li                      { position: relative; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li.header               { border-radius: 4px 4px 0 0; background-color: #fff;  padding: 7px 10px; border-bottom: 1px solid #f4f4f4; color: #444444; font-size: 14px; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li.footer > a           { border-radius: 0 0 4px 4px; font-size: 12px; background-color: #fff; padding: 7px 10px; border-bottom: 1px solid #eee; color: #444 !important; text-align: center; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li.footer > a:hover     { text-decoration: none; font-weight: normal; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li .menu                { max-height: 200px; margin: 0; padding: 0; list-style: none; overflow-x: hidden; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li .menu > li > a       { display: block; white-space: nowrap; border-bottom: 1px solid #f4f4f4; }
-.navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li .menu > li > a:hover { background: #f4f4f4; text-decoration: none; }
-.navbar-nav > .notifications-menu > .dropdown-menu > li .menu > li > a                                         { color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 10px; }
-.navbar-nav > .notifications-menu > .dropdown-menu > li .menu > li > a > :is(.glyphicon,.fa,.ion)              { width: 20px; }
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a                                              { margin: 0; padding: 10px 10px; }
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a > div > img                                  { margin: auto 10px auto auto; width: 40px; height: 40px; }
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a > h4                                         { padding: 0; margin: 0 0 0 45px; color: #444; font-size: 15px; position: relative; }
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a > h4 > small                                 { color: #999;  font-size: 10px; position: absolute; top: 0; right: 0; }
-.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a > p                                          { margin: 0 0 0 45px; font-size: 12px; color: #888; }
-.navbar-nav > .tasks-menu    > .dropdown-menu > li .menu > li > a                                              { padding: 10px; }
-.navbar-nav > .tasks-menu    > .dropdown-menu > li .menu > li > a > h3                                         { font-size: 14px; padding: 0; margin: 0 0 10px 0; color: #666; }
-.navbar-nav > .tasks-menu    > .dropdown-menu > li .menu > li > a > .progress                                          { padding: 0; margin: 0; }
 .navbar-nav > .user-menu > .dropdown-menu                                                                      { border-top-right-radius: 0; border-top-left-radius: 0; padding: 1px 0 0 0; border-top-width: 0; width: 280px; }
 .navbar-nav > .user-menu > .dropdown-menu > .user-body                                                         { border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; }
 .navbar-nav > .user-menu > .dropdown-menu > li.user-header                                                     { height: 175px; padding: 10px; text-align: center; }
@@ -804,7 +776,6 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
     .navbar-collapse.pull-left + .navbar-custom-menu        { display: block; position: absolute; top: 0; right: 40px; }
 
     .navbar-nav > .user-menu > .dropdown-menu > .user-footer .btn-default:hover                          { background-color: #f9f9f9; }
-    .navbar-nav > :is(.notifications-menu, .messages-menu, .tasks-menu) > .dropdown-menu > li.footer > a { background: #fff !important; color: #444 !important; }
     .navbar-nav > .user-menu > .dropdown-menu > .user-body a                                             { background: #fff !important; color: #444 !important; }
     .navbar-nav > .user-menu .user-image                                                                 { float: none; margin-right: 0; margin-top: -8px; line-height: 10px; }
     .navbar-custom-menu > .navbar-nav                                                                    { float: right; }
