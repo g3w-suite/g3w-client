@@ -1246,8 +1246,8 @@ export default {
     // Fixes the layout height in case min-height fails.
     const resize = function() {
       //Set the min-height of the content and sidebar based on the height of the document.
-      $(".content-wrapper")  .css('min-height', $(window).height() - $('.main-footer').outerHeight());
-      $(".content-wrapper")  .css('height',     $(window).height() - $('.main-footer').outerHeight());
+      $(".content-wrapper")  .css('min-height', $(window).height());
+      $(".content-wrapper")  .css('height',     $(window).height());
       $(".sidebar")          .css({'height':    ($(window).height() - $(".navbar-header").height()) + "px", 'overflow-y': 'auto'});
       $(".control-sidebar")  .css('max-height', $(window).innerHeight());
       $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
@@ -1294,8 +1294,8 @@ export default {
           $this.parent("li").addClass('active');
           //Fix the layout in case the sidebar stretches over the height of the window
           //Set the min-height of the content and sidebar based on the height of the document.
-          $(".content-wrapper, .right-side").css('min-height', $(window).height() - $('.main-footer').outerHeight());
-          $(".content-wrapper, .right-side").css('height',     $(window).height() - $('.main-footer').outerHeight());
+          $(".content-wrapper").css('min-height', $(window).height());
+          $(".content-wrapper").css('height',     $(window).height());
         });
       }
       //if this isn't a link, prevent the page from being redirected

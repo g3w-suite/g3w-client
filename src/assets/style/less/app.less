@@ -177,37 +177,26 @@ body {
 
 /*
  * Content Wrapper - contains the main content
- * .right-side has been deprecated as of v2.0.0 in favor of .content-wrapper
  */
-.content-wrapper,
-.right-side,
-.main-footer {
+.content-wrapper {
   transition: transform .3s ease-in-out, margin .3s ease-in-out;
   margin-left: @sidebar-width;
   z-index: 820;
 }
 
-.layout-top-nav .content-wrapper,
-.layout-top-nav .right-side,
-.layout-top-nav .main-footer { margin-left: 0; }
+.layout-top-nav .content-wrapper { margin-left: 0; }
 
 :root {
   @media (max-width: 767px) {
-    .content-wrapper,
-    .right-side,
-    .main-footer { margin-left: 0; }
+    .content-wrapper { margin-left: 0; }
 
     //When opening the sidebar on small screens
-    .sidebar-open .content-wrapper,
-    .sidebar-open .right-side,
-    .sidebar-open .main-footer { transform: translate(@sidebar-width, 0); }
+    .sidebar-open .content-wrapper { transform: translate(@sidebar-width, 0); }
   }
 
   @media (min-width: 768px) {
     //When opening the sidebar on large screens
-    .sidebar-collapse .content-wrapper,
-    .sidebar-collapse .right-side,
-    .sidebar-collapse .main-footer { margin-left: 0; }
+    .sidebar-collapse .content-wrapper { margin-left: 0; }
   }
 }
 
@@ -590,17 +579,14 @@ table.text-center :is(td, th)                        { text-align: center; }
 .chart svg,
 .chart canvas                             { width: 100%!important; }
 
-.content-wrapper,
-.right-side  { min-height: 100%; background-color: #ecf0f5; z-index: 800; }
-.main-footer { background: #fff; padding: 15px; color: #444; border-top: 1px solid @gray; }
+.content-wrapper      { min-height: 100%; background-color: #ecf0f5; z-index: 800; }
 
  /* Fixed layout */
 .main-header,
 .main-sidebar,
 .left-side            { position: fixed; }
 .main-header          { top: 0; right: 0; left: 0; }
-.content-wrapper,
-.right-side           { padding-top: 50px; }
+.content-wrapper      { padding-top: 50px; }
 
  /* Content */
 .content {
@@ -637,9 +623,7 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 
 :root {
   @media (max-width: 767px) {
-    .sidebar-open .content-wrapper,
-    .sidebar-open .right-side,
-    .sidebar-open .main-footer            { transform: translate(300px,0); }
+    .sidebar-open .content-wrapper        { transform: translate(300px,0); }
   }
   @media (min-width: 768px) {
     .container-fluid  > .navbar-collapse,
@@ -974,9 +958,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
     .sidebar-collapse .left-side { transform: translate(-@sidebar-width, 0); }
 
     //Apply the new margining to the main content and footer
-    .sidebar-mini.sidebar-collapse .content-wrapper,
-    .sidebar-mini.sidebar-collapse .right-side,
-    .sidebar-mini.sidebar-collapse .main-footer                                 { margin-left: 40px!important; z-index: 840; }
+    .sidebar-mini.sidebar-collapse .content-wrapper                             { margin-left: 40px!important; z-index: 840; }
     .sidebar-mini.sidebar-collapse .main-sidebar                                { transform: translate(0, 0); width: 35px !important; z-index: 850; }
     .sidebar-mini.sidebar-collapse .sidebar-menu > li                           { position: relative; }
     .sidebar-mini.sidebar-collapse .sidebar-menu > li > a                       { margin-right: 0; }
@@ -1147,9 +1129,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
   }
   
   @media (min-width: 768px) {
-    .control-sidebar-open .content-wrapper,
-    .control-sidebar-open .right-side,
-    .control-sidebar-open .main-footer { margin-right: 450px; }
+    .control-sidebar-open .content-wrapper { margin-right: 450px; }
   }
 
   @media (max-width: 767px) {
@@ -1714,11 +1694,8 @@ input[type="range"]::-ms-thumb:hover                                            
   .left-side,
   .main-header,
   .content-header                           { display: none!important; }
-  .content-wrapper,
-  .right-side,
-  .main-footer                              { margin-left: 0!important; min-height: 0!important; transform: translate(0,0)!important; }
-  .content-wrapper,
-  .right-side                               { padding-top: 0!important; }
+  .content-wrapper                          { margin-left: 0!important; min-height: 0!important; transform: translate(0,0)!important; }
+  .content-wrapper                          { padding-top: 0!important; }
   .invoice                                  { width: 100%; border: 0; margin: 0; padding: 0; }
   .invoice-col                              { float: left; width: 33.3333333%; }
   .table-responsive                         { overflow: auto; }
