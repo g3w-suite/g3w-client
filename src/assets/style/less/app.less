@@ -169,11 +169,7 @@ body {
 
 /* Layout */
 
-/* clear fix */
-.wrapper:before, .wrapper:after { content: " "; display: table; }
-.wrapper:after                  { clear: both; }
-
-.wrapper               { min-height: 100%; position: static; overflow: hidden; }
+.wrapper               { height: 100%; width: 100%; overflow: hidden; }
 
 /*
  * Content Wrapper - contains the main content
@@ -183,8 +179,8 @@ body {
   margin-left: @sidebar-width;
   min-height: 100%;
   background-color: #ecf0f5;
-  z-index: 800;
   padding-top: 50px;
+  position: relative;
 }
 
 :root {
@@ -920,9 +916,8 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
  * 5. Viewport
  **************************************************************************************/
 
-.g3w-viewport                                                                    { position: relative; background: #fff; overflow:hidden; line-height: 0; }
-.g3w-viewport #application-notifications                                         { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 100; font-size: 25px; }
-.g3w-viewport #application-notifications > div                                   { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; padding: 5px; background-color: #FFF; border-radius: 3px; }
+.content-wrapper #application-notifications                                      { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 100; font-size: 25px; }
+.content-wrapper #application-notifications > div                                { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; padding: 5px; background-color: #FFF; border-radius: 3px; }
 .g3w-view.map                                                                    { line-height: normal; display:inline-block; height:0; width:0; position: relative; }
 .g3w-view.map #resize-map-and-content                                            { position: absolute; z-index:4; user-select: none; }
 .g3w-view.map #resize-map-and-content:hover                                      { background-color: #ccc !important; }

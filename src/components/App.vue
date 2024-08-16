@@ -399,8 +399,6 @@
       class  = "content-wrapper"
       :style = "{paddingTop: isIframe ? 0 : null}"
     >
-      <div class = "g3w-viewport">
-
         <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
           <user-message
             v-if               = "usermessage.show"
@@ -535,7 +533,6 @@
             </div>
           </div>
           <bar-loader :loading = "state.content.loading"/>
-        </div>
         </div>
     </div>
 
@@ -1265,9 +1262,6 @@ export default {
 
     // Fixes the layout height in case min-height fails.
     const resize = function() {
-      //Set the min-height of the content and sidebar based on the height of the document.
-      $(".content-wrapper")  .css('min-height', $(window).height());
-      $(".content-wrapper")  .css('height',     $(window).height());
       $(".sidebar")          .css({'height':    ($(window).height() - $(".navbar-header").height()) + "px", 'overflow-y': 'auto'});
       $(".control-sidebar")  .css('max-height', $(window).innerHeight());
       $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
@@ -1312,10 +1306,6 @@ export default {
           next.addClass('menu-open');
           parent.find('li.treeview.active').removeClass('active');
           $this.parent("li").addClass('active');
-          //Fix the layout in case the sidebar stretches over the height of the window
-          //Set the min-height of the content and sidebar based on the height of the document.
-          $(".content-wrapper").css('min-height', $(window).height());
-          $(".content-wrapper").css('height',     $(window).height());
         });
       }
       //if this isn't a link, prevent the page from being redirected
