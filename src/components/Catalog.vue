@@ -259,10 +259,6 @@
 
     </div>
 
-    <catalog-layer-context-menu :external="state.external" />
-
-    <catalog-project-context-menu />
-
   </div>
 </template>
 
@@ -275,8 +271,6 @@ import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 
 import CatalogChangeMapThemes      from 'components/CatalogChangeMapThemes.vue';
-import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
-import CatalogProjectContextMenu   from 'components/CatalogProjectContextMenu.vue';
 import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
 
 /**
@@ -308,8 +302,6 @@ export default {
 
   components: {
     CatalogChangeMapThemes,
-    CatalogLayerContextMenu,
-    CatalogProjectContextMenu,
     CatalogTristateTree,
   },
 

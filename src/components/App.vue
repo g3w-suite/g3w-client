@@ -18,7 +18,6 @@
         slot="message"
         v-t="'cookie_law.message'">
       </div>
-
     </cookie-law>
 
     <header
@@ -567,12 +566,14 @@
         </div>
         <div id="g3w-floatbarpanel-placeholder" class="g3w-floatbarpanel-placeholder"></div>
       </div>
+      <catalog-layer-context-menu />
+      <catalog-project-context-menu />
     </aside>
 
     <!-- Sidebar's background, must be placed immediately after the control sidebar -->
     <div class="control-sidebar-bg"></div>
 
-    <!--full screen modal element-->
+    <!-- MODAL (FULL SCREEN) -->
     <div
       class           = "modal fade modal-fullscreen force-fullscreen"
       id              = "full-screen-modal"
@@ -581,10 +582,10 @@
       data-backdrop   = "static"
       data-keyboard   = "false"
       aria-labelledby = "full-screen-modal"
-      aria-hidden     = "true">
-    </div>
+      aria-hidden     = "true"
+    ></div>
 
-    <!-- CREDITS -->
+    <!-- MODAL CREDITS -->
     <div
       id    = "credits"
       class = "modal fade"
@@ -742,6 +743,8 @@ import { resizeMixin }           from "mixins";
 
 import HeaderItem                from "components/HeaderItem.vue";
 import userMessage               from 'components/UserMessage.vue';
+import CatalogLayerContextMenu   from 'components/CatalogLayerContextMenu.vue';
+import CatalogProjectContextMenu from 'components/CatalogProjectContextMenu.vue';
 import getUniqueDomId            from 'utils/getUniqueDomId';
 
 const { t }        = require('core/i18n/i18n.service');
@@ -802,6 +805,8 @@ export default {
     HeaderItem,
     CookieLaw,
     userMessage,
+    CatalogLayerContextMenu,
+    CatalogProjectContextMenu,
   },
 
   computed: {
@@ -1012,7 +1017,7 @@ export default {
     
     closable() {
       return floatbarService.closable;
-    }
+    },
 
   },
 

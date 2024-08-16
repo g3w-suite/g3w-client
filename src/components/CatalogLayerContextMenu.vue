@@ -921,7 +921,7 @@
       getGeometryType(layerId, external=false) {
         let geometryType;
         if (external) {
-          const layer = this.external.vector.find(layer => layer.id === layerId);
+          const layer = GUI.getService('catalog').state.external.vector.find(layer => layer.id === layerId);
           if (layer) geometryType = layer.geometryType;
         } else {
           const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
