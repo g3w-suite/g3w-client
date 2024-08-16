@@ -361,7 +361,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
         GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
         await this.$nextTick();
         self.emit('ready');
-        self.sizes.sidebar.width = $('#g3w-sidebar').width();
+        self.sizes.sidebar.width = $('.main-sidebar').width();
         //getSkinColor
         GUI.ready();
       }

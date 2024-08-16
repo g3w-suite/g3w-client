@@ -216,7 +216,7 @@
         if (this.isMobile()) {
           const top = $(e.target).position().top - 10 ;
           await this.$nextTick();
-          setTimeout(() => $('.sidebar').scrollTop(top), 500);
+          setTimeout(() => $('.main-sidebar').scrollTop(top), 500);
         }
       },
 

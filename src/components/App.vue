@@ -307,14 +307,14 @@
     <aside>
       <div
         class  = "main-sidebar"
-        :class = "{ iframe: iframe}"
+        :class = "{ iframe: iframe, 'g3w-disabled': disabled }"
       >
         <!-- SIDEBAR CONTENT -->
-        <div
+        <!-- <div
           id     = "g3w-sidebar"
           class  = "sidebar"
           :class = "{ 'g3w-disabled': disabled }"
-        >
+        > -->
           <div id="disable-sidebar"></div>
 
           <div
@@ -368,16 +368,14 @@
             ></div>
           </div>
 
-          <div id = "g3w-sidebarcomponents-content" >
-            <ul
-              id     = "g3w-sidebarcomponents"
-              v-show = "showmainpanel"
-              class  = "sidebar-menu"
-              :class = "{ 'g3w-disabled': sstate.disabled }"
-            ></ul>
-          </div>
+          <ul
+            id     = "g3w-sidebarcomponents"
+            v-show = "showmainpanel"
+            class  = "sidebar-menu"
+            :class = "{ 'g3w-disabled': sstate.disabled }"
+          ></ul>
 
-        </div>
+        <!-- </div> -->
 
       </div>
       <!-- TOGGLE BUTTON (desktop only) -->
@@ -1274,7 +1272,7 @@ export default {
 
     // Fixes the layout height in case min-height fails.
     const resize = function() {
-      $(".sidebar")          .css({'height':    ($(window).height() - $(".navbar-header").height()) + "px", 'overflow-y': 'auto'});
+      $(".main-sidebar")      .css('height',    ($(window).height() - $(".navbar-header").height()) + "px");
       $(".control-sidebar")  .css('max-height', $(window).innerHeight());
       $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
       $('#g3w-modal-overlay').css('height',     $(window).height());
@@ -1284,7 +1282,7 @@ export default {
     $(window, ".wrapper").resize(resize);
 
     // toggle sidebar tree items on click
-    $(document).on('click', '.sidebar li a', function (e) {
+    $(document).on('click', '.main-sidebar li a', function (e) {
 
       // Expand on click for sidebar mini
       if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > 767) {
