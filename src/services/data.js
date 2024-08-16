@@ -36,19 +36,19 @@ const DataService = {
    */
   ouputplaces: {
 
-    async gui(dataPromise, options = {}) {
+    async gui(promise, opts = {}) {
       GUI.setLoadingContent(true);
       try {
-        GUI.outputDataPlace(dataPromise, options);
-        await dataPromise;
+        GUI.outputDataPlace(promise, opts);
+        await promise;
       } catch(e) {
         console.warn(e);
       }
       GUI.setLoadingContent(false);
     },
 
-    async iframe(dataPromise, options = {}) {
-      IFrameRouterService.outputDataPlace(dataPromise, options);
+    async iframe(promise, opts = {}) {
+      IFrameRouterService.outputDataPlace(promise, opts);
     }
 
   },
@@ -60,16 +60,16 @@ const DataService = {
    * @returns {Promise<void>}
    */
   async getData(contextAndMethod, options = {}) {
-    const { context, method }     = splitContextAndMethod(contextAndMethod);
-    const service                 = DataService.getService(context);
-    const {inputs={}, outputs={}} = options;
+    const { context, method }           = splitContextAndMethod(contextAndMethod);
+    const service                       = DataService.getService(context);
+    const { inputs = {}, outputs = {} } = options;
     //return a promise and not the data
-    const dataPromise = service[method](inputs);
+    const promise = service[method](inputs);
     if (outputs) {
-      DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](dataPromise, outputs));
+      DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](promise, outputs));
     }
     //return always data
-    return await (await dataPromise);
+    return await (await promise);
   },
 
   /**
@@ -82,10 +82,10 @@ const DataService = {
   /**
    * Set a costum datapromiseoutput to applicationa outputs settede
    * 
-   * @param dataPromise
+   * @param promise
    */
-  showCustomOutputDataPromise(dataPromise) {
-    DataService.currentoutputplaces.forEach(place => DataService.ouputplaces[place](dataPromise, {}));
+  showCustomOutputDataPromise(promise) {
+    DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](promise, {}));
   },
 
   /**
@@ -105,7 +105,7 @@ const DataService = {
    * @param place
    */
   addCurrentOutputPlace(place) {
-    if (place && -1 === DataService.currentoutputplaces.indexOf(place)) {
+    if (place && !DataService.currentoutputplaces.includes(place)) {
       DataService.currentoutputplaces.push(place);
     }
   },
@@ -119,12 +119,11 @@ const DataService = {
    *   }
    */
   addNewOutputPlace({ place, method = () => {} } = {}) {
-    let added = false;
     if (undefined === DataService.ouputplaces[place] ) {
       DataService.ouputplaces[place] = method;
-      added = true;
+      return true;
     }
-    return added;
+    return false;
   },
 
   // reset default configuration
@@ -184,10 +183,10 @@ DataService.init = async () => {
         if (!geometry) {
           return this.returnExceptionResponse({
             usermessage: {
-              type: 'warning',
-              message: `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+              type:        'warning',
+              message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
               messagetext: true,
-              autoclose: false
+              autoclose:   false
             }
           });
         }
@@ -327,7 +326,7 @@ DataService.init = async () => {
 
         if (Array.isArray(layerIds)) {
           layerIds.forEach(id => {
-            if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
+            if (!layersFilterObject.IDS) { layersFilterObject.IDS = []; }
             layersFilterObject.IDS.push(id);
           });
         }
@@ -371,10 +370,9 @@ DataService.init = async () => {
         return new Promise((resolve, reject) => {
           request
             .then(response => {
-              const results = this.handleResponse(response, query);
-              resolve(results);
+              resolve(this.handleResponse(response, query));
             })
-            .fail(reject)
+            .fail(e => { console.warn(e); reject(e) })
         })
       }
 
@@ -451,14 +449,14 @@ DataService.init = async () => {
     
         // if 'api' or 'ows' search_endpoint
         if ('api' === params.search_endpoint) {
-          promises = layers.map((layer, i) => layer.searchFeatures({ ...params, filter: params.filter[i] }));
+          promises = layers.map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }));
         } else {
           promises = [new Promise((resolve, reject) => {
             layers[0]                                                  // get query provider for get one request only
             .getProvider('search')
             .query({ ...params, layers, ...layers[0].getSearchParams() /* get search params*/ })
             .then(data => { resolve(data)})
-            .fail(reject)
+            .fail(e => { console.warn(e); reject(e) })
           })];
         }
     
@@ -478,7 +476,7 @@ DataService.init = async () => {
         return {
           data,
           query: {
-            type: 'search',
+            type:   'search',
             search: filter,
           },
           type: params.search_endpoint,
@@ -505,8 +503,8 @@ DataService.init = async () => {
           if (feats) {
             feats.forEach(f => features.push(createOlFeatureFromApiResponseFeature(f)));
           }
-        } catch(err) {
-          console.warn(err);
+        } catch(e) {
+          console.warn(e);
         }
         return {
           data: [{
@@ -536,8 +534,8 @@ DataService.init = async () => {
         layers.forEach((layer, i) => { promises.push(this.fids({ layer, fids: fids[i], formatter })) });
         try {
           (await Promise.all(promises)).forEach(response => { data.push(response.data) });
-        } catch(err) {
-          console.warn(err);
+        } catch(e) {
+          console.warn(e);
         }
         return {
           data,
@@ -577,8 +575,9 @@ DataService.init = async () => {
               params
             })
           );
-        } catch(err) {
-          return Promise.reject(err);
+        } catch(e) {
+          console.warn(e);
+          return Promise.reject(e);
         }
 
       }
@@ -599,7 +598,7 @@ DataService.init = async () => {
        * 
        * @returns { Promise<void> }
        */
-      expression_eval(params={}) {
+      expression_eval(params = {}) {
         return this.handleRequest({
           url: this.project.getUrl('expression_eval'),
           params
@@ -639,7 +638,7 @@ DataService.init = async () => {
        * @param data: Object conitans data to pass to proxy
        * @returns {Promise<{data: string, response: *}>}
        */
-      async wms({url, method='GET', params={}, headers={}}={}) {
+      async wms({ url, method='GET', params={}, headers={} } = {}) {
         let proxyUrl = `${ApplicationService.getProxyUrl()}`;
         if (method === 'GET') {
           url = new URL(url);
@@ -662,7 +661,8 @@ DataService.init = async () => {
             response,
             data
           };
-        } catch(err) {
+        } catch(e) {
+          console.warn(e);
           return;
         }
       }
@@ -671,7 +671,7 @@ DataService.init = async () => {
        * Generic proxy data function
        * @param params
        */
-      data(params={}) {}
+      data(params = {}) {}
     }),
 
     /**
@@ -690,14 +690,14 @@ DataService.init = async () => {
             url,
             service: "wms"
           };
-          const data = JSON.stringify(params);
-          const response = await XHR.post({
+          const data     = JSON.stringify(params);
+          return await XHR.post({
             url: owsUrl,
             contentType: 'application/json',
             data
           });
-          return response;
-        } catch(err) {
+        } catch(e) {
+          console.warn(e);
           return;
         }
       }
@@ -735,7 +735,7 @@ class BaseService {
    * 
    * @since 3.8.0
    */
-  getSelectedExternalLayers({type = 'vector'}) {
+  getSelectedExternalLayers({ type = 'vector' } = {}) {
     return GUI.getService('catalog').state.external[type].filter(l => l.selected);
   }
 
@@ -755,7 +755,7 @@ class BaseService {
    * 
    * @since 3.8.0
    */
-  hasExternalLayerSelected({type = 'vector'}) {
+  hasExternalLayerSelected({ type = 'vector' } = {}) {
     return this.getSelectedExternalLayers({ type }).length > 0;
   }
 
