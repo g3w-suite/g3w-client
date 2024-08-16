@@ -120,17 +120,17 @@ class IframePluginService {
    * 
    * @returns { Promise<void> }
    */
-  async outputDataPlace(dataPromise, options = {}){
+  async outputDataPlace(dataPromise, options = {}) {
+    let outputData;
     const { action = 'app:results' } = options;
-    let { result, data = [] } = await dataPromise;
-    const parser = new ol.format.GeoJSON();
-    let outputData = [];
-
+    let { result, data = [] }        = await dataPromise;
+    const parser                     = new ol.format.GeoJSON();
     try {
       outputData = data.map(({ layer, features }) => ({ [layer.getId()]: { features: parser.writeFeatures(features) } }));
-    } catch(err) {
-      result = false;
-      outputData = err;
+    } catch(e) {
+      console.warn(e);
+      result     = false;
+      outputData = e;
     }
 
     this.postMessage({
@@ -163,9 +163,14 @@ class IframePluginService {
    */
   async getMessage(evt) {
     if (evt && evt.data) {
-      const { id = uniqueId(), single = true, action, data:params } = evt.data;
+      const {
+        id =     uniqueId(),
+        single = true,
+        action,
+        data: params
+      }                         = evt.data;
       const { context, method } = splitContextAndMethod(action);
-      let result = false;
+      let result                = false;
       let data;
       try {
         const is_ready = this.services[context].getReady();
@@ -177,9 +182,10 @@ class IframePluginService {
           data = await this.services[context][method](params);
           result = true;
         }
-      } catch(err) {
+      } catch(e) {
+        console.warn(e);
         result = false;
-        data = err;
+        data   = e;
       }
       this.postMessage({
         id,
@@ -274,7 +280,7 @@ class BaseIframeService extends G3WObject {
       PluginsRegistry
         .onafter('registerPlugin', async plugin => {
           await plugin.isReady();
-          if (plugin.getName() === this.pluginName) {
+          if (this.pluginName === plugin.getName()) {
             this.setDependencyApi(plugin.getApi());
             this.setReady(true);
           }
@@ -465,7 +471,7 @@ class AppService extends BaseIframeService {
   }
 
   /**
-   * @returns { Promise<void> }
+   * @returns { Promise<Array> }
    */
   async results({
     capture = true,
@@ -495,8 +501,9 @@ class AppService extends BaseIframeService {
       let response;
       try {
         response = { result: true, data: await this.mapService.createMapImage() };
-      } catch(err) {
-        response = { result: false, data: err };
+      } catch(e) {
+        console.warn(e);
+        response = { result: false, data: e };
       } finally {
         this.emit('response', { response, action: 'app:screenshot' });
       }
@@ -537,13 +544,13 @@ class AppService extends BaseIframeService {
       coordinates = [],
       epsg,
     } = params;
-    // skip when ..
+    // skip when coordinates in params are null or are an array with more than item 2
     if (!(coordinates && Array.isArray(coordinates) && 2 === coordinates.length)) {
       return Promise.reject(coordinates);
     }
     if (undefined !== epsg) {
       // normalized psg code
-      epsg = await _getEpsgFromParam(epsg);
+      epsg        = await _getEpsgFromParam(epsg);
       coordinates = ol.proj.transform(coordinates, epsg, this.mapService.getEpsg());
     }
     this.mapService.zoomTo(coordinates);
@@ -579,14 +586,14 @@ class AppService extends BaseIframeService {
    * @returns { Promise<Array> }
    */
   async zoomtoextent(params = {}) {
-    let { extent=[], epsg } = params;
-    // skip when ..
+    let { extent = [], epsg } = params;
+    // skip when an extent is null ora an array with number of ites not equal to 4
     if (!(extent && Array.isArray(extent) && 4 === extent.length)) {
       return Promise.reject(extent);
     }
-    /** @FIXME add description */
+    /** If epsg is provide, get epsg definition */
     if (undefined !== epsg) {
-      epsg = _getEpsgFromParam(epsg);
+      epsg   = _getEpsgFromParam(epsg);
       extent = ol.proj.transformExtent(extent, epsg, this.mapService.getEpsg());
     } else {
       this.mapService.goToBBox(extent);
@@ -687,7 +694,7 @@ class EditingService extends BaseIframeService {
         //set currenttoolbocx id in editing to null
         if (false === bool) {
           this.responseObject.qgs_layer_id = null;
-          this.responseObject.error = null;
+          this.responseObject.error        = null;
         }
         activeTool.setEnabled(!bool);
         disableToolboxes.forEach(toolbox => toolbox.setEditing(!bool))
@@ -755,7 +762,7 @@ class EditingService extends BaseIframeService {
     // set same mode autosave
     this.dependencyApi.setSaveConfig({
       cb: {
-        // called when commit changes is done successuffly
+        // called when commit changes are done successuffly
         done: toolbox => {
           //set toolbox id
           this.responseObject.cb           = resolve;
@@ -773,7 +780,7 @@ class EditingService extends BaseIframeService {
       }
     });
 
-    // set toolboxes visible base on value of qgs_layer_id
+    // set toolboxes visible base on the value of qgs_layer_id
     this.dependencyApi.showPanel({ toolboxes });
 
     this.isRunning = true;
@@ -802,11 +809,11 @@ class EditingService extends BaseIframeService {
    * Reset subscriber editing plugin events
    */
   resetSubscribeEvents() {
-    this.subscribevents.forEach((d) => { this.dependencyApi.unsubscribe(d.event, d.handler); });
+    this.subscribevents.forEach(d => { this.dependencyApi.unsubscribe(d.event, d.handler); });
   };
 
   /**
-   * Called whe we want add a feature
+   * Called whe we want to add a feature
    * 
    * @param { Object } config
    * @param config.qgs_layer_id
@@ -821,7 +828,7 @@ class EditingService extends BaseIframeService {
         return reject();
       }
 
-      // extract `qgs_layer_id9` from configuration message
+      // extract `qgs_layer_id9` from a configuration message
       const { qgs_layer_id: configQglLayerId, ...data } = config;
       const { properties }                              = data;
 
@@ -862,7 +869,7 @@ class EditingService extends BaseIframeService {
   }
 
   /**
-   * Called when we want update a know feature field
+   * Called when we want to update a know feature field
    * 
    * @param config
    * 
@@ -885,9 +892,9 @@ class EditingService extends BaseIframeService {
       const response = await this.findFeaturesWithGeometry({
         qgs_layer_id,
         feature,
-        zoom: true,
+        zoom:      true,
         highlight: true,
-        selected: 1 === qgs_layer_id.length // set selected toolbox
+        selected:  1 === qgs_layer_id.length // set selected toolbox
       });
 
       // skip when ..
@@ -928,14 +935,14 @@ class EditingService extends BaseIframeService {
    */
   async startEditing(qgs_layer_id = [], options = {}) {
     const { action = 'add', feature } = options;
-    const filter = {};
-    options.filter = filter;
+    const filter                      = {};
+    options.filter                    = filter;
     switch (action) {
       case 'add':    filter.nofeatures = true;                                   break;
       case 'update': filter.field      = `${feature.field}|eq|${feature.value}`; break;
     }
     const promises = [];
-    qgs_layer_id.forEach(layerid => { promises.push(this.dependencyApi.startEditing(layerid, options)) });
+    qgs_layer_id.forEach(id => { promises.push(this.dependencyApi.startEditing(id, options)) });
     return await Promise.allSettled(promises);
   }
 
@@ -948,7 +955,7 @@ class EditingService extends BaseIframeService {
    */
   async stopEditing(qgs_layer_id) {
     const promises = [];
-    qgs_layer_id.forEach(layerid => { promises.push(this.dependencyApi.stopEditing(layerid)); });
+    qgs_layer_id.forEach(id => { promises.push(this.dependencyApi.stopEditing(id)); });
     await Promise.allSettled(promises);
     this.clear();
   }
