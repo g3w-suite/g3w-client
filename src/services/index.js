@@ -1,6 +1,5 @@
 import ApiService          from './api';
 import ApplicationService  from './application';
-import ClipboardService    from './clipboard';
 import DataService         from './data';
 import GUI                 from './gui';
 import HistoryService      from './history';
@@ -19,7 +18,6 @@ import ViewportService     from './viewport';
 export {
   ApiService,
   ApplicationService,
-  ClipboardService,
   DataService,
   GUI,
   HistoryService,

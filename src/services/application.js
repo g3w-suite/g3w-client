@@ -15,7 +15,6 @@ import DataRouterService from 'services/data';
 import PluginsRegistry   from 'store/plugins';
 import ProjectsRegistry  from 'store/projects';
 import ApiService        from 'services/api';
-import ClipboardService  from 'services/clipboard';
 import RouterService     from 'services/router';
 import GUI               from 'services/gui';
 
@@ -351,13 +350,6 @@ const ApplicationService = function() {
    */
   this.getInterfaceOwsUrl = function() {
     return `${this._initConfig.interfaceowsurl}`;
-  };
-
-  /**
-   * clipboard service
-   */
-  this.getClipboardService = function() {
-    return ClipboardService;
   };
 
   /**
