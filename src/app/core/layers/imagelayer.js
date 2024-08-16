@@ -143,7 +143,7 @@ class RasterLayer extends G3WObject {
       };
   
       /** @since 3.10.0 - MapProxy WMTS layer **/
-      const resolutions = 'mapproxy' === layerObj.cache_provider && ol.tilegrid.createXYZ({ extent: opts.cache_grid_extent }).getResolutions();
+      const resolutions = 'mapproxy' === layerObj.cache_provider && ol.tilegrid.createXYZ({ extent: layerObj.cache_grid_extent }).getResolutions();
   
       olLayer = resolutions
         ? new ol.layer.Tile({
