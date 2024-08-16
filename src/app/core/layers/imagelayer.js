@@ -173,7 +173,7 @@ class RasterLayer extends G3WObject {
     else if ('XYZ' === this.config.type) {
       const projection = this.config.url && this.projection ? this.projection : this.layer.getProjection();
 
-      this._olLayer = new ol.layer.Tile({
+      olLayer = new ol.layer.Tile({
         visible:    true,
         projection,
         source:     new ol.source.XYZ({
