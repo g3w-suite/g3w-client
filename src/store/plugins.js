@@ -175,10 +175,10 @@ export default new (class PluginsRegistry extends G3WObject {
  */
 function _loadScript(url) {
   return new Promise(function(resolve, reject) {
-    const s = document.createElement('script');
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Failed to load script: ' + url));
-    s.src = url;
+    const s   = document.createElement('script');
+    s.onload  = resolve;
+    s.onerror = e => { console.warn(e); reject(new Error('Failed to load script: ' + url)) };
+    s.src     = url;
     document.head.appendChild(s);
   });
 }
