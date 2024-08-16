@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div id = "open_attribute_table" style = "margin-top: 5px">
+  <div id = "open_attribute_table">
 
     <!-- TABLE TOOLBAR -->
     <!-- ORIGINAL SOURCE: src/components/TableToolBar.vue@3.9.7 -->
@@ -173,7 +173,7 @@ function _createFeatureForSelection(f) {
     id: f.id,
     feature: {
       attributes: f.attributes || f.properties,
-      geometry: f.geometry ? coordinatesToGeometry(f.geometry.type, f.geometry.coordinates) : f.geometry,
+      geometry:   f.geometry ? coordinatesToGeometry(f.geometry.type, f.geometry.coordinates) : f.geometry,
     },
   }
 }
@@ -265,8 +265,8 @@ export default {
         await promisify(
           DataRouterService.getData('search:fids', {
             inputs: {
-              layer: this.layer,
-              fids: [feature.id],
+              layer:     this.layer,
+              fids:      [feature.id],
               formatter: 1
             }
           })
@@ -583,7 +583,7 @@ export default {
     unSelectAll() {
       this.state.features.forEach(f => f.selected = false);
       this.state.show_tools = false;
-      this.state.selectAll = false;
+      this.state.selectAll  = false;
     },
 
     /**
@@ -606,7 +606,7 @@ export default {
     //   table.columns.adjust(); // adjust column
     // },
 
-    onGUIContent(opts) {
+    onGUIContent(opts = {}) {
       this.has_map = (100 !== opts.perc);
     },
     /**
@@ -654,8 +654,8 @@ export default {
 
     GUI.showContent({
       content: new Component({
-        id: 'openattributetable',
-        service: { state: this.state },
+        id:                'openattributetable',
+        service:           { state: this.state },
         internalComponent: this,
       }),
       // perc: undefined !== this.$options.perc ? this.$options.perc : 55,
@@ -714,7 +714,7 @@ export default {
     this.changeColumn = debounce(async (e, i) => {
       const value = e.target.value.trim();
       table.one('draw', async() => {
-        filterColumns[i] = value;
+        filterColumns[i]      = value;
         this.disableSelectAll = 0 === this.state.features.length;
         this.filter           = Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [];
       })
@@ -755,7 +755,7 @@ export default {
     if (!this.has_map) {
       setTimeout(() => {
         this.async_highlight();
-        this.has_map = true;
+        this.has_map         = true;
         this.async_highlight = noop;
       });
     }
@@ -771,6 +771,11 @@ export default {
 </script>
 
 <style>
+
+#open_attribute_table {
+  margin-top: 5px;
+}
+
 #g3w-table-toolbar {
   margin: 0.755em 1ch 0 0;
   position: relative;
