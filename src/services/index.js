@@ -2,7 +2,6 @@ import ApiService          from './api';
 import ApplicationService  from './application';
 import DataService         from './data';
 import GUI                 from './gui';
-import HistoryService      from './history';
 import IframeService       from './iframe';
 import NavbaritemsService  from './navbaritems';
 import RelationsService    from './relations';
@@ -20,7 +19,6 @@ export {
   ApplicationService,
   DataService,
   GUI,
-  HistoryService,
   IframeService,
   NavbaritemsService,
   RelationsService,
