@@ -103,11 +103,23 @@
             style = "text-align: center; overflow: hidden; margin: 0 0;"
           >
 
-            <!-- TODO: add description -->
-            <navbarleftitems />
+            <!-- ORIGINAL SOURCE: src/components/NavbaritemsLeft.vue@v3.10.1 -->
+            <ul class = "nav navbar-nav navbar-left">
+              <li
+                v-for = "item in NavbarItemsService.state.items.right"
+                :is = "item"
+                :key = "item.id"
+              ></li>
+            </ul>
 
-            <!-- TODO: add description -->
-            <navbarrightitems />
+            <!-- ORIGINAL SOURCE: src/components/NavbaritemsRight.vue@v3.10.1 -->
+            <ul class = "nav navbar-nav navbar-right">
+              <li
+                v-for = "item in NavbarItemsService.state.items.right"
+                :is = "item"
+                :key = "item.id"
+              ></li>
+            </ul>
 
             <ul
               ref   = "app-navbar-nav"
@@ -543,10 +555,9 @@
       </div>
     </aside>
 
-    <!-- /.control-sidebar -->
-    <!-- Add the sidebar's background. This div must be placed
-         immediately after the control sidebar -->
+    <!-- Sidebar's background, must be placed immediately after the control sidebar -->
     <div class="control-sidebar-bg"></div>
+
     <!--full screen modal element-->
     <div
       class           = "modal fade modal-fullscreen force-fullscreen"
@@ -558,7 +569,8 @@
       aria-labelledby = "full-screen-modal"
       aria-hidden     = "true">
     </div>
-    <!---->
+
+    <!-- CREDITS -->
     <div
       id    = "credits"
       class = "modal fade"
@@ -711,6 +723,7 @@ import GUI                       from "services/gui";
 import viewportService           from 'services/viewport';
 import sidebarService            from 'services/sidebar';
 import floatbarService           from 'services/floatbar';
+import NavbarItemsService        from 'services/navbaritems';
 import { resizeMixin }           from "mixins";
 
 import HeaderItem                from "components/HeaderItem.vue";
@@ -768,6 +781,9 @@ export default {
       zIndex:                       ZINDEXES.usermessage.tool + 2,
 
       stack:                        floatbarService.stack.state,
+
+      NavbarItemsService,
+      
     }
   },
 
