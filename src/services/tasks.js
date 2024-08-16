@@ -32,8 +32,16 @@ function TaskService() {
    *
    * return a Promise that return a task id
    */
-  this.runTask = async function(options={}) {
-    let { method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener= () => {} } = options;
+  this.runTask = async function(opts = {}) {
+    let {
+      method = 'GET',
+      params = {},
+      url,
+      taskUrl,
+      interval = 1000,
+      timeout = Infinity,
+      listener = () => {}
+    } = opts;
     try {
       const response = 'GET' === method  ? await XHR.get({
         url,
@@ -89,19 +97,20 @@ function TaskService() {
       }
 
     } catch(e) {
+      console.warn(e);
       return Promise.reject(e);
     }
   };
 
   /**
    *
-   * @param options: {
+   * @param opts: {
    *   taskId: taskId that is running
    * }
    */
-  this.stopTask = function(options= {}) {
-    const { task_id } = options;
-    const task = tasks.find(task => task.task_id === task_id);
+  this.stopTask = function(opts = {}) {
+    const { task_id } = opts;
+    const task = tasks.find(t => t.task_id === task_id);
     if (task) {
       clearInterval(task.intervalId);
     }
@@ -121,27 +130,27 @@ function TaskService() {
 /**
  * SERVER
  * """Returns the (possibly) new layer ID where the isochrone
- data has been added. If the task has not yet completed a status message is returned
+ data has been added. If the task has not yet completed, a status message is returned
 
  Note: `project_id` is only used for permissions checking!
 
- Returns 500 in case of exceptions
- Returns 404 in case of task not found
+ Returns 500 in case of exception
+ Returns 404 in case of a task didn't find
  Returns 200 ok for all other cases
 
  Response body:
 
  {
-            "status": "complete",  // or "pending" or "error", full list at
-                                   // https://huey.readthedocs.io/en/latest/signals.html#signals
-            "exception": "Normally empty, error message in case of errors",
-            "progress": [
-                100,  // Progress %
-            ],
-            "task_result": {
-                "qgis_ayer_id": "4f2a88a1-ca93-4859-9de3-75d9728cde0e"
-            }
-        }
+    "status": "complete",  // or "pending" or "error", full list at
+                         // https://huey.readthedocs.io/en/latest/signals.html#signals
+    "exception": "Normally empty, error message in case of errors",
+    "progress": [
+      100,  // Progress %
+    ],
+    "task_result": {
+        "qgis_ayer_id": "4f2a88a1-ca93-4859-9de3-75d9728cde0e"
+     }
+  }
 
  **/
 
