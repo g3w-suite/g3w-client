@@ -394,7 +394,10 @@
 
     <!-- ORIGINAL SOURCE: src/components/Viewport.vue@v3.10.1 -->
     <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+    <div
+      class  = "content-wrapper"
+      :style = "{paddingTop: isIframe ? 0 : null}"
+    >
       <div class = "g3w-viewport">
 
         <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
