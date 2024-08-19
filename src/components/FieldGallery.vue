@@ -87,13 +87,13 @@ export default {
   },
   methods: {
     isActive(src) {
-      return src === active;
+      return src === this.active;
     },
     isRelativePath(url) {
-      if (!_.startsWith(url,'/') && !_.startsWith(url,'http')) {
-        return ProjectsRegistry.getConfig().mediaurl + url
+      if (!url.startsWith('/') && !url.startsWith('http')) {
+        return `${ProjectsRegistry.getConfig().mediaurl}${url}`;
       }
-      return url
+      return url;
     },
   }
 };

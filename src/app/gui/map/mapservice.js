@@ -466,23 +466,31 @@ class MapService extends G3WObject {
                             className:     'ol-overviewmap ol-custom-overviewmap',
                             collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
                             label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                            layers:        (Object.entries(
-                              _.groupBy(
-                                project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false }),
-                                l => l.getMultiLayerId()
-                              )
-                            ) || []).map(([id, layers]) => {
-                              const { WMSLayer } = require('core/layers/imagelayer');
-                              const mapLayer = new WMSLayer({
-                                url:   project.getWmsUrl(),
-                                id:    'overview_layer_' + id,
-                                tiled: layers[0].state.tiled,
-                              });
-                              layers.reverse().forEach(l => mapLayer.addLayer(l));
-                              return mapLayer.getOLLayer(true);
-                            }).reverse()
+                            layers:        Object
+                              .entries(
+                                //group layer by multilayerId
+                                project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false })
+                                  .reduce((group, l) => {
+                                    const id = l.getMultiLayerId();
+                                    //initialize group[id] layer
+                                    if (undefined === group[id]) {
+                                      group[id] = [];
+                                    }
+                                    group[id].push(l);
+                                    return group;
+                                  }, {}) || []
+                              ).map(([id, layers]) => {
+                                const { WMSLayer } = require('core/layers/imagelayer');
+                                const mapLayer = new WMSLayer({
+                                  url:   project.getWmsUrl(),
+                                  id:    `overview_layer_${id}`,
+                                  tiled: layers[0].state.tiled,
+                                });
+                                layers.reverse().forEach(l => mapLayer.addLayer(l));
+                                return mapLayer.getOLLayer(true);
+                              }).reverse()
                           }
-                      });
+                      })
                       /** @since 3.10.0 Move another bottom left map controls bottom to a left of overview control**/
                       document.querySelector('.g3w-map-controls-left-bottom').style.left = '230px';
                       const observer = new MutationObserver((mutations) => {
@@ -1486,30 +1494,37 @@ class MapService extends G3WObject {
     // set map projection on each layer
     layers.forEach(l => l.setMapProjection(this.getProjection()));
 
-    let cache     = {};
-    let mapLayers = [];
+    //store incremental value for qtimesriable layer with same multilayer id
+    const cache     = {};
+    const mapLayers = [];
 
     Object
       .entries(
         // Group layers by multilayer property (from project config)
-        // to speed up "qtimeseriesries" loading for single layers
-        _.groupBy(layers, layer => {
-          let id = layer.getMultiLayerId();
-          if (layer.isQtimeseries()) {
+        // to speed up "qtimeseries" loading for single layers
+        layers.reduce((group, l) => {
+          //get multilayer id
+          let id = l.getMultiLayerId();
+          //check if layer has qtimeseries attribute set
+          if (l.isQtimeseries()) {
+            //if layers with same multilayer id are qtimeseriable,
+            //need to creat a new incremental multilayer id
             cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
-            return `${id}_${cache[id]}`;
+            id = `${id}_${cache[id]}`;
           }
-          return id = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
-        })
+          if (undefined === group[id]) { group[id] = [] }
+          group[id].push(l);
+          return group;
+        }, {})
       )
       .forEach(([id, layers]) => {
         const layer    = layers[0] || [];
         const mapLayer = layer.getMapLayer(
           {
-            id: `layer_${id}`,
+            id:         `layer_${id}`,
             projection: this.getProjection(),
             /** @since 3.9.1 */
-            format: 1 === layers.length ? layer.getFormat() : null
+            format:     1 === layers.length ? layer.getFormat() : null
           },
           1 === layers.length ? {} : this.layersExtraParams
         );
@@ -2084,8 +2099,8 @@ class MapService extends G3WObject {
       this._drawShadow.inner[3] = upperRight[1] * ol.has.DEVICE_PIXEL_RATIO; // y_max
     }
 
-    this._drawShadow.scale    = _.isNil(opts.scale)    ? this._drawShadow.scale    || 1 : opts.scale;
-    this._drawShadow.rotation = _.isNil(opts.rotation) ? this._drawShadow.rotation || 0 : opts.rotation;
+    this._drawShadow.scale    = [null, undefined].includes(opts.scale) ? this._drawShadow.scale || 1 : opts.scale;
+    this._drawShadow.rotation = [null, undefined].includes(opts.rotation) ? this._drawShadow.rotation || 0 : opts.rotation;
 
     if (this._drawShadow.outer) {
       map.render();
