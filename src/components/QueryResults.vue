@@ -639,14 +639,8 @@
       getColSpan(layer) {
         return this.attributesSubsetLength(layer)+(!this.hasLayerOneFeature(layer)*1);
       },
-      getDownloadActions(layer) {
-        return this.state.layersactions[layer.id].find(a => a.formats);
-      },
       addLayerFeaturesToResults(layer) {
         this.$options.service.addLayerFeaturesToResultsAction(layer);
-      },
-      showDownloadAction(evt) {
-        evt.target.children[0].style.display = evt.target.children[0].style.display === 'none' ? 'inline-block' : 'none';
       },
       printAtlas(layer) {
         this.$options.service.printAtlas(layer);
@@ -687,15 +681,6 @@
       addToSelection(layer) {
         this.$options.service.addToSelection(layer);
       },
-      layerHasActions(layer) {
-        return this.state.layersactions[layer.id].length > 0;
-      },
-      featureHasActions(layer,feature) {
-        return this.geometryAvailable(feature);
-      },
-      geometryAvailable(feature) {
-        return !!feature.geometry;
-      },
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
         const traverseStructure = item => {
@@ -704,8 +689,8 @@
           } else {
             let field = layer.formStructure.fields.find(field => field.name === item.field_name);
             if (field) {
-              if (this.state.type === 'ows'){
-                // clone it to avoid to replace original
+              if (this.state.type === 'ows') {
+                // clone it to avoid replacing original
                 field = {...field};
                 field.name = field.name.replace(/ /g, '_');
               }
@@ -728,62 +713,12 @@
         const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ MAX_SUBSET_LENGTH, attributes.length);
         return _attributes.slice(0, end);
       },
-
-      relationsAttributesSubset(relationAttributes) {
-        const attributes = [];
-        _.forEach(relationAttributes, function (value, attribute) {
-          if (Array.isArray(value)) return;
-          attributes.push({label: attribute, value: value})
-        });
-        const end = Math.min(MAX_SUBSET_LENGTH, attributes.length);
-        return attributes.slice(0, end);
-      },
-      relationsAttributes(relationAttributes) {
-        const attributes = [];
-        _.forEach(relationAttributes, function (value, attribute) {
-          attributes.push({label: attribute, value: value})
-        });
-        return attributes;
-      },
       attributesSubsetLength(layer) {
         return this.attributesSubset(layer).length;
-      },
-      cellWidth(index,layer) {
-        const headerLength                  = MAX_SUBSET_LENGTH + this.state.layersactions[layer.id].length;
-        const subsetLength                  = this.attributesSubsetLength(layer);
-        const diff                          = headerLength - subsetLength;
-        const actionsCellWidth              = layer.hasgeometry ? headerActionsCellWidth : 0;
-        const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
-        const baseCellWidth                 = headerAttributeCellTotalWidth / MAX_SUBSET_LENGTH;
-        if ((index === subsetLength - 1) && diff > 0) {
-          return baseCellWidth * (diff+1);
-        } else {
-          return baseCellWidth;
-        }
-      },
-      featureBoxColspan(layer) {
-        let colspan = this.attributesSubsetLength(layer);
-        if (layer.expandable) {
-          colspan += 1;
-        }
-        if (layer.hasgeometry) {
-          colspan += 1;
-        }
-        return colspan;
-      },
-      relationsAttributesSubsetLength(elements) {
-        return this.relationsAttributesSubset(elements).length;
       },
       getLayerFormStructure(layer) {
         //need to clone structure objects in deep and set reactive with Vue.observable
         return layer.formStructure.structure.map(n => Vue.observable(structuredClone(n)));
-      },
-      isAttributeOrTab(layer, item) {
-        const isField = undefined !== item.field_name;
-        return  {
-          type: isField && 'field' || 'tab',
-          item: isField && this.getLayerAttributeFromStructureItem(layer, item.field_name) || [item]
-        };
       },
       getLayerAttributeFromStructureItem(layer, field_name) {
         return layer.attributes.find(a => field_name === a.name);
@@ -839,9 +774,6 @@
           await this.$nextTick();
         }
         await this.$options.service.trigger(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
-      },
-      showFullPhoto(url) {
-        this.$options.service.showFullPhoto(url);
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
