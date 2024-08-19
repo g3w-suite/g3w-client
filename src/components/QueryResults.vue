@@ -720,9 +720,6 @@
         //need to clone structure objects in deep and set reactive with Vue.observable
         return layer.formStructure.structure.map(n => Vue.observable(structuredClone(n)));
       },
-      getLayerAttributeFromStructureItem(layer, field_name) {
-        return layer.attributes.find(a => field_name === a.name);
-      },
       getLayerFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
         if (undefined === this.state.layersFeaturesBoxes[boxid] ) {
@@ -796,7 +793,7 @@
       /**
        * Highlight all features of layer
        *
-       * @param layers
+       * @param layer
        * @param opts
        *
        * @since 3.11.0
