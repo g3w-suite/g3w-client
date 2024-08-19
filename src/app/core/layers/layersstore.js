@@ -1,29 +1,29 @@
-const { base, inherit, uniqueId } = require('utils');
-const G3WObject                   = require('core/g3wobject');
+const { uniqueId } = require('utils');
+const G3WObject    = require('core/g3wobject');
 
 module.exports = class LayersStore extends G3WObject {
   constructor(config = {}) {
     super();
     this.config = {
-      id: config.id || Date.now(),
+      id:         config.id || Date.now(),
       projection: config.projection,
-      extent: config.extent,
+      extent:     config.extent,
       initextent: config.initextent,
-      wmsUrl: config.wmsUrl,
+      wmsUrl:     config.wmsUrl,
       //set catalogable property
-      catalog: _.isBoolean(config.catalog) ? config.catalog : true
+      catalog: (true === config.catalog || false === config.catalog) ? config.catalog : true
     };
     this.state = {
       //useful to build layerstree
       layerstree: [],
-      relations: null // useful to build tree of relations
+      relations:  null // useful to build a tree of relations
     };
-    this._isQueryable = _.isBoolean(config.queryable) ? config.queryable : true;
+    this._isQueryable = (true === config.queryable || false === config.queryable ) ? config.queryable : true;
     this._layers = this.config.layers || {};
 
     this.setters = {
       setLayerSelected(layerId, selected) {
-        this.getLayers().forEach(layer => layer.state.selected = (layerId === layer.getId()) ? selected : false);
+        this.getLayers().forEach(l => l.state.selected = (layerId === l.getId()) ? selected : false);
       },
       addLayers(layers) {
         layers.forEach(l => this.addLayer(l))
@@ -107,7 +107,7 @@ module.exports = class LayersStore extends G3WObject {
     // check if there are `selected` layers otherwise get all `layers`
     if (filter.SELECTED_OR_ALL) {
       const selected = layers.filter(l => l.isSelected());
-      layers = selected.length > 0 ? selected : layers;
+      layers         = selected.length > 0 ? selected : layers;
     }
 
     // checks if a boolean filter is setted

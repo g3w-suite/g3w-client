@@ -44,7 +44,7 @@ module.exports = class PickCoordinatesInteraction extends ol.interaction.Pointer
 
   setMap(map) {
     if (!map) {
-      map.getViewport().classList.remove(this._cursor);
+      this.getMap().getViewport().classList.remove(this._cursor);
     }
     super.setMap(map);
   }
