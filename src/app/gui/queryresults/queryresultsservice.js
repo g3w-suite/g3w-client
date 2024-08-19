@@ -71,9 +71,9 @@ class QueryResultsService extends G3WObject {
     };
 
     /**
-     * <Array> to store relations
+     * <Object> to store relations (key is referenceLayer of relation)
      */
-    this._relations = [];
+    this._relations = {};
 
     /**
      * @FIXME add description
@@ -903,7 +903,7 @@ class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   _clearActions() {
-    Object.values(this.state.layersactions).forEach(l => l.forEach(action => action.clear && action.clear()));
+    Object.values(this.state.layersactions).forEach(l => l.forEach(a => a.clear && a.clear()));
     this.state.layersactions       = {};
     this.state.actiontools         = {};
     this.state.layeractiontool     = {};
@@ -932,15 +932,23 @@ class QueryResultsService extends G3WObject {
    * @param project
    */
   _setRelations(project) {
-    const projectRelations = project.getRelations();
-    this._relations = projectRelations ? _.groupBy(projectRelations,'referencedLayer'):  [];
+    this._relations = (
+      project.getRelations() || []
+    ).reduce((group, r) => {
+      const key = r.referencedLayer;
+      if (undefined === group[key]) {
+        group[key] = [];
+      }
+      group[key].push(r);
+      return group;
+    }, {});
   }
 
   /**
    * @param layerId
    */
   getAtlasByLayerId(layerId) {
-    return this._atlas.filter(atlas => atlas.atlas.qgs_layer_id === layerId);
+    return this._atlas.filter(a => a.atlas.qgs_layer_id === layerId);
   }
 
   /**
@@ -949,7 +957,7 @@ class QueryResultsService extends G3WObject {
    * @param project
    */
   _setAtlasActions(project) {
-    this._atlas = project.getPrint().filter(printconfig => printconfig.atlas) || [];
+    this._atlas = project.getPrint().filter(p => p.atlas) || [];
   }
 
   /**
@@ -1100,7 +1108,8 @@ class QueryResultsService extends G3WObject {
    */
   _parseLayerObjFormStructure(layer, features, rawdata, attributes) {
     const structure = layer.hasFormStructure() && layer.getLayerEditingFormStructure();
-    if (false === (structure && this._relations && this._relations.length)) {
+    console.log(layer, this._relations)
+    if (false === (structure && this._relations[layer.getId()] && this._relations[layer.getId()].length)) {
       return;
     }
     const setRelationField = (node) => {
