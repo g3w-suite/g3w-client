@@ -6,9 +6,8 @@
 <template>
   <!-- item template -->
   <div
-    id                        = "catalog"
-    @contextmenu.prevent.stop = ""
-    class                     = "tabbable-panel catalog"
+    id    = "catalog"
+    class = "tabbable-panel catalog"
   >
 
     <div class = "tabbable-line">

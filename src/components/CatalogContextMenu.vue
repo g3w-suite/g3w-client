@@ -1361,10 +1361,10 @@
   .catalog-context-menu .item-text {
     margin-left: 3px;
   }
-  li .item-text{
+  .catalog-context-menu li .item-text{
     font-weight: bold;
   }
-  ul, li {
+  .catalog-context-menu ul, .catalog-context-menu li {
     list-style-type: none;
   }
   #project-context-menu {

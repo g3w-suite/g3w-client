@@ -52,11 +52,11 @@
 
             <!-- HAMBURGER BUTTON (SIDEBAR MENU) -->
             <a
-              id          = "g3w-small-screen-hamburger-sidebar"
-              href        = "#"
-              class       = "sidebar-toggle"
-              data-toggle = "offcanvas"
-              role        = "button"
+              id             = "g3w-small-screen-hamburger-sidebar"
+              href           = "#"
+              class          = "sidebar-toggle"
+              @click.prevent = "toggleSidebar"
+              role           = "button"
             >
               <i
                 style  = "font-size: 1.3em;"
@@ -71,8 +71,8 @@
             >
               <a
                 v-if    = "logo_url"
-                :href   = "logo_link"
-                :target = "logo_link_target"
+                :href   = "getLogoLink() || '#'"
+                :target = "getLogoLink() ? '_blank' : ''"
                 class   = "project_logo_link"
               >
                 <img
@@ -368,11 +368,13 @@
       </div>
       <!-- TOGGLE BUTTON (desktop only) -->
       <a
-        href        = "#"
-        class       = "sidebar-aside-toggle"
-        :class      = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
-        :style      = "{zIndex: zIndex}"
-        data-toggle = "offcanvas" role="button">
+        href           = "#"
+        class          = "sidebar-aside-toggle"
+        :class         = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
+        :style         = "{ zIndex: 4 }"
+        @click.prevent = "toggleSidebar"
+        role           = "button"
+      >
           <i :class = "g3wtemplate.getFontClass('bars')"></i>
       </a>
 
@@ -591,7 +593,7 @@
                   >
                     <img
                       class = "g3w-suite-logo"
-                      :src  = "g3w_suite_logo"
+                      :src  = "`${this.clienturl}images/g3wsuite_logo.png`"
                       alt   = "">
                   </a>
                   <div
@@ -612,7 +614,7 @@
                     <img
                       width = "60"
                       style = "margin-left: 5px"
-                      :src  = "credits_logo"
+                      :src  = "`${this.clienturl}images/logo_gis3w_156_85.png`"
                       class = "img-responsive center-block"
                       alt   = "">
                   </a>
@@ -690,8 +692,7 @@ import CookieLaw          from "vue-cookie-law";
 
 import {
   LOCAL_ITEM_IDS,
-  ZINDEXES,
-  VIEWPORT as viewportConstraints
+  VIEWPORT
 }                                from 'app/constant';
 import { SidebarEventBus as VM } from 'app/eventbus';
 import ApplicationState          from 'store/application-state';
@@ -744,19 +745,11 @@ export default {
       cookie_law_buttonText:        t('cookie_law.buttonText'),
       state:                        viewportService.state,
       updatePreviousTitle:          false,
-      media:                        { matches: true },
-
       components:                   sidebarService.state.components,
       panels:                       sidebarService.stack.state.contentsdata,
-      bOpen:                        true,
-      bPageMode:                    false,
       header:                       t('main navigation'),
       sstate:                       sidebarService.state,
-      /** @since 3.9.0 */
-      zIndex:                       ZINDEXES.usermessage.tool + 2,
-
       NavbarItemsService,
-      
     }
   },
 
@@ -806,27 +799,9 @@ export default {
       return this.urls.clienturl;
     },
 
-    g3w_suite_logo() {
-      return `${this.clienturl}images/g3wsuite_logo.png`;
-    },
-
-    credits_logo() {
-      return `${this.clienturl}images/logo_gis3w_156_85.png`;
-    },
-
     logo_url() {
       const logo_project_url = this.currentProject.getThumbnail();
       return logo_project_url ? logo_project_url : `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
-    },
-
-    logo_link() {
-      const logo_link = this.getLogoLink();
-      return logo_link ? logo_link : "#";
-    },
-
-    logo_link_target() {
-      const logo_link = this.getLogoLink();
-      return logo_link ? "_blank" : "";
     },
 
     project_title() {
@@ -904,8 +879,8 @@ export default {
         content: {
           width:         `${this.state.content.sizes.width}px`,
           height:        `${this.state.content.sizes.height}px`,
-          zIndex:        ZINDEXES.usermessage.tool + 1,
-          minHeight:     'v' === this.state.split ? `${viewportConstraints.resize.content.min}px` : null,
+          zIndex:        3,
+          minHeight:     'v' === this.state.split ? `${VIEWPORT.resize.content.min}px` : null,
           paddingTop:    '8px',
           paddingBottom: '8px',
         }
@@ -993,7 +968,7 @@ export default {
     },
 
     getLogoLink() {
-      return this.appconfig.logo_link ? this.appconfig.logo_link: null;
+      return this.appconfig.logo_link || null;
     },
 
     /**
@@ -1101,7 +1076,7 @@ export default {
       const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : viewportService.SIDEBARWIDTH : $('#main-navbar').height();
       const viewPortSize = $(this.$el)[size]();
       let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
-      const { content, map } = viewportConstraints.resize;
+      const { content, map } = VIEWPORT.resize;
       if (mapSize > viewPortSize - content.min) {
         mapSize = viewPortSize -  content.min;
       } else if ( mapSize < map.min) {
@@ -1117,6 +1092,21 @@ export default {
     closeAllPanels() {
       sidebarService.closeAllPanels();
     },
+
+    /**
+     * @since 3.11.0
+     */
+    toggleSidebar() {
+      if (window.innerWidth > 767) {
+        document.body.classList.toggle('sidebar-collapse', !document.body.classList.contains('sidebar-collapse'));
+      }
+      if (window.innerWidth <= 767 && document.body.classList.contains('sidebar-open')) {
+        document.body.classList.remove('sidebar-collapse');
+      }
+      if (window.innerWidth <= 767) {
+        document.body.classList.toggle('sidebar-open', !document.body.classList.contains('sidebar-open'));
+      }
+    }
 
   },
 
@@ -1212,17 +1202,21 @@ export default {
     $(window, ".wrapper").resize(resize);
 
     // toggle sidebar tree items on click
-    $(document).on('click', '.main-sidebar li a', function (e) {
+    $(document).on('click', '.main-sidebar li', function (e) {
 
       // Expand on click for sidebar mini
-      if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > 767) {
-        $("body").removeClass('sidebar-collapse');
+      if (document.body.classList.contains('sidebar-mini') && 
+          document.body.classList.contains('sidebar-collapse') && 
+          window.innerWidth > 767) {
+          document.body.classList.remove('sidebar-collapse');
       }
 
       //Get the clicked link and the next element
       const $this = $(this);
       //is the content of the "accordion" ul
       const next = $this.next();
+
+      console.log($this, next);
 
       //Check if the next element is a menu and is visible
       if ((next.is('.treeview-menu')) && (next.is(':visible'))) {
@@ -1254,28 +1248,6 @@ export default {
       }
     });
 
-    //Enable sidebar toggle
-    $("[data-toggle='offcanvas']").on('click', function (e) {
-      e.preventDefault();
-
-      //Enable sidebar push menu
-      if ($(window).width() > 767) {
-        if ($("body").hasClass('sidebar-collapse')) {
-          $("body").removeClass('sidebar-collapse').trigger('expanded.pushMenu');
-        } else {
-          $("body").addClass('sidebar-collapse').trigger('collapsed.pushMenu');
-        }
-      }
-      //Handle sidebar push menu for small screens
-      else {
-        if ($("body").hasClass('sidebar-open')) {
-          $("body").removeClass('sidebar-open').removeClass('sidebar-collapse').trigger('collapsed.pushMenu');
-        } else {
-          $("body").addClass('sidebar-open').trigger('expanded.pushMenu');
-        }
-      }
-    });
-
     //Activate box widget
     $(document).on('click', '[data-widget="collapse"]', function (e) {
       e.preventDefault();
@@ -1292,35 +1264,14 @@ export default {
       }
     });
 
-    //Listen for remove event triggers
-    $(document).on('click', '[data-widget="remove"]', function (e) {
-      e.preventDefault();
-      $(this).parents(".box").first().slideUp('fast');
-    });
-
-    // INITIALIZE BUTTON TOGGLE 
-    $('.btn-group[data-toggle="btn-toggle"]').each(function () {
-      var group = $(this);
-      $(this).find(".btn").on('click', function (e) {
-        group.find(".btn.active").removeClass("active");
-        $(this).addClass("active");
-        e.preventDefault();
-      });
-    });
-
     document.body.classList.toggle('is-mobile', this.isMobile());
 
     this.iframe = ApplicationState.iframe;
     VM.$on('sidebaritemclick', () => $('.sidebar-toggle').click())
 
-    const handleResizeViewport = () => this.state.resized.start = true;
     await this.$nextTick();
-    const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
-    this.media.matches = mediaQueryEventMobile.matches;
-    mediaQueryEventMobile.addListener(e => {
-      if (e.type === 'change') { this.media.matches = e.currentTarget.matches }
-    });
-    handleResizeViewport();
+
+    this.state.resized.start = true
 
   },
 
