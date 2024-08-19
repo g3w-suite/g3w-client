@@ -986,7 +986,6 @@ export default {
     left: 0;
     width: 15px;
     height: 15px;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.5);
     border: 1px solid #fff;
     border-radius: 50%;
   }

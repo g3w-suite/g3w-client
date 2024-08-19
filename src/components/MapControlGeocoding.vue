@@ -1037,7 +1037,6 @@ export default {
   }
 
   .ol-geocoder > ul {
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     border-radius: 3px !important;
     width: 100%;
     max-height: 200px;

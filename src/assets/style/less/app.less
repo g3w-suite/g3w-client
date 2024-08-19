@@ -279,8 +279,6 @@ body {
 .nav > li > a:hover,
 .nav > li > a:active,
 .nav > li > a:focus                  { color: #444; background: #f7f7f7; }
-.pagination > li > a                 { background: #fafafa; color: #666; }
-.pagination.pagination-flat > li > a { border-radius: 0 !important; }
 
 /**************************************************************************************
 * table.less
@@ -400,7 +398,7 @@ a:focus  { outline: none; text-decoration: none; color: var(--skin-primary-l15);
 .box-title.fa-plus:before,
 .box-title.fa-minus:before                { content: ""; }
 div.info_help_text                        { position:relative; border-radius: 2px; padding: 5px; margin:.8em; white-space: pre-line; background-color: rgba(255,255,255,0.1); }
-div.info_help_text .info_help_text_button { text-align: center; font-size: .7em; margin-top: -5px; margin-left: -5px; background-color: #222d32; font-weight: bold; color: #fff; position:absolute; top:0; left:0; width:15px; height:15px; box-shadow: 0 3px 5px rgba(0,0,0,0.5); border: 1px solid #fff; border-radius:50%; }
+div.info_help_text .info_help_text_button { text-align: center; font-size: .7em; margin-top: -5px; margin-left: -5px; background-color: #222d32; font-weight: bold; color: #fff; position:absolute; top:0; left:0; width:15px; height:15px; border: 1px solid #fff; border-radius:50%; }
 .btn.quick-action                         { font-size: 1.5em; color: #888; background-color: transparent; border: 0; margin: -5px 0 0 0; padding: 6px 10px; vertical-align: middle; }
 .btn.quick-action:hover                   { color: #888; border-color: var(--skin-primary); background-color: transparent; }
 .g3w-icon                                 { box-shadow: 0 2px 4px rgba(0,0,0,0.2); padding: 5px; font-size: 1.3em; border-radius: 30%; cursor: pointer; }
@@ -777,7 +775,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-control.ol-rotate             button .ol-compass                   { background: url(../images/compass.svg) no-repeat 50% center; display: block; width: 100%; height: 100%; transform: rotate(30deg); font-size: 0; }
 
 .ol-control, .ol-custom-overviewmap                                    { background-color: transparent; border-radius: 0; padding: 0; }
-:is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border: none; border-radius: 3px; font-size: 25px; font-family: icomoon; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 1px solid rgba(0,0,0,0.25); background-clip: padding-box; box-shadow: none !important; border-radius: 4px; }
+:is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border: none; border-radius: 3px; font-size: 25px; font-family: icomoon; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 1px solid rgba(0,0,0,0.5); background-clip: padding-box; box-shadow: none !important; border-radius: 3px; }
 :is(.ol-control, .ol-custom-overviewmap) button:hover                  { text-decoration: none; }
 :is(.ol-control, .ol-custom-overviewmap) button:focus                  { text-decoration: none; outline: none; }
 .ol-overviewmap:not(.ol-collapsed) button                              { bottom: 5px; }
@@ -785,7 +783,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-mouse-position                                                     { position: relative !important; height: 20px; font-weight: bold; font-size: 0.9em; margin-left: 8px; }
 .ol-mouse-position-default                                             { right: 50px; border-radius: 4px; z-index: 1; }
 .ol-mouse-position-default                                             { color: #fff; }
-.ol-custom-overviewmap                                                 { box-shadow: 0 3px 5px rgba(0,0,0,0.5); border-radius: 5px; }
+.ol-custom-overviewmap                                                 { border-radius: 5px; }
 .ol-custom-overviewmap button                                          { display: inline-block;     left: 3px; bottom: 8px; width: 30px; height: 30px; }
 .ol-custom-overviewmap button span                                     { font-size: 15px; font-weight: bold; position: absolute; margin: -6px; }
 .ol-custom-overviewmap .ol-overviewmap-map                             { border: none; height: 150px; width: 200px; }
@@ -795,8 +793,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-control-bl                                                         { bottom: 40px; left: 7px; }
 .ol-control-tr                                                         { top: 7px; right: 7px; }
 .ol-control-br                                                         { bottom: 7px; right: 7px; min-height: 20px; }
-.ol-zoom .ol-zoom-in                                                   { border-radius: 4px; display: block; }
-.ol-zoom .ol-zoom-out                                                  { border-radius: 4px; display: block; }
+.ol-zoom :is(.ol-zoom-in, .ol-zoom-out)                                { border-radius: 3px; display: block; }
 .ol-scale-control                                                      { bottom: 15px; }
 .ol-scale-control span.select2-selection                               { border-radius: 5px; }
 .ol-scale-line                                                         { left: auto; font-weight: bold; bottom: 35px; }
@@ -804,7 +801,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 #scale-control .select2-container--default .select2-selection--single,
 #scale-control .select2-selection .select2-selection--single           { height: 30px !important; background-color: #eee; border-width: 0; }
 .ol-rotate                                                             { top: 55px; left: 0; }
-.ol-rotate button                                                      { box-shadow: 0 3px 5px rgba(0,0,0,0.5); }
 .ol-rotate button span                                                 { font-weight: bold; }
 .ol-hidden                                                             { display:none; }
 .ol-attribution li a                                                   { font-weight: bold; }
@@ -828,11 +824,10 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3w-map-controls.lh                                                   { top:60px; left: 0; flex-direction: row; }
 .g3w-map-controls.rh                                                   { top:8px; right: 0; flex-direction: row; }
 .g3w-map-controls .ol-control                                          { position:relative; padding: 3px; }
-.g3w-map-controls .ol-control button                                   { box-shadow: 0 3px 5px rgba(0,0,0,0.5); }
 .g3w-map-controls .ol-zoom                                             { top:0; left:0; }
 .g3w-map-controls .ol-zoom .ol-zoom-in                                 { float: none; margin-bottom: 6px; }
 .g3w-map-controls .ol-zoom-extent                                      { top:0; left:0; }
-.info_mapcontrol_button                                                { text-align: center; margin-top: -5px; margin-left: -15px; font-weight: bold; color: #fff; position:absolute; top:0; left:0; width:20px; height:20px; box-shadow: 0 3px 5px rgba(0,0,0,0.5); border: 2px solid #fff; border-radius:50%; cursor: pointer; }
+.info_mapcontrol_button                                                { text-align: center; margin-top: -5px; margin-left: -15px; font-weight: bold; color: #fff; position:absolute; top:0; left:0; width:20px; height:20px; border: 2px solid #fff; border-radius:50%; cursor: pointer; }
 :is(.ol-control, .ol-custom-overviewmap) button:hover                  { background-color:var(--skin-color); }
 :is(.ol-control, .ol-custom-overviewmap) button:focus                  { background-color:#e5e5e5; }
 .ol-mouse-position-default                                             { background: var(--skin-color); }
@@ -873,7 +868,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 /**************************************************************************************
  * 8. Query Results
  **************************************************************************************/
-.query_relation_field                                                                      { display: inline-block; cursor: pointer; color: white; margin: 5px; width: 30px; height: 30px; text-align: center; border-radius: 3px; box-shadow: 0 3px 5px rgba(0,0,0,0.5); }
+.query_relation_field                                                                      { display: inline-block; cursor: pointer; color: white; margin: 5px; width: 30px; height: 30px; text-align: center; border-radius: 3px; }
 .query_relation_field i                                                                    { padding: 6px; }
 .query_relation_field_message                                                              { font-weight: bold; margin-left: 5px; }
 .queryresults-wrapper                                                                      { height: 100%; caret-color: transparent;}
@@ -882,7 +877,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .queryresults-container .query-results-not-found                                           { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #fff; border-radius: 3px; }
 .queryresults-container .sub-group .group > .row                                           { margin-left: -2px; margin-right: -2px; }
 .queryresults-container .box-features-action                                               { display: flex; }
-.queryresults-container .field_value :is(.field_link, img)                                 { box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2); }
 .queryresults-container .field_value :is(.field_link, img):focus                           { box-shadow: none; }
 .queryresults-container .field_value .field_link                                           { border-radius: 5px; min-width: 50px; font-weight: bold; }
 .queryresults-container .field_value .field_link:hover                                     { color:#FFF; }
@@ -1023,7 +1017,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3wform_body .form-group                                        { margin-bottom: 5px; }
 .g3wform_body .bootstrap-filestyle > input.form-control          { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g3wform_body .form_editing_relation_input                       { position: relative; font-size: 1.2em; font-weight: bold; width: 100%; padding: 10px; }
-.g3wform_body .form_editing_relation_input .info_helptext_button { text-align: center; font-size: 0.8em; margin-top: -5px; margin-left: 0; font-weight: bold; position: absolute; top: 0; left: 0; width: 15px; height: 15px; box-shadow: 0 3px 5px rgba(0,0,0,0.5); border: 1px solid #fff; border-radius: 50%; }
+.g3wform_body .form_editing_relation_input .info_helptext_button { text-align: center; font-size: 0.8em; margin-top: -5px; margin-left: 0; font-weight: bold; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%; }
 .g3wform_body .preview                                           { width: 100%; margin-top: 10px; display:flex; align-items: center; }
 .g3wform_body .preview .filename                                 { overflow: hidden; margin: 15px; font-weight: bold; }
 .g3wform_body .preview .clearmedia                               { cursor: pointer; margin-left: auto; }
