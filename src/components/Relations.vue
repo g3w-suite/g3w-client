@@ -13,7 +13,7 @@
           style   = "font-size: 1.1em;"
           v-t:pre = "'sdk.relations.list_of_relations_feature'"
         > </span>
-        <span v-for = "info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }}</span>
+        <div v-for = "info in featureInfo()"> - <b>{{ info.key }}</b>: {{ info.value }}</div>
       </div>
     </div>
     <div class = "query-relations-content">
@@ -50,25 +50,13 @@ export default {
     },
 
     /**
-     * @FIXME add description
+     * Array of parent feature attributes [max three attributes]
      */
     featureInfo() {
-      let infoFeatures = [];
-      let index        = 0;
-      Object
+      return Object
         .entries(this.feature.attributes)
-        .forEach(([key, value]) => {
-          // skip when ..
-          if (index > 2) {
-            return false;
-          }
-          /** @FIXME add description */
-          if (value && _.isString(value) && -1 === value.indexOf('/')) {
-            infoFeatures.push({ key: key, value: value });
-            index++;
-          }
-        });
-      return infoFeatures;
+        .filter(([_, value]) => (value && 'string' === typeof value && !value.includes('/')))
+        .map(([key, value]) => ({key, value})).slice(0,3)
     },
 
   },
