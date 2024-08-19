@@ -8,23 +8,22 @@ module.exports = class PickFeatureInteraction extends ol.interaction.Pointer {
       handleUpEvent(e) {
         if (this.pickedFeature_) {
           this.dispatchEvent({
-            type: 'picked',
-            feature: this.pickedFeature_,
+            type:       'picked',
+            feature:    this.pickedFeature_,
             coordinate: e.coordinate,
-            layer: this.pickedLayer_,
+            layer:      this.pickedLayer_,
           })
         }
         return true;
       },
       handleMoveEvent(e) {
-        const intersectingFeature = this.featuresAtPixel_(e.pixel, e.map);
-        e.map.getTargetElement().style.cursor = intersectingFeature ? 'pointer': '';
+        e.map.getTargetElement().style.cursor = this.featuresAtPixel_(e.pixel, e.map) ? 'pointer': '';
       },
       ...opts
     })
 
     const { features } = opts;
-    this.features_      = Array.isArray(features) && features.length && features || null;
+    this.features_      = (Array.isArray(features) && features.length > 0) ? features : null;
     this.layers_        = opts.layers || null;
     this.pickedFeature_ = null;
     this.pickedLayer_   = null;
@@ -40,7 +39,7 @@ module.exports = class PickFeatureInteraction extends ol.interaction.Pointer {
     let featureFound = null;
     const intersectingFeature = map.forEachFeatureAtPixel(pixel, feature => {
       if (this.features_) {
-        if (this.features_.indexOf(feature) > -1) { return feature }
+        if (this.features_.includes(feature)) { return feature }
         else { return null }
       }
       return feature;
@@ -56,6 +55,6 @@ module.exports = class PickFeatureInteraction extends ol.interaction.Pointer {
 
   setMap(map) {
     if (!map) { this.getMap().getTargetElement().style.cursor = ''}
-    ol.interaction.Pointer.prototype.setMap.call(this,map);
+    super.setMap(map);
   }
 };
