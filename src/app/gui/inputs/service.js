@@ -73,7 +73,7 @@ proto._getValidatorType = function() {
 };
 
 proto.setState = function(state = {}) {
-  this.state = _.isObject(state) ? state : {};
+  this.state = ('object' === typeof state && null !== state && !Array.isArray(state)) ? state : {};
 };
 
 // return validator

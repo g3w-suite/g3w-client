@@ -50,8 +50,8 @@ export default new (class SidebarService extends G3WObject {
    * add component to sidebar, internally call `addComponent`
    * method on each component of the sidebar 
    */
-  addComponents(components, options={}) {
-    components.forEach(c => this.addComponent(c, options));
+  addComponents(components, opts = {}) {
+    components.forEach(c => this.addComponent(c, opts));
     return true;
   };
 
@@ -83,14 +83,13 @@ export default new (class SidebarService extends G3WObject {
 
     this.state.components.push(comp);
 
-    const children = $(id).children().filter(function() { return this.style.display !== 'none' });
+    const children = $(id).children().filter(function() { return 'none' !== this.style.display });
   
     if (null === opts.position || undefined === opts.position || opts.position < 0 || opts.position >= children.length) {
       $(id).append(el);
     } else {
       children.each((i, c) => {
-        const found = Number.isInteger(opts.position) ? opts.position === i : c.id === opts.position;
-        if (found) {
+        if (Number.isInteger(opts.position) ? i === opts.position : c.id === opts.position) {
           $(el)[`insert${opts.before ? 'Before' : 'After'}`](c);
         }
       });
@@ -114,9 +113,8 @@ export default new (class SidebarService extends G3WObject {
    */
   setComponentClickHandler(comp) {
     comp.click = ({ open = false } = {}) => {
-      open = open || false;
       $(comp.getInternalComponent().$el).siblings('a').click();
-      comp.setOpen(open);
+      comp.setOpen(open || false);
     };
   }
 
@@ -155,12 +153,12 @@ export default new (class SidebarService extends G3WObject {
   /**
    * remove component 
    */
-  removeComponent(comp, opts={}) {
+  removeComponent(comp, opts = {}) {
     this.state.components.forEach((c, i) => {
       if (comp === c) {
         comp.unmount();
         this.state.components.splice(i, 1);
-        if (opts.position !== undefined && Number.isInteger(opts.position)) {
+        if (undefined !== opts.position && Number.isInteger(opts.position)) {
           $('#g3w-sidebarcomponents').children(':visible')[opts.position].remove();
         } else {
           $('#g3w-sidebarcomponents').children(`#${comp.id}`).remove();
@@ -173,13 +171,13 @@ export default new (class SidebarService extends G3WObject {
   /**
    * show panel on stack
    */
-  async showPanel(panel, options={}) {
+  async showPanel(panel, opts = {}) {
     this.state.gui.title = panel.title;
-    const data = this.stack.getCurrentContentData();
+    const data           = this.stack.getCurrentContentData();
     if (data) {
       $(data.content.internalPanel.$el).hide();
     } 
-    return await this.stack.push(panel, { parent: '#g3w-sidebarpanel-placeholder', ...options });
+    return await this.stack.push(panel, { parent: '#g3w-sidebarpanel-placeholder', ...opts });
   }
 
   /**
