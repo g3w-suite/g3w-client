@@ -589,7 +589,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .sidebar-form input:focus                                                   { border-color: transparent; }
 .sidebar-menu                                                               { list-style: none; margin: 0; padding: 0; }
 .sidebar-menu > li                                                          { position: relative; margin: 0; padding: 0; }
-.sidebar-menu > li > a                                                      { padding: 12px 5px 12px 15px; display: block; }
+.sidebar-menu > li > a                                                      { padding: 12px 5px 12px 10px; display: block; }
 .sidebar-menu > li > a > :is(.fa, .glyphicon, .ion)                         { width: 20px; }
 .sidebar-menu > li :is(.label, .badge)                                      { margin-top: 3px; margin-right: 5px; }
 .sidebar-menu li.header                                                     { padding: 10px 25px 10px 15px; font-size: 12px; }
@@ -671,7 +671,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar .sidebar-button-run                                  { background-color: var(--skin-color) !important; }
 .main-sidebar .sidebar-button                                      { color: var(--skin-color); }
 .main-sidebar .sidebar-button.toggled                              { background-color: var(--skin-color) !important; }
-.main-sidebar ul.sidebar-menu li.sidebaritem a span.treeview-label { color: #FFF !important; }
+.main-sidebar ul.sidebar-menu li.sidebaritem a span.treeview-label { color: #FFF; }
 .main-sidebar ul.sidebar-menu li.sidebaritem a:hover               { color: var(--skin-l30) !important; }
 
 .skin-green  .main-sidebar ul.sidebar-menu li.sidebaritem a:hover  { color: #a1e096 !important; }
@@ -697,7 +697,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
     .sidebar-collapse .sidebar-aside-toggle                                     { transform: translate(~"calc(-1 * var(--sidebar-width))", 0); }
 
     //Apply the new margining to the main content and footer
-    .sidebar-mini.sidebar-collapse .content-wrapper                             { padding-left: 35px; /*z-index: 840;*/ }
+    .sidebar-mini.sidebar-collapse .content-wrapper                             { margin-left: 35px; /*z-index: 840;*/ }
     .sidebar-mini.sidebar-collapse .main-sidebar                                { transform: translate(0, 0); width: 35px !important; z-index: 850; }
     .sidebar-mini.sidebar-collapse .sidebar-menu > li                           { position: relative; }
     .sidebar-mini.sidebar-collapse .sidebar-menu > li > a                       { margin-right: 0; }
@@ -721,10 +721,11 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
   }
 }
 
-.sidebar-mini.sidebar-collapse #catalog > *           { display: none; }
-.sidebar-mini.sidebar-collapse #catalog > a           { display: block !important; }
-.sidebar-mini.sidebar-collapse #g3w-sidebarcomponents { padding-top: 50px; overflow: hidden; }
-.sidebar-mini.sidebar-collapse .ol-geocoder           { left: 10px; }
+.sidebar-mini.sidebar-collapse #catalog > *                                                       { display: none; }
+.sidebar-mini.sidebar-collapse #catalog > a                                                       { display: block !important; }
+.sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                             { padding-top: 50px; overflow: hidden; }
+.sidebar-mini.sidebar-collapse .ol-geocoder                                                       { left: 10px; }
+.sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu li.sidebaritem a span.treeview-label { color:  transparent; }
 
 /**************************************************************************************
  * 5. Viewport
