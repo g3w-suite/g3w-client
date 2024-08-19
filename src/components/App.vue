@@ -197,29 +197,23 @@
                     </p>
                   </li>
                   <li class = "user-footer">
-                    <div
+                    <a
                       v-if  = "user.admin_url"
-                      class = "pull-left"
+                      :href = "user.admin_url"
+                      class = "btn btn-default btn-flat skin-color bold"
                     >
-                      <a
-                        :href = "user.admin_url"
-                        class = "btn btn-default btn-flat skin-color bold"
-                      >
-                        <i :class="g3wtemplate.getFontClass('folder')"></i> Admin
-                      </a>
-                    </div>
-                    <div class="pull-right">
-                      <a
-                        :href = "user.logout_url"
-                        class = "btn btn-default btn-flat skin-color bold"
-                        v-t   = "'logout'"
-                      >
-                        <i
-                          :class = "g3wtemplate.getFontClass('sign-out')"
-                          style  = "margin-right: 2px;">
-                        </i>
-                      </a>
-                    </div>
+                      <i :class="g3wtemplate.getFontClass('folder')"></i> Admin
+                    </a>
+                    <a
+                      :href = "user.logout_url"
+                      class = "btn btn-default btn-flat skin-color bold"
+                      v-t   = "'logout'"
+                    >
+                      <i
+                        :class = "g3wtemplate.getFontClass('sign-out')"
+                        style  = "margin-right: 2px;">
+                      </i>
+                    </a>
                   </li>
                 </ul>
               </li>
@@ -389,160 +383,157 @@
       class  = "content-wrapper"
       :style = "{paddingTop: isIframe ? 0 : null}"
     >
-        <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
-          <user-message
-            v-if               = "usermessage.show"
-            @close-usermessage = "closeUserMessage"
-            :title             = "usermessage.title"
-            :subtitle          = "usermessage.subtitle"
-            :id                = "usermessage.id"
-            :message           = "usermessage.message"
-            :draggable         = "usermessage.draggable"
-            :closable          = "usermessage.closable"
-            :duration          = "usermessage.duration"
-            :position          = "usermessage.position"
-            :autoclose         = "usermessage.autoclose"
-            :textMessage       = "usermessage.textMessage"
-            :size              = "usermessage.size"
-            :type              = "usermessage.type"
-            :icon-class        = "usermessage.iconClass"
-          >
-            <template v-if="hooks.header"   slot="header"><component :is="hooks.header" /></template>
-            <template v-if="hooks.body"     slot="body"><component   :is="hooks.body" /></template>
-            <template v-if = "hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
-          </user-message>
-        </transition>
-
-        <div
-          id     = "g3w-view-map"
-          :class = "`split-${state.split}`"
-          class  = "g3w-view map"
-          :style = "styles.map"
+      <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
+        <user-message
+          v-if               = "usermessage.show"
+          @close-usermessage = "closeUserMessage"
+          :title             = "usermessage.title"
+          :subtitle          = "usermessage.subtitle"
+          :id                = "usermessage.id"
+          :message           = "usermessage.message"
+          :draggable         = "usermessage.draggable"
+          :closable          = "usermessage.closable"
+          :duration          = "usermessage.duration"
+          :position          = "usermessage.position"
+          :autoclose         = "usermessage.autoclose"
+          :textMessage       = "usermessage.textMessage"
+          :size              = "usermessage.size"
+          :type              = "usermessage.type"
+          :icon-class        = "usermessage.iconClass"
         >
+          <template v-if="hooks.header"   slot="header"><component :is="hooks.header" /></template>
+          <template v-if="hooks.body"     slot="body"><component   :is="hooks.body" /></template>
+          <template v-if = "hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
+        </user-message>
+      </transition>
 
-          <g3w-resize
-            id           = "resize-map-and-content"
-            :show        = "showresize"
-            :moveFnc     = "moveFnc"
-            :orientation = "state.split"
-            :style       = "{backgroundColor:'transparent'}"
-            :class       = "`split-${state.split}`"
-          />
+      <div
+        id     = "g3w-view-map"
+        :class = "`split-${state.split}`"
+        class  = "g3w-view map"
+        :style = "styles.map"
+      >
 
-          <div id="application-notifications">
-            <div id = "offline_notification" v-online:hide style = "color: #999">
-              <i :class = "g3wtemplate.getFontClass('wifi')"></i>
-              <div style = "font-weight: bold; font-size:0.4em">offline</div>
-            </div>
-            <div id = "download_notification" v-download.show title = "DOWNLOAD" class = "skin-color">
-              <bar-loader loading = "true"/>
-              <i style = "padding:3px" :class = "g3wtemplate.getFontClass('download')"></i>
-            </div>
-            <div id = "plugins_notification" v-plugins style = "color: #994b10">
-              <bar-loader loading = "true"/>
-              <i :class = "g3wtemplate.getFontClass('plugin')"></i>
-            </div>
+        <g3w-resize
+          id           = "resize-map-and-content"
+          :show        = "showresize"
+          :moveFnc     = "moveFnc"
+          :orientation = "state.split"
+          :style       = "{backgroundColor:'transparent'}"
+          :class       = "`split-${state.split}`"
+        />
+
+        <div id="application-notifications">
+          <div id = "offline_notification" v-online:hide style = "color: #999">
+            <i :class = "g3wtemplate.getFontClass('wifi')"></i>
+            <div style = "font-weight: bold; font-size:0.4em">offline</div>
           </div>
-
+          <div id = "download_notification" v-download.show title = "DOWNLOAD" class = "skin-color">
+            <bar-loader loading = "true"/>
+            <i style = "padding:3px" :class = "g3wtemplate.getFontClass('download')"></i>
+          </div>
+          <div id = "plugins_notification" v-plugins style = "color: #994b10">
+            <bar-loader loading = "true"/>
+            <i :class = "g3wtemplate.getFontClass('plugin')"></i>
+          </div>
         </div>
-        <div
-          id         = "g3w-view-content"
-          :class     = "`split-${state.split}`"
-          class      = "g3w-view content"
-          :style     = "styles.content"
-          v-disabled = "state.content.disabled"
+
+      </div>
+      <div
+        id         = "g3w-view-content"
+        :class     = "`split-${state.split}`"
+        class      = "g3w-view content"
+        :style     = "styles.content"
+        v-disabled = "state.content.disabled"
+      >
+        <section
+          v-if  = "breadcrumb.length > 1"
+          :ref  = "breadcrumb"
+          class = "content_breadcrumb"
         >
-          <section
-            v-if  = "breadcrumb.length > 1"
-            :ref  = "breadcrumb"
-            class = "content_breadcrumb"
+          <span
+            v-for = "(crumb, index) in breadcrumb"
+            :key  = "crumb.title"
           >
             <span
-              v-for = "(crumb, index) in breadcrumb"
-              :key  = "crumb.title"
-            >
-              <span
-                class  = "skin-color-dark"
-                :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
-                v-t    = "crumb.title" >
-              </span>
-              <span
-                v-if  = "isNotLastCrumb(index)"
-                style = "font-weight: bold; margin: 3px 0">/</span>
+              class  = "skin-color-dark"
+              :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
+              v-t    = "crumb.title" >
             </span>
-          </section>
+            <span
+              v-if  = "isNotLastCrumb(index)"
+              style = "font-weight: bold; margin: 3px 0">/</span>
+          </span>
+        </section>
+        <div
+          v-if  = "(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)"
+          class = "close-panel-block"
+          style = "display: flex; justify-content: space-between"
+        >
           <div
-            v-if  = "(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)"
-            class = "close-panel-block"
-            style = "display: flex; justify-content: space-between"
+            v-if  = "previousTitle"
+            class = "g3w_contents_back g3w-long-text"
           >
             <div
-              v-if  = "previousTitle"
-              class = "g3w_contents_back g3w-long-text"
+              v-if   = "'back' === backOrBackTo "
+              :class = "backOrBackTo"
             >
-              <div
-                v-if   = "'back' === backOrBackTo "
-                :class = "backOrBackTo"
-              >
-                <span
-                  class  = "action-button"
-                  :class = "g3wtemplate.getFontClass('back')">
-                </span>
-                <span v-t="'back'"></span>
-              </div>
-              <div
-                v-else
-                @click.stop = "gotoPreviousContent()"
-                :class      = "backOrBackTo"
-              >
-                <span
-                  class  = "action-button"
-                  :class = "g3wtemplate.getFontClass('back')">
-                </span>
-                <span v-t = "'backto'"></span>
-                <span v-if = "!updatePreviousTitle" v-t = "previousTitle"></span>
-              </div>
-            </div>
-            <div
-              v-if   = "!previousTitle && showtitle && contentTitle"
-              class  = "panel-title"
-              :style = "[state.content.style.title]"
-              :class = "{'mobile': isMobile()}"
-            >
-            <span id = "contenttitle">
-              <span v-t = "contentTitle.title"></span>
-              <span v-t = "contentTitle.post_title"></span>
-            </span>
-            </div>
-            <div
-              class = "g3-content-header-action-tools"
-              style = "display: flex; align-items: center"
-            >
-              <component v-for = "tool in state.content.headertools" :is = "tool"/>
-              <resize-icon
-                v-if   = "showresizeicon"
-                :type  = "state.split"
-                style  = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
-                :style = "{marginRight: state.content.closable ? '5px': '0px'}"/>
               <span
-                v-if = "state.content.closable && state.content.aside"
-                @click = "closeContent"
-                :class = "{'mobile': isMobile()}"
                 class  = "action-button"
-                style  = "display: flex; justify-content: center "
-              >
-              <i class = "skin-color-dark" :class = "g3wtemplate.getFontClass('close')"></i>
-            </span>
+                :class = "g3wtemplate.getFontClass('back')">
+              </span>
+              <span v-t="'back'"></span>
+            </div>
+            <div
+              v-else
+              @click.stop = "gotoPreviousContent()"
+              :class      = "backOrBackTo"
+            >
+              <span
+                class  = "action-button"
+                :class = "g3wtemplate.getFontClass('back')">
+              </span>
+              <span v-t = "'backto'"></span>
+              <span v-if = "!updatePreviousTitle" v-t = "previousTitle"></span>
             </div>
           </div>
-          <bar-loader :loading = "state.content.loading"/>
+          <div
+            v-if   = "!previousTitle && showtitle && contentTitle"
+            class  = "panel-title"
+            :style = "[state.content.style.title]"
+            :class = "{'mobile': isMobile()}"
+          >
+          <span id = "contenttitle">
+            <span v-t = "contentTitle.title"></span>
+            <span v-t = "contentTitle.post_title"></span>
+          </span>
+          </div>
+          <div
+            class = "g3-content-header-action-tools"
+            style = "display: flex; align-items: center"
+          >
+            <component v-for = "tool in state.content.headertools" :is = "tool"/>
+            <resize-icon
+              v-if   = "showresizeicon"
+              :type  = "state.split"
+              style  = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
+              :style = "{marginRight: state.content.closable ? '5px': '0px'}"/>
+            <span
+              v-if = "state.content.closable && state.content.aside"
+              @click = "closeContent"
+              :class = "{'mobile': isMobile()}"
+              class  = "action-button"
+              style  = "display: flex; justify-content: center "
+            >
+            <i class = "skin-color-dark" :class = "g3wtemplate.getFontClass('close')"></i>
+          </span>
+          </div>
         </div>
+        <bar-loader :loading = "state.content.loading"/>
+      </div>
     </div>
 
-    <!-- Right Click on Project Title - Context Project Menu -->
-    <catalog-project-context-menu />
-    <!-- Right Click on TOC - Context layer Menu -->
-    <catalog-layer-context-menu />
+    <catalog-context-menu />
 
     <!-- MODAL (FULL SCREEN) -->
     <div
@@ -713,8 +704,7 @@ import { resizeMixin }           from "mixins";
 
 import HeaderItem                from "components/HeaderItem.vue";
 import userMessage               from 'components/UserMessage.vue';
-import CatalogLayerContextMenu   from 'components/CatalogLayerContextMenu.vue';
-import CatalogProjectContextMenu from 'components/CatalogProjectContextMenu.vue';
+import CatalogContextMenu   from 'components/CatalogContextMenu.vue';
 import getUniqueDomId            from 'utils/getUniqueDomId';
 
 const { t }        = require('core/i18n/i18n.service');
@@ -773,8 +763,7 @@ export default {
     HeaderItem,
     CookieLaw,
     userMessage,
-    CatalogLayerContextMenu,
-    CatalogProjectContextMenu,
+    CatalogContextMenu,
   },
 
   computed: {
@@ -1430,7 +1419,17 @@ export default {
     margin-top: 5px;
     cursor: pointer;
   }
+
+  .user-header              { background-color: var(--skin-color); }
+  .user-header              { height: 175px; padding: 10px; text-align: center; }
+  .user-header > p          { z-index: 5; color: #fff; color: rgba(255, 255, 255, 0.8); font-size: 17px; margin-top: 10px; }
+  .user-footer              { background-color: #f9f9f9; padding: 10px; display: flex;justify-content: space-between; }
+  .user-footer .btn-default { color: #666; }
+
   @media (max-width: 767px) {
     #g3w-small-screen-hamburger-sidebar { display: block; }
+    .user-footer .btn-default:hover     { background-color: #f9f9f9; }
+    .user-header                        { display: none; }
   }
+
 </style>

@@ -516,7 +516,7 @@ export default {
     },
 
     /**
-     * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
+     * @TODO refactor this, almost the Same as `CatalogContextMenu.vue::zoomToLayer(layer)`
      *
      * @since 3.10.0
      */
@@ -532,7 +532,7 @@ export default {
     },
 
     /**
-     * @TODO refactor this, almost the same as: `CatalogLayerContextMenu.vue::canZoom(layer))`
+     * @TODO refactor this, almost the same as: `CatalogContextMenu.vue::canZoom(layer))`
      *
      * @since v3.8
      */

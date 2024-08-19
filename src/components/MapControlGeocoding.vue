@@ -945,7 +945,6 @@ export default {
     background-color: #fff;
     overflow: hidden;
     border-radius: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     width: 100%;
     border: 2px solid var(--skin-color)
   }

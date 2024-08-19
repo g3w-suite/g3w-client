@@ -147,7 +147,6 @@
 }
 #switch-mouse-coordinate span {
   padding: 3px;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 #map_footer_right {
   flex-shrink: 0;
