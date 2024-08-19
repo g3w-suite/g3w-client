@@ -815,18 +815,15 @@ export default {
     },
 
     logo_url() {
-      const logo_project_url = this.currentProject.getThumbnail();
-      return logo_project_url ? logo_project_url : `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
+      return this.currentProject.getThumbnail() || `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
 
     logo_link() {
-      const logo_link = this.getLogoLink();
-      return logo_link ? logo_link : "#";
+      return this.getLogoLink() || "#";
     },
 
     logo_link_target() {
-      const logo_link = this.getLogoLink();
-      return logo_link ? "_blank" : "";
+      return this.getLogoLink() ? "_blank" : "";
     },
 
     project_title() {
@@ -884,9 +881,9 @@ export default {
     },
 
     showtitle() {
-      if (this.state.content.contentsdata.length) {
+      if (this.state.content.contentsdata.length > 0) {
         const options = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
-        if (_.isBoolean(options.showtitle)) { return options.showtitle }
+        if (true === options.showtitle || false === options.showtitle) { return options.showtitle }
       }
       return true;
     },
@@ -914,8 +911,8 @@ export default {
 
     contentTitle() {
       if (this.state.content.contentsdata.length) {
-        const {title, post_title} = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
-        return {title, post_title};
+        const { title, post_title } = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
+        return { title, post_title };
       }
     },
 
@@ -949,7 +946,7 @@ export default {
     },
 
     showmainpanel() {
-      return this.components.length>0 && !this.panelsinstack;
+      return this.components.length > 0 && !this.panelsinstack;
     },
 
     componentname() {
@@ -1011,7 +1008,7 @@ export default {
 
       const projectId = this.currentProject.getId();
 
-      for (let i =0; i < messages.items.length; i++) {
+      for (let i = 0; i < messages.items.length; i++) {
         const message = messages.items[i];
         const data    = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.MESSAGES.id) || LOCAL_ITEM_IDS.MESSAGES.value;
 
@@ -1044,11 +1041,11 @@ export default {
         // show a modal window
         await new Promise((resolve) => {
           GUI.showModalDialog({
-            title: message.title,
-            message: content,
-            size: 'large',
+            title:       message.title,
+            message:     content,
+            size:        'large',
             closeButton: false,
-            className: `g3w-modal-project-message ${Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]}`,
+            className:   `g3w-modal-project-message ${Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]}`,
             buttons: {
               close: {
                 label: t('close'),
@@ -1149,13 +1146,13 @@ export default {
 
     this.customlinks = Array.isArray(this.appconfig.header_custom_links)
       ? this.appconfig.header_custom_links
-        .filter(customitem => {
-          if (customitem !== null) {
-            const id = customitem.id = getUniqueDomId();
-            customitem.type === 'modal' && this.custom_modals.push({ id, content: customitem.content });
-            let position = 1*(customitem.position || 0);
+        .filter(item => {
+          if (null !== item !== null) {
+            const id = item.id = getUniqueDomId();
+            item.type === 'modal' && this.custom_modals.push({ id, content: item.content });
+            let position = 1*(item.position || 0);
             position = position > 4 ? 4 : position < 0 || Number.isNaN(position)? 0 : position;
-            this.custom_header_items_position[position].push(customitem);
+            this.custom_header_items_position[position].push(item);
             return true
           }
           return false;
@@ -1235,7 +1232,7 @@ export default {
       //If the menu is not visible
       else if ((next.is('.treeview-menu')) && (!next.is(':visible'))) {
         //Get the parent menu
-        var parent = $this.parents('ul').first();
+        const parent = $this.parents('ul').first();
         //Close all open menus within the parent
         //Remove the menu-open class from the parent
         parent.find('ul.treeview-menu:visible').slideUp('fast').removeClass('menu-open');
@@ -1280,9 +1277,9 @@ export default {
     $(document).on('click', '[data-widget="collapse"]', function (e) {
       e.preventDefault();
       //Find the box parent
-      var box = $(this).parents(".box").first();
+      const box = $(this).parents(".box").first();
       //Find the body and the footer
-      var box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
+      const box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
       if (!box.hasClass("collapsed-box")) {
         $(this).find(".btn-collapser").removeClass('fa-minus').addClass('fa-plus'); // Convert minus into plus
         box_content.slideUp('fast', () => box.addClass("collapsed-box"));           // Hide the content
@@ -1300,7 +1297,7 @@ export default {
 
     // INITIALIZE BUTTON TOGGLE 
     $('.btn-group[data-toggle="btn-toggle"]').each(function () {
-      var group = $(this);
+      const group = $(this);
       $(this).find(".btn").on('click', function (e) {
         group.find(".btn.active").removeClass("active");
         $(this).addClass("active");
@@ -1318,7 +1315,7 @@ export default {
     const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
     this.media.matches = mediaQueryEventMobile.matches;
     mediaQueryEventMobile.addListener(e => {
-      if (e.type === 'change') { this.media.matches = e.currentTarget.matches }
+      if ('change' === e.type) { this.media.matches = e.currentTarget.matches }
     });
     handleResizeViewport();
 
