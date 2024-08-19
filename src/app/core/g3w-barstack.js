@@ -90,8 +90,8 @@ export class BarStack extends G3WObject {
     // check the type of content:
 
     // String or JQuery
-    if (content instanceof jQuery || _.isString(content)) {
-      let el = _.isString(content) ? ($(content).length ? $('<div>' + content + '</div>') : $(content)) : content
+    if (content instanceof jQuery || 'string' === typeof content) {
+      let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
       $(this._parent).append(el);
       data.push({ content: el, options });
       console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', data[data.length - 1]);
