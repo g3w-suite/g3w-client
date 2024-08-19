@@ -772,7 +772,7 @@ class QueryResultsService extends G3WObject {
     const interaction = this._addFeaturesLayerResultInteraction;
 
     const not_current = ![null, layer.id].includes(interaction.id);
-    const new_layer   = not_current && this.state.layers.find(layer => layer.id === interaction.id);
+    const new_layer   = not_current && this.state.layers.find(l => l.id === interaction.id);
 
     // disable previous layer
     if (not_current && new_layer) {
@@ -849,7 +849,9 @@ class QueryResultsService extends G3WObject {
    * @FIXME add description
    */
   deactiveQueryInteractions() {
-    this.state.layers.forEach(layer => { if (layer.addfeaturesresults) layer.addfeaturesresults.active = false; });
+    this.state.layers.forEach(l => {
+      if (l.addfeaturesresults) { l.addfeaturesresults.active = false }
+    })
     this.removeAddFeaturesLayerResultInteraction();
   }
 
@@ -1108,8 +1110,7 @@ class QueryResultsService extends G3WObject {
    */
   _parseLayerObjFormStructure(layer, features, rawdata, attributes) {
     const structure = layer.hasFormStructure() && layer.getLayerEditingFormStructure();
-    console.log(layer, this._relations)
-    if (false === (structure && this._relations[layer.getId()] && this._relations[layer.getId()].length)) {
+    if (false === (structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0)) {
       return;
     }
     const setRelationField = (node) => {
@@ -1127,14 +1128,14 @@ class QueryResultsService extends G3WObject {
 
     const formStructure = {
       structure,
-      fields: layer.getFields().filter(field => field.show), // get features show
+      fields: layer.getFields().filter(f => f.show), // get field show
     };
 
     /** @FIXME add description */
-    if (!rawdata && Array.isArray(features) && features.length) {
+    if (!rawdata && Array.isArray(features) && features.length > 0) {
       attributes
         .forEach(attr => {
-          if (layer.getFields().some(field => field.name === attr.name)) {
+          if (layer.getFields().some(f => f.name === attr.name)) {
             formStructure.fields.push(attr);
           }
         });
@@ -1314,7 +1315,7 @@ class QueryResultsService extends G3WObject {
    * @param vectorLayer
    */
   registerVectorLayer(vectorLayer) {
-    if (-1 === this._vectorLayers.indexOf(vectorLayer)) {
+    if (!this._vectorLayers.includes(vectorLayer)) {
       this._vectorLayers.push(vectorLayer);
     }
   }
@@ -1325,9 +1326,9 @@ class QueryResultsService extends G3WObject {
    * @param vectorLayer
    */
   unregisterVectorLayer(vectorLayer) {
-    this._vectorLayers = this._vectorLayers.filter(layer => {
-      this.state.layers = this.state.layers && this.state.layers.filter(layer => layer.id !== vectorLayer.get('id'));
-      return layer !== vectorLayer;
+    this._vectorLayers = this._vectorLayers.filter(vl => {
+      this.state.layers = this.state.layers.filter(l => l.id !== vectorLayer.get('id'));
+      return vl !== vectorLayer;
     });
   }
 
@@ -1345,7 +1346,7 @@ class QueryResultsService extends G3WObject {
       bbox,
       geometry,
       filterConfig = {}
-    } = query; // extract information about query type
+    } = query; // extract information about a query type
 
     let features = [];
 
@@ -2598,12 +2599,12 @@ QueryResultsService.prototype.setters = {
   setLayersData(layers, options = { add: false }) {
     if (false === options.add) {
       // set the right order of result layers based on TOC
-      this._currentLayerIds = layers.map(layer => layer.id);
+      this._currentLayerIds = layers.map(l => l.id);
       // sort layers as Catalog project layers.
       layers.sort((a, b) => (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
     }
-    // get features from add pick layer in case of a new request query
-    layers.forEach(layer => { options.add ? this.updateLayerResultFeatures(layer) : this.state.layers.push(layer); });
+    // get features from added pick layer in case of a new request query
+    layers.forEach(l => { options.add ? this.updateLayerResultFeatures(l) : this.state.layers.push(l); });
     this.setActionsForLayers(layers, { add: options.add });
     this.state.changed = true;
   },
