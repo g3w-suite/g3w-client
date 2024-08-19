@@ -96,7 +96,7 @@ const ApplicationService = function() {
   /**
    * Set application user from intiConfig (passed as parameter)
    */
-  this.on('initconfig', ({user} = {}) => { this.setApplicationUser(user); });
+  this.on('initconfig', ({ user } = {}) => { this.setApplicationUser(user); });
 
   /**
    * init application
@@ -108,8 +108,9 @@ const ApplicationService = function() {
       this.setLayout('app', config.layout);
       return await this.bootstrap();
     } catch(error) {
+      console.warn(error);
       const browserLanguage = navigator && navigator.language || 'en';
-      const language        = appConfig.supportedLanguages.find(language => browserLanguage.indexOf(language) !== -1);
+      const language        = appConfig.supportedLanguages.find(l => browserLanguage.includes(l));
       return Promise.reject({ error, language })
     }
   };
@@ -146,7 +147,7 @@ const ApplicationService = function() {
     //set the current application download state
     ApplicationState.download = bool;
     //Set this.download caller id. If download_caller_id is provided, reset to null (start value)
-    this.download_caller_id = download_caller_id ? null : uniqueId();
+    this.download_caller_id   = download_caller_id ? null : uniqueId();
 
     return this.download_caller_id;
   };
@@ -217,9 +218,9 @@ const ApplicationService = function() {
    * @FIXME weird parameter name (`bool`)
    * @FIXME unsued function paramater (`message`)
    */
-  this.registerLeavePage = function({bool=false, message=''}={}) {
+  this.registerLeavePage = function({ bool=false, message='' } = {}) {
     const _return = !bool ? undefined : bool;
-    window.onbeforeunload = function(event) {
+    window.onbeforeunload = function() {
       return _return;
     };
   };
@@ -451,6 +452,7 @@ const ApplicationService = function() {
         macrogroups,
       };
     } catch(e) {
+      console.warn(e);
       return Promise.reject(e);
     }
   };
@@ -511,8 +513,9 @@ const ApplicationService = function() {
         // get configuration from server
         this._initConfig = await this.getInitConfig(`${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`);
       }
-    } catch(error) {
-      return Promise.reject(error);
+    } catch(e) {
+      console.warn(e);
+      return Promise.reject(e);
     } finally {
       window.initConfig = this._initConfig;
       this.emit('initconfig', this._initConfig);
@@ -528,7 +531,7 @@ const ApplicationService = function() {
       else {
         XHR.get({url})
           .then(initConfig => resolve(initConfig))
-          .catch(error => reject(error));
+          .catch(e => { console.warn(e); reject(e) });
       }
     })
   };
@@ -601,9 +604,9 @@ const ApplicationService = function() {
           DataRouterService.init();
           this.initLocalItems();
           resolve(true);
-        }).fail(e => reject(e))
+        }).fail(e => { console.warn(e); reject(e) })
       }
-    });
+    })
   };
 
   /**
@@ -727,7 +730,9 @@ const ApplicationService = function() {
     // in case of url with not same origin (CORS issue) trigger an error
     try {
       history.replaceState(null, null, url);
-    } catch (err) {}
+    } catch (e) {
+      console.warn(e);
+    }
     location.replace(url);
     d.resolve();
     return d.promise();
@@ -736,7 +741,7 @@ const ApplicationService = function() {
   /**
    * Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
    */
-  this.setLayout = function(who='app', config={}) {
+  this.setLayout = function(who = 'app', config = {}) {
 
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%  
