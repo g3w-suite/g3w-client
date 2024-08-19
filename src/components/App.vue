@@ -200,19 +200,20 @@
                     <a
                       v-if  = "user.admin_url"
                       :href = "user.admin_url"
-                      class = "btn btn-default btn-flat skin-color bold"
+                      class = "btn btn-default btn-flat skin-color"
                     >
-                      <i :class="g3wtemplate.getFontClass('folder')"></i> Admin
+                      <i :class="g3wtemplate.getFontClass('folder')"></i>
+                      <b>Admin</b>
                     </a>
                     <a
                       :href = "user.logout_url"
-                      class = "btn btn-default btn-flat skin-color bold"
-                      v-t   = "'logout'"
+                      class = "btn btn-default btn-flat skin-color"
                     >
                       <i
                         :class = "g3wtemplate.getFontClass('sign-out')"
                         style  = "margin-right: 2px;">
                       </i>
+                     <b v-t="'logout'"></b>
                     </a>
                   </li>
                 </ul>
