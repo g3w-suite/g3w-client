@@ -1293,7 +1293,80 @@
 
   };
 </script>
-<style scoped>
+
+<style>
+  .catalog-context-menu {
+    background: #FAFAFA;
+    border: 1px solid #BDBDBD;
+    border-radius: 3px;
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    min-width: 150px;
+    z-index: 999999;
+    color: #000;
+    outline: none;
+  }
+  .catalog-context-menu li {
+    border-bottom: 1px solid #E0E0E0;
+    margin: 0;
+    padding: 5px 15px;
+  }
+  .catalog-context-menu li span.menu-icon {
+    padding-right: 3px;
+    margin-right: 3px;
+  }
+  .catalog-context-menu li .wms-url-tooltip {
+    color: #000;
+    opacity: 1;
+  }
+  .catalog-context-menu li .wms-url-tooltip:hover {
+    color: #FFF !important;
+    transform: scale(1.1);
+  }
+  .catalog-context-menu li.title {
+    background: transparent;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-bottom-width: 3px !important;
+  }
+  .catalog-context-menu li.title:hover {
+    cursor: default !important;
+    background: transparent !important;
+    color: #000;
+  }
+  .catalog-context-menu li:last-child {
+    border-bottom: none;
+  }
+  .catalog-context-menu li:hover {
+    color: #FAFAFA;
+    cursor: pointer;
+  }
+  .catalog-context-menu li .layer-menu-metadata-info {
+    padding: 5px;
+    max-width: 200px;
+    white-space: normal;
+    overflow-y: auto;
+    max-height: 150px;
+  }
+  .catalog-context-menu .wms-url-tooltip .tooltip-inner {
+    min-width: 200px;
+  }
+  .catalog-context-menu .tooltip-inner {
+    word-break: break-all;
+    font-weight: bold;
+  }
+  .catalog-context-menu .item-text {
+    margin-left: 3px;
+  }
+  li .item-text{
+    font-weight: bold;
+  }
+  ul, li {
+    list-style-type: none;
+  }
   #project-context-menu {
     background: #FAFAFA;
     border: 1px solid #BDBDBD;
@@ -1308,10 +1381,5 @@
     color:#000000;
     outline: none;
   }
-  li .item-text{
-    font-weight: bold;
-  }
-  li .item-text{
-    font-weight: bold;
-  }
+
 </style>
