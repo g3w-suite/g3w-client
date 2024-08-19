@@ -144,7 +144,7 @@ export default class G3WObject extends EventEmitter {
     if (this.settersListeners && undefined !== this.settersListeners[when][setter]) {
       key = `${Math.floor(Math.random() * 1000000) + Date.now()}`;
       this.settersListeners[when][setter].push({ key, fnc: listener, async, priority, once});
-      this.settersListeners[when][setter] = _.sortBy(this.settersListeners[when][setter], listener => listener.priority);
+      this.settersListeners[when][setter] = this.settersListeners[when][setter].sort((l1, l2) => l2.priority - l1.priority);
     }
     return key // in case of no setter register return undefined listenerKey
   }
@@ -180,14 +180,14 @@ export default class G3WObject extends EventEmitter {
          */
         const next = (bool) => {
           //check if it needs to skip (exit)
-          const skip  = _.isBoolean(bool) ? !bool : false;
+          const skip  = (true === bool || false === bool) ? !bool : false;
           //get count of before subscribers on setter function
           const len = this.settersListeners.before[setter].length;
 
           // abort in case of error bool false,
           // or we reached the end of onbefore subscriber
           if (skip) {
-            (_.isFunction(setters[setter]) ? noop : (setters[setter].fallback || noop)).apply(this, args);
+            (setters[setter] instanceof Function ? noop : (setters[setter].fallback || noop)).apply(this, args);
             deferred.reject();
             return;
           }
@@ -195,7 +195,7 @@ export default class G3WObject extends EventEmitter {
           // call complete method methods and check what returns
           if (count === len) {
             // run setter function (resolve promise)
-            deferred.resolve((_.isFunction(setters[setter]) ? setters[setter] : setters[setter].fnc).apply(this, args));
+            deferred.resolve((setters[setter] instanceof Function ? setters[setter] : setters[setter].fnc).apply(this, args));
             // call all subscribed methods after setter
             const onceListeners = [];
             this
