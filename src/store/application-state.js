@@ -25,7 +25,7 @@ const STATE = Vue.observable({
   online: false,
 
   /**
-   * true = application is loaded on mobile device
+   * true = application is loaded on a mobile device
    */
   ismobile: false,
   
@@ -40,7 +40,7 @@ const STATE = Vue.observable({
   upload: false,
 
   /**
-   * @FIXME add description
+   * Store current map base layer id
    */
   baseLayerId: null,
 
@@ -60,8 +60,8 @@ const STATE = Vue.observable({
   changeProjectview: false,
 
   /**
-   * Store Array of loading plugin name add by ApplicationService.loadingPlugin
-   * Every time a plugin is loaded, plugin name are removed from Array
+   * Store Array of loading plugin name adds by ApplicationService.loadingPlugin
+   * Every time a plugin is loaded, plugin name is removed from Array
    * It used in v-plugins directive
    */
   plugins: [],
@@ -72,7 +72,7 @@ const STATE = Vue.observable({
   user: null,
 
   /**
-   * @FIXME add description
+   * Store info of the application map
    */
   map: {
     epsg: '',
@@ -80,7 +80,7 @@ const STATE = Vue.observable({
   },
 
   /**
-   * @FIXME add description
+   * Store info of the elements of GUI of the application
    */
   gui: {
 
@@ -105,26 +105,26 @@ const STATE = Vue.observable({
       __current: 'app',
 
       /**
-       * @FIXME add description
+       * Store application layout info (rightpanel)
        */
-      app: {}
+      app:       {}
 
     }
 
   },
 
   /**
-   * Sore vendor keys need by application third part script
+   * Sore vendor keys need it by application third part script
    */
   keys: {
     vendorkeys: {
       google: undefined,
-      bing: undefined
+      bing:   undefined
     }
   },
 
   /**
-   * Store tokens, used by server for example to filter features
+   * Store tokens, used by server, for example, to filter features
    */
   tokens: {
     filtertoken: undefined
@@ -134,7 +134,7 @@ const STATE = Vue.observable({
    * @since 3.10.0
    */
   querybuilder: {
-    cache: {},
+    cache:    {},
     searches: JSON.parse(window.localStorage.getItem('QUERYBUILDERSEARCHES') || "{}"),
   },
 
