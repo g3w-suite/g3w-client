@@ -24,7 +24,7 @@
       </div>
       <bar-loader :loading = "loading"/>
       <g3w-media :state = "data">
-        <div class = "clearmedia" @click = "clearMedia()">
+        <div class = "clearmedia" @click.stop = "clearMedia()">
           <i :class = "g3wtemplate.font['trash-o']" class = "g3w-icon"></i>
         </div>
       </g3w-media>
@@ -52,7 +52,7 @@
     data() {
       return {
         data: {
-          value: null,
+          value:     null,
           mime_type: null
         },
         mediaid: `media_${getUniqueDomId()}`,
@@ -60,21 +60,8 @@
       }
     },
     methods: {
-      onClick(e) {
+      onClick() {
         document.getElementById(this.mediaid).click();
-      },
-      createImage(file, field) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          field.value = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      },
-      checkFileSrc(value) {
-        if (_.isNil(value)) {
-          value = ''
-        }
-        return value
       },
       clearMedia() {
         this.data.value = this.data.mime_type = this.state.value = null;
@@ -87,36 +74,32 @@
         this.data.mime_type = this.state.value.mime_type;
       }
     },
-    mounted() {
+    async mounted() {
       const fieldName = this.state.name;
       const formData = {
-        name: fieldName,
+        name:                fieldName,
         csrfmiddlewaretoken: this.$cookie.get('csrftoken')
-      };
-      this.$nextTick(() => {
-        $(`#${this.mediaid}`).fileupload({
-          dataType: 'json',
-          formData,
-          start: ()=>{
-            this.loading = true;
-          },
-          done: (e, data) => {
-            const response = data.result[fieldName];
-            if (response) {
-              this.data.value = response.value;
-              this.data.mime_type = response.mime_type;
-              this.state.value = this.data;
-              this.change();
-            }
-          },
-          fail: () => {
-            GUI.notify.error(t("info.server_error"));
-          },
-          always: () => {
-            this.loading = false;
+      }
+
+      await this.$nextTick();
+
+      $(`#${this.mediaid}`).fileupload({
+        dataType: 'json',
+        formData,
+        start: () => this.loading = true,
+        done: (e, data) => {
+          const response = data.result[fieldName];
+          if (response) {
+            this.data.value     = response.value;
+            this.data.mime_type = response.mime_type;
+            this.state.value    = this.data;
+            this.change();
           }
-        });
+        },
+        fail: (e) => { console.warn(e); GUI.notify.error(t("info.server_error")) },
+        always: () => this.loading = false
       });
+
     },
     beforeDestroy() {
       $(`#${this.mediaid}`).fileupload('destroy');
