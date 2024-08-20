@@ -80,7 +80,9 @@
                   style = "max-width: 250px;"
                   ref   = "img_logo"
                   alt   = ""
-                  :src  = "logo_url">
+                  :src  = "logo_url"
+                  @load = "setImgOffset"
+                />
               </a>
 
               <div
@@ -1105,6 +1107,18 @@ export default {
       if (window.innerWidth <= 767) {
         document.body.classList.toggle('sidebar-open', !document.body.classList.contains('sidebar-open'));
       }
+    },
+
+    /**
+     * Add some marging to the logo
+     * 
+     * @since 3.11.0
+     */
+    setImgOffset() {
+      if (!this.isIframe) {
+        this.logoWidth = this.$refs.img_logo.offsetWidth + 15;
+        this.resize()
+      }
     }
 
   },
@@ -1165,34 +1179,22 @@ export default {
 
     await this.$nextTick();
 
-    const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
-
-    const elementLenght = rightNavBarElements.length;
-
-    this.rightNavbarWidth = 15; // margin right
-
-    for (let i = 0; i < elementLenght; i++ ) {
-      this.rightNavbarWidth+= rightNavBarElements.item(i).offsetWidth;
-    }
+    // margin right
+    this.rightNavbarWidth = Array.from(this.isIframe
+      ? []
+      : this.$refs.mainnavbar.getElementsByTagName('ul')
+    ).reduce((w, item) => w + item.offsetWidth, 15);
 
     this.language = this.appconfig.user.i18n;
 
     await this.$nextTick();
-
-    // add some marging to the logo
-    if (!this.isIframe) {
-      this.$refs.img_logo.addEventListener('load', () => {
-        this.logoWidth = this.$refs.img_logo.offsetWidth + 15;
-        this.resize()
-      }, { once: true });
-    }
 
     // start to render LayoutManager layout
     layout.loading(false);
 
     // Fixes the layout height in case min-height fails.
     const resize = function() {
-      $(".main-sidebar")      .css('height',    ($(window).height() - $(".navbar-header").height()) + "px");
+      $(".main-sidebar")     .css('height',    ($(window).height() - $(".navbar-header").height()) + "px");
       $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
       $('#g3w-modal-overlay').css('height',     $(window).height());
     };
@@ -1201,54 +1203,54 @@ export default {
     $(window, ".wrapper").resize(resize);
 
     // toggle sidebar tree items on click
-    $(document).on('click', '.main-sidebar li', function (e) {
+    document
+      .querySelectorAll('.main-sidebar li > a, .main-sidebar li > ul')
+      .forEach(item => item.addEventListener('click', function (e) {
+          // Expand on click for sidebar mini
+          if (document.body.classList.contains('sidebar-mini') && 
+              document.body.classList.contains('sidebar-collapse') && 
+              window.innerWidth > 767) {
+              document.body.classList.remove('sidebar-collapse');
+          }
 
-      // Expand on click for sidebar mini
-      if (document.body.classList.contains('sidebar-mini') && 
-          document.body.classList.contains('sidebar-collapse') && 
-          window.innerWidth > 767) {
-          document.body.classList.remove('sidebar-collapse');
-      }
+          // Get the clicked element and the next element
+          const next = this.nextElementSibling;
 
-      //Get the clicked link and the next element
-      const $this = $(this);
-      //is the content of the "accordion" ul
-      const next = $this.next();
-
-      console.log($this, next);
-
-      //Check if the next element is a menu and is visible
-      if ((next.is('.treeview-menu')) && (next.is(':visible'))) {
-        //Close the menu
-        next.slideUp('fast', function () {
-          next.parent("li.treeview").removeClass("active");
-          next.removeClass('menu-open');
-        });
-      }
-      //If the menu is not visible
-      else if ((next.is('.treeview-menu')) && (!next.is(':visible'))) {
-        //Get the parent menu
-        const parent = $this.parents('ul').first();
-        //Close all open menus within the parent
-        //Remove the menu-open class from the parent
-        parent.find('ul.treeview-menu:visible').slideUp('fast').removeClass('menu-open');
-        //Get the parent li
-        //Open the target menu and add the menu-open class
-        next.slideDown('fast', function () {
-          //Add the class active to the parent li
-          next.addClass('menu-open');
-          parent.find('li.treeview.active').removeClass('active');
-          $this.parent("li").addClass('active');
-        });
-      }
-      //if this isn't a link, prevent the page from being redirected
-      if (next.is('.treeview-menu')) {
-        e.preventDefault();
-      }
-    });
+          // next element is a menu and is visible
+          if (next && next.classList.contains('treeview-menu') && next.style.display !== 'none') {
+              // Close the menu
+              next.style.display = 'none';
+              next.parentElement.classList.remove("active");
+              next.classList.remove('menu-open');
+          }
+          // menu is not visible
+          else if (next && next.classList.contains('treeview-menu') && next.style.display === 'none') {
+              // Get the parent menu
+              const parent = this.closest('ul');
+              // Close all open menus within the parent
+              // Remove the menu-open class from the parent
+              parent.querySelectorAll('ul.treeview-menu').forEach(menu => {
+                  if (menu.style.display !== 'none') {
+                      menu.style.display = 'none';
+                      menu.classList.remove('menu-open');
+                  }
+              });
+              // Open the target menu and add the menu-open class
+              next.style.display = 'block';
+              next.classList.add('menu-open');
+              parent.querySelectorAll('li.treeview.active').forEach(active => {
+                  active.classList.remove('active');
+              });
+              this.parentElement.classList.add('active');
+          }
+          // if this isn't a link, prevent the page from being redirected
+          if (next && next.classList.contains('treeview-menu')) {
+              e.preventDefault();
+          }
+      }));
 
     //Activate box widget
-    $(document).on('click', '[data-widget="collapse"]', function (e) {
+    $('[data-widget="collapse"]').on('click', function (e) {
       e.preventDefault();
       //Find the box parent
       const box = $(this).parents(".box").first();
