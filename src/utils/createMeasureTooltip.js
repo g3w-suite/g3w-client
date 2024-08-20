@@ -4,12 +4,12 @@ import { formatMeasure } from 'utils/formatMeasure';
  * create and add measure tooltip 
  */
 export function createMeasureTooltip({ map, feature } = {}, options = {}) {
-  const element = document.createElement('div');
+  const element     = document.createElement('div');
   element.className = 'mtooltip mtooltip-measure';
 
   const tooltip = new ol.Overlay({
     element,
-    offset: [0, -15],
+    offset:      [0, -15],
     positioning: 'bottom-center'
   });
 
@@ -19,9 +19,9 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
     tooltip,
     unbyKey: feature
       .getGeometry()
-      .on('change', evt => {
+      .on('change', e => {
         let tooltipCoord;
-        const geometry = evt.target;
+        const geometry = e.target;
         if (geometry instanceof ol.geom.Polygon) {
           tooltipCoord = geometry.getInteriorPoint().getCoordinates();
         } else if (geometry instanceof ol.geom.MultiPolygon) {
@@ -31,7 +31,7 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
         } else if (geometry instanceof ol.geom.MultiLineString) {
           tooltipCoord = geometry.getLastCoordinate();
         }
-        element.innerHTML = formatMeasure({geometry, projection: map.getView().getProjection()}, options);
+        element.innerHTML = formatMeasure({ geometry, projection: map.getView().getProjection() }, options);
         tooltip.setPosition(tooltipCoord);
       })
   }

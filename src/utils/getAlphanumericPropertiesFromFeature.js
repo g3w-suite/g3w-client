@@ -6,6 +6,5 @@ import { GEOMETRY_FIELDS } from 'app/constant';
  * @returns { Array }
  */
 export function getAlphanumericPropertiesFromFeature(properties = []) {
-  properties = Array.isArray(properties) ? properties : Object.keys(properties);
-  return properties.filter(prop => -1 === GEOMETRY_FIELDS.indexOf(prop));
+  return (Array.isArray(properties) ? properties : Object.keys(properties)).filter(p => !GEOMETRY_FIELDS.includes(p));
 }

@@ -21,4 +21,4 @@ export function createStyleFunctionToVectorLayer(opts = {}) {
       return style;
     }, { _g3w_options: opts }
   );
-};
+}

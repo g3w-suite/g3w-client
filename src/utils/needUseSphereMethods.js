@@ -5,5 +5,4 @@
  */
 export function needUseSphereMethods(projection) {
   return 'EPSG:3857' === projection.getCode() || 'degrees' === projection.getUnits();
-  //return projection.getUnits() === 'degrees';
-};
+}

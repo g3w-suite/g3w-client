@@ -24,7 +24,7 @@ export function createSelectedStyle({
       return new ol.style.Style({
         image: new ol.style.Circle({
           radius: 6,
-          fill: fill && new ol.style.Fill({ color }),
+          fill:   fill && new ol.style.Fill({ color }),
           stroke: !fill && new ol.style.Stroke({ color, width: 4 }),
         }),
         zIndex: Infinity,

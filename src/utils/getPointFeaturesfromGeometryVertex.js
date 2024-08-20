@@ -33,17 +33,13 @@ export function getPointFeaturesfromGeometryVertex(geometry) {
     case GEOMETRY_TYPES.MULTILINESTRING:
       geometry
         .getCoordinates()
-        .forEach(c => {
-          c.forEach(c => pointFeatures.push(new ol.Feature(new ol.geom.Point(c))));
-        });
+        .forEach(c => c.forEach(c => pointFeatures.push(new ol.Feature(new ol.geom.Point(c)))));
       break;
 
     case GEOMETRY_TYPES.LINESTRING:
       geometry
         .getCoordinates()
-        .forEach(c => {
-          c.forEach(c => pointFeatures.push(new ol.Feature(new ol.geom.Point(c))));
-        });
+        .forEach(c => c.forEach(c => pointFeatures.push(new ol.Feature(new ol.geom.Point(c)))));
       break;
 
     case GEOMETRY_TYPES.MULTIPOINT:
@@ -58,4 +54,4 @@ export function getPointFeaturesfromGeometryVertex(geometry) {
 
   }
   return pointFeatures;
-};
+}

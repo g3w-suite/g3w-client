@@ -14,8 +14,8 @@ export function getFormDataExpressionRequestFromFeature(feature) {
   const properties = {};
 
   getAlphanumericPropertiesFromFeature(feature.attributes)
-    .filter(prop => prop !== G3W_FID)
-    .forEach(prop => properties[prop] = feature.attributes[prop]);
+    .filter(p => G3W_FID !== p)
+    .forEach(p => properties[p] = feature.attributes[p]);
 
   _feature.setProperties(properties);
   _feature.setId(feature.attributes[G3W_FID]);

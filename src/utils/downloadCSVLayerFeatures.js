@@ -8,7 +8,7 @@ export function downloadCSVLayerFeatures({
   //get headers
   const attributes = Object.keys(layer.features[0].attributes);
   const properties = getAlphanumericPropertiesFromFeature(attributes);
-  const headers = !alias ? properties : properties.map((property) => {
+  const headers    = !alias ? properties : properties.map((property) => {
     const attribute = layer.attributes.find(attribute => attribute.name === property);
     return attribute ? attribute.label : property;
   });
@@ -26,4 +26,4 @@ export function downloadCSVLayerFeatures({
     filename: layer.id,
     items
   })
-};
+}

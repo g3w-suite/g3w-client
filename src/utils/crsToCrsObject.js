@@ -9,7 +9,7 @@ import { toRawType }     from 'utils/toRawType';
 export function crsToCrsObject(crs) {
 
   /** @FIXME add description */
-  if (null === crs || undefined === crs) {
+  if ([undefined, null].includes(crs)) {
     return crs;
   }
 
@@ -20,9 +20,9 @@ export function crsToCrsObject(crs) {
   }
 
   return {
-    epsg: normalizeEpsg(crs),
-    proj4: "",
+    epsg:         normalizeEpsg(crs),
+    proj4:        "",
     axisinverted: false,
-    geographic: false
+    geographic:   false
   };
-};
+}

@@ -42,8 +42,7 @@ export function getQueryLayersPromisesByCoordinates(layers, { coordinates, featu
     const numberOfRequests = Object.keys(multiLayers).length;
     let layersLength = numberOfRequests;
     for (let key in multiLayers) {
-      const _multilayer = multiLayers[key];
-      const layers      = _multilayer;
+      const layers      = multiLayers[key];
       const multilayer  = multiLayers[key][0];
       const provider    = multilayer.getProvider('query');
       provider
@@ -58,7 +57,7 @@ export function getQueryLayersPromisesByCoordinates(layers, { coordinates, featu
           layers,
         })
         .then(response => queryResponses.push(response))
-        .fail(error => queryErrors.push(error))
+        .fail(e => { console.warn(e); queryErrors.push(e) })
         .always(() => {
           layersLength -= 1;
           if (0 === layersLength) {
@@ -84,7 +83,7 @@ export function getQueryLayersPromisesByCoordinates(layers, { coordinates, featu
             resolution,
           })
           .then(response => queryResponses.push(response))
-          .fail(error => { queryErrors.push(error); rejectedResponses +=1; })
+          .fail(e => { console.warn(e); queryErrors.push(e); rejectedResponses +=1; })
           .always(() => {
             layersLength -= 1;
             if (0 === layersLength) {

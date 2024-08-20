@@ -10,4 +10,4 @@ export function colorHEXToRGB(color='#FFFFFF') {
   const g = parseInt(color.substr(3,2), 16);
   const b = parseInt(color.substr(5,2), 16);
   return [r,g,b]
-};
+}

@@ -1,7 +1,7 @@
 /**
  * build throttle function
  */
-export function throttle(fnc, delay=500) {
+export function throttle(fnc, delay = 500) {
   let lastCall;
   return function (...args) {
     let previousCall = lastCall;
@@ -11,4 +11,4 @@ export function throttle(fnc, delay=500) {
       fnc(...args);
     }
   }
-};
+}

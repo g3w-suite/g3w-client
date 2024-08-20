@@ -9,7 +9,9 @@
 export function waitFor(predicate, timeout) {
   return new Promise((resolve, reject) => {
     const check = () => {
-      if (!predicate()) return;
+      if (!predicate()) {
+        return;
+      }
       clearInterval(interval);
       resolve();
     };

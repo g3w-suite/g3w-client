@@ -12,21 +12,23 @@ export function formatMeasure({ geometry, projection } = {}, options = {}) {
    */
   //
   const geometryType = geometry.getType();
-  const unit = getCurrentMapUnit();
+  const unit         = getCurrentMapUnit();
   if (isLineGeometryType(geometryType)) {
     return getLengthMessageText({
       unit,
       projection,
       geometry
     });
-  } else if (isPolygonGeometryType(geometryType)){
+  } else if (isPolygonGeometryType(geometryType)) {
     let segments;
     if (isMultiGeometry(geometryType)) {
       segments = [];
       multiGeometryToSingleGeometries(geometry).forEach(geometry => {
         geometry.getLinearRing().getCoordinates().forEach(coordinates => segments.push(coordinates))
       })
-    } else segments = geometry.getLinearRing().getCoordinates();
+    } else {
+      segments = geometry.getLinearRing().getCoordinates();
+    }
     return getAreaMessageText({unit, geometry, projection, segments});
   }
 }

@@ -44,7 +44,7 @@ export function printAtlas(opts = {}, method = 'GET') {
   const store = ProjectsRegistry.getCurrentProject().getLayersStore();
   const multi = opts.values.length > 1;
   return FETCH[method]({
-    url: store.getWmsUrl(),
+    url:       store.getWmsUrl(),
     mime_type: 'application/pdf',
     params:    {
       SERVICE:     'WMS',

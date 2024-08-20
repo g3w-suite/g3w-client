@@ -12,8 +12,8 @@ export function convertDEGToDM({
   output = 'Array',
 } = {}) {
   const absolute = Math.abs(deg);
-  const degrees = Math.floor(absolute);
-  const minutes = (absolute - degrees) * 60;
+  const degrees  = Math.floor(absolute);
+  const minutes  = (absolute - degrees) * 60;
   switch (output) {
     case 'Array':  return [degrees, minutes];
     case 'Object': return { degrees, minutes };

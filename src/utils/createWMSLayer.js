@@ -17,9 +17,9 @@ export function createWMSLayer({
   projection,
   layers = [],
 } = {}) {
-  const id = name || getUniqueDomId();
+  const id       = name || getUniqueDomId();
   const wmslayer = new WMSLayer({ id, layers, projection, url });
-  const olLayer =  wmslayer.getOLLayer();
+  const olLayer  =  wmslayer.getOLLayer();
   olLayer.set('id', id); // set unique id
   olLayer.set('name', name || id);
   return {

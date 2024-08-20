@@ -17,9 +17,9 @@ export function getLengthMessageText({
    * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
    */
   //
-  const geometryType = geometry.getType();
+  const geometryType     = geometry.getType();
   const useSphereMethods = needUseSphereMethods(projection);
-  const length = useSphereMethods ? ol.sphere.getLength(geometry, {
+  const length           = useSphereMethods ? ol.sphere.getLength(geometry, {
     projection: projection.getCode()
   }) : isMultiGeometry(geometryType)
     ? geometry.getLineStrings().reduce((totalLength, lineGeometry) => totalLength+= lineGeometry.getLength(), 0)
@@ -34,4 +34,4 @@ export function getLengthMessageText({
       message = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
   }
   return message;
-};
+}

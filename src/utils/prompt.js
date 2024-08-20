@@ -63,4 +63,4 @@ export async function prompt({
       data     = null;
       prompt   = null;
     })
-};
+}

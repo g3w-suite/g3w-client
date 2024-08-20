@@ -60,6 +60,5 @@ export function getOLGeometry(geometryType) {
     default:
       console.warn('invalid geometry type: ', geometryType);
       return geometryType;
-
   }
-};
+}

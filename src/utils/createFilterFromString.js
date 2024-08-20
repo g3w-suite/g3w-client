@@ -38,4 +38,4 @@ export function createFilterFromString({
 
   }
   return filter;
-};
+}
