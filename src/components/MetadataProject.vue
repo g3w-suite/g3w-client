@@ -130,6 +130,25 @@
 </script>
 
 <style scoped>
+  .metadata-item-tab.general {
+    color: var(--skin-primary);
+  }
+  .metadata-item-tab.layers  {
+    color: var(--skin-warning);
+  }
+  .metadata-item-tab.spatial {
+    color: var(--skin-success);
+  }
+
+  .metadata-nav-tabs > li.active > a,
+  .metadata-nav-tabs > li > a:hover {
+    color: var(--skin-color) !important;
+  }
+  
+  .metadata-nav-tabs > li > a::after {
+    background: var(--skin-color);
+  }
+
   #project-catalog {
     background: transparent;
   }

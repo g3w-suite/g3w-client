@@ -11,11 +11,10 @@
  * 9. Form
  * 10. Contents
  * 11. Errors
- * 12. Metadata
- * 13. Externals
- * 14. Tabs
- * 15. Skin colors
- * 16. Print
+ * 12. Externals
+ * 13. Tabs
+ * 14. Skin colors
+ * 15. Print
  **************************************************************************************/
 
 :root        {
@@ -587,12 +586,12 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar .sidebar-divider:last-child                          { border:0; }
 
 /* color  icons of sidebar */
-.sidebaritem > a .fa-search                                        { color: #8DC3E3; }
-.sidebaritem > a :is(.fa-map-o, .fa-map)                           { color: #019A4C; }
-.sidebaritem > a :is(.fa-gears, .fa-cogs)                          { color: #FFE721; }
-.sidebaritem > a .fa-print                                         { color: #FF9B21; }
-.sidebaritem > a :is(.fa-file-code-o, .fa-file-code)               { color: #fff; }
-.sidebaritem > a .fa-bookmark                                      { color: #00bcd4; }
+.sidebar-menu > li > a .fa-search                                        { color: #8DC3E3; }
+.sidebar-menu > li > a :is(.fa-map-o, .fa-map)                           { color: #019A4C; }
+.sidebar-menu > li > a :is(.fa-gears, .fa-cogs)                          { color: #FFE721; }
+.sidebar-menu > li > a .fa-print                                         { color: #FF9B21; }
+.sidebar-menu > li > a :is(.fa-file-code-o, .fa-file-code)               { color: #fff; }
+.sidebar-menu > li > a .fa-bookmark                                      { color: #00bcd4; }
 
 .main-sidebar                                                      { width: 350px; margin-top: 50px; overflow-y: auto;}
 .main-sidebar .btn.quick-action                                    { color: #bbb; background-color: #222d32; border: 2px solid #888; }
@@ -602,10 +601,10 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar .sidebar-button-run                                  { background-color: var(--skin-color) !important; }
 .main-sidebar .sidebar-button                                      { color: var(--skin-color); }
 .main-sidebar .sidebar-button.toggled                              { background-color: var(--skin-color) !important; }
-.main-sidebar ul.sidebar-menu li.sidebaritem a span.treeview-label { color: #FFF; }
-.main-sidebar ul.sidebar-menu li.sidebaritem a:hover               { color: var(--skin-l30) !important; }
+.main-sidebar ul.sidebar-menu > li a span.treeview-label { color: #FFF; }
+.main-sidebar ul.sidebar-menu > li a:hover               { color: var(--skin-l30) !important; }
 
-.skin-green  .main-sidebar ul.sidebar-menu li.sidebaritem a:hover  { color: #a1e096 !important; }
+.skin-green  .main-sidebar ul.sidebar-menu > li a:hover  { color: #a1e096 !important; }
 
 :root {
   @media (max-width: 767px) {
@@ -656,14 +655,14 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .sidebar-mini.sidebar-collapse #catalog > a                                                       { display: block !important; }
 .sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                             { padding-top: 50px; overflow: hidden; }
 .sidebar-mini.sidebar-collapse .ol-geocoder                                                       { left: 10px; }
-.sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu li.sidebaritem a span.treeview-label { color:  transparent; }
+.sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label { color:  transparent; }
 
 /**************************************************************************************
  * 5. Viewport
  **************************************************************************************/
 
-.content-wrapper #application-notifications                                      { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 100; font-size: 25px; }
-.content-wrapper #application-notifications > div                                { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; padding: 5px; background-color: #FFF; border-radius: 3px; }
+#application-notifications                                                       { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 100; font-size: 25px; }
+#application-notifications > div                                                 { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; padding: 5px; background-color: #FFF; border-radius: 3px; }
 .g3w-view.map                                                                    { line-height: normal; display:inline-block; height:0; width:0; position: relative; }
 .g3w-view.map #resize-map-and-content                                            { position: absolute; z-index:4; user-select: none; }
 .g3w-view.map #resize-map-and-content:hover                                      { background-color: #ccc !important; }
@@ -705,11 +704,10 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .g3w-view .close-panel-block span i.panel-button                                 { color: transparent; }
 .g3w-view .close-panel-block span.g3w-span-button                                { height: 1.1em; line-height: 1.1em; width: 1.1em; font-size: 1em !important; margin-top: 8px; margin-bottom: 5px; margin-right: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 30%; caret-color: rgba(0,0,0,0); }
 .g3w-view .close-panel-block span.g3w-span-button.mobile                         { margin-top: 3px; }
-.g3w-view #contenttitle                                                          { font-weight: bold; }
+.g3w-view #contenttitle                                                          { font-weight: bold; color: var(--skin-d20); }
 
 .g3w-view.content .action-button-icon,
 .g3w-view.content .g3w_contents_back > div                                       { color: var(--skin-color); }
-.g3w-view #contenttitle                                                          { color: var(--skin-d20) }
 
 .g3w-view.content .table-header-tool                                             { background-color: var(--skin-color); }
 .g3w-view.content .action-button.toggled                                         { border: 2px solid var(--skin-l30); }
@@ -1082,37 +1080,18 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
  **************************************************************************************/
 .contents                            { padding: 0 10px; height: 100%; }
 .contents > div                      { height: 100%; }
-.contents .header                    { margin: 10px 0; font-size: 1.1em; }
-.contents .header .key               { display: inline-block; width: 60px; }
-.contents .header .value             { display: inline-block; font-weight: bold; }
-.contents .back-btn                  { cursor: pointer; margin-bottom: 3px; }
-.contents .back-btn .back-link:hover { text-decoration: underline; }
 .contents table                      { empty-cells: show; width: 100%; background-color: #fff !important; }
-.contents .thumbnail                 { position: relative; padding: 0; margin-bottom: 20px; }
-.contents .thumbnail img             { width: 100%; }
 
 /**************************************************************************************
  * 11. Errors
  **************************************************************************************/
-#initerror                 { position: fixed; z-index: 100000; margin: auto; inset: 0; width: 400px; height: 200px; }
-.initial_error_text        { text-transform: uppercase; }
 .error-initial-page        { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #FFF; }
 .error-initial-page .oops  { font-weight: bold; font-size: 5.0em; }
 .error-initial-page .cause { margin-top:0; }
 .error-initial-page .f5    { font-weight: bold; }
 
 /**************************************************************************************
- * 12. Metadata
- **************************************************************************************/
-.metadata-nav-bar li a.metadata-item-tab.general { color: var(--skin-primary); }
-.metadata-nav-bar li a.metadata-item-tab.layers  { color: var(--skin-warning); }
-.metadata-nav-bar li a.metadata-item-tab.spatial { color: var(--skin-success); }
-.metadata-nav-tabs > li.active > a,
-.metadata-nav-tabs > li > a:hover                { color: var(--skin-color) !important; }
-.metadata-nav-tabs > li > a::after               { background: var(--skin-color); }
-
-/**************************************************************************************
- * 13. Externals
+ * 12. Externals
  **************************************************************************************/
 
 .select2-container--default.select2-container--focus,
@@ -1200,7 +1179,7 @@ input[type="range"]::-ms-thumb:hover                                            
 .select2-container--default .select2-results__option[aria-selected=true]            { background-color: var(--skin-l20); }
 
 /**************************************************************************************
- * 14. Tabs
+ * 13. Tabs
  **************************************************************************************/
 :is(.queryresults-wrapper, .g3wform_body, .query-relation) :is(.tabs-wrapper, .form-inputs-body)
 :is(.queryresults-wrapper, .g3wform_body, .query-relation) .tabs-wrapper                                        { border-radius: 3px; border: 1px solid; padding: 3px; }
@@ -1230,7 +1209,7 @@ input[type="range"]::-ms-thumb:hover                                            
 .skin-yellow .formquerytabs.nav-tabs li:not(.active) > a    { background-color: var(--skin-warning-l50) !important; border: 1px solid var(--skin-warning-d40); }
 
 /**************************************************************************************
- * 15. Skin colors
+ * 14. Skin colors
  **************************************************************************************/
 
 .skin-button.bordered,
@@ -1253,7 +1232,7 @@ input[type="range"]::-ms-thumb:hover                                            
 .tooltip .tooltip-inner             { font-weight: 700; font-size: 1.25rem; padding: 8px; background-color: #222; }
 
 /**************************************************************************************
- * 16. Print
+ * 15. Print
  **************************************************************************************/
 
 @media print {
