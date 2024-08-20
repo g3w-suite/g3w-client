@@ -444,6 +444,7 @@ export class QueryBy extends InteractionControl {
           this.setEnable(false);
         }
       },
+      clickmap: true,
     });
 
     GUI.getService('map').addControl(type, type, control, false, false);
