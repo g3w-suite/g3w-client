@@ -781,7 +781,6 @@ export default {
   position: relative;
   bottom: 3px;
   display: inline-flex;
-  border-radius: 2px;
   border: 1px solid #d2d6de;
   background-color: #fff;
   float: left;

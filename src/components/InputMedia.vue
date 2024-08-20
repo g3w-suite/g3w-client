@@ -9,7 +9,7 @@
       <div
         class  = "g3w_input_button skin-border-color"
         @click = "onClick"
-        style  = "border-style: solid; border-width: 2px; border-radius: 4px; width:100%; cursor: pointer; text-align: center;"
+        style  = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
       >
         <i :class = "g3wtemplate.getFontClass('file-upload')" class = "fa-2x skin-color" style = "padding: 5px;">
           <input
