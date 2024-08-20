@@ -621,29 +621,16 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
   //Sidebar mini should work only on devices larger than @screen-sm
   @media (min-width: 768px) {
     .sidebar-collapse .main-sidebar,
-    .sidebar-collapse .sidebar-aside-toggle                                     { left: 0; }
+    .sidebar-collapse .sidebar-aside-toggle                        { left: 0; }
 
     //Apply the new margining to the main content and footer
-    .sidebar-mini.sidebar-collapse .content-wrapper                             { margin-left: 35px; /*z-index: 840;*/ }
-    .sidebar-mini.sidebar-collapse .main-sidebar                                { transform: translate(0, 0); width: 35px !important; z-index: 850; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li                           { position: relative; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li > a                       { margin-right: 0; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li > a > span                { border-top-right-radius: 4px; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li:not(.treeview) > a > span { border-bottom-right-radius: 4px; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li > .treeview-menu          { padding-top: 5px; padding-bottom: 5px; border-bottom-right-radius: 4px; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span:not(.pull-right),
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu    { display: block!important; position: absolute; width: ~"calc(var(--sidebar-width) - 50)"; left: 50px; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span          { top: 0; margin-left: -3px; padding: 12px 5px 12px 20px; background-color: inherit; }
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu    { top: 44px; margin-left: 0; }
-
-    //Make the sidebar links, menus, labels, badges and angle icons disappear
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li > a > span,
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li > .treeview-menu,
-    .sidebar-mini.sidebar-collapse .sidebar-menu > li > a > .pull-right,
-    .sidebar-mini.sidebar-collapse .sidebar-menu li.header                     { display: none!important; }
+    .sidebar-collapse .content-wrapper                             { margin-left: 0; }
+    .sidebar-collapse .main-sidebar                                { transform: translate(0, 0); width: 0px !important; }
+    .sidebar-mini.sidebar-collapse .content-wrapper                { margin-left: 35px; }
+    .sidebar-mini.sidebar-collapse .main-sidebar                   { width: 35px !important; }
 
     //Let's make the logo also shrink and the mini logo to appear
-    .sidebar-mini.sidebar-collapse .main-header .logo                          { width: 50px; }
+    .sidebar-collapse .main-header .logo                          { width: 50px; }
   }
 }
 

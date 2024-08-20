@@ -18,23 +18,8 @@ export default new (class SidebarService extends G3WObject {
     // service state
     this.state = {
       components: [],
-      gui: {
-        title: ''
-      },
-      disabled: false
-    };
-
-    /**
-     * setter for close sidebarpanel to catch the event
-     * of a closing panel of the sidebar
-     */
-    this.setters = {
-      closeSidebarPanel() {
-        console.info('closing sidebar panel');
-      },
-      openCloseItem(bool) {
-        console.info('toggle sidebar panel');
-      }
+      gui:        { title: '' },
+      disabled:   false
     };
 
   }
@@ -70,12 +55,11 @@ export default new (class SidebarService extends G3WObject {
     item.title       = comp.title       || item.title;
     item.info        = comp.info        || item.info;
     item.actions     = comp.actions     || item.actions;
-    item.open        = comp.state.open; // (comp.open === undefined) ? item.open : comp.open;
+    item.open        = comp.state.open;
     item.icon        = comp.icon        || item.icon;
     item.iconColor   = comp.iconColor;
     item.state       = comp.state       || true;
-    item.collapsible = ('boolean' === typeof comp.collapsible) ? comp.collapsible : true;
-    item.isolate     = ('boolean' === typeof comp.isolate)     ? comp.isolate     : false;
+    item.collapsible = false !== comp.collapsible;
 
     // append component to `g3w-sidebarcomponents`
     const el = item.$mount().$el;
@@ -85,7 +69,7 @@ export default new (class SidebarService extends G3WObject {
 
     const children = $(id).children().filter(function() { return 'none' !== this.style.display });
   
-    if (null === opts.position || undefined === opts.position || opts.position < 0 || opts.position >= children.length) {
+    if ([null, undefined].includes(opts.position) || opts.position < 0 || opts.position >= children.length) {
       $(id).append(el);
     } else {
       children.each((i, c) => {
@@ -95,27 +79,15 @@ export default new (class SidebarService extends G3WObject {
       });
     }
 
-    // mount component to `g3w-sidebarcomponent-placeholder`
     comp.mount("#g3w-sidebarcomponent-placeholder");
 
-    if (comp.initService) {
-      comp.initService();
-    }
-
-    // add click handler
-    this.setComponentClickHandler(comp);
-
-    return true;
-  }
-
-  /**
-   * @param comp component
-   */
-  setComponentClickHandler(comp) {
+    // set component click handler
     comp.click = ({ open = false } = {}) => {
       $(comp.getInternalComponent().$el).siblings('a').click();
       comp.setOpen(open || false);
     };
+
+    return true;
   }
 
   /**
@@ -126,22 +98,10 @@ export default new (class SidebarService extends G3WObject {
   }
 
   /**
-   * get all components
-   */
-  getComponents() {
-    return this.state.components;
-  }
-
-  /**
    * close for the moment only conlapsbale
    */
   closeOpenComponents() {
-    this.getComponents().forEach(c => c.getOpen() && c.state.closewhenshowviewportcontent && c.collapsible && c.click({ open: false }))
-  }
-
-  reloadComponent(id) {
-    const component = this.getComponent(id);
-    component && component.reload();
+    this.state.components.forEach(c => c.getOpen() && c.state.closewhenshowviewportcontent && c.collapsible && c.click({ open: false }))
   }
 
   reloadComponents() {
@@ -184,7 +144,6 @@ export default new (class SidebarService extends G3WObject {
    * close panel
    */
   closePanel() {
-    this.closeSidebarPanel();
     this.stack.pop().then(content => {
       content = null;
       const data = this.stack.getCurrentContentData();
@@ -193,12 +152,6 @@ export default new (class SidebarService extends G3WObject {
         this.state.gui.title = data.content.title;
       }
     });
-  }
-
-  closeAllPanels() {
-    this.state.gui.title = null;
-    this.closeSidebarPanel();
-    this.stack.clear();
   }
 
 })();

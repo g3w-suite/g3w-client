@@ -70,26 +70,21 @@
       SidebarItemAction
     },
     methods: {
-      onClickItem(evt) {
+      onClickItem() {
         // force to close
-        if (this.component.isolate) { evt.stopPropagation() }
-        if (!this.component.isolate) {
-          // set state of an opened component
-          this.$options.service.state.components
-            .forEach(component => {
-              if (component !== this.component && component.getOpen()) {
-                component.click({ open:component.isolate });
-              }
-           });
-
-          if (!this.component.collapsible && isMobile.any) { VM.$emit('sidebaritemclick') }
+        // set state of an opened component
+        this.$options.service.state.components
+          .forEach(component => {
+            if (component !== this.component && component.getOpen()) {
+              component.click({ open: false });
+            }
+          });
+        if (!this.component.collapsible && isMobile.any) {
+          VM.$emit('sidebaritemclick')
         }
         this.component.setOpen(!this.component.state.open);
       }
     },
-    created() {
-      this.component.openClose = () => this.$refs.anchor_click.click();
-    }
   }
 </script>
 

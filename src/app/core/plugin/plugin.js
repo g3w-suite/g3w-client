@@ -336,7 +336,6 @@ module.exports = class Plugin extends G3WObject {
    * @param { string }           opts.title                        textual description on left sidebar (eg. "metadata")
    * @param { boolean }          opts.open                         true = collapsible button; false = button
    * @param { boolean }          opts.collapsible                  whether expand the button when plugin is loaded
-   * @param { boolean }          opts.isolate                      whether propagate click event to all sidebar item
    * @param { boolean }          opts.closewhenshowviewportcontent
    * @param { Object }           opts.iconConfig
    * @param { string }           opts.iconConfig.color             color of icon
@@ -357,7 +356,6 @@ module.exports = class Plugin extends G3WObject {
     opts.vueComponentObject = vue; 
     opts.collapsible        = çç(opts.collapsible, true);
     opts.mobile             = çç(opts.mobile, true);
-    opts.isolate            = çç(opts.isolate, false);
     opts.sidebarOptions     = çç(opts.sidebarOptions, { position: 1 });
 
     GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);

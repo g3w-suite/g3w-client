@@ -1074,7 +1074,8 @@ export default {
     },
 
     closeAllPanels() {
-      sidebarService.closeAllPanels();
+      sidebarService.state.gui.title = null;
+      sidebarService.stack.clear();
     },
 
     /**
@@ -1106,13 +1107,17 @@ export default {
       }
 
       const li     = e.target.closest('.sidebaritem')
+      const menu   = li.querySelector('.treeview-menu');
       const active = li.classList.contains('active');
 
       document.querySelectorAll('.main-sidebar li.sidebaritem.active')    .forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.main-sidebar li.sidebaritem .menu-open').forEach(el =>  el.classList.remove('menu-open'));
 
       li.classList.toggle('active', !active);
-      li.querySelector('.treeview-menu').classList.toggle('menu-open', !active);
+
+      if (menu) {
+        menu.classList.toggle('menu-open', !active);
+      }
     },
 
     /**

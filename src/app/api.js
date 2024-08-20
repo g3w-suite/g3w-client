@@ -441,7 +441,6 @@ g3wsdk.gui.ComponentsFactory.buildSidebar  = ({ vueComponentObject }, options={}
     title:       options.title,
     open:        çç(options.open, false),
     collapsible: çç(options.collapsible, true),
-    isolate:     çç(options.isolate, false),
     iconColor:   çç(options.iconConfig, {}).color,
     icon:        çç(options.iconConfig, {}).icon && GUI.getFontClass(options.iconConfig.icon),
     mobile:      çç(options.mobile, true),

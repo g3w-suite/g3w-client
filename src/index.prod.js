@@ -307,7 +307,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
               id: 'catalog',
               open: false,
               collapsible: false,
-              isolate:     true,
               icon:        GUI.getFontClass('map'),
               mobile:      true,
               config:      { legend: { config: appLayoutConfig.legend } },
