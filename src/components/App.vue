@@ -1098,7 +1098,7 @@ export default {
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
-      const mini = document.body.classList.contains('sidebar-mini');
+      const mini = true || document.body.classList.contains('sidebar-mini');
       const open = mini && document.body.classList.contains('sidebar-collapse') && window.innerWidth > 767;
 
       if (open) {

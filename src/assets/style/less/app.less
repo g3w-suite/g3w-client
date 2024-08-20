@@ -479,13 +479,12 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .sidebar-aside-toggle:is(:focus, :hover)                       { color: #fff; }
 .sidebar-aside-toggle.iframe                                   { top: 0; }
 .sidebar-aside-toggle .icon-bar                                { display: none; }
-.navbar-form                                                   { padding-top:0; padding-bottom:0; margin-bottom:0 } /** Per evitare che la navbar si allarghi (in altezza) in modalità mobile (override di bootstrap) */
 .title-box                                                     { line-height: 50px; margin-left: 10px; }
 .title-box .title                                              { font-size: 2em; font-weight: bold; color: white }
 .sidebar-aside-toggle                                          { background-color: var(--skin-color); border-bottom: 1px solid var(--skin-color); }
 .navbar-inverse .navbar-toggle                                 { outline: 1; }
 .navbar-inverse .navbar-toggle:is(:focus, :hover)              { outline: #fff 1px solid; background-color: transparent; }
-.navbar-inverse :is(.navbar-collapse, .navbar-form)            { border-color: transparent; background-color: var(--skin-color); }
+.navbar-inverse .navbar-collapse                               { border-color: transparent; background-color: var(--skin-color); }
 .g3w-languages .select2-selection__rendered                    { color: var(--skin-color) !important; }
 
 :root {
@@ -516,7 +515,6 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar,
 .sidebar-aside-toggle                                                       { transition: left .3s ease-in-out, width .3s ease-in-out; }
 .main-sidebar                                                               { padding-bottom: 0; }
-.sidebar-form input:focus                                                   { border-color: transparent; }
 .sidebar-menu                                                               { list-style: none; margin: 0; padding: 0; }
 .sidebar-menu > li                                                          { position: relative; margin: 0; padding: 0; }
 .sidebar-menu > li > a                                                      { padding: 12px 5px 12px 10px; display: block; }
@@ -541,7 +539,6 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .sidebar-menu,
 .sidebar-menu > li.header                                          { white-space: nowrap; }
 .sidebar-menu:hover                                                { overflow: visible; }
-.sidebar-form,
 .sidebar-menu > li.header                                          { overflow: hidden; text-overflow: clip; }
 .sidebar-menu li > a                                               { position: relative; }
 .sidebar-menu li > a > .pull-right                                 { position: absolute; top: 50%; right: 10px; margin-top: -7px; }
@@ -640,11 +637,10 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
     .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu    { top: 44px; margin-left: 0; }
 
     //Make the sidebar links, menus, labels, badges and angle icons disappear
-    .sidebar-mini.sidebar-collapse .sidebar-form,
     .sidebar-mini.sidebar-collapse .sidebar-menu > li > a > span,
     .sidebar-mini.sidebar-collapse .sidebar-menu > li > .treeview-menu,
     .sidebar-mini.sidebar-collapse .sidebar-menu > li > a > .pull-right,
-    .sidebar-mini.sidebar-collapse .sidebar-menu li.header                     { display: none!important; -webkit-transform: translateZ(0); }
+    .sidebar-mini.sidebar-collapse .sidebar-menu li.header                     { display: none!important; }
 
     //Let's make the logo also shrink and the mini logo to appear
     .sidebar-mini.sidebar-collapse .main-header .logo                          { width: 50px; }
