@@ -10,12 +10,13 @@ export function getAjaxResponses(listRequests = []) {
         .then((response) => {
           DoneRespones.push(response)
         })
-        .fail((err) => {
-          FailedResponses.push(err)
+        .fail(e => {
+          console.warn(e);
+          FailedResponses.push(e);
         })
         .always(() => {
           requestsLenght = requestsLenght > 0 ? requestsLenght - 1: requestsLenght;
-          if (requestsLenght === 0) {
+          if (0 === requestsLenght) {
             d.resolve({
               done: DoneRespones,
               fail: FailedResponses
@@ -26,4 +27,4 @@ export function getAjaxResponses(listRequests = []) {
   });
 
   return d.promise();
-};
+}

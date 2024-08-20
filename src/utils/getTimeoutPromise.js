@@ -13,4 +13,4 @@ export function getTimeoutPromise({
   data,
 }) {
  return setTimeout(() => { resolve(data) }, timeout);
-};
+}

@@ -3,7 +3,7 @@ import { getUniqueDomId } from './getUniqueDomId';
 export function downloadCSV({
   filename = getUniqueDomId(),
   items = [],
-}={}) {
+} = {}) {
   function convertToCSV(items) {
     let str = '';
     for (let i = 0; i < items.length; i++) {
@@ -16,18 +16,18 @@ export function downloadCSV({
     }
     return str;
   }
-  const exportedFilenmae = `${filename}.csv`;
-  const csv = convertToCSV(items);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const exportedFilename = `${filename}.csv`;
+  const csv              = convertToCSV(items);
+  const blob             = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   if (navigator.msSaveBlob) { // IE 10+
-    navigator.msSaveBlob(blob, exportedFilenmae);
+    navigator.msSaveBlob(blob, exportedFilename);
   } else {
     const link = document.createElement("a");
-    if (link.download !== undefined) { 
+    if (undefined !== link.download) {
       // Browsers that support HTML5 download attribute
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", exportedFilenmae);
+      link.setAttribute("download", exportedFilename);
       link.style.visibility = 'hidden';
       link.click();
     }

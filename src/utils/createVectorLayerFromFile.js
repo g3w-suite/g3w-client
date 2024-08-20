@@ -20,7 +20,7 @@ function _createVectorLayer(name, crs, mapCrs, style, data, format, epsg) {
     source: new ol.source.Vector({ features }),
     name,
     _fields: Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0),
-    id: getUniqueDomId(),
+    id:      getUniqueDomId(),
     style
   });
 }
@@ -53,7 +53,7 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
           }
           properties[field] = value;
         });
-        // check if all coordinates is right
+        // check if all coordinates are right
         if (undefined === coordinates.find(value => Number.isNaN(value))) {
           const geometry = new ol.geom.Point(coordinates);
           if (crs !== mapCrs) {
@@ -69,7 +69,7 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
       }
     });
 
-  if (!features.length) {
+  if (0 === features.length) {
     return Promise.reject();
   }
 
@@ -97,7 +97,7 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
     source: new ol.source.Vector({ features }),
     name,
     _fields: headers,
-    id: getUniqueDomId(),
+    id:      getUniqueDomId(),
     style,
   });
 
@@ -114,7 +114,7 @@ async function _createKMZLayer(name, crs, mapCrs, style, data) {
        * 
        * https://github.com/g3w-suite/g3w-client/pull/430/files#r1232092732
        */
-      // get last kml file (when doc.kml file has a reference to kml inside another folder)
+      // get the last kml file (when doc.kml file has a reference to kml inside another folder)
       const kmlFile = kmlFiles[kmlFiles.length - 1];
       if (kmlFile) {
         resolve(_createVectorLayer(name, crs, mapCrs, style, kmlFile.asText(), new ol.format.KML({ extractStyles: false }), "EPSG:4326"));
@@ -122,9 +122,9 @@ async function _createKMZLayer(name, crs, mapCrs, style, data) {
         reject();
       }
     });
-  } catch(err) {
-    console.warn(err);
-    return Promise.reject();
+  } catch(e) {
+    console.warn(e);
+    return Promise.reject(e);
   }
 }
 
@@ -135,11 +135,11 @@ async function _createZIPLayer(name, crs, mapCrs, style, data) {
         .then(geojson => {
           resolve(_createVectorLayer(name, crs, mapCrs, style, JSON.stringify(geojson), new ol.format.GeoJSON({}), "EPSG:4326"));
         })
-        .catch(reject)
+        .catch(e => {console.warn(e); reject(e); })
     });
-  } catch(err) {
-    console.warn(err);
-    return Promise.reject();
+  } catch(e) {
+    console.warn(e);
+    return Promise.reject(e);
   }
 }
 

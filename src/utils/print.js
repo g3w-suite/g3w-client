@@ -88,8 +88,8 @@ export function print(opts = {}, method = 'GET') {
  const layers = store.getLayers({ PRINTABLE: { scale: opts.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
 
  // No layers are printable (i.e., no visible layers)
- if (!layers.length) {
-   return Promise.resolve({layers: false})
+ if (0 === layers.length) {
+   return Promise.resolve({ layers: false })
  }
 
   // force GET request for geopdf because qgiserver support only that method [QGIS 3.34.6-Prizren 'Prizren' (623828f58c2)]

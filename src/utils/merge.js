@@ -6,4 +6,4 @@ export function merge(destination, source) {
       destination[key] = source[key];
     }
   }
-};
+}

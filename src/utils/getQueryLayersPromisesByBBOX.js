@@ -48,7 +48,7 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
       layer
         .query({ filter, feature_count })
         .then(response => queryResponses.push(response))
-        .fail(error => queryErrors.push(error))
+        .fail(e => { console.warn(e); queryErrors.push(e) })
         .always(() => {
           layersLenght -= 1;
           if (0 === layersLenght) {

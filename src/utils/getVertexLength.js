@@ -1,7 +1,7 @@
 import { GEOMETRY_TYPES } from 'app/constant';
 
 /**
- * @param geometries
+ * @param geometry
  * @returns { number } number of vertex of a feature
  */
 export function getVertexLength(geometry) {

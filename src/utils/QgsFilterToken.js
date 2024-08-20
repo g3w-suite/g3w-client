@@ -42,8 +42,8 @@ export const QgsFilterToken = {
       if (response && response.result && response.data) {
         return response.data;
       }
-    } catch(err) {
-      console.warn(err);
+    } catch(e) {
+      console.warn(e);
     }
   },
 
@@ -72,8 +72,8 @@ export const QgsFilterToken = {
       if (response && response.result && response.data) {
         return response.data.filtertoken;
       }
-    } catch(err) {
-      console.warn(err)
+    } catch(e) {
+      console.warn(e)
     }
   },
 
@@ -87,6 +87,7 @@ export const QgsFilterToken = {
       const { data = {} } = await XHR.get({url, params});
       return data.filtertoken;
     } catch(e) {
+      console.warn(e);
       return Promise.reject(e);
     }
   },

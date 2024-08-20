@@ -59,7 +59,7 @@ export const XHR = {
       }, TIMEOUT);
       promise
         .done(()   => resolve())
-        .fail((e)  => {console.warn(e); reject(e); })
+        .fail(e  => { console.warn(e); reject(e); })
         .always(() => clearTimeout(timeoutId));
     })
   },

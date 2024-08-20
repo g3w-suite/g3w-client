@@ -18,4 +18,4 @@ export function imageToDataURL({
     image.onerror = reject;
     image.src = src;
   });
-};
+}

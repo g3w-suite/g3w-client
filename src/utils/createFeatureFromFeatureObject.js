@@ -22,6 +22,6 @@ export function createFeatureFromFeatureObject({ id, feature = {} }) {
     feature = new ol.Feature(feature.geometry);
     feature.setId(id);
   }
-  Object.keys(attributes).forEach(attr => feature.set(attr, attributes[attr]));
+  Object.keys(attributes).forEach(a => feature.set(a, attributes[a]));
   return feature;
 }

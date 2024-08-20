@@ -9,7 +9,8 @@
 export function sameOrigin(url1, url2) {
   try {
     return new URL(url1).origin === new URL(url2).origin;
-  } catch(err) {
-    return false
+  } catch(e) {
+    console.warn(e);
+    return false;
   }
-};
+}

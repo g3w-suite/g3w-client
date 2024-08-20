@@ -11,7 +11,7 @@ import { singleGeometriesToMultiGeometry } from 'utils/singleGeometriesToMultiGe
 export function convertSingleMultiGeometry(geometry, toGeometryType) {
   const from_type = geometry.getType();
   
-  if (!toGeometryType || from_type === toGeometryType) {
+  if (!toGeometryType || toGeometryType === from_type) {
     return geometry;
   }
   

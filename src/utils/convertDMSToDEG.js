@@ -11,6 +11,6 @@ export function convertDMSToDEG({
   dms,
   type = 'Array',
 }) {
-  const dms_Array = type === 'Array' ? dms : dms.split(/[^\d\w\.]+/);
+  const dms_Array = 'Array' === type ? dms : dms.split(/[^\d\w\.]+/);
   return (Number(1 * dms_Array[0]) + Number(1 * dms_Array[1]) / 60 + Number(1 * dms_Array[2]) / 3600).toFixed(6) * (['S', 'W'].includes(dms_Array[3]) ? -1 : 1);
 }

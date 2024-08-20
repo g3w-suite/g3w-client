@@ -24,7 +24,7 @@ export function createOlLayer(layer = {}) {
   if (!style && getAllPointGeometryTypes().includes(layer.geometryType)) {
     style = new ol.style.Style({
       image: new ol.style.Circle({
-        fill: new ol.style.Fill({ color }),
+        fill:   new ol.style.Fill({ color }),
         radius: 5,
       }),
     });
@@ -39,7 +39,7 @@ export function createOlLayer(layer = {}) {
   if (!style && getAllPolygonGeometryTypes().includes(layer.geometryType)) {
     style =  new ol.style.Style({
       stroke: new ol.style.Stroke({ color: '#000000', width: 1 }),
-      fill: new ol.style.Fill({ color }),
+      fill:   new ol.style.Fill({ color }),
     });
     olLayer.setOpacity(0.6);
   }

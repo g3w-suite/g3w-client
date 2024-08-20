@@ -28,7 +28,7 @@ export function getDefaultLayerStyle(geometryType, options = {}) {
   //Polygon geometry type
   if (isPolygonGeometryType(geometryType)) {
     return new ol.style.Style({
-      fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
+      fill:   new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
       stroke: new ol.style.Stroke({ color, width: 3 }),
     })
   }

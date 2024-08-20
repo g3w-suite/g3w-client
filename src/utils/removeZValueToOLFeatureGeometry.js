@@ -66,4 +66,4 @@ export function removeZValueToOLFeatureGeometry({ feature } = {}) {
   }
   
   return feature;
-};
+}

@@ -12,7 +12,7 @@ export async function createInputsFormFromFilter(state) {
 
   for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
-    const input = state.forminputs[i];
+    const input            = state.forminputs[i];
     const has_autocomplete = 'autocompletefield' === input.type;
 
     // set key-values for select

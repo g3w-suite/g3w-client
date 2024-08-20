@@ -5,4 +5,4 @@ import { DOTS_PER_INCH } from 'constant';
  */
 export function getDPI() {
   return DOTS_PER_INCH;
-};
+}

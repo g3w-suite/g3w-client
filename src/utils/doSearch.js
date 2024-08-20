@@ -33,15 +33,15 @@ export async function doSearch({
   try {
     data = await DataRouterService.getData('search:features', {
       inputs: {
-        layer: state.search_layers,
-        filter: filter || createFilterFormInputs({
-          layer:  state.search_layers,
-          inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+        layer:     state.search_layers,
+        filter:    filter || createFilterFormInputs({
+          layer:   state.search_layers,
+          inputs:  state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
         }),
         queryUrl,
         formatter: 1,
         feature_count,
-        raw: false // in order to get raw response
+        raw:       false // in order to get a raw response
       },
       outputs: show && { title: state.title }
     });
@@ -56,7 +56,7 @@ export async function doSearch({
     const relation  = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
     const layer     = relation        && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer);      // father layer id
 
-    // no features on result → show empty message
+    // no features on result → show an empty message
     if (search_1n && !features.length) {
       DataRouterService.showEmptyOutputs();
       parsed = [];

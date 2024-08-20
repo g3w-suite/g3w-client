@@ -32,13 +32,13 @@
  * @since 3.9.0
  */
 export function flattenObject(obj, parent, res = {}) {
-  for(let key in obj){
-      let propName = parent ? parent + '_' + key : key;
-      if (typeof obj[key] == 'object') {
-        flattenObject(obj[key], propName, res);
-      } else {
-          res[propName] = obj[key];
-      }
+  for (let key in obj) {
+    let propName = parent ? parent + '_' + key : key;
+    if ('object' === typeof obj[key]) {
+      flattenObject(obj[key], propName, res);
+    } else {
+      res[propName] = obj[key];
+    }
   }
   return res;
 }

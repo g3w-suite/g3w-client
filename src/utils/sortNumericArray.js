@@ -3,6 +3,6 @@
  * 
  * @since 3.8.0
  */
-export function sortNumericArray(arr, ascending = true) {
+export function sortNumericArray(arr = [], ascending = true) {
   return arr.sort((a, b) => (ascending ? (a - b) : (b - a)));
-};
+}

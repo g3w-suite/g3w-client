@@ -32,8 +32,7 @@ export function getQueryLayersPromisesByGeometry(layers, { multilayers = false, 
     let layersLength      = numberRequested;
 
     for (let key in multiLayers) {
-      const _multilayer = multiLayers[key];
-      const layers      = _multilayer;
+      const layers      = multiLayers[key];
       const multilayer  = multiLayers[key][0];
       const provider    = multilayer.getProvider('filter');
       const layerCrs    = multilayer.getProjection().getCode();
@@ -66,7 +65,7 @@ export function getQueryLayersPromisesByGeometry(layers, { multilayers = false, 
       layer
         .query({ filter, filterConfig, feature_count })
         .then(response => queryResponses.push(response))
-        .fail(error => queryErrors.push(error))
+        .fail(e => { console.warn(e); queryErrors.push(e); })
         .always(() => {
           layersLenght -= 1;
           if (0 === layersLenght) {

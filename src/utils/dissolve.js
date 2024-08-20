@@ -21,7 +21,7 @@ export function dissolve({
     return null;
   }
 
-  /** In case of single feature, return feature */
+  /** In the case of single feature, return feature */
   if (1 === featuresLength) {
     return features[0];
   }
