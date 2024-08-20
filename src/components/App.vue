@@ -1098,14 +1098,14 @@ export default {
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
-      // Expand on click for sidebar mini
-      if (document.body.classList.contains('sidebar-mini') &&
-        document.body.classList.contains('sidebar-collapse') &&
-        window.innerWidth > 767) {
+      const mini = document.body.classList.contains('sidebar-mini');
+      const open = mini && document.body.classList.contains('sidebar-collapse') && window.innerWidth > 767;
+
+      if (open) {
         document.body.classList.remove('sidebar-collapse');
       }
-      const li = e.target.closest('.sidebaritem')
 
+      const li     = e.target.closest('.sidebaritem')
       const active = li.classList.contains('active');
 
       document.querySelectorAll('.main-sidebar li.sidebaritem.active')    .forEach(el => el.classList.remove('active'));
@@ -1207,9 +1207,11 @@ export default {
     resize();
     $(window, ".wrapper").resize(resize);
 
-    document.body.classList.toggle('is-mobile', this.isMobile());
-
     this.iframe = ApplicationState.iframe;
+
+    document.body.classList.toggle('is-mobile', this.isMobile());
+    document.body.classList.toggle('is-iframe', this.iframe);
+  
     VM.$on('sidebaritemclick', () => $('.sidebar-toggle').click())
 
     await this.$nextTick();
