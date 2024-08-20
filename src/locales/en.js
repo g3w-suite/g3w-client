@@ -282,6 +282,9 @@ export default {
           querybbox: {
             tooltip: 'draw a rectangle'
           },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
         },
         querybypolygon: {
           download: {
@@ -313,6 +316,13 @@ export default {
           help: {
             message: "<ul><li>Drag the mouse to draw a rectangle and query layers (underlined in yellow in legend)</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {

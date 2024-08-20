@@ -151,6 +151,7 @@ CONTROLS['area']               = CONTROLS['measure'];
 CONTROLS['length']             = CONTROLS['measure'];
 CONTROLS['geoscreenshot']      = CONTROLS['screenshot'];
 CONTROLS['querybbox']          = CONTROLS['queryby'];
+CONTROLS['querybycircle']      = CONTROLS['queryby'];
 CONTROLS['querybydrawpolygon'] = CONTROLS['queryby'];
 CONTROLS['querybypolygon']     = CONTROLS['queryby'];
 
@@ -415,6 +416,7 @@ class MapService extends G3WObject {
     
               case 'querybypolygon':
               case 'querybbox':
+              case 'querybycircle':
               case 'querybydrawpolygon':
                 if (!isMobile.any) {
                   if (this.getMapControlByType('queryby')) {

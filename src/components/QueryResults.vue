@@ -558,6 +558,11 @@
                   `${query.layerName} ${undefined !== query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
                   : ' '                                                                                         // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
               };
+              case 'circle':
+                return {
+                  icon: 'empty-circle',
+                  message: ' ',                                                                                     // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+                };
             default:
               console.warn(`Unsupported query type:  ${query.type}`);
               break;

@@ -283,6 +283,9 @@ export default {
           querybbox: {
             tooltip: 'disegna un rettangolo'
           },
+          querybycircle: {
+            tooltip: 'disegna un cerchio'
+          }
         },
         querybypolygon: {
           download: {
@@ -313,6 +316,13 @@ export default {
           nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
           help: {
             message: "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli (sottolineati in giallo nella legenda)</li></ul>"
+          },
+        },
+        querybycircle: {
+          tooltip: "Disegna un cerchio per interrogare",
+          label: 'Raggio',
+          help: {
+            message: "<ul><li>Clicca sulla mappa per disegnare il cerchio</li></ul>"
           },
         },
         addlayer: {

@@ -2569,7 +2569,8 @@ QueryResultsService.prototype.setters = {
         case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
         case 'bbox':        this.showBBOX(this.state.query.bbox); break;
         case 'polygon':
-        case 'drawpolygon': this.showGeometry(this.state.query.geometry); break;
+        case 'drawpolygon':
+        case 'circle': this.showGeometry(this.state.query.geometry); break;
       }
     }
 

@@ -10,7 +10,7 @@ import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 import ProjectsRegistry               from 'store/projects';
 import { InteractionControl }         from 'g3w-ol/controls/interactioncontrol';
-import { throttle }                   from 'utils/throttle';
+import { throttle, debounce }         from 'utils/throttle';
 import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
 
 const PickCoordinatesInteraction      = require('g3w-ol/interactions/pickcoordinatesinteraction');
@@ -35,6 +35,13 @@ const QUERY = {
   feature:       null,
   coordinates:   null,
 };
+
+//Reactive data
+const REACTIVE = Vue.observable({
+  querybycircle: {
+    radius: 0
+  }
+})
 
 /**
  * Return current layer id selected or __ALL__ (no layer selected)
@@ -120,6 +127,17 @@ export class QueryBy extends InteractionControl {
                     <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.queryby.' + type + '.tooltip'"></option>
                   </select>
                 </div>
+                <!-- RADIUS TYPE -->
+                <div v-if="'querybycircle' === type" style="padding: 5px;">
+                  <label for="g3w_querybycircle_radius" v-t="'sdk.mapcontrols.querybycircle.label'"></label>
+                  <input 
+                    id      = "g3w_querybycircle_radius"
+                    v-model = "radius"
+                    class   =  "form-control" 
+                    step    = '0.1'
+                    min     = '0'
+                    type    = "number"/>
+                </div>
                 <!-- SELECTED LAYER -->
                 <div style="padding: 5px;">
                   <label v-t="'sdk.mapcontrols.queryby.layer'"></label>
@@ -139,7 +157,22 @@ export class QueryBy extends InteractionControl {
               queryable() { return (this.control.layers || []).filter(l => 'querybypolygon' === this.type ? POLYGON_TYPES.includes(l.getGeometryType()) : true); },
               no_layers() { return !this.queryable || !_hasVisible(this.control) },
               help()      { return `sdk.mapcontrols.${this.type}.help.message`; },
-              all()       { return this.no_layers ? 'sdk.mapcontrols.queryby.none' : 'sdk.mapcontrols.queryby.all'; }
+              all()       { return this.no_layers ? 'sdk.mapcontrols.queryby.none' : 'sdk.mapcontrols.queryby.all'; },
+              radius:    {
+                get() { return REACTIVE.querybycircle.radius },
+                set(v) {
+                  if (Number.isNaN(v) || v < 0) {
+                    this.radius = REACTIVE.querybycircle.radius;
+                    return;
+                  }
+                  REACTIVE.querybycircle.radius =  Math.floor(v);
+                  //already circle drawed but not clear (0) value
+                  if (QUERY.dfeature && REACTIVE.querybycircle.radius > 0) {
+                    QUERY.dfeature.getGeometry().setRadius(REACTIVE.querybycircle.radius);
+                    CONTROLS['queryby'].runSpatialQuery(this.type);
+                  }
+                }
+              }
             },
             watch: {
               method()  { this.reset(); },
@@ -205,11 +238,17 @@ export class QueryBy extends InteractionControl {
               },
               async reset() {
                 this.layers.splice(0);
+                //reset radius
+                if ('querybycircle' !== this.type) {
+                  REACTIVE.querybycircle.radius = 0;
+                }
                 // reset autorun options
                 this.types.filter(t => t !== this.type).forEach(t => {
                   if ('querybbox' === t)          { QUERY.bbox     = null; }
                   if ('querybypolygon' === t)     { QUERY.layer    = null; QUERY.feature = null; QUERY.coordinates = null; }
-                  if ('querybydrawpolygon' === t) { QUERY.dfeature = null; }
+                  if (![
+                    'querybydrawpolygon','querybycircle'
+                  ].includes(this.type))          { QUERY.dfeature = null; }
                   CONTROLS[t].autorun = false;
                 });
                 //set spatial method
@@ -233,6 +272,7 @@ export class QueryBy extends InteractionControl {
                 if (!state.id) { return state.text }
                 return $(/*html*/`<span><i class="${ GUI.getFontClass(({
                   'querybbox':          'square',
+                  'querybycircle':      'empty-circle',
                   'querybydrawpolygon': 'draw',
                   'querybypolygon':     'pointer',
                 })[state.id]) }"></i>&nbsp;&nbsp;${state.text}</span>`);
@@ -297,10 +337,13 @@ export class QueryBy extends InteractionControl {
       geometryTypes:    ['querybypolygon','querybydrawpolygon'].includes(type) ? POLYGON_TYPES : [],
       interactionClass: ({
         'querybbox':          ol.interaction.DragBox,
+        'querybycircle':      ol.interaction.Draw,
         'querybydrawpolygon': ol.interaction.Draw,
         'querybypolygon':     PickCoordinatesInteraction,
       })[type],
-      interactionClassOptions: 'querybydrawpolygon' === type ? { type: 'Polygon' } : {},
+      interactionClassOptions: ['querybydrawpolygon', 'querybycircle'].includes(type)
+        ? { type: 'querybydrawpolygon' === type ? 'Polygon' : 'Circle' }
+        :  {},
       layers: _getAvailableLayers(type),
       onSetMap({ setter, map }) {
         if ('after' !== setter) {
@@ -324,8 +367,23 @@ export class QueryBy extends InteractionControl {
           });
         }
 
-        if ('querybydrawpolygon' === type) {
+        if ('querybycircle' === type) {
+          this._interaction.on('drawstart', e => {
+            const geometry = e.feature.getGeometry();
+            geometry.setRadius(REACTIVE.querybycircle.radius);
+            geometry.on('change', () => REACTIVE.querybycircle.radius = geometry.getRadius())
+            if (REACTIVE.querybycircle.radius > 0) {
+              this._interaction.finishDrawing();
+            }
+          })
+        }
+
+        if (['querybydrawpolygon', 'querybycircle'].includes(type)) {
           this._interaction.on('drawend', throttle(e => {
+            //convert circle geometry to polygon
+            if ('querybycircle' === type) {
+              REACTIVE.querybycircle.radius = e.feature.getGeometry().getRadius();
+            }
             QUERY.dfeature = e.feature;
             this.dispatchEvent({ type: 'drawend', feature: QUERY.dfeature });
             if (this._autountoggle) {
@@ -334,7 +392,7 @@ export class QueryBy extends InteractionControl {
           }));
           this.setEventKey({
             eventType: 'drawend',
-            eventKey: this.on('drawend', () => CONTROLS['queryby'].runSpatialQuery('querybydrawpolygon'))
+            eventKey:   this.on('drawend', () => CONTROLS['queryby'].runSpatialQuery(type))
           });
         }
 
@@ -537,20 +595,40 @@ export class QueryBy extends InteractionControl {
         });
       }
 
-      if (['querybypolygon','querybydrawpolygon'].includes(type)) {
+      if (['querybypolygon','querybydrawpolygon', 'querybycircle'].includes(type)) {
         await DataRouterService.getData('query:polygon', {
           inputs: {
             layerName:       'querybypolygon' === type ? (QUERY.layer.getName ? QUERY.layer.getName() : QUERY.layer.get('name')) : '',
             excludeSelected: 'querybypolygon' === type || !selected,
-            feature:         'querybypolygon' === type ? QUERY.feature : QUERY.dfeature,
+            feature:         (() => {
+                              switch (type) {
+                                case 'querybypolygon':
+                                  return QUERY.feature
+                                case 'querybydrawpolygon':
+                                  return QUERY.dfeature;
+                                case 'querybycircle':
+                                  const feature = QUERY.dfeature.clone();
+                                  feature.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry()));
+                                  return feature;
+                              }
+                             })(),
             external:        {
               add:           'querybypolygon' === type || (!selected || externalLayers.some(l => l === selected)),
               filter: {
-                SELECTED:    'querybydrawpolygon' === type && (!selected || externalLayers.some(l => l === selected))
+                SELECTED:    ['querybydrawpolygon', 'querybycircle'].includes(type) && (!selected || externalLayers.some(l => l === selected))
               }
             },
             /** @since 3.9.0 - custom 'drawpolygon' type **/
-            type:            'querybypolygon' === type ? 'polygon' : 'drawpolygon',
+            type:            (() => {
+                                switch(type) {
+                                  case 'querybypolygon':
+                                    return 'polygon';
+                                  case 'querybydrawpolygon':
+                                    return 'drawpolygon';
+                                  case 'querybycircle':
+                                    return 'circle';
+                                }
+                              })(),
             multilayers:     ProjectsRegistry.getCurrentProject().isQueryMultiLayers(control.name),
             filterConfig:    { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           },

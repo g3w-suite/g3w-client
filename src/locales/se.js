@@ -262,6 +262,29 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
+        },
         querybypolygon: {
           download: {
             title: "Attributes download",
@@ -289,6 +312,13 @@ export default {
           help: {
             message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
