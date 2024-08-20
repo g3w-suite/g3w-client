@@ -453,7 +453,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 .main-header .navbar .nav > .active > a                        { background: rgba(0, 0, 0, 0.1); color: #f6f6f6; }
 
 .main-header .navbar .sidebar-toggle                           { color: #fff; }
-
 .main-header .navbar .sidebar-toggle:hover                     { background-color: var(--skin-d5); }
 
 .content-header                                                { background: transparent; }
@@ -559,7 +558,6 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar.mobile                                               { width: 300px; }
 .main-sidebar.iframe                                               { padding-top:0 !important; }
 .main-sidebar.iframe a.sidebar-aside-toggle                        { top: 0! important; }
-// .main-sidebar                                                   { position:relative !important; }
 .main-sidebar .sidebar-button-shadow                               { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; }
 .main-sidebar .sidebar-button-run                                  { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; color: #fff; }
 .main-sidebar .sidebar-button                                      { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; border-radius: 3px; background-color: #fff !important; cursor: pointer; }
@@ -583,12 +581,12 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar .sidebar-divider:last-child                          { border:0; }
 
 /* color  icons of sidebar */
-.sidebar-menu > li > a .fa-search                                        { color: #8DC3E3; }
-.sidebar-menu > li > a :is(.fa-map-o, .fa-map)                           { color: #019A4C; }
-.sidebar-menu > li > a :is(.fa-gears, .fa-cogs)                          { color: #FFE721; }
-.sidebar-menu > li > a .fa-print                                         { color: #FF9B21; }
-.sidebar-menu > li > a :is(.fa-file-code-o, .fa-file-code)               { color: #fff; }
-.sidebar-menu > li > a .fa-bookmark                                      { color: #00bcd4; }
+.sidebar-menu > li > a .fa-search                                  { color: #8DC3E3; }
+.sidebar-menu > li > a :is(.fa-map-o, .fa-map)                     { color: #019A4C; }
+.sidebar-menu > li > a :is(.fa-gears, .fa-cogs)                    { color: #FFE721; }
+.sidebar-menu > li > a .fa-print                                   { color: #FF9B21; }
+.sidebar-menu > li > a :is(.fa-file-code-o, .fa-file-code)         { color: #fff; }
+.sidebar-menu > li > a .fa-bookmark                                { color: #00bcd4; }
 
 .main-sidebar                                                      { width: 350px; margin-top: 50px; overflow-y: auto;}
 .main-sidebar .btn.quick-action                                    { color: #bbb; background-color: #222d32; border: 2px solid #888; }
@@ -603,34 +601,22 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 
 .skin-green  .main-sidebar ul.sidebar-menu > li a:hover  { color: #a1e096 !important; }
 
+/** Add "sidebar-mini" class to the body tag to activate this feature */
+
 :root {
   @media (max-width: 767px) {
-    .main-sidebar,
-    .sidebar-aside-toggle                                            { padding-top: 50px; }
-    .main-sidebar,
-    .sidebar-aside-toggle                                            { left: 0 }
-    .sidebar-open .main-sidebar,
-    .sidebar-open .sidebar-aside-toggle                              { transform: translate(0, 0); }
-
-    a.sidebar-aside-toggle                                           { display: none !important; }
-    .main-sidebar                                                    { transform: translate(-100%, 0); width: 100%; }
-    .sidebar-open .main-sidebar, .sidebar-open .sidebar-aside-toggle { transform: translate(0, 0) }
+    a.sidebar-aside-toggle                          { display: none !important; }
+    .main-sidebar                                   { transform: translate(-100%, 0); left: 0; padding-top: 50px; width: 100%; }
+    .sidebar-open .main-sidebar                     { transform: translate(0, 0) }
   }
-
-  //Add sidebar-mini class to the body tag to activate this feature
-  //Sidebar mini should work only on devices larger than @screen-sm
   @media (min-width: 768px) {
     .sidebar-collapse .main-sidebar,
-    .sidebar-collapse .sidebar-aside-toggle                        { left: 0; }
-
-    //Apply the new margining to the main content and footer
-    .sidebar-collapse .content-wrapper                             { margin-left: 0; }
-    .sidebar-collapse .main-sidebar                                { transform: translate(0, 0); width: 0px !important; }
-    .sidebar-mini.sidebar-collapse .content-wrapper                { margin-left: 35px; }
-    .sidebar-mini.sidebar-collapse .main-sidebar                   { width: 35px !important; }
-
-    //Let's make the logo also shrink and the mini logo to appear
-    .sidebar-collapse .main-header .logo                          { width: 50px; }
+    .sidebar-collapse .sidebar-aside-toggle         { left: 0; }
+    .sidebar-collapse .content-wrapper              { margin-left: 0; }
+    .sidebar-collapse .main-sidebar                 { transform: translate(0, 0); width: 0px !important; }
+    .sidebar-mini.sidebar-collapse .content-wrapper { margin-left: 35px; }
+    .sidebar-mini.sidebar-collapse .main-sidebar    { width: 35px !important; }
+    .sidebar-collapse .main-header .logo            { width: 50px; }
   }
 }
 

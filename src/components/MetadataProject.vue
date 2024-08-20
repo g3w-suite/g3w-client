@@ -5,7 +5,6 @@
 
 <template>
   <div id = "project-catalog">
-<!--    <h4 class="content-header-component skin-color">{{ state.name }}</h4>-->
     <div
       id     = "project-catalog-container"
       style  = "padding:0"
