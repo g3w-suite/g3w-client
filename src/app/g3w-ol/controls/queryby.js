@@ -609,7 +609,7 @@ export class QueryBy extends InteractionControl {
                                   return QUERY.dfeature;
                                 case 'querybycircle':
                                   const feature = QUERY.dfeature.clone();
-                                  feature.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry()));
+                                  feature.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry(), 64));
                                   return feature;
                               }
                              })(),
