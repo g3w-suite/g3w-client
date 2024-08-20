@@ -191,7 +191,7 @@ Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unus
 const layout = $.LayoutManager;
 
 // loading spinner at beginning
-layout.loading(true);
+$('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
 
 /**
  * ORIGINAL SOURCE: src/gui/app/index.js@3.4
@@ -1044,7 +1044,7 @@ ApplicationTemplate.Services = {
 };
 
 ApplicationTemplate.fail = function({ error }) {
-  layout.loading(false);
+  $('#startingspinner').remove();
   new Vue({
     el: '#app',
     ...Vue.compile(

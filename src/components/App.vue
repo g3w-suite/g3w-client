@@ -365,6 +365,7 @@
             v-show = "showmainpanel"
             class  = "sidebar-menu"
             :class = "{ 'g3w-disabled': sstate.disabled }"
+            @click = "toggleSidebarItem"
           ></ul>
 
       </div>
@@ -708,28 +709,10 @@ import { resizeMixin }           from "mixins";
 
 import HeaderItem                from "components/HeaderItem.vue";
 import userMessage               from 'components/UserMessage.vue';
-import CatalogContextMenu   from 'components/CatalogContextMenu.vue';
+import CatalogContextMenu        from 'components/CatalogContextMenu.vue';
 import getUniqueDomId            from 'utils/getUniqueDomId';
 
 const { t }        = require('core/i18n/i18n.service');
-
-/**
- * Original source: src/gui/app/layout.js@v3.6
- */
-$.LayoutManager = $.LayoutManager || {
-
-  loading(start) {
-    $('#initerror').remove();
-    if (false !== start) {
-      $('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
-    } else {
-      $('#startingspinner').remove();
-    }
-  },
-
-};
-
-const layout = $.LayoutManager;
 
 export default {
 
@@ -1110,6 +1093,29 @@ export default {
     },
 
     /**
+     * Toggle sidebar tree items on click
+     * 
+     * @since 3.11.0
+     */
+    toggleSidebarItem(e) {
+      // Expand on click for sidebar mini
+      if (document.body.classList.contains('sidebar-mini') &&
+        document.body.classList.contains('sidebar-collapse') &&
+        window.innerWidth > 767) {
+        document.body.classList.remove('sidebar-collapse');
+      }
+      const li = e.target.closest('.sidebaritem')
+
+      const active = li.classList.contains('active');
+
+      document.querySelectorAll('.main-sidebar li.sidebaritem.active')    .forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.main-sidebar li.sidebaritem .menu-open').forEach(el =>  el.classList.remove('menu-open'));
+
+      li.classList.toggle('active', !active);
+      li.querySelector('.treeview-menu').classList.toggle('menu-open', !active);
+    },
+
+    /**
      * Add some marging to the logo
      * 
      * @since 3.11.0
@@ -1189,8 +1195,7 @@ export default {
 
     await this.$nextTick();
 
-    // start to render LayoutManager layout
-    layout.loading(false);
+    $('#startingspinner').remove();
 
     // Fixes the layout height in case min-height fails.
     const resize = function() {
@@ -1201,69 +1206,6 @@ export default {
 
     resize();
     $(window, ".wrapper").resize(resize);
-
-    // toggle sidebar tree items on click
-    document
-      .querySelectorAll('.main-sidebar li > a, .main-sidebar li > ul')
-      .forEach(item => item.addEventListener('click', function (e) {
-          // Expand on click for sidebar mini
-          if (document.body.classList.contains('sidebar-mini') && 
-              document.body.classList.contains('sidebar-collapse') && 
-              window.innerWidth > 767) {
-              document.body.classList.remove('sidebar-collapse');
-          }
-
-          // Get the clicked element and the next element
-          const next = this.nextElementSibling;
-
-          // next element is a menu and is visible
-          if (next && next.classList.contains('treeview-menu') && next.style.display !== 'none') {
-              // Close the menu
-              next.style.display = 'none';
-              next.parentElement.classList.remove("active");
-              next.classList.remove('menu-open');
-          }
-          // menu is not visible
-          else if (next && next.classList.contains('treeview-menu') && next.style.display === 'none') {
-              // Get the parent menu
-              const parent = this.closest('ul');
-              // Close all open menus within the parent
-              // Remove the menu-open class from the parent
-              parent.querySelectorAll('ul.treeview-menu').forEach(menu => {
-                  if (menu.style.display !== 'none') {
-                      menu.style.display = 'none';
-                      menu.classList.remove('menu-open');
-                  }
-              });
-              // Open the target menu and add the menu-open class
-              next.style.display = 'block';
-              next.classList.add('menu-open');
-              parent.querySelectorAll('li.treeview.active').forEach(active => {
-                  active.classList.remove('active');
-              });
-              this.parentElement.classList.add('active');
-          }
-          // if this isn't a link, prevent the page from being redirected
-          if (next && next.classList.contains('treeview-menu')) {
-              e.preventDefault();
-          }
-      }));
-
-    //Activate box widget
-    $('[data-widget="collapse"]').on('click', function (e) {
-      e.preventDefault();
-      //Find the box parent
-      const box = $(this).parents(".box").first();
-      //Find the body and the footer
-      const box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
-      if (!box.hasClass("collapsed-box")) {
-        $(this).find(".btn-collapser").removeClass('fa-minus').addClass('fa-plus'); // Convert minus into plus
-        box_content.slideUp('fast', () => box.addClass("collapsed-box"));           // Hide the content
-      } else {
-        $(this).find(".btn-collapser").removeClass('fa-plus').addClass('fa-minus'); // Convert plus into minus
-        box_content.slideDown('fast', () => box.removeClass("collapsed-box"));      // Show the content
-      }
-    });
 
     document.body.classList.toggle('is-mobile', this.isMobile());
 

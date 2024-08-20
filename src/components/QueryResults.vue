@@ -32,11 +32,11 @@
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
               <div
-                class       = "box-header with-border"
-                :class      = "{'mobile': isMobile()}"
-                @mouseover  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout  =  "highLightLayerFeatures(layer, { highlight: false })"
-                data-widget = "collapse"
+                class      = "box-header with-border"
+                :class     = "{'mobile': isMobile()}"
+                @mouseover = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout  = "highLightLayerFeatures(layer, { highlight: false })"
+                @click     = "collapseSidebar"
               >
                 <div
                   class  = "box-title query-layer-title"
@@ -181,8 +181,8 @@
 
                 </div>
                 <button
-                  class       = "btn btn-box-tool"
-                  data-widget = "collapse"
+                  class          = "btn btn-box-tool"
+                  style          = "pointer-events: none;"
                 >
                   <i
                     class  = "btn-collapser skin-color"
@@ -802,7 +802,18 @@
         if (layer.hasgeometry && layer.features.length > 1) {
           this.$options.service.highLightLayerFeatures(layer, opts);
         }
-      }
+      },
+
+      /**
+       * @since 3.11.0
+       */
+      collapseSidebar(e) {
+        const box       = e.target.closest(".box");
+        const collapsed = box.classList.contains('collapsed-box');
+        box.classList.toggle('collapsed-box');
+        box.querySelector(".btn-collapser").classList.toggle('fa-plus', !collapsed);
+        box.querySelector(".btn-collapser").classList.add('fa-minus', collapsed);
+      },
 
     },
 
