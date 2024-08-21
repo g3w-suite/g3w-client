@@ -250,7 +250,9 @@ export default {
   },
 
   methods: {
-
+    /**
+     * @since 3.11.0
+     */
     toggle() {
       //in case of no new form map_theme is show
       if (!this.show_form) {
