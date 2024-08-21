@@ -13,7 +13,6 @@
   >
     <bar-loader :loading = "component.state.loading"/>
     <a
-      @click.prevent = "onClickItem"
       ref            = "anchor_click"
       href           = "#"
       style          = "display: flex; justify-content: space-between; align-items: center"
@@ -48,13 +47,11 @@
         class  ="pull-right">
       </i>
     </a>
-    <div v-if="component" ref="component-placeholder" ></div>
+    <div ref="component-placeholder" ></div>
   </li>
 </template>
 
 <script>
-  import { SidebarEventBus as VM } from 'app/eventbus';
-  import ApplicationState          from 'store/application-state';
 
   export default {
     name: "SidebarItem",
@@ -77,18 +74,6 @@
       triggerAction(action, component) {
         action.fnc(component);
       },
-      onClickItem() {
-        // force to close
-        ApplicationState.sidebar.components.forEach(component => {
-          if (component !== this.component && component.getOpen()) {
-            component.click({ open: false });
-          }
-        });
-        if (!this.component.collapsible && isMobile.any) {
-          VM.$emit('sidebaritemclick')
-        }
-        this.component.setOpen(!this.component.state.open);
-      }
     },
 
     mounted() {
@@ -109,9 +94,7 @@
         });
       }
 
-      if (this.$refs['component-placeholder']) {
-        this.component.mount(this.$refs['component-placeholder']);
-      }
+      this.component.mount(this.$refs['component-placeholder']);
 
       // set component click handler
       this.component.click = ({ open = false } = {}) => {

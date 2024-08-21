@@ -826,6 +826,14 @@ const ApplicationTemplate = function({ ApplicationService }) {
     // SIDEBAR //
     GUI.showSidebar      = this._showSidebar.bind(this);
     GUI.hideSidebar      = this._hideSidebar.bind(this);
+    /** @since 3.11.0*/
+    GUI.toggleSidebar = () => {
+      if (document.body.classList.contains('sidebar-collapse')) {
+        GUI.showSidebar();
+      } else {
+        GUI.hideSidebar();
+      }
+    };
     GUI.isSidebarVisible = this._isSidebarVisible.bind(this);
 
     // MODAL

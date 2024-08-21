@@ -1044,11 +1044,7 @@ export default {
      * @since 3.11.0
      */
     toggleSidebar() {
-      if (document.body.classList.contains('sidebar-collapse')) {
-        GUI.showSidebar();
-      } else {
-        GUI.hideSidebar();
-      }
+      GUI.toggleSidebar();
     },
 
     /**
@@ -1057,8 +1053,9 @@ export default {
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
-      const mini = document.body.classList.contains('sidebar-mini');
-      const open = mini && document.body.classList.contains('sidebar-collapse') && window.innerWidth > 767;
+      const mini      = document.body.classList.contains('sidebar-mini');
+      const collapsed = document.body.classList.contains('sidebar-collapse');
+      const open = mini && collapsed && window.innerWidth > 767;
 
       if (open) {
         document.body.classList.remove('sidebar-collapse');
@@ -1067,6 +1064,11 @@ export default {
       const li     = e.target.closest('.sidebaritem');
       const menu   = li.querySelector('.treeview-menu');
       const active = li.classList.contains('active');
+      const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
+
+      if (component.getOpen() && collapsed) {
+        return;
+      }
 
       document.querySelectorAll('.main-sidebar li.sidebaritem.active')    .forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.main-sidebar li.sidebaritem .menu-open').forEach(el =>  el.classList.remove('menu-open'));
@@ -1076,6 +1078,19 @@ export default {
       if (menu) {
         menu.classList.toggle('menu-open', !active);
       }
+
+      // close other components
+      ApplicationState.sidebar.components.forEach(comp => {
+        if (comp !== component && comp.getOpen()) {
+          comp.click({ open: false });
+        }
+      });
+
+      if (!component.collapsible && isMobile.any) {
+        GUI.toggleSidebar();
+      }
+
+      component.setOpen(!component.state.open);
     },
 
     /**
@@ -1174,8 +1189,6 @@ export default {
 
     document.body.classList.toggle('is-mobile', this.isMobile());
     document.body.classList.toggle('is-iframe', this.iframe);
-  
-    VM.$on('sidebaritemclick', () => $('.sidebar-toggle').click())
 
     await this.$nextTick();
 
