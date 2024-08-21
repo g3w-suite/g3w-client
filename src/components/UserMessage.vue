@@ -176,7 +176,7 @@
               backgroundColor: "#FFF",
               color:           "#222d32",
               "z-index":       100,
-              marginLeft:      "40px",
+              marginLeft:      document.body.classList.contains('sidebar-collapse') ? '5px' : '40px',
             },
             loading: {
               backgroundColor: "#FFF",
