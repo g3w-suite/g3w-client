@@ -63,10 +63,11 @@ export class QueryBy extends InteractionControl {
 
     super({
       ...opts,
-      name:     'queryby',
-      label:    "\ue903",
-      tipLabel: "sdk.mapcontrols.queryby.title",
-      enabled:  true,
+      name:        'queryby',
+      label:       "\ue903",
+      tipLabel:    "sdk.mapcontrols.queryby.title",
+      enabled:     true,
+      cursorClass: null, //store cursorClass of a current sub control enabled (querybbox, etc..)
     });
 
     this.types = [];
@@ -347,6 +348,7 @@ export class QueryBy extends InteractionControl {
       offline:          false,
       visible:          false,
       geometryTypes:    ['querybypolygon','querybydrawpolygon'].includes(type) ? POLYGON_TYPES : [],
+      cursorClass:      'querybypolygon' !== type ? 'ol-crosshair': 'ol-pointer',
       interactionClass: ({
         'querybbox':          ol.interaction.DragBox,
         'querybycircle':      ol.interaction.Draw,
@@ -404,6 +406,7 @@ export class QueryBy extends InteractionControl {
               this.toggle();
             }
           }));
+
           this.setEventKey({
             eventType: 'drawend',
             eventKey:   this.on('drawend', () => CONTROLS['queryby'].runSpatialQuery(type))
@@ -464,9 +467,11 @@ export class QueryBy extends InteractionControl {
     GUI.getService('map').addControl(type, type, control, false, false);
 
     control._interaction.on('change:active', e => {
-      if ('querybbox' === type) {
-        this.setMouseCursor(e.target.get(e.key), 'ol-crosshair');              // set mouse cursor
-      }
+      //set current cursor class on map
+      this.setMouseCursor(e.target.get(e.key), control.cursorClass);              // set mouse cursor
+      //set same cursor class to parent queryby control
+      this.cursorClass = control.cursorClass;
+
       if (['querybbox', 'querybydrawpolygon'].includes(type)) {
         GUI.getService('catalog').state.highlightlayers = e.target.get(e.key); // highlight layers in legend
       }
