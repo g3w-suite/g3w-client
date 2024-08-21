@@ -35,7 +35,6 @@ export default new (class GUI extends G3WObject {
     this.hideQueryResults = noop;
     this.showPanel        = noop;
     this.hidePanel        = noop;
-    this.reloadComponents = noop;
     this.showUserMessage  = noop;
     this.closeUserMessage = noop;
     this.showModalDialog  = noop;

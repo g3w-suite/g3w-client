@@ -12,12 +12,11 @@ import './globals';
 //import core
 import ApplicationState          from 'store/application-state';
 import ProjectsRegistry          from 'store/projects';
+import { BarStack }              from 'core/g3w-barstack';
 
 //import services
 import ApplicationService        from 'services/application';
 import GUI                       from 'services/gui';
-import NavbarItemsService        from 'services/navbaritems';
-import SidebarService            from 'services/sidebar';
 import ViewportService           from 'services/viewport';
 
 // import store
@@ -65,6 +64,8 @@ const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
 
+/** @TODO make it simpler / move it into better place */
+ApplicationState.sidebar.stack = new BarStack();
 
 /**
  * Install global components
@@ -243,33 +244,23 @@ const ApplicationTemplate = function({ ApplicationService }) {
           components: [
             new MetadataComponent({
               id:          'metadata',
-              open:        false,
               collapsible: false,
               icon:        GUI.getFontClass('file'),
               iconColor:   '#fff',
-              mobile:      true,
             }),
             new SpatialBookMarksComponent({
               id:          'spatialbookmarks',
-              open:        false,
-              collapsible: true,
               icon:        GUI.getFontClass('bookmark'),
               iconColor:   '#00bcd4',
-              mobile:      true,
             }),
             new PrintComponent({
               id:          'print',
-              open:        false,
               visible:     ApplicationService.getConfig().user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-              collapsible: true, //  it used to manage click event if you can run setOpen component method
               icon:        GUI.getFontClass('print'),
               iconColor:   '#FF9B21',
-              mobile:      false,
             }),
             new SearchComponent({
               id:         'search',
-              open:        false,
-              collapsible: true,
               icon:        GUI.getFontClass('search'),
               iconColor:   '#8dc3e3',
               actions:     [
@@ -279,7 +270,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
                   tooltip: t('sdk.querybuilder.title'),
                   fnc:     () => {
                     GUI.closeContent();
-                    ApplicationTemplate.Services.sidebar.closeOpenComponents();
+                    GUI.closeOpenSideBarComponent();
                     QueryBuilderUIFactory.show({ type: 'sidebar' });  // sidebar or modal
                   },
                   style: {
@@ -290,31 +281,21 @@ const ApplicationTemplate = function({ ApplicationService }) {
                     marginRight:  '5px'
                   }
               }],
-              mobile: true,
             }),
             // Component that store plugins
             new ToolsComponent({
               id:          'tools',
-              open:        false,
-              collapsible: true,
               icon:        GUI.getFontClass('tools'),
               iconColor:   '#FFE721',
-              mobile:      true,
             }),
             new WMSComponent({
               id:          'wms',
-              open:        false,
-              collapsible: true,
               icon:        GUI.getFontClass('layers'),
-              mobile:      true,
             }),
             new CatalogComponent({
               id:          'catalog',
-              open:        false,
-              collapsible: false,
               icon:        GUI.getFontClass('map'),
               iconColor:   '#019A4C',
-              mobile:      true,
               config:      { legend: { config: appLayoutConfig.legend } },
             }),
           ]
@@ -472,11 +453,20 @@ const ApplicationTemplate = function({ ApplicationService }) {
   };
 
   // registry component
-  this._addComponents = function(components, placeholder, options) {
+  this._addComponents = function(components, placeholder, options = {}) {
     let register = true;
     if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
       const placeholderService = ApplicationTemplate.Services[placeholder];
-      if (placeholderService) {
+      // add component to the sidebar and set position inside the sidebar
+      if ('sidebar' === placeholder) {
+        components.forEach(comp => {
+          if (!isMobile.any || false !== comp.mobile) {
+            ApplicationState.sidebar.components.push(comp);
+            (new (Vue.extend(require('components/SidebarItem.vue')))({ component: comp, opts: options })).$mount();
+          }
+        });
+        register = true;
+      } else if (placeholderService) {
         register = placeholderService.addComponents(components, options);
       }
     }
@@ -488,10 +478,8 @@ const ApplicationTemplate = function({ ApplicationService }) {
     })
   };
 
-  this._removeComponent = function(componentId, placeholder, options) {
-    if (placeholder && ApplicationTemplate.Services[placeholder]) {
-      ApplicationTemplate.Services[placeholder].removeComponent(ComponentsRegistry.unregisterComponent(componentId), options);
-    }
+  this._removeComponent = function() {
+    console.warn('[G3W-CLIENT] GUI.removeComponent is deprecated');
   };
 
   this._showModalOverlay = function(bool=false, message) {
@@ -708,7 +696,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
     };
 
     GUI.closeOpenSideBarComponent = function() {
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
+      ApplicationState.sidebar.components.forEach(c => c.getOpen() && c.state.closewhenshowviewportcontent && c.collapsible && c.click({ open: false }));
     };
 
     // show results info/search
@@ -731,14 +719,32 @@ const ApplicationTemplate = function({ ApplicationService }) {
     };
 
     GUI.addNavbarItem = function(item) {
-      NavbarItemsService.addItem(item)
+      ApplicationState.navbaritems.push(item);
     };
 
     GUI.removeNavBarItem = function() {};
 
-    GUI.showPanel  = SidebarService.showPanel.bind(SidebarService);
+    GUI.showPanel  = async (panel, opts = {}) => {
+      const { stack } = ApplicationState.sidebar;
+      ApplicationState.sidebar.title = panel.title;
+      const data      = stack.getCurrentContentData();
+      if (data) {
+        $(data.content.internalPanel.$el).hide();
+      } 
+      return await stack.push(panel, { parent: '#g3w-sidebarpanel-placeholder', ...opts });
+    };
 
-    GUI.closePanel = SidebarService.closePanel.bind(SidebarService);
+    GUI.closePanel = () => {
+      const { stack } = ApplicationState.sidebar;
+      stack.pop().then(content => {
+        content = null;
+        const data = stack.getCurrentContentData();
+        if (data) {
+          $(data.content.internalPanel.$el).show();
+          ApplicationState.sidebar.title = data.content.title;
+        }
+      });
+    };
 
     ///
     GUI.disableApplication = function(bool = false) {
@@ -821,11 +827,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
     GUI.showSidebar      = this._showSidebar.bind(this);
     GUI.hideSidebar      = this._hideSidebar.bind(this);
     GUI.isSidebarVisible = this._isSidebarVisible.bind(this);
-
-    // RELOAD COMPONENTS
-    GUI.reloadComponents = function() {
-      ApplicationTemplate.Services.sidebar.reloadComponents();
-    };
 
     // MODAL
     GUI.setModal = this._showModalOverlay.bind(this);
@@ -998,7 +999,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
         GUI.hideSidebar();
         $('#main-navbar.navbar-collapse').removeClass('in');
       }
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
+      GUI.closeOpenSideBarComponent();
       GUI.setContent({
         content: new ProjectsMenuComponent(),
         title:   '',
@@ -1018,7 +1019,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
         GUI.hideSidebar();
         $('#main-navbar.navbar-collapse').removeClass('in');
       }
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
+      GUI.closeOpenSideBarComponent();
       GUI.setContent({
         content: new ChangeMapMenuComponent(),
         title: '',
@@ -1044,7 +1045,7 @@ ApplicationTemplate.PLACEHOLDERS = [
 // service know by the applications (standard)
 ApplicationTemplate.Services = {
   navbar:   null,
-  sidebar:  SidebarService,
+  sidebar:  null,
   viewport: ViewportService,
 };
 

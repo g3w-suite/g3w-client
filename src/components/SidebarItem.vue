@@ -6,12 +6,12 @@
 <template>
   <li
     :id        = "component.id"
-    v-show     = "state.visible"
+    v-show     = "component.state.visible"
     class      = "treeview sidebaritem"
     :class     = "{'active': open }"
-    v-disabled = "state.disabled"
+    v-disabled = "component.state.disabled"
   >
-    <bar-loader :loading = "state.loading"/>
+    <bar-loader :loading = "component.state.loading"/>
     <a
       @click.prevent = "onClickItem"
       ref            = "anchor_click"
@@ -54,20 +54,23 @@
 
 <script>
   import { SidebarEventBus as VM } from 'app/eventbus';
+  import ApplicationState          from 'store/application-state';
 
   export default {
     name: "SidebarItem",
     data() {
+      const { component } = this.$options;
       return {
-        info:        this.$options.info || { state: null, style: null, class: null },
+        info:        component.info || { state: null, style: null, class: null },
         main:        true,
-        component:   this.$options.component,
+        component,
         active:      false,
-        title:       '',
-        open:        false,
-        icon:        null,
-        iconColor:   null,
-        collapsible: null
+        title:       component.title || '',
+        open:        !!component.state.open,
+        icon:        component.icon,
+        iconColor:   component.iconColor,
+        collapsible: false !== component.collapsible,
+        actions:     component.actions,
       };
     },
     methods: {
@@ -76,7 +79,7 @@
       },
       onClickItem() {
         // force to close
-        this.$options.service.state.components.forEach(component => {
+        ApplicationState.sidebar.components.forEach(component => {
           if (component !== this.component && component.getOpen()) {
             component.click({ open: false });
           }
@@ -87,9 +90,33 @@
         this.component.setOpen(!this.component.state.open);
       }
     },
+
+    mounted() {
+      const opts    = this.$options.opts;
+      const sidebar = document.getElementById('g3w-sidebarcomponents');
+
+      // append to `g3w-sidebarcomponents`
+      if ([null, undefined].includes(opts.position) || opts.position < 0 || opts.position >= sidebar.children.length) {
+        $(sidebar).append(this.$el);
+      }
+  
+      // append to `g3w-sidebarcomponents` (by position)
+      else {
+        Array.from(sidebar.children).forEach((child, i) => {
+          if (i === opts.position || child.id === opts.position) {
+            child.insertAdjacentElement((!!opts.before || undefined === opts.before) ? 'beforebegin' : 'afterend', this.$el);
+          }
+        });
+      }
+
+      this.component.mount("#g3w-sidebarcomponent-placeholder");
+  
+      // set component click handler
+      this.component.click = ({ open = false } = {}) => {
+        $(this.component.getInternalComponent().$el).siblings('a').click();
+        this.component.setOpen(open || false);
+      };
+    },
+
   }
 </script>
-
-<style scoped>
-
-</style>

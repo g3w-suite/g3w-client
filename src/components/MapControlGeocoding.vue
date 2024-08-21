@@ -183,7 +183,7 @@
 import GUI                              from 'services/gui';
 import ApplicationState                 from 'store/application-state';
 import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChooseLayer.vue';
-import { PluginsRegistry }              from "store";
+import PluginsRegistry                  from 'store/plugins';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import Projections                      from 'store/projections';
 import { toRawType, uniqueId }          from 'utils';

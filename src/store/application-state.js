@@ -138,6 +138,19 @@ const STATE = Vue.observable({
     searches: JSON.parse(window.localStorage.getItem('QUERYBUILDERSEARCHES') || "{}"),
   },
 
+  /**
+   * @since 3.11.0
+   */
+  navbaritems: [],
+
+  /**
+   * @since 3.11.0
+   */
+  sidebar: {
+    title: '',
+    components: [],
+  },
+
 });
 
 /**
