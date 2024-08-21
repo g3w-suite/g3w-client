@@ -5,9 +5,6 @@
 
 import translations from '../locales';
 
-const apptitle           = "G3W Client";
-const supportedLanguages = ['en', 'it'];
-
 export const plugins = {};
 
 export const tools = { tools:  [] };
@@ -37,11 +34,11 @@ export const utils = {
 };
 
 export default {
-  apptitle,
+  apptitle: "G3W Client",
   client,
   server,
   plugins,
-  supportedLanguages,
+  supportedLanguages: ['en', 'it'],
   tools,
   _i18n,
   utils
