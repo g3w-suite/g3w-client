@@ -69,10 +69,7 @@
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
-        <span
-          style = "font-weight: bold; color: #ffffff"
-          v-t   = "'sdk.spatialbookmarks.sections.user.title'"
-        ></span>
+        <span v-t="'sdk.spatialbookmarks.sections.user.title'"></span>
         <span
           v-t-tooltip:left.create = "'add'"
           @click.stop             = "showAddForm"

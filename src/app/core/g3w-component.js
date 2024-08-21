@@ -179,10 +179,6 @@ export default class Component extends G3WObject {
     return this.state.open;
   }
 
-  closeWhenViewportContentIsOpen() {
-    return this.getOpen() && this.state.closewhenshowviewportcontent;
-  }
-
   getVisible() {
     return this.state.visible;
   }

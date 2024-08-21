@@ -771,7 +771,6 @@ export default {
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:is(:focus, :hover) {
     color: #fff;
-    background-color: #2c3b41;
   }
   .catalog > .title {
     padding: 10px;

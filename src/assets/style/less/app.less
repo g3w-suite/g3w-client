@@ -18,6 +18,8 @@
  **************************************************************************************/
 
 :root        {
+  // --font-family: "Titillium Web", system-ui,-apple-system, "Segoe UI", "Roboto", "Ubuntu", "Cantarell", "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --sidebar-width: 350px;
 }
 
@@ -94,13 +96,21 @@ table.dataTable > tbody > tr.child ul.dtr-details > li { border-bottom: 0 !impor
   font-style: normal;
 }
 
-@font-face { src: local('Source Sans Pro Light'),           url('../fonts/source-sans-pro-v13-latin-300.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: normal; }
-@font-face { src: local('Source Sans Pro Light Italic'),    url('../fonts/source-sans-pro-v13-latin-300italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: italic; }
-@font-face { src: local('Source Sans Pro Regular'),         url('../fonts/source-sans-pro-v13-latin-regular.woff2')   format('woff2'); font-family: 'Source Sans Pro'; font-weight: 400; font-style: normal; }
-@font-face { src: local('Source Sans Pro SemiBold'),        url('../fonts/source-sans-pro-v13-latin-600.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: normal; }
-@font-face { src: local('Source Sans Pro SemiBold Italic'), url('../fonts/source-sans-pro-v13-latin-600italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: italic; }
-@font-face { src: local('Source Sans Pro Bold'),            url('../fonts/source-sans-pro-v13-latin-700.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: normal; }
-@font-face { src: local('Source Sans Pro Bold Italic'),     url('../fonts/source-sans-pro-v13-latin-700italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: italic; }
+@font-face { src: url('../fonts/source-sans-pro-v13-latin-300.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: normal; }
+@font-face { src: url('../fonts/source-sans-pro-v13-latin-300italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: italic; }
+@font-face { src: url('../fonts/source-sans-pro-v13-latin-regular.woff2')   format('woff2'); font-family: 'Source Sans Pro'; font-weight: 400; font-style: normal; }
+@font-face { src: url('../fonts/source-sans-pro-v13-latin-600.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: normal; }
+@font-face { src: url('../fonts/source-sans-pro-v13-latin-600italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: italic; }
+@font-face { src: url('../fonts/source-sans-pro-v13-latin-700.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: normal; }
+@font-face { src: url('../fonts/source-sans-pro-v13-latin-700italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: italic; }
+// @font-face { src: url(../fonts/titillium-web-latin-ext-400-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; }
+// @font-face { src: url(../fonts/titillium-web-latin-400-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; }
+// @font-face { src: url(../fonts/titillium-web-latin-ext-400-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; }
+// @font-face { src: url(../fonts/titillium-web-latin-400-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; }
+// @font-face { src: url(../fonts/titillium-web-latin-ext-700-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; }
+// @font-face { src: url(../fonts/titillium-web-latin-700-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; }
+// @font-face { src: url(../fonts/titillium-web-latin-ext-700-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; }
+// @font-face { src: url(../fonts/titillium-web-latin-700-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; }
 
 /**************************************************************************************
  * 1. Loading Spinners
@@ -131,9 +141,7 @@ html,
 body               { min-height: 100%; }
 
 body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-family);
   font-weight: 400;
   overflow-x: hidden;
   overflow-y: auto;
@@ -384,7 +392,7 @@ body {
 
 h1,   h2,  h3,  h4,  h5,  h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
-   font-family: 'Source Sans Pro', sans-serif;
+   font-family: var(--font-family);
 }
 
 a        { color: var(--skin-primary); }
@@ -570,27 +578,18 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar .sidebar-divider                                     { border-bottom: 1px solid #21292d; }
 .main-sidebar .sidebar-menu > li:last-child,
 .main-sidebar .sidebar-divider:last-child                          { border:0; }
-
-/* color  icons of sidebar */
-.sidebar-menu > li > a .fa-search                                  { color: #8DC3E3; }
-.sidebar-menu > li > a :is(.fa-map-o, .fa-map)                     { color: #019A4C; }
-.sidebar-menu > li > a :is(.fa-gears, .fa-cogs)                    { color: #FFE721; }
-.sidebar-menu > li > a .fa-print                                   { color: #FF9B21; }
-.sidebar-menu > li > a :is(.fa-file-code-o, .fa-file-code)         { color: #fff; }
-.sidebar-menu > li > a .fa-bookmark                                { color: #00bcd4; }
-
 .main-sidebar                                                      { width: 350px; margin-top: 50px; overflow-y: auto;}
 .main-sidebar .btn.quick-action                                    { color: #bbb; background-color: #222d32; border: 2px solid #888; }
 .main-sidebar .btn.quick-action:hover                              { color: #bbb; background-color: #222d32; border: 2px solid #888; }
-
-.datetimeinput                                                     { color: var(--skin-color); }
 .main-sidebar .sidebar-button-run                                  { background-color: var(--skin-color) !important; }
 .main-sidebar .sidebar-button                                      { color: var(--skin-color); }
 .main-sidebar .sidebar-button.toggled                              { background-color: var(--skin-color) !important; }
-.main-sidebar ul.sidebar-menu > li a span.treeview-label { color: #FFF; }
-.main-sidebar ul.sidebar-menu > li a:hover               { color: var(--skin-l30) !important; }
+.main-sidebar ul.sidebar-menu > li a span.treeview-label           { color: #FFF; }
+.main-sidebar ul.sidebar-menu > li a:hover                         { color: var(--skin-l30) !important; }
 
-.skin-green  .main-sidebar ul.sidebar-menu > li a:hover  { color: #a1e096 !important; }
+.skin-green  .main-sidebar ul.sidebar-menu > li a:hover            { color: #a1e096 !important; }
+
+.datetimeinput                                                     { color: var(--skin-color); }
 
 /** Add "sidebar-mini" class to the body tag to activate this feature */
 

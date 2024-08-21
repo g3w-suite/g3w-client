@@ -224,39 +224,90 @@
     margin-top:0;
     cursor: pointer;
   }
+
   .layer-name {
     font-weight: bold;
   }
+
   .layer-header-icon {
     margin-right: 10px;
     color: #999;
   }
+
   .layer_header span.open-close {
     position: absolute;
     right: 5px;
     color: #999;
   }
+
   .metadata-label {
     font-weight: bold;
     font-size: 1.1em;
   }
+
   .row {
     padding: 10px;
     border-bottom: 1px solid #e2e2e2;
   }
-  .nav-tabs { border-bottom: 0 solid #DDD; }
-  .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover { border-width: 0; }
-  .nav-tabs > li > a { border: none; color: #aeaeae; }
-  .nav-tabs > li.active > a, .nav-tabs > li > a:hover { border: none; background: transparent; }
-  .nav-tabs > li > a::after { content: ""; height: 2px; position: absolute; width: 100%; left: 0px; bottom: -1px; transition: all 250ms ease 0s; transform: scale(0); }
-  .nav-tabs > li.active > a::after, .nav-tabs > li:hover > a::after { transform: scale(1); }
-  .tab-nav > li > a::after { background: #21527d none repeat scroll 0% 0%; color: #fff; }
+
+  .nav-tabs {
+    border-bottom: 0 solid #DDD;
+  }
+
+  .nav-tabs > li.active > a,
+  .nav-tabs > li.active > a:focus,
+  .nav-tabs > li.active > a:hover {
+    border-width: 0;
+  }
+
+  .nav-tabs > li > a {
+    border: none;
+    color: #aeaeae;
+  }
+
+  .nav-tabs > li.active > a,
+  .nav-tabs > li > a:hover {
+    border: none;
+    background: transparent;
+  }
+
+  .nav-tabs > li > a::after {
+    content: "";
+    height: 2px;
+    position: absolute;
+    width: 100%;
+    left: 0px;
+    bottom: -1px;
+    transition: all 250ms ease 0s;
+    transform: scale(0);
+  }
+
+  .nav-tabs > li.active > a::after,
+  .nav-tabs > li:hover > a::after {
+    transform: scale(1);
+  }
+
+  .tab-nav > li > a::after {
+    background: #21527d none repeat scroll 0% 0%;
+    color: #fff;
+  }
+
   .tab-content {
     margin: 10px;
     background-color: #eeeeee;
     overflow: auto;
   }
-  .spatial-tab{
+
+  .spatial-tab {
     font-weight: bold;
+  }
+
+  .metadata-nav-tabs > li.active > a,
+  .metadata-nav-tabs > li > a:hover {
+    color: var(--skin-color) !important;
+  }
+  
+  .metadata-nav-tabs > li > a::after {
+    background: var(--skin-color);
   }
 </style>

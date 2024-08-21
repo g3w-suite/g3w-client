@@ -246,6 +246,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
               open:        false,
               collapsible: false,
               icon:        GUI.getFontClass('file'),
+              iconColor:   '#fff',
               mobile:      true,
             }),
             new SpatialBookMarksComponent({
@@ -253,6 +254,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
               open:        false,
               collapsible: true,
               icon:        GUI.getFontClass('bookmark'),
+              iconColor:   '#00bcd4',
               mobile:      true,
             }),
             new PrintComponent({
@@ -261,6 +263,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
               visible:     ApplicationService.getConfig().user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
               collapsible: true, //  it used to manage click event if you can run setOpen component method
               icon:        GUI.getFontClass('print'),
+              iconColor:   '#FF9B21',
               mobile:      false,
             }),
             new SearchComponent({
@@ -268,6 +271,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
               open:        false,
               collapsible: true,
               icon:        GUI.getFontClass('search'),
+              iconColor:   '#8dc3e3',
               actions:     [
                 {
                   id:      "querybuilder",
@@ -294,6 +298,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
               open:        false,
               collapsible: true,
               icon:        GUI.getFontClass('tools'),
+              iconColor:   '#FFE721',
               mobile:      true,
             }),
             new WMSComponent({
@@ -304,10 +309,11 @@ const ApplicationTemplate = function({ ApplicationService }) {
               mobile:      true,
             }),
             new CatalogComponent({
-              id: 'catalog',
-              open: false,
+              id:          'catalog',
+              open:        false,
               collapsible: false,
               icon:        GUI.getFontClass('map'),
+              iconColor:   '#019A4C',
               mobile:      true,
               config:      { legend: { config: appLayoutConfig.legend } },
             }),

@@ -21,14 +21,6 @@ export default new (class SidebarService extends G3WObject {
       gui:        { title: '' },
       disabled:   false
     };
-
-  }
-
-  /**
-   * init method
-   */
-  init(layout) {
-    this.layout = layout;
   }
 
   /**

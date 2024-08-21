@@ -19,7 +19,7 @@
       style          = "display: flex; justify-content: space-between; align-items: center"
     >
       <div>
-        <i :class = "icon" :style = "{color: iconColor}"></i>
+        <i :class = "icon" :style = "{ color: iconColor }"></i>
         <span class = "treeview-label" v-t = "title"></span>
       </div>
       <div>
@@ -30,12 +30,17 @@
           :style = "info.style"
           :title = "info.tooltip"
         >{{ info.state }}</span>
-        <sidebar-item-action
-          v-for      = "action in actions"
-          :component ="component.internalComponent"
-          :key       = "action.id"
-          :action    = "action"
-        />
+        <!-- ORIGINAL SOURCE: src/components/SidebarItemAction.vue@v3.10.2 -->
+        <span
+          v-for                   = "action in actions"
+          :key                    = "action.id"
+          @click.stop             = "triggerAction(action, component.internalComponent)"
+          v-t-tooltip:left.create = "action.tooltip"
+          style                   = "font-weight: bold; padding:3px;"
+          :class                  = "action.class"
+          class                   = "action skin-tooltip-left"
+          :style                  = "action.style"
+        ></span>
       </div>
       <i
         v-if   = "collapsible"
@@ -49,7 +54,6 @@
 
 <script>
   import { SidebarEventBus as VM } from 'app/eventbus';
-  import SidebarItemAction         from 'components/SidebarItemAction.vue';
 
   export default {
     name: "SidebarItem",
@@ -66,19 +70,17 @@
         collapsible: null
       };
     },
-    components: {
-      SidebarItemAction
-    },
     methods: {
+      triggerAction(action, component) {
+        action.fnc(component);
+      },
       onClickItem() {
         // force to close
-        // set state of an opened component
-        this.$options.service.state.components
-          .forEach(component => {
-            if (component !== this.component && component.getOpen()) {
-              component.click({ open: false });
-            }
-          });
+        this.$options.service.state.components.forEach(component => {
+          if (component !== this.component && component.getOpen()) {
+            component.click({ open: false });
+          }
+        });
         if (!this.component.collapsible && isMobile.any) {
           VM.$emit('sidebaritemclick')
         }
