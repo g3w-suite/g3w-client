@@ -622,6 +622,7 @@ export default new (class ApplicationService extends G3WObject {
     if (!this.complete) {
       try {
         await PluginsRegistry.init({
+          project:            ProjectsRegistry.getCurrentProject(),
           pluginsBaseUrl:     this._config.urls.staticurl,
           pluginsConfigs:     this._config.plugins,
           otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
