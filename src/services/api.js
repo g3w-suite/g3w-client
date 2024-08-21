@@ -14,13 +14,10 @@ export default new (class ApiService extends G3WObject {
     this._baseUrl = null;
 
   }
-  init(config = {}) {
-    const d            = $.Deferred();
+  async init(config = {}) {
     // get url from base api of application config
     this._baseUrl      = config.urls.api;
     this._apiEndpoints = config.urls.apiEndpoints;
-    d.resolve();
-    return d.promise();
   };
 
   _incrementLoaders() {

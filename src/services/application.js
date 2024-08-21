@@ -589,10 +589,10 @@ export default new (class ApplicationService extends G3WObject {
       this.setupI18n();
       const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
       if (!ApplicationState.ready) {
-        $.when(
+        Promise.allSettled([
           ProjectsRegistry.init(this._config),
           ApiService.init(this._config)
-        ).then(() => {
+        ]).then(() => {
           clearTimeout(timeout);
           this.registerOnlineOfflineEvent();
           this.emit('ready');
@@ -606,7 +606,7 @@ export default new (class ApplicationService extends G3WObject {
           DataRouterService.init();
           this.initLocalItems();
           resolve(true);
-        }).fail(e => { console.warn(e); reject(e) })
+        }).catch(e => { console.warn(e); reject(e) })
       }
     })
   };
