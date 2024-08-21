@@ -596,7 +596,8 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 :root {
   @media (max-width: 767px) {
     a.sidebar-aside-toggle                          { display: none !important; }
-    .main-sidebar                                   { left: 0; padding-top: 50px; width: 100%; }
+    .main-sidebar                                   { left: -100%; padding-top: 50px; width: 100%; }
+    .sidebar-open .main-sidebar                     { left: 0; }
   }
   @media (min-width: 768px) {
     .sidebar-collapse .main-sidebar,

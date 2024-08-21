@@ -7,7 +7,7 @@
   <div
     id         = "app"
     class      = "wrapper"
-    v-disabled = "app.disabled"
+    v-disabled = "app.gui.app.disabled"
   >
 
     <cookie-law
@@ -105,19 +105,10 @@
             style = "text-align: center; overflow: hidden; margin: 0 0;"
           >
 
-            <!-- ORIGINAL SOURCE: src/components/NavbaritemsLeft.vue@v3.10.1 -->
-            <ul class = "nav navbar-nav navbar-left">
-              <li
-                v-for = "item in NavbarItemsService.state.items.right"
-                :is = "item"
-                :key = "item.id"
-              ></li>
-            </ul>
-
             <!-- ORIGINAL SOURCE: src/components/NavbaritemsRight.vue@v3.10.1 -->
             <ul class = "nav navbar-nav navbar-right">
               <li
-                v-for = "item in NavbarItemsService.state.items.right"
+                v-for = "item in app.navbaritems"
                 :is = "item"
                 :key = "item.id"
               ></li>
@@ -272,10 +263,10 @@
 
               <!-- HOME PAGE -->
               <li
-                v-if  = "frontendurl"
+                v-if  = "urls.frontendurl"
                 class = "dropdown"
               >
-                <a :href="frontendurl">
+                <a :href="urls.frontendurl">
                   <span>
                     <i :class="g3wtemplate.getFontClass('home')">
                     </i> Home
@@ -310,48 +301,48 @@
           <div id="disable-sidebar"></div>
 
           <div
-            v-show = "panelsinstack"
+            v-show = "panels.length > 0"
             class = "g3w-sidebarpanel"
           >
             <div id="g3w-sidebarpanel-header-placeholder">
-                <div
-                  style  = "display: flex;"
-                  :style = "{ justifyContent: sstate.gui.title ? 'space-between' : 'flex-end' }"
-                >
+              <div
+                style  = "display: flex;"
+                :style = "{ justifyContent: app.sidebar.title ? 'space-between' : 'flex-end' }"
+              >
 
-                  <h4
-                    v-if  = "title"
-                    style = "display: inline-block; font-weight: bold"
-                    v-t   = "title"
-                  ></h4>
+                <h4
+                  v-if  = "title"
+                  style = "display: inline-block; font-weight: bold"
+                  v-t   = "title"
+                ></h4>
 
-                  <div>
-                    <span
-                      v-if               = "panels.length > 1"
-                      @click             = "closePanel"
-                      data-placement     = "left"
-                      data-toggle        = "tooltip"
-                      data-container     = "body"
-                      v-t-tooltip.create = "'back'"
-                      class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
-                    >
-                      <i :class = "g3wtemplate.getFontClass('circle')"     class = "fa-stack-1x panel-button"></i>
-                      <i :class = "g3wtemplate.getFontClass('arrow-left')" class = "fa-stack-1x panel-icon"></i>
-                    </span>
-                    <span
-                      @click             = "closeAllPanels"
-                      data-placement     = "left"
-                      data-toggle        = "tooltip"
-                      data-container     = "body"
-                      v-t-tooltip.create = "'close'"
-                      class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
-                    >
-                      <i :class = "g3wtemplate.getFontClass('circle')" class = "fa-stack-1x panel-button"></i>
-                      <i :class = "g3wtemplate.getFontClass('close')"  class = "fa-stack-1x panel-icon"></i>
-                    </span>
-                  </div>
-
+                <div>
+                  <span
+                    v-if               = "panels.length > 1"
+                    @click             = "closePanel"
+                    data-placement     = "left"
+                    data-toggle        = "tooltip"
+                    data-container     = "body"
+                    v-t-tooltip.create = "'back'"
+                    class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                  >
+                    <i :class = "g3wtemplate.getFontClass('circle')"     class = "fa-stack-1x panel-button"></i>
+                    <i :class = "g3wtemplate.getFontClass('arrow-left')" class = "fa-stack-1x panel-icon"></i>
+                  </span>
+                  <span
+                    @click             = "closeAllPanels"
+                    data-placement     = "left"
+                    data-toggle        = "tooltip"
+                    data-container     = "body"
+                    v-t-tooltip.create = "'close'"
+                    class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                  >
+                    <i :class = "g3wtemplate.getFontClass('circle')" class = "fa-stack-1x panel-button"></i>
+                    <i :class = "g3wtemplate.getFontClass('close')"  class = "fa-stack-1x panel-icon"></i>
+                  </span>
                 </div>
+
+              </div>
             </div>
 
             <div
@@ -364,7 +355,7 @@
             id     = "g3w-sidebarcomponents"
             v-show = "showmainpanel"
             class  = "sidebar-menu"
-            :class = "{ 'g3w-disabled': sstate.disabled }"
+            :class = "{ 'g3w-disabled': disabled }"
             @click = "toggleSidebarItem"
           ></ul>
 
@@ -407,9 +398,9 @@
           :type              = "usermessage.type"
           :icon-class        = "usermessage.iconClass"
         >
-          <template v-if="hooks.header"   slot="header"><component :is="hooks.header" /></template>
-          <template v-if="hooks.body"     slot="body"><component   :is="hooks.body" /></template>
-          <template v-if = "hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
+          <template v-if="usermessage.hooks.header"   slot="header"><component :is="usermessage.hooks.header" /></template>
+          <template v-if="usermessage.hooks.body"     slot="body"><component   :is="usermessage.hooks.body" /></template>
+          <template v-if="usermessage.hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
         </user-message>
       </transition>
 
@@ -596,7 +587,7 @@
                   >
                     <img
                       class = "g3w-suite-logo"
-                      :src  = "`${this.clienturl}images/g3wsuite_logo.png`"
+                      :src  = "`${urls.clienturl}images/g3wsuite_logo.png`"
                       alt   = "">
                   </a>
                   <div
@@ -617,7 +608,7 @@
                     <img
                       width = "60"
                       style = "margin-left: 5px"
-                      :src  = "`${this.clienturl}images/logo_gis3w_156_85.png`"
+                      :src  = "`${urls.clienturl}images/logo_gis3w_156_85.png`"
                       class = "img-responsive center-block"
                       alt   = "">
                   </a>
@@ -703,8 +694,6 @@ import ProjectsRegistry          from "store/projects";
 import ApplicationService        from "services/application";
 import GUI                       from "services/gui";
 import viewportService           from 'services/viewport';
-import sidebarService            from 'services/sidebar';
-import NavbarItemsService        from 'services/navbaritems';
 import { resizeMixin }           from "mixins";
 
 import HeaderItem                from "components/HeaderItem.vue";
@@ -722,19 +711,16 @@ export default {
   mixins: [resizeMixin],
 
   data() {
+    console.log(this);
     return {
       customcredits:                false,
-      appState:                     ApplicationService.getState(),
       current_custom_modal_content: null,
       language:                     null,
       cookie_law_buttonText:        t('cookie_law.buttonText'),
+      app:                          ApplicationState,
       state:                        viewportService.state,
       updatePreviousTitle:          false,
-      components:                   sidebarService.state.components,
-      panels:                       sidebarService.stack.state.contentsdata,
       header:                       t('main navigation'),
-      sstate:                       sidebarService.state,
-      NavbarItemsService,
     }
   },
 
@@ -746,10 +732,6 @@ export default {
   },
 
   computed: {
-
-    app() {
-      return this.appState.gui.app;
-    },
 
     languages() {
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
@@ -772,16 +754,8 @@ export default {
       return this.appconfig.urls;
     },
 
-    staticurl() {
-      return this.urls.staticurl;
-    },
-
     powered_by() {
       return this.appconfig.group.powered_by;
-    },
-
-    clienturl() {
-      return this.urls.clienturl;
     },
 
     logo_url() {
@@ -809,10 +783,6 @@ export default {
       return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
     },
 
-    frontendurl() {
-      return this.urls.frontendurl;
-    },
-
     main_title() {
       const main_title = this.appconfig.main_map_title;
       const group_name = this.appconfig.group.title || this.appconfig.group.slug;
@@ -834,10 +804,6 @@ export default {
       return 100 !== this.state.secondaryPerc;
     },
 
-    hooks() {
-      return this.usermessage.hooks;
-    },
-
     usermessage() {
       return this.state.usermessage;
     },
@@ -848,10 +814,6 @@ export default {
         if (true === options.showtitle || false === options.showtitle) { return options.showtitle }
       }
       return true;
-    },
-
-    showContent() {
-      return this.state.content.show;
     },
 
     styles() {
@@ -896,23 +858,23 @@ export default {
     },
 
     title() {
-      return this.sstate.gui.title;
+      return ApplicationState.sidebar.title;
     },
 
     disabled() {
       return ApplicationState.gui.sidebar.disabled;
     },
 
-    panelsinstack() {
-      return this.panels.length > 0;
+    panels() {
+      return ApplicationState.sidebar.stack.getContentData();
     },
 
     showmainpanel() {
-      return this.components.length > 0 && !this.panelsinstack;
+      return ApplicationState.sidebar.components.length > 0 && !this.panels.length;
     },
 
     componentname() {
-      return this.components.length ? this.components.slice(-1)[0].getTitle(): '';
+      return ApplicationState.sidebar.components.length ? ApplicationState.sidebar.components.slice(-1)[0].getTitle(): '';
     },
 
     panelname() {
@@ -932,7 +894,7 @@ export default {
       if (!state.id) { return state.text }
       return $(/*html*/`
         <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
-          <img src="${this.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
+          <img src="${this.urls.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
           <span style="margin-left: 5px;">${state.text}</span> 
         </span>`
       );
@@ -1070,12 +1032,12 @@ export default {
     },
 
     closePanel() {
-      sidebarService.closePanel();
+      GUI.closePanel();
     },
 
     closeAllPanels() {
-      sidebarService.state.gui.title = null;
-      sidebarService.stack.clear();
+      ApplicationState.sidebar.title = null;
+      ApplicationState.sidebar.stack.clear();
     },
 
     /**
@@ -1106,7 +1068,7 @@ export default {
         document.body.classList.remove('sidebar-collapse');
       }
 
-      const li     = e.target.closest('.sidebaritem')
+      const li     = e.target.closest('.sidebaritem');
       const menu   = li.querySelector('.treeview-menu');
       const active = li.classList.contains('active');
 
