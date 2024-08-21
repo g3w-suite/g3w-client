@@ -10,8 +10,9 @@ import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 import ProjectsRegistry               from 'store/projects';
 import { InteractionControl }         from 'g3w-ol/controls/interactioncontrol';
-import { throttle, debounce }         from 'utils/throttle';
+import { throttle }                   from 'utils/throttle';
 import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
+import { getMetersFromDegrees }       from 'utils/getMetersFromDegrees';
 
 const PickCoordinatesInteraction      = require('g3w-ol/interactions/pickcoordinatesinteraction');
 const { t }                           = require('core/i18n/i18n.service');
@@ -127,19 +128,29 @@ export class QueryBy extends InteractionControl {
                     <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.queryby.' + type + '.tooltip'"></option>
                   </select>
                 </div>
-                <!-- RADIUS TYPE -->
+                <!-- RADIUS TYPE IN METERS-->
                 <div v-if="'querybycircle' === type" style="padding: 5px;">
-                  <label for="g3w_querybycircle_radius" v-t="'sdk.mapcontrols.querybycircle.label'"></label>
-                  <input 
-                    id      = "g3w_querybycircle_radius"
-                    v-model = "radius"
-                    class   =  "form-control" 
-                    step    = '0.1'
-                    min     = '0'
-                    type    = "number"/>
+                  <label for="g3w_querybycircle_radius" v-t:pre="'sdk.mapcontrols.querybycircle.label'">[m]</label>
+                  <div style = "display: flex">
+                    <input
+                      id      = "g3w_querybycircle_radius"
+                      v-model = "radius"
+                      class   =  "form-control"
+                      step    = '1'
+                      min     = '0'
+                      type    = "number"/>
+                    <!-- CLEAR RADIUS -->
+                    <button 
+                      type        = "button" 
+                      @click.stop = "radius = 0" 
+                      class       = "btn btn-default"
+                    >
+                      <i :class="g3wtemplate.getFontClass('clear')"></i>
+                    </button>
+                  </div>
                 </div>
                 <!-- SELECTED LAYER -->
-                <div style="padding: 5px;">
+                <div style = "padding: 5px;">
                   <label v-t="'sdk.mapcontrols.queryby.layer'"></label>
                   <select ref="layer" :select2_value = "selectedLayer" v-select2="'selectedLayer'" :templateSelection="templateLayer" :templateResult="templateLayer">
                     <option v-t="all" :value ="'__ALL__'"></option>
@@ -165,7 +176,8 @@ export class QueryBy extends InteractionControl {
                     this.radius = REACTIVE.querybycircle.radius;
                     return;
                   }
-                  REACTIVE.querybycircle.radius =  Math.floor(v);
+                  //need to convert degree in meter
+                  REACTIVE.querybycircle.radius =  Math.floor('m' === GUI.getService('map').getMapUnits() ? v : getMetersFromDegrees(v));
                   //already circle drawed but not clear (0) value
                   if (QUERY.dfeature && REACTIVE.querybycircle.radius > 0) {
                     QUERY.dfeature.getGeometry().setRadius(REACTIVE.querybycircle.radius);
@@ -382,7 +394,9 @@ export class QueryBy extends InteractionControl {
           this._interaction.on('drawend', throttle(e => {
             //convert circle geometry to polygon
             if ('querybycircle' === type) {
-              REACTIVE.querybycircle.radius = e.feature.getGeometry().getRadius();
+              const radius = e.feature.getGeometry().getRadius();
+              //in the case of map unit degrees, convert it to meter
+              REACTIVE.querybycircle.radius = 'm' === GUI.getService('map').getMapUnits() ? radius : getMetersFromDegrees(radius);
             }
             QUERY.dfeature = e.feature;
             this.dispatchEvent({ type: 'drawend', feature: QUERY.dfeature });
@@ -609,7 +623,7 @@ export class QueryBy extends InteractionControl {
                                   return QUERY.dfeature;
                                 case 'querybycircle':
                                   const feature = QUERY.dfeature.clone();
-                                  feature.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry()));
+                                  feature.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry(), 64));
                                   return feature;
                               }
                              })(),
