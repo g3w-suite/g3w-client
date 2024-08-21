@@ -89,7 +89,7 @@ module.exports  = {
    * @param layerId
    * @param field
    */
-  changeConfigFieldType({layerId, field={}}) {
+  changeConfigFieldType({ layerId, field = {} }) {
     CatalogLayersStoresRegistry.getLayerById(layerId).changeConfigFieldType(field);
   },
   /**
@@ -97,7 +97,7 @@ module.exports  = {
    * @param layerId
    * @param field
    */
-  resetConfigFieldType({layerId, field={}}) {
+  resetConfigFieldType({ layerId, field = {} }) {
     CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
   }
 };

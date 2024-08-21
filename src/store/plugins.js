@@ -4,7 +4,6 @@
  */
 
 import G3WObject          from 'core/g3w-object';
-import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
 
 /**
@@ -45,21 +44,12 @@ export default new (class PluginsRegistry extends G3WObject {
        * Setter method to register plugin (called by every plugin when all is ready)
        */
       registerPlugin(plugin) {
-        // store plugin into registry (if not already registered )
+        // store plugin into registry (if not already registered)
         if (!this._plugins[plugin.name]) {
           this._plugins[plugin.name] = plugin;
         }
       }
     };
-
-    /**
-     * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).
-     * NOW WHEN CHANGE MAP IS TRIGGER, PAGE IS RELOADED.
-     */
-    ProjectsRegistry.onafter('setCurrentProject', project => {
-      this.gidProject = project.getGid();
-    });
-
   }
 
   /**
@@ -67,12 +57,14 @@ export default new (class PluginsRegistry extends G3WObject {
    * call by applications.js services folder
    *
    * @param { Object } options
+   * @param options.project            current project
    * @param options.pluginsBaseUrl     plugin loading urls
    * @param options.pluginsConfigs     plugin configurations
    * @param options.otherPluginsConfig plugins that aren't in configuration server but in project
    */
   async init(options = {}) {
-    this.pluginsBaseUrl = options.pluginsBaseUrl; 
+    this.gidProject     = options.project.getGid();
+    this.pluginsBaseUrl = options.pluginsBaseUrl;
 
     // set plugin config filtered by gid
     const enabledPlugins = {};

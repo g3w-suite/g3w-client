@@ -147,6 +147,46 @@
         default: null
       }
     },
+    data() {
+      let [where, alignement] = this.position.split('-');
+      return {
+        style: {
+          ...(
+            'center' === where
+              ? { top: 0, bottom: 0, maxHeight: '20%' }
+              : { [where]: 50 }
+          ),
+          ...({
+            'center': { left: 0, right: 0, margin: 'auto' },
+            'right': { right:  0 },
+          }[alignement] || {}),
+          width: ({
+            'small':    '325px',
+            'medium':   '50%',
+            'fullpage': '100%'
+          })[alignement ? 'small' : this.size] || '100%',
+          /**
+           * Custom styles to handle different types of usermessage
+           */...({
+            success: { backgroundColor: "#62ac62", color: "#FFF" },
+            info:    { backgroundColor: "#44a0bb", color: "#FFF" },
+            warning: { backgroundColor: "#f29e1d", color: "#FFF" },
+            alert:   { backgroundColor: "#c34943", color: "#FFF" },
+            tool:    {
+              backgroundColor: "#FFF",
+              color:           "#222d32",
+              "z-index":       100,
+              marginLeft:      document.body.classList.contains('sidebar-collapse') ? '5px' : '40px',
+            },
+            loading: {
+              backgroundColor: "#FFF",
+              color:           "#222d32",
+              fontWeight:      "bold",
+            },
+          })[this.type],
+        }
+      }
+    },
     computed: {
       showheader() {
         return 'loading'!== this.type ;
@@ -162,46 +202,20 @@
       hideShow() {}
     },
     created() {
-      let [where, alignement] = this.position.split('-');
-      this.style = {
-        ...(
-          'center' === where
-            ? { top: 0, bottom: 0, maxHeight: '20%' }
-            : { [where]: 50 }
-        ),
-        ...({
-          'center': { left: 0, right: 0, margin: 'auto' },
-          'right': { right:  0 },
-        }[alignement] || {}),
-        width: ({
-          'small':    '325px',
-          'medium':   '50%',
-          'fullpage': '100%'
-        })[alignement ? 'small' : this.size] || '100%',
-        /**
-         * Custom styles to handle different types of usermessage
-         */...({
-          success: { backgroundColor: "#62ac62", color: "#FFF" },
-          info:    { backgroundColor: "#44a0bb", color: "#FFF" },
-          warning: { backgroundColor: "#f29e1d", color: "#FFF" },
-          alert:   { backgroundColor: "#c34943", color: "#FFF" },
-          tool:    {
-            backgroundColor: "#FFF",
-            color:           "#222d32",
-            "z-index":       100,
-            marginLeft:      "40px",
-          },
-          loading: {
-            backgroundColor: "#FFF",
-            color:           "#222d32",
-            fontWeight:      "bold",
-          },
-        })[this.type],
-      }
+      //@since 3.11.0. Get to eventually observe mutation
+      this.observe = null;
     },
     async mounted() {
       if ('tool' === this.type) {
         dragElement(this.$refs.user_message);
+        this.observer = new MutationObserver((mutations) => {
+          mutations.forEach(mutation => {
+            if ("class" === mutation.attributeName) {
+              this.style.marginLeft = mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px';
+            }
+          });
+        });
+        this.observer.observe(document.body, {attributes: true});
       }
       if (this.autoclose) {
         await this.$nextTick();
@@ -209,6 +223,12 @@
           this.closeUserMessage();
           clearTimeout(timeout)
         }, this.duration)
+      }
+    },
+    beforeDestroy() {
+      if (this.observer) {
+        this.observer.disconnect();
+        this.observer = null;
       }
     }
   }

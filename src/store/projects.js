@@ -5,7 +5,7 @@
 
 import G3WObject                   from 'core/g3w-object';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import { promisify, $promisify }   from 'utils/promisify';
+import { XHR }                     from 'utils/XHR';
 
 
 const Project           = require('core/project/project');
@@ -13,7 +13,7 @@ const Project           = require('core/project/project');
 /* service
     setup: init method
     getLayersState: returnLayersState
-    getLayersTree: return  array of layersTree from LayersState
+    getLayersTree: return array of layersTree from LayersState
 */
 
 export default new (class ProjectsRegistry extends G3WObject {
@@ -72,53 +72,52 @@ export default new (class ProjectsRegistry extends G3WObject {
   }
 
   //Inizialize configuration for all projects belongs to group
-  init(config = {}) {
-    return $promisify(async () => {
+  async init(config = {}) {
 
-      // check if already initialized
-      if (this.initialized) {
-        return this.getCurrentProject();
-      }
+    // check if already initialized
+    if (this.initialized) {
+      return this.getCurrentProject();
+    }
 
-      this.config              = config;
-      this.currentProjectGroup = config.group;
-      this.overviewproject     = config.overviewproject;
+    this.config              = config;
+    this.currentProjectGroup = config.group;
+    this.overviewproject     = config.overviewproject;
 
-      //setup state
-      this.state.baseLayers = this.config.baselayers;
-      this.state.minScale   = this.config.minscale;
-      this.state.maxScale   = this.config.maxscale;
-      this.state.crs        = this.config.crs;
+    //setup state
+    this.state.baseLayers = this.config.baselayers;
+    this.state.minScale   = this.config.minscale;
+    this.state.maxScale   = this.config.maxscale;
+    this.state.crs        = this.config.crs;
 
-      // clear projects
-      this._groupProjects   = [];
+    // clear projects
+    this._groupProjects   = [];
 
-      // setup projects
-      this.config.projects.forEach(project => {
-        this.state.qgis_version = project.qgis_version || this.state.qgis_version;
-        Object.assign(project, {
-          baselayers:         this.config.baselayers,
-          minscale:           this.config.minscale,
-          maxscale:           this.config.maxscale,
-          crs:                this.config.crs,
-          vectorurl:          this.config.vectorurl,
-          rasterurl:          this.config.rasterurl,
-          overviewprojectgid: this.overviewproject ? this.overviewproject.gid : null,
-        });
-        this._groupProjects.push(project);
+    // setup projects
+    this.config.projects.forEach(project => {
+      this.state.qgis_version = project.qgis_version || this.state.qgis_version;
+      Object.assign(project, {
+        baselayers:         this.config.baselayers,
+        minscale:           this.config.minscale,
+        maxscale:           this.config.maxscale,
+        crs:                this.config.crs,
+        vectorurl:          this.config.vectorurl,
+        rasterurl:          this.config.rasterurl,
+        overviewprojectgid: this.overviewproject ? this.overviewproject.gid : null,
       });
-
-      const map_theme = (new URLSearchParams(location.search)).get('map_theme');
-
-      // get current configuration
-      const project = await promisify(this.getProject(config.initproject, { map_theme } ));
-
-      this.setCurrentProject(project);
-
-      this.initialized = true;
-
-      return project;
+      this._groupProjects.push(project);
     });
+
+    const map_theme = (new URLSearchParams(location.search)).get('map_theme');
+
+    // get current configuration
+    const project = await this.getProject(config.initproject, { map_theme } );
+
+    this.setCurrentProject(project);
+
+    this.initialized = true;
+
+    return project;
+
   }
 
   getConfig() {
@@ -142,7 +141,7 @@ export default new (class ProjectsRegistry extends G3WObject {
         return false;
       }
       return p;
-    }).sort((a, b) => (a.title || '').localeCompare(b.title));;
+    }).sort((a, b) => (a.title || '').localeCompare(b.title));
   }
 
   getCurrentProject() {
@@ -167,64 +166,60 @@ export default new (class ProjectsRegistry extends G3WObject {
    * @param options
    * @param { string } options.map_theme
    */
-  getProject(projectGid, options = {}) {
-    return $promisify(async () => {
+  async getProject(projectGid, options = {}) {
+    const pendingProject = this._groupProjects.find(p => projectGid === p.gid);
 
-      const pendingProject = this._groupProjects.find(p => projectGid === p.gid);
+    // skip if a project doesn't exist
+    if (!pendingProject) {
+      return Promise.reject("Project doesn't exist");
+    }
 
-      // skip if a project doesn't exist
-      if (!pendingProject) {
-        return Promise.reject("Project doesn't exist");
-      }
+    let project = this._projectConfigs[projectGid];
 
-      let project = this._projectConfigs[projectGid];
-
-      /** @TODO add description */
-      if (project) {
-        return new Project(project);
-      }
-
-      // fetch project configuration from remote server
-      const config    = await promisify($.get(this.config.getProjectConfigUrl(pendingProject)));
-      const map_theme = options.map_theme && Object.values(config.map_themes).flat().find(({ theme }) => theme === options.map_theme);
-
-      /** @TODO add description */
-      if (map_theme) {
-        const { result, data } = await promisify($.get(`/${config.type}/api/prjtheme/${pendingProject.id}/${options.map_theme}`));
-        if (result) {
-          config.layerstree    = data;
-          map_theme.layetstree = data;
-          map_theme.default    = true;
-        }
-      }
-
-      project = Object.assign(pendingProject, config);
-
-      project.WMSUrl = this.config.getWmsUrl(project);
-
-      /** @since 3.8.0 */
-      project.relations = (project.relations || []).map(r => {
-        if ("ONE" === r.type) {
-          project.layers.find(l => {
-            if (l.id === r.referencingLayer) {
-              r.name     = l.name;
-              r.origname = l.origname;
-              return true;
-            }
-          });
-        }
-        return r;
-      });
-
-      this._projectConfigs[project.gid] = project;
-
-      // instance of Project
-      this.createProject(project);
-
-      // add to project
+    /** @TODO add description */
+    if (project) {
       return new Project(project);
+    }
 
+    // fetch project configuration from remote server
+    const config    = await XHR.get({ url: this.config.getProjectConfigUrl(pendingProject) });
+    const map_theme = options.map_theme && Object.values(config.map_themes).flat().find(({ theme }) => theme === options.map_theme);
+
+    /** @TODO add description */
+    if (map_theme) {
+      const { result, data } = await XHR.get({url: `/${config.type}/api/prjtheme/${pendingProject.id}/${options.map_theme}` });
+      if (result) {
+        config.layerstree    = data;
+        map_theme.layetstree = data;
+        map_theme.default    = true;
+      }
+    }
+
+    project = Object.assign(pendingProject, config);
+
+    project.WMSUrl = this.config.getWmsUrl(project);
+
+    /** @since 3.8.0 */
+    project.relations = (project.relations || []).map(r => {
+      if ("ONE" === r.type) {
+        project.layers.find(l => {
+          if (l.id === r.referencingLayer) {
+            r.name     = l.name;
+            r.origname = l.origname;
+            return true;
+          }
+        });
+      }
+      return r;
     });
+
+    this._projectConfigs[project.gid] = project;
+
+    // instance of Project
+    this.createProject(project);
+
+    // add to project
+    return new Project(project);
   }
 
   /**

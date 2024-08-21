@@ -212,8 +212,8 @@ export const LOCALSTORAGE_EXTERNALWMS_ITEM = 'externalwms';
  * @type {MapSettings}
  */
 export const MAP_SETTINGS = {
-  ZOOM: { maxScale: 1000, },
-  ANIMATION: { duration: 2000, },
+  ZOOM:            { maxScale: 1000, },
+  ANIMATION:       { duration: 2000, },
   LAYER_POSITIONS: {
     default: 'top',
     getPositions() {
