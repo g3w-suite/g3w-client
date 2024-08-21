@@ -14,7 +14,7 @@ const Filter = require('core/layers/filter/filter');
  */
 export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, feature_count = 10, multilayers = false }) {
   const geometry      = ol.geom.Polygon.fromExtent(bbox);
-  const mapProjection = GUI.getComponent('map').getService().getMap().getView().getProjection();
+  const mapProjection = GUI.getService('map').getMap().getView().getProjection();
 
   /** Group query by layers */
   if (multilayers) {

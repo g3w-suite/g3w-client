@@ -6,7 +6,7 @@ const Service           = require('gui/inputs/service');
 function LonLatService(options = {}) {
   base(this, options);
   this.coordinatebutton;
-  this.mapService =  GUI.getComponent('map').getService();
+  this.mapService =  GUI.getService('map');
   this.mapEpsg    = this.mapService.getCrs();
   this.mapControlToggleEventHandler = evt =>{
     if (evt.target.isToggled() && evt.target.isClickMap()){
