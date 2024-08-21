@@ -11,7 +11,7 @@
     >
 
       <a href = "#" class = "g3w-map-theme-anchor">
-        <section>
+        <section @click.stop = "toggle">
           <i :class = "g3wtemplate.getFontClass('caret-down')" style = "padding: 3px;"></i>
           <i :class = "g3wtemplate.getFontClass('eye')"        style = "padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
@@ -250,6 +250,13 @@ export default {
   },
 
   methods: {
+
+    toggle() {
+      //in case of no new form map_theme is show
+      if (!this.show_form) {
+        document.getElementById('g3w-catalog-views').classList.toggle('menu-open');
+      }
+    },
 
     /**
      * Create params for save or update custom map theme
