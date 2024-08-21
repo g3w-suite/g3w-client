@@ -1053,6 +1053,7 @@ export default {
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
+
       const mini      = document.body.classList.contains('sidebar-mini');
       const collapsed = document.body.classList.contains('sidebar-collapse');
       const open = mini && collapsed && window.innerWidth > 767;
@@ -1066,7 +1067,7 @@ export default {
       const active = li.classList.contains('active');
       const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
 
-      if (component.getOpen() && collapsed) {
+      if (!component || (component.getOpen() && collapsed)) {
         return;
       }
 
@@ -1090,7 +1091,7 @@ export default {
         GUI.toggleSidebar();
       }
 
-      component.setOpen(!component.state.open);
+      component.setOpen(!component.getOpen());
     },
 
     /**

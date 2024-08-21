@@ -13,9 +13,8 @@
   >
     <bar-loader :loading = "component.state.loading"/>
     <a
-      ref            = "anchor_click"
-      href           = "#"
-      style          = "display: flex; justify-content: space-between; align-items: center"
+      href  = "#"
+      style = "display: flex; justify-content: space-between; align-items: center"
     >
       <div>
         <i :class = "icon" :style = "{ color: iconColor }"></i>
