@@ -1044,14 +1044,10 @@ export default {
      * @since 3.11.0
      */
     toggleSidebar() {
-      if (window.innerWidth > 767) {
-        document.body.classList.toggle('sidebar-collapse', !document.body.classList.contains('sidebar-collapse'));
-      }
-      if (window.innerWidth <= 767 && document.body.classList.contains('sidebar-open')) {
-        document.body.classList.remove('sidebar-collapse');
-      }
-      if (window.innerWidth <= 767) {
-        document.body.classList.toggle('sidebar-open', !document.body.classList.contains('sidebar-open'));
+      if (document.body.classList.contains('sidebar-collapse')) {
+        GUI.showSidebar();
+      } else {
+        GUI.hideSidebar();
       }
     },
 
