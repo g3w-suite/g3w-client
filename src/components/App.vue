@@ -1062,7 +1062,15 @@ export default {
         document.body.classList.remove('sidebar-collapse');
       }
 
-      const li     = e.target.closest('.sidebaritem');
+      const li = e.target.closest('.sidebaritem');
+
+      //in case is not a first ancore element of li
+      //@TODO need to be true also for children of ancor first child of li (Chech add wms layer sidebar item)
+
+      if (e.target !== li.children[0]) {
+        return;
+      }
+
       const menu   = li.querySelector('.treeview-menu');
       const active = li.classList.contains('active');
       const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
