@@ -185,9 +185,9 @@ export default new (class ProjectsRegistry extends G3WObject {
     const config    = await XHR.get({ url: this.config.getProjectConfigUrl(pendingProject) });
     const map_theme = options.map_theme && Object.values(config.map_themes).flat().find(({ theme }) => theme === options.map_theme);
 
-    /** @TODO add description */
+    /** In the case of url param set map_theme, need to get map theme configuration from server */
     if (map_theme) {
-      const { result, data } = await XHR.get({url: `/${config.type}/api/prjtheme/${pendingProject.id}/${options.map_theme}` });
+      const { result, data } = await XHR.get({url: `/${pendingProject.type}/api/prjtheme/${pendingProject.id}/${options.map_theme}` });
       if (result) {
         config.layerstree    = data;
         map_theme.layetstree = data;
