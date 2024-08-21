@@ -48,7 +48,7 @@
         class  ="pull-right">
       </i>
     </a>
-    <div id = "g3w-sidebarcomponent-placeholder"></div>
+    <div v-if="component" ref="component-placeholder" ></div>
   </li>
 </template>
 
@@ -109,8 +109,10 @@
         });
       }
 
-      this.component.mount("#g3w-sidebarcomponent-placeholder");
-  
+      if (this.$refs['component-placeholder']) {
+        this.component.mount(this.$refs['component-placeholder']);
+      }
+
       // set component click handler
       this.component.click = ({ open = false } = {}) => {
         $(this.component.getInternalComponent().$el).siblings('a').click();
