@@ -695,6 +695,10 @@ const ApplicationTemplate = function({ ApplicationService }) {
       return ViewportService.closeContent();
     };
 
+    /**
+     * Method to close all sidebar components open and collapsible
+     * @TODO in case some components need to stay open, need to think to an attribute
+     */
     GUI.closeOpenSideBarComponent = function() {
       ApplicationState.sidebar.components.forEach(c => c.getOpen() && c.state.closewhenshowviewportcontent && c.collapsible && c.click({ open: false }));
     };
