@@ -1009,6 +1009,7 @@ export default {
         $('#main-navbar.navbar-collapse').removeClass('in');
       }
       GUI.closeOpenSideBarComponent();
+      const ChangeMapMenuComponent = require('gui/changemapmenu/changemapmenu');
       GUI.setContent({
         content: new ChangeMapMenuComponent(),
         title: '',

@@ -222,6 +222,12 @@ const STATE = Vue.observable({
     immediate_Layout: undefined
   },
 
+  sizes: {
+    sidebar: {
+      width:0
+    }
+  },
+
 });
 
 /**
