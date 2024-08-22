@@ -63,7 +63,6 @@
       <ul
         v-else
         id     = "g3w-catalog-views"
-        class  = "treeview-menu"
         :class = "{'menu-open': !collapsed}"
       >
         <!-- LIST PROJECT MAP THEME -->
@@ -427,6 +426,7 @@ export default {
   }
   #g3w-catalog-views {
     display: none;
+    padding: 0;
   }
   #g3w-catalog-views.menu-open {
     display: block;
