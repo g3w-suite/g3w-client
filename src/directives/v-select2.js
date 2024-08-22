@@ -21,6 +21,10 @@ export default {
       indexItem,
       /**@since 3.10.0 whether to dynamically create a new "<option>" value */
       createTag = false,
+      /** @since 3.11.0 */
+      dropdownAutoWidth = false,
+      /** @since 3.11.0 whether to create dropdown to immediate parent of "<select>" element */
+      dropdownParent = false
     } = vnode.data.attrs || {};
     const isArray = binding.value
       && Array.isArray(vnode.context[binding.value]) // check if is an array
@@ -32,6 +36,8 @@ export default {
             tags:             createTag,
             width:            '100%',
             dropdownCssClass: 'skin-color',
+            dropdownAutoWidth,
+            dropdownParent: true === dropdownParent ? $(el.parentNode) : undefined,
             templateResult,
             templateSelection,
             minimumResultsForSearch: search ? undefined : -1,

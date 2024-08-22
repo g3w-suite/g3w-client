@@ -484,7 +484,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-header .g3w-languages                                    { margin-top: 9px; margin-left: 10px; margin-right: -7px; }
 .sidebar-aside-toggle                                          { position: absolute; left: 350px; top: 50px; color: white; padding: 11.6px; }
 .sidebar-aside-toggle:is(:focus, :hover)                       { color: #fff; }
-.sidebar-aside-toggle.iframe                                   { top: 0; }
+.is-iframe .sidebar-aside-toggle                               { top: 0; }
 .sidebar-aside-toggle .icon-bar                                { display: none; }
 .title-box                                                     { line-height: 50px; margin-left: 10px; }
 .title-box .title                                              { font-size: 2em; font-weight: bold; color: white }
@@ -557,8 +557,8 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 
 .main-sidebar                                                      { z-index: 1 !important; }
 .main-sidebar.mobile                                               { width: 300px; }
-.main-sidebar.iframe                                               { padding-top:0 !important; }
-.main-sidebar.iframe a.sidebar-aside-toggle                        { top: 0! important; }
+.is-iframe .main-sidebar                                           { margin-top: 0; }
+.is-iframe .main-sidebar a.sidebar-aside-toggle                    { top: 0! important; }
 .main-sidebar .sidebar-button-shadow                               { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; }
 .main-sidebar .sidebar-button-run                                  { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; color: #fff; }
 .main-sidebar .sidebar-button                                      { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; border-radius: 3px; background-color: #fff !important; cursor: pointer; }

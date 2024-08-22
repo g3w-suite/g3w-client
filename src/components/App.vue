@@ -240,6 +240,19 @@
                 @show-custom-modal-content = "showCustomModalContent"
               />
 
+              <!-- HOME PAGE -->
+              <li
+                v-if  = "urls.frontendurl"
+                class = "dropdown"
+              >
+                <a :href="urls.frontendurl">
+                  <span>
+                    <i :class="g3wtemplate.getFontClass('home')">
+                    </i> Home
+                  </span>
+                </a>
+              </li>
+
               <!-- LANGUAGE SWITCHER -->
               <li v-if="languages" class="g3w-languages">
                 <select
@@ -247,6 +260,8 @@
                   class              = "form-control"
                   :templateSelection = "templateResultLanguages"
                   :templateResult    = "templateResultLanguages"
+                  :dropdownAutoWidth = "true"
+                  :dropdownParent    = "true"
                   v-model            = "language"
                   style              = "cursor:pointer; width: 130px;"
                 >
@@ -259,19 +274,6 @@
                     {{ lang[1] }}
                   </option>
                 </select>
-              </li>
-
-              <!-- HOME PAGE -->
-              <li
-                v-if  = "urls.frontendurl"
-                class = "dropdown"
-              >
-                <a :href="urls.frontendurl">
-                  <span>
-                    <i :class="g3wtemplate.getFontClass('home')">
-                    </i> Home
-                  </span>
-                </a>
               </li>
 
               <!-- TODO: add description -->
@@ -889,7 +891,7 @@ export default {
      * 
      * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
      */
-    templateResultLanguages(state) {
+     templateResultLanguages(state) {
       if (!state.id) { return state.text }
       return $(/*html*/`
         <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
@@ -1061,16 +1063,9 @@ export default {
         GUI.showSidebar();
       }
 
-      const li = e.target.closest('.sidebaritem');
-
-      //in case is not the first ancor element of li
-      //or not child of an ancor element of li
-      if (!(e.target === li.children[0] || li.children[0].contains(e.target))) {
-        return;
-      }
-
-      const menu   = li.querySelector('.treeview-menu');
-      const active = li.classList.contains('active');
+      const li        = e.target.closest('.sidebaritem');
+      const menu      = li.querySelector('.treeview-menu');
+      const active    = li.classList.contains('active');
       const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
 
       // skip toggling element
@@ -1189,6 +1184,10 @@ export default {
 
     this.iframe = ApplicationState.iframe;
 
+    if (!this.iframe) {
+      document.body.classList.add('sidebar-mini');
+    }
+
     document.body.classList.toggle('is-mobile', this.isMobile());
     document.body.classList.toggle('is-iframe', this.iframe);
 
@@ -1211,6 +1210,25 @@ export default {
   .g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
   .g3w-modal-project-message.Critical .modal-header { background-color: #605ca8; }
   .g3w-modal-project-message h4.modal-title         { color: #FFF !important; }
+  .g3w-languages .select2-container--default .select2-selection--single {
+    background: none;
+    border: none;
+  }
+  .g3w-languages .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #fff transparent transparent transparent
+  }
+  .g3w-languages .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent #fff transparent;
+  }
+  .g3w-languages .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #fff !important;
+  }
+  @media (min-width: 768px) {
+    .g3w-languages .select2-container {
+      right: 0;
+      left: auto !important;
+    }
+  }
 </style>
 
 <style scoped>
@@ -1251,9 +1269,6 @@ export default {
   }
   #address-credits span {
     padding-left: 3px;
-  }
-  .g3w-languages {
-    min-width: 125px;
   }
   #g3w-sidebarpanel-header-placeholder {
     overflow: hidden;
