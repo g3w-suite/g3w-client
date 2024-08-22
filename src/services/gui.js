@@ -1,8 +1,10 @@
+import G3WObject          from 'core/g3w-object';
+import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
 import ComponentsRegistry from 'store/components';
 
-const { noop }  = require('utils');
-const G3WObject = require('core/g3wobject');
+import { noop }   from 'utils/noop';
+import { layout } from 'utils/layout';
 
 // API della GUI.
 // methods have been defined by application
@@ -66,6 +68,47 @@ export default new (class GUI extends G3WObject {
     return ComponentsRegistry.getComponents();
   }
   ready() {
+    let drawing     = false;
+    let resizeFired = false;
+    function triggerResize() {
+      resizeFired = true;
+      drawResize();
+    }
+    /**
+     * function called from resize of browser windows (also open dev tool)
+     */
+    const drawResize = () => {
+      if (true === resizeFired ) {
+        resizeFired = false;
+        drawing = true;
+        layout('resize');
+        requestAnimationFrame(drawResize);
+      } else {
+        drawing = false;
+      }
+    };
+
+    // SetSidebar width (used by components/Viewport.vue single file component)
+    ApplicationState.viewport.SIDEBARWIDTH = this.getSize({element:'sidebar', what:'width'});
+    layout();
+    this.on('guiresized',() => triggerResize());
+    // resize della window
+    $(window).resize(() => {
+      // set resizedFired to true and execute drawResize if it's not already running
+      if (false === drawing) {
+        triggerResize();
+      }
+    });
+
+    // resize on main siedemar open close sidebar
+    $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function (event) {
+      //be sure that is the main sidebar that is transitioned non his child
+      if (event.target === this) {
+        $(this).trigger('trans-end');
+        triggerResize();
+      }
+    });
+
     this.emit('ready');
     this.isready = true;
   }

@@ -689,18 +689,18 @@ import CookieLaw                 from 'vue-cookie-law';
 import {
   LOCAL_ITEM_IDS,
   VIEWPORT
-}                                from 'app/constant';
-import ApplicationState          from 'store/application-state';
-import ProjectsRegistry          from 'store/projects';
-import ApplicationService        from 'services/application';
-import GUI                       from 'services/gui';
-import viewportService           from 'services/viewport';
-import { resizeMixin }           from "mixins";
+}                         from 'app/constant';
+import ApplicationState   from 'store/application-state';
+import ProjectsRegistry   from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI                from 'services/gui';
+import { resizeMixin }    from "mixins";
 
-import HeaderItem                from 'components/HeaderItem.vue';
-import userMessage               from 'components/UserMessage.vue';
-import CatalogContextMenu        from 'components/CatalogContextMenu.vue';
-import getUniqueDomId            from 'utils/getUniqueDomId';
+import HeaderItem         from 'components/HeaderItem.vue';
+import userMessage        from 'components/UserMessage.vue';
+import CatalogContextMenu from 'components/CatalogContextMenu.vue';
+import getUniqueDomId     from 'utils/getUniqueDomId';
+import layout             from 'utils/layout';
 
 const { t }        = require('core/i18n/i18n.service');
 
@@ -719,7 +719,7 @@ export default {
       language:                     null,
       cookie_law_buttonText:        t('cookie_law.buttonText'),
       app:                          ApplicationState,
-      state:                        viewportService.state,
+      state:                        ApplicationState.viewport,
       updatePreviousTitle:          false,
       header:                       t('main navigation'),
     }
@@ -801,7 +801,8 @@ export default {
     },
 
     showresize() {
-      const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
+      const layout = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      const currentPerc = layout[this.state.split === 'h' ? 'width' : 'height'];
       return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
     },
 
@@ -999,7 +1000,20 @@ export default {
      * @since 3.8.0
      */
     openChangeMapMenu() {
-      GUI.openChangeMapMenu();
+      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
+        GUI.closeContent();
+        return;
+      }
+      if (this.isMobile()) {
+        GUI.hideSidebar();
+        $('#main-navbar.navbar-collapse').removeClass('in');
+      }
+      GUI.closeOpenSideBarComponent();
+      GUI.setContent({
+        content: new ChangeMapMenuComponent(),
+        title: '',
+        perc: 100
+      });
     },
 
     isNotLastCrumb(index) {
@@ -1011,7 +1025,15 @@ export default {
     },
 
     closeMap() {
-      viewportService.closeMap();
+      const state = ApplicationState.viewport;
+      state.secondaryPerc = (state.primaryView === 'map') ? 100 : 0;
+      // recover default map
+      if (state.components.map !== state.map_component) {
+        state.components.map = state.map_component;
+        state.map_contextual.internalComponent.$el.style.display = 'none'; 
+        state.map_component .internalComponent.$el.style.display = 'block'; 
+      }
+      layout();
     },
 
     gotoPreviousContent() {
@@ -1025,7 +1047,7 @@ export default {
     moveFnc(e) {
       e.preventDefault();
       const size         = 'h' === this.state.split ? 'width' : 'height';
-      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : viewportService.SIDEBARWIDTH : $('#main-navbar').height();
+      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : ApplicationState.viewport.SIDEBARWIDTH : $('#main-navbar').height();
       const viewPortSize = $(this.$el)[size]();
       let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
       const { content, map } = VIEWPORT.resize;
@@ -1034,7 +1056,9 @@ export default {
       } else if ( mapSize < map.min) {
         mapSize = map.min;
       }
-      viewportService.resizeViewComponents(this.state.split, { }, 100 - Math.round((mapSize / viewPortSize) * 100));
+      ApplicationState.viewport.resized[this.state.split] = true;
+      ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === this.state.split ? 'width' : 'height'] = 100 - Math.round((mapSize / viewPortSize) * 100);
+      layout('resize');
     },
 
     closePanel() {

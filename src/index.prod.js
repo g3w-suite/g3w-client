@@ -12,12 +12,13 @@ import './globals';
 //import core
 import ApplicationState          from 'store/application-state';
 import ProjectsRegistry          from 'store/projects';
+import G3WObject                 from 'core/g3w-object';
 import { BarStack }              from 'core/g3w-barstack';
+
 
 //import services
 import ApplicationService        from 'services/application';
 import GUI                       from 'services/gui';
-import ViewportService           from 'services/viewport';
 
 // import store
 import ComponentsRegistry        from 'store/components';
@@ -58,9 +59,12 @@ import vClickOutside             from 'directives/v-click-outside'
 // constants
 import { FONT_AWESOME_ICONS }    from 'app/constant';
 
+import { getUniqueDomId }        from 'utils/getUniqueDomId';
+import { layout }                from 'utils/layout';
+import { layoutComponents }      from 'utils/layoutComponents';
+
 const { base, inherit, toRawType } = require('utils');
 const { t, tPlugin }               = require('core/i18n/i18n.service');
-const G3WObject                    = require('core/g3wobject');
 const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
 const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
 
@@ -186,13 +190,67 @@ Vue.use({
 
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
-/**
- * @requires components/App.vue
- */
-const layout = $.LayoutManager;
-
 // loading spinner at beginning
 $('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
+
+ApplicationState.viewport.immediate_layout = true;
+
+// get default component
+function _recoverDefaultMap() {
+  const state = ApplicationState.viewport;
+  if (state.components.map !== state.map_component) {
+    state.components.map = state.map_component;
+    state.map_contextual.internalComponent.$el.style.display = 'none'; 
+    state.map_component .internalComponent.$el.style.display = 'block'; 
+  }
+  return state.components.map;
+}
+
+// close secondary view
+function _closeSecondaryView(event = null) {
+  const state = ApplicationState.viewport;
+  const d = $.Deferred();
+  const secondaryViewComponent = state.components[state.primaryView === 'map' ? 'content' : 'map'];
+  if (secondaryViewComponent.clearContents) {
+    secondaryViewComponent.clearContents().then(() => {
+      state.secondaryVisible = false;
+      state.secondaryPerc = 0;
+      layout(event);
+      Vue.nextTick(() => d.resolve());
+    });
+  } else {
+    state.secondaryVisible = false;
+    layout(event);
+    Vue.nextTick(() => d.resolve());
+  }
+  return d.promise();
+}
+
+// manage all layout logic
+// viewName: map or content
+//options.  percentage , splitting title etc ..
+function _showView(viewName, options = {}) {
+  const state = ApplicationState.viewport;
+  const { perc = viewName == state.primaryView ? 100 : 50, split = 'h' } = options;
+  let aside;
+  if (viewName == state.primaryView) {
+    aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
+  } else {
+    aside = true;
+  }
+  state[viewName].aside = aside;
+  //calculate the content
+  const secondaryPerc = viewName == state.primaryView ? 100 - perc : perc;
+  //show Secondary View content only if more than 0
+  if (secondaryPerc > 0)  {
+    state.secondaryVisible = true;
+    state.split = undefined !== split ? split : state.split;
+    state.secondaryPerc = undefined !== perc ? perc : state.perc;
+    layout();
+  } else {
+    return _closeSecondaryView();
+  }
+}
 
 /**
  * ORIGINAL SOURCE: src/gui/app/index.js@3.4
@@ -409,7 +467,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
       .values(GUI.getComponents())
       .forEach(component => ApplicationService.registerService(component.id, component.getService()));
 
-    ApplicationTemplate.Services.viewport.on('resize', () => GUI.emit('resize'));
+    // ApplicationTemplate.Services.viewport.on('resize', () => GUI.emit('resize'));
   };
   // build template function
   this._buildTemplate = function() {
@@ -441,7 +499,28 @@ const ApplicationTemplate = function({ ApplicationService }) {
 
      */
     if (viewportOptions) {
-      ApplicationTemplate.Services.viewport.init(viewportOptions);
+      const { primaryview='map', split='h' } = viewportOptions;
+      // check if it set primary view (a map is default)
+      ApplicationState.viewport.primaryView = primaryview;
+      // check splitting property
+      ApplicationState.viewport.split       = split;
+      // add component (map and content)
+      Object
+      .entries(viewportOptions.components)
+      .forEach(([viewName, component]) => {
+        // check if component are map or content
+        if (Object.keys(ApplicationState.viewport.components).indexOf(viewName) > -1) {
+          component.mount(`#g3w-view-${viewName}`, true)
+            .then(() => {
+              ApplicationState.viewport.components[viewName] = component;
+              // check if view name is map
+              if ('map' === viewName) {
+                ApplicationState.viewport.map_component = component;
+              } // set de default component to map
+            })
+            .fail(e => console.warn(e));
+        }
+      })
       this._addComponents(viewportOptions.components);
     }
   };
@@ -539,7 +618,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
     /* PUBLIC INTERFACE */
 
     /* Common methods */
-    GUI.layout = layout;
     GUI.getSize = ({ element, what }) => {
       if (element && what)
         return this.sizes[element][what];
@@ -664,8 +742,17 @@ const ApplicationTemplate = function({ ApplicationService }) {
      */
     GUI.closeForm = function({ pop = false } = {}) {
       this.emit('closeform', false);
-      if (pop) { GUI.popContent()}
-      else { ViewportService.removeContent() }
+      if (pop) {
+        GUI.popContent();
+      } else {
+        // check if backonclose proprerty is true or false
+        // to remove all content stacks or just last component
+        if (ApplicationState.viewport.content.backonclose && ApplicationState.viewport.content.contentsdata.length > 1) {
+          GUI.popContent();
+        } else {
+          GUI.closeContent();
+        }
+      }
       // force set modal to false
       GUI.setModal(false);
     };
@@ -675,7 +762,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
     };
 
     GUI.disableContent = function(disable) {
-      ViewportService.disableContent(disable);
+      ApplicationState.viewport.content.disabled = disable;
     };
 
     GUI.disablePanel = function(disable=false) {
@@ -687,12 +774,31 @@ const ApplicationTemplate = function({ ApplicationService }) {
 
     // hide content
     GUI.hideContent = function(bool, perc) {
-      return ViewportService.hideContent(bool, perc);
+      const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split.state.split ? 'width': 'height'];
+      ApplicationState.viewport.secondaryVisible = !bool;
+      layout('hide-content');
+      // return previous percentage
+      return content_perc;
     };
 
     GUI.closeContent = function() {
       this.emit('closecontent', false);
-      return ViewportService.closeContent();
+      const state = ApplicationState.viewport;
+      const d = $.Deferred();
+      // content is open
+      if (state.content.contentsdata.length > 0) {
+        state.components.content.removeContent();
+        // close secondary view( return a promise)
+        _closeSecondaryView('close-content').then(() => {
+          //recover default map
+          const mapComponent = _recoverDefaultMap();
+          d.resolve(mapComponent);
+        });
+      } else {
+        const mapComponent = _recoverDefaultMap();
+        d.resolve(mapComponent);
+      }
+      return d.promise()
     };
 
     GUI.closeOpenSideBarComponent = function() {
@@ -752,12 +858,51 @@ const ApplicationTemplate = function({ ApplicationService }) {
     };
 
     //showusermessage
-    GUI.showUserMessage = function(options = {}) {
-      return ViewportService.showUserMessage(options);
+    GUI.showUserMessage = function({
+      title,
+      subtitle,
+      message,
+      type,
+      position,
+      size,
+      draggable,
+      duration,
+      textMessage = false,
+      closable,
+      autoclose,
+      hooks = {},
+      iconClass = null, //@since 3.11.0
+    } = {}) {
+      GUI.closeUserMessage();
+      setTimeout(() => {
+        Object.assign(ApplicationState.viewport.usermessage, {
+          id: getUniqueDomId(),
+          show: true,
+          message,
+          textMessage,
+          title,
+          subtitle,
+          position,
+          duration,
+          type,
+          size,
+          autoclose,
+          closable,
+          draggable,
+          hooks,
+          iconClass,
+        });
+      });
+      return ApplicationState.viewport.usermessage;
     };
 
     GUI.closeUserMessage = function() {
-      ViewportService.closeUserMessage();
+      Object.assign(ApplicationState.viewport.usermessage, {
+        id:          null,
+        show:        false,
+        textMessage: false,
+        message:     '',
+      });
     };
 
     /* ------------------ */
@@ -854,24 +999,56 @@ const ApplicationTemplate = function({ ApplicationService }) {
 
     // VIEWPORT //
     GUI.setPrimaryView = function(viewName) {
-      ViewportService.setPrimaryView(viewName);
+      const state = ApplicationState.viewport;
+      if (viewName !== state.primaryView ) {
+        state.primaryView = viewName;
+      }
+      layout();
     };
 
     // only map
     GUI.showMap = function() {
-      ViewportService.showMap();
+      const state = ApplicationState.viewport;
+      state.map_component.internalComponent.$el.style.display = 'block';
+      state.components.map = state.map_component;
+      _showView('map');
     };
 
     GUI.showContextualMap = function(perc = 30, split) {
-      ViewportService.showContextualMap({ perc, split });
+      const state = ApplicationState.viewport;
+      if (!state.map_contextual) {
+        state.map_contextual = state.map_component;
+      }
+      if (state.map_contextual != state.map_component) {
+        state.map_component.internalComponent.$el.style.display = 'none';
+      }
+      if (!state.map_contextual.ismount()) {
+        const map_contextual = this.state.map_contextual;
+        map_contextual.mount('#g3w-view-map', true).then(() => state.components.map = map_contextual);
+      } else {
+        state.components.map = state.map_contextual;
+        state.map_contextual.internalComponent.$el.style.display = 'block';
+      }
+      _showView('map',{ perc, split });
     };
 
     GUI.setContextualMapComponent = function(mapComponent) {
-      ViewportService.setContextualMapComponent(mapComponent);
+      const state = ApplicationState.viewport;
+      if (mapComponent === state.map_component) {
+        return;
+      }
+      if (state.map_contextual) {
+        state.map_contextual.unmount();
+      }
+      state.map_contextual = mapComponent;
     };
 
     GUI.resetContextualMapComponent = function() {
-      ViewportService.resetContextualMapComponent();
+      const state = ApplicationState.viewport;
+      if (state.map_contextual) {
+        state.map_contextual.unmount();
+      }
+      state.map_contextual = state.map_component;
     };
 
     //  (100%) content
@@ -907,27 +1084,61 @@ const ApplicationTemplate = function({ ApplicationService }) {
 
     // remove last content from stack
     GUI.popContent = function() {
-      ViewportService.popContent();
+      const state = ApplicationState.viewport;
+      const d = $.Deferred();
+      // check if content exists compontent Stack
+      if (state.content.contentsdata.length) {
+        _recoverDefaultMap();
+        const data = state.components.content.getPreviousContentData();
+        const opts = data.options;
+        Object.assign(state.content, {
+          title:        opts.title,
+          split:        undefined !== opts.split       ? opts.split : null,
+          closable:     undefined !== opts.closable    ? opts.closable : true,
+          backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
+          contentsdata: state.components.content.contentsdata,
+          style:        undefined !== opts.style ? opts.style : {},
+          headertools:  undefined !== opts.headertools ? opts.headertools : [],
+          showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
+        });
+        state.immediate_layout = false;
+        _showView('content', data.options);
+        state.components.content.popContent()
+          .then(() => {
+            state.secondaryPerc        = data.options.perc;
+            state.immediate_layout = true;
+            layout('pop-content');
+            d.resolve(state.components.contentgetCurrentContentData)
+          })
+      } else {
+        d.reject();
+      }
+      return d.promise();
     };
     //return number of a component of stack
     GUI.getContentLength = function() {
-      return ViewportService.contentLength();
+      return ApplicationState.viewport.content.contentsdata.length;
     };
 
     GUI.getCurrentContentTitle = function() {
-      return ViewportService.getCurrentContentTitle();
+      const currentContent = ApplicationState.viewport.content.contentsdata.at(-1) || null;
+      return currentContent && currentContent.options.title;
     };
 
     GUI.getCurrentContentId = function() {
-      return ViewportService.getCurrentContentId();
+      const currentContent = ApplicationState.viewport.content.contentsdata.at(-1) || null;
+      return currentContent && currentContent.options.id;
     };
 
     /**
      * change current content title
      * @param title
      */
-    GUI.changeCurrentContentTitle = function(title) {
-      ViewportService.changeCurrentContentTitle(title);
+    GUI.changeCurrentContentTitle = function(title = '') {
+      const currentContent = ApplicationState.viewport.content.contentsdata.at(-1) || null;
+      if (currentContent) {
+        currentContent.options.title = title;
+      }
     };
 
     /**
@@ -935,22 +1146,36 @@ const ApplicationTemplate = function({ ApplicationService }) {
      * @param options: {title, crumb}
      */
     GUI.changeCurrentContentOptions= function(options={}) {
-      ViewportService.changeCurrentContentOptions(options);
+      const currentContent = ApplicationState.viewport.content.contentsdata.at(-1) || null;
+      if (currentContent && options.title) {
+        currentContent.options.title = options.title;
+      }
+      if (currentContent && options.crumb) {
+        currentContent.options.crumb = options.crumb;
+      }
     };
 
     /**
      * Method to get current content
      */
     GUI.getCurrentContent = function() {
-      return ViewportService.getCurrentContent();
+      return ApplicationState.viewport.content.contentsdata.at(-1) || null;
     };
 
     GUI.toggleFullViewContent = function() {
-      ViewportService.toggleFullViewContent();
+      const state = ApplicationState.viewport;
+      ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
+      .rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
+      .rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
+      layoutComponents();
     };
 
     GUI.resetToDefaultContentPercentage = function() {
-      ViewportService.resetToDefaultContentPercentage();
+      const state = ApplicationState.viewport;
+      const currentRightPanel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      currentRightPanel[`${state.split === 'h' ? 'width' : 'height'}`] = currentRightPanel[`${state.split === 'h' ? 'width' : 'height'}_default`];
+      currentRightPanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = false;
+      layoutComponents();
     };
 
     GUI.getProjectMenuDOM = function({ projects = [], host, cbk } = {}) {
@@ -975,7 +1200,33 @@ const ApplicationTemplate = function({ ApplicationService }) {
       options.split       = options.split || 'h';
       options.backonclose = (true === options.backonclose || false === options.backonclose) ? options.backonclose : false;
       options.showtitle   = (true === options.showtitle || false === options.showtitle) ? options.showtitle : true;
-      ViewportService.showContent(options);
+
+      const opts = options;
+
+      const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
+      opts.perc = opts.perc !== undefined ? opts.perc : content_perc;
+      // check if push is set
+      opts.push = opts.push || false;
+      const evenContentName = opts.perc === 100 ? 'show-content-full' : 'show-content';
+      // set all content parameters
+      Object.assign(ApplicationState.viewport.content, {
+        title:        opts.title,
+        split:        undefined !== opts.split       ? opts.split : null,
+        closable:     undefined !== opts.closable    ? opts.closable : true,
+        backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
+        contentsdata: ApplicationState.viewport.components.content.contentsdata,
+        style:        undefined !== opts.style ? opts.style : {},
+        headertools:  undefined !== opts.headertools ? opts.headertools : [],
+        showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
+      });
+      // immediate layout false (to understand better)
+      ApplicationState.viewport.immediate_layout = false;
+      // call show view (in this case content (other is map)
+      _showView('content', opts);
+      ApplicationState.viewport.components.content.setContent(opts).then(() => {
+        ApplicationState.viewport.immediate_layout = true;
+        layoutComponents(evenContentName);
+      });
     };
 
     GUI.hideClientMenu = function() {
@@ -996,7 +1247,7 @@ const ApplicationTemplate = function({ ApplicationService }) {
     };
 
     GUI.setLoadingContent = function(loading = false) {
-      ApplicationTemplate.Services.viewport.setLoadingContent(loading);
+      ApplicationState.viewport.content.loading = loading;
       return loading && new Promise((resolve) => setTimeout(resolve, 200))
     };
 
@@ -1014,26 +1265,6 @@ const ApplicationTemplate = function({ ApplicationService }) {
         content: new ProjectsMenuComponent(),
         title:   '',
         perc:    100
-      });
-    };
-
-    /**
-     * @since 3.8.0
-     */
-    GUI.openChangeMapMenu = function() {
-      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
-        GUI.closeContent();
-        return;
-      }
-      if (this.isMobile()) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      GUI.closeOpenSideBarComponent();
-      GUI.setContent({
-        content: new ChangeMapMenuComponent(),
-        title: '',
-        perc: 100
       });
     };
 
@@ -1056,7 +1287,7 @@ ApplicationTemplate.PLACEHOLDERS = [
 ApplicationTemplate.Services = {
   navbar:   null,
   sidebar:  null,
-  viewport: ViewportService,
+  viewport: null,
 };
 
 ApplicationTemplate.fail = function({ error }) {

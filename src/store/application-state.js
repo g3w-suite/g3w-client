@@ -151,6 +151,77 @@ const STATE = Vue.observable({
     components: [],
   },
 
+  /**
+   * @since 3.11.0
+   */
+  viewport: {
+    primaryView:  'map', // primary view (default)
+    // percentage of secondary view
+    secondaryPerc: 0, // setted to 0 at beginning (not visible)
+    // used to store if content vertical or horizontal is  changed by resised
+    resized: {
+      start: false,
+      'h':   false,
+      'v':   false
+    },
+    // splitting orientation (h = horizontal, v = vertical)
+    split: 'h',
+    //map
+    map: {
+      sizes: {
+        width:  0,
+        height: 0
+      },
+      aside: false
+    },
+    //content
+    content: {
+      loading:  false,
+      disabled: false,
+      sizes: {
+        width:  0,
+        height: 0
+      },
+      // store the resize vertical or horizontal
+      resize: {
+        'h': { perc: 0 },
+        'v': { perc: 0 }
+      },
+      aside:        true,
+      showgoback:   true,
+      stack:        [], // array elements of stack contents
+      closable:     true, // (x) is closable
+      backonclose:  false, // back on prevoius content
+      contentsdata: [], // content data array
+    },
+    usermessage: {
+      id:          null, // unique identify
+      show:        false,
+      title:       null,
+      message:     null,
+      position:    null,
+      type:        null,
+      draggable:   null,
+      cloasable:   null,
+      autoclose:   null,
+      textMessage: false,
+      hooks: {
+        header: null,
+        body:   null,
+        footer: null
+      }
+    },
+    // content of viewport (map and content)
+    components: {
+      map:     null,
+      content: null
+    },
+    map_component: undefined,
+    map_contextual: undefined,
+    // minimun height and width of secondary view
+    immediate_Layout: undefined
+  },
+
 });
 
 /**
