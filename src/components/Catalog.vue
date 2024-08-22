@@ -5,10 +5,7 @@
 
 <template>
   <!-- item template -->
-  <div
-    id    = "catalog"
-    class = "tabbable-panel catalog"
-  >
+  <div class="tabbable-panel catalog">
 
     <div class = "tabbable-line">
 

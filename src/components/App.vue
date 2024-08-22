@@ -135,7 +135,7 @@
 
               <!-- TODO: add description -->
               <header-item
-                v-for                      = "state in custom_header_items_position[0]"
+                v-for                      = "state in custom_headers[0]"
                 :key                       = "state.id"
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
@@ -163,7 +163,7 @@
 
               <!-- TODO: add description -->
               <header-item
-                v-for                      = "state in custom_header_items_position[1]"
+                v-for                      = "state in custom_headers[1]"
                 :key                       = "state.id"
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
@@ -214,7 +214,7 @@
 
               <!-- TODO: add description -->
               <header-item
-                v-for                      = "state in custom_header_items_position[2]"
+                v-for                      = "state in custom_headers[2]"
                 :key                       = "state.id"
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
@@ -234,7 +234,7 @@
 
               <!-- TODO: add description -->
               <header-item
-                v-for                      = "state in custom_header_items_position[3]"
+                v-for                      = "state in custom_headers[3]"
                 :key                       = "state.id"
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
@@ -276,7 +276,7 @@
 
               <!-- TODO: add description -->
               <header-item
-                v-for                      = "state in custom_header_items_position[4]"
+                v-for                      = "state in custom_headers[4]"
                 :key                       = "state.id"
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
@@ -682,21 +682,20 @@
 </template>
 
 <script>
-import CookieLaw          from "vue-cookie-law";
+import CookieLaw                 from 'vue-cookie-law';
 
 import {
   LOCAL_ITEM_IDS,
   VIEWPORT
 }                                from 'app/constant';
-import { SidebarEventBus as VM } from 'app/eventbus';
 import ApplicationState          from 'store/application-state';
-import ProjectsRegistry          from "store/projects";
-import ApplicationService        from "services/application";
-import GUI                       from "services/gui";
+import ProjectsRegistry          from 'store/projects';
+import ApplicationService        from 'services/application';
+import GUI                       from 'services/gui';
 import viewportService           from 'services/viewport';
 import { resizeMixin }           from "mixins";
 
-import HeaderItem                from "components/HeaderItem.vue";
+import HeaderItem                from 'components/HeaderItem.vue';
 import userMessage               from 'components/UserMessage.vue';
 import CatalogContextMenu        from 'components/CatalogContextMenu.vue';
 import getUniqueDomId            from 'utils/getUniqueDomId';
@@ -903,8 +902,9 @@ export default {
     async resize() {
       if (!this.isIframe) {
         await this.$nextTick();
-        const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
-          this.$refs.mainnavbar.offsetWidth - this.$refs['app-navbar-nav'].offsetWidth;
+        const max_width = this.$refs.navbar_toggle.offsetWidth > 0
+          ? this.$refs.navbar.offsetWidth     - this.$refs.navbar_toggle.offsetWidth
+          : this.$refs.mainnavbar.offsetWidth - this.$refs['app-navbar-nav'].offsetWidth;
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
@@ -1053,13 +1053,12 @@ export default {
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
-
       const mini      = document.body.classList.contains('sidebar-mini');
       const collapsed = document.body.classList.contains('sidebar-collapse');
-      const open = mini && collapsed && window.innerWidth > 767;
 
-      if (open) {
-        document.body.classList.remove('sidebar-collapse');
+      // open sidebar
+      if (mini && collapsed) {
+        GUI.showSidebar();
       }
 
       const li = e.target.closest('.sidebaritem');
@@ -1074,7 +1073,8 @@ export default {
       const active = li.classList.contains('active');
       const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
 
-      if (!component || (component.getOpen() && collapsed)) {
+      // skip toggling element
+      if (!component || (component.getOpen() && collapsed) || (menu && menu.contains(e.target))) {
         return;
       }
 
@@ -1094,7 +1094,8 @@ export default {
         }
       });
 
-      if (!component.collapsible && isMobile.any) {
+      // automatically toggle sidebar on mobile
+      if (!component.collapsible && window.innerWidth <= 767) {
         GUI.toggleSidebar();
       }
 
@@ -1132,15 +1133,9 @@ export default {
   },
 
   created() {
-    this.language                     = this.appconfig._i18n.language;
-    this.custom_modals                = [];
-    this.custom_header_items_position = {
-      0: [],
-      1: [],
-      2: [],
-      3: [],
-      4: []
-    };
+    this.language       = this.appconfig._i18n.language;
+    this.custom_modals  = [];
+    this.custom_headers = { 0: [], 1: [], 2: [], 3: [], 4: [] };
 
     this.customlinks = Array.isArray(this.appconfig.header_custom_links)
       ? this.appconfig.header_custom_links
@@ -1150,7 +1145,7 @@ export default {
             item.type === 'modal' && this.custom_modals.push({ id, content: item.content });
             let position = 1*(item.position || 0);
             position = position > 4 ? 4 : position < 0 || Number.isNaN(position)? 0 : position;
-            this.custom_header_items_position[position].push(item);
+            this.custom_headers[position].push(item);
             return true
           }
           return false;
@@ -1185,9 +1180,8 @@ export default {
 
     // Fixes the layout height in case min-height fails.
     const resize = function() {
-      $(".main-sidebar")     .css('height',    ($(window).height() - $(".navbar-header").height()) + "px");
-      $('.g3w-sidebarpanel') .css('height',     $(window).height() - $("#main-navbar").height());
-      $('#g3w-modal-overlay').css('height',     $(window).height());
+      $(".main-sidebar")    .css('height', $(window).height() - $(".navbar-header").height());
+      $('.g3w-sidebarpanel').css('height', $(window).height() - $("#main-navbar").height());
     };
 
     resize();
@@ -1201,7 +1195,6 @@ export default {
     await this.$nextTick();
 
     this.state.resized.start = true
-
   },
 
 };
