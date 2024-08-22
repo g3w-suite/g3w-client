@@ -49,6 +49,10 @@ export default class Component extends G3WObject {
     // TODO: check why `GUI.getFontClass` is undefined
     opts.icon = GUI.getFontClass(opts.icon) || opts.icon;
 
+    opts.open        = çç(opts.open, false);
+    opts.mobile      = çç(opts.mobile, true);
+    opts.collapsible = çç(opts.collapsible, true);
+
     super({
       setters: {
 

@@ -313,6 +313,8 @@ body {
 * modal.less
 **************************************************************************************/
 
+#g3w-modal-overlay { height: 100vh; }
+
 .modal         { background: rgba(0,0,0,.3); }
 .modal-header  { border-bottom-color: #f4f4f4; }
 .modal-footer  { border-top-color: #f4f4f4; }
@@ -596,7 +598,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 :root {
   @media (max-width: 767px) {
     a.sidebar-aside-toggle                          { display: none !important; }
-    .main-sidebar                                   { left: -100%; padding-top: 50px; width: 100%; }
+    .main-sidebar                                   { left: -100%; width: 100%; }
     .sidebar-open .main-sidebar                     { left: 0; }
   }
   @media (min-width: 768px) {
@@ -618,6 +620,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                   { padding-top: 50px; overflow: hidden; }
 .sidebar-mini.sidebar-collapse .ol-geocoder                                             { left: 10px; }
 .sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label { color:  transparent; }
+.sidebar-mini.sidebar-collapse .main-sidebar                                            { overflow-y: hidden; }
 
 /**************************************************************************************
  * 5. Viewport

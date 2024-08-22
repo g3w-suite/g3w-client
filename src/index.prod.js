@@ -828,7 +828,9 @@ const ApplicationTemplate = function({ ApplicationService }) {
     GUI.hideSidebar      = this._hideSidebar.bind(this);
     /** @since 3.11.0*/
     GUI.toggleSidebar = () => {
-      if (document.body.classList.contains('sidebar-collapse')) {
+      if (document.body.classList.contains('sidebar-open')) {
+        GUI.hideSidebar();
+      } else if (document.body.classList.contains('sidebar-collapse') || window.innerWidth <= 767) {
         GUI.showSidebar();
       } else {
         GUI.hideSidebar();
