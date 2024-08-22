@@ -8,6 +8,7 @@ import { noop }                     from 'utils/noop';
 import { capitalize_first_letter }  from 'utils/capitalize_first_letter';
 import { resolve }                  from 'utils/resolve';
 import GUI                          from 'services/gui';
+import ApplicationState             from "store/application-state";
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
@@ -58,6 +59,14 @@ export default class Component extends G3WObject {
 
         setOpen(bool) {
           this.state.open = bool;
+          //@since 3.11.0 Need to add check of sidebar components, in case, for example, close
+          // contents element and some sidebar component is related to it's close, for example, qplotly
+          if (ApplicationState.sidebar.components.includes(this)) {
+            //toggle menu open of <ul> element
+            this.internalComponent.$el.classList.toggle('menu-open', bool);
+            // toggle active of <li> element
+            this.internalComponent.$el.parentNode.classList.toggle('active', bool);
+          }
           if (this._setOpen) {
             this._setOpen(bool);
           }
