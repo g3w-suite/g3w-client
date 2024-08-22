@@ -1064,10 +1064,9 @@ export default {
 
       const li = e.target.closest('.sidebaritem');
 
-      //in case is not a first ancore element of li
-      //@TODO need to be true also for children of ancor first child of li (Chech add wms layer sidebar item)
-
-      if (e.target !== li.children[0]) {
+      //in case is not the first ancor element of li
+      //or not child of an ancor element of li
+      if (!(e.target === li.children[0] || li.children[0].contains(e.target))) {
         return;
       }
 
