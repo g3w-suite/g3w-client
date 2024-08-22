@@ -222,7 +222,7 @@ const browserify_plugin = (pluginName, watch = true) => {
     .pipe(replace('process.env.g3w_plugin_branch', `"${branch}"`))
     .pipe(gulpif(production, sourcemaps.init()))
     .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-    .pipe(gulpif(production, sourcemaps.write(src)))
+    .pipe(gulpif(production, sourcemaps.write('.')))
     .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
     .pipe(gulp.dest(outputFolder)) // put plugin.js to static folder (PROD | DEV env)
     .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
