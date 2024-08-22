@@ -261,7 +261,7 @@
                   :templateSelection = "templateResultLanguages"
                   :templateResult    = "templateResultLanguages"
                   :dropdownAutoWidth = "true"
-                  :dropdownParent    = "true"
+                  :dropdownParent    = "dropdownParent"
                   v-model            = "language"
                   style              = "cursor:pointer; width: 130px;"
                 >
@@ -737,6 +737,10 @@ export default {
     languages() {
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
       return languages.length > 1 && languages;
+    },
+
+    dropdownParent() {
+      return window.innerWidth >= 768;
     },
 
     currentProject() {
