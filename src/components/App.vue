@@ -1068,22 +1068,22 @@ export default {
       }
 
       const li        = e.target.closest('.sidebaritem');
-      const menu      = li.querySelector('.treeview-menu');
-      const active    = li.classList.contains('active');
       const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
+      const open      = component && component.getOpen();
+      const menu      = li.querySelector('.treeview-menu');
 
       // skip toggling element
-      if (!component || (component.getOpen() && collapsed) || (menu && menu.contains(e.target))) {
+      if (!component || (open && collapsed) || (menu && menu.contains(e.target))) {
         return;
       }
 
       document.querySelectorAll('.main-sidebar li.sidebaritem.active')    .forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.main-sidebar li.sidebaritem .menu-open').forEach(el =>  el.classList.remove('menu-open'));
 
-      li.classList.toggle('active', !active);
+      li.classList.toggle('active', !open);
 
       if (menu) {
-        menu.classList.toggle('menu-open', !active);
+        menu.classList.toggle('menu-open', !open);
       }
 
       // close other components
