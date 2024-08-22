@@ -58,7 +58,7 @@ export default function(opts) {
   comp.getService().on('reload', () => comp.setOpen(false));
 
   // show metadata
-  comp.onafter('setOpen', b => {
+  comp._setOpen = b => {
     const service = comp.getService();
     service.show = b;
     if (b) {
@@ -69,7 +69,7 @@ export default function(opts) {
     } else {
       GUI.closeContent()
     }
-  });
+  };
 
   GUI.on('closecontent', () => comp.state.open = false);
 
