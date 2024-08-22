@@ -1077,28 +1077,20 @@ export default {
         return;
       }
 
-      document.querySelectorAll('.main-sidebar li.sidebaritem.active')    .forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.main-sidebar li.sidebaritem .menu-open').forEach(el =>  el.classList.remove('menu-open'));
-
-      li.classList.toggle('active', !open);
-
-      if (menu) {
-        menu.classList.toggle('menu-open', !open);
+      if (!open) {
+        ApplicationState.sidebar.components.forEach(comp => {
+          if (comp !== component && comp.getOpen()) {
+            comp.click({ open: false });
+          }
+        });
       }
-
-      // close other components
-      ApplicationState.sidebar.components.forEach(comp => {
-        if (comp !== component && comp.getOpen()) {
-          comp.click({ open: false });
-        }
-      });
 
       // automatically toggle sidebar on mobile
       if (!component.collapsible && window.innerWidth <= 767) {
         GUI.toggleSidebar();
       }
 
-      component.setOpen(!component.getOpen());
+      component.click({ open: !open });
     },
 
     /**

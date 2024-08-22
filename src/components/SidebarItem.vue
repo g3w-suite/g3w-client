@@ -97,8 +97,15 @@
 
       // set component click handler
       this.component.click = ({ open = false } = {}) => {
-        $(this.component.getInternalComponent().$el).siblings('a').click();
-        this.component.setOpen(open || false);
+        const node = this.component.getInternalComponent().$el
+        //@since 3.11.0 Need to add check of sidebar components, in case, for example, close
+        // contents element and some sidebar component is related to it's close, for example, qplotly
+        //a toggle menu open of <ul>
+        node.classList.toggle('menu-open', open);
+        // toggle active of <li> element
+        node.parentNode.classList.toggle('active', open);
+
+        this.component.setOpen(open);
       };
     },
 
