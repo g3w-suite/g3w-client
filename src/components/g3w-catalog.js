@@ -22,12 +22,12 @@ export default function(opts = {}) {
   const state = {
     highlightlayers: false,
     external: {  // external layers
-      wms: [],   // added by wms sidebar component
+      wms:    [],   // added by wms sidebar component
       vector: [] // added to map controls for the moment
     },
-    layerstrees: CatalogLayersStoresRegistry.getLayersStores().map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
+    layerstrees:  CatalogLayersStoresRegistry.getLayersStores().map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
     layersgroups: [],
-    legend: Object.assign(opts.config.legend || {}, { place: ApplicationService.getCurrentProject().getLegendPosition() || 'tab' }),
+    legend:       Object.assign(opts.config.legend || {}, { place: ApplicationService.getCurrentProject().getLegendPosition() || 'tab' }),
   };
 
   const service = opts.service || new G3WObject({
@@ -87,10 +87,10 @@ export default function(opts = {}) {
 
   const comp = new Component({
     ...opts,
-    title: 'catalog',
-    resizable: true,
-    service,
+    title:              'catalog',
+    resizable:          true,
     vueComponentObject: vueComp,
+    service,
   });
 
   /** @TODO check if deprecated */
