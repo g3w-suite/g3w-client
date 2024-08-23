@@ -300,66 +300,66 @@
         :class = "{ iframe: iframe, 'g3w-disabled': disabled }"
       >
         <!-- SIDEBAR CONTENT -->
-          <div id="disable-sidebar"></div>
+        <div id="disable-sidebar"></div>
 
-          <div
-            v-show = "panels.length > 0"
-            class = "g3w-sidebarpanel"
-          >
-            <div id="g3w-sidebarpanel-header-placeholder">
-              <div
-                style  = "display: flex;"
-                :style = "{ justifyContent: app.sidebar.title ? 'space-between' : 'flex-end' }"
-              >
-
-                <h4
-                  v-if  = "title"
-                  style = "display: inline-block; font-weight: bold"
-                  v-t   = "title"
-                ></h4>
-
-                <div>
-                  <span
-                    v-if               = "panels.length > 1"
-                    @click             = "closePanel"
-                    data-placement     = "left"
-                    data-toggle        = "tooltip"
-                    data-container     = "body"
-                    v-t-tooltip.create = "'back'"
-                    class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
-                  >
-                    <i :class = "g3wtemplate.getFontClass('circle')"     class = "fa-stack-1x panel-button"></i>
-                    <i :class = "g3wtemplate.getFontClass('arrow-left')" class = "fa-stack-1x panel-icon"></i>
-                  </span>
-                  <span
-                    @click             = "closeAllPanels"
-                    data-placement     = "left"
-                    data-toggle        = "tooltip"
-                    data-container     = "body"
-                    v-t-tooltip.create = "'close'"
-                    class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
-                  >
-                    <i :class = "g3wtemplate.getFontClass('circle')" class = "fa-stack-1x panel-button"></i>
-                    <i :class = "g3wtemplate.getFontClass('close')"  class = "fa-stack-1x panel-icon"></i>
-                  </span>
-                </div>
-
-              </div>
-            </div>
-
+        <div
+          v-show = "panels.length > 0"
+          class = "g3w-sidebarpanel"
+        >
+          <div id="g3w-sidebarpanel-header-placeholder">
             <div
-              id    = "g3w-sidebarpanel-placeholder"
-              class = "g3w-sidebarpanel-placeholder"
-            ></div>
+              style  = "display: flex;"
+              :style = "{ justifyContent: app.sidebar.title ? 'space-between' : 'flex-end' }"
+            >
+
+              <h4
+                v-if  = "title"
+                style = "display: inline-block; font-weight: bold"
+                v-t   = "title"
+              ></h4>
+
+              <div>
+                <span
+                  v-if               = "panels.length > 1"
+                  @click             = "closePanel"
+                  data-placement     = "left"
+                  data-toggle        = "tooltip"
+                  data-container     = "body"
+                  v-t-tooltip.create = "'back'"
+                  class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                >
+                  <i :class = "g3wtemplate.getFontClass('circle')"     class = "fa-stack-1x panel-button"></i>
+                  <i :class = "g3wtemplate.getFontClass('arrow-left')" class = "fa-stack-1x panel-icon"></i>
+                </span>
+                <span
+                  @click             = "closeAllPanels"
+                  data-placement     = "left"
+                  data-toggle        = "tooltip"
+                  data-container     = "body"
+                  v-t-tooltip.create = "'close'"
+                  class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                >
+                  <i :class = "g3wtemplate.getFontClass('circle')" class = "fa-stack-1x panel-button"></i>
+                  <i :class = "g3wtemplate.getFontClass('close')"  class = "fa-stack-1x panel-icon"></i>
+                </span>
+              </div>
+
+            </div>
           </div>
 
-          <ul
-            id     = "g3w-sidebarcomponents"
-            v-show = "showmainpanel"
-            class  = "sidebar-menu"
-            :class = "{ 'g3w-disabled': disabled }"
-            @click = "toggleSidebarItem"
-          ></ul>
+          <div
+            id    = "g3w-sidebarpanel-placeholder"
+            class = "g3w-sidebarpanel-placeholder"
+          ></div>
+        </div>
+
+        <ul
+          id     = "g3w-sidebarcomponents"
+          v-show = "showmainpanel"
+          class  = "sidebar-menu"
+          :class = "{ 'g3w-disabled': disabled }"
+          @click = "toggleSidebarItem"
+        ></ul>
 
       </div>
       <!-- TOGGLE BUTTON (desktop only) -->
@@ -712,7 +712,6 @@ export default {
   mixins: [resizeMixin],
 
   data() {
-    console.log(this);
     return {
       customcredits:                false,
       current_custom_modal_content: null,
@@ -1100,14 +1099,6 @@ export default {
       // skip toggling element
       if (!component || (open && collapsed) || (menu && menu.contains(e.target))) {
         return;
-      }
-
-      if (!open) {
-        ApplicationState.sidebar.components.forEach(comp => {
-          if (comp !== component && comp.getOpen()) {
-            comp.click({ open: false });
-          }
-        });
       }
 
       // automatically toggle sidebar on mobile
