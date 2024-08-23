@@ -2,7 +2,8 @@ import G3WObject                   from 'core/g3wobject';
 import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QUERY_POINT_TOLERANCE }   from 'app/constant';
-import { QgsFilterToken }          from 'utils/QgsFilterToken';
+import { QgsFilterToken }          from 'core/layers/utils/QgsFilterToken';
+import { ResponseParser }          from 'utils/parsers';
 import { handleQueryResponse }     from 'utils/handleQueryResponse';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
@@ -12,7 +13,6 @@ import { appendParams }            from 'utils/appendParams';
 import { getTimeoutPromise }       from 'utils/getTimeoutPromise';
 import { promisify, $promisify }   from 'utils/promisify';
 
-const Parsers                      = require('utils/parsers');
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
 const Filter                       = require('core/layers/filter/filter');
@@ -195,7 +195,7 @@ module.exports = {
 
         if (response.result) {
           return {
-            data: Parsers.response.get('application/json')({
+            data: ResponseParser.get('application/json')({
               layers:      [this._layer],
               response:    response.vector.data,
               projections: this._projections,
@@ -369,7 +369,7 @@ module.exports = {
           reject('Url not valid');
           return;
         }
-        url +=  urlParams ? '?' + urlParams : '';
+        url += urlParams ? '?' + urlParams : '';
         const filter = options.filter || null;
 
         if (!filter) {
@@ -381,7 +381,7 @@ module.exports = {
           promise = XHR.post({
             url,
             data: JSON.stringify({
-              in_bbox:     filter.bbox.join(','),
+              in_bbox: filter.bbox.join(','),
               filtertoken: ApplicationState.tokens.filtertoken
             }),
             contentType: 'application/json',
@@ -410,19 +410,18 @@ module.exports = {
         }
 
         promise
-          .then(({ vector, result, featurelocks }) => {
+          .then(({vector, result, featurelocks}) => {
             // skip when server responde with false result (error)
             if (false === result) {
               reject({ message: t("info.server_error") });
               return;
             }
             const features = [];
-            const lockIds  = featurelocks.map(lock => lock.featureid);
-            Parsers[this._layer.getType()]
-              .get({ type: 'json'})(
-                vector.data,
-                ('NoGeometry' === vector.geometrytype) ? {} : { crs: this._layer.getCrs(), /*mapCrs: this._layer.getMapCrs()*/ }
-              )
+            const lockIds = featurelocks.map(lock => lock.featureid);
+            ResponseParser.get(`g3w-${this._layer.getType()}/json`)(
+              vector.data,
+              ('NoGeometry' === vector.geometrytype) ? {} : { crs: this._layer.getCrs(), /*mapCrs: this._layer.getMapCrs()*/ }
+            )
               .forEach(feature => {
                 if (lockIds.indexOf(`${feature.getId()}`) > -1) {
                   features.push(new Feature({ feature }));
@@ -496,13 +495,13 @@ module.exports = {
           LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
         }
 
-        const timer = getTimeoutPromise({
-          resolve,
-          data: {
-            data: Parsers.response.utils.getTimeoutData(layers),
-            query: { coordinates, resolution },
-          },
-        });
+      const timer = getTimeoutPromise({
+        resolve: d.resolve,
+        data: {
+          data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+          query: { coordinates, resolution },
+        },
+      });
 
         const method =  layers[0].getOwsMethod();
         const source = (url || '').split('SOURCE');
@@ -569,13 +568,13 @@ module.exports = {
         const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
         const method = layers[0].getOwsMethod();
 
-        const timer = getTimeoutPromise({
-          resolve,
-          data: {
-            data: Parsers.response.utils.getTimeoutData(layers),
-            query: {},
-          },
-        });
+      const timer = getTimeoutPromise({
+        resolve: d.resolve,
+        data: {
+          data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+          query: {},
+        },
+      });
 
         let promise;
 
