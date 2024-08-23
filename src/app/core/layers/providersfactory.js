@@ -495,13 +495,13 @@ module.exports = {
           LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
         }
 
-      const timer = getTimeoutPromise({
-        resolve: d.resolve,
-        data: {
-          data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
-          query: { coordinates, resolution },
-        },
-      });
+        const timer = getTimeoutPromise({
+          resolve,
+          data: {
+            data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+            query: { coordinates, resolution },
+          },
+        });
 
         const method =  layers[0].getOwsMethod();
         const source = (url || '').split('SOURCE');
@@ -568,13 +568,13 @@ module.exports = {
         const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
         const method = layers[0].getOwsMethod();
 
-      const timer = getTimeoutPromise({
-        resolve: d.resolve,
-        data: {
-          data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
-          query: {},
-        },
-      });
+        const timer = getTimeoutPromise({
+          resolve,
+          data: {
+            data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+            query: {},
+          },
+        });
 
         let promise;
 
