@@ -718,7 +718,7 @@ export default new (class GUI extends G3WObject {
     const d = $.Deferred();
     // content is open
     if (state.content.contentsdata.length > 0) {
-      state.components.content.removeContent();
+      this.getComponent('contents').removeContent();
       // close secondary view( return a promise)
       this._closeSecondaryView('close-content').then(() => d.resolve(this.getComponent('map')));
     } else {
@@ -738,8 +738,7 @@ export default new (class GUI extends G3WObject {
 
   // only map
   showMap() {
-    const state = ApplicationState.viewport;
-    state.components.map.internalComponent.$el.style.display = 'block';
+    this.getComponent('map').internalComponent.$el.style.display = 'block';
     this._showView('map');
   }
 
@@ -749,26 +748,26 @@ export default new (class GUI extends G3WObject {
     const d = $.Deferred();
     // check if content exists compontent Stack
     if (state.content.contentsdata.length) {
-      const data = state.components.content.getPreviousContentData();
+      const data = this.getComponent('contents').getPreviousContentData();
       const opts = data.options;
       Object.assign(state.content, {
         title:        opts.title,
         split:        undefined !== opts.split       ? opts.split : null,
         closable:     undefined !== opts.closable    ? opts.closable : true,
         backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
-        contentsdata: state.components.content.contentsdata,
+        contentsdata: this.getComponent('contents').contentsdata,
         style:        undefined !== opts.style ? opts.style : {},
         headertools:  undefined !== opts.headertools ? opts.headertools : [],
         showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
       });
       state.immediate_layout = false;
       this._showView('content', data.options);
-      state.components.content.popContent()
+      this.getComponent('contents').popContent()
         .then(() => {
           state.secondaryPerc        = data.options.perc;
           state.immediate_layout = true;
           this._layout('pop-content');
-          d.resolve(state.components.contentgetCurrentContentData)
+          d.resolve(this.getComponent('contents').getCurrentContentData)
         })
     } else {
       d.reject();
@@ -808,7 +807,6 @@ export default new (class GUI extends G3WObject {
     ApplicationState.viewport.immediate_layout = false;
     // call show view (in this case content (other is map)
     this._showView('content', opts);
-    console.log(this.getComponent('contents'));
     this.getComponent('contents').setContent(opts).then(() => {
       ApplicationState.viewport.immediate_layout = true;
       this._layoutComponents(evenContentName);
@@ -845,7 +843,7 @@ export default new (class GUI extends G3WObject {
   _closeSecondaryView(event = null) {
     const state = ApplicationState.viewport;
     const d = $.Deferred();
-    const secondaryViewComponent = state.components[state.primaryView === 'map' ? 'content' : 'map'];
+    const secondaryViewComponent = this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
     if (secondaryViewComponent.clearContents) {
       secondaryViewComponent.clearContents().then(() => {
         state.secondaryVisible = false;
