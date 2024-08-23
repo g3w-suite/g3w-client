@@ -12,6 +12,7 @@ import { createWMSLayer }            from 'utils/createWMSLayer';
 import { createSelectedStyle }       from 'utils/createSelectedStyle';
 import { getMapLayersByFilter }      from 'utils/getMapLayersByFilter';
 import { getGeoTIFFfromServer }      from 'utils/getGeoTIFFfromServer';
+import { groupBy }                   from 'utils/groupBy';
 import { getScaleFromResolution }    from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }    from 'utils/getResolutionFromScale';
 
@@ -1957,7 +1958,7 @@ proto._setupMapLayers = function() {
     .entries(
       // Group layers by multilayer property (from project config)
       // to speed up "qtimeseriesries" loading for single layers
-      _.groupBy(layers, layer => {
+      groupBy(layers, layer => {
         let id = layer.getMultiLayerId();
         if (layer.isQtimeseries()) {
           cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
@@ -2094,7 +2095,7 @@ proto.getOverviewMapLayers = function(project) {
 
   Object
     .entries(
-      _.groupBy(
+      groupBy(
         project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false }),
         layer => layer.getMultiLayerId()
       )

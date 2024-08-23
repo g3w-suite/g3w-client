@@ -9,7 +9,6 @@ import ApplicationService                          from 'services/application';
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
-import { GEOMETRY_TYPES, GEOMETRY_FIELDS }         from 'app/constant';
 import { addZValueToOLFeatureGeometry }            from 'utils/addZValueToOLFeatureGeometry';
 import { is3DGeometry }                            from 'utils/is3DGeometry';
 import { removeZValueToOLFeatureGeometry }         from 'utils/removeZValueToOLFeatureGeometry';
@@ -123,11 +122,11 @@ import { getDPI }                                  from 'utils/getDPI';
 import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
 import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
 import { mergeOptions }                            from 'utils/mergeOptions';
+import { ResponseParser }                          from 'utils/parsers';
 
 const G3WObject                  = require('core/g3wobject');
 const utils                      = require('utils');
 const i18n                       = require('core/i18n/i18n.service');
-const Server                     = require('core/errors/parser/servererrorparser');
 const Project                    = require('core/project/project');
 const LayersStoreRegistry        = require('core/layers/layersstoresregistry');
 const LayersStore                = require('core/layers/layersstore');
@@ -186,7 +185,7 @@ const g3wsdk = {
     G3WObject,
     utils,
     geoutils: {
-      geometryFields: GEOMETRY_FIELDS,
+      geometryFields: G3W_CONSTANT.GEOMETRY_FIELDS,
       coordinatesToGeometry,
       getDefaultLayerStyle,
       createLayerStyle,
@@ -244,7 +243,7 @@ const g3wsdk = {
       closestOnSegment,
       get_LEGEND_ON_LEGEND_OFF_Params: get_legend_params,
       Geometry: {
-        GeometryTypes: GEOMETRY_TYPES,
+        GeometryTypes: G3W_CONSTANT.GEOMETRY_TYPES,
         removeZValueToOLFeatureGeometry,
         addZValueToOLFeatureGeometry,
         getOLGeometry,
@@ -274,7 +273,7 @@ const g3wsdk = {
     },
     errors: {
       parsers: {
-        Server
+        Server: ResponseParser.get('g3w-error')
       }
     },
     project: {

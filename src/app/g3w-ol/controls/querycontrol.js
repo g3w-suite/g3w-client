@@ -10,7 +10,7 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const QueryControl = function(options = {}){
   const _options = {
     offline: false,
-    name: "querylayer",
+    name: "query",
     tipLabel: "sdk.mapcontrols.query.tooltip",
     label: options.label || "\uea0f",
     clickmap: true, // set ClickMap
