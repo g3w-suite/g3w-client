@@ -153,14 +153,8 @@ const {
 }                                = require('gui/map/mapservice');
 const FieldsService              = require('gui/fields/fieldsservice');
 const Component                  = require('gui/component/component');
-const MetadataComponent          = require('gui/metadata/vue/metadata');
 const SearchComponent            = require('gui/search/vue/search');
 const SearchPanel                = require('gui/search/vue/panel/searchpanel');
-const PrintComponent             = require('gui/print/vue/print');
-const CatalogComponent           = require('gui/catalog/vue/catalog');
-const MapComponent               = require('gui/map/vue/map');
-const ToolsComponent             = require('gui/tools/vue/tools');
-const QueryResultsComponent      = require('gui/queryresults/vue/queryresults');
 const FormComponent              = require('gui/form/vue/form');
 const FormService                = require('gui/form/formservice');
 const InputsComponents           = require('gui/inputs/inputs');
@@ -333,14 +327,8 @@ const g3wsdk = {
     vue: {
       Component,
       Panel,
-      MetadataComponent,
       SearchComponent,
       SearchPanel,
-      PrintComponent,
-      CatalogComponent,
-      MapComponent,
-      ToolsComponent,
-      QueryResultsComponent,
       // main Form Component
       FormComponent,
       // Form Components

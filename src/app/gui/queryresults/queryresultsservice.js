@@ -5,13 +5,18 @@ import {
   LIST_OF_RELATIONS_ID,
 }                                               from 'app/constant';
 import G3WObject                                from 'core/g3w-object';
+import Component                                from 'core/g3w-component';
+
+import CatalogLayersStoresRegistry              from 'store/catalog-layers';
+import ApplicationState                         from 'store/application-state';
+
 import ProjectsRegistry                         from 'store/projects';
 import DataRouterService                        from 'services/data';
-import CatalogLayersStoresRegistry              from 'store/catalog-layers';
-import ApplicationState                         from "store/application-state";
+import ApplicationService                       from 'services/application';
+
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-import ApplicationService                       from 'services/application';
+
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { createFeatureFromGeometry }            from 'utils/createFeatureFromGeometry';
 import { createFeatureFromBBOX }                from 'utils/createFeatureFromBBOX';
@@ -28,10 +33,19 @@ import { copyUrl }                              from 'utils/copyUrl';
 const { t }                      = require('core/i18n/i18n.service');
 const Layer                      = require('core/layers/layer');
 const { VectorLayer }            = require('core/layers/vectorlayer');
-const RelationsPage              = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const deprecate                  = require('util-deprecate');
+
+/**
+ * ORIGINAL SOURCE: src/components/g3w-relationspage.js@v3.10.2
+ */
+function RelationsPage(opts = {}) {
+  return new Component({
+    ...opts,
+    internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))(opts)
+  });
+}
 
 /**
  * Get and set vue reactivity to QueryResultsService

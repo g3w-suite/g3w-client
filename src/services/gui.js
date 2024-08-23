@@ -1,13 +1,40 @@
 import G3WObject            from 'core/g3w-object';
+import Component            from 'core/g3w-component';
+
 import ApplicationState     from 'store/application-state';
-import ApplicationService   from 'services/application';
 import ComponentsRegistry   from 'store/components';
+import ProjectsRegistry     from 'store/projects';
+
+import ApplicationService   from 'services/application';
 
 import { noop }             from 'utils/noop';
 import { getUniqueDomId }   from 'utils/getUniqueDomId';
 import { layout }           from 'utils/layout';
 import { layoutComponents } from 'utils/layoutComponents';
 import { toRawType }        from 'utils/toRawType';
+
+/**
+ * ORIGINAL SOURCE: src/components/g3w-projectsmenu.js@v3.10.2
+ */
+function ProjectsMenuComponent(opts={}) {
+  return new Component({
+    ...opts,
+    id: 'projectsmenu',
+    title: opts.title || 'menu',
+    internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue')))({
+      host: opts.host,
+      state: {
+        menuitems: (opts.projects || ProjectsRegistry.getListableProjects()).map(p => ({
+          title:       p.title,
+          description: p.description,
+          thumbnail:   p.thumbnail,
+          gid:         p.gid,
+          cbk:         opts.cbk || ((o = {}) => ApplicationService.changeProject({ host: opts.host, gid: o.gid })),
+        }))
+      },
+    }),
+  });
+}
 
 // API della GUI.
 // methods have been defined by application
@@ -82,7 +109,6 @@ export default new (class GUI extends G3WObject {
     ComponentsRegistry.registerComponent(component);
   }
   getComponent(id) {
-    console.log(ComponentsRegistry,id, ComponentsRegistry.getComponent(id));
     return ComponentsRegistry.getComponent(id);
   }
 
@@ -581,7 +607,6 @@ export default new (class GUI extends G3WObject {
   }
 
   getProjectMenuDOM({ projects = [], host, cbk } = {}) {
-    const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
     const projectVueMenuComponent = new ProjectsMenuComponent({
       projects: projects && Array.isArray(projects) && projects,
       cbk,
@@ -617,7 +642,6 @@ export default new (class GUI extends G3WObject {
       $('#main-navbar.navbar-collapse').removeClass('in');
     }
     this.closeOpenSideBarComponent();
-    const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
     this.setContent({
       content: new ProjectsMenuComponent(),
       title:   '',

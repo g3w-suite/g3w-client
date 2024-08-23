@@ -78,7 +78,7 @@
     },
 
     mounted() {
-      const opts    = this.$options.opts;
+      const opts    = this.$options.opts || {};
       const sidebar = document.getElementById('g3w-sidebarcomponents');
 
       // append to `g3w-sidebarcomponents`
