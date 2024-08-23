@@ -9,9 +9,33 @@ import ApplicationService   from 'services/application';
 
 import { noop }             from 'utils/noop';
 import { getUniqueDomId }   from 'utils/getUniqueDomId';
-import { layout }           from 'utils/layout';
-import { layoutComponents } from 'utils/layoutComponents';
+import { setViewSizes }     from 'utils/setViewSizes';
 import { toRawType }        from 'utils/toRawType';
+
+/**
+ * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
+ */
+function getReducedSizes() {
+  const contentEl = $('.content');
+  let reducedWidth  = 0;
+  let reducedHeight = 0;
+  const sideBarToggleEl = $('.sidebar-aside-toggle');
+  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${ApplicationState.viewport.split === 'h'? 'width' : 'height'}_100`];
+  if (contentEl && ApplicationState.viewport.secondaryVisible && is_fullview) {
+    if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
+      const toggleWidth = sideBarToggleEl.outerWidth();
+      contentEl.css('padding-left', toggleWidth + 5);
+      reducedWidth = (toggleWidth - 5);
+    }
+  } else {
+    const toggleWidth = sideBarToggleEl.outerWidth();
+    contentEl.css('padding-left', ApplicationState.viewport.secondaryPerc === 100 ? toggleWidth + 5 : 15);
+  }
+  return {
+    reducedWidth,
+    reducedHeight
+  }
+}
 
 /**
  * ORIGINAL SOURCE: src/components/g3w-projectsmenu.js@v3.10.2
@@ -54,6 +78,7 @@ export default new (class GUI extends G3WObject {
     this.isready          = false;
 
     this.hideQueryResults = noop;
+
     this.hidePanel        = noop;
 
     //property to how a result has to be adding or close all and show new
@@ -129,7 +154,7 @@ export default new (class GUI extends G3WObject {
       if (true === resizeFired ) {
         resizeFired = false;
         drawing = true;
-        layout('resize');
+        this._layout('resize');
         requestAnimationFrame(drawResize);
       } else {
         drawing = false;
@@ -138,7 +163,7 @@ export default new (class GUI extends G3WObject {
 
     // SetSidebar width (used by components/Viewport.vue single file component)
     ApplicationState.viewport.SIDEBARWIDTH = this.getSize({element:'sidebar', what:'width'});
-    layout();
+    this._layout();
     this.on('guiresized',() => triggerResize());
     // resize della window
     $(window).resize(() => {
@@ -164,10 +189,11 @@ export default new (class GUI extends G3WObject {
   guiResized() {
     this.emit('guiresized');
   }
-  //ready GUI
+
   isReady() {
     return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
   };
+
   /**
    * Passing a component application ui id return service that belongs to component
    * @param componentId
@@ -177,10 +203,13 @@ export default new (class GUI extends G3WObject {
     const component = this.getComponent(componentId);
     return component && component.getService();
   }
-  /* spinner */
-  showSpinner(opts ={}) {};
-  hideSpinner(id) {};
+
+  showSpinner(opts ={}) {}
+
+  hideSpinner(id) {}
+
   /* end spinner */
+
   /**
    * Wrapper for download
    *
@@ -512,25 +541,6 @@ export default new (class GUI extends G3WObject {
     ApplicationState.gui.sidebar.disabled = bool;
   }
 
-  setContextualMapComponent(mapComponent) {
-    const state = ApplicationState.viewport;
-    if (mapComponent === state.map_component) {
-      return;
-    }
-    if (state.map_contextual) {
-      state.map_contextual.unmount();
-    }
-    state.map_contextual = mapComponent;
-  }
-
-  resetContextualMapComponent() {
-    const state = ApplicationState.viewport;
-    if (state.map_contextual) {
-      state.map_contextual.unmount();
-    }
-    state.map_contextual = state.map_component;
-  }
-
   //  (100%) content
   showContent(options = {}) {
     this.setLoadingContent(false);
@@ -654,7 +664,7 @@ export default new (class GUI extends G3WObject {
     ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
     .rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
     .rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-    layoutComponents();
+    this._layoutComponents();
   }
 
   resetToDefaultContentPercentage() {
@@ -662,7 +672,7 @@ export default new (class GUI extends G3WObject {
     const currentRightPanel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
     currentRightPanel[`${state.split === 'h' ? 'width' : 'height'}`] = currentRightPanel[`${state.split === 'h' ? 'width' : 'height'}_default`];
     currentRightPanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = false;
-    layoutComponents();
+    this._layoutComponents();
   }
 
   /**
@@ -701,7 +711,7 @@ export default new (class GUI extends G3WObject {
   hideContent(bool, perc) {
     const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split.state.split ? 'width': 'height'];
     ApplicationState.viewport.secondaryVisible = !bool;
-    layout('hide-content');
+    this._layout('hide-content');
     // return previous percentage
     return content_perc;
   }
@@ -714,14 +724,9 @@ export default new (class GUI extends G3WObject {
     if (state.content.contentsdata.length > 0) {
       state.components.content.removeContent();
       // close secondary view( return a promise)
-      _closeSecondaryView('close-content').then(() => {
-        //recover default map
-        const mapComponent = _recoverDefaultMap();
-        d.resolve(mapComponent);
-      });
+      this._closeSecondaryView('close-content').then(() => d.resolve(this.getComponent('map')));
     } else {
-      const mapComponent = _recoverDefaultMap();
-      d.resolve(mapComponent);
+      d.resolve(this.getComponent('map'));
     }
     return d.promise()
   }
@@ -732,33 +737,14 @@ export default new (class GUI extends G3WObject {
     if (viewName !== state.primaryView ) {
       state.primaryView = viewName;
     }
-    layout();
+    this._layout();
   }
 
   // only map
   showMap() {
     const state = ApplicationState.viewport;
-    state.map_component.internalComponent.$el.style.display = 'block';
-    state.components.map = state.map_component;
-    _showView('map');
-  }
-
-  showContextualMap(perc = 30, split) {
-    const state = ApplicationState.viewport;
-    if (!state.map_contextual) {
-      state.map_contextual = state.map_component;
-    }
-    if (state.map_contextual != state.map_component) {
-      state.map_component.internalComponent.$el.style.display = 'none';
-    }
-    if (!state.map_contextual.ismount()) {
-      const map_contextual = this.state.map_contextual;
-      map_contextual.mount('#g3w-view-map', true).then(() => state.components.map = map_contextual);
-    } else {
-      state.components.map = state.map_contextual;
-      state.map_contextual.internalComponent.$el.style.display = 'block';
-    }
-    _showView('map',{ perc, split });
+    state.components.map.internalComponent.$el.style.display = 'block';
+    this._showView('map');
   }
 
   // remove last content from stack
@@ -767,7 +753,6 @@ export default new (class GUI extends G3WObject {
     const d = $.Deferred();
     // check if content exists compontent Stack
     if (state.content.contentsdata.length) {
-      _recoverDefaultMap();
       const data = state.components.content.getPreviousContentData();
       const opts = data.options;
       Object.assign(state.content, {
@@ -781,12 +766,12 @@ export default new (class GUI extends G3WObject {
         showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
       });
       state.immediate_layout = false;
-      _showView('content', data.options);
+      this._showView('content', data.options);
       state.components.content.popContent()
         .then(() => {
           state.secondaryPerc        = data.options.perc;
           state.immediate_layout = true;
-          layout('pop-content');
+          this._layout('pop-content');
           d.resolve(state.components.contentgetCurrentContentData)
         })
     } else {
@@ -818,7 +803,7 @@ export default new (class GUI extends G3WObject {
       split:        undefined !== opts.split       ? opts.split : null,
       closable:     undefined !== opts.closable    ? opts.closable : true,
       backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
-      contentsdata: ApplicationState.viewport.components.content.contentsdata,
+      contentsdata: this.getComponent('contents').contentsdata,
       style:        undefined !== opts.style ? opts.style : {},
       headertools:  undefined !== opts.headertools ? opts.headertools : [],
       showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
@@ -826,10 +811,10 @@ export default new (class GUI extends G3WObject {
     // immediate layout false (to understand better)
     ApplicationState.viewport.immediate_layout = false;
     // call show view (in this case content (other is map)
-    _showView('content', opts);
-    ApplicationState.viewport.components.content.setContent(opts).then(() => {
+    this._showView('content', opts);
+    this.getComponent('contents').content.setContent(opts).then(() => {
       ApplicationState.viewport.immediate_layout = true;
-      layoutComponents(evenContentName);
+      this._layoutComponents(evenContentName);
     });
   }
 
@@ -859,62 +844,88 @@ export default new (class GUI extends G3WObject {
     }
   }
 
+  // close secondary view
+  _closeSecondaryView(event = null) {
+    const state = ApplicationState.viewport;
+    const d = $.Deferred();
+    const secondaryViewComponent = state.components[state.primaryView === 'map' ? 'content' : 'map'];
+    if (secondaryViewComponent.clearContents) {
+      secondaryViewComponent.clearContents().then(() => {
+        state.secondaryVisible = false;
+        state.secondaryPerc = 0;
+        this._layout(event);
+        Vue.nextTick(() => d.resolve());
+      });
+    } else {
+      state.secondaryVisible = false;
+      this._layout(event);
+      Vue.nextTick(() => d.resolve());
+    }
+    return d.promise();
+  }
+
+  // manage all layout logic
+  // viewName: map or content
+  //options.  percentage , splitting title etc ..
+  _showView(viewName, options = {}) {
+    const state = ApplicationState.viewport;
+    const { perc = viewName == state.primaryView ? 100 : 50, split = 'h' } = options;
+    let aside;
+    if (viewName == state.primaryView) {
+      aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
+    } else {
+      aside = true;
+    }
+    state[viewName].aside = aside;
+    //calculate the content
+    const secondaryPerc = viewName == state.primaryView ? 100 - perc : perc;
+    //show Secondary View content only if more than 0
+    if (secondaryPerc > 0)  {
+      state.secondaryVisible = true;
+      state.split = undefined !== split ? split : state.split;
+      state.secondaryPerc = undefined !== perc ? perc : state.perc;
+      this._layout();
+    } else {
+      return this._closeSecondaryView();
+    }
+  }
+
+  /**
+   * load components of viewport after right size setting
+   * 
+   * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
+   */
+  _layoutComponents(event = null) {
+    requestAnimationFrame(() => {
+      const reducesdSizes = getReducedSizes();
+      const reducedWidth  = reducesdSizes.reducedWidth || 0;
+      const reducedHeight = reducesdSizes.reducedHeight || 0;
+
+      // for each component
+      setViewSizes();
+      this.getComponent('map').layout(ApplicationState.viewport.map.sizes.width - reducedWidth, ApplicationState.viewport.map.sizes.height - reducedHeight);
+      this.getComponent('contents').layout(ApplicationState.viewport.content.sizes.width - reducedWidth, ApplicationState.viewport.content.sizes.height - reducedHeight);
+
+      if (event) {
+        setTimeout(() => { /*this.emit(event);*/ GUI.emit(event); })
+      }
+    });
+  }
+
+  /**
+   * main layout function
+   */
+  _layout(event = null) {
+    const reducesdSizes = getReducedSizes();
+    setViewSizes(reducesdSizes.reducedWidth, reducesdSizes.reducedHeight);
+    if (ApplicationState.viewport.immediate_layout) {
+      this._layoutComponents(event);
+    }
+  }
+
 });
 
 
-// get default component
-function _recoverDefaultMap() {
-  const state = ApplicationState.viewport;
-  if (state.components.map !== state.map_component) {
-    state.components.map = state.map_component;
-    state.map_contextual.internalComponent.$el.style.display = 'none'; 
-    state.map_component .internalComponent.$el.style.display = 'block'; 
-  }
-  return state.components.map;
-}
 
-// close secondary view
-function _closeSecondaryView(event = null) {
-  const state = ApplicationState.viewport;
-  const d = $.Deferred();
-  const secondaryViewComponent = state.components[state.primaryView === 'map' ? 'content' : 'map'];
-  if (secondaryViewComponent.clearContents) {
-    secondaryViewComponent.clearContents().then(() => {
-      state.secondaryVisible = false;
-      state.secondaryPerc = 0;
-      layout(event);
-      Vue.nextTick(() => d.resolve());
-    });
-  } else {
-    state.secondaryVisible = false;
-    layout(event);
-    Vue.nextTick(() => d.resolve());
-  }
-  return d.promise();
-}
 
-// manage all layout logic
-// viewName: map or content
-//options.  percentage , splitting title etc ..
-function _showView(viewName, options = {}) {
-  const state = ApplicationState.viewport;
-  const { perc = viewName == state.primaryView ? 100 : 50, split = 'h' } = options;
-  let aside;
-  if (viewName == state.primaryView) {
-    aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
-  } else {
-    aside = true;
-  }
-  state[viewName].aside = aside;
-  //calculate the content
-  const secondaryPerc = viewName == state.primaryView ? 100 - perc : perc;
-  //show Secondary View content only if more than 0
-  if (secondaryPerc > 0)  {
-    state.secondaryVisible = true;
-    state.split = undefined !== split ? split : state.split;
-    state.secondaryPerc = undefined !== perc ? perc : state.perc;
-    layout();
-  } else {
-    return _closeSecondaryView();
-  }
-}
+

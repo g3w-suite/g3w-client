@@ -240,28 +240,6 @@ function _setDataTableLanguage(dataTable=null) {
 }
 
 /**
- * @TODO check if deprecated
- */
-function _listenToMapVisibility(map_id, component) {
-  if (!map_id) {
-    return;
-  }
-
-  component.mapComponentId = map_id;
-
-  const map = GUI.getComponent(map_id);
-
-  const cb = map => {
-    const ms = map.getService();
-    component.state.visible = !ms.state.hidden;
-    ms.onafter('setHidden', () => { component.state.visible = !ms.state.hidden; component.state.expanded = true; });
-  };
-
-  if (map) { cb(map) }
-  else { ComponentsRegistry.on('componentregistered', c => map_id === c.getId() && cb(c)) }
-}
-
-/**
  * Application starting point
  *
  * create the ApplicationTemplate instance passing template interface configuration
@@ -287,7 +265,7 @@ ApplicationService.init()
         Object.values(GUI.getComponents()).forEach(component => ApplicationService.registerService(component.id, component.getService()));
 
         // update CONFIG
-        const SearchComponent       = require('gui/search/vue/search');
+        const SearchComponent = require('gui/search/vue/search');
 
         Object.assign(CONFIG, {
           sidebar: [
@@ -663,9 +641,6 @@ ApplicationService.init()
                 service,
               });
             
-              /** @TODO check if deprecated */
-              _listenToMapVisibility(opts.mapcomponentid, comp);
-            
               return comp;
             }),
           ],
@@ -821,43 +796,25 @@ ApplicationService.init()
           }
         });
 
-        CONFIG.sidebar.forEach(comp => {
-          ComponentsRegistry.registerComponent(comp);
-          ApplicationService.registerService(comp.id, comp.getService())
-        });
+        CONFIG.sidebar.forEach(comp => GUI.addComponent(comp));
 
         // register other components
-        ComponentsRegistry.registerComponent(CONFIG.queryresults);
-        ApplicationService.registerService(CONFIG.queryresults.id, CONFIG.queryresults.getService())
+        GUI.addComponent(CONFIG.queryresults);
 
         // setup Font, Css class methods
         $(document).localize();
 
-        // set viewport
-        CONFIG.map.mount('#g3w-view-map', true).then(() => {
-          ApplicationState.viewport.components.map = CONFIG.map;
-          ApplicationState.viewport.map_component  = CONFIG.map;
-        }).fail(e => console.warn(e));
+        CONFIG.map.mount('#g3w-view-map', true);
+        CONFIG.content.mount('#g3w-view-content', true);
 
-        CONFIG.content.mount('#g3w-view-content', true).then(() => {
-          ApplicationState.viewport.components.content = CONFIG.content
-        }).fail(e => console.warn(e));
-
-        ComponentsRegistry.registerComponent(CONFIG.map);
-        ApplicationService.registerService(CONFIG.map.id, CONFIG.map.getService())
-
-        ComponentsRegistry.registerComponent(CONFIG.content);
-        ApplicationService.registerService(CONFIG.content.id, CONFIG.content.getService())
-
-        const skinColor = $('.navbar').css('background-color');
-        GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
+        GUI.addComponent(CONFIG.map);
+        GUI.addComponent(CONFIG.content);
 
         await this.$nextTick();
 
         ApplicationService.postBootstrap()
         ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
 
-        //getSkinColor
         GUI.ready();
       }
     });

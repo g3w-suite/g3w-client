@@ -656,14 +656,6 @@ export default new (class ApplicationService extends G3WObject {
     this._applicationServices[el] = service;
   };
 
-  unregisterService(el) {
-    delete this._applicationServices[el];
-  };
-
-  getApplicationService(type) {
-    return this._applicationServices[type];
-  };
-
   getService(el) {
     return this._applicationServices[el];
   };

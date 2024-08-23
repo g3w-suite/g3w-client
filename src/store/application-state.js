@@ -216,8 +216,6 @@ const STATE = Vue.observable({
       map:     null,
       content: null
     },
-    map_component: undefined,
-    map_contextual: undefined,
     // minimun height and width of secondary view
     immediate_Layout: undefined
   },
