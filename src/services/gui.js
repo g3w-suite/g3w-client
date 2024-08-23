@@ -904,7 +904,7 @@ export default new (class GUI extends G3WObject {
       this.getComponent('contents').layout(ApplicationState.viewport.content.sizes.width - reducedWidth, ApplicationState.viewport.content.sizes.height - reducedHeight);
 
       if (event) {
-        setTimeout(() => { /*this.emit(event);*/ GUI.emit(event); })
+        setTimeout(() => { /*this.emit(event);*/ this.emit(event); })
       }
     });
   }
