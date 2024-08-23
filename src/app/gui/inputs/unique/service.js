@@ -1,10 +1,6 @@
-const { inherit, base } = require('utils');
-const Service           = require('gui/inputs/service');
-
-function UniqueService(options = {}) {
-  base(this, options);
-}
-
-inherit(UniqueService, Service);
-
-module.exports = UniqueService;
+const Service = require('gui/inputs/service');
+module.exports = class UniqueService extends Service {
+  constructor(opts = {}) {
+    super(opts);
+  }
+};
