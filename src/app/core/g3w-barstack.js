@@ -100,7 +100,6 @@ export class BarStack extends G3WObject {
 
     // Vue element
     else if (content.mount && 'function' === typeof content.mount) {
-      data.push({ content, options });
       // Check a duplicate element by component id (if already exist)
       let id = data.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
       if (-1 !== id) {
