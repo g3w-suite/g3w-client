@@ -261,6 +261,7 @@
 <script>
 
 import { CatalogEventBus as VM }   from 'app/eventbus';
+import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
 import ApplicationService          from 'services/application';
@@ -500,14 +501,13 @@ export default {
       // const custom = undefined !== this.project.state.map_themes.custom.find(({ theme }) => map_theme === theme);
 
       // change map theme
-      ApplicationService.changeProjectView(true);
       this.state.layerstrees[0].checked = true;
+
       const changes = (await ProjectsRegistry.getCurrentProject().setLayersTreePropertiesFromMapTheme({
         map_theme,
         rootNode:   this.state.layerstrees[0],
         layerstree: this.state.layerstrees[0].tree[0].nodes
       })).layers;
-      ApplicationService.changeProjectView(false);
 
       // get all layers with styles
       const layers  = Object.keys(changes).filter(id => changes[id].style);

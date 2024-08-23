@@ -235,10 +235,6 @@ export default new (class GUI extends G3WObject {
   isMobile() {
     return isMobile.any;
   };
-  // method that returns Template Info
-  getTemplateInfo() {
-    return Vue.prototype.g3wtemplate.getInfo();
-  }
 
   getTemplateInfo() {
     return Vue.prototype.g3wtemplate.getInfo();
@@ -812,7 +808,8 @@ export default new (class GUI extends G3WObject {
     ApplicationState.viewport.immediate_layout = false;
     // call show view (in this case content (other is map)
     this._showView('content', opts);
-    this.getComponent('contents').content.setContent(opts).then(() => {
+    console.log(this.getComponent('contents'));
+    this.getComponent('contents').setContent(opts).then(() => {
       ApplicationState.viewport.immediate_layout = true;
       this._layoutComponents(evenContentName);
     });

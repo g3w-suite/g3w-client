@@ -83,14 +83,6 @@ module.exports = class PluginService extends G3WObject {
     }
   }
 
-  registerWindowEvent({ evt, cb } = {}) {
-    ApplicationService.registerWindowEvent({ evt, cb });
-  }
-
-  unregisterWindowEvent({ evt, cb }) {
-    ApplicationService.unregisterWindowEvent({ evt, cb });
-  }
-
   subscribeEvent({ name, once=false, owner, listener }) {
     this._pluginEvents[name]        = this._pluginEvents[name] ? this._pluginEvents[name] : {};
     this._pluginEvents[name][owner] = listener;

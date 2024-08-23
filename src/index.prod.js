@@ -17,6 +17,7 @@ import ApplicationState            from 'store/application-state';
 import ProjectsRegistry            from 'store/projects';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ComponentsRegistry          from 'store/components';
+import PluginsRegistry             from 'store/plugins';
 import G3WObject                   from 'core/g3w-object';
 import { BarStack }                from 'core/g3w-barstack';
 import Panel                       from 'core/g3w-panel';
@@ -812,19 +813,36 @@ ApplicationService.init()
 
         await this.$nextTick();
 
-        ApplicationService.postBootstrap()
+        /**
+         * Run the following tasks after boostrap:
+         *
+         * 1 - check for `this.complete`
+         * 3 - initialize PluginsRegistry (once and after ProjectsRegistry and ApiService are initialized)
+         * 4 - trigger 'complete' event
+         */
+        if (!ApplicationService.complete) {
+          PluginsRegistry.init({
+            project:            ProjectsRegistry.getCurrentProject(),
+            pluginsBaseUrl:     ApplicationService.getConfig().urls.staticurl,
+            pluginsConfigs:     ApplicationService.getConfig().plugins,
+            otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
+          }).catch(console.warn).finally(() => {
+            ApplicationService.complete = true;
+            ApplicationService.emit('complete');
+          });
+        }
+
         ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
 
         GUI.ready();
       }
     });
   })
-  .catch(({ error = null, language }) => {
+  .catch(error => {
     if (error) {
       if (error.responseJSON && error.responseJSON.error.data) { error = error.responseJSON.error.data }
       else if (error.statusText) { error = error.statusText }
     }
-    console.error(error);
     $('#startingspinner').remove();
     new Vue({
       el: '#app',

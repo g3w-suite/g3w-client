@@ -55,11 +55,6 @@ const STATE = Vue.observable({
   lng: 'en',
 
   /**
-   * @FIXME add description
-   */
-  changeProjectview: false,
-
-  /**
    * Store Array of loading plugin name adds by ApplicationService.loadingPlugin
    * Every time a plugin is loaded, plugin name is removed from Array
    * It used in v-plugins directive
