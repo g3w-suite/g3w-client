@@ -1,13 +1,6 @@
 import localforage                          from 'localforage';
-import { MAP_SETTINGS }                     from 'app/constant';
 import G3WObject                            from 'core/g3w-object';
-import DataRouterService                    from 'services/data';
-import ProjectsRegistry                     from 'store/projects';
-import ApplicationService                   from 'services/application';
 import PluginsRegistry                      from 'store/plugins';
-import GUI                                  from 'services/gui';
-import MapControlZoomHistory                from 'components/MapControlZoomHistory.vue';
-import MapControlGeocoding                  from 'components/MapControlGeocoding.vue';
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
 import { createStyleFunctionToVectorLayer } from 'utils/createStyleFunctionToVectorLayer';
 import { createSelectedStyle }              from 'utils/createSelectedStyle';
@@ -24,6 +17,14 @@ import { StreetViewControl }                from 'g3w-ol/controls/streetviewcont
 import { ScaleControl }                     from 'g3w-ol/controls/scalecontrol';
 import { ScreenshotControl }                from 'g3w-ol/controls/screenshotcontrol';
 import { MeasureControl }                   from 'g3w-ol/controls/measurecontrol';
+import { MAP_SETTINGS }                     from 'app/constant';
+import DataRouterService                    from 'services/data';
+import ProjectsRegistry                     from 'store/projects';
+import ApplicationService                   from 'services/application';
+import GUI                                  from 'services/gui';
+import MapControlZoomHistory                from 'components/MapControlZoomHistory.vue';
+import MapControlGeocoding                  from 'components/MapControlGeocoding.vue';
+import { groupBy }                          from 'utils/groupBy';
 
 const { VectorLayer }            = require('core/layers/vectorlayer');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
@@ -47,7 +48,7 @@ const MAP = {
     getLayers:               filter => Object.values(MAP.stores).flatMap(s => s.getLayers(filter)),
     getQuerableLayersStores: ()     => Object.values(MAP.stores).filter(s => s.isQueryable()),
     getLayersStore:          id     => MAP.stores[id],
-    getLayersStores:         ()     => Object.values(MAP.stores),  
+    getLayersStores:         ()     => Object.values(MAP.stores),
   }),
 };
 
@@ -182,7 +183,7 @@ class MapService extends G3WObject {
 
     /**
      * internal promise. Resolved when view is set
-     * 
+     *
      * @since 3.8.3
      */
     this._ready = new Promise(res => this.once('viewerset', res));
@@ -313,25 +314,25 @@ class MapService extends G3WObject {
           ? header_terms_of_use_link
             ? `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`
             : `<span class="skin-color" style="font-weight: bold">${header_terms_of_use_text}</span>`
-          : false; 
+          : false;
 
         this.getMapLayers().forEach(l => l.getSource().setAttributions(attribution));
-    
+
         // check if a base layer is set. If true, add attribution control
         if (attribution || getMapLayersByFilter({ BASELAYER: true }).length) {
           this.getMap().addControl(new ol.control.Attribution({ collapsible: false, target: 'map_footer_left' }));
         }
-    
+
         // skip when no controls
         if (!this.config || !this.config.mapcontrols) {
           return;
         }
-    
+
         // BACKCOMP (g3w-admin < v3.7.0)
         const mapcontrols = Array.isArray(this.config.mapcontrols)
           ? this.config.mapcontrols.reduce((a, v) => { a[v] = {}; return a; }, {}) // convert `initConfig.group.mapcontrols` from an array of strings to a key-value config Object (eg. ["geocoding"] --> "geocoding" = {})
           : this.config.mapcontrols;
-    
+
         Object
           .entries(mapcontrols)
           .forEach(([type, config = {}]) => {
@@ -339,13 +340,13 @@ class MapService extends G3WObject {
               case 'zoom':
                 this.createMapControl(type);
                 break;
-    
+
               case 'zoombox':
                 if (!isMobile.any) {
                   this.createMapControl(type, {}).on('zoomend', (e) => this.viewer.fit(e.extent) );
                 }
                 break;
-    
+
               case 'zoomtoextent':
                 this.createMapControl(type, {
                   options: {
@@ -354,7 +355,7 @@ class MapService extends G3WObject {
                   }
                 });
                 break;
-    
+
               case 'mouseposition':
                 if (!isMobile.any) {
                   // @since 3.8.
@@ -379,7 +380,7 @@ class MapService extends G3WObject {
                   }
                 }
                 break;
-    
+
               case 'screenshot':
               case 'geoscreenshot':
                 if (!isMobile.any ) {
@@ -395,7 +396,7 @@ class MapService extends G3WObject {
                   }
                 }
                 break;
-    
+
               case 'scale':
                 this.createMapControl(type, {
                   add: false,
@@ -406,14 +407,14 @@ class MapService extends G3WObject {
                   }
                 });
                 break;
-    
+
               case 'query':
                 this.createMapControl(type, {
                   add: true,
                   toggled: true
                 });
                 break;
-    
+
               case 'querybypolygon':
               case 'querybbox':
               case 'querybycircle':
@@ -430,11 +431,11 @@ class MapService extends G3WObject {
                   }
                 }
                 break;
-    
+
               case 'streetview':
                 this.createMapControl(type, {});
                 break;
-    
+
               case 'scaleline':
                 this.createMapControl(type, {
                   add: false,
@@ -443,7 +444,7 @@ class MapService extends G3WObject {
                   }
                 });
                 break;
-    
+
               case 'overview':
                 if (!isMobile.any && this.config.overviewproject && this.config.overviewproject.gid) {
                   ProjectsRegistry
@@ -507,7 +508,7 @@ class MapService extends G3WObject {
                     .catch(e => console.warn(e))
                 }
                 break;
-    
+
               case 'geocoding':
               case 'nominatim':
                 this.createMapControl(type, {
@@ -515,17 +516,17 @@ class MapService extends G3WObject {
                   options: { config }
                 });
                 break;
-    
+
               case 'geolocation':
                 this.createMapControl(type).on('click', throttle(e => this.showMarker(e.coordinates)));
                 break;
-    
+
               case 'addlayers':
                 if (!isMobile.any) {
                   this.createMapControl(type, {}).on('addlayer', () => this.showAddLayerModal());
                 }
                 break;
-    
+
               case 'length':
               case 'area':
                 if (!isMobile.any) {
@@ -546,14 +547,14 @@ class MapService extends G3WObject {
                   }
                 }
                 break;
-    
+
               /**
                * @since 3.8.0
                */
               case 'zoomhistory':
                 $('.g3w-map-controls-left-bottom').append(this.createMapControl(type, { add: false }).element);
                 break;
-    
+
             }
         });
         return this.getMapControls()
@@ -611,7 +612,7 @@ class MapService extends G3WObject {
           view:                new ol.View(olView),
           keyboardEventTarget: document,
           target:              this.target,
-        }); 
+        });
 
         this.viewer = {
           map: olMap,
@@ -777,7 +778,7 @@ class MapService extends G3WObject {
   }
 
   /**
-   * @since 3.11.0 
+   * @since 3.11.0
    */
   onExtraParamsSet(extraParams, update) {
     if (update) {
@@ -786,7 +787,7 @@ class MapService extends G3WObject {
   }
 
   /**
-   * @since 3.11.0 
+   * @since 3.11.0
    */
   onSetCurrentProject(project) {
     this.removeLayers();
@@ -798,7 +799,7 @@ class MapService extends G3WObject {
     const reload = this.project.getId() === project.getId();
     this.project = project;
     const changeProjectCallBack = () => {
-      
+
       // reset view
       const [width, height] = this.viewer.map.getSize();
       const extent = this.project.state.extent;
@@ -818,7 +819,7 @@ class MapService extends G3WObject {
         MAP_SETTINGS.ZOOM.maxScale
       );
       this.viewer.map.setView(view);
-    
+
       this._setupAllLayers();
       this.setUpMapOlEvents();
       this.setupCustomMapParamsToLegendUrl();
@@ -833,7 +834,7 @@ class MapService extends G3WObject {
 
   /**
    * show spinner layers
-   * 
+   *
    * @since 3.11.0
    */
   onLayerLoadStart() {
@@ -872,7 +873,7 @@ class MapService extends G3WObject {
 
   /**
    * @returns promise ready
-   * 
+   *
    * @since 3.8.3
    */
   isReady() {
@@ -1046,7 +1047,7 @@ class MapService extends G3WObject {
 
   /**
    * Used by the following plugins: "strees"
-   * 
+   *
    * get all features from vector layer based on coordinates
    */
   getVectorLayerFeaturesFromCoordinates(layerId, coordinates) {
@@ -1225,7 +1226,7 @@ class MapService extends G3WObject {
   /**
    * @param url
    * @param epsg cordinate referece system (since 3.8.0)
-   * 
+   *
    * @returns {string}
    */
   addMapExtentUrlParameterToUrl(url, epsg) {
@@ -1501,40 +1502,34 @@ class MapService extends G3WObject {
     const cache     = {};
     const mapLayers = [];
 
-    Object
-      .entries(
-        // Group layers by multilayer property (from project config)
-        // to speed up "qtimeseries" loading for single layers
-        layers.reduce((group, l) => {
-          //get multilayer id
-          let id = l.getMultiLayerId();
-          //check if layer has qtimeseries attribute set
-          if (l.isQtimeseries()) {
-            //if layers with same multilayer id are qtimeseriable,
-            //need to creat a new incremental multilayer id
-            cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
-            id = `${id}_${cache[id]}`;
-          }
-          if (undefined === group[id]) { group[id] = [] }
-          group[id].push(l);
-          return group;
-        }, {})
-      )
-      .forEach(([id, layers]) => {
-        const layer    = layers[0] || [];
-        const mapLayer = layer.getMapLayer(
-          {
-            id:         `layer_${id}`,
-            projection: this.getProjection(),
-            /** @since 3.9.1 */
-            format:     1 === layers.length ? layer.getFormat() : null
-          },
-          1 === layers.length ? {} : this.layersExtraParams
-        );
-        layers.reverse().forEach(l => mapLayer.addLayer(l));
-        mapLayers.push(mapLayer);
-        this.registerMapLayerListeners(mapLayer);
-      });
+  Object
+    .entries(
+      // Group layers by multilayer property (from project config)
+      // to speed up "qtimeseriesries" loading for single layers
+      groupBy(layers, layer => {
+        let id = layer.getMultiLayerId();
+        if (layer.isQtimeseries()) {
+          cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
+          return `${id}_${cache[id]}`;
+        }
+        return id = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
+      })
+    )
+    .forEach(([id, layers]) => {
+      const layer    = layers[0] || [];
+      const mapLayer = layer.getMapLayer(
+        {
+          id: `layer_${id}`,
+          projection: this.getProjection(),
+          /** @since 3.9.1 */
+          format: 1 === layers.length ? layer.getFormat() : null
+        },
+        1 === layers.length ? {} : this.layersExtraParams
+      );
+      layers.reverse().forEach(l => mapLayer.addLayer(l));
+      mapLayers.push(mapLayer);
+      this.registerMapLayerListeners(mapLayer);
+    });
 
     mapLayers.reverse().forEach(l => {
       this._layers.g3w.push(l);
@@ -1622,9 +1617,9 @@ class MapService extends G3WObject {
 
   /**
    * Used by the following plugins: "qtimeseries"
-   * 
+   *
    * Update MapLayer
-   * 
+   *
    * @param layer
    * @param options
    */
@@ -1736,7 +1731,7 @@ class MapService extends G3WObject {
 
   /**
    * Used by the following plugins: "qtimeseries"
-   * 
+   *
    * Show map Info
    * @param info
    */
@@ -1775,7 +1770,7 @@ class MapService extends G3WObject {
 
   /**
    * Set map center to coordinates at resolution
-   * 
+   *
    * @param { Array } coordinates
    * @param resolution
    * @param { boolean } animate
@@ -1895,7 +1890,7 @@ class MapService extends G3WObject {
 
     // retrieve resolution from given `extent`
     else if (true === options.force) {
-      resolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent 
+      resolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
     }
 
     // calculate main resolutions from map
@@ -2184,7 +2179,7 @@ class MapService extends G3WObject {
 
   /**
    * Remove external layer
-   * 
+   *
    * @param name
    */
   removeExternalLayer(name) {
@@ -2242,7 +2237,7 @@ class MapService extends G3WObject {
 
   /**
    * @TODO deprecate in favour of `getExternalLayers`
-   * 
+   *
    * @since 3.11.0
    */
   getLegacyExternalLayers() {
@@ -2259,7 +2254,7 @@ class MapService extends G3WObject {
 
   /**
    * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
-   * 
+   *
    * @param { ol.layer.Vector | ol.layer.Image | unknown } externalLayer
    * @param { Object }  options
    * @param { unknown } options.position
@@ -2269,12 +2264,12 @@ class MapService extends G3WObject {
    * @param { unknown } options.type
    * @param { unknown } options.download
    * @param { string }  options.downloadUrl (since 3.8.3) an alternate external server url where to perfom download.
-   * 
+   *
    * @returns { Promise<unknown> }
    */
   async addExternalLayer(externalLayer, options={}) {
 
-    // extract OL layer from a G3W layer 
+    // extract OL layer from a G3W layer
     const olLayer = externalLayer.getOLLayer ? externalLayer.getOLLayer() : externalLayer;
     if (olLayer !== externalLayer) {
       olLayer.set('id',   externalLayer.getId());
@@ -2337,16 +2332,16 @@ class MapService extends G3WObject {
         download:         options.download || false,
         /**
          * An alternate (external) server url where to perfom download.
-         * 
+         *
          * @example
-         * 
+         *
          * ```js
          * GUI.getService('map').addExternalLayer(layer, {
          *   type: 'geojson',
          *   downloadUrl:  _<URL WHERE DOWNLOAD FILE>_
          * });
          * ```
-         * 
+         *
          * @since 3.8.3
          */
         downloadUrl: options.downloadUrl,
@@ -2426,7 +2421,7 @@ class MapService extends G3WObject {
     externalLayer.setVisible          = externalLayer.setVisible          || (v => {
       if (vectorLayer) { vectorLayer.setVisible(v); }
       externalLayer.visible = v;
-    });    
+    });
 
     this.viewer.map.addLayer(layer);
 
@@ -2478,7 +2473,7 @@ class MapService extends G3WObject {
 
   /**
    * @param { unknown | string | null } layer
-   * 
+   *
    * @since 3.11.0
    */
   selectLayer(layer) {
