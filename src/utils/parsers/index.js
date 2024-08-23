@@ -321,7 +321,7 @@ export const ResponseParser = {
               // Handle WMS Multi Layers Response From QGIS SERVER
               // check if features have different fields (multilayers)
               // is a multilayers. Each feature has different fields
-              // If group has more than one feature split it and create single features
+              //  If a group has more than one feature split it and create single features
               json.FeatureCollection.featureMember = is_multi
                 ? Object.keys(grouped).reduce((result, key, i) => {
                   grouped[key].forEach((feat, j) => result[`layer${i}_${j}`] = feat);
@@ -370,7 +370,7 @@ export const ResponseParser = {
 function _traverseErrorMessage(errorObject, error_message = "server_saver_error") {
   try {
     const entries   = Object.entries(errorObject);
-    const entry     = entries.find(([key, value]) => key === 'fields');
+    const entry     = entries.find(([key, _]) => 'fields' === key);
     const [, value] = (entry || entries[0]);
 
     /** @FIXME add description */
@@ -393,7 +393,7 @@ function _traverseErrorMessage(errorObject, error_message = "server_saver_error"
       return error_message.replace(/\:|\./g, '');
     }
 
-  } catch(err){
-    console.warn(err);
+  } catch(e) {
+    console.warn(e);
   }
 }
