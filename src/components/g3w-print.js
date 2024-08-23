@@ -18,6 +18,10 @@ export default function(opts = {}) {
     internalComponent: new (Vue.extend(vueComp)),
   });
 
+  //@since 3.11.0 use internal methods called by component setters if declared
+  comp._setOpen = (bool) => comp.getService().showPrintArea(bool);
+  comp._reload = () => { comp.getService().reload(); comp.state.visible = service.state.visible; }
+
   // BACKCOMP v3.x
   const service             = comp.getService();
   const internalComponent   = comp.getInternalComponent();
@@ -30,9 +34,6 @@ export default function(opts = {}) {
   service.print             = internalComponent.print;
   service.showPrintArea     = internalComponent.showPrintArea;
   service.reload            = internalComponent.reload;
-
-  comp.onafter('setOpen', b => service.showPrintArea(b));
-  comp.onafter('reload', () => { service.reload(); comp.state.visible = service.state.visible; });
 
   return comp;
 };
