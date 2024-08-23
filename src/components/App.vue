@@ -700,7 +700,6 @@ import HeaderItem         from 'components/HeaderItem.vue';
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
 import getUniqueDomId     from 'utils/getUniqueDomId';
-import layout             from 'utils/layout';
 
 const { t }        = require('core/i18n/i18n.service');
 
@@ -1027,13 +1026,7 @@ export default {
     closeMap() {
       const state = ApplicationState.viewport;
       state.secondaryPerc = (state.primaryView === 'map') ? 100 : 0;
-      // recover default map
-      if (state.components.map !== state.map_component) {
-        state.components.map = state.map_component;
-        state.map_contextual.internalComponent.$el.style.display = 'none'; 
-        state.map_component .internalComponent.$el.style.display = 'block'; 
-      }
-      layout();
+      GUI._layout();
     },
 
     gotoPreviousContent() {
@@ -1058,7 +1051,7 @@ export default {
       }
       ApplicationState.viewport.resized[this.state.split] = true;
       ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === this.state.split ? 'width' : 'height'] = 100 - Math.round((mapSize / viewPortSize) * 100);
-      layout('resize');
+      GUI._layout('resize');
     },
 
     closePanel() {
