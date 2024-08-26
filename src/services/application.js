@@ -18,6 +18,7 @@ import GUI                from 'services/gui';
 
 import { XHR }            from 'utils/XHR';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
+import { $promisify }     from 'utils/promisify';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
 const G3WObject                          = require('core/g3wobject');
@@ -623,22 +624,21 @@ export default new (class ApplicationService extends G3WObject {
    * @returns {JQuery.Promise<any, any, any>}
    */
   _changeProject({ gid, host, crs } = {}) {
-    const d          = $.Deferred();
-    this._gid        = gid;
-    const projectUrl = ProjectsRegistry.getProjectUrl(gid);
-    const url        = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
-    /**
-     * @since 3.7.15
-     */
-    // in case of url with the same origin (CORS issue) trigger an error
-    try {
-      history.replaceState(null, null, url);
-    } catch (e) {
-      console.warn(e);
-    }
-    location.replace(url);
-    d.resolve();
-    return d.promise();
+    return $promisify(async () => {
+      this._gid        = gid;
+      const projectUrl = ProjectsRegistry.getProjectUrl(gid);
+      const url        = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl, crs);
+      /**
+       * @since 3.7.15
+       */
+      // in case of url with the same origin (CORS issue) trigger an error
+      try {
+        history.replaceState(null, null, url);
+      } catch (e) {
+        console.warn(e);
+      }
+      location.replace(url);
+    })
   }
 
   /**
