@@ -2,7 +2,9 @@ import G3WObject            from 'core/g3w-object';
 import GUI                  from 'services/gui';
 import { createOlLayer }    from 'utils/createOlLayer';
 import { createLayerStyle } from 'utils/createLayerStyle';
-import GeoLayerMixin        from 'core/layers/mixins/geo';
+import GeoLayerMixin        from 'core/layers/mixins/geo'
+import { $promisify  }      from 'utils/promisify';
+
 
 const Layer          = require('core/layers/layer');
 const TableLayer     = require('core/layers/tablelayer');
@@ -68,18 +70,18 @@ class VectorMapLayer extends G3WObject {
     return style
   }
 
-  getFeatures(options={}) {
-    const d = $.Deferred();
-    this.provider.getFeatures(options)
-      .then(features => {
-        this.addFeatures(features);
-        d.resolve(features);
-      })
-      .fail(e => { console.warn(e); d.reject(e) });
-    return d.promise()
+  getFeatures(options = {}) {
+    return $promisify(new Promise((resolve, reject) => {
+      this.provider.getFeatures(options)
+        .then(features => {
+          this.addFeatures(features);
+          resolve(features);
+        })
+        .fail(e => { console.warn(e); reject(e) });
+    }))
   }
 
-  addFeatures(features=[]) {
+  addFeatures(features = []) {
     this.getSource().addFeatures(features)
   }
 
