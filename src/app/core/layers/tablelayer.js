@@ -1,6 +1,8 @@
 import { TIMEOUT }                      from "constant";
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import { waitFor }                      from 'utils/waitFor';
+import { $promisify  }                  from 'utils/promisify';
+
 
 const Layer                             = require('core/layers/layer');
 const FeaturesStore                     = require('core/layers/features/featuresstore');
@@ -55,56 +57,55 @@ module.exports = class TableLayer extends Layer {
        * @param {*} opts
        */
       getFeatures(opts = {}) {
-        const d = $.Deferred();
-        this._featuresstore
-          .getFeatures(opts)
-          .then(promise => {
-            promise
-              .then(features => {
-                this.emit('getFeatures', features);
-                return d.resolve(features);
-              })
-              .fail(e => { console.warn(e); d.reject(e) })
-          })
-          .fail(e => { console.warn(e); d.reject(e) });
-
-        return d.promise();
+        return $promisify(new Promise((resolve, reject) => {
+          this._featuresstore
+            .getFeatures(opts)
+            .then(promise => {
+              promise
+                .then(features => {
+                  this.emit('getFeatures', features);
+                  return resolve(features);
+                })
+                .fail(e => { console.warn(e); reject(e) })
+            })
+            .fail(e => { console.warn(e); reject(e) });
+        }))
       },
 
       commit(commitItems) {
-        const d = $.Deferred();
-        this._featuresstore
-          .commit(commitItems)
-          .then(promise => {
-            promise
-              .then(response => {
-                // sync selection filter features
-                if (response && response.result) {
-                  try {
-                    const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
-                    //if layer has geometry
-                    if (layer.isGeoLayer()) {
-                      commitItems.update.forEach(({ id, geometry } = {}) => {
-                        if (layer.getOlSelectionFeature(id)) {
-                          layer.updateOlSelectionFeature({id, geometry});
-                        }
-                      });
-                    }
-                    commitItems.delete.forEach(id => {
-                      if (layer.hasSelectionFid(id)) {
-                        layer.excludeSelectionFid(id);
+        return $promisify(new Promise((resolve, reject) => {
+          this._featuresstore
+            .commit(commitItems)
+            .then(promise => {
+              promise
+                .then(response => {
+                  // sync selection filter features
+                  if (response && response.result) {
+                    try {
+                      const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
+                      //if layer has geometry
+                      if (layer.isGeoLayer()) {
+                        commitItems.update.forEach(({ id, geometry } = {}) => {
+                          if (layer.getOlSelectionFeature(id)) {
+                            layer.updateOlSelectionFeature({id, geometry});
+                          }
+                        });
                       }
-                    })
-                  } catch(e) {
-                    console.warn(e);
+                      commitItems.delete.forEach(id => {
+                        if (layer.hasSelectionFid(id)) {
+                          layer.excludeSelectionFid(id);
+                        }
+                      })
+                    } catch(e) {
+                      console.warn(e);
+                    }
                   }
-                }
-                d.resolve(response)
-              })
-              .fail(e => { console.warn(e); d.reject(e) })
-          })
-          .fail(e => { console.warn(e); d.reject(e) });
-        return d.promise();
+                  resolve(response)
+                })
+                .fail(e => { console.warn(e); reject(e) })
+            })
+            .fail(e => { console.warn(e); reject(e) });
+        }))
       },
 
     };
@@ -320,12 +321,12 @@ module.exports = class TableLayer extends Layer {
    * @returns jQuery Promise
    */
   unlock() {
-    const d = $.Deferred();
-    this._featuresstore
-      .unlock()
-      .then(d.resolve)
-      .fail(e => { console.warn(e); d.reject(e) });
-    return d.promise();
+    return $promisify(new Promise((resolve, reject) => {
+      this._featuresstore
+        .unlock()
+        .then(resolve)
+        .fail(e => { console.warn(e); reject(e) });
+    }))
   }
 
   /**
@@ -427,13 +428,13 @@ module.exports = class TableLayer extends Layer {
    * @returns jQuery Promise
    */
   getEditingConfig(opts = {}) {
-    const d = $.Deferred();
-    this
-      .getProvider('data')
-      .getConfig(opts)
-      .then(d.resolve)
-      .fail(e => { console.warn(e); d.reject(e) });
-    return d.promise();
+    return $promisify(new Promise((resolve, reject) => {
+      this
+        .getProvider('data')
+        .getConfig(opts)
+        .then(resolve)
+        .fail(e => { console.warn(e); reject(e) });
+    }))
   }
 
   /**
@@ -453,13 +454,13 @@ module.exports = class TableLayer extends Layer {
   }
 
   getWidgetData(opts = {}) {
-    const d = $.Deferred();
-    this
-      .getProvider('data')
-      .getWidgetData(opts)
-      .then(d.resolve)
-      .fail(e => { console.warn(e); d.reject(e) });
-    return d.promise()
+    return $promisify(new Promise((resolve, reject) => {
+      this
+        .getProvider('data')
+        .getWidgetData(opts)
+        .then(resolve)
+        .fail(e => { console.warn(e); reject(e) });
+    }))
   }
 
   /**
