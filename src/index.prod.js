@@ -62,7 +62,7 @@ import vClickOutside               from 'directives/v-click-outside';
 
 // utils
 import { noop }                    from 'utils/noop';
-import { resolve }                 from 'utils/resolve';
+import { $promisify  }             from 'utils/promisify';
 
 const { t, tPlugin }               = require('core/i18n/i18n.service');
 
@@ -715,22 +715,23 @@ ApplicationService.init()
           
               // `push` = whether to clean the stack every time, sure to have just one component.
               setContent(opts = {}) {
-                const d = $.Deferred();
-                (opts.push ? resolve() : stack.clear()).then(() => comp.addContent(opts.content, opts).then(() => d.resolve(opts)));
-                comp.setOpen(true);
-                return d.promise();
+                return $promisify(new Promise((resolve) => {
+                  (opts.push ? resolve() : stack.clear()).then(() => comp.addContent(opts.content, opts).then(() => resolve(opts)));
+                  comp.setOpen(true);
+                }))
               },
           
-              addContent(content, opts={}) {
-                const d = $.Deferred();
-                stack.push(content, Object.assign(opts, { parent: comp.internalComponent.$el, append: true })).then(() => {
-                  comp.contentsdata = stack.state.contentsdata; // get stack content
-                  Array
-                    .from(comp.internalComponent.$el.children)  // hide other elements but not the last one
-                    .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
-                  d.resolve();
-                });
-                return d.promise();
+              addContent(content, opts = {}) {
+                return $promisify(new Promise((resolve) => {
+                  stack.push(content, Object.assign(opts, { parent: comp.internalComponent.$el, append: true }))
+                    .then(() => {
+                      comp.contentsdata = stack.state.contentsdata; // get stack content
+                      Array
+                        .from(comp.internalComponent.$el.children)  // hide other elements but not the last one
+                        .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
+                    resolve();
+                  });
+                }))
               },
           
               // remove content from stack
@@ -739,7 +740,7 @@ ApplicationService.init()
                 return stack.clear();
               },
           
-              // used by  viewport.js, update the content of contentsdata only after stack is updated
+              // used by viewport.js, update the content of contentsdata only after stack is updated
               popContent() {
                 return stack.pop().then(() => {
                   comp.contentsdata = stack.state.contentsdata;
