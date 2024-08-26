@@ -1,17 +1,17 @@
-import G3WObject            from 'core/g3w-object';
-import Component            from 'core/g3w-component';
+import G3WObject                 from 'core/g3w-object';
+import Component                 from 'core/g3w-component';
 
-import ApplicationState     from 'store/application-state';
-import ComponentsRegistry   from 'store/components';
-import ProjectsRegistry     from 'store/projects';
+import ApplicationState          from 'store/application-state';
+import ComponentsRegistry        from 'store/components';
+import ProjectsRegistry          from 'store/projects';
 
-import ApplicationService   from 'services/application';
+import ApplicationService        from 'services/application';
 
-import { noop }             from 'utils/noop';
-import { getUniqueDomId }   from 'utils/getUniqueDomId';
-import { setViewSizes }     from 'utils/setViewSizes';
-import { toRawType }        from 'utils/toRawType';
-import { promisify }        from "utils/promisify";
+import { noop }                  from 'utils/noop';
+import { getUniqueDomId }        from 'utils/getUniqueDomId';
+import { setViewSizes }          from 'utils/setViewSizes';
+import { toRawType }             from 'utils/toRawType';
+import { promisify, $promisify } from "utils/promisify";
 
 /**
  * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
@@ -334,7 +334,7 @@ export default new (class GUI extends G3WObject {
     switch (type) {
       case 'query': return this.showQueryResults.bind(this);
       case 'form': return this.showForm.bind(this);
-    };
+    }
   };
 
   showForm(options = {}) {
@@ -720,16 +720,16 @@ export default new (class GUI extends G3WObject {
   closeContent() {
     this.emit('closecontent', false);
     const state = ApplicationState.viewport;
-    const d = $.Deferred();
-    // content is open
-    if (state.content.contentsdata.length > 0) {
-      this.getComponent('contents').removeContent();
-      // close secondary view( return a promise)
-      this._closeSecondaryView('close-content').then(() => d.resolve(this.getComponent('map')));
-    } else {
-      d.resolve(this.getComponent('map'));
-    }
-    return d.promise()
+    return $promisify(new Promise((resolve) => {
+      // content is open
+      if (state.content.contentsdata.length > 0) {
+        this.getComponent('contents').removeContent();
+        // close secondary view( return a promise)
+        this._closeSecondaryView('close-content').then(() => resolve(this.getComponent('map')));
+      } else {
+        resolve(this.getComponent('map'));
+      }
+    }))
   }
 
   // VIEWPORT //
@@ -750,34 +750,34 @@ export default new (class GUI extends G3WObject {
   // remove last content from stack
   popContent() {
     const state = ApplicationState.viewport;
-    const d = $.Deferred();
-    // check if content exists compontent Stack
-    if (state.content.contentsdata.length) {
-      const data = this.getComponent('contents').getPreviousContentData();
-      const opts = data.options;
-      Object.assign(state.content, {
-        title:        opts.title,
-        split:        undefined !== opts.split       ? opts.split : null,
-        closable:     undefined !== opts.closable    ? opts.closable : true,
-        backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
-        contentsdata: this.getComponent('contents').contentsdata,
-        style:        undefined !== opts.style ? opts.style : {},
-        headertools:  undefined !== opts.headertools ? opts.headertools : [],
-        showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
-      });
-      state.immediate_layout = false;
-      this._showView('content', data.options);
-      this.getComponent('contents').popContent()
-        .then(() => {
-          state.secondaryPerc        = data.options.perc;
-          state.immediate_layout = true;
-          this._layout('pop-content');
-          d.resolve(this.getComponent('contents').getCurrentContentData)
-        })
-    } else {
-      d.reject();
-    }
-    return d.promise();
+    return $promisify(new Promise((resolve, reject) =>{
+      // check if content exists compontent Stack
+      if (state.content.contentsdata.length) {
+        const data = this.getComponent('contents').getPreviousContentData();
+        const opts = data.options;
+        Object.assign(state.content, {
+          title:        opts.title,
+          split:        undefined !== opts.split       ? opts.split : null,
+          closable:     undefined !== opts.closable    ? opts.closable : true,
+          backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
+          contentsdata: this.getComponent('contents').contentsdata,
+          style:        undefined !== opts.style ? opts.style : {},
+          headertools:  undefined !== opts.headertools ? opts.headertools : [],
+          showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
+        });
+        state.immediate_layout = false;
+        this._showView('content', data.options);
+        this.getComponent('contents').popContent()
+          .then(() => {
+            state.secondaryPerc    = data.options.perc;
+            state.immediate_layout = true;
+            this._layout('pop-content');
+            resolve(this.getComponent('contents').getCurrentContentData)
+          })
+      } else {
+        reject();
+      }
+    }))
   }
 
   _setContent(options={}) {
@@ -847,21 +847,22 @@ export default new (class GUI extends G3WObject {
   // close secondary view
   _closeSecondaryView(event = null) {
     const state = ApplicationState.viewport;
-    const d = $.Deferred();
-    const secondaryViewComponent = this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
-    if (secondaryViewComponent.clearContents) {
-      secondaryViewComponent.clearContents().then(() => {
+    return $promisify(new Promise((resolve, reject) => {
+      const secondaryViewComponent = this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
+      if (secondaryViewComponent.clearContents) {
+        secondaryViewComponent.clearContents()
+          .then(() => {
+            state.secondaryVisible = false;
+            state.secondaryPerc = 0;
+            this._layout(event);
+            Vue.nextTick(() => resolve());
+          });
+      } else {
         state.secondaryVisible = false;
-        state.secondaryPerc = 0;
         this._layout(event);
-        Vue.nextTick(() => d.resolve());
-      });
-    } else {
-      state.secondaryVisible = false;
-      this._layout(event);
-      Vue.nextTick(() => d.resolve());
-    }
-    return d.promise();
+        Vue.nextTick(() => resolve());
+      }
+    }))
   }
 
   // manage all layout logic
