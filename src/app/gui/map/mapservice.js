@@ -1898,7 +1898,7 @@ class MapService extends G3WObject {
       const curr = map.getView().getResolution();
       // max resolution of the map
       resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(MAP_SETTINGS.ZOOM.maxScale, this.getMapUnits()));
-      resolution = (curr < resolution) && (curr > extentResolution) ? curr : resolution;
+      resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
 
@@ -2002,7 +2002,7 @@ class MapService extends G3WObject {
 
     return new Promise(async resolve => {
 
-      const cb = resolve => {
+      const cb = () => {
         hlayer.getSource().clear();
         // set default style
         if (options.style) {
@@ -2012,7 +2012,7 @@ class MapService extends G3WObject {
           MAP.animatingHighlight = false;
         }
         resolve();
-      };
+      }
 
       if (hide) {
         hide(cb);
