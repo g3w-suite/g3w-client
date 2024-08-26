@@ -1,3 +1,5 @@
+import { $promisify  } from 'utils/promisify';
+
 const G3WObject         = require('core/g3wobject');
 
 /** @deprecated */
@@ -59,32 +61,33 @@ module.exports = class FeaturesStore extends G3WObject {
 
   // method unlock features
   unlock() {
-    const d = $.Deferred();
-    this._provider.unlock()
-      .then(response => d.resolve(response))
-      .fail(e => { console.warn(e); d.reject(e) });
-    return d.promise();
+    return $promisify(new Promise((resolve, reject) => {
+      this._provider.unlock()
+        .then(response => resolve(response))
+        .fail(e => { console.warn(e); reject(e) });
+    }))
   }
 
   /*
    * Gets all features from server or attribute _features
    */
   _getFeatures(options = {}) {
-    const d = $.Deferred();
-    if (this._provider) {
-      //call provider getFeatures to get features from server
-      this._provider.getFeatures(options)
-        .then(options => {
-          //get the features base on response from server features, featurelockis etc ...
-          const features = this._filterFeaturesResponse(options);
-          this.addFeatures(features);
-          d.resolve(features);
-        })
-        .fail(e => { console.warn(e); d.reject(e) })
-    } else {
-      d.resolve(this._readFeatures());
-    }
-    return d.promise();
+    return $promisify(new Promise((resolve, reject) => {
+      if (this._provider) {
+        //call provider getFeatures to get features from server
+        this._provider.getFeatures(options)
+          .then(options => {
+            //get the feature base on response from server features, featurelockis etc ...
+            const features = this._filterFeaturesResponse(options);
+            this.addFeatures(features);
+            resolve(features);
+          })
+          .fail(e => { console.warn(e); reject(e) })
+      } else {
+        resolve(this._readFeatures());
+      }
+    }))
+
   }
 
   /**
@@ -180,17 +183,17 @@ module.exports = class FeaturesStore extends G3WObject {
   }
 
   _commit(commitItems) {
-    const d = $.Deferred();
-    if (commitItems && this._provider) {
-      commitItems.lockids = this._lockIds;
-      this._provider
-        .commit(commitItems)
-        .then(response => d.resolve(response))
-        .fail(e => { console.warn(e); d.reject(e) })
-    } else {
-      d.reject();
-    }
-    return d.promise();
+    return $promisify(new Promise((resolve, reject) => {
+      if (commitItems && this._provider) {
+        commitItems.lockids = this._lockIds;
+        this._provider
+          .commit(commitItems)
+          .then(response => resolve(response))
+          .fail(e => { console.warn(e); reject(e) })
+      } else {
+        reject();
+      }
+    }))
   }
 
 // get feature from id
