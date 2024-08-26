@@ -1183,7 +1183,7 @@ class Layer extends G3WObject {
    *
    * @param {boolean} bool
    */
-  setInEditing(bool=false) {
+  setInEditing(bool = false) {
     this.state.inediting = bool;
   }
 
@@ -1314,7 +1314,8 @@ class Layer extends G3WObject {
   /**
    * Search layer feature by fids
    *
-   * @param fids formatter
+   * @param fids
+   * @param formatter
    */
   async getFeatureByFids({
     fids      = [],
@@ -1342,7 +1343,7 @@ class Layer extends G3WObject {
    *
    * Search Features
    * 
-   * @param { Object }        opts
+   * @param { Object }        options
    * @param { 'ows' | 'api' } options.search_endpoint
    * @param { boolean }       options.raw
    * @param { 0 | 1 }         options.formatter
@@ -1437,7 +1438,7 @@ class Layer extends G3WObject {
   /**
    * search method 
    */
-  search(options={}, params={}) {
+  search(options = {}, params = {}) {
     // check option feature_count
     options.feature_count = options.feature_count || 10;
     options = {
@@ -1445,32 +1446,32 @@ class Layer extends G3WObject {
       ...this.config.searchParams,
       ...params
     };
-    const d = $.Deferred();
-    const provider = this.getProvider('search');
-    if (provider) {
-      provider.query(options)
-        .done(response => d.resolve(response))
-        .fail(e => { console.warn(e); d.reject(e) });
-    } else {
-      d.reject(t('sdk.search.layer_not_searchable'));
-    }
-    return d.promise();
+    return $promisify(new Promise((resolve, reject) => {
+      const provider = this.getProvider('search');
+      if (provider) {
+        provider.query(options)
+          .done(response => resolve(response))
+          .fail(e => { console.warn(e); reject(e) });
+      } else {
+        reject(t('sdk.search.layer_not_searchable'));
+      }
+    }))
   }
 
   /**
    * Info from layer (only for querable layers) 
    */
-  query(options={}) {
-    const d = $.Deferred();
-    const provider = this.getProvider(options.filter ? 'filter' : 'query');
-    if (provider) {
-      provider.query(options)
-        .done(response => d.resolve(response))
-        .fail(e => { console.warn(e); d.reject(e) });
-    } else {
-      d.reject(t('sdk.search.layer_not_querable'));
-    }
-    return d.promise();
+  query(opts = {}) {
+    return $promisify(new Promise((resolve, reject) => {
+      const provider = this.getProvider(opts.filter ? 'filter' : 'query');
+      if (provider) {
+        provider.query(opts)
+          .done(response => resolve(response))
+          .fail(e => { console.warn(e); reject(e) });
+      } else {
+        reject(t('sdk.search.layer_not_querable'));
+      }
+    }))
   }
 
   /**
@@ -1599,7 +1600,7 @@ class Layer extends G3WObject {
    *
    * @param bool
    */
-  setHidden(bool=true) {
+  setHidden(bool = true) {
     this.state.hidden = bool;
   }
 
