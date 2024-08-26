@@ -3,9 +3,11 @@
  * @since 3.10.0
  */
 
-import Panel       from 'core/g3w-panel';
-import Component   from 'core/g3w-component';
-import G3WObject   from 'core/g3wobject';
+import Panel                     from 'core/g3w-panel';
+import Component                 from 'core/g3w-component';
+import G3WObject                 from 'core/g3wobject';
+import { $promisify, promisify } from 'utils/promisify';
+
 
 /**
  * Barstack Class - used to mount panels stack on top of each parent
@@ -41,31 +43,31 @@ export class BarStack extends G3WObject {
    * remove the last component from stack
    */
   pop() {
-    const d = $.Deferred();
-    const data = this.state.contentsdata;
-    if (data.length > 0) {
-      this._unmount(data.slice(-1)[0].content).then(() => { d.resolve(data.pop()) });
-    } else {
-      d.resolve();
-    }
-    return d.promise();
+    return $promisify(new Promise((resolve) => {
+      const data = this.state.contentsdata;
+      if (data.length > 0) {
+        this._unmount(data.slice(-1)[0].content).then(() => { resolve(data.pop()) });
+      } else {
+        resolve();
+      }
+    }))
   }
 
   /**
    * clear all stacks
    */
   clear() {
-    const d = $.Deferred();
-    const data = this.state.contentsdata;
-    if (data.length) {
-      $
-        .when(data.map(d => this._unmount(d.content)))
-        .then(() => { data.splice(0, data.length); d.resolve(); });
-    } else {
-      d.resolve();
-    }
-    this.emit('clear');
-    return d.promise();
+    return $promisify(new Promise((resolve) => {
+      const data = this.state.contentsdata;
+      if (data.length) {
+        Promise.allSettled(data.map(d => promisify(this._unmount(d.content))))
+          .then(() => { data.splice(0, data.length); resolve(); });
+      } else {
+        resolve();
+      }
+      this.emit('clear');
+    }))
+
   }
 
   getContentData() {
@@ -84,62 +86,61 @@ export class BarStack extends G3WObject {
    * Mount component to parent
    */
   _mount(content, options) {
-    const d    = $.Deferred();
-    const data = this.state.contentsdata;
 
-    // check the type of content:
+    return $promisify(new Promise((resolve) => {
+      const data = this.state.contentsdata;
 
-    // String or JQuery
-    if (content instanceof jQuery || 'string' === typeof content) {
-      let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
-      $(this._parent).append(el);
-      data.push({ content: el, options });
-      console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', data[data.length - 1]);
-      d.resolve();
-    }
+      // check the type of content:
 
-    // Vue element
-    else if (content.mount && 'function' === typeof content.mount) {
-      // Check a duplicate element by component id (if already exist)
-      let id = data.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
-      if (-1 !== id) {
-        data[id].content.unmount().then(() => data.splice(id, 1));
+      // String or JQuery
+      if (content instanceof jQuery || 'string' === typeof content) {
+        let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
+        $(this._parent).append(el);
+        data.push({ content: el, options });
+        console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', data[data.length - 1]);
+        resolve();
       }
-      // Mount vue component 
-      content
-        .mount(this._parent, options.append || false)
-        .then(() => {
-          $(this._parent).localize();
-          data.push({ content, options });
-          d.resolve(content);
-        });
 
-    }
+      // Vue element
+      else if (content.mount && 'function' === typeof content.mount) {
+        // Check a duplicate element by component id (if already exist)
+        let id = data.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
+        if (-1 !== id) {
+          data[id].content.unmount().then(() => data.splice(id, 1));
+        }
+        // Mount vue component
+        content
+          .mount(this._parent, options.append || false)
+          .then(() => {
+            $(this._parent).localize();
+            data.push({ content, options });
+            resolve(content);
+          });
 
-    // DOM element
-    else {
-      this._parent.appendChild(content);
-      data.push({ content, options });
-      d.resolve();
-    }
+      }
 
+      // DOM element
+      else {
+        this._parent.appendChild(content);
+        data.push({ content, options });
+        resolve();
+      }
 
-    return d.promise();
-
+    }))
   }
 
   /**
    * unmount component
    */
   _unmount(content) {
-    const d = $.Deferred();
-    if (content instanceof Component || content instanceof Panel) {
-      content.unmount().then(() => d.resolve());
-    } else {
-      $(this._parent).empty();
-      d.resolve();
-    }
-    return d.promise();
+    return $promisify(new Promise((resolve) => {
+      if (content instanceof Component || content instanceof Panel) {
+        content.unmount().then(() => resolve());
+      } else {
+        $(this._parent).empty();
+        resolve();
+      }
+    }))
   }
 
   forEach(cbk) {
