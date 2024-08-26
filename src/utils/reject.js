@@ -1,5 +1,5 @@
-export function reject(value){
-  const d = $.Deferred();
-  d.reject(value);
-  return d.promise();
+import { $promisify } from 'utils/promisify';
+
+export function reject(value) {
+  return $promisify(Promise.reject(value));
 }
