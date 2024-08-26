@@ -168,74 +168,75 @@ export default class G3WObject extends EventEmitter {
 
       // assign the property setter name to the object as own method
       this[setter] = function(...args) {
+        //Return a Deferred object
+        // When then method of defferred object is called, a new promise is return
+        // and not the deferred.resolve value directly.
+        // This is the reason why when we call setter methods return a promise and not the value
+        return $.Deferred(deferred => {
+          // listener count
+          let count = 0;
+          /**
+           *
+           * @param {undefined | Boolean} bool
+           */
+          const next = (bool) => {
+            //check if it needs to skip (exit)
+            const skip  = (true === bool || false === bool) ? !bool : false;
+            //get count of before subscribers on setter function
+            const len = this.settersListeners.before[setter].length;
 
-        // listener count
-        let count = 0;
-
-        const deferred = $.Deferred();
-
-        /**
-         *
-         * @param {undefined | Boolean} bool
-         */
-        const next = (bool) => {
-          //check if it needs to skip (exit)
-          const skip  = (true === bool || false === bool) ? !bool : false;
-          //get count of before subscribers on setter function
-          const len = this.settersListeners.before[setter].length;
-
-          // abort in case of error bool false,
-          // or we reached the end of onbefore subscriber
-          if (skip) {
-            (setters[setter] instanceof Function ? noop : (setters[setter].fallback || noop)).apply(this, args);
-            deferred.reject();
-            return;
-          }
-
-          // call complete method methods and check what returns
-          if (count === len) {
-            // run setter function (resolve promise)
-            deferred.resolve((setters[setter] instanceof Function ? setters[setter] : setters[setter].fnc).apply(this, args));
-            // call all subscribed methods after setter
-            const onceListeners = [];
-            this
-              .settersListeners
-              .after[setter]
-              .forEach(listener => {
-                listener.fnc.apply(this, args);
-                if (listener.once) {
-                  onceListeners.push(listener.key);
-                }
-              });
-            onceListeners.forEach(key => this.un(setter, key));
-            this.emitEvent(`set:${setter}`, args);
-          }
-          // still call an onbefore listener subscribers
-          if (count < len) {
-            //get on before listener subscribes and increment count to 1
-            const listener = this.settersListeners.before[setter][count++];
-            //check if it is async
-            if (listener.async) {
-              // add function next to argument of listener function
-              args.push(next);
-              listener.fnc.apply(this, args)
-            } else {
-              // return or undefined or a boolean to tell if ok(true) can continue or not (false)
-              next(listener.fnc.apply(this, args));
+            // abort in case of error bool false,
+            // or we reached the end of onbefore subscriber
+            if (skip) {
+              (setters[setter] instanceof Function ? noop : (setters[setter].fallback || noop)).apply(this, args);
+              deferred.reject();
+              return;
             }
-            //in case of listener subscribe function need to run just one time
-            // after call remove it from listeners
-            if (listener.once) {
-              this.settersListeners.before[setter].splice(count - 1, 1);
+
+            // call complete method methods and check what returns
+            if (count === len) {
+              // run setter function (resolve promise)
+              deferred.resolve((setters[setter] instanceof Function ? setters[setter] : setters[setter].fnc).apply(this, args));
+              // call all subscribed methods after setter
+              const onceListeners = [];
+              this
+                .settersListeners
+                .after[setter]
+                .forEach(listener => {
+                  listener.fnc.apply(this, args);
+                  if (listener.once) {
+                    onceListeners.push(listener.key);
+                  }
+                });
+              onceListeners.forEach(key => this.un(setter, key));
+              this.emitEvent(`set:${setter}`, args);
             }
-          }
+            // still call an onbefore listener subscribers
+            if (count < len) {
+              //get on before listener subscribes and increment count to 1
+              const listener = this.settersListeners.before[setter][count++];
+              //check if it is async
+              if (listener.async) {
+                // add function next to argument of listener function
+                args.push(next);
+                listener.fnc.apply(this, args)
+              } else {
+                // return or undefined or a boolean to tell if ok(true) can continue or not (false)
+                next(listener.fnc.apply(this, args));
+              }
+              //in case of listener subscribe function need to run just one time
+              // after call remove it from listeners
+              if (listener.once) {
+                this.settersListeners.before[setter].splice(count - 1, 1);
+              }
+            }
 
-        };
+          };
 
-        // run all the subscribers and setters
-        next(true);
+          // run all the subscribers and setters
+          next(true);
+        });
 
-        return deferred.promise();
       }
 
     }
