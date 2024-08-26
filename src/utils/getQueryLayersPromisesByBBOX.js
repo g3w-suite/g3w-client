@@ -1,5 +1,7 @@
 import GUI                                  from 'services/gui';
 import { getQueryLayersPromisesByGeometry } from 'utils/getQueryLayersPromisesByGeometry';
+import { $promisify  }                      from 'utils/promisify';
+
 
 const Filter = require('core/layers/filter/filter');
 
@@ -27,25 +29,24 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
     })
   }
 
-  const d              = $.Deferred();
-  const mapCrs         = mapProjection.getCode();
-  const promise        = d.promise();
-  const queryResponses = [];
-  const queryErrors    = [];
-  let layersLenght     = layers.length;
+  return $promisify(new Promise((resolve, reject) => {
+    const mapCrs         = mapProjection.getCode();
+    const queryResponses = [];
+    const queryErrors    = [];
+    let layersLenght     = layers.length;
 
-  /** @FIXME add description */
-  layers
-    .forEach(layer => {
-      const filter   = new Filter(filterConfig);
-      const layerCrs = layer.getProjection().getCode();
-      // Convert filter geometry from `mapCRS` to `layerCrs`
-      filter.setGeometry(mapCrs === layerCrs
-        ? geometry
-        : geometry.clone().transform(mapCrs, layerCrs)
-      );
+    /** @FIXME add description */
+    layers
+      .forEach(layer => {
+        const filter   = new Filter(filterConfig);
+        const layerCrs = layer.getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(mapCrs === layerCrs
+          ? geometry
+          : geometry.clone().transform(mapCrs, layerCrs)
+        );
 
-      layer
+        layer
         .query({ filter, feature_count })
         .then(response => queryResponses.push(response))
         .fail(e => { console.warn(e); queryErrors.push(e) })
@@ -53,11 +54,10 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
           layersLenght -= 1;
           if (0 === layersLenght) {
             queryErrors.length === layers.length
-              ? d.reject(queryErrors)
-              : d.resolve(queryResponses);
+              ? reject(queryErrors)
+              : resolve(queryResponses);
           }
-      })
-    });
-
-  return promise;
+        })
+      });
+  }))
 }
