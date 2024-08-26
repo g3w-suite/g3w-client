@@ -1,5 +1,5 @@
-export function resolve(value){
-  const d = $.Deferred();
-  d.resolve(value);
-  return d.promise();
+import { $promisify } from 'utils/promisify';
+
+export function resolve(value) {
+  return $promisify(Promise.resolve(value));
 }
