@@ -447,6 +447,7 @@ export class QueryBy extends InteractionControl {
                     }
                   }
                 });
+
                 if (data.length && data[0].features.length) {
                   QUERY.feature = data[0].features[0];
                   QUERY.layer   = data[0].layer;
@@ -623,7 +624,7 @@ export class QueryBy extends InteractionControl {
             feature:         (() => {
                               switch (type) {
                                 case 'querybypolygon':
-                                  return QUERY.feature
+                                  return QUERY.feature;
                                 case 'querybydrawpolygon':
                                   return QUERY.dfeature;
                                 case 'querybycircle':
@@ -653,7 +654,7 @@ export class QueryBy extends InteractionControl {
             filterConfig:    { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           },
           outputs: {
-            show: ({ error=false }) => !error,
+            show: ({ error = false }) => !error,
           },
         });
       }

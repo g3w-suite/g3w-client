@@ -11,6 +11,7 @@ import { noop }             from 'utils/noop';
 import { getUniqueDomId }   from 'utils/getUniqueDomId';
 import { setViewSizes }     from 'utils/setViewSizes';
 import { toRawType }        from 'utils/toRawType';
+import { promisify }        from "utils/promisify";
 
 /**
  * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
@@ -262,8 +263,8 @@ export default new (class GUI extends G3WObject {
   async outputDataPlace(dataPromise, options = {}) {
     // show parameter it used to set condition to show result or not
     // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
-    const defaultOutputConfig = { condition:true, add:false, loading:true };
-    const { title='', show=defaultOutputConfig, before, after } = options;
+    const defaultOutputConfig = { condition: true, add: false, loading: true };
+    const { title = '', show = defaultOutputConfig, before, after } = options;
     // convert show in an object
     const outputConfig = (toRawType(show) !== 'Object') ?
       {
@@ -274,14 +275,14 @@ export default new (class GUI extends G3WObject {
         ...defaultOutputConfig,
         ...show
       };
-    const {condition, add, loading} = outputConfig;
+    const { condition, add, loading } = outputConfig;
     //check if waiting output data
-    // in case we stop and substiute with new request data
-    if (this.waitingoutputdataplace) { await this.waitingoutputdataplace.stop() }
+    // in case we stop and substitute with new request data
+    if ( this.waitingoutputdataplace ) { await this.waitingoutputdataplace.stop() }
     let queryResultsService = add ? this.getService('queryresults'): loading && this.showContentFactory('query')(title);
     this.waitingoutputdataplace = (() => {
       let stop = false;
-      (async () =>{
+      (async () => {
         try {
           const data = await dataPromise;
           //if set before call method and wait
@@ -296,19 +297,23 @@ export default new (class GUI extends G3WObject {
           }
           if (!stop) {
             // check condition
-            const showResult = (toRawType(condition) === 'Function') ? condition(data) : (toRawType(condition) === 'Boolean') ? condition : true;
+            const showResult = ('Function' === toRawType(condition)) ? condition(data) : ('Boolean' === toRawType(condition)) ? condition : true;
             if (showResult) {
               (queryResultsService ? queryResultsService: this.showContentFactory('query')(title)).setQueryResponse(data, {
                 add
               });
-            }
-            else  {
-              this.closeContent();
+            } else {
+              //@since 3.11.0.
+              // Need to async nature of this.closeContent (E.x of querybypolygon double call)
+              this.waitingoutputdataplace = {
+                stop: async () => await promisify(this.closeContent())
+              }
             }
             // call after is set with data
             if (after) { after(data) }
           }
         } catch(e) {
+          console.warn(e);
           this.showUserMessage({
             type:        'alert',
             message:     this.errorToMessage(e),
