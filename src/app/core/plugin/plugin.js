@@ -64,17 +64,19 @@ module.exports = class Plugin extends G3WObject {
   }
 
   /**
-   * @FIXME add description
+   * Set plugin configuration
+   * @param { Object } config
    */
   setConfig(config) {
-    this.config = toRawType(config) === 'Object' ? config : null;
+    this.config = 'Object' === toRawType(config) ? config : null;
   }
 
   /**
-   * @FIXME add description
+   * Get plugin configuration
+   * @param { String } name
    */
-  getConfig(name = this.name) {
-    return this.config || PluginsRegistry.getPluginConfig(name);
+  getConfig(name) {
+    return this.config || PluginsRegistry.getPluginConfig(name || this.name);
   }
 
   /**
@@ -105,8 +107,9 @@ module.exports = class Plugin extends G3WObject {
 
   /**
    * @FIXME add description
+   * @param { Array } dependencies
    */
-  setDependencies(dependencies) {
+  setDependencies(dependencies = []) {
     this.dependencies = dependencies;
   }
 
@@ -191,22 +194,22 @@ module.exports = class Plugin extends G3WObject {
     return new Promise((resolve) => {
       this._ready
         ? resolve(this._ready)
-        : this.once('set-ready', (isReady) => { this._ready = isReady; resolve(this._ready); })
+        : this.once('set-ready', isReady => { this._ready = isReady; resolve(this._ready); })
     });
   }
 
   /**
    * @returns whether plugin is compatible with current projectId
    */
-  isCurrentProjectCompatible(projectId) {
-    return projectId === ProjectsRegistry.getCurrentProject().getGid();
+  isCurrentProjectCompatible(gid) {
+    return gid === ProjectsRegistry.getCurrentProject().getGid();
   }
 
   /**
    * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
    */
-  registerPlugin(projectId) {
-    const iscompatible  = this.isCurrentProjectCompatible(projectId);
+  registerPlugin(gid) {
+    const iscompatible  = this.isCurrentProjectCompatible(gid);
     if (iscompatible) {
       PluginsRegistry.registerPlugin(this);
     } else {
@@ -219,7 +222,7 @@ module.exports = class Plugin extends G3WObject {
   /**
    * @FIXME explain better what it does
    * 
-   * Get plugin dependencies 
+   * Get plugin dependencies
    */
   getDependencyPlugins(pluginsName) {
     this.dependencies = pluginsName || this.dependencies;
@@ -253,7 +256,7 @@ module.exports = class Plugin extends G3WObject {
         plugin
         && plugin.isReady().then(() => resolve(plugin.getApi()))
         || PluginsRegistry.onafter('registerPlugin', plugin => {
-          (plugin.name === pluginName) && plugin.isReady().then(() => {resolve(plugin.getApi())})
+          (pluginName === plugin.name) && plugin.isReady().then(() => resolve(plugin.getApi()))
         });
       })
     }
@@ -261,7 +264,7 @@ module.exports = class Plugin extends G3WObject {
   }
 
   /**
-   * Handle loading process of a specific hook service (eg. "tools" interface on the left sidebar)
+   * Handle a loading process of a specific hook service (e.g. "tools" interface on the left sidebar)
    */
   setHookLoading({ hook = "tools", loading = false } = {}) {
     this.getHookService(hook).setLoading(loading);
@@ -408,8 +411,8 @@ module.exports = class Plugin extends G3WObject {
   /**
    * @TODO it could be depecrated after v3.4 ?
    */
-  addFontClasses(fonClasses = []) {
-    fonClasses.forEach(fontClass => this.addFontClass(fontClass));
+  addFontClasses(fontClasses = []) {
+    fontClasses.forEach(fc => this.addFontClass(fc));
   }
 
 };
