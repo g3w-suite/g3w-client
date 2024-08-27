@@ -45,7 +45,7 @@ export default new (class PluginsRegistry extends G3WObject {
        */
       registerPlugin(plugin) {
         // store plugin into registry (if not already registered)
-        if (!this._plugins[plugin.name]) {
+        if (undefined === this._plugins[plugin.name]) {
           this._plugins[plugin.name] = plugin;
         }
       }
@@ -87,10 +87,9 @@ export default new (class PluginsRegistry extends G3WObject {
 
     /** @TODO check if deprecated */
     for (const p in this.pluginsConfigs) {
-      const dependecy = this.pluginsConfigs[p].plugins;
-      if (dependecy) {
-        Object.keys(dependecy).forEach(p => this.pluginsConfigs[p] = { ...this.pluginsConfigs[p], ...dependecy[p] })
-      }
+      Object
+        .entries(this.pluginsConfigs[p].plugins || {})
+        .forEach(([name, config]) => this.pluginsConfigs[name] = { ...this.pluginsConfigs[name], ...config })
     }
 
     // load plugins
@@ -100,12 +99,11 @@ export default new (class PluginsRegistry extends G3WObject {
         if (!config) {
           return;
         }
-        const url      = `${this.pluginsBaseUrl}${name}/js/plugin.js?${Date.now()}`;
         config.baseUrl = this.pluginsBaseUrl;
         try {
           // wait plugin dependencies before loading plugin
           await Promise.all((config.jsscripts || []).map(s => _loadScript(s, false)));
-          await _loadScript(url, false);
+          await _loadScript(`${this.pluginsBaseUrl}${name}/js/plugin.js?${Date.now()}`, false);
         } catch(e) {
           console.warn('[G3W-PLUGIN]', e);
           //remove plugin in case of error of dependencies
@@ -116,12 +114,12 @@ export default new (class PluginsRegistry extends G3WObject {
   }
 
   /**
-   * @param pluginName
+   * @param name
    *
    * @returns <Object> Plugin configuration server object
    */
-  getPluginConfig(pluginName) {
-    return this.pluginsConfigs[pluginName];
+  getPluginConfig(name) {
+    return this.pluginsConfigs[name];
   }
 
   /**
@@ -132,32 +130,32 @@ export default new (class PluginsRegistry extends G3WObject {
   }
 
   /**
-   * @param pluginName
+   * @param name
    *
    * @returns Plugin instance
    */
-  getPlugin(pluginName) {
-    return this._plugins[pluginName];
+  getPlugin(name) {
+    return this._plugins[name];
   }
 
   /**
-   * Check if a plugin is in configuration and will be added to application
+   * Check if a plugin is in configuration and will be added to the application
    *
-   * @param pluginName
+   * @param name
    *
    * @returns { boolean }
    */
-  isPluginInConfiguration(pluginName) {
-    return this._configurationPlugins.indexOf(pluginName) !== -1;
+  isPluginInConfiguration(name) {
+    return this._configurationPlugins.includes(name);
   }
 
   /**
-   * @param pluginName
+   * @param name
    *
    * @returns plugin Configuration
    */
-  isTherePlugin(pluginName) {
-    return this.pluginsConfigs[pluginName];
+  isTherePlugin(name) {
+    return this.pluginsConfigs[name];
   }
 
 });
