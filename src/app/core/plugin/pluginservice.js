@@ -4,8 +4,8 @@ import ApplicationService from 'services/application';
 
 module.exports = class PluginService extends G3WObject {
 
-  constructor(options = {}) {
-    super(options);
+  constructor(opts = {}) {
+    super(opts);
     this.plugin;
     this._api = {
       own:          null,
@@ -68,7 +68,7 @@ module.exports = class PluginService extends G3WObject {
     this.config = config;
   }
 
-  setApi({dependency, api} = {}) {
+  setApi({ dependency, api } = {}) {
     if (!dependency) { this._api.own = api }
     else { this._api.dependencies[dependency] = api }
   }
@@ -77,13 +77,13 @@ module.exports = class PluginService extends G3WObject {
     return dependency && this._api.dependencies[dependency] || this._api.own;
   }
 
-  initEvents(events=[]) {
+  initEvents(events = []) {
     for (let i in events) {
       this._pluginEvents[events[i]] = {};
     }
   }
 
-  subscribeEvent({ name, once=false, owner, listener }) {
+  subscribeEvent({ name, once = false, owner, listener } = {}) {
     this._pluginEvents[name]        = this._pluginEvents[name] ? this._pluginEvents[name] : {};
     this._pluginEvents[name][owner] = listener;
     if (once) {
