@@ -22,7 +22,7 @@ module.exports = class Feature extends ol.Feature {
     if (feature) {
       // check if it has to set only some properties or all feature properties
       if (properties && Array.isArray(properties)) {
-        properties.forEach(property => this.set(property, feature.get(property)));
+        properties.forEach(p => this.set(p, feature.get(p)));
       } else {
         this.setProperties(feature.getProperties());
       }

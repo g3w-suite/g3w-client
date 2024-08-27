@@ -11,7 +11,7 @@ const Feature                           = require('core/layers/features/feature'
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
 
-function _createAttributesFromFields(fields) {
+function _createAttributesFromFields(fields = []) {
   return fields.reduce((acc, f) => {
     if ('child' === f.type) {
       acc[f.name] = _createAttributesFromFields(f.fields);
@@ -28,9 +28,9 @@ function _createAttributesFromFields(fields) {
  */
 module.exports = class TableLayer extends Layer {
   
-  constructor(config = {}, options = {}) {
+  constructor(config = {}, opts = {}) {
 
-    super(config, options);
+    super(config, opts);
 
     /**
      * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
@@ -372,11 +372,11 @@ module.exports = class TableLayer extends Layer {
 
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @param options
+   * @param opts
    * @return {*}
    */
-  getEditingMediaFields(options = null) {
-    return this.config.editing.fields.filter(f => f.input.type === 'media').map(f => f.name);
+  getEditingMediaFields(opts = null) {
+    return this.config.editing.fields.filter(f => 'media' === f.input.type).map(f => f.name);
   }
 
   /**
@@ -415,7 +415,7 @@ module.exports = class TableLayer extends Layer {
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @param bool
    */
-  setReady(bool=false) {
+  setReady(bool = false) {
     this.state.editing.ready = bool;
   }
 
@@ -566,7 +566,7 @@ module.exports = class TableLayer extends Layer {
     return this.config.editing.style;
   }
 
-  addFeatures(features) {
+  addFeatures(features = []) {
     features.forEach(f => this.addFeature(f));
   }
 
@@ -587,14 +587,14 @@ module.exports = class TableLayer extends Layer {
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @param obj
-   * @param options
+   * @param opts
    * @return {*}
    */
-  getFieldsWithValues(obj, options = {}) {
+  getFieldsWithValues(obj, opts = {}) {
     const {
-      exclude = [],
+      exclude           = [],
       get_default_value = true
-    }  = options;
+    }  = opts;
 
     let fields = _cloneDeep(this.getEditingFields());
     let feature;
@@ -618,7 +618,7 @@ module.exports = class TableLayer extends Layer {
       field.update = false;                      // at beginning set update false. Used to form
 
       if (field.input) {
-        const options = this.getEditingFields().find(f => f.name === field.name).input.options;
+        const { options = {} }      = this.getEditingFields().find(f => f.name === field.name).input;
         field.input.options.loading = options.loading || { state: null };
         field.input.options.values  = options.values;
       }
@@ -633,9 +633,9 @@ module.exports = class TableLayer extends Layer {
       field.forceNull                = false;
       field.validate.valid           = true;
       field.validate._valid          = true;                            // useful to get previous value in certain case
-      field.value_from_default_value = false;                           // need to be check if default value is set by server configuration field
-      field.get_default_value        = get_default_value;               // specify if need to get value from form field.input.options.default value in case of missing value of field.value
-      field.validate.exclude_values  = new Set();                       // for validate.unique purpose to check is new value iserted or change need to be di
+      field.value_from_default_value = false;                           // need to be checked if the default value is set by server configuration field
+      field.get_default_value        = get_default_value;               // specify if you need to get value from form field.input.options.default value in case of missing value of field.value
+      field.validate.exclude_values  = new Set();                       // for validate.unique purpose to check is new value inserted or change needs to be di
       field.validate.unique          = field.validate.unique   || false;
       field.validate.required        = field.validate.required || false;
       field.validate.mutually_valid  = true;
@@ -651,11 +651,9 @@ module.exports = class TableLayer extends Layer {
    * @return {Feature}
    */
   createNewFeature() {
-    let feature      = new ol.Feature();
-    const properties = {};
-    this.getEditingFields().forEach(f => properties[f.name] = null);
-    feature.setProperties(properties);
-    feature = new Feature({ feature });
+    const feature = new Feature({
+      feature: new ol.Feature(this.getEditingFields().reduce((props, f) => { props[f.name] = null; return props }, {}))
+    });
     feature.setNew();
     return feature;
   }
