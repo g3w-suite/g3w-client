@@ -41,7 +41,7 @@ class VectorMapLayer extends G3WObject {
     return this._provider;
   }
 
-  resetSource(features=[]) {
+  resetSource(features = []) {
     this.setSource(new ol.source.Vector({ features }));
   }
 
@@ -54,7 +54,7 @@ class VectorMapLayer extends G3WObject {
     })
   }
 
-  _makeStyle(styleConfig={}) {
+  _makeStyle(styleConfig = {}) {
     let style;
     const styles = {};
     if (styleConfig) {
@@ -70,9 +70,9 @@ class VectorMapLayer extends G3WObject {
     return style
   }
 
-  getFeatures(options = {}) {
+  getFeatures(opts = {}) {
     return $promisify(new Promise((resolve, reject) => {
-      this.provider.getFeatures(options)
+      this.provider.getFeatures(opts)
         .then(features => {
           this.addFeatures(features);
           resolve(features);
@@ -124,8 +124,8 @@ class VectorMapLayer extends G3WObject {
     this._olLayer.setStyle(style);
   }
 
-  getFeatureById(fid) {
-    return fid ? this._olLayer.getSource().getFeatureById(fid) : null;
+  getFeatureById(id) {
+    return id ? this._olLayer.getSource().getFeatureById(id) : null;
   }
 
   isVisible() {
@@ -148,12 +148,12 @@ class VectorMapLayer extends G3WObject {
 
 class VectorLayer extends GeoLayerMixin(TableLayer) {
   
-  constructor(config = {}, options = {}) {
-    super(config, options);
-    this._mapLayer = null; // later tah will be added to map
-    this.type = Layer.LayerTypes.VECTOR;
-    // need an ol layer for adding to map
-    this.setup(config, options);
+  constructor(config = {}, opts = {}) {
+    super();
+    this._mapLayer = null; // later tah will be added to the map
+    this.type      = Layer.LayerTypes.VECTOR;
+    // need an ol layer for adding to the map
+    this.setup(config, opts);
     this.onafter('setColor', color => {});
   }
 
@@ -161,7 +161,7 @@ class VectorLayer extends GeoLayerMixin(TableLayer) {
     return this.getMapLayer().getOLLayer();
   }
 
-  resetEditingSource(features=[]){
+  resetEditingSource(features = []) {
     this.getMapLayer().resetSource(features)
   }
 
