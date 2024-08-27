@@ -77,15 +77,16 @@ module.exports = class Project extends G3WObject {
         const node = nodes[i];
         //check if layer (node) of folder
         if (undefined !== node.id) {
-          this.state.layers.forEach(l => {
-            if (node.id === l.id) {
-              node.name = l.name;
-              l.wmsUrl = this.getWmsUrl();
-              l.project = this;
-              node[i] = Object.assign(l, node);
-              return false
-            }
-          });
+          this.state.layers
+            .forEach(l => {
+              if (node.id === l.id) {
+                node.name = l.name;
+                l.wmsUrl  = this.getWmsUrl();
+                l.project = this;
+                node[i]   = Object.assign(l, node);
+                return false
+              }
+            });
         }
         if (Array.isArray(node.nodes)) {
           //add title to tree
@@ -103,9 +104,9 @@ module.exports = class Project extends G3WObject {
     this.state.baselayers = this.state.baselayers.filter(l => ('Bing' === l.servertype ? ApplicationState.keys.vendorkeys.bing : true));
 
     this.state.baselayers.forEach(l => {
-      const visible = (null !== baseLayerId) ? baseLayerId : this.state.initbaselayer;
-      l.visible = visible && (l.id === visible) || !!l.fixed;
-      l.baselayer = true;
+      const visible = (null === baseLayerId) ? this.state.initbaselayer : baseLayerId;
+      l.visible     = visible && (l.id === visible) || !!l.fixed;
+      l.baselayer   = true;
     });
 
     /**
@@ -128,7 +129,7 @@ module.exports = class Project extends G3WObject {
       extent:     this.state.extent,
       initextent: this.state.initextent,
       wmsUrl:     this.state.WMSUrl,
-      catalog:    this.state.gid !== (this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null),
+      catalog:    (this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null) !== this.state.gid,
     });
 
     // instance each layer ad area added to layersstore
@@ -233,12 +234,12 @@ module.exports = class Project extends G3WObject {
   }
 
   /**
-   * @param relationId
+   * @param id
    * 
    * @returns {*}
    */
-  getRelationById(relationId) {
-    return this.state.relations.find(r => relationId === r.id);
+  getRelationById(id) {
+    return this.state.relations.find(r => id === r.id);
   }
 
   /**
@@ -259,8 +260,8 @@ module.exports = class Project extends G3WObject {
     return this.state.ows_method;
   }
 
-  getLayerById(layerId) {
-    return this._layersStore.getLayerById(layerId);
+  getLayerById(id) {
+    return this._layersStore.getLayerById(id);
   }
 
   getLayers() {
