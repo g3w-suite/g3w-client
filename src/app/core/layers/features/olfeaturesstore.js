@@ -6,11 +6,18 @@ module.exports = class OlFeaturesStore extends FeaturesStore {
     this._features = opts.features || new ol.Collection([]);
   }
 
+  /**
+   * Get number of features stored
+   * @return { Number }
+   */
   getLength() {
     return this._features.getLength();
   }
 
-  //overwrite
+  /**
+   * Store features
+   * @param { Array } features
+   */
   setFeatures(features = []) {
     //remove features
     this._features.clear();
@@ -18,62 +25,79 @@ module.exports = class OlFeaturesStore extends FeaturesStore {
     this.addFeatures(features);
     this._features.dispatchEvent('change');
   };
-// overwrite
+
+  /**
+   *
+   * @return {*[]}
+   */
   readFeatures() {
     return this._features.getArray();
   };
 
+  /**
+   *
+   * @return {*|ol.Collection}
+   */
   getFeaturesCollection() {
     return this._features;
   }
 
-  getFeatureById(featureId) {
-    return this._features.getArray().find(f => featureId == f.getId());
+  /**
+   *
+   * @param id
+   * @return {*}
+   */
+  getFeatureById(id) {
+    return this._features.getArray().find(f => id == f.getId());
   }
 
   getFeatureByUid(uid) {
     return this._features.getArray().find(f => uid === f.getUid());
   }
 
+  /**
+   *
+   * @param feature
+   * @private
+   */
   _addFeature(feature) {
     this._features.push(feature);
     // useful for ol.source.Vector
     this._features.dispatchEvent('change')
   }
 
-//substitute the feature after modifying
+  /**
+   * Substitute the feature after modifying
+   * @param feature
+   * @private
+   */
   _updateFeature(feature) {
-    // set index at -1
-    let index = -1;
-    const featuresArray = this._features.getArray();
-    for (let i = 0; featuresArray.length; i++) {
-      const _feature = featuresArray[i];
-      if (_feature.getUid() === feature.getUid()) {
-        index = i;
-        break;
-      }
-    }
-    if (index >=0) {
+    const index = this._features.getArray().findIndex(f => feature.getUid() === f.getUid());
+    if (index >= 0) {
       this._features.removeAt(index);
       this._features.insertAt(index, feature);
       this._features.dispatchEvent('change')
     }
   }
 
-// remove feature from store
+  /**
+   * Remove feature from store
+   * @param feature
+   * @private
+   */
   _removeFeature(feature) {
-    const featuresArray = this._features.getArray();
-    for (let i = 0; i < featuresArray.length; i++) {
-      const feat = featuresArray[i];
-      if (feature.getUid() === feat.getUid()) {
-        this._features.removeAt(i);
-        break;
-      }
+    const index = this._features.getArray().findIndex(f => feature.getUid() === f.getUid());
+    if (index >= 0) {
+      this._features.removeAt(index);
+      this._features.dispatchEvent('change');
     }
-    this._features.dispatchEvent('change');
   }
 
 
+  /**
+   *
+   * @private
+   */
   _clearFeatures() {
     try {
       this._features.clear();
