@@ -86,8 +86,8 @@ class RasterLayer extends G3WObject {
   }
 
   addLayer(layer) {
-    if (!this.allLayers.find(l => l === layer)) { this.allLayers.push(layer); }
-    if (!this.layers.find(l => l === layer))    { this.layers.push(layer); }
+    if (!this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
+    if (!this.layers.find(l => layer === l))    { this.layers.push(layer); }
     if ('XYZ' === this.config.type)             { this.layer = layer; }
   }
 
@@ -118,7 +118,7 @@ class RasterLayer extends G3WObject {
     if ('ARCGISMAPSERVER' === this.config.type) {
       olLayer = new ol.layer.Tile({
         visible: true,
-        source: new ol.source.TileArcGISRest({
+        source:  new ol.source.TileArcGISRest({
           url:          this.config.url,
           projection:   this.config.projection,
         }),
@@ -153,11 +153,11 @@ class RasterLayer extends G3WObject {
             matrixSet:   layerObj.cache_grid,
             format:      layerObj.cache_format || 'png',
             projection:  layerObj.layers[0].getProjection(),
-            tileGrid: new ol.tilegrid.WMTS({
-              resolutions,
-              origin:    ol.extent.getTopLeft(layerObj.cache_grid_extent),
-              matrixIds: resolutions.map((_, i) => i),
-            }),
+            tileGrid:    new ol.tilegrid.WMTS({
+                           resolutions,
+                           origin:    ol.extent.getTopLeft(layerObj.cache_grid_extent),
+                           matrixIds: resolutions.map((_, i) => i),
+                         }),
             style:       layerObj.style || '',
             transparent: false,
           })
@@ -165,7 +165,7 @@ class RasterLayer extends G3WObject {
         : RasterLayer._makeOlLayer({
           layerObj,
           extraParams: this.extraParams || {},
-          tiled: true
+          tiled:       true
         }); 
     }
 
@@ -256,10 +256,10 @@ class RasterLayer extends G3WObject {
     let LEGEND_ON    = undefined;
     let LEGEND_OFF   = undefined;
 
-    layers.forEach(layer => {
-      const { LEGEND_ON: on, LEGEND_OFF: off } = get_legend_params(layer);
-      STYLES.push(layer.getStyle());
-      OPACITIES.push(parseInt((layer.getOpacity() / 100) * 255));
+    layers.forEach(l => {
+      const { LEGEND_ON: on, LEGEND_OFF: off } = get_legend_params(l);
+      STYLES.push(l.getStyle());
+      OPACITIES.push(parseInt((l.getOpacity() / 100) * 255));
       if (on)  { LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}` }
       if (off) { LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}` }
     })
@@ -303,7 +303,7 @@ RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
     visible:       opts.layerObj.visible,
     extent:        opts.layerObj.extent,
     maxResolution: opts.layerObj.maxResolution,
-    source: new (opts.tiled ? ol.source.TileWMS : ol.source.ImageWMS)({
+    source:        new (opts.tiled ? ol.source.TileWMS : ol.source.ImageWMS)({
       ratio:      1,
       url:        opts.layerObj.url,
       projection: (opts.layerObj.projection) ? opts.layerObj.projection.getCode() : null,
@@ -318,7 +318,7 @@ RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
             SLD_VERSION: undefined !== opts.layerObj.sld_version ? opts.layerObj.sld_version : '1.1.0',
           })
           // prevents sending "FORMAT" parameter when undefined
-          .filter(([key, val])=>('FORMAT' !== key ? true : undefined !== val))
+          .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
       ),
       ...(opts.extraParams || {})
       },
@@ -514,8 +514,11 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   getWFSLayerName() {
-    const name = ((this.config.infolayer && this.config.infolayer !== '') ? this.config.infolayer : this.getName());
-    return name.replace(/\s/g, '_').replaceAll( ':', '-' );
+    return (
+      (this.config.infolayer && '' !== this.config.infolayer)
+        ? this.config.infolayer
+        : this.getName()
+    ).replace(/\s/g, '_').replaceAll( ':', '-' );
   }
 
   useProxy() {
@@ -540,7 +543,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   isWfsActive() {
-    return Array.isArray(this.config.ows) && this.config.ows.some(type => 'WFS' === type);
+    return Array.isArray(this.config.ows) && this.config.ows.some(t => 'WFS' === t);
   }
 
   /**
@@ -606,9 +609,9 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   getQueryUrl() {
     const url       = super.getQueryUrl();
     const is_qgis = (
-      Layer.ServerTypes.QGIS === this.getServerType() &&
-      this.isExternalWMS() &&
-      this.isLayerProjectionASMapProjection()
+      Layer.ServerTypes.QGIS === this.getServerType()
+      && this.isExternalWMS()
+      && this.isLayerProjectionASMapProjection()
     );
 
     /** @FIXME add description */
@@ -698,7 +701,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       const ctx_legend = (
         opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
           ? get_legend_params(this)
-          : undefined // disabled when `FORMAT=application/json` (otherwise it create some strange behaviour on WMS `getMap` when switching between layer styles)   
+          : undefined // disabled when `FORMAT=application/json` (otherwise it creates some strange behaviour on WMS `getMap` when switching between layer styles)
       );
       base_url   = this.getWmsUrl({ type: 'legend' });
       url_params = [
