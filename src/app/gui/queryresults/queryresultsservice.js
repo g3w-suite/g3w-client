@@ -1962,7 +1962,7 @@ class QueryResultsService extends G3WObject {
 
     GUI.pushContent({
       content: new RelationsPage({
-        relations: action.relations,
+        relations:        action.relations,
         chartRelationIds: action.chartRelationIds,
         feature,
         layer
