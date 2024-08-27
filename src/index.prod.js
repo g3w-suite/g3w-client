@@ -716,7 +716,10 @@ ApplicationService.init()
               // `push` = whether to clean the stack every time, sure to have just one component.
               setContent(opts = {}) {
                 return $promisify(new Promise((resolve) => {
-                  (opts.push ? resolve() : stack.clear()).then(() => comp.addContent(opts.content, opts).then(() => resolve(opts)));
+                  (opts.push ? Promise.resolve() : stack.clear())
+                    .then(() => {
+                      comp.addContent(opts.content, opts).then(() => resolve(opts))
+                    });
                   comp.setOpen(true);
                 }))
               },
