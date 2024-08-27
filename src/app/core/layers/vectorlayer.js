@@ -149,7 +149,7 @@ class VectorMapLayer extends G3WObject {
 class VectorLayer extends GeoLayerMixin(TableLayer) {
   
   constructor(config = {}, opts = {}) {
-    super();
+    super(config, opts);
     this._mapLayer = null; // later tah will be added to the map
     this.type      = Layer.LayerTypes.VECTOR;
     // need an ol layer for adding to the map
