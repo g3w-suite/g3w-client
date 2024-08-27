@@ -700,6 +700,7 @@ import HeaderItem         from 'components/HeaderItem.vue';
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
 import getUniqueDomId     from 'utils/getUniqueDomId';
+import { XHR }            from 'utils/XHR';
 
 const { t }        = require('core/i18n/i18n.service');
 
@@ -1153,7 +1154,9 @@ export default {
       : [];
 
     if (!!this.appconfig.credits) {
-      $.get(this.appconfig.credits).then(c => this.customcredits = c !== 'None' && c);
+      XHR.get({ url: this.appconfig.credits })
+        .then(c => this.customcredits = 'None' !== c && c )
+        .catch(e => console.warn(e))
     }
   },
 

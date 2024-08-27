@@ -2,6 +2,9 @@
  * @file
  * @since v3.6
  */
+import { $promisify } from "utils/promisify";
+import { XHR }        from 'utils/XHR';
+
 const { reject }                = require('utils');
 const G3WObject                 = require('core/g3wobject');
 
@@ -36,7 +39,7 @@ export default new (class ApiService extends G3WObject {
       const url = `${this._baseUrl}/${apiEndPoint}${options.request ? `/${options.request}` : '' }`;
       this.emit(`${api}querystart`);
       this._incrementLoaders();
-      return $.get(url, (options.params || {}))
+      return $promisify(XHR.get({ url , params: (options.params || {}) }))
         .done(response => {
           this.emit(`${api}queryend`, response);
           return response;

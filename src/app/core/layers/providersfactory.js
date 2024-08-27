@@ -302,8 +302,7 @@ module.exports = {
     }
 
     getWidgetData(opts = {}) {
-      //@TODO Need to replace with XHR. editing and signaler_iim plugins depend on this method
-      return $.get(this._layer.getUrl('widget')[opts.type], { fields: opts.fields });
+      return $promisify(XHR.get({url: this._layer.getUrl('widget')[opts.type], params: { fields: opts.fields }}))
     };
 
     /**
