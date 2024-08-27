@@ -83,13 +83,13 @@ module.exports = {
    */
   geojson: class GEOJSONDataProvider extends DataProvider {
 
-    constructor(options = {}) {
-      super(options);
+    constructor(opts = {}) {
+      super(opts);
       this._name    = 'geojson';
-      this.provider = options.provider
+      this.provider = opts.provider
     }
 
-    query(options = {}) {
+    query(opts = {}) {
       return $promisify(Promise.resolve([]));
     }
 
@@ -125,10 +125,10 @@ module.exports = {
    */
   qgis: class QGISProvider extends DataProvider {
 
-    constructor(options = {}) {
+    constructor(opts = {}) {
       super();
       this._name             = 'qgis';
-      this._layer            = options.layer || {};
+      this._layer            = opts.layer || {};
       this._projections      = { map: null, layer: null };
       this._queryUrl         = this._layer.getUrl('query');       // url referred to query
       this._filtertokenUrl   = this._layer.getUrl('filtertoken'); // filtertokenurl
@@ -161,7 +161,7 @@ module.exports = {
      */
     async getFilterData({
       field,
-      raw = false,
+      raw       = false,
       suggest,
       unique,
       formatter = 1,
@@ -189,9 +189,9 @@ module.exports = {
         // vector layer
         if ('table' !== this._layer.getType()) { this.setProjections(); }
 
-        if (raw)                           return response;
-        if (unique && response.result)     return response.data;
-        if (fformatter && response.result) return response;
+        if (raw)                           { return response }
+        if (unique && response.result)     { return response.data }
+        if (fformatter && response.result) { return response }
 
         if (response.result) {
           return {
@@ -233,7 +233,7 @@ module.exports = {
         // in case not alphanumeric layer set projection
         if (!is_table) { this.setProjections(); }
 
-        const layers = opts.layers ? opts.layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+        const layers = opts.layers ? opts.layers.map(l => l.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
 
         let { filter = null } = opts;
         filter = filter && Array.isArray(filter) ? filter : [filter];
@@ -271,8 +271,8 @@ module.exports = {
                 resolve(handleQueryResponse({
                   response,
                   projections: this._projections,
-                  layers: undefined !== opts.layers ? opts.layers : [this._layer],
-                  wms: true,
+                  layers:      undefined === opts.layers ? [this._layer] : opts.layers,
+                  wms:         true,
                 }));
               }
             })
@@ -381,7 +381,7 @@ module.exports = {
           promise = XHR.post({
             url,
             data: JSON.stringify({
-              in_bbox: filter.bbox.join(','),
+              in_bbox:     filter.bbox.join(','),
               filtertoken: ApplicationState.tokens.filtertoken
             }),
             contentType: 'application/json',
@@ -391,7 +391,7 @@ module.exports = {
         } else if (filter.field) {
           promise = XHR.post({
             url,
-            data: JSON.stringify(filter),
+            data:        JSON.stringify(filter),
             contentType: 'application/json',
           })
         } else if (is_defined(filter.fids)) {
@@ -417,13 +417,13 @@ module.exports = {
               return;
             }
             const features = [];
-            const lockIds = featurelocks.map(lock => lock.featureid);
+            const lockIds  = featurelocks.map(lk => lk.featureid);
             ResponseParser.get(`g3w-${this._layer.getType()}/json`)(
               vector.data,
               ('NoGeometry' === vector.geometrytype) ? {} : { crs: this._layer.getCrs(), /*mapCrs: this._layer.getMapCrs()*/ }
             )
               .forEach(feature => {
-                if (lockIds.indexOf(`${feature.getId()}`) > -1) {
+                if (lockIds.includes(`${feature.getId()}`)) {
                   features.push(new Feature({ feature }));
                 }
               });
@@ -446,8 +446,8 @@ module.exports = {
    */
   wms: class WMSDataProvider extends DataProvider {
 
-    constructor(options = {}) {
-      super(options);
+    constructor(opts = {}) {
+      super(opts);
       this._name = 'wms';
     }
 
@@ -463,7 +463,7 @@ module.exports = {
         } = opts;
 
         const extent     = getExtentForViewAndSize(coordinates, resolution, 0, size);
-        const tolerance  = undefined !== opts.query_point_tolerance ? opts.query_point_tolerance : QUERY_POINT_TOLERANCE;
+        const tolerance  = undefined === opts.query_point_tolerance ? QUERY_POINT_TOLERANCE : opts.query_point_tolerance;
         const url        = layers[0].getQueryUrl();
 
         // base request
@@ -476,7 +476,7 @@ module.exports = {
           QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
           filtertoken:          ApplicationState.tokens.filtertoken,
           INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
-          FEATURE_COUNT:        undefined !== opts.feature_count ? opts.feature_count : 10,
+          FEATURE_COUNT:        undefined === opts.feature_count ? 10 : opts.feature_count,
           WITH_GEOMETRY:        true,
           DPI,
           FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
@@ -498,7 +498,7 @@ module.exports = {
         const timer = getTimeoutPromise({
           resolve,
           data: {
-            data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+            data:  (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
             query: { coordinates, resolution },
           },
         });
@@ -523,10 +523,10 @@ module.exports = {
           const data = await promise;
           resolve({
             data: handleQueryResponse({
-              response: data,
+              response:    data,
               projections: { map: projection, layer: null },
+              wms:         true,
               layers,
-              wms: true,
             }),
             query: { coordinates, resolution }
           })
@@ -582,7 +582,7 @@ module.exports = {
           SERVICE:      'WFS',
           VERSION:      '1.1.0',
           REQUEST:      'GetFeature',
-          MAXFEATURES:  undefined !== opts.feature_count ? opts.feature_count : 10,
+          MAXFEATURES:  undefined === opts.feature_count ? 10 : opts.feature_count,
           TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
           OUTPUTFORMAT: layers[0].getInfoFormat(),
           SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
@@ -619,8 +619,8 @@ module.exports = {
             });
             // sanitize in case of nil:true
             data
-              .flatMap(layer => layer.features || [])
-              .forEach(feature => Object.entries(feature.getProperties())
+              .flatMap(l => l.features || [])
+              .forEach(f => Object.entries(f.getProperties())
                 .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
               );
             resolve({ data });
