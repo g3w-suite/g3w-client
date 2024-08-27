@@ -14,26 +14,50 @@ module.exports = class FeaturesStore extends G3WObject {
     this._lockIds   = []; // store locked features
     //setters
     this.setters    = {
+      /**
+       * Add an array of features
+       * @param { Array } features
+       */
       addFeatures(features = []) {
         features.forEach(f => this._addFeature(f))
       },
+      /**
+       * Add single feature
+       * @param feature
+       */
       addFeature(feature) {
         this._addFeature(feature);
       },
+      /**
+       * Remove a feature
+       * @param feature
+       */
       removeFeature(feature) {
         this._removeFeature(feature);
       },
+      /**
+       * Update (substitute) a feature
+       * @param feature
+       */
       updateFeature(feature) {
         this._updateFeature(feature);
       },
+      /**
+       * Remove all feature
+       */
       clear() {
         this._clearFeatures();
       },
-      getFeatures(options = {}) {
-        return this._getFeatures(options);
+      /**
+       * Get features from server
+       * @param opts
+       * @return { Promise }
+       */
+      getFeatures(opts = {}) {
+        return this._getFeatures(opts);
       },
       /**
-       *
+       * Commit changes (add, update, delete) to server
        * @param commitItems
        * @param featurestore Its is used????
        * @return {*}
@@ -59,7 +83,9 @@ module.exports = class FeaturesStore extends G3WObject {
     return this._provider;
   }
 
-  // method unlock features
+  /**
+   *  Unlock features. Other users can edit these features
+   */
   unlock() {
     return $promisify(new Promise((resolve, reject) => {
       this._provider.unlock()
@@ -71,11 +97,11 @@ module.exports = class FeaturesStore extends G3WObject {
   /*
    * Gets all features from server or attribute _features
    */
-  _getFeatures(options = {}) {
+  _getFeatures(opts = {}) {
     return $promisify(new Promise((resolve, reject) => {
       if (this._provider) {
         //call provider getFeatures to get features from server
-        this._provider.getFeatures(options)
+        this._provider.getFeatures(opts)
           .then(options => {
             //get the feature base on response from server features, featurelockis etc ...
             const features = this._filterFeaturesResponse(options);
@@ -167,14 +193,16 @@ module.exports = class FeaturesStore extends G3WObject {
     return this._lockIds;
   }
 
-//method to add new lockid
+  /**
+   * Add new lockid
+   */
   addLockIds(lockIds) {
     this._lockIds = _.union(this._lockIds, lockIds);
     this._lockIds.forEach(({ featureid }) => this._loadedIds.push(featureid));
   }
 
   /**
-   *
+   * Get features stored. No call to server is done
    * @returns {*|null|[]}
    * @private
    */
@@ -196,9 +224,13 @@ module.exports = class FeaturesStore extends G3WObject {
     }))
   }
 
-// get feature from id
-  getFeatureById(featureId) {
-    return this._features.find(f => featureId == f.getId());
+  /**
+   * Get feature
+   * @param id
+   * @return { Feature }
+   */
+  getFeatureById(id) {
+    return this._features.find(f => id == f.getId());
   }
 
   getFeatureByUid(uid) {
@@ -209,7 +241,9 @@ module.exports = class FeaturesStore extends G3WObject {
     this._features.push(feature);
   }
 
-//substitute feature after update
+  /**
+   * Substitute (update) feature after update
+   */
   _updateFeature(feature) {
     this._features.find((feat, idx) => {
       if (feature.getUid() === feat.getUid() ) {
