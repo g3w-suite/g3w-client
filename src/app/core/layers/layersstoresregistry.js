@@ -26,7 +26,7 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
       removeLayersStore(store) {
         if (store) {
           const id = store.getId();
-          this.storesArray = this.storesArray.filter(i => i != id);
+          this.storesArray = this.storesArray.filter(i => id !== i);
           delete this.stores[id];
         }
       },
@@ -40,7 +40,7 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
   }
 
   getLayerById(id) {
-    return Object.values(this.stores).map(s => s.getLayerById(id)).find(layer => layer);
+    return Object.values(this.stores).map(s => s.getLayerById(id)).find(l => l);
   }
 
   getLayers(filter) {
