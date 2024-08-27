@@ -112,7 +112,7 @@ const BASE_LAYERS   = {
         // extent: opts.extent,
         visible: false,
         source: new ol.source.TileArcGISRest({
-          url:          undefined !== this.config.url ? this.config.url : null,
+          url:          undefined === this.config.url ? null : this.config.url,
           projection:   this.getProjectionFromCrs(this.config.crs),
           attributions: this.config.attributions,
           // crossOrigin:  opts.crossOrigin,
@@ -132,8 +132,8 @@ const BASE_LAYERS   = {
         layer,
         attributions,
         matrixSet,
-        format='image/png',
-        style='default',
+        format = 'image/png',
+        style  = 'default',
         requestEncoding,
         grid, /** @since 3.10.0*/
         grid_extent, /** @since 3.10.0 */
@@ -173,12 +173,12 @@ const BASE_LAYERS   = {
             layer,
             projection,
             matrixSet: grid,
-            format: format || 'png',
-            tileGrid: new ol.tilegrid.WMTS({
-              origin: ol.extent.getTopLeft(grid_extent),
-              resolutions,
-              matrixIds: resolutions.map((_, z) => z),
-            }),
+            format:    format || 'png',
+            tileGrid:  new ol.tilegrid.WMTS({
+                         origin: ol.extent.getTopLeft(grid_extent),
+                         resolutions,
+                         matrixIds: resolutions.map((_, z) => z),
+                       }),
             style,
             transparent: false,
           })
@@ -199,8 +199,8 @@ const BASE_LAYERS   = {
           projection:   this.getProjectionFromCrs(this.config.crs),
           attributions: this.config.attributions,
           layers:       this.config.layers,
-          tiled:        undefined !== this.config.singleTile ? this.config.singleTile : false,
-          opacity:      undefined !== this.config.opacity ? this.config.opacity : 1,
+          tiled:        undefined === this.config.singleTile ? false : this.config.singleTile,
+          opacity:      undefined === this.config.opacity ? 1 : this.config.opacity,
         },
     });
     }
@@ -235,7 +235,7 @@ module.exports = {
     const is_pgraster = is_qgis && Layer.SourceTypes.POSTGRESRASTER  === source.type;
 
     // Check Geometry Type
-    const is_tabular = config.geometrytype === 'NoGeometry';
+    const is_tabular = 'NoGeometry' === config.geometrytype;
     const has_geom   = config.geometrytype && WITH_GEOMETRY.includes(source.type);
     const no_geom    = !config.geometrytype && NO_GEOMETRY.includes(source.type);
 
