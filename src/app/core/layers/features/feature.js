@@ -10,9 +10,11 @@ module.exports = class Feature extends ol.Feature {
       state:   null,
       visible: true
     };
-
+    //store unique id for the feature
     this._uid       = uniqueId();
+    //prefix of new feature id
     this._newPrefix = '_new_';
+    //{ Boolean }: true if feature has geometry
     this._geometry  = false;
 
     const { feature, properties } = opts;
@@ -27,8 +29,12 @@ module.exports = class Feature extends ol.Feature {
       this.setId(feature.getId());
       this.setGeometryName(feature.getGeometryName());
       const geometry = feature.getGeometry();
-      this._geometry = !!geometry;
-      geometry && this.setGeometry(geometry);
+      //check if feature has geometry
+      if (geometry) {
+        this._geometry = true;
+        this.setGeometry(geometry);
+      }
+      //check if it has style associated
       const style = this.getStyle();
       if (style) {
         this.setStyle(style);
@@ -54,6 +60,10 @@ module.exports = class Feature extends ol.Feature {
     this._uid = uid;
   };
 
+  /**
+   *
+   * @return {boolean}
+   */
   isGeometry() {
     return this._geometry;
   };
@@ -65,6 +75,7 @@ module.exports = class Feature extends ol.Feature {
    */
   cloneNew(pk) {
     const clone = this.clone();
+    //set new unique id
     clone._setUid(uniqueId());
     clone.setTemporaryId();
     //in the case of send pk field object set temporary new value
@@ -83,6 +94,7 @@ module.exports = class Feature extends ol.Feature {
   clone() {
     const feature = super.clone();
     feature.setId(this.getId());
+    //if it has geometry, need to clone geometry
     if (this.isGeometry()) {
       feature.setGeometry(feature.getGeometry().clone());
     }
@@ -143,6 +155,10 @@ module.exports = class Feature extends ol.Feature {
     return this.state.state;
   };
 
+  /**
+   * Get only alphanumerical properties. No geometry property is returned
+   * @return {{ Object }}
+   */
   getAlphanumericProperties() {
     return Object
       .entries(this.getProperties())
@@ -166,6 +182,10 @@ module.exports = class Feature extends ol.Feature {
     return this.state.visible;
   };
 
+  /**
+   * Set visibility of feature
+   * @param bool
+   */
   setVisible(bool = true) {
     this.state.visible = bool;
   };
