@@ -403,8 +403,10 @@ ApplicationService.init()
                     GUI.closeOpenSideBarComponent();
                     const opts = { type: 'sidebar', title: t('sdk.querybuilder.title'), show: true, };
                     opts.internalPanel = new (Vue.extend(require('components/QueryBuilder.vue')))(opts);
-                    const panel = new Panel(opts);
-                    panel.show();
+                    // Build the sidebar panel.
+                    // It is show, mounted on the sidebar, because show opts is set to true
+                    // no need to class show method of panel
+                    new Panel(opts);
                   },
                   style: {
                     color:        '#8DC3E3',
