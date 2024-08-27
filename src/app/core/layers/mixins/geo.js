@@ -1,6 +1,6 @@
 /**
  * @TODO convert it to ES6 class (or external utils)
- * 
+ *
  * @file
  * @since 3.9.0
  */
@@ -22,7 +22,7 @@ import { sanitizeUrl }                    from 'utils/sanitizeUrl';
  */
 export default BaseClass => class extends BaseClass {
 
-  setup(config={}, options={}) {
+  setup(config = {}, options = {}) {
     if (!this.config) {
       console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
       return;
@@ -44,7 +44,7 @@ export default BaseClass => class extends BaseClass {
     // state extend of layer setting geolayer property to true
     // and adding information of bbox
     Object.assign(this.state, {
-      geolayer:             config.geometrytype !== "NoGeometry",
+      geolayer:             "NoGeometry" !== config.geometrytype,
       legend: {
         url:     null,
         loading: false,
@@ -98,7 +98,7 @@ export default BaseClass => class extends BaseClass {
   
   
     // sanitize source url
-    if(config.source && config.source.url) {
+    if (config.source && config.source.url) {
       this.config.source.url = sanitizeUrl({
         url:                this.config.source.url,
         reserverParameters: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ], // reserved WMS params
@@ -109,14 +109,14 @@ export default BaseClass => class extends BaseClass {
   /**
    * Legend Graphic section
    */
-  getLegendGraphic({all=true}={}) {
+  getLegendGraphic({ all = true } = {}) {
     return XHR.get({
       url: this.getLegendUrl(
         (ApplicationService.getConfig().layout || ({ legend: {} })).legend,
         {
           categories: true,
+          format:     'application/json', // is the format to request categories (icon and label of each category)
           all, // true meaning no bbox no filter just all referred to
-          format: 'application/json' // is the format to request categories (icon and label of each category)
         }
       )
     });
@@ -124,12 +124,12 @@ export default BaseClass => class extends BaseClass {
   
   /**
    * Set layer categories legend
-   * @param categories
+   * @param { Array }categories
    */
-  setCategories(categories=[]) {
+  setCategories(categories = []) {
     this.legendCategories[this.getCurrentStyle().name] = categories;
     //set categories state attribute to true only if exist at least a rule key
-    this.state.categories = categories.length > 0 && categories.filter(category => category.ruleKey).length > 0;
+    this.state.categories = (categories || []).filter(category => category.ruleKey).length > 0;
   }
   
   /**
@@ -197,11 +197,10 @@ export default BaseClass => class extends BaseClass {
    * @param id
    */
   deleteOlSelectionFeature(id) {
-    const map = GUI.getService('map');
     const selected = this.getOlSelectionFeature(id);
     if (selected) {
       /** @FIXME undefined variable */
-      map.setSelectionFeatures('remove', { feature: selected.feature });
+      GUI.getService('map').setSelectionFeatures('remove', { feature: selected.feature });
       delete this.olSelectionFeatures[id];
     }
   }
@@ -209,7 +208,7 @@ export default BaseClass => class extends BaseClass {
   /**
    * [LAYER SELECTION]
    * 
-   * Get all OpenLayers feature selection
+   * Get all OpenLayers feature selections
    * 
    * @returns { {} | null }
    */
@@ -227,7 +226,7 @@ export default BaseClass => class extends BaseClass {
   */
   addOlSelectionFeature({ id, feature } = {}) {
     this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-      feature: createFeatureFromFeatureObject({ id, feature }),
+      feature:  createFeatureFromFeatureObject({ id, feature }),
       added:    false,
       selected: false, /** @since 3.9.9 */
     };
@@ -237,7 +236,7 @@ export default BaseClass => class extends BaseClass {
   /**
    * [LAYER SELECTION]
    *
-   * Set selection layer on map not visible
+   * Set selection layer on a map not visible
    */
   hideOlSelectionFeatures() {
     GUI.getService('map').toggleSelection(false);
@@ -249,23 +248,22 @@ export default BaseClass => class extends BaseClass {
    * Show all selection features
    */
   updateMapOlSelectionFeatures() {
-    const map = GUI.getService('map');
     // Loop `added` features (selected)
     Object
       .values(this.olSelectionFeatures)
-      .forEach(feat => {
-        if (feat.selected && !feat.added) {
-          map.setSelectionFeatures('add', { feature: feat.feature });
-          feat.added = true;
+      .forEach(f => {
+        if (f.selected && !f.added) {
+          GUI.getService('map').setSelectionFeatures('add', { feature: f.feature });
+          f.added = true;
         }
   
-        if (!feat.selected && feat.added) {
-          map.setSelectionFeatures('remove', { feature: feat.feature });
-          feat.added = false;
+        if (!f.selected && f.added) {
+          GUI.getService('map').setSelectionFeatures('remove', { feature: f.feature });
+          f.added = false;
         }
       });
     // Ensures visibility of selection layer on a map
-    map.toggleSelection(Object.values(this.olSelectionFeatures).some(f => f.selected));
+    GUI.getService('map').toggleSelection(Object.values(this.olSelectionFeatures).some(f => f.selected));
   }
   
   /**
@@ -274,19 +272,18 @@ export default BaseClass => class extends BaseClass {
    * Toggle `added` property on all features
    */
   setInversionOlSelectionFeatures() {
-    const map = GUI.getService('map');
     Object
       .values(this.olSelectionFeatures)
-      .forEach(feat => {
+      .forEach(f => {
         //invert select state
-        feat.selected = !feat.selected;
-        if (!feat.selected && feat.added) {
-          map.setSelectionFeatures('remove', { feature: feat.feature });
-          feat.added = false;
+        f.selected = !f.selected;
+        if (!f.selected && f.added) {
+          GUI.getService('map').setSelectionFeatures('remove', { feature: f.feature });
+          f.added = false;
         }
-        if (feat.selected && !feat.added) {
-          map.setSelectionFeatures('add', { feature: feat.feature });
-          feat.added = true;
+        if (f.selected && !f.added) {
+          GUI.getService('map').setSelectionFeatures('add', { feature: f.feature });
+          f.added = true;
         }
       });
   }
@@ -320,8 +317,7 @@ export default BaseClass => class extends BaseClass {
    * @returns { boolean }
    */
   setOlSelectionFeatures(feature, action = 'add') {
-    const map = GUI.getService('map');
-  
+
     // select a single feature
     if (feature) {
       const feat             = this.getOlSelectionFeature(feature.id);
@@ -336,7 +332,7 @@ export default BaseClass => class extends BaseClass {
         .forEach(feat => {
           //remove selection feature
           if (feat.added) {
-            map.setSelectionFeatures('remove', { feature: feat.feature });
+            GUI.getService('map').setSelectionFeatures('remove', { feature: feat.feature });
           }
           feat.added    = false;
           feat.selected = false;
@@ -350,8 +346,9 @@ export default BaseClass => class extends BaseClass {
     let checked = this.isChecked();
     if (checked) {
       let parentGroup = this.state.parentGroup;
+      //loop from bottom to top
       while(checked && parentGroup) {
-        checked = checked && parentGroup.checked;
+        checked     = checked && parentGroup.checked;
         parentGroup = parentGroup.parentGroup;
       }
     }
@@ -376,16 +373,18 @@ export default BaseClass => class extends BaseClass {
   
   /**
    * Is a method that check for visiblitity dissabled (based on scalevisibility) and checked on toc
-   * @param bool
+   * @param { Boolean } bool
    * @returns {*}
    */
   setVisible(bool) {
-    //check if is changed
-    const oldVisibile = this.state.visible;
-    this.state.visible = bool && this.isChecked(); // bool and is checked
-    const changed = oldVisibile !== this.state.visible;
-    //if changed call change
-    changed && this.change();
+    //get current visibility
+    const visible  = this.state.visible;
+    // set visibility bool and is checked
+    this.state.visible = bool && this.isChecked();
+    //Check if change the visibility
+    if (visible !== this.state.visible) {
+      this.change();
+    }
     return this.state.visible;
   }
 
@@ -396,9 +395,18 @@ export default BaseClass => class extends BaseClass {
   isDisabled() {
     return this.state.disabled;
   }
-  
-  isPrintable({scale}={}) {
-    return this.isLayerCheckedAndAllParents() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
+
+  /**
+   *
+   * @param scale
+   * @return {boolean}
+   */
+  isPrintable({ scale } = {}) {
+    return this.isLayerCheckedAndAllParents()
+      && (
+        !this.state.scalebasedvisibility
+        || (scale >= this.state.maxscale && scale <= this.state.minscale)
+      );
   }
   
   //get style form layer
@@ -407,7 +415,7 @@ export default BaseClass => class extends BaseClass {
   }
   
   getStyle() {
-    return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
+    return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(s => s.current).name : '';
   }
   
   /**
@@ -423,22 +431,18 @@ export default BaseClass => class extends BaseClass {
   }
   
   /**
-   * Method to change current style  of layer
-   * @param currentStyleName
-   * @returns {boolean}
+   * Method to change the current style of layer
+   * @param name
+   * @returns { Boolean }
    */
-  setCurrentStyle(currentStyleName) {
-    let changed = false;
-    this.config.styles.forEach(style => {
-      if (style.name === currentStyleName)
-        changed = !style.current;
-      style.current = style.name === currentStyleName;
-    });
+  setCurrentStyle(name) {
+    const changed = !(this.config.styles.find(s => name === s.name).current);
+    this.config.styles.forEach(s => s.current = name === s.name);
     return changed;
   }
   
   getCurrentStyle() {
-    return this.config.styles.find(style => style.current);
+    return this.config.styles.find(s => s.current);
   }
   
   /**
@@ -446,17 +450,17 @@ export default BaseClass => class extends BaseClass {
    * @param resolution
    * @param mapUnits
    */
-  setDisabled(resolution, mapUnits='m') {
+  setDisabled(resolution, mapUnits = 'm') {
     if (this.state.scalebasedvisibility) {
-      const mapScale = getScaleFromResolution(resolution, mapUnits);
+      const mapScale      = getScaleFromResolution(resolution, mapUnits);
       this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
       this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
-      // needed to check if call setVisible if change disable property
+      // needed to check if call setVisible is change disable property
       // looping through parentfolter checked
       let setVisible = true;
       let parentGroup = this.state.parentGroup;
       while (parentGroup) {
-        setVisible = setVisible && parentGroup.checked;
+        setVisible  = setVisible && parentGroup.checked;
         parentGroup = parentGroup.parentGroup;
       }
       if (setVisible) {
@@ -483,7 +487,7 @@ export default BaseClass => class extends BaseClass {
     return this.config.ows_method;
   }
   
-  setProjection(crs={}) {
+  setProjection(crs = {}) {
     this.config.projection = Projections.get(crs);
   }
   
@@ -496,7 +500,7 @@ export default BaseClass => class extends BaseClass {
   }
   
   getCrs() {
-    return this.config.projection && this.config.projection.getCode() || null;
+    return this.config.projection ? this.config.projection.getCode() : null;
   }
   
   getMapCrs() {
@@ -504,7 +508,7 @@ export default BaseClass => class extends BaseClass {
   }
   
   isCached() {
-    return this.config.cache_url && this.config.cache_url !== '';
+    return this.config.cache_url && '' !== this.config.cache_url;
   }
   
   getCacheUrl() {
@@ -519,7 +523,7 @@ export default BaseClass => class extends BaseClass {
   
   // return if layer has inverted axis
   hasAxisInverted() {
-    const projection = this.getProjection();
+    const projection      = this.getProjection();
     const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
     return axisOrientation.substr(0, 2) === 'ne';
   }
@@ -530,9 +534,13 @@ export default BaseClass => class extends BaseClass {
   getMapLayer() {
     console.log('overwrite by single layer')
   }
-  
-  setMapProjection(mapProjection) {
-    this._mapProjection = mapProjection;
+
+  /**
+   *
+   * @param projection
+   */
+  setMapProjection(projection) {
+    this._mapProjection = projection;
   }
   
   getMapProjection() {
