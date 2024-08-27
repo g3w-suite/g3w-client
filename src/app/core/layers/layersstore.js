@@ -22,17 +22,17 @@ module.exports = class LayersStore extends G3WObject {
     this._layers = this.config.layers || {};
 
     this.setters = {
-      setLayerSelected(layerId, selected) {
-        this.getLayers().forEach(l => l.state.selected = (layerId === l.getId()) ? selected : false);
+      setLayerSelected(id, selected) {
+        this.getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false);
       },
-      addLayers(layers) {
+      addLayers(layers = []) {
         layers.forEach(l => this.addLayer(l))
       },
       addLayer(layer) {
         this._addLayer(layer);
       },
-      removeLayer(layerId) {
-        this._removeLayer(layerId);
+      removeLayer(id) {
+        this._removeLayer(id);
       }
     };
   }
@@ -41,6 +41,10 @@ module.exports = class LayersStore extends G3WObject {
     return this._isQueryable;
   };
 
+  /**
+   *
+   * @param { Boolean } bool
+   */
   setQueryable(bool) {
     this._isQueryable = !!bool;
   };
@@ -101,7 +105,7 @@ module.exports = class LayersStore extends G3WObject {
 
     if (filter.IDS) {
       const ids = [].concat(filter.IDS);
-      layers = layers.filter(l => -1 !== ids.indexOf(l.getId()));
+      layers = layers.filter(l => ids.includes(l.getId()));
     }
 
     // check if there are `selected` layers otherwise get all `layers`
@@ -122,7 +126,7 @@ module.exports = class LayersStore extends G3WObject {
     if (has(filter.BASELAYER))                                              layers = layers.filter(l => filter.BASELAYER   === l.isBaseLayer());
     if (has(filter.GEOLAYER))                                               layers = layers.filter(l => filter.GEOLAYER    === l.state.geolayer);
     if (has(filter.VECTORLAYER))                                            layers = layers.filter(l => filter.VECTORLAYER === l.isType('vector'));
-    if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      == l.isHidden());
+    if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      === l.isHidden());
     if (has(filter.DISABLED))                                               layers = layers.filter(l => filter.DISABLED    === l.isDisabled());
     if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
     if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.state.geolayer && l.isPrintable({ scale: filter.PRINTABLE.scale }));
@@ -139,20 +143,20 @@ module.exports = class LayersStore extends G3WObject {
     return this.getLayersDict({ BASELAYER: true });
   };
 
-  getLayerById(layerId) {
-    return this.getLayersDict()[layerId];
+  getLayerById(id) {
+    return this.getLayersDict()[id];
   };
 
   getLayerByName(name) {
     return this._layers.find(l => name === l.getName());
   };
 
-  getLayerAttributes(layerId) {
-    return this.getLayerById(layerId).getAttributes();
+  getLayerAttributes(id) {
+    return this.getLayerById(id).getAttributes();
   };
 
-  getLayerAttributeLabel(layerId, name) {
-    return this.getLayerById(layerId).getAttributeLabel(name);
+  getLayerAttributeLabel(id, name) {
+    return this.getLayerById(id).getAttributeLabel(name);
   };
 
   getGeoLayers() {
@@ -186,8 +190,8 @@ module.exports = class LayersStore extends G3WObject {
     return nodeIds;
   };
 
-  selectLayer(layerId, selected) {
-    this.setLayerSelected(layerId, selected);
+  selectLayer(id, selected) {
+    this.setLayerSelected(id, selected);
   };
 
   getProjection() {
