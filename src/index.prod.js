@@ -406,7 +406,7 @@ ApplicationService.init()
                     // Build the sidebar panel.
                     // It is show, mounted on the sidebar, because show opts is set to true
                     // no need to class show method of panel
-                    new Panel(opts);
+                    return new Panel(opts);
                   },
                   style: {
                     color:        '#8DC3E3',
