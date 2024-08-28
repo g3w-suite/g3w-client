@@ -19,11 +19,11 @@ export class GeolocationControl extends InteractionControl {
      */
     this._layer = new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style: new ol.style.Style({
+      style:  new ol.style.Style({
         text: new ol.style.Text({
-          text: '\uf3c5',
-          font: '900 3em "Font Awesome 5 Free"',
-          fill: new ol.style.Fill({ color: 'red' }),
+          text:     '\uf3c5',
+          font:     '900 3em "Font Awesome 5 Free"',
+          fill:     new ol.style.Fill({ color: 'red' }),
           offsetY: -15, // move marker icon on base point coordinate and not center
         })
       })
@@ -51,7 +51,7 @@ export class GeolocationControl extends InteractionControl {
    * 
    * @param {{ map: ol.Map, coordinates: ol.coordinate, show?: boolean }}
    */
-  _showMarker({map, coordinates, show=true}) {
+  _showMarker({ map, coordinates, show = true }) {
 
     if (!this._layer) {
       return;
@@ -96,9 +96,9 @@ export class GeolocationControl extends InteractionControl {
       this._layer = null;
 
       GUI.showUserMessage({
-        type: 'warning',
-        title: "mapcontrols.geolocation.error",
-        message: e.message,
+        type:      'warning',
+        title:     "mapcontrols.geolocation.error",
+        message:   e.message,
         autoclose: false
       });
 

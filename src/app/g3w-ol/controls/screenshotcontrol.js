@@ -21,8 +21,8 @@ import { InteractionControl }   from 'g3w-ol/controls/interactioncontrol';
  */
 export class ScreenshotControl extends InteractionControl {
 
-  constructor(options = {}) {
-    options.layers = undefined !== options.layers ? options.layers : []; 
+  constructor(opts = {}) {
+    opts.layers = undefined === opts.layers ? []: opts.layers;
 
     super({
       name: "maptoimage",
@@ -31,21 +31,21 @@ export class ScreenshotControl extends InteractionControl {
       clickmap: true,
       enabled:  true,
       layers: [],
-      ...options
+      ...opts
     });
 
     this.types = [];
 
-    (options.types || []).forEach(type => this.addType(type));
+    (opts.types || []).forEach(type => this.addType(type));
 
-    this.layers= options.layers;
+    this.layers= opts.layers;
 
     //set visibility based on layers
     this.setVisible(this.checkVisible(this.layers));
 
-    //only if is visible (no CORS issue) need to listen add/remove layer
+    //only if is visible (no CORS issue) need to listen to add/remove layer
     if (this.isVisible()) {
-      //listen add/remove External Layer event to check visibility of the control
+      //listen to add/remove External Layer event to check visibility of the control
       GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
       GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
     }
@@ -80,7 +80,7 @@ export class ScreenshotControl extends InteractionControl {
           </div>`,
         methods: {
           async download(e) {
-            const map = GUI.getService('map');
+            const map         = GUI.getService('map');
             // Start download
             const download_id = ApplicationService.setDownload(true);
             e.target.disabled = true;
@@ -93,12 +93,12 @@ export class ScreenshotControl extends InteractionControl {
                 // GeoTIFF
                 window.saveAs(
                   await getGeoTIFFfromServer({
-                    url: `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
+                    url:    `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
                     method: "POST",
                     params: {
-                      image: blobImage,
+                      image:               blobImage,
                       csrfmiddlewaretoken: map.getCookie('csrftoken'),
-                      bbox: map.getMapBBOX().toString()
+                      bbox:                map.getMapBBOX().toString()
                     },
                   }),
                   `map_${Date.now()}.tif`
@@ -158,8 +158,8 @@ export class ScreenshotControl extends InteractionControl {
   /**
    * Check visibility for map control based on layers URLs.
    * 
-   * Allow to print external WMS layers only when they have
-   * same origin URL of current application in order to avoid
+   * Allow printing external WMS layers only when they have
+   * the same origin URL of the current application in order to avoid
    * CORS issue while getting map image.
    * 
    * Layers that don't have a source URL are excluded (eg. base layers)
@@ -169,7 +169,8 @@ export class ScreenshotControl extends InteractionControl {
    * @returns {boolean}
    */
   checkVisible(layers = []) {
-    //need to be visible. If it was not visible an CORS issue was raise.
+    // Need to be visible.
+    // If it was not visible, the CORS issue was raised.
     // Need to reload and remove layer
     return this.isVisible() && !layers.some(isCrossOrigin);
   }

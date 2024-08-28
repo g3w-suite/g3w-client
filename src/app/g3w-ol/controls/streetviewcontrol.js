@@ -10,19 +10,19 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
 
 export class StreetViewControl extends InteractionControl {
-  constructor(options={}) {
+  constructor(opts = {}) {
 
     super({
-      ...options,
-      offline:          false,
-      visible:          true, // always visible. Only change behavior if exist or not
-      name:             "streetview",
-      tipLabel:         "StreetView",
-      clickmap:         true,
-      label:            "\ue905",
-      interactionClass: PickCoordinatesInteraction,
+      ...opts,
+      offline:                 false,
+      visible:                 true, // always visible. Only change behavior if exist or not
+      name:                    "streetview",
+      tipLabel:                "StreetView",
+      clickmap:                true,
+      label:                   "\ue905",
+      interactionClass:        PickCoordinatesInteraction,
       interactionClassOptions: { cursor: 'ol-streetview' },
-      cursorClass:      'ol-streetview',
+      cursorClass:             'ol-streetview',
     });
 
     /**
@@ -35,7 +35,7 @@ export class StreetViewControl extends InteractionControl {
     if (this.key) {
       XHR.get({
         url: `${GoogleStreetViewApiUrl}streetview?location=0,0&size=456x456&key=${this.key}`
-      }).catch((error) => this.keyError = error.responseText);
+      }).catch((e) => { console.warn(e); this.keyError = e.responseText });
     }
 
     // get script
@@ -52,7 +52,7 @@ export class StreetViewControl extends InteractionControl {
     this.active              = false;
     
     this._layer = new ol.layer.Vector({
-      source: new ol.source.Vector({features: []}),
+      source: new ol.source.Vector({ features: [] }),
       style(feature) {
         const coordinates = feature.getGeometry().getCoordinates();
         this._lastposition = this._lastposition ? this._lastposition : coordinates;
@@ -81,6 +81,15 @@ export class StreetViewControl extends InteractionControl {
       }
     });
 
+    //@since 3.11.0.
+    // In the case of key provided and open content with streetview images,
+    // on close content need to remove point (icon street view on a map)
+    if (this.key) {
+      GUI.on('closecontent', () => {
+        if (this.isToggled()) { this._layer.getSource().clear() }
+      })
+    }
+
   }
 
   setProjection(projection) {
@@ -88,15 +97,14 @@ export class StreetViewControl extends InteractionControl {
   }
 
   setPosition(position) {
-    const self = this;
-    this.active = true;
     let pixel;
-    if (!this._sv) this._sv = new google.maps.StreetViewService();
-    this._sv.getPanorama({location: position}, (data, status) => {
-      self._panorama = new google.maps.StreetViewPanorama(
-        document.getElementById('streetview'), {
-          imageDateControl: true
-      });
+    const self  = this;
+    this.active = true;
+    if (!this._sv) {
+      this._sv = new google.maps.StreetViewService();
+    }
+    this._sv.getPanorama({ location: position }, (data) => {
+      self._panorama = new google.maps.StreetViewPanorama(document.getElementById('streetview'), { imageDateControl: true });
       /**
        * Listen on position change
       */
@@ -114,8 +122,8 @@ export class StreetViewControl extends InteractionControl {
       });
       if (data && data.location) {
         self._panorama.setPov({
-          pitch: 0,
-          heading: 0
+          pitch:   0,
+          heading: 0,
         });
 
         self._panorama.setPosition(data.location.latLng);
@@ -124,17 +132,17 @@ export class StreetViewControl extends InteractionControl {
       if (undefined === response) {
         GUI.closeContent();
       }
-    }).catch(() => this.toggle())
+    }).catch(e => { console.warn(e); this.toggle() })
   }
 
   setMap(map) {
     this._map = map;
-    InteractionControl.prototype.setMap.call(this, map);
+    super.setMap(map);
 
     this.setProjection(this._map.getView().getProjection());
     this._map.addLayer(this._layer);
 
-    this._interaction.on('picked', ({coordinate}) => {
+    this._interaction.on('picked', ({ coordinate }) => {
       this.showStreetView(coordinate);
       if (this._autountoggle) {
         this.toggle();
@@ -147,10 +155,10 @@ export class StreetViewControl extends InteractionControl {
    * @param coordinate
    */
   showStreetView(coordinate) {
-    const [lng, lat] = ol.proj.transform(coordinate, this._map.getView().getProjection().getCode(), 'EPSG:4326');
+    const [ lng, lat ] = ol.proj.transform(coordinate, this._map.getView().getProjection().getCode(), 'EPSG:4326');
     if (this.key) {
       GUI.setContent({
-        title: 'StreetView',
+        title:   'StreetView',
         content: new Component({ internalComponent: new (Vue.extend(vueComp))({ keyError: this.keyError }) }),
       });
       if (!this.keyError) {
@@ -173,12 +181,12 @@ export class StreetViewControl extends InteractionControl {
     this._streetViewFeature.setGeometry(null);
     this.clearMarker();
     this._panorama = null;
-    this.active && GUI.closeContent();
+    if (this.active) { GUI.closeContent() }
     this.active = false;
   };
 
   toggle(toggle) {
-    InteractionControl.prototype.toggle.call(this, toggle);
+    super.toggle(toggle);
     if (this.isToggled()) {
       this._layer.getSource().addFeatures([this._streetViewFeature]);
     } else {

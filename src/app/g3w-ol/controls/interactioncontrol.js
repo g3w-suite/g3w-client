@@ -15,15 +15,15 @@ export class InteractionControl extends ol.control.Control {
       this._options     = options;
       this._control     = options.ol;
       this.positionCode = options.position || 'tl';
+      this.offline      = true;
       $(this._control.element).addClass("ol-control-" + this.positionCode);
-      this.offline = true;
       return this;
     }
 
     /** @TODO simplify */
-    options.enabled = undefined !== options.enabled ? options.enabled : !!options.interactionClass;
+    options.enabled = undefined === options.enabled ? !!options.interactionClass : options.enabled;
     
-    options.visible = undefined !== options.visible ? options.visible : true;
+    options.visible = undefined === options.visible ? true : options.visible;
 
     const name = (options.name || '').split(' ').join('-').toLowerCase();
 
@@ -40,10 +40,10 @@ export class InteractionControl extends ol.control.Control {
 
     super(options);
 
-    this._options = options;
+    this._options        = options;
 
     //@since v3.11.0
-    this.cursorClass = options.cursorClass;
+    this.cursorClass     = options.cursorClass;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
@@ -62,35 +62,35 @@ export class InteractionControl extends ol.control.Control {
      *
      * @FIXME add description
      */
-    this._enabled = options.enabled;
+    this._enabled        = options.enabled;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
      * @FIXME add description
      */
-    this.offline = undefined !== options.offline ? options.offline : true;
+    this.offline         = undefined === options.offline ? true : options.offline;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
      * @FIXME add description
      */
-    this.name = name;
+    this.name            = name;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
      * @FIXME add description
      */
-    this.id = `${this.name}_${(Math.floor(Math.random() * 1000000))}`;
+    this.id              = `${this.name}_${(Math.floor(Math.random() * 1000000))}`;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
      * store eventKey and original havenHandler
      */
-    this.eventKeys = {};
+    this.eventKeys       = {};
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
@@ -100,14 +100,14 @@ export class InteractionControl extends ol.control.Control {
      * bl: bottom-left
      * bt: bottom-right
      */
-    this.positionCode = options.position || 'tl';
+    this.positionCode    = options.position || 'tl';
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
      * @FIXME add description
      */
-    this.priority = options.priority || 0;
+    this.priority        = options.priority || 0;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
@@ -127,9 +127,9 @@ export class InteractionControl extends ol.control.Control {
       this._options.postRender.call(this);
     }
 
-    this._toggled = false;
+    this._toggled                 = false;
 
-    this._toggled = false;
+    this._toggled                 = false;
 
     this._interactionClassOptions = options.interactionClassOptions;
 
@@ -145,11 +145,11 @@ export class InteractionControl extends ol.control.Control {
    * @since 3.11.0
    */
   setMouseCursor(toggled, className = this.cursorClass) {
-    const map = this.getMap().getViewport()
+    const viewport = this.getMap().getViewport()
     if (toggled) {
-      setTimeout(() => map.classList.add(className));
+      setTimeout(() => viewport.classList.add(className));
     } else {
-      map.classList.remove(className);
+      viewport.classList.remove(className);
     }
   }
 
@@ -176,16 +176,16 @@ export class InteractionControl extends ol.control.Control {
      * 
      * @since 3.8.0
      */
-    this.layers = layers;
+    this.layers            = layers;
 
     /**
      * @since 3.8.0
      */
-    this.unwatches = [];
+    this.unwatches         = [];
 
-    this._visible = visible;
+    this._visible          = visible;
     /**
-     * Check if interact with map
+     * Check if interact with a map
      */
     this.clickmap          = clickmap;
 
@@ -214,12 +214,12 @@ export class InteractionControl extends ol.control.Control {
      */
     this._toolButton;
 
+    this.toggledTool;
+
     /**
      * @type { 'intersect' | 'within' }
      */
-    this.spatialMethod = spatialMethod;
-
-    this.toggledTool;
+    this.spatialMethod            = spatialMethod;
 
     this._interactionClassOptions = interactionClassOptions;
 
@@ -228,7 +228,7 @@ export class InteractionControl extends ol.control.Control {
       this.on('setMap', () => this.toggle(toggled));
     }
 
-    // create an help message
+    // create a help message
     if (this._help) {
       this._createModalHelp();
     }
@@ -245,7 +245,7 @@ export class InteractionControl extends ol.control.Control {
     if (this.spatialMethod) {
       const spatialMethod = this.spatialMethod;
       let eventKey = null;
-      this.on('toggled', ({toggled}) => {
+      this.on('toggled', ({ toggled }) => {
         if (true === toggled) {
           eventKey = this.on('change-spatial-method', this.runSpatialQuery);
         } else if (null !== eventKey) {
@@ -289,7 +289,7 @@ export class InteractionControl extends ol.control.Control {
    *
    * @since 3.11.0
    */
-  setEventKey({ eventType, eventKey }){
+  setEventKey({ eventType, eventKey }) {
     this.eventKeys[eventType] = {
       eventKey,
       originalHandler: eventKey.listener
@@ -299,30 +299,30 @@ export class InteractionControl extends ol.control.Control {
   /**
    * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
    *
-   * Reset original handler method of control event.
+   * Reset the original handler method of control event.
    * 
-   * @param { string } eventType
+   * @param { string } type
    *
    * @since 3.11.0
    */
-  resetOriginalHandlerEvent(eventType) {
-    if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
-      ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
-      this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
+  resetOriginalHandlerEvent(type) {
+    if (this.eventKeys[type] && this.eventKeys[type].eventKey) {
+      ol.Observable.unByKey(this.eventKeys[type].eventKey);
+      this.eventKeys[type].eventKey = this.on(type, this.eventKeys[type].originalHandler);
     }
   }
 
   /**
    * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
    *
-   * Override original handler method of control event.
+   * Override the original handler method of control event.
    * 
    * @param {string} eventType
    * @param {() => {}} handler
    *
    * @since 3.11.0
    */
-  overwriteEventHandler({eventType, handler}) {
+  overwriteEventHandler({ eventType, handler }) {
     if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
       ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
       this.eventKeys[eventType].eventKey = this.on(eventType, handler);
@@ -378,7 +378,7 @@ export class InteractionControl extends ol.control.Control {
       const offset       = position.left ? previusControl.position().left : previusControl.position().right;
       const hWhere       = position.left ? 'left' : 'right';
       const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
-      $(this.element).css(hWhere, hOffset+'px');
+      $(this.element).css(hWhere, `${hOffset}px`);
     }
   }
 
@@ -451,18 +451,18 @@ export class InteractionControl extends ol.control.Control {
    * @since 3.11.0
    */
   hideControl() {
-    let position = $(this.element).position().left;
+    let position     = $(this.element).position().left;
     let controlWidth = $(this.element).outerWidth();
-    let newPosition = position;
-    const controls = $(this.element).siblings('.ol-control-tl');
+    let newPosition  = position;
+    const controls   = $(this.element).siblings('.ol-control-tl');
     controls.each(function() {
       if ($(this).position().left > position) {
         newPosition = $(this).position().left;
         if (controlWidth > $(this).outerWidth()) {
           position = position + (controlWidth - $(this).outerWidth())
         }
-        $(this).css('left', position+'px');
-        position = newPosition;
+        $(this).css('left', `${position}px`);
+        position     = newPosition;
         controlWidth = $(this).outerWidth();
       }
     });
@@ -474,16 +474,16 @@ export class InteractionControl extends ol.control.Control {
    *
    * Toggle pointer events and `g3w-ol-disabled` class on map control button
    * 
-   * @param {boolean} enabled wheter the map control button is clickable
+   * @param { Boolean } bool whether the map control button is clickable
    *
    * @since 3.11.0
    */
-  setEnable(enabled) {
-    $(this.element).find('button').first().toggleClass('g3w-ol-disabled', !enabled);
-    if(!enabled && this._interaction) {
+  setEnable(bool) {
+    $(this.element).find('button').first().toggleClass('g3w-ol-disabled', !bool);
+    if(!bool && this._interaction) {
       this._interaction.setActive(false);
     }
-    this._enabled = enabled;
+    this._enabled = bool;
   }
 
   /**
@@ -504,7 +504,7 @@ export class InteractionControl extends ol.control.Control {
    *
    * @since 3.11.0
    */
-  setVisible(visible=true) {
+  setVisible(visible = true) {
     this._visible = visible;
     $(this.element)[visible ? 'show': 'hide']();
   }
@@ -525,9 +525,9 @@ export class InteractionControl extends ol.control.Control {
    *
    * @since 3.11.0
    */
-  overwriteOnClickEvent(clickHandler){
+  overwriteOnClickEvent(handler) {
     this._originalonlick = this._originalonlick || this._onclick;
-    this._onclick        = clickHandler;
+    this._onclick        = handler;
   };
 
   /**
@@ -566,7 +566,7 @@ export class InteractionControl extends ol.control.Control {
    *
    * @since 3.8.0
    */
-  onAddExternalLayer({layer, unWatches}={}) {}
+  onAddExternalLayer({ layer, unWatches } = {}) {}
 
   /**
    * @virtual method need to be implemented by subclasses
@@ -629,6 +629,9 @@ export class InteractionControl extends ol.control.Control {
 
     }
 
+    /**
+     * @TODO check if it is deprecated. It used to show help message for map control
+     */
     if ('how' === toggledTool.how && this._onhover) {
       this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
       $(this.element).prepend(this._toolButton);
@@ -655,32 +658,14 @@ export class InteractionControl extends ol.control.Control {
   }
 
   /**
-   * Get dom bottom
-   * 
-   * @returns {JQuery<HTMLElement> | jQuery | HTMLElement}
-   */
-  getControlBottom() {
-    return $(this.element).find('button').first();
-  }
-
-  addClassToControlBottom(className='') {
-    this.getControlBottom().addClass(className);
-  }
-
-  removeClassToControlBottom(className='') {
-    this.getControlBottom().removeClass(className);
-  }
-
-  /**
    * Set button status (pressed / not pressed)
    * 
-   * @param {boolean} [toggled]
-   * 
-   * @fires toggled event
+   * @param { Boolean } toggled
+   * @param { Object } opts
    */
   toggle(toggled = !this._toggled, opts = {}) {
 
-    opts.parent = undefined !== opts.parent ? opts.parent : false; 
+    opts.parent = undefined === opts.parent ? false : opts.parent;
 
     // skip if button is already toggled or un-toggled
     if (toggled === this._toggled ) {
@@ -706,27 +691,18 @@ export class InteractionControl extends ol.control.Control {
       this._interaction.setActive(toggled);
     }
 
-    /** @FIXME add description */
-    if (toggled) {
-      this.addClassToControlBottom('g3w-ol-toggled');
-    } else {
-      this.removeClassToControlBottom('g3w-ol-toggled');
-    }
+    /** Add or remove g3w-ol-toggled class to control button */
+    $(this.element).find('button').first()[toggled ? 'addClass' : 'removeClass']('g3w-ol-toggled')
 
-    /** @FIXME add description */
+    /** @TODO Deprecated */
     if (toggled && this._toolButton) {
       this._toolButton.show();
     } else if (!toggled && this._toolButton) {
       this._toolButton.hide();
     }
 
-    /** @FIXME add description */
-    if (!toggled && this.toggledTool) {
-      this.showToggledTool(false);
-    }
-
-    /** @FIXME add description */
-    if (undefined === this._toolButton && this.toggledTool) {
+    //** if not toggled and has a toggle tool (e.g., measure map control) close user message tool  */
+    if (this.toggledTool) {
       this.showToggledTool(this._toggled);
     }
 
@@ -753,10 +729,10 @@ export class InteractionControl extends ol.control.Control {
   /**
    * Method to set filter operation intersect or Contains
    */
-  setSpatialMethod(method='intersects') {
+  setSpatialMethod(method = 'intersects') {
     this.spatialMethod = method;
     this.dispatchEvent({
-      type: 'change-spatial-method',
+      type:          'change-spatial-method',
       spatialMethod: this.spatialMethod
     });
   }
@@ -765,7 +741,7 @@ export class InteractionControl extends ol.control.Control {
     return this.spatialMethod;
   }
 
-  setLayers(layers=[]) {
+  setLayers(layers = []) {
     this.layers = layers;
   }
 

@@ -15,7 +15,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
       image:  new ol.style.Circle({
         radius: 5,
         stroke: new ol.style.Stroke({ color: 'rgba(0, 0, 0, 0.7)' }),
-        fill: new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
+        fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
       }),
     });
     const source       = new ol.source.Vector();
@@ -92,7 +92,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._map.removeLayer(this._layer);
     this._feature = e.feature;
     if (this.feature) { this._feature.setGeometry(this.feature.getGeometry()) }
-    // remove last point
+    // removed last point
     this._keyDownEventHandler = e => {
       const geom = this._feature.getGeometry();
       if (46 === e.keyCode) {
@@ -108,8 +108,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._poinOnMapMoveListener = this._map.on('pointermove', e => {
       if (e.dragging) { return }
       if (this._feature && this._helpMsg) {
-        const helpMsg = t(this._helpMsg);
-        this._helpTooltipElement.innerHTML = helpMsg;
+        this._helpTooltipElement.innerHTML = t(this._helpMsg);
         this._helpTooltip.setPosition(e.coordinate);
         this._helpTooltipElement.classList.remove('hidden');
       }
@@ -120,8 +119,8 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._helpTooltipElement           = document.createElement('div');
     this._helpTooltipElement.className = 'mtooltip hidden';
     this._helpTooltip                  = new ol.Overlay({
-      element: this._helpTooltipElement,
-      offset: [15, 0],
+      element:     this._helpTooltipElement,
+      offset:      [15, 0],
       positioning: 'center-left'
     });
 
@@ -137,7 +136,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._clearMessagesAndListeners();
     this._map.addLayer(this._layer);
   }
-};
+}
 
 
 export class MeasureControl extends InteractionControl {
@@ -148,7 +147,7 @@ export class MeasureControl extends InteractionControl {
       clickmap: true,
       enabled:  true,
       onToggled(toggled) {
-        // toggle current iteraction
+        // toggle current interaction
         this._interaction.setActive(this.isToggled());
         // when not toggled
         if (!toggled) { this._interaction.clear() }
@@ -163,11 +162,11 @@ export class MeasureControl extends InteractionControl {
       }
     });
 
-    this.types = [];
+    this.types        = [];
 
     this.interactions = {};
 
-    (opts.types || []).forEach(type => this.addType(type));
+    (opts.types || []).forEach(t => this.addType(t));
 
     // no type set, hide control
     if (0 === this.types.length) {
@@ -187,7 +186,7 @@ export class MeasureControl extends InteractionControl {
 
     this._interactionClassOptions.geometryType = ({ area: 'Polygon', length: 'LineString' })[type];
 
-    this.interactions[type] = new MeasureInteraction(this._interactionClassOptions);
+    this.interactions[type]                    = new MeasureInteraction(this._interactionClassOptions);
 
     this.interactions[type].setActive(false);
 

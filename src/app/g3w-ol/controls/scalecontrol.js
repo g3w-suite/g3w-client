@@ -6,38 +6,38 @@ const { t } = require('core/i18n/i18n.service');
 
 export class ScaleControl extends ol.control.Control {
 
-  constructor(options= {}) {
-    options.target = 'scale-control';
-    options.offline = true;
-    super(options);
-    this.isMobile = options.isMobile || false;
+  constructor(opts = {}) {
+    opts.target  = 'scale-control';
+    opts.offline = true;
+    super(opts);
+    this.isMobile = opts.isMobile || false;
   }
 
   layout(map) {
-    const self = this;
+    const self                 = this;
     let isMapResolutionChanged = false;
-    let selectedOnClick = false;
-    const select2 = $(this.element).children('select').select2({
+    let selectedOnClick        = false;
+    const select2              = $(this.element).children('select').select2({
       tags:                    true,
       dropdownParent:          $(map.getTargetElement()),
       width:                   '120px',
       height:                  '20px',
       language:                { noResults: () => t("sdk.mapcontrols.scale.no_valid_scale") },
       minimumResultsForSearch: this.isMobile ? -1 : 0,
-      createTag(params) {
+      createTag(params = {}) {
         let newTag = null;
         let scale;
         // Don't offset to create a tag if there is no @ symbol
-        if (-1 !== params.term.indexOf('1:')) {
+        if (params.term.includes('1:')) {
           // Return null to disable tag creation
           scale = params.term.split('1:')[1];
         } else if (Number.isInteger(Number(params.term)) && Number(params.term) > 0) {
           scale = Number(params.term);
-          if (1*scale <= self.scales[0]) {
+          if (scale <= self.scales[0]) {
             newTag = {
-              id: scale,
+              id:    scale,
               text: `1:${params.term}`,
-              new: true
+              new:   true
             };
             deleteLastCustomScale()
           }
@@ -49,12 +49,13 @@ export class ScaleControl extends ol.control.Control {
     map.on('change:size', () => select2.select2('close'));
 
     function deleteLastCustomScale() {
-      select2.find('option').each((index, option) => self.scales.indexOf(1*option.value) === -1 && $(option).remove());
+      select2.find('option').each((index, option) => !self.scales.includes(1*option.value) && $(option).remove());
     }
 
     function addCustomTag (data) {
-      if (select2.find("option[value='" + data.id + "']").length) select2.val(data.id).trigger('change');
-      else {
+      if (select2.find("option[value='" + data.id + "']").length) {
+        select2.val(data.id).trigger('change');
+      } else {
         deleteLastCustomScale();
         select2.append(new Option(data.text, data.id, true, true)).trigger('change');
       }
@@ -64,12 +65,14 @@ export class ScaleControl extends ol.control.Control {
       if (isMapResolutionChanged) {
         const scale = parseInt(getScaleFromResolution(this.getView().getResolution(), this.getView().getProjection().getUnits()));
         addCustomTag({
-          id: scale,
+          id:    scale,
           text: `1:${scale}`,
-          new: true
+          new:   true
         });
         isMapResolutionChanged = false;
-      } else selectedOnClick = false;
+      } else {
+        selectedOnClick = false;
+      }
     });
 
     const setChangeResolutionHandler = () => {
@@ -80,9 +83,9 @@ export class ScaleControl extends ol.control.Control {
 
     map.on('change:view', () => setChangeResolutionHandler());
 
-    select2.on('select2:select', function(e) {
+    select2.on('select2:select', e => {
       selectedOnClick = true;
-      const data = e.params.data;
+      const data      = e.params.data;
       if (data.new) {
         deleteLastCustomScale();
         addCustomTag(data);
@@ -98,7 +101,7 @@ export class ScaleControl extends ol.control.Control {
 
     // set scales
     const currentScale = parseInt(getScaleFromResolution(map.getView().getResolution(), map.getView().getProjection().getUnits()));
-    this.scales = PRINT_SCALES.map(scale => scale.value).filter(scale => scale < currentScale);
+    this.scales        = PRINT_SCALES.map(s => s.value).filter(s => s < currentScale);
     this.scales.unshift(currentScale);
 
     // create control
@@ -110,9 +113,9 @@ export class ScaleControl extends ol.control.Control {
       optgroup.appendChild(Object.assign(
         document.createElement('option'),
         {
-          value: scale,
-          text: `1:${scale}`,
-          selected: index === 0  ? true : false,
+          value:    scale,
+          text:     `1:${scale}`,
+          selected: 0 === index,
         }
       ));
     });
@@ -120,9 +123,9 @@ export class ScaleControl extends ol.control.Control {
     select.appendChild(optgroup);
 
     if (!this.isMobile) {
-      const optgroup_custom  = document.createElement('optgroup');
-      optgroup_custom.label = 'Custom';
-      select.appendChild(optgroup_custom);
+      const optgroup  = document.createElement('optgroup');
+      optgroup.label  = 'Custom';
+      select.appendChild(optgroup);
     }
 
     div.appendChild(select);
@@ -132,7 +135,7 @@ export class ScaleControl extends ol.control.Control {
     $(this.element).css('height', '20px');
 
     this.layout(map);
-    ol.control.Control.prototype.setMap.call(this, map);
+    super.setMap(map);
   }
 
 }
