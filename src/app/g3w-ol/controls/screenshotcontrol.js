@@ -73,10 +73,10 @@ export class ScreenshotControl extends InteractionControl {
         data: () => ({ types: this.types, type: this.types[0] }),
         template: /* html */ `
           <div style="width: 100%; padding: 5px;">
-            <select ref="select" style="width: 100%" :search="false" v-select2="'type'">
+            <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
               <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
             </select>
-            <button class="btn btn-block btn-success" @click="download" v-t="'sdk.mapcontrols.screenshot.download'"></button>
+            <button style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download" v-t="'sdk.mapcontrols.screenshot.download'"></button>
           </div>`,
         methods: {
           async download(e) {
