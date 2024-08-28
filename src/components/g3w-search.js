@@ -125,7 +125,7 @@ export function SearchPanel(opts = {}, show = false) {
        *        of the parent
        */
       dependance: d.input.options.dependance || false,
-      value:     'selectfield' ===  d.input.type ? SEARCH_ALLVALUE : null,
+      value:     'selectfield' === d.input.type ? SEARCH_ALLVALUE : null,
       operator:  d.op,
       logicop:   i === (opts.options.filter.length - 1) ? null : d.logicop,
       loading:   true,
@@ -154,8 +154,8 @@ export function SearchPanel(opts = {}, show = false) {
       panel.getService().state = null;
     },
     createFilter: () => createFilterFormInputs({
-      layer: state.search_layers,
-      inputs: state.forminputs.filter(input => ![null, undefined, SEARCH_ALLVALUE].includes(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+      layer:  state.search_layers,
+      inputs: state.forminputs.filter(i => ![null, undefined, SEARCH_ALLVALUE].includes(i.value) && '' !== i.value.toString().trim()), // Filter input by NONVALIDVALUES
     }),
   });
 

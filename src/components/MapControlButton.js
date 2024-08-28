@@ -9,9 +9,9 @@ export default function ({ className, customClass, tipLabel, label }) {
     render(h) {
       return h('div', {
         class: {
-          [className]: !!className,
+          [className]:       !!className,
           'ol-unselectable': true,
-          'ol-control': true
+          'ol-control':      true
         }
       }, [
         h('button', {

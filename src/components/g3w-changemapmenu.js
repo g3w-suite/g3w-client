@@ -13,7 +13,7 @@ import * as vueComp from 'components/ChangeMapMenu.vue';
 export default function(opts = {}) {
   return new Component({
     ...opts,
-    id: 'changemapmenu',
+    id:                 'changemapmenu',
     vueComponentObject: vueComp,
   })
 };
