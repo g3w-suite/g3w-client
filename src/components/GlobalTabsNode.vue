@@ -167,8 +167,8 @@
        * @param relation
        * @returns {boolean|false|*}
        */
-      isRelationDisabled(relation){
-        return this.getRelationName(relation.name) === undefined ||
+      isRelationDisabled(relation) {
+        return undefined === this.getRelationName(relation.name) ||
           ('editing' === this.contenttype  && this.isRelationChildLayerNotEditable(relation));
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
@@ -186,7 +186,7 @@
        * @param relation
        * @returns {boolean}
        */
-      isRelationChildLayerNotEditable(relation){
+      isRelationChildLayerNotEditable(relation) {
         const {nmRelationId, name} = relation;
         ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
         const currentProject  = ProjectsRegistry.getCurrentProject();

@@ -40,7 +40,7 @@ export default {
     }
   },
   methods: {
-    setLabel(){
+    setLabel() {
       // convert label
       this.label = this.service.convertCheckedToValue(this.value);
     },

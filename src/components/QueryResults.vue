@@ -667,7 +667,7 @@
       saveFilter(layer) {
         this.$options.service.saveFilter(layer);
       },
-      addRemoveFilter(layer){
+      addRemoveFilter(layer) {
         this.$options.service.addRemoveFilter(layer);
       },
       getContainerFromFeatureLayer({ layer, index } = {}) {
@@ -691,7 +691,7 @@
           if (item.nodes) {
             item.nodes.forEach(node => traverseStructure(node));
           } else {
-            let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+            let field = layer.formStructure.fields.find(f => item.field_name === f.name);
             if (field) {
               if (this.state.type === 'ows') {
                 // clone it to avoid replacing original

@@ -21,7 +21,7 @@
 
     mixins: [Input],
     methods: {
-      setupTableCustomTools(){
+      setupTableCustomTools() {
         /**
          * Column left
          */
@@ -66,20 +66,22 @@
         buttonRowRemove.title = "Remove row";
       }
     },
-    created(){
+    created() {
 
       /**
        * edit_state is need if this input is repeated in different form tab
        */
       this.edit_state = {
-        edit: false,
+        edit:      false,
         show_html: false
       };
 
-      if (!this.state.edit_states) this.state.edit_states = [];
+      if (!this.state.edit_states) {
+        this.state.edit_states = [];
+      }
       this.state.edit_states.push(this.edit_state);
     },
-    async mounted(){
+    async mounted() {
       const toolbarOptions = [
         [{ header: [1, 2, 3, 4, 5, 6,  false] }],
         [{ 'align': ''}, {'align': 'center'}, {'align': 'right'}, {'align': 'justify'}],
@@ -96,21 +98,27 @@
             handlers: {
               html: () => {
                 this.edit_state.show_html = !this.edit_state.show_html;
-                if (this.edit_state.show_html) this.quill.container.firstChild.innerText = this.quill.container.firstChild.innerHTML;
-                else this.quill.container.firstChild.innerHTML = this.quill.container.firstChild.innerText;
+                if (this.edit_state.show_html) {
+                  this.quill.container.firstChild.innerText = this.quill.container.firstChild.innerHTML;
+                } else {
+                  this.quill.container.firstChild.innerHTML = this.quill.container.firstChild.innerText;
+                }
                 for (const qlformat of this.$el.querySelectorAll('.ql-formats')) {
                   for (const child of qlformat.children) {
-                    if (!child.classList.contains('ql-html')) child.classList.toggle('g3w-disabled');
-                    else child.classList.toggle('skin-color');
+                    if (!child.classList.contains('ql-html')) {
+                      child.classList.toggle('g3w-disabled');
+                    } else {
+                      child.classList.toggle('skin-color');
+                    }
                   }
                 }
               },
-              'column-left': () => this.table.insertColumnLeft(),
-              'column-right': () => this.table.insertColumnRight(),
+              'column-left':   () => this.table.insertColumnLeft(),
+              'column-right':  () => this.table.insertColumnRight(),
               'column-remove': () => this.table.deleteColumn(),
-              'row-above': () => this.table.insertRowAbove(),
-              'row-below': () => this.table.insertRowBelow(),
-              'row-remove': () => this.table.deleteRow()
+              'row-above':     () => this.table.insertRowAbove(),
+              'row-below':     () => this.table.insertRowBelow(),
+              'row-remove':    () => this.table.deleteRow()
             },
 
           }
@@ -132,14 +140,17 @@
       this.quill.on('text-change', this.handler);
     },
     watch: {
-      'state.value'(value){
+      'state.value'(value) {
         if (!this.edit_state.edit) {
-          if (this.edit_state.show_html) this.quill.container.firstChild.innerText = value;
-          else this.quill.container.firstChild.innerHTML = value;
+          if (this.edit_state.show_html) {
+            this.quill.container.firstChild.innerText = value;
+          } else {
+            this.quill.container.firstChild.innerHTML = value;
+          }
         }
       }
     },
-    beforeDestroy(){
+    beforeDestroy() {
       this.quill.off('text-change', this.handler);
       this.handler = null;
       this.quill = null;

@@ -139,7 +139,7 @@
       required_fields() {
         return 'editing' ===  this.contenttype && this.fields.filter(f => f.validate.required).map(f => f.name);
       },
-      show(){
+      show() {
         return this.tabs.reduce((a, t) => a || (t.visible === undefined || !!t.visible), false);
       }
     },

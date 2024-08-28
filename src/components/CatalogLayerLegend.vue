@@ -170,7 +170,7 @@
        * 
        * @since v3.8
        */
-      showCategoryMenu(){
+      showCategoryMenu() {
         this.$emit('showmenucategory');
       },
   

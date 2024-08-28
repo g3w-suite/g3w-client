@@ -75,7 +75,7 @@
     name: 'input-lonlat',
 
     mixins: [Input],
-    data(){
+    data() {
       return {
         lonId: getUniqueDomId(),
         latId: getUniqueDomId(),
@@ -85,19 +85,19 @@
       }
     },
     computed:{
-      getCoordinateActive(){
+      getCoordinateActive() {
         return this.service.state.getCoordinateActive;
       }
     },
     methods: {
-      toggleGetCoordinate(){
+      toggleGetCoordinate() {
         this.service.toggleGetCoordinate();
       },
       changeLonLat() {
         this.change();
         this.setValue();
       },
-      setValue(){
+      setValue() {
         this.state.value = [[1*this.state.values.lon, 1*this.state.values.lat]]
       }
     },

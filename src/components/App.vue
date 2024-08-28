@@ -845,7 +845,7 @@ export default {
       }
     },
 
-    backOrBackTo(){
+    backOrBackTo() {
       return (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
         ? !(this.state.content.contentsdata[this.state.content.contentsdata.length - 2].options.title)
           ? 'back'

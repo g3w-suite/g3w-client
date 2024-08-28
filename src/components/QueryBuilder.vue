@@ -215,15 +215,15 @@ export default {
       this.manual         = false;
     },
 
-    reset(){
+    reset() {
       this.filter                 = '';
       this.message                = '';
       this.filterElement.previous = null;
       this.filterElement.current  = null;
       this.filterElement.operator = null;
       this.select.field           = null;
-      if(this.$refs.search_fields) this.$refs.search_fields.selectedIndex = -1;
-      if(this.$refs.search_values) this.$refs.search_values.selectedIndex = -1;
+      if (this.$refs.search_fields) { this.$refs.search_fields.selectedIndex = -1 }
+      if (this.$refs.search_values) { this.$refs.search_values.selectedIndex = -1 }
     },
 
     /**
@@ -356,7 +356,7 @@ export default {
     });
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     this.select2.select2('destroy');
     this.select2 = null;
   },

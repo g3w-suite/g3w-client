@@ -60,7 +60,7 @@ export default Vue.extend({
     addToValidate(input) {
       this.$emit('addtovalidate', input);
     },
-    removeToValidate(input){
+    removeToValidate(input) {
       this.$emit('removetovalidate', input);
     },
     changeInput(input) {
