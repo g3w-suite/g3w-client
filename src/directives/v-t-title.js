@@ -18,11 +18,11 @@ export default {
       watcher: [
         () => ApplicationState.language,
         () => {
-          const title = (binding.arg === 'plugin' ? tPlugin : t)(binding.value);
+          const title = ('plugin' === binding.arg ? tPlugin : t)(binding.value);
           el.setAttribute('title', title);
           el.setAttribute('data-original-title', title)
         }
       ] });
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 }

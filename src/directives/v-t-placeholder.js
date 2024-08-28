@@ -17,9 +17,9 @@ export default {
       attr,
       watcher: [
         () => ApplicationState.language,
-        () => { el.setAttribute('placeholder', (binding.arg === 'plugin' ? tPlugin : t)(binding.value)); }
+        () => { el.setAttribute('placeholder', ('plugin' === binding.arg ? tPlugin : t)(binding.value)); }
       ]
     });
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 }

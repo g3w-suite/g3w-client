@@ -19,14 +19,14 @@ export default {
       watcher: [
         () => ApplicationState.language,
         () => {
-          const value = binding.value !== null ? tPlugin(binding.value) : '';
+          const value = null !== binding.value ? tPlugin(binding.value) : '';
           switch(binding.arg ? binding.arg : 'post') {
-            case 'pre': el.innerHTML = `${value} ${innerHTML}`; break;
+            case 'pre':  el.innerHTML = `${value} ${innerHTML}`; break;
             case 'post': el.innerHTML = `${innerHTML} ${value}`; break;
           }
         }
       ]
     });
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 };

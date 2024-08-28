@@ -35,9 +35,7 @@ export default {
       attr,
       watcher: [
         () => ApplicationState.language,
-        () => handleInnerHTML({
-          el,
-        })
+        () => handleInnerHTML({ el })
       ]
     });
   },
@@ -48,11 +46,9 @@ export default {
     if (el.__currentBinding.value !== binding.value) {
       //reset currentBinding to get last value;
       el.__currentBinding = binding;
-      handleInnerHTML({
-        el,
-      })
+      handleInnerHTML({ el })
     }
   },
 
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 }

@@ -16,12 +16,12 @@ export default {
       attr,
       watcher: [
         () => ApplicationState.online,
-        (bool) => {
-          bool = ((binding.arg && binding.arg === 'hide' ? false : true) ?  bool : !bool);
+        bool => {
+          bool = !(binding.arg && 'hide' === binding.arg) ?  bool : !bool;
           el.classList.toggle('g3w-hide', !bool)
         }
       ]
     });
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 };

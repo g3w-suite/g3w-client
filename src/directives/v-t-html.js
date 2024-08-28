@@ -26,5 +26,5 @@ export default {
       el.innerHTML = `${t(binding.value)}`;
     }
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 };

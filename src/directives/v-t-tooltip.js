@@ -31,17 +31,17 @@ export default {
         () => ApplicationState.language,
         ({el = _el}) => {
           let value = el.getAttribute('current-tooltip');
-          if (value === null) { value = binding.value; }
-          el.setAttribute('data-original-title', binding.modifiers.text ? value : (binding.arg === 'plugin' ? tPlugin : t)(value));
+          if (null === value) { value = binding.value; }
+          el.setAttribute('data-original-title', binding.modifiers.text ? value : ('plugin' === binding.arg ? tPlugin : t)(value));
         }
       ]
     });
   },
   componentUpdated(el, oldVnode) {
     const value = el.getAttribute('current-tooltip');
-    if (value != null && value !== oldVnode.oldValue) {
-      trigger({ el, attr, data: {el}});
+    if (null != value && value !== oldVnode.oldValue) {
+      trigger({ el, attr, data: { el } });
     }
   },
-  unbind: (el) => { $(el).tooltip('hide'); unwatch({ el, attr }); }
+  unbind: el => { $(el).tooltip('hide'); unwatch({ el, attr }); }
 };

@@ -10,13 +10,13 @@ const attr = 'g3w-v-download-id';
 
 export default {
   bind(el, binding) {
-    if (typeof binding.value === 'boolean' ? binding.value : true) {
+    if ('boolean' === typeof binding.value ? binding.value : true) {
       watch({
         el,
         attr,
         watcher: [
           () => ApplicationState.download,
-          (bool) => {
+          bool => {
             const className = binding.modifiers && binding.modifiers.show && 'hide' || 'disabled';
             el.classList.toggle(`g3w-${className}`, className === 'hide' ? !bool : bool)
           }
@@ -24,5 +24,5 @@ export default {
       });
     }
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 };

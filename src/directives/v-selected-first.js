@@ -4,5 +4,5 @@
  */
 
 export default (el, binding) => {
-  el.toggleAttribute('selected', binding.value === 0);
+  el.toggleAttribute('selected', 0 === binding.value);
 };

@@ -15,9 +15,9 @@ export default {
       attr,
       watcher: [
         () => ApplicationState.plugins,
-        (plugins) => { el.classList.toggle('g3w-hide', plugins.length === 0) }
+        (plugins = []) => { el.classList.toggle('g3w-hide', 0 === plugins.length) }
       ]
     });
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 };
