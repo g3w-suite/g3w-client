@@ -66,12 +66,12 @@ export default {
       this.components.push(component);
     },
     addComponents(components = []) {
-      components.forEach(component => this.addComponent(component))
+      components.forEach(c => this.addComponent(c))
     },
     setConfig(config = {}) {
       this.config = config;
     },
-    setDataOffset(offset, render=false) {
+    setDataOffset(offset, render = false) {
       const data = this.getData();
       for (let i = 0; i < data.length; i++) {
         const item = data[i];
@@ -111,13 +111,11 @@ export default {
       });
     },
     _setAllowedSpace() {
-      if (this.components && this.components.length) {
-        this.size.height =  document.querySelector('.g3wform_content').offsetHeight -
-          this.$el.offsetHeight -
-          document.querySelector('.g3wform_header').offsetHeight - 50;
+      if (this.components && this.components.length > 0) {
+        this.size.height = document.querySelector('.g3wform_content').offsetHeight - this.$el.offsetHeight - document.querySelector('.g3wform_header').offsetHeight - 50;
       }
     },
-    _setMaxMin({value, max, min}) {
+    _setMaxMin({ value, max, min }) {
       min = value ? +value : +min;
       max = value ? +value : +max;
       if (min < this.chart.axis.min().y) {
@@ -125,7 +123,7 @@ export default {
       } else if (max > this.chart.axis.max().y) {
         this.chart.axis.max(max);
       } else {
-        const dataValues = this.data.map(data => +data.value);
+        const dataValues = this.data.map(d => +d.value);
         this.chart.axis.max(Math.max(...dataValues));
         this.chart.axis.min(Math.min(...dataValues));
       }
@@ -136,8 +134,8 @@ export default {
         this._setMaxMin(items[0].value);
       } else {
         this._setMaxMin({
-          max: Math.max(...items.map(item => +item.value)),
-          min: Math.min(...items.map(item => +item.value)),
+          max: Math.max(...items.map(i => +i.value)),
+          min: Math.min(...items.map(i => +i.value)),
         })
       }
       this.resize();
@@ -147,26 +145,26 @@ export default {
       if (render) { this.resize() }
     }
   },
-  mounted() {
-    this.$nextTick(() => {
-      GUI.on('resize', this.resize);
-      const self = this;
-      this.config.data.onselected = function(e) {
-        self.selectitems = [...self.selectitems, e];
-      };
-      this.config.data.onunselected = function(e) {
-        self.selectitems = self.selectitems.filter(i => i.index !== e.index);
-      };
-      this.chart = c3.generate({
-        bindto: `#${this.id}`,
-        ...this.config,
-      });
-      const data = this.chart.data()[0] ? this.chart.data()[0].values : [];
-      data.forEach(i => this.data.push(i));
-      this._setAllowedSpace();
-      // emt event and pass chart
-      this.$emit('chart-ready', this.chart);
-    })
+  async mounted() {
+    await this.$nextTick();
+    GUI.on('resize', this.resize);
+    const self = this;
+    this.config.data.onselected = function(e) {
+      self.selectitems = [...self.selectitems, e];
+    };
+    this.config.data.onunselected = function(e) {
+      self.selectitems = self.selectitems.filter(i => i.index !== e.index);
+    };
+    this.chart = c3.generate({
+      bindto: `#${this.id}`,
+      ...this.config,
+    });
+    const data = this.chart.data()[0] ? this.chart.data()[0].values : [];
+    data.forEach(i => this.data.push(i));
+    this._setAllowedSpace();
+    // emt event and pass chart
+    this.$emit('chart-ready', this.chart);
+
   },
   beforeDestroy() {
     this.data = this.selectitems = null;
