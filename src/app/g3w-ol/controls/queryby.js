@@ -522,7 +522,7 @@ export class QueryBy extends InteractionControl {
       const selected  = layer && control.layers.find(l => l === layer);
       const queryable = layer && layer.isQueryable() && (control.getGeometryTypes() || []).includes(layer.getGeometryType());
 
-      if (['querybbox', 'querybydrawpolygon'].includes(t)) {
+      if (['querybbox', 'querybydrawpolygon', 'querybycircle'].includes(t)) {
         control.setEnable(control.isToggled() && (layer ? (selected && selected.isVisible()) : _hasVisible(control)));
       }
 
