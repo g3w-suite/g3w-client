@@ -27,12 +27,12 @@ module.exports  = {
    */
   getType(field) {
     let type = field.type;
-    if ('vue' !== type){
+    if ('vue' !== type) {
       const fieldValue = field.value;
       const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
       if (!value) {
         type = FieldType.SIMPLE;
-      } else if (value && typeof value == 'object') {
+      } else if (value && 'object' === typeof value) {
         if (value.coordinates) {
           type = FieldType.GEO;
         } else if (value.vue) {

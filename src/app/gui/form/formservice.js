@@ -470,7 +470,7 @@ module.exports = class FormService extends G3WObject {
   };
 
   setCurrentComponentById(id) {
-    if (-1 === this.state.disabledcomponents.indexOf(id)) {
+    if (!this.state.disabledcomponents.includes(id)) {
       this.setIdHeader(id);
       this.state.component = this.state.components.find(c => id === c.id).component;
       return this.state.component;
