@@ -41,7 +41,7 @@ function _buildRelationTable(relations = [], id) {
   relations = relations || [];
   const layer = ApplicationService.getCurrentProject().getLayerById(id);
   const attrs = Object.keys(relations[0] ? relations[0].attributes : {});
-  const cols  = layer.getTableHeaders().filter(h => -1 !== attrs.indexOf(h.name));
+  const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
   return {
     columns:          cols.map(c => c.label),
     rows:             relations.map(r => cols.map(c => r.attributes[c.name])),

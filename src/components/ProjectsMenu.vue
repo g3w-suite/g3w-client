@@ -88,8 +88,8 @@ export default {
     logoSrc(src) {
       let imageSrc;
       const host = this.$options.host || '';
-      const has_media = src && (-1 !== src.indexOf(ProjectsRegistry.config.mediaurl));
-      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'))
+      const has_media = src && (src.includes(ProjectsRegistry.config.mediaurl));
+      const not_static = src && (!src.includes('static') && !src.includes('media'))
 
       if (!src) {
         imageSrc = fakeImage

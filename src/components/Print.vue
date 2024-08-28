@@ -318,7 +318,7 @@ export default {
 
       try {
         //check if create new tag value with ':' 1:2300
-        if (this.state.scale.indexOf(':') >= 0) {
+        if (this.state.scale.includes(':')) {
           //get value
           const scale = Number(this.state.scale.split(':')[1].trim());
           //set options last tag created by user
@@ -701,7 +701,7 @@ export default {
           .split(',')
           .filter(v => v)
           .forEach(value => {
-            if (-1 === value.indexOf('-') && validate(value) !== null) {
+            if (!value.includes('-') && null !== validate(value)) {
               values.add(value);
               return;
             }

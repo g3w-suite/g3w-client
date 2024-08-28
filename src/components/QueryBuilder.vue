@@ -328,7 +328,7 @@ export default {
         return {
           id:     layer.id,
           label:  layer.title,
-          fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => -1 === exclude.indexOf(f))
+          fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => !exclude.includes(f))
         }
       });
 

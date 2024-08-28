@@ -473,7 +473,7 @@ export default {
         if (is_valid && !params) {
           const loaded_features = this.state.features.map(f => f.id);
           data.features
-            .filter(f => f.geometry && -1 === loaded_features.indexOf(f.id))
+            .filter(f => f.geometry && !loaded_features.includes(f.id))
             .forEach(f => this.layer.addOlSelectionFeature(_createFeatureForSelection(f)));
           this.getAll = true;
         }

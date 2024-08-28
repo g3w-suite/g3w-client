@@ -155,7 +155,7 @@ export function SearchPanel(opts = {}, show = false) {
     },
     createFilter: () => createFilterFormInputs({
       layer: state.search_layers,
-      inputs: state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+      inputs: state.forminputs.filter(input => ![null, undefined, SEARCH_ALLVALUE].includes(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
     }),
   });
 

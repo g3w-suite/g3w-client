@@ -168,13 +168,11 @@
       },
       // method to set required tab for editing
       setEditingRequireTab(obj) {
-        let required = false;
         if (undefined === obj.nodes) {
-          required = this.required_fields.indexOf(obj.field_name) !== -1;
+          return this.required_fields.includes(obj.field_name);
         } else {
-          required = !!obj.nodes.find(n => this.setEditingRequireTab(n));
+          return !!obj.nodes.find(n => this.setEditingRequireTab(n));
         }
-        return required;
       },
       getField(fieldName) {
         return this.fields.find(f => fieldName === f.name);

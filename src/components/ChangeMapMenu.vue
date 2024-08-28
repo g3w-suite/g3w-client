@@ -325,8 +325,8 @@ export default {
       const host       = this.$options.host || '';
       const mediaurl   = ProjectsRegistry.config.mediaurl;
       const clienturl  = ApplicationService.getConfig().urls.clienturl;
-      const has_media  = src && (-1 !== src.indexOf(mediaurl));
-      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'));
+      const has_media  = src && (src.includes(mediaurl));
+      const not_static = src && (!src.includes('static') && !src.includes('media'));
 
       if (!src) {
         imageSrc = `${clienturl}${LOGO_GIS3W}`;
