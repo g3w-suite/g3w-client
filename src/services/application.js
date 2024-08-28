@@ -2,13 +2,12 @@
  * @file
  * @since v3.6
  */
-
-import appConfig          from 'config';
 import {
   TIMEOUT,
   APP_VERSION,
   LOCAL_ITEM_IDS,
-  API_BASE_URLS
+  API_BASE_URLS,
+  APP_CONFIG,
 }                         from 'app/constant';
 import ApplicationState   from 'store/application-state';
 import DataRouterService  from 'services/data';
@@ -22,6 +21,7 @@ import { $promisify }     from 'utils/promisify';
 
 const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
 const G3WObject                          = require('core/g3wobject');
+
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
@@ -384,11 +384,11 @@ export default new (class ApplicationService extends G3WObject {
    * @param initConfig
    */
   async createApplicationConfig(initConfig) {
-    const config = { ...appConfig };
+    const config = { ...APP_CONFIG };
     try {
 
       initConfig = initConfig ? initConfig : await this.obtainInitConfig({
-        initConfigUrl:  `${appConfig.server.urls.initconfig}`
+        initConfigUrl:  `${APP_CONFIG.server.urls.initconfig}`
       });
 
       // write urls of static files and media url (base url and vector url)
