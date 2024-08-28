@@ -890,7 +890,7 @@ class MapService extends G3WObject {
         this.state.resolution = this.viewer.getResolution();
         this.state.center     = this.viewer.getCenter();
         this.updateMapLayers();
-        if(dynamicLegend) {
+        if (dynamicLegend) {
           this.setupCustomMapParamsToLegendUrl();
         }
       })

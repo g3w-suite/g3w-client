@@ -1602,7 +1602,7 @@ class QueryResultsService extends G3WObject {
       }
 
       /** @FIXME add description */
-      if(features.length > 1 && undefined !== downloadsactions) {
+      if (features.length > 1 && undefined !== downloadsactions) {
         layer[DownloadFormats.name].active = false;
       }
 

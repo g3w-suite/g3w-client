@@ -44,7 +44,7 @@ module.exports = class DeleteInteraction extends ol.interaction.Pointer {
       handleUpEvent(e) {},
       handleEvent(mapBrowserEvent) {
         if ('keydown' == mapBrowserEvent.type ){
-          if(this.features_.getArray().length > 0 && mapBrowserEvent.originalEvent.keyCode == 46) {
+          if (this.features_.getArray().length > 0 && 46 == mapBrowserEvent.originalEvent.keyCode) {
             // an event can be string or an object with an attribute type
             this.dispatchEvent(this.dispatchEvent({
               type:       'deleteend',

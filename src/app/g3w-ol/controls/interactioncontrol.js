@@ -480,7 +480,7 @@ export class InteractionControl extends ol.control.Control {
    */
   setEnable(bool) {
     $(this.element).find('button').first().toggleClass('g3w-ol-disabled', !bool);
-    if(!bool && this._interaction) {
+    if (!bool && this._interaction) {
       this._interaction.setActive(false);
     }
     this._enabled = bool;

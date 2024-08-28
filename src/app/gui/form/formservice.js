@@ -699,7 +699,7 @@ module.exports = class FormService extends G3WObject {
         outputs: false,
       });
 
-      if('select_autocomplete' === field.input.type) {
+      if ('select_autocomplete' === field.input.type) {
         field.input.options.values = [];
         // temporary array to sort the keys
         const values = [];

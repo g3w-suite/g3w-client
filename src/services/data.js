@@ -467,8 +467,8 @@ DataService.init = async () => {
             if (raw) {
               data.push({ data: value });
             } else if ('api' !== params.search_endpoint) {
-              data = value.data = undefined !== value.data ? value.data : [];
-            } else if(Array.isArray(value.data) && value.data.length) {
+              data = value.data = undefined === value.data ? [] : value.data;
+            } else if (Array.isArray(value.data) && value.data.length > 0) {
               data.push(value.data[0]);
             }
           });

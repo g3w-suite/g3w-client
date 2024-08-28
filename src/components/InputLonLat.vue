@@ -101,20 +101,17 @@
         this.state.value = [[1*this.state.values.lon, 1*this.state.values.lat]]
       }
     },
-    created(){
+    created() {
       this.state.values = this.state.values || {lon:0, lat:0};
       this.setValue();
       this.service.setCoordinateButtonReactiveObject(this.coordinatebutton);
     },
-    async mounted(){
+    async mounted() {
       await this.$nextTick();
-      this.$nextTick(() => {
-        $(this.$refs['g3w-input-lat-lon']).tooltip({
-          trigger: 'hover'
-        });
-      });
+      $(this.$refs['g3w-input-lat-lon']).tooltip({ trigger: 'hover' });
+
     },
-    destroyed(){
+    destroyed() {
       this.service.clear();
     }
   };

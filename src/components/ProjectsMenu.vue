@@ -93,9 +93,9 @@ export default {
 
       if (!src) {
         imageSrc = fakeImage
-      } else if(has_media) {
+      } else if (has_media) {
         imageSrc = src;
-      } else if(not_static) {
+      } else if (not_static) {
         imageSrc = `${ProjectsRegistry.config.mediaurl}${src}`;
       } else {
         imageSrc = fakeImage
