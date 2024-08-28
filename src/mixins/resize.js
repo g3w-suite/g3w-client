@@ -9,13 +9,13 @@ const { throttle, debounce } = require('utils');
 
 const DELAY_TYPE = {
   throttle,
-  debounce
+  debounce,
 };
 
 export default {
   created() {
     const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
-    this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
+    this.delayResize   = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
     GUI.on('resize', this.delayResize);
   },
   async mounted() {
@@ -25,6 +25,6 @@ export default {
   beforeDestroy() {
     GUI.off('resize', this.delayResize);
     this.delayResize = null;
-    this.delayTime = null;
+    this.delayTime   = null;
   }
 };

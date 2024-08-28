@@ -11,16 +11,17 @@ export default {
   },
   methods: {
     isMedia(value) {
-      if (value && typeof  value === 'object' && value.constructor === Object) {
+      if (value && 'object' === typeof value && Object === value.constructor) {
         return !!value.mime_type;
       }
       return false;
     },
     getMediaType(mime_type) {
-      let media = {
-        type: null,
+      const media = {
+        type:    null,
         options: {}
       };
+
       switch(mime_type) {
         case 'image/gif':
         case 'image/png':
@@ -36,7 +37,7 @@ export default {
         case 'video/x-ms-wmv':
         case 'video/x-msvideo':
         case 'video/quicktime':
-          media.type = 'video';
+          media.type           = 'video';
           media.options.format = mime_type;
           break;
         case 'application/gzip':

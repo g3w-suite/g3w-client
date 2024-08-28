@@ -20,7 +20,11 @@ export default {
   },
   watch: {
     'state.value'(value) {
-      this.changed ? this.changed = false : this.stateValueChanged(value);
+      if (this.changed) {
+        this.changed = false
+      } else {
+        this.stateValueChanged(value);
+      }
     }
   }
 };

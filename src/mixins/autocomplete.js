@@ -9,16 +9,15 @@ export default {
   methods: {
     async autocompleteRequest({ layerId, field, value } = {}) {
       let data = [];
-      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       try {
-        data = await layer.getFilterData({
+        data = await CatalogLayersStoresRegistry.getLayerById(layerId).getFilterData({
           suggest: `${field}|${value}`,
-          unique: field
+          unique:  field
         })
       } catch(e) {
         console.warn(e);
       }
-      return data.map(value => ({ id:value, text:value }))
+      return data.map(value => ({ id: value, text: value }))
     }
   }
 };
