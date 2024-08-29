@@ -21,7 +21,7 @@ function getReducedSizes() {
   let reducedWidth  = 0;
   let reducedHeight = 0;
   const sideBarToggleEl = $('.sidebar-aside-toggle');
-  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${ApplicationState.viewport.split === 'h'? 'width' : 'height'}_100`];
+  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${ApplicationState.viewport.split === 'h' ? 'width' : 'height'}_100`];
   if (contentEl && ApplicationState.viewport.secondaryVisible && is_fullview) {
     if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
       const toggleWidth = sideBarToggleEl.outerWidth();
@@ -709,8 +709,8 @@ export default new (class GUI extends G3WObject {
   }
 
   // hide content
-  hideContent(bool, perc) {
-    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split.state.split ? 'width': 'height'];
+  hideContent(bool) {
+    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
     ApplicationState.viewport.secondaryVisible = !bool;
     this._layout('hide-content');
     // return previous percentage
