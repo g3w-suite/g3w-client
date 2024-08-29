@@ -76,6 +76,8 @@ import { distance }                                from 'utils/distance';
 import { squaredDistance }                         from 'utils/squaredDistance';
 import { closestOnSegment }                        from 'utils/closestOnSegment';
 import { get_legend_params }                       from 'utils/get_legend_params';
+import { getDefaultExpression }                    from 'utils/getDefaultExpression';
+import { getFilterExpression }                     from "utils/getFilterExpression";
 
 /**
  * Single File Components
@@ -308,8 +310,8 @@ const g3wsdk = {
     },
     input: {
       inputService: {
-        handleFilterExpressionFormInput: FormService._getFilterExpression,
-        handleDefaultExpressionFormInput: FormService._getDefaultExpression,
+        handleFilterExpressionFormInput:  getFilterExpression,
+        handleDefaultExpressionFormInput: getDefaultExpression,
       }
     }
   },
