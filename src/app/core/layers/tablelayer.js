@@ -166,12 +166,8 @@ module.exports = class TableLayer extends Layer {
             this.setReady(false);
           })
       });
-    }
 
-    // @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-    // editable layer --> add editing state info
-    if (this.isEditable()) {
-      this.state = {
+      this.state           = {
         ...this.state,
         editing: {
           started:  false,
