@@ -22,9 +22,9 @@
       v-t = "'sidebar.wms.panel.label.layers'">
     </label>
     <select
-      id        = "g3w-wms-layers"
-      :multiple = "true"
-      clear     = "true"
+      id         = "g3w-wms-layers"
+      :multiple  = "true"
+      :clear     = "true"
       v-select2 = "'selectedlayers'"
     >
       <option
