@@ -63,7 +63,7 @@ module.exports = class OlFeaturesStore extends FeaturesStore {
   _addFeature(feature) {
     this._features.push(feature);
     // useful for ol.source.Vector
-    this._features.dispatchEvent('change')
+    this._features.dispatchEvent('change');
   }
 
   /**
@@ -93,7 +93,6 @@ module.exports = class OlFeaturesStore extends FeaturesStore {
     }
   }
 
-
   /**
    *
    * @private
@@ -104,7 +103,8 @@ module.exports = class OlFeaturesStore extends FeaturesStore {
     } catch(e) {
       console.warn(e);
     }
-    this._features = null;
+    //Need to set a new Collection to avoid duplicate
+    this._features = null; //@TODO is still usefully ????
     this._features = new ol.Collection([]);
   }
 
