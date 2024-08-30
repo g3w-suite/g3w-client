@@ -99,7 +99,11 @@ module.exports = class OlFeaturesStore extends FeaturesStore {
    */
   _clearFeatures() {
     try {
-      this._features.clear();
+      // Used remove single features instead use clear method
+      // because some time trows an error
+      for (let i = 0; i < this._features.getArray().length; i++) {
+        this._features.removeAt(i);
+      }
     } catch(e) {
       console.warn(e);
     }
