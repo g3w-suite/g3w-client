@@ -10,12 +10,12 @@ const { uniqueId } = require('utils');
 const vm         = new Vue();
 const directives = {};
 
-export const watch = ({ el, attr, watcher } = {}) => {
+export const watch = ({ el, attr, watcher, immediate = true } = {}) => {
   const unique_attr_id = uniqueId();
   el.setAttribute(attr, unique_attr_id);
   const dir = directives[unique_attr_id] = {};
   if (watcher) {
-    dir.unwatch = vm.$watch(watcher[0], watcher[1], watcher[2] || { immediate: true });
+    dir.unwatch = vm.$watch(watcher[0], watcher[1], watcher[2] || { immediate });
     dir.handler = watcher[1];
   }
   return unique_attr_id;

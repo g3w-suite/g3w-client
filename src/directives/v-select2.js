@@ -33,23 +33,23 @@ export default {
     const createSelect2 = () => {
       $(el)
         .select2({
-            tags:             createTag,
-            width:            '100%',
-            dropdownCssClass: 'skin-color',
-            dropdownAutoWidth,
-            dropdownParent: true === dropdownParent ? $(el.parentNode) : undefined,
-            templateResult,
-            templateSelection,
-            minimumResultsForSearch: search ? undefined : -1,
-            createTag(params) {
-              const value = params.term.trim();
-              return value ? {
-                id:     value,
-                text:   value,
-                newTag: true // add additional value
-              } : null;
-            },
-          })
+          tags:             createTag,
+          width:            '100%',
+          dropdownCssClass: 'skin-color',
+          dropdownAutoWidth,
+          dropdownParent: true === dropdownParent ? $(el.parentNode) : undefined,
+          templateResult,
+          templateSelection,
+          minimumResultsForSearch: search ? undefined : -1,
+          createTag(params) {
+            const value = params.term.trim();
+            return value ? {
+              id:     value,
+              text:   value,
+              newTag: true // add additional value
+            } : null;
+          },
+        })
         .on('select2:select select2:unselect', e => {
           if (!binding.value) {
             return;
@@ -114,7 +114,8 @@ export default {
       watcher: [
         () => ApplicationState.language,
         () => createSelect2()
-      ]
+      ],
+      immediate: false,
     });
   },
   unbind: (el, vnode) => {
