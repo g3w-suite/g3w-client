@@ -62,7 +62,7 @@ import vClickOutside               from 'directives/v-click-outside';
 
 // utils
 import { noop }                    from 'utils/noop';
-import { $promisify  }             from 'utils/promisify';
+import { $promisify, promisify }   from 'utils/promisify';
 
 const { t, tPlugin }               = require('core/i18n/i18n.service');
 
@@ -400,7 +400,7 @@ ApplicationService.init()
                   tooltip: t('sdk.querybuilder.title'),
                   fnc:     () => {
                     GUI.closeContent();
-                    GUI.closeOpenSideBarComponent();
+                    GUI.closeSideBar();
                     const opts = { type: 'sidebar', title: t('sdk.querybuilder.title'), show: true, };
                     opts.internalPanel = new (Vue.extend(require('components/QueryBuilder.vue')))(opts);
                     // Build the sidebar panel.
@@ -717,28 +717,18 @@ ApplicationService.init()
           
               // `push` = whether to clean the stack every time, sure to have just one component.
               setContent(opts = {}) {
-                return $promisify(new Promise((resolve) => {
-                  (opts.push ? Promise.resolve() : stack.clear())
-                    .then(() => {
-                      comp.addContent(opts.content, opts).then(() => resolve(opts))
-                    });
+                return $promisify(async () => {
+                  await promisify((opts.push ? Promise.resolve() : stack.clear()));
+                  await promisify(stack.push(opts.content, Object.assign(opts, { parent: comp.internalComponent.$el, append: true })));
+                    comp.contentsdata = stack.state.contentsdata; // get stack content
+                    Array
+                      .from(comp.internalComponent.$el.children)  // hide other elements but not the last one
+                      .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
                   comp.setOpen(true);
-                }))
+                  return opts;
+                });
               },
-          
-              addContent(content, opts = {}) {
-                return $promisify(new Promise((resolve) => {
-                  stack.push(content, Object.assign(opts, { parent: comp.internalComponent.$el, append: true }))
-                    .then(() => {
-                      comp.contentsdata = stack.state.contentsdata; // get stack content
-                      Array
-                        .from(comp.internalComponent.$el.children)  // hide other elements but not the last one
-                        .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
-                    resolve();
-                  });
-                }))
-              },
-          
+
               // remove content from stack
               removeContent() {
                 comp.setOpen(false);
