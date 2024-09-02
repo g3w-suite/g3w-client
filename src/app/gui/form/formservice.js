@@ -43,7 +43,7 @@ module.exports = class FormService extends G3WObject {
 
       setupFields() {},
 
-      setFormData(fields) {
+      setFormData(fields = []) {
         this.setFormFields(fields);
       },
 
@@ -273,14 +273,13 @@ module.exports = class FormService extends G3WObject {
     [
       ...referenced_columns,
       ...referencing_fields
-    ].forEach(dependency_field => dependency_fields.add(dependency_field));
+    ].forEach(f => dependency_fields.add(f));
 
-    dependency_fields.forEach(dependency_field => {
-      // TODO: shorten variable name
-      if (undefined === this.filter_expression_fields_dependencies[dependency_field]) {
-        this.filter_expression_fields_dependencies[dependency_field] = [];
+    dependency_fields.forEach(f => {
+      if (undefined === this.filter_expression_fields_dependencies[f]) {
+        this.filter_expression_fields_dependencies[f] = [];
       }
-      this.filter_expression_fields_dependencies[dependency_field].push(field.name);
+      this.filter_expression_fields_dependencies[f].push(field.name);
     });
 
     // Call input service if a field has a `filter_expression` every time we open a form
@@ -315,7 +314,7 @@ module.exports = class FormService extends G3WObject {
       [
         ...referenced_columns,
         ...referencing_fields
-      ].forEach(dependency_field => dependency_fields.add(dependency_field));
+      ].forEach(f => dependency_fields.add(f));
 
 
       // Only in apply update listen changeInput
@@ -323,12 +322,11 @@ module.exports = class FormService extends G3WObject {
 
         this.default_expression_fields_on_update.push(field);
 
-        dependency_fields.forEach(dependency_field => {
-          // TODO: shorten variable name
-          if (undefined === this.default_expression_fields_dependencies[dependency_field]) {
-            this.default_expression_fields_dependencies[dependency_field] = [];
+        dependency_fields.forEach(f => {
+          if (undefined === this.default_expression_fields_dependencies[f]) {
+            this.default_expression_fields_dependencies[f] = [];
           }
-          this.default_expression_fields_dependencies[dependency_field].push(field.name);
+          this.default_expression_fields_dependencies[f].push(field.name);
         });
       }
 
@@ -357,9 +355,8 @@ module.exports = class FormService extends G3WObject {
       this._handleFieldWithDefaultExpression(field, options.default_expression);
     });
     // start to evaluate filter expression field
-    Object.keys(this.filter_expression_fields_dependencies).forEach(name => {
-      this.evaluateFilterExpressionFields({ name });
-    });
+    Object.keys(this.filter_expression_fields_dependencies)
+      .forEach(name => this.evaluateFilterExpressionFields({ name }) );
   };
 
   setCurrentFormPercentage(perc) {
@@ -464,7 +461,7 @@ module.exports = class FormService extends G3WObject {
     this.state.components.splice(this.state.components.findIndex(c => id === c.id), 1, component);
   };
 
-  disableComponent({id, disabled}) {
+  disableComponent({ id, disabled } = {}) {
     if (disabled) { this.state.disabledcomponents.push(id) }
     else { this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => id !== disableId) }
   };
@@ -527,8 +524,8 @@ module.exports = class FormService extends G3WObject {
     return this.state.fields;
   };
 
-  _getField(fieldName) {
-    return this.state.fields.find(f => fieldName === f.name);
+  _getField(name) {
+    return this.state.fields.find(f => name === f.name);
   };
 
   getEventBus() {
@@ -593,13 +590,13 @@ module.exports = class FormService extends G3WObject {
         .filter(field => {
           return (
             // check if dependency field is field on update
-            this.default_expression_fields_on_update.find(({name}) => name === field) &&
+            this.default_expression_fields_on_update.find(({ name }) => name === field) &&
             // if it has bind current field
-            this.default_expression_fields_dependencies[field].find(fieldName => fieldName === this.default_expression_fields_on_update[i].name)
+            this.default_expression_fields_dependencies[field].find(name => name === this.default_expression_fields_on_update[i].name)
           )
         });
 
-      // id current field has a Array (at least one) dependency fields
+      // id current field has an Array (at least one) dependency fields
       // need to evaluate its value and after evaluate field value expression
       for (let i = 0; i < dFs.length; i++) {
         // in case already done a default_expression request evaluation from server
