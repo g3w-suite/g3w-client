@@ -199,9 +199,9 @@ const browserify_plugin = (pluginName, watch = true) => {
 
   // remove source map file
   try {
-    del([`${outputFolder}/plugin.js.map`]);
+    del([`${outputFolder}plugin.js.map`], {force: true});
   } catch(e) {
-    console.warn(YELLOW__ +  `[WARN] file not found: ${outputFolder}/plugin.js.map}`);
+    console.warn(YELLOW__ +  `[WARN] file not found: ${outputFolder}plugin.js.map}`);
   }
 
   const rebundle = () => {
