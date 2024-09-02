@@ -8,15 +8,6 @@
     v-if  = "state.visible"
     class = "form-group"
   >
-    <!-- @since 3.11.0 RELATION FIELD -->
-    <div
-      v-if   = "state.relationField"
-      style  = "color: var(--skin-warning); padding: 3px 0 3px 15px"
-    >
-      <span :class = "g3wtemplate.getFontClass('warning')"></span>
-      <span v-t = "'sdk.relations.field'"></span>
-    </div>
-
     <!-- SLOT LABEL -->
     <slot name = "label">
       <!-- @since 3.10.0 -->
@@ -38,6 +29,15 @@
         <slot name = "label-action"></slot>
       </label>
     </slot>
+
+    <!-- @since 3.11.0 RELATION FIELD -->
+    <div
+      v-if   = "state.relationField"
+      style  = "color: var(--skin-warning); padding: 3px 0 3px 15px"
+    >
+      <span :class = "g3wtemplate.getFontClass('warning')"></span>
+      <span v-t = "'sdk.relations.field'"></span>
+    </div>
 
     <div class = "col-sm-12">
 
