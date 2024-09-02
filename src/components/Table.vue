@@ -636,18 +636,16 @@ export default {
       this.last_map_control.control.toggle();
     }
 
-    GUI.closeContent();
-
     // bind context on event listeners
     this.unSelectAll  = this.unSelectAll.bind(this);
     // this.changeFilter = this.changeFilter.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
-    GUI.onbefore('setContent',   this.onGUIContent);
+    GUI.onbefore('setContent',         this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.filterChangeHandler);
 
-    GUI.closeOpenSideBarComponent(); // close other sidebar components
+    GUI.closeSideBar(); // close other sidebar components
 
     /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
     ApplicationService.getCurrentLayout().rightpanel.height = 55;
