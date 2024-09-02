@@ -618,8 +618,8 @@ export class InteractionControl extends ol.control.Control {
             </div>`,
           data:           () => ({ methods: SPATIAL_METHODS, method: this.getSpatialMethod() }),
           watch:          { method: m => this.setSpatialMethod(m) },
-          created()       { GUI.setCloseUserMessageBeforeSetContent(false); },
-          beforeDestroy() { GUI.setCloseUserMessageBeforeSetContent(true); }
+          created()       { GUI.toggleUserMessage(false); },
+          beforeDestroy() { GUI.toggleUserMessage(true); }
         };
         break;
 

@@ -134,7 +134,7 @@ export default {
         this.showChartButton = !!this.chartRelationIds.find(id => relationLayerId === id);
         this.table           = _buildRelationTable(relations, relationLayerId);
 
-        GUI.changeCurrentContentOptions({
+        GUI.setCurrentContentOptions({
           title: relation.name,
           crumb: { title: relation.name }
         });
@@ -149,7 +149,7 @@ export default {
     setRelationsList() {
       this.previousview = 'relation';
       this.currentview  = 'relations';
-      GUI.changeCurrentContentOptions({ crumb: { title: LIST_OF_RELATIONS_TITLE } });
+      GUI.setCurrentContentOptions({ crumb: { title: LIST_OF_RELATIONS_TITLE } });
       this.loading = false;
     },
   },

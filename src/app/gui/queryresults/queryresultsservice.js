@@ -1958,7 +1958,7 @@ class QueryResultsService extends G3WObject {
    * @param action
    */
   showQueryRelations(layer, feature, action) {
-    GUI.changeCurrentContentOptions({ crumb: { title: layer.title } });
+    GUI.setCurrentContentOptions({ crumb: { title: layer.title } });
 
     GUI.pushContent({
       content: new RelationsPage({

@@ -103,7 +103,7 @@ const CONTROLS = {
     cursorClass:      'ol-help',
     onSetMap({ map, setter }) {
       this.runQuery = this.runQuery || (async ({ coordinates }) => {
-        GUI.closeOpenSideBarComponent();
+        GUI.closeSideBar();
         try {
           const project = ProjectsRegistry.getCurrentProject();
           await DataRouterService.getData('query:coordinates', {

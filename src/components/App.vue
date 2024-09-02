@@ -1007,7 +1007,7 @@ export default {
         GUI.hideSidebar();
         $('#main-navbar.navbar-collapse').removeClass('in');
       }
-      GUI.closeOpenSideBarComponent();
+      GUI.closeSideBar();
       const ChangeMapMenuComponent = require('gui/changemapmenu/changemapmenu');
       GUI.setContent({
         content: new ChangeMapMenuComponent(),
@@ -1022,12 +1022,6 @@ export default {
 
     closeContent() {
       GUI.closeContent();
-    },
-
-    closeMap() {
-      const state = ApplicationState.viewport;
-      state.secondaryPerc = (state.primaryView === 'map') ? 100 : 0;
-      GUI._layout();
     },
 
     gotoPreviousContent() {

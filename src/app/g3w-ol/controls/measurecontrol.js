@@ -225,8 +225,8 @@ export class MeasureControl extends InteractionControl {
             this._interaction = this.interactions[ntype];
           },
         },
-        created()       { GUI.setCloseUserMessageBeforeSetContent(false); },
-        beforeDestroy() { GUI.setCloseUserMessageBeforeSetContent(true); }
+        created()       { GUI.toggleUserMessage(false); },
+        beforeDestroy() { GUI.toggleUserMessage(true); }
       }
     });
   }

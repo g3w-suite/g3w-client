@@ -118,8 +118,8 @@ export class ScreenshotControl extends InteractionControl {
             return true;
           }
         },
-        created()       { GUI.setCloseUserMessageBeforeSetContent(false); },
-        beforeDestroy() { GUI.setCloseUserMessageBeforeSetContent(true); }
+        created()       { GUI.toggleUserMessage(false); },
+        beforeDestroy() { GUI.toggleUserMessage(true); }
       }
     });
   }

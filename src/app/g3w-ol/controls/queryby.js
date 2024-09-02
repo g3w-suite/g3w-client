@@ -301,11 +301,11 @@ export class QueryBy extends InteractionControl {
             },
             mounted() {
               CONTROLS['queryby'].usermessage = this;
-              GUI.setCloseUserMessageBeforeSetContent(false);
+              GUI.toggleUserMessage(false);
               this.reset();
             },
             beforeDestroy: () => {
-              GUI.setCloseUserMessageBeforeSetContent(true);
+              GUI.toggleUserMessage(true);
               this.types.forEach(t => {
                 CONTROLS[t].toggle(false);
                 CONTROLS[t].autorun = false;
@@ -428,7 +428,7 @@ export class QueryBy extends InteractionControl {
             eventType: 'picked',
             eventKey:  this.on('picked', async () => {
 
-              GUI.closeOpenSideBarComponent();
+              GUI.closeSideBar();
           
               // ask for coordinates
               try {
@@ -583,7 +583,7 @@ export class QueryBy extends InteractionControl {
 
       const control = CONTROLS[type];
 
-      GUI.closeOpenSideBarComponent();
+      GUI.closeSideBar();
 
       if (
         // skip if bbox is not set
