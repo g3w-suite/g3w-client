@@ -356,7 +356,7 @@ export default {
         back_to_relations: "Powrót do relacji",
         list_of_relations_feature: "Lista relacji funkcji",
         error_missing_father_field: "Brakuje pola",
-        field: "Relation field",
+        field: "Relation key field",
       },
       form: {
         loading: "Ładowanie ...",

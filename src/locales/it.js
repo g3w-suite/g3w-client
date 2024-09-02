@@ -373,7 +373,7 @@ export default {
         back_to_relations: 'Ritorna alle relazioni',
         list_of_relations_feature: 'Lista delle relazioni della feature',
         error_missing_father_field: "Il campo relazionato non esiste",
-        field: "Campo in relazione",
+        field: "Campo chiave relazione",
       },
       form: {
         loading: 'Caricamento ...',
