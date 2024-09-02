@@ -429,8 +429,8 @@ module.exports = class FormService extends G3WObject {
       }
     }
     this.state.valid = (
-        Object.values(this.state.tovalidate).reduce((previous, input) => previous && input.validate.valid, true)
-        && Object.values(this.state.componentstovalidate).reduce((previous, valid) => previous && valid, true)
+      Object.values(this.state.tovalidate).reduce((previous, input) => previous && input.validate.valid, true)
+      && Object.values(this.state.componentstovalidate).reduce((previous, valid) => previous && valid, true)
     );
   };
 
@@ -466,7 +466,7 @@ module.exports = class FormService extends G3WObject {
 
   disableComponent({id, disabled}) {
     if (disabled) { this.state.disabledcomponents.push(id) }
-    else { this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => id !== disabledId) }
+    else { this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => id !== disableId) }
   };
 
   setCurrentComponentById(id) {
