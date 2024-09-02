@@ -14,7 +14,6 @@ import { base }                              from './base';
 import { noop }                              from './noop';
 import { resolve }                           from './resolve';
 import { reject }                            from './reject';
-import { getAjaxResponses }                  from './getAjaxResponses';
 import { trimValue }                         from './trimValue';
 import { isURL }                             from './isURL';
 import { sanitizeUrl }                       from './sanitizeUrl';
@@ -32,7 +31,6 @@ import { copyUrl }                           from './copyUrl';
 import { downloadFile }                      from './downloadFile';
 import { downloadCSVLayerFeatures }          from './downloadCSVLayerFeatures';
 import { downloadCSV }                       from './downloadCSV';
-import { getTimeoutPromise }                 from './getTimeoutPromise';
 import { XHR }                               from './XHR';
 import { createSingleFieldParameter }        from './createSingleFieldParameter';
 import { createFilterFormInputs }            from './createFilterFormInputs';
@@ -62,7 +60,6 @@ const utils = {
   reject,
   /** @TODO remove if unused */
   getValueFromG3WObjectEvent() { },
-  getAjaxResponses,
   trimValue,
   isURL,
   sanitizeUrl,
@@ -80,8 +77,7 @@ const utils = {
   downloadFile,
   downloadCSVLayerFeatures,
   downloadCSV,
-  getTimeoutPromise,
-  XHR,
+    XHR,
   /** @since 3.8.7 */
   createSingleFieldParameter,
   createFilterFromString,

@@ -1,7 +1,10 @@
+import {
+  QUERY_POINT_TOLERANCE,
+  TIMEOUT,
+}                                  from 'app/constant';
 import G3WObject                   from 'core/g3wobject';
 import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
-import { QUERY_POINT_TOLERANCE }   from 'app/constant';
 import { QgsFilterToken }          from 'utils/QgsFilterToken';
 import { ResponseParser }          from 'utils/parsers';
 import { handleQueryResponse }     from 'utils/handleQueryResponse';
@@ -10,7 +13,6 @@ import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
 import { XHR }                     from 'utils/XHR';
 import { appendParams }            from 'utils/appendParams';
-import { getTimeoutPromise }       from 'utils/getTimeoutPromise';
 import { promisify, $promisify }   from 'utils/promisify';
 
 const { t }                        = require('core/i18n/i18n.service');
@@ -22,7 +24,6 @@ const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 const DPI = getDPI();
 
 const is_defined = d => undefined !== d;
-
 
 /**
  * ORIGINAL SOURCE: src/app/core/layers/providers/provider.js@3.8.6
@@ -472,13 +473,12 @@ module.exports = {
           LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
         }
 
-        const timer = getTimeoutPromise({
-          resolve,
-          data: {
-            data:  (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
-            query: { coordinates, resolution },
-          },
-        });
+        const data = {
+          data:  (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+          query: { coordinates, resolution },
+        }; 
+
+        const timer = setTimeout(() => { resolve(data) }, TIMEOUT);
 
         const method =  layers[0].getOwsMethod();
         const source = (url || '').split('SOURCE');
@@ -545,13 +545,12 @@ module.exports = {
         const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
         const method = layers[0].getOwsMethod();
 
-        const timer = getTimeoutPromise({
-          resolve,
-          data: {
-            data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
-            query: {},
-          },
-        });
+        const data = {
+          data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+          query: {},
+        };
+
+        const timer = setTimeout(() => { resolve(data) }, TIMEOUT);
 
         let promise;
 
