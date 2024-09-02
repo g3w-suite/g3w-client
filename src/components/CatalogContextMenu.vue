@@ -11,7 +11,7 @@
     id              = "project-context-menu"
     ref             = "project-context-menu"
     class           = "catalog-context-menu"
-    v-click-outside = "closeLayerMenu"
+    v-click-outside = "__hideMenu"
     tabindex        = "-1"
     :style          = "{
       top:  menu.top + 'px',

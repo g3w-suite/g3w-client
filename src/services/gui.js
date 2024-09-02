@@ -75,6 +75,7 @@ export default new (class GUI extends G3WObject {
     super(opts);
 
     this.setters = {
+
       setContent(options = {}) {
         this.emit('opencontent', true);
 
@@ -136,34 +137,10 @@ export default new (class GUI extends G3WObject {
     this.dialog = bootbox;
 
     this.notify = {
-      warning(message, autoclose=false){
-        this.showUserMessage({
-          type: 'warning',
-          message,
-          autoclose
-        })
-      },
-      error(message, autoclose=false){
-        this.showUserMessage({
-          type: 'alert',
-          message,
-          autoclose
-        })
-      },
-      info(message, autoclose=false){
-        this.showUserMessage(({
-          type: 'info',
-          message,
-          autoclose
-        }))
-      },
-      success(message){
-        this.showUserMessage({
-          type: 'success',
-          message,
-          autoclose: true
-        })
-      }
+      warning(message, autoclose = false) { this.showUserMessage({ type: 'warning', message, autoclose }) },
+      error  (message, autoclose = false) { this.showUserMessage({ type: 'alert',   message, autoclose }) },
+      info   (message, autoclose = false) { this.showUserMessage({ type: 'info',    message, autoclose }) },
+      success(message)                    { this.showUserMessage({ type: 'success', message, autoclose: true }) }
     };
 
   }
@@ -437,22 +414,21 @@ export default new (class GUI extends G3WObject {
 
   // show results info/search
   showQueryResults(title, results) {
-    const queryResultsComponent = this.getComponent('queryresults');
-    const queryResultService    = queryResultsComponent.getService();
-    queryResultService.reset();
+    const queryresults = this.getComponent('queryresults').getService();
+    queryresults.reset();
     if (results) {
-      queryResultService.setQueryResponse(results);
+      queryresults.setQueryResponse(results);
     }
     // show contextual content
     this.setContent({
-      content:    queryResultsComponent,
+      content:    this.getComponent('queryresults'),
       title:      "info.title",
       crumb:      { title: "info.title", trigger: null },
       push:       this.push_content,
       post_title: title,
       perc:       isMobile.any ? 100 : undefined,
     });
-    return queryResultService;
+    return queryresults;
   }
 
   /**
@@ -541,12 +517,12 @@ export default new (class GUI extends G3WObject {
   }
 
   showSpinner(options = {}) {
-    const container   = options.container || 'body';
-    const id          = options.id || 'loadspinner';
-    const where       = options.where || 'prepend'; // append | prepend
-    const style       = options.style || '';
-    const transparent = options.transparent ? 'background-color: transparent' : '';
-    const center      = options.center ? 'margin: auto' : '';
+    const container   = options.container                                      || 'body';
+    const id          = options.id                                             || 'loadspinner';
+    const where       = options.where                                          || 'prepend'; // append | prepend
+    const style       = options.style                                          || '';
+    const transparent = options.transparent && 'background-color: transparent' || '';
+    const center      = options.center      && 'margin: auto'                  || '';
     if (!$(`#${id}`).length) {
       $(container)[where].call($(container),`<div id="${id}" class="spinner-wrapper ${style}" style="${transparent}"><div class="spinner ${style}" style="${center}"></div></div>`);
     }
@@ -607,12 +583,12 @@ export default new (class GUI extends G3WObject {
    * @param options: {title, crumb}
    */
   setCurrentContentOptions(options={}) {
-    const currentContent = ApplicationState.viewport.content.contentsdata.at(-1) || null;
-    if (currentContent && options.title) {
-      currentContent.options.title = options.title;
+    const content = ApplicationState.viewport.content.contentsdata.at(-1) || null;
+    if (content && options.title) {
+      content.options.title = options.title;
     }
-    if (currentContent && options.crumb) {
-      currentContent.options.crumb = options.crumb;
+    if (content && options.crumb) {
+      content.options.crumb = options.crumb;
     }
   }
 
@@ -704,8 +680,15 @@ export default new (class GUI extends G3WObject {
       // content is open
       if (state.content.contentsdata.length > 0) {
         this.getComponent('contents').removeContent();
-        // close secondary view( return a promise)
-        await promisify(this._closeSecondaryView('close-content'));
+        // close secondary view
+        const secondaryView = this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
+        if (secondaryView.clearContents) {
+          await promisify(secondaryView.clearContents());
+          state.secondaryPerc = 0;
+        }
+        state.secondaryVisible = false;
+        this._layout('close-content');
+        await Vue.nextTick();
       }
       return this.getComponent('map');
     });
@@ -774,43 +757,44 @@ export default new (class GUI extends G3WObject {
     }
   }
 
-  // close secondary view
-  async _closeSecondaryView(event = null) {
+  // manage all layout logic
+  // viewName: map or content
+  //options.  percentage , splitting title etc ..
+  async _showView(viewName, options = {}) {
     const state = ApplicationState.viewport;
+
+    const {
+      perc = viewName == state.primaryView ? 100 : 50,
+      split = 'h'
+    } = options;
+
+    state[viewName].aside = viewName == state.primaryView ? (undefined === options.aside ? false : options.aside) : true;
+
+    //calculate the content
+    const secondaryPerc = viewName == state.primaryView ? 100 - perc : perc;
+
+    //show Secondary View content only if more than 0
+    if (secondaryPerc > 0)  {
+      state.secondaryVisible = true;
+      state.split            = undefined !== split ? split : state.split;
+      state.secondaryPerc    = undefined !== perc  ? perc  : state.perc;
+      this._layout();
+      return;
+    }
+
+    // close secondary view
     const secondaryView = this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
+
     if (secondaryView.clearContents) {
       await promisify(secondaryView.clearContents());
       state.secondaryPerc = 0;
     }
-    state.secondaryVisible = false;
-    this._layout(event);
-    await Vue.nextTick();
-  }
 
-  // manage all layout logic
-  // viewName: map or content
-  //options.  percentage , splitting title etc ..
-  _showView(viewName, options = {}) {
-    const state = ApplicationState.viewport;
-    const { perc = viewName == state.primaryView ? 100 : 50, split = 'h' } = options;
-    let aside;
-    if (viewName == state.primaryView) {
-      aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
-    } else {
-      aside = true;
-    }
-    state[viewName].aside = aside;
-    //calculate the content
-    const secondaryPerc = viewName == state.primaryView ? 100 - perc : perc;
-    //show Secondary View content only if more than 0
-    if (secondaryPerc > 0)  {
-      state.secondaryVisible = true;
-      state.split = undefined !== split ? split : state.split;
-      state.secondaryPerc = undefined !== perc ? perc : state.perc;
-      this._layout();
-    } else {
-      return $promisify(this._closeSecondaryView());
-    }
+    state.secondaryVisible = false;
+
+    this._layout();
+
+    await Vue.nextTick();
   }
 
   /**

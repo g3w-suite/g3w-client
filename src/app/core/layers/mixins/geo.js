@@ -11,7 +11,28 @@ import Projections                        from 'store/projections';
 import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
 import { getScaleFromResolution }         from 'utils/getScaleFromResolution';
 import { XHR }                            from 'utils/XHR';
-import { sanitizeUrl }                    from 'utils/sanitizeUrl';
+
+/**
+ * ORIGINAL SOURCE: src/utils/sanitizeUrl.js@v3.10.2
+ */
+function sanitizeUrl({
+  url,
+  reserverParameters = [],
+} = {}) {
+  const checkUrl = new URL(url);
+  reserverParameters.forEach(p => {
+    const params = [p.toUpperCase(), p.toLowerCase()];
+    for (let i = 0; i < 2; i++) {
+      const param = params[i];
+      const value = checkUrl.searchParams.get(param);
+      if (value) {
+        url = url.replace(`${param}=${value}`, '');
+        break;
+      }
+    }
+  });
+  return url;
+}
 
 /**
  * ES6 mixin

@@ -1,6 +1,6 @@
-import ApplicationService from 'services/application';
+import ApplicationService                    from 'services/application';
+import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 
-const { convertQGISDateTimeFormatToMoment } = require('utils');
 const Service                               = require('gui/inputs/service');
 
 module.exports = class DateTimePickerService extends Service {

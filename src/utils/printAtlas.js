@@ -1,6 +1,5 @@
 import ProjectsRegistry             from 'store/projects';
 import ApplicationState             from 'store/application-state';
-import { convertObjectToUrlParams } from 'utils/convertObjectToUrlParams';
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
@@ -66,11 +65,11 @@ const FETCH = {
    * @param opts.mime_type
    * @return {Promise<{mime_type, layers: boolean, url: string}>}
    */
-  async POST({ url, params, mime_type }) {
+  async POST({ url, params = {}, mime_type }) {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body: convertObjectToUrlParams(params),
+      body: $.param(params),
     });
     if (!response.ok) {
       //@TODO Need to translate
@@ -89,9 +88,9 @@ const FETCH = {
    * @param opts.mime_type
    * @return {Promise<unknown>}
    */
-  async GET({url, params, mime_type}) {
+  async GET({url, params = {}, mime_type}) {
     return {
-      url: `${url}?${convertObjectToUrlParams(params)}`,
+      url: `${url}?${$.param(params)}`,
       layers: true,
       mime_type
     };

@@ -233,8 +233,7 @@ import ApplicationState            from "store/application-state";
 import GUI                         from 'services/gui';
 import ClickMixin                  from 'mixins/click';
 import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
-
-const { downloadFile } = require('utils');
+import { downloadFile }            from 'utils/downloadFile';
 
 function _setAllLayersVisible(layers) {
   layers.nodes.forEach(n => {

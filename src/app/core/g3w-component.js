@@ -5,7 +5,6 @@
 import G3WObject                    from 'core/g3wobject';
 import { merge }                    from 'utils/merge';
 import { noop }                     from 'utils/noop';
-import { capitalize_first_letter }  from 'utils/capitalize_first_letter';
 import { $promisify }               from 'utils/promisify';
 import GUI                          from 'services/gui';
 
@@ -15,6 +14,10 @@ const _cloneDeep = require('lodash.clonedeep');
 const deprecate  = require('util-deprecate');
 
 const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
+
+function capitalize_first_letter(string) {
+  return `${string[0].toUpperCase()}${string.slice(1)}`;
+}
 
 /**
  * Component class

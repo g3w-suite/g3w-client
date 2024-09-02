@@ -1,6 +1,6 @@
 import GUI                                  from 'services/gui';
 import { getQueryLayersPromisesByGeometry } from 'utils/getQueryLayersPromisesByGeometry';
-import { $promisify  }                      from 'utils/promisify';
+import { $promisify, promisify }            from 'utils/promisify';
 
 
 const Filter = require('core/layers/filter/filter');
@@ -29,11 +29,12 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
     })
   }
 
+  const mapCrs         = mapProjection.getCode();
+  const queryResponses = [];
+  const queryErrors    = [];
+  let i                = layers.length;
+
   return $promisify(new Promise((resolve, reject) => {
-    const mapCrs         = mapProjection.getCode();
-    const queryResponses = [];
-    const queryErrors    = [];
-    let layersLenght     = layers.length;
 
     /** @FIXME add description */
     layers
@@ -41,23 +42,20 @@ export function getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig = {}, 
         const filter   = new Filter(filterConfig);
         const layerCrs = layer.getProjection().getCode();
         // Convert filter geometry from `mapCRS` to `layerCrs`
-        filter.setGeometry(mapCrs === layerCrs
-          ? geometry
-          : geometry.clone().transform(mapCrs, layerCrs)
-        );
+        filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
 
         layer
         .query({ filter, feature_count })
         .then(response => queryResponses.push(response))
         .fail(e => { console.warn(e); queryErrors.push(e) })
         .always(() => {
-          layersLenght -= 1;
-          if (0 === layersLenght) {
-            queryErrors.length === layers.length
-              ? reject(queryErrors)
-              : resolve(queryResponses);
+          i -= 1;
+          if (0 === i && queryErrors.length === layers.length) {
+            reject(queryErrors)
+          } else if(0 === i && queryErrors.length !== layers.length) {
+            resolve(queryResponses);
           }
         })
       });
-  }))
+  }));
 }

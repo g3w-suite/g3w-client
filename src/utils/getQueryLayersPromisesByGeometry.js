@@ -24,38 +24,36 @@ export function getQueryLayersPromisesByGeometry(layers,
     feature_count = 10
   } = {}
 ) {
-  return $promisify(new Promise((resolve, reject) => {
-    const queryResponses = [];
-    const queryErrors    = [];
-    const mapCrs         = projection.getCode();
-    const filter         = new Filter(filterConfig);
+  const queryResponses = [];
+  const queryErrors    = [];
+  const mapCrs         = projection.getCode();
+  const filter         = new Filter(filterConfig);
 
-    /** In case of no features  */
-    if (0 === layers.length) {
-      resolve([]);
-    }
+  /** In case of no features  */
+  if (0 === layers.length) {
+    return $promisify(Promise.resolve([]));
+  }
+
+  return $promisify(new Promise((resolve, reject) => {
 
     /** Group query by layers instead single layer request  */
     if (multilayers) {
-      const multiLayers     = groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
-      const numberRequested = Object.keys(multiLayers).length;
-      let layersLength      = numberRequested;
+      const multiLayers = groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`);
+      let i             = Object.keys(multiLayers).length;
 
       for (let key in multiLayers) {
-        const layers      = multiLayers[key];
-        const multilayer  = multiLayers[key][0];
-        const provider    = multilayer.getProvider('filter');
-        const layerCrs    = multilayer.getProjection().getCode();
+        const layerCrs = multiLayers[key][0].getProjection().getCode();
         // Convert filter geometry from `mapCRS` to `layerCrs`
         filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
-        provider
-          .query({ filter, layers, feature_count })
+        multiLayers[key][0]
+          .getProvider('filter')
+          .query({ filter, layers: multiLayers[key], feature_count })
           .then(response => queryResponses.push(response))
           .fail(e => { console.warn(e); queryErrors.push(e) })
           .always(() => {
-            layersLength -= 1;
-            if (0 === layersLength) {
-              queryErrors.length === numberRequested
+            i -= 1;
+            if (0 === i) {
+              queryErrors.length === Object.keys(multiLayers).length
                 ? reject(queryErrors)
                 : resolve(queryResponses)
             }
@@ -63,22 +61,18 @@ export function getQueryLayersPromisesByGeometry(layers,
       }
     } else {
 
-      let layersLenght = layers.length;
+      let i = layers.length;
       layers.forEach(layer => {
         const layerCrs = layer.getProjection().getCode();
         // Convert filter geometry from `mapCRS` to `layerCrs`
-        filter.setGeometry(
-          (mapCrs === layerCrs)
-            ? geometry
-            : geometry.clone().transform(mapCrs, layerCrs)
-        );
+        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs));
         layer
           .query({ filter, filterConfig, feature_count })
           .then(response => queryResponses.push(response))
           .fail(e => { console.warn(e); queryErrors.push(e); })
           .always(() => {
-            layersLenght -= 1;
-            if (0 === layersLenght) {
+            i -= 1;
+            if (0 === i) {
               (queryErrors.length === layers.length)
                 ? reject(queryErrors)
                 : resolve(queryResponses)

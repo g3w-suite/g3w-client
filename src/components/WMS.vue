@@ -172,7 +172,6 @@
   import DataRouterService                 from 'services/data';
   import GUI                               from 'services/gui';
   import { getUniqueDomId }                from 'utils/getUniqueDomId';
-  import { isURL }                         from 'utils/isURL';
 
   import * as vuePanelComp                 from 'components/WMSLayersPanel.vue';
 
@@ -214,7 +213,7 @@
           (
             this.url !== null &&
             this.url.trim() &&
-            isURL(this.url)
+            this.url && this.url.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g) // whether is a valid url
           ) &&
           (
             this.id !== null &&

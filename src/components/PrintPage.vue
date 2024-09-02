@@ -64,7 +64,6 @@
 <script>
 import ProjectsRegistry   from 'store/projects';
 import GUI                from 'services/gui';
-import { imageToDataURL } from 'utils/imageToDataURL';
 
 export default {
 
@@ -87,7 +86,7 @@ export default {
         GUI.disableSideBar(true);
         this.state.downloading = true;
         if (['jpg', 'png', 'svg'].includes(this.format)) {
-          await imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
+          await this.imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
           setTimeout(() => {
             GUI.disableSideBar(false);
             this.state.downloading = false;
@@ -96,6 +95,28 @@ export default {
       } catch (e) {
         console.warn(e);
       }
+    },
+
+    imageToDataURL({
+      src,
+      type     = 'image/jpeg',
+      callback = () => {},
+    }) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = function() {
+          const canvas  = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = this.naturalHeight;
+          canvas.width  = this.naturalWidth;
+          context.drawImage(this, 0, 0);
+          const dataURL = canvas.toDataURL(type);
+          callback(dataURL);
+          resolve(dataURL);
+        };
+        image.onerror = reject;
+        image.src = src;
+      });
     },
 
   },

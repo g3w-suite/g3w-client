@@ -3,17 +3,49 @@
  * @since v3.6
  */
 
-import G3WObject         from 'core/g3w-object';
-import GUI               from 'services/gui';
-import ProjectsRegistry  from 'store/projects';
-import PluginsRegistry   from 'store/plugins';
-import Projections       from 'store/projections';
-import { normalizeEpsg } from 'utils/normalizeEpsg';
+import G3WObject                      from 'core/g3w-object';
+import GUI                            from 'services/gui';
+import ProjectsRegistry               from 'store/projects';
+import PluginsRegistry                from 'store/plugins';
+import Projections                    from 'store/projections';
+import { normalizeEpsg }              from 'utils/normalizeEpsg';
+import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 import {
   splitContextAndMethod,
   uniqueId,
-  createFilterFormField,
-}                        from 'utils';
+}                                     from 'utils';
+
+const Filter     = require('core/layers/filter/filter');
+const Expression = require('core/layers/filter/expression');
+
+/**
+ * 
+ * @TODO deprecate `search_endpoint = 'ows'`
+ * 
+ * Create filter from field based on search_endpoint
+ * 
+ * ORIGINAL SOURCE: src/utils/createFilterFormField.js@v3.10.2
+ */
+function createFilterFormField({
+  layer,
+  field,
+  value,
+  search_endpoint = 'api',
+  operator        = 'eq',
+}){
+  let filter;
+  switch (search_endpoint) {
+    case 'ows':
+      filter = (new Filter()).setExpression((new Expression()).createExpressionFromField({ field, value, operator, layerName: layer.getWMSLayerName() }).get());
+      break;
+    case 'api':
+      filter = createSingleFieldParameter({ field, value, operator });
+      break;
+  }
+  return filter;
+}
+
+
 
 /**
  * @param epsg: Number Code of epsg Ex.4326
