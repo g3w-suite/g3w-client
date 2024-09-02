@@ -1,9 +1,9 @@
-import G3WObject            from 'core/g3w-object';
-import GUI                  from 'services/gui';
-import { createOlLayer }    from 'utils/createOlLayer';
-import { createLayerStyle } from 'utils/createLayerStyle';
-import GeoLayerMixin        from 'core/layers/mixins/geo'
-import { $promisify  }      from 'utils/promisify';
+import G3WObject                 from 'core/g3w-object';
+import GUI                       from 'services/gui';
+import { createOlLayer }         from 'utils/createOlLayer';
+import { createLayerStyle }      from 'utils/createLayerStyle';
+import GeoLayerMixin             from 'core/layers/mixins/geo'
+import { $promisify, promisify } from 'utils/promisify';
 
 
 const Layer          = require('core/layers/layer');
@@ -71,14 +71,7 @@ class VectorMapLayer extends G3WObject {
   }
 
   getFeatures(opts = {}) {
-    return $promisify(new Promise((resolve, reject) => {
-      this.provider.getFeatures(opts)
-        .then(features => {
-          this.addFeatures(features);
-          resolve(features);
-        })
-        .fail(e => { console.warn(e); reject(e) });
-    }))
+    return $promisify(async () => this.addFeatures(await promisify(this.provider.getFeatures(opts))));
   }
 
   addFeatures(features = []) {
@@ -175,7 +168,7 @@ class VectorLayer extends GeoLayerMixin(TableLayer) {
         id:           this.getId(),
         geometryType: this.getGeometryType(),
         color:        this.getColor(),
-        style:        this.isEditingLayer() ? this.getEditingStyle() : this.getCustomStyle(),
+        style:        this.config.editing ? this.config.editing.style : this.getCustomStyle(),
         provider:     this.getProvider('data'),
         features:     this._editor && this._editor.getEditingSource().getFeaturesCollection()
       });

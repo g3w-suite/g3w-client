@@ -227,7 +227,7 @@ module.exports = {
      * @param opts.J                         wms request parameter 
      */
     query(opts = {}) {
-      return $promisify(new Promise((resolve, reject) => {
+      return $promisify(async () => {
         const is_table = 'table' === this._layer.getType();
 
         // in case not alphanumeric layer set projection
@@ -238,66 +238,53 @@ module.exports = {
         let { filter = null } = opts;
         filter = filter && Array.isArray(filter) ? filter : [filter];
 
+        // skip when ..
+        if (!filter) {
+          return Promise.reject();
+        }
+
         // check if geometry filter. If not i have to remove projection layer
         if (filter && 'geometry' !== filter[0].getType()) {
           this._projections.layer = null;
         }
 
-        if (filter) {
+        filter = filter.map(f => f.get()).filter(v => v);
 
-          filter = filter.map(f => f.get()).filter(v => v);
+        const response = await XHR.get({
+          url: opts.queryUrl || this._queryUrl,
+          params: {
+            SERVICE:       'WMS',
+            VERSION:       '1.3.0',
+            REQUEST:       'GetFeatureInfo',
+            filtertoken:   ApplicationState.tokens.filtertoken,
+            LAYERS:        layers,
+            QUERY_LAYERS:  layers,
+            INFO_FORMAT:   this._infoFormat,
+            FEATURE_COUNT: opts.feature_count || 10,
+            CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
+            I:             opts.I,
+            J:             opts.J,
+            FILTER:        filter.length ? filter.join(';') : undefined,
+            WITH_GEOMETRY: !is_table,
+          },
+        });
 
-          XHR.get({
-            url: opts.queryUrl || this._queryUrl,
-            params: {
-              SERVICE:       'WMS',
-              VERSION:       '1.3.0',
-              REQUEST:       'GetFeatureInfo',
-              filtertoken:   ApplicationState.tokens.filtertoken,
-              LAYERS:        layers,
-              QUERY_LAYERS:  layers,
-              INFO_FORMAT:   this._infoFormat,
-              FEATURE_COUNT: opts.feature_count || 10,
-              CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
-              I:             opts.I,
-              J:             opts.J,
-              FILTER:        filter.length ? filter.join(';') : undefined,
-              WITH_GEOMETRY: !is_table,
-            },
-          })
-            .then(response => {
-              if (opts.raw) { resolve(response); }
-              else {
-                resolve(handleQueryResponse({
-                  response,
-                  projections: this._projections,
-                  layers:      undefined === opts.layers ? [this._layer] : opts.layers,
-                  wms:         true,
-                }));
-              }
-            })
-            .catch(e => { console.warn(e); reject(e); });
-        } else {
-          reject();
-        }
-      }))
+        return opts.raw ? response : handleQueryResponse({
+          response,
+          projections: this._projections,
+          layers:      undefined === opts.layers ? [this._layer] : opts.layers,
+          wms:         true,
+        });
 
+      });
     }
 
     /**
      * get layer config
      */
     getConfig() {
-      return $promisify(new Promise((resolve, reject) => {
-        const url = this._layer.getUrl('config');
-        if (url) {
-          XHR.get({ url })
-            .then(config => resolve(config))
-            .catch(e => { console.warn(e); reject(e) });
-        } else {
-          reject('not valid url');
-        }
-      }))
+      const url = this._layer.getUrl('config');
+      return $promisify(url ? XHR.get({ url }) : Promise.reject('not valid url'));
 
     }
 
@@ -309,26 +296,18 @@ module.exports = {
      * unlock feature
      */
     unlock() {
-      return $promisify(new Promise((resolve, reject) => {
-        XHR.post({ url: this._layer.getUrl('unlock') })
-          .then(r  => resolve(r) )
-          .catch(e => { console.warn(e); reject(e) });
-      }))
+      return $promisify(XHR.post({ url: this._layer.getUrl('unlock') }));
     }
 
     /**
      * commit function (checks for editing) 
      */
     commit(commitItems) {
-      return $promisify(new Promise((resolve, reject) => {
-        XHR.post({
-          url:         this._layer.getUrl('commit'),
-          data:        JSON.stringify(commitItems),
-          contentType: 'application/json',
-        })
-          .then((r)  => resolve(r) )
-          .catch(e => { console.warn(e); reject(e); });
-      }))
+      return $promisify(XHR.post({
+        url:         this._layer.getUrl('commit'),
+        data:        JSON.stringify(commitItems),
+        contentType: 'application/json',
+      }));
     }
 
     /**
@@ -349,13 +328,12 @@ module.exports = {
       const urlParams = $.param(params);
 
       if (!options.editing) {
-        return $promisify(new Promise((resolve, reject) => {
-          XHR.get({
+        return $promisify(async () => {
+          const { vector } = await XHR.get({
             url: this._layer.getUrl('data') + (urlParams ? '?' + urlParams : ''),
-          })
-            .then(({ vector }) => resolve({ data:  vector.data, count: vector.count }) )
-            .catch((e)         => { console.warn(e); reject(e); })
-        }))
+          });
+          return { data: vector.data, count: vector.count };
+        });
       }
 
       return $promisify(new Promise((resolve, reject) => {
@@ -451,7 +429,7 @@ module.exports = {
     }
 
     query(opts = {}) {
-      return $promisify(new Promise(async(resolve, reject) => {
+      return $promisify(new Promise(async (resolve, reject) => {
         const projection = this._layer.getMapProjection() || this._layer.getProjection();
 
         const {
@@ -556,7 +534,7 @@ module.exports = {
      * @TODO check if deprecated
      */
     getData() {
-      return $promisify(new Promise((resolve, reject) => {}));
+      return $promisify(() => {});
     }
   
     // query method

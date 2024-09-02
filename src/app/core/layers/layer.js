@@ -1439,39 +1439,32 @@ class Layer extends G3WObject {
    * search method 
    */
   search(options = {}, params = {}) {
-    // check option feature_count
-    options.feature_count = options.feature_count || 10;
     options = {
       ...options,
+      feature_count: options.feature_count || 10,
       ...this.config.searchParams,
       ...params
     };
-    return $promisify(new Promise((resolve, reject) => {
-      const provider = this.getProvider('search');
+    const provider = this.getProvider('search');
+    return $promisify(async () => {
       if (provider) {
-        provider.query(options)
-          .done(response => resolve(response))
-          .fail(e => { console.warn(e); reject(e) });
-      } else {
-        reject(t('sdk.search.layer_not_searchable'));
+        return await promisify(provider.query(options));
       }
-    }))
+      return Promise.reject(t('sdk.search.layer_not_searchable'));
+    });
   }
 
   /**
    * Info from layer (only for querable layers) 
    */
-  query(opts = {}) {
-    return $promisify(new Promise((resolve, reject) => {
-      const provider = this.getProvider(opts.filter ? 'filter' : 'query');
+  query(options = {}) {
+    const provider = this.getProvider(options.filter ? 'filter' : 'query');
+    return $promisify(async () => {
       if (provider) {
-        provider.query(opts)
-          .done(response => resolve(response))
-          .fail(e => { console.warn(e); reject(e) });
-      } else {
-        reject(t('sdk.search.layer_not_querable'));
+        return await promisify(provider.query(options));
       }
-    }))
+      return Promise.reject(t('sdk.search.layer_not_querable'));
+    });
   }
 
   /**
