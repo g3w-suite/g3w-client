@@ -706,10 +706,6 @@
         this.menu.show = false;
       },
 
-      closeLayerMenu() {
-        this.__hideMenu();
-      },
-
       showAdminLayers() {},
 
       async onShowProjectContextMenu(evt) {
@@ -752,7 +748,7 @@
        *
         * @param menu
        */
-      closeLayerMenu(menu={}) {
+      closeLayerMenu(menu = {}) {
         this._hideMenu();
         this.showColorMenu(false);
         menu.show = false;
