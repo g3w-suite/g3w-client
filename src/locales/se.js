@@ -361,7 +361,7 @@ export default {
         back_to_relations: 'Tillbaka till relationerna',
         list_of_relations_feature: 'Lista på egenskapens relationer',
         error_missing_father_field: "Fält saknas",
-        field: "Relation field",
+        field: "Relation key field",
       },
       form: {
         loading: 'Laddning...',

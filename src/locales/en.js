@@ -372,7 +372,7 @@ export default {
         back_to_relations: 'Back to relations',
         list_of_relations_feature: 'List of relations of feature',
         error_missing_father_field: "Field is missing",
-        field: "Relation field",
+        field: "Relation key field",
       },
       form: {
         loading: 'Loading ...',

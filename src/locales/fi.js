@@ -361,7 +361,7 @@ export default {
         back_to_relations: 'Takaisin relaatioihin',
         list_of_relations_feature: 'Lista ominaisuuden relaatioista',
         error_missing_father_field: "Kenttä puuttu",
-        field: "Relation field",
+        field: "Relation key field",
       },
       form: {
         loading: 'Ladataan...',
