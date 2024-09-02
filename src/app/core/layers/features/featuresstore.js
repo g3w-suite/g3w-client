@@ -1,6 +1,5 @@
-import { $promisify  } from 'utils/promisify';
-
-const G3WObject         = require('core/g3wobject');
+import G3WObject                 from 'core/g3w-object';
+import { $promisify, promisify } from 'utils/promisify';
 
 /** @deprecated */
 const _cloneDeep        = require('lodash.clonedeep');
@@ -87,33 +86,23 @@ module.exports = class FeaturesStore extends G3WObject {
    *  Unlock features. Other users can edit these features
    */
   unlock() {
-    return $promisify(new Promise((resolve, reject) => {
-      this._provider.unlock()
-        .then(response => resolve(response))
-        .fail(e => { console.warn(e); reject(e) });
-    }))
+    return $promisify(async () => await promisify(this._provider.unlock()));
   }
 
   /*
    * Gets all features from server or attribute _features
    */
   _getFeatures(opts = {}) {
-    return $promisify(new Promise((resolve, reject) => {
+    return $promisify(async () => {
       if (this._provider) {
         //call provider getFeatures to get features from server
-        this._provider.getFeatures(opts)
-          .then(options => {
-            //get the feature base on response from server features, featurelockis etc ...
-            const features = this._filterFeaturesResponse(options);
-            this.addFeatures(features);
-            resolve(features);
-          })
-          .fail(e => { console.warn(e); reject(e) })
-      } else {
-        resolve(this._readFeatures());
+        //get the feature base on response from server features, featurelockis etc ...
+        const features = this._filterFeaturesResponse(await this._provider.getFeatures(opts));
+        this.addFeatures(features);
+        return features;
       }
-    }))
-
+      return this._readFeatures();
+    });
   }
 
   /**
@@ -211,17 +200,13 @@ module.exports = class FeaturesStore extends G3WObject {
   }
 
   _commit(commitItems) {
-    return $promisify(new Promise((resolve, reject) => {
+    return $promisify(async () => {
       if (commitItems && this._provider) {
         commitItems.lockids = this._lockIds;
-        this._provider
-          .commit(commitItems)
-          .then(response => resolve(response))
-          .fail(e => { console.warn(e); reject(e) })
-      } else {
-        reject();
+        return await promisify(this._provider.commit(commitItems));
       }
-    }))
+      return Promise.reject();
+    });
   }
 
   /**

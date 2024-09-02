@@ -1,7 +1,7 @@
 import { TIMEOUT }                      from "constant";
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import { waitFor }                      from 'utils/waitFor';
-import { $promisify  }                  from 'utils/promisify';
+import { $promisify, promisify }        from 'utils/promisify';
 
 
 const Layer                             = require('core/layers/layer');
@@ -57,55 +57,39 @@ module.exports = class TableLayer extends Layer {
        * @param {*} opts
        */
       getFeatures(opts = {}) {
-        return $promisify(new Promise((resolve, reject) => {
-          this._featuresstore
-            .getFeatures(opts)
-            .then(promise => {
-              promise
-                .then(features => {
-                  this.emit('getFeatures', features);
-                  return resolve(features);
-                })
-                .fail(e => { console.warn(e); reject(e) })
-            })
-            .fail(e => { console.warn(e); reject(e) });
-        }))
+        return $promisify(async () => {
+          const features = await promisify(this._featuresstore.getFeatures(opts));
+          this.emit('getFeatures', features);
+          return features;
+        });
       },
 
       commit(commitItems) {
-        return $promisify(new Promise((resolve, reject) => {
-          this._featuresstore
-            .commit(commitItems)
-            .then(promise => {
-              promise
-                .then(response => {
-                  // sync selection filter features
-                  if (response && response.result) {
-                    try {
-                      const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
-                      //if layer has geometry
-                      if (layer.isGeoLayer()) {
-                        commitItems.update.forEach(({ id, geometry } = {}) => {
-                          if (layer.getOlSelectionFeature(id)) {
-                            layer.updateOlSelectionFeature({id, geometry});
-                          }
-                        });
-                      }
-                      commitItems.delete.forEach(id => {
-                        if (layer.hasSelectionFid(id)) {
-                          layer.excludeSelectionFid(id);
-                        }
-                      })
-                    } catch(e) {
-                      console.warn(e);
-                    }
+        return $promisify(async () => {
+          const response = await promisify(this._featuresstore.commit(commitItems));
+          // sync selection filter features
+          if (response && response.result) {
+            try {
+              const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
+              //if layer has geometry
+              if (layer.isGeoLayer()) {
+                commitItems.update.forEach(({ id, geometry } = {}) => {
+                  if (layer.getOlSelectionFeature(id)) {
+                    layer.updateOlSelectionFeature({id, geometry});
                   }
-                  resolve(response)
-                })
-                .fail(e => { console.warn(e); reject(e) })
-            })
-            .fail(e => { console.warn(e); reject(e) });
-        }))
+                });
+              }
+              commitItems.delete.forEach(id => {
+                if (layer.hasSelectionFid(id)) {
+                  layer.excludeSelectionFid(id);
+                }
+              })
+            } catch(e) {
+              console.warn(e);
+            }
+          }
+          return response;
+        });
       },
 
     };
@@ -131,8 +115,8 @@ module.exports = class TableLayer extends Layer {
     // editable layer -- > update layer config info
     if (this.isEditable()) {
       this.layerForEditing = new Promise((resolve, reject) => {
-        this
-          .getEditingConfig()                                // get editing layer config
+        // get layer editing config (from server)
+        $promisify(async () => promisify(this.getProvider('data').getConfig(opts)))
           .then(async ({
             vector,
             constraints = {},
@@ -271,22 +255,6 @@ module.exports = class TableLayer extends Layer {
 
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @returns whether editingLayer is useful to get editingstyle
-   */
-  isEditingLayer() {
-    return !!this.config.editing;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @param style
-   */
-  setEditingStyle(style = {}) {
-    this.config.editing.style = style;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @return {{}}
    */
   getEditingConstrains() {
@@ -317,12 +285,7 @@ module.exports = class TableLayer extends Layer {
    * @returns jQuery Promise
    */
   unlock() {
-    return $promisify(new Promise((resolve, reject) => {
-      this._featuresstore
-        .unlock()
-        .then(resolve)
-        .fail(e => { console.warn(e); reject(e) });
-    }))
+    return $promisify(async () => { await promisify(this._featuresstore.unlock()); });
   }
 
   /**
@@ -377,30 +340,6 @@ module.exports = class TableLayer extends Layer {
 
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @return {*[]}
-   */
-  getFieldsLabel() {
-    return this.getEditingFields().map(f => f.label);
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @return {*}
-   */
-  getDataFormat() {
-    return this.config.editing.format;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @returns raw data
-   */
-  getEditingFormat() {
-    return this.config.editing.format;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @return {boolean}
    */
   isReady() {
@@ -415,103 +354,8 @@ module.exports = class TableLayer extends Layer {
     this.state.editing.ready = bool;
   }
 
-  /**
-   * Get configuration from server
-   * @TODO Move it on https://github.com/g3w-suite/g3w-client-plugin-editing
-   *
-   * @param {*} opts
-   *
-   * @returns jQuery Promise
-   */
-  getEditingConfig(opts = {}) {
-    return $promisify(new Promise((resolve, reject) => {
-      this
-        .getProvider('data')
-        .getConfig(opts)
-        .then(resolve)
-        .fail(e => { console.warn(e); reject(e) });
-    }))
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @param field
-   * @param key
-   * @param value
-   * @return {*}
-   */
-  addEditingConfigFieldOption({
-    field,
-    key,
-    value,
-  } = {}) {
-    field.input.options[key] = value;
-    return field.input.options[key];
-  }
-
   getWidgetData(opts = {}) {
-    return $promisify(new Promise((resolve, reject) => {
-      this
-        .getProvider('data')
-        .getWidgetData(opts)
-        .then(resolve)
-        .fail(e => { console.warn(e); reject(e) });
-    }))
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @return {string}
-   */
-  getCommitUrl() {
-    return this.config.urls.commit;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @param url
-   */
-  setCommitUrl(url) {
-    this.config.urls.commit = url;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @return {string}
-   */
-  getEditingUrl() {
-    return this.config.urls.editing;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @return {(function(): *)|(function(): *)|*|string|(function(): *)|(() => void)}
-   */
-  getUnlockUrl() {
-    return this.config.url.unlock;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @param url
-   */
-  setUnlockUrl(url) {
-    this.config.urls.unlock = url;
-  }
-
-  getWidgetUrl() {
-    return this.config.urls.widget;
-  }
-
-  /**
-   * @returns url to get config layer
-   */
-  getConfigUrl() {
-    return this.config.urls.config;
-  }
-
-  setConfigUrl(url) {
-    this.config.urls.index = url;
+    return $promisify(() => promisify(this.getProvider('data').getWidgetData(opts)));
   }
 
   /**
@@ -524,18 +368,10 @@ module.exports = class TableLayer extends Layer {
 
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @param editor
-   */
-  setEditor(editor) {
-    this._editor = editor;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * @return {*}
    */
   isStarted() {
-    return this.getEditor().isStarted()
+    return this._editor.isStarted()
   }
 
   getFeaturesStore() {
@@ -552,14 +388,6 @@ module.exports = class TableLayer extends Layer {
 
   getSource() {
     return this._featuresstore;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * @returns editing style
-   */
-  getEditingStyle() {
-    return this.config.editing.style;
   }
 
   addFeatures(features = []) {
