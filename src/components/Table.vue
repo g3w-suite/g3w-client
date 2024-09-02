@@ -630,12 +630,6 @@ export default {
    */
   async created() {
 
-    // disable any previous active map control
-    this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
-    if (this.last_map_control) {
-      this.last_map_control.control.toggle();
-    }
-
     // bind context on event listeners
     this.unSelectAll  = this.unSelectAll.bind(this);
     // this.changeFilter = this.changeFilter.bind(this);
@@ -668,6 +662,11 @@ export default {
   },
 
   async mounted() {
+    // disable any previous active map control
+    this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
+    if (this.last_map_control) {
+        this.last_map_control.control.toggle();
+    }
     this.setContentKey = GUI.onafter('setContent', this.resize);
 
     await this.$nextTick();
@@ -734,11 +733,13 @@ export default {
     table.ajax.reload();
   },
 
-  beforeDestroy() {
+  async beforeDestroy() {
     // restore any previous active map control
-    if (this.last_map_control) {
-      this.last_map_control.control.toggle();
+    if (this.last_map_control && !this.last_map_control.control.isToggled()) {
+     this.last_map_control.control.toggle();
     }
+
+    this.last_map_control = null;
 
     this.layer.off('unselectionall',    this.unSelectAll);
     this.layer.off('filtertokenchange', this.filterChangeHandler);
