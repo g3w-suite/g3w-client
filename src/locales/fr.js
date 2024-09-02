@@ -359,7 +359,8 @@ export default {
         no_relations_found: 'Aucune relation trouvée',
         back_to_relations: 'Retour aux relations',
         list_of_relations_feature: 'Liste des relations entre les entités',
-        error_missing_father_field: "Le champ concerné n'existe pas"
+        error_missing_father_field: "Le champ concerné n'existe pas",
+        field: "Relation field",
       },
       form: {
         loading: 'Chargement...',

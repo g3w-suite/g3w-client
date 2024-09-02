@@ -371,7 +371,8 @@ export default {
         no_relations_found: 'No relations found',
         back_to_relations: 'Back to relations',
         list_of_relations_feature: 'List of relations of feature',
-        error_missing_father_field: "Field is missing"
+        error_missing_father_field: "Field is missing",
+        field: "Relation field",
       },
       form: {
         loading: 'Loading ...',

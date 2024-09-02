@@ -372,7 +372,8 @@ export default {
         no_relations_found: 'Nessuna relazione trovata',
         back_to_relations: 'Ritorna alle relazioni',
         list_of_relations_feature: 'Lista delle relazioni della feature',
-        error_missing_father_field: "Il campo relazionato non esiste"
+        error_missing_father_field: "Il campo relazionato non esiste",
+        field: "Campo in relazione",
       },
       form: {
         loading: 'Caricamento ...',

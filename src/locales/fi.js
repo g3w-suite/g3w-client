@@ -360,7 +360,8 @@ export default {
         no_relations_found: 'Relaatiota ei löytynyt.',
         back_to_relations: 'Takaisin relaatioihin',
         list_of_relations_feature: 'Lista ominaisuuden relaatioista',
-        error_missing_father_field: "Kenttä puuttu"
+        error_missing_father_field: "Kenttä puuttu",
+        field: "Relation field",
       },
       form: {
         loading: 'Ladataan...',

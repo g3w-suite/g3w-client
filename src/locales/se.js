@@ -360,7 +360,8 @@ export default {
         no_relations_found: 'Inga relationer hittades.',
         back_to_relations: 'Tillbaka till relationerna',
         list_of_relations_feature: 'Lista på egenskapens relationer',
-        error_missing_father_field: "Fält saknas"
+        error_missing_father_field: "Fält saknas",
+        field: "Relation field",
       },
       form: {
         loading: 'Laddning...',

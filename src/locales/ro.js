@@ -360,7 +360,8 @@ export default {
         no_relations_found: 'Nu am găsit nicio relație',
         back_to_relations: 'Înapoi la relații',
         list_of_relations_feature: 'Lista de relații a entității',
-        error_missing_father_field: "Câmpul de legătură lipsește"
+        error_missing_father_field: "Câmpul de legătură lipsește",
+        field: "Relation field",
       },
       form: {
         loading: 'Se încarcă ...',

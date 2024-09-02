@@ -619,7 +619,7 @@ module.exports = class TableLayer extends Layer {
         field.input.options.values  = options.values;
       }
 
-      field.visible = exclude.indexOf(field.name) === -1; // exclude contain field to set visible false
+      field.visible = !exclude.includes(field.name); // exclude contain field to set visible false
 
       // for editing purpose
       if (undefined === field.validate) {
@@ -637,6 +637,14 @@ module.exports = class TableLayer extends Layer {
       field.validate.mutually_valid  = true;
       field.validate.empty           = !field.validate.required;
       field.validate.message         = null;
+      //@since 3.11.0
+      field.relationField            = false; //specify if a relation field
+      this.getRelations()
+        .getArray()
+        .forEach(r => r[this.getId() === r.getFather() ? 'getFatherField' : 'getChildField']().forEach(name => {
+          //need to check in case of not yet set field relationField to true from a previous relation
+          if (false === field.relationField) { field.relationField = ( name === field.name && field.visible ) }
+        }))
     });
 
     return fields;

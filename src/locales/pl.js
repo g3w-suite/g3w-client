@@ -355,7 +355,8 @@ export default {
         no_relations_found: "Nie znaleziono żadnych relacji",
         back_to_relations: "Powrót do relacji",
         list_of_relations_feature: "Lista relacji funkcji",
-        error_missing_father_field: "Brakuje pola"
+        error_missing_father_field: "Brakuje pola",
+        field: "Relation field",
       },
       form: {
         loading: "Ładowanie ...",
