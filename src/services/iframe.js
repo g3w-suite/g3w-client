@@ -10,10 +10,7 @@ import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
 import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
-import {
-  splitContextAndMethod,
-  uniqueId,
-}                                     from 'utils';
+import { getUniqueDomId }             from 'utils/getUniqueDomId';
 
 const Filter     = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
@@ -196,12 +193,12 @@ class IframePluginService {
   async getMessage(evt) {
     if (evt && evt.data) {
       const {
-        id =     uniqueId(),
+        id =     getUniqueDomId(),
         single = true,
         action,
         data: params
       }                         = evt.data;
-      const { context, method } = splitContextAndMethod(action);
+      const [ context, method ] = (action || '').split(':');
       let result                = false;
       let data;
       try {
@@ -510,9 +507,9 @@ class AppService extends BaseIframeService {
   }) {
     const DataRouterService = require('services/data').default;
     if (capture) {
-      DataRouterService.setOutputPlaces(['iframe'])
+      DataRouterService.currentoutputplaces = ['iframe'];
     } else {
-      DataRouterService.resetDefaultOutput();
+      DataRouterService.currentoutputplaces = ['gui'];
     }      
     return [];
   }

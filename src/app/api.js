@@ -38,8 +38,6 @@ import { createSelectedStyle }                     from 'utils/createSelectedSty
 import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
 import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
 import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
-import { getQueryLayersPromisesByBBOX }            from 'utils/getQueryLayersPromisesByBBOX';
-import { getQueryLayersPromisesByGeometry }        from 'utils/getQueryLayersPromisesByGeometry';
 import { getQueryLayersPromisesByCoordinates }     from 'utils/getQueryLayersPromisesByCoordinates';
 import { transformBBOX }                           from 'utils/transformBBOX';
 import { parseQueryLayersPromiseResponses }        from 'utils/parseQueryLayersPromiseResponses';
@@ -195,8 +193,6 @@ const g3wsdk = {
       getAlphanumericPropertiesFromFeature,
       getFormDataExpressionRequestFromFeature,
       convertFeatureToGEOJSON,
-      getQueryLayersPromisesByBBOX,
-      getQueryLayersPromisesByGeometry,
       getQueryLayersPromisesByCoordinates,
       transformBBOX,
       parseQueryLayersPromiseResponses,

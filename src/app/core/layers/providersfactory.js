@@ -294,7 +294,7 @@ module.exports = {
           projections: this._projections,
           layers:      _layers,
           wms:         true,
-        })
+        });
 
       });
     }

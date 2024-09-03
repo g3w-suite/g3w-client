@@ -7,21 +7,19 @@ import ProjectsRegistry                          from 'store/projects';
 import ApplicationService                        from 'services/application';
 import GUI                                       from 'services/gui';
 import IFrameRouterService                       from 'services/iframe';
-import { splitContextAndMethod }                 from 'utils/splitContextAndMethod';
 import { getFeaturesFromResponseVectorApi }      from 'utils/getFeaturesFromResponseVectorApi';
 import { getQueryLayersPromisesByCoordinates }   from 'utils/getQueryLayersPromisesByCoordinates';
-import { getQueryLayersPromisesByGeometry }      from 'utils/getQueryLayersPromisesByGeometry';
-import { getQueryLayersPromisesByBBOX }          from 'utils/getQueryLayersPromisesByBBOX';
+import { groupBy }                               from 'utils/groupBy';
 import { getMapLayersByFilter }                  from 'utils/getMapLayersByFilter';
 import { createOlFeatureFromApiResponseFeature } from 'utils/createOlFeatureFromApiResponseFeature';
-import { resolve }                               from 'utils/resolve';
 import { XHR }                                   from 'utils/XHR';
+import { $promisify, promisify }                 from 'utils/promisify';
 
-const { t } = require('core/i18n/i18n.service');
+const { t }  = require('core/i18n/i18n.service');
+const Filter = require('core/layers/filter/filter');
 
 const DataService = {
 
-  defaultoutputplaces: ['gui'], // set deafult outputplace
   currentoutputplaces: ['gui'], // array contains all
 
   /**
@@ -60,75 +58,16 @@ const DataService = {
    * @returns {Promise<void>}
    */
   async getData(contextAndMethod, options = {}) {
-    const { context, method }           = splitContextAndMethod(contextAndMethod);
-    const service                       = DataService.getService(context);
+    const [ context, method ]           = (contextAndMethod || '').split(':');
     const { inputs = {}, outputs = {} } = options;
     //return a promise and not the data
-    const promise = service[method](inputs);
+    const promise = DataService.services[context][method](inputs);
     if (outputs) {
       DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](promise, outputs));
     }
-    //return always data
-    return await (await promise);
-  },
-
-  /**
-   * Force to show empty output data
-   */
-  showEmptyOutputs() {
-    DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](Promise.resolve({ data: [] })));
-  },
-
-  /**
-   * Set a costum datapromiseoutput to applicationa outputs settede
-   * 
-   * @param promise
-   */
-  showCustomOutputDataPromise(promise) {
-    DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](promise, {}));
-  },
-
-  /**
-   * @param serviceName
-   * 
-   * @returns {*}
-   */
-  getService(serviceName) {
-    return DataService.services[serviceName]
-  },
-
-  setOutputPlaces(places = []) {
-    DataService.currentoutputplaces = places;
-  },
-
-  /**
-   * @param place
-   */
-  addCurrentOutputPlace(place) {
-    if (place && !DataService.currentoutputplaces.includes(place)) {
-      DataService.currentoutputplaces.push(place);
-    }
-  },
-
-  /**
-   * @param place
-   * @param method has to get two parameters data (promise) and options (Object)
-   * ex {
-   * place: <newplace>
-   * method(dataPromise, options={}) {}
-   *   }
-   */
-  addNewOutputPlace({ place, method = () => {} } = {}) {
-    if (undefined === DataService.ouputplaces[place] ) {
-      DataService.ouputplaces[place] = method;
-      return true;
-    }
-    return false;
-  },
-
-  // reset default configuration
-  resetDefaultOutput() {
-    DataService.currentoutputplaces = [...DataService.defaultoutputplaces];
+    const data = await (await promise);
+    console.log(data, contextAndMethod, options);
+    return data;
   },
 
 };
@@ -175,19 +114,21 @@ DataService.init = async () => {
         /**@since 3.9.0**/
         type = 'polygon'
       } = {}) {
-        const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-        const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
-        const geometry                  = feature.getGeometry();
+        const fid      = GUI.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID);
+        const geometry = feature.getGeometry();
 
         // in case no geometry on polygon layer response
         if (!geometry) {
-          return this.returnExceptionResponse({
+          return Promise.resolve({
+            data:   [],
             usermessage: {
               type:        'warning',
               message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
               messagetext: true,
               autoclose:   false
-            }
+            },
+            result: true,
+            error:  true
           });
         }
         return this.handleRequest(
@@ -231,7 +172,6 @@ DataService.init = async () => {
        * @param multilayers
        * @param condition
        * @param filterConfig
-       * @param excludeSelected
        * @param addExternal
        * @param layersFilterObject
        * @returns {Promise<unknown>}
@@ -243,46 +183,76 @@ DataService.init = async () => {
         multilayers        = false,
         condition          = this.condition,
         /** @since 3.8.0 **/
-        excludeSelected    = null,
-        /** @since 3.8.0 **/
         addExternal = true,
         layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
       } = {}) {
 
-        const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-        const query = {
-          bbox,
-          type: 'bbox',
-          filterConfig,
-          external: {
-            add: addExternal,
-            filter: {
-              SELECTED: hasExternalLayersSelected || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
-            }
-          },
-        };
-
         // Check If LayerIds is length === 0 so i check if add external Layer is selected
-        if (hasExternalLayersSelected) {
-          return this.handleRequest(this.getEmptyRequest(), query);
+        if (GUI.getService('catalog').state.external.vector.some(l => l.selected)) {
+          return this.handleRequest($promisify(Promise.resolve([])), {
+            bbox,
+            type: 'bbox',
+            filterConfig,
+            external: {
+              add: addExternal,
+              filter: {
+                SELECTED: true
+              }
+            },
+          });
         }
 
-        return this.handleRequest(
-          //request
-          getQueryLayersPromisesByBBOX(
-            // layers
-            getMapLayersByFilter( layersFilterObject, condition ),
-            //options
-            {
-              bbox,
-              feature_count,
-              filterConfig,
-              multilayers,
-            }
-          ),
-          // query
-          query
-        );
+        const layers = getMapLayersByFilter(layersFilterObject, condition);
+
+        feature_count = undefined !== feature_count ? feature_count : 10;
+        filterConfig  = undefined !== filterConfig  ? filterConfig  : {};
+        multilayers   = undefined !== multilayers   ? multilayers   : false;
+
+        const geometry      = ol.geom.Polygon.fromExtent(bbox);
+        const mapProjection = GUI.getService('map').getMap().getView().getProjection();
+
+        console.log(multilayers);
+
+        /** Group query by layers */
+        if (multilayers) {
+          return this.handleRequest(getQueryLayersPromisesByGeometry(layers, {
+            geometry,
+            feature_count,
+            filterConfig,
+            multilayers,
+            projection: mapProjection,
+          }));
+        }
+
+        const mapCrs         = mapProjection.getCode();
+        const queryResponses = [];
+        const queryErrors    = [];
+        let i                = layers.length;
+
+        return this.handleRequest($promisify(new Promise((resolve, reject) => {
+
+          /** @FIXME add description */
+          layers
+            .forEach(layer => {
+              const filter   = new Filter(filterConfig);
+              const layerCrs = layer.getProjection().getCode();
+              // Convert filter geometry from `mapCRS` to `layerCrs`
+              filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
+
+              layer
+              .query({ filter, feature_count })
+              .then(response => queryResponses.push(response))
+              .fail(e => { console.warn(e); queryErrors.push(e) })
+              .always(() => {
+                i -= 1;
+                if (0 === i && queryErrors.length === layers.length) {
+                  reject(queryErrors)
+                } else if(0 === i && queryErrors.length !== layers.length) {
+                  resolve(queryResponses);
+                }
+              })
+            });
+        })));
 
       }
 
@@ -300,21 +270,20 @@ DataService.init = async () => {
         addExternal = true,
         feature_count
       } = {}) {
-        const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
         const query = {
           coordinates,
           type: 'coordinates',
           external: {
             add: addExternal,
             filter: {
-              SELECTED: hasExternalLayersSelected
+              SELECTED: GUI.getService('catalog').state.external.vector.some(l => l.selected)
             }
           }
         };
 
         // Return an empty request if an external layer is selected
-        if (hasExternalLayersSelected && 0 === layerIds.length) {
-          return this.handleRequest(this.getEmptyRequest(), query);
+        if (query.external.filter.SELECTED && 0 === layerIds.length) {
+          return this.handleRequest($promisify(Promise.resolve([])), query);
         }
 
         const layersFilterObject = {
@@ -390,18 +359,6 @@ DataService.init = async () => {
           result: true // set result to true
         };
 
-      }
-
-      /**
-      * Exception response has user message attribute
-      */
-      async returnExceptionResponse({ usermessage }) {
-        return {
-          data:   [],
-          usermessage,
-          result: true,
-          error:  true
-        }
       }
 
     }),
@@ -712,7 +669,7 @@ DataService.init = async () => {
 class BaseService {
 
   constructor() {
-    ProjectsRegistry.onbefore('setCurrentProject', project => this.project = project);
+    ProjectsRegistry.onbefore('setCurrentProject', p => this.project = p);
     this.project = ProjectsRegistry.getCurrentProject();
   }
   /**
@@ -728,37 +685,85 @@ class BaseService {
    */
   async handleResponse() {}
 
-  /**
-   * @param {{ type: 'vector' }}
-   * 
-   * @returns { unknown[] } array of external layer add on project
-   * 
-   * @since 3.8.0
-   */
-  getSelectedExternalLayers({ type = 'vector' } = {}) {
-    return GUI.getService('catalog').state.external[type].filter(l => l.selected);
+}
+
+/**
+ * @param layers
+ * @param { Object } opts
+ * @param opts.multilayers
+ * @param opts.bbox
+ * @param opts.geometry
+ * @param opts.projection
+ * @param opts.feature_count
+ * 
+ * @returns { JQuery.Promise<any, any, any> }
+ */
+function getQueryLayersPromisesByGeometry(layers,
+  {
+    geometry,
+    projection,
+    filterConfig  = {},
+    multilayers   = false,
+    feature_count = 10
+  } = {}
+) {
+  const queryResponses = [];
+  const queryErrors    = [];
+  const mapCrs         = projection.getCode();
+  const filter         = new Filter(filterConfig);
+
+  /** In case of no features  */
+  if (0 === layers.length) {
+    return $promisify(Promise.resolve([]));
   }
 
-  /**
-   * @returns {Promise<[]>} a resolved request (empty array)
-   * 
-   * @since 3.8.0
-   */
-  getEmptyRequest() {
-    return resolve([]);
-  }
+  return $promisify(new Promise((resolve, reject) => {
 
-  /**
-   * @param {{ type: 'vector' }}
-   * 
-   * @returns {boolean}
-   * 
-   * @since 3.8.0
-   */
-  hasExternalLayerSelected({ type = 'vector' } = {}) {
-    return this.getSelectedExternalLayers({ type }).length > 0;
-  }
+    /** Group query by layers instead single layer request  */
+    if (multilayers) {
+      const multiLayers = groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`);
+      let i             = Object.keys(multiLayers).length;
 
+      for (let key in multiLayers) {
+        const layerCrs = multiLayers[key][0].getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
+        multiLayers[key][0]
+          .getProvider('filter')
+          .query({ filter, layers: multiLayers[key], feature_count })
+          .then(response => queryResponses.push(response))
+          .fail(e => { console.warn(e); queryErrors.push(e) })
+          .always(() => {
+            i -= 1;
+            if (0 === i) {
+              queryErrors.length === Object.keys(multiLayers).length
+                ? reject(queryErrors)
+                : resolve(queryResponses)
+            }
+          });
+      }
+    } else {
+
+      let i = layers.length;
+      layers.forEach(layer => {
+        const layerCrs = layer.getProjection().getCode();
+        // Convert filter geometry from `mapCRS` to `layerCrs`
+        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs));
+        layer
+          .query({ filter, filterConfig, feature_count })
+          .then(response => queryResponses.push(response))
+          .fail(e => { console.warn(e); queryErrors.push(e); })
+          .always(() => {
+            i -= 1;
+            if (0 === i) {
+              (queryErrors.length === layers.length)
+                ? reject(queryErrors)
+                : resolve(queryResponses)
+            }
+          })
+      });
+    }
+  }));
 }
 
 export default DataService;

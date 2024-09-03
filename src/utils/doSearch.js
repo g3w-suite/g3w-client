@@ -58,7 +58,7 @@ export async function doSearch({
 
     // no features on result → show an empty message
     if (search_1n && !features.length) {
-      DataRouterService.showEmptyOutputs();
+      DataRouterService.currentoutputplaces.forEach(p => DataRouterService.ouputplaces[p](Promise.resolve({ data: [] })));
       parsed = [];
     }
 

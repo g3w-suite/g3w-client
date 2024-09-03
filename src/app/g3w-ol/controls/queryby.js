@@ -623,14 +623,12 @@ export class QueryBy extends InteractionControl {
             excludeSelected: 'querybypolygon' === type || !selected,
             feature:         (() => {
                               switch (type) {
-                                case 'querybypolygon':
-                                  return QUERY.feature;
-                                case 'querybydrawpolygon':
-                                  return QUERY.dfeature;
+                                case 'querybypolygon':     return QUERY.feature;
+                                case 'querybydrawpolygon': return QUERY.dfeature;
                                 case 'querybycircle':
-                                  const feature = QUERY.dfeature.clone();
-                                  feature.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry(), 64));
-                                  return feature;
+                                  const feat = QUERY.dfeature.clone();
+                                  feat.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry(), 64));
+                                  return feat;
                               }
                              })(),
             external:        {
@@ -639,17 +637,7 @@ export class QueryBy extends InteractionControl {
                 SELECTED:    ['querybydrawpolygon', 'querybycircle'].includes(type) && (!selected || externalLayers.some(l => l === selected))
               }
             },
-            /** @since 3.9.0 - custom 'drawpolygon' type **/
-            type:            (() => {
-                                switch(type) {
-                                  case 'querybypolygon':
-                                    return 'polygon';
-                                  case 'querybydrawpolygon':
-                                    return 'drawpolygon';
-                                  case 'querybycircle':
-                                    return 'circle';
-                                }
-                              })(),
+            type:            (type || '').replace('queryby', '') || undefined,
             multilayers:     ProjectsRegistry.getCurrentProject().isQueryMultiLayers(control.name),
             filterConfig:    { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           },
