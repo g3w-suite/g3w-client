@@ -63,9 +63,7 @@ const DataService = {
     if (outputs) {
       DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](promise, outputs));
     }
-    const data = await (await promise);
-    console.log(data, contextAndMethod, options);
-    return data;
+    return await (await promise);
   },
 
 };
