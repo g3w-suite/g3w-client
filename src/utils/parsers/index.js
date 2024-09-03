@@ -45,8 +45,8 @@ export const ResponseParser = {
     switch (type) {
 
       case 'g3w-error':
-        return function(options = {}) {
-          let { error } = options;
+        return function(opts = {}) {
+          let { error } = opts;
           return ({
             parse({ type = 'responseJSON' } = {}) {
 
@@ -77,16 +77,17 @@ export const ResponseParser = {
 
       case 'g3w-table/json':
         return function(data = {}) {
-          return (data.features || []).map(f => {
-            const feature = new Feature();
-            feature.setProperties(f.properties);
-            feature.setId(f.id);
-            return feature;
-          });
+          return (data.features || [])
+            .map(f => {
+              const feature = new Feature();
+              feature.setProperties(f.properties);
+              feature.setId(f.id);
+              return feature;
+            });
         };
 
       case 'g3w-vector/gml':
-        return function ({ data, layer } = {}) {
+        return function({ data, layer } = {}) {
           try {
             return (
               new ol.format.WMSGetFeatureInfo({ layers: layer.getQueryLayerOrigName() })
@@ -108,7 +109,7 @@ export const ResponseParser = {
 
       case 'g3w-vector/geojson':
       case 'g3w-vector/json':
-        return function (data, options) {
+        return function(data, options) {
           try {
             return (new ol.format.GeoJSON({
               geometryName:      'geometry',
@@ -122,7 +123,7 @@ export const ResponseParser = {
         };
 
       case 'application/json':
-        return function ({
+        return function({
           response,
           projections,
           layers = [],
@@ -162,7 +163,7 @@ export const ResponseParser = {
         };
 
       case 'application/geojson':
-        return function ({
+        return function({
           layers,
           response,
         } = {}) {
@@ -174,7 +175,7 @@ export const ResponseParser = {
 
       case 'text/plain':
       case 'text/html':
-        return function ({
+        return function({
           layers,
           response,
         } = {}) {
@@ -185,7 +186,7 @@ export const ResponseParser = {
         };
 
       case 'text/gml':
-        return function ({
+        return function({
           layers,
           response,
         }) {
@@ -196,7 +197,7 @@ export const ResponseParser = {
         };
 
       case 'application/vnd.ogc.gml':
-        return function ({
+        return function({
           response,
           projections,
           layers,
@@ -272,7 +273,7 @@ export const ResponseParser = {
           );
 
           /** @FIXME add description */
-          if (olfeatures.length && invalids) {
+          if (olfeatures.length > 0 && invalids) {
             const fields = Object.keys(olfeatures[0].getProperties()).filter(prop => -1 !== prop.indexOf(NUMERIC_FIELD));
             olfeatures.forEach(f => {
               fields.forEach(_field => {
@@ -295,21 +296,20 @@ export const ResponseParser = {
 
           // handled responses
           const parsed = [];
-
           const originalFeatureMember = [].concat(json.FeatureCollection.featureMember);
-
           layers.forEach((layer, i/*, originalFeatureMember*/) => {
 
             const name   = id ? layer.getId() : `layer${i}`;                                    // layer name
-            const fname  = originalFeatureMember.filter(f => f[name]);                          // features with same name
-            let features = fname.filter(f => Array.isArray(f[name])).map(f => f[name]).pop();   // feature member array
+            const fname  = originalFeatureMember.filter(f => f[name]);                          // features with the same name
             let prefix   = fname.filter(f => Array.isArray(f[name])).map(f => f.__prefix).pop();// feature member prefix
-            fname
-              .forEach(fn => {
-                if (fn[name]._fid) {
-                  olfeatures.find(f => fn[name]._fid === f.getId()).set(G3W_FID, fn[name]._fid.split('.')[1])
-                }
-              });
+            const features = fname
+              .filter(fn => fn[name]._fid)
+              .map(fn => {
+                const feature = olfeatures.find(f => fn[name]._fid === f.getId());
+                feature.set(G3W_FID, fn[name]._fid.split('.')[1]);
+                return feature;
+              })
+
             // check if features have the same fields. If not, group the features with the same fields
             const grouped    = features && groupBy(features, f => Object.keys(f));
             const is_grouped = grouped && Object.keys(grouped).length > 1;
@@ -328,19 +328,21 @@ export const ResponseParser = {
             // Remove Z values due an incorrect addition when using
             // ol.format.WMSGetFeatureInfo readFeatures method from XML
             // (ex. WMS getFeatureInfo);
+
             if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
-              olfeatures.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
+              features.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
             }
 
             /** @FIXME add description */
             []
               .concat(is_multi ? Object.values(grouped) : layer)
-              .forEach(g => parsed.unshift({ layer, features: olfeatures }));
+              .forEach(g => parsed.unshift({ layer, features }));
 
             // on each element add and object contain layer name and information, and __prefix
             if (features && !is_grouped) {
               features.forEach(f => { json.FeatureCollection.featureMember.push({ [name]: f, __prefix: prefix }); });
             }
+
 
           });
 
@@ -351,10 +353,7 @@ export const ResponseParser = {
         return function({
           layers = [],
         } = {}) {
-          return layers.map(layer => ({
-            layer,
-            rawdata: t('warning.not_supported_format')
-          }))
+          return layers.map(layer => ({ layer, rawdata: t('warning.not_supported_format') }))
         };
 
     }
