@@ -95,7 +95,7 @@ const CONTROLS = {
   'query':              (opts = {}) => new InteractionControl({
     ...opts,
     offline:          false,
-    name:             "querylayer",
+    name:             "query",
     tipLabel:         "sdk.mapcontrols.query.tooltip",
     label:            opts.label || "\uea0f",
     clickmap:         true,
