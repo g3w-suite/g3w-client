@@ -45,7 +45,6 @@ import { getMapLayerById }                         from 'utils/getMapLayerById';
 import { getMapLayersByFilter }                    from 'utils/getMapLayersByFilter';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { getFeaturesFromResponseVectorApi }        from 'utils/getFeaturesFromResponseVectorApi';
-import { convertVectorFeaturesToResultFeatures }   from 'utils/convertVectorFeaturesToResultFeatures';
 import { splitGeometryLine }                       from 'utils/splitGeometryLine';
 import { splitFeatures }                           from 'utils/splitFeatures';
 import { splitFeature }                            from 'utils/splitFeature';
@@ -67,7 +66,6 @@ import { convertDEGToDM }                          from 'utils/convertDEGToDM';
 import { convertDMSToDEG }                         from 'utils/convertDMSToDEG';
 import { convertDEGToDMS }                         from 'utils/convertDEGToDMS';
 import { getGeoTIFFfromServer }                    from 'utils/getGeoTIFFfromServer';
-import { createOlFeatureFromApiResponseFeature }   from 'utils/createOlFeatureFromApiResponseFeature';
 import { parseAttributes }                         from 'utils/parseAttributes';
 import { distance }                                from 'utils/distance';
 import { squaredDistance }                         from 'utils/squaredDistance';
@@ -200,7 +198,6 @@ const g3wsdk = {
       getMapLayersByFilter,
       areCoordinatesEqual,
       getFeaturesFromResponseVectorApi,
-      covertVectorFeaturesToResultFeatures: convertVectorFeaturesToResultFeatures,
       splitGeometryLine,
       splitFeatures,
       splitFeature,
@@ -222,7 +219,6 @@ const g3wsdk = {
       ConvertDMSToDEG: convertDMSToDEG,
       ConvertDEGToDMS: convertDEGToDMS,
       getGeoTIFFfromServer,
-      createOlFeatureFromApiResponseFeature,
       sanitizeFidFeature,
       parseAttributes,
       distance,

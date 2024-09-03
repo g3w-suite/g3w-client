@@ -7,11 +7,9 @@ import ProjectsRegistry                          from 'store/projects';
 import ApplicationService                        from 'services/application';
 import GUI                                       from 'services/gui';
 import IFrameRouterService                       from 'services/iframe';
-import { getFeaturesFromResponseVectorApi }      from 'utils/getFeaturesFromResponseVectorApi';
 import { getQueryLayersPromisesByCoordinates }   from 'utils/getQueryLayersPromisesByCoordinates';
 import { groupBy }                               from 'utils/groupBy';
 import { getMapLayersByFilter }                  from 'utils/getMapLayersByFilter';
-import { createOlFeatureFromApiResponseFeature } from 'utils/createOlFeatureFromApiResponseFeature';
 import { XHR }                                   from 'utils/XHR';
 import { $promisify, promisify }                 from 'utils/promisify';
 
@@ -81,14 +79,8 @@ DataService.init = async () => {
     /**
      * ORIGINAL SOURCE: src/services/data-query.js@v3.9.3
      */
-    query: new (class extends BaseService {
+    query: new (class {
       
-      constructor() {
-        super();
-        /** @type {{filtrable: {ows: string}}} */
-        this.condition = { filtrable: { ows: 'WFS' } };
-      }
-
       /**
        * @param {{ feature: unknown, feature_count: unknown, filterConfig: unknown, multilayers: boolean, condition: boolean, excludeLayers: unknown[] }}
        * 
@@ -96,10 +88,10 @@ DataService.init = async () => {
        */
       polygon({
         feature,
-        feature_count   = this.project.getQueryFeatureCount(),
+        feature_count   = ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
         filterConfig    = {},
         multilayers     = false,
-        condition       = this.condition,
+        condition       = { filtrable: { ows: 'WFS' } },
         /** @since 3.8.0 */
         layerName       = '',
         /** @since 3.8.0 */
@@ -150,7 +142,7 @@ DataService.init = async () => {
               multilayers,
               feature_count,
               filterConfig,
-              projection: this.project.getProjection()
+              projection: ProjectsRegistry.getCurrentProject().getProjection()
             }
           ),
           // query
@@ -178,10 +170,10 @@ DataService.init = async () => {
        */
       bbox({
         bbox,
-        feature_count      = this.project.getQueryFeatureCount(),
+        feature_count      = ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
         filterConfig       = {},
         multilayers        = false,
-        condition          = this.condition,
+        condition          = { filtrable: { ows: 'WFS' } },
         /** @since 3.8.0 **/
         addExternal = true,
         layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
@@ -202,57 +194,18 @@ DataService.init = async () => {
           });
         }
 
-        const layers = getMapLayersByFilter(layersFilterObject, condition);
-
-        feature_count = undefined !== feature_count ? feature_count : 10;
-        filterConfig  = undefined !== filterConfig  ? filterConfig  : {};
-        multilayers   = undefined !== multilayers   ? multilayers   : false;
-
-        const geometry      = ol.geom.Polygon.fromExtent(bbox);
-        const mapProjection = GUI.getService('map').getMap().getView().getProjection();
-
-        console.log(multilayers);
-
-        /** Group query by layers */
-        if (multilayers) {
-          return this.handleRequest(getQueryLayersPromisesByGeometry(layers, {
-            geometry,
+        return this.handleRequest(getQueryLayersPromisesByGeometry(
+          // layers
+          getMapLayersByFilter(layersFilterObject, condition),
+          // options
+          {
+            geometry: ol.geom.Polygon.fromExtent(bbox),
             feature_count,
             filterConfig,
             multilayers,
-            projection: mapProjection,
-          }));
-        }
-
-        const mapCrs         = mapProjection.getCode();
-        const queryResponses = [];
-        const queryErrors    = [];
-        let i                = layers.length;
-
-        return this.handleRequest($promisify(new Promise((resolve, reject) => {
-
-          /** @FIXME add description */
-          layers
-            .forEach(layer => {
-              const filter   = new Filter(filterConfig);
-              const layerCrs = layer.getProjection().getCode();
-              // Convert filter geometry from `mapCRS` to `layerCrs`
-              filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
-
-              layer
-              .query({ filter, feature_count })
-              .then(response => queryResponses.push(response))
-              .fail(e => { console.warn(e); queryErrors.push(e) })
-              .always(() => {
-                i -= 1;
-                if (0 === i && queryErrors.length === layers.length) {
-                  reject(queryErrors)
-                } else if(0 === i && queryErrors.length !== layers.length) {
-                  resolve(queryResponses);
-                }
-              })
-            });
-        })));
+            projection: GUI.getService('map').getMap().getView().getProjection(),
+          })
+        );
 
       }
 
@@ -339,26 +292,15 @@ DataService.init = async () => {
         return new Promise((resolve, reject) => {
           request
             .then(response => {
-              resolve(this.handleResponse(response, query));
+              resolve({
+                query,
+                type:   'ows',
+                data:   (response || []).map(({ data = [] }) => data).flat(),
+                result: true // set result to true
+              });
             })
             .fail(e => { console.warn(e); reject(e) })
         })
-      }
-
-      /**
-      *
-      * @param response
-      * @param query
-      * @returns {{result: boolean, data: FlatArray<*[][], 1>[], query: {}, type: string}}
-      */
-      handleResponse(response = [], query = {}) {
-        return {
-          query,
-          type:   'ows',
-          data:   response.map(({ data = [] }) => data).flat(),
-          result: true // set result to true
-        };
-
       }
 
     }),
@@ -366,7 +308,7 @@ DataService.init = async () => {
     /**
      * ORIGINAL SOURCE: src/services/data-search.js@v3.9.3
      */
-    search: new (class extends BaseService {
+    search: new (class {
 
       /**
        * @TODO deprecate search_endpoint
@@ -457,8 +399,16 @@ DataService.init = async () => {
         const features = []; 
         try {
           const feats = layer && await layer.getFeatureByFids({ fids, formatter });
+          // convert API response to Open Layer Features
           if (feats) {
-            feats.forEach(f => features.push(createOlFeatureFromApiResponseFeature(f)));
+            feats.forEach(f => {
+              const properties    = undefined !== f.properties ? f.properties : {}
+              properties[G3W_FID] = f.id;
+              const olFeat          = new ol.Feature(f.geometry && new ol.geom[f.geometry.type](f.geometry.coordinates));
+              olFeat.setProperties(properties);
+              olFeat.setId(f.id);
+              features.push(olFeat)
+            });
           }
         } catch(e) {
           console.warn(e);
@@ -505,7 +455,7 @@ DataService.init = async () => {
     /**
      * ORIGINAL SOURCE: src/services/data-expression.js@v3.9.3
      */
-    expression: new (class extends BaseService {
+    expression: new (class {
 
       /**
        * POST only: accepts
@@ -525,13 +475,12 @@ DataService.init = async () => {
        */
       async expression(params= {}) {
         try {
-          return this.handleResponse(
-            // response
-            await this.handleRequest({
-              url: `${this.project.getUrl('vector_data')}${params.layer_id}/`,
-              params
-            })
-          );
+          const response = XHR.post({
+            url:         `${ProjectsRegistry.getCurrentProject().getUrl('vector_data')}${params.layer_id}/`,
+            contentType: 'application/json',
+            data:        JSON.stringify(params),
+          });
+          return response.result ? (response.vector.data.features || []) : null;
         } catch(e) {
           console.warn(e);
           return Promise.reject(e);
@@ -556,32 +505,11 @@ DataService.init = async () => {
        * @returns { Promise<void> }
        */
       expression_eval(params = {}) {
-        return this.handleRequest({
-          url: this.project.getUrl('expression_eval'),
-          params
+        return XHR.post({
+          url:         ProjectsRegistry.getCurrentProject().getUrl('expression_eval'),
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
         });
-      }
-
-      /**
-       * Handle server request
-       * 
-       * @param url
-       * @param params
-       * @param contentType
-       * 
-       * @returns { Promise<*> }
-       */
-      handleRequest({ url, params = {}, contentType = 'application/json' } = {}) {
-        return XHR.post({ url, contentType, data: JSON.stringify(params) });
-      }
-
-      /**
-       * Handle server response
-       * 
-       * @param response
-       */
-      handleResponse(response = {}) {
-        return getFeaturesFromResponseVectorApi(response);
       }
     
     }),
@@ -589,7 +517,7 @@ DataService.init = async () => {
     /**
      * ORIGINAL SOURCE: src/services/data-proxy.js@v3.9.3
      */
-    proxy: new (class extends BaseService {
+    proxy: new (class {
       /**
        *
        * @param data: Object conitans data to pass to proxy
@@ -634,7 +562,7 @@ DataService.init = async () => {
     /**
      * ORIGINAL SOURCE: src/services/data-ows.js@v3.9.3
      */
-    ows: new (class extends BaseService {
+    ows: new (class {
       /**
        * @param params
        * 
@@ -662,30 +590,6 @@ DataService.init = async () => {
 
   };
 };
-
-/**
- * ORIGINAL SOURCE: src/app/core/data/service.js@v3.9.3
- */
-class BaseService {
-
-  constructor() {
-    ProjectsRegistry.onbefore('setCurrentProject', p => this.project = p);
-    this.project = ProjectsRegistry.getCurrentProject();
-  }
-  /**
-   * @virtual method need to be implemented by subclasses
-   * 
-   * @param request is a Promise(jquery promise at moment
-   * @returns {Promise<unknown>}
-   */
-  handleRequest() {}
-
-  /**
-   * @virtual method need to be implemented by subclasses
-   */
-  async handleResponse() {}
-
-}
 
 /**
  * @param layers
@@ -748,7 +652,7 @@ function getQueryLayersPromisesByGeometry(layers,
       layers.forEach(layer => {
         const layerCrs = layer.getProjection().getCode();
         // Convert filter geometry from `mapCRS` to `layerCrs`
-        filter.setGeometry((mapCrs === layerCrs) ? geometry : geometry.clone().transform(mapCrs, layerCrs));
+        filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
         layer
           .query({ filter, filterConfig, feature_count })
           .then(response => queryResponses.push(response))

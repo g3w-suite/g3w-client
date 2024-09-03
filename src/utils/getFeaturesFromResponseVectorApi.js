@@ -1,4 +1,4 @@
-import { convertVectorFeaturesToResultFeatures } from 'utils/convertVectorFeaturesToResultFeatures';
+import { G3W_FID } from 'app/constant';
 
 /**
  * @param response
@@ -14,9 +14,16 @@ export function getFeaturesFromResponseVectorApi(response = {}, { type = 'vector
     return null;
   }
 
-  /** @FIXME add description */
+  /** convert vector features to result features */
   if ('result' === type) {
-    return convertVectorFeaturesToResultFeatures(response.vector.data.features || []);
+    return (response.vector.data.features || []).map(f => {
+      f.properties[G3W_FID] = f.id;
+      return {
+        geometry:   f.geometry,
+        attributes: f.properties,
+        id:         f.id,
+      };
+    });
   }
 
   /** @FIXME add description */

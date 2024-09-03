@@ -123,7 +123,15 @@ export default {
           relation,
         };
         const response = await RelationsService.getRelations(_options);
-        let relations = getFeaturesFromResponseVectorApi(response, { type: 'result' });
+        let relations  = response.result ? (response.vector.data.features || []).map(f => {
+          f.properties[G3W_FID] = f.id;
+          return {
+            geometry:   f.geometry,
+            attributes: f.properties,
+            id:         f.id,
+          };
+        }) : null;
+
         if (this.nmRelation) {
           relationLayerId = this.nmRelation.referencedLayer;
           relations = await RelationsService.getRelationsNM({
