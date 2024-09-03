@@ -30,7 +30,7 @@ module.exports = class PickFeatureInteraction extends ol.interaction.Pointer {
   }
 
   layerFilter_(layer) {
-    const include     = this.layers_.includes(layer);
+    const include     = (this.layers_ || []).includes(layer);
     this.pickedLayer_ = include && layer;
     return include;
   }
@@ -44,7 +44,7 @@ module.exports = class PickFeatureInteraction extends ol.interaction.Pointer {
       }
       return feature;
     }, {
-      layerFilter:  this.layerFilter_,
+      layerFilter:  this.layerFilter_.bind(this),
       hitTolerance: (isMobile && isMobile.any) ? 10 : 0
     });
     if (intersectingFeature) { featureFound = intersectingFeature }
