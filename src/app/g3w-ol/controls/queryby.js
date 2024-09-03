@@ -638,7 +638,7 @@ export class QueryBy extends InteractionControl {
               }
             },
             type:            (type || '').replace('queryby', '') || undefined,
-            multilayers:     ProjectsRegistry.getCurrentProject().isQueryMultiLayers(control.name),
+            multilayers:     ProjectsRegistry.getCurrentProject().isQueryMultiLayers('querybypolygon'), //hardcoded using querymultilayers server config
             filterConfig:    { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           },
           outputs: {
