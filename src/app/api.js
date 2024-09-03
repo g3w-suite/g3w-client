@@ -71,7 +71,6 @@ import { convertDEGToDMS }                         from 'utils/convertDEGToDMS';
 import { getGeoTIFFfromServer }                    from 'utils/getGeoTIFFfromServer';
 import { createOlFeatureFromApiResponseFeature }   from 'utils/createOlFeatureFromApiResponseFeature';
 import { parseAttributes }                         from 'utils/parseAttributes';
-import { handleQueryResponse }                     from 'utils/handleQueryResponse';
 import { distance }                                from 'utils/distance';
 import { squaredDistance }                         from 'utils/squaredDistance';
 import { closestOnSegment }                        from 'utils/closestOnSegment';
@@ -230,7 +229,6 @@ const g3wsdk = {
       createOlFeatureFromApiResponseFeature,
       sanitizeFidFeature,
       parseAttributes,
-      handleQueryResponse,
       distance,
       squaredDistance,
       closestOnSegment,

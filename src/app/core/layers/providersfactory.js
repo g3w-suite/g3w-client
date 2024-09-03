@@ -7,7 +7,6 @@ import ApplicationState            from 'store/application-state';
 import RelationsService            from 'services/relations';
 import { QgsFilterToken }          from 'utils/QgsFilterToken';
 import { ResponseParser }          from 'utils/parsers';
-import { handleQueryResponse }     from 'utils/handleQueryResponse';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
@@ -288,12 +287,14 @@ module.exports = {
           },
         });
 
-        return opts.raw ? response : handleQueryResponse({
+        const _layers = undefined === opts.layers ? [this._layer] : opts.layers;
+
+        return opts.raw ? response : ResponseParser.get(_layers[0].getInfoFormat())({
           response,
           projections: this._projections,
-          layers:      undefined === opts.layers ? [this._layer] : opts.layers,
+          layers:      _layers,
           wms:         true,
-        });
+        })
 
       });
     }
@@ -496,45 +497,46 @@ module.exports = {
       };
 
       const method =  layers[0].getOwsMethod();
+      const proxy  = layers[0].useProxy();
       const source = (url || '').split('SOURCE');
 
-      return $promisify(new Promise(async (resolve, reject) => {
+      let timer;
 
-        const timer = setTimeout(() => { resolve(data) }, TIMEOUT);
+      // promise with timeout
+      return $promisify(Promise.race([
+        new Promise(res => { timer = setTimeout(() => { res(data); }, TIMEOUT) }),
+        (async () => {
+          try {
+            let response;
 
-        let promise;
-
-        if (layers[0].useProxy()) {
-          promise = layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
-        } else if ('GET' === method) {
-          promise = XHR.get({ url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : '')) });
-        } else if ('POST' === method) {
-          promise = XHR.post({ url, data: params });
-        } else {
-          promise = Promise.resolve();
-          console.warn('unsupported method: ', method);
-        }
-
-        try {
-          const data = await promise;
-          resolve({
-            data: handleQueryResponse({
-              response:    data,
-              projections: { map: projection, layer: null },
-              wms:         true,
-              layers,
-            }),
-            query: { coordinates, resolution }
-          })
-        } catch(e) {
-          console.warn(e);
-          reject(e);
-        } finally {
-          if (!layers[0].useProxy()) {
-            clearTimeout(timer)
+            if (proxy) {
+              response = await layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
+            } else if ('GET' === method) {
+              response = await XHR.get({ url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : '')) });
+            } else if ('POST' === method) {
+              response = await XHR.post({ url, data: params });
+            } else {
+              console.warn('unsupported method: ', method);
+            }
+            return {
+              data: ResponseParser.get(layers[0].getInfoFormat())({
+                response,
+                projections: { map: projection, layer: null },
+                layers,
+                wms:         true,
+              }),
+              query: { coordinates, resolution }
+            };
+          } catch(e) {
+            console.warn(e);
+            return Promise.reject(e);
+          } finally {
+            if (!proxy) {
+              clearTimeout(timer)
+            }
           }
-        }
-      }));
+        })(),
+      ]));
 
     }
   },
@@ -588,45 +590,48 @@ module.exports = {
         ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
       });
 
-      return $promisify(new Promise(async (resolve, reject) => {
+      let timer;
 
-        const timer = setTimeout(() => { resolve(data) }, TIMEOUT);
+      // promise with timeout
+      return $promisify(Promise.race([
+        new Promise(res => { timer = setTimeout(() => { res(data); }, TIMEOUT) }),
+        (async () => {
+          try {
+            let response;
 
-        let promise;
+            if ('GET' === method && !['all', 'geometry'].includes(filter.getType())) {
+              response = await XHR.get({ url: url + '?' + $.param(params) });
+            }
+  
+            if ('POST' === method || ['all', 'geometry'].includes(filter.getType())) {
+              response = await XHR.post({ url, data: params })
+            }
 
-        if ('GET' === method && !['all', 'geometry'].includes(filter.getType())) {
-          promise = XHR.get({ url: url + '?' + $.param(params) });
-        }
+            const data = ResponseParser.get(layers[0].getInfoFormat())({
+              response,
+              projections: {
+                map:   this._layer.getMapProjection(),
+                layer: (opts.reproject ? this._layer.getProjection() : null)
+              },
+              layers,
+              wms: false,
+            });
 
-        if ('POST' === method || ['all', 'geometry'].includes(filter.getType())) {
-          promise = XHR.post({ url, data: params })
-        }
-
-        try {
-          const response = await (promise || Promise.reject());
-          const data = handleQueryResponse({
-            response,
-            layers,
-            projections: {
-              map:   this._layer.getMapProjection(),
-              layer: (opts.reproject ? this._layer.getProjection() : null)
-            },
-            wms: false
-          });
-          // sanitize in case of nil:true
-          data
-            .flatMap(l => l.features || [])
-            .forEach(f => Object.entries(f.getProperties())
-              .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
-            );
-          resolve({ data });
-        } catch (e) {
-          console.warn(e);
-          reject(e);
-        } finally {
-          clearTimeout(timer)
-        }
-      }));
+            // sanitize in case of nil:true
+            data
+              .flatMap(l => l.features || [])
+              .forEach(f => Object.entries(f.getProperties())
+                .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
+              );
+            return { data };
+          } catch (e) {
+            console.warn(e);
+            return Promise.reject(e);
+          } finally {
+            clearTimeout(timer)
+          }
+        })(),
+      ]));
 
     };
 
