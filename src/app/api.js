@@ -38,7 +38,6 @@ import { createSelectedStyle }                     from 'utils/createSelectedSty
 import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
 import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
 import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
-import { getQueryLayersPromisesByCoordinates }     from 'utils/getQueryLayersPromisesByCoordinates';
 import { transformBBOX }                           from 'utils/transformBBOX';
 import { parseQueryLayersPromiseResponses }        from 'utils/parseQueryLayersPromiseResponses';
 import { getMapLayerById }                         from 'utils/getMapLayerById';
@@ -191,7 +190,7 @@ const g3wsdk = {
       getAlphanumericPropertiesFromFeature,
       getFormDataExpressionRequestFromFeature,
       convertFeatureToGEOJSON,
-      getQueryLayersPromisesByCoordinates,
+      getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
       transformBBOX,
       parseQueryLayersPromiseResponses,
       getMapLayerById,

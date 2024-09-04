@@ -1,5 +1,6 @@
 import GUI                                     from 'services/gui';
-import { getQueryLayersPromisesByCoordinates } from 'utils/getQueryLayersPromisesByCoordinates';
+import DataRouterService                       from 'services/data';
+
 const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
@@ -69,7 +70,7 @@ module.exports = class PickLayerService {
         } else if ('wms' === this.pick_type) {
           const layer = GUI.getService('map').getProjectLayer(this.layerId);
           if (layer) {
-            getQueryLayersPromisesByCoordinates(
+            DataRouterService.getQueryLayersPromisesByCoordinates(
               [layer],
               {
                 map:           this.mapService.getMap(),
