@@ -90,7 +90,6 @@ import DataRouterService                           from 'services/data';
 import IFrameRouterService                         from 'services/iframe';
 import PluginsRegistry                             from 'store/plugins';
 import ProjectsRegistry                            from 'store/projects';
-import RelationsService                            from 'services/relations';
 import TaskService                                 from 'services/tasks';
 import ApiService                                  from 'services/api';
 import GUI                                         from 'services/gui';
@@ -284,9 +283,6 @@ const g3wsdk = {
         Filter,
         Expression
       }
-    },
-    relations: {
-      RelationsService
     },
     interaction: {
       PickCoordinatesInteraction,
