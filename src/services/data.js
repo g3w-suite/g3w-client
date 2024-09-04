@@ -15,6 +15,32 @@ import { $promisify, promisify } from 'utils/promisify';
 const { t }  = require('core/i18n/i18n.service');
 const Filter = require('core/layers/filter/filter');
 
+/**
+ *
+ * @param queryPromises
+ * @param resolve
+ * @param reject
+ * @return {Promise<void>}
+ */
+const handleQueryPromises = async ({ queryPromises = [], resolve, reject } = { }) => {
+  const { responses, errors } = (await Promise.allSettled(queryPromises))
+    .reduce((acc, { status, value } ) => {
+      if ('fulfilled' === status) {
+        acc.responses.push(value);
+      } else {
+        acc[errors].push(value)
+      }
+      return acc;
+    }, { responses: [], errors: [] })
+  //check at least one response
+  if (responses.length > 0) {
+    resolve(responses);
+  } else {
+    // show all errors
+    reject(errors);
+  }
+}
+
 export default {
 
   /**
@@ -450,39 +476,25 @@ export default {
 
       const map            = GUI.getService('map').getMap();
       const size           = map.getSize();
-      const queryPromises  = [];
       const mapProjection  = map.getView().getProjection();
       const resolution     = map.getView().getResolution();
 
-      Object.values(
-        multilayers
-          ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
-          : layers
-      ).forEach(layers => {
-        const layer = multilayers ? layers[0] : layers;
-        queryPromises.push(promisify(
+      await handleQueryPromises({
+        queryPromises: Object.values(
           multilayers
-            ? layer.getProvider('query').query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers })
-            : layer                     .query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution })
-        ))
-      });
-
-      const { responses, errors } = (await Promise.allSettled(queryPromises))
-        .reduce((acc, { status, value } ) => {
-          if ('fulfilled' === status) {
-            acc.responses.push(value);
-          } else {
-            acc[errors].push(value)
-          }
-          return acc;
-        }, { responses: [], errors: [] })
-      //check at least one response
-      if (responses.length > 0) {
-        resolve(responses);
-      } else {
-        // show all errors
-        reject(errors);
-      }
+            ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
+            : layers
+        ).map(layers => {
+          const layer = multilayers ? layers[0] : layers;
+          return promisify(
+            multilayers
+              ? layer.getProvider('query').query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers })
+              : layer                     .query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution })
+          )
+        }),
+        resolve,
+        reject,
+      })
     }))
 
   },
@@ -509,8 +521,6 @@ export default {
       feature_count = 10
     } = {}
   ) {
-    const queryResponses = [];
-    const queryErrors    = [];
     const mapCrs         = projection.getCode();
     const filter         = new Filter(filterConfig);
 
@@ -519,34 +529,27 @@ export default {
       return [];
     }
 
-    return await (new Promise((resolve, reject) => {
-      Object.values(
-        multilayers
-        ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
-        : layers
-      ).forEach(async (layers, i, arr) => {
-        try {
+    return await (new Promise(async (resolve, reject) => {
+
+      await handleQueryPromises({
+        queryPromises: Object.values(
+          multilayers
+            ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+            : layers
+        ).map( (layers) => {
           const layer = multilayers ? layers[0] : layers;
           const crs   = layer.getProjection().getCode();
           // Convert filter geometry from map to layer CRS
           filter.setGeometry(mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs));
-          queryResponses.push(await promisify(
+          return promisify(
             multilayers
               ? layer.getProvider('filter').query({ filter, feature_count, layers })
               : layer                      .query({ filter, feature_count, filterConfig })
-          ))
-        } catch (e) {
-          console.warn(e);
-          queryErrors.push(e)
-        }
-        if (i === arr.length - 1) {
-          if (queryErrors.length === arr.length) {
-            reject(queryErrors);
-          } else {
-            resolve(queryResponses);
-          }
-        }
-      });
+          )
+        }),
+        resolve,
+        reject,
+      })
     }));
   },
 
