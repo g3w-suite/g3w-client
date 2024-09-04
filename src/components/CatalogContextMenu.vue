@@ -600,7 +600,6 @@
 
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
 
-  import { MAP_SETTINGS }              from 'app/constant';
   import { CatalogEventBus as VM }     from 'app/eventbus';
   import CatalogLayersStoresRegistry   from 'store/catalog-layers';
   import ProjectsRegistry              from 'store/projects';
@@ -939,7 +938,7 @@
           return;
         }
         layer.position = position;
-        position = undefined !== position ? position : MAP_SETTINGS.LAYER_POSITIONS.default;
+        position = undefined !== position ? position : 'top';
         const map = GUI.getService('map');
         switch(position) {
           case 'top':    layer.setZIndex(map.layersCount); break;

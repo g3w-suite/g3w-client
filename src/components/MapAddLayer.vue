@@ -29,6 +29,7 @@
         <!-- MODAL BODY -->
         <div class = "modal-body">
 
+          <!-- LAYER PROJECTION -->
           <div class = "form-group">
             <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
             <select class = "form-control" id = "projection-layer" v-model = "layer.crs">
@@ -36,8 +37,16 @@
             </select>
           </div>
 
-          <layerspositions @layer-position-change = "onChangePosition($event)" />
+          <!-- LAYER POSITION -->
+          <div class = "form-group">
+            <label for="position-layer" v-t = "'layer_position.message'"></label>
+            <select class = "form-control" id = "position-layer" v-model = "position" style="text-transform: lowercase;">
+              <option :value = "'top'" v-t = "'layer_position.top'"></option>
+              <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
+            </select>
+          </div>
 
+          <!-- PERSISTENT LAYER  -->
           <div class = "form-group">
             <label for="persistent-layer" v-t = "'mapcontrols.add_layer_control.persistent_data'"></label>
             <select class = "form-control" id = "persistent-layer" v-model = "persistent">
@@ -47,8 +56,8 @@
             <small v-t = "'mapcontrols.add_layer_control.persistent_help'"></small>
           </div>
 
+          <!-- LAYER COLOR  -->
           <p v-t = "'mapcontrols.add_layer_control.select_color'" style = "font-weight: 700;"></p>
-
           <chrome-picker
             v-model = "layer.color"
             @input  = "onChangeColor"
@@ -227,7 +236,7 @@ export default {
       vectorLayer:        null,
       options:            EPSG,
       error_message:      '',
-      position:           null,
+      position:           'top',
       persistent:         false,
       loading:            false,
       fields:             [],
@@ -287,10 +296,6 @@ export default {
   },
 
   methods: {
-
-    onChangePosition(position) {
-      this.position = position;
-    },
 
     onChangeColor(val) {
       this.layer.color = val;

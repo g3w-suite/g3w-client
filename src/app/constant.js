@@ -206,7 +206,6 @@ export const LOCALSTORAGE_EXTERNALWMS_ITEM = 'externalwms';
  * @typedef MapSettings
  * @property {{ maxScale: number }} ZOOM
  * @property {{ duration: number }} ANIMATION
- * @property {{ default: string, getPositions: Function }} LAYER_POSITIONS: 
  */
 
 /**
@@ -215,12 +214,6 @@ export const LOCALSTORAGE_EXTERNALWMS_ITEM = 'externalwms';
 export const MAP_SETTINGS = {
   ZOOM:            { maxScale: 1000, },
   ANIMATION:       { duration: 2000, },
-  LAYER_POSITIONS: {
-    default: 'top',
-    getPositions() {
-      return [ 'top', 'bottom' ]
-    }
-  }
 };
 
 /**

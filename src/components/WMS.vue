@@ -302,7 +302,7 @@
         layers,
         name,
         epsg = GUI.getService('map').getEpsg(),
-        position = MAP_SETTINGS.LAYER_POSITIONS.default,
+        position = 'top',
         opacity,
         visible=true
       } = {}) {

@@ -33,7 +33,6 @@
 </template>
 
 <script>
-  import { MAP_SETTINGS } from 'app/constant';
 
   const { getUniqueDomId } = require('utils');
 
@@ -42,12 +41,12 @@
     props:{
       position: {
         type:    String,
-        default: MAP_SETTINGS.LAYER_POSITIONS.default
+        default: 'top'
       }
     },
     data() {
       return {
-        layerpositions: MAP_SETTINGS.LAYER_POSITIONS.getPositions()
+        layerpositions: [ 'top', 'bottom' ]
       }
     },
     methods: {

@@ -2280,7 +2280,7 @@ class MapService extends G3WObject {
 
     let vectorLayer;
 
-    options.position   = undefined !== options.position ? options.position : MAP_SETTINGS.LAYER_POSITIONS.default;
+    options.position   = undefined !== options.position ? options.position : 'top';
     options.opacity    = undefined !== options.opacity ? options.opacity : 1;
     options.visible    = undefined !== options.visible ? options.visible : true;
     options.persistent = undefined !== options.persistent ? options.persistent : true;
