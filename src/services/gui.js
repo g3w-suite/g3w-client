@@ -271,6 +271,7 @@ export default new (class GUI extends G3WObject {
 
   /**
    * Function called from DataRouterservice for gui output
+   * 
    * @param dataPromise
    * @param options
    */

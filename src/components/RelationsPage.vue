@@ -23,17 +23,23 @@
 </template>
 
 <script>
-import GUI                                  from "services/gui";
-import RelationsComponent                   from "components/Relations.vue";
-import RelationComponent                    from "components/Relation.vue";
 import {
   G3W_FID,
   LIST_OF_RELATIONS_TITLE,
-}                                           from "app/constant";
-import { RelationEventBus as VM }           from "app/eventbus";
-import { getFeaturesFromResponseVectorApi } from "utils/getFeaturesFromResponseVectorApi";
-import RelationsService                     from 'services/relations';
-import ApplicationService                   from 'services/application';
+}                                               from 'app/constant';
+import { RelationEventBus as VM }               from 'app/eventbus';
+import GUI                                      from "services/gui";
+import RelationsComponent                       from 'components/Relations.vue';
+import RelationComponent                        from 'components/Relation.vue';
+
+import CatalogLayersStoresRegistry              from 'store/catalog-layers';
+import DataRouterService                        from 'services/data';
+import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
+import { XHR }                                  from 'utils/XHR';
+import { createSingleFieldParameter }           from 'utils/createSingleFieldParameter';
+import { createRelationsUrl }                   from 'utils/createRelationsUrl';
+
+import ApplicationService                       from 'services/application';
 
 let _options;
 
@@ -98,8 +104,20 @@ export default {
   methods: {
     async saveRelations(type) {
       const id = ApplicationService.setDownload(true);
-      try      { await RelationsService.save(Object.assign(_options, { type })) }
-      catch(e) { console.warn(e); GUI.showUserMessage({ type: 'alert', message: e || 'info.server_error', closable: true }); }
+      try      {
+        await XHR.fileDownload({
+          url: createRelationsUrl(Object.assign(_options, { type })),
+          httpMethod: "GET",
+        })
+      }
+      catch(e) {
+        console.warn(e);
+        GUI.showUserMessage({
+          type: 'alert',
+          message: e || 'info.server_error',
+          closable: true,
+        });
+      }
       ApplicationService.setDownload(false, id);
     },
     reloadLayout() {
@@ -111,6 +129,51 @@ export default {
     hideChart(container) {
       GUI.getService('queryresults').hideChart(container)
     },
+
+    /**
+     * ORIGINAL SOURCE: src/services/relations.js@v3.10.2
+     * 
+     * Get relations NM
+     * 
+     * @param nmRelation
+     * @param features
+     * 
+     * @returns {Promise<[]>}
+     * 
+     * @since 3.11.0
+     */
+    async getRelationsNM({ nmRelation, features = [] } = {}) {
+      const {
+        referencedLayer,
+        fieldRef: { referencingField, referencedField }
+      }               = nmRelation;
+      let relationsNM = []; // start with an empty relations result
+      if (features.length) {
+        const values   = features.map(f => f.attributes[referencingField]);
+        const { data } = await DataRouterService.getData('search:features', {
+          inputs: {
+            layer:     CatalogLayersStoresRegistry.getLayerById(referencedLayer),
+            filter:    `${createSingleFieldParameter({ field: referencedField, value: values, logicop: 'OR' })}`,
+            formatter: 1, // set formatter to
+          },
+          outputs: null
+        });
+        if (data && data[0] && Array.isArray(data[0].features)) {
+          relationsNM = data[0].features.map(f => {
+            return {
+              id:         f.getId(),
+              geometry:   f.getGeometry(),
+              attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((accumulator, property) => {
+                accumulator[property] = f.get(property);
+                return accumulator;
+              }, {}),
+            }
+          })
+        }
+      }
+      return relationsNM;
+    },
+
     async showRelation(relation) {
       GUI.setLoadingContent(true);
       this.loading        = true;
@@ -122,7 +185,7 @@ export default {
           fid:   this.feature.attributes[G3W_FID],
           relation,
         };
-        const response = await RelationsService.getRelations(_options);
+        const response = await XHR.get({ url: createRelationsUrl(_options) }); // get relations
         let relations  = response.result ? (response.vector.data.features || []).map(f => {
           f.properties[G3W_FID] = f.id;
           return {
@@ -134,7 +197,7 @@ export default {
 
         if (this.nmRelation) {
           relationLayerId = this.nmRelation.referencedLayer;
-          relations = await RelationsService.getRelationsNM({
+          relations = await this.getRelationsNM({
             nmRelation: this.nmRelation,
             features:   relations
           });

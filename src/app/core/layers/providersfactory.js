@@ -4,12 +4,12 @@ import {
 }                                  from 'app/constant';
 import G3WObject                   from 'core/g3wobject';
 import ApplicationState            from 'store/application-state';
-import RelationsService            from 'services/relations';
 import { QgsFilterToken }          from 'utils/QgsFilterToken';
 import { ResponseParser }          from 'utils/parsers';
 import { getDPI }                  from 'utils/getDPI';
 import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
+import { createRelationsUrl }      from 'utils/createRelationsUrl';
 import { XHR }                     from 'utils/XHR';
 import { promisify, $promisify }   from 'utils/promisify';
 
@@ -384,7 +384,7 @@ module.exports = {
           contentType: 'application/json',
         })
       } else if (is_defined(filter.fid)) { // fid filter
-        promise = RelationsService.getRelations(filter.fid);
+        promise = XHR.get({ url: createRelationsUrl(filter.fid) });
       } else if (filter.field) {
         promise = XHR.post({
           url,
