@@ -202,7 +202,7 @@ export const ResponseParser = {
           projections,
           layers,
           wms = true,
-          id = false,
+          id =  false,
         } = {}) {
           // convert XML response to string
           if (response && 'string' !== typeof response && !(response instanceof String)) {
@@ -261,90 +261,96 @@ export const ResponseParser = {
             return [];
           }
 
-          // parse layer feature collection
-          const xml            = x2js.json2xml_str(json); // layer Feature Collection XML
-          const olfeatures     = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
-
-          const is_reprojected = (
-            olfeatures.length &&
-            !!olfeatures[0].getGeometry() &&
-            projections.layer &&
-            projections.layer.getCode() !== projections.map.getCode()
-          );
-
-          /** @FIXME add description */
-          if (olfeatures.length > 0 && invalids) {
-            const fields = Object.keys(olfeatures[0].getProperties()).filter(prop => -1 !== prop.indexOf(NUMERIC_FIELD));
-            olfeatures.forEach(f => {
-              fields.forEach(_field => {
-                const invalid = invalids.find((find) => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
-                f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
-                f.unset(_field);
-              })
-            });
-          }
-
-          // transform features
-          if (is_reprojected) {
-            olfeatures.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())))
-          }
-
-          // inverted axis --> reverse features coordinates
-          if (is_reprojected && 'ne' === (projections.layer ? projections.layer : projections.map).getAxisOrientation().substr(0, 2)) {
-            olfeatures.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
-          }
-
           // handled responses
-          const parsed = [];
+          const parsed = []; //Array contains item object ({layer, features})
           const originalFeatureMember = [].concat(json.FeatureCollection.featureMember);
           layers.forEach((layer, i/*, originalFeatureMember*/) => {
+            const name = id ? layer.getId() : `layer${i}`; // layer name
 
-            const name   = id ? layer.getId() : `layer${i}`;                                    // layer name
-            const fname  = originalFeatureMember.filter(f => f[name]);                          // features with the same name
-            let prefix   = fname.filter(f => Array.isArray(f[name])).map(f => f.__prefix).pop();// feature member prefix
-            const features = fname
-              .filter(fn => fn[name]._fid)
-              .map(fn => {
-                const feature = olfeatures.find(f => fn[name]._fid === f.getId());
-                feature.set(G3W_FID, fn[name]._fid.split('.')[1]);
-                return feature;
-              })
+            const featureMemberArrayAndPrefix = {
+              features: [],
+              __prefix: null
+            };
 
-            // check if features have the same fields. If not, group the features with the same fields
-            const grouped    = features && groupBy(features, f => Object.keys(f));
-            const is_grouped = grouped && Object.keys(grouped).length > 1;
-            const is_multi   = features && is_grouped;
+            json.FeatureCollection.featureMember = originalFeatureMember.filter(f => {
+              const fm = f[name];
+              if (fm) {
+                //need to get fid number removing <layer_name_or_id.fid>
+                fm._fid = fm._fid && fm._fid.split('.')[1];
+                fm[G3W_FID] = {
+                  __prefix: f.__prefix,
+                  __text:   fm._fid
+                };
 
-            // Handle WMS Multi Layers Response From QGIS SERVER
-            // check if features have different fields (multilayers)
-            // is a multilayers. Each feature has different fields
-            //  If a group has more than one feature split it and create single features
-            json.FeatureCollection.featureMember = is_multi
-              ? Object.keys(grouped).reduce((result, key, i) => {
-                grouped[key].forEach((feat, j) => result[`layer${i}_${j}`] = feat);
-                return result;
-              }, { __prefix: prefix })
-              : fname.filter(feature => !Array.isArray(feature[name]));
+                if (Array.isArray(fm)) {
+                  featureMemberArrayAndPrefix.features = fm;
+                  featureMemberArrayAndPrefix.__prefix = f.__prefix;
+                  return false;
+                }
+                return true;
+              }
+            });
+
+            const grouped = groupBy(featureMemberArrayAndPrefix.features, f => Object.keys(f));
+            const is_multi = Object.keys(grouped).length > 1;
+
+            if (featureMemberArrayAndPrefix.features.length > 0) {
+              //get prefix
+              const prefix = featureMemberArrayAndPrefix.__prefix;
+              // check if features have the same fields. If not, group the features with the same fields
+              //check if features have different fields (multilayers)
+              // If its is a multilayers. Each feature has different fields
+              is_multi
+                ? Object.keys(grouped)
+                    .forEach((key, index) => grouped[key].forEach((feature, sub_index) => { json.FeatureCollection.featureMember = { [`layer${index}_${sub_index}`]: feature, __prefix: prefix } }) )
+                : //for Each element have to add and object contain layerName and information, and __prefix
+                  featureMemberArrayAndPrefix.features.forEach(f => json.FeatureCollection.featureMember.push({ [name]:   f,  __prefix: prefix }) );
+            }
+
+            // parse layer feature collection
+            const xml            = x2js.json2xml_str(json); // layer Feature Collection XML
+            const olfeatures     = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
+
+            //Check if you need to re-project features because layers are in different projection of the map
+            const is_reprojected = (
+              olfeatures.length > 0  //has features
+              && !!olfeatures[0].getGeometry()  // has a geometry
+              && projections.layer //has a layer projection
+              && projections.layer.getCode() !== projections.map.getCode() //the layer has the same projection of the map
+            );
+
+            /** @FIXME add description */
+            if (olfeatures.length > 0 && invalids) {
+              const fields = Object.keys(olfeatures[0].getProperties()).filter(p => -1 !== p.indexOf(NUMERIC_FIELD));
+              olfeatures.forEach(f => {
+                fields.forEach(_field => {
+                  const invalid = invalids.find(find => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
+                  f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
+                  f.unset(_field);
+                })
+              });
+            }
+
+            // transform features
+            if (is_reprojected) {
+              olfeatures.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
+            }
+
+            // inverted axis --> reverse features coordinates
+            if (is_reprojected && 'ne' === (projections.layer ? projections.layer : projections.map).getAxisOrientation().substr(0, 2)) {
+              olfeatures.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
+            }
+
             // Remove Z values due an incorrect addition when using
             // ol.format.WMSGetFeatureInfo readFeatures method from XML
             // (ex. WMS getFeatureInfo);
-
             if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
-              features.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
+              olfeatures.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
             }
 
-            /** @FIXME add description */
-            []
-              .concat(is_multi ? Object.values(grouped) : layer)
-              .forEach(g => parsed.unshift({ layer, features }));
+            parsed.unshift({ layer, features: olfeatures });
 
-            // on each element add and object contain layer name and information, and __prefix
-            if (features && !is_grouped) {
-              features.forEach(f => { json.FeatureCollection.featureMember.push({ [name]: f, __prefix: prefix }); });
-            }
-
-
-          });
+          })
 
           return parsed;
         };
