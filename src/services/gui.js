@@ -6,8 +6,8 @@ import ComponentsRegistry        from 'store/components';
 import ProjectsRegistry          from 'store/projects';
 
 import ApplicationService        from 'services/application';
+import IFrameRouterService       from 'services/iframe';
 
-import { noop }                  from 'utils/noop';
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
 import { setViewSizes }          from 'utils/setViewSizes';
 import { toRawType }             from 'utils/toRawType';
@@ -143,6 +143,9 @@ export default new (class GUI extends G3WObject {
       success(message)                    { this.showUserMessage({ type: 'success', message, autoclose: true }) }
     };
 
+    /** @since 3.11.0 */
+    this.currentoutputplace = 'gui';
+
   }
 
   /**
@@ -272,32 +275,50 @@ export default new (class GUI extends G3WObject {
    * @param options
    */
   async outputDataPlace(dataPromise, options = {}) {
+
+    /** @FIXME add description */
+    if ('iframe' === this.currentoutputplace) {
+      return IFrameRouterService.outputDataPlace(promise, outputs);
+    }
+
+    this.setLoadingContent(true);
+
     // show parameter it used to set condition to show result or not
     // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
     const defaultOutputConfig = { condition: true, add: false, loading: true };
-    const { title = '', show = defaultOutputConfig, before, after } = options;
+
+    options.show = undefined !== options.show ? options.show : defaultOutputConfig;
+
     // convert show in an object
-    const outputConfig = (toRawType(show) !== 'Object') ?
+    const outputConfig = (toRawType(options.show) !== 'Object') ?
       {
-        condition: show, // can be Function or Boolean otherwise is set true
+        condition: options.show, // can be Function or Boolean otherwise is set true
         add: false,
         loading: true
       } : {
         ...defaultOutputConfig,
-        ...show
+        ...options.show
       };
-    const { condition, add, loading } = outputConfig;
+
     //check if waiting output data
     // in case we stop and substitute with new request data
-    if ( this.waitingoutputdataplace ) { await this.waitingoutputdataplace.stop() }
-    let queryResultsService = add ? this.getService('queryresults'): loading && this.showContentFactory('query')(title);
+    if (this.waitingoutputdataplace ) {
+      await this.waitingoutputdataplace.stop();
+    }
+
+    let queryResultsService = outputConfig.add ? this.getService('queryresults'): outputConfig.loading && this.showQueryResults(options.title || '');
+
     this.waitingoutputdataplace = (() => {
       let stop = false;
       (async () => {
         try {
           const data = await dataPromise;
+
           //if set before call method and wait
-          before && await before(data);
+          if(options.before) {
+            await options.before(data)
+          }
+
           // in case of usermessage show user message
           if (data.usermessage) {
             this.showUserMessage({
@@ -306,12 +327,13 @@ export default new (class GUI extends G3WObject {
               autoclose: data.usermessage.autoclose
             });
           }
+
           if (!stop) {
             // check condition
-            const showResult = ('Function' === toRawType(condition)) ? condition(data) : ('Boolean' === toRawType(condition)) ? condition : true;
+            const showResult = ('Function' === toRawType(outputConfig.condition)) ? outputConfig.condition(data) : ('Boolean' === toRawType(outputConfig.condition)) ? outputConfig.condition : true;
             if (showResult) {
-              (queryResultsService ? queryResultsService: this.showContentFactory('query')(title)).setQueryResponse(data, {
-                add
+              (queryResultsService ? queryResultsService: this.showQueryResults(options.title || '')).setQueryResponse(data, {
+                add: outputConfig.add
               });
             } else {
               //@since 3.11.0.
@@ -321,8 +343,11 @@ export default new (class GUI extends G3WObject {
               }
             }
             // call after is set with data
-            if (after) { after(data) }
+            if (options.after) {
+              options.after(data)
+            }
           }
+
         } catch(e) {
           console.warn(e);
           this.showUserMessage({
@@ -331,22 +356,33 @@ export default new (class GUI extends G3WObject {
             textMessage: true
           });
           this.closeContent();
-        } finally {
-          if (!stop) { this.waitingoutputdataplace = null }
+        }
+
+        if (!stop) {
+          this.waitingoutputdataplace = null;
         }
       })();
+
       return {
         stop: async () => stop = true
       }
     })();
-  };
+
+    try {
+      await dataPromise;
+    } catch(e) {
+      console.warn(e);
+    }
+
+    this.setLoadingContent(false);
+  }
 
   showContentFactory(type) {
     switch (type) {
       case 'query': return this.showQueryResults.bind(this);
       case 'form': return this.showForm.bind(this);
     }
-  };
+  }
 
   showForm(options = {}) {
     const { perc, split = 'h', push, showgoback, crumb } = options;

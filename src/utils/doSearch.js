@@ -1,8 +1,12 @@
 import { SEARCH_ALLVALUE }        from 'app/constant';
+import ApplicationState           from 'store/application-state';
 import ProjectsRegistry           from 'store/projects';
 import DataRouterService          from 'services/data';
 import GUI                        from 'services/gui';
+import IFrameRouterService        from 'services/iframe';
 import { createFilterFormInputs } from 'utils/createFilterFormInputs';
+
+console.assert(undefined !== IFrameRouterService);
 
 /**
  * Perform search
@@ -58,7 +62,7 @@ export async function doSearch({
 
     // no features on result → show an empty message
     if (search_1n && !features.length) {
-      DataRouterService.currentoutputplaces.forEach(p => DataRouterService.ouputplaces[p](Promise.resolve({ data: [] })));
+      GUI.outputDataPlace(Promise.resolve({ data: [] }));
       parsed = [];
     }
 

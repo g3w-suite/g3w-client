@@ -10,7 +10,6 @@ import {
   APP_CONFIG,
 }                         from 'app/constant';
 import ApplicationState   from 'store/application-state';
-import DataRouterService  from 'services/data';
 import ProjectsRegistry   from 'store/projects';
 import ApiService         from 'services/api';
 import GUI                from 'services/gui';
@@ -140,7 +139,6 @@ export default new (class ApplicationService extends G3WObject {
           if (ApplicationState.iframe) {
             require('services/iframe').default.init({ project });
           }
-          DataRouterService.init();
           // init local items
           Object.keys(LOCAL_ITEM_IDS).forEach(id => {
             if (undefined === this.getLocalItem(id)) {

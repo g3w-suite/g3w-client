@@ -505,12 +505,7 @@ class AppService extends BaseIframeService {
   async results({
     capture = true,
   }) {
-    const DataRouterService = require('services/data').default;
-    if (capture) {
-      DataRouterService.currentoutputplaces = ['iframe'];
-    } else {
-      DataRouterService.currentoutputplaces = ['gui'];
-    }      
+    GUI.currentoutputplace = capture ? 'iframe' : 'gui';
     return [];
   }
 
