@@ -16,89 +16,10 @@ import { promisify }                           from 'utils/promisify';
 const { t }  = require('core/i18n/i18n.service');
 const Filter = require('core/layers/filter/filter');
 
-/**
- * @param layers
- * @param { Object } opts
- * @param opts.multilayers
- * @param opts.bbox
- * @param opts.geometry
- * @param opts.projection
- * @param opts.feature_count
- * 
- * @returns { JQuery.Promise<any, any, any> }
- */
-async function getQueryLayersPromisesByGeometry(layers,
-  {
-    geometry,
-    projection,
-    filterConfig  = {},
-    multilayers   = false,
-    feature_count = 10
-  } = {}
-) {
-  const queryResponses = [];
-  const queryErrors    = [];
-  const mapCrs         = projection.getCode();
-  const filter         = new Filter(filterConfig);
-
-  /** In case of no features  */
-  if (0 === layers.length) {
-    return [];
-  }
-
-  return await (new Promise((resolve, reject) => {
-
-    /** Group query by layers instead single layer request  */
-    if (multilayers) {
-      const multiLayers = groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`);
-      let i             = Object.keys(multiLayers).length;
-
-      for (let key in multiLayers) {
-        const layerCrs = multiLayers[key][0].getProjection().getCode();
-        // Convert filter geometry from `mapCRS` to `layerCrs`
-        filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
-        multiLayers[key][0]
-          .getProvider('filter')
-          .query({ filter, layers: multiLayers[key], feature_count })
-          .then(response => queryResponses.push(response))
-          .fail(e => { console.warn(e); queryErrors.push(e) })
-          .always(() => {
-            i -= 1;
-            if (0 === i) {
-              queryErrors.length === Object.keys(multiLayers).length
-                ? reject(queryErrors)
-                : resolve(queryResponses)
-            }
-          });
-      }
-    } else {
-
-      let i = layers.length;
-      layers.forEach(layer => {
-        const layerCrs = layer.getProjection().getCode();
-        // Convert filter geometry from `mapCRS` to `layerCrs`
-        filter.setGeometry(mapCrs === layerCrs ? geometry : geometry.clone().transform(mapCrs, layerCrs));
-        layer
-          .query({ filter, filterConfig, feature_count })
-          .then(response => queryResponses.push(response))
-          .fail(e => { console.warn(e); queryErrors.push(e); })
-          .always(() => {
-            i -= 1;
-            if (0 === i) {
-              (queryErrors.length === layers.length)
-                ? reject(queryErrors)
-                : resolve(queryResponses)
-            }
-          })
-      });
-    }
-  }));
-}
-
 export default {
 
   /**
-   * @param contextAndMethod 'String contain type of service(search or query): method'
+   * @param { string } contextAndMethod function name (eg. "query:coordinates", "query:bbox", "query:polygon")
    * @param options
    * 
    * @returns {Promise<void>}
@@ -110,6 +31,115 @@ export default {
       GUI.outputDataPlace(promise, outputs);
     }
     return await (await promise);
+  },
+
+  /**
+   * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
+   */
+  async 'query:coordinates'({
+    coordinates,
+    layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
+    multilayers           = false,
+    query_point_tolerance = QUERY_POINT_TOLERANCE,
+    /** @since 3.8.0 **/
+    addExternal = true,
+    feature_count
+  } = {}) {
+
+    const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
+    const layers  = getMapLayersByFilter({
+      QUERYABLE:       true,
+      SELECTED_OR_ALL: (0 === layerIds.length),
+      VISIBLE:         true,
+      IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
+    });
+
+    try {
+      return {
+        result: true,
+        type: 'ows',
+        query: {
+          coordinates,
+          type: 'coordinates',
+          external: {
+            add: (!external || layerIds.length > 0)
+              ? (1 === layers.length && layers[0].isSelected() ? false : addExternal) // avoid querying a temporary layer (external layer) when another layer is selected
+              : addExternal,                                                          // an external layer is selected
+            filter: {
+              SELECTED: external
+            }
+          }
+        },
+        data: ((!external || layerIds.length > 0) && await promisify(getQueryLayersPromisesByCoordinates(layers, {
+          multilayers,
+          feature_count,
+          query_point_tolerance,
+          coordinates
+        })) || []).flatMap(({ data = [] }) => data),
+        
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
+
+  },
+
+  /**
+   * @param bbox
+   * @param feature_count
+   * @param multilayers
+   * @param condition
+   * @param filterConfig
+   * @param addExternal
+   * @param layersFilterObject
+   */
+  async 'query:bbox'({
+    bbox,
+    feature_count      = ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+    filterConfig       = {},
+    multilayers        = false,
+    condition          = { filtrable: { ows: 'WFS' } },
+    /** @since 3.8.0 **/
+    addExternal = true,
+    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
+  } = {}) {
+
+    const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
+
+    try {
+      return {
+        result: true,
+        type: 'ows',
+        query: {
+          bbox,
+          type: 'bbox',
+          filterConfig,
+          external: {
+            add: addExternal,
+            filter: {
+              SELECTED: true
+            }
+          },
+        },
+        data: (!external && await getQueryLayersPromisesByGeometry(
+          // layers
+          getMapLayersByFilter(layersFilterObject, condition),
+          // options
+          {
+            geometry: ol.geom.Polygon.fromExtent(bbox),
+            feature_count,
+            filterConfig,
+            multilayers,
+            projection: GUI.getService('map').getMap().getView().getProjection(),
+          }
+        ) || []).flatMap(({ data = [] }) => data),
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
+
   },
 
   /**
@@ -135,194 +165,52 @@ export default {
     /**@since 3.9.0**/
     type = 'polygon'
   } = {}) {
-    const fid      = GUI.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID);
     const geometry = feature.getGeometry();
 
-    // in case no geometry on polygon layer response
-    if (!geometry) {
-      return {
-        data:   [],
-        usermessage: {
-          type:        'warning',
-          message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
-          messagetext: true,
-          autoclose:   false
-        },
-        result: true,
-        error:  true
-      };
-    }
-
     try {
-      const response = await getQueryLayersPromisesByGeometry(
-        // layers
-        getMapLayersByFilter({
-          ...(
-            "boolean" === typeof excludeSelected
-              ? { SELECTED: !excludeSelected }
-              : { SELECTED_OR_ALL: true }
-          ),
-          FILTERABLE: true,
-          VISIBLE: true
-        }, condition),
-        // options
-        {
-          geometry,
-          multilayers,
-          feature_count,
-          filterConfig,
-          projection: ProjectsRegistry.getCurrentProject().getProjection()
-        }
-      );
       return {
+        result: true,
+        type: 'ows',
+        error: !geometry,
         query: {
-          fid,
+          fid: GUI.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID),
           geometry,
           layerName,
           type,
           filterConfig,
           external
         },
-        type: 'ows',
-        data: (response || []).flatMap(({ data = [] }) => data),
-        result: true,
-      };
-    } catch (error) {
-      console.warn(error);
-      throw error;
-    }
-  },
-
-  /**
-   *
-   * @param bbox
-   * @param feature_count
-   * @param multilayers
-   * @param condition
-   * @param filterConfig
-   * @param addExternal
-   * @param layersFilterObject
-   */
-  async 'query:bbox'({
-    bbox,
-    feature_count      = ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
-    filterConfig       = {},
-    multilayers        = false,
-    condition          = { filtrable: { ows: 'WFS' } },
-    /** @since 3.8.0 **/
-    addExternal = true,
-    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
-  } = {}) {
-
-    // an external layer is selected
-    if (GUI.getService('catalog').state.external.vector.some(l => l.selected)) {
-      return {
-        query: {
-          bbox,
-          type: 'bbox',
-          filterConfig,
-          external: {
-            add: addExternal,
-            filter: {
-              SELECTED: true
-            }
-          },
+        usermessage: !geometry && {
+          type:        'warning',
+          message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          messagetext: true,
+          autoclose:   false
         },
-        type: 'ows',
-        data: [],
-        result: true,
-      };
-    }
-
-    try {
-      const response = await getQueryLayersPromisesByGeometry(
-        // layers
-        getMapLayersByFilter(layersFilterObject, condition),
-        // options
-        {
-          geometry: ol.geom.Polygon.fromExtent(bbox),
-          feature_count,
-          filterConfig,
-          multilayers,
-          projection: GUI.getService('map').getMap().getView().getProjection(),
-        }
-      );
-      return {
-        query: {},
-        type: 'ows',
-        data: (response || []).flatMap(({ data = [] }) => data),
-        result: true,
+        data: (await getQueryLayersPromisesByGeometry(
+          // layers
+          getMapLayersByFilter({
+            ...(
+              "boolean" === typeof excludeSelected
+                ? { SELECTED: !excludeSelected }
+                : { SELECTED_OR_ALL: true }
+            ),
+            FILTERABLE: true,
+            VISIBLE: true
+          }, condition),
+          // options
+          {
+            geometry,
+            multilayers,
+            feature_count,
+            filterConfig,
+            projection: ProjectsRegistry.getCurrentProject().getProjection()
+          }
+        ) || []).flatMap(({ data = [] }) => data),
       };
     } catch (error) {
       console.warn(error);
       throw error;
     }
-
-  },
-
-  /**
-   * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
-   */
-  async 'query:coordinates'({
-    coordinates,
-    layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
-    multilayers           = false,
-    query_point_tolerance = QUERY_POINT_TOLERANCE,
-    /** @since 3.8.0 **/
-    addExternal = true,
-    feature_count
-  } = {}) {
-    const query = {
-      coordinates,
-      type: 'coordinates',
-      external: {
-        add: addExternal,
-        filter: {
-          SELECTED: GUI.getService('catalog').state.external.vector.some(l => l.selected)
-        }
-      }
-    };
-
-    // Return an empty request if an external layer is selected
-    if (query.external.filter.SELECTED && 0 === layerIds.length) {
-      return {
-        query,
-        type: 'ows',
-        data: [],
-        result: true,
-      };
-    }
-
-    const layers = getMapLayersByFilter({
-      QUERYABLE:       true,
-      SELECTED_OR_ALL: (0 === layerIds.length),
-      VISIBLE:         true,
-      IDS:             Array.isArray(layerIds) ? layerIds.map(id => id) : undefined,
-    });
-
-    // avoid querying a temporary layer (external layer) when another layer is selected
-    if (1 === layers.length && layers[0].isSelected()) {
-      query.external.add = false;
-    }
-
-    try {
-      const response = await promisify(getQueryLayersPromisesByCoordinates(layers, {
-        multilayers,
-        feature_count,
-        query_point_tolerance,
-        coordinates
-      }));
-      return {
-        query,
-        type: 'ows',
-        data: (response || []).flatMap(({ data = [] }) => data),
-        result: true,
-      };
-    } catch (error) {
-      console.warn(error);
-      throw error;
-    }
-
   },
 
   /**
@@ -428,7 +316,7 @@ export default {
     let data = [];
     try {
       data = (await Promise.all(
-        layers.map((layer, i) => this.search.fids({ layer, fids: fids[i], formatter }))
+        layers.map((layer, i) => this['search:fids']({ layer, fids: fids[i], formatter }))
       )).map(response => response.data);
     } catch(e) {
       console.warn(e);
@@ -532,3 +420,64 @@ export default {
   },
 
 };
+
+/**
+ * @param layers
+ * @param { Object } opts
+ * @param { boolean } opts.multilayers Group query by layers instead single layer request
+ * @param opts.bbox
+ * @param opts.geometry
+ * @param opts.projection
+ * @param opts.feature_count
+ * 
+ * @returns { JQuery.Promise<any, any, any> }
+ */
+async function getQueryLayersPromisesByGeometry(layers,
+  {
+    geometry,
+    projection,
+    filterConfig  = {},
+    multilayers   = false,
+    feature_count = 10
+  } = {}
+) {
+  const queryResponses = [];
+  const queryErrors    = [];
+  const mapCrs         = projection.getCode();
+  const filter         = new Filter(filterConfig);
+
+  // skip when no features
+  if (0 === layers.length) {
+    return [];
+  }
+
+  return await (new Promise((resolve, reject) => {
+    Object.values(
+      multilayers
+      ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+      : layers
+    ).forEach(async (layers, i, arr) => {
+      try {
+        const layer = multilayers ? layers[0] : layers;
+        const crs   = layer.getProjection().getCode();
+        // Convert filter geometry from map to layer CRS
+        filter.setGeometry(mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs));
+        queryResponses.push(await promisify(
+          multilayers
+            ? layer.getProvider('filter').query({ filter, feature_count, layers })
+            : layer                      .query({ filter, feature_count, filterConfig })
+        ))
+      } catch (e) {
+        console.warn(e);
+        queryErrors.push(e)
+      }
+      if (i === arr.length - 1) {
+        if (queryErrors.length === arr.length) {
+          reject(queryErrors);
+        } else {
+          resolve(queryResponses);
+        }
+      }
+    });
+  }));
+}
