@@ -262,16 +262,12 @@
     font-weight: bold;
     flex: 1;
   }
-  .tab-content {
-    //margin-top: 10px;
-  }
   .nav-tabs > li > a.mobile {
     padding: 5px 10px;
   }
   .tab_a {
     padding:5px;
     margin-right: 0 !important;
-    //border: 1px solid #eeeeee;
     border-bottom: 0;
     margin-bottom: 3px;
     border-radius: 3px 3px 0 0;
