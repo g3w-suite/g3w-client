@@ -548,7 +548,9 @@ export default {
         select_csv_x_field: "Seleziona il campo X",
         select_csv_y_field: "Seleziona il campo Y",
         select_color: "Colore",
-        drag_layer: "Aggiungi il file in questa area"
+        drag_layer: "Aggiungi il file in questa area",
+        persistent_data: "Persistenza",
+        persistent_help: "salva il livello nella memoria del browser",
       },
       query: {
         input_relation: "Clicca per consultare le relazioni"

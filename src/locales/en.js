@@ -544,7 +544,9 @@ export default {
         select_csv_x_field: "Select X field",
         select_csv_y_field: "Select Y field",
         select_color: "Select Layer Color",
-        drag_layer: "Drag and drop layer here"
+        drag_layer: "Drag and drop layer here",
+        persistent_data: "Persistent data",
+        persistent_help: "save layer into browser storage",
       },
       query: {
         input_relation: "Click to show relations"

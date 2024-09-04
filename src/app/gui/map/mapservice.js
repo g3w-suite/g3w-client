@@ -2264,6 +2264,7 @@ class MapService extends G3WObject {
    * @param { unknown } options.type
    * @param { unknown } options.download
    * @param { string }  options.downloadUrl (since 3.8.3) an alternate external server url where to perfom download.
+   * @param { boolean }  options.persistent (since 3.11.0) whether to save layer into local storage (ie. web sessions).
    *
    * @returns { Promise<unknown> }
    */
@@ -2279,9 +2280,10 @@ class MapService extends G3WObject {
 
     let vectorLayer;
 
-    options.position = undefined !== options.position ? options.position : MAP_SETTINGS.LAYER_POSITIONS.default;
-    options.opacity  = undefined !== options.opacity ? options.opacity : 1;
-    options.visible  = undefined !== options.visible ? options.visible : true;
+    options.position   = undefined !== options.position ? options.position : MAP_SETTINGS.LAYER_POSITIONS.default;
+    options.opacity    = undefined !== options.opacity ? options.opacity : 1;
+    options.visible    = undefined !== options.visible ? options.visible : true;
+    options.persistent = undefined !== options.persistent ? options.persistent : true;
 
     // vector layer
     if (externalLayer instanceof ol.layer.Vector) {
@@ -2437,7 +2439,7 @@ class MapService extends G3WObject {
       this.registerMapLayerListeners(externalLayer, false);
     }
 
-    if (vectorLayer) {
+    if (vectorLayer && false !== options.persistent) {
       localforage.getItem('externalLayers').then(externalLayers => {
         localforage.setItem('externalLayers', {
           ...(externalLayers || {}),

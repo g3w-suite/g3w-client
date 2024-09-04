@@ -87,7 +87,6 @@ import C3XYLine                                    from 'components/C3XYLine.vue
  */
 import CatalogLayersStoresRegistry                 from 'store/catalog-layers';
 import DataRouterService                           from 'services/data';
-import IFrameRouterService                         from 'services/iframe';
 import PluginsRegistry                             from 'store/plugins';
 import ProjectsRegistry                            from 'store/projects';
 import TaskService                                 from 'services/tasks';
@@ -247,9 +246,6 @@ const g3wsdk = {
     },
     data: {
       DataRouterService
-    },
-    iframe: {
-      IFrameRouterService
     },
     errors: {
       parsers: {

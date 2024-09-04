@@ -831,7 +831,7 @@ ApplicationService.init()
         ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
 
         GUI.ready();
-      }
+      },
     });
   })
   .catch(error => {

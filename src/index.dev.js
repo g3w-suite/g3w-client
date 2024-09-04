@@ -63,6 +63,7 @@ require('./index.prod');
 
 // custom map control: "Open in iframe"
 g3wsdk.gui.GUI.once('ready', () => {
+
   g3wsdk.gui.GUI.getService('map').once('ready', function() {
     this.createMapControl('onclick',
     {
