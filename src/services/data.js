@@ -52,7 +52,6 @@ export default {
       VISIBLE:         true,
       IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
     });
-
     try {
       return {
         result: true,
@@ -447,12 +446,11 @@ export default {
       return $promisify(Promise.resolve(layers));
     }
 
-    return $promisify(new Promise((resolve, reject) => {
+    return $promisify(new Promise(async (resolve, reject) => {
 
       const map            = GUI.getService('map').getMap();
       const size           = map.getSize();
-      const queryResponses = [];
-      const queryErrors    = [];
+      const queryPromises  = [];
       const mapProjection  = map.getView().getProjection();
       const resolution     = map.getView().getResolution();
 
@@ -460,27 +458,31 @@ export default {
         multilayers
           ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
           : layers
-      ).forEach(async (layers, i, arr) => {
-        try {
-          const layer = multilayers ? layers[0] : layers;
-          queryResponses.push(await promisify(
-            multilayers
-              ? layer.getProvider('query').query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers })
-              : layer                     .query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution })
-          ))
-        } catch (e) {
-          console.warn(e);
-          queryErrors.push(e)
-        }
-        if (i === arr.length - 1) {
-          if (queryErrors.length === arr.length) {
-            reject(queryErrors);
-          } else {
-            resolve(queryResponses);
-          }
-        }
+      ).forEach(layers => {
+        const layer = multilayers ? layers[0] : layers;
+        queryPromises.push(promisify(
+          multilayers
+            ? layer.getProvider('query').query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers })
+            : layer                     .query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution })
+        ))
       });
 
+      const { responses, errors } = (await Promise.allSettled(queryPromises))
+        .reduce((acc, { status, value } ) => {
+          if ('fulfilled' === status) {
+            acc.responses.push(value);
+          } else {
+            acc[errors].push(value)
+          }
+          return acc;
+        }, { responses: [], errors: [] })
+      //check at least one response
+      if (responses.length > 0) {
+        resolve(responses);
+      } else {
+        // show all errors
+        reject(errors);
+      }
     }))
 
   },
