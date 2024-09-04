@@ -100,11 +100,14 @@ export default {
     multilayers        = false,
     condition          = { filtrable: { ows: 'WFS' } },
     /** @since 3.8.0 **/
+    excludeSelected    = null,
+    /** @since 3.8.0 **/
     addExternal = true,
     layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
   } = {}) {
 
     const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
+    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
 
     try {
       return {
@@ -117,7 +120,7 @@ export default {
           external: {
             add: addExternal,
             filter: {
-              SELECTED: true
+              SELECTED: selected
             }
           },
         },
