@@ -18,7 +18,6 @@ import { toRawType }                         from './toRawType';
 import { throttle }                          from './throttle';
 import { debounce }                          from './debounce';
 import { XHR }                               from './XHR';
-import { createSingleFieldParameter }        from './createSingleFieldParameter';
 import { createFilterFormInputs }            from './createFilterFormInputs';
 import { colorHEXToRGB }                     from './colorHEXToRGB';
 import { sameOrigin }                        from './sameOrigin';
@@ -40,8 +39,6 @@ const utils = {
   throttle,
   debounce,
     XHR,
-  /** @since 3.8.7 */
-  createSingleFieldParameter,
   createFilterFormInputs,
   colorHEXToRGB,
   /** @since 3.8.0 */

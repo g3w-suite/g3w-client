@@ -1,5 +1,4 @@
 import { SEARCH_ALLVALUE }        from 'app/constant';
-import ApplicationState           from 'store/application-state';
 import ProjectsRegistry           from 'store/projects';
 import DataRouterService          from 'services/data';
 import GUI                        from 'services/gui';

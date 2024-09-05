@@ -83,8 +83,8 @@
     selectMixin,
     select2Mixin
   }                                     from 'mixins';
+  import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 
-  const { createSingleFieldParameter }  = require('utils');
   const PickLayerInputService           = require('gui/inputs/picklayer/service');
   const Layer                           = require('core/layers/layer');
   const InputMixin                      = require('gui/inputs/input');
