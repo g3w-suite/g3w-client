@@ -54,7 +54,7 @@
                   {{ layer.title }}
                   <span
                     v-show = "!layer.rawdata"
-                    class  = "query-layer-feature-count">({{layer.features.length}})</span>
+                    class  = "query-layer-feature-count">({{ layer.features.length }})</span>
                 </div>
                 <div
                   class       = "box-features-action"
@@ -803,7 +803,7 @@
        * @since 3.11.0
        */
       highLightLayerFeatures(layer, opts = { highlight: true }) {
-        if (layer.hasgeometry && layer.features.length > 1) {
+        if (layer.hasgeometry) {
           this.$options.service.highLightLayerFeatures(layer, opts);
         }
       },
