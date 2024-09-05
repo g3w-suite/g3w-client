@@ -1361,8 +1361,6 @@ class QueryResultsService extends G3WObject {
       filterConfig = {}
     } = query; // extract information about a query type
 
-    console.trace(query);
-
     let features = [];
 
     const has_coords = coordinates && Array.isArray(coordinates);
