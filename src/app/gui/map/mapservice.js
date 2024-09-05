@@ -1797,44 +1797,27 @@ class MapService extends G3WObject {
 
   getGeometryAndExtentFromFeatures(features = []) {
     let extent;
-    let geometryType;
+    let gtype;
     let geometry;
-    let coordinates;
-    let geometryCoordinates = [];
-    for (let i = 0; i < features.length; i++) {
-      const feature = features[i];
-      const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
-      if (geometry) {
-        if (geometry instanceof ol.geom.Geometry) {
-          const featureExtent = [...geometry.getExtent()];
-          extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
-          geometryType = geometryType ? geometryType : geometry.getType();
-          coordinates = geometry.getCoordinates();
-          if (geometryType.includes('Multi')) {
-            geometryCoordinates = [...geometryCoordinates, ...coordinates];
-          } else {
-            geometryCoordinates.push(coordinates);
-          }
-        } else {
-          const featureExtent = feature.bbox;
-          extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
-          geometryType = geometry.type;
-          coordinates = geometry.coordinates;
-        }
-        if (geometryType.includes('Multi')) {
-          geometryCoordinates = [...geometryCoordinates, ...coordinates];
-        } else {
-          geometryCoordinates.push(coordinates);
-        }
-      }
-    }
+    const coordinates = [];
+    features
+      .filter(f => f.getGeometry ? f.getGeometry() : f.geometry)
+      .forEach(f => {
+        const geom       = f.getGeometry ? f.getGeometry() : f.geometry;
+        const is_ol_geom = geom instanceof ol.geom.Geometry;
+        const f_ext      = is_ol_geom ?  [...geom.getExtent()] : f.bbox;
+        extent           = ol.extent.extend(undefined === extent ? f_ext : extent, f_ext);
+        gtype            = gtype ? gtype : is_ol_geom ? geom.getType() : geom.type;
+        const coords     = ( is_ol_geom ? geom.getCoordinates() : geom.coordinates );
+        coordinates.push(coords);
+      })
+
     //check if features have geometry
-    if (geometryCoordinates.length > 0 && geometryType) {
+    if (coordinates.length > 0) {
+      const is_multi = gtype.includes('Multi');
       try {
-        geometry = new ol.geom[geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`](geometryCoordinates);
-        if (undefined === extent) {
-            extent = geometry.getExtent();
-        }
+        geometry = new ol.geom[is_multi ? gtype : `Multi${gtype}`](is_multi ? coordinates.flat(): coordinates);
+        extent   = undefined === extent ? geometry.getExtent(): extent
       } catch(e) {
         console.warn(e);
       }
