@@ -463,7 +463,7 @@ module.exports = class TableLayer extends Layer {
       field.validate.unique          = field.validate.unique   || false;
       field.validate.required        = field.validate.required || false;
       field.validate.mutually_valid  = true;
-      field.validate.empty           = !field.validate.required;
+      field.validate.empty           = !field.validate.required; //property means that can be empty bacause not required
       field.validate.message         = null;
       //@since 3.11.0
       field.relationField            = false; //specify if a relation field
