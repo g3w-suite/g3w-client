@@ -113,7 +113,6 @@ export default new (class ApplicationService extends G3WObject {
      * 7 - set current project `gid` (group id)
      * 8 - set current project EPSG (coordinate system)
      * 9 - check if application is loaded within an <IFRAME>
-     * 10 - initialize DataRouterService
      */
   async init() {
     const config = await this.createApplicationConfig();
