@@ -158,7 +158,6 @@ import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
 import { debounce }                from 'utils/debounce';
 import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
-import { noop }                    from 'utils/noop';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
 
@@ -218,7 +217,7 @@ export default {
         })),
       filter:              [],
       has_map:             true,
-      async_highlight:     noop,
+      async_highlight:     () => {},
       getAll:              false,
       search:              {},
       firstCall:           true,
@@ -755,7 +754,7 @@ export default {
       setTimeout(() => {
         this.async_highlight();
         this.has_map         = true;
-        this.async_highlight = noop;
+        this.async_highlight = () => {};
       });
     }
 

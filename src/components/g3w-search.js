@@ -11,8 +11,7 @@ import CatalogLayersStoresRegistry    from 'store/catalog-layers';
 import ApplicationState               from 'store/application-state';
 import ProjectsRegistry               from 'store/projects';
 import GUI                            from 'services/gui';
-import { resolve }                    from 'utils/resolve';
-import { noop }                       from 'utils/noop';
+import { $promisify }                 from 'utils/promisify';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { createInputsFormFromFilter } from 'utils/createInputsFormFromFilter';
@@ -65,8 +64,8 @@ export function SearchComponent(opts = {}) {
       getTitle:              () => service.title,
       cleanSearchPanels:     () => { state.panels = {}; },
       removeTools:           () => { state.tools.splice(0) },
-      stop:                  resolve,
-      removeTool:            noop,
+      stop:                  d  => $promisify(Promise.resolve(d)),
+      removeTool:            () => {},
       reload:                () => {
         state.searches             = ProjectsRegistry.getCurrentProject().state.search;
         state.querybuildersearches = _getSavedSearches();

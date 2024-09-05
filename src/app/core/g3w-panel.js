@@ -3,9 +3,13 @@
  * @since 3.10.0
  */
 
-import GUI         from 'services/gui';
-import G3WObject   from 'core/g3w-object';
-import { resolve } from 'utils/resolve';
+import GUI            from 'services/gui';
+import G3WObject      from 'core/g3w-object';
+import { $promisify } from 'utils/promisify';
+
+export function resolve(value) {
+  return $promisify(Promise.resolve(value));
+}
 
 /**
  * ORIGINAL SOURCE: src/app/gui/panel.js@v3.9.3 
@@ -72,7 +76,7 @@ export default class Panel extends G3WObject {
       $(parent).localize();
       if (panel.onShow) { panel.onShow();}
     });
-    return resolve(true);
+    return $promisify(Promise.resolve(true));
   }
 
   unmount() {
@@ -84,7 +88,7 @@ export default class Panel extends G3WObject {
     if (this.service && this.service.clear) {
       this.service.clear();
     }
-    return resolve();
+    return $promisify(Promise.resolve());
   }
 
   onResize(parentWidth,parentHeight) {}

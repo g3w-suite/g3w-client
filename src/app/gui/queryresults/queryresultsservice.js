@@ -24,7 +24,6 @@ import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoo
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { printAtlas }                           from 'utils/printAtlas';
-import { noop }                                 from 'utils/noop';
 import { downloadFile }                         from 'utils/downloadFile';
 import { throttle }                             from 'utils/throttle';
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
@@ -226,7 +225,7 @@ class QueryResultsService extends G3WObject {
      * @FIXME add description
      */
     this._asyncFnc = {
-      todo:                      noop,
+      todo:                      () => {},
       zoomToLayerFeaturesExtent: { async: false },
       highLightLayerFeatures:    { async: false },
       goToGeometry:              { async: false },
@@ -699,7 +698,7 @@ class QueryResultsService extends G3WObject {
     this.removeAddFeaturesLayerResultInteraction({ toggle: true });
     this._asyncFnc = null;
     this._asyncFnc = {
-      todo:                      noop,
+      todo:                      () => {},
       zoomToLayerFeaturesExtent: { async: false },
       highLightLayerFeatures:    { async: false },
       goToGeometry:              { async: false },

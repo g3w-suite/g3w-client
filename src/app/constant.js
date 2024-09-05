@@ -9,7 +9,6 @@
  */
 // import { version } from '../../package.json';
 import version      from '../version';
-import translations from "../locales";
 
 /**
  * Same as "package.json" version
@@ -647,35 +646,7 @@ export const SELECTION = {
   EXCLUDE: '__EXCLUDE__'
 };
 
-/**
- * Application configuration
- *
- * @since 3.11.0
- *
- */
-export const APP_CONFIG = {
-  apptitle: "G3W Client",
-  client: {
-    debug:  true,
-    local:  false
-  },
-  server: {
-    urls:  {
-      baseurl:     '/',
-      ows:         'ows',
-      api:         'api',
-      initconfig:  'api/initconfig',
-      config:      'api/config'
-    }
-  },
-  plugins: {},
-  supportedLanguages: ['en', 'it'],
-  tools: { tools:  [] },
-  _i18n: { resources: translations },
-}
-
 export default {
-  APP_CONFIG, //@since 3.11.0
   APP_VERSION,
   API_BASE_URLS,
   DEFAULT_EDITING_CAPABILITIES,
