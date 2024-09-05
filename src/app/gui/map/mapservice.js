@@ -638,7 +638,7 @@ class MapService extends G3WObject {
         map.on('click', ({ coordinate }) => {
           const circle = new ol.layer.Vector({
             source: new ol.source.Vector({ features: [ new ol.Feature({ geometry: new ol.geom.Point(coordinate) }) ] }),
-            style: new ol.style.Style()
+            style:  new ol.style.Style()
           });
           const start    = +new Date();
           const duration = 1700;
@@ -976,9 +976,9 @@ class MapService extends G3WObject {
             ? map.getViewport()
             : $(`#${this.maps_container} .g3w-map`).last().children('.ol-viewport')[0]
         ).children('canvas')[0];
-        if (navigator.msSaveBlob) resolve(canvas.msToBlob());
-        else canvas.toBlob(blob => resolve(blob));
-      } catch (e) {
+        if (navigator.msSaveBlob) { resolve(canvas.msToBlob()) }
+        else { canvas.toBlob(blob => resolve(blob)) }
+      } catch(e) {
         console.warn(e);
         reject(e);
       }
@@ -1022,11 +1022,11 @@ class MapService extends G3WObject {
   }
 
   /**
-   * Show Marker on map
+   * Show Marker on a map
    * @param coordinates
    * @param duration
    */
-  showMarker(coordinates, duration=1000) {
+  showMarker(coordinates, duration = 1000) {
     this._marker.setPosition(coordinates);
     setTimeout(() => this._marker.setPosition(), duration);
   }
@@ -1035,7 +1035,7 @@ class MapService extends G3WObject {
    * @returns layer by name
    */
   getLayerByName(name) {
-    return this.getMap().getLayers().getArray().find(l => l.get('name') === name);
+    return this.getMap().getLayers().getArray().find(l => name === l.get('name'));
   }
 
   /**
@@ -1060,7 +1060,7 @@ class MapService extends G3WObject {
         const pixel = map.getPixelFromCoordinate(coordinates);
         map.forEachFeatureAtPixel(pixel,
           feature => features.push(feature),
-          {layerFilter(layer) {return layer === vectorLayer;}
+          { layerFilter(layer) { return layer === vectorLayer; }
         });
       } else if (4 === coordinates.length) {
         intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
@@ -1069,9 +1069,8 @@ class MapService extends G3WObject {
             features = vectorLayer.getIntersectedFeatures(intersectGeom);
             break;
           case ol.layer.Vector:
-            vectorLayer.getSource().getFeatures().forEach(feature => {
-              intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
-            });
+            vectorLayer.getSource().getFeatures()
+              .forEach(f => intersectGeom.intersectsExtent(f.getGeometry().getExtent()) && features.push(f))
             break;
         }
       }
@@ -1085,9 +1084,7 @@ class MapService extends G3WObject {
           vectorLayer
             .getSource()
             .getFeatures()
-            .forEach(feat => {
-              intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feat);
-          });
+            .forEach(f => intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(f))
           break;
       }
     }
@@ -1097,7 +1094,7 @@ class MapService extends G3WObject {
   /**
    * Used by the following plugins: "cdu"
    */
-  getQueryLayerByCoordinates({layer, coordinates} = {}) {
+  getQueryLayerByCoordinates({ layer, coordinates } = {}) {
     return new Promise((resolve, reject) => {
       layer.query({
         coordinates,
@@ -1177,7 +1174,7 @@ class MapService extends G3WObject {
   /**
    * Handle ztf url parameter
    *
-   * @param zoom_to_feature
+   * @param zoom_to_features
    */
   async zoomToFeaturesUrl(zoom_to_features = '') {
     try {
@@ -1251,8 +1248,7 @@ class MapService extends G3WObject {
     if ("string" !== typeof type) {
       type = type.type;
     }
-    const mapControl = this._controls.find(control => type === control.type);
-    return mapControl && mapControl.control;
+    return (this._controls.find(c => type === c.type) || {}).control;
   }
 
   /**
@@ -1262,11 +1258,11 @@ class MapService extends G3WObject {
    * @param addToMapControls
    * @param visible
    */
-  addControl(id, type, control, addToMapControls=true, visible=true) {
+  addControl(id, type, control, addToMapControls = true, visible = true) {
     this.state.mapcontrolready = false;
     this.viewer.map.addControl(control);
 
-    control.on('toggled', evt => this.emit('mapcontrol:toggled', evt));
+    control.on('toggled', e => this.emit('mapcontrol:toggled', e));
 
     this._controls.push({ id, type, control, visible, mapcontrol: addToMapControls && visible });
 
@@ -1360,7 +1356,7 @@ class MapService extends G3WObject {
    * @param close GUI content
    * @private
    */
-  _unToggleControls({close=true} = {}) {
+  _unToggleControls({ close = true } = {}) {
     this._controls.forEach(c => {
       if (c.control.isToggled && c.control.isToggled()) {
         c.control.toggle(false);
@@ -1379,7 +1375,7 @@ class MapService extends G3WObject {
    *
    * Method to disable
    */
-  disableClickMapControls(bool=true) {
+  disableClickMapControls(bool = true) {
     this._controls
       .filter(c => c.control.isClickMap && c.control.isClickMap())
       .forEach(c => {
@@ -1388,11 +1384,11 @@ class MapService extends G3WObject {
     })
   }
 
-  _setupCustomMapParamsToLegendUrl(bool=true) {
+  _setupCustomMapParamsToLegendUrl(bool = true) {
     if (bool) {
       const map  = this.getMap();
-      const size = map && map.getSize().filter(value => value > 0) || null;
-      const bbox = size && size.length === 2 ? map.getView().calculateExtent(size) : this.project.state.initextent;
+      const size = (map && map.getSize().filter(v => v > 0)) || null;
+      const bbox = size && 2 === size.length ? map.getView().calculateExtent(size) : this.project.state.initextent;
       this.getMapLayers().forEach(l => l.setupCustomMapParamsToLegendUrl) && l.setupCustomMapParamsToLegendUrl({
         crs: this.getEpsg(),
         // in the case of axis orientation inverted if it needs to invert the axis
@@ -1402,8 +1398,8 @@ class MapService extends G3WObject {
     }
   }
 
-  getMapLayerByLayerId(layerId) {
-    return this.getMapLayers().find(l => l.getLayerConfigs().find(l => layerId === l.getId()))
+  getMapLayerByLayerId(id) {
+    return this.getMapLayers().find(l => l.getLayerConfigs().find(l => id === l.getId()))
   }
 
   getMapLayers() {
@@ -1415,11 +1411,11 @@ class MapService extends G3WObject {
   }
 
   getMapLayerForLayer(layer) {
-    return this.getMapLayers().find(mapLayer => `layer_${layer.getMultiLayerId()}` ===  mapLayer.getId());
+    return this.getMapLayers().find(ml => `layer_${layer.getMultiLayerId()}` ===  ml.getId());
   }
 
-  getProjectLayer(layerId) {
-    return MAP.layers.getLayerById(layerId);
+  getProjectLayer(id) {
+    return MAP.layers.getLayerById(id);
   }
 
   /**
@@ -1487,6 +1483,7 @@ class MapService extends G3WObject {
       this.registerMapLayerListeners(base);
       this._layers.base[l.getId()] = base;
     });
+
     Object.values(blayers.length ? this._layers.base : {}).reverse().forEach(l => {
       l.update(this.state, this.layersExtraParams);
       this.addLayerToMap(l);
@@ -1512,7 +1509,7 @@ class MapService extends G3WObject {
           cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
           return `${id}_${cache[id]}`;
         }
-        return id = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
+        return undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
       })
     )
     .forEach(([id, layers]) => {
@@ -1585,7 +1582,7 @@ class MapService extends G3WObject {
   }
 
   //set ad increase layerIndex
-  setLayerZIndex({ layer, zindex=this.layersCount+=1 }) {
+  setLayerZIndex({ layer, zindex = this.layersCount+=1 }) {
     layer.setZIndex(zindex);
     this.emit('set-layer-zindex', { layer, zindex });
     return zindex;
@@ -1645,8 +1642,8 @@ class MapService extends G3WObject {
   }
 
   // run update function on each mapLayer
-  updateMapLayers(options = {}) {
-    this.getMapLayers().forEach(l => this.updateMapLayer(l, options));
+  updateMapLayers(opts = {}) {
+    this.getMapLayers().forEach(l => this.updateMapLayer(l, opts));
     Object.values(this.getBaseLayers()).forEach(l => l.update(this.state, this.layersExtraParams));
   }
 
@@ -1665,7 +1662,7 @@ class MapService extends G3WObject {
   }
 
   // unregister listeners of mapLayers creation
-  unregisterMapLayerListeners(layer, projectLayer=false) {
+  unregisterMapLayerListeners(layer, projectLayer = false) {
     layer.un('loadstart', this.onLayerLoadStart);
     layer.un('loadend',   this.onLayerLoadEnd);
     layer.un('loaderror', this.onLayerLoadError);
@@ -1744,7 +1741,7 @@ class MapService extends G3WObject {
    * @param { Array } coordinate
    * @param { Number } zoom
    */
-  zoomTo(coordinate, zoom=6) {
+  zoomTo(coordinate, zoom = 6) {
     const view = this.viewer.map.getView();
     view.setCenter(coordinate);
     view.setZoom(zoom);
@@ -1769,7 +1766,7 @@ class MapService extends G3WObject {
   }
 
   /**
-   * Set map center to coordinates at resolution
+   * Set map center to coordinate at resolution
    *
    * @param { Array } coordinates
    * @param resolution
@@ -1899,7 +1896,7 @@ class MapService extends G3WObject {
 
   goToBBox(bbox, epsg = this.getEpsg()) {
     bbox = epsg === this.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, this.getEpsg());
-    // compare bbox extent with project max extent
+    // compare bbox extent with a project max extent
     this.viewer.fit(ol.extent.containsExtent(this.project.state.extent, bbox) ? bbox : this.project.state.extent);
   }
 
@@ -2022,7 +2019,7 @@ class MapService extends G3WObject {
   }
 
   /**
-   * Force to referesh map
+   * Force to referesh a map
    * @param options
    */
   refreshMap(options = { force: true }) {
@@ -2255,7 +2252,7 @@ class MapService extends G3WObject {
    *
    * @returns { Promise<unknown> }
    */
-  async addExternalLayer(externalLayer, options={}) {
+  async addExternalLayer(externalLayer, options = {}) {
 
     // extract OL layer from a G3W layer
     const olLayer = externalLayer.getOLLayer ? externalLayer.getOLLayer() : externalLayer;
@@ -2267,10 +2264,10 @@ class MapService extends G3WObject {
 
     let vectorLayer;
 
-    options.position   = undefined !== options.position ? options.position : 'top';
-    options.opacity    = undefined !== options.opacity ? options.opacity : 1;
-    options.visible    = undefined !== options.visible ? options.visible : true;
-    options.persistent = undefined !== options.persistent ? options.persistent : true;
+    options.position   = undefined === options.position ? 'top': options.position;
+    options.opacity    = undefined === options.opacity ? 1: options.opacity;
+    options.visible    = undefined === options.visible || options.visible;
+    options.persistent = undefined === options.persistent || options.persistent;
 
     // vector layer
     if (externalLayer instanceof ol.layer.Vector) {
@@ -2493,7 +2490,7 @@ class MapService extends G3WObject {
     return MAP.selectedLayer;
   }
 
-};
+}
 
 /** @since 3.8.0 */
 ApplicationService.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
