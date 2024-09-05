@@ -269,11 +269,20 @@ export const ResponseParser = {
             const name = id ? layer.getId() : `layer${i}`; // layer name
 
             json.FeatureCollection.featureMember = originalFeatureMember
-            .filter(f => f[name])
-            .map(f => {
-              const fm = f[name];
-              const prefix = f.__prefix;
-              if (fm) {
+              .filter(f => f[name])
+              .map(f => {
+                const fm = f[name];
+                const prefix = f.__prefix;
+                //set fid of each feature
+                [].concat(fm).forEach(_fm => {
+                  //need to get fid number removing <layer_name_or_id.fid>
+                  _fm._fid = _fm._fid && _fm._fid.split('.')[1];
+                  _fm[G3W_FID] = {
+                    __prefix: prefix,
+                    __text:   _fm._fid
+                  }
+                })
+                //in case of wms multi layer
                 if (Array.isArray(fm)) {
                   const grouped = groupBy(fm, f => Object.keys(f));
                   // check if features have the same fields. If not, group the features with the same fields
@@ -285,16 +294,10 @@ export const ResponseParser = {
                     : //for Each element have to add and object contain layerName and information, and __prefix
                     fm.map(f => ({ [name]:   f,  __prefix: prefix }) );
                 } else {
-                  //need to get fid number removing <layer_name_or_id.fid>
-                  fm._fid = fm._fid && fm._fid.split('.')[1];
-                  fm[G3W_FID] = {
-                    __prefix: prefix,
-                    __text:   fm._fid
-                  };
                   return f;
                 }
-              }
-            }).flat();
+
+              }).flat();
             // parse layer feature collection
             const xml            = x2js.json2xml_str(json); // layer Feature Collection XML
             const olfeatures     = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
